@@ -1,0 +1,102 @@
+{
+  "schema_version": "product-truth-walmart-item-v6-list-probe/v1",
+  "mode": "READ_ONLY_EXISTING_REPORT_LIST",
+  "captured_at": "2026-07-23T01:56:01.386Z",
+  "query": {
+    "reportType": "ITEM",
+    "reportVersion": "v6",
+    "src": "API",
+    "requestSubmissionStartDate": "2026-07-21T01:55:24Z",
+    "requestSubmissionEndDate": "2026-07-23T01:55:24Z"
+  },
+  "http_status": 200,
+  "correlation_id_sha256": "522e1c07f6939b174a5990988b34c0f619f18580208e1b008774d0b219bdfb5f",
+  "response_bytes": 3401,
+  "response_sha256": "33e43fad59fe1eb45fa76a3ef06c73d3d375b8457c32f3a8fb50e50385aceebb",
+  "reported_total_count": 17,
+  "visible_request_count": 10,
+  "visible_requests": [
+    {
+      "requestId": "019f8c7f-a96b-74e2-8dcc-2b1bf3439ef4",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-23T01:03:24Z"
+    },
+    {
+      "requestId": "019f8bd9-feb7-74b2-b609-e51ed208b9fb",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T22:02:27Z"
+    },
+    {
+      "requestId": "019f8b35-7cbf-7923-8f81-3b2c9c0b390f",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T19:02:46Z"
+    },
+    {
+      "requestId": "019f8a90-88f8-740d-97e1-0e72029d73c0",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T16:02:35Z"
+    },
+    {
+      "requestId": "019f89eb-e100-7a5c-b18d-f291c4dd1fe7",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T13:02:44Z"
+    },
+    {
+      "requestId": "019f8946-6969-76ec-83a5-698cbff170b8",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T10:02:00Z"
+    },
+    {
+      "requestId": "019f88a1-3bf6-75db-988b-06b7e3db3c03",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T07:01:35Z"
+    },
+    {
+      "requestId": "019f87fc-84cd-71b8-b224-457799dbe3cb",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T04:01:41Z"
+    },
+    {
+      "requestId": "019f878e-e2f0-77f9-b488-177ccca69e90",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-22T02:01:56Z"
+    },
+    {
+      "requestId": "019f86ea-edaa-784b-a667-4456f4551667",
+      "reportType": "ITEM",
+      "reportVersion": "v2",
+      "requestStatus": "READY",
+      "requestSubmissionDate": "2026-07-21T23:02:51Z"
+    }
+  ],
+  "http_calls": {
+    "oauth_token_calls": 1,
+    "walmart_api_calls": 1,
+    "presigned_file_calls": 0,
+    "total_http_calls": 2
+  },
+  "effects": {
+    "report_create_posts": 0,
+    "listing_writes": 0,
+    "database_writes": 0,
+    "retries": 0
+  }
+}

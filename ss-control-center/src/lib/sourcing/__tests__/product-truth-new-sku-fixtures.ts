@@ -1,5 +1,11 @@
 import { createHash } from "node:crypto";
 
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
+
 function stableValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stableValue);
   if (value && typeof value === "object") {
@@ -30,7 +36,13 @@ const contentObservedAt = "2026-07-19T10:00:00.000Z";
 const contentRunId = "content-run-a";
 const contentApprovalId = "content-approval-a";
 const contentMeteredReceiptId = "content-receipt-a";
-const decisionEvidenceJson = stableJson({ exact: true, source: "fixture" });
+const decisionEvidenceJson = stableJson({
+  exact: true,
+  matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+  source: "fixture",
+});
 
 const content = {
   title: "Example Strawberry Snack 1 oz",
@@ -73,7 +85,9 @@ export const validIdentityRow = {
   donorProductId,
   canonicalVariantId,
   variantDecisionId,
-  matcherVersion: "canonical-product-match/1.2.0",
+  matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+  matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   decisionEvidenceHash: hash(decisionEvidenceJson),
   decisionEvidenceJson,
   variantKey: canonicalVariantId,

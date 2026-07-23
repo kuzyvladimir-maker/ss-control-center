@@ -1,0 +1,72 @@
+{
+  "schema_version": "product-truth-sanitized-deployment-configuration-snapshot/v1",
+  "capture_id": "deployment-config-production-20260723T014559Z",
+  "captured_at": "2026-07-23T01:45:59.000Z",
+  "captured_by": "Codex",
+  "source": "ss-control-center/.env",
+  "secret_values_included": false,
+  "amazon": [
+    {
+      "scope_key": "store1",
+      "store_index": 1,
+      "client_id_present": true,
+      "client_secret_present": true,
+      "refresh_token_present": true,
+      "seller_id_present": true,
+      "seller_id": "A3A7A0RDFUSGBS",
+      "marketplace_id": "ATVPDKIKX0DER"
+    },
+    {
+      "scope_key": "store2",
+      "store_index": 2,
+      "client_id_present": true,
+      "client_secret_present": true,
+      "refresh_token_present": true,
+      "seller_id_present": false,
+      "seller_id": null,
+      "marketplace_id": "ATVPDKIKX0DER"
+    },
+    {
+      "scope_key": "store3",
+      "store_index": 3,
+      "client_id_present": true,
+      "client_secret_present": true,
+      "refresh_token_present": true,
+      "seller_id_present": true,
+      "seller_id": "A2ON382ZMCWPCT",
+      "marketplace_id": "ATVPDKIKX0DER"
+    },
+    {
+      "scope_key": "store4",
+      "store_index": 4,
+      "client_id_present": false,
+      "client_secret_present": false,
+      "refresh_token_present": false,
+      "seller_id_present": false,
+      "seller_id": null,
+      "marketplace_id": "ATVPDKIKX0DER"
+    },
+    {
+      "scope_key": "store5",
+      "store_index": 5,
+      "client_id_present": true,
+      "client_secret_present": true,
+      "refresh_token_present": true,
+      "seller_id_present": true,
+      "seller_id": "A1LCOF57VUVMI4",
+      "marketplace_id": "ATVPDKIKX0DER"
+    }
+  ],
+  "walmart": [
+    {
+      "scope_key": "store1",
+      "store_index": 1,
+      "client_id_present": true,
+      "client_secret_present": true,
+      "seller_id": "10001624309",
+      "store_name": "SIRIUS TRADING INTERNATIONAL LLC",
+      "api_base_configured": true,
+      "api_version_configured": true
+    }
+  ]
+}

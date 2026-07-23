@@ -9,6 +9,8 @@
  */
 
 import type { ValidatorFn } from "../types";
+import { walmartProductDetailTextViolation } from
+  "@/lib/bundle-factory/validation/walmart-product-detail-policy";
 
 const DESC_CHAR_CAP_BY_CHANNEL: Record<string, number> = {
   AMAZON_PERSONAL: 2000,
@@ -25,6 +27,10 @@ const DESC_CHAR_CAP_BY_CHANNEL: Record<string, number> = {
 const HTML_TAG = /<[a-zA-Z\/!][^>]*>/;
 const EMOJI_OR_SYMBOL = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/u;
 const MANUAL_BULLET = /[•●►▪○▶➤→]/;
+
+function wordCount(value: string): number {
+  return value.split(/\s+/).filter(Boolean).length;
+}
 
 export const validatorDescription: ValidatorFn = async ({ sku }) => {
   const desc = (sku.description || "").trim();
@@ -44,6 +50,15 @@ export const validatorDescription: ValidatorFn = async ({ sku }) => {
       severity: "error",
       message: `Description is ${desc.length} chars; ${sku.channel} limit is ${cap}.`,
       details: { length: desc.length, cap },
+    };
+  }
+  if (sku.channel === "WALMART" && wordCount(desc) < 150) {
+    return {
+      validator_id: "validator-description",
+      passed: false,
+      severity: "error",
+      message: `Walmart description has ${wordCount(desc)} words; current Product details policy requires at least 150 words.`,
+      details: { words: wordCount(desc), minimum: 150 },
     };
   }
   if (HTML_TAG.test(desc)) {
@@ -69,6 +84,18 @@ export const validatorDescription: ValidatorFn = async ({ sku }) => {
       severity: "error",
       message: "Description contains a manual bullet marker.",
     };
+  }
+  if (sku.channel === "WALMART") {
+    const violation = walmartProductDetailTextViolation(desc, "DESCRIPTION");
+    if (violation) {
+      return {
+        validator_id: "validator-description",
+        passed: false,
+        severity: "error",
+        message: `Walmart description contains ${violation}.`,
+        details: { policy: "product-details-policy", violation },
+      };
+    }
   }
   return { validator_id: "validator-description", passed: true };
 };

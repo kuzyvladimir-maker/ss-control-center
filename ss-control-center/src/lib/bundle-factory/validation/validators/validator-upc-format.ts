@@ -8,10 +8,11 @@
  *   4. UPC isn't marketplace-quarantined or assigned elsewhere
  *
  * Failing #1/#2 is an unrecoverable error (typo or fabricated UPC).
- * `gs1_validated=false` is evidence, not a standalone publish block: the owner
- * explicitly chose the existing managed pool and marketplace response is the
- * collision/ownership authority. An explicit marketplace quarantine is a hard
- * block until the operator dispositions the code.
+ * `UPCPool.gs1_validated` is a legacy CSV check-digit flag, not proof of a
+ * current GS1 registry lookup. This validator only proves local syntax,
+ * reservation and uniqueness. The Walmart certification gate separately
+ * requires fresh exact-UPC registry, brand-alignment and seller-authority
+ * evidence. An explicit marketplace quarantine remains a hard block.
  */
 
 import { prisma } from "@/lib/prisma";
@@ -161,8 +162,9 @@ export const validatorUpcFormat: ValidatorFn = async ({ sku }) => {
       upc,
       ownership_basis: "OWNER_MANAGED_UPC_POOL",
       pool_status: poolRow.status,
-      gs1_validated: poolRow.gs1_validated,
-      gs1_validation_is_standalone_gate: false,
+      legacy_csv_check_digit_flag: poolRow.gs1_validated,
+      legacy_flag_is_registry_proof: false,
+      fresh_walmart_product_identifier_evidence_required: true,
     },
   };
 };

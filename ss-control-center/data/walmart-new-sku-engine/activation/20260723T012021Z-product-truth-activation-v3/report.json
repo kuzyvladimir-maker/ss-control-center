@@ -1,0 +1,287 @@
+{
+  "actions": [
+    {
+      "action": "applied",
+      "id": "20260718230000_product_truth_queue_v2",
+      "sha256": "f6c675df5eb0cf76ee39c83e6d34ae6fb8af19ac648d58171d6814d817ecf46f"
+    },
+    {
+      "action": "applied",
+      "id": "20260718233000_donor_harvest_lifecycle",
+      "sha256": "76eca447b6419f2a0f666a4d177df21d9bcea86caf1e6a801ae19d99de6f56f7"
+    },
+    {
+      "action": "applied",
+      "id": "20260718234500_product_truth_evidence_provenance",
+      "sha256": "cbc3748a46d101d609d8767d3b15302d3c306d6f8b0af2a8236095eb98b6ee5e"
+    },
+    {
+      "action": "applied",
+      "id": "20260719000000_metered_budget_ledger",
+      "sha256": "91e2ca1346e3d3ef4c37c62153b846cc7be5b537822252ec4edef1b010e80b68"
+    },
+    {
+      "action": "applied",
+      "id": "20260719001000_product_truth_metered_evidence_link",
+      "sha256": "d8bb681c2d18158ddc9108f352419f4b6655e8650a5602e1ac35b8b441353007"
+    },
+    {
+      "action": "applied",
+      "id": "20260719002000_product_truth_listing_scope",
+      "sha256": "5a98474712f8c48c9958cbe17855871aaef610b05b658e739418b61b40b9f775"
+    },
+    {
+      "action": "applied",
+      "id": "20260719003000_product_truth_queue_listing_scope",
+      "sha256": "edbeeaac5e8900fbe403c3970eeea85946d39828210977d0e4a4d1f8f3aa4bc7"
+    },
+    {
+      "action": "applied",
+      "id": "20260719004000_product_truth_operational_run",
+      "sha256": "d1c75164517d52db85d579ef738223c5ec5d25463540fd1fef859f2131452e45"
+    }
+  ],
+  "activationContractSha256": "7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e",
+  "approvalId": "owner-pending-walmart-pilot-product-truth-20260723T004458Z-v3",
+  "approvalSha256": "62edc54409d0e89e1749175dc905acf437bca054f3cc3c3fc84fec90eb0802b6",
+  "contractVersion": "product-truth-migration-report/2",
+  "final": {
+    "migrationStates": [
+      {
+        "id": "20260718230000_product_truth_queue_v2",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260718233000_donor_harvest_lifecycle",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260718234500_product_truth_evidence_provenance",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719000000_metered_budget_ledger",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719001000_product_truth_metered_evidence_link",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719002000_product_truth_listing_scope",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719003000_product_truth_queue_listing_scope",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719004000_product_truth_operational_run",
+        "state": "applied",
+        "tracking": "tracked"
+      }
+    ],
+    "prismaLedger": "ready",
+    "receiptLedger": "ready"
+  },
+  "generatedAt": "2026-07-23T01:21:34.195Z",
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "mode": "apply",
+  "planSha256": "96b675ac71344a4ded72e51cbe9d4b880139d7d5dd288e67895b8f87924b1d7f",
+  "queueImpact": {
+    "contractVersion": "product-truth-migration-queue-impact/1",
+    "queueV2CompatibilityBackfill": {
+      "count": 128,
+      "rowIds": [
+        "119b7a35-173d-4f55-920e-25662fb004f2",
+        "11b7dc83-4fe3-4bdb-9456-55262c3d8edb",
+        "13dd607a-8016-43c2-befe-5c5570f37616",
+        "14ea240c-c205-4273-a5ca-535d212dea29",
+        "18d5dd13-7682-43b6-b8ac-c5efb2b1941c",
+        "1a3e5c3e-6914-4423-b668-76cb0a8af00f",
+        "1c640366-25f1-45cb-a824-e5825d69ce7b",
+        "20955df5-a7c8-41b4-b780-e7f2ec4fcee7",
+        "20a55e3f-c525-40d9-a6fe-9f3a2dcaf51b",
+        "21a93c64-49e6-45f7-883f-83e54399a91b",
+        "228570ec-2a08-44a5-a25b-c0a263fa3f3c",
+        "239f766b-04fb-4e51-88c0-d0d1e1d00d5b",
+        "24feca17-d51e-4f26-b12a-23be6c1ae401",
+        "2525f07d-1019-466c-a574-ae2a2aa60bbd",
+        "29e09bee-c48d-4868-bb3b-db441d16cfee",
+        "2b4dd46b-3204-4280-b449-a2e9ba1aed90",
+        "2f2a19e0-3391-4626-a26a-c32f20937452",
+        "2fbad063-618a-4934-8991-29b655e87f27",
+        "32355af7-0ee7-41a5-b781-6d0f096eba20",
+        "326ab8e8-536a-4419-a27e-15a20465dcfc",
+        "34bf0251-33aa-403f-a418-23120f7a9cb4",
+        "37d8a3fb-66d9-4e34-88d7-f5652cfc28fc",
+        "389d618f-3b7a-4211-bded-e63d77e7445d",
+        "3a8dcccd-b6e3-4c84-9ceb-137467f913a3",
+        "40359c2b-1c50-44db-8e89-1759605a96db",
+        "4447b5f1-95b9-4af4-9bf9-8369508f3920",
+        "45cb9cb8-cd90-4305-a0fe-b1e2a96ee03f",
+        "4a629e28-87c5-4c68-a759-7cdfc30ce181",
+        "4ac6a79a-eda5-4105-b9c5-31af544cddf0",
+        "4da93da3-3c99-4de8-a6c9-c28ec4a92072",
+        "4f4d8f55-b347-487c-9fce-75ed691f5099",
+        "4f500b6f-fa4f-428b-a139-219ecbc3bdfe",
+        "512cf682-ce4d-4dcd-8320-99d083a20272",
+        "519ef57f-92bf-4670-85b7-a738b69d1096",
+        "53f943a4-4e00-42af-8aa7-aceda3d0c95e",
+        "54022598-de8a-4796-9526-8aa0c3fa2e06",
+        "5453fb15-cc1a-4040-93f1-9512d5b76d66",
+        "549e496f-dae9-44de-a61a-a62eb1aeeb86",
+        "571bd4d2-fc2b-4a59-9816-7556c6343709",
+        "58033c38-6d96-48b4-b575-3ce68cc335de",
+        "5a89115a-66cf-4a10-bde4-2dce5e36ae34",
+        "5be582e9-9841-4759-b11d-1654c1dd2e5b",
+        "5f3f4a4d-5a1b-4874-9618-03338d1b0636",
+        "68ff4bed-4373-4912-9eff-0cb027429f11",
+        "6acc7169-034c-44c3-86c3-04dd1cbcadfb",
+        "6b3eb35a-4797-41f8-b9a1-7071770ef465",
+        "6da384b8-64d4-4afa-91ab-f04c5a5f06a0",
+        "70a484e3-75e4-4259-ba0e-43436879c14f",
+        "71c46204-957b-40a7-ae73-95b73e37bad7",
+        "731c785d-fc57-45b4-8ba6-4d1b42f1a7e7",
+        "732aad21-60a2-4187-86b8-d0684a6f8c72",
+        "73db06ac-0de1-4769-acc8-e4794bab6f30",
+        "74e46202-af10-4eb8-b8eb-01375d369b01",
+        "778fccba-f4c7-42db-a603-ae9573c8636c",
+        "78673e78-92a0-4677-9178-347f058a8155",
+        "786d9b8c-b16d-4bac-9ecd-858823db04fb",
+        "789093d3-3c63-4c63-adc1-c01612226189",
+        "7a03a6b0-73a3-4efa-9d70-2fb7fd403860",
+        "7b46aad3-1bf4-49f4-8d33-eb0bd941ad55",
+        "7d9319a5-7554-468a-b545-1d5b8a2209fe",
+        "7e04a199-c226-48dd-80e9-3f6c222ed54f",
+        "7edef950-4646-473d-a92f-ec6570e5562c",
+        "7fdce02f-1990-43e1-b61c-622a91db9706",
+        "8093894d-98e2-4284-a584-a31a5bc9ac31",
+        "8193941c-b169-4cfc-a359-99a51cc5b5f1",
+        "81a175ac-4ca1-4142-b1c4-0a8d7db355be",
+        "834c7cb2-dd65-40c8-96a0-59a6a5a6947c",
+        "83606836-a93d-4698-8410-8e031e6a40f5",
+        "89645b26-d7a0-45c7-bcd2-0f513c246ae9",
+        "8ce45643-543f-4f78-9380-0907420ed7e4",
+        "8d378a70-eab0-4825-8cbf-487881e7c049",
+        "8d91989f-1d0e-481d-94eb-7c5c85ab8725",
+        "8e07b1c6-03d4-43e7-81ad-b2e2ab8fc2d7",
+        "8e65391b-31a8-40c1-8ae4-686bff0418c1",
+        "8ecfcfeb-bf0e-4e22-af8f-8a93f968cea5",
+        "97ae118e-f59c-428d-acae-f6725b6a4f41",
+        "98b1b387-2482-43e6-be95-12f346eb69f7",
+        "9c3b0027-3853-45dd-a845-7f106266e3a0",
+        "9e153f37-8864-46d3-bfb1-d6506afef5ef",
+        "a22a9145-0431-4a9d-b1ce-a4c1bdf466bc",
+        "a2c5d058-a548-4e6b-a79e-0537d55f6830",
+        "a5331714-20d9-4500-b554-9bcf99118350",
+        "a64c836c-1362-481b-8cb8-71ff31b858b7",
+        "a924cf0b-ee86-48af-8c46-11baae721453",
+        "ac42d620-7b4e-4374-8856-b3d71e939915",
+        "b0b10bf7-3dcd-426c-b09a-0b6a8304cad9",
+        "b0ee1b44-8b34-4e7d-ad3c-3a1f82b1e16e",
+        "b1dbe867-4f3d-42e7-93e8-f46908c945e0",
+        "b2613eb8-bfa8-420c-b994-c1cd9a1496ae",
+        "b326519c-f09c-4b7e-ab16-664fd8f9eab9",
+        "b5370ab4-89fb-4fd7-acb4-ae47eaeb6113",
+        "b6b03255-42a2-4dae-a8c7-148e78582279",
+        "b8423b61-c5a9-4703-9159-433b855f3b80",
+        "badf72f6-a3cd-4992-ba7a-c97b00e32710",
+        "bae8dd3a-7ba1-4eef-b4ee-9b2db685fcb1",
+        "bd06ba8c-4376-458b-842c-7bcf90fce0a1",
+        "c47fcd7b-ff2f-4f9f-8320-ac6dfed335f7",
+        "c52dd11d-e198-4ad9-a0bb-11804e5da93b",
+        "c67f2bfd-b364-4a4c-a83c-47e226f038c6",
+        "c8751e82-4767-494b-af07-9d567e8ded07",
+        "cae64563-4a2f-4b23-8f7f-c1a9e47069bc",
+        "cdf55b06-dff3-47f4-a967-97b66f1f6ccf",
+        "cf3f9ad9-1959-4fe4-af55-9e1f4b3778a2",
+        "d24897d8-80cb-4cfd-bc1e-f93fae9e1c01",
+        "d2cafde8-f63a-4737-b15a-343c5cb4e1b9",
+        "d2eccb90-3e1b-43f2-a29c-a6e69d6a9b7a",
+        "d4274c9b-30c4-47c6-b88e-4364baf7ae83",
+        "d576ef54-ce85-47d6-acaf-9b033a7b3962",
+        "d57e7286-b4fd-470d-9be3-840b002e99a1",
+        "d61960dc-a46a-4427-87ba-307b820d6309",
+        "d8a1d8e3-8e00-48ab-b080-382eaf0fbb81",
+        "de25dfb4-9a59-4437-a571-51a712699bb2",
+        "e2c63d1b-8edf-4b28-9b22-0189ebbaa3e0",
+        "e3fbe954-c5c3-4284-8714-660fadf7d72b",
+        "e4312268-0403-4539-8fe8-c458a84adc4d",
+        "e664bb1f-74f3-4554-aad2-778bc5c5e781",
+        "e77ff871-c7d0-4cc3-96c4-9861d6cd6fe5",
+        "e91725fb-5d96-43b2-b71b-f407bd82e827",
+        "ef0cb66a-0036-4cae-8814-5d072a568d3b",
+        "efb80d40-5363-470f-95c7-f53539bd679a",
+        "f081ee46-dec8-45ae-9029-35a1468c0f5e",
+        "f18c32cd-f0f0-417d-a12d-b011e6cf2d84",
+        "f247080f-7b1b-49a4-b62f-7d4be453fc81",
+        "f4f3e34a-c0b9-43b0-8291-34a6d6d832be",
+        "f5c8b435-8b66-445f-9654-85c4feadf5d7",
+        "f8cfa053-ccc1-4579-b33e-5e747c7105a0",
+        "fcfd74a5-787f-4230-a682-9e8d858f10d3",
+        "fd6323a8-fa67-4385-be81-f80fa1ac6424"
+      ],
+      "rowsSha256": "36151c2945382bd19f45055641cfe2090191417eb186d34fb906b3fbfee5df5d"
+    },
+    "queueV3Cancellation": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "runningQueueJobs": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "sha256": "2d1f06edafc5042f38e0cecd9707f25c2ebfc45a33eb3eeeaa43512ac10b1707"
+  },
+  "runId": "walmart-pilot-product-truth-20260723T004458Z-v3",
+  "schemaAfterSha256": "8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511",
+  "schemaBeforeSha256": "591d6ec4da09102dbb994398eb45f931592b07ac73b19ef0ebf1f3c5cf079aea",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "writerActivityAtPlan": {
+    "blockerSets": {
+      "enrichmentRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "harvestRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "operationalRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unfinishedPrismaMigrations": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unsettledMeteredReceipts": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    },
+    "contractVersion": "product-truth-migration-writer-activity/1",
+    "enrichmentRunning": 0,
+    "externalWriterQuiescenceRequired": true,
+    "harvestRunning": 0,
+    "operationalRunning": 0,
+    "sha256": "2af0ea916ca2b98bb488faa64723122748e209ab6a39b25444d0ae31d903240c",
+    "unfinishedPrismaMigrations": 0,
+    "unsettledMeteredReceipts": 0
+  }
+}

@@ -14,6 +14,12 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
+
+import {
   WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
   assertWalmartNewSkuEvidenceSealDraftBinding,
   assertWalmartNewSkuPlanIntegrity,
@@ -36,24 +42,21 @@ import {
   sealWalmartNewSkuUpcRotationReceipt,
 } from "../walmart-new-sku-engine";
 import {
-  WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
-  WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
-  WALMART_SELLER_CATALOG_MIRROR_SKEW_MAX_MS,
-  verifyWalmartSellerCatalogAuthorityBinding,
-  type SealedWalmartSellerCatalogAuthorityBinding,
-  type WalmartSellerCatalogAuthorityBindingBody,
+  buildWalmartExactIdentifierDuplicateGuardBinding,
+  type SealedWalmartExactIdentifierDuplicateGuardBinding,
 } from "../walmart-new-sku-catalog-authority";
+import {
+  WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS,
+  WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS,
+} from "../walmart-new-sku-policy-review-evidence";
 import { assertCurrentWalmartSellerAccountBinding } from
   "../walmart-new-sku-engine-runtime";
-import {
-  WALMART_ITEM_REPORT_CATALOG_SOURCE_SCHEMA,
-  walmartItemReportSha256,
-} from "@/lib/walmart/item-report-published-source";
 import type {
   ProductTruthNewSkuView as ProductTruthRecipeInput,
   ProductTruthWalmartPilotCandidate as WalmartPilotCandidate,
 } from "@/lib/sourcing/product-truth-read-contract";
 import type { ProductTruthNewSkuRecipeComponentEvidence } from "@/lib/sourcing/product-truth-read-contract";
+import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "@/lib/sourcing/product-truth-read-contract";
 
 function component(qty = 2): ProductTruthNewSkuRecipeComponentEvidence {
   return {
@@ -85,7 +88,9 @@ function component(qty = 2): ProductTruthNewSkuRecipeComponentEvidence {
     content_observation_id: "content-1",
     content_source_url: "https://retailer.example/item",
     content_captured_at: "2026-07-18T12:00:00.000Z",
-    matcher_version: "canonical-product-match/1.2.0",
+    matcher_version: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcher_implementation_sha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcher_release_sha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     content_provenance: {
       observation_key: "2".repeat(64),
       content_hash: "3".repeat(64),
@@ -141,7 +146,7 @@ function component(qty = 2): ProductTruthNewSkuRecipeComponentEvidence {
 
 function recipe(qty = 2): ProductTruthRecipeInput {
   return {
-    contractVersion: "product-truth-read-contract/3.1.0",
+    contractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
     as_of: "2026-07-18T12:00:00.000Z",
     price_max_age_ms: 86_400_000,
     zip: "33765",
@@ -177,84 +182,16 @@ function candidate(): WalmartPilotCandidate {
 }
 
 function sellerCatalogAuthority(
-  fileSha256 = "1".repeat(64),
-): SealedWalmartSellerCatalogAuthorityBinding {
-  const sourceBodySha256 = "6".repeat(64);
-  const publishedBodySha256 = "7".repeat(64);
-  const captureFingerprintSha256 = "8".repeat(64);
-  const reportRequestSha256 = "9".repeat(64);
-  const projectionSha256 = "0".repeat(64);
-  const body: WalmartSellerCatalogAuthorityBindingBody = {
-    schema_version: WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
-    account_scope: {
-      channel: "WALMART_US",
-      store_index: 1,
-      business_seller_account_fingerprint_sha256:
-        fingerprintWalmartSellerAccount({
-          storeIndex: 1,
-          sellerId: "fixture-seller-id",
-        }),
-      capture_credential_scope_fingerprint_sha256:
-        captureFingerprintSha256,
-    },
-    source_artifact: {
-      absolute_path: "/tmp/walmart-item-report-catalog-source-fixture.json",
-      file_sha256: fileSha256,
-      file_byte_length: 1_024,
-      schema_version: WALMART_ITEM_REPORT_CATALOG_SOURCE_SCHEMA,
-      source_id: `walmart-item-report-catalog-${sourceBodySha256.slice(0, 16)}`,
-      body_sha256: sourceBodySha256,
-      artifact_account_fingerprint_sha256: captureFingerprintSha256,
-      published_source_id:
-        `walmart-item-report-published-${publishedBodySha256.slice(0, 16)}`,
-      published_source_body_sha256: publishedBodySha256,
-      report_request_id_sha256: reportRequestSha256,
-      requested_at: "2026-07-18T11:55:00.000Z",
-      cutoff_at: "2026-07-18T12:02:00.000Z",
-      downloaded_at: "2026-07-18T12:03:00.000Z",
-      raw_transport_sha256: "2".repeat(64),
-      decoded_report_sha256: "3".repeat(64),
-      row_count: 1,
-      rows_sha256: "4".repeat(64),
-      published_row_count: 1,
-      published_rows_sha256: "5".repeat(64),
-      status_counts_sha256: "a".repeat(64),
-    },
-    mirror_reconciliation: {
-      projection_schema_version:
-        "walmart-catalog-item-exact-mirror-projection/v1",
-      synced_at: "2026-07-18T12:04:00.000Z",
-      row_count: 1,
-      source_projection_sha256: projectionSha256,
-      database_projection_sha256: projectionSha256,
-      exact_match: true,
-    },
-    walmart_report_diagnostic: {
-      report_type: "ITEM_CATALOG",
-      status: "DOWNLOADED",
-      request_id_sha256: reportRequestSha256,
-      row_count: 1,
-      downloaded_at: "2026-07-18T12:03:30.000Z",
-      source_download_skew_ms: 30_000,
-      mirror_sync_skew_ms: 30_000,
-      exact_match: true,
-    },
-    freshness_policy: {
-      source_cutoff_and_download_max_age_ms:
-        WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
-      mirror_and_report_max_age_ms:
-        WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
-      mirror_source_skew_max_ms:
-        WALMART_SELLER_CATALOG_MIRROR_SKEW_MAX_MS,
-      future_tolerance_ms: 0,
-    },
-  };
-  const bodySha256 = walmartItemReportSha256(body);
-  return verifyWalmartSellerCatalogAuthorityBinding({
-    ...body,
-    binding_id:
-      `walmart-seller-catalog-authority-${bodySha256.slice(0, 16)}`,
-    body_sha256: bodySha256,
+  ownerDecisionRef = "owner-chat:fixture:product-truth-donor-only",
+): SealedWalmartExactIdentifierDuplicateGuardBinding {
+  return buildWalmartExactIdentifierDuplicateGuardBinding({
+    storeIndex: 1,
+    businessSellerAccountFingerprintSha256:
+      fingerprintWalmartSellerAccount({
+        storeIndex: 1,
+        sellerId: "fixture-seller-id",
+      }),
+    ownerDecisionRef,
   });
 }
 
@@ -279,7 +216,8 @@ test("owner permit requires the exact certified catalog authority binding", () =
       assertWalmartNewSkuOwnerPermitCatalogAuthorityContinuity(
         {
           ...common,
-          seller_catalog_authority: sellerCatalogAuthority("b".repeat(64)),
+          seller_catalog_authority:
+            sellerCatalogAuthority("owner-chat:fixture:different-decision"),
         },
         { ...common, seller_catalog_authority: certifiedAuthority },
       ),
@@ -310,7 +248,9 @@ test("deterministic content uses exact identity without an LLM", () => {
   );
   assert.equal(output.bullets.length, 5);
   assert.match(output.description, /2 identical, new retail packages/);
-  assert.equal(output.generator, "deterministic-product-truth-multipack/v1");
+  assert.equal(output.generator, "deterministic-product-truth-multipack/v2");
+  assert.ok(output.description.split(/\s+/).length >= 150);
+  assert.ok(output.bullets.every((bullet) => bullet.length <= 80));
 });
 
 test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", () => {
@@ -324,10 +264,10 @@ test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", ()
     candidates: [{ candidate: candidate(), recipe: recipe(), packCount: 2 }],
   });
   assert.equal(plan.candidates.length, 1);
-  assert.equal(plan.schema_version, "walmart-new-sku-plan/1.3.0");
+  assert.equal(plan.schema_version, "walmart-new-sku-plan/1.7.0");
   assert.equal(
     WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
-    "walmart-new-sku-doctor-receipt/1.4.0",
+    "walmart-new-sku-doctor-receipt/1.7.0",
   );
   assert.equal(plan.max_live_submissions, 1);
   assert.equal(plan.marketplace_mutation_allowed, false);
@@ -381,6 +321,27 @@ test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", ()
   assert.throws(
     () => assertWalmartNewSkuPlanIntegrity(recomputed),
     /PLAN_HASH_MISMATCH/,
+  );
+});
+
+test("active pilot rejects every legacy full-seller-catalog authority artifact", () => {
+  const binding = doctorBinding();
+  assert.throws(
+    () => buildWalmartNewSkuPilotPlan({
+      createdAt: new Date("2026-07-18T13:00:00.000Z"),
+      asOf: new Date("2026-07-18T12:00:00.000Z"),
+      storeIndex: 1,
+      sellerId: "fixture-seller-id",
+      doctorBinding: {
+        ...binding,
+        sellerCatalogAuthority: {
+          schema_version: "walmart-seller-catalog-authority-binding/v1",
+        } as never,
+      },
+      zip: "33765",
+      candidates: [{ candidate: candidate(), recipe: recipe(), packCount: 2 }],
+    }),
+    /PLAN_INPUT_CATALOG_AUTHORITY_INVALID/,
   );
 });
 
@@ -477,7 +438,9 @@ test("stage identity is deterministic and the reserved UPC artifact is sealed", 
     staged_by: "owner",
     upc_pool_id: "upc-pool-1",
     upc: "012345678905",
-    upc_gs1_validated: false,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: "SpeedyBarcode",
+    upc_pool_recorded_owner: "Salutem Solutions LLC",
     upc_reserved_until: "2026-07-19T13:05:00.000Z",
     state: "UPC_RESERVED",
   });
@@ -491,7 +454,7 @@ test("stage identity is deterministic and the reserved UPC artifact is sealed", 
   );
 });
 
-test("owner UPC pool uses checksum/assignment safety, not gs1_validated as a gate", () => {
+test("owner UPC pool checksum validation is distinct from registry evidence", () => {
   assert.equal(isValidOwnerPoolUpca("012345678905"), true);
   assert.equal(isValidOwnerPoolUpca("012345678906"), false);
   assert.equal(isValidOwnerPoolUpca("123"), false);
@@ -517,7 +480,9 @@ test("certification template is bound to the sealed plan, stage and exact image 
     staged_by: "owner",
     upc_pool_id: "upc-pool-1",
     upc: "012345678905",
-    upc_gs1_validated: false,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: "SpeedyBarcode",
+    upc_pool_recorded_owner: "Salutem Solutions LLC",
     upc_reserved_until: "2026-07-19T13:05:00.000Z",
     state: "UPC_RESERVED",
   });
@@ -538,6 +503,8 @@ test("certification template is bound to the sealed plan, stage and exact image 
   )[0]!;
   const templatePolicy =
     templatePrepublication.sku_policy_review as Record<string, unknown>;
+  const templatePricing =
+    templatePrepublication.pricing_competitiveness as Record<string, unknown>;
   const templateRecall =
     templatePrepublication.recall_check as Record<string, unknown>;
   const templateCondition =
@@ -548,6 +515,9 @@ test("certification template is bound to the sealed plan, stage and exact image 
   assert.match(String(templateCategory.verified_at), /^TODO_/);
   assert.match(String(templatePolicy.status), /^TODO_/);
   assert.match(String(templatePolicy.reviewed_at), /^TODO_/);
+  assert.match(String(templatePricing.status), /^TODO_/);
+  assert.equal(templatePricing.internal_pilot_ceiling_bps, 12_500);
+  assert.equal(templatePricing.customer_shipping_charge_cents, 0);
   assert.match(String(templateRecall.status), /^TODO_/);
   assert.match(String(templateRecall.checked_at), /^TODO_/);
   assert.match(String(templateCondition.value), /^TODO_/);
@@ -562,6 +532,10 @@ test("certification template is bound to the sealed plan, stage and exact image 
     template.evidence_artifacts as Array<Record<string, unknown>>
   ).find((artifact) => artifact.kind === "POLICY_REVIEW");
   assert.equal(policyArtifact?.path, "/tmp/policy-review-fixture.json");
+  const pricingArtifact = (
+    template.evidence_artifacts as Array<Record<string, unknown>>
+  ).find((artifact) => artifact.kind === "PRICE_COMPETITIVENESS");
+  assert.ok(pricingArtifact);
 
   const policyTemplate = buildWalmartNewSkuPolicyReviewEvidenceTemplate({
     plan,
@@ -576,8 +550,25 @@ test("certification template is bound to the sealed plan, stage and exact image 
   assert.equal(policyBinding.sku, stage.proposed_sku);
   assert.equal(policyBinding.upc, stage.upc);
   assert.match(String(policyTemplate.decision), /^TODO_/);
-  assert.equal(policySources.length, 6);
-  assert.equal(policyFindings.length, 6);
+  assert.equal(policySources.length, WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS.length);
+  assert.equal(
+    policyFindings.length,
+    WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS.length,
+  );
+  assert.ok(
+    WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS.includes("pricing-rules"),
+  );
+  assert.ok(
+    WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS.includes(
+      "pricing-competitiveness",
+    ),
+  );
+  assert.deepEqual(
+    policyFindings.find(
+      (finding) => finding.finding_id === "pricing-competitiveness",
+    )?.policy_source_ids,
+    ["pricing-rules"],
+  );
   assert.ok(
     policyFindings.every(
       (finding) => String(finding.disposition).startsWith("TODO_"),
@@ -648,7 +639,7 @@ test("certification template is bound to the sealed plan, stage and exact image 
   );
 
   const certification = sealWalmartNewSkuCertificationArtifact({
-    schema_version: "walmart-new-sku-certification/1.4.0",
+    schema_version: "walmart-new-sku-certification/1.7.0",
     wave_id: plan.wave_id,
     plan_sha256: plan.plan_sha256,
     stage_sha256: stage.stage_sha256,
@@ -683,13 +674,16 @@ test("certification template is bound to the sealed plan, stage and exact image 
     seller_account_health_evidence_ref:
       "walmart-seller-account-health://fixture",
     seller_account_health_verified_at: "2026-07-18T13:09:00.000Z",
+    fulfillment_compliance_evidence_ref:
+      "walmart-fulfillment-compliance://fixture",
+    fulfillment_compliance_verified_at: "2026-07-18T13:09:00.000Z",
     item_spec_schema_sha256: "5".repeat(64),
     source_evidence_sha256: "6".repeat(64),
     marketplace_mutation_allowed: false,
   });
   assert.equal(
     certification.schema_version,
-    "walmart-new-sku-certification/1.4.0",
+    "walmart-new-sku-certification/1.7.0",
   );
   assert.deepEqual(
     certification.seller_catalog_authority,
@@ -718,7 +712,9 @@ test("certify seal-evidence binds plan/stage/policy bytes and writes only a new 
     staged_by: "fixture-operator",
     upc_pool_id: "upc-pool-seal-cli",
     upc: "012345678905",
-    upc_gs1_validated: false,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: "SpeedyBarcode",
+    upc_pool_recorded_owner: "Salutem Solutions LLC",
     upc_reserved_until: "2026-07-19T13:05:00.000Z",
     state: "UPC_RESERVED",
   });
@@ -873,7 +869,7 @@ test("catalog certification accepts only an exact-identifier absence", () => {
 
 test("certification confirmation changes with any operator evidence change", () => {
   const left = {
-    schema_version: "walmart-new-sku-certification-input/1.2.0",
+    schema_version: "walmart-new-sku-certification-input/1.5.0",
     wave_id: "wave",
     candidate_key: "candidate",
     stage_sha256: "stage",
@@ -1064,7 +1060,9 @@ test("UPC rotation confirmation and receipt bind the old proof to one new sealed
     staged_by: "operator-a",
     upc_pool_id: "upc-pool-1",
     upc: "012345678905",
-    upc_gs1_validated: false,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: "SpeedyBarcode",
+    upc_pool_recorded_owner: "Salutem Solutions LLC",
     upc_reserved_until: "2026-07-19T13:05:00.000Z",
     state: "UPC_RESERVED",
   });
@@ -1088,7 +1086,9 @@ test("UPC rotation confirmation and receipt bind the old proof to one new sealed
     staged_by: "operator-b",
     upc_pool_id: "upc-pool-2",
     upc: "012345678912",
-    upc_gs1_validated: false,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: "SpeedyBarcode",
+    upc_pool_recorded_owner: "Salutem Solutions LLC",
     upc_reserved_until: "2026-07-19T13:07:00.000Z",
   });
   const receipt = sealWalmartNewSkuUpcRotationReceipt({

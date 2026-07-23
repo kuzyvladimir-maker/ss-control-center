@@ -52,7 +52,7 @@ test("replays a complete quarantine corpus offline and reports exact zero-false-
     falseRejects: 0,
     tierMismatches: 0,
   });
-  assert.equal(report.matcherVersion, "canonical-product-match/1.2.0");
+  assert.equal(report.matcherVersion, "canonical-product-match/1.2.1");
   assert.match(report.corpusSha256, /^[a-f0-9]{64}$/);
   assert.match(report.payloadSha256, /^[a-f0-9]{64}$/);
   assert.equal(report.claims.providerCalls, false);

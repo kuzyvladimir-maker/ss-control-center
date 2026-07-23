@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { appendFileSync } from "node:fs";
+import sharp from "sharp";
 
 const originalFetch = globalThis.fetch;
 const tracePath = process.env.WALMART_NEW_SKU_FAKE_HTTP_TRACE;
@@ -29,13 +30,14 @@ function canonical(value) {
   return value;
 }
 
-// Minimal 1600 x 1600 PNG header. The production validator only reads the
-// signature and IHDR dimensions; the body is never decoded as an image.
-const pngHeader = Buffer.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-  0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-  0x00, 0x00, 0x06, 0x40, 0x00, 0x00, 0x06, 0x40,
-]);
+const pngBytes = await sharp({
+  create: {
+    width: 2200,
+    height: 2200,
+    channels: 3,
+    background: { r: 255, g: 255, b: 255 },
+  },
+}).png().toBuffer();
 
 globalThis.fetch = async (input, init = {}) => {
   const url = new URL(typeof input === "string" ? input : input.url);
@@ -176,16 +178,16 @@ globalThis.fetch = async (input, init = {}) => {
         status: 200,
         headers: {
           "content-type": "image/png",
-          "content-length": String(pngHeader.length),
+          "content-length": String(pngBytes.length),
         },
       });
     }
     if (method === "GET") {
-      return new Response(pngHeader, {
-        status: 206,
+      return new Response(pngBytes, {
+        status: 200,
         headers: {
           "content-type": "image/png",
-          "content-length": String(pngHeader.length),
+          "content-length": String(pngBytes.length),
         },
       });
     }

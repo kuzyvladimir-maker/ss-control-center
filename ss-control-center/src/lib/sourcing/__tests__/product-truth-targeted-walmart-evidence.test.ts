@@ -3,6 +3,11 @@ import { createHash } from "node:crypto";
 import { test } from "node:test";
 
 import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 import { parseUnwrangleDetailPayload } from "../donor-catalog";
 import type { ProductTruthOperationalMeteredReceipt } from "../product-truth-operational-ledger";
 import {
@@ -11,10 +16,13 @@ import {
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalIdentityFromTarget,
   parseProductTruthTargetedWalmartDonorSnapshot,
+  PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
+  targetedWalmartDonorSnapshotSha256,
   type ProductTruthTargetedWalmartDonorSnapshot,
   type ProductTruthTargetedWalmartEvidenceTarget,
 } from "../product-truth-targeted-walmart-evidence-contract";
 import {
+  deriveTargetedWalmartLegacyCanonicalIdentity,
   decideProductTruthTargetedResume,
   selectExactTargetedWalmartOffer,
 } from "../product-truth-targeted-walmart-evidence";
@@ -23,6 +31,15 @@ import type { RetailOffer } from "../retail-fetch";
 const CREATED_AT = "2026-07-19T12:00:00.000Z";
 const EXPIRES_AT = "2026-07-19T13:00:00.000Z";
 const HASH = "a".repeat(64);
+const DECISION_EVIDENCE_JSON = JSON.stringify({
+  matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+  schemaVersion: "donor-source-identity-evidence/1.1.0",
+});
+const DECISION_EVIDENCE_HASH = createHash("sha256")
+  .update(DECISION_EVIDENCE_JSON)
+  .digest("hex");
 
 const canonical = buildCanonicalProductVariantKey({
   brand: "Acme",
@@ -37,13 +54,18 @@ const canonical = buildCanonicalProductVariantKey({
 function exactSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
   return parseProductTruthTargetedWalmartDonorSnapshot({
     identityMode: "EXISTING_EXACT",
+    identityDerivationVersion: null,
     donorProductId: "donor-1",
     donorOfferId: "offer-1",
     donorIdentityStatus: "exact_confirmed",
     variantDecisionId: "decision-1",
     canonicalVariantId: canonical.canonicalVariantId,
     decisionStatus: "exact_confirmed",
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    decisionEvidenceHash: DECISION_EVIDENCE_HASH,
+    decisionEvidenceJson: DECISION_EVIDENCE_JSON,
     canonicalVariantKeyVersion: canonical.keyVersion,
     canonicalIdentityHash: canonical.identityHash,
     canonicalIdentityJson: canonical.identityJson,
@@ -60,8 +82,9 @@ function bootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
   const product = {
     id: "donor-1",
     identityStatus: "legacy_unverified",
-    brand: "legacy proposal only",
-    title: "legacy proposal only",
+    brand: "Acme",
+    size: "8 oz",
+    title: "Acme Potato Chips Original Bag 8 oz",
     createdAt: CREATED_AT,
     updatedAt: CREATED_AT,
   };
@@ -78,18 +101,28 @@ function bootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
     createdAt: CREATED_AT,
     updatedAt: CREATED_AT,
   };
+  const machineCanonical = deriveTargetedWalmartLegacyCanonicalIdentity({
+    donorProductRow: product,
+    donorOfferRow: offer,
+  });
   return parseProductTruthTargetedWalmartDonorSnapshot({
-    identityMode: "OWNER_ATTESTED_BOOTSTRAP",
+    identityMode: "EVIDENCE_VERIFIED_BOOTSTRAP",
+    identityDerivationVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
     donorProductId: "donor-1",
     donorOfferId: "offer-1",
     donorIdentityStatus: "legacy_unverified",
     variantDecisionId: null,
-    canonicalVariantId: canonical.canonicalVariantId,
+    canonicalVariantId: machineCanonical.canonicalVariantId,
     decisionStatus: null,
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    decisionEvidenceHash: null,
+    decisionEvidenceJson: null,
     canonicalVariantKeyVersion: canonical.keyVersion,
-    canonicalIdentityHash: canonical.identityHash,
-    canonicalIdentityJson: canonical.identityJson,
+    canonicalIdentityHash: machineCanonical.identityHash,
+    canonicalIdentityJson: machineCanonical.identityJson,
     retailer: "walmart",
     retailerProductId: "123456789",
     normalizedProductUrl: "https://www.walmart.com/ip/123456789",
@@ -126,7 +159,73 @@ function planFor(snapshot: ProductTruthTargetedWalmartDonorSnapshot) {
   });
 }
 
-test("existing and owner-attested bootstrap plans seal honest write claims", () => {
+test("targeted donor snapshots reject matcher implementation or release drift", () => {
+  const snapshot = exactSnapshot();
+  assert.throws(
+    () => parseProductTruthTargetedWalmartDonorSnapshot({
+      ...snapshot,
+      matcherImplementationSha256: "0".repeat(64),
+    }),
+    /TARGETED_EVIDENCE_IDENTITY_NOT_EXACT/,
+  );
+  assert.throws(
+    () => parseProductTruthTargetedWalmartDonorSnapshot({
+      ...snapshot,
+      matcherReleaseSha256: "0".repeat(64),
+    }),
+    /TARGETED_EVIDENCE_IDENTITY_NOT_EXACT/,
+  );
+});
+
+test("existing exact snapshots bind decision evidence bytes and reject forged provenance", () => {
+  const snapshot = exactSnapshot();
+  assert.equal(snapshot.decisionEvidenceHash, DECISION_EVIDENCE_HASH);
+  assert.equal(snapshot.decisionEvidenceJson, DECISION_EVIDENCE_JSON);
+
+  assert.throws(
+    () => parseProductTruthTargetedWalmartDonorSnapshot({
+      ...snapshot,
+      decisionEvidenceHash: "0".repeat(64),
+    }),
+    /TARGETED_EVIDENCE_DECISION_EVIDENCE_HASH_MISMATCH/,
+  );
+
+  const staleEvidenceJson = JSON.stringify({
+    ...JSON.parse(DECISION_EVIDENCE_JSON) as Record<string, unknown>,
+    matcherReleaseSha256: "0".repeat(64),
+  });
+  assert.throws(
+    () => parseProductTruthTargetedWalmartDonorSnapshot({
+      ...snapshot,
+      decisionEvidenceHash: createHash("sha256").update(staleEvidenceJson).digest("hex"),
+      decisionEvidenceJson: staleEvidenceJson,
+    }),
+    /TARGETED_EVIDENCE_DECISION_EVIDENCE_MATCHER_MISMATCH/,
+  );
+
+  const plan = planFor(snapshot);
+  assert.equal(plan.targets[0].decisionEvidenceHash, DECISION_EVIDENCE_HASH);
+  assert.equal(plan.targets[0].decisionEvidenceJson, DECISION_EVIDENCE_JSON);
+
+  const changedEvidenceJson = JSON.stringify({
+    ...JSON.parse(DECISION_EVIDENCE_JSON) as Record<string, unknown>,
+    sourceObservationId: "immutable-observation-2",
+  });
+  const changedSnapshot = parseProductTruthTargetedWalmartDonorSnapshot({
+    ...snapshot,
+    decisionEvidenceHash: createHash("sha256").update(changedEvidenceJson).digest("hex"),
+    decisionEvidenceJson: changedEvidenceJson,
+  });
+  const changedPlan = planFor(changedSnapshot);
+  assert.notEqual(
+    targetedWalmartDonorSnapshotSha256(snapshot),
+    targetedWalmartDonorSnapshotSha256(changedSnapshot),
+  );
+  assert.notEqual(plan.manifest.sha256, changedPlan.manifest.sha256);
+  assert.notEqual(plan.targetSetSha256, changedPlan.targetSetSha256);
+});
+
+test("existing and evidence-verified bootstrap plans seal honest write claims", () => {
   const existing = planFor(exactSnapshot());
   assert.equal(existing.claims.identityMode, "EXISTING_EXACT");
   assert.equal(existing.claims.canonicalVariantWritesMax, 0);
@@ -141,7 +240,7 @@ test("existing and owner-attested bootstrap plans seal honest write claims", () 
   assert.equal(existing.sourcePolicy.allowBjs, false);
 
   const bootstrap = planFor(bootstrapSnapshot());
-  assert.equal(bootstrap.claims.identityMode, "OWNER_ATTESTED_BOOTSTRAP");
+  assert.equal(bootstrap.claims.identityMode, "EVIDENCE_VERIFIED_BOOTSTRAP");
   assert.equal(bootstrap.claims.canonicalVariantWritesMax, 1);
   assert.equal(bootstrap.claims.variantDecisionWritesMax, 1);
   assert.equal(bootstrap.claims.targetProductProjectionMayChange, true);
@@ -200,6 +299,113 @@ test("legacy seal binds Walmart item URL and Walmart.com seller", () => {
     ...valid,
     legacySnapshot: badLegacy,
   }), /WALMART_ITEM_URL_MISMATCH|TARGETED_EVIDENCE_LEGACY_SNAPSHOT_INVALID/);
+});
+
+test("RITZ legacy bytes derive a conservative identity and fresh search rejects sibling flavor", () => {
+  const product = {
+    id: "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    identityStatus: "legacy_unverified",
+    brand: "Ritz",
+    size: "8.8 oz",
+    title: "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+  };
+  const legacyOffer = {
+    id: "do:walmart:34312392",
+    donorProductId: product.id,
+    retailer: "walmart",
+    retailerProductId: "34312392",
+    via: "direct",
+    isFirstParty: 1,
+    packSizeSeen: 1,
+    sellerName: "Walmart.com",
+    productUrl: "https://www.walmart.com/ip/34312392",
+  };
+  const derived = deriveTargetedWalmartLegacyCanonicalIdentity({
+    donorProductRow: product,
+    donorOfferRow: legacyOffer,
+  });
+  assert.equal(derived.normalized.brand, "ritz");
+  assert.equal(
+    derived.normalized.productLine,
+    "bits cheese crackers lunch sandwich snacks",
+  );
+  assert.equal(derived.normalized.flavor, null);
+  assert.equal(derived.normalized.size.dimension, "MASS");
+  assert.equal(derived.normalized.size.baseUnit, "g");
+
+  const snapshot = parseProductTruthTargetedWalmartDonorSnapshot({
+    identityMode: "EVIDENCE_VERIFIED_BOOTSTRAP",
+    identityDerivationVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
+    donorProductId: product.id,
+    donorOfferId: legacyOffer.id,
+    donorIdentityStatus: "legacy_unverified",
+    variantDecisionId: null,
+    canonicalVariantId: derived.canonicalVariantId,
+    decisionStatus: null,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    decisionEvidenceHash: null,
+    decisionEvidenceJson: null,
+    canonicalVariantKeyVersion: derived.keyVersion,
+    canonicalIdentityHash: derived.identityHash,
+    canonicalIdentityJson: derived.identityJson,
+    retailer: "walmart",
+    retailerProductId: "34312392",
+    normalizedProductUrl: "https://www.walmart.com/ip/34312392",
+    via: "direct",
+    isFirstParty: true,
+    legacySnapshot: buildProductTruthTargetedWalmartLegacySnapshot({
+      donorProductRow: product,
+      donorOfferRow: legacyOffer,
+    }),
+  });
+  const target = planFor(snapshot).targets[0];
+  const exactOffer: RetailOffer = {
+    retailer: "walmart",
+    retailerProductId: "34312392",
+    title: product.title,
+    description: null,
+    keyFeatures: [],
+    imageUrls: [],
+    price: 3.97,
+    currency: "USD",
+    inStock: true,
+    productUrl: "https://www.walmart.com/ip/34312392",
+    zip: "33765",
+    localityEvidence: "zip_scoped",
+    observedAt: "2026-07-19T12:01:00.000Z",
+    packSizeSeen: 1,
+    isMarketplaceItem: false,
+    sellerName: "Walmart.com",
+    sourceApi: "oxylabs",
+    via: "direct",
+    meteredReceiptId: "receipt-ritz",
+    meteredRunId: "targeted-run-1",
+    meteredApprovalId: "approval-1",
+  };
+  assert.equal(selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [exactOffer],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  }).retailerProductId, "34312392");
+  assert.throws(() => selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        ...exactOffer,
+        title: "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  }), /TARGETED_WALMART_EXACT_OFFER_MISSING/);
 });
 
 test("Unwrangle detail preserves independent identity and excludes generated copy", () => {

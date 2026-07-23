@@ -5,6 +5,10 @@ import {
   type CanonicalProductIdentity,
 } from "./canonical-product-match";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
+import {
   CANONICAL_PRODUCT_VARIANT_IDENTITY_VERSION,
   CANONICAL_PRODUCT_VARIANT_KEY_VERSION,
   buildCanonicalProductVariantKey,
@@ -25,9 +29,9 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION =
-  "product-truth-targeted-walmart-evidence-request/1.0.0" as const;
+  "product-truth-targeted-walmart-evidence-request/1.3.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION =
-  "product-truth-targeted-walmart-evidence-plan/1.0.0" as const;
+  "product-truth-targeted-walmart-evidence-plan/1.3.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION =
   "product-truth-targeted-walmart-evidence-scope/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION =
@@ -39,6 +43,8 @@ export const TARGETED_WALMART_MAX_WALL_CLOCK_MS = 180_000 as const;
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION =
   "product-truth-targeted-walmart-legacy-snapshot/1.0.0" as const;
+export const PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION =
+  "product-truth-targeted-walmart-identity-derivation/1.0.0" as const;
 
 export interface ProductTruthTargetedWalmartLegacySnapshot {
   schemaVersion: typeof PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION;
@@ -48,11 +54,18 @@ export interface ProductTruthTargetedWalmartLegacySnapshot {
 }
 
 interface ProductTruthTargetedWalmartDonorSnapshotBase {
-  identityMode: "EXISTING_EXACT" | "OWNER_ATTESTED_BOOTSTRAP";
+  identityMode: "EXISTING_EXACT" | "EVIDENCE_VERIFIED_BOOTSTRAP";
+  identityDerivationVersion:
+    | null
+    | typeof PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION;
   donorProductId: string;
   donorOfferId: string;
   canonicalVariantId: string;
   matcherVersion: typeof CANONICAL_PRODUCT_MATCHER_VERSION;
+  matcherImplementationSha256: typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+  matcherReleaseSha256: typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
+  decisionEvidenceHash: string | null;
+  decisionEvidenceJson: string | null;
   canonicalVariantKeyVersion: string;
   canonicalIdentityHash: string;
   canonicalIdentityJson: string;
@@ -66,18 +79,25 @@ interface ProductTruthTargetedWalmartDonorSnapshotBase {
 export interface ProductTruthTargetedWalmartExistingExactSnapshot
   extends ProductTruthTargetedWalmartDonorSnapshotBase {
   identityMode: "EXISTING_EXACT";
+  identityDerivationVersion: null;
   donorIdentityStatus: "exact_confirmed";
   variantDecisionId: string;
   decisionStatus: "exact_confirmed";
+  decisionEvidenceHash: string;
+  decisionEvidenceJson: string;
   legacySnapshot: null;
 }
 
 export interface ProductTruthTargetedWalmartBootstrapSnapshot
   extends ProductTruthTargetedWalmartDonorSnapshotBase {
-  identityMode: "OWNER_ATTESTED_BOOTSTRAP";
+  identityMode: "EVIDENCE_VERIFIED_BOOTSTRAP";
+  identityDerivationVersion:
+    typeof PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION;
   donorIdentityStatus: "candidate" | "legacy_unverified";
   variantDecisionId: null;
   decisionStatus: null;
+  decisionEvidenceHash: null;
+  decisionEvidenceJson: null;
   legacySnapshot: ProductTruthTargetedWalmartLegacySnapshot;
 }
 
@@ -94,6 +114,9 @@ export interface ProductTruthTargetedWalmartEvidencePlanRequest {
   engineReleaseSha256: string;
   schemaFingerprintSha256: string;
   migrationSetSha256: string;
+  matcherVersion: typeof CANONICAL_PRODUCT_MATCHER_VERSION;
+  matcherImplementationSha256: typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+  matcherReleaseSha256: typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
   query: string;
   donorSnapshot: ProductTruthTargetedWalmartDonorSnapshot;
   donorSnapshotSha256: string;
@@ -130,6 +153,8 @@ export interface ProductTruthTargetedWalmartEvidencePlan {
   schemaFingerprintSha256: string;
   migrationSetSha256: string;
   matcherVersion: typeof CANONICAL_PRODUCT_MATCHER_VERSION;
+  matcherImplementationSha256: typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+  matcherReleaseSha256: typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
   manifest: {
     schemaVersion: typeof PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION;
     sha256: string;
@@ -156,7 +181,7 @@ export interface ProductTruthTargetedWalmartEvidencePlan {
   };
   maxWallClockMs: typeof TARGETED_WALMART_MAX_WALL_CLOCK_MS;
   claims: {
-    identityMode: "EXISTING_EXACT" | "OWNER_ATTESTED_BOOTSTRAP";
+    identityMode: "EXISTING_EXACT" | "EVIDENCE_VERIFIED_BOOTSTRAP";
     exactOneExistingDonor: true;
     exactOneExistingDirectFirstPartyWalmartOffer: true;
     initialDetailHarvestStateAbsent: true;
@@ -240,6 +265,53 @@ function finiteNonNegative(value: unknown, label: string): number {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function parseExactDecisionEvidence(value: {
+  evidenceHash: unknown;
+  evidenceJson: unknown;
+}): { evidenceHash: string; evidenceJson: string } {
+  const evidenceHash = exactSha(
+    value.evidenceHash,
+    "donorSnapshot.decisionEvidenceHash",
+  );
+  const evidenceJson = exactText(
+    value.evidenceJson,
+    "donorSnapshot.decisionEvidenceJson",
+    200_000,
+  );
+  if (sha256(evidenceJson) !== evidenceHash) {
+    fail(
+      "TARGETED_EVIDENCE_DECISION_EVIDENCE_HASH_MISMATCH",
+      "variant decision evidenceHash does not match the exact evidenceJson bytes",
+    );
+  }
+  let evidence: unknown;
+  try {
+    evidence = JSON.parse(evidenceJson);
+  } catch {
+    fail(
+      "TARGETED_EVIDENCE_DECISION_EVIDENCE_INVALID",
+      "variant decision evidenceJson must be valid JSON",
+    );
+  }
+  if (!isRecord(evidence)) {
+    fail(
+      "TARGETED_EVIDENCE_DECISION_EVIDENCE_INVALID",
+      "variant decision evidenceJson must encode one object",
+    );
+  }
+  if (
+    evidence.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION
+    || evidence.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+    || evidence.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_DECISION_EVIDENCE_MATCHER_MISMATCH",
+      "variant decision evidenceJson is not bound to the current certified matcher release",
+    );
+  }
+  return { evidenceHash, evidenceJson };
 }
 
 function canonicalModifierInputs(modifiers: readonly string[]): string[] {
@@ -380,13 +452,18 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
 ): ProductTruthTargetedWalmartDonorSnapshot {
   if (!isRecord(value)) fail("TARGETED_EVIDENCE_INPUT_INVALID", "donorSnapshot must be an object");
   exactKeys(value, [
-    "identityMode", "donorProductId", "donorOfferId", "donorIdentityStatus", "variantDecisionId",
-    "canonicalVariantId", "decisionStatus", "matcherVersion", "canonicalVariantKeyVersion",
+    "identityMode", "identityDerivationVersion", "donorProductId", "donorOfferId",
+    "donorIdentityStatus", "variantDecisionId",
+    "canonicalVariantId", "decisionStatus", "matcherVersion", "matcherImplementationSha256",
+    "matcherReleaseSha256", "decisionEvidenceHash", "decisionEvidenceJson",
+    "canonicalVariantKeyVersion",
     "canonicalIdentityHash", "canonicalIdentityJson", "retailer", "retailerProductId",
     "normalizedProductUrl", "via", "isFirstParty", "legacySnapshot",
   ], "donorSnapshot");
   if (
     value.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION
+    || value.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+    || value.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
     || value.retailer !== "walmart"
     || value.via !== "direct"
     || value.isFirstParty !== true
@@ -395,7 +472,7 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
   }
   if (
     value.identityMode !== "EXISTING_EXACT"
-    && value.identityMode !== "OWNER_ATTESTED_BOOTSTRAP"
+    && value.identityMode !== "EVIDENCE_VERIFIED_BOOTSTRAP"
   ) fail("TARGETED_EVIDENCE_IDENTITY_MODE_INVALID", "identityMode is unsupported");
   const donorProductId = safeId(value.donorProductId, "donorSnapshot.donorProductId");
   const donorOfferId = safeId(value.donorOfferId, "donorSnapshot.donorOfferId");
@@ -463,7 +540,7 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
       outerPackCount: Number(canonicalIdentity.outerPackCount),
     });
   } catch {
-    fail("TARGETED_EVIDENCE_IDENTITY_NOT_CANONICAL", "owner identity cannot rebuild under the current canonical key contract");
+    fail("TARGETED_EVIDENCE_IDENTITY_NOT_CANONICAL", "derived identity cannot rebuild under the current canonical key contract");
   }
   if (
     sha256(canonicalIdentityJson) !== canonicalIdentityHash
@@ -487,6 +564,8 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
     donorOfferId,
     canonicalVariantId: safeId(value.canonicalVariantId, "donorSnapshot.canonicalVariantId"),
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     canonicalVariantKeyVersion: exactText(value.canonicalVariantKeyVersion, "donorSnapshot.canonicalVariantKeyVersion", 120),
     canonicalIdentityHash,
     canonicalIdentityJson,
@@ -498,25 +577,39 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
   };
   if (value.identityMode === "EXISTING_EXACT") {
     if (
+      value.identityDerivationVersion !== null
+      ||
       value.donorIdentityStatus !== "exact_confirmed"
       || value.decisionStatus !== "exact_confirmed"
       || value.legacySnapshot !== null
     ) {
       fail("TARGETED_EVIDENCE_IDENTITY_NOT_EXACT", "existing mode requires one exact alias and no legacy snapshot");
     }
+    const decisionEvidence = parseExactDecisionEvidence({
+      evidenceHash: value.decisionEvidenceHash,
+      evidenceJson: value.decisionEvidenceJson,
+    });
     return {
       ...common,
       identityMode: "EXISTING_EXACT",
+      identityDerivationVersion: null,
       donorIdentityStatus: "exact_confirmed",
       variantDecisionId: safeId(value.variantDecisionId, "donorSnapshot.variantDecisionId"),
       decisionStatus: "exact_confirmed",
+      decisionEvidenceHash: decisionEvidence.evidenceHash,
+      decisionEvidenceJson: decisionEvidence.evidenceJson,
       legacySnapshot: null,
     };
   }
   if (
+    value.identityDerivationVersion
+      !== PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION
+    ||
     !["candidate", "legacy_unverified"].includes(String(value.donorIdentityStatus))
     || value.variantDecisionId !== null
     || value.decisionStatus !== null
+    || value.decisionEvidenceHash !== null
+    || value.decisionEvidenceJson !== null
   ) {
     fail(
       "TARGETED_EVIDENCE_BOOTSTRAP_STATE_INVALID",
@@ -525,10 +618,14 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
   }
   return {
     ...common,
-    identityMode: "OWNER_ATTESTED_BOOTSTRAP",
+    identityMode: "EVIDENCE_VERIFIED_BOOTSTRAP",
+    identityDerivationVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
     donorIdentityStatus: value.donorIdentityStatus as "candidate" | "legacy_unverified",
     variantDecisionId: null,
     decisionStatus: null,
+    decisionEvidenceHash: null,
+    decisionEvidenceJson: null,
     legacySnapshot: parseLegacySnapshot(
       value.legacySnapshot,
       donorProductId,
@@ -592,12 +689,23 @@ function parseRequest(value: unknown): ProductTruthTargetedWalmartEvidencePlanRe
   if (!isRecord(value)) fail("TARGETED_EVIDENCE_INPUT_INVALID", "request must be an object");
   exactKeys(value, [
     "schemaVersion", "runId", "createdAt", "expiresAt", "expectedTargetFingerprint",
-    "engineReleaseSha256", "schemaFingerprintSha256", "migrationSetSha256", "query",
+    "engineReleaseSha256", "schemaFingerprintSha256", "migrationSetSha256", "matcherVersion",
+    "matcherImplementationSha256", "matcherReleaseSha256", "query",
     "donorSnapshot", "donorSnapshotSha256", "providerCeilings", "verificationPolicy",
     "maxWallClockMs",
   ], "request");
   if (value.schemaVersion !== PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION) {
     fail("TARGETED_EVIDENCE_INPUT_INVALID", `request must use ${PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION}`);
+  }
+  if (
+    value.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION
+    || value.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+    || value.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_MATCHER_PROVENANCE_MISMATCH",
+      "request is not bound to the current certified matcher release",
+    );
   }
   const createdAt = exactInstant(value.createdAt, "request.createdAt");
   const expiresAt = exactInstant(value.expiresAt, "request.expiresAt");
@@ -630,6 +738,9 @@ function parseRequest(value: unknown): ProductTruthTargetedWalmartEvidencePlanRe
     engineReleaseSha256: exactSha(value.engineReleaseSha256, "request.engineReleaseSha256"),
     schemaFingerprintSha256: exactSha(value.schemaFingerprintSha256, "request.schemaFingerprintSha256"),
     migrationSetSha256: exactSha(value.migrationSetSha256, "request.migrationSetSha256"),
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     query: exactText(value.query, "request.query", 300),
     donorSnapshot,
     donorSnapshotSha256,
@@ -670,6 +781,9 @@ export function buildProductTruthTargetedWalmartEvidenceRequest(input: {
     engineReleaseSha256: input.engineReleaseSha256,
     schemaFingerprintSha256: input.schemaFingerprintSha256,
     migrationSetSha256: input.migrationSetSha256,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     query: input.query,
     donorSnapshot,
     donorSnapshotSha256: targetedWalmartDonorSnapshotSha256(donorSnapshot),
@@ -765,6 +879,8 @@ export function buildProductTruthTargetedWalmartEvidencePlan(input: {
     schemaFingerprintSha256,
     migrationSetSha256,
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     manifest: {
       schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION,
       sha256: request.donorSnapshotSha256,
@@ -791,9 +907,9 @@ export function buildProductTruthTargetedWalmartEvidencePlan(input: {
       exactOneExistingDonor: true,
       exactOneExistingDirectFirstPartyWalmartOffer: true,
       initialDetailHarvestStateAbsent: true,
-      canonicalVariantWritesMax: target.identityMode === "OWNER_ATTESTED_BOOTSTRAP" ? 1 : 0,
-      variantDecisionWritesMax: target.identityMode === "OWNER_ATTESTED_BOOTSTRAP" ? 1 : 0,
-      targetProductProjectionMayChange: target.identityMode === "OWNER_ATTESTED_BOOTSTRAP",
+      canonicalVariantWritesMax: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP" ? 1 : 0,
+      variantDecisionWritesMax: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP" ? 1 : 0,
+      targetProductProjectionMayChange: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP",
       unrelatedOfferWrites: false,
       unrelatedProductWrites: false,
       openFoodFactsCalls: false,
@@ -815,6 +931,7 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
   exactKeys(value, [
     "schemaVersion", "runId", "mode", "createdAt", "expiresAt", "targetFingerprint",
     "engineReleaseSha256", "schemaFingerprintSha256", "migrationSetSha256", "matcherVersion",
+    "matcherImplementationSha256", "matcherReleaseSha256",
     "manifest", "targetSetSha256", "targets", "sourcePolicy", "providerCeilings",
     "verificationPolicy", "maxWallClockMs", "claims",
   ], "plan");
@@ -827,14 +944,18 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
   }
   const rawTarget = value.targets[0];
   exactKeys(rawTarget, [
-    "ordinal", "identityMode", "donorProductId", "donorOfferId", "donorIdentityStatus", "variantDecisionId",
-    "canonicalVariantId", "decisionStatus", "matcherVersion", "canonicalVariantKeyVersion",
+    "ordinal", "identityMode", "identityDerivationVersion", "donorProductId",
+    "donorOfferId", "donorIdentityStatus", "variantDecisionId",
+    "canonicalVariantId", "decisionStatus", "matcherVersion", "matcherImplementationSha256",
+    "matcherReleaseSha256", "decisionEvidenceHash", "decisionEvidenceJson",
+    "canonicalVariantKeyVersion",
     "canonicalIdentityHash", "canonicalIdentityJson", "retailer", "retailerProductId",
     "normalizedProductUrl", "via", "isFirstParty", "legacySnapshot", "query", "donorSnapshotSha256",
   ], "plan.targets[0]");
   if (rawTarget.ordinal !== 0) fail("TARGETED_EVIDENCE_PLAN_INVALID", "target ordinal must be zero");
   const donorSnapshot = parseProductTruthTargetedWalmartDonorSnapshot({
     identityMode: rawTarget.identityMode,
+    identityDerivationVersion: rawTarget.identityDerivationVersion,
     donorProductId: rawTarget.donorProductId,
     donorOfferId: rawTarget.donorOfferId,
     donorIdentityStatus: rawTarget.donorIdentityStatus,
@@ -842,6 +963,10 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
     canonicalVariantId: rawTarget.canonicalVariantId,
     decisionStatus: rawTarget.decisionStatus,
     matcherVersion: rawTarget.matcherVersion,
+    matcherImplementationSha256: rawTarget.matcherImplementationSha256,
+    matcherReleaseSha256: rawTarget.matcherReleaseSha256,
+    decisionEvidenceHash: rawTarget.decisionEvidenceHash,
+    decisionEvidenceJson: rawTarget.decisionEvidenceJson,
     canonicalVariantKeyVersion: rawTarget.canonicalVariantKeyVersion,
     canonicalIdentityHash: rawTarget.canonicalIdentityHash,
     canonicalIdentityJson: rawTarget.canonicalIdentityJson,
@@ -861,6 +986,9 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
     engineReleaseSha256: value.engineReleaseSha256 as string,
     schemaFingerprintSha256: value.schemaFingerprintSha256 as string,
     migrationSetSha256: value.migrationSetSha256 as string,
+    matcherVersion: value.matcherVersion as typeof CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: value.matcherImplementationSha256 as typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: value.matcherReleaseSha256 as typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     query: rawTarget.query as string,
     donorSnapshot,
     donorSnapshotSha256: rawTarget.donorSnapshotSha256 as string,
@@ -877,7 +1005,12 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
     actualDonorSnapshot: donorSnapshot,
     actualDetailHarvestStateAbsent: true,
   });
-  if (value.mode !== "WAVE" || value.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION) {
+  if (
+    value.mode !== "WAVE"
+    || value.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION
+    || value.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+    || value.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+  ) {
     fail("TARGETED_EVIDENCE_PLAN_INVALID", "targeted evidence plan mode/matcher is not canonical");
   }
   if (renderProductTruthOperationalJson(rebuilt) !== renderProductTruthOperationalJson(value)) {

@@ -29,6 +29,7 @@ import {
   type ProductTruthMigrationPlan,
   ProductTruthMigrationPlanError,
   productTruthMigrationArtifactSha256,
+  PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY,
   recoverProductTruthMigrationReport,
   runProductTruthMigrationCli,
   writeProductTruthMigrationPlanArtifact,
@@ -50,6 +51,26 @@ const SOURCE_MIGRATIONS_ROOT = fileURLToPath(
 );
 const PLAN_TIME = "2026-07-19T03:00:00.000Z";
 const APPLY_TIME = "2026-07-19T03:05:00.000Z";
+
+test("check-constraint enforcement uses the Turso-safe table-valued pragma", async () => {
+  assert.equal(
+    PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY,
+    "SELECT ignore_check_constraints FROM pragma_ignore_check_constraints",
+  );
+  assert.equal(/^PRAGMA\b/i.test(PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY), false);
+  const db = createClient({ url: ":memory:" });
+  const transaction = await db.transaction("write");
+  try {
+    const result = await transaction.execute(
+      PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY,
+    );
+    assert.equal(Number(result.rows[0]?.ignore_check_constraints ?? -1), 0);
+  } finally {
+    if (!transaction.closed) await transaction.rollback();
+    transaction.close();
+    await db.close();
+  }
+});
 
 async function createBaseProductTruthSchema(url: string): Promise<void> {
   const db = createClient({ url });

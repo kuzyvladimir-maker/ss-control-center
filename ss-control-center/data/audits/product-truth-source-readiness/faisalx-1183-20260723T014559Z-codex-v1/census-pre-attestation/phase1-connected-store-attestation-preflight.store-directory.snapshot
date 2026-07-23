@@ -1,0 +1,102 @@
+{
+  "schema_version": "product-truth-sanitized-store-directory-snapshot/v1",
+  "capture_id": "store-directory-production-20260723T014559Z",
+  "captured_at": "2026-07-23T01:45:59.000Z",
+  "captured_by": "Codex",
+  "source": {
+    "kind": "PRODUCTION_TURSO_READ_ONLY",
+    "target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "stores": [
+    {
+      "id": "cmp3a66dbyhp2ztc6",
+      "name": "Salutem Solutions",
+      "channel": "Amazon",
+      "active": true,
+      "store_index": 1,
+      "seller_id": null
+    },
+    {
+      "id": "cmp3a66igqozci81a",
+      "name": "Vladimir Personal",
+      "channel": "Amazon",
+      "active": true,
+      "store_index": 2,
+      "seller_id": null
+    },
+    {
+      "id": "cmp3a66lldak0c39x",
+      "name": "AMZ Commerce",
+      "channel": "Amazon",
+      "active": true,
+      "store_index": 3,
+      "seller_id": null
+    },
+    {
+      "id": "cmp3a66pcwoo9l4b3",
+      "name": "Sirius International",
+      "channel": "Amazon",
+      "active": true,
+      "store_index": 4,
+      "seller_id": null
+    },
+    {
+      "id": "cmp3a66svlu03k3fi",
+      "name": "Retailer Distributor",
+      "channel": "Amazon",
+      "active": true,
+      "store_index": 5,
+      "seller_id": null
+    },
+    {
+      "id": "cmp3a66xbgx2o3yen",
+      "name": "SIRIUS TRADING INTERNATIONAL LLC",
+      "channel": "Walmart",
+      "active": true,
+      "store_index": null,
+      "seller_id": "10001624309"
+    }
+  ],
+  "fresh_activity": {
+    "amazon": [
+      {
+        "store_index": 1,
+        "latest_order_purchase_at": "2026-07-22T22:55:41.000Z",
+        "latest_listing_snapshot_at": "2026-07-16T09:51:49.622Z"
+      },
+      {
+        "store_index": 2,
+        "latest_order_purchase_at": "2026-05-18T10:01:04.000Z",
+        "latest_listing_snapshot_at": null
+      },
+      {
+        "store_index": 3,
+        "latest_order_purchase_at": "2026-07-22T03:03:12.000Z",
+        "latest_listing_snapshot_at": "2026-07-22T09:52:43.876Z"
+      },
+      {
+        "store_index": 4,
+        "latest_order_purchase_at": "2026-05-11T23:01:25.000Z",
+        "latest_listing_snapshot_at": null
+      },
+      {
+        "store_index": 5,
+        "latest_order_purchase_at": "2026-05-17T09:23:58.000Z",
+        "latest_listing_snapshot_at": null,
+        "last_observed_account_state": "DEACTIVATED"
+      }
+    ],
+    "walmart": [
+      {
+        "store_index": 1,
+        "seller_id": "10001624309",
+        "catalog_mirror_latest_observed_at": "2026-07-22T06:00:34.828Z"
+      }
+    ]
+  },
+  "limitations": [
+    "Store.active is not by itself proof that marketplace credentials are configured.",
+    "Mutable catalog/order mirrors are activity evidence only and cannot replace authoritative marketplace reports.",
+    "The Walmart Store row has null storeIndex; the application contract and credentials identify the supported Walmart scope as store1."
+  ]
+}

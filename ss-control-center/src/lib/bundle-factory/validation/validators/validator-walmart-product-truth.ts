@@ -1,5 +1,10 @@
 /** Exact recipe, content, price and image evidence gate for Walmart drafts. */
 
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
 import type { ValidatorFn } from "../types";
 import {
   PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA,
@@ -124,7 +129,9 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
       if (
         !hasText(component.donor_product_id) ||
         !hasText(component.variant_decision_id) ||
-        !hasText(component.matcher_version)
+        component.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
+        component.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
+        component.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
       ) {
         failures.push(`${component.component_key || "component"} lacks exact identity provenance`);
       }

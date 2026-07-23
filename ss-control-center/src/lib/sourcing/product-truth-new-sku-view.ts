@@ -4,6 +4,10 @@ import type { Client } from "@libsql/client";
 
 import { CANONICAL_PRODUCT_MATCHER_VERSION } from "./canonical-product-match";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
+import {
   PRICE_EVIDENCE_POLICY_VERSION,
   evaluatePriceEvidenceEligibility,
 } from "./price-evidence-policy";
@@ -85,6 +89,8 @@ export interface ProductTruthNewSkuRecipeComponentEvidence {
   content_source_url: string;
   content_captured_at: string;
   matcher_version: typeof CANONICAL_PRODUCT_MATCHER_VERSION;
+  matcher_implementation_sha256: typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+  matcher_release_sha256: typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
   content_provenance: ProductTruthNewSkuContentProvenance;
   content_classification: {
     category: string | null;
@@ -399,6 +405,8 @@ async function readIdentityContent(
       decision.id AS variantDecisionId,
       decision.canonicalVariantId,
       decision.matcherVersion,
+      decision.matcherImplementationSha256,
+      decision.matcherReleaseSha256,
       decision.evidenceHash AS decisionEvidenceHash,
       decision.evidenceJson AS decisionEvidenceJson,
       decision.decidedAt AS decisionDecidedAt,
@@ -439,6 +447,8 @@ async function readIdentityContent(
     WHERE decision.donorProductId=?
       AND decision.decisionStatus='exact_confirmed'
       AND decision.matcherVersion=?
+      AND decision.matcherImplementationSha256=?
+      AND decision.matcherReleaseSha256=?
       AND julianday(decision.decidedAt)<=julianday(?)
       AND julianday(decision.createdAt)<=julianday(?)
       AND julianday(variant.createdAt)<=julianday(?)
@@ -450,6 +460,8 @@ async function readIdentityContent(
     args: [
       donorProductId,
       CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       asOf,
       asOf,
       asOf,
@@ -621,6 +633,12 @@ function contentProvenanceFromRow(
     decisionEvidenceHash !== sha256Text(decisionEvidenceRaw)
   ) {
     blockers.push("DECISION_EVIDENCE_HASH_MISMATCH");
+  } else if (
+    decisionEvidence.matcherVersion !== row.matcherVersion
+    || decisionEvidence.matcherImplementationSha256 !== row.matcherImplementationSha256
+    || decisionEvidence.matcherReleaseSha256 !== row.matcherReleaseSha256
+  ) {
+    blockers.push("DECISION_MATCHER_PROVENANCE_MISMATCH");
   }
 
   const contentRaw = optionalText(row.contentJson);
@@ -749,6 +767,12 @@ export function buildProductTruthRecipeComponentFromRows(input: {
   if (!exactDonorProductId) blockers.push("DONOR_PRODUCT_ID_MISSING");
   if (identity.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION) {
     blockers.push("MATCHER_VERSION_NOT_CURRENT");
+  }
+  if (identity.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256) {
+    blockers.push("MATCHER_IMPLEMENTATION_NOT_CURRENT");
+  }
+  if (identity.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256) {
+    blockers.push("MATCHER_RELEASE_NOT_CURRENT");
   }
   if (!Number.isInteger(input.qty) || input.qty <= 0) blockers.push("QTY_INVALID");
   const canonicalIdentity = canonicalIdentityFromRow(identity, blockers);
@@ -894,6 +918,8 @@ export function buildProductTruthRecipeComponentFromRows(input: {
       "content observedAt",
     ),
     matcher_version: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcher_implementation_sha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcher_release_sha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     content_provenance: contentProvenance!,
     content_classification: {
       category: facts.classification.category,
@@ -1195,6 +1221,8 @@ export async function listWalmartPilotCandidates(
            AND offer.canonicalVariantId=decision.canonicalVariantId
           WHERE decision.decisionStatus='exact_confirmed'
             AND decision.matcherVersion=?
+            AND decision.matcherImplementationSha256=?
+            AND decision.matcherReleaseSha256=?
             AND julianday(content.observedAt)<=julianday(?)
             AND julianday(content.createdAt)<=julianday(?)
             AND offer.id=(
@@ -1218,6 +1246,8 @@ export async function listWalmartPilotCandidates(
           LIMIT ? OFFSET ?`,
         args: [
           CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           asOf,
           asOf,
           asOf,

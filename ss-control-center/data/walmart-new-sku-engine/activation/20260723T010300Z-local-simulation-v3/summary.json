@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "product-truth-local-activation-simulation-summary/1.0.0",
+  "createdAt": "2026-07-23T01:02:50Z",
+  "authority": "LOCAL_SIMULATION_ONLY_NOT_OWNER_APPROVAL",
+  "productionMutationAuthorized": false,
+  "productionDatabaseAccessed": false,
+  "productionDatabaseCommittedWrites": 0,
+  "walmartCalls": 0,
+  "paidProviderCalls": 0,
+  "source": {
+    "kind": "COPY_OF_PRE_MIGRATION_PRODUCTION_BACKUP",
+    "backupReference": "local-sqlite-backup://walmart-pilot/20260722T224444Z/production-pre-product-truth.portable.db#sha256=6e69911d1ab83f77545c9fa5789d35e29f11cd434a25b24d2f03e3fdef952526",
+    "schemaBeforeSha256": "591d6ec4da09102dbb994398eb45f931592b07ac73b19ef0ebf1f3c5cf079aea"
+  },
+  "release": {
+    "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+    "activationContractSha256": "7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e",
+    "engineReleaseSha256": "eda6dc94ef699d30ffcd7ebcefd3d2b83c0fba63faacd4ab9eca552733ba5e11"
+  },
+  "simulation": {
+    "targetKind": "LOCAL_FILE_COPY",
+    "targetFingerprint": "5217c6110c5c1dfe85bc2255d278080b5f5e55e6132147bf384a0a105ab12482",
+    "targetFingerprintDiffersFromProduction": true,
+    "localApprovalArtifactCopiedToRepository": false,
+    "localApprovalCannotBindProductionTarget": true,
+    "planSha256": "e27adc664f39a1c25ac65369d94b30eac4bce708254cb874c1dd53b6bee569a6",
+    "migrationReportSha256": "a374a8b5d8f24f4a7d25c199ecf404d61152dcf3f24bc85bea67f0619a7f9da7",
+    "migrationCertificationSha256": "dd90f6deaa8d472faf18145a4b6d97c5387f99bb300adf7a382e6c240dfbad93",
+    "postcheckPlanSha256": "df299440044880ae710b5e8f93e7ce9a6a0ecd45d05fac49a24f145ca25a09ee",
+    "postMigrationDatabaseSha256": "a34a0c4e32899cb3842d8818de257ab8a77e35fcfaf320aaccc1c3f7ea69f628",
+    "schemaAfterSha256": "8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511",
+    "elapsedApplySecondsApprox": 2,
+    "migrationsApplied": 8,
+    "allMigrationsApplied": true,
+    "allReceiptsTracked": true,
+    "productTruthMigrationReceiptRows": 8,
+    "legacyEnrichmentRowsNormalized": 128,
+    "legacyEnrichmentRowsIdempotencyBound": 128,
+    "legacyEnrichmentRowsRequestedFieldsBound": 128,
+    "queueRowsCancelled": 0,
+    "foreignKeyViolations": 0,
+    "integrityCheck": "ok",
+    "postcheckCanApply": true,
+    "postcheckBlockers": [],
+    "postcheckMigrationStates": "8_OF_8_APPLIED_AND_TRACKED"
+  },
+  "durableArtifacts": {
+    "simulationPlan": "plan/plan.json",
+    "simulationPlanSha256": "e27adc664f39a1c25ac65369d94b30eac4bce708254cb874c1dd53b6bee569a6",
+    "migrationReport": "report/report.json",
+    "migrationReportSha256": "a374a8b5d8f24f4a7d25c199ecf404d61152dcf3f24bc85bea67f0619a7f9da7",
+    "migrationCertification": "report/migration-certification.json",
+    "migrationCertificationSha256": "dd90f6deaa8d472faf18145a4b6d97c5387f99bb300adf7a382e6c240dfbad93",
+    "postcheckPlan": "postcheck-plan/plan.json",
+    "postcheckPlanSha256": "df299440044880ae710b5e8f93e7ce9a6a0ecd45d05fac49a24f145ca25a09ee"
+  },
+  "nextBoundary": {
+    "productionActivationStillRequiresExactV3OwnerApproval": true,
+    "backfillPlanCannotBeAuthoritativeBeforeProductionMigrationCertification": true,
+    "authoritativePhase1ManifestCurrentlyAvailable": false,
+    "authoritativeManifestRequiresOwnerAttestedConnectedStoreCensus": true,
+    "authoritativeManifestRequiresFreshPerScopeAmazonReports": true,
+    "authoritativeManifestRequiresFreshWalmartItemCatalog": true,
+    "noProductionBackfillPlanClaimed": true
+  }
+}

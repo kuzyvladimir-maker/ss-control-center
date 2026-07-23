@@ -5,11 +5,13 @@ import {
   SSCC_MIN_REMAINING_SHELF_LIFE_DAYS,
   WALMART_ACCOUNT_EVIDENCE_MAX_AGE_MS,
   WALMART_CATALOG_SEARCH_MAX_AGE_MS,
+  WALMART_FULFILLMENT_EVIDENCE_MAX_AGE_MS,
   WALMART_POLICY_VERSION,
   WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
   WALMART_PUBLIC_CONTRACT_SCHEMA,
   WALMART_RECALL_CHECK_MAX_AGE_MS,
   WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+  WALMART_SELLER_ACCOUNT_HEALTH_MAX_AGE_MS,
   WALMART_SKU_POLICY_REVIEW_MAX_AGE_MS,
   WALMART_SPEC_MAX_AGE_MS,
   getPath,
@@ -142,6 +144,56 @@ export const validatorWalmartPrepublication: ValidatorFn = async ({
     }
 
     const approvals = recordArray(evidence.category_approvals);
+    const sellerHealth = isRecord(evidence.seller_account_health)
+      ? evidence.seller_account_health
+      : null;
+    if (
+      !sellerHealth ||
+      sellerHealth.status !== "HEALTHY_AND_ACCEPTING_NEW_ITEMS" ||
+      sellerHealth.store_index !== evidence.store_index ||
+      !isSha256(sellerHealth.seller_account_fingerprint_sha256) ||
+      !isFreshIsoDate(
+        sellerHealth.verified_at,
+        WALMART_SELLER_ACCOUNT_HEALTH_MAX_AGE_MS,
+      ) ||
+      !hasText(sellerHealth.evidence_ref)
+    ) {
+      failures.push("seller account health/publish eligibility evidence is missing or stale");
+    }
+
+    const fulfillment = isRecord(evidence.fulfillment_compliance)
+      ? evidence.fulfillment_compliance
+      : null;
+    if (
+      !fulfillment ||
+      fulfillment.method !== "SELLER_FULFILLED" ||
+      fulfillment.inventory_owned_by_seller !== true ||
+      fulfillment.direct_retailer_fulfillment !== false ||
+      fulfillment.competitor_branded_packaging !== false ||
+      fulfillment.third_party_promotional_materials !== false ||
+      !hasText(fulfillment.fulfillment_center_id) ||
+      !Number.isInteger(fulfillment.fulfillment_lag_time) ||
+      Number(fulfillment.fulfillment_lag_time) < 0 ||
+      !["NOT_REQUIRED", "APPROVED"].includes(
+        String(fulfillment.lag_exemption_status),
+      ) ||
+      (Number(fulfillment.fulfillment_lag_time) > 2 &&
+        fulfillment.lag_exemption_status !== "APPROVED") ||
+      !isFreshIsoDate(
+        fulfillment.verified_at,
+        WALMART_FULFILLMENT_EVIDENCE_MAX_AGE_MS,
+      ) ||
+      !hasText(fulfillment.evidence_ref) ||
+      !walmart ||
+      !isRecord(walmart.offer_handoff) ||
+      fulfillment.fulfillment_center_id !==
+        walmart.offer_handoff.fulfillment_center_id ||
+      fulfillment.fulfillment_lag_time !==
+        walmart.offer_handoff.fulfillment_lag_time
+    ) {
+      failures.push("seller-fulfilled policy evidence is missing, stale, or inconsistent with offer handoff");
+    }
+
     if (!approvals) {
       failures.push("category_approvals is malformed");
     } else {
@@ -211,6 +263,44 @@ export const validatorWalmartPrepublication: ValidatorFn = async ({
       !["BRAND_OWNER", "AUTHORIZED_RESELLER"].includes(String(rights.basis))
     ) {
       failures.push("FULL_ITEM creation requires brand-owner or authorized-reseller evidence");
+    }
+
+    const productIdentifier = isRecord(evidence.product_identifier)
+      ? evidence.product_identifier
+      : null;
+    if (
+      !productIdentifier ||
+      productIdentifier.identifier_type !== "UPC" ||
+      productIdentifier.value !== sku.upc ||
+      productIdentifier.checksum_valid !== true ||
+      !hasText(productIdentifier.pool_acquired_from) ||
+      !hasText(productIdentifier.pool_recorded_owner) ||
+      productIdentifier.registry_status !== "VERIFIED" ||
+      !sameText(
+        productIdentifier.registry_registrant_name,
+        productIdentifier.pool_recorded_owner,
+      ) ||
+      !sameText(productIdentifier.aligned_brand, master_bundle?.brand) ||
+      productIdentifier.brand_alignment_status !== "VERIFIED" ||
+      !/^[a-f0-9]{64}$/.test(
+        String(productIdentifier.seller_account_fingerprint_sha256 ?? ""),
+      ) ||
+      productIdentifier.seller_assignment_authority_status !== "VERIFIED" ||
+      !isFreshIsoDate(
+        productIdentifier.verified_at,
+        WALMART_ACCOUNT_EVIDENCE_MAX_AGE_MS,
+      ) ||
+      !hasText(productIdentifier.evidence_ref)
+    ) {
+      failures.push(
+        "product identifier registry, brand alignment, or seller assignment authority evidence is missing or stale",
+      );
+    } else if (
+      sellerHealth &&
+      productIdentifier.seller_account_fingerprint_sha256 !==
+        sellerHealth.seller_account_fingerprint_sha256
+    ) {
+      failures.push("seller account health and product identifier account bindings differ");
     }
 
     const condition = isRecord(evidence.condition) ? evidence.condition : null;

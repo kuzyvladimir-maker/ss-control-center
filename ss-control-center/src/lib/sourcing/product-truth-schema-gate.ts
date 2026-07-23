@@ -70,7 +70,14 @@ export async function assertProductTruthEvidenceSchema(db: Client): Promise<void
   const missing: string[] = [];
   try {
     const productColumns = await columns(db, "DonorProduct");
-    for (const column of ["identityStatus", "identityMatcherVersion", "identityEvidenceJson", "identityConfirmedAt"]) {
+    for (const column of [
+      "identityStatus",
+      "identityMatcherVersion",
+      "identityMatcherImplementationSha256",
+      "identityMatcherReleaseSha256",
+      "identityEvidenceJson",
+      "identityConfirmedAt",
+    ]) {
       if (!productColumns.has(column)) missing.push(`DonorProduct.${column}`);
     }
   } catch {
@@ -108,6 +115,8 @@ export async function assertProductTruthEvidenceSchema(db: Client): Promise<void
       "evidenceJson",
       "evidenceOutcome",
       "matcherVersion",
+      "matcherImplementationSha256",
+      "matcherReleaseSha256",
       "pricePolicyVersion",
       "runId",
       "approvalId",
@@ -127,7 +136,8 @@ export async function assertProductTruthEvidenceSchema(db: Client): Promise<void
       ],
       DonorProductVariantDecision: [
         "id", "decisionKey", "donorProductId", "canonicalVariantId",
-        "decisionStatus", "matcherVersion", "evidenceHash", "evidenceJson",
+        "decisionStatus", "matcherVersion", "matcherImplementationSha256",
+        "matcherReleaseSha256", "evidenceHash", "evidenceJson",
         "decidedAt", "runId", "approvalId", "createdAt",
       ],
       ProductContentObservation: [
@@ -145,8 +155,9 @@ export async function assertProductTruthEvidenceSchema(db: Client): Promise<void
         "id", "evidenceKey", "skuCostId", "componentIndex", "evidenceStatus",
         "targetCanonicalVariantId", "contentCanonicalVariantId",
         "priceCanonicalVariantId", "contentObservationId", "priceObservationId",
-        "matchTier", "matcherVersion", "pricePolicyVersion", "evidenceHash",
-        "evidenceJson", "createdAt",
+        "matchTier", "matcherVersion", "matcherImplementationSha256",
+        "matcherReleaseSha256", "pricePolicyVersion", "evidenceHash", "evidenceJson",
+        "createdAt",
       ],
     };
     for (const [table, requiredColumns] of Object.entries(requiredTables)) {

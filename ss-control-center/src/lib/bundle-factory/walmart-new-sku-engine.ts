@@ -11,6 +11,11 @@ import type {
   ProductTruthWalmartPilotCandidate as WalmartPilotCandidate,
 } from "@/lib/sourcing/product-truth-read-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "@/lib/sourcing/product-truth-read-contract";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
 import { hashWalmartPayload } from "./distribution/walmart-payload-hash";
 import {
   WALMART_OWNER_PERMIT_SCHEMA,
@@ -21,9 +26,8 @@ import {
   type WalmartOwnerPermit,
 } from "./walmart-owner-permit";
 import {
-  WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
-  verifyWalmartSellerCatalogAuthorityBinding,
-  type SealedWalmartSellerCatalogAuthorityBinding,
+  verifyWalmartExactIdentifierDuplicateGuardBinding,
+  type SealedWalmartExactIdentifierDuplicateGuardBinding,
 } from "./walmart-new-sku-catalog-authority";
 import {
   WALMART_NEW_SKU_POLICY_REVIEW_EVIDENCE_SCHEMA,
@@ -32,22 +36,23 @@ import {
   type WalmartNewSkuPolicyReviewBinding,
 } from "./walmart-new-sku-policy-review-evidence";
 import {
+  WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
   WALMART_POLICY_SOURCES,
   WALMART_POLICY_VERSION,
 } from "./validation/walmart-prepublication-policy";
 
 export const WALMART_NEW_SKU_PLAN_SCHEMA =
-  "walmart-new-sku-plan/1.3.0" as const;
+  "walmart-new-sku-plan/1.7.0" as const;
 export const WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA =
-  "walmart-new-sku-doctor-receipt/1.4.0" as const;
+  "walmart-new-sku-doctor-receipt/1.7.0" as const;
 export const WALMART_NEW_SKU_STAGE_SCHEMA =
-  "walmart-new-sku-stage/1.0.0" as const;
+  "walmart-new-sku-stage/1.1.0" as const;
 export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
   "walmart-new-sku-upc-rotation-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_INPUT_SCHEMA =
-  "walmart-new-sku-certification-input/1.2.0" as const;
+  "walmart-new-sku-certification-input/1.5.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_SCHEMA =
-  "walmart-new-sku-certification/1.4.0" as const;
+  "walmart-new-sku-certification/1.7.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_RECEIPT_SCHEMA =
   "walmart-new-sku-certification-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_DRY_RUN_RECEIPT_SCHEMA =
@@ -64,16 +69,23 @@ export const WALMART_NEW_SKU_PILOT_PACK_COUNTS = [2, 3] as const;
 export const WALMART_NEW_SKU_DRY_RUN_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_APPROVAL_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_DOCTOR_MAX_AGE_MS = 30 * 60 * 1_000;
+/**
+ * SSCC pilot safeguard, not a Walmart-published threshold. The customer total
+ * for a new multipack may not exceed 125% of a fresh, exact-variant comparable
+ * normalized to the same unit count.
+ */
+export const SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS = 12_500;
 
 export type WalmartNewSkuPlanBlocker =
   | "COUNT_ACCURATE_RIGHTS_CLEARED_MAIN_IMAGE"
   | "RIGHTS_CLEARED_SECONDARY_IMAGE"
   | "OPERATOR_VERIFIED_PACKAGE_MEASUREMENTS"
   | "EXACT_UPC_CATALOG_SEARCH"
-  | "SELLER_CATALOG_RECIPE_NOVELTY"
   | "CURRENT_WALMART_GET_SPEC"
   | "SELLER_ACCOUNT_HEALTH_AND_PUBLISH_ELIGIBILITY"
+  | "SELLER_FULFILLMENT_POLICY_COMPLIANCE"
   | "BRAND_RIGHTS_EVIDENCE"
+  | "PRODUCT_IDENTIFIER_REGISTRY_BRAND_AND_SELLER_AUTHORITY"
   | "CATEGORY_AND_SKU_POLICY_CLEARANCE"
   | "CURRENT_RECALL_CHECK"
   | "EXPIRATION_AND_LOT_PROCEDURE"
@@ -81,7 +93,7 @@ export type WalmartNewSkuPlanBlocker =
   | "EXPLICIT_DISTRIBUTION_APPROVAL";
 
 export interface DeterministicWalmartContent {
-  generator: "deterministic-product-truth-multipack/v1";
+  generator: "deterministic-product-truth-multipack/v2";
   title: string;
   bullets: string[];
   description: string;
@@ -107,7 +119,7 @@ export interface WalmartNewSkuPlan {
   as_of: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartSellerCatalogAuthorityBinding;
+  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   doctor_receipt_sha256: string;
   engine_release_sha256: string;
   release_manifest_sha256: string;
@@ -138,7 +150,9 @@ export interface WalmartNewSkuStageArtifact extends WalmartNewSkuStagePreview {
   staged_by: string;
   upc_pool_id: string;
   upc: string;
-  upc_gs1_validated: boolean;
+  upc_checksum_valid: true;
+  upc_pool_acquired_from: string;
+  upc_pool_recorded_owner: string;
   upc_reserved_until: string;
   state: "UPC_RESERVED";
 }
@@ -223,9 +237,12 @@ export type WalmartNewSkuEvidenceArtifactKind =
   | "PRODUCT_ATTRIBUTE"
   | "CATEGORY_APPROVAL"
   | "POLICY_REVIEW"
+  | "PRICE_COMPETITIVENESS"
   | "RECALL_CHECK"
   | "BRAND_RIGHTS"
+  | "PRODUCT_IDENTIFIER"
   | "SELLER_ACCOUNT_HEALTH"
+  | "FULFILLMENT_COMPLIANCE"
   | "LOT_CONTROL_PROCEDURE"
   | "EXPIRATION_SOURCE";
 
@@ -237,6 +254,31 @@ export interface WalmartNewSkuEvidenceArtifactInput {
   byte_size: number;
   captured_at: string;
   source_url: string | null;
+}
+
+export interface WalmartNewSkuPricingCompetitivenessInput {
+  status: "CLEARED";
+  policy_source_id: "pricing-rules";
+  basis: "EXACT_COMPONENT_VARIANT_LINEARIZED";
+  proposed_item_price_cents: number;
+  customer_shipping_charge_cents: 0;
+  proposed_customer_total_cents: number;
+  comparable: {
+    canonical_variant_id: string;
+    url: string;
+    observed_at: string;
+    pack_count: number;
+    item_price_cents: number;
+    customer_shipping_charge_cents: number;
+    customer_total_cents: number;
+  };
+  linearized_comparable_total_cents: number;
+  proposed_to_comparable_ratio_bps: number;
+  internal_pilot_ceiling_bps:
+    typeof SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS;
+  reviewed_at: string;
+  reviewer: string;
+  evidence_ref: string;
 }
 
 export interface WalmartNewSkuCertificationInput {
@@ -296,6 +338,18 @@ export interface WalmartNewSkuCertificationInput {
       verified_at: string;
       evidence_ref: string;
     };
+    fulfillment_compliance: {
+      method: "SELLER_FULFILLED";
+      inventory_owned_by_seller: true;
+      direct_retailer_fulfillment: false;
+      competitor_branded_packaging: false;
+      third_party_promotional_materials: false;
+      fulfillment_center_id: string;
+      fulfillment_lag_time: number;
+      lag_exemption_status: "NOT_REQUIRED" | "APPROVED";
+      verified_at: string;
+      evidence_ref: string;
+    };
     category_approvals: Array<{
       scope: string;
       status: "APPROVED" | "NOT_REQUIRED";
@@ -307,6 +361,7 @@ export interface WalmartNewSkuCertificationInput {
       reviewed_at: string;
       evidence_ref: string;
     };
+    pricing_competitiveness: WalmartNewSkuPricingCompetitivenessInput;
     recall_check: {
       status: "CLEAR";
       checked_at: string;
@@ -316,6 +371,21 @@ export interface WalmartNewSkuCertificationInput {
     brand_rights: {
       brand: string;
       basis: "BRAND_OWNER" | "AUTHORIZED_RESELLER";
+      verified_at: string;
+      evidence_ref: string;
+    };
+    product_identifier: {
+      identifier_type: "UPC";
+      value: string;
+      checksum_valid: true;
+      pool_acquired_from: string;
+      pool_recorded_owner: string;
+      registry_status: "VERIFIED";
+      registry_registrant_name: string;
+      aligned_brand: string;
+      brand_alignment_status: "VERIFIED";
+      seller_account_fingerprint_sha256: string;
+      seller_assignment_authority_status: "VERIFIED";
       verified_at: string;
       evidence_ref: string;
     };
@@ -340,7 +410,7 @@ export interface WalmartNewSkuCertificationArtifact {
   candidate_key: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartSellerCatalogAuthorityBinding;
+  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   bundle_draft_id: string;
   master_bundle_id: string;
   channel_sku_id: string;
@@ -366,6 +436,8 @@ export interface WalmartNewSkuCertificationArtifact {
   seller_sku_absence_evidence_ref: string;
   seller_account_health_evidence_ref: string;
   seller_account_health_verified_at: string;
+  fulfillment_compliance_evidence_ref: string;
+  fulfillment_compliance_verified_at: string;
   item_spec_schema_sha256: string;
   source_evidence_sha256: string;
   marketplace_mutation_allowed: false;
@@ -378,7 +450,7 @@ export interface WalmartNewSkuDoctorReceipt {
   expires_at: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartSellerCatalogAuthorityBinding;
+  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   database_target_fingerprint_sha256: string;
   database_schema_sha256: string;
   engine_release_sha256: string;
@@ -410,6 +482,7 @@ export interface WalmartNewSkuDoctorReceipt {
   publish_lifecycle_schema_ready: true;
   upc_pool: {
     available: number;
+    available_with_legacy_checksum_flag_and_provenance: number;
     duplicate_draft_reservations: 0;
   };
   ready_for_plan: true;
@@ -1171,21 +1244,28 @@ export function buildDeterministicWalmartMultipackContent(input: {
     "WALMART_TITLE",
   );
   const bullets = [
-    `Includes ${input.packCount} identical, new retail packages.`,
-    `Exact manufacturer brand: ${brand}.`,
-    flavor
-      ? `Exact flavor or variant: ${flavor}.`
-      : "Exact variant is shown in the product title and package images.",
-    "Manufacturer ingredients and allergen details remain on each package.",
-    `Multipack quantity is ${input.packCount}; the main image must show the same count.`,
+    `${input.packCount} identical new retail packages in one sellable multipack`,
+    `Manufacturer brand: ${brand}`,
+    flavor ? `Exact flavor or variant: ${flavor}` : "Exact variant shown in images",
+    "Ingredients and allergen details remain on each original package",
+    `Main image shows the complete ${input.packCount}-package quantity`,
   ].map((bullet, index) =>
-    assertLength(cleanPlainText(bullet, `BULLET_${index + 1}`), 150, `BULLET_${index + 1}`),
+    assertLength(cleanPlainText(bullet, `BULLET_${index + 1}`), 80, `BULLET_${index + 1}`),
   );
   const description = assertLength(
     cleanPlainText(
       `This listing contains ${input.packCount} identical, new retail packages of ${identity}. ` +
-        "The brand, flavor or variant, package identity, ingredients, allergen information, " +
-        "and label details must match the exact packages shown in the listing images.",
+        `Each package is the same ${brand} product and the exact variant identified in the title and images. ` +
+        "The offer is a homogeneous multipack and is not a mixed assortment. " +
+        `The stated quantity means ${input.packCount} complete retail packages are delivered together as one sellable unit. ` +
+        "It does not change the serving count, piece count, net content, formula, or package size printed by the manufacturer on each individual package. " +
+        "Original package labels remain the controlling source for ingredients, allergen statements, nutrition facts, directions, warnings, storage instructions, lot codes, and expiration information. " +
+        "Read every package label before use, especially when checking dietary restrictions, allergens, preparation directions, storage needs, or other product-specific information. " +
+        "The main image must show the complete sellable quantity described in this listing. " +
+        "Secondary images provide additional views of the same exact product and must not substitute another size, flavor, formula, count, or package design. " +
+        "All included units must be supplied in new condition and in their original retail packaging. " +
+        "Compare the delivered brand, variant, package identity, and quantity with the title and listing images before use. " +
+        "If the item received does not match these details, use the order support options available through the marketplace.",
       "DESCRIPTION",
     ),
     4_000,
@@ -1193,7 +1273,7 @@ export function buildDeterministicWalmartMultipackContent(input: {
   );
 
   return {
-    generator: "deterministic-product-truth-multipack/v1",
+    generator: "deterministic-product-truth-multipack/v2",
     title,
     bullets,
     description,
@@ -1217,10 +1297,11 @@ const REQUIRED_BEFORE_CERTIFICATION: WalmartNewSkuPlanBlocker[] = [
   "RIGHTS_CLEARED_SECONDARY_IMAGE",
   "OPERATOR_VERIFIED_PACKAGE_MEASUREMENTS",
   "EXACT_UPC_CATALOG_SEARCH",
-  "SELLER_CATALOG_RECIPE_NOVELTY",
   "CURRENT_WALMART_GET_SPEC",
   "SELLER_ACCOUNT_HEALTH_AND_PUBLISH_ELIGIBILITY",
+  "SELLER_FULFILLMENT_POLICY_COMPLIANCE",
   "BRAND_RIGHTS_EVIDENCE",
+  "PRODUCT_IDENTIFIER_REGISTRY_BRAND_AND_SELLER_AUTHORITY",
   "CATEGORY_AND_SKU_POLICY_CLEARANCE",
   "CURRENT_RECALL_CHECK",
   "EXPIRATION_AND_LOT_PROCEDURE",
@@ -1239,10 +1320,10 @@ function assertCatalogAuthorityScope(input: {
   storeIndex: number;
   businessSellerFingerprintSha256: string;
   label: string;
-}): SealedWalmartSellerCatalogAuthorityBinding {
-  let authority: SealedWalmartSellerCatalogAuthorityBinding;
+}): SealedWalmartExactIdentifierDuplicateGuardBinding {
+  let authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   try {
-    authority = verifyWalmartSellerCatalogAuthorityBinding(input.authority);
+    authority = verifyWalmartExactIdentifierDuplicateGuardBinding(input.authority);
   } catch (error) {
     throw new WalmartNewSkuPlanError([
       `${input.label}_CATALOG_AUTHORITY_INVALID:${
@@ -1366,6 +1447,9 @@ export function assertWalmartNewSkuPlanIntegrity(
       ) ||
       candidate.recipe_input.contractVersion !==
         PRODUCT_TRUTH_READ_CONTRACT_VERSION ||
+      component.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
+      component.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
+      component.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256 ||
       !Number.isFinite(candidate.recipe_input.price_max_age_ms) ||
       candidate.recipe_input.price_max_age_ms !== 24 * 60 * 60 * 1_000 ||
       component.price_evidence.locality_evidence !== "zip_scoped" ||
@@ -1516,6 +1600,11 @@ export function assertWalmartNewSkuStageArtifactIntegrity(
     !artifact.generation_job_id?.trim() ||
     !artifact.bundle_draft_id?.trim() ||
     !artifact.upc_pool_id?.trim() ||
+    artifact.upc_checksum_valid !== true ||
+    !artifact.upc_pool_acquired_from?.trim() ||
+    !artifact.upc_pool_recorded_owner?.trim() ||
+    PLACEHOLDER_TEXT.test(artifact.upc_pool_acquired_from) ||
+    PLACEHOLDER_TEXT.test(artifact.upc_pool_recorded_owner) ||
     !artifact.staged_by?.trim() ||
     artifact.state !== "UPC_RESERVED"
   ) {
@@ -1654,8 +1743,8 @@ export function assertWalmartNewSkuCertificationInput(input: {
     !Number.isSafeInteger(certification.packaging_cost_cents) ||
     certification.packaging_cost_cents <= 0 ||
     !Number.isSafeInteger(certification.shipping_label_cents) ||
-    certification.shipping_label_cents < 0 ||
-    typeof certification.shipping_in_price !== "boolean"
+    certification.shipping_label_cents <= 0 ||
+    certification.shipping_in_price !== true
   ) {
     failures.push("CERTIFICATION_COST_BASIS_INVALID");
   }
@@ -1665,9 +1754,12 @@ export function assertWalmartNewSkuCertificationInput(input: {
     "PRODUCT_ATTRIBUTE",
     "CATEGORY_APPROVAL",
     "POLICY_REVIEW",
+    "PRICE_COMPETITIVENESS",
     "RECALL_CHECK",
     "BRAND_RIGHTS",
+    "PRODUCT_IDENTIFIER",
     "SELLER_ACCOUNT_HEALTH",
+    "FULFILLMENT_COMPLIANCE",
     "LOT_CONTROL_PROCEDURE",
     "EXPIRATION_SOURCE",
   ]);
@@ -1902,6 +1994,35 @@ export function assertWalmartNewSkuCertificationInput(input: {
       "SELLER_ACCOUNT_HEALTH",
     );
   }
+  const fulfillment = manual.fulfillment_compliance;
+  if (
+    fulfillment?.method !== "SELLER_FULFILLED" ||
+    fulfillment?.inventory_owned_by_seller !== true ||
+    fulfillment?.direct_retailer_fulfillment !== false ||
+    fulfillment?.competitor_branded_packaging !== false ||
+    fulfillment?.third_party_promotional_materials !== false ||
+    fulfillment?.fulfillment_center_id !== handoff.fulfillment_center_id ||
+    fulfillment?.fulfillment_lag_time !== handoff.fulfillment_lag_time ||
+    !["NOT_REQUIRED", "APPROVED"].includes(
+      String(fulfillment?.lag_exemption_status),
+    ) ||
+    (handoff.fulfillment_lag_time > 2 &&
+      fulfillment?.lag_exemption_status !== "APPROVED") ||
+    !isFreshPastIso(
+      fulfillment?.verified_at,
+      ACCOUNT_EVIDENCE_MAX_AGE_MS,
+      now,
+    ) ||
+    !isEvidenceReference(fulfillment?.evidence_ref)
+  ) {
+    failures.push("SELLER_FULFILLMENT_POLICY_EVIDENCE_INVALID");
+  } else {
+    requireEvidence(
+      fulfillment.evidence_ref,
+      "FULFILLMENT_COMPLIANCE",
+      "FULFILLMENT_COMPLIANCE",
+    );
+  }
   if (
     !Array.isArray(manual.category_approvals) ||
     manual.category_approvals.length === 0 ||
@@ -1951,6 +2072,40 @@ export function assertWalmartNewSkuCertificationInput(input: {
       "BRAND_RIGHTS",
     );
   }
+  const productIdentifier = manual.product_identifier;
+  if (
+    productIdentifier.identifier_type !== "UPC" ||
+    productIdentifier.value !== stage.upc ||
+    productIdentifier.checksum_valid !== true ||
+    !isValidOwnerPoolUpca(productIdentifier.value) ||
+    productIdentifier.pool_acquired_from !== stage.upc_pool_acquired_from ||
+    productIdentifier.pool_recorded_owner !== stage.upc_pool_recorded_owner ||
+    productIdentifier.registry_status !== "VERIFIED" ||
+    !productIdentifier.registry_registrant_name.trim() ||
+    PLACEHOLDER_TEXT.test(productIdentifier.registry_registrant_name) ||
+    productIdentifier.registry_registrant_name.trim().toLowerCase() !==
+      stage.upc_pool_recorded_owner.trim().toLowerCase() ||
+    productIdentifier.aligned_brand.trim().toLowerCase() !==
+      component.manufacturer_brand.trim().toLowerCase() ||
+    productIdentifier.brand_alignment_status !== "VERIFIED" ||
+    productIdentifier.seller_account_fingerprint_sha256 !==
+      plan.seller_account_fingerprint_sha256 ||
+    productIdentifier.seller_assignment_authority_status !== "VERIFIED" ||
+    !isFreshPastIso(
+      productIdentifier.verified_at,
+      ACCOUNT_EVIDENCE_MAX_AGE_MS,
+      now,
+    ) ||
+    !isEvidenceReference(productIdentifier.evidence_ref)
+  ) {
+    failures.push("PRODUCT_IDENTIFIER_EVIDENCE_INVALID");
+  } else {
+    requireEvidence(
+      productIdentifier.evidence_ref,
+      "PRODUCT_IDENTIFIER",
+      "PRODUCT_IDENTIFIER",
+    );
+  }
   if (
     manual.condition.value !== "New" ||
     !isFreshPastIso(
@@ -1987,6 +2142,88 @@ export function assertWalmartNewSkuCertificationInput(input: {
       "RECALL_CHECK",
       "RECALL_CHECK",
     );
+  }
+  const pricing = manual.pricing_competitiveness;
+  const comparable = pricing?.comparable;
+  const comparableTotal =
+    Number.isSafeInteger(comparable?.item_price_cents) &&
+    Number.isSafeInteger(comparable?.customer_shipping_charge_cents)
+      ? Number(comparable.item_price_cents) +
+        Number(comparable.customer_shipping_charge_cents)
+      : Number.NaN;
+  const linearizedComparableTotal =
+    Number.isSafeInteger(comparable?.pack_count) &&
+    Number(comparable?.pack_count) > 0 &&
+    Number.isSafeInteger(comparableTotal) &&
+    comparableTotal > 0
+      ? Math.round(
+        comparableTotal * candidate.pack_count / Number(comparable.pack_count),
+      )
+      : Number.NaN;
+  const proposedCustomerTotal =
+    certification.price_cents +
+    Number(pricing?.customer_shipping_charge_cents);
+  const proposedToComparableRatioBps =
+    Number.isSafeInteger(linearizedComparableTotal) &&
+    linearizedComparableTotal > 0
+      ? Math.ceil(
+        proposedCustomerTotal * 10_000 / linearizedComparableTotal,
+      )
+      : Number.NaN;
+  if (
+    pricing?.status !== "CLEARED" ||
+    pricing?.policy_source_id !== "pricing-rules" ||
+    pricing?.basis !== "EXACT_COMPONENT_VARIANT_LINEARIZED" ||
+    pricing?.proposed_item_price_cents !== certification.price_cents ||
+    pricing?.customer_shipping_charge_cents !== 0 ||
+    pricing?.proposed_customer_total_cents !== proposedCustomerTotal ||
+    comparable?.canonical_variant_id !== candidate.canonical_variant_id ||
+    typeof comparable?.url !== "string" ||
+    !/^https:\/\/\S+$/i.test(comparable.url) ||
+    !isFreshPastIso(
+      comparable?.observed_at,
+      WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
+      now,
+    ) ||
+    !Number.isSafeInteger(comparable?.pack_count) ||
+    Number(comparable?.pack_count) <= 0 ||
+    !Number.isSafeInteger(comparable?.item_price_cents) ||
+    Number(comparable?.item_price_cents) <= 0 ||
+    !Number.isSafeInteger(comparable?.customer_shipping_charge_cents) ||
+    Number(comparable?.customer_shipping_charge_cents) < 0 ||
+    comparable?.customer_total_cents !== comparableTotal ||
+    pricing?.linearized_comparable_total_cents !==
+      linearizedComparableTotal ||
+    pricing?.proposed_to_comparable_ratio_bps !==
+      proposedToComparableRatioBps ||
+    pricing?.internal_pilot_ceiling_bps !==
+      SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS ||
+    proposedToComparableRatioBps >
+      SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS ||
+    !isFreshPastIso(
+      pricing?.reviewed_at,
+      WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
+      now,
+    ) ||
+    typeof pricing?.reviewer !== "string" ||
+    !pricing.reviewer.trim() ||
+    PLACEHOLDER_TEXT.test(pricing.reviewer) ||
+    !isEvidenceReference(pricing?.evidence_ref)
+  ) {
+    failures.push("PRICE_COMPETITIVENESS_EVIDENCE_INVALID");
+  } else {
+    requireEvidence(
+      pricing.evidence_ref,
+      "PRICE_COMPETITIVENESS",
+      "PRICE_COMPETITIVENESS",
+    );
+    const pricingArtifact = evidenceByRef.get(pricing.evidence_ref);
+    if (
+      pricingArtifact &&
+      pricingArtifact.source_url !== pricing.comparable.url
+    ) {
+      failures.push("PRICE_COMPETITIVENESS_SOURCE_URL_MISMATCH");
+    }
   }
   if (
     manual.expiration.applicable !== true ||
@@ -2070,20 +2307,17 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     receipt.walmart_api_probe?.upc_sha256,
     receipt.walmart_api_probe?.response_sha256,
   ];
-  const ownerTrust = inspectWalmartOwnerPermitTrustRoot(env);
-  const catalogAuthority = assertCatalogAuthorityScope({
+  const ownerTrust = inspectWalmartOwnerPermitTrustRoot(
+    env,
+    walmartOwnerPermitRuntimeEnvironment(env),
+  );
+  assertCatalogAuthorityScope({
     authority: receipt.seller_catalog_authority,
     storeIndex: receipt.store_index,
     businessSellerFingerprintSha256:
       receipt.seller_account_fingerprint_sha256,
     label: "DOCTOR",
   });
-  const catalogFreshnessInstants = [
-    catalogAuthority.source_artifact.cutoff_at,
-    catalogAuthority.source_artifact.downloaded_at,
-    catalogAuthority.mirror_reconciliation.synced_at,
-    catalogAuthority.walmart_report_diagnostic.downloaded_at,
-  ].map((value) => Date.parse(value));
   if (
     receipt.schema_version !== WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA ||
     actual !== expected ||
@@ -2122,6 +2356,10 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     receipt.publish_lifecycle_schema_ready !== true ||
     !Number.isSafeInteger(receipt.upc_pool?.available) ||
     receipt.upc_pool.available <= 0 ||
+    !Number.isSafeInteger(
+      receipt.upc_pool.available_with_legacy_checksum_flag_and_provenance,
+    ) ||
+    receipt.upc_pool.available_with_legacy_checksum_flag_and_provenance <= 0 ||
     receipt.upc_pool.duplicate_draft_reservations !== 0 ||
     receipt.ready_for_plan !== true ||
     receipt.infrastructure_ready_for_pilot !== true ||
@@ -2133,12 +2371,7 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     receipt.claims?.marketplace_mutated !== false ||
     receipt.claims?.listing_published !== false ||
     receipt.claims?.migration_applied !== false ||
-    receipt.claims?.backfill_performed !== false ||
-    catalogFreshnessInstants.some((instant) =>
-      !Number.isFinite(instant) ||
-      instant > nowMs ||
-      nowMs - instant > WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS
-    )
+    receipt.claims?.backfill_performed !== false
   ) {
     throw new WalmartNewSkuPlanError(["DOCTOR_RECEIPT_INVALID_OR_STALE"]);
   }
@@ -2201,6 +2434,10 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
       "seller_account_health_evidence_ref",
       artifact.seller_account_health_evidence_ref,
     ],
+    [
+      "fulfillment_compliance_evidence_ref",
+      artifact.fulfillment_compliance_evidence_ref,
+    ],
   ]) {
     if (typeof value !== "string" || !value.trim()) {
       throw new WalmartNewSkuPlanError([
@@ -2224,6 +2461,15 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
   ) {
     throw new WalmartNewSkuPlanError([
       "CERTIFICATION_SELLER_ACCOUNT_HEALTH_TIMESTAMP_INVALID",
+    ]);
+  }
+  if (
+    !Number.isFinite(Date.parse(artifact.fulfillment_compliance_verified_at)) ||
+    Date.parse(artifact.fulfillment_compliance_verified_at) >
+      Date.parse(artifact.certified_at)
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "CERTIFICATION_FULFILLMENT_COMPLIANCE_TIMESTAMP_INVALID",
     ]);
   }
   const truth = artifact.product_truth_binding;
@@ -2582,10 +2828,15 @@ export function buildWalmartNewSkuOwnerPermitTemplate(input: {
   applyPreview: WalmartNewSkuApplyReceipt;
   engineReleaseSha256: string;
   now?: Date;
+  env?: NodeJS.ProcessEnv;
 }): Record<string, unknown> {
   assertWalmartNewSkuApplyReceiptIntegrity(input.applyPreview, input.approval);
   const issuedAt = input.now ?? new Date();
-  const trust = inspectWalmartOwnerPermitTrustRoot();
+  const permitEnvironment = walmartOwnerPermitRuntimeEnvironment(input.env);
+  const trust = inspectWalmartOwnerPermitTrustRoot(
+    input.env,
+    permitEnvironment,
+  );
   if (trust.active_key_ids.length !== 1) {
     throw new WalmartNewSkuPlanError(["OWNER_PERMIT_TRUST_ROOT_NOT_READY"]);
   }
@@ -2597,7 +2848,7 @@ export function buildWalmartNewSkuOwnerPermitTemplate(input: {
     signed_body: {
       permit_id: "TODO_OWNER_GENERATED_UNIQUE_PERMIT_ID",
       action: "WALMART_MP_ITEM_SUBMIT",
-      environment: "PRODUCTION",
+      environment: permitEnvironment,
       engine_release_sha256: input.engineReleaseSha256,
       approval_sha256: input.approval.approval_sha256,
       doctor_receipt_sha256: "TODO_FRESH_DOCTOR_RECEIPT_SHA256",
@@ -2944,9 +3195,12 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
       ["TODO_EVIDENCE_REF_COUNTRY_OF_ORIGIN", "COUNTRY_OF_ORIGIN"],
       ["TODO_EVIDENCE_REF_CATEGORY_APPROVAL", "CATEGORY_APPROVAL"],
       ["TODO_EVIDENCE_REF_POLICY_REVIEW", "POLICY_REVIEW"],
+      ["TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS", "PRICE_COMPETITIVENESS"],
       ["TODO_EVIDENCE_REF_RECALL_CHECK", "RECALL_CHECK"],
       ["TODO_EVIDENCE_REF_BRAND_RIGHTS", "BRAND_RIGHTS"],
+      ["TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER", "PRODUCT_IDENTIFIER"],
       ["TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH", "SELLER_ACCOUNT_HEALTH"],
+      ["TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE", "FULFILLMENT_COMPLIANCE"],
       ["TODO_EVIDENCE_REF_LOT_CONTROL", "LOT_CONTROL_PROCEDURE"],
       ["TODO_EVIDENCE_REF_EXPIRATION_SOURCE", "EXPIRATION_SOURCE"],
     ].map(([ref, kind]) => ({
@@ -2964,6 +3218,8 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
           ? WALMART_POLICY_SOURCES.find(
               (source) => source.id === "prohibited-products-overview",
             )!.url
+          : kind === "PRICE_COMPETITIVENESS"
+            ? "TODO_SAME_AS_CURRENT_EXACT_VARIANT_COMPARABLE_URL"
           : null,
     })),
     images: [
@@ -3030,6 +3286,18 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         verified_at: "TODO_CANONICAL_UTC_AFTER_ACCOUNT_CHECK",
         evidence_ref: "TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH",
       },
+      fulfillment_compliance: {
+        method: "SELLER_FULFILLED",
+        inventory_owned_by_seller: true,
+        direct_retailer_fulfillment: false,
+        competitor_branded_packaging: false,
+        third_party_promotional_materials: false,
+        fulfillment_center_id: "TODO_WALMART_FULFILLMENT_CENTER_ID",
+        fulfillment_lag_time: null,
+        lag_exemption_status: "TODO_NOT_REQUIRED_OR_APPROVED",
+        verified_at: "TODO_CANONICAL_UTC_AFTER_FULFILLMENT_POLICY_CHECK",
+        evidence_ref: "TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE",
+      },
       category_approvals: [{
         scope: "INGESTIBLE_PRODUCTS",
         status: "TODO_APPROVED_AFTER_EXACT_ACCOUNT_EVIDENCE",
@@ -3040,6 +3308,30 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         status: "TODO_CLEARED_AFTER_STRUCTURED_HUMAN_REVIEW",
         reviewed_at: "TODO_CANONICAL_UTC_MATCHING_POLICY_ARTIFACT",
         evidence_ref: "TODO_EVIDENCE_REF_POLICY_REVIEW",
+      },
+      pricing_competitiveness: {
+        status: "TODO_CLEARED_AFTER_CURRENT_COMPARABLE_REVIEW",
+        policy_source_id: "pricing-rules",
+        basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
+        proposed_item_price_cents: null,
+        customer_shipping_charge_cents: 0,
+        proposed_customer_total_cents: null,
+        comparable: {
+          canonical_variant_id: candidate.canonical_variant_id,
+          url: "TODO_CURRENT_HTTPS_EXACT_VARIANT_COMPARABLE_URL",
+          observed_at: "TODO_CANONICAL_UTC_AFTER_PRICE_OBSERVATION",
+          pack_count: null,
+          item_price_cents: null,
+          customer_shipping_charge_cents: null,
+          customer_total_cents: null,
+        },
+        linearized_comparable_total_cents: null,
+        proposed_to_comparable_ratio_bps: null,
+        internal_pilot_ceiling_bps:
+          SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS,
+        reviewed_at: "TODO_CANONICAL_UTC_AFTER_PRICE_REVIEW",
+        reviewer: "TODO_HUMAN_REVIEWER_ID",
+        evidence_ref: "TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS",
       },
       recall_check: {
         status: "TODO_CLEAR_AFTER_OFFICIAL_RECALL_CHECK",
@@ -3052,6 +3344,24 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         basis: "TODO_BRAND_OWNER_OR_AUTHORIZED_RESELLER",
         verified_at: "TODO_CANONICAL_UTC_AFTER_BRAND_RIGHTS_CHECK",
         evidence_ref: "TODO_EVIDENCE_REF_BRAND_RIGHTS",
+      },
+      product_identifier: {
+        identifier_type: "UPC",
+        value: input.stage.upc,
+        checksum_valid: true,
+        pool_acquired_from: input.stage.upc_pool_acquired_from,
+        pool_recorded_owner: input.stage.upc_pool_recorded_owner,
+        registry_status: "TODO_VERIFIED_AFTER_CURRENT_REGISTRY_CHECK",
+        registry_registrant_name: "TODO_EXACT_CURRENT_REGISTRY_NAME",
+        aligned_brand: component.manufacturer_brand,
+        brand_alignment_status:
+          "TODO_VERIFIED_ONLY_AFTER_EXACT_BRAND_OR_DOCUMENTED_ASSIGNMENT_REVIEW",
+        seller_account_fingerprint_sha256:
+          input.plan.seller_account_fingerprint_sha256,
+        seller_assignment_authority_status:
+          "TODO_VERIFIED_ONLY_AFTER_SELLING_ENTITY_AUTHORITY_REVIEW",
+        verified_at: "TODO_CANONICAL_UTC_AFTER_PRODUCT_IDENTIFIER_REVIEW",
+        evidence_ref: "TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER",
       },
       condition: {
         value: "TODO_VERIFY_EXACT_ITEM_CONDITION_IS_NEW",
@@ -3098,6 +3408,10 @@ export function buildWalmartNewSkuPolicyReviewEvidenceTemplate(input: {
       policy_source_ids: ["prohibited-products-overview"],
       required_approval_scopes: ["INGESTIBLE_PRODUCTS"],
     }],
+    ["account-publish-eligibility", {
+      policy_source_ids: ["account-health-compliance", "selling-privileges"],
+      required_approval_scopes: [],
+    }],
     ["condition-resale-rights", {
       policy_source_ids: ["resold-products"],
       required_approval_scopes: [],
@@ -3106,12 +3420,31 @@ export function buildWalmartNewSkuPolicyReviewEvidenceTemplate(input: {
       policy_source_ids: ["food-products", "prohibited-products-overview"],
       required_approval_scopes: [],
     }],
+    ["pricing-competitiveness", {
+      policy_source_ids: ["pricing-rules"],
+      required_approval_scopes: [],
+    }],
     ["product-claims", {
       policy_source_ids: ["product-claims"],
       required_approval_scopes: [],
     }],
+    ["product-detail-content", {
+      policy_source_ids: ["image-guidelines", "product-details-policy"],
+      required_approval_scopes: [],
+    }],
+    ["product-identifier-and-duplicates", {
+      policy_source_ids: [
+        "duplicate-listings-policy",
+        "product-identifier-policy",
+      ],
+      required_approval_scopes: [],
+    }],
     ["recall-safety", {
       policy_source_ids: ["recalled-products"],
+      required_approval_scopes: [],
+    }],
+    ["shipping-fulfillment", {
+      policy_source_ids: ["shipping-fulfillment-policy"],
       required_approval_scopes: [],
     }],
     ["territory-legal-sanctions", {
@@ -3185,7 +3518,7 @@ export function buildWalmartNewSkuPilotPlan(input: {
     databaseTargetFingerprintSha256: string;
     databaseSchemaSha256: string;
     itemSpecVersion: string;
-    sellerCatalogAuthority: SealedWalmartSellerCatalogAuthorityBinding;
+    sellerCatalogAuthority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   };
   zip: string;
   maxLiveSubmissions?: number;

@@ -7,7 +7,11 @@ import { afterEach, describe, test } from "node:test";
 
 import { createClient, type Client } from "@libsql/client";
 
-import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 import {
   harvestDonorDetail,
   persistCompleteExactContentObservation,
@@ -41,10 +45,13 @@ import {
 } from "../product-truth-operational-run-store";
 import { readWalmartPilotCandidate } from "../product-truth-new-sku-view";
 import {
+  PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
+  PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
   buildProductTruthTargetedWalmartEvidencePlan,
   buildProductTruthTargetedWalmartEvidenceRequest,
   validateProductTruthTargetedWalmartEvidenceApproval,
   type ProductTruthTargetedWalmartEvidencePlan,
+  type ProductTruthTargetedWalmartEvidencePlanRequest,
 } from "../product-truth-targeted-walmart-evidence-contract";
 import {
   executeProductTruthTargetedWalmartEvidence,
@@ -86,16 +93,6 @@ const MIGRATION_SET = "d".repeat(64);
 const WALMART_ITEM_ID = "123456789";
 const WALMART_URL = `https://www.walmart.com/ip/${WALMART_ITEM_ID}`;
 
-const canonical = buildCanonicalProductVariantKey({
-  brand: "Acme",
-  productLine: "Potato Chips",
-  flavor: "Original",
-  modifiers: [],
-  form: "Bag",
-  size: "8 oz",
-  outerPackCount: 1,
-});
-
 const scratchDirectories = new Set<string>();
 
 afterEach(async () => {
@@ -112,6 +109,27 @@ function plusMilliseconds(value: string, milliseconds: number): string {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function assertCurrentMatcherTuple(
+  value: {
+    matcherVersion: unknown;
+    matcherImplementationSha256: unknown;
+    matcherReleaseSha256: unknown;
+  },
+  label: string,
+): void {
+  assert.equal(value.matcherVersion, CANONICAL_PRODUCT_MATCHER_VERSION, `${label} matcher version`);
+  assert.equal(
+    value.matcherImplementationSha256,
+    CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    `${label} matcher implementation`,
+  );
+  assert.equal(
+    value.matcherReleaseSha256,
+    CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    `${label} matcher release`,
+  );
 }
 
 function exactUnwrangleDetailPayload() {
@@ -276,11 +294,13 @@ interface Fixture {
   directory: string;
   databaseUrl: string;
   initialAt: string;
+  request: ProductTruthTargetedWalmartEvidencePlanRequest;
   plan: ProductTruthTargetedWalmartEvidencePlan;
   planSha256: string;
   approval: ValidatedProductTruthOperationalApproval;
   adapter: ProductTruthTargetedWalmartEvidenceAdapter;
   counters: { oxylabs: number; unwrangle: number };
+  adapterCalls: { probeRuntime: number };
   reports: ProductTruthTargetedWalmartEvidenceReport[];
 }
 
@@ -339,7 +359,6 @@ async function createFixture(input: {
   const snapshot = await readTargetedWalmartLegacyDonorSnapshot(
     db,
     donorProductId,
-    canonical.identityJson,
   );
   const request = buildProductTruthTargetedWalmartEvidenceRequest({
     runId: input.runId,
@@ -353,6 +372,12 @@ async function createFixture(input: {
     donorSnapshot: snapshot,
     unwrangleReserveFloor: 100,
   });
+  assert.equal(
+    request.schemaVersion,
+    PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
+  );
+  assertCurrentMatcherTuple(request, "targeted request");
+  assertCurrentMatcherTuple(request.donorSnapshot, "targeted request donor snapshot");
   const plan = buildProductTruthTargetedWalmartEvidencePlan({
     request,
     actualTargetFingerprint: TARGET_FINGERPRINT,
@@ -362,6 +387,12 @@ async function createFixture(input: {
     actualDonorSnapshot: snapshot,
     actualDetailHarvestStateAbsent: true,
   });
+  assert.equal(
+    plan.schemaVersion,
+    PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
+  );
+  assertCurrentMatcherTuple(plan, "targeted plan");
+  assertCurrentMatcherTuple(plan.targets[0], "targeted plan target");
   const planSha256 = productTruthOperationalSha256(plan);
   const approvalId = `approval-${input.runId}`;
   const providers = Object.fromEntries(plan.providerCeilings.map((ceiling) => [
@@ -408,6 +439,7 @@ async function createFixture(input: {
     now: initialAt,
   });
   const counters = { oxylabs: 0, unwrangle: 0 };
+  const adapterCalls = { probeRuntime: 0 };
   const reports: ProductTruthTargetedWalmartEvidenceReport[] = [];
 
   const fakeHarvestDetail = async (
@@ -491,13 +523,16 @@ async function createFixture(input: {
   };
 
   const adapter: ProductTruthTargetedWalmartEvidenceAdapter = {
-    probeRuntime: async () => ({
-      targetFingerprint: TARGET_FINGERPRINT,
-      engineReleaseSha256: ENGINE_RELEASE,
-      schemaFingerprintSha256: SCHEMA_FINGERPRINT,
-      migrationSetSha256: MIGRATION_SET,
-      canonicalMigrationsApplied: true,
-    }),
+    probeRuntime: async () => {
+      adapterCalls.probeRuntime += 1;
+      return {
+        targetFingerprint: TARGET_FINGERPRINT,
+        engineReleaseSha256: ENGINE_RELEASE,
+        schemaFingerprintSha256: SCHEMA_FINGERPRINT,
+        migrationSetSha256: MIGRATION_SET,
+        canonicalMigrationsApplied: true,
+      };
+    },
     search: async (query) => {
       let authorization: MeteredProviderAuthorization | null = null;
       await withMeteredProviderCall({
@@ -560,11 +595,13 @@ async function createFixture(input: {
     directory,
     databaseUrl,
     initialAt,
+    request,
     plan,
     planSha256,
     approval,
     adapter,
     counters,
+    adapterCalls,
     reports,
   };
 }
@@ -708,6 +745,73 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
       assert.equal(harvest?.leaseOwner, null);
       assert.equal(harvest?.leaseToken, null);
       assert.equal(harvest?.leaseExpiresAt, null);
+
+      const target = fixture.plan.targets[0];
+      const decisionBeforeDrift = (await fixture.db.execute({
+        sql: `SELECT id,matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+                     evidenceHash,evidenceJson
+              FROM "DonorProductVariantDecision" WHERE donorProductId=?`,
+        args: [target.donorProductId],
+      })).rows[0];
+      assert.ok(decisionBeforeDrift);
+      assertCurrentMatcherTuple({
+        matcherVersion: decisionBeforeDrift.matcherVersion,
+        matcherImplementationSha256: decisionBeforeDrift.matcherImplementationSha256,
+        matcherReleaseSha256: decisionBeforeDrift.matcherReleaseSha256,
+      }, "persisted variant decision");
+      const decisionEvidence = JSON.parse(String(decisionBeforeDrift.evidenceJson)) as {
+        matcherVersion: unknown;
+        matcherImplementationSha256: unknown;
+        matcherReleaseSha256: unknown;
+      };
+      assertCurrentMatcherTuple(decisionEvidence, "persisted variant decision evidence");
+      assert.equal(
+        decisionBeforeDrift.evidenceHash,
+        sha256(String(decisionBeforeDrift.evidenceJson)),
+      );
+
+      const productProjection = (await fixture.db.execute({
+        sql: `SELECT identityStatus,identityMatcherVersion,
+                     identityMatcherImplementationSha256,identityMatcherReleaseSha256,
+                     identityEvidenceJson
+              FROM "DonorProduct" WHERE id=?`,
+        args: [target.donorProductId],
+      })).rows[0];
+      assert.equal(productProjection?.identityStatus, "exact_confirmed");
+      assertCurrentMatcherTuple({
+        matcherVersion: productProjection?.identityMatcherVersion,
+        matcherImplementationSha256: productProjection?.identityMatcherImplementationSha256,
+        matcherReleaseSha256: productProjection?.identityMatcherReleaseSha256,
+      }, "persisted donor projection");
+      assert.deepEqual(
+        JSON.parse(String(productProjection?.identityEvidenceJson)),
+        decisionEvidence,
+      );
+
+      const driftedEvidence = JSON.stringify({
+        ...decisionEvidence,
+        matcherReleaseSha256: "f".repeat(64),
+      });
+      await assert.rejects(
+        fixture.db.execute({
+          sql: `UPDATE "DonorProductVariantDecision"
+                SET matcherReleaseSha256=?,evidenceHash=?,evidenceJson=? WHERE id=?`,
+          args: [
+            "f".repeat(64),
+            sha256(driftedEvidence),
+            driftedEvidence,
+            decisionBeforeDrift.id,
+          ],
+        }),
+        /DONOR_PRODUCT_VARIANT_DECISION_IMMUTABLE/,
+      );
+      const decisionAfterDrift = (await fixture.db.execute({
+        sql: `SELECT id,matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+                     evidenceHash,evidenceJson
+              FROM "DonorProductVariantDecision" WHERE donorProductId=?`,
+        args: [target.donorProductId],
+      })).rows[0];
+      assert.deepEqual(decisionAfterDrift, decisionBeforeDrift);
       assert.deepEqual(
         completed.events.map((event) => event.eventType),
         [
@@ -723,6 +827,112 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
       assert.equal(fixture.reports[1]?.outcome, "COMPLETED");
     } finally {
       await fixture.db.close();
+    }
+  });
+
+  test("a matcher tuple drift in the sealed plan fails before DB or provider work", async () => {
+    const fixture = await createFixture({ runId: "targeted-matcher-tuple-drift" });
+    try {
+      assert.equal(
+        fixture.request.schemaVersion,
+        PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
+      );
+      const driftedPlan = {
+        ...fixture.plan,
+        matcherImplementationSha256: "f".repeat(64),
+      } as unknown as ProductTruthTargetedWalmartEvidencePlan;
+      await assert.rejects(
+        executeProductTruthTargetedWalmartEvidence(
+          fixture.db,
+          {
+            ...executionInput(fixture, "execute"),
+            plan: driftedPlan,
+            planSha256: productTruthOperationalSha256(driftedPlan),
+          },
+        ),
+        /TARGETED_EVIDENCE_MATCHER_PROVENANCE_MISMATCH/,
+      );
+      assert.deepEqual(fixture.counters, { oxylabs: 0, unwrangle: 0 });
+      assert.equal(await scalarCount(fixture.db, "ProductTruthOperationalRun"), 0);
+      assert.equal(await scalarCount(fixture.db, "EnrichmentJob"), 0);
+      assert.equal(await scalarCount(fixture.db, "MeteredReservationReceipt"), 0);
+      assert.equal(await scalarCount(fixture.db, "CanonicalProductVariant"), 0);
+      assert.equal(await scalarCount(fixture.db, "DonorProductVariantDecision"), 0);
+      assert.equal(await scalarCount(fixture.db, "DonorOfferObservation"), 0);
+      assert.equal(await scalarCount(fixture.db, "ProductContentObservation"), 0);
+    } finally {
+      await fixture.db.close();
+    }
+  });
+
+  test("decision evidence hash or JSON matcher drift fails before every adapter/provider call", async () => {
+    for (const mode of ["HASH_MISMATCH", "JSON_MATCHER_MISMATCH"] as const) {
+      const fixture = await createFixture({
+        runId: `targeted-decision-evidence-${mode.toLowerCase()}`,
+      });
+      try {
+        let monotonicReads = 0;
+        const interrupted = await executeProductTruthTargetedWalmartEvidence(
+          fixture.db,
+          executionInput(fixture, "execute", {
+            monotonicNow: () => {
+              monotonicReads += 1;
+              return monotonicReads >= 8 ? 180_000 : 0;
+            },
+          }),
+        );
+        assert.equal(interrupted.status, "interrupted", interrupted.reason);
+        assert.deepEqual(fixture.counters, { oxylabs: 1, unwrangle: 0 });
+
+        const decision = (await fixture.db.execute({
+          sql: `SELECT id,evidenceJson FROM "DonorProductVariantDecision"
+                WHERE donorProductId=?`,
+          args: [fixture.plan.targets[0].donorProductId],
+        })).rows[0];
+        assert.ok(decision);
+        await fixture.db.execute(`DROP TRIGGER "DonorProductVariantDecision_update_guard"`);
+        if (mode === "HASH_MISMATCH") {
+          await fixture.db.execute({
+            sql: `UPDATE "DonorProductVariantDecision" SET evidenceHash=? WHERE id=?`,
+            args: ["0".repeat(64), decision.id],
+          });
+        } else {
+          const driftedEvidenceJson = JSON.stringify({
+            ...JSON.parse(String(decision.evidenceJson)) as Record<string, unknown>,
+            matcherReleaseSha256: "0".repeat(64),
+          });
+          await fixture.db.execute(`PRAGMA ignore_check_constraints=ON`);
+          await fixture.db.execute({
+            sql: `UPDATE "DonorProductVariantDecision"
+                  SET evidenceHash=?,evidenceJson=? WHERE id=?`,
+            args: [sha256(driftedEvidenceJson), driftedEvidenceJson, decision.id],
+          });
+        }
+
+        const providerCallsBefore = { ...fixture.counters };
+        const adapterCallsBefore = { ...fixture.adapterCalls };
+        const receiptCountBefore = await scalarCount(
+          fixture.db,
+          "MeteredReservationReceipt",
+        );
+        await assert.rejects(
+          executeProductTruthTargetedWalmartEvidence(
+            fixture.db,
+            executionInput(fixture, "resume"),
+          ),
+          mode === "HASH_MISMATCH"
+            ? /TARGETED_EVIDENCE_DECISION_EVIDENCE_HASH_MISMATCH/
+            : /TARGETED_EVIDENCE_DECISION_EVIDENCE_MATCHER_MISMATCH/,
+        );
+        assert.deepEqual(fixture.counters, providerCallsBefore);
+        assert.deepEqual(fixture.adapterCalls, adapterCallsBefore);
+        assert.equal(
+          await scalarCount(fixture.db, "MeteredReservationReceipt"),
+          receiptCountBefore,
+        );
+      } finally {
+        await fixture.db.close();
+      }
     }
   });
 

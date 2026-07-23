@@ -192,6 +192,15 @@ test("typed identity and package facts can auto-pass", () => {
   assert.equal(decision.checks.package_facts.net_content, "MATCH");
 });
 
+test("product and variant markers may cross observer fields without weakening identity", () => {
+  const decision = decideBlind(teaCase, image, observation({
+    visible_product_text: "Peppermint Herbal Tea",
+    visible_variant_text: null,
+  }));
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.identity, "MATCH");
+});
+
 test("an explicitly empty product-marker list supports brand-equals-product truth", () => {
   const drPepperCase = caseWith({
     identity: {
@@ -432,6 +441,41 @@ test("8 count and 19 oz are independent facts and both can match", () => {
   assert.equal(decision.checks.package_facts.inner_item_count, "MATCH");
 });
 
+test("a dedicated inner-content literal may carry a leading count before product words", () => {
+  const decision = decideBlind(bunCase(), image, bunObservation({
+    visible_size_texts: ["NET WT 19 OZ (538 g)"],
+    inner_contents_claims: ["8 Top Sliced Butter Hot Dog Buns"],
+  }));
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.package_facts.inner_item_count, "MATCH");
+});
+
+test("nutrition gallery serving size is not whole-package size evidence", () => {
+  const nutritionImage = {
+    slot: "gallery-2",
+    url: "https://example.com/nutrition.png",
+    buyer_facing_verified: true,
+    surface: "buyer_pdp",
+  };
+  const decision = decideBlind(bunCase(), nutritionImage, bunObservation({
+    visual_role: "nutrition",
+    visible_brand_text: null,
+    visible_product_text: null,
+    visible_variant_text: null,
+    visible_size_texts: ["1 Bun (50g)"],
+    external_package_count: { mode: "unknown", value: null, min: null, max: null },
+    outer_package_claims: [],
+    inner_contents_claims: ["8 Servings Per Container", "Serving Size 1 Bun (50g)"],
+    grid_cell_kind: "not_a_grid",
+    front_visibility: "not_applicable",
+    readable_identity: "none",
+  }));
+  assert.equal(decision.verdict, "REVIEW");
+  assert.equal(decision.checks.package_facts.inner_item_count, "NOT_APPLICABLE");
+  assert.equal(decision.checks.package_facts.net_content, "NOT_APPLICABLE");
+  assert.deepEqual(decision.hard_failures, []);
+});
+
 test("a hidden if_visible package fact does not block PASS", () => {
   const decision = decideBlind(bunCase("if_visible"), image, bunObservation({
     visible_size_texts: ["8 COUNT"],
@@ -665,10 +709,10 @@ test("OCR-split small nutrition grams cannot conflict with a real net weight", (
   assert.equal(decision.checks.package_facts.net_content, "MATCH");
 });
 
-test("blind prompt and observation schema remain independent of comparator v4", () => {
+test("blind prompt and observation schema remain independent of comparator v5", () => {
   const prompt = buildBlindObservationPrompt(["i_a", "i_b"]);
   assert.equal(BLIND_OBSERVATION_SCHEMA, "wm_visual_observation_batch/v3");
-  assert.equal(WALMART_VISUAL_COMPARATOR_VERSION, "walmart-visual-comparator/v4");
+  assert.equal(WALMART_VISUAL_COMPARATOR_VERSION, "walmart-visual-comparator/v5");
   assert.match(prompt, /i_a/);
   assert.match(prompt, /inner_contents_claims/);
   assert.doesNotMatch(prompt, /Bigelow|SKU-1|Peppermint/);

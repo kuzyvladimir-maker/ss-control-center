@@ -10,7 +10,7 @@ import {
 import { dirname, parse as parsePath, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { createClient, type Client } from "@libsql/client";
+import { createClient, type Client, type Transaction } from "@libsql/client";
 
 import {
   PRODUCT_TRUTH_OPERATIONAL_APPROVAL_VERSION,
@@ -46,7 +46,6 @@ import {
   executeProductTruthTargetedWalmartEvidence,
   inspectProductTruthTargetedWalmartEvidenceRun,
   readTargetedWalmartLegacyDonorSnapshot,
-  readTargetedWalmartLegacyIdentityTemplate,
   readTargetedWalmartDonorSnapshot,
 } from "../src/lib/sourcing/product-truth-targeted-walmart-evidence";
 import {
@@ -152,7 +151,6 @@ export type ProductTruthRunnerCliOptions =
       expiresAt?: string;
       unwrangleReserveFloor?: number;
       outputDirectory?: string;
-      canonicalIdentityPath?: string;
     })
   | (CommonDatabaseOptions & {
       command: "plan";
@@ -404,6 +402,12 @@ export function parseProductTruthRunnerArguments(
     help: false,
   };
   if (command === "doctor") {
+    if (flagText(flags, "--canonical-identity")) {
+      usageError(
+        "CLI_TARGETED_DOCTOR_EXTERNAL_IDENTITY_RETIRED",
+        "--canonical-identity is retired; the engine derives a conservative identity and requires fresh exact Walmart evidence before promotion",
+      );
+    }
     const targetedValues = [
       flagText(flags, "--donor-product-id"),
       flagText(flags, "--query"),
@@ -413,12 +417,6 @@ export function parseProductTruthRunnerArguments(
       flagText(flags, "--out"),
     ];
     const targetedCount = targetedValues.filter((value) => value !== undefined).length;
-    if (targetedCount === 0 && flagText(flags, "--canonical-identity")) {
-      usageError(
-        "CLI_TARGETED_DOCTOR_ARGUMENTS_INCOMPLETE",
-        "--canonical-identity is valid only with the complete targeted doctor scope",
-      );
-    }
     if (targetedCount !== 0 && targetedCount !== targetedValues.length) {
       usageError(
         "CLI_TARGETED_DOCTOR_ARGUMENTS_INCOMPLETE",
@@ -437,7 +435,6 @@ export function parseProductTruthRunnerArguments(
         "--unwrangle-reserve-floor",
       ),
       outputDirectory: exactValue(targetedValues[5], "--out"),
-      canonicalIdentityPath: flagText(flags, "--canonical-identity"),
     };
   }
   if (command === "plan") {
@@ -529,8 +526,8 @@ export function productTruthRunnerUsage(command?: ProductTruthRunnerCommand): st
     "  doctor --url URL [--allow-remote --auth-token-env NAME]",
     "  doctor --donor-product-id ID --query QUERY --run-id RUN_ID --expires-at ISO_TIMESTAMP",
     "       --unwrangle-reserve-floor UNITS --url URL --out NEW_DIR",
-    "       [--canonical-identity OWNER_IDENTITY.json] [--allow-remote --auth-token-env NAME]",
-    "       # exact donor writes a request; legacy donor first writes an owner-review template",
+    "       [--allow-remote --auth-token-env NAME]",
+    "       # exact donor is reused; eligible legacy donor gets a conservative engine-derived identity",
     "  plan --request REQUEST.json --manifest MANIFEST.json --url URL --out NEW_DIR",
     "       [--allow-remote]  # canonical listing lane",
     "  plan --request TARGETED_REQUEST.json --url URL --out NEW_DIR",
@@ -1756,6 +1753,226 @@ async function withOperationalClient<T>(
   }
 }
 
+const PRODUCT_TRUTH_READ_ONLY_FORBIDDEN_SQL_TOKENS = new Set([
+  "ALTER",
+  "ANALYZE",
+  "ATTACH",
+  "BEGIN",
+  "COMMIT",
+  "CREATE",
+  "DELETE",
+  "DETACH",
+  "DROP",
+  "INSERT",
+  "LOAD_EXTENSION",
+  "PRAGMA",
+  "REINDEX",
+  "RELEASE",
+  "REPLACE",
+  "ROLLBACK",
+  "SAVEPOINT",
+  "TRUNCATE",
+  "UPDATE",
+  "VACUUM",
+]);
+
+function productTruthSqlText(statement: unknown): string {
+  if (typeof statement === "string") return statement;
+  if (Array.isArray(statement) && typeof statement[0] === "string") {
+    return statement[0];
+  }
+  if (statement && typeof statement === "object"
+    && "sql" in statement && typeof statement.sql === "string") {
+    return statement.sql;
+  }
+  fail("READ_ONLY_SQL_INVALID", "read-only client received an invalid SQL statement");
+}
+
+function visibleProductTruthSql(sql: string): string {
+  if (!sql || sql.includes("\0")) {
+    fail("READ_ONLY_SQL_INVALID", "read-only SQL must be a non-empty text statement");
+  }
+  let visible = "";
+  let state: "NORMAL" | "SINGLE" | "DOUBLE" | "BACKTICK" | "BRACKET"
+    | "LINE_COMMENT" | "BLOCK_COMMENT" = "NORMAL";
+  for (let index = 0; index < sql.length; index += 1) {
+    const current = sql[index]!;
+    const next = sql[index + 1];
+    if (state === "LINE_COMMENT") {
+      if (current === "\n" || current === "\r") {
+        state = "NORMAL";
+        visible += " ";
+      }
+      continue;
+    }
+    if (state === "BLOCK_COMMENT") {
+      if (current === "*" && next === "/") {
+        state = "NORMAL";
+        visible += " ";
+        index += 1;
+      }
+      continue;
+    }
+    if (state === "SINGLE") {
+      if (current === "'" && next === "'") {
+        index += 1;
+      } else if (current === "'") {
+        state = "NORMAL";
+      }
+      visible += " ";
+      continue;
+    }
+    if (state === "DOUBLE") {
+      if (current === "\"" && next === "\"") {
+        index += 1;
+      } else if (current === "\"") {
+        state = "NORMAL";
+      }
+      visible += " ";
+      continue;
+    }
+    if (state === "BACKTICK") {
+      if (current === "`" && next === "`") {
+        index += 1;
+      } else if (current === "`") {
+        state = "NORMAL";
+      }
+      visible += " ";
+      continue;
+    }
+    if (state === "BRACKET") {
+      if (current === "]" && next === "]") {
+        index += 1;
+      } else if (current === "]") {
+        state = "NORMAL";
+      }
+      visible += " ";
+      continue;
+    }
+    if (current === "-" && next === "-") {
+      state = "LINE_COMMENT";
+      visible += " ";
+      index += 1;
+    } else if (current === "/" && next === "*") {
+      state = "BLOCK_COMMENT";
+      visible += " ";
+      index += 1;
+    } else if (current === "'") {
+      state = "SINGLE";
+      visible += " ";
+    } else if (current === "\"") {
+      state = "DOUBLE";
+      visible += " ";
+    } else if (current === "`") {
+      state = "BACKTICK";
+      visible += " ";
+    } else if (current === "[") {
+      state = "BRACKET";
+      visible += " ";
+    } else {
+      visible += current;
+    }
+  }
+  if (state !== "NORMAL" && state !== "LINE_COMMENT") {
+    fail("READ_ONLY_SQL_INVALID", "read-only SQL contains an unterminated literal or comment");
+  }
+  return visible;
+}
+
+export function assertProductTruthReadOnlySql(statement: unknown): void {
+  const sql = productTruthSqlText(statement).trim();
+  // SQLite/libSQL expose schema metadata through these two read-only PRAGMA
+  // forms. Require one exact quoted identifier and no comments or suffixes.
+  if (
+    /^PRAGMA\s+(?:foreign_keys|foreign_key_check)$/iu.test(sql)
+    || /^PRAGMA\s+(?:table_info|foreign_key_list|index_list|index_info)\s*\(\s*"(?:[^"]|"")+"(?:\s*)\)$/iu.test(sql)
+  ) {
+    return;
+  }
+  const visible = visibleProductTruthSql(sql).trim();
+  if (!visible || visible.includes(";")) {
+    fail("READ_ONLY_SQL_FORBIDDEN", "read-only SQL must contain exactly one statement");
+  }
+  const tokens = visible.match(/[A-Za-z_][A-Za-z0-9_]*/gu)?.map((token) =>
+    token.toUpperCase()) ?? [];
+  if (tokens.length === 0 || (tokens[0] !== "SELECT" && tokens[0] !== "WITH")) {
+    fail("READ_ONLY_SQL_FORBIDDEN", "read-only client accepts only SELECT or SELECT-only WITH");
+  }
+  const forbidden = tokens.find((token) =>
+    PRODUCT_TRUTH_READ_ONLY_FORBIDDEN_SQL_TOKENS.has(token));
+  if (forbidden) {
+    fail("READ_ONLY_SQL_FORBIDDEN", `read-only SQL contains forbidden token ${forbidden}`);
+  }
+}
+
+export function createProductTruthReadOnlyClientGuard(db: Client): Client {
+  const rejectCapability = (name: string): never => fail(
+    "READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN",
+    `read-only client forbids ${name}`,
+  );
+  const guardTransaction = (transaction: Transaction): Transaction => new Proxy(transaction, {
+    get(target, property) {
+      if (property === "execute") {
+        return (statement: unknown) => {
+          assertProductTruthReadOnlySql(statement);
+          return target.execute(statement as never);
+        };
+      }
+      if (property === "batch") {
+        return (statements: unknown) => {
+          if (!Array.isArray(statements)) {
+            fail("READ_ONLY_SQL_INVALID", "read-only transaction batch requires an array");
+          }
+          statements.forEach(assertProductTruthReadOnlySql);
+          return target.batch(statements as never);
+        };
+      }
+      if (property === "executeMultiple") {
+        return () => rejectCapability("transaction.executeMultiple");
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  return new Proxy(db, {
+    get(target, property) {
+      if (property === "execute") {
+        return (statement: unknown, args?: unknown) => {
+          assertProductTruthReadOnlySql(statement);
+          return typeof statement === "string"
+            ? target.execute(statement, args as never)
+            : target.execute(statement as never);
+        };
+      }
+      if (property === "batch") {
+        return (statements: unknown, mode?: unknown) => {
+          if (!Array.isArray(statements)) {
+            fail("READ_ONLY_SQL_INVALID", "read-only batch requires an array of statements");
+          }
+          if (mode !== undefined && mode !== "read") {
+            rejectCapability(`batch mode ${String(mode)}`);
+          }
+          statements.forEach(assertProductTruthReadOnlySql);
+          return target.batch(statements as never, "read");
+        };
+      }
+      if (property === "transaction") {
+        return async (mode?: unknown) => {
+          if (mode !== "read") rejectCapability(`transaction mode ${String(mode)}`);
+          return guardTransaction(await target.transaction("read"));
+        };
+      }
+      if (property === "migrate"
+        || property === "executeMultiple" || property === "sync"
+        || property === "reconnect") {
+        return () => rejectCapability(String(property));
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 async function withReadOnlyClient<T>(
   resolved: ResolvedCliDatabaseTarget,
   action: (db: Client) => Promise<T>,
@@ -1766,9 +1983,11 @@ async function withReadOnlyClient<T>(
     ...(resolved.authToken ? { authToken: resolved.authToken } : {}),
   });
   try {
-    await db.execute("PRAGMA foreign_keys=ON");
-    await db.execute("PRAGMA query_only=ON");
-    return await action(db);
+    if (resolved.target.kind === "local") {
+      await db.execute("PRAGMA foreign_keys=ON");
+      await db.execute("PRAGMA query_only=ON");
+    }
+    return await action(createProductTruthReadOnlyClientGuard(db));
   } finally {
     db.close();
   }
@@ -1983,7 +2202,6 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
     expiresAt: string;
     unwrangleReserveFloor: number;
     outputDirectory: string;
-    canonicalIdentityPath?: string;
   };
   resolved: ResolvedCliDatabaseTarget;
   cwd: string;
@@ -1994,86 +2212,17 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
     cwd: input.cwd,
     now: input.now,
   });
-  let ownerCanonicalIdentityJson: string | null = null;
-  if (input.options.canonicalIdentityPath) {
-    const identityFile = await readExactRegularUtf8File(
-      input.options.canonicalIdentityPath,
-      "owner canonical identity",
-      input.cwd,
-      JSON_LIMIT_BYTES,
-    );
-    const identity = parseJson(identityFile.text, "owner canonical identity");
-    if (JSON.stringify(identity) !== identityFile.text) {
-      fail(
-        "TARGETED_EVIDENCE_OWNER_IDENTITY_BYTES_INVALID",
-        "owner canonical identity must be compact exact builder-order JSON without a newline",
-      );
-    }
-    ownerCanonicalIdentityJson = identityFile.text;
-  }
-  const capture = await withReadOnlyClient(input.resolved, async (db) => {
+  const snapshot = await withReadOnlyClient(input.resolved, async (db) => {
     try {
-      const exact = await readTargetedWalmartDonorSnapshot(db, input.options.donorProductId);
-      if (ownerCanonicalIdentityJson !== null) {
-        fail(
-          "TARGETED_EVIDENCE_OWNER_IDENTITY_UNEXPECTED",
-          "already-exact donor must not receive a bootstrap identity artifact",
-        );
-      }
-      return { snapshot: exact, ownerTemplate: null };
+      return await readTargetedWalmartDonorSnapshot(db, input.options.donorProductId);
     } catch {
-      if (ownerCanonicalIdentityJson === null) {
-        const ownerTemplate = await readTargetedWalmartLegacyIdentityTemplate(
-          db,
-          input.options.donorProductId,
-        );
-        return { snapshot: null, ownerTemplate };
-      }
-      const bootstrap = await readTargetedWalmartLegacyDonorSnapshot(
+      return readTargetedWalmartLegacyDonorSnapshot(
         db,
         input.options.donorProductId,
-        ownerCanonicalIdentityJson,
       );
-      return { snapshot: bootstrap, ownerTemplate: null };
     }
   });
   const output = resolveNewOutputDirectory(input.cwd, input.options.outputDirectory);
-  if (capture.ownerTemplate) {
-    const template = capture.ownerTemplate;
-    const identity = (template.canonicalIdentity ?? {}) as Record<string, unknown>;
-    const exactIdentityTemplate = JSON.stringify({
-      schemaVersion: identity.schemaVersion,
-      brand: identity.brand,
-      productLine: identity.productLine,
-      flavor: identity.flavor,
-      modifiers: identity.modifiers,
-      form: identity.form,
-      size: identity.size,
-      outerPackCount: identity.outerPackCount,
-    });
-    await writeNewArtifactDirectory(output, [
-      {
-        name: "owner-identity-review.json",
-        content: renderProductTruthOperationalJson(template),
-      },
-      { name: "canonical-identity.template.json", content: exactIdentityTemplate },
-    ]);
-    return {
-      ok: false,
-      command: "doctor",
-      mode: "TARGETED_OWNER_IDENTITY_REQUIRED",
-      providerCalls: 0,
-      databaseWrites: 0,
-      ownerActionRequired: true,
-      authenticatedOwnerIdentity: false,
-      outputDirectory: output,
-      ownerReviewArtifact: resolve(output, "owner-identity-review.json"),
-      canonicalIdentityTemplate: resolve(output, "canonical-identity.template.json"),
-      next_argv: null,
-      next_command: null,
-    };
-  }
-  const snapshot = capture.snapshot!;
   if (!await withReadOnlyClient(input.resolved, (db) => targetedHarvestStateAbsent(
     db,
     snapshot.donorProductId,
@@ -2167,12 +2316,10 @@ async function buildOfflinePlanArtifacts(input: {
     });
     const actual = await withReadOnlyClient(input.resolved, async (db) => {
       const identityMode = donorRequest?.identityMode;
-      const canonicalIdentityJson = donorRequest?.canonicalIdentityJson;
-      const donor = identityMode === "OWNER_ATTESTED_BOOTSTRAP"
+      const donor = identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP"
         ? await readTargetedWalmartLegacyDonorSnapshot(
             db,
             donorProductId,
-            typeof canonicalIdentityJson === "string" ? canonicalIdentityJson : "",
           )
         : await readTargetedWalmartDonorSnapshot(db, donorProductId);
       return {
@@ -2227,9 +2374,9 @@ async function buildOfflinePlanArtifacts(input: {
     providerCeilings: plan.providerCeilings,
     sourcePolicy: plan.sourcePolicy,
     ...(targeted && (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].identityMode
-      === "OWNER_ATTESTED_BOOTSTRAP" ? {
-        ownerIdentityAttestationRequired: {
-          statement: "By issuing the external Product Truth approval for this exact planSha256, owner attests that the canonical identity is the exact sellable variant represented by the sealed legacy donor and Walmart offer bytes.",
+      === "EVIDENCE_VERIFIED_BOOTSTRAP" ? {
+        machineIdentityVerification: {
+          statement: "The engine derived a conservative title-signature identity from sealed legacy bytes. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, complete identity token set, size and base-unit pack.",
           donorProductId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].donorProductId,
           donorOfferId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].donorOfferId,
           retailerProductId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].retailerProductId,
@@ -2237,6 +2384,7 @@ async function buildOfflinePlanArtifacts(input: {
           canonicalVariantId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].canonicalVariantId,
           canonicalIdentityHash: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].canonicalIdentityHash,
           legacySnapshotSha256: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].legacySnapshot?.sha256,
+          identityDerivationVersion: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].identityDerivationVersion,
           planExpiresAt: plan.expiresAt,
         },
       } : {}),

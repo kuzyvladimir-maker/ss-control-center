@@ -10,7 +10,6 @@ import type { ChannelSKU } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertProductTruthEvidenceSchema } from "@/lib/sourcing/product-truth-schema-gate";
 import { getWalmartClient, getWalmartStoreStatus } from "@/lib/walmart/client";
-import { computeWalmartSellerAccountFingerprint } from "@/lib/walmart/item-report-capture-session";
 import { approveDraftForDistribution } from "./approval";
 import {
   normalizeAllergenDeclaration,
@@ -65,14 +64,16 @@ import {
 import {
   WALMART_POLICY_VERSION,
 } from "./validation/walmart-prepublication-policy";
-import { assertWalmartSellerCatalogRecipeNovelty } from "./walmart-new-sku-novelty";
+import {
+  inspectWalmartPublicImageSet,
+  type VerifiedWalmartPublicImage,
+} from "./validation/walmart-public-image-inspection";
 import {
   parseAndValidateWalmartNewSkuPolicyReviewEvidence,
 } from "./walmart-new-sku-policy-review-evidence";
 import {
-  recheckWalmartSellerCatalogAuthorityBinding,
-  verifyWalmartSellerCatalogAuthorityBinding,
-  type SealedWalmartSellerCatalogAuthorityBinding,
+  verifyWalmartExactIdentifierDuplicateGuardBinding,
+  type SealedWalmartExactIdentifierDuplicateGuardBinding,
 } from "./walmart-new-sku-catalog-authority";
 import {
   WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
@@ -142,18 +143,17 @@ export function assertCurrentWalmartSellerAccountBinding(input: {
 }
 
 /**
- * Re-resolve both the business seller identity and the credential scope that
- * captured ITEM v6, then reread the pinned source bytes and their exact DB
- * mirror. Callers use this immediately next to every prepublication mutation.
+ * Re-resolve the business seller identity for every duplicate-guard mode. The
+ * legacy optional all-status mode additionally rechecks its capture credential
+ * and source mirror; the pilot's exact-identifier mode does not require them.
  */
 export function assertCurrentWalmartSellerCatalogAuthorityScope(
-  input: SealedWalmartSellerCatalogAuthorityBinding,
-): SealedWalmartSellerCatalogAuthorityBinding {
-  const authority = verifyWalmartSellerCatalogAuthorityBinding(input);
+  input: SealedWalmartExactIdentifierDuplicateGuardBinding,
+): SealedWalmartExactIdentifierDuplicateGuardBinding {
+  const authority = verifyWalmartExactIdentifierDuplicateGuardBinding(input);
   const storeIndex = authority.account_scope.store_index;
   const status = getWalmartStoreStatus(storeIndex);
-  const clientId = process.env[`WALMART_CLIENT_ID_STORE${storeIndex}`];
-  if (!status.configured || !status.sellerId || !clientId) {
+  if (!status.configured || !status.sellerId) {
     throw new WalmartNewSkuPlanError([
       `SELLER_CATALOG_AUTHORITY_ACCOUNT_NOT_CONFIGURED:STORE_${storeIndex}`,
     ]);
@@ -163,35 +163,34 @@ export function assertCurrentWalmartSellerCatalogAuthorityScope(
     seller_account_fingerprint_sha256:
       authority.account_scope.business_seller_account_fingerprint_sha256,
   });
-  const currentCaptureFingerprint = computeWalmartSellerAccountFingerprint({
-    store_index: storeIndex,
-    client_id: clientId,
-    seller_id: status.sellerId,
-  });
-  if (
-    currentCaptureFingerprint !==
-      authority.account_scope.capture_credential_scope_fingerprint_sha256
-  ) {
-    throw new WalmartNewSkuPlanError([
-      `SELLER_CATALOG_AUTHORITY_CREDENTIAL_SCOPE_MISMATCH:STORE_${storeIndex}`,
-    ]);
-  }
   return authority;
+}
+
+async function assertWalmartExactIdentifierDuplicateGuardPlan(input: {
+  component: ProductTruthNewSkuRecipeComponentEvidence;
+}): Promise<void> {
+  if (!input.component.donor_product_id
+    || !input.component.canonical_variant_id
+    || !Number.isInteger(input.component.qty)
+    || input.component.qty < 1) {
+    throw new Error("EXACT_IDENTIFIER_DUPLICATE_GUARD_COMPONENT_INVALID");
+  }
+  // The selected mode does not require an all-status seller-catalog read.
+  // Certification still requires exact staged-SKU absence plus exact staged-
+  // UPC SPEC search before any Walmart publish transport can be prepared.
 }
 
 export async function assertCurrentWalmartSellerCatalogAuthority(input: {
   db: Client;
-  authority: SealedWalmartSellerCatalogAuthorityBinding;
+  authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
   now?: Date;
-}): Promise<SealedWalmartSellerCatalogAuthorityBinding> {
+}): Promise<SealedWalmartExactIdentifierDuplicateGuardBinding> {
+  void input.db;
+  void input.now;
   const authority = assertCurrentWalmartSellerCatalogAuthorityScope(
     input.authority,
   );
-  return recheckWalmartSellerCatalogAuthorityBinding({
-    db: input.db,
-    expected: authority,
-    now: input.now ?? new Date(),
-  });
+  return verifyWalmartExactIdentifierDuplicateGuardBinding(authority);
 }
 
 function isUniqueConstraintError(error: unknown): boolean {
@@ -552,19 +551,31 @@ async function reserveManagedUpc(input: {
 }): Promise<{
   id: string;
   upc: string;
-  gs1_validated: boolean;
+  acquired_from: string;
+  gs1_owner: string;
   reserved_until: Date;
 }> {
   const reservedUntil = new Date(input.now.getTime() + UPC_RESERVATION_TTL_MS);
   for (let attempt = 0; attempt < 10; attempt += 1) {
     const existing = await prisma.uPCPool.findUnique({
       where: { reserved_for_id: input.draftId },
-      select: { id: true, upc: true, gs1_validated: true, reserved_until: true },
+      select: {
+        id: true,
+        upc: true,
+        acquired_from: true,
+        gs1_owner: true,
+        reserved_until: true,
+      },
     });
     if (existing) {
       if (!isValidOwnerPoolUpca(existing.upc)) {
         throw new Error(
           `Draft ${input.draftId} already holds checksum-invalid UPC ${existing.upc}`,
+        );
+      }
+      if (!existing.acquired_from?.trim() || !existing.gs1_owner?.trim()) {
+        throw new Error(
+          `Draft ${input.draftId} holds UPC ${existing.upc} without pool provenance`,
         );
       }
       const renewed =
@@ -583,16 +594,32 @@ async function reserveManagedUpc(input: {
         });
         if (renewedRow.count !== 1) continue;
       }
-      return { ...existing, reserved_until: renewed };
+      return {
+        id: existing.id,
+        upc: existing.upc,
+        acquired_from: existing.acquired_from,
+        gs1_owner: existing.gs1_owner,
+        reserved_until: renewed,
+      };
     }
 
     const rows = await prisma.uPCPool.findMany({
       where: { status: "AVAILABLE", assigned_to_id: null },
       orderBy: [{ acquired_at: "asc" }, { id: "asc" }],
       take: 100,
-      select: { id: true, upc: true, gs1_validated: true },
+      select: {
+        id: true,
+        upc: true,
+        acquired_from: true,
+        gs1_owner: true,
+      },
     });
-    const row = rows.find((candidate) => isValidOwnerPoolUpca(candidate.upc));
+    const row = rows.find(
+      (candidate) =>
+        isValidOwnerPoolUpca(candidate.upc) &&
+        Boolean(candidate.acquired_from?.trim()) &&
+        Boolean(candidate.gs1_owner?.trim()),
+    );
     if (!row) {
       throw new Error("UPC pool has no AVAILABLE checksum-valid UPC-A rows");
     }
@@ -618,7 +645,15 @@ async function reserveManagedUpc(input: {
       if (isUniqueConstraintError(error)) continue;
       throw error;
     }
-    if (claimed.count === 1) return { ...row, reserved_until: reservedUntil };
+    if (claimed.count === 1) {
+      return {
+        id: row.id,
+        upc: row.upc,
+        acquired_from: row.acquired_from!,
+        gs1_owner: row.gs1_owner!,
+        reserved_until: reservedUntil,
+      };
+    }
   }
   throw new Error("Could not atomically reserve a UPC after 10 races");
 }
@@ -660,11 +695,8 @@ export async function stageWalmartNewSkuCandidate(input: {
     (item) => item.candidate_key === input.candidateKey,
   );
   if (!candidate) throw new Error(`Candidate ${input.candidateKey} is not in plan`);
-  await assertWalmartSellerCatalogRecipeNovelty({
-    db: input.productTruthDb,
-    storeIndex: input.plan.store_index,
+  await assertWalmartExactIdentifierDuplicateGuardPlan({
     component: candidate.recipe_input.components[0],
-    now,
   });
 
   const preview = buildWalmartNewSkuStagePreview({
@@ -695,7 +727,9 @@ export async function stageWalmartNewSkuCandidate(input: {
     staged_by: actor,
     upc_pool_id: upc.id,
     upc: upc.upc,
-    upc_gs1_validated: upc.gs1_validated,
+    upc_checksum_valid: true,
+    upc_pool_acquired_from: upc.acquired_from,
+    upc_pool_recorded_owner: upc.gs1_owner,
     upc_reserved_until: upc.reserved_until.toISOString(),
     state: "UPC_RESERVED",
   });
@@ -861,6 +895,8 @@ export async function rotateExactMatchedWalmartNewSkuUpc(input: {
               id: true,
               upc: true,
               gs1_validated: true,
+              acquired_from: true,
+              gs1_owner: true,
               status: true,
               assigned_to_id: true,
               reserved_for_id: true,
@@ -909,6 +945,8 @@ export async function rotateExactMatchedWalmartNewSkuUpc(input: {
             where: { id: persisted.new_upc_pool_id },
             select: {
               upc: true,
+              acquired_from: true,
+              gs1_owner: true,
               status: true,
               assigned_to_id: true,
               reserved_for_id: true,
@@ -918,6 +956,10 @@ export async function rotateExactMatchedWalmartNewSkuUpc(input: {
           if (
             !currentNewPool ||
             currentNewPool.upc !== persisted.new_upc ||
+            currentNewPool.acquired_from !==
+              persisted.new_stage.upc_pool_acquired_from ||
+            currentNewPool.gs1_owner !==
+              persisted.new_stage.upc_pool_recorded_owner ||
             currentNewPool.status !== "RESERVED" ||
             currentNewPool.assigned_to_id != null ||
             currentNewPool.reserved_for_id !== draft.id ||
@@ -975,10 +1017,17 @@ export async function rotateExactMatchedWalmartNewSkuUpc(input: {
             id: true,
             upc: true,
             gs1_validated: true,
+            acquired_from: true,
+            gs1_owner: true,
             notes: true,
           },
         });
-        const nextPool = available.find((row) => isValidOwnerPoolUpca(row.upc));
+        const nextPool = available.find(
+          (row) =>
+            isValidOwnerPoolUpca(row.upc) &&
+            Boolean(row.acquired_from?.trim()) &&
+            Boolean(row.gs1_owner?.trim()),
+        );
         if (!nextPool) {
           throw new Error("UPC pool has no AVAILABLE checksum-valid UPC-A rows");
         }
@@ -992,7 +1041,9 @@ export async function rotateExactMatchedWalmartNewSkuUpc(input: {
           staged_by: actor,
           upc_pool_id: nextPool.id,
           upc: nextPool.upc,
-          upc_gs1_validated: nextPool.gs1_validated,
+          upc_checksum_valid: true,
+          upc_pool_acquired_from: nextPool.acquired_from!,
+          upc_pool_recorded_owner: nextPool.gs1_owner!,
           upc_reserved_until: reservedUntil.toISOString(),
           state: "UPC_RESERVED",
         });
@@ -1209,6 +1260,7 @@ function stagedSkuShape(input: {
 
 export interface WalmartNewSkuCertificationSourceReceipt {
   operator_evidence: VerifiedWalmartNewSkuEvidenceArtifact[];
+  public_images: VerifiedWalmartPublicImage[];
   seller_sku_absence: {
     endpoint: string;
     sku: string;
@@ -1302,12 +1354,8 @@ export async function certifyWalmartNewSkuCandidate(input: {
     component_key: component.component_key,
   });
 
-  await assertWalmartSellerCatalogRecipeNovelty({
-    db: input.productTruthDb,
-    storeIndex: input.plan.store_index,
+  await assertWalmartExactIdentifierDuplicateGuardPlan({
     component,
-    allowedChannelSkuId: channelSkuId,
-    now,
   });
 
   const [draft, pool] = await Promise.all([
@@ -1320,6 +1368,8 @@ export async function certifyWalmartNewSkuCandidate(input: {
       select: {
         id: true,
         upc: true,
+        acquired_from: true,
+        gs1_owner: true,
         status: true,
         assigned_to_id: true,
         reserved_for_id: true,
@@ -1331,6 +1381,12 @@ export async function certifyWalmartNewSkuCandidate(input: {
   if (draft.approved_at) throw new Error("Approved draft cannot be recertified");
   if (!pool || pool.upc !== input.stage.upc) {
     throw new Error("Staged UPC pool row is missing or changed");
+  }
+  if (
+    pool.acquired_from !== input.stage.upc_pool_acquired_from ||
+    pool.gs1_owner !== input.stage.upc_pool_recorded_owner
+  ) {
+    throw new Error("Staged UPC pool provenance changed after stage sealing");
   }
   const reservationMatches =
     pool.status === "RESERVED" &&
@@ -1393,6 +1449,10 @@ export async function certifyWalmartNewSkuCandidate(input: {
   const secondaryImages = input.certification.images
     .filter((image) => image.role !== "MAIN")
     .map((image) => image.url);
+  const verifiedPublicImages = await inspectWalmartPublicImageSet([
+    mainImage.url,
+    ...secondaryImages,
+  ]);
   const manifest = buildProductTruthListingManifest({
     sku: input.stage.proposed_sku,
     storeIndex: input.plan.store_index,
@@ -1414,16 +1474,21 @@ export async function certifyWalmartNewSkuCandidate(input: {
     offer_handoff: input.certification.walmart.offer_handoff,
   };
   const prepublication: WalmartPrepublicationEvidence = {
-    schema_version: "walmart-prepublication-evidence/1.0.0",
+    schema_version: "walmart-prepublication-evidence/1.2.0",
     policy_version: WALMART_POLICY_VERSION,
     generated_at: now.toISOString(),
     store_index: input.plan.store_index,
     sku: input.stage.proposed_sku,
     catalog_search: catalogSearch,
+    seller_account_health:
+      input.certification.prepublication.seller_account_health,
+    fulfillment_compliance:
+      input.certification.prepublication.fulfillment_compliance,
     category_approvals: input.certification.prepublication.category_approvals,
     sku_policy_review: input.certification.prepublication.sku_policy_review,
     recall_check: input.certification.prepublication.recall_check,
     brand_rights: input.certification.prepublication.brand_rights,
+    product_identifier: input.certification.prepublication.product_identifier,
     condition: input.certification.prepublication.condition,
     expiration: input.certification.prepublication.expiration,
     item_spec: {
@@ -1762,6 +1827,7 @@ export async function certifyWalmartNewSkuCandidate(input: {
 
   const sourceReceipt: WalmartNewSkuCertificationSourceReceipt = {
     operator_evidence: verifiedOperatorEvidence,
+    public_images: verifiedPublicImages,
     seller_sku_absence: {
       endpoint: sellerSkuAbsence.endpoint,
       sku: sellerSkuAbsence.sku,
@@ -1825,6 +1891,10 @@ export async function certifyWalmartNewSkuCandidate(input: {
       input.certification.prepublication.seller_account_health.evidence_ref,
     seller_account_health_verified_at:
       input.certification.prepublication.seller_account_health.verified_at,
+    fulfillment_compliance_evidence_ref:
+      input.certification.prepublication.fulfillment_compliance.evidence_ref,
+    fulfillment_compliance_verified_at:
+      input.certification.prepublication.fulfillment_compliance.verified_at,
     item_spec_schema_sha256: fetchedSpec.schema_sha256,
     source_evidence_sha256: sha256WalmartJson(sourceReceipt),
     marketplace_mutation_allowed: false,
@@ -1961,11 +2031,8 @@ export async function dryRunCertifiedWalmartNewSku(input: {
     db: input.productTruthDb,
     certification: input.certification,
   });
-  await assertWalmartSellerCatalogRecipeNovelty({
-    db: input.productTruthDb,
-    storeIndex: input.certification.store_index,
+  await assertWalmartExactIdentifierDuplicateGuardPlan({
     component,
-    allowedChannelSkuId: input.certification.channel_sku_id,
   });
   const replay = await replayCertifiedWalmartNewSkuLocally(input);
   const client = getWalmartClient(input.certification.store_index);
@@ -2026,12 +2093,8 @@ export async function approveCertifiedWalmartNewSku(input: {
     certification: input.certification,
     now,
   });
-  await assertWalmartSellerCatalogRecipeNovelty({
-    db: input.productTruthDb,
-    storeIndex: input.certification.store_index,
+  await assertWalmartExactIdentifierDuplicateGuardPlan({
     component,
-    allowedChannelSkuId: input.certification.channel_sku_id,
-    now,
   });
 
   // Re-run every deterministic local gate at approval time. The fresh sealed
@@ -2251,13 +2314,8 @@ export async function applyCertifiedWalmartNewSku(input: {
     now,
   });
   if (requiresPrepublicationCatalogAuthority) {
-    await assertWalmartSellerCatalogRecipeNovelty({
-      db: input.productTruthDb,
-      storeIndex: input.certification.store_index,
+    await assertWalmartExactIdentifierDuplicateGuardPlan({
       component: currentComponent,
-      allowedChannelSkuId: input.certification.channel_sku_id,
-      allowedSellerSku: currentAttempt ? input.certification.sku : null,
-      now,
     });
   }
   if (canInitiateWalmartPost) {
@@ -2280,6 +2338,13 @@ export async function applyCertifiedWalmartNewSku(input: {
       responseFormat: "SPEC",
     });
   }
+  const currentImageUrls = [
+    sku.main_image_url,
+    ...replay.walmart_contract.secondary_image_urls,
+  ];
+  if (currentImageUrls.some((url) => !url)) {
+    throw new Error("Certified Walmart payload has a missing public image URL");
+  }
   assertCurrentWalmartSellerAccountBinding(input.certification);
   if (requiresPrepublicationCatalogAuthority) {
     await assertCurrentWalmartSellerCatalogAuthority({
@@ -2296,12 +2361,8 @@ export async function applyCertifiedWalmartNewSku(input: {
       ? async () => {
           try {
             assertCurrentWalmartSellerAccountBinding(input.certification);
-            await assertWalmartSellerCatalogRecipeNovelty({
-              db: input.productTruthDb,
-              storeIndex: input.certification.store_index,
+            await assertWalmartExactIdentifierDuplicateGuardPlan({
               component: currentComponent,
-              allowedChannelSkuId: input.certification.channel_sku_id,
-              now: new Date(),
             });
             const sellerSkuResponse = await getWalmartClient(
               input.certification.store_index,
@@ -2317,6 +2378,7 @@ export async function applyCertifiedWalmartNewSku(input: {
               checkedAt: new Date(),
               correlationId: sellerSkuResponse.correlationId,
             });
+            await inspectWalmartPublicImageSet(currentImageUrls as string[]);
             // This is deliberately the final awaited catalog guard before the
             // synchronous permit fence and POST /feeds inside submitToWalmart.
             await assertCurrentWalmartSellerCatalogAuthority({

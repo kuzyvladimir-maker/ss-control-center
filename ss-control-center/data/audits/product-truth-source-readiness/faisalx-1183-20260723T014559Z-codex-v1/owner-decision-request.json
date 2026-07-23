@@ -1,0 +1,90 @@
+{
+  "schema_version": "product-truth-owner-decision-request/v1",
+  "status": "DRAFT_NON_AUTHORITATIVE_DO_NOT_EXECUTE",
+  "created_at": "2026-07-23T01:56:01.386Z",
+  "target": {
+    "listing_key": "walmart:1:FaisalX-1183",
+    "sku": "FaisalX-1183",
+    "objective": "Establish authoritative Phase 1 scope and exact Product Truth before one Walmart MAIN-only canary."
+  },
+  "facts_already_proven": [
+    "Product Truth schema migrations are applied and certified 8/8.",
+    "Amazon store1 and store3 are connected to the US marketplace and have fresh full listing reports.",
+    "Amazon store5 has configured credentials but no US marketplace participation; its fresh full listing report has zero rows and its last observed state is DEACTIVATED.",
+    "Amazon store2 returns HTTP 403 from Sellers API and has no configured seller ID.",
+    "Amazon store4 has no configured credentials or seller ID.",
+    "No API-visible Walmart ITEM v6 exists in the fully observed latest 24-hour window.",
+    "FaisalX-1183 is incorrectly linked in legacy data to Pepperidge Farm Chessmen Butter Cookies."
+  ],
+  "owner_facts_required": [
+    {
+      "scope": "amazon:store2",
+      "store_name": "Vladimir Personal",
+      "question": "Is this currently an intended connected Amazon US selling account?"
+    },
+    {
+      "scope": "amazon:store4",
+      "store_name": "Sirius International",
+      "question": "Is this currently an intended connected Amazon US selling account?"
+    }
+  ],
+  "recommended_dispositions_if_store2_and_store4_are_not_current": [
+    {
+      "scope": "amazon:store1",
+      "connection_status": "CONNECTED",
+      "phase1_disposition": "IN_SCOPE"
+    },
+    {
+      "scope": "amazon:store2",
+      "connection_status": "NOT_CONNECTED",
+      "phase1_disposition": "EXCLUDED_OWNER_CONFIRMED"
+    },
+    {
+      "scope": "amazon:store3",
+      "connection_status": "CONNECTED",
+      "phase1_disposition": "IN_SCOPE"
+    },
+    {
+      "scope": "amazon:store4",
+      "connection_status": "NOT_CONNECTED",
+      "phase1_disposition": "EXCLUDED_OWNER_CONFIRMED"
+    },
+    {
+      "scope": "amazon:store5",
+      "connection_status": "CONNECTED",
+      "phase1_disposition": "EXCLUDED_OWNER_CONFIRMED",
+      "reason": "DEACTIVATED_WITH_NO_US_MARKETPLACE_PARTICIPATION"
+    },
+    {
+      "scope": "walmart:store1",
+      "connection_status": "CONNECTED",
+      "phase1_disposition": "IN_SCOPE"
+    }
+  ],
+  "requested_report_action": {
+    "action": "WALMART_ITEM_V6_REPORT_CREATE_ONCE",
+    "maximum_oauth_token_calls": 1,
+    "maximum_report_create_posts": 1,
+    "retries": 0,
+    "listing_writes": 0,
+    "price_writes": 0,
+    "inventory_writes": 0,
+    "delisting_writes": 0
+  },
+  "exact_owner_reply_if_recommendation_is_factually_correct": "Подтверждаю: Amazon store2 Vladimir Personal и store4 Sirius International сейчас не подключены; Amazon store5 Retailer Distributor исключить как deactivated без US participation. Amazon store1 и store3, а также Walmart store1 оставить в Phase 1. Разрешаю один новый zero-retry запрос Walmart ITEM v6 только для read-only Product Truth intake; листинги не изменять.",
+  "next_after_owner_reply": [
+    "Seal a fresh connected-store capture and owner-bound census.",
+    "Create and consume one exact Walmart ITEM v6 report authorization.",
+    "Compile the authoritative Phase 1 manifest from exact report bytes.",
+    "Produce a read-only exact Product Truth backfill plan.",
+    "Return the final FaisalX-1183 diff to the owner before any Walmart write."
+  ],
+  "current_prohibitions": [
+    "No Product Truth business-data backfill.",
+    "No paid provider calls.",
+    "No Walmart listing write.",
+    "No price or inventory change.",
+    "No delisting.",
+    "No mass run."
+  ]
+}

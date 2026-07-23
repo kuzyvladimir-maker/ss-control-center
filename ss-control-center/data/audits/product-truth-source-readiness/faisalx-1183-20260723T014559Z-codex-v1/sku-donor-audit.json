@@ -1,0 +1,83 @@
+{
+  "schema_version": "walmart-listing-integrity-product-truth-donor-audit/v1",
+  "captured_at": "2026-07-23T01:45:59.000Z",
+  "mode": "READ_ONLY",
+  "listing": {
+    "listing_key": "walmart:1:FaisalX-1183",
+    "sku": "FaisalX-1183",
+    "seller_title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    "seller_upc": "684611898937",
+    "seller_gtin14": "00684611898937",
+    "buyer_item_id": "8419413379",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "current_legacy_component": {
+    "component_id": "comp:FaisalX-1183:0",
+    "product": "Butter Hot Dog Buns Top Sliced",
+    "flavor": "Butter",
+    "size": "8-ct (approx. 15 oz)",
+    "quantity": 6,
+    "donor_product_id": "372d916c-afad-479e-bdb2-ebf4d76751da",
+    "donor_title": "Pepperidge Farm Chessmen Butter Cookies - 7.25oz (Packaging May Vary)",
+    "donor_upc": "014100079521",
+    "matched_retailer": "target",
+    "matched_price": 4.59,
+    "cost_method": "line-price",
+    "line_cost": 27.54,
+    "finding": "WRONG_PRODUCT_DONOR",
+    "canonical_use_allowed": false
+  },
+  "exact_content_candidate": {
+    "donor_product_id": "e8f7a13f-d6ae-4b04-badb-d62dd3d22ba6",
+    "title": "Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns - 14oz/8ct",
+    "brand": "Pepperidge Farm",
+    "size": "14 oz",
+    "inner_count": 8,
+    "upc": "014100050162",
+    "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_50842c30-b7f4-4e34-b603-f4827710788a",
+    "gallery_image_count": 8,
+    "identity_status": "legacy_unverified",
+    "canonical_variant_decision_count": 0,
+    "offers": [
+      {
+        "offer_id": "do:target:54569726",
+        "retailer": "target",
+        "retailer_product_id": "54569726",
+        "via": "direct",
+        "seller_name": "target",
+        "is_first_party": true,
+        "pack_size_seen": 1,
+        "price": 3.39,
+        "zip": "33765",
+        "source_api": "unwrangle",
+        "fetched_at": "2026-07-10T06:02:37.804Z"
+      }
+    ],
+    "fresh_price_ready": false,
+    "content_identity_evidence_ready_for_owner_review": true,
+    "canonical_use_allowed": false
+  },
+  "product_truth_point_read": {
+    "contract_version": "3.2.0",
+    "ready": false,
+    "blockers": [
+      "LISTING_SCOPE_NOT_REGISTERED",
+      "CURRENT_SCOPED_SKU_COST_MISSING"
+    ]
+  },
+  "conclusions": [
+    "The legacy component donor is a different product and must never be promoted into canonical Product Truth.",
+    "The exact buns donor candidate matches brand, form, variant, size and inner count, but still requires canonical identity approval and fresh source evidence.",
+    "The seller listing is a six-pack recipe of the single 14 oz/8-count sellable package; the approved MAIN candidate visually shows six exact packages.",
+    "A ProductTruthListingScope row cannot be created from this manual audit; it requires an authoritative Phase 1 manifest and owner-gated backfill."
+  ],
+  "external_effects": {
+    "production_read_only_sessions": 3,
+    "database_writes": 0,
+    "walmart_api_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "walmart_listing_writes": 0
+  }
+}

@@ -8,8 +8,13 @@
  * resolve to the same approved proof. Absence and ambiguity fail closed.
  */
 
-import registryJson from "./data/uncrustables-authenticity-registry-v1.json";
-import approvalsJson from "./data/uncrustables-main-owner-approvals-v2.json";
+// 2026-07-22 preview→publish batch: production proofs live in the v3 manifest
+// and are bound to the MERGED registry (sealed v1 + the owner's 11-flavor
+// extension) because the new listings use extension-only flavors. The v1/v2
+// artifacts stay untouched on disk as history.
+import approvalsJson from "./data/uncrustables-main-owner-approvals-v3.json";
+
+import { MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
 
 import {
   evaluateUncrustablesMainAuthenticity,
@@ -133,7 +138,7 @@ export type UncrustablesMainImageBytesFetcher = (
 ) => Promise<Buffer>;
 
 export const PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY =
-  registryJson as unknown as UncrustablesAuthenticityRegistry;
+  MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY as unknown as UncrustablesAuthenticityRegistry;
 export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS =
   approvalsJson as unknown as UncrustablesMainOwnerApprovalManifest;
 

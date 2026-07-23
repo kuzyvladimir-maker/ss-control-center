@@ -12,6 +12,10 @@ import {
   persistScoredDonorOffer,
   scoredDonorOfferCanonicalVariantId,
 } from "../donor-catalog";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "../canonical-product-match-provenance";
 import { listProductTruthWalmartPilotCandidates } from "../product-truth-read-contract";
 import { renderProductTruthOperationalJson } from "../product-truth-operational-run-contract";
 import { expectedMeteredRunConfirmation } from "../metered-call-guard";
@@ -517,6 +521,41 @@ test("two exact retailer source rows remain separate and alias one canonical var
       (await db.execute(`SELECT DISTINCT identityStatus FROM DonorProduct`)).rows.map((row) => row.identityStatus),
       ["exact_confirmed"],
     );
+    const decisions = (await db.execute(`
+      SELECT matcherVersion, matcherImplementationSha256, matcherReleaseSha256,
+             evidenceHash, evidenceJson
+      FROM DonorProductVariantDecision
+      WHERE decisionStatus='exact_confirmed'
+      ORDER BY id
+    `)).rows;
+    assert.equal(decisions.length, 2);
+    for (const decision of decisions) {
+      assert.equal(decision.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
+      assert.equal(decision.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
+      const evidence = JSON.parse(String(decision.evidenceJson));
+      assert.equal(evidence.schemaVersion, "donor-source-identity-evidence/1.1.0");
+      assert.equal(evidence.matcherVersion, decision.matcherVersion);
+      assert.equal(evidence.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
+      assert.equal(evidence.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
+    }
+    const projections = (await db.execute(`
+      SELECT identityMatcherVersion, identityMatcherImplementationSha256,
+             identityMatcherReleaseSha256, identityEvidenceJson
+      FROM DonorProduct
+      ORDER BY id
+    `)).rows;
+    assert.equal(projections.length, 2);
+    for (const projection of projections) {
+      assert.equal(
+        projection.identityMatcherImplementationSha256,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      );
+      assert.equal(projection.identityMatcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
+      const evidence = JSON.parse(String(projection.identityEvidenceJson));
+      assert.equal(evidence.matcherVersion, projection.identityMatcherVersion);
+      assert.equal(evidence.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
+      assert.equal(evidence.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
+    }
   });
 });
 
@@ -629,14 +668,21 @@ test("existing exact alias conflict is immutable, quarantined, and observed unli
     })).rows;
     assert.equal(exactDecision.length, 1);
     assert.equal(exactDecision[0].canonicalVariantId, first.canonicalVariantId);
+    const rejectedDecision = (await db.execute({
+      sql: `SELECT matcherImplementationSha256, matcherReleaseSha256, evidenceJson
+            FROM DonorProductVariantDecision
+            WHERE donorProductId=? AND decisionStatus='rejected'`,
+      args: [first.donorProductId],
+    })).rows;
+    assert.equal(rejectedDecision.length, 1);
     assert.equal(
-      Number((await db.execute({
-        sql: `SELECT COUNT(*) AS n FROM DonorProductVariantDecision
-              WHERE donorProductId=? AND decisionStatus='rejected'`,
-        args: [first.donorProductId],
-      })).rows[0]?.n),
-      1,
+      rejectedDecision[0].matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
     );
+    assert.equal(rejectedDecision[0].matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
+    const rejectedEvidence = JSON.parse(String(rejectedDecision[0].evidenceJson));
+    assert.equal(rejectedEvidence.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
+    assert.equal(rejectedEvidence.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
     const currentOffer = (await db.execute({
       sql: `SELECT donorProductId, price FROM DonorOffer WHERE id=?`,
       args: [first.donorOfferId],
@@ -699,6 +745,35 @@ test("exact replay preflights immutable rows and performs no duplicate insert", 
         counts.offerObservations, counts.contentObservations,
       ].map(Number),
       [1, 1, 1, 1, 1, 1],
+    );
+  });
+});
+
+test("exact alias reuse fails closed when the persisted matcher tuple evidence binding drifts", async () => {
+  await withScratchDb(async (db) => {
+    const scored = sourceOffer({
+      target: EIGHT_OZ,
+      retailer: "walmart",
+      retailerProductId: "matcher-provenance-drift",
+      title: "Acme Potato Chips Original Bag, 8 oz",
+      observedAt: "2026-07-18T20:00:00.000Z",
+    });
+    const first = await persistScoredDonorOffer(db, scored, EIGHT_OZ, NOW);
+    await db.execute(`DROP TRIGGER "DonorProductVariantDecision_update_guard"`);
+    await db.execute({
+      sql: `UPDATE DonorProductVariantDecision
+            SET evidenceHash=?
+            WHERE id=?`,
+      args: ["f".repeat(64), first.variantDecisionId!],
+    });
+
+    await assert.rejects(
+      persistScoredDonorOffer(db, scored, EIGHT_OZ, NOW),
+      /DONOR_PRODUCT_VARIANT_DECISION_MATCHER_PROVENANCE_DRIFT/,
+    );
+    assert.equal(
+      Number((await db.execute(`SELECT COUNT(*) AS n FROM DonorProductVariantDecision`)).rows[0]?.n),
+      1,
     );
   });
 });

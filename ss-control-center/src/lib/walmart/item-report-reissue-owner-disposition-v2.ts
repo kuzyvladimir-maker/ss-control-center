@@ -2,9 +2,10 @@
  * Pure Ed25519 owner-disposition contract for one Walmart ITEM v6 replacement
  * request after the 2026-07-19 ambiguous-create incident.
  *
- * Production deliberately fails closed until a dedicated owner public key is
- * enrolled in PINNED_OWNER_KEYS.  Private-key generation/signing is outside
- * this repository and outside the Claude operator runtime.
+ * Production deliberately fails closed until the shared Walmart owner-control
+ * public key is enrolled in a reviewed release. Every action remains isolated
+ * by its own signing domain. Private-key custody/signing is outside the Claude
+ * operator runtime.
  */
 
 import {
@@ -38,6 +39,11 @@ import {
 import {
   WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES,
 } from "./item-report-reissue-absence-probe-evidence.ts";
+import {
+  validateWalmartOwnerControlTrustedKey,
+  walmartOwnerControlProductionTrustedKeys,
+  type WalmartOwnerControlTrustedKey,
+} from "./owner-control-trust-root.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_SCHEMA =
   "walmart-item-report-reissue-owner-disposition/v2" as const;
@@ -65,20 +71,8 @@ export type WalmartItemReportReissueOwnerDispositionV2Environment =
   | "PRODUCTION"
   | "TEST_FIXTURE_ONLY";
 
-export interface WalmartItemReportReissueOwnerDispositionV2TrustedKey {
-  key_id: string;
-  public_key_spki_der_base64: string;
-  public_key_spki_sha256: string;
-  status: "ACTIVE" | "REVOKED";
-  environment: WalmartItemReportReissueOwnerDispositionV2Environment;
-}
-
-/**
- * Dedicated trust root only.  Never add worker, Listing Integrity family, or
- * Walmart new-SKU keys here.  Enrollment is a reviewed owner action.
- */
-const PINNED_OWNER_KEYS: readonly WalmartItemReportReissueOwnerDispositionV2TrustedKey[] =
-  Object.freeze([]);
+export type WalmartItemReportReissueOwnerDispositionV2TrustedKey =
+  WalmartOwnerControlTrustedKey;
 
 export interface WalmartItemReportReissueReplacementPlanV2 {
   session_name: string;
@@ -311,24 +305,10 @@ function exactJsonEqual(left: unknown, right: unknown): boolean {
 function validateTrustedKey(
   key: WalmartItemReportReissueOwnerDispositionV2TrustedKey,
 ): void {
-  safeIdentifier(key.key_id, "owner key_id");
-  const encoded = canonicalBase64(key.public_key_spki_der_base64, "owner public key");
-  if (digest(key.public_key_spki_sha256, "owner public-key fingerprint")
-      !== sha256Bytes(encoded.bytes)) {
-    fail("INVALID_TRUST_ROOT", "owner public-key fingerprint mismatch");
-  }
-  let publicKey;
   try {
-    publicKey = createPublicKey({ key: encoded.bytes, format: "der", type: "spki" });
+    validateWalmartOwnerControlTrustedKey(key);
   } catch {
-    fail("INVALID_TRUST_ROOT", "owner public key is not SPKI DER");
-  }
-  if (publicKey.asymmetricKeyType !== "ed25519") {
-    fail("INVALID_TRUST_ROOT", "owner public key must be Ed25519");
-  }
-  if (!new Set(["ACTIVE", "REVOKED"]).has(key.status)
-    || !new Set(["PRODUCTION", "TEST_FIXTURE_ONLY"]).has(key.environment)) {
-    fail("INVALID_TRUST_ROOT", "owner trust-root status/environment is invalid");
+    fail("INVALID_TRUST_ROOT", "Walmart owner-control public key is invalid");
   }
 }
 
@@ -355,7 +335,8 @@ export function walmartItemReportReissueOwnerDispositionV2TrustedKeys(
   env: NodeJS.ProcessEnv = process.env,
 ): readonly WalmartItemReportReissueOwnerDispositionV2TrustedKey[] {
   const fixture = testFixtureKey(env);
-  const keys = fixture ? [...PINNED_OWNER_KEYS, fixture] : [...PINNED_OWNER_KEYS];
+  const productionKeys = walmartOwnerControlProductionTrustedKeys();
+  const keys = fixture ? [...productionKeys, fixture] : [...productionKeys];
   const ids = new Set<string>();
   for (const key of keys) {
     validateTrustedKey(key);

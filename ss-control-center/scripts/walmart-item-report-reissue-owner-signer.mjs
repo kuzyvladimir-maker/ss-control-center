@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Interactive owner-only Ed25519 key custody and detached signer for the exact
- * Walmart ITEM-v6 reissue authorization domain.
+ * Owner-only Walmart control-key custody and detached signer for
+ * the exact ITEM-v6 reissue authorization domain. The same public key may be
+ * pinned for other Walmart owner actions, but domain separation makes their
+ * signatures non-interchangeable.
  *
  * The private key is encrypted at rest, created outside the repository, never
  * accepted via argv/env, and never printed. This tool has no credentials,
@@ -14,9 +16,11 @@ import {
   createPrivateKey,
   createPublicKey,
   generateKeyPairSync,
+  randomBytes,
   randomUUID,
   sign,
 } from "node:crypto";
+import { spawn } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
 import {
   chmod,
@@ -34,16 +38,22 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const PROJECT_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
 const REPOSITORY_ROOT = path.resolve(PROJECT_ROOT, "..");
 const CAPTURE_ROOT = path.join(PROJECT_ROOT, "data/audits/walmart-source-captures");
-const PRIVATE_KEY_NAME = "owner-private-key.pem";
-const ENROLLMENT_NAME = "owner-public-enrollment.json";
-const KEY_SCHEMA = "walmart-item-report-reissue-owner-key-enrollment/v1";
+const PRIVATE_KEY_NAME = "walmart-owner-control-private-key.pem";
+const ENROLLMENT_NAME = "walmart-owner-control-public-enrollment.json";
+const KEY_SCHEMA = "walmart-owner-control-key-enrollment/1.0.0";
+const KEY_DOMAIN = "WALMART_OWNER_CONTROL";
+const KEYCHAIN_SERVICE = "com.ss-command-center.walmart-owner-control.v1";
+const ALLOWED_SIGNING_DOMAINS = Object.freeze([
+  "WALMART_ITEM_V6_CATALOG_ACTIVATE",
+  "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
+  "WALMART_MP_ITEM_SUBMIT",
+]);
 const REQUEST_SCHEMA = "walmart-item-report-reissue-owner-disposition/v2";
 const ACTION = "WALMART_ITEM_V6_REPORT_CREATE_REISSUE";
 const DOMAIN = Buffer.from(
   "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v2\0",
   "utf8",
 );
-const INIT_CONFIRMATION = "CREATE_DEDICATED_WALMART_ITEM_REISSUE_OWNER_KEY";
 const SHA256 = /^[a-f0-9]{64}$/u;
 
 export class WalmartItemReportReissueOwnerSignerError extends Error {
@@ -240,61 +250,92 @@ function exactOptions(values, names) {
   }
 }
 
-function validatePassphrase(value) {
-  if (!Buffer.isBuffer(value) || value.byteLength < 20 || value.byteLength > 256
+function validateMachineSecret(value) {
+  if (!Buffer.isBuffer(value) || value.byteLength < 32 || value.byteLength > 256
     || value.includes(0) || /[\u0000-\u001f\u007f]/u.test(value.toString("utf8"))) {
-    fail("WEAK_PASSPHRASE", "passphrase must contain 20..256 printable UTF-8 bytes");
+    fail("INVALID_KEYCHAIN_SECRET", "macOS Keychain returned an invalid machine secret");
   }
   return value;
 }
 
-async function readSecretFromTty(prompt) {
-  if (!process.stdin.isTTY || !process.stdout.isTTY || typeof process.stdin.setRawMode !== "function") {
-    fail("INTERACTIVE_TTY_REQUIRED", "owner passphrase requires an interactive TTY");
-  }
-  process.stdout.write(prompt);
-  process.stdin.setEncoding("utf8");
-  process.stdin.setRawMode(true);
-  process.stdin.resume();
-  const characters = [];
-  try {
-    return await new Promise((resolve, reject) => {
-      const onData = (chunk) => {
-        for (const character of chunk) {
-          if (character === "\u0003") {
-            cleanup();
-            reject(new WalmartItemReportReissueOwnerSignerError("OWNER_ABORT", "owner aborted"));
-            return;
-          }
-          if (character === "\r" || character === "\n") {
-            cleanup();
-            process.stdout.write("\n");
-            resolve(Buffer.from(characters.join(""), "utf8"));
-            return;
-          }
-          if (character === "\u007f" || character === "\b") {
-            characters.pop();
-          } else if (characters.length < 256) {
-            characters.push(character);
-          }
-        }
-      };
-      const cleanup = () => {
-        process.stdin.off("data", onData);
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-      };
-      process.stdin.on("data", onData);
+function runSecurity(args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn("/usr/bin/security", args, {
+      env: { PATH: "/usr/bin:/bin" },
+      stdio: ["ignore", "pipe", "pipe"],
     });
-  } finally {
-    if (process.stdin.isRaw) process.stdin.setRawMode(false);
-  }
+    const stdout = [];
+    const stderr = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    const collect = (target, maximum, chunk, label) => {
+      const bytes = Buffer.from(chunk);
+      const next = (label === "stdout" ? stdoutBytes : stderrBytes) + bytes.byteLength;
+      if (next > maximum) {
+        child.kill("SIGKILL");
+        return;
+      }
+      if (label === "stdout") stdoutBytes = next;
+      else stderrBytes = next;
+      target.push(bytes);
+    };
+    child.stdout.on("data", (chunk) => collect(stdout, 4096, chunk, "stdout"));
+    child.stderr.on("data", (chunk) => collect(stderr, 4096, chunk, "stderr"));
+    child.once("error", () => reject(
+      new WalmartItemReportReissueOwnerSignerError(
+        "KEYCHAIN_UNAVAILABLE",
+        "macOS Keychain command could not start",
+      ),
+    ));
+    child.once("close", (code) => {
+      if (code !== 0 || stdoutBytes > 4096 || stderrBytes > 4096) {
+        reject(new WalmartItemReportReissueOwnerSignerError(
+          "KEYCHAIN_OPERATION_FAILED",
+          "macOS Keychain operation failed",
+        ));
+        return;
+      }
+      resolve(Buffer.concat(stdout));
+    });
+  });
+}
+
+async function storeMachineSecret(keyId, secret) {
+  await runSecurity([
+    "add-generic-password",
+    "-a", keyId,
+    "-s", KEYCHAIN_SERVICE,
+    "-D", "SS Command Center Walmart owner control key",
+    "-l", `SS Command Center Walmart owner control (${keyId})`,
+    "-T", "/usr/bin/security",
+    "-X", secret.toString("hex"),
+  ]);
+}
+
+async function readMachineSecret(keyId) {
+  const output = await runSecurity([
+    "find-generic-password",
+    "-a", keyId,
+    "-s", KEYCHAIN_SERVICE,
+    "-w",
+  ]);
+  const bytes = output.at(-1) === 0x0a ? output.subarray(0, -1) : output;
+  return validateMachineSecret(Buffer.from(bytes));
+}
+
+async function deleteMachineSecret(keyId) {
+  await runSecurity([
+    "delete-generic-password",
+    "-a", keyId,
+    "-s", KEYCHAIN_SERVICE,
+  ]);
 }
 
 function keyEnrollment(keyId, publicDer, createdAt) {
   return {
     schema_version: KEY_SCHEMA,
-    domain: ACTION,
+    domain: KEY_DOMAIN,
+    allowed_signing_domains: ALLOWED_SIGNING_DOMAINS,
     algorithm: "Ed25519",
     key_id: keyId,
     status: "ACTIVE",
@@ -305,6 +346,10 @@ function keyEnrollment(keyId, publicDer, createdAt) {
     private_key_export: "PKCS8_PEM_AES_256_CBC",
     private_key_encrypted_at_rest: true,
     private_key_created_outside_repository: true,
+    private_key_unlock_provider: "MACOS_LOGIN_KEYCHAIN",
+    keychain_service: KEYCHAIN_SERVICE,
+    keychain_account: keyId,
+    user_managed_password_required: false,
     created_at: createdAt,
   };
 }
@@ -312,19 +357,23 @@ function keyEnrollment(keyId, publicDer, createdAt) {
 async function initKey(input, injected) {
   const custodyDir = await assertExternalCustodyPath(input.custody_dir, false);
   const keyId = identifier(input.key_id, "key_id");
-  if (input.confirm !== INIT_CONFIRMATION) fail("CONFIRMATION_MISMATCH", "exact init confirmation is required");
-  const ask = injected.read_secret ?? readSecretFromTty;
-  const first = validatePassphrase(await ask("New owner-key passphrase (20+ chars): "));
-  const second = validatePassphrase(await ask("Repeat owner-key passphrase: "));
+  const randomSecretBytes = Buffer.from((injected.random_bytes ?? randomBytes)(32));
+  const machineSecret = validateMachineSecret(
+    Buffer.from(randomSecretBytes.toString("base64url"), "utf8"),
+  );
+  randomSecretBytes.fill(0);
+  const storeSecret = injected.store_secret ?? storeMachineSecret;
+  const deleteSecret = injected.delete_secret ?? deleteMachineSecret;
+  let secretStored = false;
+  let custodyPublished = false;
   try {
-    if (!first.equals(second)) fail("PASSPHRASE_MISMATCH", "passphrases do not match");
     const { publicKey, privateKey } = (injected.generate_key_pair ?? generateKeyPairSync)("ed25519");
     const publicDer = Buffer.from(publicKey.export({ format: "der", type: "spki" }));
     const encryptedPrivate = Buffer.from(privateKey.export({
       format: "pem",
       type: "pkcs8",
       cipher: "aes-256-cbc",
-      passphrase: first,
+      passphrase: machineSecret,
     }));
     const enrollment = keyEnrollment(
       keyId,
@@ -333,8 +382,10 @@ async function initKey(input, injected) {
     );
     const parent = path.dirname(custodyDir);
     const temporary = path.join(parent, `.walmart-item-owner-key-${randomUUID()}.tmp`);
-    await mkdir(temporary, { mode: 0o700 });
+    await storeSecret(keyId, machineSecret);
+    secretStored = true;
     try {
+      await mkdir(temporary, { mode: 0o700 });
       await chmod(temporary, 0o700);
       await writeExclusive(path.join(temporary, PRIVATE_KEY_NAME), encryptedPrivate, 0o400);
       await writeExclusive(
@@ -344,10 +395,13 @@ async function initKey(input, injected) {
       );
       await syncDirectory(temporary);
       await rename(temporary, custodyDir);
+      custodyPublished = true;
       await syncDirectory(parent);
     } catch (error) {
-      await chmod(temporary, 0o700).catch(() => {});
-      await rm(temporary, { recursive: true, force: true }).catch(() => {});
+      const cleanupTarget = custodyPublished ? custodyDir : temporary;
+      await chmod(cleanupTarget, 0o700).catch(() => {});
+      await rm(cleanupTarget, { recursive: true, force: true }).catch(() => {});
+      if (secretStored) await deleteSecret(keyId).catch(() => {});
       throw error;
     } finally {
       encryptedPrivate.fill(0);
@@ -361,13 +415,14 @@ async function initKey(input, injected) {
       public_key_spki_sha256: enrollment.public_key_spki_sha256,
       private_key_encrypted_at_rest: true,
       private_key_disclosed: false,
+      private_key_unlock_provider: "MACOS_LOGIN_KEYCHAIN",
+      user_managed_password_required: false,
       network_calls: 0,
       walmart_calls: 0,
       model_calls: 0,
     };
   } finally {
-    first.fill(0);
-    second.fill(0);
+    machineSecret.fill(0);
   }
 }
 
@@ -379,12 +434,17 @@ function parseEnrollment(bytes) {
     4096,
   ), "base64");
   if (publicDer.byteLength < 1 || publicDer.toString("base64") !== value.public_key_spki_der_base64
-    || value.schema_version !== KEY_SCHEMA || value.domain !== ACTION
+    || value.schema_version !== KEY_SCHEMA || value.domain !== KEY_DOMAIN
+    || canonicalJson(value.allowed_signing_domains) !== canonicalJson(ALLOWED_SIGNING_DOMAINS)
     || value.algorithm !== "Ed25519" || value.environment !== "PRODUCTION"
     || value.status !== "ACTIVE" || value.private_key_file !== PRIVATE_KEY_NAME
     || value.private_key_export !== "PKCS8_PEM_AES_256_CBC"
     || value.private_key_encrypted_at_rest !== true
     || value.private_key_created_outside_repository !== true
+    || value.private_key_unlock_provider !== "MACOS_LOGIN_KEYCHAIN"
+    || value.keychain_service !== KEYCHAIN_SERVICE
+    || value.keychain_account !== value.key_id
+    || value.user_managed_password_required !== false
     || !SHA256.test(String(value.public_key_spki_sha256))
     || sha256(publicDer) !== value.public_key_spki_sha256) {
     fail("INVALID_ENROLLMENT", "owner public enrollment is invalid");
@@ -549,8 +609,8 @@ async function signRequest(input, injected) {
   if (input.confirm !== parsed.confirmation) {
     fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${parsed.confirmation}`);
   }
-  const ask = injected.read_secret ?? readSecretFromTty;
-  const passphrase = validatePassphrase(await ask("Owner-key passphrase: "));
+  const readSecret = injected.read_secret ?? readMachineSecret;
+  const machineSecret = validateMachineSecret(await readSecret(enrollment.key_id));
   try {
     const privateBytes = await readStable(
       path.join(custodyDir, PRIVATE_KEY_NAME),
@@ -558,7 +618,7 @@ async function signRequest(input, injected) {
     );
     let privateKey;
     try {
-      privateKey = createPrivateKey({ key: privateBytes, format: "pem", passphrase });
+      privateKey = createPrivateKey({ key: privateBytes, format: "pem", passphrase: machineSecret });
     } catch {
       fail("PRIVATE_KEY_UNLOCK_FAILED", "owner private key could not be unlocked");
     } finally {
@@ -587,7 +647,7 @@ async function signRequest(input, injected) {
       model_calls: 0,
     };
   } finally {
-    passphrase.fill(0);
+    machineSecret.fill(0);
     parsed.message.fill(0);
   }
 }
@@ -598,17 +658,17 @@ export async function runWalmartItemReportReissueOwnerSignerCli(argv, injected =
     exactOptions(values, []);
     return {
       commands: ["init", "inspect", "sign"],
-      init_confirmation: INIT_CONFIRMATION,
       private_key_via_argv_or_env_allowed: false,
+      private_key_unlock_provider: "MACOS_LOGIN_KEYCHAIN",
+      user_managed_password_required: false,
       network_available: false,
     };
   }
   if (command === "init") {
-    exactOptions(values, ["custody-dir", "key-id", "confirm"]);
+    exactOptions(values, ["custody-dir", "key-id"]);
     return initKey({
       custody_dir: values.get("custody-dir"),
       key_id: values.get("key-id"),
-      confirm: values.get("confirm"),
     }, injected);
   }
   if (command === "inspect") {
@@ -645,5 +705,3 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
     },
   );
 }
-
-export const WALMART_ITEM_REPORT_REISSUE_OWNER_SIGNER_INIT_CONFIRMATION = INIT_CONFIRMATION;

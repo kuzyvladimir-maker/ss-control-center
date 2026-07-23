@@ -126,6 +126,7 @@ async function fixture(t: TestContext): Promise<string> {
       "_multi.ts",
       "_qavalidate.ts",
       "_trial100.ts",
+      "prisma.config.ts",
       "vercel.json",
     ].map((file) => copyFile(join(process.cwd(), file), join(root, file))),
     writeFile(join(root, "src", "index.ts"), "export const fixture = 1;\n"),
@@ -424,12 +425,15 @@ test("inspection rejects an ambient credential file inside a selected source tre
 
 test("engine digest binds dependency bytes, executable mode, platform and arch", async (t) => {
   const root = await fixture(t);
-  const dependency = join(root, "node_modules", "tsx", "index.mjs");
+  const dependency = join(root, "node_modules", "tsx", "dist", "loader.mjs");
+  const originalMode = (await lstat(dependency)).mode & 0o777;
   const original = await inspectWalmartNewSkuSourceRelease(root);
+  await chmod(dependency, 0o644);
   await writeFile(dependency, "export const changed = true;\n");
+  await chmod(dependency, originalMode);
   const byteChanged = await inspectWalmartNewSkuSourceRelease(root);
   assert.notEqual(byteChanged.engine_release_sha256, original.engine_release_sha256);
-  await chmod(dependency, 0o755);
+  await chmod(dependency, (originalMode & 0o111) === 0 ? 0o755 : 0o644);
   const modeChanged = await inspectWalmartNewSkuSourceRelease(root);
   assert.notEqual(modeChanged.engine_release_sha256, byteChanged.engine_release_sha256);
   const otherRuntime = structuredClone(modeChanged.descriptor);

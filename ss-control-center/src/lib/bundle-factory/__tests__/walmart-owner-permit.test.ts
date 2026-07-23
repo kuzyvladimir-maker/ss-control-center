@@ -155,14 +155,15 @@ test("hash-only, altered, expired, wrong-key and test-key-in-production permits 
     /KEY_UNTRUSTED_OR_REVOKED/,
   );
 
-  assert.equal(
-    inspectWalmartOwnerPermitTrustRoot({
-      ...fx.env,
-      NODE_ENV: "production",
-      WALMART_API_BASE_URL: "https://marketplace.walmartapis.com",
-    }).ready,
-    false,
-  );
+  const productionTrust = inspectWalmartOwnerPermitTrustRoot({
+    ...fx.env,
+    NODE_ENV: "production",
+    WALMART_API_BASE_URL: "https://marketplace.walmartapis.com",
+  }, "PRODUCTION");
+  assert.equal(productionTrust.ready, true);
+  assert.deepEqual(productionTrust.active_key_ids, [
+    "walmart-owner-control-2026-01",
+  ]);
 });
 
 test("operator module contains no private key or signing implementation", async () => {

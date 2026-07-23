@@ -8,10 +8,10 @@
  */
 
 export const WALMART_VISUAL_AUDIT_SCHEMA = "walmart-visual-audit/v3" as const;
-export const WALMART_VISUAL_COMPARATOR_VERSION = "walmart-visual-comparator/v4" as const;
+export const WALMART_VISUAL_COMPARATOR_VERSION = "walmart-visual-comparator/v5" as const;
 export const WALMART_VISUAL_AUXILIARY_OCR_MIN_CONFIDENCE = 0.95 as const;
 export const BLIND_OBSERVATION_SCHEMA = "wm_visual_observation_batch/v3" as const;
-export const BLIND_PROMPT_VERSION = "walmart-visual-blind/v3" as const;
+export const BLIND_PROMPT_VERSION = "walmart-visual-blind/v4" as const;
 
 export type AuditVerdict = "PASS" | "BAD" | "REVIEW";
 export type ImageSlot = "main" | `gallery-${number}`;
@@ -543,6 +543,7 @@ export function buildBlindObservationPrompt(imageIds: readonly string[]): string
     "A shipping/display case, shrink-wrap, caddy, tray, or offer graphic that contains several separately packaged cans/bottles/boxes/bags is multi_package_case. Put a literal claim such as '24 cans' or '12 pack' in case_package_claims when the pixels show a case of separate packages.",
     "visible_size_texts is an array of every literal readable size/count for ONE repeated outer package (examples: ['48 fl oz', '2 qt', '1.89 L'] or ['20 tea bags', '0.91 oz']). Use [] when none is readable. Do not convert sizes into objects.",
     "Evidence must be short text actually visible in the image. Do not copy or invent an expected title.",
+    "Hard array limits: visible_size_texts and evidence contain at most 8 strings each; outer_package_claims, inner_contents_claims, case_package_claims, unclear_quantity_claims, and flags contain at most 12 strings each. Keep only the strongest literal evidence when more text is visible.",
     "Allowed enums: visual_role=tiled_main|single_product_front|back|nutrition|ingredients|lifestyle|infographic|mixed_products|other; grid_cell_kind=single_sellable_package|multi_package_case|multiple_loose_products|not_a_grid|unknown; front_visibility=all|some|none|not_applicable|unknown; background=white|near_white|colored|lifestyle|mixed|unknown; multiple_distinct_products=yes|no|unknown; readable_identity=clear|partial|none.",
     `Return exactly this valid JSON shape with one observation for every supplied image_id and no other fields (replace the placeholder values with observations):\n${JSON.stringify({
       schema_version: BLIND_OBSERVATION_SCHEMA,
@@ -598,8 +599,13 @@ function isNutrientClaim(value: string): boolean {
 
 function parseBareInnerCount(value: string): ExpectedSize | null {
   const text = value.trim();
-  if (!/^\d+$/.test(text)) return null;
-  const count = Number(text);
+  const bare = /^(\d+)$/u.exec(text);
+  // This field is already dedicated to inner contents. Accept a leading count
+  // only when the same exact literal terminates in a concrete countable retail
+  // noun. This covers label text such as "8 Top Sliced Butter Hot Dog Buns"
+  // without interpreting serving-size or nutrition prose as package truth.
+  const labeled = /^(\d+)(?:\s+[\p{L}][\p{L}'’-]*){0,8}\s+(?:tea\s+bags?|buns?|muffins?|cookies?|bars?|pieces?|shells?|cans?|bottles?)\.?$/iu.exec(text);
+  const count = Number((bare ?? labeled)?.[1]);
   return Number.isInteger(count) && count > 0 ? { value: count, unit: "count" } : null;
 }
 
@@ -951,12 +957,20 @@ export function decideBlind(
   const blindBrandMatches = textContainsAliases(observed.visible_brand_text, identity.brand_aliases);
   const rawOcrBrandMatches = ocrContainsAliases(trustedOcrTexts, identity.brand_aliases);
   const explicitWrongBrand = hasLexicallySpecificText(observed.visible_brand_text) && !blindBrandMatches;
-  const blindMissingProductMarkers = missingRoleMarkerGroups(
+  // Product-vs-variant placement is an observer annotation, not product truth.
+  // Require every exact marker, but accept it anywhere in the two non-brand
+  // identity fields. Forbidden markers already follow this same fail-closed
+  // role-drift rule.
+  const blindNonBrandIdentity = [
     observed.visible_product_text,
+    observed.visible_variant_text,
+  ].filter((value): value is string => value !== null).join(" ");
+  const blindMissingProductMarkers = missingRoleMarkerGroups(
+    blindNonBrandIdentity,
     identity.product_marker_groups,
   );
   const blindMissingVariantMarkers = missingRoleMarkerGroups(
-    observed.visible_variant_text,
+    blindNonBrandIdentity,
     identity.variant_marker_groups,
   );
   const blindAllProductMarkersMatch = blindMissingProductMarkers.length === 0;
@@ -974,11 +988,11 @@ export function decideBlind(
     && blindAllVariantMarkersMatch;
   const brandMatches = blindBrandMatches || ocrBrandMatches;
   const missingProductMarkers = identity.product_marker_groups
-    .filter((aliases) => !textContainsAliases(observed.visible_product_text, aliases)
+    .filter((aliases) => !textContainsAliases(blindNonBrandIdentity, aliases)
       && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const missingVariantMarkers = identity.variant_marker_groups
-    .filter((aliases) => !textContainsAliases(observed.visible_variant_text, aliases)
+    .filter((aliases) => !textContainsAliases(blindNonBrandIdentity, aliases)
       && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const ocrSuppliedIdentity = (!blindBrandMatches && ocrBrandMatches)
@@ -1028,6 +1042,14 @@ export function decideBlind(
   const packageSizes = observedPackageSizes(observed);
   const ocrPackageSizes = auxiliaryPackageSizes(trustedOcrTexts);
   for (const fact of caseInput.expected.package_facts) {
+    // A Nutrition Facts panel describes a serving, not necessarily the whole
+    // sellable package. Values such as "Serving Size 1 Bun (50g)" therefore
+    // cannot contradict an 8-count / 14-oz package. A main image whose visual
+    // role is nutrition still fails independently below as the wrong role.
+    if (observed.visual_role === "nutrition") {
+      checks.package_facts[fact.kind] = "NOT_APPLICABLE";
+      continue;
+    }
     const expectedDimension = normalizedSize(fact).dimension;
     const blindSizes = packageSizes[fact.kind].filter(
       (value) => normalizedSize(value).dimension === expectedDimension,

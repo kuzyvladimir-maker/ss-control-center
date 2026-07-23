@@ -30,13 +30,16 @@ import {
 } from "../product-truth-operational-plan-request";
 import {
   ProductTruthRunnerCliError,
+  assertProductTruthReadOnlySql,
   buildProductTruthTargetedPlanHandoff,
+  createProductTruthReadOnlyClientGuard,
   createProductTruthReportArtifactWriter,
   loadProductTruthExecutionArtifacts,
   parseProductTruthRunnerArguments,
   productTruthTargetedDoctorExitCode,
   runProductTruthRunnerCli,
 } from "../../../../scripts/product-truth-runner";
+import type { Client } from "@libsql/client";
 import { PRODUCT_TRUTH_MATCHER_REPLAY_CORPUS_VERSION } from "../product-truth-matcher-replay";
 
 const CREATED_AT = "2026-07-19T12:00:00.000Z";
@@ -274,13 +277,13 @@ test("strict parser has no implicit all/default execution path", () => {
   );
 });
 
-test("targeted doctor identity flag is mode-bound and emitted handoff argv is lossless", async () => {
+test("targeted doctor retires external identity files and emitted handoff argv is lossless", async () => {
   assert.throws(
     () => parseProductTruthRunnerArguments([
       "doctor", "--url", "file:/tmp/test.sqlite", "--canonical-identity", "/tmp/id.json",
     ]),
     (error: unknown) => error instanceof ProductTruthRunnerCliError
-      && error.code === "CLI_TARGETED_DOCTOR_ARGUMENTS_INCOMPLETE",
+      && error.code === "CLI_TARGETED_DOCTOR_EXTERNAL_IDENTITY_RETIRED",
   );
   const parsed = parseProductTruthRunnerArguments([
     "doctor",
@@ -289,13 +292,11 @@ test("targeted doctor identity flag is mode-bound and emitted handoff argv is lo
     "--run-id", "run-1",
     "--expires-at", EXPIRES_AT,
     "--unwrangle-reserve-floor", "100",
-    "--canonical-identity", "/tmp/owner identity.json",
     "--url", "file:/tmp/test.sqlite",
     "--out", "/tmp/targeted output",
   ]);
   assert.equal(parsed.command, "doctor");
   if (parsed.command !== "doctor") assert.fail("doctor parser narrowed incorrectly");
-  assert.equal(parsed.canonicalIdentityPath, "/tmp/owner identity.json");
   assert.equal(productTruthTargetedDoctorExitCode({ ownerActionRequired: true }), 2);
   assert.equal(productTruthTargetedDoctorExitCode({ ok: true }), 0);
 
@@ -329,6 +330,95 @@ test("targeted doctor identity flag is mode-bound and emitted handoff argv is lo
     handoff.next_argv,
   );
   await assert.rejects(readFile(injected), /ENOENT/);
+});
+
+test("remote-compatible read-only guard permits reads and blocks every write capability", async () => {
+  const executed: string[] = [];
+  const fake = {
+    execute: async (statement: string | { sql: string }) => {
+      executed.push(typeof statement === "string" ? statement : statement.sql);
+      return { rows: [], columns: [], columnTypes: [], rowsAffected: 0, lastInsertRowid: undefined };
+    },
+    batch: async (statements: Array<string | { sql: string }>, mode?: string) => {
+      executed.push(`BATCH:${mode}:${statements.length}`);
+      return [];
+    },
+    migrate: async () => [],
+    transaction: async (mode?: string) => {
+      executed.push(`TRANSACTION:${mode}`);
+      return {
+        execute: async (statement: string | { sql: string }) => {
+          executed.push(`TX:${typeof statement === "string" ? statement : statement.sql}`);
+          return { rows: [], columns: [], columnTypes: [], rowsAffected: 0, lastInsertRowid: undefined };
+        },
+        batch: async () => [],
+        executeMultiple: async () => assert.fail("transaction executeMultiple reached underlying client"),
+        rollback: async () => undefined,
+        commit: async () => undefined,
+        close: () => undefined,
+        closed: false,
+      };
+    },
+    executeMultiple: async () => assert.fail("executeMultiple reached underlying client"),
+    sync: async () => assert.fail("sync reached underlying client"),
+    close: () => undefined,
+    reconnect: () => assert.fail("reconnect reached underlying client"),
+    closed: false,
+    protocol: "http",
+  } as unknown as Client;
+  const guarded = createProductTruthReadOnlyClientGuard(fake);
+
+  await guarded.execute("SELECT id FROM DonorProduct WHERE title = 'DELETE is a word'");
+  await guarded.execute({
+    sql: "WITH exact AS (SELECT id FROM DonorProduct) SELECT id FROM exact",
+    args: [],
+  });
+  await guarded.execute('PRAGMA table_info("DonorProduct")');
+  await guarded.execute('PRAGMA foreign_key_list("DonorOffer")');
+  await guarded.execute('PRAGMA index_list("DonorOffer")');
+  await guarded.execute('PRAGMA index_info("DonorOffer_retailer_retailerProductId_key")');
+  await guarded.execute("PRAGMA foreign_keys");
+  await guarded.execute("PRAGMA foreign_key_check");
+  await guarded.batch([
+    "SELECT id FROM DonorProduct",
+    ["SELECT id FROM DonorOffer WHERE retailer = ?", ["walmart"]],
+  ], "read");
+  const readTransaction = await guarded.transaction("read");
+  await readTransaction.execute("SELECT id FROM ProductTruthListingScope");
+  await readTransaction.commit();
+  assert.deepEqual(executed, [
+    "SELECT id FROM DonorProduct WHERE title = 'DELETE is a word'",
+    "WITH exact AS (SELECT id FROM DonorProduct) SELECT id FROM exact",
+    'PRAGMA table_info("DonorProduct")',
+    'PRAGMA foreign_key_list("DonorOffer")',
+    'PRAGMA index_list("DonorOffer")',
+    'PRAGMA index_info("DonorOffer_retailer_retailerProductId_key")',
+    "PRAGMA foreign_keys",
+    "PRAGMA foreign_key_check",
+    "BATCH:read:2",
+    "TRANSACTION:read",
+    "TX:SELECT id FROM ProductTruthListingScope",
+  ]);
+
+  for (const sql of [
+    "INSERT INTO DonorProduct(id) VALUES ('x')",
+    "WITH changed AS (UPDATE DonorProduct SET title='x' RETURNING id) SELECT id FROM changed",
+    "PRAGMA query_only=ON",
+    "SELECT 1; DELETE FROM DonorProduct",
+    "SELECT load_extension('unsafe')",
+  ]) {
+    assert.throws(
+      () => assertProductTruthReadOnlySql(sql),
+      (error: unknown) => error instanceof ProductTruthRunnerCliError
+        && error.code === "READ_ONLY_SQL_FORBIDDEN",
+    );
+  }
+  await assert.rejects(guarded.transaction(), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
+  await assert.rejects(guarded.transaction("write"), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
+  assert.throws(() => guarded.executeMultiple("SELECT 1"), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
+  assert.throws(() => guarded.migrate(["SELECT 1"]), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
+  assert.throws(() => guarded.sync(), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
+  assert.equal(executed.length, 11);
 });
 
 test("matcher-replay is exact-corpus offline-only and writes immutable certification artifacts", async () => {

@@ -74,6 +74,97 @@ const cases: Case[] = [
     reasons: ["IDENTITY_SIBLING_FLAVOR"],
   },
   {
+    name: "Original in structured flavor is a named sibling flavor at the same size",
+    target: {
+      brand: "Acme",
+      productLine: "Potato Chips",
+      flavor: "Original",
+      form: "Bag",
+      size: "8 oz",
+    },
+    candidate: {
+      brand: "Acme",
+      productLine: "Potato Chips",
+      flavor: "Barbecue",
+      form: "Bag",
+      size: "8 oz",
+    },
+    verdict: "SIBLING_ESTIMATE",
+    reasons: ["IDENTITY_SIBLING_FLAVOR", "SIZE_EXACT"],
+  },
+  {
+    name: "Original in structured flavor reaches sibling size rejection instead of modifier rejection",
+    target: {
+      brand: "Acme",
+      productLine: "Potato Chips",
+      flavor: "Original",
+      form: "Bag",
+      size: "8 oz",
+    },
+    candidate: {
+      brand: "Acme",
+      productLine: "Potato Chips",
+      flavor: "Barbecue",
+      form: "Bag",
+      size: "16 oz",
+    },
+    verdict: "REJECT",
+    reasons: ["SIBLING_SIZE_NOT_EXACT"],
+  },
+  {
+    name: "explicit Original modifier remains identity-bearing",
+    target: cola({ flavor: "Cola", modifiers: ["Original"] }),
+    candidate: cola({ flavor: "Cola", modifiers: [] }),
+    verdict: "REJECT",
+    reasons: ["MODIFIER_MISMATCH"],
+  },
+  {
+    name: "Original in product line remains identity-bearing",
+    target: {
+      brand: "Acme",
+      productLine: "Original Potato Chips",
+      flavor: "Sea Salt",
+      form: "Bag",
+      size: "8 oz",
+    },
+    candidate: {
+      brand: "Acme",
+      productLine: "Original Potato Chips",
+      flavor: "Barbecue",
+      form: "Bag",
+      size: "8 oz",
+      modifiers: [],
+    },
+    verdict: "SIBLING_ESTIMATE",
+    reasons: ["IDENTITY_SIBLING_FLAVOR"],
+  },
+  {
+    name: "Zero Sugar in structured flavor remains an identity-bearing modifier",
+    target: cola({ flavor: "Cola" }),
+    candidate: cola({ flavor: "Zero Sugar" }),
+    verdict: "REJECT",
+    reasons: ["MODIFIER_MISMATCH"],
+  },
+  {
+    name: "Decaf in structured flavor remains an identity-bearing modifier",
+    target: {
+      brand: "Acme",
+      productLine: "Ground Coffee",
+      flavor: "Regular",
+      form: "Ground Coffee",
+      size: "12 oz",
+    },
+    candidate: {
+      brand: "Acme",
+      productLine: "Ground Coffee",
+      flavor: "Decaf",
+      form: "Ground Coffee",
+      size: "12 oz",
+    },
+    verdict: "REJECT",
+    reasons: ["MODIFIER_MISMATCH"],
+  },
+  {
     name: "normal soda does not match Zero Sugar even when base flavor overlaps",
     target: cola({ flavor: "Cola" }),
     candidate: cola({
@@ -319,6 +410,25 @@ for (const row of cases) {
     }
   });
 }
+
+test("Original suppression is limited to structured flavor and its duplicate title evidence", () => {
+  const base: CanonicalProductIdentity = {
+    brand: "Acme",
+    productLine: "Potato Chips",
+    flavor: "Sea Salt",
+    form: "Bag",
+    size: "8 oz",
+  };
+  const modifierKeys = (identity: CanonicalProductIdentity) =>
+    matchCanonicalProduct(identity, identity).normalized.target.modifierKeys;
+
+  assert.equal(modifierKeys({ ...base, flavor: "Original" }).includes("original"), false);
+  assert.equal(modifierKeys({ ...base, flavor: "Original", title: "Acme Potato Chips Original Bag 8 oz" }).includes("original"), false);
+  assert.equal(modifierKeys({ ...base, modifiers: ["Original"] }).includes("original"), true);
+  assert.equal(modifierKeys({ ...base, productLine: "Original Potato Chips" }).includes("original"), true);
+  assert.equal(modifierKeys({ ...base, form: "Original Bag" }).includes("original"), true);
+  assert.equal(modifierKeys({ ...base, title: "Acme Potato Chips Original Sea Salt Bag 8 oz" }).includes("original"), true);
+});
 
 test("identity tokens are exact words, not substrings", () => {
   assert.deepEqual(normalizeIdentityTokens("Dove"), ["dove"]);

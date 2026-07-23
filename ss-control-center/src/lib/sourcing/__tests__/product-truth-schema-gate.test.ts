@@ -11,12 +11,20 @@ import {
   assertProductTruthEvidenceSchema,
   assertProductTruthMeteredEvidenceSchema,
 } from "../product-truth-schema-gate";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 
 const HASH_A = "a".repeat(64);
 const HASH_B = "b".repeat(64);
 const HASH_C = "c".repeat(64);
 const VARIANT_1 = `cpv1:${HASH_A}`;
 const VARIANT_2 = `cpv1:${HASH_B}`;
+const MATCHER_VERSION = CANONICAL_PRODUCT_MATCHER_VERSION;
+const MATCHER_IMPLEMENTATION_SHA256 = CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+const MATCHER_RELEASE_SHA256 = CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
 
 function hashKey(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -122,21 +130,41 @@ async function confirmSource(
   await db.execute({
     sql: `INSERT INTO DonorProductVariantDecision (
       id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
-      matcherVersion,evidenceHash,evidenceJson,decidedAt,createdAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+      evidenceHash,evidenceJson,decidedAt,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       input.decisionId, `decision:${input.decisionId}`, input.donorProductId,
-      input.variantId, "exact_confirmed", "matcher-v2", HASH_C,
-      JSON.stringify({ verdict: "EXACT_IDENTITY", source: input.donorProductId }),
+      input.variantId, "exact_confirmed", MATCHER_VERSION,
+      MATCHER_IMPLEMENTATION_SHA256, MATCHER_RELEASE_SHA256, HASH_C,
+      JSON.stringify({
+        verdict: "EXACT_IDENTITY",
+        source: input.donorProductId,
+        matcherVersion: MATCHER_VERSION,
+        matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+        matcherReleaseSha256: MATCHER_RELEASE_SHA256,
+      }),
       "2026-07-18T18:30:00.000Z", "2026-07-18T18:30:00.000Z",
     ],
   });
   await db.execute({
     sql: `UPDATE DonorProduct SET
-      identityStatus='exact_confirmed', identityMatcherVersion='matcher-v2',
+      identityStatus='exact_confirmed', identityMatcherVersion=?,
+      identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
       identityEvidenceJson=?, identityConfirmedAt='2026-07-18T18:30:00.000Z'
       WHERE id=?`,
-    args: [JSON.stringify({ verdict: "EXACT_IDENTITY" }), input.donorProductId],
+    args: [
+      MATCHER_VERSION,
+      MATCHER_IMPLEMENTATION_SHA256,
+      MATCHER_RELEASE_SHA256,
+      JSON.stringify({
+        verdict: "EXACT_IDENTITY",
+        matcherVersion: MATCHER_VERSION,
+        matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+        matcherReleaseSha256: MATCHER_RELEASE_SHA256,
+      }),
+      input.donorProductId,
+    ],
   });
 }
 
@@ -242,7 +270,9 @@ function exactEvidenceStatement(input: {
     method: "exact",
     targetComparableUnitPrice: null,
     matchTier: "EXACT_IDENTITY",
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: MATCHER_VERSION,
+    matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+    matcherReleaseSha256: MATCHER_RELEASE_SHA256,
     pricePolicyVersion: "price-evidence-eligibility/1.0.0",
   });
   return {
@@ -250,12 +280,14 @@ function exactEvidenceStatement(input: {
       id,evidenceKey,skuCostId,componentIndex,evidenceStatus,
       targetCanonicalVariantId,contentCanonicalVariantId,priceCanonicalVariantId,
       contentObservationId,priceObservationId,matchTier,matcherVersion,
+      matcherImplementationSha256,matcherReleaseSha256,
       pricePolicyVersion,evidenceHash,evidenceJson
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       input.id, hashKey(`evidence:${input.id}`), input.costId, input.index, "FACT",
       VARIANT_1, VARIANT_1, VARIANT_1, input.contentId, input.priceId,
-      "EXACT_IDENTITY", "canonical-product-match/1.2.0",
+      "EXACT_IDENTITY", MATCHER_VERSION,
+      MATCHER_IMPLEMENTATION_SHA256, MATCHER_RELEASE_SHA256,
       "price-evidence-eligibility/1.0.0", hashKey(evidenceJson), evidenceJson,
     ],
   };
@@ -323,7 +355,9 @@ function costStatement(input: {
         ? input.exactGraph?.priceDecisionId ?? null : null,
       matchTier: component.priceEvidenceStatus === "MANUAL_FACT" ? "MANUAL_COST"
         : component.priceEvidenceStatus === "REJECT" ? "REJECT" : "EXACT_IDENTITY",
-      matcherVersion: "canonical-product-match/1.2.0",
+      matcherVersion: MATCHER_VERSION,
+      matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+      matcherReleaseSha256: MATCHER_RELEASE_SHA256,
       pricePolicyVersion: component.priceEvidenceStatus === "MANUAL_FACT"
         ? "owner-manual-cost/1.0.0" : "price-evidence-eligibility/1.0.0",
       ...component,
@@ -333,6 +367,9 @@ function costStatement(input: {
     outcome: "FACT",
     recipeHash,
     evaluatedAt,
+    matcherVersion: MATCHER_VERSION,
+    matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+    matcherReleaseSha256: MATCHER_RELEASE_SHA256,
     total: totalCost,
     costPerUnit: input.costPerUnit ?? totalCost / packSize,
     packSize,
@@ -342,15 +379,17 @@ function costStatement(input: {
     sql: `INSERT INTO SkuCost (
       id,sku,effectiveDate,productCost,packagingCost,iceCost,totalCost,costPerUnit,
       packSize,source,observationKey,recipeHash,evidenceJson,evidenceOutcome,
-      matcherVersion,pricePolicyVersion,createdAt,updatedAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+      pricePolicyVersion,createdAt,updatedAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       input.id, input.sku, effectiveDate, productCost,
       input.packagingCost ?? null, input.iceCost ?? null, totalCost,
       input.costPerUnit ?? totalCost / packSize, packSize,
       input.source ?? "retail:batch", hashKey(input.observationSeed),
       recipeHash, evidenceJson, "FACT",
-      "canonical-product-match/1.2.0", "price-evidence-eligibility/1.0.0",
+      MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256, MATCHER_RELEASE_SHA256,
+      "price-evidence-eligibility/1.0.0",
       "2026-07-18T19:06:00.000Z", "2026-07-18T19:06:00.000Z",
     ],
   };
@@ -372,6 +411,142 @@ test("evidence and harvest paths fail closed before their migrations", async () 
       (error) =>
         error instanceof ProductTruthSchemaNotReadyError
         && error.missing.includes("DonorHarvestState"),
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("matcher provenance tuple is exact and JSON-bound across canonical evidence", async () => {
+  const db = createClient({ url: "file::memory:" });
+  try {
+    await createBaseSchema(db);
+    await applyEvidenceMigration(db);
+    await insertVariant(db, VARIANT_1, HASH_A, "barbecue");
+    await db.execute(`INSERT INTO DonorProduct (
+      id,identityKey,brand,productLine,flavor,containerType,size,identityStatus
+    ) VALUES ('tuple-source','tuple-source:key','Acme','Crunch Chips','barbecue','bag','8 oz','candidate')`);
+
+    const decisionEvidence = {
+      verdict: "EXACT_IDENTITY",
+      matcherVersion: MATCHER_VERSION,
+      matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+      matcherReleaseSha256: MATCHER_RELEASE_SHA256,
+    };
+    const decisionStatement = (
+      id: string,
+      matcherReleaseSha256: string,
+      evidenceJson: string,
+    ): InStatement => ({
+      sql: `INSERT INTO DonorProductVariantDecision (
+        id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
+        matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+        evidenceHash,evidenceJson,decidedAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        id, `decision:${id}`, "tuple-source", VARIANT_1, "exact_confirmed",
+        MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256, matcherReleaseSha256,
+        HASH_C, evidenceJson, "2026-07-18T18:30:00.000Z",
+      ],
+    });
+    await assert.rejects(
+      db.execute(decisionStatement(
+        "tuple-wrong-release",
+        HASH_A,
+        JSON.stringify({ ...decisionEvidence, matcherReleaseSha256: HASH_A }),
+      )),
+      /CHECK constraint failed/,
+    );
+    await assert.rejects(
+      db.execute(decisionStatement(
+        "tuple-json-mismatch",
+        MATCHER_RELEASE_SHA256,
+        JSON.stringify({ ...decisionEvidence, matcherReleaseSha256: HASH_A }),
+      )),
+      /CHECK constraint failed/,
+    );
+    await db.execute(decisionStatement(
+      "tuple-decision",
+      MATCHER_RELEASE_SHA256,
+      JSON.stringify(decisionEvidence),
+    ));
+
+    await assert.rejects(
+      db.execute({
+        sql: `UPDATE DonorProduct SET
+          identityStatus='exact_confirmed', identityMatcherVersion=?,
+          identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
+          identityEvidenceJson=?, identityConfirmedAt='2026-07-18T18:30:00.000Z'
+          WHERE id='tuple-source'`,
+        args: [
+          MATCHER_VERSION,
+          MATCHER_IMPLEMENTATION_SHA256,
+          MATCHER_RELEASE_SHA256,
+          JSON.stringify({ ...decisionEvidence, matcherReleaseSha256: HASH_A }),
+        ],
+      }),
+      /DONOR_PRODUCT_EXACT_CONTRACT_INVALID/,
+    );
+    await db.execute({
+      sql: `UPDATE DonorProduct SET
+        identityStatus='exact_confirmed', identityMatcherVersion=?,
+        identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
+        identityEvidenceJson=?, identityConfirmedAt='2026-07-18T18:30:00.000Z'
+        WHERE id='tuple-source'`,
+      args: [
+        MATCHER_VERSION,
+        MATCHER_IMPLEMENTATION_SHA256,
+        MATCHER_RELEASE_SHA256,
+        JSON.stringify(decisionEvidence),
+      ],
+    });
+
+    const graph = await seedExactGraph(db, "tuple");
+    const badComponent = exactEvidenceStatement({
+      id: "tuple-bad-component",
+      costId: "tuple-bad-cost",
+      index: 0,
+      contentId: graph.contentId,
+      priceId: graph.priceId,
+    });
+    if (typeof badComponent === "string") assert.fail("component evidence must be parameterized");
+    const badComponentArgs = [...badComponent.args];
+    const badComponentJson = JSON.parse(String(badComponentArgs[16])) as Record<string, unknown>;
+    badComponentArgs[16] = JSON.stringify({
+      ...badComponentJson,
+      matcherImplementationSha256: HASH_A,
+    });
+    await assert.rejects(
+      db.execute({ ...badComponent, args: badComponentArgs }),
+      /SKU_COMPONENT_EVIDENCE_METADATA_INVALID/,
+    );
+
+    const badCost = costStatement({
+      id: "tuple-cost-json-mismatch",
+      sku: "SKU-TUPLE-MISMATCH",
+      observationSeed: "tuple-cost-observation",
+      recipeSeed: "tuple-cost-recipe",
+      exactGraph: graph,
+    });
+    if (typeof badCost === "string") assert.fail("cost evidence must be parameterized");
+    const badCostArgs = [...badCost.args];
+    const badCostJson = JSON.parse(String(badCostArgs[12])) as Record<string, unknown>;
+    badCostArgs[12] = JSON.stringify({
+      ...badCostJson,
+      matcherReleaseSha256: HASH_A,
+    });
+    await assert.rejects(
+      db.batch([
+        exactEvidenceStatement({
+          id: "tuple-cost-child",
+          costId: "tuple-cost-json-mismatch",
+          index: 0,
+          contentId: graph.contentId,
+          priceId: graph.priceId,
+        }),
+        { ...badCost, args: badCostArgs },
+      ], "write"),
+      /SKU_COST_EVIDENCE_REQUIRED/,
     );
   } finally {
     await db.close();
@@ -585,11 +760,19 @@ test("canonical variant schema permits different exact content and price sources
       db.execute({
         sql: `INSERT INTO DonorProductVariantDecision (
           id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
-          matcherVersion,evidenceHash,evidenceJson,decidedAt
-        ) VALUES (?,?,?,?,?,?,?,?,?)`,
+          matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+          evidenceHash,evidenceJson,decidedAt
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
         args: [
           "decision-second", "decision:second", "target-content-source", VARIANT_2,
-          "exact_confirmed", "matcher-v2", HASH_C, "{}", "2026-07-18T19:00:00.000Z",
+          "exact_confirmed", MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256,
+          MATCHER_RELEASE_SHA256, HASH_C,
+          JSON.stringify({
+            matcherVersion: MATCHER_VERSION,
+            matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+            matcherReleaseSha256: MATCHER_RELEASE_SHA256,
+          }),
+          "2026-07-18T19:00:00.000Z",
         ],
       }),
       /DONOR_PRODUCT_VARIANT_DECISION_ALREADY_EXISTS/,
@@ -631,12 +814,14 @@ test("canonical variant schema permits different exact content and price sources
         id,evidenceKey,skuCostId,componentIndex,evidenceStatus,
         targetCanonicalVariantId,contentCanonicalVariantId,priceCanonicalVariantId,
         contentObservationId,priceObservationId,matchTier,matcherVersion,
+        matcherImplementationSha256,matcherReleaseSha256,
         pricePolicyVersion,evidenceHash,evidenceJson
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         "component-fact", hashKey("component:fact"), "cost-fact", 0, "FACT",
         VARIANT_1, VARIANT_1, VARIANT_1, "content-target", "price-walmart",
-        "EXACT_IDENTITY", "canonical-product-match/1.2.0",
+        "EXACT_IDENTITY", MATCHER_VERSION,
+        MATCHER_IMPLEMENTATION_SHA256, MATCHER_RELEASE_SHA256,
         "price-evidence-eligibility/1.0.0", HASH_C,
         JSON.stringify({
           evidenceStatus: "FACT",
@@ -653,7 +838,9 @@ test("canonical variant schema permits different exact content and price sources
           method: "exact",
           targetComparableUnitPrice: null,
           matchTier: "EXACT_IDENTITY",
-          matcherVersion: "canonical-product-match/1.2.0",
+          matcherVersion: MATCHER_VERSION,
+          matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+          matcherReleaseSha256: MATCHER_RELEASE_SHA256,
           pricePolicyVersion: "price-evidence-eligibility/1.0.0",
         }),
       ],
@@ -662,8 +849,9 @@ test("canonical variant schema permits different exact content and price sources
       sql: `INSERT INTO SkuCost (
         id,sku,effectiveDate,productCost,totalCost,costPerUnit,packSize,source,
         observationKey,recipeHash,evidenceJson,evidenceOutcome,
-        matcherVersion,pricePolicyVersion
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+        pricePolicyVersion
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         "cost-fact", "SKU-FACT", "2026-07-18", 3.99, 3.99, 3.99, 1,
         "retail:batch", HASH_A, HASH_B,
@@ -671,6 +859,9 @@ test("canonical variant schema permits different exact content and price sources
           outcome: "FACT",
           recipeHash: HASH_B,
           evaluatedAt: "2026-07-18T19:05:00.000Z",
+          matcherVersion: MATCHER_VERSION,
+          matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+          matcherReleaseSha256: MATCHER_RELEASE_SHA256,
           total: 3.99,
           costPerUnit: 3.99,
           packSize: 1,
@@ -688,12 +879,15 @@ test("canonical variant schema permits different exact content and price sources
               priceEvidenceObservationId: "price-walmart",
               contentObservationId: "content-target",
               priceVariantDecisionId: "decision-walmart",
-              matcherVersion: "canonical-product-match/1.2.0",
+              matcherVersion: MATCHER_VERSION,
+              matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+              matcherReleaseSha256: MATCHER_RELEASE_SHA256,
               pricePolicyVersion: "price-evidence-eligibility/1.0.0",
             },
           ],
         }),
-        "FACT", "canonical-product-match/1.2.0",
+        "FACT", MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256,
+        MATCHER_RELEASE_SHA256,
         "price-evidence-eligibility/1.0.0",
       ],
     };
@@ -793,13 +987,15 @@ test("FACT, ESTIMATE, REJECT, legacy-link and retail cost contracts fail closed"
         id,evidenceKey,skuCostId,componentIndex,evidenceStatus,
         targetCanonicalVariantId,contentCanonicalVariantId,priceCanonicalVariantId,
         contentObservationId,priceObservationId,matchTier,matcherVersion,
+        matcherImplementationSha256,matcherReleaseSha256,
         pricePolicyVersion,evidenceHash,evidenceJson
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         overrides.id, hashKey(`evidence:${overrides.id}`), "future-cost", 0, overrides.status,
         overrides.target ?? VARIANT_1, overrides.contentVariant ?? null,
         overrides.priceVariant ?? null, overrides.contentObservation ?? null,
-        overrides.priceObservation ?? null, "TEST", "canonical-product-match/1.2.0",
+        overrides.priceObservation ?? null, "TEST", MATCHER_VERSION,
+        MATCHER_IMPLEMENTATION_SHA256, MATCHER_RELEASE_SHA256,
         "price-evidence-eligibility/1.0.0",
         HASH_C, "{}",
       ],
@@ -842,8 +1038,9 @@ test("FACT, ESTIMATE, REJECT, legacy-link and retail cost contracts fail closed"
         sql: `INSERT INTO SkuCost (
           id,sku,effectiveDate,productCost,totalCost,costPerUnit,packSize,source,
           observationKey,recipeHash,evidenceJson,evidenceOutcome,
-          matcherVersion,pricePolicyVersion
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+          pricePolicyVersion
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         args: [
           "missing-child", "SKU-MISSING-CHILD", "2026-07-18", 3.99, 3.99,
           3.99, 1, "retail:batch", HASH_A, HASH_B,
@@ -851,6 +1048,9 @@ test("FACT, ESTIMATE, REJECT, legacy-link and retail cost contracts fail closed"
             outcome: "FACT",
             recipeHash: HASH_B,
             evaluatedAt: "2026-07-18T19:00:00.000Z",
+            matcherVersion: MATCHER_VERSION,
+            matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+            matcherReleaseSha256: MATCHER_RELEASE_SHA256,
             total: 3.99,
             costPerUnit: 3.99,
             packSize: 1,
@@ -865,12 +1065,15 @@ test("FACT, ESTIMATE, REJECT, legacy-link and retail cost contracts fail closed"
                 size: "8 oz",
                 method: "exact",
                 matchTier: "EXACT_IDENTITY",
-                matcherVersion: "canonical-product-match/1.2.0",
+                matcherVersion: MATCHER_VERSION,
+                matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+                matcherReleaseSha256: MATCHER_RELEASE_SHA256,
                 pricePolicyVersion: "price-evidence-eligibility/1.0.0",
               },
             ],
           }),
-          "FACT", "canonical-product-match/1.2.0",
+          "FACT", MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256,
+          MATCHER_RELEASE_SHA256,
           "price-evidence-eligibility/1.0.0",
         ],
       }),
@@ -1213,7 +1416,9 @@ test("price and manual evidence fail closed on source quality, freshness, and ty
       method: "own-brand",
       targetComparableUnitPrice: null,
       matchTier: "MANUAL_COST",
-      matcherVersion: "canonical-product-match/1.2.0",
+      matcherVersion: MATCHER_VERSION,
+      matcherImplementationSha256: MATCHER_IMPLEMENTATION_SHA256,
+      matcherReleaseSha256: MATCHER_RELEASE_SHA256,
       pricePolicyVersion: "owner-manual-cost/1.0.0",
       manualCost: {
         policyVersion: "owner-manual-cost/1.0.0",
@@ -1231,11 +1436,13 @@ test("price and manual evidence fail closed on source quality, freshness, and ty
     const manualEvidence = (id: string, costId: string, evidenceJson: string): InStatement => ({
       sql: `INSERT INTO SkuComponentEvidence (
         id,evidenceKey,skuCostId,componentIndex,evidenceStatus,targetCanonicalVariantId,
-        matchTier,matcherVersion,pricePolicyVersion,evidenceHash,evidenceJson
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+        matchTier,matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+        pricePolicyVersion,evidenceHash,evidenceJson
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         id, hashKey(`manual:${id}`), costId, 0, "MANUAL_FACT", VARIANT_1,
-        "MANUAL_COST", "canonical-product-match/1.2.0", "owner-manual-cost/1.0.0",
+        "MANUAL_COST", MATCHER_VERSION, MATCHER_IMPLEMENTATION_SHA256,
+        MATCHER_RELEASE_SHA256, "owner-manual-cost/1.0.0",
         hashKey(evidenceJson), evidenceJson,
       ],
     });

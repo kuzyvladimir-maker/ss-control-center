@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
+
 import type { ChannelSKU } from "@/generated/prisma/client";
 import {
   WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
@@ -107,7 +113,9 @@ function fixture(): ValidatorInput {
     content_observation_id: "content-a",
     content_source_url: "https://manufacturer.example/item-a",
     content_captured_at: recent(24),
-    matcher_version: "canonical-product-match/1.2.0",
+    matcher_version: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcher_implementation_sha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcher_release_sha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     facts: {
       ingredients: "Corn, sugar, strawberry powder.",
       allergens: { contains: [], may_contain: [] },
@@ -193,6 +201,25 @@ function fixture(): ValidatorInput {
       walmart_item_id: null,
       evidence_ref: "catalog-search:pilot",
     },
+    seller_account_health: {
+      status: "HEALTHY_AND_ACCEPTING_NEW_ITEMS",
+      store_index: 1,
+      seller_account_fingerprint_sha256: "d".repeat(64),
+      verified_at: recent(0.5),
+      evidence_ref: "seller-center:account-health",
+    },
+    fulfillment_compliance: {
+      method: "SELLER_FULFILLED",
+      inventory_owned_by_seller: true,
+      direct_retailer_fulfillment: false,
+      competitor_branded_packaging: false,
+      third_party_promotional_materials: false,
+      fulfillment_center_id: "FC-1",
+      fulfillment_lag_time: 1,
+      lag_exemption_status: "NOT_REQUIRED",
+      verified_at: recent(1),
+      evidence_ref: "seller-center:fulfillment-compliance",
+    },
     category_approvals: [{
       scope: "INGESTIBLE_PRODUCTS",
       status: "APPROVED",
@@ -215,6 +242,21 @@ function fixture(): ValidatorInput {
       basis: "BRAND_OWNER",
       verified_at: recent(24),
       evidence_ref: "brand-portal:example",
+    },
+    product_identifier: {
+      identifier_type: "UPC",
+      value: "756441000010",
+      checksum_valid: true,
+      pool_acquired_from: "SpeedyBarcode",
+      pool_recorded_owner: "Example Registrant LLC",
+      registry_status: "VERIFIED",
+      registry_registrant_name: "Example Registrant LLC",
+      aligned_brand: "Example",
+      brand_alignment_status: "VERIFIED",
+      seller_account_fingerprint_sha256: "d".repeat(64),
+      seller_assignment_authority_status: "VERIFIED",
+      verified_at: recent(1),
+      evidence_ref: "product-id:exact-current",
     },
     condition: { value: "New", verified_at: recent(1) },
     expiration: {
@@ -307,6 +349,24 @@ test("complete Walmart pilot evidence passes all three new gates", async () => {
   const itemType = await validatorWalmartItemType(input);
   assert.equal(itemType.passed, true);
   assert.equal(itemType.details?.source, "versioned_get_spec_evidence");
+});
+
+test("Walmart gate rejects unhealthy account or retail-arbitrage fulfillment", async () => {
+  const unhealthy = mutate(fixture(), (root) => {
+    root.walmart_prepublication!.seller_account_health.status =
+      "SUSPENDED" as never;
+  });
+  const unhealthyResult = await validatorWalmartPrepublication(unhealthy);
+  assert.equal(unhealthyResult.passed, false);
+  assert.match(unhealthyResult.message ?? "", /seller account health/i);
+
+  const arbitrage = mutate(fixture(), (root) => {
+    root.walmart_prepublication!.fulfillment_compliance.direct_retailer_fulfillment =
+      true as never;
+  });
+  const arbitrageResult = await validatorWalmartPrepublication(arbitrage);
+  assert.equal(arbitrageResult.passed, false);
+  assert.match(arbitrageResult.message ?? "", /seller-fulfilled policy/i);
 });
 
 test("Walmart manufacturer brand requires matching truth, recipe and rights", async () => {
@@ -411,6 +471,31 @@ test("prepublication fails without ingestible approval, New condition or brand r
     root.walmart_prepublication!.brand_rights.basis = "LEGITIMATE_RESALE";
   });
   assert.match((await validatorWalmartPrepublication(resaleFullItem)).message ?? "", /FULL_ITEM/);
+});
+
+test("prepublication fails closed on registry, brand or seller-account identifier drift", async () => {
+  const wrongRegistrant = mutate(fixture(), (root) => {
+    root.walmart_prepublication!.product_identifier.registry_registrant_name =
+      "Different Registrant LLC";
+  });
+  assert.match(
+    (await validatorWalmartPrepublication(wrongRegistrant)).message ?? "",
+    /product identifier registry, brand alignment, or seller assignment authority/,
+  );
+
+  const wrongBrand = mutate(fixture(), (root) => {
+    root.walmart_prepublication!.product_identifier.aligned_brand = "Different Brand";
+  });
+  assert.equal((await validatorWalmartPrepublication(wrongBrand)).passed, false);
+
+  const malformedSellerAccount = mutate(fixture(), (root) => {
+    root.walmart_prepublication!.product_identifier.seller_account_fingerprint_sha256 =
+      "not-a-fingerprint";
+  });
+  assert.equal(
+    (await validatorWalmartPrepublication(malformedSellerAccount)).passed,
+    false,
+  );
 });
 
 test("initial pilot hard-blocks exact catalog matches until MP_ITEM_MATCH exists", async () => {

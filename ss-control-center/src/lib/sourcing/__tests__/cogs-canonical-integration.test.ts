@@ -16,6 +16,11 @@ import {
 } from "../cogs-engine";
 import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
+import {
   UNWRANGLE_DETAIL_CREDIT_UNITS,
   unwrangleDetailCreditUnits,
 } from "../donor-catalog";
@@ -243,6 +248,9 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       const decisionEvidence = JSON.stringify({
         verdict: "EXACT_IDENTITY",
         source: input.donorProductId,
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       });
       await db.execute({
         sql: `INSERT INTO DonorProduct
@@ -256,21 +264,39 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       await db.execute({
         sql: `INSERT INTO DonorProductVariantDecision
           (id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
-           matcherVersion,evidenceHash,evidenceJson,decidedAt,createdAt)
-          VALUES (?,?,?,?,?,?,?,?,?,?)`,
+           matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+           evidenceHash,evidenceJson,decidedAt,createdAt)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
         args: [
           input.decisionId, `key:${input.decisionId}`, input.donorProductId,
           variant.canonicalVariantId, "exact_confirmed",
-          "canonical-product-match/1.2.0", hashKey(decisionEvidence),
+          CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+          hashKey(decisionEvidence),
           decisionEvidence,
           now, now,
         ],
       });
+      const projectedEvidence = JSON.stringify({
+        verdict: "EXACT_IDENTITY",
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      });
       await db.execute({
         sql: `UPDATE DonorProduct SET identityStatus='exact_confirmed',
-          identityMatcherVersion='canonical-product-match/1.2.0',
+          identityMatcherVersion=?, identityMatcherImplementationSha256=?,
+          identityMatcherReleaseSha256=?,
           identityEvidenceJson=?,identityConfirmedAt=? WHERE id=?`,
-        args: [JSON.stringify({ verdict: "EXACT_IDENTITY" }), now, input.donorProductId],
+        args: [
+          CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+          projectedEvidence,
+          now,
+          input.donorProductId,
+        ],
       });
     };
 
@@ -394,6 +420,23 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
     assert.equal(authoritative.priceDonorProductId, "publix-price-donor");
     assert.notEqual(authoritative.contentDonorProductId, authoritative.priceDonorProductId);
     assert.equal(authoritative.matchTier, "EXACT_IDENTITY");
+    assert.equal(
+      authoritative.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      authoritative.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
+    const persistedComponentEvidence = JSON.parse(String(authoritative.evidenceJson));
+    assert.equal(
+      persistedComponentEvidence.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      persistedComponentEvidence.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
 
     const costs = await db.execute(`SELECT * FROM SkuCost WHERE sku='SKU-1'`);
     assert.equal(costs.rows.length, 1, "same immutable evidence must not append a duplicate cost row");
@@ -402,7 +445,15 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
     assert.equal(costs.rows[0].needsReview, 0);
     assert.match(String(costs.rows[0].observationKey), /^[a-f0-9]{64}$/);
     assert.match(String(costs.rows[0].recipeHash), /^[a-f0-9]{64}$/);
-    assert.equal(costs.rows[0].matcherVersion, "canonical-product-match/1.2.0");
+    assert.equal(costs.rows[0].matcherVersion, CANONICAL_PRODUCT_MATCHER_VERSION);
+    assert.equal(
+      costs.rows[0].matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      costs.rows[0].matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.equal(costs.rows[0].pricePolicyVersion, "price-evidence-eligibility/1.0.0");
     const persistedCostEvidence = JSON.parse(String(costs.rows[0].evidenceJson));
     assert.deepEqual(persistedCostEvidence.sourcePolicy, {
@@ -410,6 +461,14 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       retailerAllowlist: ["walmart", "target", "publix"],
       allowClubRetailers: false,
     });
+    assert.equal(
+      persistedCostEvidence.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      persistedCostEvidence.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.match(String(costs.rows[0].evidenceJson), /observation-2/);
     assert.doesNotMatch(String(costs.rows[0].evidenceJson), /observation-1/);
     assert.match(String(costs.rows[0].evidenceJson), /https:\/\/publix\.example\.test\/item-current/);
@@ -433,6 +492,14 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
     assert.equal(snapshot.views.unitEconomics.status, "FACT");
     assert.equal(snapshot.views.procurement.ready, true);
     assert.equal(snapshot.views.bundleFactory.components[0].qty, 1);
+    assert.equal(
+      snapshot.views.unitEconomics.current?.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      snapshot.views.unitEconomics.current?.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.equal(
       snapshot.views.bundleFactory.components[0].content?.facts.ingredients,
       "Potatoes, oil, seasoning",

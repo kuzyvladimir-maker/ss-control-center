@@ -38,6 +38,10 @@ import {
   type CanonicalProductIdentity,
 } from "@/lib/sourcing/canonical-product-match";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "@/lib/sourcing/canonical-product-match-provenance";
+import {
   buildCanonicalProductVariantKey,
   type CanonicalProductVariantKey,
 } from "@/lib/sourcing/canonical-product-variant";
@@ -205,6 +209,8 @@ type CostHit = {
   evidenceAnchorAt: string;
   matchTier: string;
   matcherVersion: string;
+  matcherImplementationSha256: string;
+  matcherReleaseSha256: string;
   pricePolicyVersion: string;
 };
 
@@ -355,9 +361,17 @@ async function bestContentObservationForVariant(
            AND decision.canonicalVariantId=content.canonicalVariantId
            AND decision.decisionStatus='exact_confirmed'
            AND decision.matcherVersion=?
+           AND decision.matcherImplementationSha256=?
+           AND decision.matcherReleaseSha256=?
           WHERE content.canonicalVariantId=? AND content.observedAt<=?
           ORDER BY content.observedAt DESC, content.id ASC`,
-    args: [CANONICAL_PRODUCT_MATCHER_VERSION, canonicalVariantId, evaluationNow],
+    args: [
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      canonicalVariantId,
+      evaluationNow,
+    ],
   })).rows;
   const candidates = rows.map((row) => {
     const contentJson = parseJsonObject(row.contentJson);
@@ -428,6 +442,9 @@ async function cheapestCostForTarget(
                AND decision.donorProductId=obs.donorProductId
                AND decision.canonicalVariantId=obs.canonicalVariantId
                AND decision.decisionStatus='exact_confirmed'
+               AND decision.matcherVersion=?
+               AND decision.matcherImplementationSha256=?
+               AND decision.matcherReleaseSha256=?
               WHERE obs.id=(
                 SELECT latest.id FROM "DonorOfferObservation" latest
                 WHERE latest.donorOfferId=obs.donorOfferId AND latest.observedAt<=?
@@ -442,6 +459,9 @@ async function cheapestCostForTarget(
                 )
               ORDER BY obs.observedAt DESC, obs.id ASC`,
         args: [
+          CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           evaluationNow,
           `%${brandTokens[0].replace(/s$/, "")}%`,
           `%${brandTokens[0].replace(/s$/, "")}%`,
@@ -558,6 +578,8 @@ async function cheapestCostForTarget(
       ], evaluationNow),
       matchTier: selected.match.verdict,
       matcherVersion: selected.match.matcherVersion,
+      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       pricePolicyVersion: selected.priceEvidence.policyVersion,
     },
   };
@@ -1019,6 +1041,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       evidenceAnchorAt: string;
       matchTier?: string | null;
       matcherVersion?: string | null;
+      matcherImplementationSha256?: string | null;
+      matcherReleaseSha256?: string | null;
       priceEvidenceStatus?: string | null;
       pricePolicyVersion?: string | null;
       priceEvidenceJson?: string | null;
@@ -1051,6 +1075,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           contentDonorProductId: null,
           matchTier: "MANUAL_COST",
           matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+          matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           priceEvidenceStatus: "MANUAL_FACT",
           pricePolicyVersion: ob.policyVersion,
           evidenceAnchorAt: ob.effectiveAt,
@@ -1121,6 +1147,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           contentCanonicalVariantId: lookup.content?.canonicalVariantId ?? null,
           contentObservationId: lookup.content?.id ?? null,
           matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+          matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           priceEvidenceStatus: "REJECT",
           pricePolicyVersion: PRICE_EVIDENCE_POLICY_VERSION,
           evidenceAnchorAt: latestIsoTimestamp(
@@ -1152,6 +1180,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           evidenceAnchorAt: cost.evidenceAnchorAt,
           matchTier: cost.matchTier,
           matcherVersion: cost.matcherVersion,
+          matcherImplementationSha256: cost.matcherImplementationSha256,
+          matcherReleaseSha256: cost.matcherReleaseSha256,
           priceEvidenceStatus: cost.outcome,
           pricePolicyVersion: cost.pricePolicyVersion,
           priceEvidenceJson: lookup.evidenceJson,
@@ -1193,6 +1223,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       matchTier: part.matchTier ?? null,
       priceEvidenceStatus: part.priceEvidenceStatus ?? null,
       matcherVersion: part.matcherVersion ?? null,
+      matcherImplementationSha256: part.matcherImplementationSha256 ?? null,
+      matcherReleaseSha256: part.matcherReleaseSha256 ?? null,
       pricePolicyVersion: part.pricePolicyVersion ?? null,
       evidence: parseEvidenceJson(part.priceEvidenceJson),
     }));
@@ -1203,6 +1235,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       storeIndex: STORE_INDEX,
       listingKey: listingScope.listingKey,
       listingKeyVersion: listingScope.keyVersion,
+      matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       sourcePolicy: sourcePolicyEvidence,
       identity: {
         inputSource: identityInputSource,
@@ -1229,6 +1264,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         priceEvidenceObservationId: part.priceEvidenceObservationId,
         priceVariantDecisionId: part.priceVariantDecisionId,
         matchTier: part.matchTier,
+        matcherVersion: part.matcherVersion,
+        matcherImplementationSha256: part.matcherImplementationSha256,
+        matcherReleaseSha256: part.matcherReleaseSha256,
         priceEvidenceStatus: part.priceEvidenceStatus,
         evidenceDigest: sha256Json(stableEvidenceForHash(part.evidence)),
       })),
@@ -1266,6 +1304,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         storeIndex: STORE_INDEX,
         listingKey: listingScope.listingKey,
         listingKeyVersion: listingScope.keyVersion,
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         evaluatedAt: evidenceEvaluatedAt,
         procurementZip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
         sourcePolicy: sourcePolicyEvidence,
@@ -1286,6 +1327,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         listingKey: listingScope.listingKey,
         source: "retail:batch",
         recipeHash,
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         outcome: costEvidence.outcome,
         total,
         costPerUnit: perUnitStore,
@@ -1308,14 +1352,18 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         sql: `INSERT INTO "SkuCost"
           (id, observationKey, sku, effectiveDate, productCost, totalCost, costPerUnit,
            packSize, includesPackaging, currency, source, confidence, needsReview, notes,
-           recipeHash, evidenceJson, evidenceOutcome, matcherVersion, pricePolicyVersion, runId, approvalId,
+           recipeHash, evidenceJson, evidenceOutcome, matcherVersion,
+           matcherImplementationSha256, matcherReleaseSha256,
+           pricePolicyVersion, runId, approvalId,
            createdAt, updatedAt)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         args: [
           costId, observationKey, sku, eff,
           total, total, perUnitStore, packSize, 0, "USD", "retail:batch",
           identity.confidence ?? null, needsReview, noteParts.slice(0, 180), recipeHash,
           evidenceJson, costEvidence.outcome, CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           rollupPricePolicyVersion,
           runProvenance?.runId ?? null, runProvenance?.approvalId ?? null, now, now,
         ],
@@ -1330,6 +1378,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         storeIndex: STORE_INDEX,
         listingKey: listingScope.listingKey,
         listingKeyVersion: listingScope.keyVersion,
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         evaluatedAt: evidenceEvaluatedAt,
         procurementZip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
         sourcePolicy: sourcePolicyEvidence,
@@ -1345,6 +1396,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         listingKey: listingScope.listingKey,
         source: "retail:batch",
         recipeHash,
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         outcome: "UNSOURCEABLE",
         evaluatedAt: evidenceEvaluatedAt,
         runId: runProvenance?.runId ?? null,
@@ -1356,14 +1410,18 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         sql: `INSERT INTO "SkuCost"
           (id, observationKey, sku, effectiveDate, totalCost, costPerUnit, packSize,
            includesPackaging, currency, source, confidence, needsReview, notes,
-           recipeHash, evidenceJson, evidenceOutcome, matcherVersion, pricePolicyVersion, runId, approvalId,
+           recipeHash, evidenceJson, evidenceOutcome, matcherVersion,
+           matcherImplementationSha256, matcherReleaseSha256,
+           pricePolicyVersion, runId, approvalId,
            createdAt, updatedAt)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         args: [
           costId, observationKey, sku, eff,
           null, null, null, 0, "USD", "retail:batch", identity.confidence ?? null, 1,
           "UNSOURCEABLE: no eligible fresh local first-party evidence; owner review required",
           recipeHash, evidenceJson, "UNSOURCEABLE", CANONICAL_PRODUCT_MATCHER_VERSION,
+          CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           PRICE_EVIDENCE_POLICY_VERSION, runProvenance?.runId ?? null,
           runProvenance?.approvalId ?? null, now, now,
         ],
@@ -1373,7 +1431,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
 
     const authoritativeEvidence = parts.map((part) => {
       const evidenceStatus = part.priceEvidenceStatus;
-      if (!evidenceStatus || !part.matchTier || !part.matcherVersion || !part.pricePolicyVersion) {
+      if (!evidenceStatus || !part.matchTier || !part.matcherVersion ||
+          !part.matcherImplementationSha256 || !part.matcherReleaseSha256 ||
+          !part.pricePolicyVersion) {
         throw new Error(`COMPONENT_EVIDENCE_INCOMPLETE index=${part.idx}`);
       }
       const sourceEvidence = parseJsonObject(part.priceEvidenceJson);
@@ -1396,6 +1456,8 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         targetComparableUnitPrice: evidenceStatus === "ESTIMATE" ? part.perUnit : null,
         matchTier: part.matchTier,
         matcherVersion: part.matcherVersion,
+        matcherImplementationSha256: part.matcherImplementationSha256,
+        matcherReleaseSha256: part.matcherReleaseSha256,
         pricePolicyVersion: part.pricePolicyVersion,
       };
       const evidenceJson = JSON.stringify(evidencePayload);
@@ -1414,8 +1476,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
             (id, evidenceKey, skuCostId, componentIndex, evidenceStatus,
              targetCanonicalVariantId, contentCanonicalVariantId, priceCanonicalVariantId,
              contentObservationId, priceObservationId, matchTier, matcherVersion,
+             matcherImplementationSha256, matcherReleaseSha256,
              pricePolicyVersion, evidenceHash, evidenceJson, createdAt)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
           args: [
             `sce:${evidenceKey}`, evidenceKey, costId, part.idx, evidenceStatus,
             part.targetVariant.canonicalVariantId,
@@ -1423,7 +1486,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
             part.priceCanonicalVariantId ?? null,
             part.contentObservationId ?? null,
             part.priceEvidenceObservationId ?? null,
-            part.matchTier, part.matcherVersion, part.pricePolicyVersion,
+            part.matchTier, part.matcherVersion,
+            part.matcherImplementationSha256, part.matcherReleaseSha256,
+            part.pricePolicyVersion,
             evidenceHash, evidenceJson, now,
           ],
         } satisfies InStatement,

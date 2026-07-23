@@ -7,36 +7,60 @@ import {
 } from "./validation/walmart-prepublication-policy";
 
 export const WALMART_NEW_SKU_POLICY_REVIEW_EVIDENCE_SCHEMA =
-  "walmart-new-sku-policy-review-evidence/1.0.0" as const;
+  "walmart-new-sku-policy-review-evidence/1.2.0" as const;
 
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1_000;
 const PLACEHOLDER_TEXT =
   /(?:^|[^A-Z0-9])(?:TODO|TBD)(?:$|[^A-Z0-9])|PLACEHOLDER|TO_FILL|REPLACE_ME|UNKNOWN_EVIDENCE/i;
 export const WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS = [
+  "account-health-compliance",
+  "duplicate-listings-policy",
   "food-products",
+  "image-guidelines",
+  "pricing-rules",
   "product-claims",
+  "product-details-policy",
+  "product-identifier-policy",
   "prohibited-products-overview",
   "recalled-products",
   "resold-products",
   "restricted-illegal-products",
+  "selling-privileges",
+  "shipping-fulfillment-policy",
 ] as const;
 export const WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS = [
+  "account-publish-eligibility",
   "category-preapproval",
   "condition-resale-rights",
   "food-labeling-prohibited",
+  "pricing-competitiveness",
   "product-claims",
+  "product-detail-content",
+  "product-identifier-and-duplicates",
   "recall-safety",
+  "shipping-fulfillment",
   "territory-legal-sanctions",
 ] as const;
 const POLICY_SOURCES_BY_ID = new Map<string, string>(
   WALMART_POLICY_SOURCES.map((source) => [source.id, source.url] as const),
 );
 const REQUIRED_DOMAIN_SOURCES = new Map<string, readonly string[]>([
+  [
+    "account-publish-eligibility",
+    ["account-health-compliance", "selling-privileges"],
+  ],
   ["category-preapproval", ["prohibited-products-overview"]],
   ["condition-resale-rights", ["resold-products"]],
   ["food-labeling-prohibited", ["food-products", "prohibited-products-overview"]],
+  ["pricing-competitiveness", ["pricing-rules"]],
+  ["product-detail-content", ["image-guidelines", "product-details-policy"]],
+  [
+    "product-identifier-and-duplicates",
+    ["duplicate-listings-policy", "product-identifier-policy"],
+  ],
   ["product-claims", ["product-claims"]],
   ["recall-safety", ["recalled-products"]],
+  ["shipping-fulfillment", ["shipping-fulfillment-policy"]],
   [
     "territory-legal-sanctions",
     ["prohibited-products-overview", "restricted-illegal-products"],

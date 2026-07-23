@@ -1048,7 +1048,7 @@ export async function seedProductTruthTargetedEvidenceControlRun(
   db: Client,
   input: {
     plan: {
-      schemaVersion: "product-truth-targeted-walmart-evidence-plan/1.0.0";
+      schemaVersion: "product-truth-targeted-walmart-evidence-plan/1.3.0";
       runId: string;
       mode: "WAVE";
       targetFingerprint: string;
@@ -2534,7 +2534,7 @@ export async function reapExpiredProductTruthTargetedEvidenceRun(
   try {
     const run = await selectRun(transaction, input.runId);
     if (!run) throw storeError("OPERATIONAL_RUN_MISSING", "run does not exist");
-    if (run.planSchemaVersion !== "product-truth-targeted-walmart-evidence-plan/1.0.0") {
+    if (run.planSchemaVersion !== "product-truth-targeted-walmart-evidence-plan/1.3.0") {
       throw storeError(
         "OPERATIONAL_RUN_KIND_MISMATCH",
         "targeted evidence reaper cannot handle another plan contract",

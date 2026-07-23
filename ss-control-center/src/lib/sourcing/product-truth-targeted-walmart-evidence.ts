@@ -3,12 +3,18 @@ import { createHash, randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
 
 import {
+  CANONICAL_TITLE_NEUTRAL_TOKENS,
   CANONICAL_PRODUCT_MATCHER_VERSION,
   matchCanonicalProductTitle,
   type CanonicalProductIdentity,
 } from "./canonical-product-match";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
+import {
   harvestDonorDetail,
+  parseSize,
   persistScoredDonorOffer,
   scoredDonorOfferCanonicalVariantId,
   type PersistScoredDonorOfferExactScope,
@@ -47,10 +53,12 @@ import {
 import { readWalmartPilotCandidate } from "./product-truth-new-sku-view";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 import {
-  CANONICAL_PRODUCT_VARIANT_IDENTITY_VERSION,
   CANONICAL_PRODUCT_VARIANT_KEY_VERSION,
+  buildCanonicalProductVariantKey,
+  type CanonicalProductVariantKey,
 } from "./canonical-product-variant";
 import {
+  PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION,
   buildProductTruthTargetedWalmartLegacySnapshot,
@@ -238,6 +246,7 @@ function exactDonorSnapshotFromTarget(
 ): ProductTruthTargetedWalmartDonorSnapshot {
   return parseProductTruthTargetedWalmartDonorSnapshot({
     identityMode: target.identityMode,
+    identityDerivationVersion: target.identityDerivationVersion,
     donorProductId: target.donorProductId,
     donorOfferId: target.donorOfferId,
     donorIdentityStatus: target.donorIdentityStatus,
@@ -245,6 +254,10 @@ function exactDonorSnapshotFromTarget(
     canonicalVariantId: target.canonicalVariantId,
     decisionStatus: target.decisionStatus,
     matcherVersion: target.matcherVersion,
+    matcherImplementationSha256: target.matcherImplementationSha256,
+    matcherReleaseSha256: target.matcherReleaseSha256,
+    decisionEvidenceHash: target.decisionEvidenceHash,
+    decisionEvidenceJson: target.decisionEvidenceJson,
     canonicalVariantKeyVersion: target.canonicalVariantKeyVersion,
     canonicalIdentityHash: target.canonicalIdentityHash,
     canonicalIdentityJson: target.canonicalIdentityJson,
@@ -354,6 +367,10 @@ export async function readTargetedWalmartDonorSnapshot(
                  decision.canonicalVariantId,
                  decision.decisionStatus,
                  decision.matcherVersion,
+                 decision.matcherImplementationSha256,
+                 decision.matcherReleaseSha256,
+                 decision.evidenceHash AS decisionEvidenceHash,
+                 decision.evidenceJson AS decisionEvidenceJson,
                  variant.keyVersion AS canonicalVariantKeyVersion,
                  variant.identityHash AS canonicalIdentityHash,
                  variant.identityJson AS canonicalIdentityJson,
@@ -386,6 +403,7 @@ export async function readTargetedWalmartDonorSnapshot(
   const row = result.rows[0]!;
   return parseProductTruthTargetedWalmartDonorSnapshot({
     identityMode: "EXISTING_EXACT",
+    identityDerivationVersion: null,
     donorProductId: String(row.donorProductId),
     donorOfferId: String(row.donorOfferId),
     donorIdentityStatus: row.donorIdentityStatus,
@@ -393,6 +411,10 @@ export async function readTargetedWalmartDonorSnapshot(
     canonicalVariantId: String(row.canonicalVariantId),
     decisionStatus: row.decisionStatus,
     matcherVersion: row.matcherVersion,
+    matcherImplementationSha256: row.matcherImplementationSha256,
+    matcherReleaseSha256: row.matcherReleaseSha256,
+    decisionEvidenceHash: row.decisionEvidenceHash,
+    decisionEvidenceJson: row.decisionEvidenceJson,
     canonicalVariantKeyVersion: String(row.canonicalVariantKeyVersion),
     canonicalIdentityHash: String(row.canonicalIdentityHash),
     canonicalIdentityJson: String(row.canonicalIdentityJson),
@@ -424,11 +446,129 @@ function canonicalDbRow(row: Record<string, unknown>): Record<string, unknown> {
   }));
 }
 
-/** Read-only owner-bootstrap capture. No canonical row is created here. */
+function exactTrimmedText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed && trimmed === value ? trimmed : null;
+}
+
+function orderedIdentityTokens(value: string): string[] {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+const LEGACY_TITLE_MEASURE =
+  /\b\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|ounce|ounces|lb|lbs|pound|pounds|kg|kgs|g|gram|grams|ml|l|liter|liters|litre|litres|ct|count|counts)\b/gi;
+const LEGACY_NEUTRAL_TOKENS = new Set<string>(CANONICAL_TITLE_NEUTRAL_TOKENS);
+
+/**
+ * Deterministically derives a conservative identity proposal from the sealed
+ * legacy donor row. The complete post-brand title signature is kept as the
+ * product-line discriminator, so uncertainty produces a false reject rather
+ * than silently collapsing adjacent flavors/forms. A fresh exact Walmart
+ * search must still prove this identity before any canonical row is written.
+ */
+export function deriveTargetedWalmartLegacyCanonicalIdentity(input: {
+  donorProductRow: Record<string, unknown>;
+  donorOfferRow: Record<string, unknown>;
+}): CanonicalProductVariantKey {
+  const brand = exactTrimmedText(input.donorProductRow.brand);
+  const title = exactTrimmedText(input.donorProductRow.title);
+  const explicitSize = exactTrimmedText(input.donorProductRow.size);
+  const parsedSize = parseSize(title).size;
+  const size = explicitSize ?? parsedSize;
+  if (!brand || !title || !size) {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_INCOMPLETE",
+      "legacy donor must contain exact brand, title and parseable size",
+    );
+  }
+  if (
+    input.donorOfferRow.retailer !== "walmart"
+    || input.donorOfferRow.via !== "direct"
+    || Number(input.donorOfferRow.isFirstParty) !== 1
+    || input.donorOfferRow.sellerName !== "Walmart.com"
+    || Number(input.donorOfferRow.packSizeSeen) !== 1
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_SOURCE_INVALID",
+      "identity derivation requires one direct base-unit Walmart.com offer",
+    );
+  }
+
+  const brandTokens = orderedIdentityTokens(brand);
+  const withoutMeasure = title.replace(LEGACY_TITLE_MEASURE, " ");
+  const titleTokens = orderedIdentityTokens(withoutMeasure);
+  if (
+    brandTokens.length === 0
+    || titleTokens.length <= brandTokens.length
+    || brandTokens.some((token, index) => titleTokens[index] !== token)
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_BRAND_MISMATCH",
+      "legacy title must start with the exact donor brand",
+    );
+  }
+  const discriminatorTokens = titleTokens
+    .slice(brandTokens.length)
+    .filter((token) => !LEGACY_NEUTRAL_TOKENS.has(token) && !/^\d+$/.test(token));
+  if (discriminatorTokens.length === 0) {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_DISCRIMINATOR_MISSING",
+      "legacy title has no conservative post-brand identity signature",
+    );
+  }
+
+  let canonical: CanonicalProductVariantKey;
+  try {
+    canonical = buildCanonicalProductVariantKey({
+      brand,
+      productLine: discriminatorTokens.join(" "),
+      flavor: null,
+      modifiers: [],
+      form: null,
+      size,
+      outerPackCount: 1,
+    });
+  } catch (error) {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_INVALID",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+  const exactTitleProof = matchCanonicalProductTitle(
+    {
+      brand: canonical.normalized.brand,
+      productLine: canonical.normalized.productLine,
+      flavor: canonical.normalized.flavor,
+      modifiers: canonical.normalized.modifiers,
+      form: canonical.normalized.form,
+      size: `${canonical.normalized.size.baseAmount} ${canonical.normalized.size.baseUnit}`,
+      outerPackCount: 1,
+    },
+    { title },
+  );
+  if (exactTitleProof.verdict !== "EXACT_IDENTITY") {
+    fail(
+      "TARGETED_EVIDENCE_MACHINE_IDENTITY_TITLE_NOT_EXACT",
+      exactTitleProof.reasonCodes.join(",") || exactTitleProof.verdict,
+    );
+  }
+  return canonical;
+}
+
+/** Read-only evidence-verified bootstrap capture. No canonical row is created here. */
 export async function readTargetedWalmartLegacyDonorSnapshot(
   db: Client,
   donorProductId: string,
-  canonicalIdentityJson: string,
 ): Promise<ProductTruthTargetedWalmartDonorSnapshot> {
   const products = await db.execute({
     sql: `SELECT * FROM "DonorProduct" WHERE id=?`,
@@ -456,8 +596,15 @@ export async function readTargetedWalmartLegacyDonorSnapshot(
   if (decisions.rows.length !== 0) {
     fail("TARGETED_EVIDENCE_BOOTSTRAP_DECISION_NOT_ABSENT", "bootstrap donor already owns a canonical decision");
   }
-  const identityHash = sha256(canonicalIdentityJson);
-  const canonicalVariantId = `cpv1:${identityHash}`;
+  const product = canonicalDbRow(products.rows[0] as Record<string, unknown>);
+  const offer = canonicalDbRow(offers.rows[0] as Record<string, unknown>);
+  const derivedIdentity = deriveTargetedWalmartLegacyCanonicalIdentity({
+    donorProductRow: product,
+    donorOfferRow: offer,
+  });
+  const canonicalIdentityJson = derivedIdentity.identityJson;
+  const identityHash = derivedIdentity.identityHash;
+  const canonicalVariantId = derivedIdentity.canonicalVariantId;
   const variants = await db.execute({
     sql: `SELECT id FROM "CanonicalProductVariant"
           WHERE id=? OR variantKey=? OR identityHash=?`,
@@ -466,14 +613,14 @@ export async function readTargetedWalmartLegacyDonorSnapshot(
   if (variants.rows.length !== 0) {
     fail(
       "TARGETED_EVIDENCE_BOOTSTRAP_VARIANT_NOT_ABSENT",
-      "owner-attested bootstrap requires its expected canonical variant to be absent",
+      "evidence-verified bootstrap requires its expected canonical variant to be absent",
     );
   }
-  const product = canonicalDbRow(products.rows[0] as Record<string, unknown>);
-  const offer = canonicalDbRow(offers.rows[0] as Record<string, unknown>);
   const retailerProductId = String(offer.retailerProductId ?? "");
   return parseProductTruthTargetedWalmartDonorSnapshot({
-    identityMode: "OWNER_ATTESTED_BOOTSTRAP",
+    identityMode: "EVIDENCE_VERIFIED_BOOTSTRAP",
+    identityDerivationVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
     donorProductId,
     donorOfferId: String(offer.id ?? ""),
     donorIdentityStatus: product.identityStatus,
@@ -481,6 +628,10 @@ export async function readTargetedWalmartLegacyDonorSnapshot(
     canonicalVariantId,
     decisionStatus: null,
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    decisionEvidenceHash: null,
+    decisionEvidenceJson: null,
     canonicalVariantKeyVersion: CANONICAL_PRODUCT_VARIANT_KEY_VERSION,
     canonicalIdentityHash: identityHash,
     canonicalIdentityJson,
@@ -499,90 +650,6 @@ export async function readTargetedWalmartLegacyDonorSnapshot(
   });
 }
 
-export async function readTargetedWalmartLegacyIdentityTemplate(
-  db: Client,
-  donorProductId: string,
-): Promise<Record<string, unknown>> {
-  const products = await db.execute({
-    sql: `SELECT * FROM "DonorProduct" WHERE id=?`,
-    args: [donorProductId],
-  });
-  const offers = await db.execute({
-    sql: `SELECT * FROM "DonorOffer"
-          WHERE donorProductId=? AND retailer='walmart' AND via='direct' AND isFirstParty=1
-          ORDER BY id`,
-    args: [donorProductId],
-  });
-  const decisions = await db.execute({
-    sql: `SELECT id FROM "DonorProductVariantDecision" WHERE donorProductId=?`,
-    args: [donorProductId],
-  });
-  if (products.rows.length !== 1 || offers.rows.length !== 1 || decisions.rows.length !== 0) {
-    fail(
-      "TARGETED_EVIDENCE_BOOTSTRAP_TEMPLATE_SCOPE_INVALID",
-      "template requires one unconfirmed donor, one direct first-party Walmart offer, and zero decisions",
-    );
-  }
-  const product = canonicalDbRow(products.rows[0] as Record<string, unknown>);
-  const offer = canonicalDbRow(offers.rows[0] as Record<string, unknown>);
-  if (
-    !["candidate", "legacy_unverified"].includes(String(product.identityStatus))
-    || offer.sellerName !== "Walmart.com"
-    || Number(offer.packSizeSeen) !== 1
-  ) {
-    fail(
-      "TARGETED_EVIDENCE_BOOTSTRAP_TEMPLATE_SCOPE_INVALID",
-      "legacy donor status or Walmart.com seller proof is not eligible",
-    );
-  }
-  const retailerProductId = String(offer.retailerProductId ?? "");
-  const normalizedProductUrl = normalizeExactWalmartProductUrl(
-    offer.productUrl,
-    retailerProductId,
-  );
-  const legacySnapshot = buildProductTruthTargetedWalmartLegacySnapshot({
-    donorProductRow: product,
-    donorOfferRow: offer,
-  });
-  return {
-    schemaVersion: "product-truth-targeted-owner-identity-template/1.0.0",
-    authorityRequired: "owner",
-    authenticated: false,
-    instructions: [
-      "Owner must independently verify the exact sellable variant.",
-      "Replace every placeholder and save only canonicalIdentity as canonical JSON.",
-      "The later external Product Truth approval attests the exact plan SHA that binds these row bytes and identity.",
-    ],
-    donorProductId,
-    donorOfferId: String(offer.id),
-    retailerProductId,
-    normalizedProductUrl,
-    legacySnapshotSha256: legacySnapshot.sha256,
-    legacyEvidence: {
-      brand: product.brand ?? null,
-      productLine: product.productLine ?? null,
-      flavor: product.flavor ?? null,
-      containerType: product.containerType ?? null,
-      size: product.size ?? null,
-      title: product.title ?? null,
-    },
-    canonicalIdentity: {
-      schemaVersion: CANONICAL_PRODUCT_VARIANT_IDENTITY_VERSION,
-      brand: "OWNER_REPLACE",
-      productLine: null,
-      flavor: null,
-      modifiers: [],
-      form: "OWNER_REPLACE",
-      size: {
-        dimension: "OWNER_REPLACE",
-        baseAmount: "OWNER_REPLACE",
-        baseUnit: "OWNER_REPLACE",
-      },
-      outerPackCount: 1,
-    },
-  };
-}
-
 async function assertRuntimeBindings(input: {
   db: Client;
   plan: ProductTruthTargetedWalmartEvidencePlan;
@@ -590,16 +657,6 @@ async function assertRuntimeBindings(input: {
   phase?: "PRE_PROMOTION" | "POST_PROMOTION";
   approvalId?: string;
 }): Promise<void> {
-  const probe = await input.adapter.probeRuntime();
-  if (
-    probe.targetFingerprint !== input.plan.targetFingerprint
-    || probe.engineReleaseSha256 !== input.plan.engineReleaseSha256
-    || probe.schemaFingerprintSha256 !== input.plan.schemaFingerprintSha256
-    || probe.migrationSetSha256 !== input.plan.migrationSetSha256
-    || probe.canonicalMigrationsApplied !== true
-  ) {
-    fail("TARGETED_EVIDENCE_RUNTIME_DRIFT", "DB/schema/migration/source release differs from sealed plan");
-  }
   const target = input.plan.targets[0];
   if (target.identityMode === "EXISTING_EXACT") {
     const stored = await readTargetedWalmartDonorSnapshot(input.db, target.donorProductId);
@@ -610,13 +667,10 @@ async function assertRuntimeBindings(input: {
     ) {
       fail("TARGETED_EVIDENCE_DONOR_DRIFT", "donor/offer/decision graph differs from sealed plan");
     }
-    return;
-  }
-  if ((input.phase ?? "PRE_PROMOTION") === "PRE_PROMOTION") {
+  } else if ((input.phase ?? "PRE_PROMOTION") === "PRE_PROMOTION") {
     const stored = await readTargetedWalmartLegacyDonorSnapshot(
       input.db,
       target.donorProductId,
-      target.canonicalIdentityJson,
     );
     if (
       targetedWalmartDonorSnapshotSha256(stored) !== target.donorSnapshotSha256
@@ -628,42 +682,61 @@ async function assertRuntimeBindings(input: {
         "legacy donor/offer full-row bytes or canonical absence differ from sealed plan",
       );
     }
-    return;
+  } else {
+    if (!input.approvalId) {
+      fail("TARGETED_EVIDENCE_APPROVAL_REQUIRED", "post-promotion binding requires approvalId");
+    }
+    const stored = await readTargetedWalmartDonorSnapshot(input.db, target.donorProductId);
+    const decisions = await input.db.execute({
+      sql: `SELECT id,canonicalVariantId,decisionStatus,matcherVersion,
+                   matcherImplementationSha256,matcherReleaseSha256,
+                   evidenceHash,evidenceJson,runId,approvalId
+            FROM "DonorProductVariantDecision" WHERE donorProductId=? ORDER BY id`,
+      args: [target.donorProductId],
+    });
+    const decision = decisions.rows[0];
+    if (
+      decisions.rows.length !== 1
+      || !decision
+      || String(decision.id) !== stored.variantDecisionId
+      || String(decision.canonicalVariantId) !== target.canonicalVariantId
+      || decision.decisionStatus !== "exact_confirmed"
+      || decision.matcherVersion !== target.matcherVersion
+      || decision.matcherImplementationSha256 !== target.matcherImplementationSha256
+      || decision.matcherReleaseSha256 !== target.matcherReleaseSha256
+      || decision.evidenceHash !== stored.decisionEvidenceHash
+      || decision.evidenceJson !== stored.decisionEvidenceJson
+      || decision.runId !== input.plan.runId
+      || decision.approvalId !== input.approvalId
+      || stored.donorProductId !== target.donorProductId
+      || stored.donorOfferId !== target.donorOfferId
+      || stored.canonicalVariantId !== target.canonicalVariantId
+      || stored.canonicalIdentityHash !== target.canonicalIdentityHash
+      || stored.canonicalIdentityJson !== target.canonicalIdentityJson
+      || stored.canonicalVariantKeyVersion !== target.canonicalVariantKeyVersion
+      || stored.retailerProductId !== target.retailerProductId
+      || stored.normalizedProductUrl !== target.normalizedProductUrl
+      || stored.via !== "direct"
+      || stored.isFirstParty !== true
+    ) {
+      fail(
+        "TARGETED_EVIDENCE_BOOTSTRAP_PROMOTION_DRIFT",
+        "promoted exact alias differs from the owner-bound canonical target",
+      );
+    }
   }
-  if (!input.approvalId) {
-    fail("TARGETED_EVIDENCE_APPROVAL_REQUIRED", "post-promotion binding requires approvalId");
-  }
-  const stored = await readTargetedWalmartDonorSnapshot(input.db, target.donorProductId);
-  const decisions = await input.db.execute({
-    sql: `SELECT id,canonicalVariantId,decisionStatus,matcherVersion,runId,approvalId
-          FROM "DonorProductVariantDecision" WHERE donorProductId=? ORDER BY id`,
-    args: [target.donorProductId],
-  });
-  const decision = decisions.rows[0];
+
+  // Validate the immutable donor/decision bytes before crossing any adapter or
+  // provider boundary. A forged evidence hash must consume zero external work.
+  const probe = await input.adapter.probeRuntime();
   if (
-    decisions.rows.length !== 1
-    || !decision
-    || String(decision.id) !== stored.variantDecisionId
-    || String(decision.canonicalVariantId) !== target.canonicalVariantId
-    || decision.decisionStatus !== "exact_confirmed"
-    || decision.matcherVersion !== target.matcherVersion
-    || decision.runId !== input.plan.runId
-    || decision.approvalId !== input.approvalId
-    || stored.donorProductId !== target.donorProductId
-    || stored.donorOfferId !== target.donorOfferId
-    || stored.canonicalVariantId !== target.canonicalVariantId
-    || stored.canonicalIdentityHash !== target.canonicalIdentityHash
-    || stored.canonicalIdentityJson !== target.canonicalIdentityJson
-    || stored.canonicalVariantKeyVersion !== target.canonicalVariantKeyVersion
-    || stored.retailerProductId !== target.retailerProductId
-    || stored.normalizedProductUrl !== target.normalizedProductUrl
-    || stored.via !== "direct"
-    || stored.isFirstParty !== true
+    probe.targetFingerprint !== input.plan.targetFingerprint
+    || probe.engineReleaseSha256 !== input.plan.engineReleaseSha256
+    || probe.schemaFingerprintSha256 !== input.plan.schemaFingerprintSha256
+    || probe.migrationSetSha256 !== input.plan.migrationSetSha256
+    || probe.canonicalMigrationsApplied !== true
   ) {
-    fail(
-      "TARGETED_EVIDENCE_BOOTSTRAP_PROMOTION_DRIFT",
-      "promoted exact alias differs from the owner-bound canonical target",
-    );
+    fail("TARGETED_EVIDENCE_RUNTIME_DRIFT", "DB/schema/migration/source release differs from sealed plan");
   }
 }
 
@@ -675,7 +748,8 @@ async function runtimeVariantDecisionId(input: {
   const target = input.plan.targets[0];
   if (target.identityMode === "EXISTING_EXACT") return target.variantDecisionId;
   const rows = await input.db.execute({
-    sql: `SELECT id,canonicalVariantId,decisionStatus,matcherVersion,runId,approvalId
+    sql: `SELECT id,canonicalVariantId,decisionStatus,matcherVersion,
+                 matcherImplementationSha256,matcherReleaseSha256,runId,approvalId
           FROM "DonorProductVariantDecision" WHERE donorProductId=? ORDER BY id`,
     args: [target.donorProductId],
   });
@@ -686,6 +760,8 @@ async function runtimeVariantDecisionId(input: {
     || row?.canonicalVariantId !== target.canonicalVariantId
     || row?.decisionStatus !== "exact_confirmed"
     || row?.matcherVersion !== target.matcherVersion
+    || row?.matcherImplementationSha256 !== target.matcherImplementationSha256
+    || row?.matcherReleaseSha256 !== target.matcherReleaseSha256
     || row?.runId !== input.plan.runId
     || row?.approvalId !== input.approvalId
   ) {
@@ -1573,7 +1649,7 @@ export async function executeProductTruthTargetedWalmartEvidence(
   });
   if (
     raw.command === "execute"
-    && plan.targets[0].identityMode === "OWNER_ATTESTED_BOOTSTRAP"
+    && plan.targets[0].identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP"
     && initialVariantDecisionId !== null
   ) {
     fail("TARGETED_EVIDENCE_BOOTSTRAP_REPLAY_FORBIDDEN", "execute cannot adopt an already promoted bootstrap donor");
@@ -1725,7 +1801,7 @@ export async function executeProductTruthTargetedWalmartEvidence(
               canonicalVariantId: plan.targets[0].canonicalVariantId,
               variantDecisionId: plan.targets[0].variantDecisionId,
               canonicalVariantMustBeAbsent:
-                plan.targets[0].identityMode === "OWNER_ATTESTED_BOOTSTRAP",
+                plan.targets[0].identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP",
               normalizedProductUrl: plan.targets[0].normalizedProductUrl,
               expectedLegacyRows: plan.targets[0].legacySnapshot === null
                 ? null

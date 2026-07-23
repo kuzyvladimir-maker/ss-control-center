@@ -1,0 +1,61 @@
+{
+  "authority": "LOCAL_REHEARSAL_ONLY_NOT_OWNER_APPROVAL",
+  "createdAt": "2026-07-23T02:07:55.000Z",
+  "durableArtifacts": {
+    "localApprovalSha256": "408aadae1f59a595be268fe7241dacf515ed473214940654efb193b02ab15ec8",
+    "planSha256": "807fa7a87612e093ee83a6911c0c929df4ce5f3dfbf8d11ba5174ed129782029",
+    "postcheckPlanSha256": "2ad34a8468a01487ea025bc9b12a24ad54517a06d50c55db06c12313dc48b466",
+    "reportSha256": "2c674710d90fc33d9f588a7c42a6583611faf6e6a35ec401cfec18222432fd47"
+  },
+  "externalEffects": {
+    "databaseProductionWrites": 0,
+    "modelCalls": 0,
+    "paidProviderCalls": 0,
+    "walmartCalls": 0,
+    "walmartListingWrites": 0
+  },
+  "guardProbes": {
+    "buyerAttemptSkuMismatch": "REJECTED_WALMART_BUYER_EVIDENCE_ATTEMPT_SKU_MISMATCH",
+    "invalidActiveFence": "REJECTED_INVALID_MARKETPLACE_SUBMISSION_ACTIVE_FENCE",
+    "pilotThirdDistinctSku": "REJECTED_WALMART_PILOT_GLOBAL_TWO_SKU_CAP_REACHED",
+    "positiveAttemptAndBuyerEvidence": "PASS_1_ATTEMPT_1_EVIDENCE_THEN_ROLLBACK",
+    "rowsAfterProbes": {
+      "MarketplaceSubmissionAttempt": 0,
+      "WalmartBuyerPublicationEvidence": 0
+    }
+  },
+  "localApply": {
+    "activationReceiptRows": 1,
+    "foreignKeyViolations": 0,
+    "integrityCheck": "ok",
+    "migrationName": "20260719003000_walmart_publish_lifecycle_safety",
+    "migrationSha256": "d46c10fbf1e1c30071cf162a3c5f0cebb31954b76e844a8d4d4df610d065641e",
+    "postSchemaSha256": "ee6035c35520970377f89dbd8649dbb733ae5e436caa633d51e397da5b8282ac",
+    "preSchemaSha256": "0d85e87f159937ce398e8c9959db1308316eb68d5b148e92f087e88fb7979dd9",
+    "prismaHistoryRows": 1,
+    "requiredLifecycleObjectsPresent": 10,
+    "status": "applied"
+  },
+  "postcheck": {
+    "artifactsState": "applied",
+    "blockers": [
+      "MIGRATION_ALREADY_ACTIVATED"
+    ],
+    "eligibleForApply": false,
+    "purpose": "Proves a second apply is rejected after the first sealed local activation"
+  },
+  "productionBoundary": {
+    "localApprovalBindsProduction": false,
+    "productionPlanSha256": "dce9ece5f3613cf765ae21040fdaf471f578d88b4dc1b4b748d0d5e3f7036ac4",
+    "productionPlanStillRequiresOwnerApproval": true,
+    "productionTargetAccessed": false
+  },
+  "schemaVersion": "walmart-lifecycle-local-rehearsal-summary/1.0.0",
+  "source": {
+    "backupKind": "COPY_OF_PRE_PRODUCT_TRUTH_PRODUCTION_PORTABLE_BACKUP",
+    "backupSha256": "6e69911d1ab83f77545c9fa5789d35e29f11cd434a25b24d2f03e3fdef952526",
+    "productTruthMigrationMode": "EXACT_EIGHT_MIGRATION_SQL_FILES_APPLIED_TO_LOCAL_COPY_ONLY",
+    "productTruthMigrationReceiptLedgerReproduced": false,
+    "temporaryDatabaseRetainedInDurableArtifacts": false
+  }
+}

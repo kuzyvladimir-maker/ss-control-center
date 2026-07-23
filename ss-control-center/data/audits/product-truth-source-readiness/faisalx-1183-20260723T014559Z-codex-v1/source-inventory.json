@@ -1,0 +1,126 @@
+{
+  "schema_version": "product-truth-authoritative-source-inventory/v1",
+  "captured_at": "2026-07-23T01:45:59.000Z",
+  "updated_at": "2026-07-23T01:56:01.386Z",
+  "authoritative_phase1_manifest_ready": false,
+  "amazon_reports": {
+    "required_report_type": "GET_MERCHANT_LISTINGS_ALL_DATA",
+    "fresh_per_scope_reports_found": [
+      {
+        "scope_key": "store1",
+        "store_name": "Salutem Solutions",
+        "report_id": "1076999020657",
+        "report_document_id": "amzn1.spdoc.1.4.na.7728728e-b01f-4576-9af8-d78523f7f6e7.T33L1X3BVOZSDH.47700",
+        "report_created_at": "2026-07-23T00:01:55.000Z",
+        "downloaded_at": "2026-07-23T01:51:17.169Z",
+        "source_path": "amazon-reports/amazon-store1-1076999020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+        "bytes": 1662849,
+        "data_rows": 1563,
+        "content_sha256": "6655a6a093d65f1915195650c90bc3525ee118182e643b13046afdbb874942c5"
+      },
+      {
+        "scope_key": "store3",
+        "store_name": "AMZ Commerce",
+        "report_id": "424270020657",
+        "report_document_id": "amzn1.spdoc.1.4.na.b8b0e280-b604-4955-8cc8-333f877164cb.T1CFUWJR4HIS8N.47700",
+        "report_created_at": "2026-07-23T00:08:15.000Z",
+        "downloaded_at": "2026-07-23T01:51:17.464Z",
+        "source_path": "amazon-reports/amazon-store3-424270020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+        "bytes": 149802,
+        "data_rows": 514,
+        "content_sha256": "5c49ec8dcc996f7dd958ac966a56c017aaad8e2273ac3e393412467023787d08"
+      },
+      {
+        "scope_key": "store5",
+        "store_name": "Retailer Distributor",
+        "report_id": "223657020657",
+        "report_document_id": "amzn1.spdoc.1.4.na.ec62f0f9-b6c8-441a-9147-fccd99848bd9.T9DETC9BY14QR.47700",
+        "report_created_at": "2026-07-23T00:14:07.000Z",
+        "downloaded_at": "2026-07-23T01:51:17.748Z",
+        "source_path": "amazon-reports/amazon-store5-223657020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+        "bytes": 421,
+        "data_rows": 0,
+        "content_sha256": "05632ea2119651b27f8f09c5e9f595f805a746489e67899d4a59df0ff98cb100",
+        "account_participation_observation": "NO_US_MARKETPLACE_PARTICIPATION"
+      }
+    ],
+    "report_create_calls": 0,
+    "read_only_downloads": 3,
+    "unresolved_scopes": [
+      {
+        "scope_key": "store2",
+        "store_name": "Vladimir Personal",
+        "api_result": "HTTP_403_UNAUTHORIZED",
+        "seller_id_configured": false,
+        "owner_connectivity_confirmation_required": true
+      },
+      {
+        "scope_key": "store4",
+        "store_name": "Sirius International",
+        "api_result": "NOT_ATTEMPTED_NO_CREDENTIALS",
+        "seller_id_configured": false,
+        "owner_connectivity_confirmation_required": true
+      }
+    ],
+    "repository_search_result": "NO_PREEXISTING_CAPTURE_FOUND_BEFORE_READ_ONLY_DOWNLOAD"
+  },
+  "walmart_reports": {
+    "required_report_type": "ITEM",
+    "required_report_version": "v6",
+    "fresh_completed_report_found": false,
+    "latest_read_only_list_probe": {
+      "captured_at": "2026-07-23T01:56:01.386Z",
+      "requested_window_start": "2026-07-21T01:55:24.000Z",
+      "requested_window_end": "2026-07-23T01:55:24.000Z",
+      "http_status": 200,
+      "reported_total_count": 17,
+      "first_page_rows": 10,
+      "first_page_newest_at": "2026-07-23T01:03:24.000Z",
+      "first_page_oldest_at": "2026-07-21T23:02:51.000Z",
+      "first_page_versions": [
+        "v2"
+      ],
+      "conclusion": "NO_API_VISIBLE_ITEM_V6_IN_FULL_LATEST_24H_WINDOW",
+      "scope_limit": "The first page crosses the 24-hour cutoff but not the full 48-hour query start; no cursor call was made.",
+      "response_path": "walmart-item-v6-list-probe-20260723T015524Z/response.bytes",
+      "response_sha256": "33e43fad59fe1eb45fa76a3ef06c73d3d375b8457c32f3a8fb50e50385aceebb",
+      "metadata_path": "walmart-item-v6-list-probe-20260723T015524Z/metadata.json",
+      "metadata_sha256": "e7bb45ba5f973bb21274e18b548c6146423cfa3a3f39051ddd4c0d36bc926af0"
+    },
+    "last_attempt": {
+      "session": "item-v6-store1-20260722-pilot-codex-v1",
+      "observed_at": "2026-07-22T12:04:44.047Z",
+      "http_status": 429,
+      "state": "MANUAL_REVIEW",
+      "authorization_consumed": true,
+      "retry_with_same_authorization_forbidden": true,
+      "report_request_id_received": false,
+      "report_file_received": false
+    }
+  },
+  "prohibited_substitutes": [
+    "AmazonListingSnapshot",
+    "WalmartCatalogItem",
+    "historical combined Amazon export",
+    "seller exact-SKU GET",
+    "manual Product Truth",
+    "visual attestation"
+  ],
+  "next_external_inputs": [
+    "Owner disposition for Amazon store2 and store4 connectivity, plus store5 deactivated-scope inclusion or exclusion.",
+    "Fresh GET_MERCHANT_LISTINGS_ALL_DATA reports only for any additional Amazon scopes the owner confirms as IN_SCOPE; store1, store3 and store5 exact report bytes are already captured.",
+    "One new owner-authorized zero-retry Walmart ITEM v6 report request after the prior 429-burned authorization.",
+    "Owner scope dispositions bound to exact report bytes."
+  ],
+  "external_effects": {
+    "database_writes": 0,
+    "marketplace_report_create_calls": 0,
+    "amazon_report_document_metadata_get_calls": 3,
+    "amazon_report_download_get_calls": 3,
+    "walmart_oauth_token_calls": 1,
+    "walmart_report_list_get_calls": 1,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "walmart_listing_writes": 0
+  }
+}

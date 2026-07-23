@@ -1,0 +1,112 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "createdAt": "2026-07-23T05:21:27.760Z",
+  "engineReleaseSha256": "ca4ac9e47825114c13334f9bfd4f1a7ebbbc45a5d8c189916a66d567d19c208e",
+  "expiresAt": "2026-07-24T01:00:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-23T05:21:27.760Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "4a912aca80b69eafaff365f453df89d7e5f11241654f028b1cdae0c7bac37f15"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 180000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 100
+    }
+  ],
+  "runId": "wm-ritz-cheese-localproof-20260723T0522Z",
+  "schemaFingerprintSha256": "8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.3.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "0ca0e14ed91b7eae080e327b8ce75b938dd819ee2bab9c83b7007784abe99d34",
+  "targetSetSha256": "54d1324e4f8498fc3cb712498fa4f1f79bf234118ef0265251e1f26eec77b50d",
+  "targets": [
+    {
+      "canonicalIdentityHash": "ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"ritz\",\"productLine\":\"bits cheese crackers lunch sandwich snacks\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":249.4758035,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": null,
+      "decisionEvidenceJson": null,
+      "decisionStatus": null,
+      "donorIdentityStatus": "legacy_unverified",
+      "donorOfferId": "do:walmart:34312392",
+      "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+      "donorSnapshotSha256": "4a912aca80b69eafaff365f453df89d7e5f11241654f028b1cdae0c7bac37f15",
+      "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+      "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+      "isFirstParty": true,
+      "legacySnapshot": {
+        "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-08T19:14:50.353Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"75422f18-e3d2-4c62-ae62-7287aaa75119\",\n  \"fetchedAt\": \"2026-07-11T14:07:42.021Z\",\n  \"id\": \"do:walmart:34312392\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 3.97,\n  \"pricePerUnit\": 3.97,\n  \"productUrl\": \"https://www.walmart.com/ip/RITZ-Bits-Cheese-Sandwich-Crackers-8-8-oz/34312392?classType=REGULAR&athbdg=L1600\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"34312392\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-11T14:07:42.021Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+        "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"label\\\":\\\"Features\\\",\\\"value\\\":\\\"No High Fructose Corn Syrup\\\"},{\\\"label\\\":\\\"Dietary Needs\\\",\\\"value\\\":\\\"0 Grams Trans Fat, Naturally Flavored\\\"},{\\\"label\\\":\\\"State of Readiness\\\",\\\"value\\\":\\\"Ready to Eat\\\"},{\\\"label\\\":\\\"Form\\\",\\\"value\\\":\\\"Pieces\\\"},{\\\"label\\\":\\\"Package Quantity\\\",\\\"value\\\":\\\"1\\\"},{\\\"label\\\":\\\"Origin\\\",\\\"value\\\":\\\"Made in the USA or Imported\\\"}]\",\n  \"bestPrice\": 3.97,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Ritz\",\n  \"bullets\": \"[\\\"One 8.8 oz box of RITZ Bits Cheese Sandwich Crackers (packaging may vary)\\\",\\\"Smooth and creamy cheese spread between two tiny RITZ snack crackers\\\",\\\"Bite-sized, mini crackers featuring filling made with real cheese and containing no high-fructose corn syrup for a deliciously crunchy snack\\\",\\\"RITZ snack crackers with cheese that make great office snacks and after-school snacks for kids and adults; wonderful on the go snacks and travel snacks\\\",\\\"Box of cheese and crackers for anytime, anywhere snacking\\\",\\\"Packaging may vary. Please refer to the actual packaging for current information for this product\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-08T19:08:28.677Z\",\n  \"currency\": \"USD\",\n  \"description\": \"Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"75422f18-e3d2-4c62-ae62-7287aaa75119\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"ritz|bits|cheese|sandwich|crackers|lunch|snacks|8 8 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_73635a4b-03d1-4941-a786-d15b73bbf82f\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_2833a548-2bdf-480f-bf3a-1c47eabe9385\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_51d34b86-3fcc-496f-b2c1-9e8e6e030ddf\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_92bee758-0712-4f26-ae53-8ffd4c5f4743\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_3df06436-9647-4533-bfaa-77d4eaab9293\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_97a8da23-6499-40a9-b870-a5da12c010eb\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_2d456492-54b3-4409-8ae9-9287a2668e1a\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_aed1e4b7-c752-4f9f-a283-9aa0ba938d41\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_1dd05e7e-f501-4fb4-87d6-d836425b25c9\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_a20daa79-ee33-4423-9ee3-dc12932a49d1\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_ea0def60-ab8f-4310-a7fd-74434f67bf34\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_ee2d5a00-314a-4580-b10f-fa824774dee7\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_895b22f8-360d-4014-a501-7dd7096fb0ec\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_177a30fb-aa99-4f53-a508-3c5b1575c2e5\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_d24c335b-ab1e-42b5-8925-18f3369c623e\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_d7846b14-5496-47ad-93a9-f0b60fb1a6aa\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_2f47d504-9430-4d85-acf8-e9c212907451\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_ad778cf4-ae3c-4d6f-99b4-321216dfe50d\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_d3ddad4e-02ec-4535-8b7c-715cea0760db\\\"]\",\n  \"ingredients\": \"UNBLEACHED ENRICHED FLOUR (WHEAT FLOUR, NIACIN, REDUCED IRON, THIAMINE MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID), CANOLA OIL, PALM OIL, SUGAR, WHEY, LEAVENING (CALCIUM PHOSPHATE, BAKING SODA), CHEDDAR CHEESE POWDER (PASTEURIZED MILK, CHEESE CULTURES, SALT, ENZYMES), SALT, SODIUM PHOSPHATE, NATURAL FLAVOR, SOY LECITHIN, YEAST EXTRACT, CORNSTARCH, TURMERIC, ANNATTO EXTRACTS.\",\n  \"mainImageUrl\": \"https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": \"{\\\"added-sugars\\\":6.89655172413793,\\\"added-sugars_100g\\\":6.89655172413793,\\\"added-sugars_serving\\\":2,\\\"added-sugars_unit\\\":\\\"g\\\",\\\"added-sugars_value\\\":6.89655172413793,\\\"calcium\\\":0.206896551724138,\\\"calcium_100g\\\":0.206896551724138,\\\"calcium_serving\\\":0.06,\\\"calcium_unit\\\":\\\"g\\\",\\\"calcium_value\\\":0.206896551724138,\\\"carbohydrates\\\":58.6206896551724,\\\"carbohydrates_100g\\\":58.6206896551724,\\\"carbohydrates_serving\\\":17,\\\"carbohydrates_unit\\\":\\\"g\\\",\\\"carbohydrates_value\\\":58.6206896551724,\\\"energy\\\":2262.06896551724,\\\"energy-kcal\\\":517.241379310345,\\\"energy-kcal_100g\\\":517.241379310345,\\\"energy-kcal_serving\\\":150,\\\"energy-kcal_unit\\\":\\\"kcal\\\",\\\"energy-kcal_value\\\":517.241379310345,\\\"energy-kj\\\":2262.06896551724,\\\"energy-kj_100g\\\":2262.06896551724,\\\"energy-kj_modifier\\\":\\\"~\\\",\\\"energy-kj_serving\\\":656,\\\"energy-kj_unit\\\":\\\"kJ\\\",\\\"energy-kj_value\\\":2262.06896551724,\\\"energy_100g\\\":2262.06896551724,\\\"energy_modifier\\\":\\\"~\\\",\\\"energy_serving\\\":656,\\\"energy_unit\\\":\\\"kJ\\\",\\\"energy_value\\\":2262.06896551724,\\\"fat\\\":31.0344827586207,\\\"fat_100g\\\":31.0344827586207,\\\"fat_serving\\\":9,\\\"fat_unit\\\":\\\"g\\\",\\\"fat_value\\\":31.0344827586207,\\\"fruits-vegetables-legumes-estimate-from-ingredients_100g\\\":0,\\\"fruits-vegetables-nuts-estimate-from-ingredients_100g\\\":23.3333333333333,\\\"iron\\\":0.00275862068965517,\\\"iron_100g\\\":0.00275862068965517,\\\"iron_serving\\\":0.0008,\\\"iron_unit\\\":\\\"g\\\",\\\"iron_value\\\":0.00275862068965517,\\\"nova-group\\\":13.7931034482759,\\\"nova-group_100g\\\":13.7931034482759,\\\"nova-group_serving\\\":13.7931034482759,\\\"nova-group_unit\\\":\\\"\\\",\\\"nova-group_value\\\":13.7931034482759,\\\"potassium\\\":0.275862068965517,\\\"potassium_100g\\\":0.275862068965517,\\\"potassium_serving\\\":0.08,\\\"potassium_unit\\\":\\\"g\\\",\\\"potassium_value\\\":0.275862068965517,\\\"proteins\\\":6.89655172413793,\\\"proteins_100g\\\":6.89655172413793,\\\"proteins_serving\\\":2,\\\"proteins_unit\\\":\\\"g\\\",\\\"proteins_value\\\":6.89655172413793,\\\"salt\\\":1.07758620689655,\\\"salt_100g\\\":1.07758620689655,\\\"salt_serving\\\":0.312,\\\"salt_unit\\\":\\\"g\\\",\\\"salt_value\\\":1.07758620689655,\\\"saturated-fat\\\":10.3448275862069,\\\"saturated-fat_100g\\\":10.3448275862069,\\\"saturated-fat_serving\\\":3,\\\"saturated-fat_unit\\\":\\\"g\\\",\\\"saturated-fat_value\\\":10.3448275862069,\\\"sodium\\\":0.431034482758621,\\\"sodium_100g\\\":0.431034482758621,\\\"sodium_serving\\\":0.125,\\\"sodium_unit\\\":\\\"g\\\",\\\"sodium_value\\\":0.431034482758621,\\\"sugars\\\":13.7931034482759,\\\"sugars_100g\\\":13.7931034482759,\\\"sugars_serving\\\":4,\\\"sugars_unit\\\":\\\"g\\\",\\\"sugars_value\\\":13.7931034482759,\\\"allergens\\\":[\\\"gluten\\\",\\\"milk\\\",\\\"peanuts\\\",\\\"soybeans\\\"]}\",\n  \"pricePerMeasure\": 0.451,\n  \"productLine\": null,\n  \"size\": \"8.8 oz\",\n  \"title\": \"RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz\",\n  \"unitAmount\": 8.8,\n  \"unitMeasure\": \"oz\",\n  \"upc\": \"044000035457\",\n  \"updatedAt\": \"2026-07-11T14:07:42.021Z\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+        "sha256": "f8c276b2709f5ffd4cc915a4578936a5a116d9c7f5991d3b3c8010efcae0da17"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/34312392",
+      "ordinal": 0,
+      "query": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks 8.8 oz",
+      "retailer": "walmart",
+      "retailerProductId": "34312392",
+      "variantDecisionId": null,
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

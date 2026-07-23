@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
@@ -19,7 +20,7 @@ import {
 test("canonical Product Truth boundary exports the exact new-SKU compiler", () => {
   assert.equal(
     PRODUCT_TRUTH_READ_CONTRACT_VERSION,
-    "product-truth-read-contract/3.1.0",
+    "product-truth-read-contract/3.2.0",
   );
   const component = buildProductTruthNewSkuRecipeComponentFromRows({
     identity,
@@ -96,8 +97,19 @@ test("canonical new-SKU compiler preserves ZIP and arithmetic fail-closed gates"
 });
 
 test("new-SKU compiler rejects stale identity and tampered immutable provenance", () => {
+  const mismatchedDecisionEvidenceJson = JSON.stringify({
+    ...JSON.parse(String(identity.decisionEvidenceJson)),
+    matcherReleaseSha256: "0".repeat(64),
+  });
   const cases: Array<[Record<string, unknown>, RegExp]> = [
     [{ ...identity, matcherVersion: "canonical-product-match/1.1.0" }, /MATCHER_VERSION_NOT_CURRENT/],
+    [{ ...identity, matcherImplementationSha256: "0".repeat(64) }, /MATCHER_IMPLEMENTATION_NOT_CURRENT/],
+    [{ ...identity, matcherReleaseSha256: "0".repeat(64) }, /MATCHER_RELEASE_NOT_CURRENT/],
+    [{
+      ...identity,
+      decisionEvidenceJson: mismatchedDecisionEvidenceJson,
+      decisionEvidenceHash: createHash("sha256").update(mismatchedDecisionEvidenceJson).digest("hex"),
+    }, /DECISION_MATCHER_PROVENANCE_MISMATCH/],
     [{ ...identity, decisionEvidenceHash: "0".repeat(64) }, /DECISION_EVIDENCE_HASH_MISMATCH/],
     [{ ...identity, contentHash: "0".repeat(64) }, /CONTENT_HASH_MISMATCH/],
     [{ ...identity, fieldHashesJson: JSON.stringify({ title: "0".repeat(64) }) }, /CONTENT_FIELD_HASHES_INVALID/],

@@ -8,6 +8,8 @@ ALTER TABLE "DonorOffer" ADD COLUMN "localityEvidence" TEXT;
 
 ALTER TABLE "DonorProduct" ADD COLUMN "identityStatus" TEXT NOT NULL DEFAULT 'legacy_unverified';
 ALTER TABLE "DonorProduct" ADD COLUMN "identityMatcherVersion" TEXT;
+ALTER TABLE "DonorProduct" ADD COLUMN "identityMatcherImplementationSha256" TEXT;
+ALTER TABLE "DonorProduct" ADD COLUMN "identityMatcherReleaseSha256" TEXT;
 ALTER TABLE "DonorProduct" ADD COLUMN "identityEvidenceJson" TEXT;
 ALTER TABLE "DonorProduct" ADD COLUMN "identityConfirmedAt" DATETIME;
 CREATE INDEX "DonorProduct_identityStatus_idx" ON "DonorProduct"("identityStatus");
@@ -122,7 +124,15 @@ CREATE TABLE "DonorProductVariantDecision" (
   "donorProductId" TEXT NOT NULL,
   "canonicalVariantId" TEXT,
   "decisionStatus" TEXT NOT NULL CHECK ("decisionStatus" IN ('exact_confirmed','rejected')),
-  "matcherVersion" TEXT NOT NULL CHECK (length(trim("matcherVersion")) > 0),
+  "matcherVersion" TEXT NOT NULL CHECK (
+    "matcherVersion" = 'canonical-product-match/1.2.1'
+  ),
+  "matcherImplementationSha256" TEXT NOT NULL CHECK (
+    "matcherImplementationSha256" = '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+  ),
+  "matcherReleaseSha256" TEXT NOT NULL CHECK (
+    "matcherReleaseSha256" = '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
+  ),
   "evidenceHash" TEXT NOT NULL CHECK (
     length("evidenceHash") = 64 AND "evidenceHash" NOT GLOB '*[^0-9a-f]*'
   ),
@@ -147,6 +157,13 @@ CREATE TABLE "DonorProductVariantDecision" (
       length(trim(COALESCE("runId", ''))) > 0
       AND length(trim(COALESCE("approvalId", ''))) > 0
     )
+  ),
+  CONSTRAINT "DonorProductVariantDecision_matcher_provenance" CHECK (
+    json_extract("evidenceJson", '$.matcherVersion') IS "matcherVersion"
+    AND json_extract("evidenceJson", '$.matcherImplementationSha256')
+      IS "matcherImplementationSha256"
+    AND json_extract("evidenceJson", '$.matcherReleaseSha256')
+      IS "matcherReleaseSha256"
   )
 );
 
@@ -214,7 +231,8 @@ END;
 
 CREATE TRIGGER "DonorProduct_identity_contract_update"
 BEFORE UPDATE OF
-  "identityStatus", "identityMatcherVersion", "identityEvidenceJson", "identityConfirmedAt",
+  "identityStatus", "identityMatcherVersion", "identityMatcherImplementationSha256",
+  "identityMatcherReleaseSha256", "identityEvidenceJson", "identityConfirmedAt",
   "identityKey", "brand", "productLine", "flavor", "containerType", "size"
 ON "DonorProduct"
 BEGIN
@@ -232,16 +250,29 @@ BEGIN
         AND length(trim(COALESCE(NEW."flavor", ''))) = 0
         AND length(trim(COALESCE(NEW."containerType", ''))) = 0
       )
-      OR length(trim(COALESCE(NEW."identityMatcherVersion", ''))) = 0
+      OR NEW."identityMatcherVersion" <> 'canonical-product-match/1.2.1'
+      OR NEW."identityMatcherImplementationSha256"
+        <> '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+      OR NEW."identityMatcherReleaseSha256"
+        <> '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
       OR NEW."identityEvidenceJson" IS NULL
       OR NOT json_valid(NEW."identityEvidenceJson")
       OR json_type(NEW."identityEvidenceJson") <> 'object'
+      OR json_extract(NEW."identityEvidenceJson", '$.matcherVersion')
+        IS NOT NEW."identityMatcherVersion"
+      OR json_extract(NEW."identityEvidenceJson", '$.matcherImplementationSha256')
+        IS NOT NEW."identityMatcherImplementationSha256"
+      OR json_extract(NEW."identityEvidenceJson", '$.matcherReleaseSha256')
+        IS NOT NEW."identityMatcherReleaseSha256"
       OR NEW."identityConfirmedAt" IS NULL
       OR NOT EXISTS (
         SELECT 1 FROM "DonorProductVariantDecision" decision
         WHERE decision."donorProductId" = NEW."id"
           AND decision."decisionStatus" = 'exact_confirmed'
           AND decision."matcherVersion" = NEW."identityMatcherVersion"
+          AND decision."matcherImplementationSha256"
+            = NEW."identityMatcherImplementationSha256"
+          AND decision."matcherReleaseSha256" = NEW."identityMatcherReleaseSha256"
       )
     ) THEN RAISE(ABORT, 'DONOR_PRODUCT_EXACT_CONTRACT_INVALID')
   END;
@@ -249,6 +280,9 @@ BEGIN
     WHEN OLD."identityStatus"='exact_confirmed' AND (
       NEW."identityStatus" IS NOT OLD."identityStatus"
       OR NEW."identityMatcherVersion" IS NOT OLD."identityMatcherVersion"
+      OR NEW."identityMatcherImplementationSha256"
+        IS NOT OLD."identityMatcherImplementationSha256"
+      OR NEW."identityMatcherReleaseSha256" IS NOT OLD."identityMatcherReleaseSha256"
       OR NEW."identityEvidenceJson" IS NOT OLD."identityEvidenceJson"
       OR NEW."identityConfirmedAt" IS NOT OLD."identityConfirmedAt"
       OR NEW."identityKey" IS NOT OLD."identityKey"
@@ -352,6 +386,8 @@ ALTER TABLE "SkuCost" ADD COLUMN "recipeHash" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "evidenceJson" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "evidenceOutcome" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "matcherVersion" TEXT;
+ALTER TABLE "SkuCost" ADD COLUMN "matcherImplementationSha256" TEXT;
+ALTER TABLE "SkuCost" ADD COLUMN "matcherReleaseSha256" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "pricePolicyVersion" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "runId" TEXT;
 ALTER TABLE "SkuCost" ADD COLUMN "approvalId" TEXT;
@@ -610,7 +646,15 @@ CREATE TABLE "SkuComponentEvidence" (
   "contentObservationId" TEXT,
   "priceObservationId" TEXT,
   "matchTier" TEXT NOT NULL CHECK (length(trim("matchTier")) > 0),
-  "matcherVersion" TEXT NOT NULL CHECK (length(trim("matcherVersion")) > 0),
+  "matcherVersion" TEXT NOT NULL CHECK (
+    "matcherVersion" = 'canonical-product-match/1.2.1'
+  ),
+  "matcherImplementationSha256" TEXT NOT NULL CHECK (
+    "matcherImplementationSha256" = '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+  ),
+  "matcherReleaseSha256" TEXT NOT NULL CHECK (
+    "matcherReleaseSha256" = '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
+  ),
   "pricePolicyVersion" TEXT NOT NULL CHECK (length(trim("pricePolicyVersion")) > 0),
   "evidenceHash" TEXT NOT NULL CHECK (
     length("evidenceHash") = 64 AND "evidenceHash" NOT GLOB '*[^0-9a-f]*'
@@ -697,6 +741,10 @@ BEGIN
          AND decision."donorProductId" = content."donorProductId"
          AND decision."canonicalVariantId" = content."canonicalVariantId"
          AND decision."decisionStatus" = 'exact_confirmed'
+         AND decision."matcherVersion" = NEW."matcherVersion"
+         AND decision."matcherImplementationSha256"
+           = NEW."matcherImplementationSha256"
+         AND decision."matcherReleaseSha256" = NEW."matcherReleaseSha256"
         WHERE content."id" = NEW."contentObservationId"
           AND content."canonicalVariantId" = NEW."contentCanonicalVariantId"
       )
@@ -717,10 +765,23 @@ BEGIN
   SELECT CASE
     WHEN NEW."evidenceStatus" = 'FACT' AND (
       NEW."matchTier" <> 'EXACT_IDENTITY'
-      OR NEW."matcherVersion" <> 'canonical-product-match/1.2.0'
+      OR NEW."matcherVersion" <> 'canonical-product-match/1.2.1'
+      OR NEW."matcherImplementationSha256"
+        <> '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+      OR NEW."matcherReleaseSha256"
+        <> '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
       OR NEW."pricePolicyVersion" <> 'price-evidence-eligibility/1.0.0'
       OR NOT EXISTS (
         SELECT 1 FROM "DonorOfferObservation" price
+        JOIN "DonorProductVariantDecision" decision
+          ON decision."id" = price."variantDecisionId"
+         AND decision."donorProductId" = price."donorProductId"
+         AND decision."canonicalVariantId" = price."canonicalVariantId"
+         AND decision."decisionStatus" = 'exact_confirmed'
+         AND decision."matcherVersion" = NEW."matcherVersion"
+         AND decision."matcherImplementationSha256"
+           = NEW."matcherImplementationSha256"
+         AND decision."matcherReleaseSha256" = NEW."matcherReleaseSha256"
         WHERE price."id" = NEW."priceObservationId"
           AND price."canonicalVariantId" = NEW."priceCanonicalVariantId"
           AND price."via" = 'direct'
@@ -779,6 +840,15 @@ BEGIN
       OR NEW."priceObservationId" IS NULL
       OR NOT EXISTS (
         SELECT 1 FROM "DonorOfferObservation" price
+        JOIN "DonorProductVariantDecision" decision
+          ON decision."id" = price."variantDecisionId"
+         AND decision."donorProductId" = price."donorProductId"
+         AND decision."canonicalVariantId" = price."canonicalVariantId"
+         AND decision."decisionStatus" = 'exact_confirmed'
+         AND decision."matcherVersion" = NEW."matcherVersion"
+         AND decision."matcherImplementationSha256"
+           = NEW."matcherImplementationSha256"
+         AND decision."matcherReleaseSha256" = NEW."matcherReleaseSha256"
         WHERE price."id" = NEW."priceObservationId"
           AND price."canonicalVariantId" = NEW."priceCanonicalVariantId"
       )
@@ -789,7 +859,11 @@ BEGIN
       NEW."matchTier" NOT IN (
         'EXACT_IDENTITY','CROSS_SIZE_ESTIMATE','SIBLING_ESTIMATE','SIZE_UNKNOWN_ESTIMATE'
       )
-      OR NEW."matcherVersion" <> 'canonical-product-match/1.2.0'
+      OR NEW."matcherVersion" <> 'canonical-product-match/1.2.1'
+      OR NEW."matcherImplementationSha256"
+        <> '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+      OR NEW."matcherReleaseSha256"
+        <> '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
       OR NEW."pricePolicyVersion" <> 'price-evidence-eligibility/1.0.0'
       OR NOT EXISTS (
         SELECT 1 FROM "DonorOfferObservation" price
@@ -841,6 +915,10 @@ BEGIN
        IS NOT NEW."priceObservationId"
     OR json_extract(NEW."evidenceJson", '$.matchTier') IS NOT NEW."matchTier"
     OR json_extract(NEW."evidenceJson", '$.matcherVersion') IS NOT NEW."matcherVersion"
+    OR json_extract(NEW."evidenceJson", '$.matcherImplementationSha256')
+       IS NOT NEW."matcherImplementationSha256"
+    OR json_extract(NEW."evidenceJson", '$.matcherReleaseSha256')
+       IS NOT NEW."matcherReleaseSha256"
     OR json_extract(NEW."evidenceJson", '$.pricePolicyVersion') IS NOT NEW."pricePolicyVersion"
     OR json_type(NEW."evidenceJson", '$.qty') IS NOT 'integer'
     OR CAST(json_extract(NEW."evidenceJson", '$.qty') AS INTEGER) <= 0
@@ -931,7 +1009,16 @@ BEGIN
     OR julianday(NEW."createdAt") IS NULL
     OR julianday(json_extract(NEW."evidenceJson", '$.evaluatedAt')) > julianday(NEW."createdAt")
     OR julianday(NEW."effectiveDate") > julianday(NEW."createdAt")
-    OR length(trim(COALESCE(NEW."matcherVersion", ''))) = 0
+    OR NEW."matcherVersion" <> 'canonical-product-match/1.2.1'
+    OR NEW."matcherImplementationSha256"
+      <> '2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb'
+    OR NEW."matcherReleaseSha256"
+      <> '027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2'
+    OR json_extract(NEW."evidenceJson", '$.matcherVersion') IS NOT NEW."matcherVersion"
+    OR json_extract(NEW."evidenceJson", '$.matcherImplementationSha256')
+      IS NOT NEW."matcherImplementationSha256"
+    OR json_extract(NEW."evidenceJson", '$.matcherReleaseSha256')
+      IS NOT NEW."matcherReleaseSha256"
     OR length(trim(COALESCE(NEW."pricePolicyVersion", ''))) = 0
     OR NOT (
       (NEW."runId" IS NULL AND NEW."approvalId" IS NULL)
@@ -985,6 +1072,16 @@ BEGIN
     SELECT 1 FROM "SkuComponentEvidence" evidence
     WHERE evidence."skuCostId" = NEW."id"
   ) THEN RAISE(ABORT, 'SKU_COST_COMPONENT_EVIDENCE_REQUIRED') END;
+  SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM "SkuComponentEvidence" evidence
+    WHERE evidence."skuCostId" = NEW."id"
+      AND (
+        evidence."matcherVersion" IS NOT NEW."matcherVersion"
+        OR evidence."matcherImplementationSha256"
+          IS NOT NEW."matcherImplementationSha256"
+        OR evidence."matcherReleaseSha256" IS NOT NEW."matcherReleaseSha256"
+      )
+  ) THEN RAISE(ABORT, 'SKU_COST_MATCHER_PROVENANCE_MISMATCH') END;
   SELECT CASE WHEN NEW."evidenceOutcome" = 'FACT' AND EXISTS (
     SELECT 1 FROM "SkuComponentEvidence" evidence
     WHERE evidence."skuCostId" = NEW."id"
@@ -1074,6 +1171,10 @@ BEGIN
           IS NOT json_extract(component.value, '$.matchTier')
         OR json_extract(evidence."evidenceJson", '$.matcherVersion')
           IS NOT json_extract(component.value, '$.matcherVersion')
+        OR json_extract(evidence."evidenceJson", '$.matcherImplementationSha256')
+          IS NOT json_extract(component.value, '$.matcherImplementationSha256')
+        OR json_extract(evidence."evidenceJson", '$.matcherReleaseSha256')
+          IS NOT json_extract(component.value, '$.matcherReleaseSha256')
         OR json_extract(evidence."evidenceJson", '$.pricePolicyVersion')
           IS NOT json_extract(component.value, '$.pricePolicyVersion')
         OR json_extract(evidence."evidenceJson", '$.product')

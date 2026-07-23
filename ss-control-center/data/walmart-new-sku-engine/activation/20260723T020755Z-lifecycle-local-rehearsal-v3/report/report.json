@@ -1,0 +1,26 @@
+{
+  "appliedAt": "2026-07-23T02:08:35.197Z",
+  "approvalSha256": "408aadae1f59a595be268fe7241dacf515ed473214940654efb193b02ab15ec8",
+  "claims": {
+    "callsProviderApis": false,
+    "callsWalmartApis": false,
+    "delistsListings": false,
+    "performsBackfill": false,
+    "publishesListings": false,
+    "purchasesInventory": false,
+    "repricesListings": false,
+    "schemaOnly": true
+  },
+  "contractVersion": "walmart-new-sku-schema-activation-report/3",
+  "environment": "local-rehearsal",
+  "migrationName": "20260719003000_walmart_publish_lifecycle_safety",
+  "migrationSha256": "d46c10fbf1e1c30071cf162a3c5f0cebb31954b76e844a8d4d4df610d065641e",
+  "planSha256": "807fa7a87612e093ee83a6911c0c929df4ce5f3dfbf8d11ba5174ed129782029",
+  "preflightSha256": "17bb8f6772af61d1c590d00b84b4da35a92d316382ef05189ffe2ed880af9cf5",
+  "prismaMigrationId": "250adff2-66cc-4693-9b1b-911c7889546e",
+  "receiptId": "09e06772-bb0b-41b1-877f-feb1ca424d17",
+  "schemaSha256After": "ee6035c35520970377f89dbd8649dbb733ae5e436caa633d51e397da5b8282ac",
+  "schemaSha256Before": "0d85e87f159937ce398e8c9959db1308316eb68d5b148e92f087e88fb7979dd9",
+  "status": "applied",
+  "targetFingerprint": "e7dfcd4c7632070617f99490d24ae3feb74601707fe583ded3ba9effd2571240"
+}

@@ -8,7 +8,8 @@
  * consumption-ledger identity.
  *
  * Private keys and signing helpers intentionally do not exist here. Production
- * fails closed until a reviewed public key is enrolled in PINNED_OWNER_KEYS.
+ * trusts only the reviewed public key enrolled below; its private half remains
+ * outside the repository and is used only after an exact owner confirmation.
  */
 
 import {
@@ -162,7 +163,15 @@ interface TrustedOwnerKey {
 }
 
 /** Dedicated domain, but it may enroll the same owner public key used elsewhere. */
-const PINNED_OWNER_KEYS: readonly TrustedOwnerKey[] = Object.freeze([]);
+const PINNED_OWNER_KEYS: readonly TrustedOwnerKey[] = Object.freeze([{
+  key_id: "walmart-listing-repair-owner-6aba8f02755a87f1",
+  public_key_spki_der_base64:
+    "MCowBQYDK2VwAyEAcd201SCeiWF2On3xqgRjt2v+gn0WUmmBqH6Okcwq/p8=",
+  public_key_spki_sha256:
+    "6aba8f02755a87f1c41b778aef7e0ed7a184c3f5efbcd7ba443339ddbf68a9d2",
+  status: "ACTIVE",
+  environment: "PRODUCTION",
+}]);
 
 export function inspectWalmartListingRepairOwnerTrustReadiness(): {
   owner_trust_root_ready: boolean;

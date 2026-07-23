@@ -14,6 +14,11 @@ import {
   productTruthConsumerGatewayReportSha256,
 } from "../product-truth-consumer-gateway";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "../product-truth-read-contract-version";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 import type {
   ProductTruthCostStatus,
   ProductTruthSnapshot,
@@ -84,7 +89,9 @@ function snapshot(input: {
         packSize: status === "UNSOURCEABLE" ? null : 1,
         currency: "USD",
         needsReview: status !== "FACT",
-        matcherVersion: "canonical-product-match/1.2.0",
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         pricePolicyVersion: "price-evidence-eligibility/1.0.0",
         evidenceOutcome: status,
         evidence: {},

@@ -19,6 +19,8 @@ import {
 
 export const WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA =
   "walmart-seller-catalog-authority-binding/v1" as const;
+export const WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA =
+  "walmart-exact-identifier-duplicate-guard-binding/v1" as const;
 export const WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS =
   24 * 60 * 60 * 1_000;
 export const WALMART_SELLER_CATALOG_MIRROR_SKEW_MAX_MS = 5 * 60 * 1_000;
@@ -122,11 +124,36 @@ export interface WalmartSellerCatalogAuthorityBindingBody {
   };
 }
 
-export interface SealedWalmartSellerCatalogAuthorityBinding
+export interface SealedWalmartAllStatusSellerCatalogAuthorityBinding
   extends WalmartSellerCatalogAuthorityBindingBody {
   binding_id: string;
   body_sha256: string;
 }
+
+export interface SealedWalmartExactIdentifierDuplicateGuardBinding {
+  schema_version: typeof WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA;
+  account_scope: {
+    channel: typeof CHANNEL;
+    store_index: number;
+    business_seller_account_fingerprint_sha256: string;
+  };
+  policy: {
+    mode: "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY";
+    product_source: "PRODUCT_TRUTH_DONOR_CATALOG";
+    full_seller_catalog_required: false;
+    seller_recipe_catalog_scan_required: false;
+    exact_seller_sku_absence_required_before_certification: true;
+    exact_upc_catalog_search_required_before_certification: true;
+    checks_must_bind_staged_sku_and_upc: true;
+  };
+  owner_decision_ref: string;
+  binding_id: string;
+  body_sha256: string;
+}
+
+export type SealedWalmartSellerCatalogAuthorityBinding =
+  | SealedWalmartAllStatusSellerCatalogAuthorityBinding
+  | SealedWalmartExactIdentifierDuplicateGuardBinding;
 
 export interface BuildWalmartSellerCatalogAuthorityBindingInput {
   db: Client;
@@ -409,7 +436,7 @@ async function readReportDiagnostic(input: {
 
 function sealBinding(
   body: WalmartSellerCatalogAuthorityBindingBody,
-): SealedWalmartSellerCatalogAuthorityBinding {
+): SealedWalmartAllStatusSellerCatalogAuthorityBinding {
   const bodySha256 = walmartItemReportSha256(body);
   return {
     ...body,
@@ -425,7 +452,7 @@ function sealBinding(
  */
 export async function buildWalmartSellerCatalogAuthorityBinding(
   input: BuildWalmartSellerCatalogAuthorityBindingInput,
-): Promise<SealedWalmartSellerCatalogAuthorityBinding> {
+): Promise<SealedWalmartAllStatusSellerCatalogAuthorityBinding> {
   if (!Number.isInteger(input.storeIndex) || input.storeIndex < 1
     || !(input.now instanceof Date) || !Number.isFinite(input.now.getTime())) {
     fail("INVALID_AUTHORITY_INPUT", "storeIndex and now are invalid");
@@ -596,7 +623,137 @@ export async function buildWalmartSellerCatalogAuthorityBinding(
       future_tolerance_ms: 0,
     },
   };
-  return verifyWalmartSellerCatalogAuthorityBinding(sealBinding(body));
+  const sealed = verifyWalmartSellerCatalogAuthorityBinding(sealBinding(body));
+  if (isWalmartExactIdentifierDuplicateGuardBinding(sealed)) {
+    fail(
+      "CATALOG_AUTHORITY_BINDING_INVALID",
+      "all-status catalog builder produced an exact-identifier guard",
+    );
+  }
+  return sealed;
+}
+
+export function buildWalmartExactIdentifierDuplicateGuardBinding(input: {
+  storeIndex: number;
+  businessSellerAccountFingerprintSha256: string;
+  ownerDecisionRef: string;
+}): SealedWalmartExactIdentifierDuplicateGuardBinding {
+  if (!Number.isInteger(input.storeIndex) || input.storeIndex < 1) {
+    fail("INVALID_AUTHORITY_INPUT", "storeIndex is invalid");
+  }
+  const body = {
+    schema_version: WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA,
+    account_scope: {
+      channel: CHANNEL,
+      store_index: input.storeIndex,
+      business_seller_account_fingerprint_sha256: sha256(
+        input.businessSellerAccountFingerprintSha256,
+        "businessSellerAccountFingerprintSha256",
+      ),
+    },
+    policy: {
+      mode: "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+      product_source: "PRODUCT_TRUTH_DONOR_CATALOG",
+      full_seller_catalog_required: false,
+      seller_recipe_catalog_scan_required: false,
+      exact_seller_sku_absence_required_before_certification: true,
+      exact_upc_catalog_search_required_before_certification: true,
+      checks_must_bind_staged_sku_and_upc: true,
+    },
+    owner_decision_ref: exactString(input.ownerDecisionRef, "ownerDecisionRef"),
+  } as const;
+  const bodySha256 = walmartItemReportSha256(body);
+  return verifyWalmartExactIdentifierDuplicateGuardBinding({
+    ...body,
+    binding_id: `walmart-exact-identifier-guard-${bodySha256.slice(0, 16)}`,
+    body_sha256: bodySha256,
+  });
+}
+
+export function isWalmartExactIdentifierDuplicateGuardBinding(
+  input: SealedWalmartSellerCatalogAuthorityBinding,
+): input is SealedWalmartExactIdentifierDuplicateGuardBinding {
+  return input.schema_version ===
+    WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA;
+}
+
+export function verifyWalmartExactIdentifierDuplicateGuardBinding(
+  input: unknown,
+): SealedWalmartExactIdentifierDuplicateGuardBinding {
+  const root = record(input, "exact identifier duplicate guard binding");
+  assertExactKeys(root, [
+    "schema_version",
+    "account_scope",
+    "policy",
+    "owner_decision_ref",
+    "binding_id",
+    "body_sha256",
+  ], "exact identifier duplicate guard binding");
+  if (root.schema_version !==
+    WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA) {
+    fail("CATALOG_AUTHORITY_BINDING_INVALID", "exact identifier guard schema is invalid");
+  }
+  const account = record(root.account_scope, "account_scope");
+  assertExactKeys(account, [
+    "channel",
+    "store_index",
+    "business_seller_account_fingerprint_sha256",
+  ], "account_scope");
+  if (account.channel !== CHANNEL) {
+    fail("CATALOG_AUTHORITY_BINDING_INVALID", "account_scope.channel is invalid");
+  }
+  const policy = record(root.policy, "policy");
+  assertExactKeys(policy, [
+    "mode",
+    "product_source",
+    "full_seller_catalog_required",
+    "seller_recipe_catalog_scan_required",
+    "exact_seller_sku_absence_required_before_certification",
+    "exact_upc_catalog_search_required_before_certification",
+    "checks_must_bind_staged_sku_and_upc",
+  ], "policy");
+  if (policy.mode !== "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY"
+    || policy.product_source !== "PRODUCT_TRUTH_DONOR_CATALOG"
+    || policy.full_seller_catalog_required !== false
+    || policy.seller_recipe_catalog_scan_required !== false
+    || policy.exact_seller_sku_absence_required_before_certification !== true
+    || policy.exact_upc_catalog_search_required_before_certification !== true
+    || policy.checks_must_bind_staged_sku_and_upc !== true) {
+    fail("CATALOG_AUTHORITY_BINDING_INVALID", "exact identifier guard policy changed");
+  }
+  const parsed: SealedWalmartExactIdentifierDuplicateGuardBinding = {
+    schema_version: WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA,
+    account_scope: {
+      channel: CHANNEL,
+      store_index: safeInteger(account.store_index, "account_scope.store_index", 1),
+      business_seller_account_fingerprint_sha256: bindingSha256(
+        account.business_seller_account_fingerprint_sha256,
+        "account_scope.business_seller_account_fingerprint_sha256",
+      ),
+    },
+    policy: {
+      mode: "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+      product_source: "PRODUCT_TRUTH_DONOR_CATALOG",
+      full_seller_catalog_required: false,
+      seller_recipe_catalog_scan_required: false,
+      exact_seller_sku_absence_required_before_certification: true,
+      exact_upc_catalog_search_required_before_certification: true,
+      checks_must_bind_staged_sku_and_upc: true,
+    },
+    owner_decision_ref: exactString(root.owner_decision_ref, "owner_decision_ref"),
+    binding_id: exactString(root.binding_id, "binding_id"),
+    body_sha256: bindingSha256(root.body_sha256, "body_sha256"),
+  };
+  const body = structuredClone(parsed) as unknown as Record<string, unknown>;
+  delete body.binding_id;
+  delete body.body_sha256;
+  const expectedBodySha256 = walmartItemReportSha256(body);
+  if (parsed.body_sha256 !== expectedBodySha256
+    || parsed.binding_id !==
+      `walmart-exact-identifier-guard-${expectedBodySha256.slice(0, 16)}`) {
+    fail("CATALOG_AUTHORITY_BINDING_INVALID", "exact identifier guard seal is invalid");
+  }
+  return parsed;
 }
 
 /** Strict, pure verification of a previously sealed binding. */
@@ -604,6 +761,10 @@ export function verifyWalmartSellerCatalogAuthorityBinding(
   input: unknown,
 ): SealedWalmartSellerCatalogAuthorityBinding {
   const root = record(input, "catalog authority binding");
+  if (root.schema_version ===
+    WALMART_EXACT_IDENTIFIER_DUPLICATE_GUARD_BINDING_SCHEMA) {
+    return verifyWalmartExactIdentifierDuplicateGuardBinding(root);
+  }
   assertExactKeys(root, [
     "schema_version",
     "account_scope",
@@ -822,7 +983,7 @@ export function verifyWalmartSellerCatalogAuthorityBinding(
     fail("CATALOG_AUTHORITY_BINDING_INVALID", "freshness policy was weakened or changed");
   }
 
-  const parsed: SealedWalmartSellerCatalogAuthorityBinding = {
+  const parsed: SealedWalmartAllStatusSellerCatalogAuthorityBinding = {
     schema_version: WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
     account_scope: {
       channel: CHANNEL,
@@ -880,6 +1041,9 @@ export async function recheckWalmartSellerCatalogAuthorityBinding(input: {
   now: Date;
 }): Promise<SealedWalmartSellerCatalogAuthorityBinding> {
   const expected = verifyWalmartSellerCatalogAuthorityBinding(input.expected);
+  if (isWalmartExactIdentifierDuplicateGuardBinding(expected)) {
+    return expected;
+  }
   const current = await buildWalmartSellerCatalogAuthorityBinding({
     db: input.db,
     sourcePath: expected.source_artifact.absolute_path,

@@ -26,6 +26,8 @@ import type {
 } from
   "@/lib/bundle-factory/walmart-new-sku-engine";
 import {
+  assertWalmartNewSkuCertificationInput,
+  WALMART_NEW_SKU_PLAN_SCHEMA,
   sealWalmartNewSkuVerifyReceipt,
 } from "@/lib/bundle-factory/walmart-new-sku-engine";
 import {
@@ -36,6 +38,7 @@ import {
 } from "@/lib/bundle-factory/walmart-listing-contract";
 import {
   WALMART_NEW_SKU_POLICY_REVIEW_EVIDENCE_SCHEMA,
+  WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS,
   WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS,
 } from "@/lib/bundle-factory/walmart-new-sku-policy-review-evidence";
 import {
@@ -50,21 +53,13 @@ import {
   createWalmartNewSkuFrozenRelease,
 } from "@/lib/bundle-factory/walmart-new-sku-source-release";
 import {
-  buildWalmartItemReportDownloadLocatorRequestManifest,
-  buildWalmartItemReportFileRequestManifest,
-  buildWalmartItemReportReadyRequestManifest,
-  buildWalmartItemReportV6CreateRequestManifest,
-  canonicalWalmartItemReportJson,
-  compileWalmartItemReportCatalogSource,
-  walmartItemReportTrustedExchangeSha256,
-  walmartItemReportUtf8Sha256,
-  type HttpResponseCaptureMetadata,
-  type WalmartItemReportCaptureEvidence,
-  type WalmartItemReportCompileContext,
-} from "@/lib/walmart/item-report-published-source";
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
 import {
-  computeWalmartSellerAccountFingerprint,
-} from "@/lib/walmart/item-report-capture-session";
+  PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+} from "@/lib/sourcing/product-truth-read-contract-version";
 
 const APP_ROOT = process.cwd();
 const MIGRATIONS_ROOT = path.join(APP_ROOT, "prisma", "migrations");
@@ -193,8 +188,15 @@ function extractCreateObjects(sql: string): string[] {
 }
 
 async function buildFreshCurrentSchema(db: Client): Promise<string[]> {
-  const prismaExecutable = path.join(APP_ROOT, "node_modules", ".bin", "prisma");
-  const diff = await runProcess(prismaExecutable, [
+  const prismaCli = path.join(
+    APP_ROOT,
+    "node_modules",
+    "prisma",
+    "build",
+    "index.js",
+  );
+  const diff = await runProcess(process.execPath, [
+    prismaCli,
     "migrate",
     "diff",
     "--from-empty",
@@ -254,219 +256,6 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function isoOffset(value: string, offsetMs: number): string {
-  return new Date(Date.parse(value) + offsetMs).toISOString();
-}
-
-function itemReportBytes(value: string): Uint8Array {
-  return new TextEncoder().encode(value);
-}
-
-function itemReportHttp(
-  responseBytes: Uint8Array,
-  correlationSha256: string | null,
-  requestIdSha256: string | null,
-  contentType = "application/json",
-): HttpResponseCaptureMetadata {
-  return {
-    status: 200,
-    content_type: contentType,
-    content_length: responseBytes.byteLength,
-    echoed_correlation_id_sha256: correlationSha256,
-    echoed_report_request_id_sha256: requestIdSha256,
-  };
-}
-
-async function writeSellerCatalogAuthorityFixture(
-  root: string,
-  observedAt: string,
-): Promise<{ path: string; sha256: string }> {
-  const captureFingerprint = computeWalmartSellerAccountFingerprint({
-    store_index: 1,
-    client_id: FIXTURE_WALMART_CLIENT_ID,
-    seller_id: FIXTURE_WALMART_SELLER_ID,
-  });
-  const accountScope = {
-    channel: "WALMART_US" as const,
-    store_index: 1,
-    seller_account_fingerprint_sha256: captureFingerprint,
-  };
-  const correlations = {
-    create_sha256: walmartItemReportUtf8Sha256("fixture-item-report-create"),
-    ready_status_sha256: walmartItemReportUtf8Sha256("fixture-item-report-ready"),
-    download_locator_sha256:
-      walmartItemReportUtf8Sha256("fixture-item-report-locator"),
-    report_file_sha256: walmartItemReportUtf8Sha256("fixture-item-report-file"),
-  };
-  const binding = (requestCorrelationSha256: string) => ({
-    account_scope: accountScope,
-    request_correlation_id_sha256: requestCorrelationSha256,
-  });
-  const requestedAt = isoOffset(observedAt, -10 * 60_000);
-  const generatedAt = isoOffset(observedAt, -4 * 60_000);
-  const readyAt = isoOffset(observedAt, -3 * 60_000);
-  const downloadLocatorAt = isoOffset(observedAt, -2 * 60_000);
-  const reportFileRequestedAt = isoOffset(observedAt, -60_000);
-  const downloadUrl =
-    "https://walmart-reports.s3.amazonaws.com/reports/fixture-item-v6.csv?X-Amz-Signature=fixture";
-  const createRequest = itemReportBytes(JSON.stringify(
-    buildWalmartItemReportV6CreateRequestManifest(
-      binding(correlations.create_sha256),
-    ),
-  ));
-  const createResponse = itemReportBytes(JSON.stringify({
-    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
-    requestSubmissionDate: requestedAt,
-    reportType: "ITEM",
-    reportVersion: "v6",
-  }));
-  const readyRequest = itemReportBytes(JSON.stringify(
-    buildWalmartItemReportReadyRequestManifest(
-      FIXTURE_ITEM_REPORT_REQUEST_ID,
-      binding(correlations.ready_status_sha256),
-    ),
-  ));
-  const readyResponse = itemReportBytes(JSON.stringify({
-    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
-    requestStatus: "READY",
-    reportType: "ITEM",
-    reportVersion: "v6",
-    createdTime: requestedAt,
-    reportGenerationDate: generatedAt,
-  }));
-  const locatorRequest = itemReportBytes(JSON.stringify(
-    buildWalmartItemReportDownloadLocatorRequestManifest(
-      FIXTURE_ITEM_REPORT_REQUEST_ID,
-      binding(correlations.download_locator_sha256),
-    ),
-  ));
-  const locatorResponse = itemReportBytes(JSON.stringify({
-    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
-    requestSubmissionDate: requestedAt,
-    reportGenerationDate: generatedAt,
-    downloadURL: downloadUrl,
-    downloadURLExpirationTime: isoOffset(observedAt, 60 * 60_000),
-  }));
-  const fileRequest = itemReportBytes(JSON.stringify(
-    buildWalmartItemReportFileRequestManifest({
-      ...binding(correlations.report_file_sha256),
-      locator_url: downloadUrl,
-    }),
-  ));
-  const reportBody = itemReportBytes([
-    "SKU,ProductName,ProductId,ProductIdType,PublishedStatus,ProductCondition,Brand,LifecycleStatus,Item ID",
-    "EXISTING-UNRELATED-1,Different Brand Tomato Soup 15 oz,012345678905,UPC,PUBLISHED,New,Different Brand,ACTIVE,fixture-item-existing",
-    "",
-  ].join("\r\n"));
-  const requestIdSha256 = walmartItemReportUtf8Sha256(
-    FIXTURE_ITEM_REPORT_REQUEST_ID,
-  );
-  const capture: WalmartItemReportCaptureEvidence = {
-    create_request_manifest_bytes: createRequest,
-    create_response_payload_bytes: createResponse,
-    ready_status_request_manifest_bytes: readyRequest,
-    ready_status_payload_bytes: readyResponse,
-    download_locator_request_manifest_bytes: locatorRequest,
-    download_locator_response_payload_bytes: locatorResponse,
-    report_file_request_manifest_bytes: fileRequest,
-    downloaded_body_bytes: reportBody,
-    http: {
-      create_response: itemReportHttp(
-        createResponse,
-        correlations.create_sha256,
-        requestIdSha256,
-      ),
-      ready_status_response: itemReportHttp(
-        readyResponse,
-        correlations.ready_status_sha256,
-        requestIdSha256,
-      ),
-      download_locator_response: itemReportHttp(
-        locatorResponse,
-        correlations.download_locator_sha256,
-        requestIdSha256,
-      ),
-      download_response: itemReportHttp(
-        reportBody,
-        null,
-        null,
-        "application/octet-stream",
-      ),
-    },
-  };
-  const trustedSeal = (
-    requestBytes: Uint8Array,
-    correlationSha256: string,
-    responseBytes: Uint8Array,
-    responseHttp: HttpResponseCaptureMetadata,
-  ) => walmartItemReportTrustedExchangeSha256({
-    request_manifest_bytes: requestBytes,
-    request_correlation_id_sha256: correlationSha256,
-    response_payload_bytes: responseBytes,
-    http: responseHttp,
-  });
-  const context: WalmartItemReportCompileContext = {
-    account_scope: accountScope,
-    request_correlations: correlations,
-    ready_at: readyAt,
-    download_locator_at: downloadLocatorAt,
-    report_file_requested_at: reportFileRequestedAt,
-    downloaded_at: observedAt,
-    trusted_exchange_seals: {
-      create_response_sha256: trustedSeal(
-        createRequest,
-        correlations.create_sha256,
-        createResponse,
-        capture.http.create_response,
-      ),
-      ready_status_response_sha256: trustedSeal(
-        readyRequest,
-        correlations.ready_status_sha256,
-        readyResponse,
-        capture.http.ready_status_response,
-      ),
-      download_locator_response_sha256: trustedSeal(
-        locatorRequest,
-        correlations.download_locator_sha256,
-        locatorResponse,
-        capture.http.download_locator_response,
-      ),
-      download_response_sha256: trustedSeal(
-        fileRequest,
-        correlations.report_file_sha256,
-        reportBody,
-        capture.http.download_response,
-      ),
-    },
-  };
-  const source = compileWalmartItemReportCatalogSource(capture, context);
-  assert.equal(source.catalog_population_complete, true);
-  assert.equal(source.rows.length, 1);
-  assert.deepEqual(source.rows.map((row) => ({
-    sku: row.sku,
-    item_id: row.reported_legacy_item_identifier_opaque,
-    title: row.reported_product_name,
-    lifecycle_status: row.reported_lifecycle_status,
-    published_status: row.published_status,
-  })), [{
-    sku: "EXISTING-UNRELATED-1",
-    item_id: "fixture-item-existing",
-    title: "Different Brand Tomato Soup 15 oz",
-    lifecycle_status: "ACTIVE",
-    published_status: "PUBLISHED",
-  }]);
-  const canonicalBytes = Buffer.from(
-    canonicalWalmartItemReportJson(source),
-    "utf8",
-  );
-  const sourcePath = path.join(root, "fixture-item-report-catalog-source.json");
-  await writeFile(sourcePath, canonicalBytes, { flag: "wx" });
-  return {
-    path: sourcePath,
-    sha256: createHash("sha256").update(canonicalBytes).digest("hex"),
-  };
-}
-
 function renderPosixArg(value: string): string {
   if (/^[A-Za-z0-9_@%+=:,./-]+$/.test(value)) return value;
   return `'${value.replaceAll("'", `'"'"'`)}'`;
@@ -514,6 +303,9 @@ async function seedCanonicalPilotFixture(
   const decisionEvidenceJson = JSON.stringify({
     exact: true,
     source: "fixture-reviewed-product-label",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   });
   const decisionEvidenceHash = sha256(decisionEvidenceJson);
   const content = {
@@ -610,14 +402,17 @@ async function seedCanonicalPilotFixture(
   await db.execute({
     sql: `INSERT INTO DonorProductVariantDecision (
       id, decisionKey, donorProductId, canonicalVariantId, decisionStatus,
-      matcherVersion, evidenceHash, evidenceJson, decidedAt, createdAt
-    ) VALUES (?, ?, ?, ?, 'exact_confirmed', 'canonical-product-match/1.2.0',
-      ?, ?, ?, ?)`,
+      matcherVersion, matcherImplementationSha256, matcherReleaseSha256,
+      evidenceHash, evidenceJson, decidedAt, createdAt
+    ) VALUES (?, ?, ?, ?, 'exact_confirmed', ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       decisionId,
       "fixture-decision-key-1",
       donorProductId,
       canonicalVariantId,
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       decisionEvidenceHash,
       decisionEvidenceJson,
       observedAt,
@@ -627,10 +422,20 @@ async function seedCanonicalPilotFixture(
   await db.execute({
     sql: `UPDATE DonorProduct SET
       identityStatus='exact_confirmed',
-      identityMatcherVersion='canonical-product-match/1.2.0',
+      identityMatcherVersion=?,
+      identityMatcherImplementationSha256=?,
+      identityMatcherReleaseSha256=?,
       identityEvidenceJson=?, identityConfirmedAt=?, updatedAt=?
       WHERE id=?`,
-    args: [decisionEvidenceJson, observedAt, observedAt, donorProductId],
+    args: [
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      decisionEvidenceJson,
+      observedAt,
+      observedAt,
+      donorProductId,
+    ],
   });
   await db.execute({
     sql: `INSERT INTO ProductContentObservation (
@@ -688,10 +493,10 @@ async function seedCanonicalPilotFixture(
   });
   await db.execute({
     sql: `INSERT INTO UPCPool (
-      id, upc, upc_prefix, gs1_validated, status, acquired_from,
+      id, upc, upc_prefix, gs1_validated, gs1_owner, status, acquired_from,
       acquired_at, created_at, updated_at
-    ) VALUES ('fixture-upc-pool-1', '012345678912', '012345', 0,
-      'AVAILABLE', 'fixture-owner-pool', ?, ?, ?)`,
+    ) VALUES ('fixture-upc-pool-1', '012345678912', '012345', 1,
+      'Fixture Registrant LLC', 'AVAILABLE', 'fixture-owner-pool', ?, ?, ?)`,
     args: [observedAt, observedAt, observedAt],
   });
   await db.execute({
@@ -755,7 +560,9 @@ async function seedCanonicalPilotFixture(
     method: "exact",
     targetComparableUnitPrice: null,
     matchTier: "EXACT_IDENTITY",
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     pricePolicyVersion: "price-evidence-eligibility/1.0.0",
   };
   const recipeComponent = {
@@ -771,7 +578,9 @@ async function seedCanonicalPilotFixture(
     priceEvidenceOfferId: donorOfferId,
     priceVariantDecisionId: decisionId,
     matchTier: "EXACT_IDENTITY",
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     pricePolicyVersion: "price-evidence-eligibility/1.0.0",
     product: "Example Brand Crunchy Snack",
     flavor: "Sea Salt",
@@ -788,6 +597,9 @@ async function seedCanonicalPilotFixture(
     listingKeyVersion: "product-truth-listing-key/1.0.0",
     outcome: "FACT",
     recipeHash,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     evaluatedAt: costCreatedAt,
     total: 3.99,
     costPerUnit: 3.99,
@@ -825,9 +637,10 @@ async function seedCanonicalPilotFixture(
         id,evidenceKey,skuCostId,componentIndex,evidenceStatus,
         targetCanonicalVariantId,contentCanonicalVariantId,priceCanonicalVariantId,
         contentObservationId,priceObservationId,matchTier,matcherVersion,
+        matcherImplementationSha256,matcherReleaseSha256,
         pricePolicyVersion,evidenceHash,evidenceJson,createdAt
       ) VALUES (?,?,?,0,'FACT',?,?,?,?,?,'EXACT_IDENTITY',
-        'canonical-product-match/1.2.0','price-evidence-eligibility/1.0.0',?,?,?)`,
+        ?,?,?,'price-evidence-eligibility/1.0.0',?,?,?)`,
       args: [
         "fixture-existing-component-evidence-1",
         sha256("fixture-existing-component-evidence-key-1"),
@@ -837,6 +650,9 @@ async function seedCanonicalPilotFixture(
         canonicalVariantId,
         contentObservationId,
         priceObservationId,
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         sha256(JSON.stringify(componentEvidence)),
         JSON.stringify(componentEvidence),
         componentCreatedAt,
@@ -846,10 +662,11 @@ async function seedCanonicalPilotFixture(
       sql: `INSERT INTO SkuCost (
         id,sku,effectiveDate,productCost,totalCost,costPerUnit,packSize,
         includesPackaging,currency,source,needsReview,observationKey,recipeHash,
-        evidenceJson,evidenceOutcome,matcherVersion,pricePolicyVersion,runId,
+        evidenceJson,evidenceOutcome,matcherVersion,matcherImplementationSha256,
+        matcherReleaseSha256,pricePolicyVersion,runId,
         approvalId,createdAt,updatedAt
       ) VALUES (?,?,?,3.99,3.99,3.99,1,0,'USD','retail:batch',0,?,?,?,
-        'FACT','canonical-product-match/1.2.0','price-evidence-eligibility/1.0.0',
+        'FACT',?,?,?,'price-evidence-eligibility/1.0.0',
         'fixture-approved-run','fixture-owner-approval',?,?)`,
       args: [
         costId,
@@ -858,6 +675,9 @@ async function seedCanonicalPilotFixture(
         sha256(`cost:${costId}`),
         recipeHash,
         JSON.stringify(costEvidence),
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         costCreatedAt,
         costCreatedAt,
       ],
@@ -947,6 +767,10 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   const dryRunPath = path.join(artifactRoot, "dry-run.json");
   const approvalPath = path.join(artifactRoot, "approval.json");
   const applyPreviewPath = path.join(artifactRoot, "apply-preview.json");
+  const applyPreviewAfterUnrelatedCatalogDriftPath = path.join(
+    artifactRoot,
+    "apply-preview-after-unrelated-catalog-drift.json",
+  );
   const applyLivePath = path.join(artifactRoot, "apply-live.json");
   const applyLiveRetryPath = path.join(artifactRoot, "apply-live-retry.json");
   const ownerPermitRequestPath = path.join(artifactRoot, "owner-permit-request.json");
@@ -1002,20 +826,36 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   const seedDb = createClient({ url: `file:${databasePath}` });
   await buildFreshCurrentSchema(seedDb);
   await seedCanonicalPilotFixture(seedDb, observedAt);
-  const sellerCatalogSource = await writeSellerCatalogAuthorityFixture(
-    root,
-    observedAt,
-  );
   const { readWalmartPilotCandidate } = await import(
     "../../src/lib/sourcing/product-truth-new-sku-view"
   );
-  await readWalmartPilotCandidate(seedDb, {
+  const pilotCandidate = await readWalmartPilotCandidate(seedDb, {
     donorProductId: "fixture-donor-1",
     qty: 2,
     asOf,
     maxPriceAgeMs: 24 * 60 * 60 * 1_000,
     zip: "33765",
   });
+  assert.equal(
+    PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+    "product-truth-read-contract/3.2.0",
+  );
+  assert.equal(pilotCandidate.contractVersion, PRODUCT_TRUTH_READ_CONTRACT_VERSION);
+  assert.equal(
+    pilotCandidate.newSkuView.contractVersion,
+    PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+  );
+  const pilotComponent = pilotCandidate.newSkuView.components[0];
+  assert.ok(pilotComponent);
+  assert.equal(pilotComponent.matcher_version, CANONICAL_PRODUCT_MATCHER_VERSION);
+  assert.equal(
+    pilotComponent.matcher_implementation_sha256,
+    CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  );
+  assert.equal(
+    pilotComponent.matcher_release_sha256,
+    CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  );
   await seedDb.close();
 
   const env: Record<string, string | undefined> = {
@@ -1131,8 +971,6 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--expected-engine-release-sha", expectedEngineReleaseSha256,
     "--release-manifest", frozen.manifest_path,
     "--release-manifest-sha", frozen.manifest_sha256_path,
-    "--item-report-catalog-source", sellerCatalogSource.path,
-    "--expected-item-report-catalog-source-sha256", sellerCatalogSource.sha256,
     "--limit", "1",
     "--as-of", asOf,
     "--out", doctorPath,
@@ -1182,7 +1020,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   assert.equal(planned.marketplace_mutated, false);
   assert.equal(planned.candidate_count, 1);
   const plan = JSON.parse(await readFile(planPath, "utf8")) as Record<string, unknown>;
-  assert.equal(plan.schema_version, "walmart-new-sku-plan/1.3.0");
+  assert.equal(WALMART_NEW_SKU_PLAN_SCHEMA, "walmart-new-sku-plan/1.7.0");
+  assert.equal(plan.schema_version, WALMART_NEW_SKU_PLAN_SCHEMA);
   assert.equal(plan.doctor_receipt_sha256, doctor.doctor_receipt_sha256);
   assert.equal(plan.engine_release_sha256, expectedEngineReleaseSha256);
   assert.equal(plan.release_manifest_sha256, frozen.manifest_sha256);
@@ -1222,7 +1061,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuDoctorReceipt;
   assert.equal(
     doctorArtifactForStage.schema_version,
-    "walmart-new-sku-doctor-receipt/1.4.0",
+    "walmart-new-sku-doctor-receipt/1.7.0",
   );
   assert.equal(
     doctorArtifactForStage.release_manifest_sha256,
@@ -1373,9 +1212,12 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   assert.match(String(generatedPolicyReviewTemplate.decision), /^TODO_/);
   assert.equal(
     (generatedPolicyReviewTemplate.official_sources as unknown[]).length,
-    6,
+    WALMART_NEW_SKU_REQUIRED_POLICY_SOURCE_IDS.length,
   );
-  assert.equal((generatedPolicyReviewTemplate.findings as unknown[]).length, 6);
+  assert.equal(
+    (generatedPolicyReviewTemplate.findings as unknown[]).length,
+    WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS.length,
+  );
   const certification = JSON.parse(
     await readFile(certificationInputPath, "utf8"),
   ) as WalmartNewSkuCertificationInput;
@@ -1388,8 +1230,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   const evidenceAt = new Date().toISOString();
   certification.price_cents = 2499;
   certification.packaging_cost_cents = 100;
-  certification.shipping_label_cents = 0;
-  certification.shipping_in_price = false;
+  certification.shipping_label_cents = 700;
+  certification.shipping_in_price = true;
   certification.images = [
     {
       ...certification.images[0],
@@ -1441,6 +1283,18 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       verified_at: evidenceAt,
       evidence_ref: "fixture-evidence://seller-account/healthy-and-accepting-v1",
     },
+    fulfillment_compliance: {
+      method: "SELLER_FULFILLED",
+      inventory_owned_by_seller: true,
+      direct_retailer_fulfillment: false,
+      competitor_branded_packaging: false,
+      third_party_promotional_materials: false,
+      fulfillment_center_id: "FIXTURE_FC_1",
+      fulfillment_lag_time: 1,
+      lag_exemption_status: "NOT_REQUIRED",
+      verified_at: evidenceAt,
+      evidence_ref: "fixture-evidence://fulfillment/policy-compliant-v1",
+    },
     category_approvals: [{
       scope: "INGESTIBLE_PRODUCTS",
       status: "APPROVED",
@@ -1451,6 +1305,29 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       status: "CLEARED",
       reviewed_at: evidenceAt,
       evidence_ref: "fixture-evidence://policy-review/walmart-v1",
+    },
+    pricing_competitiveness: {
+      status: "CLEARED",
+      policy_source_id: "pricing-rules",
+      basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
+      proposed_item_price_cents: 2499,
+      customer_shipping_charge_cents: 0,
+      proposed_customer_total_cents: 2499,
+      comparable: {
+        canonical_variant_id: String(candidates[0].canonical_variant_id),
+        url: "https://www.walmart.com/ip/fixture-comparable-1",
+        observed_at: evidenceAt,
+        pack_count: 1,
+        item_price_cents: 1100,
+        customer_shipping_charge_cents: 0,
+        customer_total_cents: 1100,
+      },
+      linearized_comparable_total_cents: 2200,
+      proposed_to_comparable_ratio_bps: 11_360,
+      internal_pilot_ceiling_bps: 12_500,
+      reviewed_at: evidenceAt,
+      reviewer: "fixture-human-pricing-reviewer",
+      evidence_ref: "fixture-evidence://pricing/current-comparable-v1",
     },
     recall_check: {
       status: "CLEAR",
@@ -1463,6 +1340,22 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       basis: "AUTHORIZED_RESELLER",
       verified_at: evidenceAt,
       evidence_ref: "fixture-evidence://brand-rights/example-brand-v1",
+    },
+    product_identifier: {
+      identifier_type: "UPC",
+      value: String(stage.upc),
+      checksum_valid: true,
+      pool_acquired_from: String(stage.upc_pool_acquired_from),
+      pool_recorded_owner: String(stage.upc_pool_recorded_owner),
+      registry_status: "VERIFIED",
+      registry_registrant_name: String(stage.upc_pool_recorded_owner),
+      aligned_brand: "Example Brand",
+      brand_alignment_status: "VERIFIED",
+      seller_account_fingerprint_sha256:
+        String(plan.seller_account_fingerprint_sha256),
+      seller_assignment_authority_status: "VERIFIED",
+      verified_at: evidenceAt,
+      evidence_ref: "fixture-evidence://product-identifier/current-v1",
     },
     condition: { value: "New", verified_at: evidenceAt },
     expiration: {
@@ -1480,11 +1373,20 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     ["fixture-evidence://country-of-origin/product-label-v1", "COUNTRY_OF_ORIGIN"],
     ["fixture-evidence://seller-center/ingestible-approval-v1", "CATEGORY_APPROVAL"],
     ["fixture-evidence://policy-review/walmart-v1", "POLICY_REVIEW"],
+    [
+      "fixture-evidence://pricing/current-comparable-v1",
+      "PRICE_COMPETITIVENESS",
+    ],
     ["fixture-evidence://recall-check/current-v1", "RECALL_CHECK"],
     ["fixture-evidence://brand-rights/example-brand-v1", "BRAND_RIGHTS"],
+    ["fixture-evidence://product-identifier/current-v1", "PRODUCT_IDENTIFIER"],
     [
       "fixture-evidence://seller-account/healthy-and-accepting-v1",
       "SELLER_ACCOUNT_HEALTH",
+    ],
+    [
+      "fixture-evidence://fulfillment/policy-compliant-v1",
+      "FULFILLMENT_COMPLIANCE",
     ],
     ["fixture-evidence://lot-control/procedure-v1", "LOT_CONTROL_PROCEDURE"],
     ["fixture-evidence://expiration/manufacturer-v1", "EXPIRATION_SOURCE"],
@@ -1529,6 +1431,16 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     ),
     findings: [
       {
+        finding_id: "account-publish-eligibility",
+        disposition: "CLEARED",
+        summary: "Account health, item limits, and publish eligibility were reviewed.",
+        policy_source_ids: [
+          "account-health-compliance",
+          "selling-privileges",
+        ],
+        required_approval_scopes: [],
+      },
+      {
         finding_id: "category-preapproval",
         disposition: "REQUIRES_APPROVAL",
         summary: "The exact seller account has the required ingestible entitlement.",
@@ -1550,6 +1462,13 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
         required_approval_scopes: [],
       },
       {
+        finding_id: "pricing-competitiveness",
+        disposition: "CLEARED",
+        summary: "Item price and shipping were reviewed against current comparable offers.",
+        policy_source_ids: ["pricing-rules"],
+        required_approval_scopes: [],
+      },
+      {
         finding_id: "product-claims",
         disposition: "CLEARED",
         summary: "All public product claims were reviewed against current policy.",
@@ -1557,10 +1476,34 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
         required_approval_scopes: [],
       },
       {
+        finding_id: "product-detail-content",
+        disposition: "CLEARED",
+        summary: "Title, description, key features, images, and attributes were reviewed.",
+        policy_source_ids: ["image-guidelines", "product-details-policy"],
+        required_approval_scopes: [],
+      },
+      {
+        finding_id: "product-identifier-and-duplicates",
+        disposition: "CLEARED",
+        summary: "The exact UPC, registry alignment, and duplicate controls were reviewed.",
+        policy_source_ids: [
+          "duplicate-listings-policy",
+          "product-identifier-policy",
+        ],
+        required_approval_scopes: [],
+      },
+      {
         finding_id: "recall-safety",
         disposition: "CLEARED",
         summary: "Recall and product-safety controls were reviewed for the exact item.",
         policy_source_ids: ["recalled-products"],
+        required_approval_scopes: [],
+      },
+      {
+        finding_id: "shipping-fulfillment",
+        disposition: "CLEARED",
+        summary: "Owned inventory, fulfillment center, packaging, and lag controls were reviewed.",
+        policy_source_ids: ["shipping-fulfillment-policy"],
         required_approval_scopes: [],
       },
       {
@@ -1597,7 +1540,11 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       sha256: "TODO_ENGINE_SEALS_EXACT_EVIDENCE_SHA256",
       byte_size: null as never,
       captured_at: evidenceAt,
-      source_url: kind === "POLICY_REVIEW" ? policyOverviewUrl : null,
+      source_url: kind === "POLICY_REVIEW"
+        ? policyOverviewUrl
+        : kind === "PRICE_COMPETITIVENESS"
+          ? certification.prepublication.pricing_competitiveness.comparable.url
+          : null,
     });
   }
   await writeFile(
@@ -1635,6 +1582,60 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     assert.equal(artifact.sha256, createHash("sha256").update(bytes).digest("hex"));
     assert.equal(artifact.byte_size, bytes.length, `sealed evidence ${index}`);
   }
+  assert.doesNotThrow(() => assertWalmartNewSkuCertificationInput({
+    certification: sealedCertification,
+    plan: plan as never,
+    stage: stage as never,
+  }));
+  const missingPricing = structuredClone(sealedCertification);
+  delete (missingPricing.prepublication as Partial<
+    typeof missingPricing.prepublication
+  >).pricing_competitiveness;
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: missingPricing,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
+  );
+  const pricingMathDrift = structuredClone(sealedCertification);
+  pricingMathDrift.prepublication.pricing_competitiveness
+    .linearized_comparable_total_cents += 1;
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: pricingMathDrift,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
+  );
+  const overpriced = structuredClone(sealedCertification);
+  overpriced.prepublication.pricing_competitiveness.proposed_item_price_cents =
+    3000;
+  overpriced.prepublication.pricing_competitiveness
+    .proposed_customer_total_cents = 3000;
+  overpriced.prepublication.pricing_competitiveness
+    .proposed_to_comparable_ratio_bps = 13_637;
+  overpriced.price_cents = 3000;
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: overpriced,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
+  );
+  const excludedShipping = structuredClone(sealedCertification);
+  excludedShipping.shipping_in_price = false;
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: excludedShipping,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /CERTIFICATION_COST_BASIS_INVALID/,
+  );
   const overwriteDraftPath = path.join(root, "certification-input-overwrite.json");
   const overwriteDraft = structuredClone(certification);
   overwriteDraft.price_cents += 1;
@@ -1874,7 +1875,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuCertificationArtifact;
   assert.equal(
     certificationArtifact.schema_version,
-    "walmart-new-sku-certification/1.4.0",
+    "walmart-new-sku-certification/1.7.0",
   );
   const buyerAttemptId = "fixture-buyer-seal-attempt";
   const buyerItemId = "123456789";
@@ -2468,15 +2469,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--actor", "fixture-owner",
     "--confirm", ownerPermit.permit_sha256,
   ];
-  const traceBeforeCatalogDrift = (await readFile(tracePath, "utf8"))
-    .trim()
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as { method: string; url: string });
-  const postsBeforeCatalogDrift = traceBeforeCatalogDrift.filter(
-    (entry) =>
-      entry.method === "POST" && new URL(entry.url).pathname === "/v3/feeds",
-  ).length;
+  // An unrelated row in the seller mirror is not a Product Truth input and
+  // cannot invalidate the exact staged SKU/UPC guard.
   const catalogDriftDb = createClient({ url: `file:${databasePath}` });
   await catalogDriftDb.execute(
     `UPDATE WalmartCatalogItem
@@ -2484,20 +2478,22 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
      WHERE id='fixture-existing-catalog-row'`,
   );
   await catalogDriftDb.close();
-  const deniedCatalogDrift = await runProcess(
-    process.execPath,
-    [
-      "--import", "tsx",
-      "--import", FAKE_FETCH,
-      CLI,
-      ...liveApplyArgs,
-    ],
-    { env: { ...env, WALMART_NEW_SKU_TEST_ALLOW_FEED_POST: "1" } },
+  const previewAfterUnrelatedCatalogDrift = await runCli([
+    "apply",
+    "--certification", certificationPath,
+    "--certification-receipt", certificationReceiptPath,
+    "--dry-run-receipt", dryRunPath,
+    "--approval", approvalPath,
+    "--mode", "preview",
+    "--out", applyPreviewAfterUnrelatedCatalogDriftPath,
+  ], env);
+  assert.equal(
+    previewAfterUnrelatedCatalogDrift.marketplace_mutation_requested,
+    false,
   );
-  assert.equal(deniedCatalogDrift.code, 1);
-  assert.match(
-    deniedCatalogDrift.stderr,
-    /CATALOG_MIRROR_RECONCILIATION_MISMATCH|CATALOG_AUTHORITY_BINDING_DRIFT/,
+  assert.equal(
+    (previewAfterUnrelatedCatalogDrift.distribution as Record<string, unknown>).ok,
+    true,
   );
   const driftInspectionDb = createClient({ url: `file:${databasePath}` });
   const attemptRowsAfterCatalogDrift = await driftInspectionDb.execute(
@@ -2510,18 +2506,6 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   );
   await driftInspectionDb.close();
   assert.equal(Number(attemptRowsAfterCatalogDrift.rows[0].value), 0);
-  const traceAfterCatalogDrift = (await readFile(tracePath, "utf8"))
-    .trim()
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as { method: string; url: string });
-  assert.equal(
-    traceAfterCatalogDrift.filter(
-      (entry) =>
-        entry.method === "POST" && new URL(entry.url).pathname === "/v3/feeds",
-    ).length,
-    postsBeforeCatalogDrift,
-  );
   const liveApplied = await runCli([
     ...liveApplyArgs,
     "--out", applyLivePath,
@@ -3041,4 +3025,101 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     Number(beforeMismatchRows[1].rows[0].value),
   );
   assert.equal(String(stage.marketplace_mutation_allowed), "false");
+
+  const blockedDb = createClient({ url: `file:${databasePath}` });
+  const blockedObservedAt = new Date(Date.now() - 1_000).toISOString();
+  await blockedDb.execute({
+    sql: `INSERT INTO DonorOfferObservation (
+      id, observationKey, donorOfferId, donorProductId, canonicalVariantId,
+      variantDecisionId, retailer, retailerProductId, via, title, price,
+      packSizeSeen, pricePerUnit, currency, zip, localityEvidence, inStock,
+      productUrl, sellerName, isFirstParty, sourceApi, observedAt, createdAt
+    )
+    SELECT
+      'fixture-price-observation-blocked',
+      ?,
+      donorOfferId, donorProductId, canonicalVariantId, variantDecisionId,
+      retailer, retailerProductId, via, title, price, packSizeSeen,
+      pricePerUnit, currency, zip, localityEvidence, 0, productUrl,
+      sellerName, isFirstParty, sourceApi, ?, ?
+    FROM DonorOfferObservation
+    WHERE id='fixture-price-1'`,
+    args: [
+      sha256("fixture-price-observation-blocked"),
+      blockedObservedAt,
+      blockedObservedAt,
+    ],
+  });
+  await blockedDb.close();
+  const blockedDoctorRequestedPath = path.join(
+    artifactRoot,
+    "blocked-doctor-receipt.json",
+  );
+  const blockedDoctorDiagnosticPath = path.join(
+    artifactRoot,
+    "blocked-doctor-receipt.blocked.json",
+  );
+  const blockedDoctorResult = await runProcess(
+    process.execPath,
+    [
+      "--import", "tsx", "--import", FAKE_FETCH, CLI,
+      "doctor",
+      "--expected-engine-release-sha", expectedEngineReleaseSha256,
+      "--release-manifest", frozen.manifest_path,
+      "--release-manifest-sha", frozen.manifest_sha256_path,
+      "--limit", "1",
+      "--as-of", new Date().toISOString(),
+      "--out", blockedDoctorRequestedPath,
+    ],
+    { env },
+  );
+  assert.equal(blockedDoctorResult.code, 2, blockedDoctorResult.stderr);
+  const blockedDoctorStdout = JSON.parse(
+    blockedDoctorResult.stdout.trim(),
+  ) as Record<string, unknown>;
+  assert.equal(blockedDoctorStdout.doctor_receipt, null);
+  assert.equal(blockedDoctorStdout.doctor_receipt_written, false);
+  assert.equal(
+    blockedDoctorStdout.doctor_diagnostic,
+    blockedDoctorDiagnosticPath,
+  );
+  assert.equal(blockedDoctorStdout.doctor_diagnostic_written, true);
+  assert.match(
+    String(blockedDoctorStdout.doctor_diagnostic_sha256),
+    /^[a-f0-9]{64}$/,
+  );
+  assert.equal(blockedDoctorStdout.next_command, null);
+  assert.equal(blockedDoctorStdout.next_argv, null);
+  await assert.rejects(
+    readFile(blockedDoctorRequestedPath, "utf8"),
+    /ENOENT/,
+  );
+  const blockedDiagnosticBytes = await readFile(
+    blockedDoctorDiagnosticPath,
+    "utf8",
+  );
+  assert.equal(
+    sha256(blockedDiagnosticBytes),
+    blockedDoctorStdout.doctor_diagnostic_sha256,
+  );
+  const blockedDiagnostic = JSON.parse(
+    blockedDiagnosticBytes,
+  ) as Record<string, unknown>;
+  assert.equal(
+    blockedDiagnostic.schema_version,
+    "walmart-new-sku-doctor-diagnostic/1.0.0",
+  );
+  assert.equal(
+    blockedDiagnostic.artifact_role,
+    "BLOCKED_DOCTOR_DIAGNOSTIC_ONLY",
+  );
+  assert.equal(blockedDiagnostic.acceptable_as_doctor_receipt, false);
+  assert.equal(blockedDiagnostic.doctor_receipt_written, false);
+  assert.equal(blockedDiagnostic.next_command, null);
+  assert.equal(blockedDiagnostic.next_argv, null);
+  assert.ok(
+    (blockedDiagnostic.blockers as string[]).includes(
+      "NO_CURRENT_CANONICAL_PILOT_CANDIDATES",
+    ),
+  );
 });

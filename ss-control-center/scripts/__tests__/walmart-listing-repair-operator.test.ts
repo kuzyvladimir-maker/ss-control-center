@@ -11,7 +11,7 @@ import {
   WalmartListingRepairOperatorError,
 } from "../walmart-listing-repair-operator.ts";
 
-const RELEASE_ID = "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8";
+const RELEASE_ID = "0d21ffcd5bf55c6e781daba80b3a750613f2d21bb89690a73ccbd66326aa246d";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(
@@ -33,7 +33,7 @@ test("operator CLI requires wrapper-attested release hashes and rejects test run
   );
 });
 
-test("doctor proves the engine pins ready and stays zero-effect NO-GO only on the owner root", async () => {
+test("doctor proves the engine and enrolled owner trust root are ready with zero effects", async () => {
   const root = await realpath(await mkdtemp(path.join(tmpdir(), "walmart-repair-operator-")));
   const out = path.join(root, "doctor.json");
   try {
@@ -42,8 +42,8 @@ test("doctor proves the engine pins ready and stays zero-effect NO-GO only on th
       args,
       new Date("2026-07-22T06:00:00.000Z"),
     );
-    assert.equal(result.status, "NO_GO");
-    assert.equal(result.next_command, null);
+    assert.equal(result.status, "READY");
+    assert.match(String(result.next_command), /^plan --package /u);
     const readiness = result.readiness as {
       ready: boolean;
       authority: { owner_trust_root_ready: boolean; enrolled_owner_key_count: number };
@@ -58,9 +58,9 @@ test("doctor proves the engine pins ready and stays zero-effect NO-GO only on th
         native_one_shot_transport_ready: boolean;
       };
     };
-    assert.equal(readiness.ready, false);
-    assert.equal(readiness.authority.owner_trust_root_ready, false);
-    assert.equal(readiness.authority.enrolled_owner_key_count, 0);
+    assert.equal(readiness.ready, true);
+    assert.equal(readiness.authority.owner_trust_root_ready, true);
+    assert.equal(readiness.authority.enrolled_owner_key_count, 1);
     assert.equal(readiness.qualification.verifier_release_pinned, true);
     assert.equal(readiness.qualification.walmart_native_payload_validator_ready, true);
     assert.equal(readiness.qualification.frozen_apply_writer_attestation_ready, true);

@@ -1961,6 +1961,8 @@ model SkuCost {
   evidenceJson       String?
   evidenceOutcome    String? // FACT | ESTIMATE | UNSOURCEABLE (required for retail:batch)
   matcherVersion     String?
+  matcherImplementationSha256 String?
+  matcherReleaseSha256        String?
   pricePolicyVersion String?
   runId              String?
   approvalId         String?
@@ -2183,6 +2185,8 @@ model DonorProduct {
   identityKey            String    @unique
   identityStatus         String    @default("legacy_unverified") // candidate | exact_confirmed | legacy_unverified | rejected
   identityMatcherVersion String?
+  identityMatcherImplementationSha256 String?
+  identityMatcherReleaseSha256        String?
   identityEvidenceJson   String?
   identityConfirmedAt    DateTime?
   confidence             Float? // identify confidence
@@ -2244,6 +2248,8 @@ model DonorProductVariantDecision {
   canonicalVariant   CanonicalProductVariant? @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   decisionStatus     String
   matcherVersion     String
+  matcherImplementationSha256 String
+  matcherReleaseSha256        String
   evidenceHash       String
   evidenceJson       String
   decidedAt          DateTime
@@ -2388,6 +2394,8 @@ model SkuComponentEvidence {
   priceObservation          DonorOfferObservation?     @relation(fields: [priceObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   matchTier                 String
   matcherVersion            String
+  matcherImplementationSha256 String
+  matcherReleaseSha256        String
   pricePolicyVersion        String
   evidenceHash              String
   evidenceJson              String

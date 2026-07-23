@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-listing-integrity-owner-visual-review/v1",
+  "recorded_at": "2026-07-22T23:49:08.000Z",
+  "decision": "APPROVED_FOR_EXACT_LIVE_CANARY_DIFF_PREPARATION",
+  "scope": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1183",
+    "item_id": "8419413379",
+    "expected_outer_units": 6
+  },
+  "reviewed_artifacts": {
+    "canary_preview_path": "ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/canary-preview.json",
+    "canary_preview_sha256": "46d3d8fe33fa21e92f72ef58e90b36cdcfd81e1e07e87a7b32c0261d955ef0a1",
+    "owner_gallery_path": "ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/owner-gallery.html",
+    "owner_gallery_sha256": "a15d41d593553baeaed81044a66d30f2c7fa788455e2954f1ff6a1118e9ae798"
+  },
+  "owner_observation": {
+    "current_main_is_one_package": true,
+    "proposed_main_is_six_packages": true,
+    "proposed_main_accepted": true,
+    "existing_gallery_accepted": true,
+    "owner_words": "все корректно текущая main картинка это одна упаковка предлагаемая main картинка 6 упаковок все четко мне нравится. Эти дополнительные изображения тоже все четко."
+  },
+  "authority_boundary": {
+    "exact_diff_preparation_authorized": true,
+    "walmart_listing_write_authorized": false,
+    "mass_run_authorized": false,
+    "reprice_authorized": false,
+    "inventory_change_authorized": false,
+    "delist_authorized": false
+  },
+  "external_effects": {
+    "walmart_listing_writes": 0,
+    "database_writes": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "paid_api_calls": 0
+  }
+}

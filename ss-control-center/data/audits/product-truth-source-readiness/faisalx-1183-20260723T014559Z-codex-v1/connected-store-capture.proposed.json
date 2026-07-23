@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "phase1-connected-store-capture/v1",
+  "captureId": "product-truth-connected-store-capture-20260723T014559Z-codex-v1",
+  "capturedAt": "2026-07-23T01:45:59.000Z",
+  "capturedBy": "Codex",
+  "environment": "production",
+  "target": "ss-control-center-production",
+  "supportContracts": {
+    "amazon": "AMAZON_SP_AUTH_STORE_INDEX_1_TO_5",
+    "walmart": "WALMART_EXPLICIT_SUPPORTED_STORE_INDEX_SET"
+  },
+  "supportedStoreIndexes": {
+    "amazon": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "walmart": [
+      1
+    ]
+  },
+  "sourceArtifacts": [
+    {
+      "kind": "STORE_DIRECTORY_SNAPSHOT",
+      "captureId": "store-directory-production-20260723T014559Z",
+      "capturedAt": "2026-07-23T01:45:59.000Z",
+      "capturedBy": "Codex",
+      "sourceName": "store-directory.snapshot.json",
+      "contentSha256": "db749d0016c27e3734415f7067ee35c6fc675d5b5b80d670760307664abb0189"
+    },
+    {
+      "kind": "DEPLOYMENT_CONFIGURATION_SNAPSHOT",
+      "captureId": "deployment-config-production-20260723T014559Z",
+      "capturedAt": "2026-07-23T01:45:59.000Z",
+      "capturedBy": "Codex",
+      "sourceName": "deployment-config.snapshot.json",
+      "contentSha256": "eb81ad2f0c02392aa7763ccc233912d2ae28ac9dafd98fef6ee50b9e335ec0ad"
+    }
+  ],
+  "scopes": [
+    {
+      "channel": "amazon",
+      "scopeKey": "store1",
+      "storeIndex": 1,
+      "connectionStatus": "CONNECTED",
+      "directoryState": "ACTIVE",
+      "credentialState": "CONFIGURED",
+      "accountId": "A3A7A0RDFUSGBS",
+      "storeId": "store1",
+      "marketplaceId": "ATVPDKIKX0DER"
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store2",
+      "storeIndex": 2,
+      "connectionStatus": "UNRESOLVED",
+      "directoryState": "ACTIVE",
+      "credentialState": "UNKNOWN",
+      "accountId": null,
+      "storeId": "store2",
+      "marketplaceId": "ATVPDKIKX0DER"
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store3",
+      "storeIndex": 3,
+      "connectionStatus": "CONNECTED",
+      "directoryState": "ACTIVE",
+      "credentialState": "CONFIGURED",
+      "accountId": "A2ON382ZMCWPCT",
+      "storeId": "store3",
+      "marketplaceId": "ATVPDKIKX0DER"
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store4",
+      "storeIndex": 4,
+      "connectionStatus": "UNRESOLVED",
+      "directoryState": "ACTIVE",
+      "credentialState": "NOT_CONFIGURED",
+      "accountId": null,
+      "storeId": "store4",
+      "marketplaceId": "ATVPDKIKX0DER"
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store5",
+      "storeIndex": 5,
+      "connectionStatus": "CONNECTED",
+      "directoryState": "ACTIVE",
+      "credentialState": "CONFIGURED",
+      "accountId": "A1LCOF57VUVMI4",
+      "storeId": "store5",
+      "marketplaceId": "ATVPDKIKX0DER"
+    },
+    {
+      "channel": "walmart",
+      "scopeKey": "store1",
+      "storeIndex": 1,
+      "connectionStatus": "CONNECTED",
+      "directoryState": "ACTIVE",
+      "credentialState": "CONFIGURED",
+      "accountId": "10001624309",
+      "storeId": "store1",
+      "marketplaceId": null
+    }
+  ]
+}

@@ -7,31 +7,33 @@
  */
 
 import type { ValidatorFn } from "../types";
+import { walmartProductDetailTextViolation } from
+  "@/lib/bundle-factory/validation/walmart-product-detail-policy";
 
 // Amazon allows up to 5 bullets (additional positions get suppressed).
-// Walmart's grocery taxonomy also caps at 5 — Walmart shows only the
-// first 5 in the description card.
+// Walmart's current Product details policy requires three to ten key
+// features. The live product-type spec may impose an even narrower cap.
 const BULLET_COUNT_CAP_BY_CHANNEL: Record<string, number> = {
   AMAZON_PERSONAL: 10, // Amazon hard cap before code 99016
   AMAZON_SALUTEM: 10,
   AMAZON_AMZCOM: 10,
   AMAZON_SIRIUS: 10,
   AMAZON_RETAILER: 10,
-  WALMART: 5,
+  WALMART: 10,
   EBAY: 10,
   TIKTOK_1: 5,
   TIKTOK_2: 5,
 };
 
 // Per-bullet character cap. Amazon allows 500 per bullet; Walmart's
-// shorter description format caps each at ~150.
+// current Product details policy prohibits more than 80 characters.
 const BULLET_CHAR_CAP_BY_CHANNEL: Record<string, number> = {
   AMAZON_PERSONAL: 500,
   AMAZON_SALUTEM: 500,
   AMAZON_AMZCOM: 500,
   AMAZON_SIRIUS: 500,
   AMAZON_RETAILER: 500,
-  WALMART: 150,
+  WALMART: 80,
   EBAY: 250,
   TIKTOK_1: 200,
   TIKTOK_2: 200,
@@ -68,6 +70,16 @@ export const validatorBullets: ValidatorFn = async ({ sku }) => {
       passed: false,
       severity: "error",
       message: "bullets array is empty",
+    };
+  }
+
+  if (sku.channel === "WALMART" && strings.length < 3) {
+    return {
+      validator_id: "validator-bullets",
+      passed: false,
+      severity: "error",
+      message: `Walmart requires 3–10 key features; received ${strings.length}.`,
+      details: { count: strings.length, minimum: 3, maximum: 10 },
     };
   }
 
@@ -120,6 +132,18 @@ export const validatorBullets: ValidatorFn = async ({ sku }) => {
         message: `bullets[${i}] starts with a manual bullet marker — Amazon renders bullets automatically`,
         details: { index: i },
       };
+    }
+    if (sku.channel === "WALMART") {
+      const violation = walmartProductDetailTextViolation(b, "KEY_FEATURE");
+      if (violation) {
+        return {
+          validator_id: "validator-bullets",
+          passed: false,
+          severity: "error",
+          message: `bullets[${i}] contains Walmart-prohibited ${violation}`,
+          details: { index: i, policy: "product-details-policy", violation },
+        };
+      }
     }
   }
 

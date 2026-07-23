@@ -22,7 +22,9 @@ import {
 } from "@/lib/walmart/item-report-published-source";
 import {
   WalmartSellerCatalogAuthorityError,
+  buildWalmartExactIdentifierDuplicateGuardBinding,
   buildWalmartSellerCatalogAuthorityBinding,
+  isWalmartExactIdentifierDuplicateGuardBinding,
   recheckWalmartSellerCatalogAuthorityBinding,
   verifyWalmartSellerCatalogAuthorityBinding,
   type BuildWalmartSellerCatalogAuthorityBindingInput,
@@ -322,6 +324,38 @@ test("builds a deterministic exact all-status seller catalog authority binding",
     db: fx.db,
     expected: first,
     now: new Date("2026-07-18T12:30:00.000Z"),
+  }), first);
+});
+
+test("exact staged SKU/UPC guard is sealed and requires no seller-catalog read", async () => {
+  const first = buildWalmartExactIdentifierDuplicateGuardBinding({
+    storeIndex: 1,
+    businessSellerAccountFingerprintSha256: BUSINESS_FINGERPRINT,
+    ownerDecisionRef:
+      "owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight",
+  });
+  const second = buildWalmartExactIdentifierDuplicateGuardBinding({
+    storeIndex: 1,
+    businessSellerAccountFingerprintSha256: BUSINESS_FINGERPRINT,
+    ownerDecisionRef:
+      "owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight",
+  });
+  assert.deepEqual(first, second);
+  assert.equal(isWalmartExactIdentifierDuplicateGuardBinding(first), true);
+  assert.equal(first.policy.product_source, "PRODUCT_TRUTH_DONOR_CATALOG");
+  assert.equal(first.policy.full_seller_catalog_required, false);
+  assert.equal(first.policy.seller_recipe_catalog_scan_required, false);
+  assert.equal(first.policy.exact_seller_sku_absence_required_before_certification, true);
+  assert.equal(first.policy.exact_upc_catalog_search_required_before_certification, true);
+  assert.deepEqual(verifyWalmartSellerCatalogAuthorityBinding(first), first);
+
+  const noDatabaseCalls = {
+    execute: async () => assert.fail("point duplicate guard must not query the seller catalog"),
+  } as unknown as Client;
+  assert.deepEqual(await recheckWalmartSellerCatalogAuthorityBinding({
+    db: noDatabaseCalls,
+    expected: first,
+    now: NOW,
   }), first);
 });
 

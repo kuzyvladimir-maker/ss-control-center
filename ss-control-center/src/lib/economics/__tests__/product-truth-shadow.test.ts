@@ -15,6 +15,11 @@ import type {
 } from "../../sourcing/product-truth-consumer-gateway";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from
   "../../sourcing/product-truth-read-contract-version";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../../sourcing/canonical-product-match-provenance";
 import type { ProductTruthCostRecord } from
   "../../sourcing/product-truth-read-contract";
 
@@ -60,7 +65,9 @@ function cost(input: {
     packSize: 1,
     currency: "USD",
     needsReview: input.status !== "FACT",
-    matcherVersion: "canonical-product-match/1.2.0",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     pricePolicyVersion: "price-evidence-eligibility/1.0.0",
     evidenceOutcome: input.status,
     evidence: {},

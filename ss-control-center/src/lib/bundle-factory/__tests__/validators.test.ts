@@ -9,6 +9,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import sharp from "sharp";
 
 import type { ChannelSKU } from "@/generated/prisma/client";
 import type { ValidatorInput } from "@/lib/bundle-factory/validation/types";
@@ -31,6 +32,9 @@ import { validatorMarginFloor } from "@/lib/bundle-factory/validation/validators
 import { validatorRecipeContent } from "@/lib/bundle-factory/validation/validators/validator-recipe-content";
 import { validatorCanonicalPrice } from "@/lib/bundle-factory/validation/validators/validator-canonical-price";
 import { VERIFIED_PHYSICAL_PACKAGE_SCHEMA } from "@/lib/bundle-factory/physical-package-specs";
+import {
+  inspectWalmartPublicImageSet,
+} from "@/lib/bundle-factory/validation/walmart-public-image-inspection";
 
 // ── Fixture builder ─────────────────────────────────────────────────────
 
@@ -297,7 +301,7 @@ test("validator-bullets fails on overlong bullet (Amazon 500)", async () => {
   assert.match(out.message ?? "", /501 chars/);
 });
 
-test("validator-bullets fails on >5 bullets for Walmart", async () => {
+test("validator-bullets accepts 3–10 concise key features for Walmart", async () => {
   const out = await validatorBullets(
     mkInput(
       mkSku({
@@ -306,8 +310,46 @@ test("validator-bullets fails on >5 bullets for Walmart", async () => {
       }),
     ),
   );
+  assert.equal(out.passed, true);
+});
+
+test("validator-bullets rejects fewer than 3 or more than 10 Walmart key features", async () => {
+  const tooFew = await validatorBullets(
+    mkInput(mkSku({ channel: "WALMART", bullets: JSON.stringify(["a", "b"]) })),
+  );
+  assert.equal(tooFew.passed, false);
+  assert.match(tooFew.message ?? "", /3–10/);
+
+  const tooMany = await validatorBullets(
+    mkInput(mkSku({
+      channel: "WALMART",
+      bullets: JSON.stringify(Array.from({ length: 11 }, (_, index) => `feature ${index}`)),
+    })),
+  );
+  assert.equal(tooMany.passed, false);
+  assert.match(tooMany.message ?? "", /11 items/);
+});
+
+test("validator-bullets rejects Walmart key features over 80 characters", async () => {
+  const out = await validatorBullets(
+    mkInput(mkSku({
+      channel: "WALMART",
+      bullets: JSON.stringify(["a".repeat(81), "feature two", "feature three"]),
+    })),
+  );
   assert.equal(out.passed, false);
-  assert.match(out.message ?? "", /6 items/);
+  assert.match(out.message ?? "", /81 chars/);
+});
+
+test("validator-bullets rejects explicit Walmart product-detail policy signals", async () => {
+  const out = await validatorBullets(
+    mkInput(mkSku({
+      channel: "WALMART",
+      bullets: JSON.stringify(["Exact pack count", "Low price", "Original package"]),
+    })),
+  );
+  assert.equal(out.passed, false);
+  assert.match(out.message ?? "", /promotional claim/);
 });
 
 // ── validator-description ─────────────────────────────────────────────
@@ -328,6 +370,31 @@ test("validator-description rejects HTML", async () => {
 test("validator-description rejects empty", async () => {
   const out = await validatorDescription(mkInput(mkSku({ description: "" })));
   assert.equal(out.passed, false);
+});
+
+test("validator-description enforces Walmart 150-word minimum and prohibited URLs", async () => {
+  const short = await validatorDescription(
+    mkInput(mkSku({ channel: "WALMART", description: "Exact product description." })),
+  );
+  assert.equal(short.passed, false);
+  assert.match(short.message ?? "", /at least 150 words/);
+
+  const withUrl = await validatorDescription(
+    mkInput(mkSku({
+      channel: "WALMART",
+      description: `${Array.from({ length: 150 }, () => "detail").join(" ")} https://example.com`,
+    })),
+  );
+  assert.equal(withUrl.passed, false);
+  assert.match(withUrl.message ?? "", /external URL/);
+});
+
+test("validator-title rejects explicit Walmart product-detail policy signals", async () => {
+  const out = await validatorTitle(
+    mkInput(mkSku({ channel: "WALMART", title: "Example Snack Low Price" })),
+  );
+  assert.equal(out.passed, false);
+  assert.match(out.message ?? "", /promotional claim/);
 });
 
 // ── validator-brand-field ─────────────────────────────────────────────
@@ -566,7 +633,7 @@ test("validator-image-dimensions requires Walmart images to be square", async ()
   const out = await validatorImageDimensions(
     mkInput(mkSku({
       channel: "WALMART",
-      main_image_url: buildPngWithDims(1600, 1500),
+      main_image_url: buildPngWithDims(2300, 2200),
     })),
   );
   assert.equal(out.passed, false);
@@ -601,6 +668,89 @@ test("validator-image-format fails on missing URL", async () => {
 test("validator-image-format uses Walmart's current 5 MB cap", () => {
   assert.equal(maxImageBytesForChannel("WALMART"), 5 * 1024 * 1024);
   assert.equal(maxImageBytesForChannel("AMAZON_SALUTEM"), 10 * 1024 * 1024);
+});
+
+test("Walmart pilot decodes and verifies every public image", async () => {
+  const bytes = await sharp({
+    create: {
+      width: 2200,
+      height: 2200,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const fakeFetch = (async () => new Response(new Uint8Array(bytes), {
+    status: 200,
+    headers: {
+      "content-type": "image/png",
+      "content-length": String(bytes.byteLength),
+    },
+  })) as typeof fetch;
+  const verified = await inspectWalmartPublicImageSet([
+    "https://images.example/main.png",
+    "https://images.example/secondary.png",
+  ], fakeFetch);
+  assert.deepEqual(verified.map((image) => [image.width, image.height]), [
+    [2200, 2200],
+    [2200, 2200],
+  ]);
+});
+
+test("Walmart pilot fails when any secondary image is undersized", async () => {
+  const good = await sharp({
+    create: {
+      width: 2200,
+      height: 2200,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const small = await sharp({
+    create: {
+      width: 1500,
+      height: 1500,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const fakeFetch = (async (input: string | URL | Request) => {
+    const raw = typeof input === "string" ? input : input.toString();
+    const bytes = raw.includes("secondary") ? small : good;
+    return new Response(new Uint8Array(bytes), {
+      status: 200,
+      headers: {
+        "content-type": "image/png",
+        "content-length": String(bytes.byteLength),
+      },
+    });
+  }) as typeof fetch;
+  await assert.rejects(
+    inspectWalmartPublicImageSet([
+      "https://images.example/main.png",
+      "https://images.example/secondary.png",
+    ], fakeFetch),
+    /at least 2200x2200.*secondary/,
+  );
+});
+
+test("Walmart pilot image fetch rejects private or query-bearing URLs", async () => {
+  const neverFetch = (async () => {
+    throw new Error("fetch must not run");
+  }) as typeof fetch;
+  await assert.rejects(
+    inspectWalmartPublicImageSet([
+      "https://127.0.0.1/main.png",
+      "https://images.example/secondary.png",
+    ], neverFetch),
+    /private address/,
+  );
+  await assert.rejects(
+    inspectWalmartPublicImageSet([
+      "https://images.example/main.png?token=x",
+      "https://images.example/secondary.png",
+    ], neverFetch),
+    /query-free public HTTPS URL/,
+  );
 });
 
 // ── validator-margin-floor (Phase 7) ────────────────────────────────────

@@ -8,7 +8,9 @@
  * line/form.
  */
 
-export const CANONICAL_PRODUCT_MATCHER_VERSION = "canonical-product-match/1.2.0" as const;
+import { CANONICAL_PRODUCT_MATCHER_VERSION } from "./canonical-product-match-provenance";
+
+export { CANONICAL_PRODUCT_MATCHER_VERSION };
 
 export type CanonicalMatchVerdict =
   | "EXACT_IDENTITY"
@@ -271,19 +273,35 @@ function knownModifierKeysAndConsumed(tokens: readonly string[]): { keys: string
 
 function normalizeModifierKeys(identity: CanonicalProductIdentity): string[] {
   const keys = new Set<string>();
+  const structuredFlavorTokens = orderedTokens(identity.flavor);
+  const originalIsStructuredFlavor = structuredFlavorTokens.includes("original");
   const titleWithoutBrand = removeFirstPhrase(
     orderedTokens(identity.title),
     orderedTokens(identity.brand),
   );
   const evidence = [
-    orderedTokens(identity.productLine),
-    orderedTokens(identity.flavor),
-    orderedTokens(identity.form),
-    titleWithoutBrand,
-  ];
-  for (const tokens of evidence) {
+    { field: "productLine", tokens: orderedTokens(identity.productLine) },
+    { field: "flavor", tokens: structuredFlavorTokens },
+    { field: "form", tokens: orderedTokens(identity.form) },
+    { field: "title", tokens: titleWithoutBrand },
+  ] as const;
+  for (const { field, tokens } of evidence) {
     const detected = knownModifierKeysAndConsumed(tokens);
-    detected.keys.forEach((key) => keys.add(key));
+    detected.keys.forEach((key) => {
+      // `Original` is commonly the actual named flavor/variant. When a caller has
+      // already classified it into the structured flavor field, flavor comparison
+      // must decide sibling identity instead of duplicating it as a modifier. The
+      // exception is deliberately limited to this field and this key. The same
+      // word in a title is also flavor evidence when it repeats an already
+      // structured Original flavor; otherwise title/productLine/form occurrences
+      // remain identity-bearing. Explicit modifiers are processed below and always
+      // remain identity-bearing. Zero Sugar/decaf/etc. retain their existing gates.
+      if (
+        key === "original" &&
+        (field === "flavor" || (field === "title" && originalIsStructuredFlavor))
+      ) return;
+      keys.add(key);
+    });
   }
 
   const explicit = Array.isArray(identity.modifiers)
@@ -800,7 +818,10 @@ export function matchCanonicalProductTitle(
   const candidateModifierEvidence = knownModifierKeysAndConsumed(afterBrand);
   const knownModifierKeys = new Set(KNOWN_MODIFIERS.map((definition) => definition.key));
   const targetKnownModifiers = normalizedTarget.modifierKeys.filter((key) => knownModifierKeys.has(key));
-  const candidateKnownModifiers = [...candidateModifierEvidence.keys].sort();
+  const originalIsRequiredFlavor = orderedTokens(targetInput.flavor).includes("original");
+  const candidateKnownModifiers = candidateModifierEvidence.keys
+    .filter((key) => !(key === "original" && originalIsRequiredFlavor))
+    .sort();
   if (!sameTokenSet([...targetKnownModifiers].sort(), candidateKnownModifiers)) {
     return rejectTitle(["MODIFIER_MISMATCH"]);
   }

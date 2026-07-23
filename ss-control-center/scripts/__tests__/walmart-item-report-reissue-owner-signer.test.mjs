@@ -18,12 +18,11 @@ import path from "node:path";
 import test from "node:test";
 
 import {
-  WALMART_ITEM_REPORT_REISSUE_OWNER_SIGNER_INIT_CONFIRMATION,
   runWalmartItemReportReissueOwnerSignerCli,
 } from "../walmart-item-report-reissue-owner-signer.mjs";
 import { canonicalWalmartItemReportJson } from "../../src/lib/walmart/item-report-published-source.ts";
 
-const PASSPHRASE = "correct horse battery staple owner key";
+const FIXED_RANDOM = Buffer.from("abcdef0123456789abcdef0123456789", "utf8");
 const DOMAIN = Buffer.from(
   "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v2\0",
   "utf8",
@@ -40,12 +39,8 @@ async function fixture(t) {
     root,
     custody: path.join(root, "owner-custody"),
     request: path.join(root, "signing-request.json"),
+    secrets: new Map(),
   };
-}
-
-function secretSequence(values) {
-  let index = 0;
-  return async () => Buffer.from(values[index++], "utf8");
 }
 
 function fixedAuthorization() {
@@ -91,9 +86,14 @@ async function init(fx) {
     "init",
     `--custody-dir=${fx.custody}`,
     "--key-id=walmart-item-v6-reissue-owner-test",
-    `--confirm=${WALMART_ITEM_REPORT_REISSUE_OWNER_SIGNER_INIT_CONFIRMATION}`,
   ], {
-    read_secret: secretSequence([PASSPHRASE, PASSPHRASE]),
+    random_bytes: () => Buffer.from(FIXED_RANDOM),
+    store_secret: async (keyId, secret) => {
+      fx.secrets.set(keyId, Buffer.from(secret));
+    },
+    delete_secret: async (keyId) => {
+      fx.secrets.delete(keyId);
+    },
     now: () => new Date("2026-07-22T07:00:00.000Z"),
   });
 }
@@ -154,25 +154,35 @@ test("init creates only an encrypted private key and public enrollment outside r
   const result = await init(fx);
   assert.equal(result.status, "OWNER_KEY_CREATED");
   assert.equal(result.private_key_disclosed, false);
+  assert.equal(result.private_key_unlock_provider, "MACOS_LOGIN_KEYCHAIN");
+  assert.equal(result.user_managed_password_required, false);
   assert.equal(result.network_calls, 0);
-  const privatePath = path.join(fx.custody, "owner-private-key.pem");
-  const enrollmentPath = path.join(fx.custody, "owner-public-enrollment.json");
+  const privatePath = path.join(fx.custody, "walmart-owner-control-private-key.pem");
+  const enrollmentPath = path.join(fx.custody, "walmart-owner-control-public-enrollment.json");
   assert.equal((await stat(fx.custody)).mode & 0o777, 0o700);
   assert.equal((await stat(privatePath)).mode & 0o777, 0o400);
   assert.equal((await stat(enrollmentPath)).mode & 0o777, 0o400);
   const privateText = await readFile(privatePath, "utf8");
   assert.match(privateText, /BEGIN ENCRYPTED PRIVATE KEY/);
-  assert.equal(privateText.includes(PASSPHRASE), false);
   const enrollmentBytes = await readFile(enrollmentPath);
+  const enrollment = JSON.parse(enrollmentBytes);
+  assert.equal(enrollment.domain, "WALMART_OWNER_CONTROL");
+  assert.equal(enrollment.private_key_unlock_provider, "MACOS_LOGIN_KEYCHAIN");
+  assert.equal(enrollment.user_managed_password_required, false);
+  assert.deepEqual(enrollment.allowed_signing_domains, [
+    "WALMART_ITEM_V6_CATALOG_ACTIVATE",
+    "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
+    "WALMART_MP_ITEM_SUBMIT",
+  ]);
   assert.equal(enrollmentBytes.toString("utf8"),
-    canonicalWalmartItemReportJson(JSON.parse(enrollmentBytes)));
+    canonicalWalmartItemReportJson(enrollment));
 });
 
 test("inspect exposes exact risk summary and sign emits one raw valid Ed25519 signature", async (t) => {
   const fx = await fixture(t);
   await init(fx);
   const enrollment = JSON.parse(await readFile(
-    path.join(fx.custody, "owner-public-enrollment.json"),
+    path.join(fx.custody, "walmart-owner-control-public-enrollment.json"),
     "utf8",
   ));
   const request = await writeRequest(fx, enrollment);
@@ -195,7 +205,9 @@ test("inspect exposes exact risk summary and sign emits one raw valid Ed25519 si
     `--expect-request-sha256=${requestSha}`,
     `--out=${signaturePath}`,
     `--confirm=${inspection.required_confirmation}`,
-  ], { read_secret: secretSequence([PASSPHRASE]) });
+  ], {
+    read_secret: async (keyId) => Buffer.from(fx.secrets.get(keyId)),
+  });
   assert.equal(signed.status, "DETACHED_SIGNATURE_CREATED");
   assert.equal(signed.signature_byte_length, 64);
   assert.equal(signed.network_calls, 0);
@@ -213,7 +225,7 @@ test("wrong confirmation never unlocks the key or creates a signature", async (t
   const fx = await fixture(t);
   await init(fx);
   const enrollment = JSON.parse(await readFile(
-    path.join(fx.custody, "owner-public-enrollment.json"),
+    path.join(fx.custody, "walmart-owner-control-public-enrollment.json"),
     "utf8",
   ));
   const request = await writeRequest(fx, enrollment);
@@ -228,7 +240,12 @@ test("wrong confirmation never unlocks the key or creates a signature", async (t
       `--expect-request-sha256=${requestSha}`,
       `--out=${output}`,
       "--confirm=WRONG",
-    ], { read_secret: async () => { prompts += 1; return Buffer.from(PASSPHRASE); } }),
+    ], {
+      read_secret: async (keyId) => {
+        prompts += 1;
+        return Buffer.from(fx.secrets.get(keyId));
+      },
+    }),
     (error) => error?.code === "CONFIRMATION_MISMATCH",
   );
   assert.equal(prompts, 0);

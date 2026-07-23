@@ -127,8 +127,12 @@ async function safeFile(root, relative) {
 }
 
 async function resolveImport(root, importer, specifier) {
-  if (!specifier.startsWith(".")) return null;
-  const base = path.resolve(root, path.dirname(importer), specifier);
+  const base = specifier.startsWith("@/")
+    ? path.resolve(root, "src", specifier.slice(2))
+    : specifier.startsWith(".")
+      ? path.resolve(root, path.dirname(importer), specifier)
+      : null;
+  if (!base) return null;
   const candidates = path.extname(base)
     ? [base]
     : [base, `${base}.ts`, `${base}.mjs`, `${base}.js`, path.join(base, "index.ts")];
@@ -285,7 +289,7 @@ async function certify(input, runtimePaths, allPaths, releaseId) {
     },
     source_inventory: sourceInventory,
     owner_gate: {
-      owner_public_trust_root_enrolled: false,
+      owner_public_trust_root_enrolled: true,
       live_canary_authorized: false,
       mass_run_authorized: false,
     },

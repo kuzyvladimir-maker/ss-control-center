@@ -63,6 +63,7 @@ const CERTIFICATION_FILE_SPEC = Object.freeze([
   ["FROZEN_SEALER_TEST", "scripts/__tests__/walmart-item-report-reissue-v2-frozen-sealer.test.mjs"],
   ["OWNER_DISPOSITION_MODULE", "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts"],
   ["OWNER_DISPOSITION_TEST", "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs"],
+  ["OWNER_CONTROL_TRUST_ROOT", "src/lib/walmart/owner-control-trust-root.ts"],
   ["ABSENCE_PROBE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts"],
   ["ABSENCE_PROBE_EVIDENCE_TEST", "scripts/__tests__/capture-walmart-item-v6-absence-probe.test.mjs"],
   ["SOURCE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-v2.ts"],

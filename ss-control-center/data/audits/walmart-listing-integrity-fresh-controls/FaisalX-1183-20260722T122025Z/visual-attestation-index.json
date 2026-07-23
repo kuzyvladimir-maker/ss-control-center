@@ -1,0 +1,18 @@
+{
+  "schema_version": "walmart-listing-integrity-visual-attestation-index/v1",
+  "selected_bundle_path": "shadow-vision-20260722T224545Z/bundle-manifest.json",
+  "selected_bundle_sha256": "2c8bb1254c49f7e105fafced6498dc5ef80f67d993bb7aefee12f7f575d0794d",
+  "status": "SIGNED_TARGET_PASS_GALLERY_REVIEW_REQUIRED",
+  "comparator_version": "walmart-visual-comparator/v5",
+  "owner_review": {
+    "current_main": "BAD",
+    "target_main": "PASS",
+    "gallery_bad_count": 0,
+    "gallery_review_count": 2,
+    "gallery_review_required": true
+  },
+  "authority": {
+    "live_canary_authorized": false,
+    "mass_run": false
+  }
+}

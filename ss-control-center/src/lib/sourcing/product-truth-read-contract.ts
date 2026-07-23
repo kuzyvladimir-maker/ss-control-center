@@ -4,6 +4,10 @@ import type { Client, Row, Transaction } from "@libsql/client";
 
 import { CANONICAL_PRODUCT_MATCHER_VERSION } from "./canonical-product-match";
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
+import {
   PRICE_EVIDENCE_POLICY_VERSION,
   evaluatePriceEvidenceEligibility,
   type PriceEvidenceDecision,
@@ -53,6 +57,12 @@ export interface ProductTruthBatchReadOptions {
 
 export const PRODUCT_TRUTH_MAX_BATCH_SCOPES = 100;
 
+export interface ProductTruthMatcherProvenance {
+  matcherVersion: string;
+  matcherImplementationSha256: string;
+  matcherReleaseSha256: string;
+}
+
 export interface ProductTruthContentFacts {
   canonicalVariantId: string;
   identity: {
@@ -80,12 +90,11 @@ export interface ProductTruthContentFacts {
     mainImageUrl: string | null;
     imageUrls: string[];
   };
-  provenance: {
+  provenance: ProductTruthMatcherProvenance & {
     contentObservationId: string;
     observationKey: string;
     donorProductId: string;
     variantDecisionId: string;
-    matcherVersion: string;
     decisionEvidenceHash: string;
     contentHash: string;
     fieldHashes: unknown;
@@ -122,7 +131,7 @@ export interface ProductTruthManualCost {
   evidenceHash: string;
 }
 
-export interface ProductTruthPriceOption {
+export interface ProductTruthPriceOption extends ProductTruthMatcherProvenance {
   rank: number;
   eligibility: Exclude<PriceEvidenceEligibility, "REJECT">;
   observationId: string;
@@ -136,7 +145,6 @@ export interface ProductTruthPriceOption {
     | "CROSS_SIZE_ESTIMATE"
     | "SIBLING_ESTIMATE"
     | "SIZE_UNKNOWN_ESTIMATE";
-  matcherVersion: string;
   pricePolicyVersion: string;
   packagePrice: number | null;
   packSizeSeen: number | null;
@@ -170,7 +178,7 @@ export interface ProductTruthProcurementComponent {
   blockers: string[];
 }
 
-export interface ProductTruthCostRecord {
+export interface ProductTruthCostRecord extends ProductTruthMatcherProvenance {
   id: string;
   observationKey: string;
   recipeHash: string;
@@ -186,7 +194,6 @@ export interface ProductTruthCostRecord {
   packSize: number | null;
   currency: string;
   needsReview: boolean;
-  matcherVersion: string;
   pricePolicyVersion: string;
   evidenceOutcome: "FACT" | "ESTIMATE" | "UNSOURCEABLE";
   evidence: unknown;
@@ -195,6 +202,7 @@ export interface ProductTruthCostRecord {
   componentProvenance: Array<{
     componentIndex: number;
     kind: "RETAILER" | "MANUAL" | "ESTIMATE" | "REJECT";
+    matcher: ProductTruthMatcherProvenance;
     manualCost: ProductTruthManualCost | null;
   }>;
 }
@@ -332,6 +340,16 @@ function isCurrentMatcher(value: unknown): value is string {
   return value === CANONICAL_PRODUCT_MATCHER_VERSION;
 }
 
+function isCurrentMatcherProvenance(input: {
+  matcherVersion: unknown;
+  matcherImplementationSha256: unknown;
+  matcherReleaseSha256: unknown;
+}): boolean {
+  return isCurrentMatcher(input.matcherVersion) &&
+    input.matcherImplementationSha256 === CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 &&
+    input.matcherReleaseSha256 === CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
+}
+
 function isCurrentPricePolicy(value: unknown): value is string {
   return value === PRICE_EVIDENCE_POLICY_VERSION;
 }
@@ -446,6 +464,7 @@ async function readComponentEvidenceRows(
       evidence.targetCanonicalVariantId, evidence.contentCanonicalVariantId,
       evidence.priceCanonicalVariantId, evidence.contentObservationId,
       evidence.priceObservationId, evidence.matchTier, evidence.matcherVersion,
+      evidence.matcherImplementationSha256, evidence.matcherReleaseSha256,
       evidence.pricePolicyVersion, evidence.evidenceHash,
       evidence.evidenceJson AS componentEvidenceJson,
       evidence.createdAt AS componentEvidenceCreatedAt,
@@ -482,6 +501,8 @@ async function readCurrentContentRows(
     rows.push(...(await tx.execute({
       sql: `SELECT
         content.*, decision.decisionStatus, decision.matcherVersion AS decisionMatcherVersion,
+        decision.matcherImplementationSha256 AS decisionMatcherImplementationSha256,
+        decision.matcherReleaseSha256 AS decisionMatcherReleaseSha256,
         decision.evidenceHash AS decisionEvidenceHash,
         decision.evidenceJson AS decisionEvidenceJson,
         decision.donorProductId AS decisionDonorProductId,
@@ -525,6 +546,8 @@ async function readRelevantPriceRows(
       sql: `SELECT observation.*,
         decision.decisionStatus,
         decision.matcherVersion AS decisionMatcherVersion,
+        decision.matcherImplementationSha256 AS decisionMatcherImplementationSha256,
+        decision.matcherReleaseSha256 AS decisionMatcherReleaseSha256,
         decision.evidenceHash AS decisionEvidenceHash,
         decision.evidenceJson AS decisionEvidenceJson,
         decision.donorProductId AS decisionDonorProductId,
@@ -556,6 +579,8 @@ async function readRelevantPriceRows(
       sql: `SELECT observation.*,
         decision.decisionStatus,
         decision.matcherVersion AS decisionMatcherVersion,
+        decision.matcherImplementationSha256 AS decisionMatcherImplementationSha256,
+        decision.matcherReleaseSha256 AS decisionMatcherReleaseSha256,
         decision.evidenceHash AS decisionEvidenceHash,
         decision.evidenceJson AS decisionEvidenceJson,
         decision.donorProductId AS decisionDonorProductId,
@@ -665,15 +690,29 @@ function validateComponentRelations(
   if (!isCurrentMatcher(row.matcherVersion)) {
     coreBlockers.push("COMPONENT_MATCHER_VERSION_NOT_CURRENT");
   }
+  if (row.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256) {
+    coreBlockers.push("COMPONENT_MATCHER_IMPLEMENTATION_NOT_CURRENT");
+  }
+  if (row.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256) {
+    coreBlockers.push("COMPONENT_MATCHER_RELEASE_NOT_CURRENT");
+  }
   if (status === "MANUAL_FACT") {
     if (!textValue(row.pricePolicyVersion)) priceBlockers.push("MANUAL_FACT_POLICY_MISSING");
   } else if (!isCurrentPricePolicy(row.pricePolicyVersion)) {
     priceBlockers.push("COMPONENT_PRICE_POLICY_NOT_CURRENT");
   }
   const componentEvidenceRaw = textValue(row.componentEvidenceJson);
-  if (!jsonObject(componentEvidenceRaw) ||
+  const componentEvidence = jsonObject(componentEvidenceRaw);
+  if (!componentEvidence ||
       !componentEvidenceRaw || row.evidenceHash !== sha256Text(componentEvidenceRaw)) {
     coreBlockers.push("COMPONENT_EVIDENCE_PROVENANCE_INVALID");
+  }
+  if (componentEvidence && !isCurrentMatcherProvenance({
+    matcherVersion: componentEvidence.matcherVersion,
+    matcherImplementationSha256: componentEvidence.matcherImplementationSha256,
+    matcherReleaseSha256: componentEvidence.matcherReleaseSha256,
+  })) {
+    coreBlockers.push("COMPONENT_EVIDENCE_MATCHER_PROVENANCE_NOT_CURRENT");
   }
   if ((timeMs(row.componentEvidenceCreatedAt) ?? Infinity) > asOfMs) {
     coreBlockers.push("COMPONENT_EVIDENCE_NOT_AVAILABLE_AT_SNAPSHOT");
@@ -779,7 +818,11 @@ function contentForComponent(
         currentContent.decisionStatus !== "exact_confirmed") {
       blockers.push("CONTENT_EXACT_ALIAS_INVALID");
     }
-    if (!isCurrentMatcher(currentContent.decisionMatcherVersion)) {
+    if (!isCurrentMatcherProvenance({
+      matcherVersion: currentContent.decisionMatcherVersion,
+      matcherImplementationSha256: currentContent.decisionMatcherImplementationSha256,
+      matcherReleaseSha256: currentContent.decisionMatcherReleaseSha256,
+    })) {
       blockers.push("CONTENT_DECISION_MATCHER_NOT_CURRENT");
     }
     if ((timeMs(currentContent.observedAt) ?? Infinity) > asOfMs ||
@@ -793,9 +836,17 @@ function contentForComponent(
     }
     const contentJsonRaw = textValue(currentContent.contentJson);
     const decisionJsonRaw = textValue(currentContent.decisionEvidenceJson);
+    const decisionEvidence = jsonObject(decisionJsonRaw);
     if (!contentJsonRaw || currentContent.contentHash !== sha256Text(contentJsonRaw) ||
         !decisionJsonRaw || currentContent.decisionEvidenceHash !== sha256Text(decisionJsonRaw)) {
       blockers.push("CONTENT_PROVENANCE_HASH_MISMATCH");
+    }
+    if (!decisionEvidence || !isCurrentMatcherProvenance({
+      matcherVersion: decisionEvidence.matcherVersion,
+      matcherImplementationSha256: decisionEvidence.matcherImplementationSha256,
+      matcherReleaseSha256: decisionEvidence.matcherReleaseSha256,
+    })) {
+      blockers.push("CONTENT_DECISION_MATCHER_PROVENANCE_INVALID");
     }
   }
   if (blockers.length || !currentContent || !content || !fieldHashes || !identity) {
@@ -822,6 +873,10 @@ function contentForComponent(
         donorProductId: String(currentContent.donorProductId),
         variantDecisionId: String(currentContent.variantDecisionId),
         matcherVersion: String(currentContent.decisionMatcherVersion),
+        matcherImplementationSha256: String(
+          currentContent.decisionMatcherImplementationSha256,
+        ),
+        matcherReleaseSha256: String(currentContent.decisionMatcherReleaseSha256),
         decisionEvidenceHash: String(currentContent.decisionEvidenceHash),
         contentHash: String(currentContent.contentHash),
         fieldHashes,
@@ -854,7 +909,12 @@ function validatePriceRelation(
     if (selected.row.decisionStatus !== "exact_confirmed" ||
         selected.row.donorProductId !== selected.row.decisionDonorProductId ||
         selected.row.canonicalVariantId !== selected.row.decisionCanonicalVariantId ||
-        !isCurrentMatcher(selected.row.decisionMatcherVersion)) {
+        !isCurrentMatcherProvenance({
+          matcherVersion: selected.row.decisionMatcherVersion,
+          matcherImplementationSha256:
+            selected.row.decisionMatcherImplementationSha256,
+          matcherReleaseSha256: selected.row.decisionMatcherReleaseSha256,
+        })) {
       blockers.push("SELECTED_PRICE_SOURCE_ALIAS_INVALID");
     }
   }
@@ -888,12 +948,25 @@ function optionFromObservation(
     fetchedAt: textValue(row.observedAt), matchVerdict: textValue(matchTier),
   }, { now: asOf, maxAgeMs: maxPriceAgeMs });
 
+  const decisionEvidenceRaw = textValue(row.decisionEvidenceJson);
+  const decisionEvidence = jsonObject(decisionEvidenceRaw);
+
   const exactAlias = row.decisionStatus === "exact_confirmed" &&
     row.donorProductId === row.decisionDonorProductId &&
     row.canonicalVariantId === row.decisionCanonicalVariantId &&
-    isCurrentMatcher(row.decisionMatcherVersion) &&
-    textValue(row.decisionEvidenceJson) !== null &&
-    row.decisionEvidenceHash === sha256Text(String(row.decisionEvidenceJson));
+    isCurrentMatcherProvenance({
+      matcherVersion: row.decisionMatcherVersion,
+      matcherImplementationSha256: row.decisionMatcherImplementationSha256,
+      matcherReleaseSha256: row.decisionMatcherReleaseSha256,
+    }) &&
+    decisionEvidenceRaw !== null &&
+    row.decisionEvidenceHash === sha256Text(decisionEvidenceRaw) &&
+    decisionEvidence !== null &&
+    isCurrentMatcherProvenance({
+      matcherVersion: decisionEvidence.matcherVersion,
+      matcherImplementationSha256: decisionEvidence.matcherImplementationSha256,
+      matcherReleaseSha256: decisionEvidence.matcherReleaseSha256,
+    });
   const productUrl = textValue(row.productUrl);
   const localityEvidence = textValue(row.localityEvidence);
   const observedAt = textValue(row.observedAt);
@@ -919,6 +992,8 @@ function optionFromObservation(
       canonicalVariantId: String(row.canonicalVariantId),
       variantDecisionId: String(row.variantDecisionId),
       matchTier, matcherVersion: String(context.row.matcherVersion),
+      matcherImplementationSha256: String(context.row.matcherImplementationSha256),
+      matcherReleaseSha256: String(context.row.matcherReleaseSha256),
       pricePolicyVersion: decision.policyVersion,
       packagePrice: numberValue(row.price), packSizeSeen: integerValue(row.packSizeSeen),
       observedUnitPrice, targetComparableUnitPrice,
@@ -984,6 +1059,19 @@ function currentCostView(
     blockers.push("COST_LISTING_KEY_SCOPE_UNPROVEN");
   }
   if (!isCurrentMatcher(row.matcherVersion)) blockers.push("COST_MATCHER_VERSION_NOT_CURRENT");
+  if (row.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256) {
+    blockers.push("COST_MATCHER_IMPLEMENTATION_NOT_CURRENT");
+  }
+  if (row.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256) {
+    blockers.push("COST_MATCHER_RELEASE_NOT_CURRENT");
+  }
+  if (evidence && !isCurrentMatcherProvenance({
+    matcherVersion: evidence.matcherVersion,
+    matcherImplementationSha256: evidence.matcherImplementationSha256,
+    matcherReleaseSha256: evidence.matcherReleaseSha256,
+  })) {
+    blockers.push("COST_EVIDENCE_MATCHER_PROVENANCE_NOT_CURRENT");
+  }
   const hasRetailerComponent = contexts.some((context) =>
     context.row.evidenceStatus === "FACT" || context.row.evidenceStatus === "ESTIMATE");
   if (hasRetailerComponent && !isCurrentPricePolicy(row.pricePolicyVersion)) {
@@ -1035,7 +1123,10 @@ function currentCostView(
     iceCost: numberValue(row.iceCost), totalCost: numberValue(row.totalCost),
     costPerUnit: numberValue(row.costPerUnit), packSize: integerValue(row.packSize),
     currency: textValue(row.currency) ?? "USD", needsReview: booleanValue(row.needsReview) === true,
-    matcherVersion: String(row.matcherVersion), pricePolicyVersion: String(row.pricePolicyVersion),
+    matcherVersion: String(row.matcherVersion),
+    matcherImplementationSha256: String(row.matcherImplementationSha256),
+    matcherReleaseSha256: String(row.matcherReleaseSha256),
+    pricePolicyVersion: String(row.pricePolicyVersion),
     evidenceOutcome: outcome as "FACT" | "ESTIMATE" | "UNSOURCEABLE", evidence,
     runId: textValue(row.runId), approvalId: textValue(row.approvalId),
     componentProvenance: contexts.map((context) => ({
@@ -1043,6 +1134,11 @@ function currentCostView(
       kind: context.row.evidenceStatus === "MANUAL_FACT" ? "MANUAL"
         : context.row.evidenceStatus === "FACT" ? "RETAILER"
           : context.row.evidenceStatus === "ESTIMATE" ? "ESTIMATE" : "REJECT",
+      matcher: {
+        matcherVersion: String(context.row.matcherVersion),
+        matcherImplementationSha256: String(context.row.matcherImplementationSha256),
+        matcherReleaseSha256: String(context.row.matcherReleaseSha256),
+      },
       manualCost: context.row.evidenceStatus === "MANUAL_FACT"
         ? manualCostFromEvidence(context.row, context.evidence, asOfMs) : null,
     })),

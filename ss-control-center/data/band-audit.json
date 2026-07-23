@@ -1119,13 +1119,13 @@
     "price": 297.99,
     "sale": null,
     "min": 258.57,
-    "max": 297.99,
+    "max": 304.32,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 297.99,
     "modelMin": 258.57,
     "violations": [
-      "NOT_BUYABLE"
+      "MAX_OFF_MODEL"
     ]
   },
   {
@@ -1361,13 +1361,13 @@
     "price": 76.99,
     "sale": 66.98,
     "min": 66.95,
-    "max": 76.99,
+    "max": 78.8,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 76.99,
     "modelMin": 66.95,
     "violations": [
-      "NOT_BUYABLE"
+      "MAX_OFF_MODEL"
     ]
   },
   {
@@ -1393,13 +1393,13 @@
     "price": 76.99,
     "sale": null,
     "min": 66.95,
-    "max": 76.99,
+    "max": 78.8,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 76.99,
     "modelMin": 66.95,
     "violations": [
-      "NOT_BUYABLE"
+      "MAX_OFF_MODEL"
     ]
   },
   {
@@ -1557,16 +1557,18 @@
     "asin": "B0H84WQRXB",
     "status": "LIVE",
     "total": 24,
-    "price": 76.99,
+    "price": 48.73,
     "sale": 66.98,
     "min": 66.95,
-    "max": 76.99,
+    "max": 78.8,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 76.99,
     "modelMin": 66.95,
     "violations": [
-      "NOT_BUYABLE"
+      "PRICE_BELOW_MIN",
+      "MAX_OFF_MODEL",
+      "PRICE_OFF_MODEL"
     ]
   },
   {
@@ -2072,13 +2074,13 @@
     "price": 76.99,
     "sale": null,
     "min": 66.95,
-    "max": 76.99,
+    "max": 78.8,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 76.99,
     "modelMin": 66.95,
     "violations": [
-      "NOT_BUYABLE"
+      "MAX_OFF_MODEL"
     ]
   },
   {
@@ -2149,13 +2151,13 @@
     "price": 76.99,
     "sale": 66.98,
     "min": 66.95,
-    "max": 76.99,
+    "max": 78.8,
     "bizPrice": null,
-    "buyable": false,
+    "buyable": true,
     "modelPrice": 76.99,
     "modelMin": 66.95,
     "violations": [
-      "NOT_BUYABLE"
+      "MAX_OFF_MODEL"
     ]
   },
   {

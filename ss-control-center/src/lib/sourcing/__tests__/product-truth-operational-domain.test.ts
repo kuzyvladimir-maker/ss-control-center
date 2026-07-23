@@ -9,7 +9,15 @@ import {
   type ProductTruthDonorContentInspection,
 } from "../product-truth-operational-domain";
 import type { ProductTruthSourcePolicy } from "../product-truth-operational-run-contract";
-import type { ProductTruthSnapshot } from "../product-truth-read-contract";
+import {
+  PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+  type ProductTruthSnapshot,
+} from "../product-truth-read-contract";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 
 const policy: ProductTruthSourcePolicy = {
   procurementZip: "33765",
@@ -37,7 +45,10 @@ function snapshot(status: "FACT" | "ESTIMATE" | "UNSOURCEABLE"): ProductTruthSna
     },
     provenance: {
       contentObservationId: "obs", observationKey: "2".repeat(64), donorProductId: "donor-a",
-      variantDecisionId: "decision", matcherVersion: "matcher", decisionEvidenceHash: "3".repeat(64),
+      variantDecisionId: "decision", matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      decisionEvidenceHash: "3".repeat(64),
       contentHash: "4".repeat(64), fieldHashes: {}, sourceUrl: "https://walmart.com/item/1",
       sourceApi: "unwrangle", observedAt: "2026-07-19T12:00:00.000Z",
       runId: "run", approvalId: "approval", meteredReceiptId: "receipt",
@@ -45,7 +56,7 @@ function snapshot(status: "FACT" | "ESTIMATE" | "UNSOURCEABLE"): ProductTruthSna
   };
   const factualOptions = status === "UNSOURCEABLE" ? [] : [{ rank: 1 }] as never[];
   return {
-    contractVersion: "product-truth-read-contract/3.1.0",
+    contractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
     snapshot: {
       sku: "SKU", channel: "amazon", storeIndex: 1, listingKey: "amazon:1:SKU",
       asOf: "2026-07-19T12:00:00.000Z", maxPriceAgeMs: 86_400_000, skuCostId: "cost",

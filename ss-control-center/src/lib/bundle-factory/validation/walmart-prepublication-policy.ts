@@ -37,13 +37,16 @@ export type {
 };
 
 export const WALMART_POLICY_VERSION =
-  "walmart-us-prepublication/2026-07-19.2" as const;
+  "walmart-us-prepublication/2026-07-23.3" as const;
 export const WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION =
   "5.0.20260501-19_21_29-api" as const;
 export const WALMART_ITEM_MATCH_SPEC_VERSION = "MP_ITEM_MATCHv4.2" as const;
 
 export const WALMART_SPEC_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1_000;
 export const WALMART_ACCOUNT_EVIDENCE_MAX_AGE_MS =
+  30 * 24 * 60 * 60 * 1_000;
+export const WALMART_SELLER_ACCOUNT_HEALTH_MAX_AGE_MS = 60 * 60 * 1_000;
+export const WALMART_FULFILLMENT_EVIDENCE_MAX_AGE_MS =
   30 * 24 * 60 * 60 * 1_000;
 export const WALMART_SKU_POLICY_REVIEW_MAX_AGE_MS =
   7 * 24 * 60 * 60 * 1_000;
@@ -54,6 +57,11 @@ export const WALMART_PRICE_EVIDENCE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
 export const SSCC_MIN_REMAINING_SHELF_LIFE_DAYS = 30;
 
 export const WALMART_POLICY_SOURCES = [
+  {
+    id: "account-health-compliance",
+    url: "https://marketplacelearn.walmart.com/guides/Getting%20started/Account%20settings/account-health-compliance-overview",
+    source_updated_at: "2026-05-27",
+  },
   {
     id: "prohibited-products-overview",
     url: "https://marketplacelearn.walmart.com/guides/Policies%20%26%20standards/Prohibited%20products%20%26%20brands/Prohibited-products-policy%3A-overview?locale=en-US",
@@ -80,34 +88,64 @@ export const WALMART_POLICY_SOURCES = [
     source_updated_at: "2025-12-11",
   },
   {
+    id: "product-details-policy",
+    url: "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content%2C%20imagery%2C%20and%20media/Product-Detail-Page%3A-overview",
+    source_updated_at: "2026-05-21",
+  },
+  {
+    id: "selling-privileges",
+    url: "https://marketplacelearn.walmart.com/guides/Getting%20started/Getting%20ready%20to%20sell/selling-privileges",
+    source_updated_at: "2026-03-20",
+  },
+  {
+    id: "shipping-fulfillment-policy",
+    url: "https://marketplacelearn.walmart.com/guides/Seller%20Fulfillment%20Services/Shipping%20methods/Shipping-and-fulfillment-policy",
+    source_updated_at: "2026-07-02",
+  },
+  {
+    id: "product-identifier-policy",
+    url: "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20setup/Choose-a-product-identifier",
+    source_updated_at: "2025-06-05",
+  },
+  {
+    id: "duplicate-listings-policy",
+    url: "https://marketplacelearn.walmart.com/guides/Policies%20%26%20standards/Product%20listings/duplicate-listings-policy?locale=en-US",
+    source_updated_at: "2025-12-10",
+  },
+  {
     id: "item-spec-versioning",
     url: "https://developer.walmart.com/us-marketplace/docs/item-spec-versioning-and-diff-reporting",
-    verified_at: "2026-07-19",
+    verified_at: "2026-07-22",
   },
   {
     id: "get-spec",
     url: "https://developer.walmart.com/us-marketplace/reference/getspec",
-    verified_at: "2026-07-19",
+    verified_at: "2026-07-22",
   },
   {
     id: "item-search-spec-format",
     url: "https://developer.walmart.com/us-marketplace/docs/item-search-for-the-walmart-catalog",
-    verified_at: "2026-07-19",
+    verified_at: "2026-07-22",
   },
   {
     id: "create-items-routing",
     url: "https://developer.walmart.com/us-marketplace/docs/create-items-on-walmartcom",
-    verified_at: "2026-07-19",
+    verified_at: "2026-07-22",
   },
   {
     id: "full-item-setup",
     url: "https://developer.walmart.com/us-marketplace/docs/create-a-new-item-full-item-setup",
-    verified_at: "2026-07-19",
+    verified_at: "2026-07-22",
   },
   {
     id: "image-guidelines",
     url: "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content%2C%20imagery%2C%20and%20media/Product-detail-page%3A-Image-guidelines-%26-requirements?locale=en-US",
     source_updated_at: "2026-05-12",
+  },
+  {
+    id: "pricing-rules",
+    url: "https://marketplacelearn.walmart.com/guides/Catalog%20management/Price%20management/Pricing-rules",
+    source_updated_at: "2025-12-12",
   },
   {
     id: "resold-products",

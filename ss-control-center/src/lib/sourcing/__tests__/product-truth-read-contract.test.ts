@@ -8,6 +8,10 @@ import { test } from "node:test";
 import { createClient, type Client, type InStatement } from "@libsql/client";
 
 import { CANONICAL_PRODUCT_MATCHER_VERSION } from "../canonical-product-match";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "../canonical-product-match-provenance";
 import { PRICE_EVIDENCE_POLICY_VERSION } from "../price-evidence-policy";
 import {
   buildProductTruthConsumerActivation,
@@ -114,7 +118,12 @@ async function insertExactSource(
   db: Client,
   input: { donorProductId: string; decisionId: string; variantId: string; flavor: string },
 ): Promise<void> {
-  const decisionEvidence = JSON.stringify({ exact: true });
+  const decisionEvidence = JSON.stringify({
+    exact: true,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  });
   await db.execute({
     sql: `INSERT INTO DonorProduct (
       id,identityKey,brand,productLine,flavor,containerType,size,identityStatus
@@ -127,11 +136,14 @@ async function insertExactSource(
   await db.execute({
     sql: `INSERT INTO DonorProductVariantDecision (
       id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,matcherVersion,
+      matcherImplementationSha256,matcherReleaseSha256,
       evidenceHash,evidenceJson,decidedAt,createdAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       input.decisionId, `decision:${input.decisionId}`, input.donorProductId,
       canonicalVariantId(input.variantId), "exact_confirmed", CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       hash(decisionEvidence), decisionEvidence,
       "2026-07-18T17:00:00.000Z", "2026-07-18T17:00:00.000Z",
     ],
@@ -139,10 +151,14 @@ async function insertExactSource(
   await db.execute({
     sql: `UPDATE DonorProduct SET
       identityStatus='exact_confirmed', identityMatcherVersion=?,
+      identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
       identityEvidenceJson=?, identityConfirmedAt=?
       WHERE id=?`,
     args: [
-      CANONICAL_PRODUCT_MATCHER_VERSION, JSON.stringify({ exact: true }),
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      decisionEvidence,
       "2026-07-18T17:00:00.000Z", input.donorProductId,
     ],
   });
@@ -350,6 +366,8 @@ async function insertCanonicalCost(
       targetComparableUnitPrice: component.status === "ESTIMATE" ? perUnit : null,
       matchTier: component.matchTier,
       matcherVersion,
+      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       pricePolicyVersion,
     };
     return {
@@ -369,6 +387,8 @@ async function insertCanonicalCost(
         priceVariantDecisionId: priceSource?.variantDecisionId ?? null,
         matchTier: component.matchTier,
         matcherVersion,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         pricePolicyVersion,
         product: component.evidence.product,
         flavor: component.evidence.flavor ?? null,
@@ -387,9 +407,11 @@ async function insertCanonicalCost(
     sql: `INSERT INTO SkuComponentEvidence (
       id,evidenceKey,skuCostId,componentIndex,evidenceStatus,targetCanonicalVariantId,
       contentCanonicalVariantId,priceCanonicalVariantId,contentObservationId,
-      priceObservationId,matchTier,matcherVersion,pricePolicyVersion,evidenceHash,
+      priceObservationId,matchTier,matcherVersion,
+      matcherImplementationSha256,matcherReleaseSha256,
+      pricePolicyVersion,evidenceHash,
       evidenceJson,createdAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       `sce:${input.id}:${component.index}`,
       hash(`evidence:${input.id}:${component.index}`),
@@ -398,6 +420,8 @@ async function insertCanonicalCost(
       component.priceVariantId ? canonicalVariantId(component.priceVariantId) : null,
       component.contentObservationId ?? null, component.priceObservationId ?? null,
       component.matchTier, CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       component.pricePolicyVersion ?? PRICE_EVIDENCE_POLICY_VERSION,
       hash(JSON.stringify(childEvidence)), JSON.stringify(childEvidence),
       new Date(Date.parse(input.createdAt) - 1_000).toISOString(),
@@ -407,9 +431,11 @@ async function insertCanonicalCost(
     sql: `INSERT INTO SkuCost (
       id,sku,effectiveDate,productCost,totalCost,costPerUnit,packSize,
       includesPackaging,currency,source,needsReview,observationKey,recipeHash,
-      evidenceJson,evidenceOutcome,matcherVersion,pricePolicyVersion,runId,
+      evidenceJson,evidenceOutcome,matcherVersion,
+      matcherImplementationSha256,matcherReleaseSha256,
+      pricePolicyVersion,runId,
       approvalId,createdAt,updatedAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       input.id, input.sku, input.effectiveDate, input.totalCost, input.totalCost,
       input.totalCost, input.totalCost === null ? null : 1, 0, "USD", "retail:batch",
@@ -420,6 +446,9 @@ async function insertCanonicalCost(
         storeIndex,
         listingKey,
         listingKeyVersion: "product-truth-listing-key/1.0.0",
+        matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+        matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
         outcome: input.outcome,
         recipeHash,
         evaluatedAt: input.createdAt,
@@ -431,6 +460,8 @@ async function insertCanonicalCost(
         components: preparedComponents.map((entry) => entry.recipe),
       }),
       input.outcome, CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       input.pricePolicyVersion ?? PRICE_EVIDENCE_POLICY_VERSION,
       "run-approved", "approval-owner", input.createdAt, input.createdAt,
     ],
@@ -550,19 +581,41 @@ test("one canonical snapshot serves four views and permits different exact conte
       asOf: AS_OF, maxPriceAgeMs: MAX_AGE_MS,
     });
     assert.equal(snapshot.contractVersion, PRODUCT_TRUTH_READ_CONTRACT_VERSION);
+    assert.equal(snapshot.contractVersion, "product-truth-read-contract/3.2.0");
     assert.equal(snapshot.snapshot.skuCostId, "cost-current");
     assert.equal(snapshot.views.bundleFactory.ready, true);
     assert.equal(snapshot.views.listingImprovement.ready, true);
     const content = snapshot.views.bundleFactory.components[0].content;
     assert.equal(content?.canonicalVariantId, canonicalVariantId("variant-bbq"));
     assert.equal(content?.provenance.donorProductId, "dp-content");
+    assert.equal(
+      content?.provenance.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      content?.provenance.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.equal(content?.facts.title, "Acme Crunch Chips Barbecue 8 oz");
     assert.equal(snapshot.views.unitEconomics.status, "FACT");
     assert.equal(snapshot.views.unitEconomics.current?.id, "cost-current");
     assert.equal(snapshot.views.unitEconomics.factualCost?.totalCost, 4.99);
+    assert.equal(
+      snapshot.views.unitEconomics.current?.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      snapshot.views.unitEconomics.current?.matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.deepEqual(
       snapshot.views.unitEconomics.current?.componentProvenance.map((entry) => entry.kind),
       ["RETAILER"],
+    );
+    assert.equal(
+      snapshot.views.unitEconomics.current?.componentProvenance[0]
+        .matcher.matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
     );
     const procurement = snapshot.views.procurement.components[0];
     assert.equal(snapshot.views.procurement.ready, true);
@@ -582,6 +635,14 @@ test("one canonical snapshot serves four views and permits different exact conte
       canonicalVariantId("variant-bbq"),
     );
     assert.equal(procurement.factualOptions[0].locality.zip, "33765");
+    assert.equal(
+      procurement.factualOptions[0].matcherImplementationSha256,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    );
+    assert.equal(
+      procurement.factualOptions[0].matcherReleaseSha256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    );
     assert.equal(procurement.factualOptions[0].productUrl, "https://walmart.example.test/price-b-current");
     assert.deepEqual(
       procurement.estimateOptions.map((option) => option.observationId),

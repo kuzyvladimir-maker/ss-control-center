@@ -41,8 +41,16 @@ import {
   type ProductTruthOperationalReport,
 } from "../product-truth-operational-runner";
 import type { ProductTruthSnapshot } from "../product-truth-read-contract";
+import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "../product-truth-read-contract-version";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match-provenance";
 
 const BASE_MS = Date.now();
+const CENSUS_CAPTURED_AT = new Date(BASE_MS - 3 * 60_000).toISOString();
+const CENSUS_ATTESTED_AT = new Date(BASE_MS - 2 * 60_000).toISOString();
 const CREATED_AT = new Date(BASE_MS - 60_000).toISOString();
 const NOW = new Date(BASE_MS).toISOString();
 const EXPIRES_AT = new Date(BASE_MS + 60 * 60_000).toISOString();
@@ -93,6 +101,8 @@ function authoritativeManifest(skus: readonly string[]): Phase1ScopeManifest {
     asOf: CREATED_AT,
     connectedStoreCensus: makeTestConnectedStoreCensus({
       asOf: CREATED_AT,
+      capturedAt: CENSUS_CAPTURED_AT,
+      attestedAt: CENSUS_ATTESTED_AT,
       identityStyle: "index",
     }),
     disposition: {
@@ -364,7 +374,9 @@ function snapshot(target: ProductTruthOperationalTarget): ProductTruthSnapshot {
       observationKey: "e".repeat(64),
       donorProductId,
       variantDecisionId: `decision-${target.sku}`,
-      matcherVersion: "canonical-product-match/1.2.0",
+      matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
       decisionEvidenceHash: "f".repeat(64),
       contentHash: "1".repeat(64),
       fieldHashes: {},
@@ -377,7 +389,7 @@ function snapshot(target: ProductTruthOperationalTarget): ProductTruthSnapshot {
     },
   };
   return {
-    contractVersion: "product-truth-read-contract/3.1.0",
+    contractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
     snapshot: {
       sku: target.sku,
       channel: target.channel,

@@ -10,6 +10,8 @@
 
 import { findForeignBrandsInText } from "@/lib/bundle-factory/compliance/banned-words";
 import { isOwnBrandPassthrough } from "@/lib/bundle-factory/own-brand";
+import { walmartProductDetailTextViolation } from
+  "@/lib/bundle-factory/validation/walmart-product-detail-policy";
 import type { ValidatorFn } from "../types";
 
 // Amazon main product title spec: 200 chars max. Walmart's grocery
@@ -62,6 +64,18 @@ export const validatorTitle: ValidatorFn = async ({ sku, master_bundle }) => {
       message: `Title contains forbidden character ${JSON.stringify(forbidden[0])}.`,
       details: { offending_char: forbidden[0] },
     };
+  }
+  if (sku.channel === "WALMART") {
+    const violation = walmartProductDetailTextViolation(title, "TITLE");
+    if (violation) {
+      return {
+        validator_id: "validator-title",
+        passed: false,
+        severity: "error",
+        message: `Walmart title contains ${violation}.`,
+        details: { policy: "product-details-policy", violation },
+      };
+    }
   }
 
   let foreign = findForeignBrandsInText(title);

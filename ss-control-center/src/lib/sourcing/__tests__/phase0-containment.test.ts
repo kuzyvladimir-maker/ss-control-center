@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { NextRequest } from "next/server";
 
 import { POST as retiredAmazonAdvisorPaidExecution } from "@/app/api/amazon/growth/advisor/route";
+import { POST as legacyStudioGenerate } from "@/app/api/bundle-factory/studio/generate/route";
 import { POST as retiredAmazonAdvisorApply } from "@/app/api/amazon/growth/advisor/apply/route";
 import { POST as retiredAmazonAdvisorBulkEnqueue } from "@/app/api/amazon/growth/advisor-bulk/route";
 import { POST as retiredAmazonAdvisorBulkDrain } from "@/app/api/amazon/growth/advisor-bulk/drain/route";
@@ -188,6 +189,34 @@ test("legacy Walmart remediation cannot be revived by its former runtime flag", 
       process.env.SS_WALMART_REMEDIATION_WORKER_ENABLED = previousEnabled;
     }
   }
+});
+
+test("legacy Bundle Factory Studio cannot bypass the canonical Walmart pilot", async () => {
+  const route = source("src/app/api/bundle-factory/studio/generate/route.ts");
+  const engine = source("src/lib/bundle-factory/studio-engine.ts");
+  const routeFence = route.indexOf("studioChannelRoute(channel)");
+  const routeWrite = route.indexOf("prisma.generationJob.create");
+  const tickStart = engine.indexOf("export async function tickBatch");
+  const engineFence = engine.indexOf("studioChannelRoute(channel)", tickStart);
+  const engineDonorRead = engine.indexOf("const donors = await sourceDonors", tickStart);
+
+  assert.ok(routeFence >= 0 && routeFence < routeWrite);
+  assert.ok(engineFence >= 0 && engineFence < engineDonorRead);
+
+  const response = await legacyStudioGenerate(
+    new NextRequest("https://sscc.example/api/bundle-factory/studio/generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        prompt: "Create one shelf-stable multipack",
+        channel: "WALMART",
+      }),
+    }),
+  );
+  assert.equal(response.status, 400);
+  const body = await response.json() as { error?: string };
+  assert.match(body.error ?? "", /canonical Bundle Factory Walmart pilot workflow/);
+  assert.match(body.error ?? "", /walmart:new-sku/);
 });
 
 test("legacy Walmart generated-image apply has no executable feed path", () => {

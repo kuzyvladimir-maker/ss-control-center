@@ -98,6 +98,7 @@ const REQUIRED_ENGINE_SOURCE_INPUTS = Object.freeze([
   "src/lib/walmart/item-report-reissue-consumption-ledger-v2.ts",
   "src/lib/walmart/item-report-reissue-executor-v2.ts",
   "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
+  "src/lib/walmart/owner-control-trust-root.ts",
   "src/lib/walmart/item-report-reissue-permit.ts",
   "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts",
   "src/lib/walmart/item-report-reissue-source-evidence-v2.ts",
@@ -124,6 +125,7 @@ const REQUIRED_CERTIFICATION_BINDINGS = Object.freeze({
   OWNER_DISPOSITION_MODULE: "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
   OWNER_DISPOSITION_TEST:
     "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs",
+  OWNER_CONTROL_TRUST_ROOT: "src/lib/walmart/owner-control-trust-root.ts",
   ABSENCE_PROBE_EVIDENCE_MODULE:
     "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts",
   ABSENCE_PROBE_EVIDENCE_TEST:

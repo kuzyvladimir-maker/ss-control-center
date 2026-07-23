@@ -32,7 +32,11 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_AMZCOM", label: "Amazon · AMZ Commerce" },
   { value: "AMAZON_SIRIUS", label: "Amazon · Sirius International" },
   { value: "AMAZON_RETAILER", label: "Amazon · Retailer Distributor" },
-  { value: "WALMART", label: "Walmart (dry multipacks)" },
+  {
+    value: "WALMART",
+    label: "Walmart · safe pilot via Claude Code",
+    disabled: true,
+  },
 ];
 
 const EXAMPLES = [

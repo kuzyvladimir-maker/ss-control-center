@@ -10,9 +10,7 @@
  * Usage:
  *   npm run walmart:new-sku -- doctor --expected-engine-release-sha <sha256> \
  *     --release-manifest /abs/release-manifest.json \
- *     --release-manifest-sha /abs/release-manifest.sha256 \
- *     --item-report-catalog-source /abs/item-report-catalog-source.json \
- *     --expected-item-report-catalog-source-sha256 <sha256> --out <doctor.json>
+ *     --release-manifest-sha /abs/release-manifest.sha256 --out <doctor.json>
  *   npm run walmart:new-sku -- plan --doctor-receipt <doctor.json>
  */
 
@@ -27,14 +25,14 @@ import {
   realpath,
   unlink,
 } from "node:fs/promises";
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 
 import {
   inspectWalmartNewSkuSourceRelease,
   verifyWalmartNewSkuFrozenRelease,
 } from "../src/lib/bundle-factory/walmart-new-sku-source-release";
-import type { SealedWalmartSellerCatalogAuthorityBinding } from
+import type { SealedWalmartExactIdentifierDuplicateGuardBinding } from
   "../src/lib/bundle-factory/walmart-new-sku-catalog-authority";
 import type { WalmartNewSkuCertificationArtifact } from
   "../src/lib/bundle-factory/walmart-new-sku-engine";
@@ -99,8 +97,6 @@ interface ParsedArgs {
   expectedEngineReleaseSha256: string | null;
   releaseManifestPath: string | null;
   releaseManifestShaPath: string | null;
-  itemReportCatalogSourcePath: string | null;
-  expectedItemReportCatalogSourceSha256: string | null;
 }
 
 const PILOT_STORE_INDEX = 1;
@@ -109,6 +105,10 @@ const PILOT_MAX_PRICE_AGE_HOURS = 24;
 const PILOT_MAX_CANDIDATES_PER_PLAN = 1;
 const PILOT_DOCTOR_AS_OF_MAX_AGE_MS = 15 * 60_000;
 const PILOT_PACK_COUNTS = new Set([2, 3]);
+export const WALMART_NEW_SKU_DOCTOR_DIAGNOSTIC_SCHEMA =
+  "walmart-new-sku-doctor-diagnostic/1.0.0";
+const WALMART_DUPLICATE_GUARD_OWNER_DECISION_REF =
+  "owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight";
 
 const OPERATOR_COMMANDS = new Set<Command>([
   "doctor",
@@ -133,8 +133,7 @@ const COMMAND_MODE_FLAG_ALLOWLIST: Record<string, ReadonlySet<string>> = {
   "doctor:preview": new Set([
     "store-index", "limit", "pack-count", "zip", "as-of",
     "max-price-age-hours", "out", "expected-engine-release-sha",
-    "release-manifest", "release-manifest-sha", "item-report-catalog-source",
-    "expected-item-report-catalog-source-sha256",
+    "release-manifest", "release-manifest-sha",
   ]),
   "plan:preview": new Set([
     "store-index", "limit", "pack-count", "zip", "as-of",
@@ -328,10 +327,6 @@ function parseArgs(
   }
   const releaseManifestPath = values.get("release-manifest") ?? null;
   const releaseManifestShaPath = values.get("release-manifest-sha") ?? null;
-  const itemReportCatalogSourcePath =
-    values.get("item-report-catalog-source") ?? null;
-  const expectedItemReportCatalogSourceSha256 =
-    values.get("expected-item-report-catalog-source-sha256")?.trim() ?? null;
   if (
     command === "doctor" &&
     (!releaseManifestPath || !isAbsolute(releaseManifestPath))
@@ -344,24 +339,6 @@ function parseArgs(
   ) {
     throw new Error(
       "doctor requires absolute --release-manifest-sha <release-manifest.sha256>",
-    );
-  }
-  if (
-    command === "doctor" &&
-    (!itemReportCatalogSourcePath ||
-      !isAbsolute(itemReportCatalogSourcePath) ||
-      resolve(itemReportCatalogSourcePath) !== itemReportCatalogSourcePath)
-  ) {
-    throw new Error(
-      "doctor requires normalized absolute --item-report-catalog-source <catalog-source.json>",
-    );
-  }
-  if (
-    command === "doctor" &&
-    !/^[a-f0-9]{64}$/.test(expectedItemReportCatalogSourceSha256 ?? "")
-  ) {
-    throw new Error(
-      "doctor requires --expected-item-report-catalog-source-sha256 as a lowercase SHA-256",
     );
   }
   const defaultMode = command === "verify" ? "status" : "preview";
@@ -426,8 +403,6 @@ function parseArgs(
     expectedEngineReleaseSha256,
     releaseManifestPath,
     releaseManifestShaPath,
-    itemReportCatalogSourcePath,
-    expectedItemReportCatalogSourceSha256,
   };
 }
 
@@ -448,6 +423,20 @@ function operatorNext(
     next_argv: nextArgv,
     next_command: nextArgv.map(quoteWalmartNewSkuShellArg).join(" "),
   };
+}
+
+export function walmartNewSkuBlockedDoctorDiagnosticPath(
+  requestedReceiptPath: string,
+): string {
+  const absolute = resolve(requestedReceiptPath);
+  const extension = extname(absolute);
+  const stem = extension
+    ? basename(absolute, extension)
+    : basename(absolute);
+  return join(
+    dirname(absolute),
+    `${stem}.blocked${extension || ".json"}`,
+  );
 }
 
 async function readCertification(path: string) {
@@ -1103,14 +1092,9 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   );
   const {
     listProductTruthWalmartPilotCandidates,
-    readProductTruthNewSkuView,
   } = await import(
     "../src/lib/sourcing/product-truth-read-contract"
   );
-  const {
-    inspectWalmartSellerCatalogRecipeNovelty,
-    loadWalmartSellerCatalogNoveltyIndex,
-  } = await import("../src/lib/bundle-factory/walmart-new-sku-novelty");
   const { getWalmartClient, getWalmartStoreStatus } = await import(
     "../src/lib/walmart/client"
   );
@@ -1127,7 +1111,15 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   const { inspectWalmartOwnerPermitTrustRoot } = await import(
     "../src/lib/bundle-factory/walmart-owner-permit"
   );
-  const ownerPermitTrust = inspectWalmartOwnerPermitTrustRoot();
+  const ownerPermitEnvironment =
+    process.env.NODE_ENV === "test" &&
+    process.env.WALMART_NEW_SKU_TEST_MODE === "1"
+      ? "TEST_FIXTURE_ONLY"
+      : "PRODUCTION";
+  const ownerPermitTrust = inspectWalmartOwnerPermitTrustRoot(
+    process.env,
+    ownerPermitEnvironment,
+  );
   if (ownerPermitTrust.active_key_ids.length !== 1) {
     blockers.push("OWNER_PERMIT_TRUST_ROOT_NOT_READY");
   }
@@ -1164,7 +1156,7 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   }
 
   let availableUpcs = 0;
-  let availableHistoricPoolUpcs = 0;
+  let availableUpcsWithLegacyChecksumFlagAndProvenance = 0;
   let duplicateDraftReservations = 0;
   let probeUpc: string | null = null;
   try {
@@ -1174,11 +1166,13 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
        WHERE status='AVAILABLE' AND assigned_to_id IS NULL
          AND reserved_for_id IS NULL`,
     );
-    availableHistoricPoolUpcs = await scalar(
+    availableUpcsWithLegacyChecksumFlagAndProvenance = await scalar(
       db,
       `SELECT COUNT(*) AS value FROM UPCPool
        WHERE status='AVAILABLE' AND assigned_to_id IS NULL
-         AND reserved_for_id IS NULL AND gs1_validated=0`,
+         AND reserved_for_id IS NULL AND gs1_validated=1
+         AND acquired_from IS NOT NULL AND trim(acquired_from)<>''
+         AND gs1_owner IS NOT NULL AND trim(gs1_owner)<>''`,
     );
     duplicateDraftReservations = await scalar(
       db,
@@ -1194,10 +1188,16 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
       `SELECT upc FROM UPCPool
        WHERE status='AVAILABLE' AND assigned_to_id IS NULL
          AND reserved_for_id IS NULL
+         AND gs1_validated=1
+         AND acquired_from IS NOT NULL AND trim(acquired_from)<>''
+         AND gs1_owner IS NOT NULL AND trim(gs1_owner)<>''
        ORDER BY COALESCE(acquired_at, created_at), id LIMIT 1`,
     );
     probeUpc = probeRow.rows[0]?.upc ? String(probeRow.rows[0].upc) : null;
     if (availableUpcs === 0) blockers.push("UPC_POOL_EMPTY");
+    if (availableUpcsWithLegacyChecksumFlagAndProvenance === 0) {
+      blockers.push("UPC_POOL_HAS_NO_CHECKSUM_FLAGGED_PROVENANCE_ROWS");
+    }
     if (duplicateDraftReservations > 0) {
       blockers.push("UPC_DUPLICATE_DRAFT_RESERVATIONS");
     }
@@ -1208,48 +1208,34 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   const store = getWalmartStoreStatus(args.storeIndex);
   if (!store.configured) blockers.push("WALMART_CREDENTIALS_NOT_CONFIGURED");
   const sellerId = store.sellerId;
-  let sellerCatalogAuthority: SealedWalmartSellerCatalogAuthorityBinding | null = null;
+  let sellerCatalogAuthority:
+    SealedWalmartExactIdentifierDuplicateGuardBinding | null = null;
   let sellerCatalogAuthorityError: string | null = null;
   if (store.configured && sellerId) {
     try {
-      const clientId = process.env[`WALMART_CLIENT_ID_STORE${args.storeIndex}`];
-      if (!clientId) {
-        throw new Error("active Walmart client ID is missing");
-      }
-      const [authorityModule, captureModule, engineModule] = await Promise.all([
+      const [authorityModule, engineModule] = await Promise.all([
         import("../src/lib/bundle-factory/walmart-new-sku-catalog-authority"),
-        import("../src/lib/walmart/item-report-capture-session"),
         import("../src/lib/bundle-factory/walmart-new-sku-engine"),
       ]);
       sellerCatalogAuthority =
-        await authorityModule.buildWalmartSellerCatalogAuthorityBinding({
-          db,
-          sourcePath: args.itemReportCatalogSourcePath!,
-          expectedSourceFileSha256:
-            args.expectedItemReportCatalogSourceSha256!,
+        authorityModule.buildWalmartExactIdentifierDuplicateGuardBinding({
           storeIndex: args.storeIndex,
           businessSellerAccountFingerprintSha256:
             engineModule.fingerprintWalmartSellerAccount({
               storeIndex: args.storeIndex,
               sellerId,
             }),
-          activeCaptureCredentialScopeFingerprintSha256:
-            captureModule.computeWalmartSellerAccountFingerprint({
-              store_index: args.storeIndex,
-              client_id: clientId,
-              seller_id: sellerId,
-            }),
-          now: checkedAt,
+          ownerDecisionRef: WALMART_DUPLICATE_GUARD_OWNER_DECISION_REF,
         });
     } catch (error) {
       sellerCatalogAuthorityError =
         error instanceof Error ? error.message : String(error);
-      blockers.push("SELLER_CATALOG_AUTHORITY_NOT_READY");
+      blockers.push("EXACT_IDENTIFIER_DUPLICATE_GUARD_NOT_READY");
     }
   } else {
     sellerCatalogAuthorityError =
       "configured Walmart seller identity is required";
-    blockers.push("SELLER_CATALOG_AUTHORITY_NOT_READY");
+    blockers.push("EXACT_IDENTIFIER_DUPLICATE_GUARD_NOT_READY");
   }
   let walmartApiProbe: {
     method: "GET";
@@ -1295,15 +1281,6 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
     blockers.push("WALMART_AUTHENTICATED_CATALOG_READ_UNAVAILABLE");
   }
   const candidates: Awaited<ReturnType<typeof listProductTruthWalmartPilotCandidates>> = [];
-  let sellerCatalogSnapshot: {
-    synced_at: string;
-    row_count: number;
-    active_row_count: number;
-    sha256: string;
-    authoritative_item_report_downloaded_at: string;
-    authoritative_item_report_request_id_sha256: string;
-    exact_recipe_collisions_excluded: number;
-  } | null = null;
   if (productTruthReady) {
     try {
       const candidatePool = await listProductTruthWalmartPilotCandidates(db, {
@@ -1312,48 +1289,12 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
         zip: args.zip,
         limit: 100,
       });
-      const noveltyIndex = await loadWalmartSellerCatalogNoveltyIndex({
-        db,
-        storeIndex: args.storeIndex,
-        now: checkedAt,
-      });
-      let collisionsExcluded = 0;
       for (const candidate of candidatePool) {
-        const recipe = await readProductTruthNewSkuView(
-          db,
-          [{ donorProductId: candidate.donor_product_id, qty: args.packCount }],
-          {
-            asOf: args.asOf,
-            maxPriceAgeMs: args.maxPriceAgeMs,
-            zip: args.zip,
-          },
-        );
-        const novelty = inspectWalmartSellerCatalogRecipeNovelty({
-          index: noveltyIndex,
-          component: recipe.components[0],
-          now: checkedAt,
-        });
-        if (!novelty.novel) {
-          collisionsExcluded += 1;
-          continue;
-        }
         candidates.push(candidate);
         if (candidates.length >= args.limit) break;
       }
-      sellerCatalogSnapshot = {
-        synced_at: noveltyIndex.seller_catalog_synced_at,
-        row_count: noveltyIndex.seller_catalog_row_count,
-        active_row_count: noveltyIndex.seller_catalog_active_row_count,
-        sha256: noveltyIndex.seller_catalog_sha256,
-        authoritative_item_report_downloaded_at:
-          noveltyIndex.authoritative_item_report_downloaded_at,
-        authoritative_item_report_request_id_sha256:
-          noveltyIndex.authoritative_item_report_request_id_sha256,
-        exact_recipe_collisions_excluded: collisionsExcluded,
-      };
     } catch (error) {
-      blockers.push("SELLER_CATALOG_NOVELTY_NOT_READY");
-      sellerCatalogSnapshot = null;
+      blockers.push("PRODUCT_TRUTH_CANDIDATE_READ_FAILED");
       productTruthError = [
         productTruthError,
         error instanceof Error ? error.message : String(error),
@@ -1362,6 +1303,115 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   }
   if (productTruthReady && candidates.length === 0) {
     blockers.push("NO_CURRENT_CANONICAL_PILOT_CANDIDATES");
+  }
+  let commercialDiscovery: Awaited<ReturnType<
+    typeof import("../src/lib/bundle-factory/walmart-new-sku-commercial-discovery")
+      .buildWalmartNewSkuCommercialDiscovery
+  >> | null = null;
+  let commercialDiscoveryError: string | null = null;
+  try {
+    const { buildWalmartNewSkuCommercialDiscovery } = await import(
+      "../src/lib/bundle-factory/walmart-new-sku-commercial-discovery"
+    );
+    const commercialRows = await db.execute(
+      `SELECT
+         product.id AS donor_product_id,
+         product.title,
+         product.brand,
+         product.size,
+         product.category,
+         product.upc AS manufacturer_upc,
+         product.description,
+         product.ingredients,
+         product.nutritionFacts AS nutrition_facts,
+         product.mainImageUrl AS main_image_url,
+         product.imageUrls AS image_urls,
+         product.needsReview AS needs_review,
+         offer.id AS offer_id,
+         offer.retailer,
+         offer.retailerProductId AS retailer_product_id,
+         offer.via,
+         offer.price,
+         offer.packSizeSeen AS pack_size_seen,
+         offer.pricePerUnit AS price_per_unit,
+         offer.zip,
+         offer.localityEvidence AS locality_evidence,
+         offer.inStock AS in_stock,
+         offer.isFirstParty AS is_first_party,
+         (
+           SELECT observation.title
+           FROM DonorOfferObservation observation
+           WHERE observation.donorOfferId=offer.id
+           ORDER BY julianday(observation.observedAt) DESC,
+             observation.observedAt DESC,observation.id DESC
+           LIMIT 1
+         ) AS offer_title,
+         offer.productUrl AS product_url,
+         offer.fetchedAt AS fetched_at
+       FROM DonorProduct product
+       JOIN DonorOffer offer ON offer.donorProductId=product.id
+       WHERE product.needsReview=0
+         AND offer.isFirstParty=1
+         AND offer.inStock=1
+         AND lower(offer.via)='direct'
+         AND offer.price>0
+       ORDER BY product.id,offer.id
+       LIMIT 10000`,
+    );
+    commercialDiscovery = buildWalmartNewSkuCommercialDiscovery({
+      rows: commercialRows.rows.map((row) => ({
+        donor_product_id: String(row.donor_product_id ?? ""),
+        title: row.title == null ? null : String(row.title),
+        brand: row.brand == null ? null : String(row.brand),
+        size: row.size == null ? null : String(row.size),
+        category: row.category == null ? null : String(row.category),
+        manufacturer_upc:
+          row.manufacturer_upc == null
+            ? null
+            : String(row.manufacturer_upc),
+        description:
+          row.description == null ? null : String(row.description),
+        ingredients:
+          row.ingredients == null ? null : String(row.ingredients),
+        nutrition_facts:
+          row.nutrition_facts == null
+            ? null
+            : String(row.nutrition_facts),
+        main_image_url:
+          row.main_image_url == null ? null : String(row.main_image_url),
+        image_urls:
+          row.image_urls == null ? null : String(row.image_urls),
+        needs_review: row.needs_review as number | boolean | null,
+        offer_id: String(row.offer_id ?? ""),
+        retailer: String(row.retailer ?? ""),
+        retailer_product_id: String(row.retailer_product_id ?? ""),
+        via: String(row.via ?? ""),
+        price: row.price == null ? null : Number(row.price),
+        pack_size_seen:
+          row.pack_size_seen == null ? null : Number(row.pack_size_seen),
+        price_per_unit:
+          row.price_per_unit == null ? null : Number(row.price_per_unit),
+        zip: row.zip == null ? null : String(row.zip),
+        locality_evidence:
+          row.locality_evidence == null
+            ? null
+            : String(row.locality_evidence),
+        in_stock: row.in_stock as number | boolean | null,
+        is_first_party: row.is_first_party as number | boolean | null,
+        offer_title:
+          row.offer_title == null ? null : String(row.offer_title),
+        product_url:
+          row.product_url == null ? null : String(row.product_url),
+        fetched_at:
+          row.fetched_at == null ? null : String(row.fetched_at),
+      })),
+      asOf: args.asOf.toISOString(),
+      packCount: args.packCount as 2 | 3,
+      limit: 10,
+    });
+  } catch (error) {
+    commercialDiscoveryError =
+      error instanceof Error ? error.message : String(error);
   }
 
   const schemaSha256 = await databaseSchemaSha256(db);
@@ -1401,32 +1451,29 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
       schema_ready: productTruthReady,
       error: productTruthError,
       current_candidate_count_sample: candidates.length,
+      commercial_discovery: commercialDiscovery,
+      commercial_discovery_error: commercialDiscoveryError,
+      commercial_discovery_can_enter_plan: false,
     },
-    seller_catalog_novelty: sellerCatalogSnapshot,
-    seller_catalog_authority: sellerCatalogAuthority
+    duplicate_guard: sellerCatalogAuthority
       ? {
           binding_id: sellerCatalogAuthority.binding_id,
           body_sha256: sellerCatalogAuthority.body_sha256,
-          source_file_sha256:
-            sellerCatalogAuthority.source_artifact.file_sha256,
-          source_row_count:
-            sellerCatalogAuthority.source_artifact.row_count,
-          mirror_row_count:
-            sellerCatalogAuthority.mirror_reconciliation.row_count,
-          source_downloaded_at:
-            sellerCatalogAuthority.source_artifact.downloaded_at,
-          mirror_synced_at:
-            sellerCatalogAuthority.mirror_reconciliation.synced_at,
-          exact_match:
-            sellerCatalogAuthority.mirror_reconciliation.exact_match,
+          mode: "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+          product_source: "PRODUCT_TRUTH_DONOR_CATALOG",
+          full_seller_catalog_required: false,
+          exact_seller_sku_absence_required_before_certification: true,
+          exact_upc_catalog_search_required_before_certification: true,
           error: null,
         }
       : { error: sellerCatalogAuthorityError },
     upc_pool: {
       available: availableUpcs,
-      available_historic_pool_not_marked_gs1_validated: availableHistoricPoolUpcs,
+      available_with_legacy_checksum_flag_and_provenance:
+        availableUpcsWithLegacyChecksumFlagAndProvenance,
       duplicate_draft_reservations: duplicateDraftReservations,
-      gs1_validated_false_is_not_a_blocker: true,
+      legacy_gs1_validated_field_is_not_registry_proof: true,
+      certification_requires_fresh_registry_brand_and_seller_authority_evidence: true,
     },
     publish_lifecycle: {
       submission_ledger_schema_ready: submissionLedgerReady,
@@ -1456,6 +1503,8 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
   };
   let receiptOutput: string | null = null;
   let receiptSha256: string | null = null;
+  let diagnosticOutput: string | null = null;
+  let diagnosticSha256: string | null = null;
   if (
     blockers.length === 0 &&
     args.out &&
@@ -1464,13 +1513,14 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
     sellerCatalogAuthority
   ) {
     const {
+      WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
       fingerprintWalmartSellerAccount,
       sealWalmartNewSkuDoctorReceipt,
     } = await import(
       "../src/lib/bundle-factory/walmart-new-sku-engine"
     );
     const receipt = sealWalmartNewSkuDoctorReceipt({
-      schema_version: "walmart-new-sku-doctor-receipt/1.4.0",
+      schema_version: WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
       checked_at: checkedAt.toISOString(),
       expires_at: new Date(checkedAt.getTime() + 30 * 60_000).toISOString(),
       store_index: args.storeIndex,
@@ -1502,6 +1552,8 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
       publish_lifecycle_schema_ready: true,
       upc_pool: {
         available: availableUpcs,
+        available_with_legacy_checksum_flag_and_provenance:
+          availableUpcsWithLegacyChecksumFlagAndProvenance,
         duplicate_draft_reservations: 0,
       },
       ready_for_plan: true,
@@ -1520,12 +1572,33 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
     receiptOutput = resolve(args.out);
     await writeOnce(receiptOutput, `${JSON.stringify(receipt, null, 2)}\n`);
     receiptSha256 = receipt.receipt_sha256;
+  } else if (blockers.length > 0 && args.out) {
+    diagnosticOutput = walmartNewSkuBlockedDoctorDiagnosticPath(args.out);
+    const diagnostic = {
+      schema_version: WALMART_NEW_SKU_DOCTOR_DIAGNOSTIC_SCHEMA,
+      artifact_role: "BLOCKED_DOCTOR_DIAGNOSTIC_ONLY",
+      acceptable_as_doctor_receipt: false,
+      requested_doctor_receipt: resolve(args.out),
+      ...report,
+      doctor_receipt: null,
+      doctor_receipt_sha256: null,
+      doctor_receipt_written: false,
+      ...operatorNext(null),
+    };
+    const diagnosticBytes = `${JSON.stringify(diagnostic, null, 2)}\n`;
+    await writeOnce(diagnosticOutput, diagnosticBytes);
+    diagnosticSha256 = createHash("sha256")
+      .update(diagnosticBytes)
+      .digest("hex");
   }
   process.stdout.write(`${JSON.stringify({
     ...report,
     doctor_receipt: receiptOutput,
     doctor_receipt_sha256: receiptSha256,
     doctor_receipt_written: Boolean(receiptOutput),
+    doctor_diagnostic: diagnosticOutput,
+    doctor_diagnostic_sha256: diagnosticSha256,
+    doctor_diagnostic_written: Boolean(diagnosticOutput),
     ...operatorNext(receiptOutput ? [
       "plan",
       "--doctor-receipt", receiptOutput,
@@ -1698,10 +1771,6 @@ async function runPlan(args: ParsedArgs): Promise<void> {
     buildWalmartNewSkuPilotPlan,
     serializeWalmartNewSkuPlan,
   } = await import("../src/lib/bundle-factory/walmart-new-sku-engine");
-  const {
-    inspectWalmartSellerCatalogRecipeNovelty,
-    loadWalmartSellerCatalogNoveltyIndex,
-  } = await import("../src/lib/bundle-factory/walmart-new-sku-novelty");
   const { getWalmartStoreStatus } = await import("../src/lib/walmart/client");
   const { getConfiguredWalmartSpecVersion } = await import(
     "../src/lib/bundle-factory/distribution/walmart-item-contract"
@@ -1770,11 +1839,6 @@ async function runPlan(args: ParsedArgs): Promise<void> {
       zip: args.zip,
       limit: 100,
     });
-    const sellerCatalogIndex = await loadWalmartSellerCatalogNoveltyIndex({
-      db,
-      storeIndex: args.storeIndex,
-      now: plannedAt,
-    });
     const compiled = [];
     const rejected: Array<{ donor_product_id: string; reason: string }> = [];
     for (const candidate of candidates) {
@@ -1805,20 +1869,6 @@ async function runPlan(args: ParsedArgs): Promise<void> {
             zip: args.zip,
           },
         );
-        const novelty = inspectWalmartSellerCatalogRecipeNovelty({
-          index: sellerCatalogIndex,
-          component: recipe.components[0],
-          now: plannedAt,
-        });
-        if (!novelty.novel) {
-          rejected.push({
-            donor_product_id: candidate.donor_product_id,
-            reason: `RECIPE_ALREADY_EXISTS_OR_REQUIRES_RECONCILIATION:${novelty.collisions
-              .map((collision) => `${collision.source}:${collision.sku}:${collision.basis}`)
-              .join(",")}`,
-          });
-          continue;
-        }
         compiled.push({ candidate, recipe, packCount: args.packCount });
       } catch (error) {
         rejected.push({
@@ -2060,7 +2110,9 @@ async function runStage(args: ParsedArgs): Promise<void> {
       candidate_key: artifact.candidate_key,
       proposed_sku: artifact.proposed_sku,
       upc: artifact.upc,
-      upc_gs1_validated: artifact.upc_gs1_validated,
+      upc_checksum_valid: artifact.upc_checksum_valid,
+      upc_pool_acquired_from: artifact.upc_pool_acquired_from,
+      upc_pool_recorded_owner: artifact.upc_pool_recorded_owner,
       stage_sha256: artifact.stage_sha256,
       output: outputPath,
       disposition,
@@ -2767,6 +2819,7 @@ async function runApply(args: ParsedArgs): Promise<void> {
         applyPreview: receipt,
         engineReleaseSha256,
         now: inputs.now,
+        env: process.env,
       }), null, 2)}\n`,
     );
   }
@@ -3172,7 +3225,7 @@ function printHelp(surface: WalmartNewSkuCliSurface): void {
     process.stdout.write(`This surface cannot run operator commands or mutate Walmart.\n`);
     return;
   }
-  process.stdout.write(`  doctor  Read-only readiness check; independently verifies the frozen release and pinned all-status ITEM v6 source+SHA against the active seller catalog mirror; --out seals them for 30 minutes\n`);
+  process.stdout.write(`  doctor  Read-only readiness check; verifies the frozen release, Product Truth donor candidates, account health and exact-SKU/UPC preflight policy; a full seller-catalog export is not required; --out seals the result for 30 minutes\n`);
   process.stdout.write(`  plan    Requires that fresh doctor receipt; builds a hash-sealed Product Truth pilot plan (read-only)\n\n`);
   process.stdout.write(`  stage   Preview or explicitly reserve one pool UPC in the internal DB\n\n`);
   process.stdout.write(`  rotate-upc  Re-read SPEC catalog proof; RETIRE exact MP_ITEM_MATCH UPC and reserve the next pool UPC\n\n`);

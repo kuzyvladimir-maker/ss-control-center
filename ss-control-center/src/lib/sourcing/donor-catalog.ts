@@ -23,6 +23,10 @@ import {
   type CanonicalProductIdentity,
   type NormalizedCanonicalProduct,
 } from "./canonical-product-match";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
 import { oxylabsSearch, oxylabsWalmartSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
 import { openClawSearch, openClawEnabled, type OpenClawRetailer } from "./openclaw-fetch";
 import { CLAUDE } from "@/lib/ai-models";
@@ -41,7 +45,7 @@ import { evaluatePriceEvidenceEligibility } from "./price-evidence-policy";
 type SqlExecutor = Pick<Client, "execute">;
 
 const SOURCE_IDENTITY_EVIDENCE_VERSION =
-  "donor-source-identity-evidence/1.0.0" as const;
+  "donor-source-identity-evidence/1.1.0" as const;
 const PRODUCT_CONTENT_OBSERVATION_VERSION =
   "product-content-observation/1.0.0" as const;
 
@@ -1056,6 +1060,8 @@ function sourceIdentityEvidence(input: {
     certification: "EXACT_SOURCE_IDENTITY",
     targetComparisonVerdict: match.verdict,
     matcherVersion: match.matcherVersion,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     reasonCodes: match.reasonCodes,
     titleEvidence: match.titleEvidence ?? null,
     source: {
@@ -1095,7 +1101,8 @@ async function insertRejectedAliasConflict(
   const decisionKey = `dpvd-rejected:${evidenceHash}`;
   const readDecision = () => db.execute({
     sql: `SELECT id, decisionKey, donorProductId, canonicalVariantId,
-                 decisionStatus, matcherVersion, evidenceHash, evidenceJson,
+                 decisionStatus, matcherVersion, matcherImplementationSha256,
+                 matcherReleaseSha256, evidenceHash, evidenceJson,
                  decidedAt, runId, approvalId
           FROM "DonorProductVariantDecision"
           WHERE id=? OR decisionKey=?`,
@@ -1110,6 +1117,8 @@ async function insertRejectedAliasConflict(
       && String(stored.canonicalVariantId) === input.proposedVariantId
       && String(stored.decisionStatus) === "rejected"
       && String(stored.matcherVersion) === input.matcherVersion
+      && String(stored.matcherImplementationSha256) === CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+      && String(stored.matcherReleaseSha256) === CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
       && String(stored.evidenceHash) === evidenceHash
       && String(stored.evidenceJson) === evidenceJson
       && String(stored.decidedAt) === input.decidedAt
@@ -1123,12 +1132,13 @@ async function insertRejectedAliasConflict(
   if (!before.rows.length) await db.execute({
     sql: `INSERT INTO "DonorProductVariantDecision"
       (id, decisionKey, donorProductId, canonicalVariantId, decisionStatus,
-       matcherVersion, evidenceHash, evidenceJson, decidedAt, runId,
-       approvalId, createdAt)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+       matcherVersion, matcherImplementationSha256, matcherReleaseSha256,
+       evidenceHash, evidenceJson, decidedAt, runId, approvalId, createdAt)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       decisionKey, decisionKey, input.donorProductId, input.proposedVariantId,
-      "rejected", input.matcherVersion, evidenceHash, evidenceJson,
+      "rejected", input.matcherVersion, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256, evidenceHash, evidenceJson,
       input.decidedAt, input.runId, input.approvalId, input.now,
     ],
   });
@@ -1163,17 +1173,36 @@ async function certifyExactSourceAlias(
   const evidenceHash = sha256(evidenceJson);
   const matcherVersion = input.offer.identityMatch!.matcherVersion;
   const product = (await db.execute({
-    sql: `SELECT identityStatus FROM "DonorProduct" WHERE id=? LIMIT 1`,
+    sql: `SELECT identityStatus, identityMatcherVersion,
+                 identityMatcherImplementationSha256, identityMatcherReleaseSha256,
+                 identityEvidenceJson, identityConfirmedAt
+          FROM "DonorProduct" WHERE id=? LIMIT 1`,
     args: [input.donorProductId],
   })).rows[0];
   if (!product) throw new Error(`DONOR_PRODUCT_MISSING: ${input.donorProductId}`);
 
   const existing = (await db.execute({
-    sql: `SELECT id, canonicalVariantId, matcherVersion, evidenceJson, decidedAt
+    sql: `SELECT id, canonicalVariantId, matcherVersion,
+                 matcherImplementationSha256, matcherReleaseSha256,
+                 evidenceHash, evidenceJson, decidedAt
           FROM "DonorProductVariantDecision"
           WHERE donorProductId=? AND decisionStatus='exact_confirmed' LIMIT 1`,
     args: [input.donorProductId],
   })).rows[0];
+  if (existing) {
+    const existingEvidence = parseRecordJson(existing.evidenceJson);
+    if (
+      String(existing.matcherVersion) !== matcherVersion
+      || String(existing.matcherImplementationSha256) !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+      || String(existing.matcherReleaseSha256) !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+      || String(existing.evidenceHash) !== sha256(String(existing.evidenceJson))
+      || existingEvidence?.matcherVersion !== matcherVersion
+      || existingEvidence?.matcherImplementationSha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+      || existingEvidence?.matcherReleaseSha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+    ) {
+      throw new Error(`DONOR_PRODUCT_VARIANT_DECISION_MATCHER_PROVENANCE_DRIFT: ${String(existing.id)}`);
+    }
+  }
   if (existing && String(existing.canonicalVariantId) !== input.sourceIdentity.canonical.canonicalVariantId) {
     await insertRejectedAliasConflict(db, {
       donorProductId: input.donorProductId,
@@ -1208,11 +1237,15 @@ async function certifyExactSourceAlias(
 
   let decisionId: string;
   let projectionMatcherVersion: string;
+  let projectionMatcherImplementationSha256: string;
+  let projectionMatcherReleaseSha256: string;
   let projectionEvidenceJson: string;
   let projectionDecidedAt: string;
   if (existing) {
     decisionId = String(existing.id);
     projectionMatcherVersion = String(existing.matcherVersion);
+    projectionMatcherImplementationSha256 = String(existing.matcherImplementationSha256);
+    projectionMatcherReleaseSha256 = String(existing.matcherReleaseSha256);
     projectionEvidenceJson = String(existing.evidenceJson);
     projectionDecidedAt = String(existing.decidedAt);
   } else {
@@ -1220,7 +1253,8 @@ async function certifyExactSourceAlias(
     decisionId = decisionKey;
     const readDecision = () => db.execute({
       sql: `SELECT id, decisionKey, donorProductId, canonicalVariantId,
-                   decisionStatus, matcherVersion, evidenceHash, evidenceJson,
+                   decisionStatus, matcherVersion, matcherImplementationSha256,
+                   matcherReleaseSha256, evidenceHash, evidenceJson,
                    decidedAt, runId, approvalId
             FROM "DonorProductVariantDecision"
             WHERE id=? OR decisionKey=?`,
@@ -1235,6 +1269,8 @@ async function certifyExactSourceAlias(
         && String(stored.canonicalVariantId) === input.sourceIdentity.canonical.canonicalVariantId
         && String(stored.decisionStatus) === "exact_confirmed"
         && String(stored.matcherVersion) === matcherVersion
+        && String(stored.matcherImplementationSha256) === CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+        && String(stored.matcherReleaseSha256) === CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
         && String(stored.evidenceHash) === evidenceHash
         && String(stored.evidenceJson) === evidenceJson
         && String(stored.decidedAt) === input.observedAt
@@ -1248,13 +1284,14 @@ async function certifyExactSourceAlias(
     if (!before.rows.length) await db.execute({
       sql: `INSERT INTO "DonorProductVariantDecision"
         (id, decisionKey, donorProductId, canonicalVariantId, decisionStatus,
-         matcherVersion, evidenceHash, evidenceJson, decidedAt, runId,
-         approvalId, createdAt)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+         matcherVersion, matcherImplementationSha256, matcherReleaseSha256,
+         evidenceHash, evidenceJson, decidedAt, runId, approvalId, createdAt)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         decisionId, decisionKey, input.donorProductId,
         input.sourceIdentity.canonical.canonicalVariantId, "exact_confirmed",
-        matcherVersion, evidenceHash, evidenceJson, input.observedAt,
+        matcherVersion, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256, evidenceHash, evidenceJson, input.observedAt,
         input.runId, input.approvalId, input.now,
       ],
     });
@@ -1262,6 +1299,8 @@ async function certifyExactSourceAlias(
       throw new Error(`DONOR_PRODUCT_VARIANT_DECISION_WRITE_MISMATCH: ${decisionKey}`);
     }
     projectionMatcherVersion = matcherVersion;
+    projectionMatcherImplementationSha256 = CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+    projectionMatcherReleaseSha256 = CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
     projectionEvidenceJson = evidenceJson;
     projectionDecidedAt = input.observedAt;
   }
@@ -1271,7 +1310,8 @@ async function certifyExactSourceAlias(
       sql: `UPDATE "DonorProduct" SET
               brand=?, productLine=?, flavor=?, containerType=?, size=?,
               unitMeasure=?, unitAmount=?, identityStatus='exact_confirmed',
-              identityMatcherVersion=?, identityEvidenceJson=?,
+              identityMatcherVersion=?, identityMatcherImplementationSha256=?,
+              identityMatcherReleaseSha256=?, identityEvidenceJson=?,
               identityConfirmedAt=?, needsReview=1, updatedAt=?
             WHERE id=? AND identityStatus IN ('candidate','legacy_unverified')`,
       args: [
@@ -1279,17 +1319,28 @@ async function certifyExactSourceAlias(
         input.sourceIdentity.flavor, input.sourceIdentity.containerType,
         input.sourceIdentity.size, input.sourceIdentity.unitMeasure,
         input.sourceIdentity.unitAmount, projectionMatcherVersion,
+        projectionMatcherImplementationSha256, projectionMatcherReleaseSha256,
         projectionEvidenceJson, projectionDecidedAt, input.now,
         input.donorProductId,
       ],
     });
   }
   const confirmed = (await db.execute({
-    sql: `SELECT identityStatus FROM "DonorProduct" WHERE id=? LIMIT 1`,
+    sql: `SELECT identityStatus, identityMatcherVersion,
+                 identityMatcherImplementationSha256, identityMatcherReleaseSha256,
+                 identityEvidenceJson, identityConfirmedAt
+          FROM "DonorProduct" WHERE id=? LIMIT 1`,
     args: [input.donorProductId],
   })).rows[0];
-  if (String(confirmed?.identityStatus) !== "exact_confirmed") {
-    throw new Error(`DONOR_PRODUCT_EXACT_PROJECTION_FAILED: ${input.donorProductId}`);
+  if (
+    String(confirmed?.identityStatus) !== "exact_confirmed"
+    || String(confirmed?.identityMatcherVersion) !== projectionMatcherVersion
+    || String(confirmed?.identityMatcherImplementationSha256) !== projectionMatcherImplementationSha256
+    || String(confirmed?.identityMatcherReleaseSha256) !== projectionMatcherReleaseSha256
+    || String(confirmed?.identityEvidenceJson) !== projectionEvidenceJson
+    || String(confirmed?.identityConfirmedAt) !== projectionDecidedAt
+  ) {
+    throw new Error(`DONOR_PRODUCT_EXACT_PROJECTION_MISMATCH: ${input.donorProductId}`);
   }
   return {
     alias: {

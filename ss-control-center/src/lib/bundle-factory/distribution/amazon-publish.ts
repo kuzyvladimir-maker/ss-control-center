@@ -398,6 +398,21 @@ export function buildAmazonAttributes(
         schedule: [{ value_with_tax: priceUsd }],
       },
     ];
+    // GROCERY now hard-requires list_price (90220 on the 2026-07-22 canary).
+    // Set it EQUAL to our_price: an identical reference price can never render
+    // a crossed-out fake discount, so the coupon-only launch policy holds.
+    attrs.list_price = [
+      { value: priceUsd, currency: "USD", marketplace_id: MARKETPLACE_ID },
+    ];
+  }
+  // GROCERY hard-requires melting_temperature for heat-sensitive listings
+  // (90220 on the 2026-07-22 canary). 32°F is the water/ice thaw point and the
+  // value the live Uncrustables cohort carries (e.g. GU-ASQ1-S7M6); a reviewed
+  // rich-attribute value, when present, wins.
+  if (isColdCategory(category) && !attrs.melting_temperature) {
+    attrs.melting_temperature = [
+      { value: 32, unit: "degrees_fahrenheit", marketplace_id: MARKETPLACE_ID },
+    ];
   }
   attrs.manufacturer = [lt(listingBrand)];
   if (totalUnits) {

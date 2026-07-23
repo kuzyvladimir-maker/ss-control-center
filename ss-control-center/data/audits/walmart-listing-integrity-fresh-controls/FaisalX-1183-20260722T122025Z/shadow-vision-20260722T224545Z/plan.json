@@ -1,0 +1,90 @@
+{
+  "schema_version": "walmart-listing-integrity-shadow-vision-plan/v1",
+  "created_at": "2026-07-22T22:52:15.860Z",
+  "authority_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/shadow-vision-authorization-20260722T224545Z.json",
+  "authority_sha256": "acfcbeefbe08970811f091dad8d6ca8ada1c016443145ce8699837e65d5f3e85",
+  "canary_preview_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/canary-preview.json",
+  "canary_preview_sha256": "46d3d8fe33fa21e92f72ef58e90b36cdcfd81e1e07e87a7b32c0261d955ef0a1",
+  "worker_contract": {
+    "worker_build": "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9",
+    "model": "sonnet",
+    "reasoning_effort": null,
+    "cli_version": "2.1.179 (Claude Code)",
+    "node_version": "v20.20.1",
+    "runtime_platform": "linux",
+    "runtime_arch": "x64",
+    "vision_timeout_ms": 180000,
+    "reservation_ledger": {
+      "schema_version": "vision-call-reservation-ledger-contract/v1",
+      "ledger_id": "ledger-2c53fa5f-f761-4660-80b9-24e934e172aa",
+      "ledger_epoch": "epoch-986b9a13-740b-4403-b433-378f2613d4f0",
+      "state_directory_path_sha256": "ae43d594a2a43b6bc856529cfa729d73d9784d1dd3f3e4dffddf27feccfece53",
+      "directory_identity_sha256": "c0e7a611777a5b7063c36a94c3c4c27ea6943e34ba2622944c0426d7685c0db1",
+      "identity_artifact_sha256": "ffd380901c51e88205454d1ddd68141d94e811c286b62d556c60e335e84e3a68"
+    }
+  },
+  "partition_id": "shadow-faisalx-1183-current-target-v2",
+  "calls": [
+    {
+      "call_index": 0,
+      "shard_id": "shadow-faisalx-1183-current-000003",
+      "call_key": "1033bf8135309d73af216591c54e3d2701ffd66c5fb738524ca7f80181aff1e6",
+      "prompt_sha256": "0d800008e929bdfebb3a95b8863ca40147c7bf259af95d695e1af684a740bd8f",
+      "request_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/shadow-vision-20260722T224545Z/call-1-request.json",
+      "request_file_sha256": "db86f7094e52de1f0fc9b3e01fb0ec011a2b93c8b6b20c117dbd708129c6ceaf",
+      "image_bindings": [
+        {
+          "listing_key": "walmart:1:FaisalX-1183",
+          "item_id": "8419413379",
+          "slot": "main",
+          "asset_sha256": "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736",
+          "model_view_sha256": "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736",
+          "image_id": "i_f29c35da55ab16485840"
+        },
+        {
+          "listing_key": "walmart:1:FaisalX-1183",
+          "item_id": "8419413379",
+          "slot": "gallery-1",
+          "asset_sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+          "model_view_sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+          "image_id": "i_d1597f1292cdc5dba5cd"
+        },
+        {
+          "listing_key": "walmart:1:FaisalX-1183",
+          "item_id": "8419413379",
+          "slot": "gallery-2",
+          "asset_sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+          "model_view_sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+          "image_id": "i_e1b414239d710114578e"
+        }
+      ]
+    },
+    {
+      "call_index": 1,
+      "shard_id": "shadow-faisalx-1183-target-000004",
+      "call_key": "286bfece599e4985b21ede489da0d4bc76a4838a6368c15f0fee547687d6efcc",
+      "prompt_sha256": "30fc5a0b5db92633b08831741258a0bb7fd0981252a44c94a6dd11b017993de1",
+      "request_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/shadow-vision-20260722T224545Z/call-2-request.json",
+      "request_file_sha256": "458056707a77806886fed91b496e1e33b4052c963e384655942b7b91d647ce22",
+      "image_bindings": [
+        {
+          "listing_key": "walmart:1:FaisalX-1183",
+          "item_id": "8419413379",
+          "slot": "main",
+          "asset_sha256": "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06",
+          "model_view_sha256": "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06",
+          "image_id": "i_9867d3a6c8c44ab69a23"
+        }
+      ]
+    }
+  ],
+  "execution_policy": {
+    "subscription_calls_maximum": 2,
+    "transport_attempts_per_call": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "paid_api_calls": 0
+  }
+}

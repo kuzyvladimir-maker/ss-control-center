@@ -16,6 +16,8 @@ export const TEST_CENSUS_CAPTURED_AT = "2026-07-18T20:00:00.000Z";
 
 export interface TestConnectedStoreCensusOptions {
   asOf?: string;
+  capturedAt?: string;
+  attestedAt?: string;
   amazonConnected?: number[];
   walmartConnected?: number[];
   walmartSupported?: number[];
@@ -39,6 +41,7 @@ export function testScopeIdentity(
 export function makeTestConnectedStoreCapture(
   options: TestConnectedStoreCensusOptions = {},
 ): Phase1ConnectedStoreCapture {
+  const capturedAt = options.capturedAt ?? TEST_CENSUS_CAPTURED_AT;
   const amazonConnected = new Set(options.amazonConnected ?? [1]);
   const walmartConnected = new Set(options.walmartConnected ?? [1]);
   const walmartSupported = [...new Set(options.walmartSupported ?? [1])].sort(
@@ -76,7 +79,7 @@ export function makeTestConnectedStoreCapture(
   return {
     schemaVersion: PHASE1_CONNECTED_STORE_CAPTURE_VERSION,
     captureId: "test-connected-store-capture",
-    capturedAt: TEST_CENSUS_CAPTURED_AT,
+    capturedAt,
     capturedBy: "Test Capture Operator",
     environment: "test",
     target: "fixture-deployment",
@@ -92,7 +95,7 @@ export function makeTestConnectedStoreCapture(
       {
         kind: "STORE_DIRECTORY_SNAPSHOT",
         captureId: "test-store-directory",
-        capturedAt: TEST_CENSUS_CAPTURED_AT,
+        capturedAt,
         capturedBy: "Test Capture Operator",
         sourceName: "store-directory.json",
         contentSha256: phase1CensusSha256Hex("test-store-directory\n"),
@@ -100,7 +103,7 @@ export function makeTestConnectedStoreCapture(
       {
         kind: "DEPLOYMENT_CONFIGURATION_SNAPSHOT",
         captureId: "test-deployment-config",
-        capturedAt: TEST_CENSUS_CAPTURED_AT,
+        capturedAt,
         capturedBy: "Test Capture Operator",
         sourceName: "deployment-config.json",
         contentSha256: phase1CensusSha256Hex("test-deployment-config\n"),
@@ -112,13 +115,14 @@ export function makeTestConnectedStoreCapture(
 
 export function makeTestConnectedStoreOwnerAttestation(
   capture: Phase1ConnectedStoreCapture,
+  attestedAt = "2026-07-18T21:00:00.000Z",
 ): Phase1ConnectedStoreOwnerAttestation {
   return {
     schemaVersion: PHASE1_CONNECTED_STORE_OWNER_ATTESTATION_VERSION,
     authority: "OWNER",
     attestationId: "test-owner-census-attestation",
     attestedBy: "Vladimir",
-    attestedAt: "2026-07-18T21:00:00.000Z",
+    attestedAt,
     captureSha256: computePhase1ConnectedStoreCaptureSha256(capture),
     statement: PHASE1_CONNECTED_STORE_COMPLETENESS_STATEMENT,
   };
@@ -128,7 +132,10 @@ export function makeTestConnectedStoreCensus(
   options: TestConnectedStoreCensusOptions = {},
 ) {
   const capture = makeTestConnectedStoreCapture(options);
-  const ownerAttestation = makeTestConnectedStoreOwnerAttestation(capture);
+  const ownerAttestation = makeTestConnectedStoreOwnerAttestation(
+    capture,
+    options.attestedAt,
+  );
   const artifact = buildPhase1ConnectedStoreCensus({
     asOf: options.asOf ?? TEST_CENSUS_AS_OF,
     capture,

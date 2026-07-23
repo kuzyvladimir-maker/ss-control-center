@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
+
+import {
   PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA,
   WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
   WALMART_PUBLIC_CONTRACT_SCHEMA,
@@ -29,7 +35,9 @@ const component: ProductTruthRecipeComponentEvidence = {
   content_observation_id: "content-a",
   content_source_url: "https://manufacturer.example/item-a",
   content_captured_at: "2026-07-18T12:00:00.000Z",
-  matcher_version: "canonical-product-match/1.2.0",
+  matcher_version: CANONICAL_PRODUCT_MATCHER_VERSION,
+  matcher_implementation_sha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  matcher_release_sha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   facts: {
     ingredients: "Corn, sugar, strawberry powder.",
     allergens: { contains: [], may_contain: [] },
@@ -54,6 +62,24 @@ const component: ProductTruthRecipeComponentEvidence = {
   },
 };
 
+const staleMatcherProvenanceCases = [
+  {
+    field: "matcher_version",
+    current: CANONICAL_PRODUCT_MATCHER_VERSION,
+    stale: "canonical-product-match/0.0.0",
+  },
+  {
+    field: "matcher_implementation_sha256",
+    current: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    stale: "1".repeat(64),
+  },
+  {
+    field: "matcher_release_sha256",
+    current: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    stale: "2".repeat(64),
+  },
+] as const;
+
 const walmart: WalmartPublicListingContract = {
   contract_version: WALMART_PUBLIC_CONTRACT_SCHEMA,
   spec_version: "5.0.20260501-19_21_29-api",
@@ -73,7 +99,7 @@ const walmart: WalmartPublicListingContract = {
 
 const prepublication: WalmartPrepublicationEvidence = {
   schema_version: WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
-  policy_version: "walmart-us-prepublication/2026-07-19.2",
+  policy_version: "walmart-us-prepublication/2026-07-23.3",
   generated_at: "2026-07-19T11:40:00.000Z",
   store_index: 1,
   sku: "SV-WM01-TEST",
@@ -84,6 +110,25 @@ const prepublication: WalmartPrepublicationEvidence = {
     setup_method: "FULL_ITEM",
     walmart_item_id: null,
     evidence_ref: "catalog-search:test",
+  },
+  seller_account_health: {
+    status: "HEALTHY_AND_ACCEPTING_NEW_ITEMS",
+    store_index: 1,
+    seller_account_fingerprint_sha256: "d".repeat(64),
+    verified_at: "2026-07-19T11:36:00.000Z",
+    evidence_ref: "seller-health:test",
+  },
+  fulfillment_compliance: {
+    method: "SELLER_FULFILLED",
+    inventory_owned_by_seller: true,
+    direct_retailer_fulfillment: false,
+    competitor_branded_packaging: false,
+    third_party_promotional_materials: false,
+    fulfillment_center_id: "FC-1",
+    fulfillment_lag_time: 1,
+    lag_exemption_status: "NOT_REQUIRED",
+    verified_at: "2026-07-19T11:36:00.000Z",
+    evidence_ref: "fulfillment:test",
   },
   category_approvals: [{
     scope: "SHELF_STABLE_FOOD",
@@ -107,6 +152,21 @@ const prepublication: WalmartPrepublicationEvidence = {
     basis: "LEGITIMATE_RESALE",
     verified_at: "2026-07-19T11:38:00.000Z",
     evidence_ref: "invoice:test",
+  },
+  product_identifier: {
+    identifier_type: "UPC",
+    value: "756441000010",
+    checksum_valid: true,
+    pool_acquired_from: "SpeedyBarcode",
+    pool_recorded_owner: "Example Registrant LLC",
+    registry_status: "VERIFIED",
+    registry_registrant_name: "Example Registrant LLC",
+    aligned_brand: "Example",
+    brand_alignment_status: "VERIFIED",
+    seller_account_fingerprint_sha256: "d".repeat(64),
+    seller_assignment_authority_status: "VERIFIED",
+    verified_at: "2026-07-19T11:38:00.000Z",
+    evidence_ref: "product-id:test",
   },
   condition: { value: "New", verified_at: "2026-07-19T11:38:00.000Z" },
   expiration: {
@@ -181,6 +241,82 @@ test("builds a count-accurate exact Product Truth listing manifest", () => {
     }),
     /recipe total 2 does not equal packCount 3/,
   );
+});
+
+test("matcher provenance fails closed at manifest build, approval seal, and publication validation", () => {
+  const manifest = buildProductTruthListingManifest({
+    sku: "SV-WM01-TEST",
+    storeIndex: 1,
+    verifiedAt: new Date("2026-07-19T11:30:00.000Z"),
+    packCount: 2,
+    components: [component],
+    images: [{
+      role: "MAIN",
+      url: "https://images.example/main.jpg",
+      depicted_component_keys: ["variant-a"],
+      source_content_observation_ids: ["content-a"],
+      represented_unit_count: 2,
+      rights_basis: "SOURCE_ALLOWED",
+      rights_evidence_ref: "rights:test",
+      reviewed_at: "2026-07-19T11:25:00.000Z",
+    }],
+  });
+  const attributes = mergeWalmartListingContracts("{}", {
+    productTruth: manifest,
+    walmart,
+    prepublication,
+  });
+  const sealed = sealWalmartDistributionApproval({
+    sku: sku(attributes),
+    approvedAt: new Date("2026-07-19T12:00:00.000Z"),
+    approvedBy: "Vladimir",
+    validationRunId: "validation-run-1",
+    marketplacePayloadSha256: "a".repeat(64),
+  });
+
+  for (const provenanceCase of staleMatcherProvenanceCases) {
+    const expectedError = new RegExp(provenanceCase.field);
+    assert.throws(
+      () => buildProductTruthListingManifest({
+        sku: "SV-WM01-TEST",
+        storeIndex: 1,
+        verifiedAt: new Date("2026-07-19T11:30:00.000Z"),
+        packCount: 2,
+        components: [{
+          ...component,
+          [provenanceCase.field]: provenanceCase.stale,
+        }],
+        images: manifest.images,
+      }),
+      expectedError,
+    );
+
+    const staleAttributes = attributes.replace(
+      provenanceCase.current,
+      provenanceCase.stale,
+    );
+    assert.notEqual(staleAttributes, attributes);
+    assert.throws(
+      () => sealWalmartDistributionApproval({
+        sku: sku(staleAttributes),
+        approvedAt: new Date("2026-07-19T12:00:00.000Z"),
+        approvedBy: "Vladimir",
+        validationRunId: "validation-run-1",
+        marketplacePayloadSha256: "a".repeat(64),
+      }),
+      expectedError,
+    );
+
+    const staleSealedAttributes = sealed.attributes.replace(
+      provenanceCase.current,
+      provenanceCase.stale,
+    );
+    assert.notEqual(staleSealedAttributes, sealed.attributes);
+    assert.throws(
+      () => assertValidWalmartDistributionApproval(sku(staleSealedAttributes)),
+      expectedError,
+    );
+  }
 });
 
 test("approval seals every publishable field and detects later drift", () => {

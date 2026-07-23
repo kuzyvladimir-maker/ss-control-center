@@ -68,6 +68,16 @@ function fixture(): {
       ),
       findings: [
         {
+          finding_id: "account-publish-eligibility",
+          disposition: "CLEARED",
+          summary: "Account health, item limits, and publish eligibility were reviewed.",
+          policy_source_ids: [
+            "account-health-compliance",
+            "selling-privileges",
+          ],
+          required_approval_scopes: [],
+        },
+        {
           finding_id: "category-preapproval",
           disposition: "REQUIRES_APPROVAL",
           summary: "The exact seller account has the required ingestible entitlement.",
@@ -89,6 +99,13 @@ function fixture(): {
           required_approval_scopes: [],
         },
         {
+          finding_id: "pricing-competitiveness",
+          disposition: "CLEARED",
+          summary: "Item price and shipping were reviewed against current comparable offers.",
+          policy_source_ids: ["pricing-rules"],
+          required_approval_scopes: [],
+        },
+        {
           finding_id: "product-claims",
           disposition: "CLEARED",
           summary: "All public product claims were reviewed against current policy.",
@@ -96,10 +113,34 @@ function fixture(): {
           required_approval_scopes: [],
         },
         {
+          finding_id: "product-detail-content",
+          disposition: "CLEARED",
+          summary: "Title, description, key features, images, and attributes were reviewed.",
+          policy_source_ids: ["image-guidelines", "product-details-policy"],
+          required_approval_scopes: [],
+        },
+        {
+          finding_id: "product-identifier-and-duplicates",
+          disposition: "CLEARED",
+          summary: "The exact UPC, registry alignment, and duplicate-listing controls were reviewed.",
+          policy_source_ids: [
+            "duplicate-listings-policy",
+            "product-identifier-policy",
+          ],
+          required_approval_scopes: [],
+        },
+        {
           finding_id: "recall-safety",
           disposition: "CLEARED",
           summary: "Recall and product-safety controls were reviewed for the exact item.",
           policy_source_ids: ["recalled-products"],
+          required_approval_scopes: [],
+        },
+        {
+          finding_id: "shipping-fulfillment",
+          disposition: "CLEARED",
+          summary: "Owned inventory, fulfillment center, packaging, and lag controls were reviewed.",
+          policy_source_ids: ["shipping-fulfillment-policy"],
           required_approval_scopes: [],
         },
         {

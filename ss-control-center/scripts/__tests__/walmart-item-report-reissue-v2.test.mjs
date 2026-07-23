@@ -22,7 +22,7 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-test("help and trust-root status expose no live request command", async () => {
+test("help exposes enrolled trust root but no live request command", async () => {
   const help = await runWalmartItemReportReissueV2Cli(["help"]);
   assert.equal(help.network_calls, 0);
   assert.equal(
@@ -32,7 +32,10 @@ test("help and trust-root status expose no live request command", async () => {
   assert.ok(help.unavailable_until_owner_key_enrollment_and_execution_certification
     .includes("execute-create"));
   const status = await runWalmartItemReportReissueV2Cli(["trust-root-status"]);
-  assert.equal(status.trust_root.ready, false);
+  assert.equal(status.trust_root.ready, true);
+  assert.deepEqual(status.trust_root.active_key_ids, [
+    "walmart-owner-control-2026-01",
+  ]);
   assert.equal(status.live_report_create_path_enabled, false);
   assert.equal(status.network_calls, 0);
 });
@@ -58,6 +61,7 @@ test("engine release binds the complete local transitive closure and rejects omi
     "scripts/walmart-item-report-reissue-v2.mjs",
     "src/lib/walmart/item-report-reissue-source-evidence-v2.ts",
     "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
+    "src/lib/walmart/owner-control-trust-root.ts",
     "src/lib/walmart/item-report-published-source.ts",
     "src/lib/walmart/item-report-reissue-permit.ts",
     "src/lib/walmart/catalog-truth-export.ts",

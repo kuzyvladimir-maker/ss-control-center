@@ -4,6 +4,12 @@ import {
   verify as verifySignature,
 } from "node:crypto";
 
+import {
+  validateWalmartOwnerControlTrustedKey,
+  walmartOwnerControlProductionTrustedKeys,
+  type WalmartOwnerControlTrustedKey,
+} from "@/lib/walmart/owner-control-trust-root";
+
 import { stableWalmartJson } from "./walmart-listing-contract";
 
 export const WALMART_OWNER_PERMIT_SCHEMA =
@@ -76,21 +82,7 @@ export interface WalmartOwnerPermitSigningRequest
   permit_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE";
 }
 
-export interface WalmartOwnerPermitTrustedKey {
-  key_id: string;
-  public_key_spki_der_base64: string;
-  public_key_spki_sha256: string;
-  status: "ACTIVE" | "REVOKED";
-  environment: WalmartOwnerPermitEnvironment;
-}
-
-/**
- * Owner public keys are pinned in the audited release. Private keys and signing
- * helpers must never exist in this repository or the Claude operator runtime.
- * Production remains fail-closed until the owner enrolls at least one key in a
- * reviewed release.
- */
-const PINNED_OWNER_KEYS: readonly WalmartOwnerPermitTrustedKey[] = Object.freeze([]);
+export type WalmartOwnerPermitTrustedKey = WalmartOwnerControlTrustedKey;
 
 function sha256Bytes(bytes: Uint8Array | string): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -119,24 +111,6 @@ function validReference(value: unknown): value is string {
     return Boolean(url.protocol && url.protocol !== "javascript:");
   } catch {
     return false;
-  }
-}
-
-function validateTrustedKey(key: WalmartOwnerPermitTrustedKey): void {
-  if (
-    !/^[a-z0-9][a-z0-9._-]{2,127}$/i.test(key.key_id) ||
-    !canonicalBase64(key.public_key_spki_der_base64) ||
-    !isSha256(key.public_key_spki_sha256)
-  ) {
-    throw new Error("Walmart owner permit trust root is malformed");
-  }
-  const der = Buffer.from(key.public_key_spki_der_base64, "base64");
-  if (sha256Bytes(der) !== key.public_key_spki_sha256) {
-    throw new Error("Walmart owner permit public-key fingerprint mismatch");
-  }
-  const publicKey = createPublicKey({ key: der, format: "der", type: "spki" });
-  if (publicKey.asymmetricKeyType !== "ed25519") {
-    throw new Error("Walmart owner permit trust root must be Ed25519");
   }
 }
 
@@ -173,10 +147,11 @@ export function walmartOwnerPermitTrustedKeys(
   env: NodeJS.ProcessEnv = process.env,
 ): readonly WalmartOwnerPermitTrustedKey[] {
   const fixture = testFixtureKey(env);
-  const keys = fixture ? [...PINNED_OWNER_KEYS, fixture] : [...PINNED_OWNER_KEYS];
+  const productionKeys = walmartOwnerControlProductionTrustedKeys();
+  const keys = fixture ? [...productionKeys, fixture] : [...productionKeys];
   const ids = new Set<string>();
   for (const key of keys) {
-    validateTrustedKey(key);
+    validateWalmartOwnerControlTrustedKey(key);
     if (ids.has(key.key_id)) throw new Error("Duplicate Walmart owner permit key_id");
     ids.add(key.key_id);
   }

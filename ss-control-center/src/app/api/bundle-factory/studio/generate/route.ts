@@ -19,6 +19,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { badRequest, readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
+import {
+  studioChannelRoute,
+  WALMART_CANONICAL_OPERATOR_MESSAGE,
+} from "@/lib/bundle-factory/studio-channel-routing";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +46,9 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   // are wired. eBay/TikTok land later.
   if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
     return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
+  }
+  if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED") {
+    return badRequest(WALMART_CANONICAL_OPERATOR_MESSAGE);
   }
 
   const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";

@@ -1,11 +1,17 @@
 import { createHash } from "node:crypto";
 
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "@/lib/sourcing/canonical-product-match-provenance";
+
 export const PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA =
-  "product-truth-listing-manifest/1.0.0" as const;
+  "product-truth-listing-manifest/1.1.0" as const;
 export const WALMART_PUBLIC_CONTRACT_SCHEMA =
   "walmart-mp-item-public/1.0.0" as const;
 export const WALMART_PREPUBLICATION_EVIDENCE_SCHEMA =
-  "walmart-prepublication-evidence/1.0.0" as const;
+  "walmart-prepublication-evidence/1.2.0" as const;
 export const MARKETPLACE_DISTRIBUTION_APPROVAL_SCHEMA =
   "marketplace-distribution-approval/1.0.0" as const;
 
@@ -41,6 +47,8 @@ export interface ProductTruthRecipeComponentEvidence {
   content_source_url: string;
   content_captured_at: string;
   matcher_version: string;
+  matcher_implementation_sha256: string;
+  matcher_release_sha256: string;
   facts: {
     ingredients: string | null;
     allergens: unknown;
@@ -78,6 +86,33 @@ export interface ProductTruthListingManifest {
   recipe_hash: string;
   components: ProductTruthRecipeComponentEvidence[];
   images: ProductTruthListingImageEvidence[];
+}
+
+export function assertCurrentProductTruthMatcherProvenance(
+  components: ReadonlyArray<ProductTruthRecipeComponentEvidence>,
+): void {
+  if (!Array.isArray(components) || components.length === 0) {
+    throw new Error("Product Truth matcher provenance requires recipe components");
+  }
+  for (const [index, component] of components.entries()) {
+    const mismatches = [
+      component.matcher_version === CANONICAL_PRODUCT_MATCHER_VERSION
+        ? null
+        : "matcher_version",
+      component.matcher_implementation_sha256 === CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256
+        ? null
+        : "matcher_implementation_sha256",
+      component.matcher_release_sha256 === CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+        ? null
+        : "matcher_release_sha256",
+    ].filter((field): field is string => field !== null);
+    if (mismatches.length > 0) {
+      const componentKey = component.component_key?.trim() || `component[${index}]`;
+      throw new Error(
+        `${componentKey}: Product Truth matcher provenance is not current (${mismatches.join(", ")})`,
+      );
+    }
+  }
 }
 
 export interface WalmartPublicListingContract {
@@ -118,6 +153,25 @@ export interface WalmartPrepublicationEvidence {
     walmart_item_id: string | null;
     evidence_ref: string;
   };
+  seller_account_health: {
+    status: "HEALTHY_AND_ACCEPTING_NEW_ITEMS";
+    store_index: number;
+    seller_account_fingerprint_sha256: string;
+    verified_at: string;
+    evidence_ref: string;
+  };
+  fulfillment_compliance: {
+    method: "SELLER_FULFILLED";
+    inventory_owned_by_seller: true;
+    direct_retailer_fulfillment: false;
+    competitor_branded_packaging: false;
+    third_party_promotional_materials: false;
+    fulfillment_center_id: string;
+    fulfillment_lag_time: number;
+    lag_exemption_status: "NOT_REQUIRED" | "APPROVED";
+    verified_at: string;
+    evidence_ref: string;
+  };
   category_approvals: Array<{
     scope: string;
     status: "APPROVED" | "NOT_REQUIRED";
@@ -138,6 +192,21 @@ export interface WalmartPrepublicationEvidence {
   brand_rights: {
     brand: string;
     basis: "BRAND_OWNER" | "AUTHORIZED_RESELLER" | "LEGITIMATE_RESALE";
+    verified_at: string;
+    evidence_ref: string;
+  };
+  product_identifier: {
+    identifier_type: "UPC";
+    value: string;
+    checksum_valid: true;
+    pool_acquired_from: string;
+    pool_recorded_owner: string;
+    registry_status: "VERIFIED";
+    registry_registrant_name: string;
+    aligned_brand: string;
+    brand_alignment_status: "VERIFIED";
+    seller_account_fingerprint_sha256: string;
+    seller_assignment_authority_status: "VERIFIED";
     verified_at: string;
     evidence_ref: string;
   };
@@ -292,6 +361,7 @@ export function buildProductTruthListingManifest(input: {
     throw new Error("packCount must be a positive integer");
   }
   if (input.components.length === 0) throw new Error("recipe components are required");
+  assertCurrentProductTruthMatcherProvenance(input.components);
   const componentKeys = new Set<string>();
   const observationIds = new Set<string>();
   let total = 0;
@@ -403,6 +473,7 @@ export function sealWalmartDistributionApproval(input: {
   if (truth?.schema_version !== PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA) {
     throw new Error("Product Truth manifest is missing or unsupported");
   }
+  assertCurrentProductTruthMatcherProvenance(truth.components);
   if (prepublication?.schema_version !== WALMART_PREPUBLICATION_EVIDENCE_SCHEMA) {
     throw new Error("Walmart prepublication evidence is missing or unsupported");
   }
@@ -439,6 +510,10 @@ export function assertValidWalmartDistributionApproval(
   if (approval?.schema_version !== MARKETPLACE_DISTRIBUTION_APPROVAL_SCHEMA) {
     throw new Error("Walmart distribution approval is missing or unsupported");
   }
+  if (truth?.schema_version !== PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA) {
+    throw new Error("Product Truth manifest is missing or unsupported");
+  }
+  assertCurrentProductTruthMatcherProvenance(truth.components);
   if (approval.channel_sku_id !== sku.id) {
     throw new Error("Walmart distribution approval targets another ChannelSKU");
   }
@@ -453,7 +528,7 @@ export function assertValidWalmartDistributionApproval(
       "Walmart distribution approval does not bind the current validation run",
     );
   }
-  if (!truth || approval.product_truth_recipe_hash !== truth.recipe_hash) {
+  if (approval.product_truth_recipe_hash !== truth.recipe_hash) {
     throw new Error("Walmart distribution approval Product Truth hash mismatch");
   }
   if (

@@ -15,6 +15,10 @@ import {
   createWalmartNewSkuFrozenRelease,
   WalmartNewSkuSourceReleaseError,
 } from "@/lib/bundle-factory/walmart-new-sku-source-release";
+import {
+  WALMART_NEW_SKU_DOCTOR_DIAGNOSTIC_SCHEMA,
+  walmartNewSkuBlockedDoctorDiagnosticPath,
+} from "../../scripts/walmart-new-sku-engine";
 
 const APP_ROOT = process.cwd();
 const CLI = path.join(APP_ROOT, "scripts", "walmart-new-sku-engine.ts");
@@ -29,6 +33,23 @@ interface FrozenRuntime {
 }
 
 let frozenRuntime: FrozenRuntime;
+
+test("blocked doctor diagnostics use a distinct non-receipt artifact path", () => {
+  assert.equal(
+    WALMART_NEW_SKU_DOCTOR_DIAGNOSTIC_SCHEMA,
+    "walmart-new-sku-doctor-diagnostic/1.0.0",
+  );
+  assert.equal(
+    walmartNewSkuBlockedDoctorDiagnosticPath(
+      "/tmp/operator artifacts/doctor receipt.json",
+    ),
+    "/tmp/operator artifacts/doctor receipt.blocked.json",
+  );
+  assert.equal(
+    walmartNewSkuBlockedDoctorDiagnosticPath("/tmp/doctor"),
+    "/tmp/doctor.blocked.json",
+  );
+});
 
 async function makeDirectoriesWritable(root: string): Promise<void> {
   const stat = await lstat(root).catch(() => null);
@@ -85,7 +106,6 @@ async function runDoctor(
     injectExpectedRelease?: boolean;
     injectAsOf?: boolean;
     injectReleaseManifest?: boolean;
-    injectCatalogSource?: boolean;
   } = {},
 ): Promise<{ code: number; stdout: string; stderr: string }> {
   const commandParts = Array.isArray(commandInput) ? commandInput : [commandInput];
@@ -119,18 +139,6 @@ async function runDoctor(
     commandArgs.push(
       "--release-manifest", frozenRuntime.manifestPath,
       "--release-manifest-sha", frozenRuntime.manifestShaPath,
-    );
-  }
-  if (
-    commandParts[0] === "doctor" &&
-    options.injectCatalogSource !== false &&
-    !commandParts.includes("--item-report-catalog-source")
-  ) {
-    commandArgs.push(
-      "--item-report-catalog-source",
-      path.join(frozenRuntime.releaseRoot, "test-item-report-catalog-source.json"),
-      "--expected-item-report-catalog-source-sha256",
-      "0".repeat(64),
     );
   }
   return new Promise((resolve, reject) => {
@@ -253,14 +261,12 @@ test("doctor requires and checks the frozen release SHA before DB or Walmart", a
   assert.equal(missingManifest.code, 1);
   assert.match(missingManifest.stderr, /requires absolute --release-manifest/);
 
-  const missingCatalogSource = await runDoctor({}, ["doctor"], {
-    injectCatalogSource: false,
-  });
-  assert.equal(missingCatalogSource.code, 1);
-  assert.match(
-    missingCatalogSource.stderr,
-    /requires normalized absolute --item-report-catalog-source/,
-  );
+  const forbiddenCatalogSource = await runDoctor({}, [
+    "doctor",
+    "--item-report-catalog-source", "/tmp/catalog-source.json",
+  ]);
+  assert.equal(forbiddenCatalogSource.code, 1);
+  assert.match(forbiddenCatalogSource.stderr, /does not accept --item-report-catalog-source/);
 
   const relativeManifest = await runDoctor({}, [
     "doctor",

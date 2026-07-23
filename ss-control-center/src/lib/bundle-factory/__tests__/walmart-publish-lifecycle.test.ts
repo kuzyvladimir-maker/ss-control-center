@@ -187,7 +187,7 @@ test("Walmart rejection disposition quarantines only identifier conflicts", () =
   assert.equal(walmartDispositionQuarantinesUpc(generic), false);
 });
 
-test("owner-managed UPC assignment does not block on gs1_validated=false alone", () => {
+test("local UPC assignment ignores the legacy CSV flag; certification supplies registry proof", () => {
   assert.deepEqual(
     evaluateManagedUpcAssignment({
       skuId: "sku-1",

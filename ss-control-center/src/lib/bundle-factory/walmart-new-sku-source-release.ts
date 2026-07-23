@@ -19,11 +19,11 @@ import {
 } from "node:path";
 
 export const WALMART_NEW_SKU_SOURCE_RELEASE_VERSION =
-  "walmart-new-sku-source-release/3.2.0" as const;
+  "walmart-new-sku-source-release/3.3.0" as const;
 export const WALMART_NEW_SKU_FROZEN_RELEASE_VERSION =
-  "walmart-new-sku-frozen-source-release/2.1.0" as const;
+  "walmart-new-sku-frozen-source-release/2.2.0" as const;
 export const WALMART_NEW_SKU_RUNTIME_DEPENDENCY_POLICY_VERSION =
-  "walmart-new-sku-runtime-dependency-closure/1.1.0" as const;
+  "walmart-new-sku-runtime-dependency-closure/1.3.0" as const;
 
 export const WALMART_NEW_SKU_RELEASE_TREES = [
   "src",
@@ -39,6 +39,7 @@ export const WALMART_NEW_SKU_RELEASE_FILES = [
   "_multi.ts",
   "_qavalidate.ts",
   "_trial100.ts",
+  "prisma.config.ts",
   "prisma/schema.prisma",
   "package.json",
   "package-lock.json",
@@ -61,8 +62,12 @@ export const WALMART_NEW_SKU_RUNTIME_DEPENDENCY_SEEDS = Object.freeze([
   "@prisma/client",
   "ajv",
   "date-holidays",
+  "dotenv",
   // Required by the frozen Product Truth certification suite's route guard.
   "next",
+  // Required by the frozen end-to-end certification harness to build its
+  // isolated current-schema database without relying on an omitted .bin shim.
+  "prisma",
   "sharp",
   "tsx",
 ] as const);

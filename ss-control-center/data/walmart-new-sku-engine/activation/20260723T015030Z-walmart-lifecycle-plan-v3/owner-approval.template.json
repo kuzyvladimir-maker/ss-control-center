@@ -1,0 +1,25 @@
+{
+  "approvalId": "REPLACE_WITH_OWNER_APPROVAL_ID",
+  "approvedAt": "REPLACE_WITH_ISO_UTC_TIMESTAMP",
+  "approvedBy": "REPLACE_WITH_OWNER_IDENTITY",
+  "claims": {
+    "callsProviderApis": false,
+    "callsWalmartApis": false,
+    "delistsListings": false,
+    "performsBackfill": false,
+    "publishesListings": false,
+    "purchasesInventory": false,
+    "repricesListings": false,
+    "schemaOnly": true
+  },
+  "contractVersion": "walmart-new-sku-schema-activation-approval/3",
+  "decision": "REPLACE_WITH_APPROVE",
+  "environment": "production",
+  "expiresAt": "2026-07-24T01:45:00.000Z",
+  "instructions": "Copy this template to a separate file; do not edit files in the sealed plan directory.",
+  "migrationSha256": "d46c10fbf1e1c30071cf162a3c5f0cebb31954b76e844a8d4d4df610d065641e",
+  "planSha256": "dce9ece5f3613cf765ae21040fdaf471f578d88b4dc1b4b748d0d5e3f7036ac4",
+  "preflightSha256": "4f5d1a1a87fa99ac41b999b896df24996d5917c16c7efeee162200c2bbc0ec03",
+  "schemaSha256": "8157c318016ade9f524394a42ca50e294a7776cd2d27bc13dfa6009a356d3a9c",
+  "targetFingerprint": "72b2bbf0ce92ed2a2d08ca63827bba750824e2b5d6e51cbf1d013ac7f107b12c"
+}

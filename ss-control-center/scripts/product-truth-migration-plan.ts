@@ -38,6 +38,8 @@ const APPLY_CONTRACT_VERSION = "product-truth-migration-apply/2" as const;
 const REPORT_CONTRACT_VERSION = "product-truth-migration-report/2" as const;
 const MAX_APPROVAL_TTL_MS = 30 * 60 * 1_000;
 const ZERO_SHA256 = "0".repeat(64);
+export const PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY =
+  "SELECT ignore_check_constraints FROM pragma_ignore_check_constraints" as const;
 
 type RequiredSchema = Record<string, readonly string[]>;
 
@@ -223,6 +225,8 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
         "canonicalVariantId",
         "decisionStatus",
         "matcherVersion",
+        "matcherImplementationSha256",
+        "matcherReleaseSha256",
         "evidenceHash",
         "evidenceJson",
         "decidedAt",
@@ -233,6 +237,8 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
       DonorProduct: [
         "identityStatus",
         "identityMatcherVersion",
+        "identityMatcherImplementationSha256",
+        "identityMatcherReleaseSha256",
         "identityEvidenceJson",
         "identityConfirmedAt",
       ],
@@ -291,6 +297,8 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
         "priceObservationId",
         "matchTier",
         "matcherVersion",
+        "matcherImplementationSha256",
+        "matcherReleaseSha256",
         "pricePolicyVersion",
         "evidenceHash",
         "evidenceJson",
@@ -302,6 +310,8 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
         "evidenceJson",
         "evidenceOutcome",
         "matcherVersion",
+        "matcherImplementationSha256",
+        "matcherReleaseSha256",
         "pricePolicyVersion",
         "runId",
         "approvalId",
@@ -2595,7 +2605,12 @@ async function assertFullSchemaPostconditions(
   if (Number(foreignKeysEnabled.rows[0]?.foreign_keys ?? 0) !== 1) {
     problems.push("foreign-key-enforcement-disabled");
   }
-  const ignoredCheckConstraints = await executor.execute("PRAGMA ignore_check_constraints");
+  // Turso/libSQL rejects direct `PRAGMA ignore_check_constraints` inside a write
+  // transaction even when it is only being read. The table-valued pragma is the
+  // equivalent read-only query and is accepted both by SQLite and remote libSQL.
+  const ignoredCheckConstraints = await executor.execute(
+    PRODUCT_TRUTH_CHECK_CONSTRAINT_ENFORCEMENT_QUERY,
+  );
   if (Number(ignoredCheckConstraints.rows[0]?.ignore_check_constraints ?? 0) !== 0) {
     problems.push("check-constraint-enforcement-disabled");
   }

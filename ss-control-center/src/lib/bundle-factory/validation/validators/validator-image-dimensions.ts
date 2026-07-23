@@ -1,7 +1,9 @@
 /**
  * Phase 2.4 Stage 6 — Validator 6: Image dimensions.
  *
- * Amazon main image: ≥ 2000×2000 px for zoom. Walmart: ≥ 1500×1500 px.
+ * Amazon main image: ≥ 2000×2000 px for zoom. Walmart pilot quality
+ * floor: ≥ 2200×2200 px (Walmart's current requested pixel dimensions;
+ * 1500×1500 is only the documented minimum for zoom).
  * We avoid the `sharp` dependency (not installed) and parse the PNG/JPEG
  * header bytes directly — works for both formats gpt-image-1 returns
  * and any natural retailer JPEG. Falls back to NEEDS_REVIEW (warning,
@@ -22,7 +24,7 @@ const MIN_DIMS_BY_CHANNEL: Record<string, number> = {
   AMAZON_AMZCOM: 2000,
   AMAZON_SIRIUS: 2000,
   AMAZON_RETAILER: 2000,
-  WALMART: 1500,
+  WALMART: 2200,
   EBAY: 1000,
   TIKTOK_1: 1080,
   TIKTOK_2: 1080,
