@@ -1,0 +1,87 @@
+# Uncrustables preview→publish batch 1+2 (2026-07-23)
+
+Owner order 2026-07-22/23: iterate preview listings to perfection, then publish
+to Amazon store1 (Salutem Solutions, `A3A7A0RDFUSGBS`), then fold the proven
+pipeline into Bundle Factory.
+
+## What shipped
+
+9 new mixed-flavor Uncrustables listings created end-to-end through the REAL
+Bundle Factory path and PUT to Amazon (all ACCEPTED):
+
+| SKU | ASIN | Recipe | Price |
+|-----|------|--------|-------|
+| ZV-AS8R-ZQVP | B0HB3VQPRK | 24ct PB + Strawberry + Grape (2×4 each) | $76.99 |
+| MT-ASQN-YY3H | B0HB3VNF2Q | 24ct Grape 3×4 + Raspberry 3×4 | $76.99 |
+| XK-ASBS-8T49 | B0HB3VKPH1 | 28ct Honey 10 + Chocolate 10 + Strawberry 2×4 | $82.99 |
+| DT-AS2G-Y9CG | B0HB46JPTG | 28ct Bright-Eyed Berry 8 + Up & Apple 8 + WW Grape 3×4 | $82.99 |
+| TC-AS0C-J5A3 | (review) | 30ct Honey 10 + Hazelnut 3×4 + Grape 2×4 | $85.99 |
+| GC-ASMX-MJXZ | B0HB3TFSTJ | 30ct Chocolate 10 + Hazelnut 2×4 + Raspberry 3×4 | $85.99 |
+| MT-ASEZ-ZCBE | B0HB3VQBCG | 48ct Beamin' 8 + Burstin' 8 + Strawberry 4×4 + Grape 4×4 | $135.99 |
+| UR-ASI5-ZFR5 | B0HB3WXWZQ | 54ct Honey 10 + Berry Burst 4×4 + Blackberry Boom 4×4 + WW Strawberry 3×4 | $144.99 |
+| PP-AS42-RJ34 | B0HB5JVVCB | 60ct Honey 3×10 + Chocolate 3×10 | $153.99 |
+
+7/9 DISCOVERABLE+BUYABLE within minutes; PP + TC in Amazon's standard new-listing
+review (code 100521), monitor until it clears. #10 (XL 90ct, $252.99, recipe
+Honey 3×10 + Chocolate 2×10 + Burstin' 3×8 + Beamin' 2×8) waits for the image
+worker (subscription image_gen limits) — same conveyor, nothing else pending.
+
+## The conveyor (scripts, in order)
+
+1. `scripts/_publish_batch12_stage1.ts` — GenerationJob → BundleDraft
+   (draft_components with OFFICIAL smuckersuncrustables.com ingredients +
+   allergen declarations; PB flavors = Contains Peanuts+Wheat / may contain
+   Hazelnut+Milk; Hazelnut spread flavor = Contains Hazelnut+Milk+Wheat / may
+   contain Peanuts) → GeneratedContent → real `runComplianceGate` (8 rules,
+   vision incl.) → `promoteDraftToChannelSkus` (SKU mint, UPCPool claim,
+   canonical band) → operator ship-specs (live cohort convention: S 12×12×10
+   160oz / M 13×13×15 256oz / XL 24×13×16 544oz) → operator-declared inventory
+   (buy-to-order: Veeqo does not track these retail components, so the
+   Veeqo-derived inventory validator is inapplicable — same posture as the 161).
+2. `scripts/build-uncrustables-main-owner-approvals-v3.ts` — production-main
+   proofs: exact R2 MAIN bytes sha256, 2048px check, generation manifests,
+   carton-by-carton visual observation vs the MERGED registry, sealed owner
+   approval. Output `…/data/uncrustables-main-owner-approvals-v3.json` (+sha
+   sidecar), self-verified through `evaluateUncrustablesMainAuthenticity`.
+3. `uncrustables-main-production-preflight.ts` now binds to the MERGED registry
+   (v1 + owner's 11-flavor extension) + the v3 manifest — extension flavors are
+   publishable; v1/v2 artifacts untouched.
+4. `scripts/_publish_batch12_submit.ts` — per-SKU: fresh inventory stamp →
+   `preflightProductionUncrustablesMain` (fetches exact R2 bytes → sealed
+   permit) → `submitToAmazon` (full blast-door chain + VALIDATION_PREVIEW →
+   real PUT).
+5. `scripts/_verify_batch12_live.ts` — post-submit getListing check
+   (ASIN/status/issues/offer), persists ASINs.
+6. `scripts/_gen_channelmax_batch12.ts` — ChannelMAX File Uploader sheet
+   (min = ROI floor, max = item price, model 59021 Manual min/max) per the
+   launch SOP.
+
+## Amazon requirement changes discovered (GROCERY, vs the 161-era)
+
+- `list_price` is now REQUIRED (90220). Set EQUAL to our_price — an identical
+  reference price cannot render a fake strikethrough, so the coupon-only launch
+  policy survives. (`amazon-publish.ts`)
+- `melting_temperature` REQUIRED for heat-sensitive listings: 32°F, matching
+  the live cohort (verified on GU-ASQ1-S7M6). (`amazon-publish.ts`)
+- `business_price` and `recommended_browse_nodes` now come back as ignored
+  WARNINGs on GROCERY.
+
+## Proven image prompt contract (the reason previews pass carton-checks)
+
+REFERENCE MAPPING (ref N = exact carton, exact badge) + ROW LAYOUT CONTRACT
+(one flavor per row, spelled-out count, never fill empty width with cartons) +
+UNIFORM CARTON SIZE + EXACT FRONT TEXT + SCENE/BRANDING anchor (green lotus,
+2+2 gel packs). Any weakening reintroduced padded rows, double-width cartons,
+invented logos or duplicated words — all caught by the carton-by-carton crop
+protocol before the owner ever saw them.
+
+## Next
+
+- Monitor 100521 review on PP/TC; add TC to the ChannelMAX sheet when its ASIN
+  lands; owner uploads `channelmax-batch12-9.txt` (Desktop copy) via File
+  Uploader.
+- Launch coupons per `docs/wiki/pricing-launch-sop.md` (owner action in Seller
+  Central).
+- Render + verify + publish #10 XL when the image worker recovers.
+- Fold the conveyor into the Bundle Factory studio module (blocked on Codex's
+  uncommitted `studio-engine.ts` WIP — lane lease).
