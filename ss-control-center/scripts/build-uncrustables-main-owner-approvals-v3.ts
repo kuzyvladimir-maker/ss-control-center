@@ -48,8 +48,8 @@ const root = path.resolve(scriptDir, "..");
 const SCRATCH = "/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/";
 const AUDIT_DIR = "data/audits/uncrustables-preview-publish-20260722";
 const OUTPUT = "src/lib/bundle-factory/audit/data/uncrustables-main-owner-approvals-v3.json";
-const CAPTURED_AT = "2026-07-22T23:30:00.000Z";
-const OBSERVED_AT = "2026-07-22T23:00:00.000Z";
+const CAPTURED_AT = "2026-07-23T07:30:00.000Z";
+const OBSERVED_AT = "2026-07-23T07:00:00.000Z";
 
 // Preview source files, later overrides earlier per slug (same merge the
 // gallery and stage-1 use).
@@ -263,7 +263,7 @@ async function main() {
   const body: any = {
     schema_version: "uncrustables-main-owner-approvals/v2",
     immutable: true,
-    manifest_id: "uncrustables-owner-approved-preview-publish-2026-07-22-v3-production",
+    manifest_id: "uncrustables-owner-approved-preview-publish-2026-07-23-v3r2-production-10",
     captured_at: CAPTURED_AT,
     approved_by: "owner",
     registry_sha256: registry.sha256,
