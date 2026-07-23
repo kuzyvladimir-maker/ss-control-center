@@ -66,7 +66,7 @@ test("builds exact safe 161-row A/B projection with preserved 81/80 assignments"
     built.manifest.rows.filter((row) => row.arm === "B").length,
     80,
   );
-  const heldSkus = new Set(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
+  const heldSkus = new Set<string>(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
   assert.equal(built.manifest.rows.some((row) => heldSkus.has(row.sku)), false);
   assert.deepEqual(
     built.manifest.identity_holds.map((row) => row.sku),
@@ -170,7 +170,7 @@ test("verifier rejects authorization, hold, window, arm, or CSV mutation", async
   );
 
   const changedWindow = structuredClone(built.manifest);
-  changedWindow.window.end_date = "2026-08-20" as "2026-08-19";
+  (changedWindow.window as { end_date: string }).end_date = "2026-08-20";
   assert.throws(
     () => verifySafeLaunchPromoArtifact(changedWindow, files),
     /strategy, window, holds, or tier policy drifted/,

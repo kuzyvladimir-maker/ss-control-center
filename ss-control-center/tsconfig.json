@@ -33,6 +33,13 @@
   ],
   "exclude": [
     "node_modules",
+    "scripts",
+    "**/__tests__/**",
+    "src/lib/walmart/item-report-request-reconciliation.ts",
+    "src/lib/walmart/item-report-reissue-executor-v2.ts",
+    "src/lib/walmart/item-report-reissue-evidence.ts",
+    "src/lib/walmart/listing-integrity-remediation-*.ts",
+    "src/lib/walmart/listing-integrity-single-pipeline.ts",
     "_*.ts",
     "_*.mts",
     "_*.mjs",

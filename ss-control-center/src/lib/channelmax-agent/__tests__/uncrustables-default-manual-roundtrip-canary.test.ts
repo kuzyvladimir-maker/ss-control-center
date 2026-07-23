@@ -108,7 +108,7 @@ test("treats 35218 as documentation-only and enumerates exact evidence for a rea
 
 test("rejects any pinned-source byte drift", async () => {
   const input = await fixture();
-  input.sources.bd_postwrite = {
+  (input.sources as { bd_postwrite: (typeof input.sources)["bd_postwrite"] }).bd_postwrite = {
     ...input.sources.bd_postwrite,
     bytes: Buffer.concat([input.sources.bd_postwrite.bytes, Buffer.from(" ")]),
   };

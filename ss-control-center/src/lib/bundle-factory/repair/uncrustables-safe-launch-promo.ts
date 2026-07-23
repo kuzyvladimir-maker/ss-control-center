@@ -762,7 +762,7 @@ export function verifySafeLaunchPromoArtifact(
   ) {
     throw new Error("Safe launch promo scope is not exact 161 / 81 / 80.");
   }
-  const heldSkus = new Set(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
+  const heldSkus = new Set<string>(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
   const seenSkus = new Set<string>();
   const seenAsins = new Set<string>();
   let couponRows = 0;
@@ -956,7 +956,7 @@ export function buildSafeLaunchPromoArtifact(
     safeBaseOffer,
   );
 
-  const heldSkus = new Set(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
+  const heldSkus = new Set<string>(SAFE_LAUNCH_PROMO_IDENTITY_HOLDS.map((row) => row.sku));
   const manifestBySku = new Map(launchManifest.rows.map((row) => [row.sku, row]));
   const rows: SafeLaunchPromoRow[] = assignments
     .filter((row) => !heldSkus.has(row.sku))

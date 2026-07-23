@@ -311,7 +311,7 @@ export function buildWalmartListingCatalogTriagePlan(input: {
   const calls = [];
   for (let offset = 0; offset < assets.length; offset += WALMART_LISTING_CATALOG_TRIAGE_MAX_IMAGES_PER_CALL) {
     const callAssets = assets.slice(offset, offset + WALMART_LISTING_CATALOG_TRIAGE_MAX_IMAGES_PER_CALL);
-    const callIndex = calls.length;
+    const callIndex: number = calls.length;
     const imageIds = callAssets.map((asset) => asset.image_id);
     const shardId = `catalog-triage-${String(callIndex).padStart(2, "0")}-${walmartListingObservationSha256(imageIds).slice(0, 16)}`;
     const prompt = buildBlindObservationPrompt(imageIds);

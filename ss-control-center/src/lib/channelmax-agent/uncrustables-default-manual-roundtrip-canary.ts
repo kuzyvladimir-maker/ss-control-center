@@ -282,7 +282,9 @@ function json(bytes: Buffer, label: string): JsonRecord {
 function sourceBindings(
   input: BuildChannelMaxBdDefaultManualCanaryInput["sources"],
 ): ChannelMaxBdDefaultManualCanaryManifest["sources"] {
-  const result = {} as ChannelMaxBdDefaultManualCanaryManifest["sources"];
+  const result = {} as {
+    -readonly [K in keyof ChannelMaxBdDefaultManualCanaryManifest["sources"]]: ChannelMaxBdDefaultManualCanaryManifest["sources"][K];
+  };
   for (const key of Object.keys(
     CHANNELMAX_BD_DEFAULT_MANUAL_PINNED_SOURCES,
   ) as Array<keyof typeof CHANNELMAX_BD_DEFAULT_MANUAL_PINNED_SOURCES>) {

@@ -10,9 +10,10 @@ export const WALMART_LISTING_INTEGRITY_CATALOG_ORCHESTRATOR_VERSION =
   "walmart-listing-integrity-catalog-orchestrator/v1" as const;
 export const WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_CALL = 6;
 export const WALMART_LISTING_INTEGRITY_MAX_CALLS_PER_PARTITION = 6;
-export const WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_PARTITION =
+export const WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_PARTITION = (
   WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_CALL
-  * WALMART_LISTING_INTEGRITY_MAX_CALLS_PER_PARTITION;
+  * WALMART_LISTING_INTEGRITY_MAX_CALLS_PER_PARTITION
+) as 36;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -442,7 +443,7 @@ export function buildWalmartListingIntegrityCatalogCensus(input: {
       reusable_evidence: {
         mirror_main_image_url: httpsUrl(raw.mainImageUrl),
         ...reusable,
-        buyer_surface_verified: false,
+        buyer_surface_verified: false as const,
       },
       deterministic_findings: [...new Set(deterministicFindings)].sort(codeUnitCompare),
       scan_disposition: disposition,

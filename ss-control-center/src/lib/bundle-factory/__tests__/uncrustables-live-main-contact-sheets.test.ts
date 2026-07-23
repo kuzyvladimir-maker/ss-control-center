@@ -10,7 +10,6 @@ import {
   sealManifestBody,
   selectSealedLiveMainTargets,
   verifyManifestSeal,
-// @ts-expect-error -- explicit .ts lets Node's native test runner load the source.
 } from "../audit/uncrustables-live-main-contact-sheets.ts";
 
 const LEDGER_SHA = "a".repeat(64);
