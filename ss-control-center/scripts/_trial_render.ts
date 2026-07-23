@@ -272,7 +272,7 @@ async function main() {
       console.log(`✗ ${l.slug}: ${l.main_error}`);
     }
   }
-  const wave = process.env.WAVE ?? "custom";
+  const wave = process.env.RUN ?? process.env.WAVE ?? "custom";
   // DRY runs must never write the wave JSON: a file full of null image URLs
   // would poison the later-wins merge in stage-1 and the proofs minter.
   if (!DRY) writeFileSync(`/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/trial-wave${wave}.json`, JSON.stringify(out, null, 1));

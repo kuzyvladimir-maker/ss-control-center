@@ -55,7 +55,8 @@ const OBSERVED_AT = "2026-07-23T19:30:00.000Z";
 // Trial render outputs, later overrides earlier per slug (same merge stage-1
 // uses via FILES=). Missing files are skipped.
 const PREVIEW_FILES = [
-  "trial-wave1.json", "trial-wavecustom.json", "trial-wave2.json", "trial-wave3.json",
+  "trial-wave1.json", "trial-wavecustom.json", "trial-waverr2.json",
+  "trial-wave2.json", "trial-waverr3.json", "trial-wave3.json", "trial-waverr4.json",
 ];
 const SKU_MAP = "publish-trial-skus.json";
 

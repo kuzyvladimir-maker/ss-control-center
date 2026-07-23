@@ -33,7 +33,7 @@ async function main() {
   const ad: any = await import("../src/lib/bundle-factory/allergen-declaration");
   const allergensFromStored = ad.amazonAllergensFromStoredDeclarations ?? ad.default?.amazonAllergensFromStoredDeclarations;
 
-  const rows: any[] = JSON.parse(readFileSync(SCRATCH + "publish-batch12-skus.json", "utf8"))
+  const rows: any[] = JSON.parse(readFileSync(SCRATCH + (process.env.MAP ?? "publish-batch12-skus.json"), "utf8"))
     .filter((r: any) => (SKUS.length ? SKUS.includes(r.sku) : true))
     .slice(0, Number(process.env.LIMIT ?? 99));
 

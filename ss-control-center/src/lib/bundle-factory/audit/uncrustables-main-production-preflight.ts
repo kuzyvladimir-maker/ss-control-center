@@ -13,6 +13,7 @@
 // extension) because the new listings use extension-only flavors. The v1/v2
 // artifacts stay untouched on disk as history.
 import approvalsJson from "./data/uncrustables-main-owner-approvals-v3.json";
+import trialApprovalsJson from "./data/uncrustables-main-owner-approvals-trial1.json";
 
 import { MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
 
@@ -141,6 +142,31 @@ export const PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY =
   MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY as unknown as UncrustablesAuthenticityRegistry;
 export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS =
   approvalsJson as unknown as UncrustablesMainOwnerApprovalManifest;
+// Sealed manifests are additive: batch 1+2 (v3) stays immutable; each later
+// batch ships its own sealed manifest. Every manifest is verified in full and
+// proof_id/subject uniqueness is enforced ACROSS manifests.
+export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS = [
+  approvalsJson,
+  trialApprovalsJson,
+] as unknown as UncrustablesMainOwnerApprovalManifest[];
+
+function allProductionOwnerApprovedProofs(): UncrustablesOwnerApprovedMainProof[] {
+  return PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS.flatMap(
+    (manifest) => manifest.entries,
+  );
+}
+
+function manifestContainingProof(
+  proofId: string,
+): UncrustablesMainOwnerApprovalManifest {
+  const manifest = PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS.find(
+    (candidate) => candidate.entries.some((proof) => proof.proof_id === proofId),
+  );
+  if (!manifest) {
+    throw new Error(`No sealed owner-approval manifest contains proof ${proofId}.`);
+  }
+  return manifest;
+}
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
 const MAX_MAIN_IMAGE_BYTES = 25 * 1024 * 1024;
@@ -167,8 +193,12 @@ function finding(
 /** Throws when either production artifact, any proof, or any human seal drifts. */
 export function verifyProductionUncrustablesAuthenticityArtifacts(): void {
   const registry = PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY;
-  const manifest = PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS;
   verifyUncrustablesAuthenticityRegistry(registry);
+  // Uniqueness sets span ALL manifests: a proof_id or review subject may
+  // never be approved twice, even across separately sealed batches.
+  const proofIds = new Set<string>();
+  const approvedSubjects = new Set<string>();
+  for (const manifest of PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS) {
   if (
     manifest.schema_version !== UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA ||
     manifest.immutable !== true ||
@@ -189,8 +219,6 @@ export function verifyProductionUncrustablesAuthenticityArtifacts(): void {
     throw new Error("Owner-approval manifest is bound to another registry.");
   }
 
-  const proofIds = new Set<string>();
-  const approvedSubjects = new Set<string>();
   for (const proof of manifest.entries) {
     if (
       !nonEmpty(proof.proof_id) ||
@@ -264,6 +292,7 @@ export function verifyProductionUncrustablesAuthenticityArtifacts(): void {
           .join(", ")}.`,
       );
     }
+  }
   }
 }
 
@@ -380,8 +409,9 @@ function createPermit(args: {
     runtime_recipe_sha256: args.runtimeRecipeSha256,
     proof_id: args.proof.proof_id,
     registry_sha256: PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY.sha256,
-    owner_approval_manifest_sha256:
-      PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.sha256,
+    owner_approval_manifest_sha256: manifestContainingProof(
+      args.proof.proof_id,
+    ).sha256,
     approval_sha256: args.proof.human_approval.sha256,
     approved_subject_sha256: args.authenticity.subject_sha256,
     approved_recipe_sha256: digestObject(args.proof.recipe),
@@ -411,10 +441,9 @@ export function preflightDeclaredUncrustablesMainHash(
       ],
     };
   }
-  const allProofsForSku =
-    PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.entries.filter(
-      (proof) => proof.sku === identity.sku,
-    );
+  const allProofsForSku = allProductionOwnerApprovedProofs().filter(
+    (proof) => proof.sku === identity.sku,
+  );
   const proofsForSku = allProofsForSku.filter(
     (proof) =>
       proof.approval_scope === "production-main" &&
@@ -663,7 +692,7 @@ export async function preflightProductionUncrustablesMain(
 ): Promise<UncrustablesMainProductionPreflightResult> {
   // A missing proof is rejected before any network read.
   if (
-    !PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.entries.some(
+    !allProductionOwnerApprovedProofs().some(
       (proof) =>
         proof.sku === identity.sku &&
         proof.approval_scope === "production-main" &&
@@ -696,7 +725,7 @@ export async function preflightProductionUncrustablesMain(
     };
   }
   const imageSha256 = uncrustablesAuthenticitySha256(bytes);
-  const exactProof = PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.entries.find(
+  const exactProof = allProductionOwnerApprovedProofs().find(
     (proof) =>
       proof.sku === identity.sku &&
       proof.approval_scope === "production-main" &&
@@ -773,18 +802,24 @@ export function verifyUncrustablesMainPublishPermit(
   }
   if (
     permit.registry_sha256 !==
-      PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY.sha256 ||
-    permit.owner_approval_manifest_sha256 !==
-      PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.sha256
+      PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY.sha256
   ) {
     return { valid: false, error: "Authenticity publish permit is stale." };
   }
-  const proof = PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS.entries.find(
+  const proof = allProductionOwnerApprovedProofs().find(
     (candidate) =>
       candidate.proof_id === permit.proof_id &&
       candidate.approval_scope === "production-main" &&
       candidate.production_eligible === true,
   );
+  // The permit must carry the seal of the exact manifest holding its proof.
+  if (
+    proof &&
+    permit.owner_approval_manifest_sha256 !==
+      manifestContainingProof(proof.proof_id).sha256
+  ) {
+    return { valid: false, error: "Authenticity publish permit is stale." };
+  }
   if (
     !proof ||
     proof.sku !== permit.sku ||
