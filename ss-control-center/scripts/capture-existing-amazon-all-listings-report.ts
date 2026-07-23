@@ -161,7 +161,7 @@ async function main(): Promise<void> {
       processingStatus: "DONE",
     },
     artifact: {
-      sourceName: basename(rawPath),
+      sourceName: rawName,
       contentSha256: sha256(reportBytes),
       byteLength: reportBytes.length,
       headerSha256: sha256(header),
