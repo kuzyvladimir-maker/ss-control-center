@@ -15,16 +15,16 @@ Bundle Factory path and PUT to Amazon (all ACCEPTED):
 | MT-ASQN-YY3H | B0HB3VNF2Q | 24ct Grape 3×4 + Raspberry 3×4 | $76.99 |
 | XK-ASBS-8T49 | B0HB3VKPH1 | 28ct Honey 10 + Chocolate 10 + Strawberry 2×4 | $82.99 |
 | DT-AS2G-Y9CG | B0HB46JPTG | 28ct Bright-Eyed Berry 8 + Up & Apple 8 + WW Grape 3×4 | $82.99 |
-| TC-AS0C-J5A3 | (review) | 30ct Honey 10 + Hazelnut 3×4 + Grape 2×4 | $85.99 |
+| TC-AS0C-J5A3 | B0HB5G4RXG | 30ct Honey 10 + Hazelnut 3×4 + Grape 2×4 | $85.99 |
 | GC-ASMX-MJXZ | B0HB3TFSTJ | 30ct Chocolate 10 + Hazelnut 2×4 + Raspberry 3×4 | $85.99 |
 | MT-ASEZ-ZCBE | B0HB3VQBCG | 48ct Beamin' 8 + Burstin' 8 + Strawberry 4×4 + Grape 4×4 | $135.99 |
 | UR-ASI5-ZFR5 | B0HB3WXWZQ | 54ct Honey 10 + Berry Burst 4×4 + Blackberry Boom 4×4 + WW Strawberry 3×4 | $144.99 |
 | PP-AS42-RJ34 | B0HB5JVVCB | 60ct Honey 3×10 + Chocolate 3×10 | $153.99 |
 
-7/9 DISCOVERABLE+BUYABLE within minutes; PP + TC in Amazon's standard new-listing
-review (code 100521), monitor until it clears. #10 (XL 90ct, $252.99, recipe
-Honey 3×10 + Chocolate 2×10 + Burstin' 3×8 + Beamin' 2×8) waits for the image
-worker (subscription image_gen limits) — same conveyor, nothing else pending.
+Status 2026-07-23 evening: 9/10 BUYABLE (PP and TC cleared their 100521 review
+same day). #10 — XL 90ct $252.99 (Honey 3×10 + Chocolate 2×10 + Burstin' 3×8 +
+Beamin' 2×8), SKU CD-ASU4-85VB, ASIN B0HB7GV5DB — published through the same
+conveyor and sits in the standard 100521 new-listing review.
 
 ## The conveyor (scripts, in order)
 
@@ -77,11 +77,18 @@ protocol before the owner ever saw them.
 
 ## Next
 
-- Monitor 100521 review on PP/TC; add TC to the ChannelMAX sheet when its ASIN
-  lands; owner uploads `channelmax-batch12-9.txt` (Desktop copy) via File
-  Uploader.
+- Monitor 100521 review on the XL (CD-ASU4-85VB); owner uploads
+  `channelmax-batch12-9.txt` (Desktop copy, all 10 rows with ASINs) via the
+  ChannelMAX File Uploader.
 - Launch coupons per `docs/wiki/pricing-launch-sop.md` (owner action in Seller
   Central).
-- Render + verify + publish #10 XL when the image worker recovers.
-- Fold the conveyor into the Bundle Factory studio module (blocked on Codex's
-  uncommitted `studio-engine.ts` WIP — lane lease).
+- Trial run of 12 more ASINs (owner-approved 2026-07-23): recipes planned and
+  validated by the new BF module
+  `src/lib/bundle-factory/uncrustables-box-planner.ts` (flavor catalog,
+  rational count bands S≤30 / M 48–54 / L 60–66 / XL 90–135 with dead-zone
+  rejection, renderable-scene limits ≤4 flavors / ≤11 cartons / ≤4 rows / ≤4
+  cartons per row, and generated listing copy). Render driver:
+  `scripts/_trial_render.ts` (WAVE=1|2|3), then the same conveyor.
+- Fold the conveyor into the Bundle Factory studio module — the box-planner is
+  its first extracted piece; coordinate studio-file changes with Codex via
+  CHAT-SYNC.
