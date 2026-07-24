@@ -1,7 +1,7 @@
 {
   "schema_version": "uncrustables-main-owner-approvals/v2",
   "immutable": true,
-  "manifest_id": "uncrustables-owner-approved-trial-publish-2026-07-23-trial1-production-8",
+  "manifest_id": "uncrustables-owner-approved-trial-publish-2026-07-23-trial1-production-9",
   "captured_at": "2026-07-23T20:00:00.000Z",
   "approved_by": "owner",
   "registry_sha256": "e53cc077624ec134abcddea4f3b4477b9357459dd1cd04227956d1c2d2c47b83",
@@ -1377,6 +1377,145 @@
         "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
         "sha256": "19aa5f7e9d5cedd1818fed395caf144e83e63ffaee9dffe161bfa8994e175e1b"
       }
+    },
+    {
+      "proof_id": "production-s-wheat-duo-24",
+      "sku": "UF-ASWN-FV9M",
+      "asin": "PENDING-FIRST-PUBLISH",
+      "approval_scope": "production-main",
+      "production_eligible": true,
+      "pixel_dimensions": {
+        "width": 2048,
+        "height": 2048
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/s-wheat-duo-24.png",
+        "sha256": "b574befb82cba64473cb718ff52a2d0ea5fc01c894d058370f2adca6bfe09fc9"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/s-wheat-duo-24.generation-manifest.json",
+        "sha256": "2f63d01eaa3b147072c17fca5c2351e4c4765750c590c4a1034abd256568d048"
+      },
+      "production_provenance": {
+        "origin": "raw-generation",
+        "output_sha256": "b574befb82cba64473cb718ff52a2d0ea5fc01c894d058370f2adca6bfe09fc9",
+        "transformation_manifest": {
+          "kind": "generation-manifest",
+          "locator": "data/audits/uncrustables-trial-publish-20260723/s-wheat-duo-24.generation-manifest.json",
+          "sha256": "2f63d01eaa3b147072c17fca5c2351e4c4765750c590c4a1034abd256568d048"
+        }
+      },
+      "recipe": {
+        "recipe_id": "trial-publish-20260723:s-wheat-duo-24",
+        "components": [
+          {
+            "flavor": "whole-wheat-peanut-butter-and-strawberry-jam",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          },
+          {
+            "flavor": "whole-wheat-peanut-butter-and-grape-jelly",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-23T19:30:00.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "s-wheat-duo-24-whole-wheat-peanut-butter-and-strawberry-jam-4ct",
+            "flavor": "whole-wheat-peanut-butter-and-strawberry-jam",
+            "art_id": "whole-wheat-peanut-butter-and-strawberry-jam-carton-us-4ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/07-whole-wheat-peanut-butter-strawberry-jam.jpg",
+                "sha256": "467c42745d30b082801d46a44cf2a03013b77c9e60cab888ab8a462d20310f9b"
+              }
+            ]
+          },
+          {
+            "observation_id": "s-wheat-duo-24-whole-wheat-peanut-butter-and-grape-jelly-4ct",
+            "flavor": "whole-wheat-peanut-butter-and-grape-jelly",
+            "art_id": "whole-wheat-peanut-butter-and-grape-jelly-carton-us-4ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/09-whole-wheat-peanut-butter-grape-jelly.jpg",
+                "sha256": "806cb10ae5156efdbd2561556289ac2408546fc0a820d0edfe66446d81a19279"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Carton-by-carton verification of exact hash b574befb82cb…: every carton front counted at full 2048px resolution, every printed count badge read, every flavor variant compared to its merged-registry evidence photo; 2 gel packs inside + 2 outside; no foreign, fictional or overlay items; no retailer-exclusive roundels. Verification executed by Claude Code as the owner's delegate under the standing 2026-07-22/23 mandate (\"делай все сам…загружая эти листинги на amazon\"; trial run ordered 2026-07-23), with an additional independent multi-agent adversarial pass (layout, typography, art/branding lenses); failed renders were re-rendered under a hardened prompt contract before approval.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-s-wheat-duo-24-b574befb-production-trial1",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-trial1/s-wheat-duo-24",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-23T20:00:00.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "e537ebb9312d52320f1da0136e2df134976171e179a77b4c3a6d83d07b233582",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
+        "sha256": "4d26d4fa4986053d203bed89302686cd3cba08b8e03f9cf30c521c7bf65ccee9"
+      }
     }
   ],
   "complements": {
@@ -1384,10 +1523,10 @@
     "reason": "The trial batch extends the production pool with box-planner recipes; the v3 manifest remains untouched and authoritative for its 10 preview-publish SKUs."
   },
   "safety": {
-    "production_eligible_entries": 8,
+    "production_eligible_entries": 9,
     "amazon_writes": 0,
     "image_generations": 0,
-    "network_requests": 8
+    "network_requests": 9
   },
-  "sha256": "6881f1f9685ac0f83fcdfbdb3ddcf4d69e3494277cff1614c2cd453f0b04d197"
+  "sha256": "49f5bbc3c421e0956888383a12bcae973f4c97a5cf29ad6fd08262f9ffe714a5"
 }
