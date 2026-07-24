@@ -226,6 +226,8 @@ async function main() {
       frontText.push('The Chocolate carton reads exactly "Peanut Butter & Chocolate Flavored Spread Sandwich" (the word Spread appears once before Sandwich).');
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Honey Spread"))
       frontText.push('The Honey carton reads exactly "Peanut Butter & Honey Spread Sandwich".');
+    if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Mixed Berry Spread"))
+      frontText.push('The BERRY BURST cartons are PINK with a pattern of blue circles and stars and a "Limited Edition Flavor" roundel, copied exactly from their reference photo — never dark purple, never a plain dot pattern.');
     mapLines.push(
       "ROW LAYOUT CONTRACT (mandatory): the cartons stand in stepped rows from back to front, one flavor per row:",
       ...rowLines,

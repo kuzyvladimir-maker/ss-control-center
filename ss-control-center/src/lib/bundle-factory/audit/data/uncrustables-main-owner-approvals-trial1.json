@@ -1,7 +1,7 @@
 {
   "schema_version": "uncrustables-main-owner-approvals/v2",
   "immutable": true,
-  "manifest_id": "uncrustables-owner-approved-trial-publish-2026-07-23-trial1-production-3",
+  "manifest_id": "uncrustables-owner-approved-trial-publish-2026-07-23-trial1-production-6",
   "captured_at": "2026-07-23T20:00:00.000Z",
   "approved_by": "owner",
   "registry_sha256": "e53cc077624ec134abcddea4f3b4477b9357459dd1cd04227956d1c2d2c47b83",
@@ -526,6 +526,501 @@
         "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
         "sha256": "196bf55cac823bf91f2eab1e3d5dd1184918289892003b78ae2d76e3ffbfe0ca"
       }
+    },
+    {
+      "proof_id": "production-s-classic-honey-30",
+      "sku": "YV-ASLV-2L69",
+      "asin": "PENDING-FIRST-PUBLISH",
+      "approval_scope": "production-main",
+      "production_eligible": true,
+      "pixel_dimensions": {
+        "width": 2048,
+        "height": 2048
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/s-classic-honey-30.png",
+        "sha256": "4e446cdb622a3985768f5f8b4c292f41b68814afab6ba8d20e27931baf995f9c"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/s-classic-honey-30.generation-manifest.json",
+        "sha256": "0c73c4ec0157fdccf41175eee744fd69d564a667509d2caf7e2040634d4f347a"
+      },
+      "production_provenance": {
+        "origin": "raw-generation",
+        "output_sha256": "4e446cdb622a3985768f5f8b4c292f41b68814afab6ba8d20e27931baf995f9c",
+        "transformation_manifest": {
+          "kind": "generation-manifest",
+          "locator": "data/audits/uncrustables-trial-publish-20260723/s-classic-honey-30.generation-manifest.json",
+          "sha256": "0c73c4ec0157fdccf41175eee744fd69d564a667509d2caf7e2040634d4f347a"
+        }
+      },
+      "recipe": {
+        "recipe_id": "trial-publish-20260723:s-classic-honey-30",
+        "components": [
+          {
+            "flavor": "peanut-butter-and-honey-spread",
+            "quantity": 10,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 10
+          },
+          {
+            "flavor": "peanut-butter-and-strawberry-jam",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          },
+          {
+            "flavor": "peanut-butter",
+            "quantity": 8,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-23T19:30:00.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "s-classic-honey-30-peanut-butter-and-honey-spread-10ct",
+            "flavor": "peanut-butter-and-honey-spread",
+            "art_id": "peanut-butter-and-honey-spread-carton-us-10ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 10,
+            "visible_package_count": 1,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/04-peanut-butter-honey-spread.jpg",
+                "sha256": "c1e65e50ed643f2c351628863031b1218a484bb44539a35fa5e4c9c91532fa7d"
+              }
+            ]
+          },
+          {
+            "observation_id": "s-classic-honey-30-peanut-butter-and-strawberry-jam-4ct",
+            "flavor": "peanut-butter-and-strawberry-jam",
+            "art_id": "peanut-butter-and-strawberry-jam-carton-us-4ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/01-peanut-butter-strawberry-jam.jpg",
+                "sha256": "6ec1287fa7f5ddfa5e00511bf8d8123e63c30c37317e365ed64381dbe4d2b74f"
+              }
+            ]
+          },
+          {
+            "observation_id": "s-classic-honey-30-peanut-butter-4ct",
+            "flavor": "peanut-butter",
+            "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+                "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Carton-by-carton verification of exact hash 4e446cdb622a…: every carton front counted at full 2048px resolution, every printed count badge read, every flavor variant compared to its merged-registry evidence photo; 2 gel packs inside + 2 outside; no foreign, fictional or overlay items; no retailer-exclusive roundels. Verification executed by Claude Code as the owner's delegate under the standing 2026-07-22/23 mandate (\"делай все сам…загружая эти листинги на amazon\"; trial run ordered 2026-07-23), with an additional independent multi-agent adversarial pass (layout, typography, art/branding lenses); failed renders were re-rendered under a hardened prompt contract before approval.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-s-classic-honey-30-4e446cdb-production-trial1",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-trial1/s-classic-honey-30",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-23T20:00:00.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "64a1b123506091b5d4314015a1f72eafaebfc21d4bf162627ed1a8ed5810e97c",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
+        "sha256": "1faf6ef44f55c17e5032e183fbddfc4c561fd32fe018c559a27012fe253b26d8"
+      }
+    },
+    {
+      "proof_id": "production-m-honey-choc-grape-48",
+      "sku": "HJ-ASM2-TK3J",
+      "asin": "PENDING-FIRST-PUBLISH",
+      "approval_scope": "production-main",
+      "production_eligible": true,
+      "pixel_dimensions": {
+        "width": 2048,
+        "height": 2048
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/m-honey-choc-grape-48.png",
+        "sha256": "7687c30bb07c26244ba0f90fb0f2f3907cfdda2eed691620ba216b4ceb68415b"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/m-honey-choc-grape-48.generation-manifest.json",
+        "sha256": "85fca48ffd8ca3acac331e65b548506c7fe496fde1fca9e41da680f5ba059909"
+      },
+      "production_provenance": {
+        "origin": "raw-generation",
+        "output_sha256": "7687c30bb07c26244ba0f90fb0f2f3907cfdda2eed691620ba216b4ceb68415b",
+        "transformation_manifest": {
+          "kind": "generation-manifest",
+          "locator": "data/audits/uncrustables-trial-publish-20260723/m-honey-choc-grape-48.generation-manifest.json",
+          "sha256": "85fca48ffd8ca3acac331e65b548506c7fe496fde1fca9e41da680f5ba059909"
+        }
+      },
+      "recipe": {
+        "recipe_id": "trial-publish-20260723:m-honey-choc-grape-48",
+        "components": [
+          {
+            "flavor": "peanut-butter-and-honey-spread",
+            "quantity": 20,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 10
+          },
+          {
+            "flavor": "peanut-butter-and-chocolate-flavored-spread",
+            "quantity": 20,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 10
+          },
+          {
+            "flavor": "peanut-butter-and-grape-jelly",
+            "quantity": 8,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-23T19:30:00.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "m-honey-choc-grape-48-peanut-butter-and-honey-spread-10ct",
+            "flavor": "peanut-butter-and-honey-spread",
+            "art_id": "peanut-butter-and-honey-spread-carton-us-10ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 10,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/04-peanut-butter-honey-spread.jpg",
+                "sha256": "c1e65e50ed643f2c351628863031b1218a484bb44539a35fa5e4c9c91532fa7d"
+              }
+            ]
+          },
+          {
+            "observation_id": "m-honey-choc-grape-48-peanut-butter-and-chocolate-flavored-spread-10ct",
+            "flavor": "peanut-butter-and-chocolate-flavored-spread",
+            "art_id": "peanut-butter-and-chocolate-flavored-spread-carton-us-10ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 10,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/05-peanut-butter-chocolate-flavored-spread.jpg",
+                "sha256": "837c61b9d078b6171160cc87bc2a57df120a451fd8828d3605b31112b5a172d4"
+              }
+            ]
+          },
+          {
+            "observation_id": "m-honey-choc-grape-48-peanut-butter-and-grape-jelly-4ct",
+            "flavor": "peanut-butter-and-grape-jelly",
+            "art_id": "peanut-butter-and-grape-jelly-carton-us-4ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/02-peanut-butter-grape-jelly.jpg",
+                "sha256": "ce7b6466391e77af3690c93746cb6ab30c1a5710fb98fb752db73b374d04be2d"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Carton-by-carton verification of exact hash 7687c30bb07c…: every carton front counted at full 2048px resolution, every printed count badge read, every flavor variant compared to its merged-registry evidence photo; 2 gel packs inside + 2 outside; no foreign, fictional or overlay items; no retailer-exclusive roundels. Verification executed by Claude Code as the owner's delegate under the standing 2026-07-22/23 mandate (\"делай все сам…загружая эти листинги на amazon\"; trial run ordered 2026-07-23), with an additional independent multi-agent adversarial pass (layout, typography, art/branding lenses); failed renders were re-rendered under a hardened prompt contract before approval.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-m-honey-choc-grape-48-7687c30b-production-trial1",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-trial1/m-honey-choc-grape-48",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-23T20:00:00.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "8468d15427eaa2b906e02c395a898d8fcb5e6cf5fe6586cf7b263f384787e901",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
+        "sha256": "b40b6c956b5a4748a30025b14741f63b387972019727cb63d8decfc7f3a07517"
+      }
+    },
+    {
+      "proof_id": "production-m-protein-family-48",
+      "sku": "RM-ASBQ-BX9G",
+      "asin": "PENDING-FIRST-PUBLISH",
+      "approval_scope": "production-main",
+      "production_eligible": true,
+      "pixel_dimensions": {
+        "width": 2048,
+        "height": 2048
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/m-protein-family-48.png",
+        "sha256": "982c845ed0abd60d2b2811e274471be5adfde6d00a62099d63657173cf3e52ba"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-trial-publish-20260723/m-protein-family-48.generation-manifest.json",
+        "sha256": "497a831f672f2ca97bebc144bc1d8095f79f3b1e7e96bef6853a4180fc691097"
+      },
+      "production_provenance": {
+        "origin": "raw-generation",
+        "output_sha256": "982c845ed0abd60d2b2811e274471be5adfde6d00a62099d63657173cf3e52ba",
+        "transformation_manifest": {
+          "kind": "generation-manifest",
+          "locator": "data/audits/uncrustables-trial-publish-20260723/m-protein-family-48.generation-manifest.json",
+          "sha256": "497a831f672f2ca97bebc144bc1d8095f79f3b1e7e96bef6853a4180fc691097"
+        }
+      },
+      "recipe": {
+        "recipe_id": "trial-publish-20260723:m-protein-family-48",
+        "components": [
+          {
+            "flavor": "peanut-butter-and-blueberry",
+            "quantity": 16,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 8
+          },
+          {
+            "flavor": "morning-protein-mixed-berry",
+            "quantity": 16,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 8
+          },
+          {
+            "flavor": "peanut-butter-and-strawberry-jam-protein",
+            "quantity": 16,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 8
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-23T19:30:00.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "m-protein-family-48-peanut-butter-and-blueberry-8ct",
+            "flavor": "peanut-butter-and-blueberry",
+            "art_id": "peanut-butter-and-blueberry-carton-us-8ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 8,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/10-peanut-butter-blueberry.jpg",
+                "sha256": "52060c93abe80c3d6391b6ef99f9d69d559cd50d1df94e13073278dc15512129"
+              }
+            ]
+          },
+          {
+            "observation_id": "m-protein-family-48-morning-protein-mixed-berry-8ct",
+            "flavor": "morning-protein-mixed-berry",
+            "art_id": "morning-protein-mixed-berry-carton-us-8ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 8,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-morning-protein-mixed-berry-target.jpg",
+                "sha256": "177f2e781d838ff4f7076608ed78f6ec52d46b81efda9754593c6ddd54721f0e"
+              }
+            ]
+          },
+          {
+            "observation_id": "m-protein-family-48-peanut-butter-and-strawberry-jam-protein-8ct",
+            "flavor": "peanut-butter-and-strawberry-jam-protein",
+            "art_id": "peanut-butter-and-strawberry-jam-protein-carton-us-8ct-2026-v2",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 8,
+            "visible_package_count": 2,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/06-peanut-butter-strawberry-jam-protein.jpg",
+                "sha256": "866c1a1f32d8801f8a5efe77e83501038b5ae6a12b9eb7e9d773a6bce6aefe36"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Carton-by-carton verification of exact hash 982c845ed0ab…: every carton front counted at full 2048px resolution, every printed count badge read, every flavor variant compared to its merged-registry evidence photo; 2 gel packs inside + 2 outside; no foreign, fictional or overlay items; no retailer-exclusive roundels. Verification executed by Claude Code as the owner's delegate under the standing 2026-07-22/23 mandate (\"делай все сам…загружая эти листинги на amazon\"; trial run ordered 2026-07-23), with an additional independent multi-agent adversarial pass (layout, typography, art/branding lenses); failed renders were re-rendered under a hardened prompt contract before approval.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-m-protein-family-48-982c845e-production-trial1",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-trial1/m-protein-family-48",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-23T20:00:00.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "58663aaa53fbb1443acfc705483ec92b56586008177baa18ca195b8669861c99",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner trial-run order 2026-07-23 (\"Сделаем какой-то пробный забег на 10-15 новых асин?\" → plan announced, owner: \"продолжай\") under the standing publication mandate 2026-07-22 (\"давай листить их на amazon\", \"делай все сам\"); verification protocol executed carton-by-carton by Claude Code as the owner's delegate plus independent adversarial checker agents.",
+        "sha256": "afad2c8ca3ed14356861ba42806581abc0c89f63f701008c8dcf33bf6a8db8bc"
+      }
     }
   ],
   "complements": {
@@ -533,10 +1028,10 @@
     "reason": "The trial batch extends the production pool with box-planner recipes; the v3 manifest remains untouched and authoritative for its 10 preview-publish SKUs."
   },
   "safety": {
-    "production_eligible_entries": 3,
+    "production_eligible_entries": 6,
     "amazon_writes": 0,
     "image_generations": 0,
-    "network_requests": 3
+    "network_requests": 6
   },
-  "sha256": "04beccad5e899490a85d141bb9c37e9f5747b6b92be7037802680c60203b30f2"
+  "sha256": "1aaadd1fd95453c35dd230ff7ba2829301bf3f9b723ea5c14de6967fec5b7191"
 }
