@@ -13,7 +13,9 @@ async function main() {
   const cm: any = await import("../src/lib/pricing/cost-model");
   const priceFor = cm.priceFor ?? cm.default?.priceFor;
 
-  const rows: any[] = JSON.parse(readFileSync(SCRATCH + "publish-batch12-skus.json", "utf8"));
+  const rows: any[] = (process.env.MAPS ?? "publish-batch12-skus.json")
+    .split(",")
+    .flatMap((f) => JSON.parse(readFileSync(SCRATCH + f.trim(), "utf8")));
   const lines = ["SKU\tASIN\tSellingVenue\tMinSellingPrice\tMaxSellingPrice\tRepricingModelID"];
   const skipped: string[] = [];
   for (const r of rows) {
@@ -23,8 +25,9 @@ async function main() {
     lines.push([sku.sku, sku.asin, "Amazon_US", model.floor.toFixed(2), (sku.price_cents / 100).toFixed(2), "59021"].join("\t"));
   }
   const out = lines.join("\r\n") + "\r\n";
-  writeFileSync(SCRATCH + "channelmax-batch12-9.txt", out);
-  writeFileSync("/Users/vladimirkuznetsov/Desktop/channelmax-batch12-9.txt", out);
+  const OUT_NAME = process.env.OUT_NAME ?? "channelmax-batch12-9.txt";
+  writeFileSync(SCRATCH + OUT_NAME, out);
+  writeFileSync(`/Users/vladimirkuznetsov/Desktop/${OUT_NAME}`, out);
   console.log(out);
   console.log("skipped (no ASIN yet):", skipped.join(",") || "none");
   await prisma.$disconnect();

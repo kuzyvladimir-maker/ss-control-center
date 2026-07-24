@@ -57,6 +57,9 @@ const OBSERVED_AT = "2026-07-23T19:30:00.000Z";
 const PREVIEW_FILES = [
   "trial-wave1.json", "trial-wavecustom.json", "trial-waverr2.json",
   "trial-wave2.json", "trial-waverr3.json", "trial-wave3.json", "trial-waverr4.json",
+  "trial-waverr5.json", "trial-waverr6.json", "trial-waverr7.json",
+  "trial-waverr8.json", "trial-waverr9.json", "trial-waverr10.json",
+  "trial-waverr11.json", "trial-waverr12.json",
 ];
 const SKU_MAP = "publish-trial-skus.json";
 
