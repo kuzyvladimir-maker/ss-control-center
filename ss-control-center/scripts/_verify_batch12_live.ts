@@ -13,7 +13,7 @@ async function main() {
   const li: any = await import("../src/lib/amazon-sp-api/listings");
   const getListing = li.getListing ?? li.default?.getListing;
 
-  const rows: any[] = JSON.parse(readFileSync(SCRATCH + "publish-batch12-skus.json", "utf8"));
+  const rows: any[] = JSON.parse(readFileSync(SCRATCH + (process.env.MAP ?? "publish-batch12-skus.json"), "utf8"));
   for (const r of rows) {
     try {
       const res = await getListing(1, SELLER, r.sku, { includedData: ["summaries", "issues", "offers"] });

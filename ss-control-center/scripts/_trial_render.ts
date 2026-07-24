@@ -219,6 +219,8 @@ async function main() {
     });
     const frontText = [
       'FRONT TEXT: each front prints its flavor line once, single ampersand, no word repeated, matching its reference photo exactly.',
+      'The words "Peanut Butter" are spelled exactly P-e-a-n-u-t B-u-t-t-e-r on EVERY carton — never "Botter", "Batter" or any other vowel.',
+      'Each descriptor contains its "&" character exactly ONCE. When the descriptor wraps to a second line, the "&" starts the second line and NEVER also appears at the end of the first line.',
     ];
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Chocolate Flavored Spread"))
       frontText.push('The Chocolate carton reads exactly "Peanut Butter & Chocolate Flavored Spread Sandwich" (the word Spread appears once before Sandwich).');
@@ -229,11 +231,12 @@ async function main() {
       ...rowLines,
       `TOTAL cartons: EXACTLY ${totalBoxes}.`,
       "Unfilled row width stays empty (foam/gel pack) — never add cartons to fill space. Every carton front fully visible; none cropped, slivered, or hidden. Cartons stand side by side only — no depth pairs. Same-count cartons share identical dimensions — no wide or stretched boxes.",
-      "FRUIT ART: every carton front shows ONLY its own flavor's fruit artwork copied from its reference photo (grape cartons show purple grapes, strawberry cartons show strawberries, mixed-berry cartons show strawberries AND blueberries, and so on). NEVER paint fruit from a neighboring row's flavor onto a carton, and never drop a fruit that the reference shows.",
+      "FRUIT ART: every carton front shows ONLY its own flavor's signature artwork copied from its reference photo (grape cartons show purple grapes, strawberry cartons show strawberries, mixed-berry cartons show strawberries AND blueberries, honey cartons show the wooden honey dipper, chocolate cartons show NO fruit and NO dipper — just the chocolate-filled sandwich). NEVER paint fruit, honey dippers or any art element from a neighboring row's flavor onto a carton, and never drop an element that the reference shows.",
       "GEL PACKS: EXACTLY four in the scene — one standing inside against the left wall, one inside against the right wall, and two leaning outside at the front right. Never add a fifth gel pack or a duplicate behind another.",
       'GEL PACK TEXT: every gel pack prints exactly, letter for letter: "FROZEN GEL PACK" then "KEEP FROZEN" (F-R-O-Z-E-N, never "PROZEN") then "FOR FROZEN SHIPMENTS" then the green lotus then "SALUTEM SOLUTIONS" then "OUR BEST SOLUTIONS FOR YOU".',
       "RETAILER FLAGS: if a reference photo carries a retailer-exclusive roundel (such as \"Only at Walmart\"), OMIT it — draw that corner of the carton plain. Never print any retailer's name or logo anywhere in the image.",
       "SCENE: the open white Salutem Solutions foam cooler from Reference 1 with lid and gel packs IS the stage; rows sit inside/above it. Never a flat catalog lineup on plain white.",
+      "NO LOOSE PROPS: never scatter loose fruit, berries, ice, snow or any other prop in or around the cooler. The ONLY objects in the scene are the cartons, the cooler with its lid, and the four gel packs. Fruit exists ONLY as printed artwork on carton faces.",
       "BRANDING: the cooler front and every gel pack carry the EXACT branding from Reference 1 — the green lotus emblem with the words SALUTEM SOLUTIONS and OUR BEST SOLUTIONS FOR YOU. Copy that logo pixel-faithfully. NEVER invent a different logo, monogram, crest or typography.",
       frontText.join(" "),
     );
