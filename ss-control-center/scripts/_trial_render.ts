@@ -71,10 +71,15 @@ const TRIAL_RECIPES: Recipe[] = [
     { flavor: "Peanut Butter & Raspberry Spread", qty: 8 },
   ] },
   // Wave 3 — XL (scene-complexity ceiling, rendered last)
+  // 96ct reshaped after 10 render attempts: two 4-wide 10ct rows kept
+  // collapsing (3/5 counts, cross-flavor art). Same total and band, built
+  // from proven sub-shapes: 2-wide 10ct rows (HJ live) + a 4-wide and a
+  // 3-wide 8ct row (xl-protein renders held those counts).
   { slug: "xl-honey-choc-blueberry-96", comps: [
-    { flavor: "Peanut Butter & Honey Spread", qty: 40 },
-    { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 40 },
-    { flavor: "Peanut Butter & Blueberry", qty: 16 },
+    { flavor: "Peanut Butter & Honey Spread", qty: 20 },
+    { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 20 },
+    { flavor: "Peanut Butter & Blueberry", qty: 32 },
+    { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 24 },
   ] },
   { slug: "xl-protein-90", comps: [
     { flavor: "Peanut Butter & Honey Spread", qty: 10 },
@@ -228,7 +233,9 @@ async function main() {
       'Each descriptor contains its "&" character exactly ONCE. When the descriptor wraps to a second line, the "&" starts the second line and NEVER also appears at the end of the first line.',
     ];
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Chocolate Flavored Spread"))
-      frontText.push('The Chocolate carton reads exactly "Peanut Butter & Chocolate Flavored Spread Sandwich" (the word Spread appears once before Sandwich).');
+      frontText.push('The Chocolate carton reads exactly "Peanut Butter & Chocolate Flavored Spread Sandwich" (the word Spread appears once before Sandwich). The "&" symbol MUST appear between "Butter" and "Chocolate" on EVERY chocolate carton — never omit it.');
+    if (r.comps.some((c: any) => c.flavor === "Morning Protein Peanut Butter & Mixed Berry Spread"))
+      frontText.push("Every Beamin' Berry Blend carton reads exactly \"Peanut Butter & Mixed Berry Spread Sandwich\" — \"Peanut\" P-e-a-n-u-t, \"Mixed\" M-i-x-e-d with a clear X, \"Spread Sandwich\" spelled exactly.");
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Honey Spread"))
       frontText.push('The Honey carton reads exactly "Peanut Butter & Honey Spread Sandwich".');
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Mixed Berry Spread"))
