@@ -60,10 +60,15 @@ const TRIAL_RECIPES: Recipe[] = [
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 8 },
     { flavor: "Peanut Butter & Mixed Berry Spread", qty: 16 },
   ] },
+  // 60ct reshaped after 10 render attempts: the 2/3/2 row shape kept
+  // collapsing to 2/2/2 (the model symmetrizes a lone 3-carton middle row).
+  // Same band and price, same chocolate+berry spirit, in a 2/2/2/2 shape the
+  // renderer handles reliably.
   { slug: "l-choc-berry-60", comps: [
     { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 20 },
-    { flavor: "Peanut Butter & Blueberry", qty: 24 },
+    { flavor: "Peanut Butter & Blueberry", qty: 16 },
     { flavor: "Morning Protein Peanut Butter & Mixed Berry Spread", qty: 16 },
+    { flavor: "Peanut Butter & Raspberry Spread", qty: 8 },
   ] },
   // Wave 3 — XL (scene-complexity ceiling, rendered last)
   { slug: "xl-honey-choc-blueberry-96", comps: [
