@@ -197,6 +197,16 @@ function report(
       channel: "amazon",
       storeIndex: 1,
       sku: "SKU-1",
+      recipe: {
+        components: [{
+          componentEvidenceId: "component-evidence-1",
+          componentIndex: 0,
+          targetCanonicalVariantId: VARIANT,
+          quantity: 1,
+          evidenceStatus: "FACT",
+        }],
+        blockers: [],
+      },
       disposition,
       ready,
       blockers,
@@ -416,6 +426,45 @@ test("Procurement blocks unknown inventory and selects the cheapest factual pack
   assert.equal(known.claims.procurementMutations, false);
 });
 
+test("exact recipe variant lets inventory cover demand even when no retailer offer exists", () => {
+  const plan = compileProductTruthProcurementPlan({
+    report: report("PROCUREMENT", {
+      consumer: "PROCUREMENT",
+      ready: false,
+      components: [{
+        componentIndex: 0,
+        product: "Acme Crunch",
+        requiredQuantity: 1,
+        factualOptions: [],
+        estimateOptions: [],
+        manualCost: null,
+        blockers: ["NO_CURRENT_ELIGIBLE_LOCAL_PRICE"],
+      }],
+      blockers: ["COMPONENT_0:NO_CURRENT_ELIGIBLE_LOCAL_PRICE"],
+    }, {
+      disposition: "BLOCKED",
+      ready: false,
+      blockers: ["COMPONENT_0:NO_CURRENT_ELIGIBLE_LOCAL_PRICE"],
+    }),
+    listingKey: LISTING_KEY,
+    orderQuantity: 2,
+    inventoryByCanonicalVariantId: {
+      [VARIANT]: {
+        status: "KNOWN",
+        availableQuantity: 2,
+        evidenceId: "inventory-exact-2",
+        observedAt: READ_AT,
+      },
+    },
+  });
+  assert.equal(plan.readyForReview, true);
+  assert.equal(plan.components[0].factualCanonicalVariantId, VARIANT);
+  assert.equal(plan.components[0].shortageQuantity, 0);
+  assert.equal(plan.components[0].selectedForReview, null);
+  assert.deepEqual(plan.blockers, []);
+  assert.equal(plan.claims.purchaseAuthorized, false);
+});
+
 test("consumer/scope drift and cross-variant factual procurement offers fail closed", () => {
   assert.throws(
     () => compileProductTruthBundleFactorySeed({
@@ -478,4 +527,3 @@ test("consumer adapters are pure and contain no DB, process, provider or network
   assert.doesNotMatch(source, /\bfetch\s*\(|\bexecute\s*\(|\btransaction\s*\(/);
   assert.doesNotMatch(source, /openai|anthropic|unwrangle|oxylabs/i);
 });
-

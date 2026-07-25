@@ -251,7 +251,10 @@ owner-gated этапами; consumed schema approval их не разрешае�
 
 - [x] Реализовать pure, hash-bound adapters всех четырёх consumers без DB,
   process, provider или network surface:
-  `product-truth-consumer-adapters.ts`, `6/6` adversarial tests.
+  `product-truth-consumer-adapters.ts`, `7/7` adversarial tests.
+- [x] Повысить только consumer gateway до `1.1.0` и пронести exact recipe
+  variant/quantity binding для Procurement inventory; frozen read-contract
+  `3.2.0` не изменён.
 - [x] Unit Economics — typed basis и существующий default-OFF SHADOW adapter;
   `UNSOURCEABLE`/missing остаются `null`, repricing не разрешён.
 - [x] Procurement — pure demand/inventory/factual-pack plan только для review;

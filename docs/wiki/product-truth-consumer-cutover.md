@@ -47,9 +47,13 @@ immutable, hash-bound outputs:
 - Unit Economics typed product-acquisition basis без legacy/`$1`/zero fallback;
 - Procurement demand/inventory/factual-offer plan без cart/order/purchase.
 
-Шесть adversarial tests доказывают, что unknown inventory блокирует Procurement,
-factual two-pack может честно победить две single packages, estimate/manual не становятся
-buy evidence, а adapters не имеют DB/process/network/provider surface. Это
+Семь adversarial tests доказывают, что unknown inventory блокирует Procurement,
+factual two-pack может честно победить две single packages, exact inventory может
+закрыть demand без retailer offer, estimate/manual не становятся buy evidence, а
+adapters не имеют DB/process/network/provider surface. Consumer gateway повышен до
+`product-truth-consumer-gateway/1.1.0`: каждая entry теперь несёт exact
+`componentEvidenceId/componentIndex/targetCanonicalVariantId/quantity`, поэтому
+inventory не выводится из offer proxy. Read-contract остаётся frozen `3.2.0`. Это
 **contract preparation**, а не runtime integration или owner activation; production
 cutover остаётся `0/4`.
 

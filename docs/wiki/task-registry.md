@@ -44,9 +44,10 @@ exact marketplace listing scope и SKU recipe — разные проекции 
   custody, новый Product Truth Ed25519 domain и pinned external worker. Реализация
   Stage A ждёт exact owner gate; production activation/spend он не разрешает.
 - 🟢 Phase 6 contract preparation — pure hash-bound adapters всех четырёх consumers
-  готовы (`6/6`): Bundle Factory draft seed, Listing Improvement preview seed,
+  готовы (`7/7`): Bundle Factory draft seed, Listing Improvement preview seed,
   Unit Economics typed basis и Procurement factual-pack review plan. Они не имеют
-  DB/network/provider/process surface и не означают runtime activation.
+  DB/network/provider/process surface и не означают runtime activation. Gateway
+  `1.1.0` несёт exact recipe variant/qty для inventory и не выводит target из offer.
 - ⚪ Далее — authoritative manifest/backfill/readiness, затем staged business-runtime
   cutover `OFF → SHADOW → ENFORCED` по одному consumer и только потом
   owner-approved canary/waves. Production cutover остаётся `0/4`.

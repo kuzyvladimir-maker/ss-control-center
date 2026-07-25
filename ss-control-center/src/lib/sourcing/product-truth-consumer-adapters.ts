@@ -405,6 +405,20 @@ function optionPlan(
   };
 }
 
+function isPriceOnlyProcurementBlocker(
+  blocker: string,
+  fullyAllocatedComponentIndexes: ReadonlySet<number>,
+): boolean {
+  for (const componentIndex of fullyAllocatedComponentIndexes) {
+    if (
+      blocker === `COMPONENT_${componentIndex}:NO_CURRENT_ELIGIBLE_LOCAL_PRICE`
+      || blocker ===
+        `COMPONENT_${componentIndex}:MANUAL_COST_NOT_RETAILER_BUY_OPTION`
+    ) return true;
+  }
+  return false;
+}
+
 /**
  * Read-only Procurement MVP. It computes demand and reviewable factual options,
  * but deliberately emits no cart/order/purchase instruction.
@@ -418,10 +432,25 @@ export function compileProductTruthProcurementPlan(
     fail("CONSUMER_ADAPTER_CONSUMER_MISMATCH", "Procurement view is required");
   }
   const components = entry.view.components.map((component) => {
+    const recipeMatches = entry.recipe.components.filter((candidate) =>
+      candidate.componentIndex === component.componentIndex);
+    if (recipeMatches.length !== 1) {
+      fail(
+        "CONSUMER_ADAPTER_PROCUREMENT_INVALID",
+        `component ${component.componentIndex} lacks one exact recipe binding`,
+      );
+    }
+    const recipe = recipeMatches[0];
     const perOrderQuantity = positiveInteger(
       component.requiredQuantity,
       `component ${component.componentIndex} requiredQuantity`,
     );
+    if (recipe.quantity !== perOrderQuantity) {
+      fail(
+        "CONSUMER_ADAPTER_PROCUREMENT_INVALID",
+        `component ${component.componentIndex} procurement and recipe quantities differ`,
+      );
+    }
     const requiredQuantity = positiveInteger(
       perOrderQuantity * orderQuantity,
       `component ${component.componentIndex} total requiredQuantity`,
@@ -435,7 +464,16 @@ export function compileProductTruthProcurementPlan(
         `component ${component.componentIndex} factual offers cross canonical variants`,
       );
     }
-    const factualCanonicalVariantId = factualVariantIds[0] ?? null;
+    if (
+      factualVariantIds.length === 1
+      && factualVariantIds[0] !== recipe.targetCanonicalVariantId
+    ) {
+      fail(
+        "CONSUMER_ADAPTER_PROCUREMENT_INVALID",
+        `component ${component.componentIndex} factual offer differs from the target recipe variant`,
+      );
+    }
+    const factualCanonicalVariantId = recipe.targetCanonicalVariantId;
     const inventory =
       (factualCanonicalVariantId
         ? input.inventoryByCanonicalVariantId?.[factualCanonicalVariantId]
@@ -471,7 +509,12 @@ export function compileProductTruthProcurementPlan(
         ? options[0] ?? null
         : null;
     const blockers = unique([
-      ...component.blockers,
+      ...component.blockers.filter((blocker) =>
+        shortageQuantity !== 0
+        || (
+          blocker !== "NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+          && blocker !== "MANUAL_COST_NOT_RETAILER_BUY_OPTION"
+        )),
       ...(inventory.status === "UNKNOWN"
         ? [`COMPONENT_${component.componentIndex}_INVENTORY_UNKNOWN`]
         : []),
@@ -508,15 +551,26 @@ export function compileProductTruthProcurementPlan(
       blockers,
     };
   });
+  const fullyAllocatedComponentIndexes = new Set(
+    components
+      .filter((component) => component.shortageQuantity === 0)
+      .map((component) => component.componentIndex),
+  );
   const blockers = unique([
-    ...entry.blockers,
-    ...entry.view.blockers,
+    ...entry.blockers.filter((blocker) =>
+      !isPriceOnlyProcurementBlocker(
+        blocker,
+        fullyAllocatedComponentIndexes,
+      )),
+    ...entry.view.blockers.filter((blocker) =>
+      !isPriceOnlyProcurementBlocker(
+        blocker,
+        fullyAllocatedComponentIndexes,
+      )),
     ...components.flatMap((component) => component.blockers),
   ]);
   const readyForReview =
-    entry.ready
-    && entry.view.ready
-    && components.length > 0
+    components.length > 0
     && blockers.length === 0;
   return hashBound({
     schemaVersion: PRODUCT_TRUTH_PROCUREMENT_PLAN_VERSION,
@@ -528,6 +582,7 @@ export function compileProductTruthProcurementPlan(
     claims: {
       readOnly: true,
       inventoryUnknownIsNotZero: true,
+      exactInventoryMayResolvePriceOnlyBlocker: true,
       factualOffersOnlyForSelection: true,
       estimateIsNotBuyEvidence: true,
       manualCostIsNotBuyEvidence: true,
