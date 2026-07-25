@@ -8,7 +8,8 @@
 > [[product-truth-operator-runbook]]. Consumer cutover:
 > [[product-truth-consumer-cutover]]. Release boundary:
 > [[product-truth-release-scope]]. Matcher evidence:
-> [[product-truth-matcher-replay-v2]].
+> [[product-truth-matcher-replay-v2]]. Web operations design:
+> [[product-truth-web-operations-control-plane]].
 >
 > Этот документ не разрешает paid/provider calls, Turso writes, migrations,
 > marketplace mutations, publication, repricing, delist или purchase. Он является
@@ -173,23 +174,34 @@ legacy execution path.
   provider ceilings, receipts/spend, blockers, event-chain/report/artifact hashes.
 - [x] Держать web `Execute`, retry/replay и self-asserted owner approval
   технически отсутствующими, а runtime — default `OFF`.
-- [ ] Создать durable command queue и исполнять долгую работу отдельным worker;
+- [x] Провести completion/threat audit и зафиксировать canonical design в
+  [[product-truth-web-operations-control-plane]]: существующий Product Truth
+  operational ledger не дублируется; отдельный SSCC web-command bridge использует
+  content-addressed append-only artifacts, отдельный Product Truth Ed25519 domain,
+  typed allowlist и pinned long-running worker.
+- [x] Доказать, что ChannelMAX/Walmart patterns можно использовать только как
+  инженерные примитивы lease/heartbeat/ambiguity и Ed25519 verification; их
+  tables, keys, permits и authority не переносятся в Product Truth.
+- [ ] После отдельного Stage-A owner gate создать durable command queue;
+  долгую работу исполняет отдельный worker;
   browser только планирует,
   подтверждает и poll-ит состояние.
-- [ ] Выбрать постоянное immutable artifact custody и pinned owner-authentication
-  trust root. Текущий Product Truth v1 проверяет hashes/custody, но не
-  криптографически аутентифицирует автора approval; обычная UI-кнопка не может
-  безопасно расширить этот контракт.
-- [ ] После отдельного design/owner gate реализовать authenticated command
+- [x] Выбрать рекомендуемую permanent boundary для owner decision: bounded
+  append-only artifact bytes в основной SSCC DB, новый отдельный Product Truth
+  Ed25519 trust root/private owner custody и pinned iMac/`launchd` worker. Это
+  design decision, а не activation; public image R2 и Vercel request запрещены.
+- [ ] После отдельного Stage-A owner gate реализовать authenticated command
   admission, сохранив `ambiguous=no replay`, terminal states,
   new-output-only semantics и sealed CLI parity.
 
 **Exit:** UI не ослабляет sealed plan, approval, budget ledger или mutation gates;
 локальный no-spend smoke полностью воспроизводим.
 
-**Текущий blocker:** required durable web-command/artifact/trust boundary является
-новой authority и schema/runtime surface. До отдельного owner решения Phase 4
-честно остаётся `⛔`, а готовый CLI из [[product-truth-operator-runbook]] остаётся
+**Текущий blocker:** design закрыт, но новая SSCC schema и отдельный Product Truth
+trust root всё равно являются новой authority/runtime surface. Exact owner phrase,
+разрешающая только default-OFF Stage A, находится в
+[[product-truth-web-operations-control-plane]]. До этого решения Phase 4 честно
+остаётся `⛔`, а готовый CLI из [[product-truth-operator-runbook]] остаётся
 единственным execution entrypoint.
 
 ### ⛔ Phase 5 — Production data foundation

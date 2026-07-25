@@ -23,9 +23,12 @@
    восемь immutable inputs, честный post-blind provenance и sealed wrapper boundary.
 8. `docs/wiki/product-truth-command-center.md` — живой implementation board
    постоянного модуля Catalog / Product Truth, его фазы, acceptance gates и прогресс.
-9. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
+9. `docs/wiki/product-truth-web-operations-control-plane.md` — канонический
+   default-OFF design web→worker bridge, отдельного Product Truth owner trust root,
+   immutable command artifacts и staged activation.
+10. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
    это единственный operator workflow готового движка.
-10. Для исправления существующих Walmart-листингов —
+11. Для исправления существующих Walmart-листингов —
     `docs/wiki/walmart-listing-integrity-operator-runbook.md`; это единственный
     operator workflow frozen Listing Integrity repair engine.
 
