@@ -353,6 +353,41 @@ track и больше не обозначается blocker текущего Wal
   release verify подтвердил engine/manifest, а пять ключевых Walmart engine/preview/
   economics/discovery файлов byte-exact совпали с frozen snapshot. Gallery повторно
   прошла lint, production build и render `2/2`.
+- [x] Сверить 2026-07-25 buyer-view с актуальными публичными Walmart PDP exact
+  product и pack-4: `https://www.walmart.com/ip/34312392` и
+  `https://www.walmart.com/ip/5207432412`. Gallery по умолчанию теперь показывает
+  Walmart-подобную покупательскую страницу с store/title/rating/online price,
+  Shipping/Pickup/Delivery, seller, save actions, key features, product details и
+  specifications; economics/UPC/Product Truth proof скрыты за отдельным owner
+  evidence toggle и не смешиваются с buyer-view.
+- [x] Собрать из clean gallery commit
+  `d772c9a8c19bce5bae06698e50921b87defc894e` текущий Sites deployment archive:
+  SHA-256 `9ac1aa7404884ba3ff5a8f27efe9773bd71a4cd923d32de6005b2e28b16d691a`;
+  `.env`, `.git` и `node_modules` в archive отсутствуют. Предыдущий
+  `ec1e3643…34ed61` / `edae5af7…a484a3` superseded после исправления семантики
+  heading: exact product title теперь является единственным buyer-page `h1`.
+  Отправка current archive наружу остаётся отдельным понятным owner gate и не
+  разрешает Walmart publication.
+- [x] Read-only проверить Sites target: существующий project активен, access mode
+  `custom`, allowlist содержит только owner account, saved versions `0`, preview/live
+  URL отсутствуют. Новый site не создаётся; после owner gate используется этот exact
+  project и current clean commit.
+- [x] После явного owner approval 2026-07-25 сохранить Sites version `1` из exact
+  commit `d772c9a8…fc894e` и успешно развернуть owner-only production URL
+  `https://walmart-new-sku-owner-preview.kuzy-09.chatgpt.site`. Post-deploy
+  `get_site` подтвердил current live URL, `custom` access, ровно один owner account
+  и отсутствие allowed groups. Автоматический deployment screenshot визуально
+  подтвердил buyer-view, обе pack-карточки, изображения, title и prices. Walmart,
+  UPC, Product Truth DB и paid providers не вызывались.
+- [x] По owner feedback «Pack of 3 выглядит не очень качественно» переработать только
+  hero composition: три почти фронтальные упаковки, симметричный ряд, минимальное
+  перекрытие и source image `1400×1400 qlt=95` (`HTTP 200 image/jpeg`). Gallery
+  lint/build/render `2/2` прошли; owner-only Sites version `2` из clean commit
+  `674d6945…2b6191` успешно заменила version `1` по тому же URL. Товар, тексты,
+  economics, UPC и Walmart state не менялись.
+- [x] Повторно проверить 2026-07-25 все шесть preview image URL: `6/6` вернули
+  `HTTP 200 image/jpeg`. Это доказывает работоспособность галереи, но не заменяет
+  publication-rights и count-accurate final-image gate.
 - [ ] Владелец визуально принимает либо возвращает на доработку pack-of-2/pack-of-3.
 - [ ] После принятия preview повторить `doctor→plan` против fresh production target;
   максимум один Oxylabs query и один Unwrangle detail требуют отдельного понятного

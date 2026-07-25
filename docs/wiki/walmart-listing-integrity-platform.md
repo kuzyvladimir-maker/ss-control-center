@@ -90,6 +90,27 @@ result остаётся evidence, а не единоличным разреше�
 [[walmart-listing-integrity-checkpoint-2026-07-21]]. Исторический one-SKU
 snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
 
+- 2026-07-25 добавлен отсутствовавший one-SKU orchestration boundary:
+  `npm run walmart:listing-integrity -- doctor|capture|inspect|observe|diagnose`.
+  `diagnose` принимает exact
+  Product Truth, buyer snapshot/PDP, все image bytes и blind observations, проверяет
+  каждый image SHA и выдаёт sealed
+  `SOURCE_REQUIRED|BAD|REVIEW|CLEAN_CANDIDATE` с точным `next_step`.
+  `CLEAN_CANDIDATE` намеренно не равен PASS до source-aware Qualification. Найдены
+  и закрыты два скрытых дефекта прежнего моста: неисполнявшийся missing import и
+  неверное требование literal donor-title equality до аудита current title.
+  `capture` fail-fast возвращает `SOURCE_REQUIRED` до Walmart, а `inspect` продолжает
+  только read-only self-consistency lane и никогда не создаёт repair authority.
+  Server-side PDP redirect/подмена теперь возвращает sealed
+  `BUYER_CAPTURE_REQUIRED`: чужой primary item не принимается, уже полученные
+  seller/catalog evidence не теряются, images/model/writes остаются нулевыми.
+  Точный browser HTML можно подать через `--buyer-pdp-html`; strict item-ID binding
+  остаётся обязательным. Реальный `FaisalX-1183` дал именно этот штатный результат:
+  `2` Walmart logical GET + `1` buyer GET, images/model/DB writes/Walmart writes `0`,
+  intake SHA `698cf12b…06a624`. One-SKU suite 17/17, schema-gate suite 11/11 и
+  targeted ESLint PASS. Limited worker adapter реализован, но fresh exact buyer
+  capture, mixed calibration и persistent queue ещё не закрыты; pilot/mass run
+  разрешением это не является.
 - Локальные фазы 0–5 закрыты: полный offline
   `detect → plan → repair → fresh reread → qualify` доказан, combined suite
   **109/109 PASS** в рабочей проекции и чистом checkout. Cross-process custody
