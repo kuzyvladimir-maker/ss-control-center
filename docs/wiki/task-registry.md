@@ -42,17 +42,16 @@
 
 - 🟡 **Product Truth Control Center / permanent productization:** owner 2026-07-19
   подтвердил, что готовый engine должен стать постоянным backend существующего
-  модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Rebaseline
-  2026-07-25 доказал, что актуальный matcher `1.2.1`, read-contract `3.2.0`, runner,
-  schema и tests уже находятся в current Git `HEAD 12799d64`; старый engine bundle
-  `9b194a21` superseded и не импортируется. Fresh clone прошёл `npm ci`, Product
-  Truth `429/429`, CLI `13/13`, Prisma и targeted ESLint. Отдельный docs-only
-  candidate `5c6be822` материализует root `AGENTS.md` и 15 канонических runbooks,
-  даёт Wiki-Brain `0` broken links и сохранён в checksum-bound bundle SHA-256
-  `c618c0b0…9bed5`. Phase 1 остановлена только на owner import/merge decision; затем
-  следуют canonical read-only API/UI,
-  default-OFF operations control plane, production data gates и staged cutover 0/4.
-  Живой checklist и acceptance gates: [[product-truth-command-center]].
+  модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Reconciled
+  candidate `r4` собран поверх current `main 9f59ecbd`: он сохраняет полный текущий
+  owner registry и три более свежих Walmart-документа, добавляет authenticated
+  default-OFF Product Truth API, семь Catalog views и pure adapters четырёх
+  consumers. Exact branch прошёл Product Truth `444/444`, TypeScript, targeted
+  ESLint, production build и Wiki-Brain (`0` broken links). Shared `main` не
+  изменён; import остановлен только на `G1` из [[product-truth-owner-gates]].
+  Operations Stage A остаётся за отдельным `G2`; production/provider/paid/
+  marketplace действий не было. Cutover остаётся `0/4`. Живой checklist и
+  acceptance gates: [[product-truth-command-center]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
 - 🟢 Отдельный roadmap с gates, критериями Phase 1/2 и owner-решениями записан.
 - 🟢 Обязательные указатели добавлены в Wiki‑Brain и инструкции Codex/Claude.
