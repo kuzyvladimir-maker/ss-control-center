@@ -4,7 +4,7 @@
 Владелец цели: Vladimir  
 Исполнитель разработки и квалификации: Codex  
 Оператор замороженного движка после пилота: Command Center / Claude Code  
-Последняя сверка: 2026-07-23
+Последняя сверка: 2026-07-25
 
 ## Главная цель
 
@@ -67,28 +67,59 @@ SKU `FaisalX-1183`:
 Legacy donor audit дополнительно доказал неправильную привязку к Chessmen Butter
 Cookies. Этот donor запрещено переносить в canonical Product Truth.
 
-### [ ] Phase 4 — свежий Walmart source и exact truth одного canary — IN PROGRESS
+### [ ] Phase 4 — единый процесс одного SKU и свежий read-only intake — IN PROGRESS
 
-Нужно получить свежий authoritative Walmart ITEM v6 и связать `FaisalX-1183` с точным
-товарным вариантом Pepperidge Farm Butter Hot Dog Buns, 14 oz / 8-count, recipe
-`6 × one sellable package`.
+Задача фазы — не перепись всего каталога и не ожидание массового ITEM report. Один
+SKU должен пройти одной командой:
+
+`Product Truth → exact seller/catalog identity → buyer PDP → MAIN + вся gallery →
+blind observation → deterministic audit → SOURCE_REQUIRED/BAD/REVIEW/CLEAN_CANDIDATE`.
+
+ITEM v6 может быть дополнительным census/source artifact, но не является обязательным
+предусловием последовательной проверки одного exact SKU.
 
 Уже сделано:
 
 - Product Truth schema migrations 8/8 применены и сертифицированы;
-- bounded GET-only probe полностью покрыл последние 24 часа и подтвердил, что готового
-  ITEM v6 нет;
-- report-create calls = 0, Walmart listing writes = 0;
-- точный buns candidate найден, но ещё не promoted вручную.
+- реализован чистый Product Truth → one-SKU detector bridge без title fallback и без
+  возможности превратить multipack donor в multipack-of-multipacks;
+- найден и исправлен пропущенный runtime import, который прежние projection-only
+  тесты не исполняли;
+- исправлено разделение ролей: current buyer title теперь проверяется против Product
+  Truth, а не обязан заранее буквально совпадать с donor title;
+- добавлена единая локальная команда `npm run walmart:listing-integrity -- diagnose`;
+  она читает exact evidence одного SKU, побайтово проверяет все изображения и выдаёт
+  один sealed результат с SHA-256;
+- добавлены `capture|inspect`: `capture` останавливается до Walmart при отсутствии
+  canonical Product Truth, а `inspect` может безопасно собрать live self-consistency
+  evidence для source-blocked SKU, не объявляя его Product Truth и не разрешая repair;
+- schema gate теперь сначала доказывает доступность БД и больше не выдаёт сетевой/DNS
+  отказ за «отсутствует вся Product Truth schema»;
+- server-side Walmart PDP substitution оформлена как штатный
+  `BUYER_CAPTURE_REQUIRED`: точные seller/catalog evidence сохраняются, чужой primary
+  product отвергается, images/model/writes не запускаются. Exact browser HTML можно
+  импортировать через `inspect --buyer-pdp-html=...`; item ID всё равно повторно
+  проверяется strict parser;
+- реальный read-only `FaisalX-1183` подтвердил этот stop:
+  seller/catalog GET `2`, buyer GET `1`, images/model/DB writes/Walmart writes `0`;
+  sealed intake SHA
+  `698cf12b5dcb019e3c70625a60ddc62aafdee7acded3ccf7f18d95549206a624`;
+- доказаны `BAD` для MAIN `1 вместо 6`, reject изменённых image bytes, reject другого
+  SKU и честный `CLEAN_CANDIDATE`, который ещё не называется PASS до source-aware
+  Qualification;
+- новый one-SKU suite 17/17 PASS, schema-gate suite 11/11 PASS, targeted ESLint PASS.
 
 Exit criteria:
 
-- свежий completed ITEM v6 сохранён exact bytes + SHA-256;
-- строка `FaisalX-1183` найдена и связана с buyer identity;
-- exact product/variant/quantity подтверждены без legacy cookie donor;
-- one-SKU Product Truth read-contract READY либо targeted owner-attested bootstrap
-  прошёл канонический gate;
-- Amazon scope не участвует в этом exit criterion.
+- команда самостоятельно получает свежие read-only exact-SKU/Product Truth/buyer
+  inputs либо возвращает `SOURCE_REQUIRED`, не останавливая всю очередь;
+- limited image-worker adapter выдаёт signed blind observations без знания Product
+  Truth и без Walmart write path;
+- смешанная калибровочная выборка содержит известный BAD, визуально корректный SKU,
+  wrong-product gallery и source-blocked SKU;
+- по каждому SKU сохранён sealed отчёт и точный следующий шаг; ни один REVIEW не
+  повышается до PASS;
+- Amazon scope и полный ITEM v6 census не участвуют в этом exit criterion.
 
 ### [ ] Phase 5 — финальный one-SKU apply package и owner review
 
@@ -182,8 +213,9 @@ mixing, quantity confusion, collateral field changes и потеря публи�
 ## Текущая точка
 
 Активная фаза: **Phase 4**.  
-Следующий внешний action: один новый zero-retry Walmart ITEM v6 report request; он не
-изменяет листинги, но создаёт report request в Walmart.  
+Следующий action: получить exact buyer-facing capture для одного SKU (автоматически
+через browser worker либо импортом строгого HTML), завершить signed blind observation,
+затем выполнить смешанную read-only калибровочную выборку. Новый ITEM v6 report request
+и полный catalog census для этого не требуются.  
 Live listing writes на текущей точке: **0**.  
 Mass run: **NO-GO**.
-
