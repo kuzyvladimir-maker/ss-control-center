@@ -18,8 +18,9 @@ import { pickBestFront, pickBestFrontFromPool, qualifyDonorFront, qualifyTiledMa
 import { resolveDonorPhoto } from "../../sourcing/resolve-donor";
 import { logRemediation } from "./analytics";
 import { buildFoodAttributes } from "./attributes";
+import { SPEC_VERSION } from "./spec-version";
 
-export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
+export { SPEC_VERSION };
 const DONOR_IMAGE_CAP = 6;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 

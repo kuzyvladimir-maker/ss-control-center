@@ -21,7 +21,6 @@
  * Tests/smoke install `globalThis.__SS_CODEX_IMAGE_STUB__` to return canned
  * PNG bytes with no network call.
  */
-import sharp from "sharp";
 
 export interface CodexImageStub {
   (args: { prompt: string; size?: string }): Promise<Buffer>;
@@ -73,6 +72,10 @@ async function normalize(png: Buffer, size?: string): Promise<Buffer> {
   const dim = parseSize(size);
   if (!dim) return png;
   try {
+    // Loaded lazily: sharp dlopen's native libvips at import time, and a
+    // static import here made every module that transitively reaches this
+    // file fail to load when the .so is missing from a serverless bundle.
+    const { default: sharp } = await import("sharp");
     return await sharp(png)
       .resize(dim.w, dim.h, { fit: "cover", position: "centre" })
       .png()

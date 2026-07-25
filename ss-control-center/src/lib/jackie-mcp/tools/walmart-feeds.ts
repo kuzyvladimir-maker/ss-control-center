@@ -33,7 +33,7 @@ import {
   validatePriceUpdates,
   type PriceUpdate,
 } from "@/lib/walmart/price";
-import { SPEC_VERSION } from "@/lib/walmart/multipack/remediate";
+import { SPEC_VERSION } from "@/lib/walmart/multipack/spec-version";
 import {
   PROMOTIONAL_BANNED,
   PROMOTIONAL_BANNED_LOWER,
