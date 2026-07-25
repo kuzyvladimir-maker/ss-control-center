@@ -3,8 +3,11 @@
  * small buyer-PDP contract consumed by buyer-facing-snapshot.ts.
  *
  * This parser performs no network or filesystem I/O. It never chooses a
- * related/variant product: the primary product, canonical URL and both public
- * item-id fields must all equal the exact requested numeric item ID.
+ * related/variant product: the displayed product `usItemId` and canonical URL
+ * must equal the exact requested numeric item ID. Walmart's
+ * `primaryUsItemId` may identify the primary item in a variant/offer group, may
+ * differ from the requested item, or may be null when Walmart has no primary
+ * group item. When present it is validated as an ID.
  */
 
 const MAX_PUBLIC_PDP_HTML_BYTES = 5 * 1024 * 1024;
@@ -141,11 +144,23 @@ export function projectWalmartPublicBuyerPdpHtml(
   const product = requiredRecord(data.product, "Walmart PDP primary product");
   const idml = requiredRecord(data.idml, "Walmart PDP idml");
 
-  const publicIds = [product.usItemId, product.primaryUsItemId].map((value, index) => (
-    requiredString(value, `Walmart PDP public item ID ${index + 1}`, 100)
-  ));
-  if (publicIds.some((value) => value !== expectedItemId)) {
-    throw new Error("Walmart PDP primary product does not match the requested item ID");
+  const displayedItemId = requiredString(
+    product.usItemId,
+    "Walmart PDP displayed item ID",
+    100,
+  );
+  if (product.primaryUsItemId !== null && product.primaryUsItemId !== undefined) {
+    const primaryItemId = requiredString(
+      product.primaryUsItemId,
+      "Walmart PDP primary item ID",
+      100,
+    );
+    if (!/^\d+$/u.test(primaryItemId)) {
+      throw new Error("Walmart PDP primary item ID must contain digits only");
+    }
+  }
+  if (displayedItemId !== expectedItemId) {
+    throw new Error("Walmart PDP displayed product does not match the requested item ID");
   }
 
   const imageInfo = requiredRecord(product.imageInfo, "Walmart PDP imageInfo");

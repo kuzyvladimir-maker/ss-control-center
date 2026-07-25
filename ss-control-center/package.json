@@ -25,6 +25,8 @@
     "walmart-listing-catalog": "node --env-file=.env --experimental-strip-types scripts/walmart-listing-integrity-catalog.mjs",
     "walmart-listing-triage": "node --experimental-strip-types scripts/walmart-listing-integrity-triage.mjs",
     "walmart-listing-triage-observer": "node --experimental-strip-types scripts/walmart-listing-integrity-triage-observer.mjs",
+    "walmart:listing-integrity": "node --import tsx scripts/walmart-listing-integrity-process.ts",
+    "walmart:listing-repair:owner": "node --import tsx scripts/walmart-listing-repair-owner-package.ts",
     "walmart:listing-repair": "node scripts/verify-and-run-walmart-listing-repair.mjs",
     "walmart:item-v6-absence-probe": "node --env-file=.env --experimental-strip-types scripts/capture-walmart-item-v6-absence-probe.mjs",
     "product-truth": "node --import tsx scripts/product-truth-runner.ts",

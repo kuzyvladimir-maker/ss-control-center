@@ -10,6 +10,8 @@
  * multipack-of-multipacks.
  */
 
+import { createHash } from "node:crypto";
+
 import {
   BLIND_OBSERVATION_SCHEMA,
   parseBlindResponse,
@@ -77,6 +79,32 @@ export type WalmartListingSingleDiagnosticResult =
       truth: Extract<WalmartListingSingleTruthProjection, { status: "READY" }>;
       detector_input: WalmartListingIntegrityInput;
       report: SealedWalmartListingIntegrityReport;
+    };
+
+export type WalmartListingSingleProcessOutcome =
+  | {
+      status: "SOURCE_REQUIRED";
+      blockers: string[];
+      report: null;
+      next_step: "ENRICH_EXACT_PRODUCT_TRUTH";
+    }
+  | {
+      status: "BAD";
+      blockers: string[];
+      report: SealedWalmartListingIntegrityReport;
+      next_step: "BUILD_REPAIR_PREVIEW";
+    }
+  | {
+      status: "REVIEW";
+      blockers: string[];
+      report: SealedWalmartListingIntegrityReport;
+      next_step: "MANUAL_OR_ADDITIONAL_EVIDENCE_REVIEW";
+    }
+  | {
+      status: "CLEAN_CANDIDATE";
+      blockers: [];
+      report: SealedWalmartListingIntegrityReport;
+      next_step: "RUN_SOURCE_AWARE_QUALIFICATION";
     };
 
 function exactText(value: unknown): string | null {
@@ -301,6 +329,14 @@ export async function diagnoseWalmartSingleListing(
   const truthSha = walmartListingIntegritySha256(input.product_truth);
   const buyerSha = buyer.body_sha256;
   const surfaceSha = walmartListingIntegritySha256(surface);
+  // AuditExpectedTruth.title is the source-bound current buyer-facing title,
+  // while its identity/quantity/package facts come from Product Truth. Keeping
+  // these roles separate lets the detector audit a wrong live title instead of
+  // requiring the live title to equal the donor title before comparison.
+  const detectorExpected: AuditExpectedTruth = {
+    ...truth.expected,
+    title: surface.title,
+  };
   const detectorInput: WalmartListingIntegrityInput = {
     schema_version: WALMART_LISTING_INTEGRITY_INPUT_SCHEMA,
     listing: {
@@ -321,7 +357,7 @@ export async function diagnoseWalmartSingleListing(
       catalog_truth_export_id: `single-diagnostic:${listingKey}`,
       catalog_truth_export_body_sha256: truthSha,
       catalog_truth_case_id: `single-diagnostic-case:${listingKey}`,
-      catalog_truth_preflight_sha256: walmartListingIntegritySha256(truth.expected),
+      catalog_truth_preflight_sha256: walmartListingIntegritySha256(detectorExpected),
       truth_revision_id: truth.component_evidence_id,
       truth_revision_body_sha256: truthSha,
       truth_approval_sha256: walmartListingIntegritySha256({
@@ -337,7 +373,7 @@ export async function diagnoseWalmartSingleListing(
       surface_snapshot_body_sha256: surfaceSha,
       surface_payload_sha256: buyer.payload_hashes.buyer_payload_canonical_sha256,
     },
-    expected: truth.expected,
+    expected: detectorExpected,
     surface,
     images: {
       assets,
@@ -357,6 +393,58 @@ export async function diagnoseWalmartSingleListing(
     truth,
     detector_input: detectorInput,
     report: compileWalmartListingIntegrityReport(detectorInput),
+  };
+}
+
+/**
+ * Convert the input-only detector result into the operational state used by a
+ * sequential one-SKU queue. CLEAN_CANDIDATE is deliberately not PASS: only
+ * the existing source-aware verifier may promote it after rebuilding all
+ * source artifacts and exact image bytes.
+ */
+export function classifyWalmartSingleDiagnostic(
+  result: WalmartListingSingleDiagnosticResult,
+): WalmartListingSingleProcessOutcome {
+  if (result.status === "SOURCE_REQUIRED") {
+    return {
+      status: "SOURCE_REQUIRED",
+      blockers: [...result.truth.blockers],
+      report: null,
+      next_step: "ENRICH_EXACT_PRODUCT_TRUTH",
+    };
+  }
+  if (result.report.overall_verdict === "BAD") {
+    return {
+      status: "BAD",
+      blockers: [...result.report.blocking_reasons],
+      report: result.report,
+      next_step: "BUILD_REPAIR_PREVIEW",
+    };
+  }
+  const allComponentChecksPass = result.report.text_decision.verdict === "PASS"
+    && result.report.main_decision.verdict === "PASS"
+    && result.report.gallery_decisions.every((decision) => decision.verdict === "PASS")
+    && result.report.blocking_reasons.length === 0
+    && result.report.review_reasons.every((reason) => (
+      reason === "source artifacts, surface snapshot, and image bytes were not independently verified"
+      || reason === "blind observation and local OCR artifacts were not independently verified"
+    ));
+  if (allComponentChecksPass) {
+    return {
+      status: "CLEAN_CANDIDATE",
+      blockers: [],
+      report: result.report,
+      next_step: "RUN_SOURCE_AWARE_QUALIFICATION",
+    };
+  }
+  return {
+    status: "REVIEW",
+    blockers: [...new Set([
+      ...result.report.blocking_reasons,
+      ...result.report.review_reasons,
+    ])],
+    report: result.report,
+    next_step: "MANUAL_OR_ADDITIONAL_EVIDENCE_REVIEW",
   };
 }
 

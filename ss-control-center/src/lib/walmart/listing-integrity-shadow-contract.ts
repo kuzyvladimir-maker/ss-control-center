@@ -7,6 +7,51 @@ export interface ListingIntegrityShadowImage {
   role: string;
 }
 
+export interface ListingIntegrityOwnerRepairReview {
+  status: "OWNER_REVIEW_REQUIRED";
+  selectedAt: string;
+  createdAt: string;
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  title: string;
+  publishedStatus: string;
+  lifecycleStatus: string;
+  productTruth: {
+    donorProductId: string;
+    brand: string;
+    product: string;
+    variant: string;
+    singleUnitSize: string;
+    singleUnitInnerCount: number;
+    singleUnitUpc: string;
+    outerUnits: number;
+    totalUnits: number;
+    wrongLegacyDonorId: string;
+  };
+  current: {
+    description: string;
+    bullets: string[];
+    images: ListingIntegrityShadowImage[];
+  };
+  proposed: {
+    description: string;
+    bullets: string[];
+  };
+  changedFields: ["description", "bullets"];
+  unchangedFields: string[];
+  qualificationPrecheck: "PASS";
+  exactImageBytesVerified: true;
+  certificationBodySha256: string;
+  reviewFileSha256: string;
+  certificationFileSha256: string;
+  evidenceIndexPath: string;
+  evidenceIndexSha256: string;
+  approvalInstruction: string;
+  walmartWriteAuthorized: false;
+  databaseWriteAuthorized: false;
+}
+
 export interface ListingIntegrityProductTruthReadiness {
   status:
     | "BLOCKED_SCHEMA_NOT_READY"
@@ -126,6 +171,7 @@ export interface ListingIntegrityCatalogOverview {
 
 export interface ListingIntegrityShadowData {
   mode: "SHADOW_READ_ONLY";
+  ownerRepairReview: ListingIntegrityOwnerRepairReview | null;
   catalog: ListingIntegrityCatalogOverview;
   productTruth: ListingIntegrityProductTruthReadiness;
   engine: {

@@ -417,6 +417,25 @@ test("evidence and harvest paths fail closed before their migrations", async () 
   }
 });
 
+test("schema inspection does not misclassify an unavailable database as missing schema", async () => {
+  let attempts = 0;
+  const unavailable = {
+    async execute() {
+      attempts += 1;
+      throw new Error("PRODUCT_TRUTH_DATABASE_UNREACHABLE");
+    },
+  } as unknown as Client;
+
+  await assert.rejects(
+    assertProductTruthEvidenceSchema(unavailable),
+    (error) =>
+      !(error instanceof ProductTruthSchemaNotReadyError)
+      && error instanceof Error
+      && error.message === "PRODUCT_TRUTH_DATABASE_UNREACHABLE",
+  );
+  assert.equal(attempts, 1);
+});
+
 test("matcher provenance tuple is exact and JSON-bound across canonical evidence", async () => {
   const db = createClient({ url: "file::memory:" });
   try {

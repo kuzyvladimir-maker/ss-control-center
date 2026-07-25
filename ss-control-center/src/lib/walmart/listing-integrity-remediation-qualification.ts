@@ -62,7 +62,7 @@ const FIELD_ORDER = Object.freeze([
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
 const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
-  "0d21ffcd5bf55c6e781daba80b3a750613f2d21bb89690a73ccbd66326aa246d";
+  "b11f4ccaeaac3f9550eb4d8fd2dbbf67dfd9212840c3a30e2c1d958ef5ea243a";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE
@@ -876,6 +876,25 @@ function assertTargetSurfaceMatchesProductTruth(
       fail(`repair target attributes do not contain one exact ${fact.kind} claim`);
     }
   }
+}
+
+/**
+ * Pure review-time precheck for a proposed full listing surface.
+ *
+ * This proves only that the proposed text/attributes express the supplied exact
+ * Product Truth identity, outer count and package facts. It performs no reads,
+ * writes or authorization and does not replace the frozen plan/permit gates.
+ */
+export function precheckWalmartListingRepairTargetForReview(input: {
+  surface: WalmartListingSurface;
+  expected: WalmartListingIntegrityInput["expected"];
+}): { valid: true; marketplace_write_authorized: false } {
+  const surface = assertSurface(input.surface);
+  assertTargetSurfaceMatchesProductTruth(surface, input.expected);
+  return {
+    valid: true,
+    marketplace_write_authorized: false,
+  };
 }
 
 function checkState(value: unknown, expectedOuter: number): boolean {
