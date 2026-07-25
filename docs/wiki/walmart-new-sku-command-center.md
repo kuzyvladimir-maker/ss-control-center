@@ -1,0 +1,458 @@
+# Walmart New SKU — execution board
+
+> **Статус:** active implementation board, обновлено 2026-07-25.
+>
+> **Канон:** [[product-catalog-architecture]]. Операторский workflow:
+> [[walmart-new-sku-operator-runbook]]. Product Truth prerequisites:
+> [[product-truth-command-center]]. Этот board не разрешает production migrations,
+> Walmart publication, paid provider calls, repricing, delist или purchase.
+
+## Конечная цель
+
+Сделать `Walmart New SKU` полноценным опциональным подмодулем Bundle Factory:
+
+1. кандидат и контент читаются только из Product Truth;
+2. используется существующий owner-approved UPC pool;
+3. Walmart payload, policy, economics и lifecycle проверяются до публикации;
+4. Claude Code только исполняет frozen engine и его точный `next_command`;
+5. первый реальный SKU проходит весь путь до seller- и buyer-подтверждённого `LIVE`;
+6. второй SKU и любые волны требуют отдельного решения владельца.
+
+Уточнение цели владельца от 2026-07-22: это не отдельный скрипт, не второй Bundle
+Factory и не Walmart-only товарный каталог. Общий Bundle Factory сохраняет общие
+job/draft/approval primitives, но Amazon, Walmart и будущие каналы имеют независимые
+channel-ветки со своими content, attributes, images, compliance, payload, publish и
+verify lifecycle. Walmart-ветка использует Product Truth / донорский справочный
+каталог как единственный источник товарной идентичности, фактов, изображений,
+закупочных offers и evidence. Полный каталог наших существующих Walmart-листингов не
+является входом или prerequisite нового SKU. Непосредственно перед certification
+движок проверяет только два exact идентификатора будущего листинга: staged seller SKU
+должен отсутствовать, а выделенный UPC не должен быть занят в Walmart catalog.
+
+Knowledge Base конкретного канала переводится в versioned executable validators,
+candidate-bound policy evidence и live marketplace spec; markdown сам по себе не
+является runtime-разрешением. После успешного pilot 1–2 SKU масштабирование на волны
+15–20 и затем расписание проектируются как отдельные releases с новыми owner gates,
+лимитами, stop conditions и мониторингом. Текущий pilot release этого не разрешает.
+
+Текущий release намеренно поддерживает только один exact shelf-stable товарный
+вариант в multipack `2` или `3`, один candidate на plan и максимум два pilot SKU.
+Mixed/variety/frozen и партии 15–20 не входят в этот release.
+
+Уточнение владельца от 2026-07-23: целевая contribution margin равна `30%` после
+goods, packaging materials, seller shipping label и Walmart referral fee. Walmart
+разрешён как источник закупки. Высокая цена относительно локального Walmart
+comparable не отклоняет candidate внутри Bundle Factory: это обязательный warning для
+owner review, потому что бизнес доставляет в зоны, где retail delivery недоступен.
+При этом официальный Walmart Pricing Rule остаётся внешним риском unpublish/Buy Box.
+
+## Правило статусов
+
+- `✅ Завершено` — фаза завершена и проверена;
+- `🔄 Выполнение` — единственная текущая фаза;
+- `⬜ Ожидает` — ещё не начато;
+- `⛔ Owner gate` — всё возможное подготовлено, требуется понятное решение владельца
+  или внешний вход.
+
+После завершения каждого пункта или смены текущей фазы progress update обязан показать
+весь краткий фазовый план с этими отметками. Технический лог без видимого положения в
+плане не считается достаточным отчётом владельцу.
+
+## Минимальный реестр owner-gates
+
+Общая цель не является бессрочным разрешением на неизвестные будущие production
+bytes. При этом оператор не спрашивает «продолжать ли» для обычной работы. Без нового
+решения выполняются чтение, код, тесты, Wiki-Brain, plans, doctor, candidate/evidence
+подготовка, economics, policy analysis, dry-run и preview.
+
+Отдельное короткое решение владельца требуется только для уже подготовленного и
+показанного действия:
+
+1. ~~применить post-Product-Truth Walmart lifecycle migration~~ — закрыто
+   2026-07-23: schema-only activation v3 применён;
+2. выполнить платный provider call, только если бесплатных evidence недостаточно;
+3. отправить exact первый Walmart SKU после preview;
+4. отдельно разрешить второй pilot SKU;
+5. после pilot отдельно разрешить bounded waves и ещё позже schedule.
+
+Product Truth schema gate уже закрыт: exact восемь migrations применены и независимо
+сертифицированы. Полный cross-channel Phase 1 manifest/backfill остаётся обязательной
+отдельной задачей Product Truth Platform, но не стоит на критическом пути первого
+Walmart SKU: единственный pilot candidate может закрыть свой exact gap только через
+канонический sealed `TARGETED_WALMART_EVIDENCE` lane. Это не разрешает mass backfill,
+не создаёт отдельный каталог и не уменьшает полный Phase 1 denominator.
+
+Эти решения нельзя выдавать одним пакетом заранее: downstream plan/payload/source ещё
+не существует и его exact scope невозможно проверить. Один gate — одно короткое
+owner-сообщение обычным языком; hashes, artifact binding и confirmation собирает
+Codex. Повторно спрашивать разрешение внутри уже одобренного exact действия запрещено.
+
+## Фазовый план
+
+### ✅ Фаза 0 — Фактическая исходная точка
+
+- [x] Полностью перечитан обязательный Product Truth/Walmart canon.
+- [x] Текущий source, Git boundary, frozen release и production prerequisites
+  проверены на 2026-07-22.
+- [x] Исторический frozen release self-verify прошёл; его operational suite
+  `146/146` остаётся только исходной точкой, а не текущим release-кандидатом.
+- [x] Read-only production doctor подтвердил отсутствие Product Truth schema.
+- [x] Подтверждено: ITEM v6 attempt от 2026-07-22 получил `HTTP 429`, request ID
+  отсутствует, retry не выполнялся и запрещён.
+- [x] Исправлен wall-clock-stale Product Truth census fixture без ослабления
+  production TTL; предположение о runtime-дефекте Prisma CLI снято полным frozen
+  integration-прогоном.
+
+**Внешние эффекты этой фазы:** одна read-only Turso schema inspection; Walmart/DB
+writes, provider/model calls и listing mutations — `0`.
+
+### ✅ Фаза 1 — Единый Bundle Factory и Walmart channel adapter
+
+- [x] Доказать, что Walmart runtime использует общие `GenerationJob`, `BundleDraft`,
+  `MasterBundle`, `ChannelSKU` и общий `distribution-pipeline`, а не второй Bundle Factory.
+- [x] Закрыть legacy Studio Walmart path, который напрямую читал mutable
+  `DonorProduct`; Amazon Studio оставить без изменений.
+- [x] Добавить fail-closed regression gate для API и уже созданных legacy Walmart jobs.
+- [x] Исправить time-dependent Product Truth fixture без ослабления production TTL.
+- [x] Доказать единый runtime path:
+  `Bundle Factory → Walmart adapter → Product Truth → BundleDraft/ChannelSKU → distribution-pipeline`.
+- [x] Повторить общий Product Truth suite `426/426`, Walmart suite `160/160`,
+  focused matcher/evidence regressions `33/33` и frozen fake-live `3/3`.
+- [x] Доказать в fake-live ровно один feed POST, отсутствие второго POST при replay
+  и финальный `BUYER_VERIFIED/LIVE`.
+
+### ✅ Фаза 2 — Matcher provenance и новый frozen release
+
+- [x] Выдать matcher версию `canonical-product-match/1.2.1` и отдельно закрепить
+  SHA точных implementation bytes и matcher release manifest.
+- [x] Протащить полный matcher provenance через donor decisions, Product Truth,
+  COGS, read-contract `3.2.0`, Walmart plan `1.4.0` и listing manifest `1.1.0`.
+- [x] Сохранить ровно восемь canonical Product Truth migrations; production activation
+  остаётся отдельным owner-gated plan, а не девятой скрытой migration.
+- [x] Повторно проверить current source: Product Truth `427/427`, Walmart `160/160`,
+  focused matcher/evidence regressions `33/33`, frozen fake-live `3/3`, Prisma schema valid.
+- [x] Выпустить и проверить новый frozen Walmart release: operational suite из
+  persistent release `147/147`, source-release meta suite `13/13`.
+- [x] Сохранить runbook, manifest/certificate/checksums и release location в
+  долговечном artifact boundary без помещения runtime dependencies в обычный Git.
+
+### ✅ Фаза 3 — Исправленный план Product Truth v3
+
+- [x] Использовать первое owner approval ровно один раз для plan v2. Turso отверг
+  direct `PRAGMA ignore_check_constraints` внутри write-transaction до commit;
+  транзакция целиком откатилась, retry не выполнялся.
+- [x] Свежим read-only plan сразу после ошибки доказать отсутствие частичной мутации:
+  на тот момент production schema SHA остался `591d6ec4…9aea`, все восемь migrations
+  были pending, durable schema/data writes = `0`.
+- [x] Заменить только несовместимый direct PRAGMA на table-valued pragma `SELECT`,
+  сохранив fail-closed constraint check; проверить query внутри реальной Turso
+  write-transaction с rollback.
+- [x] Повторить тесты: focused migration `16/16`, Product Truth `427/427`, Walmart
+  `160/160`, frozen operational `147/147`, source-release `13/13`, fake-live `3/3`.
+- [x] Построить свежий read-only plan v3 против неизменившейся production DB:
+  `data/walmart-new-sku-engine/activation/20260723T004458Z-product-truth-plan-v3`,
+  SHA `96b675ac71344a4ded72e51cbe9d4b880139d7d5dd288e67895b8f87924b1d7f`,
+  `canApply=true`, `blockers=[]`, exact migrations `8`, compatibility rows `128`,
+  active writers/unfinished migrations/unsettled metered receipts = `0`.
+- [x] Выпустить и проверить frozen release v3 с исправленным activation runner:
+  engine SHA `eda6dc94…5e11`, manifest SHA `20f5f86d…c1d`, certificate SHA
+  `2c160359…1bd6`.
+
+### ✅ Фаза 4A — Product Truth production schema
+
+- [x] Снять новый self-contained production backup для plan 2026-07-22:
+  `data/walmart-new-sku-engine/activation/backups/20260722T224444Z`, portable SHA
+  `6e69911d1ab83f77545c9fa5789d35e29f11cd434a25b24d2f03e3fdef952526`;
+  `integrity_check=ok`, FK violations `0`, manifest SHA
+  `84c3b2bfdf625bf5a0b9a40534aab2de590eece79a6f51309f1c054547fa8f02`.
+- [x] Доказать writer quiescence без перекладывания технической проверки на owner:
+  reference enrichment/harvest/COGS crons отсутствуют в `vercel.json`, legacy routes
+  и manual mutation endpoints retired/410, canonical writers не фоновые процессы,
+  plan-bound active writer counts = `0`; apply всё равно повторяет drift/writer
+  preflight и fail-closed останавливается до записи при любом изменении.
+- [x] Зафиксировать первый неуспешный apply как полностью rolled-back incident;
+  approval v2 и plan v2 сохранить только как evidence и запретить их reuse.
+- [x] Выполнить полную локальную репетицию на отдельной копии production backup:
+  все `8/8` migrations applied/tracked одной транзакцией примерно за 2 секунды,
+  schema after `8c9fc783…d511`, compatibility rows `128/128`, cancellations `0`,
+  `integrity_check=ok`, FK violations `0`, postcheck blockers `[]`. Durable summary
+  SHA `1afd1b5c…1225`; Turso/Walmart/provider calls и production writes = `0`.
+- [x] Получить короткое повторное owner decision, связанное именно с исправленными
+  bytes/plan v3; это тот же набор восьми schema changes, а не новый объём работ.
+- [x] После v3 owner approval применить exact migration plan один раз: 8/8
+  applied/tracked, schema after `8c9fc783…d511`, activation report SHA
+  `9039f226…a1db`, migration certification SHA `d26f5702…8093`.
+- [x] Независимым post-commit read-only plan подтвердить обе ledgers, 8/8 migrations
+  и `blockers=[]`; plan SHA `37c6d141…13fa`. Business-data writes = `0`.
+- [x] Получить migration certification и schema readiness report.
+
+Полный Amazon+Walmart manifest/backfill не закрыт, но вынесен в отдельный platform
+track и больше не обозначается blocker текущего Walmart pilot. Для выбранного одного
+кандидата обязателен exact Product Truth evidence, а не общий mutable donor read.
+
+### ✅ Фаза 4B — Walmart publish lifecycle v3
+
+- [x] После Product Truth построить новый lifecycle v3 plan: SHA
+  `dce9ece5f3613cf765ae21040fdaf471f578d88b4dc1b4b748d0d5e3f7036ac4`,
+  `eligibleForApply=true`, `blockers=[]`, duplicate active UPC reservations `0`.
+- [x] Выполнить локальную репетицию на копии production backup после применения exact
+  восьми Product Truth SQL migrations: lifecycle apply `applied`, integrity `ok`, FK
+  violations `0`, required objects `10/10`; повторный plan fail-closed вернул только
+  `MIGRATION_ALREADY_ACTIVATED`. Runtime probes подтвердили active-fence, global
+  two-SKU cap и buyer-evidence/attempt-SKU guard. Summary SHA
+  `3bc021833bd9a1c049e7ba38be46a57ea532b077b65150c12ab31515475ee9ef`.
+- [x] После понятного owner approval применить только lifecycle migration:
+  production report =
+  `data/walmart-new-sku-engine/activation/20260723T053000Z-walmart-lifecycle-apply-v3`,
+  status `applied`, report SHA
+  `9cd66451c701e8d6fac49cf89de1656b367bc5cb27bd6ea97668676a485e94d1`.
+  Business-data backfill, Walmart/provider/model calls и публикации = `0`.
+- [x] Transactional apply до commit повторно проверил exact target/schema/migration
+  bindings, все обязательные lifecycle objects, Prisma migration history и
+  immutable activation receipt. Production schema SHA изменился только с
+  `8157c318016ade9f524394a42ca50e294a7776cd2d27bc13dfa6009a356d3a9c` на
+  `c54877cb6cf9cb2e823092a739bc078a11af1e4102a6d1c650ee200e23c3dbeb`.
+  One-shot active-attempt fence, buyer-evidence binding и historical two-SKU cap
+  отдельно доказаны local backup-shaped runtime probes и frozen fake-live replay.
+
+### ✅ Фаза 4C — Актуальная Walmart Knowledge Base и executable policy gates
+
+- [x] Сверить runtime policy snapshot с официальными Walmart Marketplace Learn и
+  Developer Portal страницами на 2026-07-23; pinned snapshot =
+  `walmart-us-prepublication/2026-07-23.4`.
+- [x] Расширить structured review с 9 источников/8 доменов до 14 источников/11
+  доменов: отдельно добавлены account publish eligibility, image policy,
+  shipping/fulfillment и pricing competitiveness.
+- [x] Зафиксировать owner commercial contract: fresh exact-variant comparable,
+  линейная нормализация pack count, нулевая customer shipping charge, положительный
+  shipping label внутри item price, referral `15%` и contribution margin не ниже
+  `30%`. Comparable — warning, не hard reject; официальный Walmart Pricing Rule
+  остаётся отдельным внешним риском.
+- [x] Сделать обязательными fresh Seller Center Health & compliance evidence,
+  `INGESTIBLE_PRODUCTS=APPROVED`, owned inventory, отсутствие retail arbitrage,
+  competitor packaging/promotional inserts и exact fulfillment center/lag binding.
+- [x] Исправить ошибочную внутреннюю дату Product ID policy: официальная страница
+  обновлена 2025-06-05, а не 2026-07-15.
+- [x] Повторная official recheck 2026-07-23 не обнаружила spec drift: Developer
+  Portal по-прежнему рекомендует `MP_ITEM 5.0.20260501-19_21_29-api` и
+  `MP_ITEM_MATCH v4.2`, то есть frozen v23 использует текущий Item Spec.
+- [x] Перенести policy gates в current immutable release v23 и доказать: frozen
+  Product Truth `429/429`, Walmart unit/security exit `0`, fake-live `3/3`, ровно
+  один fake POST и replay без второго POST.
+
+### ✅ Фаза 4D — Offline owner signer без доступа Claude Code
+
+- [x] Создать отдельный owner-only `walmart:new-sku:owner-signer` для инициализации,
+  inspect и подписи exact one-SKU permit.
+- [x] Свести report request, catalog activation и MP_ITEM submit к одному
+  owner-control public key, сохранив три непересекающихся signing domain. Подпись
+  report технически не подходит для catalog/listing и наоборот.
+- [x] Исключить пользовательский пароль, хранение private key внутри repository,
+  network/Walmart/DB/model access и расширение scope на
+  delist/reprice/purchase/schedule либо больше одного POST.
+- [x] Проверить encrypted-at-rest custody + macOS Keychain, exact request/hash binding, понятные
+  summary, 64-byte signature, immutable freeze closure и fail-closed tamper cases:
+  post-enrollment owner/report/catalog suites `92/92 PASS`.
+- [x] Описать автоматический owner-control workflow обычным языком в
+  [[walmart-new-sku-operator-runbook]]. Claude Code эту поверхность не запускает.
+- [x] Автоматически создать production owner-control key без пользовательского
+  пароля, подтвердить `OWNER_CONTROL_READY` и закрепить public fingerprint
+  `ca74a2134808ab46eb162b14dfe481730fc69df00b57283cffd7a7bb1d37883a`.
+- [x] Выпустить и проверить immutable Bundle Factory Walmart release v7 с pinned
+  production public key.
+- [x] После успешного fresh GET-only absence probe выпустить новый one-shot ITEM v6
+  report executor с закреплённым production trust root; старый executor с пустым
+  trust root оставить только как `NO-GO` audit evidence.
+
+### ✅ Фаза 5 — Product source и exact duplicate guard
+
+- [x] Исторический pre-enrollment one-shot report-request executor доказал safety:
+  manifest SHA
+  `2faa4399e751ad4d7877629347ba7c6138d915ca99bfca5909f4c33d77918c5e`, bundle SHA
+  `b44b6a354d512cda3229186c3da0224a65f1c807d7732db622945681d5f7429e`;
+  sidecars `OK`, private modes `0500/0400`, focused safety suite `71/71 PASS`.
+- [x] Подтверждено, что этот frozen executor содержит пустой production trust root:
+  он корректно не способен выполнить POST и не должен выдаваться как исполнимый.
+  Подготовленные pre-enrollment plan/session остаются audit evidence, но не
+  переиспользуются после нового release.
+- [x] Общий encrypted owner-control key создан вне repository автоматически;
+  закреплён только public enrollment, пользовательский пароль отсутствует.
+- [x] Выполнить fresh GET-only absence probe, пересобрать exact
+  session/ledger/plan и заморозить новый self-bound one-shot executor: evidence SHA
+  `0c203bef0b14f199c6eca33560257adbf8baf4d17721950a6dfd765333be64a5`,
+  manifest SHA
+  `1e87043d3cf0ab879f184c5a8bbbb5445e84e3ed4a2fd6e56b1951efb13cf575`,
+  bundle SHA
+  `2afdb43f918be2fff93db8426f6e1bf683a846471a792288cff451847e07e7f3`,
+  focused suite `12/12 PASS`.
+- [x] Решением владельца
+  `owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight`
+  Product Truth закреплён как единственный product source.
+- [x] Удалить обязательные ITEM v6 source/DB mirror/`WalmartReport` inputs из doctor,
+  plan и runtime; полный seller-catalog scan не выполнять.
+- [x] Закрыть legacy compatibility path: active plan/doctor/certification/runtime
+  release v11 принимает только exact-identifier point guard и отклоняет старый
+  full-seller-catalog binding.
+- [x] Удалить ручной canonical identity input: release v12 впервые использовал
+  `EVIDENCE_VERIFIED_BOOTSTRAP`, выводит conservative identity из sealed donor
+  brand/title/size и требует fresh exact Walmart proof до canonical write.
+- [x] Запечатать seller-scoped point guard: exact staged SKU `404` и exact UPC `SPEC`
+  search обязательны до certification.
+- [x] Доказать persistent Walmart unit/security `179/179`, operator CLI `7/7`,
+  Product Truth `429/429` и frozen fake-live integration `3/3`.
+- [x] Выпустить и проверить immutable release v23: engine SHA
+  `94ec292870b398aa08385c6d951454b790aaa7db662d6aa796337f7026340f5f`,
+  manifest SHA
+  `7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`,
+  certificate SHA
+  `cc5603d8d56421c151b92b5a6726c1cf10c3dfa52732614763cde6dc6fec9242`.
+- [x] Новый и старый one-shot ITEM v6 executors оставить только audit evidence;
+  authorization/POST/activation не выполнять.
+
+### ⛔ Owner gate — Фаза 6: два owner preview одного кандидата
+
+- [x] Собрать только provisional shortlist из legacy donor bytes для ускорения
+  последующей exact-проверки: RITZ Bits Cheese 8.8 oz, RITZ Bits Peanut Butter
+  8.8 oz, OREO Thins Mint 11.78 oz. Это не Product Truth authority и не выбор
+  кандидата; shortlist SHA
+  `bac54c85864ce09e0382422cc2c140e80e50b5a4871fe83d55824e752d116161`.
+- [x] Выбрать один кандидат для бесплатного commercial preflight: RITZ Bits Cheese
+  Sandwich Crackers 8.8 oz, homogeneous pack of 2.
+- [x] На новой локальной копии exact portable production snapshot применить штатным
+  engine текущие 8/8 Product Truth migrations и прогнать frozen v12
+  `doctor→plan`: `EVIDENCE_VERIFIED_BOOTSTRAP`, один donor, один direct
+  first-party Walmart.com offer, provider calls `0`, production writes `0`.
+  Local plan SHA
+  `5970067627b633beac37b36c720c333898ebec682db864666cace687bc74803a`;
+  старый human preview SHA
+  `4aea7beda755b1835fa9c6d0438ca0fedc853213ac9d3f131228c452a39ce96c`.
+- [x] Пометить старый v20 commercial reject как исторический: он применял
+  superseded policy `20% + 125% ceiling` и не является current business decision.
+- [x] Встроить в canonical `doctor` бесплатный commercial discovery
+  `walmart-new-sku-commercial-discovery/1.1.0`: он читает только донорский Product
+  Truth, не читает seller catalog, не вызывает providers/Walmart, разрешает Walmart
+  sourcing, исключает Amazon/клубы и не может передать provisional row в plan.
+- [x] Добавить exact-size guard между content donor, procurement offer и Walmart
+  comparable. Он выявил и отклонил ошибочно слитый SKIPPY: donor title `80 oz`,
+  Publix source `16.3 oz`, Walmart comparable `64 oz`.
+- [x] Сделать blocked `doctor` операционно видимым: при `--out` green receipt не
+  создаётся, вместо него пишется hash-verifiable
+  `walmart-new-sku-doctor-diagnostic/1.0.0` с `next_command: null`; `plan` не может
+  принять diagnostic как receipt. Исторические v20 diagnostics:
+  pack-of-2 SHA `57b1f71e…9496a`, pack-of-3 SHA `b2f0b1ef…ca5eb`.
+- [x] Рассчитать RITZ по owner policy: pack-of-2 `$33.13`, profit `$9.94`; pack-of-3
+  `$40.36`, profit `$12.11`; contribution margin обоих вариантов ровно `30%`.
+- [x] Сгенерировать два non-publishable owner preview из sealed Product Truth:
+  `data/walmart-new-sku-engine/previews/20260723T132637Z-ritz-cheese-pack2-pack3-owner-preview.json`,
+  SHA `a84a84d6786a249c4f40760fbc5090f60edc88320ae065aa8b2dadda7559596d`.
+- [x] Собрать Walmart-подобную gallery и проверить lint/build/render `2/2`.
+- [x] Доказать frozen v23: Product Truth `429/429`, fake-live `3/3`, ровно один fake
+  POST и replay без второго POST. Реальные Walmart writes, DB writes, paid calls и UPC
+  reservation равны `0`.
+- [x] Повторно проверить 2026-07-25 immutable release v23 и mutable/frozen boundary:
+  release verify подтвердил engine/manifest, а пять ключевых Walmart engine/preview/
+  economics/discovery файлов byte-exact совпали с frozen snapshot. Gallery повторно
+  прошла lint, production build и render `2/2`.
+- [ ] Владелец визуально принимает либо возвращает на доработку pack-of-2/pack-of-3.
+- [ ] После принятия preview повторить `doctor→plan` против fresh production target;
+  максимум один Oxylabs query и один Unwrangle detail требуют отдельного понятного
+  owner budget gate.
+- [ ] Перед certification доказать отсутствие только exact staged seller SKU и
+  выделенного UPC; полный seller-catalog novelty scan не нужен.
+
+### ⬜ Фаза 7 — Exact evidence кандидата
+
+- [ ] Связать новый viable candidate с одним exact Product Truth variant и direct
+  first-party offer.
+- [ ] Получить точные content, dimensions/weight, images/rights, category, brand,
+  recall, policy, origin, fulfillment, UPC registry и economics evidence.
+- [ ] Заблокировать candidate при любом unresolved или sibling evidence.
+
+### ⬜ Фаза 8 — Green doctor и preview
+
+- [ ] Получить `ready_for_plan=true`, `infrastructure_ready_for_pilot=true` и
+  `blockers=[]`.
+- [ ] Выполнить plan → stage → certify → dry-run → approve → apply-preview.
+- [ ] Показать владельцу один понятный финальный preview без технических сокращений.
+
+### ⛔ Фаза 9 — Один live SKU
+
+- [x] Выполнить автоматическую key initialization вне repository и закрепить только
+  public key; private key и machine secret недоступны Claude Code.
+- [ ] Только после явного решения владельца отправить ровно один feed POST.
+- [ ] Не повторять unknown/ambiguous POST.
+- [ ] Проверить seller `ACTIVE/PUBLISHED`, buyer PDP и buyability до `LIVE`.
+
+### ⬜ Фаза 10 — Handoff и решение по второму SKU
+
+- [ ] Сохранить полную immutable artifact chain и итоговый отчёт.
+- [ ] Передать Claude Code только verified frozen release и exact operator prompt.
+- [ ] Отдельно решить: остановиться или повторить весь цикл для второго pilot SKU.
+- [ ] После успешного pilot подключить этот же защищённый Walmart adapter как опцию
+  общего Bundle Factory Studio UI, не возвращая legacy mutable `DonorProduct` reads.
+
+### ⬜ Фаза 11 — Post-pilot release для волн 15–20
+
+- [ ] Только после seller- и buyer-подтверждённого pilot 1–2 SKU разобрать все
+  acceptance/rejection/latency/policy результаты и утвердить критерии расширения.
+- [ ] Выпустить новый release с bounded wave manifest, rate/budget ledger, duplicate
+  fence, per-SKU owner-visible preview и автоматическими stop conditions.
+- [ ] Текущий pilot ограничен одним SKU на plan и максимум двумя SKU на release.
+- [ ] Волны 15–20 не входят в этот release и будут рассматриваться только после
+  успешного отдельного pilot.
+
+### ⬜ Фаза 12 — Расписание и постоянная эксплуатация
+
+- [ ] Только после нескольких успешных ограниченных волн отдельно согласовать cadence,
+  дневной/недельный cap, budget/rate limits и account-health stop thresholds.
+- [ ] Claude Code исполняет только новый frozen scheduled-run suite и exact
+  `next_command`; он не меняет engine, schema, policy или лимиты.
+- [ ] Любой policy/spec/account/Product-Truth drift автоматически переводит контур в
+  fail-closed pause до нового doctor и owner review.
+
+## Текущий доказанный boundary
+
+- Current persistent Walmart pilot release:
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-23-v23`; engine SHA
+  `94ec292870b398aa08385c6d951454b790aaa7db662d6aa796337f7026340f5f`,
+  manifest SHA `7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`,
+  certificate SHA `cc5603d8d56421c151b92b5a6726c1cf10c3dfa52732614763cde6dc6fec9242`.
+- Product Truth `429/429`, frozen Walmart unit/security exit `0`, fake-live `3/3`;
+  legacy full-catalog binding rejection включён в active regression.
+- Legacy prompt Studio не является вторым Walmart creation path; канонический
+  Walmart adapter остаётся внутри общего Bundle Factory.
+- Product Truth production schema применена и подтверждена: 8/8 migrations,
+  schema SHA `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.
+  Полный Phase 1 business backfill остаётся отдельным platform track.
+- Post-Product-Truth lifecycle v3 применён schema-only: plan SHA
+  `dce9ece5f3613cf765ae21040fdaf471f578d88b4dc1b4b748d0d5e3f7036ac4`,
+  activation report SHA
+  `9cd66451c701e8d6fac49cf89de1656b367bc5cb27bd6ea97668676a485e94d1`,
+  production schema after
+  `c54877cb6cf9cb2e823092a739bc078a11af1e4102a6d1c650ee200e23c3dbeb`.
+- RITZ Bits Cheese 8.8 oz имеет два owner preview: pack-of-2 `$33.13` с profit
+  `$9.94` и pack-of-3 `$40.36` с profit `$12.11`; contribution margin = `30%`.
+  Preview artifact SHA
+  `a84a84d6786a249c4f40760fbc5090f60edc88320ae065aa8b2dadda7559596d`.
+  Exact comparable остаётся warning; права на count-accurate final images ещё не
+  доказаны. Provider calls, UPC reservation, certification и Walmart writes не
+  выполнялись.
+- Frozen v20 zero-candidate doctor и RITZ reject сохраняются только как аудит старой
+  политики. Current v23 production doctor после owner visual review ещё не запускался.
+  SKIPPY по-прежнему не является кандидатом из-за cross-size merge
+  `16.3 oz / 64 oz / 80 oz`.
+- Lifecycle local rehearsal на backup-копии прошла, включая post-apply replay fence и
+  три database-authoritative guard probes. Затем та же exact migration была
+  применена одной production transaction; товарные данные и marketplace state не
+  изменялись.
+- Frozen ITEM v6 executors, sessions и empty ledgers сохранены только как safety/audit
+  evidence. По текущему owner contract их нельзя исполнять; fresh full source,
+  mirror activation и `WalmartReport` не требуются.
+- Общий offline owner-control signer реализован; production key автоматически
+  создан без пользовательского пароля, реальный doctor вернул
+  `OWNER_CONTROL_READY`, public key pinned. Раздельный regression после enrollment:
+  `92/92 PASS`; старые frozen releases всё ещё намеренно не принимают permit до
+  выпуска замены.
+- Full all-status Walmart ITEM catalog source отсутствует и для new-SKU workflow не
+  требуется.
+- Live Walmart new SKU создано: `0`.
