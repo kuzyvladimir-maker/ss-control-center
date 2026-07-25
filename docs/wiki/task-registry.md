@@ -38,8 +38,11 @@ exact marketplace listing scope и SKU recipe — разные проекции 
   `/reference-catalog` и `/cogs` остались aliases без legacy API reads. Product
   Truth `437/437`, TypeScript/ESLint/build `PASS`.
 - ⛔ Phase 4 — default-OFF workflow, sealed runs/queue/budgets/blockers видимы;
-  Execute/retry/replay отсутствуют. Для web execution нужен отдельный owner design
-  gate: durable command queue, immutable artifact custody и pinned owner trust root.
+  Execute/retry/replay отсутствуют. Completion/threat audit и canonical
+  [[product-truth-web-operations-control-plane]] готовы: не дублировать внутренний
+  operational ledger; отдельные SSCC command/artifact/event tables, append-only DB
+  custody, новый Product Truth Ed25519 domain и pinned external worker. Реализация
+  Stage A ждёт exact owner gate; production activation/spend он не разрешает.
 - ⚪ Далее — owner-gated data foundation,
   staged four-consumer cutover и только затем owner-approved canary/waves.
 
