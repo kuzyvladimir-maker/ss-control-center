@@ -94,7 +94,7 @@ Truth, а не функциями matcher replay.
 ### ⛔ Phase 1 — Permanent engine materialization
 
 - [x] Материализовать актуальный Product Truth source в постоянном Git:
-  current `HEAD 12799d6431ec1a0dcfdd14e3d64af2367d457ac8` содержит matcher
+  current base `main 9f59ecbd61df726d8b7b3ef95a60f66cddf376c0` содержит matcher
   `canonical-product-match/1.2.1`, read-contract `3.2.0`, runner, schema и tests.
 - [x] Проверить current `HEAD` из отдельного fresh clone: `npm ci`,
   Product Truth `429/429`, CLI help `13/13`, Prisma validate и targeted ESLint —
@@ -106,6 +106,17 @@ Truth, а не функциями matcher replay.
   Truth/Walmart runbooks в узкий docs-only candidate от current `HEAD`.
 - [x] Получить на candidate Wiki-Brain `0` broken links, clean diff и новый
   checksum-bound recovery bundle.
+- [x] Rebase implementation на current `main 9f59ecbd` и выполнить read-only
+  dirty-worktree preflight всех 35 paths: committed intersection `0`; `10`
+  byte-equal, `9` candidate-only, `11` exact earlier candidate revisions и `5`
+  divergent owner files.
+- [x] Собрать reconciled `r4`, сохранив полный 744-строчный owner task registry,
+  три более свежих Walmart 2026-07-25 документа и merged `AGENTS.md`; shared
+  worktree не менялся.
+- [x] Проверить exact reconciled branch: Product Truth `444/444`, TypeScript,
+  targeted ESLint, production build и Wiki-Brain (`0` orphan, `0` broken links)
+  — `PASS`. Build сохранил только два уже известных unrelated Walmart/NFT и Sharp
+  warning.
 - [ ] Остановиться на owner decision перед import/merge/push candidate в shared Git.
 
 **Exit:** воспроизводимый permanent tree содержит готовый engine и проходит тот же
