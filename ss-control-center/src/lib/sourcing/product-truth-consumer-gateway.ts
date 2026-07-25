@@ -22,7 +22,7 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_CONSUMER_GATEWAY_VERSION =
-  "product-truth-consumer-gateway/1.0.0" as const;
+  "product-truth-consumer-gateway/1.1.0" as const;
 
 export type ProductTruthConsumerView =
   ProductTruthSnapshot["views"][keyof ProductTruthSnapshot["views"]];
@@ -37,6 +37,17 @@ export interface ProductTruthConsumerGatewayEntry {
   channel: string;
   storeIndex: number;
   sku: string;
+  recipe: {
+    components: Array<{
+      componentEvidenceId: string;
+      componentIndex: number;
+      targetCanonicalVariantId: string;
+      quantity: number;
+      evidenceStatus:
+        ProductTruthSnapshot["recipe"]["components"][number]["evidenceStatus"];
+    }>;
+    blockers: string[];
+  };
   disposition: ProductTruthConsumerDisposition;
   ready: boolean;
   blockers: string[];
@@ -169,6 +180,16 @@ function entryFromSnapshot(
     channel: snapshot.snapshot.channel,
     storeIndex: snapshot.snapshot.storeIndex,
     sku: snapshot.snapshot.sku,
+    recipe: {
+      components: snapshot.recipe.components.map((component) => ({
+        componentEvidenceId: component.componentEvidenceId,
+        componentIndex: component.componentIndex,
+        targetCanonicalVariantId: component.targetCanonicalVariantId,
+        quantity: component.qty,
+        evidenceStatus: component.evidenceStatus,
+      })),
+      blockers: unique(snapshot.recipe.blockers),
+    },
     disposition,
     ready,
     blockers,

@@ -118,7 +118,7 @@ function fixture(input: {
     },
   };
   const gateway: ProductTruthConsumerGatewayReport = {
-    schemaVersion: "product-truth-consumer-gateway/1.0.0",
+    schemaVersion: "product-truth-consumer-gateway/1.1.0",
     readContractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
     activationSha256: "e".repeat(64),
     ownerApprovalId: "owner-shadow-1",
@@ -145,6 +145,7 @@ function fixture(input: {
       channel,
       storeIndex,
       sku,
+      recipe: { components: [], blockers: [] },
       disposition: status === "UNSOURCEABLE"
         ? "UNSOURCEABLE"
         : status === "FACT" || status === "ESTIMATE"
