@@ -1,6 +1,7 @@
 # Product Truth — план подключения четырёх потребителей
 
-> **Статус:** канонический технический cutover-plan, 2026-07-19.
+> **Статус:** канонический технический cutover-plan, 2026-07-19; execution state
+> сверено 2026-07-25.
 >
 > Подчинён [[product-catalog-architecture]] и
 > [[donor-catalog-execution-roadmap]]. Этот документ не разрешает production
@@ -36,6 +37,21 @@ confirmation, expiry, `mode=SHADOW`, consumer subset `UNIT_ECONOMICS`, manifest 
 обязателен и проверяется до открытия DB. Только после этого endpoint читает
 последовательную manifest-bound страницу до 100 scopes и выпускает compare-only
 diagnostics. Наличие кода не является owner activation и не меняет счётчик `0/4`.
+
+Pure adapter boundary для всех четырёх consumers теперь локально реализована в
+`src/lib/sourcing/product-truth-consumer-adapters.ts`. Она компилирует только
+immutable, hash-bound outputs:
+
+- Bundle Factory exact-content draft seed без создания draft/content/image;
+- Listing Improvement exact-content preview seed без live diff/apply;
+- Unit Economics typed product-acquisition basis без legacy/`$1`/zero fallback;
+- Procurement demand/inventory/factual-offer plan без cart/order/purchase.
+
+Шесть adversarial tests доказывают, что unknown inventory блокирует Procurement,
+factual two-pack может честно победить две single packages, estimate/manual не становятся
+buy evidence, а adapters не имеют DB/process/network/provider surface. Это
+**contract preparation**, а не runtime integration или owner activation; production
+cutover остаётся `0/4`.
 
 Exact listing scope должен поступить из
 `phase1-authoritative-scope-manifest/v3`. Manifest policy фиксирует
@@ -100,6 +116,11 @@ canonical variant/content/price observation bindings → повторный exac
 promotion. Любой drift блокирует promotion. Sibling flavor/size не может давать image,
 ingredients, nutrition или описание.
 
+Первый шаг этого перехода уже материализован pure-функцией
+`compileProductTruthBundleFactorySeed`: она выдаёт exact component/content IDs, hashes,
+source URL и no-action claims. Mass/studio runtime ещё не потребляет этот seed и не
+считается переведённым.
+
 ### 3.2. Listing Improvement
 
 Legacy Walmart remediation был наиболее опасным bypass:
@@ -143,6 +164,10 @@ listingKey, `asOf`, recipe/component IDs, canonical variants, content observatio
 полный hash. Перед apply выполняется новый exact read; drift, missing component или
 not-ready означает SKIP + idempotent exact-need queue, ноль provider/feed/PATCH calls.
 
+Pure `compileProductTruthListingImprovementSeed` теперь готовит truth-side preview
+binding и технически не способен прочитать live listing, сгенерировать diff или
+разрешить apply. Channel-specific shadow comparison остаётся следующим runtime шагом.
+
 ### 3.3. Unit Economics и repricing
 
 `economics/cogs.ts` пока читает `SkuCost` по голому SKU, поэтому view явно маркируется
@@ -184,6 +209,10 @@ Cutover:
   owner action gate; `$1` и older-positive fallback удаляются;
 - coverage denominator — authoritative listingKey manifest.
 
+Pure `compileProductTruthUnitEconomicsBasis` уже выдаёт только typed acquisition basis:
+`FACT`/`ESTIMATE` остаются различимы, а `UNSOURCEABLE`/`INVALID`/`MISSING` дают `null`
+и blocker. Он не разрешает repricing.
+
 ### 3.4. Procurement
 
 Текущий Procurement UI — execution board по Veeqo, а не catalog-first planner.
@@ -206,6 +235,12 @@ order line
 Estimate и manual cost остаются review/accounting evidence и не могут войти в auto buy
 plan. Unknown inventory не равен нулю. Cart/order/purchase и существующие Veeqo bought/
 partial mutations не входят в planner activation.
+
+Pure `compileProductTruthProcurementPlan` реализует этот read-only MVP на уровне
+контракта: умножает recipe demand на order quantity, требует explicit inventory
+evidence, считает package arithmetic только по factual exact local offers и выбирает
+минимальный subtotal **только для review**. Unknown inventory блокирует план; estimate
+и manual cost помечены `eligibleForPurchase=false`. Veeqo/UI runtime ещё не подключён.
 
 ## 4. Общий gateway и масштаб чтения
 
@@ -243,11 +278,12 @@ bytes; successor manifest с уже существующим listingKey чест
 ## 5. Порядок безопасной активации
 
 1. **Contract preparation:** manifest-bound read, activation contract, set-based gateway,
-   Unit Economics SHADOW runtime/adapter и architectural no-bypass tests локально
-   реализованы. Остальные consumer adapters ещё не подключены.
-2. **Owner-gated schema:** применить ordered migrations к точному Turso target и
-   подтвердить schema gate. Локальное наличие migration/schema tests не доказывает
-   remote state.
+   Unit Economics SHADOW runtime, pure adapters всех четырёх consumers и
+   architectural no-bypass tests локально реализованы. Business runtime wiring кроме
+   Unit Economics SHADOW ещё не подключён.
+2. **Owner-gated schema:** исторический gate закрыт 2026-07-23: ordered exact-eight
+   migrations применены/зарегистрированы на точном Turso target и schema-after
+   сертифицирован. Это не разрешает authoritative manifest, backfill или activation.
 3. **Authoritative scope:** получить полные Walmart `ITEM_CATALOG` и Amazon
    `GET_MERCHANT_LISTINGS_ALL_DATA` reports, полный connected-store census, owner
    dispositions и заморозить zero-blocker manifest v3.
@@ -291,13 +327,17 @@ bytes; successor manifest с уже существующим listingKey чест
 - gap создаёт один idempotent exact-need job и ноль provider/marketplace calls;
 - preview/apply evidence drift блокирует действие;
 - Economics не считает прибыль с COGS = 0 для unknown status;
-- Procurement не использует estimate/manual/stale/3P/non-local offer;
+- pure consumer seeds сохраняют exact content IDs/hashes и не создают draft/diff/apply;
+- Procurement unknown inventory не считается нулём, factual pack arithmetic
+  детерминирован, estimate/manual не становятся buy option;
+- consumer adapters не имеют DB/process/network/provider surface;
 - activation не может разрешить publish/delist/reprice/purchase.
 
 ## 7. Внешние блокеры, которые код не может объявить выполненными
 
-- ordered migrations и backfill ещё не применены к Turso;
-- schema gate/backfill-readiness не верифицированы на точном Turso target;
+- exact-eight migrations уже применены и schema gate подтверждён; повторный schema
+  apply не требуется и сам по себе ничего дальше не разрешает;
+- authoritative manifest-bound backfill plan/apply/readiness ещё не выполнены;
 - authoritative Amazon/Walmart reports и final Phase 1 manifest v3 отсутствуют;
 - полный set-based readiness report не построен;
 - paid provider canary, иной платный Product Truth run и Phase 1 waves не запускались;

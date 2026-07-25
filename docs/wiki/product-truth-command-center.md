@@ -249,10 +249,19 @@ owner-gated этапами; consumed schema approval их не разрешае�
 
 ### ⬜ Phase 6 — Staged consumer cutover
 
-- [ ] Unit Economics — `OFF → SHADOW → ENFORCED` read-only.
-- [ ] Procurement — read-only shortage/pack/store plan.
-- [ ] Listing Improvement — audit/preview, без автоматического apply.
-- [ ] Bundle Factory — catalog-first draft, без автоматического publish.
+- [x] Реализовать pure, hash-bound adapters всех четырёх consumers без DB,
+  process, provider или network surface:
+  `product-truth-consumer-adapters.ts`, `6/6` adversarial tests.
+- [x] Unit Economics — typed basis и существующий default-OFF SHADOW adapter;
+  `UNSOURCEABLE`/missing остаются `null`, repricing не разрешён.
+- [x] Procurement — pure demand/inventory/factual-pack plan только для review;
+  unknown inventory блокирует, estimate/manual не являются buy evidence.
+- [x] Listing Improvement — exact-content truth seed для будущего preview;
+  live diff/apply отсутствуют.
+- [x] Bundle Factory — exact-content draft seed; draft/content/image/publish
+  отсутствуют.
+- [ ] Подключить consumers к их business runtime по одному после authoritative
+  manifest/readiness: `OFF → SHADOW → ENFORCED`, без legacy fallback.
 - [ ] Для каждого consumer выпустить отдельный activation artifact и evidence window.
 
 **Exit:** четыре consumers читают единый snapshot без legacy fallback. Publish,
