@@ -49,19 +49,14 @@ export const MODULES: ModuleDef[] = [
   { key: "adjustments", label: "Adjustments", href: "/adjustments" },
   { key: "training", label: "Training", href: "/training" },
   { key: "bundle-factory", label: "Bundle Factory", href: "/bundle-factory" },
-  // ── Catalog (one module, three sub-views via in-page tabs) ──
-  // "catalog" owns the Overview/status page (/catalog) + the shared nav. The two
-  // detail sub-views keep their own module keys so their routes/data stay gated:
-  // "cogs" (/cogs, cost) and "reference-catalog" (/reference-catalog, content).
+  // ── Catalog / Product Truth (one module, seven in-page views) ──
   { key: "catalog", label: "Catalog", href: "/catalog" },
-  { key: "reference-catalog", label: "Reference Catalog", href: "/reference-catalog" },
   { key: "staff-hats", label: "Staff Hats", href: "/staff-hats" },
   { key: "finance", label: "Financial Plan", href: "/finance" },
   // Personal Finance — Vladimir's private pool (income, bills, credit cards).
   // adminOnly: owner-only, never grantable to staff roles.
   { key: "personal", label: "Personal Finance", href: "/personal", adminOnly: true },
   { key: "economics", label: "Economics", href: "/economics" },
-  { key: "cogs", label: "SKU Cost Catalog", href: "/cogs" },
   { key: "walmart-growth", label: "Walmart Growth", href: "/walmart-growth" },
   { key: "amazon-growth", label: "Amazon Growth", href: "/amazon-growth" },
   { key: "amazon-aplus", label: "A+ Content", href: "/amazon-aplus" },
@@ -104,6 +99,17 @@ export function moduleForPath(pathname: string): ModuleDef | null {
     pathname.length > 1 && pathname.endsWith("/")
       ? pathname.slice(0, -1)
       : pathname;
+
+  // Historical aliases render the canonical Product Truth module. They are
+  // intentionally not separate grantable permissions anymore.
+  if (
+    path === "/cogs"
+    || path.startsWith("/cogs/")
+    || path === "/reference-catalog"
+    || path.startsWith("/reference-catalog/")
+  ) {
+    return getModule("catalog") ?? null;
+  }
 
   let best: ModuleDef | null = null;
   for (const m of MODULES) {

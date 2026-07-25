@@ -112,45 +112,85 @@ tree `88f58b50412783108369076bf94651475154af09`, bundle SHA-256
 Он остаётся доказательством старой интеграции v2.2, но superseded текущим matcher
 `1.2.1` и сегодняшним Git `HEAD`.
 
-### ⬜ Phase 2 — Canonical read-only backend
+### ✅ Phase 2 — Canonical read-only backend
 
-- [ ] Создать authenticated Product Truth API boundary без direct legacy joins.
-- [ ] Overview: authoritative scope, coverage и readiness четырёх consumers.
-- [ ] Products/variants: canonical identity, packs, exact content и provenance.
-- [ ] SKU recipes: exact listing scope → component × quantity.
-- [ ] Offers/COGS: factual/estimate/unsourceable, locality, freshness и sources.
-- [ ] Runs/blockers/spend/artifacts: только read-only durable projections.
-- [ ] Добавить API contract tests, RBAC и no-provider/no-mutation assertions.
+- [x] Создать authenticated Product Truth API boundary без direct legacy joins:
+  `/api/catalog/product-truth/[view]`, Catalog RBAC и server-side module guard.
+- [x] Overview: exact manifest denominator, partitions и readiness четырёх
+  consumers из read-contract `3.2.0`.
+- [x] Products/variants: immutable canonical identity, pack, exact content,
+  source URL/hash/run/approval/receipt provenance и latest retailer observations.
+- [x] SKU recipes: exact listing scope → component × quantity через canonical
+  batch snapshots, без raw-SKU fallback.
+- [x] Offers/COGS: typed `FACT/ESTIMATE/UNSOURCEABLE/MISSING/INVALID`, locality,
+  freshness, first-party/source details и independent content/price axes.
+- [x] Runs/blockers/spend/artifacts: read-only projections sealed run/items,
+  operational queue, metered budgets/receipts и artifact/report hashes.
+- [x] Добавить API contract tests, RBAC и no-provider/no-mutation assertions:
+  семь новых tests, включая real canonical schema integration всех четырёх views
+  и adversarial write-SQL rejection.
+- [x] Проверить exact candidate: Product Truth certification `436/436`, TypeScript,
+  targeted ESLint и production `npm run build` — `PASS`. Build сохранил два
+  существовавших unrelated Turbopack/NFT warning для Walmart shadow path и
+  duplicate Sharp runtime; они не относятся к Product Truth API.
 
 **Exit:** UI может получить все canonical projections без mutable `DonorProduct`,
 bare-SKU `SkuCost`, paid calls или data writes.
 
-### ⬜ Phase 3 — Catalog / Product Truth UI
+### ✅ Phase 3 — Catalog / Product Truth UI
 
-- [ ] Сохранить один sidebar module `Catalog`; использовать Product Truth subtitle.
-- [ ] Вкладки: Overview, Products, SKU Recipes, Offers & COGS, Queue & Runs,
+- [x] Сохранить один grantable/sidebar module `Catalog`; использовать Product Truth
+  subtitle. Старые role keys `cogs`/`reference-catalog` больше не отображаются как
+  отдельные permissions, но дают backward-compatible доступ к `Catalog`.
+- [x] Вкладки: Overview, Products, SKU Recipes, Offers & COGS, Queue & Runs,
   Quality Review, Consumer Readiness.
-- [ ] Перевести `/catalog`, `/reference-catalog` и `/cogs` на canonical APIs.
-- [ ] Удалить/заменить ложные legacy cron assumptions и мёртвую Enrich-кнопку.
-- [ ] Показывать freshness, provenance, blockers и typed outcomes без false green.
-- [ ] Добавить deep links из Walmart/Amazon Growth, Economics и Procurement.
+- [x] Перевести `/catalog`, `/reference-catalog` и `/cogs` на canonical APIs:
+  два старых URL сохранены как UI aliases, но больше не вызывают legacy
+  `/api/catalog-status`, `/api/cogs/catalog` или `/api/reference-catalog`.
+- [x] Удалить ложные legacy cron assumptions и мёртвую Enrich-кнопку из всех трёх
+  Catalog UI surfaces.
+- [x] Показывать exact content provenance, offer URL/locality/freshness,
+  `FACT/ESTIMATE/UNSOURCEABLE/MISSING/INVALID`, blockers, run/approval/receipt,
+  budgets и immutable artifact hashes без false green.
+- [x] Зафиксировать default-OFF/runtime-invalid состояния, read-only boundary и
+  независимость data readiness от consumer activation.
+- [ ] Добавить deep links из Walmart/Amazon Growth, Economics и Procurement
+  после их staged consumer adapters; текущие legacy consumers не объявлены
+  canonical до Phase 6.
+- [x] Проверить candidate: Product Truth `437/437`, UI safety `8/8`,
+  TypeScript/targeted ESLint и production build `PASS`. Первый sandbox build
+  упал только на запрещённой загрузке Google Fonts; exact rerun с network access
+  прошёл. Сохранились два unrelated pre-existing Walmart NFT/Turbopack warning.
 
 **Exit:** read-only UI честно отображает Product Truth и не предлагает запрещённый
 legacy execution path.
 
-### ⬜ Phase 4 — Default-OFF operations control plane
+### ⛔ Phase 4 — Default-OFF operations control plane
 
-- [ ] Реализовать authenticated `Doctor → Plan → Owner Approval → Execute →
-  Status/Resume → Report` orchestration поверх готовых contracts.
-- [ ] Исполнять долгую работу отдельным durable worker; browser только планирует,
+- [x] Отобразить authenticated `Doctor → Plan → Owner Approval → Execute →
+  Status/Resume → Report` workflow и точный status каждого шага.
+- [x] Показывать durable Product Truth run/items, exact scope, queue state,
+  provider ceilings, receipts/spend, blockers, event-chain/report/artifact hashes.
+- [x] Держать web `Execute`, retry/replay и self-asserted owner approval
+  технически отсутствующими, а runtime — default `OFF`.
+- [ ] Создать durable command queue и исполнять долгую работу отдельным worker;
+  browser только планирует,
   подтверждает и poll-ит состояние.
-- [ ] Отображать exact scope, provider ceilings, reserve floor, receipts, attempts,
-  checkpoints, events и immutable artifacts.
-- [ ] Сохранить `ambiguous=no replay`, terminal states и new-output-only semantics.
-- [ ] До external prerequisites держать execute технически `OFF`.
+- [ ] Выбрать постоянное immutable artifact custody и pinned owner-authentication
+  trust root. Текущий Product Truth v1 проверяет hashes/custody, но не
+  криптографически аутентифицирует автора approval; обычная UI-кнопка не может
+  безопасно расширить этот контракт.
+- [ ] После отдельного design/owner gate реализовать authenticated command
+  admission, сохранив `ambiguous=no replay`, terminal states,
+  new-output-only semantics и sealed CLI parity.
 
 **Exit:** UI не ослабляет sealed plan, approval, budget ledger или mutation gates;
 локальный no-spend smoke полностью воспроизводим.
+
+**Текущий blocker:** required durable web-command/artifact/trust boundary является
+новой authority и schema/runtime surface. До отдельного owner решения Phase 4
+честно остаётся `⛔`, а готовый CLI из [[product-truth-operator-runbook]] остаётся
+единственным execution entrypoint.
 
 ### ⛔ Phase 5 — Production data foundation
 

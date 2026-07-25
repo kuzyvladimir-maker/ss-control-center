@@ -31,6 +31,17 @@ export function canAccessModule(ctx: AccessContext, key: string): boolean {
   if (!mod) return false; // unknown module → deny by default
   if (mod.alwaysOn) return true; // e.g. Dashboard
   if (mod.adminOnly) return false; // admin already returned true above
+  // Preserve access for roles created before the Cost/Reference views were
+  // consolidated into the one Catalog / Product Truth permission.
+  if (
+    key === "catalog"
+    && (
+      ctx.modules.includes("cogs")
+      || ctx.modules.includes("reference-catalog")
+    )
+  ) {
+    return true;
+  }
   return ctx.modules.includes(key);
 }
 
@@ -63,13 +74,16 @@ export function accessibleModules(ctx: AccessContext): ModuleDef[] {
  * Order: longer/more-specific prefixes first.
  */
 const API_MODULE_PREFIXES: Array<[string, string]> = [
+  ["/api/catalog", "catalog"],
+  ["/api/catalog-status", "catalog"],
+  ["/api/reference-catalog", "catalog"],
+  ["/api/cogs", "catalog"],
   ["/api/personal", "personal"],
   ["/api/finance", "finance"],
   ["/api/economics", "economics"],
   ["/api/adjustments", "adjustments"],
   ["/api/procurement", "procurement"],
   ["/api/bundle-factory", "bundle-factory"],
-  ["/api/reference-catalog", "reference-catalog"],
   ["/api/account-health", "account-health"],
   ["/api/sales-overview", "analytics"],
   ["/api/analytics", "analytics"],
