@@ -16,12 +16,42 @@
 
 ---
 
+## Активная инициатива: Product Truth Platform / постоянный Catalog
+
+**Канон:** [[product-catalog-architecture]] · **живой board:**
+[[product-truth-command-center]] · **оператор:** [[product-truth-operator-runbook]].
+
+Это один независимый от каналов Product Truth Platform для Bundle Factory,
+Listing Improvement, Unit Economics и Procurement. Canonical variant catalog,
+exact marketplace listing scope и SKU recipe — разные проекции одной платформы,
+а не параллельные каталоги. Content truth и price/COGS outcome независимы.
+
+- 🟢 Phase 0 — канон, execution board и безопасный release boundary проверены.
+- ⛔ Phase 1 — current engine уже находится в permanent source; узкий docs/recovery
+  import candidate полностью проверен и ждёт отдельного owner merge decision.
+- 🟢 Phase 2 — в изолированной candidate branch готов authenticated default-OFF
+  read-only API `/api/catalog/product-truth/[view]`: overview/readiness,
+  variants/content/offers, exact listing recipes/COGS, runs/queue/budgets/blockers.
+  Product Truth `436/436`, TypeScript/ESLint/build `PASS`; paid/provider/production
+  действий не было.
+- 🟢 Phase 3 — единый Catalog / Product Truth UI с семью canonical views; старые
+  `/reference-catalog` и `/cogs` остались aliases без legacy API reads. Product
+  Truth `437/437`, TypeScript/ESLint/build `PASS`.
+- ⛔ Phase 4 — default-OFF workflow, sealed runs/queue/budgets/blockers видимы;
+  Execute/retry/replay отсутствуют. Для web execution нужен отдельный owner design
+  gate: durable command queue, immutable artifact custody и pinned owner trust root.
+- ⚪ Далее — owner-gated data foundation,
+  staged four-consumer cutover и только затем owner-approved canary/waves.
+
+---
+
 ## Активная инициатива: Walmart multipack — довести листинги до эталона (100%)
 
 **Чат-владелец:** «SS Command Center / multipack remediation» (сессия ba0c998a, iMac, 2026-07-04→).
-**АРХИТЕКТУРА (канон для всех 3 чатов):** [[product-catalog-architecture]] — ДВА каталога
-(справочник товаров: вариант→паки, в радиусе ZIP · мои SKU/листинги) + связь = РЕЦЕПТ
-(вариант×кол-во, НЕ GTIN) + ОДИН движок `enrichProduct()` пишет, все читают. Этот чат
+**АРХИТЕКТУРА (канон для всех 3 чатов):** [[product-catalog-architecture]] — ОДНА
+Product Truth Platform с разными проекциями (канонический вариант и exact
+marketplace listing scope) + связь = РЕЦЕПТ (вариант×кол-во, НЕ GTIN) + ОДИН
+enrichment-контур пишет, все читают. Этот чат
 (картинки) = ПОТРЕБИТЕЛЬ каталога; наш водопад/vision/гейты = сорсинг-слой движка.
 
 **Главная цель (ствол):** все листинги Walmart-мультипаков в идеальной картине —
