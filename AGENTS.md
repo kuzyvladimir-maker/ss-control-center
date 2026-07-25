@@ -26,9 +26,11 @@
 9. `docs/wiki/product-truth-web-operations-control-plane.md` — канонический
    default-OFF design web→worker bridge, отдельного Product Truth owner trust root,
    immutable command artifacts и staged activation.
-10. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
+10. `docs/wiki/product-truth-owner-gates.md` — единый живой реестр независимых
+    owner decisions, их точных границ, approval phrases и consumed evidence.
+11. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
    это единственный operator workflow готового движка.
-11. Для исправления существующих Walmart-листингов —
+12. Для исправления существующих Walmart-листингов —
     `docs/wiki/walmart-listing-integrity-operator-runbook.md`; это единственный
     operator workflow frozen Listing Integrity repair engine.
 

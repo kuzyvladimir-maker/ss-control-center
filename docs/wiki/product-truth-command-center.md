@@ -9,7 +9,8 @@
 > [[product-truth-consumer-cutover]]. Release boundary:
 > [[product-truth-release-scope]]. Matcher evidence:
 > [[product-truth-matcher-replay-v2]]. Web operations design:
-> [[product-truth-web-operations-control-plane]].
+> [[product-truth-web-operations-control-plane]]. Owner decisions:
+> [[product-truth-owner-gates]].
 >
 > Этот документ не разрешает paid/provider calls, Turso writes, migrations,
 > marketplace mutations, publication, repricing, delist или purchase. Он является
@@ -70,6 +71,9 @@ Truth, а не функциями matcher replay.
 
 Одновременно активна только одна фаза. После каждого принятого milestone обновляются
 этот board, [[task-registry]] и чатовый чек-лист.
+
+Все независимые owner approvals и точные phrases ведутся только в
+[[product-truth-owner-gates]], чтобы Codex/Claude не создавали конкурирующие prompts.
 
 ---
 

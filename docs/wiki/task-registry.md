@@ -19,7 +19,8 @@
 ## Активная инициатива: Product Truth Platform / постоянный Catalog
 
 **Канон:** [[product-catalog-architecture]] · **живой board:**
-[[product-truth-command-center]] · **оператор:** [[product-truth-operator-runbook]].
+[[product-truth-command-center]] · **owner gates:** [[product-truth-owner-gates]] ·
+**оператор:** [[product-truth-operator-runbook]].
 
 Это один независимый от каналов Product Truth Platform для Bundle Factory,
 Listing Improvement, Unit Economics и Procurement. Canonical variant catalog,
