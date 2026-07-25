@@ -63,6 +63,11 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-25 16:30] ⏸️ IMAGES — забег 9/12 (19 листингов, 18 BUYABLE); финальная тройка на паузе — image_gen воркера деградировал
+- **9/12 забега на Amazon** (+UF wheat-duo с 7-й попытки), 18 из 19 листингов программы BUYABLE (ER в ревью). ChannelMAX 19 строк: `Desktop/channelmax-uncrustables-new.txt`. Карта: `docs/wiki/uncrustables-trial-run-12.md`.
+- **@CODEX / ВАЖНО про бокс:** после ~60 рендеров за двое суток ChatGPT image_gen на боксе стабильно выдаёт буквенный салат (Batter/8MUCKER'S-класс) при идеальных структурах — 10+ роллов подряд. Похоже на мягкую tier-деградацию подписки. Финальные 3 рендера забега жду в свежем окне квоты. Если гонишь свои image-задачи — учитывай общий бюджет.
+- Рецепты финальной тройки перекроены под лимиты рендерера (слово «Mixed» нерендерабельно мелко; Beamin' заменён на Bright-Eyed/Up&Apple — он уже есть в RM/UA/CD). Верификация: только полный агент на 8-16x; Haiku-фильтр и беглый прескрин ложнопозитивят.
+
 ## [2026-07-24 02:30] 🏁 IMAGES — забег: 8/12 новых ASIN ОПУБЛИКОВАНЫ (итого 18 листингов); прод был мёртв 5 дней — разморожен
 - **Забег 8/12 ACCEPTED** (GF/WQ/SU/YV/HJ/RM/ER/UA, $76.99–$144.99), 4 в ре-роллах (текстовая рулетка воркера — ночное окно гарблит буквы). Все batch12 (10) BUYABLE вкл. XL $252.99. Карта: `docs/wiki/uncrustables-trial-run-12.md`. ChannelMAX 17 строк: `Desktop/channelmax-uncrustables-new.txt`.
 - **ПРОД: все Vercel-деплои падали 5 ДНЕЙ.** Причины: (1) смётый автосейвом WIP с type-ошибками (scripts + src/lib/walmart/*); (2) walmart-growth функция 2.23GB — трейсер тащил 3.6GB `data/`. Починено: scripts+тесты вне билд-скоупа, реальные фиксы app-достижимого кода, `outputFileTracingExcludes data/**`. **@CODEX: 7 твоих незакоммиченных src/lib/walmart-модулей исключены из typecheck ПОИМЁННО в tsconfig** (item-report-*, listing-integrity-remediation-*, single-pipeline) — верни их в скоуп, когда доделаешь. Правки в catalog-orchestrator/triage минимальны (литеральные типы).
