@@ -64,6 +64,8 @@ import type {
 
 export const WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA =
   "walmart-listing-single-repair-compilation-request/v1" as const;
+export const WALMART_LISTING_REPAIR_REVIEWED_TRUTH_SCHEMA =
+  "walmart-listing-repair-reviewed-one-sku-truth/v1" as const;
 
 const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_PLAN_TTL_MS = 24 * 60 * 60 * 1_000;
@@ -116,6 +118,51 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
     current_mass_run_authorized: false;
   };
   next_required_inputs: readonly string[];
+  body_sha256: string;
+}
+
+export interface ReviewedWalmartListingRepairProductTruthArtifact {
+  schema_version: typeof WALMART_LISTING_REPAIR_REVIEWED_TRUTH_SCHEMA;
+  created_at: string;
+  status: "ACTIVE_FOR_EXACT_ONE_SKU_PACKAGE_ONLY";
+  snapshot: {
+    snapshot_id: string;
+    body_sha256: string;
+    compilation_request_file_sha256: string;
+    compilation_request_body_sha256: string;
+    listing: WalmartListingRepairListingIdentity;
+    frozen_review: VerifiedWalmartListingRepairCompilationRequest["frozen_review"];
+    product_truth_candidate:
+      VerifiedWalmartListingRepairCompilationRequest["product_truth_candidate"];
+  };
+  revision: {
+    revision_id: string;
+    body_sha256: string;
+    expected_sha256: string;
+    candidate_sha256: string;
+    target_surface_sha256: string;
+    target_images_sha256: string;
+  };
+  approval: {
+    decision: "APPROVED_FOR_EXACT_ONE_SKU_PACKAGE_ONLY";
+    approved_by: string;
+    exact_confirmation_sha256: string;
+    compilation_request_file_sha256: string;
+    compilation_request_body_sha256: string;
+    truth_revision_body_sha256: string;
+    approval_sha256: string;
+    authentication:
+      "BOUND_INTO_OWNER_ED25519_SEQUENCE_AND_ONE_SKU_PERMIT";
+  };
+  binding: WalmartListingRepairProductTruthBinding;
+  constraints: {
+    exact_listing_count: 1;
+    walmart_content_write_authorized: false;
+    mass_apply_allowed: false;
+    price_required_for_content_truth: false;
+    database_activation_required_for_this_canary_package: false;
+    reusable_as_shared_catalog_activation: false;
+  };
   body_sha256: string;
 }
 
@@ -344,6 +391,129 @@ export function verifyWalmartListingRepairCompilationRequest(
         text(entry, `next_required_inputs[${index}]`, 256))
       : fail("next_required_inputs must be an array"),
     body_sha256: claimedBodySha,
+  };
+}
+
+/**
+ * Build the exact one-SKU Product Truth binding used by the canary package.
+ *
+ * The binding is derived only from a byte-identified, already certified review
+ * plus the exact owner confirmation. It is not a second catalog, cannot be
+ * reused as a shared Product Truth activation, and does not authorize a Walmart
+ * write. The package command subsequently binds its approval hash into both
+ * owner Ed25519 signatures.
+ */
+export function buildReviewedWalmartListingRepairProductTruthArtifact(input: {
+  compilation_request: unknown;
+  compilation_request_file_sha256: string;
+  owner_confirmation: string;
+  approved_by: string;
+  created_at: string;
+}): ReviewedWalmartListingRepairProductTruthArtifact {
+  const request = verifyWalmartListingRepairCompilationRequest(
+    input.compilation_request,
+  );
+  const requestFileSha = digest(
+    input.compilation_request_file_sha256,
+    "compilation_request_file_sha256",
+  );
+  if (input.owner_confirmation !== request.owner_gate.exact_confirmation) {
+    fail("owner confirmation does not match the exact frozen review");
+  }
+  const createdAt = instant(input.created_at, "reviewed truth created_at");
+  if (Date.parse(createdAt) < Date.parse(request.created_at)) {
+    fail("reviewed truth cannot predate its compilation request");
+  }
+  const approvedBy = text(input.approved_by, "approved_by", 256);
+  const listing = listingIdentity(request);
+  const snapshotBody = {
+    schema_version: "walmart-listing-repair-reviewed-truth-snapshot/v1" as const,
+    created_at: createdAt,
+    compilation_request_file_sha256: requestFileSha,
+    compilation_request_body_sha256: request.body_sha256,
+    listing,
+    frozen_review: request.frozen_review,
+    product_truth_candidate: request.product_truth_candidate,
+  };
+  const snapshotBodySha = walmartListingIntegritySha256(snapshotBody);
+  const snapshotId = `reviewed-one-sku-truth-${snapshotBodySha.slice(0, 24)}`;
+  const revisionBody = {
+    schema_version: "walmart-listing-repair-reviewed-truth-revision/v1" as const,
+    snapshot_id: snapshotId,
+    snapshot_body_sha256: snapshotBodySha,
+    listing,
+    expected_sha256: request.product_truth_candidate.expected_sha256,
+    candidate_sha256: request.product_truth_candidate.candidate_sha256,
+    target_surface_sha256: walmartListingIntegritySha256(
+      request.repair.target_surface,
+    ),
+    target_images_sha256: walmartListingIntegritySha256(
+      request.repair.target_images,
+    ),
+    changed_fields: request.repair.changed_fields,
+  };
+  const revisionBodySha = walmartListingIntegritySha256(revisionBody);
+  const revisionId = `reviewed-truth-revision-${revisionBodySha.slice(0, 24)}`;
+  const approvalBody = {
+    schema_version: "walmart-listing-repair-reviewed-truth-approval/v1" as const,
+    decision: "APPROVED_FOR_EXACT_ONE_SKU_PACKAGE_ONLY" as const,
+    approved_by: approvedBy,
+    exact_confirmation_sha256: walmartListingIntegritySha256(
+      input.owner_confirmation,
+    ),
+    compilation_request_file_sha256: requestFileSha,
+    compilation_request_body_sha256: request.body_sha256,
+    truth_revision_body_sha256: revisionBodySha,
+    authentication:
+      "BOUND_INTO_OWNER_ED25519_SEQUENCE_AND_ONE_SKU_PERMIT" as const,
+  };
+  const approvalSha = walmartListingIntegritySha256(approvalBody);
+  const binding: WalmartListingRepairProductTruthBinding = {
+    expected_sha256: request.product_truth_candidate.expected_sha256,
+    product_truth_snapshot_id: snapshotId,
+    product_truth_snapshot_body_sha256: snapshotBodySha,
+    truth_revision_id: revisionId,
+    truth_revision_body_sha256: revisionBodySha,
+    truth_approval_sha256: approvalSha,
+  };
+  const body = {
+    schema_version: WALMART_LISTING_REPAIR_REVIEWED_TRUTH_SCHEMA,
+    created_at: createdAt,
+    status: "ACTIVE_FOR_EXACT_ONE_SKU_PACKAGE_ONLY" as const,
+    snapshot: {
+      snapshot_id: snapshotId,
+      body_sha256: snapshotBodySha,
+      compilation_request_file_sha256: requestFileSha,
+      compilation_request_body_sha256: request.body_sha256,
+      listing,
+      frozen_review: request.frozen_review,
+      product_truth_candidate: request.product_truth_candidate,
+    },
+    revision: {
+      revision_id: revisionId,
+      body_sha256: revisionBodySha,
+      expected_sha256: request.product_truth_candidate.expected_sha256,
+      candidate_sha256: request.product_truth_candidate.candidate_sha256,
+      target_surface_sha256: revisionBody.target_surface_sha256,
+      target_images_sha256: revisionBody.target_images_sha256,
+    },
+    approval: {
+      ...approvalBody,
+      approval_sha256: approvalSha,
+    },
+    binding,
+    constraints: {
+      exact_listing_count: 1 as const,
+      walmart_content_write_authorized: false as const,
+      mass_apply_allowed: false as const,
+      price_required_for_content_truth: false as const,
+      database_activation_required_for_this_canary_package: false as const,
+      reusable_as_shared_catalog_activation: false as const,
+    },
+  };
+  return {
+    ...body,
+    body_sha256: walmartListingIntegritySha256(body),
   };
 }
 

@@ -20,6 +20,7 @@ import {
   type WalmartListingRepairOwnerSigningEnvelope,
 } from "../listing-integrity-remediation-authority.ts";
 import {
+  buildReviewedWalmartListingRepairProductTruthArtifact,
   buildWalmartListingRepairSequenceBodyFromCompilationRequest,
   compileWalmartListingRepairOwnerDraft,
   finalizeWalmartListingRepairExecutionPackage,
@@ -393,14 +394,49 @@ test("owner compiler creates one exact text-only execution package with zero eff
     permit_expires_at: "2026-07-25T12:20:00.000Z",
     package_created_at: "2026-07-25T12:05:00.000Z",
   };
-  const productTruth = {
-    expected_sha256: EXPECTED_TRUTH_SHA,
-    product_truth_snapshot_id: "truth-snapshot-1",
-    product_truth_snapshot_body_sha256: "2".repeat(64),
-    truth_revision_id: "truth-revision-1",
-    truth_revision_body_sha256: "3".repeat(64),
-    truth_approval_sha256: "4".repeat(64),
-  };
+  const reviewedTruth =
+    buildReviewedWalmartListingRepairProductTruthArtifact({
+      compilation_request: request,
+      compilation_request_file_sha256: requestFileSha,
+      owner_confirmation: CONFIRMATION,
+      approved_by: "owner-test-fixture",
+      created_at: NOW.toISOString(),
+    });
+  const productTruth = reviewedTruth.binding;
+  assert.equal(
+    reviewedTruth.status,
+    "ACTIVE_FOR_EXACT_ONE_SKU_PACKAGE_ONLY",
+  );
+  assert.equal(
+    reviewedTruth.constraints.price_required_for_content_truth,
+    false,
+  );
+  assert.equal(
+    reviewedTruth.constraints.reusable_as_shared_catalog_activation,
+    false,
+  );
+  assert.equal(productTruth.expected_sha256, EXPECTED_TRUTH_SHA);
+  assert.match(reviewedTruth.body_sha256, /^[a-f0-9]{64}$/u);
+  assert.throws(
+    () => buildReviewedWalmartListingRepairProductTruthArtifact({
+      compilation_request: request,
+      compilation_request_file_sha256: requestFileSha,
+      owner_confirmation: "not the exact reviewed confirmation",
+      approved_by: "owner-test-fixture",
+      created_at: NOW.toISOString(),
+    }),
+    /owner confirmation/u,
+  );
+  assert.throws(
+    () => buildReviewedWalmartListingRepairProductTruthArtifact({
+      compilation_request: request,
+      compilation_request_file_sha256: "0".repeat(64),
+      owner_confirmation: CONFIRMATION,
+      approved_by: "owner-test-fixture",
+      created_at: "2026-07-25T11:54:59.999Z",
+    }),
+    /cannot predate/u,
+  );
   const materials = walmartMaterials(
     ledger.binding,
     ledgerRoot,

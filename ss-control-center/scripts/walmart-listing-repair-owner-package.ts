@@ -46,18 +46,16 @@ import {
   type WalmartListingRepairMaterialCaptureResult,
 } from "../src/lib/walmart/listing-integrity-remediation-owner-material-capture.ts";
 import {
+  buildReviewedWalmartListingRepairProductTruthArtifact,
   buildWalmartListingRepairSequenceBodyFromCompilationRequest,
   compileWalmartListingRepairOwnerDraft,
   finalizeWalmartListingRepairExecutionPackage,
   verifyWalmartListingRepairCompilationRequest,
+  type ReviewedWalmartListingRepairProductTruthArtifact,
 } from "../src/lib/walmart/listing-integrity-remediation-owner-compiler.ts";
 import {
   bootstrapWalmartListingRepairConsumptionLedger,
 } from "../src/lib/walmart/listing-integrity-remediation-ledger.ts";
-import type {
-  WalmartListingRepairProductTruthBinding,
-} from "../src/lib/walmart/listing-integrity-remediation-writer.ts";
-
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const PROJECT_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
 const REPOSITORY_ROOT = path.resolve(PROJECT_ROOT, "..");
@@ -70,7 +68,6 @@ type JsonRecord = Record<string, unknown>;
 export interface WalmartListingRepairOwnerPackageArgs {
   command: "doctor" | "package";
   compilation_request?: string;
-  product_truth_binding?: string;
   owner_confirmation?: string;
   private_key?: string;
   custody_root?: string;
@@ -384,7 +381,6 @@ function parseArgs(argv: readonly string[]): WalmartListingRepairOwnerPackageArg
   }
   const exact = [
     "compilation-request",
-    "product-truth-binding",
     "owner-confirmation",
     "private-key",
     "custody-root",
@@ -400,8 +396,6 @@ function parseArgs(argv: readonly string[]): WalmartListingRepairOwnerPackageArg
     command,
     compilation_request:
       exactAbsolute(flags.get("compilation-request"), "--compilation-request"),
-    product_truth_binding:
-      exactAbsolute(flags.get("product-truth-binding"), "--product-truth-binding"),
     owner_confirmation: text(
       flags.get("owner-confirmation"),
       "--owner-confirmation",
@@ -436,7 +430,7 @@ async function exactPrivateDirectory(root: string): Promise<string> {
 
 function artifactMap(input: {
   compilationRequestBytes: Uint8Array;
-  productTruthBytes: Uint8Array;
+  reviewedTruth: ReviewedWalmartListingRepairProductTruthArtifact;
   capture: WalmartListingRepairMaterialCaptureResult;
   sequence: unknown;
   draft: ReturnType<typeof compileWalmartListingRepairOwnerDraft>;
@@ -445,7 +439,8 @@ function artifactMap(input: {
 }): Record<string, Uint8Array> {
   return {
     "compilation-request.json": input.compilationRequestBytes,
-    "product-truth-binding.json": input.productTruthBytes,
+    "reviewed-one-sku-product-truth.json": renderJson(input.reviewedTruth),
+    "product-truth-binding.json": renderJson(input.reviewedTruth.binding),
     "sequence-authorization.json": renderJson(input.sequence),
     "repair-plan.json": renderJson(input.draft.plan),
     "unchanged-image-certificate.json":
@@ -502,13 +497,8 @@ export async function executeWalmartListingRepairOwnerPackage(
     args.compilation_request,
     "--compilation-request",
   );
-  const truthPath = exactAbsolute(
-    args.product_truth_binding,
-    "--product-truth-binding",
-  );
-  const [requestBytes, truthBytes, ownerKey, custodyRoot] = await Promise.all([
+  const [requestBytes, ownerKey, custodyRoot] = await Promise.all([
     readStable(requestPath, "compilation request"),
-    readStable(truthPath, "Product Truth binding"),
     ownerPrivateKey(exactAbsolute(args.private_key, "--private-key")),
     exactPrivateDirectory(exactAbsolute(args.custody_root, "--custody-root")),
   ]);
@@ -517,15 +507,21 @@ export async function executeWalmartListingRepairOwnerPackage(
   if (args.owner_confirmation !== request.owner_gate.exact_confirmation) {
     fail("owner confirmation differs from the exact frozen review");
   }
-  const truth = parseJson(
-    truthBytes,
-    "Product Truth binding",
-  ) as WalmartListingRepairProductTruthBinding;
-  if (!truth || typeof truth !== "object"
-    || truth.expected_sha256 !== request.product_truth_candidate.expected_sha256) {
-    fail("active Product Truth binding differs from the reviewed exact truth");
-  }
   const requestFileSha = sha256(requestBytes);
+  const initialNow = (injected.now ?? (() => new Date()))();
+  if (!Number.isFinite(initialNow.getTime())) fail("current time is invalid");
+  const reviewedTruth =
+    buildReviewedWalmartListingRepairProductTruthArtifact({
+      compilation_request: request,
+      compilation_request_file_sha256: requestFileSha,
+      owner_confirmation: text(
+        args.owner_confirmation,
+        "--owner-confirmation",
+      ),
+      approved_by: text(args.approved_by, "--approved-by", 256),
+      created_at: initialNow.toISOString(),
+    });
+  const truth = reviewedTruth.binding;
   const runTag = `${new Date().toISOString().replace(/[-:.]/gu, "")}-`
     + requestFileSha.slice(0, 16);
   const ledgerRoot = path.join(custodyRoot, `ledger-${runTag}`);
@@ -652,7 +648,7 @@ export async function executeWalmartListingRepairOwnerPackage(
   });
   const artifacts = artifactMap({
     compilationRequestBytes: requestBytes,
-    productTruthBytes: truthBytes,
+    reviewedTruth,
     capture,
     sequence,
     draft,
