@@ -43,8 +43,13 @@ exact marketplace listing scope и SKU recipe — разные проекции 
   operational ledger; отдельные SSCC command/artifact/event tables, append-only DB
   custody, новый Product Truth Ed25519 domain и pinned external worker. Реализация
   Stage A ждёт exact owner gate; production activation/spend он не разрешает.
-- ⚪ Далее — owner-gated data foundation,
-  staged four-consumer cutover и только затем owner-approved canary/waves.
+- 🟢 Phase 6 contract preparation — pure hash-bound adapters всех четырёх consumers
+  готовы (`6/6`): Bundle Factory draft seed, Listing Improvement preview seed,
+  Unit Economics typed basis и Procurement factual-pack review plan. Они не имеют
+  DB/network/provider/process surface и не означают runtime activation.
+- ⚪ Далее — authoritative manifest/backfill/readiness, затем staged business-runtime
+  cutover `OFF → SHADOW → ENFORCED` по одному consumer и только потом
+  owner-approved canary/waves. Production cutover остаётся `0/4`.
 
 ---
 
