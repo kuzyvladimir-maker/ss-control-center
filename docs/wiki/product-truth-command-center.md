@@ -86,7 +86,7 @@ Truth, а не функциями matcher replay.
 **Exit:** существует проверяемая карта release → permanent tree; ни один чужой diff
 не перезаписан; следующий шаг имеет точный scoped file list.
 
-### 🔄 Phase 1 — Permanent engine materialization
+### ⛔ Phase 1 — Permanent engine materialization
 
 - [x] Материализовать актуальный Product Truth source в постоянном Git:
   current `HEAD 12799d6431ec1a0dcfdd14e3d64af2367d457ac8` содержит matcher
@@ -97,9 +97,9 @@ Truth, а не функциями matcher replay.
 - [x] Подтвердить, что старый integration bundle от 2026-07-19 больше не является
   import candidate: он предшествует matcher `1.2.1` и не должен откатывать current
   source.
-- [ ] Включить root `AGENTS.md` и все уже связанные из Wiki канонические Product
+- [x] Включить root `AGENTS.md` и все уже связанные из Wiki канонические Product
   Truth/Walmart runbooks в узкий docs-only candidate от current `HEAD`.
-- [ ] Получить на candidate Wiki-Brain `0` broken links, clean diff и новый
+- [x] Получить на candidate Wiki-Brain `0` broken links, clean diff и новый
   checksum-bound recovery bundle.
 - [ ] Остановиться на owner decision перед import/merge/push candidate в shared Git.
 
