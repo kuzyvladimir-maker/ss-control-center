@@ -60,14 +60,15 @@ const TRIAL_RECIPES: Recipe[] = [
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 8 },
     { flavor: "Peanut Butter & Mixed Berry Spread", qty: 16 },
   ] },
-  // 60ct reshaped after 10 render attempts: the 2/3/2 row shape kept
-  // collapsing to 2/2/2 (the model symmetrizes a lone 3-carton middle row).
-  // Same band and price, same chocolate+berry spirit, in a 2/2/2/2 shape the
-  // renderer handles reliably.
+  // 60ct, third shape: 2/3/2 collapsed to 2/2/2 (10 attempts); the 2/2/2/2
+  // reshape then failed 3 straight times ONLY on the word "Mixed" of the
+  // Beamin' cartons — that word does not render at this carton scale. Beamin'
+  // is already live in RM/UA/CD listings, so it is swapped for Bright-Eyed
+  // Berry ("Strawberry Jam" renders reliably). Total, band and price unchanged.
   { slug: "l-choc-berry-60", comps: [
     { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 20 },
     { flavor: "Peanut Butter & Blueberry", qty: 16 },
-    { flavor: "Morning Protein Peanut Butter & Mixed Berry Spread", qty: 16 },
+    { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 16 },
     { flavor: "Peanut Butter & Raspberry Spread", qty: 8 },
   ] },
   // Wave 3 — XL (scene-complexity ceiling, rendered last)
@@ -81,10 +82,12 @@ const TRIAL_RECIPES: Recipe[] = [
     { flavor: "Peanut Butter & Blueberry", qty: 32 },
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 24 },
   ] },
+  // Beamin' (the cursed "Mixed" word) swapped for Up & Apple after 7 attempts
+  // where every failure was Beamin'-row typography; same 1/4/4/2 shape.
   { slug: "xl-protein-90", comps: [
     { flavor: "Peanut Butter & Honey Spread", qty: 10 },
     { flavor: "Peanut Butter & Blueberry", qty: 32 },
-    { flavor: "Morning Protein Peanut Butter & Mixed Berry Spread", qty: 32 },
+    { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 32 },
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 16 },
   ] },
 ];
