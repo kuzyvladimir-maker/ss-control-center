@@ -277,9 +277,11 @@ entrypoint.
   non-zero/ambiguous/invalid GET запрещает POST и сжигает authorization. Clean
   checkout прошёл TypeScript, targeted ESLint и `227/227`; frozen bundle SHA
   `09e108c1…2ffca`, engine manifest SHA `5ce2ec88…ea94f`. Live network calls пока `0`;
-  signing request SHA `c34c4497…668c9` прошёл owner-key inspect и действует до
-  `2026-07-26T15:23:41.000Z`. Остались exact owner confirmation, один запуск и
-  report-bound artifacts.
+  Standing read-only contract `fbe4dd38…a594` отменил per-report confirmation.
+  Единственный create принят Walmart: request `019f9f34…319a`, HTTP `200`;
+  20 poll вернули `RECEIVED`, затем Walmart ограничил polling через `429`.
+  Повторный create запрещён; продолжается только чтение существующего request.
+  Permanent cadence fix `bdc7cb46` меняет polling на `30s × 40`, suite `227/227`.
 - [x] Подготовить exact Turso migration plan и остановиться на owner gate; reserved
   `approvalId` внутри plan не является решением владельца.
 - [x] Снять свежий self-contained backup exact target перед owner gate: portable SHA
@@ -386,12 +388,12 @@ UI не соединяется напрямую с legacy endpoints или CLI.
 
 Текущая execution-точка 2026-07-26: G1 импортирован и сертифицирован; G2 Stage A
 реализован и сертифицирован с runtime hardcoded `OFF`; G3 owner scope/census sealed.
-В G4 устранён старый двух-OAuth конфликт: exact one-token successor закоммичен,
-сертифицирован из no-hardlink clean checkout и заморожен. Новый private ledger,
-replacement plan и short-lived signing request созданы офлайн; request
-`c34c4497…668c9` проверен против active owner public key. OAuth/Walmart calls пока
-`0`. Следующая точка — exact owner confirmation и один sealed запуск.
-Quarantined session и старые permit bytes переиспользовать запрещено. Final
+В G4 устранён старый двух-OAuth конфликт, а owner direction отменил лишние
+пооперационные подтверждения для обычного read-only сбора. Единственный conditional
+create уже принят Walmart; request `019f9f34…319a` сохранён immutable. После 20
+`RECEIVED` poll Walmart вернул rate-limit `429`, поэтому повторный create запрещён и
+продолжается только безопасный continuation существующего request с более редким
+cadence. Quarantined session и старые permit bytes переиспользовать запрещено. Final
 report-bound disposition/manifest появятся только после exact ITEM v6 bytes.
 
 ---

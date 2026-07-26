@@ -269,11 +269,12 @@ Exit gate:
   external checksum-bound executable tree. Clean tree прошёл полный Product Truth suite, targeted stress,
   source-release tests, help/Prisma smokes и checksum verification. Gate 1 packet
   перепривязан к этому executable tree и заново прошёл SHA256SUMS verification;
-- 🟡 replacement report-create не выполнялся. Новый private ledger и distinct
-  replacement plan созданы офлайн; signing request `c34c4497…668c9` прошёл
-  owner-key inspect. OAuth/Walmart/provider calls = `0`. Frozen executable готов,
-  но live entrypoint остаётся закрытым до exact owner confirmation, detached Ed25519
-  signature и verified assembly. Старые session/permit/confirmation запрещены;
+- 🟡 единственный replacement report-create принят Walmart: request
+  `019f9f34…319a`, HTTP `200`; повторный create запрещён. Первые 20 poll вернули
+  `RECEIVED`, затем Walmart вернул `429 REQUEST_THRESHOLD_VIOLATED`. Standing
+  read-only owner direction отменяет per-report confirmation для утверждённого
+  scope; continuation читает только существующий request. Permanent cadence fix
+  `bdc7cb46` меняет poll на `30s × 40`, suite `227/227`;
 - 🟡 будущий v1 at-most-once будет технически доказан только внутри одной intact local
   session/custody root и не имеет distributed consumption ledger. Quarantined session
   нельзя переиспользовать как этот root;

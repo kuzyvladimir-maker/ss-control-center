@@ -792,13 +792,13 @@ POST не может использовать старую session/permit proven
 устранено successor engine: один shared transport выполняет exact absence GET,
 conditional create, poll/download/compile. Commit
 `c8cb50fe4a56480f90b207531453206f83ab1826` прошёл no-hardlink clean checkout
-`227/227`; frozen bundle `09e108c1…2ffca`, manifest `5ce2ec88…ea94f`. Новый ledger,
-replacement plan и signing request `c34c4497…668c9` созданы офлайн; owner-key inspect
-прошёл, live calls = `0`. Запуск остаётся закрытым до exact owner confirmation,
-detached Ed25519 signature и verified assembly. Старые hashes/confirmation это
-требование не закрывают. Owner
-facts для store scope подтверждены, но authoritative Walmart ITEM v6 report ещё не
-выпущен.
+`227/227`; standing read-only successor `fbe4dd38…a594` также прошёл `227/227` и
+не требует per-report confirmation для утверждённого scope. Единственный create
+принят: request `019f9f34-9bad-7390-b236-341290db319a`, HTTP `200`. После 20
+`RECEIVED` Walmart вернул `429`; повторный create запрещён, разрешён только
+continuation существующего request. Permanent cadence fix `bdc7cb46` переводит poll
+на `30s × 40`. Owner facts для store scope подтверждены, но authoritative Walmart
+ITEM v6 report ещё не скачан.
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.

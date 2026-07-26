@@ -28,7 +28,7 @@
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census и owner scope receipt sealed; финальный report-bound disposition ждёт G4 |
-| G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_EXACT_CONFIRMATION` | One-token release/ledger/replacement готовы; нет owner signature и authoritative report bytes |
+| G4. Walmart ITEM v6 read-only report | `REQUEST_CREATED_CONTINUATION_PENDING` | Единственный create принят; существующий request ждёт continuation после Walmart 429 |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
 | G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
@@ -245,19 +245,15 @@ network call, manifest, backfill, provider spend или marketplace write.
 - backfill;
 - publish.
 
-### Exact owner phrase
+### Standing read-only owner direction 2026-07-26
 
-```text
-Разрешаю G4: одну новую zero-retry попытку создать и получить Walmart ITEM v6
-только для read-only Product Truth intake: максимум один OAuth token call и один
-report-create POST. Листинги, цены, inventory и delist не изменять; повторный
-report-create не разрешаю.
-```
-
-G4 исполняется только готовым sealed operator workflow. Текстовое разрешение не
-заменяет требуемые engine-generated authorization/permit bytes, hashes и exact
-confirmation. Quarantined session и старые permit/authorization bytes повторно
-использовать запрещено.
+Обычный сбор отчётов, чтение каталогов и сохранение evidence для уже утверждённых
+магазинов выполняются автоматически и не требуют пооперационной confirmation-фразы.
+Технические scope/rate/idempotency limits остаются обязательными. Отдельное
+подтверждение по-прежнему требуется перед paid mass runs, изменением/удалением
+листингов, ценами, inventory writes, закупками и другими денежными действиями.
+Quarantined session и старые permit/authorization bytes повторно использовать
+запрещено.
 
 ### Consumed implementation evidence 2026-07-26
 
@@ -271,17 +267,18 @@ confirmation. Quarantined session и старые permit/authorization bytes п�
   `09e108c1fb59c6868ab6dacc42d02fa7f943254d55b0f31ff73ce8f015b2ffca`;
 - engine manifest SHA-256:
   `5ce2ec8807784529fc0afc0edf2af86cc9165ca27a4f8f6caa478db598fea94f`;
-- новый private consumption ledger и distinct replacement plan созданы офлайн;
-  network/OAuth/Walmart/provider/database/model calls = `0`.
-- signing request SHA-256
-  `c34c4497eb1fc68d7b6283a5802e88c7429df10391a4e151ed0c078a76a668c9`
-  прошёл owner-key inspect; signing message SHA-256
-  `bf43c71bac32e189420f72492a7b705c1b28359c07f033232be14e87bced556d`,
-  expiry `2026-07-26T15:23:41.000Z`.
-
-Это не означает, что G4 live уже выполнен. Inspect короткоживущего signing request
-пройден; следующая ручная граница — точная machine-generated owner confirmation.
-Только после Ed25519 signature/assembly разрешён один sealed запуск.
+- standing read-only contract commit
+  `fbe4dd38a583aba3fa92cb104338ae42faa4a594`, clean checkout `227/227`;
+- единственный conditional create принят Walmart с HTTP `200`; request ID
+  `019f9f34-9bad-7390-b236-341290db319a`, SHA-256
+  `e92d7021f5c8fb4f5e7ec877469c028f1ba4161d89cb861b6dd32a40e23b6d47`;
+- guard подтвердил exact absence; report-create calls `1`, listing/price/inventory/
+  delist writes `0`, database/model/paid-provider calls `0`;
+- первые 20 poll вернули `RECEIVED`; poll 21 и отдельный continuation poll 22
+  получили Walmart `429 REQUEST_THRESHOLD_VIOLATED`. Повторный create запрещён;
+  continuation продолжает только чтение существующего request;
+- permanent cadence fix commit `bdc7cb46`: poll `30s × 40` вместо `10s × 60`,
+  focused `43/43`, полный suite `227/227`.
 
 ## Что произойдёт после G3 + G4
 
