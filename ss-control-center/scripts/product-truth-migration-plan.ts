@@ -813,7 +813,7 @@ export class ProductTruthMigrationPlanError extends Error {
   }
 }
 
-export interface ProductTruthSchemaExecutor {
+interface SchemaExecutor {
   execute(statement: InStatement): Promise<ResultSet>;
 }
 
@@ -1470,7 +1470,7 @@ export function buildProductTruthMigrationConfirmationToken(input: {
   ].join(":");
 }
 
-async function readSchema(executor: ProductTruthSchemaExecutor): Promise<SchemaSnapshot> {
+async function readSchema(executor: SchemaExecutor): Promise<SchemaSnapshot> {
   const master = await executor.execute(
     `SELECT type, name, tbl_name, sql
      FROM sqlite_schema
@@ -1533,12 +1533,6 @@ async function readSchema(executor: ProductTruthSchemaExecutor): Promise<SchemaS
       objects,
     },
   };
-}
-
-export async function inspectProductTruthSchemaFingerprint(
-  executor: ProductTruthSchemaExecutor,
-): Promise<ProductTruthSchemaFingerprint> {
-  return (await readSchema(executor)).fingerprint;
 }
 
 function artifactPresent(snapshot: SchemaSnapshot, artifact: string): boolean {
@@ -1652,7 +1646,7 @@ function prismaLedgerState(snapshot: SchemaSnapshot): {
 }
 
 async function readReceipts(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   ledgerState: ProductTruthMigrationPlan["receiptLedger"],
 ): Promise<{ rows: Map<string, ReceiptRow>; blockers: string[] }> {
   if (ledgerState !== "ready") return { rows: new Map(), blockers: [] };
@@ -1711,7 +1705,7 @@ async function readReceipts(
 }
 
 async function readPrismaMigrationRows(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   ledgerState: ProductTruthMigrationPlan["prismaLedger"],
 ): Promise<{ rows: Map<string, PrismaMigrationRow>; blockers: string[] }> {
   if (ledgerState !== "ready") return { rows: new Map(), blockers: [] };
@@ -1755,7 +1749,7 @@ function rowsImpact(rows: ResultSet["rows"]): {
 }
 
 async function inspectQueueImpact(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   snapshot: SchemaSnapshot,
 ): Promise<ProductTruthQueueImpact> {
   const columns = snapshot.columns.get("EnrichmentJob") ?? new Set<string>();
@@ -1800,7 +1794,7 @@ async function inspectQueueImpact(
 }
 
 async function inspectWriterRows(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   snapshot: SchemaSnapshot,
   table: string,
   identifier: string,
@@ -1815,7 +1809,7 @@ async function inspectWriterRows(
 }
 
 async function inspectWriterActivity(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   snapshot: SchemaSnapshot,
 ): Promise<ProductTruthWriterActivity> {
   const blockerSets = {
@@ -1876,7 +1870,7 @@ function migrationDefinitionProblems(
 }
 
 async function inspectDatabasePlan(input: {
-  executor: ProductTruthSchemaExecutor;
+  executor: SchemaExecutor;
   files: readonly ProductTruthMigrationFile[];
   target: DatabaseTarget;
   activationContractSha256: string;
@@ -2403,7 +2397,7 @@ function assertPlanCanApply(plan: ProductTruthMigrationPlan): void {
 }
 
 async function insertReceipt(input: {
-  executor: ProductTruthSchemaExecutor;
+  executor: SchemaExecutor;
   file: ProductTruthMigrationFile;
   migrationSetHash: string;
   activationContractSha256: string;
@@ -2471,7 +2465,7 @@ async function insertReceipt(input: {
 }
 
 async function insertPrismaMigrationReceipt(input: {
-  executor: ProductTruthSchemaExecutor;
+  executor: SchemaExecutor;
   file: ProductTruthMigrationFile;
   appliedAt: string;
 }): Promise<void> {
@@ -2502,7 +2496,7 @@ async function insertPrismaMigrationReceipt(input: {
 }
 
 async function insertActivationReceipt(input: {
-  executor: ProductTruthSchemaExecutor;
+  executor: SchemaExecutor;
   planSha256: string;
   approvalSha256: string;
   migrationSetSha256: string;
@@ -2553,7 +2547,7 @@ async function insertActivationReceipt(input: {
 }
 
 async function assertMigrationArtifactsApplied(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   file: ProductTruthMigrationFile,
 ): Promise<void> {
   const snapshot = await readSchema(executor);
@@ -2579,7 +2573,7 @@ async function assertMigrationArtifactsApplied(
 }
 
 async function assertFullSchemaPostconditions(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   files: readonly ProductTruthMigrationFile[],
 ): Promise<SchemaSnapshot> {
   const snapshot = await readSchema(executor);
@@ -2647,7 +2641,7 @@ async function assertFullSchemaPostconditions(
 }
 
 async function assertQueueEffects(
-  executor: ProductTruthSchemaExecutor,
+  executor: SchemaExecutor,
   impact: ProductTruthQueueImpact,
 ): Promise<void> {
   const chunks = (ids: readonly string[]) => {

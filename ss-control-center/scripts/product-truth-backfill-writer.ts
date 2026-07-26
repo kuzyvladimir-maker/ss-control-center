@@ -39,7 +39,7 @@ import {
 } from "../src/lib/sourcing/product-truth-schema-gate";
 import {
   inspectProductTruthSchemaFingerprint,
-} from "./product-truth-migration-plan";
+} from "./product-truth-schema-fingerprint";
 
 export const PRODUCT_TRUTH_OWNER_BACKFILL_PLAN_VERSION =
   "product-truth-owner-backfill-plan/1.1.0" as const;

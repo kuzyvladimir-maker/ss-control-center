@@ -47,12 +47,14 @@ import {
   applyProductTruthMigrations,
   buildProductTruthMigrationConfirmationToken,
   canonicalProductTruthMigrationArtifact,
-  inspectProductTruthSchemaFingerprint,
   planProductTruthMigrations,
   productTruthMigrationArtifactSha256,
   writeProductTruthMigrationPlanArtifact,
   type ProductTruthMigrationApprovalV2,
 } from "../../../../scripts/product-truth-migration-plan";
+import {
+  inspectProductTruthSchemaFingerprint,
+} from "../../../../scripts/product-truth-schema-fingerprint";
 
 const CREATED_AT = "2026-07-19T12:05:00.000Z";
 const APPLY_AT = "2026-07-19T12:10:00.000Z";
