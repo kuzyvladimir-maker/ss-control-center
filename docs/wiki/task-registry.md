@@ -49,8 +49,12 @@
   `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`, сохраняет семь более свежих owner
   документов и проходит no-hardlink clean checkout: Product Truth `445/445`,
   TypeScript, targeted ESLint, production build, Wiki-Brain `0/0` и diff-check.
-  G1 import выполняется без push/deploy/production. G2 Stage A разрешён
-  только с runtime hardcoded `OFF`. G3 scope: Amazon store1 `Salutem Solutions`,
+  G1 consumed: shared local `main` fast-forwarded на
+  `df1e6600ef3a38ba402b5785ac7ed4ef1a3597a2`; Product Truth `445/445`,
+  targeted ESLint и Wiki-Brain `0/0` прошли, unrelated dirty worktree и два
+  recovery-stash сохранены, push/deploy/production не выполнялись. G2 Stage A
+  теперь активен только с runtime hardcoded `OFF`. G3 scope: Amazon store1
+  `Salutem Solutions`,
   store3 `AMZ Commerce` и Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`; Amazon
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются
   только через successor census/manifest. G4 разрешает одну новую zero-retry

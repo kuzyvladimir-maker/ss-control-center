@@ -14,9 +14,11 @@
 > поверх shared base `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e` с сохранением
 > более свежих owner-документов. No-hardlink clean checkout прошёл Product Truth
 > `445/445`, TypeScript, targeted ESLint, production build, Wiki-Brain `0/0` и
-> diff-check. Exact final commit/tree/bundle hashes хранятся в соседнем
-> checksum-bound release artifact; до локального import G1 остаётся
-> `APPROVED_IN_PROGRESS`. Это не разрешает push/deploy/production.
+> diff-check. Exact final candidate hashes хранятся в соседнем checksum-bound
+> release artifact. G1 consumed 2026-07-26: shared local `main` fast-forwarded to
+> `df1e6600ef3a38ba402b5785ac7ed4ef1a3597a2`, tree
+> `a74a45697a88509478ecf1750995194c9b7c0e6c`; push/deploy/production не
+> выполнялись и не были разрешены.
 
 > **Актуализация:** третья frozen closure имеет exact tree
 > `a1616dc605e474e6c70065d199b6b5c3aefc9805`. Поверх неё собирается отдельная

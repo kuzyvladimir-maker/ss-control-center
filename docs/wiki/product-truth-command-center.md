@@ -91,7 +91,7 @@ Truth, а не функциями matcher replay.
 **Exit:** существует проверяемая карта release → permanent tree; ни один чужой diff
 не перезаписан; следующий шаг имеет точный scoped file list.
 
-### 🔄 Phase 1 — Permanent engine materialization
+### ✅ Phase 1 — Permanent engine materialization
 
 - [x] Материализовать актуальный Product Truth source в постоянном Git:
   current base `main 9f59ecbd61df726d8b7b3ef95a60f66cddf376c0` содержит matcher
@@ -126,10 +126,16 @@ Truth, а не функциями matcher replay.
 - [x] Повторить no-hardlink clean-checkout certification: `npm ci`, Product Truth
   `445/445`, TypeScript, targeted ESLint, production build, Wiki-Brain (`0` orphan,
   `0` broken links) и `git diff --check` — `PASS`.
-- [ ] Импортировать exact certified `r5` в shared local `main` через recovery-stash
-  только пересекающихся release paths; unrelated dirty worktree не менять.
-- [ ] Повторить certification/build/Wiki-Brain в shared tree и записать consumed
-  G1 evidence. Push и deploy остаются вне G1.
+- [x] Импортировать exact certified `r5` в shared local `main` через два
+  recovery-stash только пересекающихся release paths; unrelated dirty worktree не
+  изменён. Imported commit `df1e6600ef3a38ba402b5785ac7ed4ef1a3597a2`,
+  tree `a74a45697a88509478ecf1750995194c9b7c0e6c`.
+- [x] Повторить certification в shared tree: Product Truth `445/445`, targeted
+  ESLint и Wiki-Brain (`0` orphan, `0` broken links) — `PASS`. Exact clean commit
+  ранее прошёл TypeScript и production build. Глобальный `tsc` dirty shared tree
+  отдельно выявил две ошибки в параллельных незакоммиченных Walmart-файлах
+  (`validator-walmart-product-truth.ts`, `walmart-new-sku-engine-runtime.ts`);
+  Product Truth paths их не изменяют. Push и deploy не выполнялись.
 
 **Exit:** воспроизводимый permanent tree содержит готовый engine и проходит тот же
 или более строгий certification set без `/private/tmp`.
@@ -193,7 +199,7 @@ bare-SKU `SkuCost`, paid calls или data writes.
 **Exit:** read-only UI честно отображает Product Truth и не предлагает запрещённый
 legacy execution path.
 
-### ⬜ Phase 4 — Default-OFF operations control plane (G2 approved, queued)
+### 🔄 Phase 4 — Default-OFF operations control plane (G2 approved, active)
 
 - [x] Отобразить authenticated `Doctor → Plan → Owner Approval → Execute →
   Status/Resume → Report` workflow и точный status каждого шага.

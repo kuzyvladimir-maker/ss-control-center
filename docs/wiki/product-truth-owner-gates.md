@@ -25,8 +25,8 @@
 
 | Gate | Состояние | Что блокирует |
 |---|---|---|
-| G1. Import permanent candidate | `APPROVED_IN_PROGRESS` | `r5` должен пройти clean certification и безопасный import в shared `main` |
-| G2. Web Operations Stage A | `APPROVED_NOT_CONSUMED` | Начинается только после завершения и сертификации G1 |
+| G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
+| G2. Web Operations Stage A | `APPROVED_IN_PROGRESS` | Реализуется только локально с runtime hardcoded `OFF` |
 | G3. Phase 1 store dispositions | `OWNER_CONFIRMED` | Нужно выпустить hash-bound census/disposition artifact с exact owner facts |
 | G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_SEALED_AUTHORIZATION` | Нет новой engine-generated authorization/permit и authoritative report bytes |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
@@ -62,6 +62,24 @@ successor census, свежий authoritative report и новый manifest.
 repricing, listing publish/apply или purchase.
 
 ## G1 — импорт permanent candidate в shared local `main`
+
+### Consumed evidence 2026-07-26
+
+- imported shared `main` commit:
+  `df1e6600ef3a38ba402b5785ac7ed4ef1a3597a2`;
+- imported tree:
+  `a74a45697a88509478ecf1750995194c9b7c0e6c`;
+- required base:
+  `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`;
+- two scoped recovery stashes retained; unrelated dirty worktree remained;
+- shared Product Truth certification `445/445`, targeted ESLint and Wiki-Brain
+  `0/0` passed;
+- no push, deploy, DB/provider/paid/marketplace action occurred.
+
+Global shared-worktree TypeScript remains independently red on two active,
+uncommitted Walmart new-SKU files. The exact imported commit passed TypeScript and
+production build from a no-hardlink clean checkout; this external dirty-worktree
+warning does not weaken or expand G1.
 
 ### Разрешает
 

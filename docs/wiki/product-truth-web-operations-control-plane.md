@@ -353,7 +353,7 @@ Code для программирования или принятия решен�
 
 ## 10. Activation sequence
 
-### Stage A — schema/contracts, no worker (`OWNER_APPROVED`, not implemented)
+### Stage A — schema/contracts, no worker (`OWNER_APPROVED_IN_PROGRESS`)
 
 - SSCC migration для command/artifact/event tables;
 - canonical parsers, Ed25519 verifier, state machine;
@@ -361,9 +361,9 @@ Code для программирования или принятия решен�
 - runtime hardcoded `OFF`;
 - production effects: zero.
 
-Владелец одобрил этот ограниченный Stage A 2026-07-26. Approval ещё не consumed:
-реализация начинается после завершения G1 и не включает production migration apply,
-trust-root enrollment, worker claim, provider calls/spend или marketplace actions.
+Владелец одобрил этот ограниченный Stage A 2026-07-26. G1 завершён, Stage A
+переведён в работу. Approval не включает production migration apply, trust-root
+enrollment, worker claim, provider calls/spend или marketplace actions.
 
 ### Stage B — `ADMISSION_ONLY`
 
