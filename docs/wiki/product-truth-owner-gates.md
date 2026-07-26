@@ -27,7 +27,7 @@
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
-| G3. Phase 1 store dispositions | `OWNER_CONFIRMED` | Нужно выпустить hash-bound census/disposition artifact с exact owner facts |
+| G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census и owner scope receipt sealed; финальный report-bound disposition ждёт G4 |
 | G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_SEALED_AUTHORIZATION` | Нет новой engine-generated authorization/permit и authoritative report bytes |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
 | G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
@@ -180,6 +180,30 @@ Distributor сейчас заблокированы и исключены из �
 Amazon store1 Salutem Solutions, store3 AMZ Commerce и Walmart store1 SIRIUS
 TRADING INTERNATIONAL LLC остаются в Phase 1.
 ```
+
+### Consumed evidence 2026-07-26
+
+- contract fix commit
+  `4465e14adc14de83c9b56c95ee5e6e3e8db9143c`: owner-attested
+  `UNRESOLVED` остаётся required scope и может быть закрыт только явным
+  `EXCLUDED_OWNER_CONFIRMED`; Product Truth `452/452`, TypeScript и targeted
+  ESLint прошли;
+- immutable evidence commit
+  `e129060e470c20a3f38f5c7793ed373290323b32`;
+- authoritative census: 6 required scopes, 4 technically connected,
+  2 unresolved, 0 blockers; content SHA-256
+  `ca0380c47f6b936fb761f5eb58c437433b6f7f9a6d34e82da6a4f13baecdeda3`;
+- capture SHA-256
+  `31bfa842f07c8c3ef7f128e62756a3e0933276f2eb97ae3d54a292b263b5452d`;
+- owner scope receipt SHA-256
+  `17e86147c36cc4467b764b96008fe816bbdda8e68d5c6406c5ea2211dd64f23e`;
+- evidence root:
+  `ss-control-center/data/audits/product-truth-phase1-scope/20260726T142613Z-g3-v1`.
+
+Owner scope decision завершён. Exact `phase1-scope-disposition/v3` не выпускается
+до G4, потому что `IN_SCOPE` Walmart обязан быть связан с фактическими ITEM v6
+bytes/report ID/count/hash. Pending receipt машинно помечен
+`mustNotBePassedToProductTruthManifestCli=true`.
 
 ### Historical proposed wording — superseded
 

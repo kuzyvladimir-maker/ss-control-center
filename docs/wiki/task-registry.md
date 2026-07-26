@@ -57,13 +57,16 @@
   tables и guards, canonical parser/state machine и Product Truth Ed25519 verifier
   сертифицированы `451/451`; TypeScript, Prisma validate, targeted ESLint и
   production build прошли. Runtime hardcoded `OFF`, production migration не
-  применялась, route/worker/provider effects отсутствуют. G3 теперь активен; scope:
-  Amazon store1
+  применялась, route/worker/provider effects отсутствуют. G3 scope/census завершён:
+  contract fix `4465e14a` прошёл Product Truth `452/452`, authoritative census
+  содержит 6 required scopes и 0 blockers, evidence commit `e129060e`, census SHA
+  `ca0380c4…cdeda3`. Amazon store1
   `Salutem Solutions`,
   store3 `AMZ Commerce` и Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`; Amazon
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются
-  только через successor census/manifest. G4 разрешает одну новую zero-retry
-  read-only ITEM v6 попытку, но старую quarantined session переиспользовать нельзя.
+  только через successor census/manifest. G4 теперь активен и разрешает одну новую
+  zero-retry read-only ITEM v6 попытку, но старую quarantined session и permit bytes
+  переиспользовать нельзя. Final report-bound disposition/manifest ждут exact G4 bytes.
   G5–G8 не разрешены. Живой checklist и acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.

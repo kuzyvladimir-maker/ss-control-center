@@ -263,10 +263,13 @@ entrypoint.
   `96b675ac71344a4ded72e51cbe9d4b880139d7d5dd288e67895b8f87924b1d7f`,
   `canApply=true`, `blockers=[]`. Наличие plan/frozen release не означает, что
   production schema уже активирована.
-- [ ] Выпустить owner-attested connected-store census по решению 2026-07-26:
+- [x] Выпустить owner-attested connected-store census по решению 2026-07-26:
   Amazon store1/store3 и Walmart store1 в scope; Amazon store2/store4/store5
-  исключены как blocked до successor census. Получить authoritative Walmart ITEM v6
-  report и заморозить manifest v3.
+  исключены как blocked до successor census. Authoritative census содержит все 6
+  required scopes, включая два честных `UNRESOLVED`, и 0 blockers; owner scope
+  receipt sealed в evidence commit `e129060e`.
+- [ ] Получить authoritative Walmart ITEM v6 report через новый sealed G4 workflow,
+  выпустить exact report-bound `phase1-scope-disposition/v3` и заморозить manifest v3.
 - [x] Подготовить exact Turso migration plan и остановиться на owner gate; reserved
   `approvalId` внутри plan не является решением владельца.
 - [x] Снять свежий self-contained backup exact target перед owner gate: portable SHA
@@ -372,11 +375,11 @@ smokes и shadow adapters выполняются до этих gates.
 UI не соединяется напрямую с legacy endpoints или CLI.
 
 Текущая execution-точка 2026-07-26: G1 импортирован и сертифицирован; G2 Stage A
-реализован и сертифицирован с runtime hardcoded `OFF`. Следующая активная фаза —
-G3: выпустить owner-bound census/disposition artifacts для Amazon store1/store3 и
-Walmart store1, исключив blocked Amazon store2/store4/store5 только в текущем
-snapshot. G4 одобрен по intent, но исполнение остаётся закрытым до новой sealed
-authorization; quarantined session переиспользовать запрещено.
+реализован и сертифицирован с runtime hardcoded `OFF`; G3 owner scope/census sealed.
+Следующая активная фаза — G4. Он одобрен по intent, но исполнение остаётся закрытым
+до новой sealed authorization; quarantined session и старые permit bytes
+переиспользовать запрещено. Final report-bound disposition/manifest появятся только
+после exact ITEM v6 bytes.
 
 ---
 

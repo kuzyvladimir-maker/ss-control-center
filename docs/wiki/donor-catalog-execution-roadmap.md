@@ -286,14 +286,16 @@ Exit gate:
   marketplace mutations и consumer activation не выполнялись. Consumer cutover на
   единый read-contract равен **0 из 4**; legacy views/tables не являются
   доказательством production readiness;
-- 🟡 три уже существующих свежих Amazon
+- 🟡 три ранее захваченных Amazon
   `GET_MERCHANT_LISTINGS_ALL_DATA` reports скачаны read-only: store1 = 1563 строк,
   store3 = 514, store5 = 0; report-create calls = 0, exact bytes связаны SHA-256.
-  Amazon store2/store4 всё ещё требуют owner connectivity disposition, store5 —
-  явного exclusion как deactivated/no-US-participation. Authoritative Walmart
-  `ITEM_CATALOG` v6 отсутствует: свежий bounded GET-only probe полностью покрыл
-  последние 24 часа и увидел только v2. Owner-bound census/dispositions, финальный
-  Phase 1 manifest v3 и все последующие budget/action gates ещё не получены;
+  Owner decision 2026-07-26 закрыл scope: store1/store3 Amazon и store1 Walmart
+  остаются `IN_SCOPE`; store2/store4/store5 Amazon исключены как currently blocked
+  до successor census. Authoritative census sealed: 6 required scopes, 0 blockers,
+  content SHA `ca0380c4…cdeda3`; два технически `UNRESOLVED` scope сохранены в
+  denominator и закрываются только явным owner exclusion. Authoritative Walmart
+  `ITEM_CATALOG` v6 отсутствует: bounded GET-only probe видел только v2. Final
+  report-bound disposition v3, Phase 1 manifest v3 и последующие gates ждут G4;
 - ⚪ paid/provider canary, платный gap enrichment и любой иной платный Product Truth
   run не запускались.
 
