@@ -68,7 +68,7 @@ test("Walmart uses the explicit deployment-supported set without inventing a uni
   assert.deepEqual(artifact.requiredScopes.walmart, ["store1", "store9"]);
 });
 
-test("source disagreement is explicit UNRESOLVED and remains in the denominator", () => {
+test("source disagreement stays explicit and owner-attested UNRESOLVED remains required", () => {
   const capture = makeTestConnectedStoreCapture();
   const store2 = capture.scopes.find(
     (scope) => scope.channel === "amazon" && scope.storeIndex === 2,
@@ -82,13 +82,10 @@ test("source disagreement is explicit UNRESOLVED and remains in the denominator"
     capture,
     ownerAttestation: makeTestConnectedStoreOwnerAttestation(capture),
   });
-  assert.equal(artifact.authoritative, false);
+  assert.equal(artifact.authoritative, true);
   assert.ok(artifact.requiredScopes.amazon.includes("store2"));
-  assert.ok(
-    artifact.blockers.some(
-      (blocker) => blocker.code === "UNRESOLVED_CONNECTED_STORE_SCOPE",
-    ),
-  );
+  assert.equal(artifact.counts.unresolvedScopes, 1);
+  assert.deepEqual(artifact.blockers, []);
 });
 
 test("owner attestation binds the canonical capture and canonical artifact bytes", () => {

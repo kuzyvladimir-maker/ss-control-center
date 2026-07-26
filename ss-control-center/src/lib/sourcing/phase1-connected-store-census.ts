@@ -7,7 +7,7 @@ export const PHASE1_CONNECTED_STORE_OWNER_ATTESTATION_VERSION =
 export const PHASE1_CONNECTED_STORE_CENSUS_VERSION =
   "phase1-connected-store-census/v1" as const;
 export const PHASE1_CONNECTED_STORE_CENSUS_POLICY_VERSION =
-  "phase1-connected-store-census-policy/1.0.0" as const;
+  "phase1-connected-store-census-policy/1.1.0" as const;
 
 export const PHASE1_CONNECTED_STORE_COMPLETENESS_STATEMENT =
   "ALL_SUPPORTED_AND_CONNECTED_AMAZON_WALMART_STORE_SCOPES_ARE_ENUMERATED" as const;
@@ -86,7 +86,6 @@ export type Phase1ConnectedStoreCensusBlockerCode =
   | "UNSUPPORTED_CENSUS_SLOT"
   | "INVALID_CENSUS_SCOPE"
   | "CENSUS_SCOPE_STATUS_MISMATCH"
-  | "UNRESOLVED_CONNECTED_STORE_SCOPE"
   | "INVALID_CENSUS_OWNER_ATTESTATION"
   | "CENSUS_CAPTURE_HASH_MISMATCH"
   | "CENSUS_CAPTURE_IN_FUTURE"
@@ -519,15 +518,6 @@ function normalizeCapture(
         scopeKey,
         message: "Explicit connectionStatus does not match Store-directory/config evidence.",
         details: { connectionStatus, expectedStatus, directoryState, credentialState },
-      });
-    }
-    if (connectionStatus === "UNRESOLVED") {
-      addBlocker({
-        code: "UNRESOLVED_CONNECTED_STORE_SCOPE",
-        channel,
-        scopeKey,
-        message: "Connected-store evidence is unresolved; this slot remains in the required denominator and blocks freeze.",
-        details: { directoryState, credentialState },
       });
     }
     const accountId = raw.accountId == null ? null : nonEmptyString(raw.accountId);

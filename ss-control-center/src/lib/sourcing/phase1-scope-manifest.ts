@@ -12,9 +12,9 @@ import {
 } from "./phase1-connected-store-census";
 
 export const PHASE1_SCOPE_DISPOSITION_VERSION =
-  "phase1-scope-disposition/v2" as const;
+  "phase1-scope-disposition/v3" as const;
 export const PHASE1_SCOPE_BUILDER_POLICY_VERSION =
-  "phase1-scope-builder-policy/1.1.0" as const;
+  "phase1-scope-builder-policy/1.2.0" as const;
 export const PHASE1_SCOPE_MANIFEST_VERSION =
   "phase1-authoritative-scope-manifest/v3" as const;
 
@@ -45,7 +45,7 @@ export interface Phase1ScopeDispositionEntry {
   channel: Phase1Channel;
   scopeKey: string;
   storeIndex: number;
-  accountId: string;
+  accountId: string | null;
   storeId: string;
   marketplaceId?: string | null;
   disposition: Phase1ScopeDisposition;
@@ -150,7 +150,7 @@ export interface Phase1ScopeDispositionRecord {
   channel: Phase1Channel;
   scopeKey: string;
   storeIndex: number;
-  accountId: string;
+  accountId: string | null;
   storeId: string;
   marketplaceId: string | null;
   disposition: Phase1ScopeDisposition;
@@ -618,25 +618,6 @@ function parseDisposition(
       });
     }
 
-    const accountId = nonEmptyString(raw.accountId);
-    const storeId = nonEmptyString(raw.storeId);
-    const marketplaceId = raw.marketplaceId == null
-      ? null
-      : nonEmptyString(raw.marketplaceId);
-    if (!accountId || !storeId || (channel === "amazon" && !marketplaceId)) {
-      addBlocker({
-        code: "INVALID_SCOPE_IDENTITY",
-        channel,
-        scopeKey: key,
-        message: "Every scope needs accountId and storeId; Amazon also needs marketplaceId.",
-        details: {
-          hasAccountId: Boolean(accountId),
-          hasStoreId: Boolean(storeId),
-          hasMarketplaceId: Boolean(marketplaceId),
-        },
-      });
-    }
-
     const disposition =
       raw.disposition === "IN_SCOPE" ||
       raw.disposition === "EXCLUDED_OWNER_CONFIRMED" ||
@@ -652,6 +633,30 @@ function parseDisposition(
         details: { received: raw.disposition ?? null },
       });
       return;
+    }
+
+    const accountId = raw.accountId == null ? null : nonEmptyString(raw.accountId);
+    const storeId = nonEmptyString(raw.storeId);
+    const marketplaceId = raw.marketplaceId == null
+      ? null
+      : nonEmptyString(raw.marketplaceId);
+    if (
+      (raw.accountId != null && !accountId)
+      || (disposition === "IN_SCOPE" && !accountId)
+      || !storeId
+      || (channel === "amazon" && !marketplaceId)
+    ) {
+      addBlocker({
+        code: "INVALID_SCOPE_IDENTITY",
+        channel,
+        scopeKey: key,
+        message: "IN_SCOPE needs accountId; every scope needs storeId and Amazon marketplaceId. Owner-excluded unresolved scope may retain a null accountId.",
+        details: {
+          hasAccountId: Boolean(accountId),
+          hasStoreId: Boolean(storeId),
+          hasMarketplaceId: Boolean(marketplaceId),
+        },
+      });
     }
 
     const decision = isRecord(raw.decision) ? raw.decision : null;
@@ -735,7 +740,7 @@ function parseDisposition(
       channel,
       scopeKey: key,
       storeIndex: storeIndex ?? 0,
-      accountId: accountId ?? "",
+      accountId,
       storeId: storeId ?? "",
       marketplaceId,
       disposition,
@@ -1032,7 +1037,8 @@ export function validatePhase1ScopeManifestV3Policy(value: unknown): string[] {
         || scopeKey !== normalizeScopeKey(scopeKey)
         || !disposition
         || positiveStoreIndex(raw.storeIndex) === null
-        || typeof raw.accountId !== "string"
+        || (raw.accountId !== null && typeof raw.accountId !== "string")
+        || (disposition === "IN_SCOPE" && raw.accountId === null)
         || typeof raw.storeId !== "string"
         || (raw.marketplaceId !== null && typeof raw.marketplaceId !== "string")
         || typeof raw.decisionId !== "string"
@@ -1745,6 +1751,17 @@ export function buildPhase1ScopeManifest(
     .filter((candidate) => candidate.disposition === "IN_SCOPE")
     .sort(dispositionComparator)) {
     if (entry.storeIndex <= 0) continue;
+    if (!entry.accountId) {
+      addBlocker({
+        code: "INVALID_SCOPE_IDENTITY",
+        channel: entry.channel,
+        scopeKey: entry.scopeKey,
+        message: "IN_SCOPE disposition cannot compile reports without accountId.",
+        details: { hasAccountId: false },
+      });
+      continue;
+    }
+    const accountId = entry.accountId;
     const id = scopeId(entry.channel, entry.scopeKey);
     const local = reportsByScope.get(id);
     if (!local) {
@@ -1991,7 +2008,7 @@ export function buildPhase1ScopeManifest(
         channel: entry.channel,
         scopeKey: entry.scopeKey,
         storeIndex: entry.storeIndex,
-        accountId: entry.accountId,
+        accountId,
         storeId: entry.storeId,
         marketplaceId: entry.marketplaceId,
         listingKey: buildProductTruthListingScope({
@@ -2022,7 +2039,7 @@ export function buildPhase1ScopeManifest(
       channel: entry.channel,
       scopeKey: entry.scopeKey,
       storeIndex: entry.storeIndex,
-      accountId: entry.accountId,
+      accountId,
       storeId: entry.storeId,
       marketplaceId: entry.marketplaceId,
       reportType: reportAttestation.reportType,

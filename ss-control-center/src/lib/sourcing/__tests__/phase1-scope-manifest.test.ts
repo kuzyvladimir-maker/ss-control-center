@@ -319,6 +319,45 @@ test("accepts an explicitly owner-excluded required account but never a missing 
   assert.ok(blockerCodes(missing).includes("MISSING_ACCOUNT_DISPOSITION"));
 });
 
+test("owner-confirmed exclusion resolves a census-required UNRESOLVED account", () => {
+  const base = input();
+  const unresolvedCensus = makeTestConnectedStoreCensus({
+    amazonConnected: [1],
+    amazonUnresolved: [2],
+  });
+  const excludedUnresolved = {
+    ...excluded("amazon", "store2"),
+    accountId: null,
+    storeId: "store2",
+    marketplaceId: "ATVPDKIKX0DER",
+  };
+  const resolved = buildPhase1ScopeManifest({
+    ...base,
+    connectedStoreCensus: unresolvedCensus,
+    disposition: {
+      ...(base.disposition as Phase1ScopeDispositionDocument),
+      scopes: [
+        ...(base.disposition as Phase1ScopeDispositionDocument).scopes,
+        excludedUnresolved,
+      ],
+    },
+  });
+  assert.equal(resolved.authoritative, true, JSON.stringify(resolved.blockers));
+  assert.equal(
+    resolved.scopeDispositions.filter(
+      (scope) => scope.disposition === "EXCLUDED_OWNER_CONFIRMED",
+    ).length,
+    1,
+  );
+
+  const omitted = buildPhase1ScopeManifest({
+    ...base,
+    connectedStoreCensus: unresolvedCensus,
+  });
+  assert.equal(omitted.authoritative, false);
+  assert.ok(blockerCodes(omitted).includes("MISSING_ACCOUNT_DISPOSITION"));
+});
+
 test("rejects a competing manual denominator even when it equals the census", () => {
   const manifest = buildPhase1ScopeManifest({
     ...input(),

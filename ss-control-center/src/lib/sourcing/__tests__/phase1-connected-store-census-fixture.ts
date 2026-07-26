@@ -19,6 +19,7 @@ export interface TestConnectedStoreCensusOptions {
   capturedAt?: string;
   attestedAt?: string;
   amazonConnected?: number[];
+  amazonUnresolved?: number[];
   walmartConnected?: number[];
   walmartSupported?: number[];
   identityStyle?: "scope-key" | "index";
@@ -43,6 +44,7 @@ export function makeTestConnectedStoreCapture(
 ): Phase1ConnectedStoreCapture {
   const capturedAt = options.capturedAt ?? TEST_CENSUS_CAPTURED_AT;
   const amazonConnected = new Set(options.amazonConnected ?? [1]);
+  const amazonUnresolved = new Set(options.amazonUnresolved ?? []);
   const walmartConnected = new Set(options.walmartConnected ?? [1]);
   const walmartSupported = [...new Set(options.walmartSupported ?? [1])].sort(
     (left, right) => left - right,
@@ -50,16 +52,31 @@ export function makeTestConnectedStoreCapture(
   const scopes: Phase1ConnectedStoreCaptureScope[] = [];
   for (const storeIndex of [1, 2, 3, 4, 5]) {
     const connected = amazonConnected.has(storeIndex);
+    const unresolved = amazonUnresolved.has(storeIndex);
     scopes.push({
       channel: "amazon",
       scopeKey: `store${storeIndex}`,
       storeIndex,
-      connectionStatus: connected ? "CONNECTED" : "NOT_CONNECTED",
-      directoryState: connected ? "ACTIVE" : "ABSENT",
-      credentialState: connected ? "CONFIGURED" : "NOT_CONFIGURED",
+      connectionStatus: connected
+        ? "CONNECTED"
+        : unresolved
+          ? "UNRESOLVED"
+          : "NOT_CONNECTED",
+      directoryState: connected || unresolved ? "ACTIVE" : "ABSENT",
+      credentialState: connected
+        ? "CONFIGURED"
+        : unresolved
+          ? "UNKNOWN"
+          : "NOT_CONFIGURED",
       ...(connected
         ? testScopeIdentity("amazon", storeIndex, options.identityStyle)
-        : { accountId: null, storeId: null, marketplaceId: null }),
+        : unresolved
+          ? {
+              accountId: null,
+              storeId: `store${storeIndex}`,
+              marketplaceId: "ATVPDKIKX0DER",
+            }
+          : { accountId: null, storeId: null, marketplaceId: null }),
     });
   }
   for (const storeIndex of walmartSupported) {
