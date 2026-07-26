@@ -149,6 +149,11 @@ pause, so subscription usage and remaining work are visible to the owner.
   - [x] 7.1b render fail-closed Product Truth readiness and the exact shared-plan
     identity in the permanent tab; execution-package/write/mass authority remain
     independent, self-asserted `READY` is rejected, loader 7/7 and UI 1/1;
+  - [x] 7.1c revalidate Walmart title ordering against official guidance and add
+    a deterministic standard-grocery gap for a leading `Pack of N`/`N-Pack`/
+    `N Count`; searchable brand/product identity precedes variant/attributes and
+    outer Pack Count, exact current Product Type spec retains hard-limit authority,
+    tests 3/3 and targeted ESLint PASS; `FaisalX-1183` title remains unchanged;
   - [ ] 7.2 connect persistent API/state store, scheduler and resumable queue;
   - [ ] 7.3 show factual post-canary `До → После`, fresh Qualification and
     published/indexing status before waves are allowed.
