@@ -199,7 +199,7 @@ bare-SKU `SkuCost`, paid calls или data writes.
 **Exit:** read-only UI честно отображает Product Truth и не предлагает запрещённый
 legacy execution path.
 
-### 🔄 Phase 4 — Default-OFF operations control plane (G2 approved, active)
+### 🔄 Phase 4 — Default-OFF operations control plane (Stage A complete; later stages gated)
 
 - [x] Отобразить authenticated `Doctor → Plan → Owner Approval → Execute →
   Status/Resume → Report` workflow и точный status каждого шага.
@@ -215,27 +215,36 @@ legacy execution path.
 - [x] Доказать, что ChannelMAX/Walmart patterns можно использовать только как
   инженерные примитивы lease/heartbeat/ambiguity и Ed25519 verification; их
   tables, keys, permits и authority не переносятся в Product Truth.
-- [ ] После завершения G1 создать Stage-A durable command queue;
-  долгую работу исполняет отдельный worker;
-  browser только планирует,
-  подтверждает и poll-ит состояние.
+- [x] Реализовать Stage-A custody boundary: отдельная SSCC migration family для
+  durable command/artifact/event tables, append-only triggers, exact event chain и
+  guarded state/attempt boundary. Migration существует только как проверенный
+  локальный artifact и не применена к production DB.
 - [x] Выбрать рекомендуемую permanent boundary для owner decision: bounded
   append-only artifact bytes в основной SSCC DB, новый отдельный Product Truth
   Ed25519 trust root/private owner custody и pinned iMac/`launchd` worker. Это
   design decision, а не activation; public image R2 и Vercel request запрещены.
-- [ ] После завершения G1 реализовать Stage-A authenticated command
-  admission, сохранив `ambiguous=no replay`, terminal states,
-  new-output-only semantics и sealed CLI parity.
+- [x] Реализовать Stage-A локальный admission contract: canonical exact-byte
+  envelope, typed allowlist, отдельный Product Truth Ed25519 verifier/domain,
+  expiry/key-family checks, `ambiguous=no replay`, immutable terminal states и
+  new-output-only artifact semantics. Production trust root и web route отсутствуют.
+- [x] Сертифицировать Stage A: Product Truth `451/451`, TypeScript, targeted ESLint,
+  Prisma validate, production build и `git diff --check` — `PASS`. Code commit
+  `fc98be84cdb6c909e0d5a6db45f8b6570e01bcde`, tree
+  `37a706c362201e46c6401756fc0b0347995f9199`.
+- [ ] Stage B `ADMISSION_ONLY`: только после нового owner gate; enrollment public
+  trust root и UI signing request, но всё ещё без worker claim.
+- [ ] Stage C+: отдельный pinned worker и последующие read/write/metered stages —
+  только по самостоятельным owner gates.
 
 **Exit:** UI не ослабляет sealed plan, approval, budget ledger или mutation gates;
 локальный no-spend smoke полностью воспроизводим.
 
-**Текущий статус:** владелец одобрил G2 2026-07-26 строго для Stage A с runtime
-hardcoded `OFF`. Реализация поставлена следующей после G1, чтобы одновременно была
-активна только одна фаза. Approval не разрешает DB apply, enrollment production
-key, worker claim, provider calls/spend или marketplace actions. До отдельной
-активации готовый CLI из [[product-truth-operator-runbook]] остаётся единственным
-execution entrypoint.
+**Текущий статус:** G2 Stage A завершён локально 2026-07-26 с runtime hardcoded
+`OFF`. Ни route, ни worker claim, ни process/network/database runtime не созданы.
+Production migration apply, enrollment production key, provider calls/spend и
+marketplace actions не выполнялись и не разрешены. До отдельного Stage-B/C gate
+готовый CLI из [[product-truth-operator-runbook]] остаётся единственным execution
+entrypoint.
 
 ### ⛔ Phase 5 — Production data foundation
 
@@ -362,11 +371,12 @@ smokes и shadow adapters выполняются до этих gates.
 Следовательно, Phase 1 начинается только после точной release-materialization карты;
 UI не соединяется напрямую с legacy endpoints или CLI.
 
-Текущая execution-точка 2026-07-26: G1 одобрен; `r5` собирается поверх
-`af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`. G2 одобрен и стоит следующим с runtime
-hardcoded `OFF`. G3 facts подтверждены владельцем. G4 одобрен по intent, но
-исполнение остаётся закрытым до новой sealed authorization; quarantined session
-переиспользовать запрещено.
+Текущая execution-точка 2026-07-26: G1 импортирован и сертифицирован; G2 Stage A
+реализован и сертифицирован с runtime hardcoded `OFF`. Следующая активная фаза —
+G3: выпустить owner-bound census/disposition artifacts для Amazon store1/store3 и
+Walmart store1, исключив blocked Amazon store2/store4/store5 только в текущем
+snapshot. G4 одобрен по intent, но исполнение остаётся закрытым до новой sealed
+authorization; quarantined session переиспользовать запрещено.
 
 ---
 

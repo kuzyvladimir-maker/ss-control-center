@@ -53,7 +53,12 @@
   `df1e6600ef3a38ba402b5785ac7ed4ef1a3597a2`; Product Truth `445/445`,
   targeted ESLint и Wiki-Brain `0/0` прошли, unrelated dirty worktree и два
   recovery-stash сохранены, push/deploy/production не выполнялись. G2 Stage A
-  теперь активен только с runtime hardcoded `OFF`. G3 scope: Amazon store1
+  завершён локально в commit `fc98be84c`: отдельные command/artifact/event custody
+  tables и guards, canonical parser/state machine и Product Truth Ed25519 verifier
+  сертифицированы `451/451`; TypeScript, Prisma validate, targeted ESLint и
+  production build прошли. Runtime hardcoded `OFF`, production migration не
+  применялась, route/worker/provider effects отсутствуют. G3 теперь активен; scope:
+  Amazon store1
   `Salutem Solutions`,
   store3 `AMZ Commerce` и Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`; Amazon
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются

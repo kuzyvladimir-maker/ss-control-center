@@ -26,7 +26,7 @@
 | Gate | Состояние | Что блокирует |
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
-| G2. Web Operations Stage A | `APPROVED_IN_PROGRESS` | Реализуется только локально с runtime hardcoded `OFF` |
+| G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
 | G3. Phase 1 store dispositions | `OWNER_CONFIRMED` | Нужно выпустить hash-bound census/disposition artifact с exact owner facts |
 | G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_SEALED_AUTHORIZATION` | Нет новой engine-generated authorization/permit и authoritative report bytes |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
@@ -108,6 +108,18 @@ activation, DB writes, provider calls и marketplace actions не разреша
 ## G2 — Web Operations Stage A, runtime hardcoded OFF
 
 Полный design: [[product-truth-web-operations-control-plane]].
+
+### Consumed evidence 2026-07-26
+
+- code commit:
+  `fc98be84cdb6c909e0d5a6db45f8b6570e01bcde`;
+- tree:
+  `37a706c362201e46c6401756fc0b0347995f9199`;
+- Product Truth certification `451/451`, TypeScript, targeted ESLint, Prisma
+  validate, production build и `git diff --check` — `PASS`;
+- отдельная SSCC migration family создана, но к production DB не применялась;
+- runtime остаётся hardcoded `OFF`; routes, worker claim, production trust-root,
+  provider calls/spend и marketplace actions отсутствуют.
 
 ### Разрешает
 
