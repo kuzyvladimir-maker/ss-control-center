@@ -2649,6 +2649,116 @@ model ProductTruthOperationalEvent {
   @@index([runId, eventIndex], map: "ProductTruthOperationalEvent_run_idx")
 }
 
+// SS Command Center Web Operations Stage A custody. This is deliberately
+// separate from the frozen exact-eight Product Truth business-data schema.
+// Runtime remains hardcoded OFF; no web route or worker claims these rows.
+model ProductTruthControlCommand {
+  commandId String @id
+
+  schemaVersion String
+  commandKind   String
+  gateClass     String
+  status        String @default("DRAFT")
+  idempotencyKey String @unique
+  requestSha256  String @unique
+
+  requestedByUserId String
+  requestedAt       DateTime
+
+  engineReleaseId       String
+  engineCommitSha       String
+  engineTreeSha         String
+  executableTreeSha256  String
+  environment           String
+  databaseTargetFingerprint String
+  manifestSha256        String
+
+  runId        String?
+  planSha256   String?
+  approvalId   String?
+
+  requestArtifactId             String?
+  planArtifactId                String?
+  approvalArtifactId            String?
+  permitArtifactId              String?
+  balanceArtifactId             String?
+  resultArtifactId              String?
+  artifactIndexArtifactId       String?
+  reportArtifactId              String?
+  zeroAttemptEvidenceArtifactId String?
+
+  ownerKeyId                    String?
+  ownerNonce                    String? @unique
+  ownerSignatureSha256          String?
+  ownerAuthorizedAt             DateTime?
+  ownerAuthorizationExpiresAt   DateTime?
+
+  workerLeaseOwner       String?
+  workerLeaseTokenSha256 String?
+  workerLeaseExpiresAt   DateTime?
+  workerHeartbeatAt      DateTime?
+  attempts               Int @default(0)
+  maxAttempts            Int @default(1)
+  executionStartedAt     DateTime?
+  executionBoundary      String?
+
+  exitCode  Int?
+  outcome   String?
+  errorCode String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  artifacts ProductTruthControlArtifact[]
+  events    ProductTruthControlEvent[]
+
+  @@index([status, requestedAt], map: "ProductTruthControlCommand_status_requestedAt_idx")
+  @@index([workerLeaseExpiresAt], map: "ProductTruthControlCommand_leaseExpiresAt_idx")
+  @@index([commandKind, status], map: "ProductTruthControlCommand_kind_status_idx")
+}
+
+// Exact bounded bytes under append-only DB triggers. `locator` is
+// command-scoped/content-addressed; public image storage is not used.
+model ProductTruthControlArtifact {
+  artifactId String @id
+  commandId  String
+  command    ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
+
+  schemaVersion      String
+  role               String
+  mediaType          String
+  content            Bytes
+  byteSize           Int
+  sha256             String
+  locator            String @unique
+  createdAt          DateTime
+  createdByPrincipal String
+
+  @@unique([commandId, role, sha256], map: "ProductTruthControlArtifact_command_role_sha_key")
+  @@index([commandId, createdAt], map: "ProductTruthControlArtifact_command_created_idx")
+}
+
+// Immutable per-command hash chain. SQL triggers enforce exact next sequence,
+// predecessor binding and append-only behavior.
+model ProductTruthControlEvent {
+  eventId   String @id
+  commandId String
+  command   ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
+
+  schemaVersion    String
+  sequence         Int
+  eventType        String
+  source           String
+  occurredAt       DateTime
+  payload          Bytes
+  payloadSha256    String
+  previousEventHash String
+  eventHash        String @unique
+  createdAt        DateTime @default(now())
+
+  @@unique([commandId, sequence], map: "ProductTruthControlEvent_command_sequence_key")
+  @@index([commandId, occurredAt], map: "ProductTruthControlEvent_command_occurred_idx")
+}
+
 // Durable command/evidence bridge for the OpenClaw worker that controls the
 // owner's already-authenticated ChannelMAX Chrome profile. Commands are a
 // small, schema-validated allow-list; this is deliberately not a generic
