@@ -51,6 +51,70 @@ const contextV6 = {
 };
 
 const v6Header = "SKU,ProductName,ProductId,ProductIdType,PublishedStatus,ProductCondition";
+const productionV6Header = [
+  "SKU",
+  "Item ID",
+  "Product Name",
+  "Lifecycle Status",
+  "Publish Status",
+  "Status Change Reason",
+  "Product Category",
+  "Product Type",
+  "Price",
+  "Currency",
+  "Price Type",
+  "Promo Start Date",
+  "Promo End Date",
+  "Comparison Price",
+  "Comparison Price Type",
+  "Buy Box Item Price",
+  "Buy Box Shipping Price",
+  "Buy Box Eligible",
+  "MSRP",
+  "Product Tax Code",
+  "Ship Methods",
+  "Shipping Weight",
+  "Shipping Weight Unit",
+  "Fulfillment Lag Time",
+  "Fulfillment Type",
+  "WFS Sales Restriction",
+  "WPID",
+  "GTIN",
+  "UPC",
+  "Item Page URL",
+  "Primary Image URL",
+  "Shelf Name",
+  "Primary Category Path",
+  "Brand",
+  "Offer Start Date",
+  "Offer End Date",
+  "Item Creation Date",
+  "Item Last Updated",
+  "Reviews Count",
+  "Average Rating",
+  "Searchable?",
+  "Variant Group Id",
+  "Primary Variant?",
+  "Variant Grouping Attributes",
+  "Variant Grouping Values",
+  "Competitor URL",
+  "Competitor Price",
+  "Competitor Ship Price",
+  "Competitor Last Date Fetched",
+  "Repricer Strategy",
+  "Minimum Seller Allowed Price",
+  "Maximum Seller Allowed Price",
+  "Repricer Status",
+  "Product Condition",
+  "Lagtime Category",
+].join(",");
+
+function productionV6Row(values) {
+  return productionV6Header
+    .split(",")
+    .map((header) => values[header] ?? "")
+    .join(",");
+}
 
 function bytes(text) {
   return encoder.encode(text);
@@ -432,6 +496,89 @@ test("compiles documented v6 fields into a sealed, complete PUBLISHED denominato
   ]);
   assert.deepEqual(verifyWalmartItemReportPublishedSource(source), source);
   assert.deepEqual(verifyWalmartItemReportPublishedSourceAgainstCapture(source, evidence, contextV6), source);
+});
+
+test("compiles the production ITEM v6 spaced schema with self-describing UPC evidence", () => {
+  const decoded = report(productionV6Header, [
+    productionV6Row({
+      SKU: "prod-published",
+      "Item ID": "123456789",
+      "Product Name": "Production Bread",
+      "Lifecycle Status": "ACTIVE",
+      "Publish Status": "PUBLISHED",
+      WPID: "WPID-PROD",
+      GTIN: "00123456789012",
+      UPC: "123456789012",
+      Brand: "Production Brand",
+      "Product Condition": "New",
+    }),
+    productionV6Row({
+      SKU: "prod-unpublished",
+      "Item ID": "987654321",
+      "Product Name": "Unpublished Bread",
+      "Lifecycle Status": "ARCHIVED",
+      "Publish Status": "UNPUBLISHED",
+      WPID: "WPID-UNPUBLISHED",
+      GTIN: "00987654321098",
+      UPC: "987654321098",
+      Brand: "Production Brand",
+      "Product Condition": "New",
+    }),
+  ]);
+  const evidence = capture(decoded);
+  const published = compileWalmartItemReportPublishedSource(evidence, contextV6);
+  const catalog = compileWalmartItemReportCatalogSource(evidence, contextV6);
+  const upcIndex = productionV6Header.split(",").indexOf("UPC");
+
+  assert.equal(published.report.decoded_report.header_mapping.product_id, upcIndex);
+  assert.equal(published.report.decoded_report.header_mapping.product_id_type, upcIndex);
+  assert.equal(published.report.decoded_report.header_mapping.product_name, 2);
+  assert.equal(published.report.decoded_report.header_mapping.published_status, 4);
+  assert.equal(published.rows.length, 1);
+  assert.equal(published.rows[0].reported_product_identifier_opaque, "123456789012");
+  assert.equal(published.rows[0].reported_product_identifier_type_opaque, "UPC");
+  assert.equal(published.rows[0].reported_product_identifier_header, "UPC");
+  assert.equal(published.rows[0].reported_product_identifier_type_header, "UPC");
+  assert.equal(published.rows[0].reported_legacy_item_identifier_opaque, "123456789");
+  assert.equal(published.rows[0].reported_legacy_wpid_opaque, "WPID-PROD");
+  assert.equal(catalog.rows.length, 2);
+  assert.equal(catalog.rows[0].reported_brand, "Production Brand");
+  assert.equal(catalog.rows[1].published_status, "UNPUBLISHED");
+  assert.deepEqual(verifyWalmartItemReportPublishedSource(published), published);
+  assert.deepEqual(verifyWalmartItemReportCatalogSource(catalog), catalog);
+  assert.deepEqual(
+    verifyWalmartItemReportPublishedSourceAgainstCapture(published, evidence, contextV6),
+    published,
+  );
+  assert.deepEqual(
+    verifyWalmartItemReportCatalogSourceAgainstCapture(catalog, evidence, contextV6),
+    catalog,
+  );
+});
+
+test("falls back to a self-describing GTIN when production ITEM v6 has no UPC column", () => {
+  const header = [
+    "SKU",
+    "Item ID",
+    "Product Name",
+    "Lifecycle Status",
+    "Publish Status",
+    "Product Condition",
+    "WPID",
+    "GTIN",
+    "Brand",
+  ].join(",");
+  const decoded = report(header, [
+    "gtin-only,123,GTIN Bread,ACTIVE,PUBLISHED,New,WPID-GTIN,00123456789012,GTIN Brand",
+  ]);
+  const evidence = capture(decoded);
+  const source = compileWalmartItemReportCatalogSource(evidence, contextV6);
+
+  assert.equal(source.rows[0].reported_product_identifier_opaque, "00123456789012");
+  assert.equal(source.rows[0].reported_product_identifier_type_opaque, "GTIN");
+  assert.equal(source.rows[0].reported_product_identifier_header, "GTIN");
+  assert.equal(source.rows[0].reported_product_identifier_type_header, "GTIN");
+  assert.deepEqual(verifyWalmartItemReportCatalogSourceAgainstCapture(source, evidence, contextV6), source);
 });
 
 test("catalog source preserves every ITEM v6 status, Brand, lifecycle, and legacy identifier", () => {

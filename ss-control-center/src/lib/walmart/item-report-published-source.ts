@@ -14,10 +14,11 @@
  * They are not Walmart signatures and do not independently prove TLS identity,
  * server authenticity, or the truth of caller-authored trusted context.
  *
- * Important identity rules: documented ProductId + ProductIdType are preserved
- * as an opaque typed global-product identifier (UPC/EAN/ISBN semantics), never
- * as a buyer-facing Walmart item ID. Legacy `Item ID`, `WPID`, and lifecycle
- * columns are separate optional evidence and are never aliases or scope filters.
+ * Important identity rules: either documented ProductId + ProductIdType or the
+ * production ITEM v6 self-describing UPC/GTIN column is preserved as an opaque
+ * typed global-product identifier, never as a buyer-facing Walmart item ID.
+ * Legacy `Item ID`, `WPID`, and lifecycle columns are separate optional evidence
+ * and are never aliases or scope filters.
  */
 
 import { createHash } from "node:crypto";
@@ -91,15 +92,15 @@ type DownloadContainer = "plain" | "gzip" | "zip";
 
 const REQUIRED_HEADER_ALIASES = {
   sku: ["SKU"],
-  product_name: ["ProductName"],
-  product_id: ["ProductId"],
-  product_id_type: ["ProductIdType"],
-  published_status: ["PublishedStatus"],
+  product_name: ["ProductName", "Product Name"],
+  product_id: ["ProductId", "UPC", "GTIN"],
+  product_id_type: ["ProductIdType", "UPC", "GTIN"],
+  published_status: ["PublishedStatus", "Publish Status"],
 } as const;
 
 const OPTIONAL_HEADER_ALIASES = {
-  lifecycle_status: ["LifecycleStatus"],
-  product_condition: ["ProductCondition"],
+  lifecycle_status: ["LifecycleStatus", "Lifecycle Status"],
+  product_condition: ["ProductCondition", "Product Condition"],
   legacy_item_id: ["Item ID", "Walmart Item ID"],
   legacy_wpid: ["WPID"],
 } as const;
@@ -442,6 +443,13 @@ interface DecodedTransport {
 }
 
 interface HeaderMapping extends Record<RequiredHeaderRole, number>, Record<OptionalHeaderRole, number | null> {}
+
+interface ProductIdentifierEvidence {
+  identifier: string;
+  identifierType: string;
+  identifierHeader: string;
+  identifierTypeHeader: string;
+}
 
 interface ParsedReport {
   delimiter: Delimiter;
@@ -1677,18 +1685,40 @@ function resolveHeaderRole(
   return matches[0] ?? null;
 }
 
+function selfDescribingProductIdentifierType(header: string): "UPC" | "GTIN" | null {
+  const normalized = normalizeHeader(header);
+  if (normalized === "upc") return "UPC";
+  if (normalized === "gtin") return "GTIN";
+  return null;
+}
+
+function resolveProductIdentifierMapping(normalized: string[]): {
+  product_id: number;
+  product_id_type: number;
+} {
+  const explicitId = resolveHeaderRole(normalized, "product_id", ["ProductId"], false);
+  const explicitType = resolveHeaderRole(normalized, "product_id_type", ["ProductIdType"], false);
+  if (explicitId !== null || explicitType !== null) {
+    if (explicitId === null) throw new Error("ITEM report header is missing required product_id column");
+    if (explicitType === null) throw new Error("ITEM report header is missing required product_id_type column");
+    return { product_id: explicitId, product_id_type: explicitType };
+  }
+
+  const upc = resolveHeaderRole(normalized, "product_id", ["UPC"], false);
+  const gtin = resolveHeaderRole(normalized, "product_id", ["GTIN"], false);
+  const selfDescribing = upc ?? gtin;
+  if (selfDescribing === null) throw new Error("ITEM report header is missing required product_id column");
+  return { product_id: selfDescribing, product_id_type: selfDescribing };
+}
+
 function findHeaderMapping(header: string[], reportVersion: SupportedReportVersion): HeaderMapping {
   const normalized = header.map(normalizeHeader);
+  const productIdentifier = resolveProductIdentifierMapping(normalized);
   return {
     sku: resolveHeaderRole(normalized, "sku", REQUIRED_HEADER_ALIASES.sku, true) as number,
     product_name: resolveHeaderRole(normalized, "product_name", REQUIRED_HEADER_ALIASES.product_name, true) as number,
-    product_id: resolveHeaderRole(normalized, "product_id", REQUIRED_HEADER_ALIASES.product_id, true) as number,
-    product_id_type: resolveHeaderRole(
-      normalized,
-      "product_id_type",
-      REQUIRED_HEADER_ALIASES.product_id_type,
-      true,
-    ) as number,
+    product_id: productIdentifier.product_id,
+    product_id_type: productIdentifier.product_id_type,
     published_status: resolveHeaderRole(
       normalized,
       "published_status",
@@ -1714,6 +1744,30 @@ function findHeaderMapping(header: string[], reportVersion: SupportedReportVersi
       false,
     ),
     legacy_wpid: resolveHeaderRole(normalized, "legacy_wpid", OPTIONAL_HEADER_ALIASES.legacy_wpid, false),
+  };
+}
+
+function productIdentifierEvidence(
+  record: string[],
+  header: string[],
+  mapping: HeaderMapping,
+  recordPath: string,
+): ProductIdentifierEvidence {
+  const identifierHeader = header[mapping.product_id];
+  const identifierTypeHeader = header[mapping.product_id_type];
+  const identifier = exactString(record[mapping.product_id], `${recordPath}.product_id`);
+  if (mapping.product_id === mapping.product_id_type) {
+    const identifierType = selfDescribingProductIdentifierType(identifierHeader);
+    if (identifierType === null) {
+      throw new Error(`${recordPath}.product_id self-describing header must be UPC or GTIN`);
+    }
+    return { identifier, identifierType, identifierHeader, identifierTypeHeader };
+  }
+  return {
+    identifier,
+    identifierType: exactString(record[mapping.product_id_type], `${recordPath}.product_id_type`),
+    identifierHeader,
+    identifierTypeHeader,
   };
 }
 
@@ -2042,13 +2096,11 @@ function compileBody(
     else lifecycleCounts.set(lifecycle, (lifecycleCounts.get(lifecycle) ?? 0) + 1);
     if (published !== "PUBLISHED") continue;
 
-    const productIdentifier = exactString(
-      reportRecord.cells[parsed.headerMapping.product_id],
-      `${recordPath}.product_id`,
-    );
-    const productIdentifierType = exactString(
-      reportRecord.cells[parsed.headerMapping.product_id_type],
-      `${recordPath}.product_id_type`,
+    const productIdentifier = productIdentifierEvidence(
+      reportRecord.cells,
+      parsed.header,
+      parsed.headerMapping,
+      recordPath,
     );
     const productName = exactText(
       reportRecord.cells[parsed.headerMapping.product_name],
@@ -2074,10 +2126,10 @@ function compileBody(
       store_index: context.account_scope.store_index,
       sku,
       listing_key: listingKey,
-      reported_product_identifier_opaque: productIdentifier,
-      reported_product_identifier_type_opaque: productIdentifierType,
-      reported_product_identifier_header: parsed.header[parsed.headerMapping.product_id],
-      reported_product_identifier_type_header: parsed.header[parsed.headerMapping.product_id_type],
+      reported_product_identifier_opaque: productIdentifier.identifier,
+      reported_product_identifier_type_opaque: productIdentifier.identifierType,
+      reported_product_identifier_header: productIdentifier.identifierHeader,
+      reported_product_identifier_type_header: productIdentifier.identifierTypeHeader,
       reported_product_name: productName,
       reported_product_name_header: parsed.header[parsed.headerMapping.product_name],
       reported_product_condition: productCondition,
@@ -2332,7 +2384,12 @@ function parseHeaderMapping(
     mapping[role] = index;
     used.push(index);
   }
-  if (new Set(used).size !== used.length) throw new Error(`${path} roles must point at distinct columns`);
+  const selfDescribingIdentifier = mapping.product_id === mapping.product_id_type
+    && selfDescribingProductIdentifierType(header[mapping.product_id]) !== null;
+  const expectedDistinctCount = selfDescribingIdentifier ? used.length - 1 : used.length;
+  if (new Set(used).size !== expectedDistinctCount) {
+    throw new Error(`${path} roles must point at distinct columns except one self-describing UPC/GTIN identifier`);
+  }
   if (reportVersion === "v6" && mapping.product_condition === null) {
     throw new Error(`${path}.product_condition is required for reportVersion v6`);
   }
@@ -2401,6 +2458,12 @@ function parsePublishedRow(
     || productIdentifierTypeHeader !== header[mapping.product_id_type]
     || productNameHeader !== header[mapping.product_name]) {
     throw new Error(`${path} documented product evidence headers do not match decoded header mapping`);
+  }
+  const selfDescribingType = mapping.product_id === mapping.product_id_type
+    ? selfDescribingProductIdentifierType(productIdentifierHeader)
+    : null;
+  if (selfDescribingType !== null && productIdentifierType !== selfDescribingType) {
+    throw new Error(`${path}.reported_product_identifier_type_opaque must match its self-describing report header`);
   }
 
   const parseOptionalPair = (
@@ -3399,21 +3462,21 @@ function compileCatalogRow(
     parsed.headerMapping.product_condition,
     `${recordPath}.product_condition`,
   );
+  const productIdentifier = productIdentifierEvidence(
+    cells,
+    parsed.header,
+    parsed.headerMapping,
+    recordPath,
+  );
   return {
     channel: CHANNEL,
     store_index: accountScope.store_index,
     sku,
     listing_key: walmartListingKey(accountScope.store_index, sku),
-    reported_product_identifier_opaque: exactString(
-      cells[parsed.headerMapping.product_id],
-      `${recordPath}.product_id`,
-    ),
-    reported_product_identifier_type_opaque: exactString(
-      cells[parsed.headerMapping.product_id_type],
-      `${recordPath}.product_id_type`,
-    ),
-    reported_product_identifier_header: parsed.header[parsed.headerMapping.product_id],
-    reported_product_identifier_type_header: parsed.header[parsed.headerMapping.product_id_type],
+    reported_product_identifier_opaque: productIdentifier.identifier,
+    reported_product_identifier_type_opaque: productIdentifier.identifierType,
+    reported_product_identifier_header: productIdentifier.identifierHeader,
+    reported_product_identifier_type_header: productIdentifier.identifierTypeHeader,
     reported_product_name: exactText(
       cells[parsed.headerMapping.product_name],
       `${recordPath}.product_name`,
@@ -3665,6 +3728,20 @@ function parseCatalogRow(
     REQUIRED_HEADER_ALIASES.product_name,
     `${path}.reported_product_name_header`,
   );
+  const productIdentifier = exactString(
+    raw.reported_product_identifier_opaque,
+    `${path}.reported_product_identifier_opaque`,
+  );
+  const productIdentifierType = exactString(
+    raw.reported_product_identifier_type_opaque,
+    `${path}.reported_product_identifier_type_opaque`,
+  );
+  const selfDescribingType = productIdentifierHeader === productIdentifierTypeHeader
+    ? selfDescribingProductIdentifierType(productIdentifierHeader)
+    : null;
+  if (selfDescribingType !== null && productIdentifierType !== selfDescribingType) {
+    throw new Error(`${path}.reported_product_identifier_type_opaque must match its self-describing report header`);
+  }
   const brandHeader = exactCatalogHeader(
     raw.reported_brand_header,
     ["Brand"],
@@ -3707,14 +3784,8 @@ function parseCatalogRow(
     store_index: storeIndex,
     sku,
     listing_key: listingKey,
-    reported_product_identifier_opaque: exactString(
-      raw.reported_product_identifier_opaque,
-      `${path}.reported_product_identifier_opaque`,
-    ),
-    reported_product_identifier_type_opaque: exactString(
-      raw.reported_product_identifier_type_opaque,
-      `${path}.reported_product_identifier_type_opaque`,
-    ),
+    reported_product_identifier_opaque: productIdentifier,
+    reported_product_identifier_type_opaque: productIdentifierType,
     reported_product_identifier_header: productIdentifierHeader,
     reported_product_identifier_type_header: productIdentifierTypeHeader,
     reported_product_name: exactText(raw.reported_product_name, `${path}.reported_product_name`),
