@@ -63,6 +63,7 @@ const PREVIEW_FILES = [
   // re-minted proofs reproduce the original generation provenance exactly.
   "trial-waverestored9.json",
   "trial-waverr49.json", // xl-protein-90 PASS (agent-verified 2026-07-26)
+  "trial-waverr50.json", // l-choc-berry-60 PASS (agent-verified 2026-07-26)
 ];
 const SKU_MAP = "publish-trial-skus.json";
 
