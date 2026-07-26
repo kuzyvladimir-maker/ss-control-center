@@ -21,11 +21,11 @@ verified prefix is:
 
 ```bash
 /opt/homebrew/Cellar/node@24/24.18.0/bin/node \
-  "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-23-v2/engine/ss-control-center/scripts/verify-and-run-walmart-listing-repair.mjs" \
-  --engine-root "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-23-v2/engine/ss-control-center" \
-  --manifest "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-23-v2/evidence-final-v2/release-manifest.json" \
-  --manifest-sha256 387d4093e86a35a200304cbad4a92cd9ef75204ad936e562641f6e17c3da7c74 \
-  --release-id-sha256 0d21ffcd5bf55c6e781daba80b3a750613f2d21bb89690a73ccbd66326aa246d \
+  "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-25-v4/engine/ss-control-center/scripts/verify-and-run-walmart-listing-repair.mjs" \
+  --engine-root "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-25-v4/engine/ss-control-center" \
+  --manifest "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-25-v4/evidence-final-v4/release-manifest.json" \
+  --manifest-sha256 208c4cee282b7ff2d3aaebfb594946f081c8b4d31e3f883a46917670f832ea2c \
+  --release-id-sha256 cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2 \
   -- <command> <exact flags>
 ```
 
@@ -49,6 +49,26 @@ Claude Code executes only the exact `next_command` returned by the previous
 receipt. If `next_command` is `null`, it stops and reports the blocker. It does
 not edit engine, tests, schemas, release pins, owner trust roots, execution
 packages, permits, receipts or custody artifacts.
+
+The owner-side package compiler is a separate Codex/owner operation, not a
+Claude Code command. Its zero-write readiness check inside this same frozen
+release is:
+
+```bash
+cd "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-25-v4/engine/ss-control-center"
+npm run walmart:listing-repair:owner -- doctor
+```
+
+It returns `READY` only for local trust/runtime readiness. `package` is allowed
+only after an exact reviewed one-SKU compilation request and its exact owner
+confirmation. It deterministically derives a non-reusable one-SKU Product Truth
+binding from that SHA-bound review; it no longer accepts an arbitrary external
+Product Truth binding file. This canary binding is bound into the owner-signed
+sequence and permit, does not require price/COGS, cannot activate the shared
+catalog and cannot authorize a mass run. `package` then performs exactly one
+OAuth call, one exact item GET and one Get Spec POST, with zero retry, zero
+redirect and zero Walmart content write. The emitted data-only package is handed
+to the verifier prefix above. Claude Code never creates or signs this package.
 
 ## Mandatory sequence
 
@@ -81,15 +101,19 @@ packages, permits, receipts or custody artifacts.
 
 ## Current release state
 
-As of 2026-07-23, Phase 5 release v2 is sealed. Clean-checkout certification passed
-**109/109** tests plus targeted ESLint and diff-check. Release ID is
-`0d21ffcd5bf55c6e781daba80b3a750613f2d21bb89690a73ccbd66326aa246d`;
+As of 2026-07-25, release v4 is sealed. Clean-checkout certification passed
+**109/109** declared tests plus targeted ESLint and diff-check. Release ID is
+`cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2`;
 manifest SHA-256 is
-`387d4093e86a35a200304cbad4a92cd9ef75204ad936e562641f6e17c3da7c74`.
+`208c4cee282b7ff2d3aaebfb594946f081c8b4d31e3f883a46917670f832ea2c`.
+The normalized runtime closure contains 51 files and four sealed entrypoints:
+the verifier-wrapper, bounded operator, one-SKU process and owner package
+compiler. Automatic retry and caller dependency injection are disabled;
+marketplace writes are bounded to one.
 The release contains one dedicated production public key; its password-free
 private half is outside the repository and is not part of this operator handoff.
-The verified-wrapper smoke `doctor` returns `READY` with zero network/model/DB/
-Walmart effects. This is local engine readiness only: it authorizes no write.
+Both the verified-wrapper `doctor` and owner-package `doctor` return `READY`.
+These are local engine readiness checks only and authorize no write.
 An exact one-SKU package, ordinary owner confirmation and fresh post-write
 Qualification remain mandatory; mass run is still `NO-GO`.
 

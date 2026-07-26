@@ -780,16 +780,19 @@ Owner approval разрешает только exact metered plan, бюджет 
 Связано: [[product-catalog-architecture]], [[donor-catalog-execution-roadmap]],
 [[enrichment-division-of-labor]], [[reference-catalog-engine]].
 
-## 10. Текущий внешний статус на 2026-07-23
+## 10. Текущий внешний статус на 2026-07-26
 
 Этот runbook описывает проверенный локальный engine contract, а не уже выполненный
 production run. Connected-store census/manifest/migration/backfill/readiness/matcher
 replay и one-shot Walmart ITEM reissue инструменты реализованы; старый ITEM create path
 retired. Единственная live reconciliation session quarantined после provenance
 incident, а её поздний конфликтующий `ABSENCE_ONLY` не авторитетен. Поэтому replacement
-POST заблокирован ещё до permit stage и не может быть разрешён простым предоставлением
-ранее описанных hashes/confirmation. Реальные
-owner-attested snapshots и authoritative Amazon/Walmart reports ещё не получены.
+POST не может использовать старую session/permit provenance. Владелец 2026-07-26
+разрешил ровно одну новую zero-retry read-only попытку, но она остаётся
+неисполняемой до выпуска новой engine-generated sealed authorization/permit и exact
+confirmation. Старые hashes/confirmation это требование не закрывают. Owner facts
+для store scope подтверждены, но canonical owner-bound census artifact и
+authoritative Walmart ITEM v6 report ещё не выпущены.
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.

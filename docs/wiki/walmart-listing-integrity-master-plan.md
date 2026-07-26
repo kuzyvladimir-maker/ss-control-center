@@ -52,22 +52,26 @@ Production release заморожен и запускается через verif
 текущие изображения, proposed repair, exact diff и Qualification chain, но не даёт
 скрытого mass apply.
 
-### [x] Phase 3 — реальный one-SKU defect и визуальное одобрение
+### [x] Phase 3 — исторический one-SKU defect и визуальное одобрение
 
 SKU `FaisalX-1183`:
 
 - title: `Pack of 6`;
-- текущая MAIN: одна упаковка;
+- историческая MAIN от 2026-07-22: одна упаковка;
 - proposed MAIN: шесть точных упаковок;
 - gallery проверена;
 - владелец визуально одобрил proposed MAIN и gallery;
-- меняется только MAIN;
-- title, description, bullets, attributes, price, inventory и gallery не меняются.
+- свежая live MAIN от 2026-07-25 уже показывает шесть упаковок и перцептивно
+  совпадает с ранее одобренной proposed MAIN;
+- receipt замороженного writer для происхождения этого live-изменения отсутствует,
+  поэтому оно не объявляется выполненным нашим движком;
+- свежий reread выявил отдельный дефект: title/изображения говорят `hot dog buns`,
+  а bullet 3 — `hamburger buns`.
 
 Legacy donor audit дополнительно доказал неправильную привязку к Chessmen Butter
 Cookies. Этот donor запрещено переносить в canonical Product Truth.
 
-### [ ] Phase 4 — единый процесс одного SKU и свежий read-only intake — IN PROGRESS
+### [x] Phase 4 — единый процесс одного SKU и свежий read-only pilot
 
 Задача фазы — не перепись всего каталога и не ожидание массового ITEM report. Один
 SKU должен пройти одной командой:
@@ -87,7 +91,11 @@ ITEM v6 может быть дополнительным census/source artifact,
   тесты не исполняли;
 - исправлено разделение ролей: current buyer title теперь проверяется против Product
   Truth, а не обязан заранее буквально совпадать с donor title;
-- добавлена единая локальная команда `npm run walmart:listing-integrity -- diagnose`;
+- добавлена единая локальная команда
+  `npm run walmart:listing-integrity -- doctor|capture|inspect|observe|diagnose|review`;
+  `review` связывает exact Product Truth candidate, свежий diagnosis, buyer PDP,
+  buyer snapshot, все image bytes и donor audit, затем выполняет полный
+  Qualification precheck и выпускает immutable review certificate без write-authority;
   она читает exact evidence одного SKU, побайтово проверяет все изображения и выдаёт
   один sealed результат с SHA-256;
 - добавлены `capture|inspect`: `capture` останавливается до Walmart при отсутствии
@@ -95,21 +103,31 @@ ITEM v6 может быть дополнительным census/source artifact,
   evidence для source-blocked SKU, не объявляя его Product Truth и не разрешая repair;
 - schema gate теперь сначала доказывает доступность БД и больше не выдаёт сетевой/DNS
   отказ за «отсутствует вся Product Truth schema»;
-- server-side Walmart PDP substitution оформлена как штатный
-  `BUYER_CAPTURE_REQUIRED`: точные seller/catalog evidence сохраняются, чужой primary
-  product отвергается, images/model/writes не запускаются. Exact browser HTML можно
-  импортировать через `inspect --buyer-pdp-html=...`; item ID всё равно повторно
-  проверяется strict parser;
-- реальный read-only `FaisalX-1183` подтвердил этот stop:
-  seller/catalog GET `2`, buyer GET `1`, images/model/DB writes/Walmart writes `0`;
-  sealed intake SHA
-  `698cf12b5dcb019e3c70625a60ddc62aafdee7acded3ccf7f18d95549206a624`;
+- strict buyer parser принимает exact отображаемый Walmart item даже если внутренний
+  `primaryUsItemId` отличается или отсутствует; действительно чужой товар
+  по-прежнему fail-closed отклоняется;
 - доказаны `BAD` для MAIN `1 вместо 6`, reject изменённых image bytes, reject другого
   SKU и честный `CLEAN_CANDIDATE`, который ещё не называется PASS до source-aware
   Qualification;
-- новый one-SKU suite 17/17 PASS, schema-gate suite 11/11 PASS, targeted ESLint PASS.
+- unknown outcome после передачи запроса vision-worker теперь обязательно сохраняет
+  partial evidence, stable exact call key и `OBSERVATION_UNKNOWN_OUTCOME`; retry
+  запрещён;
+- неизвестный исход для `Athar-1591` сверен с remote reservation ledger: запрос
+  был зарезервирован, result не сохранён, consumption неизвестен, повтор запрещён;
+- выполнены пять успешных свежих read-only наблюдений:
+  `FaisalX-1183`, `FaisalX-1181`, `FaisalX-1130`, `FaisalX-1208`, `Comm-05`;
+- `FaisalX-1183` и `FaisalX-1181` имеют явное противоречие
+  `hot dog buns ↔ hamburger buns`; три остальных не имеют найденного внутреннего
+  противоречия, но честно остаются `SOURCE_REQUIRED`, а не PASS;
+- comparator v5 на 24 immutable размеченных примерах дал 24/24:
+  12/12 известных BAD найдены, 12/12 исправленных PASS, false PASS/BAD = 0;
+- актуальная проверка: one-SKU suite 21/21, remediation/Qualification 102/102,
+  verifier-wrapper/operator 8/8 и targeted ESLint PASS;
+- owner-gallery с 17 реальными изображениями запечатана SHA-256
+  `61ee94ab2e510206b088ae8e228c3a0b3dfa85700bb22eb3d0591ed68af7786e`;
+  в рамках фазы Walmart writes = 0.
 
-Exit criteria:
+Exit criteria закрыты:
 
 - команда самостоятельно получает свежие read-only exact-SKU/Product Truth/buyer
   inputs либо возвращает `SOURCE_REQUIRED`, не останавливая всю очередь;
@@ -123,15 +141,83 @@ Exit criteria:
 
 ### [ ] Phase 5 — финальный one-SKU apply package и owner review
 
-Собрать immutable package для одного изменения MAIN. Перед отправкой показать владельцу:
+Сначала закрыть exact Product Truth для одного найденного дефекта и собрать immutable
+package минимальной хирургической коррекции. Исторический MAIN-only package
+`FaisalX-1183` нельзя отправлять повторно: свежая live MAIN уже показывает шесть
+упаковок. Перед отправкой показать владельцу:
 
-- текущую MAIN;
-- предлагаемую MAIN;
-- фактический title и Pack of 6;
+- текущую полную карточку;
+- предлагаемое исправление;
+- фактический title, текст, pack count, MAIN и всю gallery;
 - список каждого изменяемого поля;
 - явный список неизменяемых полей;
 - rollback asset;
 - свежую visual attestation и Qualification precheck.
+
+Текущий прогресс:
+
+- exact single-unit candidate доказан существующим общим donor:
+  Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns,
+  `14 oz / 8 ct`, UPC `014100050162`;
+- источник Chessmen Butter Cookies подтверждён как wrong-product и запрещён;
+- свежие manufacturer, Target exact single-unit, Walmart first-party base item и
+  live Pack of 6 согласуются по identity/variant;
+- минимальный diff затрагивает только `description` и `bullets`: в обоих явно
+  появляется `Pack of 6`, шесть пакетов по восемь булочек; ошибочный
+  `hamburger buns` удаляется;
+- `title`, attributes, MAIN, gallery, price, inventory, identifiers и listing status
+  остаются неизменными;
+- чистый Qualification precheck = PASS; он не разрешает write;
+- штатная one-SKU команда `review` побайтово связала proposal с exact diagnosis,
+  buyer snapshot/PDP, всеми тремя live image assets и donor audit; regression test
+  доказывает, что сертификат остаётся `OWNER_REVIEW_REQUIRED` и имеет
+  network/model/DB/Walmart writes = 0;
+- owner-review package SHA-256:
+  JSON `ce1b31e0…cb72b`, HTML `ad6af7ba…a0206`;
+- read-only review certification SHA-256:
+  file `10a9fafb…e527`, sealed body `12aff1f6…14bc0`.
+- актуальный certified review подключён к
+  `Walmart Growth → Listing Integrity`: сверху показаны exact Product Truth,
+  текущие MAIN/gallery без изменений, полный текст `ДО → ПРЕДЛАГАЕМОЕ`,
+  неизменяемые поля и точная owner-команда; исторический `MAIN 1 → 6`
+  свёрнут и явно помечен как неактуальный payload;
+- UI читает review только через SHA-bound current-review index, заново проверяет
+  certification/diagnosis/snapshot/PDP/donor bindings и локальные image bytes;
+  tamper test fail-closed, loader/UI 9/9, TypeScript и ESLint PASS.
+- owner-side compiler теперь детерминированно строит из exact review request,
+  активного Product Truth binding и свежих Walmart material bytes только
+  data-only one-SKU execution package. Compiler отдельно доказывает unchanged
+  images, exact seller/spec binding, surgical payload и permit sequence; на этой
+  стадии network/model/DB/Walmart writes = 0;
+- fresh material capture ограничен ровно тремя попытками: OAuth `1`, exact item
+  GET `1`, Get Spec POST `1`; redirect/retry/content write = `0`, неизвестный
+  сетевой исход fail-closed;
+- clean-checkout release v4 заморожен:
+  release ID `cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2`,
+  manifest SHA `208c4cee282b7ff2d3aaebfb594946f081c8b4d31e3f883a46917670f832ea2c`;
+  109/109 declared tests, targeted ESLint и diff-check PASS; operator doctor и
+  owner-package doctor = `READY`;
+- v4 устраняет внешний «магический» Product Truth binding: после exact owner
+  confirmation compiler сам детерминированно строит из SHA-bound review
+  non-reusable one-SKU truth artifact и связывает его с Ed25519 sequence/permit.
+  Он не требует price/COGS, не активирует shared catalog, не пригоден для mass run
+  и сам по себе не разрешает Walmart write;
+- frozen release readiness не является write-authority. Реальный execution
+  package для `FaisalX-1183` ещё не выпущен: exact owner confirmation не получено.
+- exact v3 compilation request создан и независимо проверен:
+  `FaisalX-1183-repair-compilation-request-20260725-v3.json`, file SHA
+  `6813237a2a9910b0e8ada11f9b3ad7498649a4a8129ea21933b8f1093915c00d`,
+  body SHA
+  `dbedeb76af540f9300e096715167943cf59b3eeaab2225827ee5b67ba8aaad52`;
+  verifier подтвердил SKU/item/UPC, changed fields только
+  `description|bullets` и `unchanged_image_bytes=true`;
+- свежий production Product Truth point-read сохранён в
+  `FaisalX-1183-source-control-20260725-v2`: статус `SOURCE_REQUIRED`, blockers
+  `LISTING_SCOPE_NOT_REGISTERED`, `CURRENT_SCOPED_SKU_COST_MISSING` и
+  `SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0`; execution accounting:
+  Product Truth reads `1`, Walmart/model/DB writes и Walmart reads `0`. Это
+  сохраняется как честный shared-catalog backlog, но v4 больше не делает полный
+  Phase 1 census prerequisite первого owner-reviewed canary.
 
 Exit criteria: package `READY`, owner видит полный diff. Это ещё не разрешение на write.
 
@@ -139,10 +225,11 @@ Exit criteria: package `READY`, owner видит полный diff. Это ещ�
 
 Только после точной команды владельца:
 
-> Загружай FaisalX-1183
+> Подтверждаю SKU `<exact SKU>` и показанный exact diff `<hash>`
 
-Выполнить один MAIN-only Walmart write. Maximum SKU count = 1; retries = 0; price,
-inventory, delisting и gallery writes = 0.
+Выполнить один заранее показанный surgical Walmart content write. Maximum SKU
+count = 1; retries = 0; price, inventory и delisting = 0. Никакие поля вне
+утверждённого exact diff не меняются.
 
 ### [ ] Phase 7 — propagation и независимая Qualification
 
@@ -212,10 +299,18 @@ mixing, quantity confusion, collateral field changes и потеря публи�
 
 ## Текущая точка
 
-Активная фаза: **Phase 4**.  
-Следующий action: получить exact buyer-facing capture для одного SKU (автоматически
-через browser worker либо импортом строгого HTML), завершить signed blind observation,
-затем выполнить смешанную read-only калибровочную выборку. Новый ITEM v6 report request
-и полный catalog census для этого не требуются.  
+Активная фаза: **Phase 5**.
+Следующий action Codex: заново выпустить v3 compilation request из уже
+сертифицированного review и проверить его против frozen compiler — **выполнено**.
+Следующий gate: владелец подтверждает exact Product Truth candidate и показанный
+text-only diff строкой, уже запечатанной в request. Это разрешает frozen owner
+package compiler выпустить non-reusable single-SKU truth binding, получить свежие
+Walmart spec/live item receipts и собрать connected execution package, но ещё не
+разрешает Walmart write. Перед `execute` владелец видит exact package diff, SHA и
+точную команду подтверждения; сам package и оба `doctor` write не разрешают.
+Новый ITEM v6 report request и полный catalog census для этого не требуются.
+Техническая проверка frozen engine и compilation request завершена. Текущий gate —
+только exact owner confirmation review/truth; это не ошибка движка и не причина
+запускать массовый прогон.
 Live listing writes на текущей точке: **0**.  
 Mass run: **NO-GO**.

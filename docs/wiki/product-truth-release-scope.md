@@ -9,6 +9,13 @@
 > в Git и что должно пройти в чистом checkout, прежде чем называть движок
 > переданным исполнителю».
 
+> **Current continuation 2026-07-26:** исторический `NO-GO` ниже описывает исходный
+> handoff 2026-07-19, а не текущий permanent candidate. Reconciled `r5` собирается
+> поверх shared base `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e` с сохранением
+> более свежих owner-документов. Его exact commit/tree/bundle hashes и certification
+> count записываются только после clean-checkout gate; до локального import G1
+> остаётся `APPROVED_IN_PROGRESS`. Это не разрешает push/deploy/production.
+
 > **Актуализация:** третья frozen closure имеет exact tree
 > `a1616dc605e474e6c70065d199b6b5c3aefc9805`. Поверх неё собирается отдельная
 > adjacent дельта Unit Economics SHADOW: default-OFF, owner-config-bound,

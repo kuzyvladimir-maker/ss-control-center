@@ -91,7 +91,7 @@ Truth, а не функциями matcher replay.
 **Exit:** существует проверяемая карта release → permanent tree; ни один чужой diff
 не перезаписан; следующий шаг имеет точный scoped file list.
 
-### ⛔ Phase 1 — Permanent engine materialization
+### 🔄 Phase 1 — Permanent engine materialization
 
 - [x] Материализовать актуальный Product Truth source в постоянном Git:
   current base `main 9f59ecbd61df726d8b7b3ef95a60f66cddf376c0` содержит matcher
@@ -117,7 +117,15 @@ Truth, а не функциями matcher replay.
   targeted ESLint, production build и Wiki-Brain (`0` orphan, `0` broken links)
   — `PASS`. Build сохранил только два уже известных unrelated Walmart/NFT и Sharp
   warning.
-- [ ] Остановиться на owner decision перед import/merge/push candidate в shared Git.
+- [x] Получить owner decision G1 на локальный import без push/deploy/production:
+  подтверждено 2026-07-26.
+- [ ] Собрать `r5` поверх current shared base
+  `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`, сохранив семь более свежих owner
+  документов, и повторить clean-checkout certification.
+- [ ] Импортировать exact certified `r5` в shared local `main` через recovery-stash
+  только пересекающихся release paths; unrelated dirty worktree не менять.
+- [ ] Повторить certification/build/Wiki-Brain в shared tree и записать consumed
+  G1 evidence. Push и deploy остаются вне G1.
 
 **Exit:** воспроизводимый permanent tree содержит готовый engine и проходит тот же
 или более строгий certification set без `/private/tmp`.
@@ -181,7 +189,7 @@ bare-SKU `SkuCost`, paid calls или data writes.
 **Exit:** read-only UI честно отображает Product Truth и не предлагает запрещённый
 legacy execution path.
 
-### ⛔ Phase 4 — Default-OFF operations control plane
+### ⬜ Phase 4 — Default-OFF operations control plane (G2 approved, queued)
 
 - [x] Отобразить authenticated `Doctor → Plan → Owner Approval → Execute →
   Status/Resume → Report` workflow и точный status каждого шага.
@@ -197,7 +205,7 @@ legacy execution path.
 - [x] Доказать, что ChannelMAX/Walmart patterns можно использовать только как
   инженерные примитивы lease/heartbeat/ambiguity и Ed25519 verification; их
   tables, keys, permits и authority не переносятся в Product Truth.
-- [ ] После отдельного Stage-A owner gate создать durable command queue;
+- [ ] После завершения G1 создать Stage-A durable command queue;
   долгую работу исполняет отдельный worker;
   browser только планирует,
   подтверждает и poll-ит состояние.
@@ -205,19 +213,19 @@ legacy execution path.
   append-only artifact bytes в основной SSCC DB, новый отдельный Product Truth
   Ed25519 trust root/private owner custody и pinned iMac/`launchd` worker. Это
   design decision, а не activation; public image R2 и Vercel request запрещены.
-- [ ] После отдельного Stage-A owner gate реализовать authenticated command
+- [ ] После завершения G1 реализовать Stage-A authenticated command
   admission, сохранив `ambiguous=no replay`, terminal states,
   new-output-only semantics и sealed CLI parity.
 
 **Exit:** UI не ослабляет sealed plan, approval, budget ledger или mutation gates;
 локальный no-spend smoke полностью воспроизводим.
 
-**Текущий blocker:** design закрыт, но новая SSCC schema и отдельный Product Truth
-trust root всё равно являются новой authority/runtime surface. Exact owner phrase,
-разрешающая только default-OFF Stage A, находится в
-[[product-truth-web-operations-control-plane]]. До этого решения Phase 4 честно
-остаётся `⛔`, а готовый CLI из [[product-truth-operator-runbook]] остаётся
-единственным execution entrypoint.
+**Текущий статус:** владелец одобрил G2 2026-07-26 строго для Stage A с runtime
+hardcoded `OFF`. Реализация поставлена следующей после G1, чтобы одновременно была
+активна только одна фаза. Approval не разрешает DB apply, enrollment production
+key, worker claim, provider calls/spend или marketplace actions. До отдельной
+активации готовый CLI из [[product-truth-operator-runbook]] остаётся единственным
+execution entrypoint.
 
 ### ⛔ Phase 5 — Production data foundation
 
@@ -236,8 +244,10 @@ trust root всё равно являются новой authority/runtime surfa
   `96b675ac71344a4ded72e51cbe9d4b880139d7d5dd288e67895b8f87924b1d7f`,
   `canApply=true`, `blockers=[]`. Наличие plan/frozen release не означает, что
   production schema уже активирована.
-- [ ] Получить owner-attested connected-store census и authoritative Amazon/Walmart
-  reports; заморозить manifest v3.
+- [ ] Выпустить owner-attested connected-store census по решению 2026-07-26:
+  Amazon store1/store3 и Walmart store1 в scope; Amazon store2/store4/store5
+  исключены как blocked до successor census. Получить authoritative Walmart ITEM v6
+  report и заморозить manifest v3.
 - [x] Подготовить exact Turso migration plan и остановиться на owner gate; reserved
   `approvalId` внутри plan не является решением владельца.
 - [x] Снять свежий self-contained backup exact target перед owner gate: portable SHA
@@ -317,7 +327,7 @@ smokes и shadow adapters выполняются до этих gates.
 
 ## 6. Текущая исходная точка
 
-На старте productization:
+На старте productization (историческая исходная точка):
 
 - permanent repository: `main`, `HEAD=origin/main=f0889fb3bf40e284da15d70c3058ec6a4a45c271`;
 - shared worktree содержит многочисленные параллельные modified/untracked files,
@@ -341,6 +351,12 @@ smokes и shadow adapters выполняются до этих gates.
 
 Следовательно, Phase 1 начинается только после точной release-materialization карты;
 UI не соединяется напрямую с legacy endpoints или CLI.
+
+Текущая execution-точка 2026-07-26: G1 одобрен; `r5` собирается поверх
+`af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`. G2 одобрен и стоит следующим с runtime
+hardcoded `OFF`. G3 facts подтверждены владельцем. G4 одобрен по intent, но
+исполнение остаётся закрытым до новой sealed authorization; quarantined session
+переиспользовать запрещено.
 
 ---
 

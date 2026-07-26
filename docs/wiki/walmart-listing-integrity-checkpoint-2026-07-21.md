@@ -134,6 +134,10 @@ pause, so subscription usage and remaining work are visible to the owner.
       SHA-bound readiness snapshot; UI confirms all eight migrations applied and
       reports the exact SKU-level truth blockers while keeping execution-package,
       one-SKU write and mass-run gates closed;
+    - [x] render one owner-facing `Сейчас → После исправления` gallery for
+      `FaisalX-1183`, with current/proposed MAIN shown side by side, the complete
+      live gallery, exact description/bullet diff and explicit unchanged fields;
+      artifact SHA `1a4ca270…d1b57`, Walmart writes `0`;
     - [ ] build the exact one-SKU execution package from canonical Product Truth
       and fresh live source evidence, then request the exact apply confirmation;
 - [ ] **Phase 7 — Permanent operations.** Add Walmart Growth → Listing Integrity

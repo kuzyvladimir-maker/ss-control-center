@@ -78,8 +78,8 @@
   SKU и не разрешает волны 15–20 либо schedule.
 - Для Walmart Listing Integrity Claude Code только вызывает готовый
   verifier-wrapper из clean checkout по единственной команде и exact trust inputs
-  из `walmart-listing-integrity-operator-runbook.md` (release ID `632bb723…8cc8d8`,
-  manifest SHA `b42c3dc5…f618df`), затем только
+  из `walmart-listing-integrity-operator-runbook.md` (release ID `cb9d4f2b…38ae2`,
+  manifest SHA `208c4cee…ea2c`), затем только
   `doctor|plan|execute|resume|status|report`, следует exact `next_command` и
   останавливается при `next_command: null`. Прямой запуск mutable
   `scripts/walmart-listing-repair-operator.ts` запрещён. Он не

@@ -385,6 +385,13 @@ track и больше не обозначается blocker текущего Wal
   lint/build/render `2/2` прошли; owner-only Sites version `2` из clean commit
   `674d6945…2b6191` успешно заменила version `1` по тому же URL. Товар, тексты,
   economics, UPC и Walmart state не менялись.
+- [x] После повторного owner review признать version `2` визуально неверной: donor
+  hero является opaque JPEG с белым прямоугольным canvas, поэтому любое overlap
+  верхнего слоя закрывает нижнюю упаковку белым фоном. Исправить сам compositor:
+  Pack of 2/3 используют отдельные grid columns без overlap, rotation, shadow или
+  `z-index`. Добавить regression `never overlaps opaque JPEG package canvases`;
+  gallery lint/build/render `3/3`. Owner-only Sites version `3` из clean commit
+  `79de4979…255fbd` успешно развернута по тому же URL; version `2` superseded.
 - [x] Повторно проверить 2026-07-25 все шесть preview image URL: `6/6` вернули
   `HTTP 200 image/jpeg`. Это доказывает работоспособность галереи, но не заменяет
   publication-rights и count-accurate final-image gate.

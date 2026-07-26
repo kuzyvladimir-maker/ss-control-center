@@ -92,9 +92,10 @@ authoritative Phase 1 manifest
 - activation read-only и отдельно запрещает publish/delist/reprice/purchase;
 - один consumer не может включить другой consumer неявно.
 
-До authoritative manifest, применения migrations, backfill и полного readiness-report
-режим `ENFORCED` должен быть технически недостижим. Отсутствие валидного owner activation
-artifact означает `OFF`, а не implicit shadow или fallback.
+Exact-eight schema уже применена и сертифицирована. До authoritative manifest,
+manifest-bound backfill и полного readiness-report режим `ENFORCED` должен быть
+технически недостижим. Отсутствие валидного owner activation artifact означает
+`OFF`, а не implicit shadow или fallback.
 
 ## 3. Доказанный аудит текущих bypasses
 

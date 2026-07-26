@@ -91,7 +91,7 @@ result остаётся evidence, а не единоличным разреше�
 snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
 
 - 2026-07-25 добавлен отсутствовавший one-SKU orchestration boundary:
-  `npm run walmart:listing-integrity -- doctor|capture|inspect|observe|diagnose`.
+  `npm run walmart:listing-integrity -- doctor|capture|inspect|observe|diagnose|review`.
   `diagnose` принимает exact
   Product Truth, buyer snapshot/PDP, все image bytes и blind observations, проверяет
   каждый image SHA и выдаёт sealed
@@ -101,23 +101,24 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
   неверное требование literal donor-title equality до аудита current title.
   `capture` fail-fast возвращает `SOURCE_REQUIRED` до Walmart, а `inspect` продолжает
   только read-only self-consistency lane и никогда не создаёт repair authority.
-  Server-side PDP redirect/подмена теперь возвращает sealed
-  `BUYER_CAPTURE_REQUIRED`: чужой primary item не принимается, уже полученные
-  seller/catalog evidence не теряются, images/model/writes остаются нулевыми.
-  Точный browser HTML можно подать через `--buyer-pdp-html`; strict item-ID binding
-  остаётся обязательным. Реальный `FaisalX-1183` дал именно этот штатный результат:
-  `2` Walmart logical GET + `1` buyer GET, images/model/DB writes/Walmart writes `0`,
-  intake SHA `698cf12b…06a624`. One-SKU suite 17/17, schema-gate suite 11/11 и
-  targeted ESLint PASS. Limited worker adapter реализован, но fresh exact buyer
-  capture, mixed calibration и persistent queue ещё не закрыты; pilot/mass run
-  разрешением это не является.
+  Strict buyer parser теперь связывает фактически отображаемый exact Walmart item
+  и не требует ложного равенства внутреннему `primaryUsItemId`, который может
+  отличаться или отсутствовать; действительно чужой товар всё равно отвергается.
+  Точный browser HTML можно подать через `--buyer-pdp-html`. Limited worker adapter
+  также fail-closed сохраняет `OBSERVATION_UNKNOWN_OUTCOME`, stable call key и
+  partial evidence после transport failure; автоматический retry запрещён.
+  `review` принимает только семь exact paths, проверяет SHA-sealed diagnosis и
+  buyer snapshot, точные байты MAIN/gallery, fresh buyer PDP и donor audit,
+  запускает full-surface Product Truth precheck и создаёт immutable certificate.
+  Он никогда не активирует Product Truth и не разрешает marketplace write.
+  Актуальный one-SKU suite 21/21 и targeted ESLint PASS.
 - Локальные фазы 0–5 закрыты: полный offline
   `detect → plan → repair → fresh reread → qualify` доказан, combined suite
   **109/109 PASS** в рабочей проекции и чистом checkout. Cross-process custody
   lock, fixed data-only production
   dependency factory, native one-shot zero-retry transport и bounded operator
   `doctor/plan/execute/resume/status/report` реализованы. Clean-checkout release
-  `0d21ffcd…246d` запечатан manifest SHA `387d4093…7c74` и запускается
+  `cb9d4f2b…38ae2` запечатан manifest SHA `208c4cee…ea2c` и запускается
   только через verifier-wrapper.
 - Frozen read-only audit/observer и visual worker существуют, но полный каталог
   ещё не просканирован на свежих authoritative sources.
@@ -125,7 +126,7 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
   `MP_MAINTENANCE`, но не является production Listing Integrity writer: в нём нет
   нового one-SKU owner permit, durable exact consumption/evidence boundary и
   безопасной unknown-outcome политики; batch retry несовместим с этим контрактом.
-- Production closure v2 пройден, verifier/writer pins и attestations готовы. Один
+- Production closure v4 пройден, verifier/writer pins и attestations готовы. Один
   dedicated public trust root enrolled; password-free private key хранится локально
   вне repository и скрыт за обычным точным подтверждением diff. Frozen `doctor`
   возвращает `READY`, но это не write-authority. Exact eight Product Truth migrations
@@ -138,14 +139,20 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
   `legacy_unverified`. Свежие существующие Amazon reports для store1/store3/store5
   уже сохранены без report-create, а authoritative Phase 1 manifest ждёт owner
   disposition по store2/store4/store5 и свежий Walmart ITEM v6.
-- Малый fresh read-only тест начат на двух реальных SKU. `FaisalX-1130` выявил
+- Малый fresh read-only pilot завершён на пяти реальных SKU. `FaisalX-1130` выявил
   ложный `BAD` на широком атрибуте `Flavor=Grain`; правило исправлено так, что hard
   mismatch выдаётся только при явном запрещённом Product Truth marker. После этого
-  `FaisalX-1183` дал настоящий quantity-confusion defect: title = `Pack of 6`, а
-  buyer MAIN показывает одну упаковку. Реальный контроль `before BAD → proposed
-  MAIN PASS` закреплён regression-тестом. Расширенный detector/exact-resolution/
-  public-PDP suite = **37/37 PASS**,
-  closed-loop repair suite = **109/109 PASS**, Walmart listing writes = `0`.
+  исторический `FaisalX-1183` подтвердил quantity-confusion defect:
+  title = `Pack of 6`, buyer MAIN показывала одну упаковку. Свежая live MAIN
+  2026-07-25 уже показывает шесть и перцептивно совпадает с approved proposal,
+  но frozen writer receipt для происхождения изменения отсутствует. Свежий pilot
+  нашёл другой реальный дефект на `FaisalX-1183` и `FaisalX-1181`: title/изображения
+  говорят `hot dog buns`, bullet 3 — `hamburger buns`. `FaisalX-1130`,
+  `FaisalX-1208` и `Comm-05` не имеют найденного внутреннего противоречия, но
+  остаются `SOURCE_REQUIRED`, а не PASS. Comparator v5 на immutable replay =
+  24/24: BAD 12/12, corrected PASS 12/12, false PASS/BAD 0.
+  Текущие focused suites: one-SKU 21/21, remediation/Qualification 102/102,
+  verifier-wrapper/operator 8/8; Walmart listing writes = `0`.
 - Первая read-only вкладка **Walmart Growth → Listing Integrity** реализована в
   shadow-режиме. Она читает frozen fresh-control evidence, показывает текущую MAIN
   и gallery, предложенную MAIN, exact diff, Qualification chain и честно блокирует
@@ -162,9 +169,10 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
 - Для `FaisalX-1183` exact current MAIN и две gallery-картинки перенесены из
   временного capture в content-addressed custody. SHA-bound `canary-preview.json`
   фиксирует только один допустимый diff: MAIN `1 → 6`; title, description,
-  bullet points, attributes, price, inventory и gallery неизменны. Loader
-  побайтово перепроверяет все четыре asset SHA перед показом экрана. Свежая
-  signed v2 visual attestation всё ещё обязательна перед live apply. Exact
+  bullet points, attributes, price, inventory и gallery неизменны. Этот preview
+  теперь является историческим evidence, а не текущим разрешённым payload:
+  свежая live MAIN уже показывает шесть упаковок. Loader побайтово перепроверяет
+  все четыре asset SHA перед показом экрана. Exact
   two-call shadow plan и offline verifier подготовлены: verifier заново связывает
   request bytes, prompt, image SHA, call key, worker build/ledger, Ed25519 receipt,
   blind observation и deterministic Product Truth decision; malformed response
@@ -177,9 +185,31 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
   **38/38**, worker security **17/17**, observation **17/17**, shadow loader
   **7/7**, UI **1/1**, targeted TypeScript/ESLint и diff-check PASS. Signed bundle
   сохранён побайтово; UI перепроверяет все file SHA и обе Ed25519 receipts и
-  fail-closed отвергает tamper. External effects: Claude subscription calls `2`,
+  fail-closed отвергает tamper. Дополнительная owner-gallery с 17 live и
+  историческими изображениями сохранена как
+  `ss-control-center/data/audits/walmart-listing-integrity-single-calibration/owner-gallery-20260725.html`,
+  SHA-256 `61ee94ab…7786e`. External effects: Claude subscription calls `2`,
   attempts `2`, retries/fallbacks/paid API/OpenAI/Walmart/DB writes `0`. Временные
   remote `/tmp`-файлы удалены после локальной SHA-bound custody.
+- На свежем live reread подготовлен первый текстовый repair review:
+  exact donor `Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns`,
+  `14 oz / 8 ct`, UPC `014100050162`; Chessmen donor запрещён. Correct target
+  меняет только `description` и `bullets`, явно фиксирует Pack of 6 и 48 buns total,
+  удаляет `hamburger buns`; MAIN/gallery/title/attributes/price/inventory не
+  меняются. Pure Qualification precheck = PASS и не является write-authority.
+  Review JSON SHA `ce1b31e0…cb72b`, HTML SHA `ad6af7ba…a0206`.
+  Детерминированная команда `review` независимо перепроверила exact file/image
+  bindings и выпустила read-only certification: file SHA `10a9fafb…e527`,
+  sealed body `12aff1f6…14bc0`. Owner gate открыт; Walmart/DB writes = 0.
+- Тот же current review теперь является первой карточкой вкладки
+  **Walmart Growth → Listing Integrity**. UI больше не выдаёт исторический
+  `MAIN 1 → 6` за актуальный payload: исторический control свёрнут, а текущая
+  карточка показывает unchanged live MAIN/gallery и exact text diff
+  `hamburger buns → PACK OF 6 hot dog buns`. Current-review index SHA
+  `24f0a7e6…c7cf1` связывает proposal, certification, diagnosis, buyer snapshot/PDP
+  и donor audit. Loader побайтово проверяет все три image assets и fail-closed
+  отклоняет tamper. Loader/UI 9/9, combined current control 30/30,
+  полный TypeScript и targeted ESLint PASS.
 
 ## Порядок доведения до постоянного продукта
 
@@ -187,11 +217,12 @@ snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
    operator commands и clean-checkout sealed release.~~ Закрыто 2026-07-22.
 2. ~~Выполнить первые малые read-only проверки на свежих exact-SKU/Product Truth/
    buyer данных и доказать хотя бы один реальный defect case без writes.~~ Закрыто
-   на `FaisalX-1130` и `FaisalX-1183`; второй SKU дал настоящий MAIN 1-vs-6 defect.
-   До live canary остаётся sealed source-aware прогон текущих bytes всех gallery.
+   на пяти SKU: два текстовых противоречия, три честных `SOURCE_REQUIRED`, 0 writes.
+   Owner-gallery и mixed offline replay запечатаны.
 3. Только по отдельным owner permits провести 1–3 полных canary:
    detect → repair → propagation → live reread → PASS; следующий SKU не начинать
-   до PASS текущего.
+   до PASS текущего. Перед первым write общий Product Truth должен дать exact
+   товарную правду и минимальный repair diff для выбранного SKU.
 4. **[SHADOW UI COMPLETE / RUNTIME PENDING]** Подключить тот же backend к вкладке
    Listing Integrity и resumable queue. Read-only evidence view уже реализован;
    постоянные scheduler/API/state store остаются. Вкладка обязательно показывает

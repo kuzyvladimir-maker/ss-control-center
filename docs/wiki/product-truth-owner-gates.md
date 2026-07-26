@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-25.
+> **Статус:** живой decision ledger, сверено 2026-07-26.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -25,14 +25,41 @@
 
 | Gate | Состояние | Что блокирует |
 |---|---|---|
-| G1. Import permanent candidate | `AWAITING_OWNER` | Код/UI/канон пока в isolated branch, не в shared `main` |
-| G2. Web Operations Stage A | `AWAITING_OWNER` | SSCC command/artifact/event schema и tests не реализуются |
-| G3. Phase 1 store dispositions | `AWAITING_OWNER_FACTS` | Нельзя выпустить owner-bound connected-store census |
-| G4. Walmart ITEM v6 read-only report | `AWAITING_OWNER_ACTION_GATE` | Нет authoritative Walmart report bytes |
+| G1. Import permanent candidate | `APPROVED_IN_PROGRESS` | `r5` должен пройти clean certification и безопасный import в shared `main` |
+| G2. Web Operations Stage A | `APPROVED_NOT_CONSUMED` | Начинается только после завершения и сертификации G1 |
+| G3. Phase 1 store dispositions | `OWNER_CONFIRMED` | Нужно выпустить hash-bound census/disposition artifact с exact owner facts |
+| G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_SEALED_AUTHORIZATION` | Нет новой engine-generated authorization/permit и authoritative report bytes |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
 | G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
+
+## Owner decision 2026-07-26
+
+Владелец подтвердил текущий Phase 1 selling-account scope и разрешил продолжить
+G1–G4 в границах этого ledger:
+
+- Amazon store1 `Salutem Solutions` — `IN_SCOPE`;
+- Amazon store3 `AMZ Commerce` — `IN_SCOPE`;
+- Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC` — `IN_SCOPE`;
+- Amazon store2 `Vladimir Personal` — `EXCLUDED_OWNER_CONFIRMED_BLOCKED`;
+- Amazon store4 `Sirius International` — `EXCLUDED_OWNER_CONFIRMED_BLOCKED`;
+- Amazon store5 `Retailer Distributor` — `EXCLUDED_OWNER_CONFIRMED_BLOCKED`.
+
+Три исключённых Amazon-аккаунта сейчас заблокированы, по ним не выполняются
+listing intake, enrichment или marketplace actions. Это **не удаление** аккаунтов
+и не вечное исключение: после разблокировки любой из них возвращается только через
+successor census, свежий authoritative report и новый manifest.
+
+Решение разрешает:
+
+- G1 — локальный import exact certified permanent candidate без push/deploy;
+- G2 — реализацию Stage A с runtime hardcoded `OFF`;
+- G3 — выпуск owner-bound census/disposition artifacts по фактам выше;
+- G4 — одну новую zero-retry read-only попытку через sealed workflow.
+
+Оно не разрешает G5–G8, production activation, paid provider waves, delist,
+repricing, listing publish/apply или purchase.
 
 ## G1 — импорт permanent candidate в shared local `main`
 
@@ -101,8 +128,9 @@ paid spend или marketplace actions.
 - Amazon store3 `AMZ Commerce`: connected US, свежий полный report,
   514 rows → рекомендовано `IN_SCOPE`.
 - Amazon store5 `Retailer Distributor`: credentials есть, US participation
-  отсутствует, report пуст, last state `DEACTIVATED` → рекомендовано
-  `EXCLUDED_OWNER_CONFIRMED`.
+  отсутствует, report пуст, last observed technical state `DEACTIVATED`;
+  владелец 2026-07-26 подтвердил текущий business state `BLOCKED` и исключение
+  из текущего Phase 1 snapshot.
 - Amazon store2 `Vladimir Personal`: Sellers API 403, seller ID отсутствует,
   last order 2026-05-18.
 - Amazon store4 `Sirius International`: credentials/seller ID отсутствуют,
@@ -110,10 +138,20 @@ paid spend или marketplace actions.
 - Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`: connected/active →
   `IN_SCOPE`, но authoritative ITEM v6 report отсутствует.
 
-Код не может решить бизнес-факт, являются ли store2/store4 всё ещё intended
-connected selling accounts.
+Код не мог решить бизнес-факт для store2/store4/store5. Владелец закрыл этот
+вопрос решением 2026-07-26: все три сейчас blocked и исключаются из текущего
+manifest denominator.
 
-### Если store2/store4 действительно больше не подключены
+### Принятое disposition
+
+```text
+Amazon store2 Vladimir Personal, store4 Sirius International и store5 Retailer
+Distributor сейчас заблокированы и исключены из текущего Phase 1 snapshot.
+Amazon store1 Salutem Solutions, store3 AMZ Commerce и Walmart store1 SIRIUS
+TRADING INTERNATIONAL LLC остаются в Phase 1.
+```
+
+### Historical proposed wording — superseded
 
 ```text
 Подтверждаю G3: Amazon store2 Vladimir Personal и store4 Sirius International
@@ -123,11 +161,11 @@ Salutem Solutions, store3 AMZ Commerce и Walmart store1 SIRIUS TRADING
 INTERNATIONAL LLC оставить в Phase 1.
 ```
 
-### Если store2 или store4 всё ещё действующий
+### Если заблокированный магазин будет восстановлен
 
-Владелец называет exact store. Тогда gate остаётся открыт до восстановления его
-credentials/identity и свежего полного Amazon report. Действующий магазин нельзя
-исключить ради удобного denominator.
+Владелец называет exact store. Для него создаются successor census/disposition,
+восстанавливаются credentials/identity, снимается свежий полный Amazon report и
+выпускается successor manifest. Старый manifest задним числом не изменяется.
 
 G3 разрешает только owner-bound census/disposition artifacts. Он не разрешает
 network call, manifest, backfill, provider spend или marketplace write.
@@ -164,7 +202,8 @@ report-create не разрешаю.
 
 G4 исполняется только готовым sealed operator workflow. Текстовое разрешение не
 заменяет требуемые engine-generated authorization/permit bytes, hashes и exact
-confirmation.
+confirmation. Quarantined session и старые permit/authorization bytes повторно
+использовать запрещено.
 
 ## Что произойдёт после G3 + G4
 
@@ -190,4 +229,3 @@ purchase действий не разрешаю.
 ```
 
 Можно одобрить только отдельные номера, например: `Разрешаю только G1`.
-
