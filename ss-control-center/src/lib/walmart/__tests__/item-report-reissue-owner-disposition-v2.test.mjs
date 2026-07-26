@@ -202,11 +202,13 @@ async function expectCode(action, code) {
   });
 }
 
-test("production trust root is intentionally fail-closed before owner enrollment", () => {
+test("production trust root exposes the reviewed enrolled owner key", () => {
   assert.deepEqual(inspectWalmartItemReportReissueOwnerDispositionV2TrustRoot(), {
-    ready: false,
-    active_key_ids: [],
-    active_key_fingerprints: [],
+    ready: true,
+    active_key_ids: ["walmart-owner-control-2026-01"],
+    active_key_fingerprints: [
+      "ca74a2134808ab46eb162b14dfe481730fc69df00b57283cffd7a7bb1d37883a",
+    ],
   });
 });
 
@@ -220,8 +222,12 @@ test("assembles and verifies one exact domain-separated Ed25519 disposition", as
   assert.equal(verified.signed_body.authorization.maximum_create_post_calls, 1);
   assert.equal(verified.signed_body.authorization.retry_attempts_allowed, 0);
   assert.equal(
-    verified.signed_body.authorization.request_body_sha256,
+    verified.signed_body.authorization.create_request.request_body_sha256,
     WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
+  );
+  assert.equal(
+    verified.signed_body.authorization.pre_create_absence_guard_required,
+    true,
   );
   assert.equal(verified.signed_body.prior_incident.consume_conflicting_final, false);
 });

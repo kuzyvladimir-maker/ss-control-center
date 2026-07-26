@@ -385,10 +385,26 @@ function successfulTransport(onSend = async () => {}, accountBinding = {
     },
     async send(request) {
       await onSend(request);
-      counts.oauth_token_calls += 1;
+      if (counts.oauth_token_calls === 0) counts.oauth_token_calls = 1;
       counts.walmart_api_calls += 1;
-      counts.total_http_calls += 2;
+      counts.total_http_calls = counts.oauth_token_calls + counts.walmart_api_calls;
       requests.push(request);
+      if (request.method === "GET") {
+        const body = Buffer.from(JSON.stringify({
+          page: 1,
+          totalCount: 0,
+          limit: 0,
+          requests: [],
+        }));
+        return {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "content-length": String(body.byteLength),
+          },
+          body,
+        };
+      }
       const body = Buffer.from(JSON.stringify({
         requestId: "replacement-request-001",
         requestSubmissionDate: "2026-07-20T00:05:00.000Z",
@@ -436,8 +452,12 @@ test("offline preflight verifies every binding and performs zero writes/network"
     assert.equal(opened, 0);
     assert.equal(preflight.status, "READY_FOR_IRREVERSIBLE_SINGLE_EXECUTION");
     assert.equal(preflight.authorization_sha256, item.disposition.authorization_sha256);
-    assert.equal(preflight.request.method, "POST");
-    assert.deepEqual(preflight.request.query, { reportType: "ITEM", reportVersion: "v6" });
+    assert.equal(preflight.request.guard.method, "GET");
+    assert.equal(preflight.request.create.method, "POST");
+    assert.deepEqual(preflight.request.create.query, {
+      reportType: "ITEM",
+      reportVersion: "v6",
+    });
     assert.equal(preflight.external_effects.filesystem_writes, 0);
     assert.equal(preflight.external_effects.oauth_token_calls, 0);
     await assert.rejects(lstat(preflight.replacement_session_directory), { code: "ENOENT" });
@@ -446,44 +466,39 @@ test("offline preflight verifies every binding and performs zero writes/network"
   }
 });
 
-test("delegated pilot authorization preflights without password or owner key", async () => {
+test("delegated pilot authorization is rejected before any effect", async () => {
   const item = await fixture({ delegated: true });
   try {
-    const preflight = await preflightWalmartItemReportReissueExecutorV2(item.input, {
-      now: NOW,
-    });
-    assert.equal(preflight.status, "READY_FOR_IRREVERSIBLE_SINGLE_EXECUTION");
-    assert.equal(preflight.authorization_sha256, item.disposition.authorization_sha256);
+    await assert.rejects(
+      preflightWalmartItemReportReissueExecutorV2(item.input, { now: NOW }),
+      (error) => error?.code === "INVALID_DISPOSITION",
+    );
     assert.equal(item.disposition.authorization_mode, "OWNER_DELEGATED_AUTOMATION");
-    assert.equal(preflight.external_effects.listing_content_writes, 0);
   } finally {
     await cleanup(item);
   }
 });
 
-test("delegated pilot authorization burns once and executes the same fixed POST", async () => {
+test("delegated pilot authorization cannot burn or open transport", async () => {
   const item = await fixture({ delegated: true });
   try {
-    const transport = successfulTransport();
-    const result = await executeWalmartItemReportReissueExecutorV2(item.input, {
-      now: () => NOW,
-      open_transport: () => transport,
-    });
-    assert.equal(result.status, "REQUESTED");
-    assert.equal(result.authorization_consumed_before_oauth, true);
-    assert.equal(transport.requests.length, 1);
-    assert.equal(transport.requests[0].method, "POST");
-    assert.deepEqual(transport.requests[0].query, {
-      reportType: "ITEM",
-      reportVersion: "v6",
-    });
+    let opened = 0;
+    await assert.rejects(
+      executeWalmartItemReportReissueExecutorV2(item.input, {
+        now: () => NOW,
+        open_transport: () => {
+          opened += 1;
+          return successfulTransport();
+        },
+      }),
+      (error) => error?.code === "INVALID_DISPOSITION",
+    );
+    assert.equal(opened, 0);
     const ledger = await openWalmartItemReportReissueConsumptionLedgerV2({
       state_directory: item.ledgerDirectory,
       expected_binding: item.ledgerBinding,
     });
-    assert.equal(ledger.authorizations[0]?.state, "SUCCEEDED");
-    assert.equal(ledger.authorizations[0]?.authorization_sha256,
-      item.disposition.authorization_sha256);
+    assert.equal(ledger.authorizations.length, 0);
   } finally {
     await cleanup(item);
   }
@@ -511,12 +526,23 @@ test("burns authorization before transport/OAuth and issues exactly one fixed PO
     assert.equal(result.authorization_consumed_before_oauth, true);
     assert.deepEqual(result.http_calls, {
       oauth_token_calls: 1,
-      walmart_api_calls: 1,
+      walmart_api_calls: 2,
       presigned_file_calls: 0,
-      total_http_calls: 2,
+      total_http_calls: 3,
     });
-    assert.equal(transport.requests.length, 1);
-    const request = transport.requests[0];
+    assert.equal(transport.requests.length, 2);
+    const guard = transport.requests[0];
+    assert.equal(guard.kind, "walmart-api");
+    assert.equal(guard.method, "GET");
+    assert.equal(guard.endpoint, "/v3/reports/reportRequests");
+    assert.deepEqual(guard.query, {
+      reportType: "ITEM",
+      reportVersion: "v6",
+      requestSubmissionStartDate: "2026-07-19T03:55:00Z",
+      requestSubmissionEndDate: "2026-07-19T04:00:00Z",
+      src: "API",
+    });
+    const request = transport.requests[1];
     assert.equal(request.kind, "walmart-api");
     assert.equal(request.method, "POST");
     assert.equal(request.endpoint, "/v3/reports/reportRequests");
@@ -558,6 +584,11 @@ test("burns authorization before transport/OAuth and issues exactly one fixed PO
       "trusted/00-session-authority.json",
       "trusted/01-owner-disposition.json",
       "trusted/02-consumption-receipt.json",
+      "capture/05-pre-create-guard-request.json",
+      "capture/06-pre-create-guard-response.bin",
+      "capture/07-pre-create-guard-response-http.json",
+      "trusted/08-pre-create-guard-exchange-seal.json",
+      "checkpoints/09-pre-create-guard-complete.json",
       "capture/10-create-request-manifest.json",
       "checkpoints/10-request-reserved.json",
       "checkpoints/19-request-complete.json",
@@ -588,7 +619,7 @@ test("network ambiguity burns permanently, writes manual-review, and never retri
       }),
       (error) => {
         assert.ok(error instanceof WalmartItemReportReissueExecutorV2ManualReviewError);
-        assert.equal(error.reason_code, "AMBIGUOUS_POST_NETWORK_OUTCOME");
+        assert.equal(error.reason_code, "PRE_CREATE_GUARD_NETWORK_OUTCOME_AMBIGUOUS");
         return true;
       },
     );
@@ -607,7 +638,7 @@ test("network ambiguity burns permanently, writes manual-review, and never retri
     });
     assert.equal(ledger.authorizations.find(
       (entry) => entry.authorization_sha256 === item.disposition.authorization_sha256,
-    )?.state, "AMBIGUOUS");
+    )?.state, "FAILED");
     await expectExecutorCode(
       executeWalmartItemReportReissueExecutorV2(item.input, {
         now: () => NOW,
@@ -623,21 +654,106 @@ test("network ambiguity burns permanently, writes manual-review, and never retri
   }
 });
 
+test("non-empty live guard forbids the create POST under the same burned authorization", async () => {
+  const item = await fixture();
+  try {
+    const requests = [];
+    const counts = {
+      oauth_token_calls: 0,
+      walmart_api_calls: 0,
+      presigned_file_calls: 0,
+      total_http_calls: 0,
+    };
+    const transport = {
+      get_account_binding() {
+        return {
+          channel: "WALMART_US",
+          store_index: 1,
+          seller_id: "10001624309",
+          seller_account_fingerprint_sha256: EXPECTED_FINGERPRINT,
+        };
+      },
+      get_http_call_counts() {
+        return { ...counts };
+      },
+      async send(request) {
+        requests.push(request);
+        counts.oauth_token_calls = 1;
+        counts.walmart_api_calls += 1;
+        counts.total_http_calls = counts.oauth_token_calls + counts.walmart_api_calls;
+        const body = Buffer.from(JSON.stringify({
+          page: 1,
+          totalCount: 1,
+          limit: 10,
+          requests: [{ requestId: "existing-v6-request" }],
+        }));
+        return {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "content-length": String(body.byteLength),
+          },
+          body,
+        };
+      },
+    };
+    await assert.rejects(
+      executeWalmartItemReportReissueExecutorV2(item.input, {
+        now: () => NOW,
+        open_transport: () => transport,
+      }),
+      (error) => error instanceof WalmartItemReportReissueExecutorV2ManualReviewError
+        && error.reason_code === "PRE_CREATE_GUARD_NOT_ABSENT",
+    );
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].method, "GET");
+    assert.equal(counts.oauth_token_calls, 1);
+    assert.equal(counts.walmart_api_calls, 1);
+    const session = path.join(
+      item.captureRoot,
+      item.disposition.signed_body.replacement.session_name,
+    );
+    await assert.rejects(
+      lstat(path.join(session, "capture/11-create-response.bin")),
+      { code: "ENOENT" },
+    );
+    const ledger = await openWalmartItemReportReissueConsumptionLedgerV2({
+      state_directory: item.ledgerDirectory,
+      expected_binding: item.ledgerBinding,
+    });
+    assert.equal(ledger.authorizations[0]?.state, "FAILED");
+  } finally {
+    await cleanup(item);
+  }
+});
+
 test("non-success/redirect response is terminal and not followed", async () => {
   const item = await fixture();
   try {
     const transport = successfulTransport();
+    let calls = 0;
     transport.send = async (request) => {
       transport.requests.push(request);
-      const counts = transport.get_http_call_counts;
-      // Replace accounting accessor after this one fixed call.
+      calls += 1;
       transport.get_http_call_counts = () => ({
         oauth_token_calls: 1,
-        walmart_api_calls: 1,
+        walmart_api_calls: calls,
         presigned_file_calls: 0,
-        total_http_calls: 2,
+        total_http_calls: calls + 1,
       });
-      void counts;
+      if (calls === 1) {
+        const body = Buffer.from(JSON.stringify({
+          page: 1, totalCount: 0, limit: 0, requests: [],
+        }));
+        return {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "content-length": String(body.byteLength),
+          },
+          body,
+        };
+      }
       return {
         status: 307,
         headers: { location: "https://example.invalid/forbidden", "content-length": "0" },
@@ -652,8 +768,8 @@ test("non-success/redirect response is terminal and not followed", async () => {
       (error) => error instanceof WalmartItemReportReissueExecutorV2ManualReviewError
         && error.reason_code === "POST_HTTP_FAILURE",
     );
-    assert.equal(transport.requests.length, 1);
-    assert.equal(transport.requests[0].redirect, "manual");
+    assert.equal(transport.requests.length, 2);
+    assert.equal(transport.requests[1].redirect, "manual");
     const ledger = await openWalmartItemReportReissueConsumptionLedgerV2({
       state_directory: item.ledgerDirectory,
       expected_binding: item.ledgerBinding,
@@ -666,24 +782,65 @@ test("non-success/redirect response is terminal and not followed", async () => {
   }
 });
 
-test("successful executor artifacts continue through retired-request-safe poll/download/compile", async () => {
+test("one OAuth transport guards, creates, polls, downloads, and compiles", async () => {
   const item = await fixture();
   try {
-    const executed = await executeWalmartItemReportReissueExecutorV2(item.input, {
-      now: () => NOW,
-      open_transport: () => successfulTransport(),
-    });
     const csv = [
       "SKU,ProductName,ProductId,ProductIdType,PublishedStatus,ProductCondition,Brand,LifecycleStatus",
       "SKU-A,Alpha Bread,111111111111,UPC,PUBLISHED,New,Alpha Brand,ACTIVE",
     ].join("\r\n") + "\r\n";
     const requests = [];
-    const continuationTransport = {
+    const counts = {
+      oauth_token_calls: 0,
+      walmart_api_calls: 0,
+      presigned_file_calls: 0,
+      total_http_calls: 0,
+    };
+    const transport = {
+      get_account_binding() {
+        return {
+          channel: "WALMART_US",
+          store_index: 1,
+          seller_id: "10001624309",
+          seller_account_fingerprint_sha256: EXPECTED_FINGERPRINT,
+        };
+      },
+      get_http_call_counts() {
+        return { ...counts };
+      },
       async send(request) {
         requests.push(request);
         let payload;
         let contentType = "application/json";
+        let status = 200;
+        if (request.kind === "walmart-api") {
+          if (counts.oauth_token_calls === 0) counts.oauth_token_calls = 1;
+          counts.walmart_api_calls += 1;
+        } else {
+          counts.presigned_file_calls += 1;
+        }
+        counts.total_http_calls = counts.oauth_token_calls
+          + counts.walmart_api_calls + counts.presigned_file_calls;
         if (request.kind === "walmart-api"
+          && request.method === "GET"
+          && request.endpoint === "/v3/reports/reportRequests") {
+          payload = JSON.stringify({
+            page: 1,
+            totalCount: 0,
+            limit: 0,
+            requests: [],
+          });
+        } else if (request.kind === "walmart-api"
+          && request.method === "POST"
+          && request.endpoint === "/v3/reports/reportRequests") {
+          status = 201;
+          payload = JSON.stringify({
+            requestId: "replacement-request-001",
+            requestSubmissionDate: "2026-07-20T00:05:00.000Z",
+            reportType: "ITEM",
+            reportVersion: "v6",
+          });
+        } else if (request.kind === "walmart-api"
           && request.endpoint === "/v3/reports/reportRequests/replacement-request-001") {
           payload = JSON.stringify({
             requestId: "replacement-request-001",
@@ -717,50 +874,30 @@ test("successful executor artifacts continue through retired-request-safe poll/d
         if (request.correlation_id !== null) {
           headers["wm_qos.correlation_id"] = request.correlation_id;
         }
-        return { status: 200, headers, body };
+        return { status, headers, body };
       },
     };
     let tick = 0;
-    const now = () => new Date(Date.parse("2026-07-20T00:15:00.000Z") + tick++ * 1000);
-    const dependencies = {
-      transport: continuationTransport,
-      account_scope: {
-        channel: "WALMART_US",
-        store_index: 1,
-        seller_account_fingerprint_sha256: EXPECTED_FINGERPRINT,
-      },
-      now,
+    const executed = await executeWalmartItemReportReissueExecutorV2(item.input, {
+      now: () => new Date(NOW.getTime() + tick++ * 100),
       random_uuid: randomUUID,
-    };
-    const phaseInput = (phase) => ({
-      execute: true,
-      phase,
-      store_index: 1,
-      session_dir: executed.replacement_session_directory,
-      allowed_capture_root: item.captureRoot,
+      sleep: async () => {},
+      complete_report: true,
+      open_transport: () => transport,
     });
-    const polled = await runWalmartItemReportCapturePhase(
-      phaseInput("poll"),
-      dependencies,
-    );
-    assert.equal(polled.state, "READY");
-    const downloaded = await runWalmartItemReportCapturePhase(
-      phaseInput("download"),
-      dependencies,
-    );
-    assert.equal(downloaded.state, "DOWNLOADED");
-    const compiled = await runWalmartItemReportCapturePhase(
-      phaseInput("compile"),
-      dependencies,
-    );
-    assert.equal(compiled.state, "COMPILED");
-    assert.equal(compiled.network_calls, 0);
-    const source = JSON.parse(await readFile(compiled.sanitized_source_path, "utf8"));
+    assert.equal(executed.status, "COMPILED");
+    assert.deepEqual(executed.http_calls, {
+      oauth_token_calls: 1,
+      walmart_api_calls: 4,
+      presigned_file_calls: 1,
+      total_http_calls: 6,
+    });
+    const source = JSON.parse(await readFile(executed.sanitized_source_path, "utf8"));
     const verified = verifyWalmartItemReportPublishedSource(source);
     assert.equal(verified.published_population_complete, true);
     assert.equal(verified.rows.length, 1);
     assert.equal(verified.rows[0].sku, "SKU-A");
-    assert.equal(requests.filter((request) => request.kind === "walmart-api").length, 2);
+    assert.equal(requests.filter((request) => request.kind === "walmart-api").length, 4);
     assert.equal(requests.filter((request) => request.kind === "presigned-file").length, 1);
   } finally {
     await cleanup(item);
@@ -773,14 +910,29 @@ test("invalid content-length and missing requestId are terminal", async (context
       const item = await fixture();
       try {
         const transport = successfulTransport();
+        let calls = 0;
         transport.send = async (request) => {
           transport.requests.push(request);
+          calls += 1;
           transport.get_http_call_counts = () => ({
             oauth_token_calls: 1,
-            walmart_api_calls: 1,
+            walmart_api_calls: calls,
             presigned_file_calls: 0,
-            total_http_calls: 2,
+            total_http_calls: calls + 1,
           });
+          if (calls === 1) {
+            const body = Buffer.from(JSON.stringify({
+              page: 1, totalCount: 0, limit: 0, requests: [],
+            }));
+            return {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+                "content-length": String(body.byteLength),
+              },
+              body,
+            };
+          }
           const body = variant === "REQUEST_ID"
             ? Buffer.from("{}")
             : Buffer.from('{"requestId":"ok"}');
@@ -805,7 +957,7 @@ test("invalid content-length and missing requestId are terminal", async (context
               ? "POST_RESPONSE_CAPTURE_INVALID"
               : "POST_RESPONSE_REQUEST_ID_INVALID"),
         );
-        assert.equal(transport.requests.length, 1);
+        assert.equal(transport.requests.length, 2);
       } finally {
         await cleanup(item);
       }

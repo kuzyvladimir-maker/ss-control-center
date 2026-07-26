@@ -159,7 +159,7 @@ test("frozen sealer publishes the benign evidence seal atomically and privately"
   assert.equal(result.status, "SEALED");
   assert.equal(result.engine_manifest_artifact_sha256, manifestSha256);
   assert.equal(result.frozen_bundle_artifact_sha256, bundleSha256);
-  assert.equal(result.production_owner_trust_root_ready, false);
+  assert.equal(result.production_owner_trust_root_ready, true);
   assert.equal(result.live_report_create_path_enabled, false);
   assert.equal(result.network_calls, 0);
   assert.equal(Number((await lstat(output)).mode) & 0o777, 0o700);
@@ -188,7 +188,7 @@ test("frozen sealer publishes the benign evidence seal atomically and privately"
   assert.equal(report.output_safety.stable_parent_identity, true);
   assert.equal(report.runtime.node_version, process.version);
   assert.equal(report.runtime.exec_argv.length, 0);
-  assert.equal(report.bundled_contracts.production_owner_trust_root.ready, false);
+  assert.equal(report.bundled_contracts.production_owner_trust_root.ready, true);
   assert.equal(report.external_effects.network_calls, 0);
   assert.equal(report.external_effects.credential_reads, 0);
 }, { timeout: 120_000 });

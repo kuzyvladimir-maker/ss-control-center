@@ -24,7 +24,7 @@ import { canonicalWalmartItemReportJson } from "../../src/lib/walmart/item-repor
 
 const FIXED_RANDOM = Buffer.from("abcdef0123456789abcdef0123456789", "utf8");
 const DOMAIN = Buffer.from(
-  "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v2\0",
+  "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v3\0",
   "utf8",
 );
 
@@ -46,20 +46,47 @@ async function fixture(t) {
 function fixedAuthorization() {
   return {
     report_create_post_authorized: true,
+    pre_create_absence_guard_required: true,
+    same_oauth_transport_required: true,
     maximum_create_post_calls: 1,
     maximum_oauth_token_calls: 1,
-    maximum_walmart_report_api_calls: 1,
-    maximum_total_http_calls: 2,
+    maximum_walmart_report_api_calls_before_create: 2,
+    maximum_total_http_calls_before_create: 3,
+    maximum_total_http_calls: 73,
     maximum_request_timeout_ms: 60_000,
     retry_attempts_allowed: 0,
     fallbacks_allowed: 0,
     redirects_followed_allowed: 0,
     automatic_replay_allowed: false,
-    method: "POST",
-    endpoint: "/v3/reports/reportRequests",
-    report_type: "ITEM",
-    report_version: "v6",
-    request_body_sha256: createHash("sha256").update("{}", "utf8").digest("hex"),
+    absence_guard: {
+      method: "GET",
+      endpoint: "/v3/reports/reportRequests",
+      query: {
+        reportType: "ITEM",
+        reportVersion: "v6",
+        requestSubmissionStartDate: "2026-07-19T03:55:00Z",
+        requestSubmissionEndDate: "2026-07-19T04:00:00Z",
+        src: "API",
+      },
+      exact_zero_results_required: true,
+      next_cursor_forbidden: true,
+    },
+    create_request: {
+      method: "POST",
+      endpoint: "/v3/reports/reportRequests",
+      report_type: "ITEM",
+      report_version: "v6",
+      request_body_sha256: createHash("sha256").update("{}", "utf8").digest("hex"),
+    },
+    continuation: {
+      same_oauth_transport_required: true,
+      polling_authorized: true,
+      maximum_poll_observations: 60,
+      poll_interval_ms: 10_000,
+      download_locator_calls_maximum: 1,
+      presigned_download_calls_maximum: 9,
+      compile_network_calls_maximum: 0,
+    },
     request_id_adoption_from_prior: false,
     original_session_writes_allowed: 0,
     database_calls_allowed: 0,
@@ -72,12 +99,22 @@ function fixedAuthorization() {
 
 function fixedRisk() {
   return {
-    exact_probe_observed_no_api_visible_v6_request: true,
-    exact_probe_does_not_prove_original_post_failed: true,
+    historical_exact_probe_observed_no_api_visible_v6_request: true,
+    historical_exact_probe_does_not_prove_original_post_failed: true,
+    live_pre_create_guard_must_observe_exact_absence: true,
+    live_guard_and_create_must_share_one_oauth_transport: true,
+    non_absent_or_ambiguous_guard_forbids_create: true,
     original_post_may_have_reached_walmart: true,
     duplicate_report_request_risk_is_non_zero: true,
     duplicate_report_request_risk_accepted: true,
     exact_probe_account_match_is_operator_asserted_not_machine_verified: true,
+    operator_custody_metadata_is_not_walmart_signature_or_tls_transcript: true,
+    broad_probe_is_corroborating_only: true,
+    quarantined_terminal_failure_remains_authoritative: true,
+    prohibited_conflicting_final_must_not_be_consumed: true,
+    original_request_id_must_not_be_adopted: true,
+    crash_or_ambiguous_replacement_outcome_burns_authorization: true,
+    single_custody_ledger_is_not_distributed_at_most_once: true,
   };
 }
 
@@ -126,7 +163,7 @@ async function writeRequest(fx, enrollment) {
     owner_risk_acknowledgement: fixedRisk(),
   };
   const envelope = {
-    schema_version: "walmart-item-report-reissue-owner-disposition/v2",
+    schema_version: "walmart-item-report-reissue-owner-disposition/v3",
     algorithm: "Ed25519",
     key_id: enrollment.key_id,
     owner_public_key_spki_sha256: enrollment.public_key_spki_sha256,

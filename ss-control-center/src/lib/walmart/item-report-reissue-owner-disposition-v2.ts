@@ -46,7 +46,7 @@ import {
 } from "./owner-control-trust-root.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_SCHEMA =
-  "walmart-item-report-reissue-owner-disposition/v2" as const;
+  "walmart-item-report-reissue-owner-disposition/v3" as const;
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_ALGORITHM =
   "Ed25519" as const;
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_ACTION =
@@ -61,7 +61,7 @@ export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS =
   5 * 60 * 1000;
 
 const SIGNING_DOMAIN = Buffer.from(
-  "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v2\0",
+  "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v3\0",
   "utf8",
 );
 const EMPTY_BODY_SHA256 = createHash("sha256").update("{}", "utf8").digest("hex");
@@ -413,20 +413,47 @@ function parseLedgerBinding(
 function fixedAuthorization(): JsonRecord {
   return {
     report_create_post_authorized: true,
+    pre_create_absence_guard_required: true,
+    same_oauth_transport_required: true,
     maximum_create_post_calls: 1,
     maximum_oauth_token_calls: 1,
-    maximum_walmart_report_api_calls: 1,
-    maximum_total_http_calls: 2,
+    maximum_walmart_report_api_calls_before_create: 2,
+    maximum_total_http_calls_before_create: 3,
+    maximum_total_http_calls: 73,
     maximum_request_timeout_ms: 60_000,
     retry_attempts_allowed: 0,
     fallbacks_allowed: 0,
     redirects_followed_allowed: 0,
     automatic_replay_allowed: false,
-    method: "POST",
-    endpoint: "/v3/reports/reportRequests",
-    report_type: "ITEM",
-    report_version: "v6",
-    request_body_sha256: EMPTY_BODY_SHA256,
+    absence_guard: {
+      method: "GET",
+      endpoint: "/v3/reports/reportRequests",
+      query: {
+        reportType: "ITEM",
+        reportVersion: "v6",
+        requestSubmissionStartDate: "2026-07-19T03:55:00Z",
+        requestSubmissionEndDate: "2026-07-19T04:00:00Z",
+        src: "API",
+      },
+      exact_zero_results_required: true,
+      next_cursor_forbidden: true,
+    },
+    create_request: {
+      method: "POST",
+      endpoint: "/v3/reports/reportRequests",
+      report_type: "ITEM",
+      report_version: "v6",
+      request_body_sha256: EMPTY_BODY_SHA256,
+    },
+    continuation: {
+      same_oauth_transport_required: true,
+      polling_authorized: true,
+      maximum_poll_observations: 60,
+      poll_interval_ms: 10_000,
+      download_locator_calls_maximum: 1,
+      presigned_download_calls_maximum: 9,
+      compile_network_calls_maximum: 0,
+    },
     request_id_adoption_from_prior: false,
     original_session_writes_allowed: 0,
     database_calls_allowed: 0,
@@ -439,8 +466,11 @@ function fixedAuthorization(): JsonRecord {
 
 function fixedRiskAcknowledgement(): JsonRecord {
   return {
-    exact_probe_observed_no_api_visible_v6_request: true,
-    exact_probe_does_not_prove_original_post_failed: true,
+    historical_exact_probe_observed_no_api_visible_v6_request: true,
+    historical_exact_probe_does_not_prove_original_post_failed: true,
+    live_pre_create_guard_must_observe_exact_absence: true,
+    live_guard_and_create_must_share_one_oauth_transport: true,
+    non_absent_or_ambiguous_guard_forbids_create: true,
     original_post_may_have_reached_walmart: true,
     duplicate_report_request_risk_is_non_zero: true,
     duplicate_report_request_risk_accepted: true,
@@ -889,10 +919,9 @@ function parseSignedBody(value: unknown): WalmartItemReportReissueOwnerDispositi
   if (Date.parse(expiresAt) <= Date.parse(issuedAt)
     || Date.parse(expiresAt) - Date.parse(issuedAt)
       > WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_MAX_TTL_MS
-    || Date.parse(expiresAt) > Date.parse(evidenceFreshUntil)
     || sourceEvidence.exact_probe_fresh_until !== evidenceFreshUntil
     || Date.parse(sourceEvidence.exact_probe_observed_at) > Date.parse(issuedAt)) {
-    fail("INVALID_FRESHNESS", "owner disposition TTL/evidence deadline is invalid");
+    fail("INVALID_FRESHNESS", "owner disposition TTL or historical evidence binding is invalid");
   }
   const replacement = parseReplacement(raw.replacement);
   const accountScope = parseAccountScope(raw.account_scope);
@@ -1406,14 +1435,13 @@ export function assertWalmartItemReportReissueAuthorizationCurrent(
   const issuedAt = Date.parse(authorization.signed_body.issued_at);
   const effectiveDeadline = Math.min(
     Date.parse(authorization.signed_body.expires_at),
-    Date.parse(authorization.signed_body.evidence_fresh_until),
   );
   if (issuedAt > now.getTime() + WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS
     || now.getTime() < issuedAt - WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS) {
     fail("AUTHORIZATION_NOT_CURRENT", "authorization issuance window has not opened");
   }
   if (now.getTime() >= effectiveDeadline) {
-    fail("AUTHORIZATION_EXPIRED", "authorization or source evidence has expired");
+    fail("AUTHORIZATION_EXPIRED", "authorization has expired");
   }
   return new Date(effectiveDeadline).toISOString();
 }

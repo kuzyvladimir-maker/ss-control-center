@@ -51,7 +51,7 @@ const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_JSON_BYTES = 512 * 1024;
 
 export const WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA =
-  "walmart-item-report-reissue-v2-authority-cli/1.0.0";
+  "walmart-item-report-reissue-v2-authority-cli/1.1.0";
 
 export class WalmartItemReportReissueV2AuthorityError extends Error {
   constructor(code, message) {
@@ -534,7 +534,6 @@ function help() {
       "renewal-evidence",
       "ledger-bootstrap",
       "replacement-plan",
-      "delegated-authorization",
       "disposition-request",
       "disposition-assemble",
     ],
@@ -561,14 +560,6 @@ export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
     required(values, ["session_name", "created_at", "account_fingerprint_sha256", "out"]);
     return authorWalmartItemReportReissueReplacementPlanV2(values);
   }
-  if (command === "delegated-authorization") {
-    required(values, [
-      "source_evidence", "expected_source_evidence_sha256", "replacement",
-      "ledger_binding", "engine_release_sha256", "disposition_id",
-      "approved_by", "decision_ref", "issued_at", "expires_at", "out",
-    ]);
-    return authorWalmartItemReportReissueDelegatedAuthorizationV1(values);
-  }
   if (command === "disposition-request") {
     required(values, [
       "source_evidence", "expected_source_evidence_sha256", "replacement",
@@ -585,7 +576,7 @@ export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
     ]);
     return authorWalmartItemReportReissueDispositionV2(values);
   }
-  fail("INVALID_CLI", "command must be renewal-evidence, ledger-bootstrap, replacement-plan, delegated-authorization, disposition-request, disposition-assemble, or help");
+  fail("INVALID_CLI", "command must be renewal-evidence, ledger-bootstrap, replacement-plan, disposition-request, disposition-assemble, or help");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

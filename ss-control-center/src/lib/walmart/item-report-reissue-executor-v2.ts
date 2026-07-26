@@ -9,7 +9,7 @@
  * opened (and therefore before OAuth or Walmart network access can begin).
  */
 
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { constants as fsConstants } from "node:fs";
 import { builtinModules } from "node:module";
 import {
@@ -30,10 +30,8 @@ import {
 } from "./item-report-reissue-consumption-ledger-v2.ts";
 import {
   WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
-  WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA,
   assertWalmartItemReportReissueAuthorizationCurrent,
   buildWalmartItemReportReissueReplacementPlanV2,
-  verifyWalmartItemReportReissueDelegatedAuthorizationV1,
   verifyWalmartItemReportReissueOwnerDispositionV2,
   type WalmartItemReportReissueConsumptionLedgerBindingV2,
   type WalmartItemReportReissueExecutionAuthorization,
@@ -51,6 +49,7 @@ import {
 import {
   WALMART_ITEM_REPORT_CAPTURE_CHECKPOINT_SCHEMA,
   computeWalmartSellerAccountFingerprint,
+  runWalmartItemReportCapturePhase,
   type WalmartItemReportAtomicTransport,
   type WalmartItemReportAtomicTransportRequest,
   type WalmartItemReportAtomicTransportResponse,
@@ -58,11 +57,11 @@ import {
 } from "./item-report-capture-session.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_POLICY =
-  "walmart-item-report-reissue-executor/2.0.0" as const;
+  "walmart-item-report-reissue-executor/3.0.0" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_PREFLIGHT_SCHEMA =
-  "walmart-item-report-reissue-executor-preflight/v2" as const;
+  "walmart-item-report-reissue-executor-preflight/v3" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA =
-  "walmart-item-report-reissue-execution-checkpoint/v2" as const;
+  "walmart-item-report-reissue-execution-checkpoint/v3" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_FROZEN_ENGINE_SCHEMA =
   "walmart-item-report-reissue-v2-frozen-engine/1.0.0" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_FROZEN_ENGINE_POLICY =
@@ -72,7 +71,7 @@ export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_FROZEN_ENTRYPOINT =
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_FROZEN_BUNDLE =
   "walmart-item-report-reissue-v2-frozen-executor.bundle.mjs" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS = 60_000;
-export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_PRE_BURN_HEADROOM_MS = 65_000;
+export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_PRE_BURN_HEADROOM_MS = 130_000;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_RESPONSE_BYTES = 1024 * 1024;
 
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_EXACT_ARGV_ORDER = Object.freeze([
@@ -89,6 +88,13 @@ export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_EXACT_ARGV_ORDER = Object.f
 ] as const);
 
 const CREATE_BODY = Buffer.from("{}", "utf8");
+const ABSENCE_GUARD_QUERY = Object.freeze({
+  reportType: "ITEM",
+  reportVersion: "v6",
+  requestSubmissionStartDate: "2026-07-19T03:55:00Z",
+  requestSubmissionEndDate: "2026-07-19T04:00:00Z",
+  src: "API",
+});
 const LOADED_EXECUTOR_MODULE_PATH = fileURLToPath(import.meta.url);
 const DIRECTORY_MODE = 0o700;
 const FILE_MODE = 0o400;
@@ -192,6 +198,9 @@ export interface WalmartItemReportReissueExecutorV2Dependencies {
   /** Must construct a fresh, unused transport. Called only after ledger burn. */
   open_transport(): WalmartItemReportReissueExecutorV2Transport;
   now?: () => Date;
+  random_uuid?: () => string;
+  sleep?: (milliseconds: number) => Promise<void>;
+  complete_report?: boolean;
   after_immutable_write?: (relative_path: string) => void | Promise<void>;
 }
 
@@ -216,10 +225,19 @@ export interface WalmartItemReportReissueExecutorV2Preflight {
   ledger_state_directory: string;
   replacement_session_directory: string;
   request: {
-    method: "POST";
-    endpoint: "/v3/reports/reportRequests";
-    query: { reportType: "ITEM"; reportVersion: "v6" };
-    body_sha256: string;
+    guard: {
+      method: "GET";
+      endpoint: "/v3/reports/reportRequests";
+      query: typeof ABSENCE_GUARD_QUERY;
+      exact_zero_results_required: true;
+    };
+    create: {
+      method: "POST";
+      endpoint: "/v3/reports/reportRequests";
+      query: { reportType: "ITEM"; reportVersion: "v6" };
+      body_sha256: string;
+    };
+    same_oauth_transport_required: true;
     timeout_ms_maximum: 60_000;
     redirects: 0;
     retries: 0;
@@ -243,7 +261,7 @@ export interface WalmartItemReportReissueExecutorV2Preflight {
 }
 
 export interface WalmartItemReportReissueExecutorV2Result {
-  status: "REQUESTED";
+  status: "REQUESTED" | "COMPILED" | "REQUESTED_REPORT_INCOMPLETE";
   authorization_sha256: string;
   replacement_session_directory: string;
   request_id: string;
@@ -257,6 +275,13 @@ export interface WalmartItemReportReissueExecutorV2Result {
   model_calls: 0;
   paid_provider_calls: 0;
   listing_content_writes: 0;
+  continuation_error_code?: string;
+  sanitized_source_path?: string;
+  sanitized_source_sha256?: string;
+  sanitized_catalog_source_path?: string;
+  sanitized_catalog_source_sha256?: string;
+  catalog_source_id?: string;
+  catalog_source_body_sha256?: string;
 }
 
 export class WalmartItemReportReissueExecutorV2Error extends Error {
@@ -871,10 +896,7 @@ function verifyExecutionAuthorization(
   raw: JsonRecord,
   options: Parameters<typeof verifyWalmartItemReportReissueOwnerDispositionV2>[1],
 ): WalmartItemReportReissueExecutionAuthorization {
-  return raw.schema_version
-      === WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA
-    ? verifyWalmartItemReportReissueDelegatedAuthorizationV1(raw, options)
-    : verifyWalmartItemReportReissueOwnerDispositionV2(raw, options);
+  return verifyWalmartItemReportReissueOwnerDispositionV2(raw, options);
 }
 
 async function prepareWalmartItemReportReissueExecutorV2(
@@ -953,18 +975,47 @@ async function prepareWalmartItemReportReissueExecutorV2(
   }
   const authorization = record(disposition.signed_body.authorization, "authorization");
   if (authorization.request_body_sha256
-      !== WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256
+      !== undefined
+    || authorization.report_create_post_authorized !== true
+    || authorization.pre_create_absence_guard_required !== true
+    || authorization.same_oauth_transport_required !== true
     || authorization.maximum_request_timeout_ms !== WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS
     || authorization.maximum_oauth_token_calls !== 1
     || authorization.maximum_create_post_calls !== 1
-    || authorization.maximum_total_http_calls !== 2
+    || authorization.maximum_walmart_report_api_calls_before_create !== 2
+    || authorization.maximum_total_http_calls_before_create !== 3
+    || authorization.maximum_total_http_calls !== 73
     || authorization.retry_attempts_allowed !== 0
     || authorization.redirects_followed_allowed !== 0
     || authorization.original_session_writes_allowed !== 0
     || authorization.database_calls_allowed !== 0
     || authorization.model_calls_allowed !== 0
     || authorization.paid_provider_calls_allowed !== 0
-    || authorization.listing_content_writes_allowed !== 0) {
+    || authorization.listing_content_writes_allowed !== 0
+    || !sameJson(authorization.absence_guard, {
+      method: "GET",
+      endpoint: "/v3/reports/reportRequests",
+      query: ABSENCE_GUARD_QUERY,
+      exact_zero_results_required: true,
+      next_cursor_forbidden: true,
+    })
+    || !sameJson(authorization.create_request, {
+      method: "POST",
+      endpoint: "/v3/reports/reportRequests",
+      report_type: "ITEM",
+      report_version: "v6",
+      request_body_sha256:
+        WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
+    })
+    || !sameJson(authorization.continuation, {
+      same_oauth_transport_required: true,
+      polling_authorized: true,
+      maximum_poll_observations: 60,
+      poll_interval_ms: 10_000,
+      download_locator_calls_maximum: 1,
+      presigned_download_calls_maximum: 9,
+      compile_network_calls_maximum: 0,
+    })) {
     fail("AUTHORIZATION_POLICY_MISMATCH", "owner authorization is not exact one-shot policy");
   }
 
@@ -1008,10 +1059,19 @@ async function prepareWalmartItemReportReissueExecutorV2(
     ledger_state_directory: ledgerDirectory,
     replacement_session_directory: sessionDirectory,
     request: {
-      method: "POST",
-      endpoint: "/v3/reports/reportRequests",
-      query: { reportType: "ITEM", reportVersion: "v6" },
-      body_sha256: sha256(CREATE_BODY),
+      guard: {
+        method: "GET",
+        endpoint: "/v3/reports/reportRequests",
+        query: ABSENCE_GUARD_QUERY,
+        exact_zero_results_required: true,
+      },
+      create: {
+        method: "POST",
+        endpoint: "/v3/reports/reportRequests",
+        query: { reportType: "ITEM", reportVersion: "v6" },
+        body_sha256: sha256(CREATE_BODY),
+      },
+      same_oauth_transport_required: true,
       timeout_ms_maximum: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS,
       redirects: 0,
       retries: 0,
@@ -1669,6 +1729,390 @@ async function sendOnePost(
   }
 }
 
+async function sendOneAbsenceGuardGet(
+  transport: WalmartItemReportReissueExecutorV2Transport,
+  correlationId: string,
+): Promise<WalmartItemReportAtomicTransportResponse> {
+  const controller = new AbortController();
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timeoutHandle = setTimeout(() => {
+      controller.abort();
+      reject(new WalmartItemReportReissueExecutorV2Error(
+        "REQUEST_TIMEOUT",
+        "pre-create absence guard exceeded its one-shot deadline",
+      ));
+    }, WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS);
+  });
+  const request: WalmartItemReportAtomicTransportRequest = {
+    kind: "walmart-api",
+    method: "GET",
+    endpoint: "/v3/reports/reportRequests",
+    query: { ...ABSENCE_GUARD_QUERY },
+    url: null,
+    headers: {
+      accept: "application/json",
+      "accept-encoding": "identity",
+    },
+    body: null,
+    correlation_id: correlationId,
+    redirect: "manual",
+    max_response_bytes: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_RESPONSE_BYTES,
+    max_redirect_response_bytes: 64 * 1024,
+    timeout_ms: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS,
+    signal: controller.signal,
+  };
+  try {
+    return await Promise.race([transport.send(request), timeout]);
+  } finally {
+    if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+  }
+}
+
+function exactGuardAbsence(bytes: Uint8Array, http: HttpResponseCaptureMetadata): {
+  absence: boolean;
+  page: number;
+  total_count: number;
+  limit: number;
+  request_count: number;
+  next_cursor_present: boolean;
+} {
+  if (http.status !== 200 || typeof http.content_type !== "string"
+    || !/^application\/json(?:\s*;|$)/iu.test(http.content_type)) {
+    fail("INVALID_GUARD_RESPONSE", "pre-create absence guard must return HTTP 200 JSON");
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  } catch {
+    fail("INVALID_GUARD_RESPONSE", "pre-create absence guard body is not UTF-8 JSON");
+  }
+  const raw = record(parsed, "pre-create absence guard response");
+  if (raw.page !== 1 || !Number.isSafeInteger(raw.totalCount)
+    || Number(raw.totalCount) < 0 || !Number.isSafeInteger(raw.limit)
+    || Number(raw.limit) < 0 || !Array.isArray(raw.requests)) {
+    fail("INVALID_GUARD_RESPONSE", "pre-create absence guard response shape is invalid");
+  }
+  const nextCursorPresent = typeof raw.nextCursor === "string" && raw.nextCursor.length > 0;
+  return {
+    absence: raw.totalCount === 0 && raw.requests.length === 0 && !nextCursorPresent,
+    page: 1,
+    total_count: Number(raw.totalCount),
+    limit: Number(raw.limit),
+    request_count: raw.requests.length,
+    next_cursor_present: nextCursorPresent,
+  };
+}
+
+async function executePreCreateAbsenceGuard(
+  prepared: PreparedExecution,
+  created: Awaited<ReturnType<typeof createReplacementSession>>,
+  transport: WalmartItemReportReissueExecutorV2Transport,
+  consumptionReceipt: WalmartItemReportReissueAuthorizationRequestingReceiptV2,
+  dependencies: WalmartItemReportReissueExecutorV2Dependencies,
+): Promise<void> {
+  const uuid = dependencies.random_uuid ?? randomUUID;
+  const correlationId = exactString(uuid(), "pre-create guard correlation ID", 128);
+  const correlationSha256 = walmartItemReportUtf8Sha256(correlationId);
+  const reservedAt = nowDate(dependencies.now).toISOString();
+  const requestManifest = {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA,
+    phase: "pre_create_absence_guard",
+    method: "GET",
+    endpoint: "/v3/reports/reportRequests",
+    query: { ...ABSENCE_GUARD_QUERY },
+    request_correlation_id_sha256: correlationSha256,
+    exact_zero_results_required: true,
+    next_cursor_forbidden: true,
+    retries: 0,
+    redirects: 0,
+  };
+  const requestManifestBytes = Buffer.from(
+    canonicalWalmartItemReportJson(requestManifest),
+    "utf8",
+  );
+  const reservation = {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA,
+    phase: "pre_create_absence_guard",
+    state: "RESERVED",
+    observed_at: reservedAt,
+    authorization_sha256: prepared.preflight.authorization_sha256,
+    request_manifest_sha256: sha256(requestManifestBytes),
+    request_correlation_id_sha256: correlationSha256,
+    same_transport_as_create_required: true,
+    retry_forbidden: true,
+  };
+  await writeExclusive(
+    created.sessionDirectory,
+    "capture/05-pre-create-guard-request.json",
+    requestManifestBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "capture/05-pre-create-guard-request.json",
+    requestManifestBytes,
+  );
+  const reservationBytes = Buffer.from(canonicalWalmartItemReportJson(reservation), "utf8");
+  await writeExclusive(
+    created.sessionDirectory,
+    "checkpoints/05-pre-create-guard-reserved.json",
+    reservationBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "checkpoints/05-pre-create-guard-reserved.json",
+    reservationBytes,
+  );
+
+  let rawResponse: WalmartItemReportAtomicTransportResponse;
+  try {
+    rawResponse = await sendOneAbsenceGuardGet(transport, correlationId);
+  } catch {
+    return terminalManualReview(
+      created.sessionDirectory,
+      "PRE_CREATE_GUARD_NETWORK_OUTCOME_AMBIGUOUS",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      { create_post_calls: 0 },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+
+  const rawBytes = Buffer.from(rawResponse.body);
+  await writeExclusive(
+    created.sessionDirectory,
+    "capture/06-pre-create-guard-response.bin",
+    rawBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "capture/06-pre-create-guard-response.bin",
+    rawBytes,
+  );
+  let captured: { body: Uint8Array; http: HttpResponseCaptureMetadata };
+  let guard: ReturnType<typeof exactGuardAbsence>;
+  try {
+    captured = validateResponse(rawResponse, correlationSha256);
+    guard = exactGuardAbsence(captured.body, captured.http);
+  } catch {
+    return terminalManualReview(
+      created.sessionDirectory,
+      "PRE_CREATE_GUARD_RESPONSE_INVALID",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      {
+        create_post_calls: 0,
+        response_body_sha256: sha256(rawBytes),
+      },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+
+  const httpBytes = Buffer.from(canonicalWalmartItemReportJson(captured.http), "utf8");
+  await writeExclusive(
+    created.sessionDirectory,
+    "capture/07-pre-create-guard-response-http.json",
+    httpBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "capture/07-pre-create-guard-response-http.json",
+    httpBytes,
+  );
+  const exchangeSeal = {
+    policy_id: WALMART_ITEM_REPORT_TRUSTED_EXCHANGE_POLICY_ID,
+    sha256: walmartItemReportTrustedExchangeSha256({
+      request_manifest_bytes: requestManifestBytes,
+      request_correlation_id_sha256: correlationSha256,
+      response_payload_bytes: captured.body,
+      http: captured.http,
+    }),
+  };
+  const sealBytes = Buffer.from(canonicalWalmartItemReportJson(exchangeSeal), "utf8");
+  await writeExclusive(
+    created.sessionDirectory,
+    "trusted/08-pre-create-guard-exchange-seal.json",
+    sealBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "trusted/08-pre-create-guard-exchange-seal.json",
+    sealBytes,
+  );
+  const completed = {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA,
+    phase: "pre_create_absence_guard",
+    state: guard.absence ? "ABSENCE_CONFIRMED" : "CREATE_FORBIDDEN",
+    observed_at: nowDate(dependencies.now).toISOString(),
+    authorization_sha256: prepared.preflight.authorization_sha256,
+    request_manifest_sha256: sha256(requestManifestBytes),
+    response_body_sha256: sha256(captured.body),
+    response_http_sha256: sha256(httpBytes),
+    exchange_seal_sha256: sha256(sealBytes),
+    result: guard,
+    create_post_calls: 0,
+    retry_forbidden: true,
+  };
+  const completedBytes = Buffer.from(canonicalWalmartItemReportJson(completed), "utf8");
+  await writeExclusive(
+    created.sessionDirectory,
+    "checkpoints/09-pre-create-guard-complete.json",
+    completedBytes,
+    dependencies,
+  );
+  created.expectedArtifacts.set(
+    "checkpoints/09-pre-create-guard-complete.json",
+    completedBytes,
+  );
+
+  const counts = transport.get_http_call_counts();
+  if (!validCounts(counts) || counts.oauth_token_calls !== 1
+    || counts.walmart_api_calls !== 1 || counts.presigned_file_calls !== 0
+    || counts.total_http_calls !== 2) {
+    return terminalManualReview(
+      created.sessionDirectory,
+      "PRE_CREATE_GUARD_HTTP_ACCOUNTING_VIOLATION",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      { create_post_calls: 0 },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+  if (!guard.absence) {
+    return terminalManualReview(
+      created.sessionDirectory,
+      "PRE_CREATE_GUARD_NOT_ABSENT",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      {
+        create_post_calls: 0,
+        total_count: guard.total_count,
+        request_count: guard.request_count,
+        next_cursor_present: guard.next_cursor_present,
+      },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+}
+
+async function completeReportWithSameOauthTransport(
+  prepared: PreparedExecution,
+  transport: WalmartItemReportReissueExecutorV2Transport,
+  dependencies: WalmartItemReportReissueExecutorV2Dependencies,
+): Promise<Pick<
+  WalmartItemReportReissueExecutorV2Result,
+  | "status"
+  | "continuation_error_code"
+  | "sanitized_source_path"
+  | "sanitized_source_sha256"
+  | "sanitized_catalog_source_path"
+  | "sanitized_catalog_source_sha256"
+  | "catalog_source_id"
+  | "catalog_source_body_sha256"
+>> {
+  if (dependencies.complete_report !== true) return { status: "REQUESTED" };
+  const phaseInput = (phase: "poll" | "download" | "compile") => ({
+    execute: true as const,
+    phase,
+    store_index: prepared.preflight.account_scope.store_index,
+    session_dir: prepared.preflight.replacement_session_directory,
+    allowed_capture_root: prepared.capture_root,
+  });
+  const phaseDependencies = {
+    transport,
+    account_scope: {
+      channel: "WALMART_US" as const,
+      store_index: prepared.preflight.account_scope.store_index,
+      seller_account_fingerprint_sha256:
+        prepared.preflight.account_scope.seller_account_fingerprint_sha256,
+    },
+    random_uuid: dependencies.random_uuid ?? randomUUID,
+    now: dependencies.now,
+    request_timeout_ms: WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_MAX_TIMEOUT_MS,
+  };
+  const sleep = dependencies.sleep
+    ?? ((milliseconds: number) => new Promise<void>((resolve) => {
+      setTimeout(resolve, milliseconds);
+    }));
+  try {
+    let ready = false;
+    for (let attempt = 1; attempt <= 60; attempt += 1) {
+      const before = transport.get_http_call_counts();
+      if (!validCounts(before) || before.oauth_token_calls !== 1
+        || before.walmart_api_calls !== attempt + 1
+        || before.presigned_file_calls !== 0
+        || before.total_http_calls !== attempt + 2) {
+        fail("CONTINUATION_HTTP_ACCOUNTING_VIOLATION", "poll accounting drifted");
+      }
+      const result = await runWalmartItemReportCapturePhase(
+        phaseInput("poll"),
+        phaseDependencies,
+      );
+      if (result.mode !== "EXECUTED") {
+        fail("CONTINUATION_STATE_INVALID", "poll did not execute");
+      }
+      if (result.state === "READY") {
+        ready = true;
+        break;
+      }
+      if (attempt < 60) await sleep(10_000);
+    }
+    if (!ready) {
+      return {
+        status: "REQUESTED_REPORT_INCOMPLETE",
+        continuation_error_code: "POLL_OBSERVATION_BUDGET_EXHAUSTED",
+      };
+    }
+    const downloaded = await runWalmartItemReportCapturePhase(
+      phaseInput("download"),
+      phaseDependencies,
+    );
+    if (downloaded.mode !== "EXECUTED" || downloaded.state !== "DOWNLOADED") {
+      fail("CONTINUATION_STATE_INVALID", "download did not complete");
+    }
+    const compiled = await runWalmartItemReportCapturePhase(
+      phaseInput("compile"),
+      phaseDependencies,
+    );
+    if (compiled.mode !== "EXECUTED" || compiled.state !== "COMPILED"
+      || typeof compiled.sanitized_source_path !== "string"
+      || typeof compiled.sanitized_source_sha256 !== "string"
+      || typeof compiled.sanitized_catalog_source_path !== "string"
+      || typeof compiled.sanitized_catalog_source_sha256 !== "string"
+      || typeof compiled.catalog_source_id !== "string"
+      || typeof compiled.catalog_source_body_sha256 !== "string") {
+      fail("CONTINUATION_STATE_INVALID", "compile did not produce exact source bindings");
+    }
+    const finalCounts = transport.get_http_call_counts();
+    if (!validCounts(finalCounts) || finalCounts.oauth_token_calls !== 1
+      || finalCounts.walmart_api_calls > 63
+      || finalCounts.presigned_file_calls > 9
+      || finalCounts.total_http_calls > 73) {
+      fail("CONTINUATION_HTTP_ACCOUNTING_VIOLATION", "continuation exceeded owner bounds");
+    }
+    return {
+      status: "COMPILED",
+      sanitized_source_path: compiled.sanitized_source_path,
+      sanitized_source_sha256: compiled.sanitized_source_sha256,
+      sanitized_catalog_source_path: compiled.sanitized_catalog_source_path,
+      sanitized_catalog_source_sha256: compiled.sanitized_catalog_source_sha256,
+      catalog_source_id: compiled.catalog_source_id,
+      catalog_source_body_sha256: compiled.catalog_source_body_sha256,
+    };
+  } catch (error) {
+    return {
+      status: "REQUESTED_REPORT_INCOMPLETE",
+      continuation_error_code: typeof (error as { code?: unknown })?.code === "string"
+        ? String((error as { code: string }).code)
+        : "CONTINUATION_FAILED",
+    };
+  }
+}
+
 export async function executeWalmartItemReportReissueExecutorV2(
   input: WalmartItemReportReissueExecutorV2Input,
   dependencies: WalmartItemReportReissueExecutorV2Dependencies,
@@ -1766,6 +2210,49 @@ export async function executeWalmartItemReportReissueExecutorV2(
     );
   }
 
+  if (!createdSession) {
+    return terminalManualReview(
+      sessionDirectory,
+      "INVALID_STATE_BEFORE_PRE_CREATE_GUARD",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      { create_post_calls: 0 },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+  await executePreCreateAbsenceGuard(
+    prepared,
+    createdSession,
+    transport,
+    consumptionReceipt,
+    dependencies,
+  );
+
+  try {
+    assertFullExecutionHeadroom(prepared.disposition, nowDate(dependencies.now));
+    assertTransportAccountBinding(transport, prepared.preflight.account_scope);
+    const counts = transport.get_http_call_counts();
+    if (!validCounts(counts) || counts.oauth_token_calls !== 1
+      || counts.walmart_api_calls !== 1 || counts.presigned_file_calls !== 0
+      || counts.total_http_calls !== 2) {
+      fail(
+        "PRE_CREATE_GUARD_ACCOUNTING_DRIFT",
+        "transport changed after the exact absence guard",
+      );
+    }
+  } catch {
+    return terminalManualReview(
+      sessionDirectory,
+      "FINAL_PRE_CREATE_GATE_FAILED",
+      nowDate(dependencies.now).toISOString(),
+      prepared.preflight.authorization_sha256,
+      dependencies,
+      { create_post_calls: 0 },
+      ledgerTerminalInput(prepared, consumptionReceipt, "FAILED"),
+    );
+  }
+
   let rawResponse: WalmartItemReportAtomicTransportResponse;
   try {
     rawResponse = await sendOnePost(
@@ -1799,8 +2286,8 @@ export async function executeWalmartItemReportReissueExecutorV2(
       ledgerTerminalInput(prepared, consumptionReceipt, "AMBIGUOUS"),
     );
   }
-  if (!validCounts(calls) || calls.oauth_token_calls !== 1 || calls.walmart_api_calls !== 1
-    || calls.presigned_file_calls !== 0 || calls.total_http_calls !== 2) {
+  if (!validCounts(calls) || calls.oauth_token_calls !== 1 || calls.walmart_api_calls !== 2
+    || calls.presigned_file_calls !== 0 || calls.total_http_calls !== 3) {
     return terminalManualReview(
       sessionDirectory,
       "HTTP_CALL_ACCOUNTING_VIOLATION",
@@ -2039,14 +2526,20 @@ export async function executeWalmartItemReportReissueExecutorV2(
       },
     );
   }
+  const continuation = await completeReportWithSameOauthTransport(
+    prepared,
+    transport,
+    dependencies,
+  );
+  const finalCalls = transport.get_http_call_counts();
   return {
-    status: "REQUESTED",
+    ...continuation,
     authorization_sha256: prepared.preflight.authorization_sha256,
     replacement_session_directory: sessionDirectory,
     request_id: requestId,
     request_id_sha256: requestIdSha256,
     http_status: http.status,
-    http_calls: calls,
+    http_calls: finalCalls,
     authorization_consumed_before_oauth: true,
     automatic_retry_allowed: false,
     prior_session_writes: 0,

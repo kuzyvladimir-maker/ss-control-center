@@ -62,6 +62,7 @@ const CERTIFICATION_FILES = Object.freeze([
   Object.freeze(["FREEZER_TEST", "scripts/__tests__/freeze-walmart-item-report-reissue-v2-engine.test.mjs"]),
   Object.freeze(["FROZEN_SEALER", SOURCE_ENTRYPOINT]),
   Object.freeze(["FROZEN_SEALER_TEST", "scripts/__tests__/walmart-item-report-reissue-v2-frozen-sealer.test.mjs"]),
+  Object.freeze(["OWNER_CONTROL_TRUST_ROOT", "src/lib/walmart/owner-control-trust-root.ts"]),
   Object.freeze(["OWNER_DISPOSITION_MODULE", "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts"]),
   Object.freeze(["OWNER_DISPOSITION_TEST", "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs"]),
   Object.freeze(["SOURCE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-v2.ts"]),

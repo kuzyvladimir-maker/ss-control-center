@@ -287,6 +287,9 @@ export async function main(argv = process.argv.slice(2), injected = {}) {
     capture_root: captureRoot,
   }, {
     now: injected.now,
+    random_uuid: injected.random_uuid,
+    sleep: injected.sleep,
+    complete_report: true,
     open_transport: () => {
       const underlying = createWalmartItemReportCliTransport({
         credentials,
