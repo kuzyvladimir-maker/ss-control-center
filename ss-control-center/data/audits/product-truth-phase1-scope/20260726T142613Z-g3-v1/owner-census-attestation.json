@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "phase1-connected-store-owner-attestation/v1",
+  "authority": "OWNER",
+  "attestationId": "owner-phase1-connected-store-census-20260726T142613Z-g3-v1",
+  "attestedBy": "Vladimir",
+  "attestedAt": "2026-07-26T14:26:13.000Z",
+  "captureSha256": "31bfa842f07c8c3ef7f128e62756a3e0933276f2eb97ae3d54a292b263b5452d",
+  "statement": "ALL_SUPPORTED_AND_CONNECTED_AMAZON_WALMART_STORE_SCOPES_ARE_ENUMERATED"
+}
