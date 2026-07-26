@@ -218,8 +218,8 @@ track и больше не обозначается blocker текущего Wal
 ### ✅ Фаза 4C — Актуальная Walmart Knowledge Base и executable policy gates
 
 - [x] Сверить runtime policy snapshot с официальными Walmart Marketplace Learn и
-  Developer Portal страницами на 2026-07-23; pinned snapshot =
-  `walmart-us-prepublication/2026-07-23.4`.
+  Developer Portal страницами на 2026-07-26; pinned snapshot =
+  `walmart-us-prepublication/2026-07-26.1`.
 - [x] Расширить structured review с 9 источников/8 доменов до 14 источников/11
   доменов: отдельно добавлены account publish eligibility, image policy,
   shipping/fulfillment и pricing competitiveness.
@@ -395,6 +395,17 @@ track и больше не обозначается blocker текущего Wal
 - [x] Повторно проверить 2026-07-25 все шесть preview image URL: `6/6` вернули
   `HTTP 200 image/jpeg`. Это доказывает работоспособность галереи, но не заменяет
   publication-rights и count-accurate final-image gate.
+- [x] Owner review 2026-07-26 вернул version `3` на доработку: отдельные grid
+  columns устранили белое перекрытие, но упаковки стали неестественно маленькими и
+  слишком далеко друг от друга. Зафиксирован новый золотой закон Image Truth:
+  exact physical variant и current package artwork совпадают минимум на `99%`;
+  generative redraw/reconstruction упаковки запрещены; multipack показывает ровно
+  `N` полных exact-source единиц; права на публикацию остаются независимым gate.
+  Walmart MAIN не содержит добавленный `PACK OF N` badge, а product group целится
+  в `95%` длинной стороны квадратной рамки без distortion/overlap/clipping.
+- [ ] Выпустить gallery version `4`: deterministic exact-pixel composition,
+  unit-canvas clipping вместо overlap, минимальный визуальный gap, увеличенный
+  product frame и regression для no overlay/exact count.
 - [ ] Владелец визуально принимает либо возвращает на доработку pack-of-2/pack-of-3.
 - [ ] После принятия preview повторить `doctor→plan` против fresh production target;
   максимум один Oxylabs query и один Unwrangle detail требуют отдельного понятного
