@@ -466,39 +466,51 @@ test("offline preflight verifies every binding and performs zero writes/network"
   }
 });
 
-test("delegated pilot authorization is rejected before any effect", async () => {
+test("standing delegated read-only authorization passes preflight with zero effects", async () => {
   const item = await fixture({ delegated: true });
   try {
-    await assert.rejects(
-      preflightWalmartItemReportReissueExecutorV2(item.input, { now: NOW }),
-      (error) => error?.code === "INVALID_DISPOSITION",
+    const preflight = await preflightWalmartItemReportReissueExecutorV2(
+      item.input,
+      { now: NOW },
     );
+    assert.equal(preflight.status, "READY_FOR_IRREVERSIBLE_SINGLE_EXECUTION");
+    assert.equal(preflight.authorization_sha256, item.disposition.authorization_sha256);
+    assert.equal(preflight.external_effects.oauth_token_calls, 0);
+    assert.equal(preflight.external_effects.walmart_api_calls, 0);
+    assert.equal(preflight.external_effects.filesystem_writes, 0);
     assert.equal(item.disposition.authorization_mode, "OWNER_DELEGATED_AUTOMATION");
   } finally {
     await cleanup(item);
   }
 });
 
-test("delegated pilot authorization cannot burn or open transport", async () => {
+test("standing delegated read-only authorization remains one-shot and bounded", async () => {
   const item = await fixture({ delegated: true });
   try {
     let opened = 0;
-    await assert.rejects(
-      executeWalmartItemReportReissueExecutorV2(item.input, {
-        now: () => NOW,
-        open_transport: () => {
-          opened += 1;
-          return successfulTransport();
-        },
-      }),
-      (error) => error?.code === "INVALID_DISPOSITION",
-    );
-    assert.equal(opened, 0);
+    const transport = successfulTransport();
+    const result = await executeWalmartItemReportReissueExecutorV2(item.input, {
+      now: () => NOW,
+      open_transport: () => {
+        opened += 1;
+        return transport;
+      },
+    });
+    assert.equal(result.status, "REQUESTED");
+    assert.equal(opened, 1);
+    assert.deepEqual(result.http_calls, {
+      oauth_token_calls: 1,
+      walmart_api_calls: 2,
+      presigned_file_calls: 0,
+      total_http_calls: 3,
+    });
+    assert.equal(transport.requests.length, 2);
     const ledger = await openWalmartItemReportReissueConsumptionLedgerV2({
       state_directory: item.ledgerDirectory,
       expected_binding: item.ledgerBinding,
     });
-    assert.equal(ledger.authorizations.length, 0);
+    assert.equal(ledger.authorizations.length, 1);
+    assert.equal(ledger.authorizations[0].state, "SUCCEEDED");
   } finally {
     await cleanup(item);
   }

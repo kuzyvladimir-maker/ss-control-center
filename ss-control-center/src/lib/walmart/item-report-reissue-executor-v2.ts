@@ -29,9 +29,11 @@ import {
   type WalmartItemReportReissueAuthorizationRequestingReceiptV2,
 } from "./item-report-reissue-consumption-ledger-v2.ts";
 import {
+  WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA,
   WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
   assertWalmartItemReportReissueAuthorizationCurrent,
   buildWalmartItemReportReissueReplacementPlanV2,
+  verifyWalmartItemReportReissueDelegatedAuthorizationV1,
   verifyWalmartItemReportReissueOwnerDispositionV2,
   type WalmartItemReportReissueConsumptionLedgerBindingV2,
   type WalmartItemReportReissueExecutionAuthorization,
@@ -57,7 +59,7 @@ import {
 } from "./item-report-capture-session.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_POLICY =
-  "walmart-item-report-reissue-executor/3.0.0" as const;
+  "walmart-item-report-reissue-executor/3.1.0" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_PREFLIGHT_SCHEMA =
   "walmart-item-report-reissue-executor-preflight/v3" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA =
@@ -896,6 +898,9 @@ function verifyExecutionAuthorization(
   raw: JsonRecord,
   options: Parameters<typeof verifyWalmartItemReportReissueOwnerDispositionV2>[1],
 ): WalmartItemReportReissueExecutionAuthorization {
+  if (raw.schema_version === WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA) {
+    return verifyWalmartItemReportReissueDelegatedAuthorizationV1(raw, options);
+  }
   return verifyWalmartItemReportReissueOwnerDispositionV2(raw, options);
 }
 
