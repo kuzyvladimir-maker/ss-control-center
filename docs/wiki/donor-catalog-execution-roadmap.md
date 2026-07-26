@@ -269,12 +269,13 @@ Exit gate:
   external checksum-bound executable tree. Clean tree прошёл полный Product Truth suite, targeted stress,
   source-release tests, help/Prisma smokes и checksum verification. Gate 1 packet
   перепривязан к этому executable tree и заново прошёл SHA256SUMS verification;
-- 🟡 единственный replacement report-create принят Walmart: request
-  `019f9f34…319a`, HTTP `200`; повторный create запрещён. Первые 20 poll вернули
-  `RECEIVED`, затем Walmart вернул `429 REQUEST_THRESHOLD_VIOLATED`. Standing
-  read-only owner direction отменяет per-report confirmation для утверждённого
-  scope; continuation читает только существующий request. Permanent cadence fix
-  `bdc7cb46` меняет poll на `30s × 40`, suite `227/227`;
+- 🟢 единственный replacement report-create принят Walmart: request
+  `019f9f34…319a`, HTTP `200`, затем достиг `READY` continuation-only GET-ами;
+  повторный create не выполнялся. Final cadence `59f25201` = `180s × 9`.
+  Raw ZIP SHA `fa858d5c…c56d`, decoded CSV SHA `07de74f3…fb1`; complete catalog
+  `5236` rows, из них `3891 PUBLISHED`, `734 SYSTEM_PROBLEM`,
+  `611 UNPUBLISHED`, malformed/duplicate/conflict = `0`. Production parser
+  `cfb41078` прошёл clean Walmart report suite `229/229`;
 - 🟡 будущий v1 at-most-once будет технически доказан только внутри одной intact local
   session/custody root и не имеет distributed consumption ledger. Quarantined session
   нельзя переиспользовать как этот root;
@@ -282,23 +283,24 @@ Exit gate:
   migrations применены и tracked в production Turso, обе migration ledgers ready,
   independent post-commit plan имеет `blockers=[]`; schema after SHA-256 =
   `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`;
-- 🟡 P0 продолжается на data/cutover gates: schema готова, но authoritative Phase 1
-  manifest v3, business-data backfill, runtime scope readiness и отдельный
+- 🟡 P0 продолжается на data/cutover gates: schema и authoritative Phase 1 manifest
+  v3 готовы, но business-data backfill, runtime scope readiness и отдельный
   owner-approved provider canary ещё не выполнены;
 - 🟡 production schema transaction = `1`; business-data backfill, paid provider calls,
   marketplace mutations и consumer activation не выполнялись. Consumer cutover на
   единый read-contract равен **0 из 4**; legacy views/tables не являются
   доказательством production readiness;
-- 🟡 три ранее захваченных Amazon
-  `GET_MERCHANT_LISTINGS_ALL_DATA` reports скачаны read-only: store1 = 1563 строк,
-  store3 = 514, store5 = 0; report-create calls = 0, exact bytes связаны SHA-256.
+- 🟢 fresh Amazon `GET_MERCHANT_LISTINGS_ALL_DATA` reports повторно захвачены
+  GET-only для текущего snapshot: store1 = `1571` строк, SHA
+  `b3839047…d5e14`; store3 = `502`, SHA `51e331ed…5842`; report-create calls = `0`.
   Owner decision 2026-07-26 закрыл scope: store1/store3 Amazon и store1 Walmart
   остаются `IN_SCOPE`; store2/store4/store5 Amazon исключены как currently blocked
   до successor census. Authoritative census sealed: 6 required scopes, 0 blockers,
-  content SHA `ca0380c4…cdeda3`; два технически `UNRESOLVED` scope сохранены в
-  denominator и закрываются только явным owner exclusion. Authoritative Walmart
-  `ITEM_CATALOG` v6 отсутствует: bounded GET-only probe видел только v2. Final
-  report-bound disposition v3, Phase 1 manifest v3 и последующие gates ждут G4;
+  successor content SHA `0230d7bf…ab6dd`; два технически `UNRESOLVED` scope
+  сохранены в denominator и закрыты только явным owner exclusion. Final
+  report-bound disposition v3 и authoritative manifest v3 готовы: `5935` live
+  listings, `3` exact reports, `0` blockers, canonical SHA
+  `94359db1…9062c`;
 - ⚪ paid/provider canary, платный gap enrichment и любой иной платный Product Truth
   run не запускались.
 
@@ -354,7 +356,7 @@ Success metric: 100% live listings находятся в authoritative manifest 
 пропавшая или молча слитая строка.
 
 Canonical artifact этой стадии — `phase1-authoritative-scope-manifest/v3`. Он обязан
-содержать policy `phase1-scope-builder-policy/1.1.0`, embedded canonical
+содержать policy `phase1-scope-builder-policy/1.3.0`, embedded canonical
 `phase1-connected-store-census/v1`, SHA-256 census content/capture, canonical owner
 disposition input, derived required scopes и exact raw bytes каждого Amazon/Walmart
 report. Ручной competing denominator запрещён. Manifest нельзя считать authoritative
@@ -607,16 +609,14 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    `1.2.0`, требующий version/provenance migration и consumer cutover. Claude запускает
    только одну sealed wrapper-команду из [[product-truth-operator-runbook]]; paid queue
    не разрешена.
-5. 🟡 **Authoritative Phase 1 scope** — census/manifest builders и реальные sanitized
-   production configuration snapshots готовы. Read-only live verification доказала
-   Amazon US participation store1/store3, отсутствие credentials store4, отсутствие
-   US participation store5 и HTTP 403 Sellers API для store2. Остаются owner
-   disposition для store2, owner attestation, Walmart/Amazon reports и scope
-   dispositions, затем manifest v3 замораживается на
-   `(channel, positive storeIndex, raw SKU)`.
+5. 🟢 **Authoritative Phase 1 scope** — fresh Amazon store1/store3 и complete
+   Walmart ITEM v6 связаны с owner disposition и successor census. Manifest v3
+   заморожен на `(channel, positive storeIndex, raw SKU)`: `5935` live listings,
+   `0` blockers, SHA `94359db1…9062c`.
 6. 🟡 **Production schema/backfill/cutover** — Turso schema activation завершена и
-   сертифицирована 8/8. Authoritative manifest v3, business-data backfill/readiness и
-   перевод всех четырёх consumers не выполнены; consumer cutover = 0.
+   сертифицирована 8/8; authoritative manifest v3 готов. Business-data
+   backfill/readiness и перевод всех четырёх consumers не выполнены; consumer
+   cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам, cheap-first plan, explicit owner gate.
 8. ⚪ **Canary** — 5–10 SKU с жестким лимитом и ручной проверкой.
 9. ⚪ **Controlled waves** — только после успешного canary и отдельного approval.

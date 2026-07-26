@@ -72,7 +72,7 @@ Claude Code запрещено:
    блокирует authoritative scope.
 2. Authoritative `phase1-authoritative-scope-manifest/v3` на grain
    `(channel, positive storeIndex, raw SKU)` с нулём blockers. Его policy должна
-   фиксировать `builderPolicyVersion=phase1-scope-builder-policy/1.1.0`, embedded census
+   фиксировать `builderPolicyVersion=phase1-scope-builder-policy/1.3.0`, embedded census
    и его content/capture SHA, disposition schema, `dispositionInputSha256`,
    `requiredScopesSha256` и `contentSha256` exact bytes каждого report. Required scopes
    выводятся только из census; ручной competing denominator запрещён. Локальный hash не
@@ -95,19 +95,17 @@ brand/title/size bytes и сразу создаёт request. Ручной identi
 `--canonical-identity` и техническая аттестация владельца запрещены. Внешнее решение
 владельца требуется только для точного metered plan, бюджета и provider permit.
 
-Для replacement Walmart ITEM v6 report-create действует отдельный предшествующий gate,
-но текущая live session этому gate не соответствует. Неизвестный параллельный процесс
-добавил read-only GET и конфликтующие поздние `CAPTURED`/`ABSENCE_ONLY` artifacts поверх
-terminal `PAGINATION_INCOMPLETE`; session quarantined read-only, а этот final запрещено
-использовать для permit или source compile. До отдельного owner disposition и свежего
-eligible evidence chain исполнимой replacement-команды нет.
+Историческая Walmart ITEM v6 reconciliation session остаётся quarantined read-only:
+неизвестный параллельный процесс добавил read-only GET и конфликтующие поздние
+`CAPTURED`/`ABSENCE_ONLY` artifacts поверх terminal `PAGINATION_INCOMPLETE`. Её final,
+permit bytes и custody root запрещено использовать для source compile или replay.
 
-Если новый gate когда-либо станет допустим, владелец/Codex должны передать готовые
-canonical permit bytes вне repo/capture root, independently communicated hashes и exact
-confirmation. Claude Code не создаёт и не редактирует permit, не заменяет его текстовым
-согласием и не использует legacy cron. V1 не имеет distributed consumption ledger:
-один permit/host/session нельзя копировать, перемещать, удалять или replay. Эти будущие
-правила не разрешают повторно использовать quarantined session.
+Отдельный successor gate уже потреблён владельцем/Codex: один shared OAuth transport
+создал request `019f9f34-9bad-7390-b236-341290db319a`, затем только continuation GET-ами
+довёл его до `READY`, скачал и скомпилировал exact ITEM v6 bytes. Второй create не
+выполнялся. Этот завершённый G4 не является повторно используемым разрешением на
+report-create. Любая будущая replacement-сессия снова требует нового exact gate и
+собственной immutable custody chain.
 
 Оператор не дополняет эти входы «по здравому смыслу». Отсутствующий или противоречивый
 вход — fail closed.
@@ -782,27 +780,28 @@ Owner approval разрешает только exact metered plan, бюджет 
 
 ## 10. Текущий внешний статус на 2026-07-26
 
-Этот runbook описывает проверенный локальный engine contract, а не уже выполненный
-production run. Connected-store census/manifest/migration/backfill/readiness/matcher
-replay и one-shot Walmart ITEM reissue инструменты реализованы; старый ITEM create path
-retired. Единственная live reconciliation session quarantined после provenance
-incident, а её поздний конфликтующий `ABSENCE_ONLY` не авторитетен. Поэтому replacement
-POST не может использовать старую session/permit provenance. Владелец 2026-07-26
-разрешил ровно одну новую zero-retry read-only попытку. Двух-OAuth противоречие
-устранено successor engine: один shared transport выполняет exact absence GET,
-conditional create, poll/download/compile. Commit
-`c8cb50fe4a56480f90b207531453206f83ab1826` прошёл no-hardlink clean checkout
-`227/227`; standing read-only successor `fbe4dd38…a594` также прошёл `227/227` и
-не требует per-report confirmation для утверждённого scope. Единственный create
-принят: request `019f9f34-9bad-7390-b236-341290db319a`, HTTP `200`. После 20
-`RECEIVED` Walmart вернул `429`; повторный create запрещён, разрешён только
-continuation существующего request. Permanent cadence fix `bdc7cb46` переводит poll
-на `30s × 40`. Owner facts для store scope подтверждены, но authoritative Walmart
-ITEM v6 report ещё не скачан.
+Этот runbook описывает проверенный engine contract и точную текущую execution-точку,
+а не завершённый production cutover. Историческая reconciliation session остаётся
+quarantined после provenance incident; её поздний конфликтующий `ABSENCE_ONLY`
+не авторитетен и не переиспользовался. Successor G4 завершён: единственный create
+request `019f9f34-9bad-7390-b236-341290db319a` достиг `READY` continuation-only
+GET-ами, второй create не выполнялся. Final cadence commit `59f25201` ограничивает
+polling до `180s × 9`; production ITEM v6 parser commit `cfb41078` прошёл clean
+Walmart report suite `229/229`. Raw ZIP SHA
+`fa858d5ca65616627acb4578097861c6abcd42fad8332d2f0378ff59baa9c56d`,
+decoded CSV SHA `07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1`;
+complete catalog содержит `5236` rows (`3891 PUBLISHED`, `734 SYSTEM_PROBLEM`,
+`611 UNPUBLISHED`) и ноль malformed/duplicate/conflict.
+Fresh Amazon store1/store3 reports захвачены GET-only без report-create. Final
+report-bound disposition и `phase1-authoritative-scope-manifest/v3` policy `1.3.0`
+готовы: `5935` live listings, `6` required scopes, `3` exact reports, `0` blockers;
+canonical manifest SHA
+`94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`.
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.
-Business-data backfill не выполнялся; реальный
+Business-data backfill не выполнялся; следующий разрешённый шаг — только read-only
+`backfill-plan`. Реальный
 386-case corpus v2.2 собран и offline replay выполнен, но 86 cases остаются
 `UNRESOLVED_EVIDENCE`; Unit Economics SHADOW runtime локально готов, но owner activation
 не выдан и consumer cutover равен 0/4; paid provider canary или иной платный Product

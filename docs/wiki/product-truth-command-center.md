@@ -268,20 +268,19 @@ entrypoint.
   исключены как blocked до successor census. Authoritative census содержит все 6
   required scopes, включая два честных `UNRESOLVED`, и 0 blockers; owner scope
   receipt sealed в evidence commit `e129060e`.
-- [ ] Получить authoritative Walmart ITEM v6 report через новый sealed G4 workflow,
+- [x] Получить authoritative Walmart ITEM v6 report через sealed G4 workflow,
   выпустить exact report-bound `phase1-scope-disposition/v3` и заморозить manifest v3.
-  One-token successor engine уже собран в commit
-  `c8cb50fe4a56480f90b207531453206f83ab1826`: один OAuth transport выполняет
-  exact historical-window absence GET и только при `0 rows + no cursor` допускает
-  единственный create POST, затем poll/download/compile в том же процессе. Любой
-  non-zero/ambiguous/invalid GET запрещает POST и сжигает authorization. Clean
-  checkout прошёл TypeScript, targeted ESLint и `227/227`; frozen bundle SHA
-  `09e108c1…2ffca`, engine manifest SHA `5ce2ec88…ea94f`. Live network calls пока `0`;
-  Standing read-only contract `fbe4dd38…a594` отменил per-report confirmation.
-  Единственный create принят Walmart: request `019f9f34…319a`, HTTP `200`;
-  20 poll вернули `RECEIVED`, затем Walmart ограничил polling через `429`.
-  Повторный create запрещён; продолжается только чтение существующего request.
-  Permanent cadence fix `bdc7cb46` меняет polling на `30s × 40`, suite `227/227`.
+  Единственный create request `019f9f34…319a` достиг `READY` continuation-only
+  GET-ами; второй create не выполнялся. Raw ZIP SHA `fa858d5c…c56d`, decoded CSV
+  SHA `07de74f3…fb1`, полный каталог `5236` rows: `3891 PUBLISHED`,
+  `734 SYSTEM_PROBLEM`, `611 UNPUBLISHED`, malformed/duplicate/conflict = `0`.
+  Final cadence `59f25201` ограничен `180s × 9`. Production-schema parser
+  `cfb41078` и manifest policy `9090580e` прошли clean suites `229/229` и
+  `453/453`. Fresh GET-only Amazon captures: store1 `1571` rows, store3 `502`
+  rows, report-create calls `0`. Authoritative
+  `phase1-authoritative-scope-manifest/v3` policy `1.3.0` содержит `5935` live
+  listings, `6` required scopes, `3` exact reports, `0` blockers; canonical
+  SHA-256 `94359db1…9062c`.
 - [x] Подготовить exact Turso migration plan и остановиться на owner gate; reserved
   `approvalId` внутри plan не является решением владельца.
 - [x] Снять свежий self-contained backup exact target перед owner gate: portable SHA
@@ -379,22 +378,23 @@ smokes и shadow adapters выполняются до этих gates.
   `7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`;
 - существующий Catalog UI остаётся legacy: direct mutable reads, устаревшие cron
   assumptions и видимая Enrich form при tombstoned POST;
-- exact восемь Turso schema migrations применены и сертифицированы; business-data
-  backfill не выполнялся, authoritative Phase 1 manifest отсутствует;
+- exact восемь Turso schema migrations применены и сертифицированы; authoritative
+  Phase 1 manifest v3 готов (`5935` live listings, `0` blockers), business-data
+  backfill не выполнялся;
   consumer cutover `0/4`; paid Product Truth run не выполнялся.
 
 Следовательно, Phase 1 начинается только после точной release-materialization карты;
 UI не соединяется напрямую с legacy endpoints или CLI.
 
 Текущая execution-точка 2026-07-26: G1 импортирован и сертифицирован; G2 Stage A
-реализован и сертифицирован с runtime hardcoded `OFF`; G3 owner scope/census sealed.
-В G4 устранён старый двух-OAuth конфликт, а owner direction отменил лишние
-пооперационные подтверждения для обычного read-only сбора. Единственный conditional
-create уже принят Walmart; request `019f9f34…319a` сохранён immutable. После 20
-`RECEIVED` poll Walmart вернул rate-limit `429`, поэтому повторный create запрещён и
-продолжается только безопасный continuation существующего request с более редким
-cadence. Quarantined session и старые permit bytes переиспользовать запрещено. Final
-report-bound disposition/manifest появятся только после exact ITEM v6 bytes.
+реализован и сертифицирован с runtime hardcoded `OFF`; G3 owner scope/census sealed;
+G4 и G4.5 закрыты exact Walmart ITEM v6 и authoritative manifest v3. Единственный
+conditional create request `019f9f34…319a` достиг `READY`; повторный create не
+выполнялся. Fresh Amazon store1/store3 и Walmart store1 reports связаны с manifest
+SHA `94359db1…9062c`; denominator = `5935`, blockers = `0`. Quarantined session и
+старые permit bytes переиспользовать запрещено. Следующая точка — только read-only
+G5 `backfill-plan`; apply, consumer activation, paid run и marketplace actions не
+разрешены.
 
 ---
 

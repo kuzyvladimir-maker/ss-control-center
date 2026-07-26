@@ -27,9 +27,9 @@
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
-| G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census и owner scope receipt sealed; финальный report-bound disposition ждёт G4 |
-| G4. Walmart ITEM v6 read-only report | `REQUEST_CREATED_CONTINUATION_PENDING` | Единственный create принят; существующий request ждёт continuation после Walmart 429 |
-| G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
+| G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
+| G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
+| G5. Backfill apply | `READY_FOR_READ_ONLY_PLAN` | Manifest v3 готов; apply всё ещё требует отдельный exact owner gate |
 | G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
@@ -277,16 +277,32 @@ Quarantined session и старые permit/authorization bytes повторно 
 - первые 20 poll вернули `RECEIVED`; poll 21 и отдельный continuation poll 22
   получили Walmart `429 REQUEST_THRESHOLD_VIOLATED`. Повторный create запрещён;
   continuation продолжает только чтение существующего request;
-- permanent cadence fix commit `bdc7cb46`: poll `30s × 40` вместо `10s × 60`,
-  focused `43/43`, полный suite `227/227`.
+- final conservative cadence commit `59f25201`: poll `180s × 9`, focused `43/43`;
+- request достиг `READY` continuation-only GET-ами; raw ZIP SHA-256
+  `fa858d5ca65616627acb4578097861c6abcd42fad8332d2f0378ff59baa9c56d`;
+- production ITEM v6 parser commit `cfb41078`: фактические spaced headers,
+  self-describing UPC/GTIN и legacy Item ID/WPID разделены; clean Walmart report
+  suite `229/229`;
+- complete Walmart catalog: `5236` rows, из них `3891 PUBLISHED`,
+  `734 SYSTEM_PROBLEM`, `611 UNPUBLISHED`, malformed/duplicate/conflict = `0`;
+- decoded CSV SHA-256
+  `07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1`;
+  sanitized catalog source SHA-256
+  `70684781742ce31b0a3559eb469ee1030874dcbfd70a6ee4656e7c273144f9b2`;
+- fresh GET-only Amazon reports получены без report-create: store1 `1571` rows,
+  SHA `b3839047…d5e14`; store3 `502` rows, SHA `51e331ed…5842`;
+- Phase 1 manifest policy commit `9090580e` (`phase1-scope-builder-policy/1.3.0`)
+  прошёл clean Product Truth `453/453`;
+- authoritative manifest v3: `5935` live listings, `6` required scopes,
+  `3` exact reports, `0` blockers; canonical JSON SHA-256
+  `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`.
 
-## Что произойдёт после G3 + G4
+## Что происходит после закрытия G3 + G4
 
-1. Внешние owner facts будут оформлены canonical census/disposition artifacts.
-2. Exact Amazon/Walmart report bytes сформируют authoritative Phase 1 manifest v3.
-3. Codex/оператор выполнит только read-only `backfill-plan`.
-4. Владелец увидит denominator, writes preview, blockers и no-paid claims.
-5. Только после этого появится отдельный G5 на exact backfill apply.
+1. Canonical census/disposition и authoritative Phase 1 manifest v3 уже готовы.
+2. Codex/оператор выполняет только read-only `backfill-plan`.
+3. Владелец увидит denominator, writes preview, blockers и no-paid claims.
+4. Только после этого может появиться отдельный G5 на exact backfill apply.
 
 ## Удобный комбинированный ответ
 

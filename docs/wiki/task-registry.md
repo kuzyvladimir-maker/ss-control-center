@@ -64,17 +64,18 @@
   `Salutem Solutions`,
   store3 `AMZ Commerce` и Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`; Amazon
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются
-  только через successor census/manifest. G4 теперь активен и разрешает одну новую
-  zero-retry read-only ITEM v6 попытку, но старую quarantined session и permit bytes
-  переиспользовать нельзя. Двух-OAuth конфликт устранён one-token successor engine:
-  commit `c8cb50fe…1826`, no-hardlink clean checkout `227/227`, frozen bundle
-  `09e108c1…2ffca`, manifest `5ce2ec88…ea94f`. Standing read-only contract
-  `fbe4dd38…a594` отменил per-report confirmation для утверждённого scope.
-  Единственный create принят Walmart: request `019f9f34…319a`, HTTP `200`; 20 poll
-  вернули `RECEIVED`, затем Walmart ответил `429`. Повторный create запрещён;
-  продолжается только существующий request. Cadence fix `bdc7cb46` — `30s × 40`,
-  suite `227/227`. Final report-bound disposition/manifest ждут exact G4 bytes.
-  G5–G8 не разрешены. Живой checklist и acceptance gates:
+  только через successor census/manifest. G4 закрыт: единственный create request
+  `019f9f34…319a` достиг `READY` continuation-only GET-ами, второй create не
+  выполнялся; старая quarantined session и permit bytes не переиспользовались.
+  Final cadence `59f25201` = `180s × 9`; production parser `cfb41078` прошёл clean
+  Walmart report suite `229/229`. Complete ITEM v6 содержит `5236` rows
+  (`3891 PUBLISHED`, `734 SYSTEM_PROBLEM`, `611 UNPUBLISHED`) при нуле
+  malformed/duplicate/conflict. Fresh Amazon store1/store3 reports захвачены
+  GET-only без report-create. Manifest policy commit `9090580e` прошёл clean
+  Product Truth `453/453`; final report-bound disposition и authoritative manifest
+  v3 готовы: `5935` live listings, `3` exact reports, `0` blockers, canonical SHA
+  `94359db1…9062c`. G5 разрешён только как read-only `backfill-plan`; apply,
+  G6 activation и G7–G8 не разрешены. Живой checklist и acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
 - 🟢 Отдельный roadmap с gates, критериями Phase 1/2 и owner-решениями записан.
@@ -135,14 +136,16 @@
   Sam's/Costco, запрет BJ's, provider ceilings/reserve floors, dedup и hash-linked
   checkpoints. Он не имеет DB/network/provider/execution capabilities; внешний
   registry/runtime и любой spend остаются будущими owner-gated этапами после Phase 1.
-- 🟡 **Phase 1 authoritative scope:** локальный trusted census + immutable builder
-  `phase1-authoritative-scope-manifest/v3` policy 1.1.0 fail-closed связывает все
+- 🟢 **Phase 1 authoritative scope:** trusted census + immutable builder
+  `phase1-authoritative-scope-manifest/v3` policy 1.3.0 fail-closed связывает все
   supported Amazon/Walmart slots, owner attestation, canonical dispositions, derived
   required scopes и exact report bytes SHA-256;
-  relabeled/tampered v2 не проходит importer. Provisional snapshot сохранён только как
-  исторический non-authoritative baseline. Ещё нужны Walmart `ITEM_CATALOG`, Amazon
-  `GET_MERCHANT_LISTINGS_ALL_DATA`, owner dispositions по store scopes и финальный
-  manifest всех live listings. Повтор raw SKU между точными scopes не объединяется и
+  relabeled/tampered v2 не проходит importer. Final successor census содержит 6
+  required scopes и 0 blockers; fresh Amazon store1/store3 и Walmart store1 bytes
+  связаны с exact disposition. Manifest содержит `5935` live listings, `3` exact
+  reports, `0` blockers, canonical SHA `94359db1…9062c`. Provisional snapshot
+  сохранён только как исторический non-authoritative baseline. Повтор raw SKU между
+  точными scopes не объединяется и
   не требует исключения; конфликт exact listingKey/mapping остаётся блокером.
   Приоритет по продажам не сужает denominator.
 - 🟢 **Phase 1 / Gate 1 operator preparation:** готов rejected-template packet
@@ -492,7 +495,7 @@
   второй SKU, волны 15–20 и расписание не разрешены.
 - 🟡 **Production activation:** exact 8 Product Truth migrations применены к Turso и
   независимо сертифицированы; post-commit plan подтверждает 8/8 и обе ledgers.
-  Business-data backfill не выполнен, authoritative Phase 1 manifest v3 отсутствует,
+  Authoritative Phase 1 manifest v3 готов; business-data backfill не выполнен,
   consumer cutover на единый Product Truth read-contract = **0 из 4**. Legacy
   `DonorProduct`/`SkuComponent`/`SkuCost`/views не доказывают readiness.
   Свежий source-readiness audit сохранил sanitized production snapshots. Read-only
@@ -500,14 +503,14 @@
   marketplace; store4 не
   имеет credentials; store5 получает LWA token, но больше не имеет US marketplace
   participation; store2 получает LWA token, но Sellers API возвращает HTTP 403.
-  Уже существующие свежие `GET_MERCHANT_LISTINGS_ALL_DATA` reports для store1,
-  store3 и store5 скачаны read-only без report-create: соответственно 1563, 514 и
-  0 строк; exact bytes запечатаны SHA-256. Поэтому store2/store4 остаются
-  `UNRESOLVED` до owner connectivity disposition, store5 требует явного exclusion
-  как deactivated/no-US-participation, а для Walmart store1 всё ещё нужен свежий
-  owner-authorized ITEM v6. Новый bounded GET-only Walmart probe (1 OAuth + 1 GET,
-  zero retry) полностью покрыл последние 24 часа и увидел только ITEM v2; API-visible
-  v6 в этом окне нет. Отчёты и census нельзя подменять mutable listing mirrors.
+  Fresh `GET_MERCHANT_LISTINGS_ALL_DATA` reports для store1/store3 скачаны GET-only
+  без report-create: `1571` и `502` строк. Owner disposition исключает
+  store2/store4/store5 из текущего snapshot до successor census. Complete Walmart
+  ITEM v6 содержит `5236` rows и даёт `3891 PUBLISHED` live listings. Exact bytes
+  всех трёх reports, successor census и disposition связаны manifest SHA
+  `94359db1…9062c`. Отчёты и census нельзя подменять mutable listing mirrors.
+  Следующий разрешённый шаг — read-only `backfill-plan`; apply требует отдельного
+  owner gate.
   Внешние listing/DB writes = 0.
 - 🟡 **ChannelMAX VC same-model canary / no-spend:** state machine и точные 103-byte
   forward/rollback артефакты готовы; добавлен finite CDP adapter skeleton с exact
