@@ -37,6 +37,9 @@ function fakeClient(input: {
       const args = typeof statement === "string" || !Array.isArray(statement.args)
         ? []
         : [...statement.args];
+      if (sql === "SELECT 1 AS product_truth_schema_probe") {
+        return result([{ product_truth_schema_probe: 1 }]);
+      }
       const tableInfo = sql.match(/^PRAGMA table_info\("([^"]+)"\)$/);
       if (tableInfo) {
         return result((columns[tableInfo[1]] ?? []).map((name) => ({ name })));
