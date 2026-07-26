@@ -55,11 +55,14 @@ const OBSERVED_AT = "2026-07-23T19:30:00.000Z";
 // Trial render outputs, later overrides earlier per slug (same merge stage-1
 // uses via FILES=). Missing files are skipped.
 const PREVIEW_FILES = [
-  "trial-wave1.json", "trial-wavecustom.json", "trial-waverr2.json",
-  "trial-wave2.json", "trial-waverr3.json", "trial-wave3.json", "trial-waverr4.json",
-  "trial-waverr5.json", "trial-waverr6.json", "trial-waverr7.json",
-  "trial-waverr8.json", "trial-waverr9.json", "trial-waverr10.json",
-  "trial-waverr11.json", "trial-waverr12.json",
+  // Original wave files (trial-wave1 … trial-waverr12) were lost to the daily
+  // scratchpad wipe. trial-waverestored9.json reconstructs the 9 published
+  // slugs' rows: comps from a DRY re-plan (recipes unchanged since publish),
+  // prompt/reference_urls/r2_url overlaid from the committed generation
+  // manifests in data/audits/uncrustables-trial-publish-20260723/ — so the
+  // re-minted proofs reproduce the original generation provenance exactly.
+  "trial-waverestored9.json",
+  "trial-waverr49.json", // xl-protein-90 PASS (agent-verified 2026-07-26)
 ];
 const SKU_MAP = "publish-trial-skus.json";
 

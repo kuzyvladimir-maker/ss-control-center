@@ -298,7 +298,11 @@ async function main() {
   const wave = process.env.RUN ?? process.env.WAVE ?? "custom";
   // DRY runs must never write the wave JSON: a file full of null image URLs
   // would poison the later-wins merge in stage-1 and the proofs minter.
+  // DRY_OUT is the explicit exception for wave-row restoration after a
+  // scratchpad wipe: it writes to its OWN filename (never trial-wave*) so the
+  // null-URL rows can be overlaid with committed generation-manifest data.
   if (!DRY) writeFileSync(`/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/trial-wave${wave}.json`, JSON.stringify(out, null, 1));
+  else if (process.env.DRY_OUT) writeFileSync(`/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/${process.env.DRY_OUT}`, JSON.stringify(out, null, 1));
   console.log(`готово: ${out.filter((l: any) => l.main_image_url).length}/${out.length}`);
   await prisma.$disconnect();
 }
