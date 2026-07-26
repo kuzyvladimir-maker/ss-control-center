@@ -1,0 +1,148 @@
+{
+  "schema_version": "walmart-packaging-artwork-review/1.0.0",
+  "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+  "approved_package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+  "reviewed_at": "2026-07-26T16:10:00.000Z",
+  "images": [
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-1-current-orange-red"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_73635a4b-03d1-4941-a786-d15b73bbf82f",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:9d2278f23b2faf8f3be4e933fad778f29e203849b6e372f3477f398c6d7ac448",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "owner-review:target-image-2-old-purple"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_2833a548-2bdf-480f-bf3a-1c47eabe9385",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-3-current-orange-red"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_51d34b86-3fcc-496f-b2c1-9e8e6e030ddf",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-4-current-orange-red"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_92bee758-0712-4f26-ae53-8ffd4c5f4743",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-5-current-orange-red"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_3df06436-9647-4533-bfaa-77d4eaab9293",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "REJECTED_OTHER_PRODUCT",
+      "review_evidence_ref": "owner-review:target-image-6-other-ritz-product-promo"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_97a8da23-6499-40a9-b870-a5da12c010eb",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-7-current-orange-red-left-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_2d456492-54b3-4409-8ae9-9287a2668e1a",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-8-current-orange-red-right-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_aed1e4b7-c752-4f9f-a283-9aa0ba938d41",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-9-current-orange-red-back-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_1dd05e7e-f501-4fb4-87d6-d836425b25c9",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-10-current-orange-red-side-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_a20daa79-ee33-4423-9ee3-dc12932a49d1",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-11-current-orange-red-nutrition-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ea0def60-ab8f-4310-a7fd-74434f67bf34",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-12-current-orange-red-top-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ee2d5a00-314a-4580-b10f-fa824774dee7",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-13-current-orange-red-bottom-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_895b22f8-360d-4014-a501-7dd7096fb0ec",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "REJECTED_OTHER_PRODUCT",
+      "review_evidence_ref": "owner-review:target-image-14-unproven-generic-ritz-gift-promo"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_177a30fb-aa99-4f53-a508-3c5b1575c2e5",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-15-current-orange-red-top-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_d24c335b-ab1e-42b5-8925-18f3369c623e",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-16-current-orange-red-bottom-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_d7846b14-5496-47ad-93a9-f0b60fb1a6aa",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-17-exact-cheese-sandwich-cracker-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_2f47d504-9430-4d85-acf8-e9c212907451",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:9d2278f23b2faf8f3be4e933fad778f29e203849b6e372f3477f398c6d7ac448",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "owner-review:target-image-18-old-purple"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ad778cf4-ae3c-4d6f-99b4-321216dfe50d",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:9d2278f23b2faf8f3be4e933fad778f29e203849b6e372f3477f398c6d7ac448",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "owner-review:target-image-19-old-purple"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_d3ddad4e-02ec-4535-8b7c-715cea0760db",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "package_artwork_revision_id": "par1:38be5e136566148d2c07f96e9c3e8db2604614a7716e761c7981948bd0ef3844",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "owner-review:target-image-20-exact-cheese-sandwich-cracker-closeup"
+    }
+  ]
+}

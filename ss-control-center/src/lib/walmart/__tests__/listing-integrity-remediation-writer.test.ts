@@ -917,7 +917,7 @@ test("production closure is pinned and malformed data cannot reach any executabl
   assert.deepEqual(inspectWalmartListingRepairWriterProductionReadiness(), {
     apply_writer_release_pinned: true,
     apply_engine_release_sha256:
-      "cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2",
+      "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d",
     fixed_dependency_factory_ready: true,
     native_one_shot_transport_ready: true,
     caller_dependency_injection_allowed: false,

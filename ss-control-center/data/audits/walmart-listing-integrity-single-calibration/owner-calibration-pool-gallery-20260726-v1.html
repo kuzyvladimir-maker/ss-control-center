@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Walmart Listing Integrity — проверочный пул «До → После»</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f4f6f8;
+      --panel: #fff;
+      --ink: #17212b;
+      --muted: #647180;
+      --line: #dce3ea;
+      --blue: #0b57d0;
+      --blue-soft: #edf5ff;
+      --red: #9d241a;
+      --red-soft: #fff0ee;
+      --green: #116b3c;
+      --green-soft: #eaf8ef;
+      --amber: #805400;
+      --amber-soft: #fff7df;
+      --shadow: 0 5px 24px rgba(29, 43, 56, .055);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1380px, calc(100% - 32px));
+      margin: 28px auto 68px;
+    }
+
+    h1 {
+      margin: 7px 0 12px;
+      max-width: 1100px;
+      font-size: clamp(32px, 5.2vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -.025em;
+    }
+
+    h2 { margin: 0; font-size: clamp(25px, 3vw, 35px); line-height: 1.15; }
+    h3 { margin: 0 0 8px; font-size: 20px; line-height: 1.25; }
+    p { margin: 8px 0; }
+
+    .eyebrow {
+      color: var(--blue);
+      font: 760 13px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .045em;
+    }
+
+    .muted { color: var(--muted); }
+
+    .hero,
+    .case,
+    .decision {
+      margin: 18px 0;
+      padding: 23px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: clamp(24px, 4vw, 48px);
+      border-color: #a9c7ee;
+      background: linear-gradient(135deg, #edf5ff, #fff 58%);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .stat {
+      padding: 15px;
+      border: 1px solid #bdd3ef;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 25px;
+      line-height: 1.1;
+    }
+
+    .case { padding: 0; overflow: hidden; }
+
+    .case-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 23px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .case-body { padding: 23px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .repair-badge { color: var(--green); background: var(--green-soft); }
+    .hold-badge { color: var(--amber); background: var(--amber-soft); }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 52px 1fr;
+      align-items: stretch;
+      gap: 13px;
+    }
+
+    .arrow {
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .side {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .side-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 800;
+    }
+
+    .before .side-head { color: var(--red); background: var(--red-soft); }
+    .after .side-head { color: var(--green); background: var(--green-soft); }
+    .hold .side-head { color: var(--amber); background: var(--amber-soft); }
+
+    .product-image {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1.28 / 1;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .side-body { padding: 16px; }
+
+    .same {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #a8c7ef;
+      border-radius: 10px;
+      background: var(--blue-soft);
+      color: #234e85;
+      font-weight: 700;
+    }
+
+    .field-clarification {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 2px solid #a8c7ef;
+      border-radius: 12px;
+      background: var(--blue-soft);
+      color: #173f72;
+      font-weight: 720;
+    }
+
+    .section-title {
+      margin: 27px 0 12px;
+      padding-top: 23px;
+      border-top: 1px solid var(--line);
+    }
+
+    .text-grid,
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .text-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .text-card.before { border-color: #efb1aa; background: var(--red-soft); }
+    .text-card.after { border-color: #a6d9ba; background: var(--green-soft); }
+
+    mark {
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 780;
+    }
+
+    mark.bad { background: #ffd6d1; color: #7e1b13; }
+    mark.good { background: #ccefd9; color: #075b31; }
+
+    .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    figure {
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    figcaption {
+      padding: 11px 13px;
+      border-top: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+
+    details {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--blue);
+      font-weight: 720;
+    }
+
+    code {
+      font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .decision {
+      border: 2px solid #9fd4b4;
+      background: linear-gradient(135deg, #effbf3, #fff);
+    }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .comparison { grid-template-columns: 1fr; }
+      .arrow { min-height: 38px; transform: rotate(90deg); }
+      .gallery { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .text-grid,
+      .stats { grid-template-columns: 1fr; }
+      .case-head { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="eyebrow">WALMART LISTING INTEGRITY · OWNER CALIBRATION POOL V1</div>
+    <h1>Проверочный пул «До → После»</h1>
+    <p>
+      Четыре реальные карточки проверены по обновлённой логике: товар,
+      внешний Pack Count, внутренний count, title, description, bullets,
+      attributes, MAIN и дополнительные изображения.
+    </p>
+    <p class="muted">
+      Это локальная галерея для вашего просмотра. В Walmart ничего не отправлено.
+    </p>
+    <div class="field-clarification">
+      ВАЖНО: title ни у одного repair-preview не начинается с Pack Count.
+      Title остаётся product-first и заканчивается внешним Pack Count.
+      Выделенные ниже «PACK OF 2 / PACK OF 6» относятся только к description
+      и bullet 3 — это не предлагаемый title.
+    </div>
+    <div class="stats">
+      <div class="stat"><strong>4</strong><span>реальных SKU</span></div>
+      <div class="stat"><strong>2</strong><span>точных исправления</span></div>
+      <div class="stat"><strong>2</strong><span>контроля «не менять»</span></div>
+      <div class="stat"><strong>0</strong><span>Walmart writes</span></div>
+    </div>
+  </section>
+
+  <article class="case" id="faisalx-1181">
+    <header class="case-head">
+      <div>
+        <div class="eyebrow">SKU FaisalX-1181 · ITEM 8389917875</div>
+        <h2>Pepperidge Farm Hot Dog Buns — Pack of 2</h2>
+        <p class="muted">
+          Title: Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)
+        </p>
+      </div>
+      <span class="badge repair-badge">✓ ИСПРАВИТЬ ТЕКСТ</span>
+    </header>
+    <div class="case-body">
+      <div class="comparison">
+        <section class="side before">
+          <div class="side-head"><span>ДО</span><span>LIVE SNAPSHOT</span></div>
+          <img class="product-image"
+            src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41.png"
+            alt="FaisalX-1181 MAIN, две упаковки">
+          <div class="side-body">
+            <h3>MAIN показывает 2 упаковки</h3>
+            <p>Точный Butter Top Sliced Hot Dog Buns, 8 buns в каждой упаковке.</p>
+            <div class="same">MAIN уже корректна — не меняем.</div>
+          </div>
+        </section>
+        <div class="arrow" aria-hidden="true">→</div>
+        <section class="side after">
+          <div class="side-head"><span>ПОСЛЕ</span><span>PREVIEW</span></div>
+          <img class="product-image"
+            src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41.png"
+            alt="FaisalX-1181 предлагаемая MAIN, без изменений">
+          <div class="side-body">
+            <h3>Та же правильная MAIN</h3>
+            <p>Никакой перегенерации или замены изображения.</p>
+            <div class="same">До = После для title, MAIN и gallery.</div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="section-title">Точное текстовое исправление</h3>
+      <div class="field-clarification">
+        TITLE НЕ МЕНЯЕТСЯ. Ниже сравниваются только DESCRIPTION и BULLET 3.
+      </div>
+      <div class="text-grid">
+        <section class="text-card before">
+          <h3>Сейчас — неоднозначно и неверно</h3>
+          <p>
+            Description не объясняет внешний Pack of 2 и заканчивается фразой
+            <mark class="bad">our 8-pack</mark>, которую можно спутать с количеством упаковок.
+          </p>
+          <p>
+            Bullet 3: Pepperidge Farm
+            <mark class="bad">hamburger buns</mark> are carefully crafted...
+          </p>
+        </section>
+        <section class="text-card after">
+          <h3>После — однозначно</h3>
+          <p>
+            <strong>DESCRIPTION — НЕ TITLE:</strong><br>
+            <mark class="good">PACK OF 2:</mark> This listing includes two 14 oz bags...
+            Each bag contains 8 buns, for <mark class="good">16 buns total</mark>.
+          </p>
+          <p>
+            <strong>BULLET 3 — НЕ TITLE:</strong><br>
+            <mark class="good">PACK OF 2:</mark> Includes 2 bags of Pepperidge Farm
+            Bakery Classics Top Sliced Butter <mark class="good">Hot Dog Buns</mark>;
+            each 14 oz bag contains 8 buns.
+          </p>
+        </section>
+      </div>
+
+      <details>
+        <summary>Показать полный предлагаемый description</summary>
+        <p>
+          <strong>PACK OF 2: This listing includes two 14 oz bags of Pepperidge Farm
+          Bakery Classics Top Sliced Butter Hot Dog Buns. Each bag contains 8 buns,
+          for 16 buns total.</strong> Pepperidge Farm Bakery Classics buns are baked
+          with deliberate, thoughtful care and made with premium ingredients,
+          perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have
+          been baking delicious breads inspired by small-batch recipes and crafted
+          with premium ingredients for over 80 years. For us, baking is more than a
+          job, it’s a real passion. The whole family will love these cookout-ready,
+          classic butter hot dog buns. Our Top Sliced butter hot dog buns are perfect
+          for your favorite hot dogs, sausages, or even lobster rolls. And they stand
+          up, making them easy to fill with your favorite toppings. Pepperidge Farm
+          Bakery Classics stay true to the classic recipe you know and love with no
+          high-fructose corn syrup. Our dedication to quality shows in the care we put
+          into every detail. Make your meals a little more special with these
+          delicious Pepperidge Farm hot dog buns. Shelf-stable product.
+        </p>
+      </details>
+
+      <h3 class="section-title">Все изображения этого SKU</h3>
+      <div class="gallery">
+        <figure>
+          <img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41.png"
+            alt="MAIN, две упаковки">
+          <figcaption><strong>MAIN</strong><br>2 правильные упаковки</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg"
+            alt="Lifestyle hot dog bun">
+          <figcaption><strong>Gallery 1</strong><br>Lifestyle того же hot dog bun</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg"
+            alt="Nutrition Facts">
+          <figcaption><strong>Gallery 2</strong><br>8 servings, 1 bun</figcaption>
+        </figure>
+      </div>
+    </div>
+  </article>
+
+  <article class="case" id="faisalx-1183">
+    <header class="case-head">
+      <div>
+        <div class="eyebrow">SKU FaisalX-1183 · ITEM 8419413379</div>
+        <h2>Pepperidge Farm Hot Dog Buns — Pack of 6</h2>
+        <p class="muted">
+          Title: Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)
+        </p>
+      </div>
+      <span class="badge repair-badge">✓ ИСПРАВИТЬ ТЕКСТ</span>
+    </header>
+    <div class="case-body">
+      <div class="comparison">
+        <section class="side before">
+          <div class="side-head"><span>ДО</span><span>LIVE SNAPSHOT</span></div>
+          <img class="product-image"
+            src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png"
+            alt="FaisalX-1183 MAIN, шесть упаковок">
+          <div class="side-body">
+            <h3>MAIN показывает 6 упаковок</h3>
+            <p>Точный Butter Top Sliced Hot Dog Buns, 8 buns в каждой упаковке.</p>
+            <div class="same">MAIN уже корректна — не меняем.</div>
+          </div>
+        </section>
+        <div class="arrow" aria-hidden="true">→</div>
+        <section class="side after">
+          <div class="side-head"><span>ПОСЛЕ</span><span>PREVIEW</span></div>
+          <img class="product-image"
+            src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png"
+            alt="FaisalX-1183 предлагаемая MAIN, без изменений">
+          <div class="side-body">
+            <h3>Та же правильная MAIN</h3>
+            <p>Никакой перегенерации или замены изображения.</p>
+            <div class="same">До = После для title, MAIN и gallery.</div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="section-title">Точное текстовое исправление</h3>
+      <div class="field-clarification">
+        TITLE НЕ МЕНЯЕТСЯ. Ниже сравниваются только DESCRIPTION и BULLET 3.
+      </div>
+      <div class="text-grid">
+        <section class="text-card before">
+          <h3>Сейчас — неоднозначно и неверно</h3>
+          <p>
+            Description не объясняет внешний Pack of 6 и заканчивается фразой
+            <mark class="bad">our 8-pack</mark>.
+          </p>
+          <p>
+            Bullet 3: Pepperidge Farm
+            <mark class="bad">hamburger buns</mark> are carefully crafted...
+          </p>
+        </section>
+        <section class="text-card after">
+          <h3>После — однозначно</h3>
+          <p>
+            <strong>DESCRIPTION — НЕ TITLE:</strong><br>
+            <mark class="good">PACK OF 6:</mark> This listing includes six 14 oz bags...
+            Each bag contains 8 buns, for <mark class="good">48 buns total</mark>.
+          </p>
+          <p>
+            <strong>BULLET 3 — НЕ TITLE:</strong><br>
+            <mark class="good">PACK OF 6:</mark> Includes 6 bags of Pepperidge Farm
+            Bakery Classics Top Sliced Butter <mark class="good">Hot Dog Buns</mark>;
+            each 14 oz bag contains 8 buns.
+          </p>
+        </section>
+      </div>
+
+      <details>
+        <summary>Показать полный предлагаемый description</summary>
+        <p>
+          <strong>PACK OF 6: This listing includes six 14 oz bags of Pepperidge Farm
+          Bakery Classics Top Sliced Butter Hot Dog Buns. Each bag contains 8 buns,
+          for 48 buns total.</strong> Pepperidge Farm Bakery Classics buns are baked
+          with deliberate, thoughtful care and made with premium ingredients,
+          perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have
+          been baking delicious breads inspired by small-batch recipes and crafted
+          with premium ingredients for over 80 years. For us, baking is more than a
+          job, it’s a real passion. The whole family will love these cookout-ready,
+          classic butter hot dog buns. Our Top Sliced butter hot dog buns are perfect
+          for your favorite hot dogs, sausages, or even lobster rolls. And they stand
+          up, making them easy to fill with your favorite toppings. Pepperidge Farm
+          Bakery Classics stay true to the classic recipe you know and love with no
+          high-fructose corn syrup. Our dedication to quality shows in the care we put
+          into every detail. Make your meals a little more special with these
+          delicious Pepperidge Farm hot dog buns. Shelf-stable product.
+        </p>
+      </details>
+
+      <h3 class="section-title">Все изображения этого SKU</h3>
+      <div class="gallery">
+        <figure>
+          <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png"
+            alt="MAIN, шесть упаковок">
+          <figcaption><strong>MAIN</strong><br>6 правильных упаковок</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg"
+            alt="Lifestyle hot dog bun">
+          <figcaption><strong>Gallery 1</strong><br>Lifestyle того же hot dog bun</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg"
+            alt="Nutrition Facts">
+          <figcaption><strong>Gallery 2</strong><br>8 servings, 1 bun</figcaption>
+        </figure>
+      </div>
+    </div>
+  </article>
+
+  <article class="case" id="faisalx-1130">
+    <header class="case-head">
+      <div>
+        <div class="eyebrow">CONTROL 1 · SKU FaisalX-1130 · ITEM 8412702942</div>
+        <h2>15 Grain Bread — алгоритм обязан не спутать числа</h2>
+        <p class="muted">
+          Title: Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)
+        </p>
+      </div>
+      <span class="badge hold-badge">✓ НЕ МЕНЯТЬ</span>
+    </header>
+    <div class="case-body">
+      <div class="comparison">
+        <section class="side hold">
+          <div class="side-head"><span>ДО</span><span>CONTROL</span></div>
+          <img class="product-image"
+            src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/b9133ec39c2f525f1e282b20097c591e6c8af7ae4d07d3769eb04072d237124f.png"
+            alt="15 Grain Bread, две упаковки">
+          <div class="side-body">
+            <h3>2 упаковки; «15» — это вариант 15 Grain</h3>
+            <p>MAIN, title и attributes согласованы по внешнему Pack of 2.</p>
+          </div>
+        </section>
+        <div class="arrow" aria-hidden="true">→</div>
+        <section class="side hold">
+          <div class="side-head"><span>ПОСЛЕ</span><span>NO CHANGE</span></div>
+          <img class="product-image"
+            src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/b9133ec39c2f525f1e282b20097c591e6c8af7ae4d07d3769eb04072d237124f.png"
+            alt="15 Grain Bread после проверки, без изменений">
+          <div class="side-body">
+            <h3>До = После</h3>
+            <p>Доказанного дефекта нет. Без exact Product Truth исправление запрещено.</p>
+            <div class="same">Контроль ложного срабатывания пройден.</div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="section-title">Все изображения контрольного SKU</h3>
+      <div class="gallery">
+        <figure>
+          <img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/b9133ec39c2f525f1e282b20097c591e6c8af7ae4d07d3769eb04072d237124f.png"
+            alt="MAIN, две буханки">
+          <figcaption><strong>MAIN</strong><br>2 × Whole Grain Thin Sliced 15 Grain</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/c5e37b052275e0df6dfe9989d69f63d64092110ea6466d80d8b654482f37bf4e.jpg"
+            alt="Ingredients 15 Grain Bread">
+          <figcaption><strong>Gallery 1</strong><br>Ingredients того же хлеба</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/ee1d50dd6ca31a7a96a5f8cbd43f91f48c8500e96e88b4edaf9d1cbd7eb7e015.jpg"
+            alt="Nutrition Facts 15 Grain Bread">
+          <figcaption><strong>Gallery 2</strong><br>Nutrition Facts того же хлеба</figcaption>
+        </figure>
+      </div>
+    </div>
+  </article>
+
+  <article class="case" id="faisalx-1208">
+    <header class="case-head">
+      <div>
+        <div class="eyebrow">CONTROL 2 · SKU FaisalX-1208 · ITEM 8406560524</div>
+        <h2>Sara Lee Hamburger Buns — правильный product class</h2>
+        <p class="muted">
+          Title: Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns,
+          19 oz Bag (Pack of 2)
+        </p>
+      </div>
+      <span class="badge hold-badge">✓ НЕ МЕНЯТЬ</span>
+    </header>
+    <div class="case-body">
+      <div class="comparison">
+        <section class="side hold">
+          <div class="side-head"><span>ДО</span><span>CONTROL</span></div>
+          <img class="product-image"
+            src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894.png"
+            alt="Sara Lee Hamburger Buns, две упаковки">
+          <div class="side-body">
+            <h3>Здесь Hamburger Buns — правильно</h3>
+            <p>MAIN, title, description, bullets и attributes говорят об одном товаре.</p>
+          </div>
+        </section>
+        <div class="arrow" aria-hidden="true">→</div>
+        <section class="side hold">
+          <div class="side-head"><span>ПОСЛЕ</span><span>NO CHANGE</span></div>
+          <img class="product-image"
+            src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894.png"
+            alt="Sara Lee Hamburger Buns после проверки, без изменений">
+          <div class="side-body">
+            <h3>До = После</h3>
+            <p>Алгоритм не переносит исправление Hot Dog Buns на соседний другой товар.</p>
+            <div class="same">Контроль product-class contamination пройден.</div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="section-title">Все изображения контрольного SKU</h3>
+      <div class="gallery">
+        <figure>
+          <img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894.png"
+            alt="MAIN Sara Lee, две упаковки">
+          <figcaption><strong>MAIN</strong><br>2 × Sara Lee Artesano Bakery Buns</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e.jpg"
+            alt="Ingredients Sara Lee">
+          <figcaption><strong>Gallery 1</strong><br>Ingredients того же товара</figcaption>
+        </figure>
+        <figure>
+          <img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122.jpg"
+            alt="Nutrition Facts Sara Lee">
+          <figcaption><strong>Gallery 2</strong><br>8 servings, 1 bun</figcaption>
+        </figure>
+      </div>
+
+      <h3 class="section-title">SEO/title-решение</h3>
+      <table>
+        <tr>
+          <th>Наблюдение</th>
+          <th>Решение алгоритма</th>
+        </tr>
+        <tr>
+          <td>Title = 88 символов, выше публичного оптимизационного диапазона 50–75.</td>
+          <td>
+            Не сокращать автоматически: сначала нужен exact текущий U.S. Product Type
+            spec и exact Product Truth. Это review-сигнал, а не доказательство ошибки.
+          </td>
+        </tr>
+      </table>
+    </div>
+  </article>
+
+  <section class="decision">
+    <div class="eyebrow">СЛЕДУЮЩИЙ OWNER GATE</div>
+    <h2>Что произойдёт после вашего одобрения</h2>
+    <p>
+      Сначала будет подготовлен и применён <strong>один</strong> свежий live-canary:
+      один SKU, одна точная запись, затем повторное чтение Walmart и Qualification
+      всей карточки. Если результат не PASS — следующий SKU не запускается.
+    </p>
+    <p>
+      Только после фактической галереи live «До → После» и вашего второго одобрения
+      можно подготовить небольшую production-волну. Автоматического запуска всех
+      листингов не будет.
+    </p>
+    <p>
+      <strong>Сейчас: Walmart writes 0 · Price changes 0 · Inventory changes 0 · Delisting 0</strong>
+    </p>
+    <p class="muted">
+      Data artifact:
+      <code>owner-calibration-pool-20260726-v1.json</code>
+    </p>
+  </section>
+</main>
+</body>
+</html>

@@ -17,6 +17,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { createClient, type Client } from "@libsql/client";
+import sharp from "sharp";
 import type {
   WalmartNewSkuApplyReceipt,
   WalmartNewSkuApprovalArtifact,
@@ -75,6 +76,32 @@ const FAKE_FETCH = path.join(
 const FIXTURE_WALMART_CLIENT_ID = "fixture-client-id";
 const FIXTURE_WALMART_SELLER_ID = "fixture-seller-id";
 const FIXTURE_ITEM_REPORT_REQUEST_ID = "fixture-item-report-request";
+
+async function fixtureImageSha256(): Promise<string> {
+  const bytes = await sharp({
+    create: {
+      width: 2200,
+      height: 2200,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  })
+    .composite([{
+      input: {
+        create: {
+          width: 2090,
+          height: 1700,
+          channels: 3,
+          background: { r: 196, g: 24, b: 32 },
+        },
+      },
+      left: 55,
+      top: 250,
+    }])
+    .png()
+    .toBuffer();
+  return createHash("sha256").update(bytes).digest("hex");
+}
 
 interface ProcessResult {
   code: number;
@@ -1228,6 +1255,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     generatedPolicyReviewTemplatePath,
   );
   const evidenceAt = new Date().toISOString();
+  const fakeImageSha = await fixtureImageSha256();
   certification.price_cents = 3000;
   certification.packaging_cost_cents = 100;
   certification.shipping_label_cents = 700;
@@ -1236,14 +1264,34 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     {
       ...certification.images[0],
       url: "https://images.fixture.test/listing-main.png",
-      rights_basis: "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
+      output_sha256: fakeImageSha,
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      source_asset_sha256s: ["a".repeat(64)],
+      rendered_unit_source_sha256s: ["a".repeat(64), "a".repeat(64)],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"4".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "fixture-evidence://image-truth/main-v1",
+      rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "fixture-evidence://image-rights/main-v1",
       reviewed_at: evidenceAt,
     },
     {
       ...certification.images[1],
       url: "https://images.fixture.test/listing-secondary.png",
-      rights_basis: "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
+      output_sha256: fakeImageSha,
+      construction_method: "EXACT_SOURCE_ASSET",
+      source_asset_sha256s: [fakeImageSha],
+      rendered_unit_source_sha256s: [],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"4".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "fixture-evidence://image-truth/secondary-v1",
+      rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "fixture-evidence://image-rights/secondary-v1",
       reviewed_at: evidenceAt,
     },
@@ -1379,6 +1427,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   const evidenceSpecs = [
     ["fixture-evidence://image-rights/main-v1", "IMAGE_RIGHTS"],
     ["fixture-evidence://image-rights/secondary-v1", "IMAGE_RIGHTS"],
+    ["fixture-evidence://image-truth/main-v1", "IMAGE_TRUTH"],
+    ["fixture-evidence://image-truth/secondary-v1", "IMAGE_TRUTH"],
     ["fixture-evidence://country-of-origin/product-label-v1", "COUNTRY_OF_ORIGIN"],
     ["fixture-evidence://seller-center/ingestible-approval-v1", "CATEGORY_APPROVAL"],
     ["fixture-evidence://policy-review/walmart-v1", "POLICY_REVIEW"],
@@ -1894,7 +1944,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuCertificationArtifact;
   assert.equal(
     certificationArtifact.schema_version,
-    "walmart-new-sku-certification/1.8.0",
+    "walmart-new-sku-certification/1.9.0",
   );
   const buyerAttemptId = "fixture-buyer-seal-attempt";
   const buyerItemId = "123456789";
@@ -2530,7 +2580,11 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--out", applyLivePath,
   ], { ...env, WALMART_NEW_SKU_TEST_ALLOW_FEED_POST: "1" });
   assert.equal(liveApplied.marketplace_mutation_requested, true);
-  assert.equal((liveApplied.distribution as Record<string, unknown>).ok, true);
+  assert.equal(
+    (liveApplied.distribution as Record<string, unknown>).ok,
+    true,
+    JSON.stringify(liveApplied.distribution, null, 2),
+  );
   assert.equal(
     (liveApplied.latest_submission_attempt as Record<string, unknown>).state,
     "ACCEPTED",

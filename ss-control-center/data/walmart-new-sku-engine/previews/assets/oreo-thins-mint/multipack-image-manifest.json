@@ -1,0 +1,24 @@
+{
+  "schema_version": "walmart-preview-multipack-images/1.0.0",
+  "product_slug": "oreo-thins-mint-current",
+  "source_file": "oreo-mint-current.jpg",
+  "source_asset_sha256": "705a2d09338ac6c7846e6e76518791b4e9477158fd9d1239224bdf820f26bb64",
+  "outputs": [
+    {
+      "file": "oreo-thins-mint-current-pack-of-2.png",
+      "output_sha256": "7188da0c6e21ef313aa9a924f41745279574a766c9b2e53d4a1f26e1c33bca8c",
+      "represented_unit_count": 2
+    },
+    {
+      "file": "oreo-thins-mint-current-pack-of-3.png",
+      "output_sha256": "6a8c3f5fe6b626010e6a1f58f8a2038827a4e0b89fcfb9cd135d4c462882f44d",
+      "represented_unit_count": 3
+    }
+  ],
+  "construction_method": "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+  "canvas": {
+    "width": 2200,
+    "height": 2200,
+    "background": "WHITE"
+  }
+}

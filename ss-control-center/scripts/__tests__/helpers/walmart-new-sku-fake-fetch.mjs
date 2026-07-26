@@ -30,14 +30,29 @@ function canonical(value) {
   return value;
 }
 
-const pngBytes = await sharp({
+const pngCanvas = sharp({
   create: {
     width: 2200,
     height: 2200,
     channels: 3,
     background: { r: 255, g: 255, b: 255 },
   },
-}).png().toBuffer();
+});
+const pngBytes = await pngCanvas
+  .composite([{
+    input: {
+      create: {
+        width: 2090,
+        height: 1700,
+        channels: 3,
+        background: { r: 196, g: 24, b: 32 },
+      },
+    },
+    left: 55,
+    top: 250,
+  }])
+  .png()
+  .toBuffer();
 
 globalThis.fetch = async (input, init = {}) => {
   const url = new URL(typeof input === "string" ? input : input.url);

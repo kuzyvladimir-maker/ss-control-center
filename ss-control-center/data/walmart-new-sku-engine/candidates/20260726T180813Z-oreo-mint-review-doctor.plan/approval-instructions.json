@@ -1,0 +1,56 @@
+{
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:c71857dbdfe8019c3eb691882ad0791c38262c406be63bc1905acea4f94225e6:<OWNER_APPROVAL_ID>",
+  "machineIdentityVerification": {
+    "canonicalIdentityHash": "d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+    "canonicalVariantId": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+    "donorOfferId": "do:walmart:5033343267",
+    "donorProductId": "3f95a432-eb1d-4735-96de-e68e20a765b3",
+    "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+    "legacySnapshotSha256": "e238898af94e5404febe1fb4adc6ed4e862fe039c28476b686348cddd72098cb",
+    "normalizedProductUrl": "https://www.walmart.com/ip/5033343267",
+    "planExpiresAt": "2026-07-27T17:08:13.000Z",
+    "retailerProductId": "5033343267",
+    "statement": "The engine derived a conservative title-signature identity from sealed legacy bytes. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, complete identity token set, size and base-unit pack."
+  },
+  "mode": "WAVE",
+  "planExpiresAt": "2026-07-27T17:08:13.000Z",
+  "planSha256": "c71857dbdfe8019c3eb691882ad0791c38262c406be63bc1905acea4f94225e6",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 0
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "wm-review-oreo-mint-20260726T180813Z",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "0ca0e14ed91b7eae080e327b8ce75b938dd819ee2bab9c83b7007784abe99d34",
+  "warning": "Owner approval, exact two-provider permit, fresh Unwrangle balance evidence, and exact confirmation are required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
+}

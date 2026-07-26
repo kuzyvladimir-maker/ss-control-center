@@ -5,9 +5,13 @@ import {
   minimumWalmartNewSkuPriceForTargetMargin,
   walmartNewSkuComparableSignal,
 } from "./walmart-new-sku-economics";
+import {
+  selectCurrentWalmartPackagingArtwork,
+  type WalmartPackagingArtworkReview,
+} from "./walmart-new-sku-packaging-artwork";
 
 export const WALMART_NEW_SKU_OWNER_PREVIEW_SCHEMA =
-  "walmart-new-sku-owner-preview-gallery/1.0.0" as const;
+  "walmart-new-sku-owner-preview-gallery/1.1.0" as const;
 
 export interface WalmartNewSkuOwnerPreviewSource {
   generatedAt: string;
@@ -29,6 +33,7 @@ export interface WalmartNewSkuOwnerPreviewSource {
   ingredients: string;
   mainImageUrl: string;
   imageUrls: string[];
+  packagingArtworkReview: WalmartPackagingArtworkReview;
   packCounts: Array<2 | 3>;
 }
 
@@ -101,16 +106,15 @@ export function buildWalmartNewSkuOwnerPreviewGallery(
   ) {
     throw new Error("preview packCounts must contain only 2 or 3");
   }
-  const mainImageUrl = exactHttpsUrl(input.mainImageUrl, "mainImageUrl");
-  const imageUrls = [...new Set([
-    mainImageUrl,
-    ...input.imageUrls.map((url, index) =>
+  const selectedArtwork = selectCurrentWalmartPackagingArtwork({
+    canonicalVariantId: input.canonicalVariantId,
+    mainImageUrl: exactHttpsUrl(input.mainImageUrl, "mainImageUrl"),
+    discoveredImageUrls: input.imageUrls.map((url, index) =>
       exactHttpsUrl(url, `imageUrls[${index}]`)
     ),
-  ])].slice(0, 8);
-  if (imageUrls.length < 2) {
-    throw new Error("at least two exact-variant preview images are required");
-  }
+    review: input.packagingArtworkReview,
+  });
+  const imageUrls = selectedArtwork.image_urls.slice(0, 8);
   const productName = requiredText(input.productName, "productName");
   const brand = requiredText(input.brand, "brand");
   const description = requiredText(input.description, "description");
@@ -177,6 +181,11 @@ export function buildWalmartNewSkuOwnerPreviewGallery(
         main_visualization:
           "DUPLICATED_EXACT_DONOR_UNIT_IMAGE_PREVIEW_ONLY" as const,
         represented_unit_count: packCount,
+        package_artwork_revision_id:
+          selectedArtwork.package_artwork_revision_id,
+        packaging_artwork_review_evidence_refs:
+          selectedArtwork.review_evidence_refs,
+        excluded_donor_images: selectedArtwork.excluded_images,
         publication_rights_status:
           "NOT_CLEARED_PREVIEW_ONLY" as const,
       },

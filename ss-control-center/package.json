@@ -17,6 +17,8 @@
     "walmart:new-sku:release": "node --import tsx scripts/walmart-new-sku-release.ts",
     "walmart:new-sku:release:freeze": "node --import tsx scripts/walmart-new-sku-release-freeze.ts",
     "walmart:new-sku:preview-data": "node --import tsx scripts/build-walmart-new-sku-owner-preview.ts",
+    "walmart:new-sku:preview-images": "node --import tsx scripts/build-walmart-new-sku-preview-images.ts",
+    "walmart:new-sku:artwork-contact-sheet": "node --import tsx scripts/build-walmart-packaging-artwork-contact-sheet.ts",
     "walmart:new-sku:schema": "node --import tsx scripts/walmart-new-sku-schema-activation.ts",
     "walmart:new-sku:catalog": "node --import tsx scripts/walmart-new-sku-catalog-activation.ts",
     "walmart-listing-freeze": "node --experimental-strip-types scripts/freeze-walmart-listing-integrity-bundle.mjs",

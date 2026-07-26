@@ -62,9 +62,9 @@ export const WALMART_NEW_SKU_STAGE_SCHEMA =
 export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
   "walmart-new-sku-upc-rotation-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_INPUT_SCHEMA =
-  "walmart-new-sku-certification-input/1.6.0" as const;
+  "walmart-new-sku-certification-input/1.7.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_SCHEMA =
-  "walmart-new-sku-certification/1.8.0" as const;
+  "walmart-new-sku-certification/1.9.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_RECEIPT_SCHEMA =
   "walmart-new-sku-certification-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_DRY_RUN_RECEIPT_SCHEMA =
@@ -238,6 +238,7 @@ export interface WalmartNewSkuPhysicalPackageInput {
 
 export type WalmartNewSkuEvidenceArtifactKind =
   | "IMAGE_RIGHTS"
+  | "IMAGE_TRUTH"
   | "COUNTRY_OF_ORIGIN"
   | "PRODUCT_ATTRIBUTE"
   | "CATEGORY_APPROVAL"
@@ -307,14 +308,25 @@ export interface WalmartNewSkuCertificationInput {
   images: Array<{
     role: "MAIN" | "SECONDARY" | "NUTRITION";
     url: string;
+    output_sha256: string;
     depicted_component_keys: string[];
     source_content_observation_ids: string[];
     represented_unit_count: number;
+    construction_method:
+      | "EXACT_SOURCE_ASSET"
+      | "DETERMINISTIC_EXACT_PIXEL_MULTIPACK";
+    source_asset_sha256s: string[];
+    rendered_unit_source_sha256s: string[];
+    generative_model_used: false;
+    package_artwork_unchanged: true;
+    package_artwork_revision_id: string;
+    added_graphics_or_text_overlay: false;
+    exact_variant_identity_match_bps: number;
+    image_truth_evidence_ref: string;
     rights_basis:
       | "OWNED"
       | "LICENSED"
-      | "SOURCE_ALLOWED"
-      | "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS";
+      | "SOURCE_ALLOWED";
     rights_evidence_ref: string;
     reviewed_at: string;
   }>;
@@ -1773,6 +1785,7 @@ export function assertWalmartNewSkuCertificationInput(input: {
   }
   const allowedEvidenceKinds = new Set<WalmartNewSkuEvidenceArtifactKind>([
     "IMAGE_RIGHTS",
+    "IMAGE_TRUTH",
     "COUNTRY_OF_ORIGIN",
     "PRODUCT_ATTRIBUTE",
     "CATEGORY_APPROVAL",
@@ -1848,6 +1861,7 @@ export function assertWalmartNewSkuCertificationInput(input: {
   if (main.length !== 1) failures.push("CERTIFICATION_MAIN_IMAGE_COUNT_INVALID");
   if (secondary.length < 1) failures.push("CERTIFICATION_SECONDARY_IMAGE_REQUIRED");
   const urls = new Set<string>();
+  const packageArtworkRevisionIds = new Set<string>();
   for (const [index, image] of certification.images.entries()) {
     if (!isPilotImageUrl(image.url)) failures.push(`IMAGE_${index}_URL_INVALID`);
     if (urls.has(image.url)) failures.push(`IMAGE_${index}_URL_DUPLICATE`);
@@ -1867,11 +1881,66 @@ export function assertWalmartNewSkuCertificationInput(input: {
     if (!Number.isInteger(image.represented_unit_count) || image.represented_unit_count <= 0) {
       failures.push(`IMAGE_${index}_COUNT_INVALID`);
     }
+    if (!/^[a-f0-9]{64}$/.test(image.output_sha256)) {
+      failures.push(`IMAGE_${index}_OUTPUT_SHA256_INVALID`);
+    }
+    const sourceAssets = new Set(image.source_asset_sha256s);
+    if (
+      sourceAssets.size === 0 ||
+      [...sourceAssets].some((sha256) => !/^[a-f0-9]{64}$/.test(sha256))
+    ) {
+      failures.push(`IMAGE_${index}_SOURCE_ASSET_SHA256_INVALID`);
+    }
+    if (
+      image.generative_model_used !== false ||
+      image.package_artwork_unchanged !== true ||
+      !/^par1:[a-f0-9]{64}$/.test(image.package_artwork_revision_id) ||
+      image.added_graphics_or_text_overlay !== false ||
+      !Number.isInteger(image.exact_variant_identity_match_bps) ||
+      image.exact_variant_identity_match_bps < 9_900 ||
+      image.exact_variant_identity_match_bps > 10_000
+    ) {
+      failures.push(`IMAGE_${index}_EXACT_PRODUCT_TRUTH_INVALID`);
+    }
+    if (/^par1:[a-f0-9]{64}$/.test(image.package_artwork_revision_id)) {
+      packageArtworkRevisionIds.add(image.package_artwork_revision_id);
+    }
+    if (image.construction_method === "EXACT_SOURCE_ASSET") {
+      if (
+        sourceAssets.size !== 1 ||
+        image.source_asset_sha256s[0] !== image.output_sha256 ||
+        image.rendered_unit_source_sha256s.length !== 0
+      ) {
+        failures.push(`IMAGE_${index}_EXACT_SOURCE_BINDING_INVALID`);
+      }
+    } else if (
+      image.construction_method === "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+    ) {
+      if (
+        image.rendered_unit_source_sha256s.length !==
+          image.represented_unit_count ||
+        image.rendered_unit_source_sha256s.some(
+          (sha256) => !sourceAssets.has(sha256),
+        )
+      ) {
+        failures.push(`IMAGE_${index}_DETERMINISTIC_UNIT_BINDING_INVALID`);
+      }
+    } else {
+      failures.push(`IMAGE_${index}_CONSTRUCTION_METHOD_INVALID`);
+    }
+    if (!isEvidenceReference(image.image_truth_evidence_ref)) {
+      failures.push(`IMAGE_${index}_TRUTH_REF_INVALID`);
+    } else {
+      requireEvidence(
+        image.image_truth_evidence_ref,
+        "IMAGE_TRUTH",
+        `IMAGE_${index}_TRUTH`,
+      );
+    }
     if (![
       "OWNED",
       "LICENSED",
       "SOURCE_ALLOWED",
-      "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
     ].includes(image.rights_basis)) {
       failures.push(`IMAGE_${index}_RIGHTS_BASIS_INVALID`);
     }
@@ -1888,8 +1957,18 @@ export function assertWalmartNewSkuCertificationInput(input: {
       failures.push(`IMAGE_${index}_REVIEW_DATE_INVALID`);
     }
   }
+  if (packageArtworkRevisionIds.size !== 1) {
+    failures.push("CERTIFICATION_MIXED_PACKAGE_ARTWORK_REVISIONS");
+  }
   if (main[0]?.represented_unit_count !== candidate.pack_count) {
     failures.push("CERTIFICATION_MAIN_IMAGE_RECIPE_COUNT_MISMATCH");
+  }
+  if (
+    candidate.pack_count > 1 &&
+    main[0]?.construction_method !==
+      "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+  ) {
+    failures.push("CERTIFICATION_MAIN_IMAGE_NOT_DETERMINISTIC_MULTIPACK");
   }
   const physical = certification.physical_package;
   if (
@@ -3262,6 +3341,8 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
     evidence_artifacts: [
       ["TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN", "IMAGE_RIGHTS"],
       ["TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY", "IMAGE_RIGHTS"],
+      ["TODO_EVIDENCE_REF_IMAGE_TRUTH_MAIN", "IMAGE_TRUTH"],
+      ["TODO_EVIDENCE_REF_IMAGE_TRUTH_SECONDARY", "IMAGE_TRUTH"],
       ["TODO_EVIDENCE_REF_COUNTRY_OF_ORIGIN", "COUNTRY_OF_ORIGIN"],
       ["TODO_EVIDENCE_REF_CATEGORY_APPROVAL", "CATEGORY_APPROVAL"],
       ["TODO_EVIDENCE_REF_POLICY_REVIEW", "POLICY_REVIEW"],
@@ -3296,20 +3377,45 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
       {
         role: "MAIN",
         url: "TODO_QUERY_FREE_HTTPS_JPEG_OR_PNG",
+        output_sha256: "TODO_LOWERCASE_SHA256_OF_FINAL_MAIN_IMAGE_BYTES",
         depicted_component_keys: [component.component_key],
         source_content_observation_ids: [component.content_observation_id],
         represented_unit_count: candidate.pack_count,
-        rights_basis: "TODO_OWNED_LICENSED_SOURCE_ALLOWED_OR_AI_DERIVED",
+        construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+        source_asset_sha256s: ["TODO_LOWERCASE_SHA256_OF_EXACT_DONOR_UNIT_IMAGE"],
+        rendered_unit_source_sha256s: Array.from(
+          { length: candidate.pack_count },
+          () => "TODO_SAME_EXACT_DONOR_UNIT_SHA256",
+        ),
+        generative_model_used: false,
+        package_artwork_unchanged: true,
+        package_artwork_revision_id:
+          "TODO_PAR1_PACKAGE_ARTWORK_REVISION_ID_FROM_REVIEW",
+        added_graphics_or_text_overlay: false,
+        exact_variant_identity_match_bps: null,
+        image_truth_evidence_ref: "TODO_EVIDENCE_REF_IMAGE_TRUTH_MAIN",
+        rights_basis: "TODO_OWNED_LICENSED_OR_SOURCE_ALLOWED",
         rights_evidence_ref: "TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN",
         reviewed_at: "TODO_CANONICAL_UTC_AFTER_IMAGE_REVIEW",
       },
       {
         role: "SECONDARY",
         url: "TODO_DISTINCT_QUERY_FREE_HTTPS_JPEG_OR_PNG",
+        output_sha256: "TODO_LOWERCASE_SHA256_OF_FINAL_SECONDARY_IMAGE_BYTES",
         depicted_component_keys: [component.component_key],
         source_content_observation_ids: [component.content_observation_id],
         represented_unit_count: candidate.pack_count,
-        rights_basis: "TODO_OWNED_LICENSED_SOURCE_ALLOWED_OR_AI_DERIVED",
+        construction_method: "TODO_EXACT_SOURCE_ASSET_OR_DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+        source_asset_sha256s: ["TODO_LOWERCASE_SHA256_OF_EXACT_DONOR_IMAGE"],
+        rendered_unit_source_sha256s: [],
+        generative_model_used: false,
+        package_artwork_unchanged: true,
+        package_artwork_revision_id:
+          "TODO_SAME_PAR1_PACKAGE_ARTWORK_REVISION_ID",
+        added_graphics_or_text_overlay: false,
+        exact_variant_identity_match_bps: null,
+        image_truth_evidence_ref: "TODO_EVIDENCE_REF_IMAGE_TRUTH_SECONDARY",
+        rights_basis: "TODO_OWNED_LICENSED_OR_SOURCE_ALLOWED",
         rights_evidence_ref: "TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY",
         reviewed_at: "TODO_CANONICAL_UTC_AFTER_IMAGE_REVIEW",
       },

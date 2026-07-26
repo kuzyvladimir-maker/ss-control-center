@@ -54,6 +54,7 @@ import {
   parseWalmartListingAttributes,
   sha256WalmartJson,
   stableWalmartJson,
+  type ProductTruthListingManifest,
   type WalmartPrepublicationEvidence,
   type WalmartPublicListingContract,
 } from "./walmart-listing-contract";
@@ -66,6 +67,9 @@ import {
 } from "./validation/walmart-prepublication-policy";
 import {
   inspectWalmartPublicImageSet,
+  WALMART_MAIN_IMAGE_MAX_LONG_EDGE_FILL_BPS,
+  WALMART_MAIN_IMAGE_MIN_LONG_EDGE_FILL_BPS,
+  WALMART_MAIN_IMAGE_MIN_WHITE_EDGE_BPS,
   type VerifiedWalmartPublicImage,
 } from "./validation/walmart-public-image-inspection";
 import {
@@ -1453,6 +1457,35 @@ export async function certifyWalmartNewSkuCandidate(input: {
     mainImage.url,
     ...secondaryImages,
   ]);
+  for (const [index, image] of input.certification.images.entries()) {
+    const inspected = verifiedPublicImages[index];
+    if (!inspected || inspected.url !== image.url) {
+      throw new Error(`Walmart image inspection order drift at index ${index}`);
+    }
+    if (inspected.sha256 !== image.output_sha256) {
+      throw new Error(
+        `Walmart image bytes differ from certified output SHA-256 at index ${index}`,
+      );
+    }
+  }
+  const verifiedMainImage = verifiedPublicImages[0]!;
+  if (
+    verifiedMainImage.white_edge_bps < WALMART_MAIN_IMAGE_MIN_WHITE_EDGE_BPS
+  ) {
+    throw new Error(
+      "Walmart MAIN image does not have a seamless white outer background",
+    );
+  }
+  if (
+    verifiedMainImage.product_frame_long_edge_fill_bps <
+      WALMART_MAIN_IMAGE_MIN_LONG_EDGE_FILL_BPS ||
+    verifiedMainImage.product_frame_long_edge_fill_bps >
+      WALMART_MAIN_IMAGE_MAX_LONG_EDGE_FILL_BPS
+  ) {
+    throw new Error(
+      "Walmart MAIN product group must fill 90–97% of the image long edge",
+    );
+  }
   const manifest = buildProductTruthListingManifest({
     sku: input.stage.proposed_sku,
     storeIndex: input.plan.store_index,
@@ -1925,6 +1958,7 @@ export interface LocalCertifiedWalmartNewSkuReplay {
   payload: Record<string, unknown>;
   payload_sha256: string;
   validation: Awaited<ReturnType<typeof runValidation>>;
+  product_truth_manifest: ProductTruthListingManifest;
   walmart_contract: WalmartPublicListingContract;
   offer_handoff: WalmartPublicListingContract["offer_handoff"];
 }
@@ -1949,12 +1983,16 @@ export async function replayCertifiedWalmartNewSkuLocally(input: {
     throw new Error("Certified artifact identity differs from current ChannelSKU");
   }
   const currentAttributes = parseWalmartListingAttributes(sku.attributes);
+  const productTruthManifest = currentAttributes.product_truth_manifest;
   const currentStoreIndex =
-    currentAttributes.product_truth_manifest?.listing_scope.store_index;
+    productTruthManifest?.listing_scope.store_index;
   if (currentStoreIndex !== input.certification.store_index) {
     throw new Error(
       "Certification store_index differs from current Product Truth listing scope",
     );
+  }
+  if (!productTruthManifest) {
+    throw new Error("Certified ChannelSKU has no Product Truth listing manifest");
   }
   const walmartContract = currentAttributes.walmart;
   if (!walmartContract) {
@@ -2013,6 +2051,7 @@ export async function replayCertifiedWalmartNewSkuLocally(input: {
     payload: result.payload,
     payload_sha256: payloadHash,
     validation,
+    product_truth_manifest: productTruthManifest,
     walmart_contract: walmartContract,
     offer_handoff: result.offer_handoff,
   };
@@ -2378,7 +2417,35 @@ export async function applyCertifiedWalmartNewSku(input: {
               checkedAt: new Date(),
               correlationId: sellerSkuResponse.correlationId,
             });
-            await inspectWalmartPublicImageSet(currentImageUrls as string[]);
+            const currentImages = await inspectWalmartPublicImageSet(
+              currentImageUrls as string[],
+            );
+            for (const [index, currentImage] of currentImages.entries()) {
+              const certifiedImage = replay.product_truth_manifest.images.find(
+                (image) => image.url === currentImage.url,
+              );
+              if (
+                !certifiedImage ||
+                currentImage.sha256 !== certifiedImage.output_sha256
+              ) {
+                throw new Error(
+                  `Walmart image bytes drifted after certification at index ${index}`,
+                );
+              }
+            }
+            const currentMainImage = currentImages[0]!;
+            if (
+              currentMainImage.white_edge_bps <
+                WALMART_MAIN_IMAGE_MIN_WHITE_EDGE_BPS ||
+              currentMainImage.product_frame_long_edge_fill_bps <
+                WALMART_MAIN_IMAGE_MIN_LONG_EDGE_FILL_BPS ||
+              currentMainImage.product_frame_long_edge_fill_bps >
+                WALMART_MAIN_IMAGE_MAX_LONG_EDGE_FILL_BPS
+            ) {
+              throw new Error(
+                "Walmart MAIN image canvas or product occupancy drifted after certification",
+              );
+            }
             // This is deliberately the final awaited catalog guard before the
             // synchronous permit fence and POST /feeds inside submitToWalmart.
             await assertCurrentWalmartSellerCatalogAuthority({

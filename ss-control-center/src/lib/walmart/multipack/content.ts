@@ -1,7 +1,9 @@
-// Walmart Quantity-Confusion Fix — content layer. Rewrites title + the lead
-// bullets so the pack count and the "1 order = N" formula are impossible to
-// miss. Deterministic and brand-voice safe (no promo adjectives, no emoji —
-// see CLAUDE.md). Respects Walmart limits: title <= 75 chars, bullet <= 500.
+// Walmart Quantity-Confusion Fix — content layer. Keeps brand/product identity
+// at the start of the title and appends the outer pack count; the anti-confusion
+// explanation is front-loaded in the description. Deterministic and brand-voice
+// safe (no promo adjectives, no emoji — see CLAUDE.md). Aims for Walmart's
+// 50-75 character title optimization band; the exact current Product Type spec
+// remains the authority for publication limits.
 
 // Brand-voice enforcement now lives in the shared lib (Phase 0.3). Re-exported
 // so existing importers (`./content`) keep working.
@@ -108,7 +110,7 @@ export function buildMultipackListing(
 }
 
 /**
- * Rewrite listing content with an explicit, front-loaded pack count.
+ * Rewrite listing content with an explicit pack-count suffix.
  *   - title: "<product> — N-Pack (N <noun>)" trimmed to 75 chars
  *   - bullet[0]: the anti-confusion formula
  *   - bullet[1]: what one order physically is

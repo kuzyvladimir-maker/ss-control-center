@@ -7,7 +7,7 @@ import {
 } from "@/lib/sourcing/canonical-product-match-provenance";
 
 export const PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA =
-  "product-truth-listing-manifest/1.1.0" as const;
+  "product-truth-listing-manifest/1.3.0" as const;
 export const WALMART_PUBLIC_CONTRACT_SCHEMA =
   "walmart-mp-item-public/1.0.0" as const;
 export const WALMART_PREPUBLICATION_EVIDENCE_SCHEMA =
@@ -61,15 +61,28 @@ export interface ProductTruthRecipeComponentEvidence {
 export type ProductTruthImageRightsBasis =
   | "OWNED"
   | "LICENSED"
-  | "SOURCE_ALLOWED"
-  | "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS";
+  | "SOURCE_ALLOWED";
+
+export type ProductTruthImageConstructionMethod =
+  | "EXACT_SOURCE_ASSET"
+  | "DETERMINISTIC_EXACT_PIXEL_MULTIPACK";
 
 export interface ProductTruthListingImageEvidence {
   role: "MAIN" | "SECONDARY" | "NUTRITION";
   url: string;
+  output_sha256: string;
   depicted_component_keys: string[];
   source_content_observation_ids: string[];
   represented_unit_count: number;
+  construction_method: ProductTruthImageConstructionMethod;
+  source_asset_sha256s: string[];
+  rendered_unit_source_sha256s: string[];
+  generative_model_used: false;
+  package_artwork_unchanged: true;
+  package_artwork_revision_id: string;
+  added_graphics_or_text_overlay: false;
+  exact_variant_identity_match_bps: number;
+  image_truth_evidence_ref: string;
   rights_basis: ProductTruthImageRightsBasis;
   rights_evidence_ref: string;
   reviewed_at: string;
@@ -399,7 +412,11 @@ export function buildProductTruthListingManifest(input: {
 
   const main = input.images.filter((image) => image.role === "MAIN");
   if (main.length !== 1) throw new Error("exactly one MAIN image evidence row is required");
+  const packageArtworkRevisionIds = new Set<string>();
   for (const image of input.images) {
+    if (!/^[a-f0-9]{64}$/.test(image.output_sha256)) {
+      throw new Error(`${image.role}: output_sha256 must be a lowercase SHA-256`);
+    }
     if (!Number.isInteger(image.represented_unit_count) || image.represented_unit_count <= 0) {
       throw new Error(`${image.role}: represented_unit_count must be positive`);
     }
@@ -409,9 +426,69 @@ export function buildProductTruthListingManifest(input: {
     if (image.depicted_component_keys.some((key) => !componentKeys.has(key))) {
       throw new Error(`${image.role}: image references an unknown component`);
     }
+    if (
+      image.generative_model_used !== false ||
+      image.package_artwork_unchanged !== true ||
+      !/^par1:[a-f0-9]{64}$/.test(image.package_artwork_revision_id) ||
+      image.added_graphics_or_text_overlay !== false ||
+      !Number.isInteger(image.exact_variant_identity_match_bps) ||
+      image.exact_variant_identity_match_bps < 9_900 ||
+      image.exact_variant_identity_match_bps > 10_000 ||
+      !image.image_truth_evidence_ref.trim()
+    ) {
+      throw new Error(`${image.role}: image truth contract is incomplete`);
+    }
+    packageArtworkRevisionIds.add(image.package_artwork_revision_id);
+    if (
+      !["OWNED", "LICENSED", "SOURCE_ALLOWED"].includes(image.rights_basis) ||
+      !image.rights_evidence_ref.trim()
+    ) {
+      throw new Error(`${image.role}: image rights evidence is incomplete`);
+    }
+    const sourceAssets = new Set(image.source_asset_sha256s);
+    if (
+      sourceAssets.size === 0 ||
+      [...sourceAssets].some((sha256) => !/^[a-f0-9]{64}$/.test(sha256))
+    ) {
+      throw new Error(`${image.role}: exact source asset SHA-256 is required`);
+    }
+    if (image.construction_method === "EXACT_SOURCE_ASSET") {
+      if (
+        sourceAssets.size !== 1 ||
+        image.source_asset_sha256s[0] !== image.output_sha256 ||
+        image.rendered_unit_source_sha256s.length !== 0
+      ) {
+        throw new Error(`${image.role}: exact source asset binding is invalid`);
+      }
+    } else if (
+      image.construction_method === "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+    ) {
+      if (
+        image.rendered_unit_source_sha256s.length !==
+          image.represented_unit_count ||
+        image.rendered_unit_source_sha256s.some(
+          (sha256) => !sourceAssets.has(sha256),
+        )
+      ) {
+        throw new Error(`${image.role}: deterministic unit-source binding is invalid`);
+      }
+    } else {
+      throw new Error(`${image.role}: image construction method is unsupported`);
+    }
+  }
+  if (packageArtworkRevisionIds.size !== 1) {
+    throw new Error("listing gallery mixes packaging-artwork revisions");
   }
   if (main[0].represented_unit_count !== input.packCount) {
     throw new Error("MAIN image represented count does not equal packCount");
+  }
+  if (
+    input.packCount > 1 &&
+    main[0].construction_method !== "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+  ) {
+    throw new Error(
+      "MAIN multipack image must be a deterministic exact-pixel composition",
+    );
   }
 
   const recipeHash = computeProductTruthRecipeHash(input.components);

@@ -645,7 +645,7 @@ test("certification template is bound to the sealed plan, stage and exact image 
   );
 
   const certification = sealWalmartNewSkuCertificationArtifact({
-    schema_version: "walmart-new-sku-certification/1.8.0",
+    schema_version: "walmart-new-sku-certification/1.9.0",
     wave_id: plan.wave_id,
     plan_sha256: plan.plan_sha256,
     stage_sha256: stage.stage_sha256,
@@ -689,7 +689,7 @@ test("certification template is bound to the sealed plan, stage and exact image 
   });
   assert.equal(
     certification.schema_version,
-    "walmart-new-sku-certification/1.8.0",
+    "walmart-new-sku-certification/1.9.0",
   );
   assert.deepEqual(
     certification.seller_catalog_authority,
@@ -875,7 +875,7 @@ test("catalog certification accepts only an exact-identifier absence", () => {
 
 test("certification confirmation changes with any operator evidence change", () => {
   const left = {
-    schema_version: "walmart-new-sku-certification-input/1.6.0",
+    schema_version: "walmart-new-sku-certification-input/1.7.0",
     wave_id: "wave",
     candidate_key: "candidate",
     stage_sha256: "stage",

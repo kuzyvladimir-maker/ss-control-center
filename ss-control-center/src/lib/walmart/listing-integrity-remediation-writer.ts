@@ -40,7 +40,7 @@ export const WALMART_LISTING_REPAIR_REQUEST_TIMEOUT_MS = 60_000;
 
 /** Filled only by the final frozen release. Null is an intentional production NO-GO. */
 const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null =
-  "cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2";
+  "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d";
 
 export function inspectWalmartListingRepairWriterProductionReadiness(): {
   apply_writer_release_pinned: boolean;

@@ -42,6 +42,7 @@ import {
 import type {
   VerifiedWalmartListingRepairCustodyApplyEvidence,
 } from "./listing-integrity-remediation-apply-evidence.ts";
+import { hasFrontLoadedPackCount } from "./multipack/guidelines.ts";
 
 export const WALMART_LISTING_REPAIR_PLAN_SCHEMA =
   "walmart-listing-integrity-repair-plan/v2" as const;
@@ -62,7 +63,7 @@ const FIELD_ORDER = Object.freeze([
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
 const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
-  "cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2";
+  "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE
@@ -841,6 +842,12 @@ function assertTargetSurfaceMatchesProductTruth(
 ): void {
   const description = surface.description ?? "";
   const bullets = surface.bullets.join("\n");
+  const standardMeasuredMultipack = expected.outer_units > 1
+    && expected.package_facts.some((fact) => fact.kind === "net_content")
+    && expected.package_facts.some((fact) => fact.kind === "inner_item_count");
+  if (standardMeasuredMultipack && hasFrontLoadedPackCount(surface.title)) {
+    fail("repair target title front-loads Pack Count before product identity");
+  }
   if (!identityTextPass(surface.title, expected)
     || !explicitOuterCount(surface.title, expected.outer_units)) {
     fail("repair target title does not express exact Product Truth identity/count");

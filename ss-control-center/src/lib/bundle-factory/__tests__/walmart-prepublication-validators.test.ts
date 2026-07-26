@@ -148,18 +148,38 @@ function fixture(): ValidatorInput {
     images: [{
       role: "MAIN",
       url: "https://images.example/main.jpg",
+      output_sha256: "1".repeat(64),
       depicted_component_keys: ["variant-a"],
       source_content_observation_ids: ["content-a"],
       represented_unit_count: 2,
-      rights_basis: "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      source_asset_sha256s: ["2".repeat(64)],
+      rendered_unit_source_sha256s: ["2".repeat(64), "2".repeat(64)],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"4".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "image-truth:pilot-main",
+      rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "image-run:pilot",
       reviewed_at: recent(1),
     }, {
       role: "SECONDARY",
       url: "https://images.example/secondary.jpg",
+      output_sha256: "3".repeat(64),
       depicted_component_keys: ["variant-a"],
       source_content_observation_ids: ["content-a"],
       represented_unit_count: 2,
+      construction_method: "EXACT_SOURCE_ASSET",
+      source_asset_sha256s: ["3".repeat(64)],
+      rendered_unit_source_sha256s: [],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"4".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "image-truth:pilot-secondary",
       rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "image-source:pilot-secondary",
       reviewed_at: recent(1),
@@ -410,6 +430,52 @@ test("Product Truth fails closed on content-role, price and MAIN count drift", a
     root.product_truth_manifest!.images[0].represented_unit_count = 1;
   });
   assert.match((await validatorWalmartProductTruth(wrongCount)).message ?? "", /MAIN represents/);
+});
+
+test("Product Truth image gate rejects generated or altered package art and sub-99% identity", async () => {
+  const generated = mutate(fixture(), (root) => {
+    (root.product_truth_manifest!.images[0] as unknown as {
+      generative_model_used: boolean;
+    }).generative_model_used = true;
+  });
+  assert.match(
+    (await validatorWalmartProductTruth(generated)).message ?? "",
+    /exact-product truth is incomplete/,
+  );
+
+  const overlay = mutate(fixture(), (root) => {
+    (root.product_truth_manifest!.images[0] as unknown as {
+      added_graphics_or_text_overlay: boolean;
+    }).added_graphics_or_text_overlay = true;
+  });
+  assert.match(
+    (await validatorWalmartProductTruth(overlay)).message ?? "",
+    /exact-product truth is incomplete/,
+  );
+
+  const lowIdentity = mutate(fixture(), (root) => {
+    root.product_truth_manifest!.images[0].exact_variant_identity_match_bps = 9_899;
+  });
+  assert.match(
+    (await validatorWalmartProductTruth(lowIdentity)).message ?? "",
+    /exact-product truth is incomplete/,
+  );
+
+  const missingUnit = mutate(fixture(), (root) => {
+    root.product_truth_manifest!.images[0].rendered_unit_source_sha256s.pop();
+  });
+  assert.match(
+    (await validatorWalmartProductTruth(missingUnit)).message ?? "",
+    /deterministic unit-source binding is invalid/,
+  );
+
+  const missingRights = mutate(fixture(), (root) => {
+    root.product_truth_manifest!.images[0].rights_evidence_ref = "";
+  });
+  assert.match(
+    (await validatorWalmartProductTruth(missingRights)).message ?? "",
+    /lacks rights evidence/,
+  );
 });
 
 test("Product Truth requires evidence for every public Walmart image URL", async () => {

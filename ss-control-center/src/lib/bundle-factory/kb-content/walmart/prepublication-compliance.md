@@ -1,10 +1,10 @@
 # Walmart US — pre-publication compliance contract
 
-**Policy version:** `walmart-us-prepublication/2026-07-23.4`
-**Contract schemas:** `product-truth-listing-manifest/1.1.0`,
+**Policy version:** `walmart-us-prepublication/2026-07-26.1`
+**Contract schemas:** `product-truth-listing-manifest/1.2.0`,
 `walmart-mp-item-public/1.0.0`, `walmart-prepublication-evidence/1.2.0`
 **Current recommended SFF new-item spec:** `MP_ITEM 5.0.20260501-19_21_29-api`
-**Verified against current official Walmart documentation:** 2026-07-23
+**Verified against current official Walmart documentation:** 2026-07-26
 
 This document is the runtime prompt companion to the typed contracts in
 `src/lib/bundle-factory/walmart-listing-contract.ts`. It does not authorize a
@@ -93,6 +93,26 @@ override this contract, Seller Center evidence or the current live Get Spec.
   ZIP/store-scoped and no older than seven days.
 - MAIN must trace to the exact content observations, represent the exact outer
   quantity and cover every recipe component. Every image needs rights evidence.
+- The package shown in every image must be the exact physical variant named by
+  the title and attributes: same brand, product, flavor, size, count and current
+  package artwork. A human-reviewed identity score below `9900 bps` is a hard
+  block, not a warning.
+- New-SKU imagery may use either the exact rights-cleared source asset unchanged,
+  or a deterministic multipack composition that repeats those exact source pixels.
+  A generative model must not redraw, reconstruct, restyle or invent package
+  artwork. Cropping, resizing, white-canvas placement and deterministic repetition
+  are permitted only when the package pixels remain unchanged.
+- A homogeneous multipack MAIN must visibly contain exactly `N` complete units,
+  where `N` equals the sealed recipe and public multipack quantity. The engine
+  binds every rendered unit to a source SHA-256 and rejects missing, extra,
+  obscured or overlapping units.
+- The MAIN contains no added quantity badge, promotional text or graphic overlay.
+  The product group targets 95% of the available square frame without distortion;
+  the automated pilot accepts a 90–97% long-edge band, requires a pure-white edge
+  background and rejects excessive whitespace or edge clipping.
+- Image truth and image rights are independent gates. Exact donor pixels do not
+  by themselves prove publication rights; every source still needs `OWNED`,
+  `LICENSED` or documented `SOURCE_ALLOWED` evidence.
 - Every public secondary URL must have its own top-level lineage/rights row.
   The initial pilot uses query-free HTTPS JPEG/PNG URLs, square images at
   Walmart's requested 2200×2200 pixels and Walmart's current 5 MB maximum.
@@ -101,8 +121,10 @@ override this contract, Seller Center evidence or the current live Get Spec.
 - Certification downloads and decodes **every** MAIN/secondary/nutrition public
   image, rejects redirects, missing/mismatched byte lengths, undecodable bytes,
   private-address targets, wrong MIME/format, files above 5 MB, non-square images
-  and dimensions below 2200×2200. The exact image set is checked again immediately
-  before the live feed POST; a warning or manual fallback cannot pass the pilot.
+  and dimensions below 2200×2200. It also binds the downloaded bytes to the sealed
+  output SHA-256. The exact image set, byte hashes, background and MAIN occupancy
+  are checked again immediately before the live feed POST; a warning or manual
+  fallback cannot pass the pilot.
 
 ### Prohibited/restricted products and account entitlement
 

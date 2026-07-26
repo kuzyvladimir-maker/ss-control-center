@@ -15,6 +15,7 @@ import {
   buildProductTruthListingManifest,
   mergeWalmartListingContracts,
   sealWalmartDistributionApproval,
+  type ProductTruthListingImageEvidence,
   type ProductTruthRecipeComponentEvidence,
   type PublishableWalmartSkuInput,
   type WalmartPrepublicationEvidence,
@@ -62,6 +63,27 @@ const component: ProductTruthRecipeComponentEvidence = {
   },
 };
 
+const exactMainImage: ProductTruthListingImageEvidence = {
+  role: "MAIN",
+  url: "https://images.example/main.jpg",
+  output_sha256: "b".repeat(64),
+  depicted_component_keys: ["variant-a"],
+  source_content_observation_ids: ["content-a"],
+  represented_unit_count: 2,
+  construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+  source_asset_sha256s: ["a".repeat(64)],
+  rendered_unit_source_sha256s: ["a".repeat(64), "a".repeat(64)],
+  generative_model_used: false,
+  package_artwork_unchanged: true,
+  package_artwork_revision_id: `par1:${"d".repeat(64)}`,
+  added_graphics_or_text_overlay: false,
+  exact_variant_identity_match_bps: 10_000,
+  image_truth_evidence_ref: "image-truth:test",
+  rights_basis: "SOURCE_ALLOWED",
+  rights_evidence_ref: "image-rights:test",
+  reviewed_at: "2026-07-19T11:25:00.000Z",
+};
+
 const staleMatcherProvenanceCases = [
   {
     field: "matcher_version",
@@ -99,7 +121,7 @@ const walmart: WalmartPublicListingContract = {
 
 const prepublication: WalmartPrepublicationEvidence = {
   schema_version: WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
-  policy_version: "walmart-us-prepublication/2026-07-23.4",
+  policy_version: "walmart-us-prepublication/2026-07-26.1",
   generated_at: "2026-07-19T11:40:00.000Z",
   store_index: 1,
   sku: "SV-WM01-TEST",
@@ -220,10 +242,20 @@ test("builds a count-accurate exact Product Truth listing manifest", () => {
     images: [{
       role: "MAIN",
       url: "https://images.example/main.jpg",
+      output_sha256: "b".repeat(64),
       depicted_component_keys: ["variant-a"],
       source_content_observation_ids: ["content-a"],
       represented_unit_count: 2,
-      rights_basis: "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      source_asset_sha256s: ["a".repeat(64)],
+      rendered_unit_source_sha256s: ["a".repeat(64), "a".repeat(64)],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"d".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "image-truth:test",
+      rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "image-run:test",
       reviewed_at: "2026-07-19T11:25:00.000Z",
     }],
@@ -243,6 +275,71 @@ test("builds a count-accurate exact Product Truth listing manifest", () => {
   );
 });
 
+test("image truth rejects generated artwork, overlays, sub-99% identity, count drift, and missing rights", () => {
+  const build = (image: ProductTruthListingImageEvidence) =>
+    buildProductTruthListingManifest({
+      sku: "SV-WM01-TEST",
+      storeIndex: 1,
+      verifiedAt: new Date("2026-07-19T11:30:00.000Z"),
+      packCount: 2,
+      components: [component],
+      images: [image],
+    });
+
+  assert.throws(
+    () => build({ ...exactMainImage, generative_model_used: true as false }),
+    /image truth contract is incomplete/,
+  );
+  assert.throws(
+    () => build({ ...exactMainImage, package_artwork_unchanged: false as true }),
+    /image truth contract is incomplete/,
+  );
+  assert.throws(
+    () => build({ ...exactMainImage, added_graphics_or_text_overlay: true as false }),
+    /image truth contract is incomplete/,
+  );
+  assert.throws(
+    () => build({ ...exactMainImage, exact_variant_identity_match_bps: 9_899 }),
+    /image truth contract is incomplete/,
+  );
+  assert.throws(
+    () => build({
+      ...exactMainImage,
+      rendered_unit_source_sha256s: ["a".repeat(64)],
+    }),
+    /deterministic unit-source binding is invalid/,
+  );
+  assert.throws(
+    () => build({ ...exactMainImage, rights_evidence_ref: "" }),
+    /image rights evidence is incomplete/,
+  );
+});
+
+test("image truth rejects galleries that mix packaging-artwork revisions", () => {
+  const secondary: ProductTruthListingImageEvidence = {
+    ...exactMainImage,
+    role: "SECONDARY",
+    url: "https://images.example/secondary.jpg",
+    output_sha256: "c".repeat(64),
+    represented_unit_count: 1,
+    construction_method: "EXACT_SOURCE_ASSET",
+    source_asset_sha256s: ["c".repeat(64)],
+    rendered_unit_source_sha256s: [],
+    package_artwork_revision_id: `par1:${"e".repeat(64)}`,
+  };
+  assert.throws(
+    () => buildProductTruthListingManifest({
+      sku: "SV-WM01-TEST",
+      storeIndex: 1,
+      verifiedAt: new Date("2026-07-19T11:30:00.000Z"),
+      packCount: 2,
+      components: [component],
+      images: [exactMainImage, secondary],
+    }),
+    /mixes packaging-artwork revisions/,
+  );
+});
+
 test("matcher provenance fails closed at manifest build, approval seal, and publication validation", () => {
   const manifest = buildProductTruthListingManifest({
     sku: "SV-WM01-TEST",
@@ -253,9 +350,19 @@ test("matcher provenance fails closed at manifest build, approval seal, and publ
     images: [{
       role: "MAIN",
       url: "https://images.example/main.jpg",
+      output_sha256: "b".repeat(64),
       depicted_component_keys: ["variant-a"],
       source_content_observation_ids: ["content-a"],
       represented_unit_count: 2,
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      source_asset_sha256s: ["a".repeat(64)],
+      rendered_unit_source_sha256s: ["a".repeat(64), "a".repeat(64)],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"d".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 9_900,
+      image_truth_evidence_ref: "image-truth:test",
       rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "rights:test",
       reviewed_at: "2026-07-19T11:25:00.000Z",
@@ -329,9 +436,19 @@ test("approval seals every publishable field and detects later drift", () => {
     images: [{
       role: "MAIN",
       url: "https://images.example/main.jpg",
+      output_sha256: "b".repeat(64),
       depicted_component_keys: ["variant-a"],
       source_content_observation_ids: ["content-a"],
       represented_unit_count: 2,
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      source_asset_sha256s: ["a".repeat(64)],
+      rendered_unit_source_sha256s: ["a".repeat(64), "a".repeat(64)],
+      generative_model_used: false,
+      package_artwork_unchanged: true,
+      package_artwork_revision_id: `par1:${"d".repeat(64)}`,
+      added_graphics_or_text_overlay: false,
+      exact_variant_identity_match_bps: 10_000,
+      image_truth_evidence_ref: "image-truth:test",
       rights_basis: "SOURCE_ALLOWED",
       rights_evidence_ref: "rights:test",
       reviewed_at: "2026-07-19T11:25:00.000Z",

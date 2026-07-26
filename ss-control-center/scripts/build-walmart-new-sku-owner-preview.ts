@@ -6,6 +6,8 @@ import { dirname, resolve } from "node:path";
 
 import { buildWalmartNewSkuOwnerPreviewGallery } from
   "../src/lib/bundle-factory/walmart-new-sku-owner-preview";
+import type { WalmartPackagingArtworkReview } from
+  "../src/lib/bundle-factory/walmart-new-sku-packaging-artwork";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -44,6 +46,8 @@ function stringArray(value: unknown, label: string): string[] {
 function parseArgs(argv: string[]): {
   source: string;
   sourceSha: string;
+  imageReview: string;
+  mainImageUrl: string | null;
   out: string;
   generatedAt: string;
 } {
@@ -57,13 +61,26 @@ function parseArgs(argv: string[]): {
     if (values.has(flag)) throw new Error(`duplicate flag ${flag}`);
     values.set(flag, value);
   }
-  const allowed = new Set(["--source", "--source-sha", "--out", "--generated-at"]);
+  const allowed = new Set([
+    "--source",
+    "--source-sha",
+    "--image-review",
+    "--main-image-url",
+    "--out",
+    "--generated-at",
+  ]);
   for (const flag of values.keys()) {
     if (!allowed.has(flag)) throw new Error(`unsupported flag ${flag}`);
   }
   return {
     source: resolve(textValue(values.get("--source"), "--source")),
     sourceSha: resolve(textValue(values.get("--source-sha"), "--source-sha")),
+    imageReview: resolve(
+      textValue(values.get("--image-review"), "--image-review"),
+    ),
+    mainImageUrl: values.has("--main-image-url")
+      ? textValue(values.get("--main-image-url"), "--main-image-url")
+      : null,
     out: resolve(textValue(values.get("--out"), "--out")),
     generatedAt: textValue(values.get("--generated-at"), "--generated-at"),
   };
@@ -71,9 +88,10 @@ function parseArgs(argv: string[]): {
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  const [sourceBytes, expectedShaRaw] = await Promise.all([
+  const [sourceBytes, expectedShaRaw, imageReviewRaw] = await Promise.all([
     readFile(args.source),
     readFile(args.sourceSha, "utf8"),
+    readFile(args.imageReview, "utf8"),
   ]);
   const actualSha = createHash("sha256").update(sourceBytes).digest("hex");
   const expectedSha = expectedShaRaw.trim().split(/\s+/)[0] ?? "";
@@ -95,6 +113,18 @@ async function main(): Promise<void> {
     JSON.parse(textValue(legacy.donorOfferRowJson, "donorOfferRowJson")),
     "donorOfferRow",
   );
+  const packagingArtworkReview = record(
+    JSON.parse(imageReviewRaw),
+    "packagingArtworkReview",
+  ) as unknown as WalmartPackagingArtworkReview;
+  const imageUrls = stringArray(product.imageUrls, "imageUrls");
+  const donorMainImageUrl = textValue(product.mainImageUrl, "mainImageUrl");
+  const mainImageUrl = args.mainImageUrl ?? donorMainImageUrl;
+  if (!imageUrls.includes(mainImageUrl)) {
+    throw new Error(
+      "--main-image-url must be one of the exact discovered donor image URLs",
+    );
+  }
   const artifact = buildWalmartNewSkuOwnerPreviewGallery({
     generatedAt: args.generatedAt,
     sourcePlanPath: args.source,
@@ -120,8 +150,9 @@ async function main(): Promise<void> {
     shippingLabelCents: 878,
     description: textValue(product.description, "description"),
     ingredients: textValue(product.ingredients, "ingredients"),
-    mainImageUrl: textValue(product.mainImageUrl, "mainImageUrl"),
-    imageUrls: stringArray(product.imageUrls, "imageUrls"),
+    mainImageUrl,
+    imageUrls,
+    packagingArtworkReview,
     packCounts: [2, 3],
   });
   await mkdir(dirname(args.out), { recursive: true });

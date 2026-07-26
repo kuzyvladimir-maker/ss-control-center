@@ -3,6 +3,8 @@ import test from "node:test";
 
 import { buildWalmartNewSkuOwnerPreviewGallery } from
   "../walmart-new-sku-owner-preview";
+import { WALMART_PACKAGING_ARTWORK_REVIEW_SCHEMA } from
+  "../walmart-new-sku-packaging-artwork";
 
 test("owner preview emits two deterministic non-publishable Walmart projections", () => {
   const input = {
@@ -28,7 +30,37 @@ test("owner preview emits two deterministic non-publishable Walmart projections"
     imageUrls: [
       "https://images.example/main.jpg",
       "https://images.example/nutrition.jpg",
+      "https://images.example/old.jpg",
     ],
+    packagingArtworkReview: {
+      schema_version: WALMART_PACKAGING_ARTWORK_REVIEW_SCHEMA,
+      canonical_variant_id: `cpv1:${"b".repeat(64)}`,
+      approved_package_artwork_revision_id: `par1:${"c".repeat(64)}`,
+      reviewed_at: "2026-07-23T17:59:00.000Z",
+      images: [
+        {
+          url: "https://images.example/main.jpg",
+          canonical_variant_id: `cpv1:${"b".repeat(64)}`,
+          package_artwork_revision_id: `par1:${"c".repeat(64)}`,
+          disposition: "APPROVED_CURRENT" as const,
+          review_evidence_ref: "image-review:main",
+        },
+        {
+          url: "https://images.example/nutrition.jpg",
+          canonical_variant_id: `cpv1:${"b".repeat(64)}`,
+          package_artwork_revision_id: `par1:${"c".repeat(64)}`,
+          disposition: "APPROVED_CURRENT" as const,
+          review_evidence_ref: "image-review:nutrition",
+        },
+        {
+          url: "https://images.example/old.jpg",
+          canonical_variant_id: `cpv1:${"b".repeat(64)}`,
+          package_artwork_revision_id: `par1:${"d".repeat(64)}`,
+          disposition: "REJECTED_OLDER_PACKAGING" as const,
+          review_evidence_ref: "image-review:old",
+        },
+      ],
+    },
     packCounts: [2, 3] as Array<2 | 3>,
   };
   const first = buildWalmartNewSkuOwnerPreviewGallery(input);
@@ -49,5 +81,19 @@ test("owner preview emits two deterministic non-publishable Walmart projections"
     "BLOCKED_PREVIEW_ONLY",
   );
   assert.equal(first.rules.marketplace_mutated, false);
+  assert.deepEqual(
+    first.listing_previews[0]!.gallery.unit_image_urls,
+    [
+      "https://images.example/main.jpg",
+      "https://images.example/nutrition.jpg",
+    ],
+  );
+  assert.deepEqual(
+    first.listing_previews[0]!.gallery.excluded_donor_images,
+    [{
+      url: "https://images.example/old.jpg",
+      disposition: "REJECTED_OLDER_PACKAGING",
+    }],
+  );
   assert.match(first.artifact_sha256, /^[a-f0-9]{64}$/);
 });

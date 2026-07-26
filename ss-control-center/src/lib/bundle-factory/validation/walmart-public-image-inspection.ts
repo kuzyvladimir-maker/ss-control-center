@@ -1,7 +1,12 @@
+import { createHash } from "node:crypto";
+
 import sharp from "sharp";
 
 export const WALMART_PILOT_IMAGE_MIN_PIXELS = 2200;
 export const WALMART_PILOT_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const WALMART_MAIN_IMAGE_MIN_LONG_EDGE_FILL_BPS = 9_000;
+export const WALMART_MAIN_IMAGE_MAX_LONG_EDGE_FILL_BPS = 9_700;
+export const WALMART_MAIN_IMAGE_MIN_WHITE_EDGE_BPS = 9_900;
 const IMAGE_FETCH_TIMEOUT_MS = 15_000;
 const ALLOWED_CONTENT_TYPES = new Set([
   "image/jpeg",
@@ -11,10 +16,67 @@ const ALLOWED_CONTENT_TYPES = new Set([
 
 export interface VerifiedWalmartPublicImage {
   url: string;
+  sha256: string;
   format: "jpeg" | "png";
   width: number;
   height: number;
   byte_size: number;
+  white_edge_bps: number;
+  product_frame_long_edge_fill_bps: number;
+}
+
+async function inspectWhiteCanvas(bytes: Buffer): Promise<{
+  white_edge_bps: number;
+  product_frame_long_edge_fill_bps: number;
+}> {
+  const { data, info } = await sharp(bytes, { failOn: "warning" })
+    .flatten({ background: { r: 255, g: 255, b: 255 } })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height, channels } = info;
+  const edgeBand = Math.max(1, Math.round(Math.min(width, height) * 0.01));
+  let edgePixels = 0;
+  let whiteEdgePixels = 0;
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const offset = (y * width + x) * channels;
+      const white =
+        data[offset]! >= 245 &&
+        data[offset + 1]! >= 245 &&
+        data[offset + 2]! >= 245;
+      if (
+        x < edgeBand ||
+        y < edgeBand ||
+        x >= width - edgeBand ||
+        y >= height - edgeBand
+      ) {
+        edgePixels += 1;
+        if (white) whiteEdgePixels += 1;
+      }
+      if (!white) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+  if (maxX < minX || maxY < minY) {
+    throw new Error("Walmart image does not contain a visible product");
+  }
+  const spanX = maxX - minX + 1;
+  const spanY = maxY - minY + 1;
+  return {
+    white_edge_bps: Math.round((whiteEdgePixels / edgePixels) * 10_000),
+    product_frame_long_edge_fill_bps: Math.round(
+      Math.max(spanX / width, spanY / height) * 10_000,
+    ),
+  };
 }
 
 function assertPublicImageUrl(raw: string): URL {
@@ -121,12 +183,15 @@ export async function inspectWalmartPublicImage(
       `got ${metadata.width}x${metadata.height}: ${rawUrl}`,
     );
   }
+  const canvas = await inspectWhiteCanvas(bytes);
   return {
     url: rawUrl,
+    sha256: createHash("sha256").update(bytes).digest("hex"),
     format: metadata.format,
     width: metadata.width,
     height: metadata.height,
     byte_size: bytes.byteLength,
+    ...canvas,
   };
 }
 

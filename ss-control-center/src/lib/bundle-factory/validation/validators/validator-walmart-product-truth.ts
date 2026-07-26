@@ -18,6 +18,7 @@ import {
   isPositiveInteger,
   isPositiveNumber,
   isRecord,
+  isSha256,
   isWalmartPilotImageUrl,
   parseWalmartAttributes,
   recordArray,
@@ -247,6 +248,7 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
     if (imageRecords) {
       const mainImages = imageRecords.filter((image) => image.role === "MAIN");
       const imageUrls = new Set<string>();
+      const packageArtworkRevisionIds = new Set<string>();
       if (mainImages.length !== 1) {
         failures.push(`manifest requires exactly one MAIN image; found ${mainImages.length}`);
       }
@@ -275,12 +277,87 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
         if (!isPositiveInteger(image.represented_unit_count)) {
           failures.push(`${String(image.role)} image represented_unit_count is invalid`);
         }
+        if (!isSha256(image.output_sha256)) {
+          failures.push(`${String(image.role)} image output_sha256 is invalid`);
+        }
+        const rawSourceAssetSha256s = Array.isArray(image.source_asset_sha256s)
+          ? image.source_asset_sha256s
+          : null;
+        const sourceAssetSha256s = rawSourceAssetSha256s
+          ? rawSourceAssetSha256s.filter(isSha256)
+          : [];
+        const rawRenderedUnitSourceSha256s = Array.isArray(
+          image.rendered_unit_source_sha256s,
+        )
+          ? image.rendered_unit_source_sha256s
+          : null;
+        const renderedUnitSourceSha256s = rawRenderedUnitSourceSha256s
+          ? rawRenderedUnitSourceSha256s.filter(isSha256)
+          : [];
+        const sourceAssets = new Set(sourceAssetSha256s);
+        if (
+          !rawSourceAssetSha256s ||
+          sourceAssets.size === 0 ||
+          sourceAssetSha256s.length !== rawSourceAssetSha256s.length
+        ) {
+          failures.push(`${String(image.role)} image exact source assets are invalid`);
+        }
+        if (
+          !rawRenderedUnitSourceSha256s ||
+          renderedUnitSourceSha256s.length !== rawRenderedUnitSourceSha256s.length
+        ) {
+          failures.push(`${String(image.role)} image rendered unit SHA-256s are invalid`);
+        }
+        if (
+          image.generative_model_used !== false ||
+          image.package_artwork_unchanged !== true ||
+          !/^par1:[a-f0-9]{64}$/.test(
+            String(image.package_artwork_revision_id ?? ""),
+          ) ||
+          image.added_graphics_or_text_overlay !== false ||
+          !Number.isInteger(image.exact_variant_identity_match_bps) ||
+          Number(image.exact_variant_identity_match_bps) < 9_900 ||
+          Number(image.exact_variant_identity_match_bps) > 10_000 ||
+          !hasText(image.image_truth_evidence_ref)
+        ) {
+          failures.push(`${String(image.role)} image exact-product truth is incomplete`);
+        }
+        if (
+          /^par1:[a-f0-9]{64}$/.test(
+            String(image.package_artwork_revision_id ?? ""),
+          )
+        ) {
+          packageArtworkRevisionIds.add(
+            String(image.package_artwork_revision_id),
+          );
+        }
+        if (image.construction_method === "EXACT_SOURCE_ASSET") {
+          if (
+            sourceAssets.size !== 1 ||
+            sourceAssetSha256s[0] !== image.output_sha256 ||
+            renderedUnitSourceSha256s.length !== 0
+          ) {
+            failures.push(`${String(image.role)} image exact-source binding is invalid`);
+          }
+        } else if (
+          image.construction_method === "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+        ) {
+          if (
+            renderedUnitSourceSha256s.length !== image.represented_unit_count ||
+            renderedUnitSourceSha256s.some((sha256) => !sourceAssets.has(sha256))
+          ) {
+            failures.push(
+              `${String(image.role)} image deterministic unit-source binding is invalid`,
+            );
+          }
+        } else {
+          failures.push(`${String(image.role)} image construction method is unsupported`);
+        }
         if (
           ![
             "OWNED",
             "LICENSED",
             "SOURCE_ALLOWED",
-            "AI_DERIVED_FROM_RIGHTS_CLEARED_INPUTS",
           ].includes(String(image.rights_basis)) ||
           !hasText(image.rights_evidence_ref)
         ) {
@@ -290,6 +367,9 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
           failures.push(`${String(image.role)} image reviewed_at is invalid`);
         }
       }
+      if (packageArtworkRevisionIds.size !== 1) {
+        failures.push("listing gallery mixes packaging-artwork revisions");
+      }
       const main = mainImages[0];
       if (main) {
         if (main.url !== sku.main_image_url) {
@@ -298,6 +378,16 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
         if (master_bundle && main.represented_unit_count !== master_bundle.pack_count) {
           failures.push(
             `MAIN represents ${String(main.represented_unit_count)} units; expected ${master_bundle.pack_count}`,
+          );
+        }
+        if (
+          master_bundle &&
+          master_bundle.pack_count > 1 &&
+          main.construction_method !==
+            "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+        ) {
+          failures.push(
+            "MAIN multipack image must use deterministic exact-pixel composition",
           );
         }
         const depicted = new Set(

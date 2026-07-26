@@ -117,6 +117,14 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
     current_walmart_write_authorized: false;
     current_mass_run_authorized: false;
   };
+  assurance: {
+    network_calls: 0;
+    model_calls: 0;
+    database_reads: 0;
+    database_writes: 0;
+    walmart_reads: 0;
+    walmart_writes: 0;
+  };
   next_required_inputs: readonly string[];
   body_sha256: string;
 }
@@ -284,6 +292,23 @@ export function verifyWalmartListingRepairCompilationRequest(
   value: unknown,
 ): VerifiedWalmartListingRepairCompilationRequest {
   const raw = record(value, "compilation request");
+  const exactTopLevelFields = [
+    "assurance",
+    "body_sha256",
+    "created_at",
+    "frozen_review",
+    "listing",
+    "next_required_inputs",
+    "owner_gate",
+    "product_truth_candidate",
+    "repair",
+    "schema_version",
+    "status",
+  ];
+  if (walmartListingIntegritySha256(Object.keys(raw).sort())
+    !== walmartListingIntegritySha256(exactTopLevelFields)) {
+    fail("compilation request fields are not the exact supported schema");
+  }
   if (raw.schema_version !== WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA
     || raw.status !== "READY_FOR_CONNECTED_MATERIALS") {
     fail("compilation request schema/status is unsupported");
@@ -344,6 +369,20 @@ export function verifyWalmartListingRepairCompilationRequest(
     || gate.current_mass_run_authorized !== false) {
     fail("owner gate boundary is invalid");
   }
+  const assurance = record(raw.assurance, "assurance");
+  const exactAssuranceFields = [
+    "database_reads",
+    "database_writes",
+    "model_calls",
+    "network_calls",
+    "walmart_reads",
+    "walmart_writes",
+  ];
+  if (walmartListingIntegritySha256(Object.keys(assurance).sort())
+      !== walmartListingIntegritySha256(exactAssuranceFields)
+    || exactAssuranceFields.some((field) => assurance[field] !== 0)) {
+    fail("compilation request assurance must prove exact zero effects");
+  }
   return {
     schema_version: WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA,
     created_at: instant(raw.created_at, "created_at"),
@@ -385,6 +424,14 @@ export function verifyWalmartListingRepairCompilationRequest(
       confirmation_would_authorize_one_sku_package_compilation: true,
       current_walmart_write_authorized: false,
       current_mass_run_authorized: false,
+    },
+    assurance: {
+      network_calls: 0,
+      model_calls: 0,
+      database_reads: 0,
+      database_writes: 0,
+      walmart_reads: 0,
+      walmart_writes: 0,
     },
     next_required_inputs: Array.isArray(raw.next_required_inputs)
       ? raw.next_required_inputs.map((entry, index) =>

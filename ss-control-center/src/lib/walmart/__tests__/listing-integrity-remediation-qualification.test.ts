@@ -777,7 +777,7 @@ test("production verifier is pinned and still rejects an owner key outside the p
   assert.deepEqual(inspectWalmartListingRepairQualificationProductionReadiness(), {
     verifier_release_pinned: true,
     verifier_engine_release_sha256:
-      "cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2",
+      "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d",
     walmart_native_payload_validator_ready: true,
     frozen_apply_writer_attestation_ready: true,
   });
@@ -898,6 +898,17 @@ test("FaisalX-1183 review target needs explicit Pack of 6 in description and bul
       expected,
     }),
     { valid: true, marketplace_write_authorized: false },
+  );
+
+  const packFirstSurface = clone(proposedSurface);
+  packFirstSurface.title =
+    "Pack of 6 Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag";
+  assert.throws(
+    () => precheckWalmartListingRepairTargetForReview({
+      surface: packFirstSurface,
+      expected,
+    }),
+    /title front-loads Pack Count before product identity/,
   );
 });
 

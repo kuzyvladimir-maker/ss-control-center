@@ -678,7 +678,21 @@ test("Walmart pilot decodes and verifies every public image", async () => {
       channels: 3,
       background: { r: 255, g: 255, b: 255 },
     },
-  }).png().toBuffer();
+  })
+    .composite([{
+      input: {
+        create: {
+          width: 2090,
+          height: 1700,
+          channels: 3,
+          background: { r: 196, g: 24, b: 32 },
+        },
+      },
+      left: 55,
+      top: 250,
+    }])
+    .png()
+    .toBuffer();
   const fakeFetch = (async () => new Response(new Uint8Array(bytes), {
     status: 200,
     headers: {
@@ -694,6 +708,36 @@ test("Walmart pilot decodes and verifies every public image", async () => {
     [2200, 2200],
     [2200, 2200],
   ]);
+  assert.ok(verified.every((image) => /^[a-f0-9]{64}$/.test(image.sha256)));
+  assert.ok(verified.every((image) => image.white_edge_bps === 10_000));
+  assert.ok(
+    verified.every((image) => image.product_frame_long_edge_fill_bps === 9_500),
+  );
+});
+
+test("Walmart pilot rejects a blank white image with no visible product", async () => {
+  const bytes = await sharp({
+    create: {
+      width: 2200,
+      height: 2200,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const fakeFetch = (async () => new Response(new Uint8Array(bytes), {
+    status: 200,
+    headers: {
+      "content-type": "image/png",
+      "content-length": String(bytes.byteLength),
+    },
+  })) as typeof fetch;
+  await assert.rejects(
+    inspectWalmartPublicImageSet([
+      "https://images.example/main.png",
+      "https://images.example/secondary.png",
+    ], fakeFetch),
+    /does not contain a visible product/,
+  );
 });
 
 test("Walmart pilot fails when any secondary image is undersized", async () => {

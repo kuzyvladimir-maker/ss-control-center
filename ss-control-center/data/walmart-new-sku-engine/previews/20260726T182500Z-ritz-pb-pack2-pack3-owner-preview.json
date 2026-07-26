@@ -1,0 +1,239 @@
+{
+  "schema_version": "walmart-new-sku-owner-preview-gallery/1.1.0",
+  "generated_at": "2026-07-26T18:25:00.000Z",
+  "channel": "WALMART_US",
+  "source": {
+    "source_plan_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/candidates/20260726T180813Z-ritz-pb-review-doctor.plan/plan.json",
+    "source_plan_sha256": "d24f00aacf998e3ddd04a0a9869b92874b6e0edf613e91bc6136d1c488791727",
+    "donor_product_id": "4bc40420-74eb-442c-acd9-e59bc91bb2f5",
+    "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+    "manufacturer_upc": "044000035440",
+    "authority": "SEALED_PRODUCT_TRUTH_PREVIEW_ONLY_NOT_PUBLICATION_EVIDENCE"
+  },
+  "rules": {
+    "target_margin_bps": 3000,
+    "referral_fee_bps": 1500,
+    "comparable_is_informational_not_hard_reject": true,
+    "walmart_pricing_rule_can_still_unpublish": true,
+    "marketplace_mutated": false,
+    "database_mutated": false,
+    "upc_reserved": false
+  },
+  "listing_previews": [
+    {
+      "preview_id": "wm-preview-2-17b208ceed57",
+      "pack_count": 2,
+      "product_name": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz",
+      "brand": "Ritz",
+      "flavor": null,
+      "size_each": "8.8 oz",
+      "total_net_weight_oz": 17.6,
+      "category": "Dry",
+      "title": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks, 8.8 oz (Pack of 2)",
+      "bullets": [
+        "Includes 2 identical retail packages",
+        "Same Ritz product, size and variant in every package",
+        "Homogeneous multipack; not a mixed assortment",
+        "Original package labels provide ingredients, allergens and nutrition facts",
+        "Main image represents all 2 packages included"
+      ],
+      "description": "Stock up with 2 identical retail packages of RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks, 8.8 oz. This homogeneous multipack contains the same Ritz product, size and variant in every package; it is not a mixed assortment. You receive 2 complete packages together as one sellable unit. Each package remains separate, so the contents can be stored and opened one package at a time. This format makes it straightforward to keep an unopened package available while another package is in use. The package count in the title and main image refers to the total number of individual retail packages included. Products arrive new in their original retail packaging. Check every package before use and follow the information printed by the manufacturer. Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. Package design and labeling may change when the manufacturer updates them. The main image represents the full 2-package quantity included in the order. Compare the delivered product name, size, variant and package count with the order details.",
+      "source_description_preview": "Enjoy a tiny take on the classic RITZ peanut butter cracker sandwiches you know and love with RITZ Bits Peanut Butter Sandwich Crackers. The bite-sized snacks layer a delicious, peanut butter spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real peanut butter and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers with peanut butter hit the spot when you're looking for lightly salty snacks with creamy peanut butter filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these peanut butter crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing.",
+      "ingredients": "Unbleached enriched flour (wheat flour, niacin, reduced iron, thiamine mononitrate {vitamin b1}, riboflavin {vitamin b2}, folic acid), peanut butter (roasted peanuts, hydrogenated vegetable oil {rapeseed and/or cottonseed and/or soybean oils}, salt, peanut oil), vegetable oil (soybean and/or canola and/or palm and/or partially hydrogenated cottonseed oil), sugar, dextrose, leavening (baking soda and/or calcium phosphate), salt, soy lecithin, malted barley flour. milk.",
+      "price_cents": 3313,
+      "economics": {
+        "goods_cost_cents": 794,
+        "packaging_cost_cents": 150,
+        "shipping_label_cents": 878,
+        "referral_fee_bps": 1500,
+        "referral_fee_cents": 497,
+        "target_margin_bps": 3000,
+        "item_price_cents": 3313,
+        "contribution_profit_cents": 994,
+        "contribution_margin_bps": 3000
+      },
+      "comparable": {
+        "exact_component_unit_price_cents": 397,
+        "linearized_comparable_cents": 794,
+        "proposed_to_comparable_ratio_bps": 41726,
+        "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+        "disposition": "WARNING_ONLY_NOT_CANDIDATE_REJECTION"
+      },
+      "gallery": {
+        "unit_image_urls": [
+          "https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e",
+          "https://target.scene7.com/is/image/Target/GUEST_9024bf68-2565-43e4-850c-f52952358485",
+          "https://target.scene7.com/is/image/Target/GUEST_09c0c1f6-ec26-45d2-aace-b30e09c981fe",
+          "https://target.scene7.com/is/image/Target/GUEST_ddf139ba-0661-4c5d-baf9-fb4443a48eda",
+          "https://target.scene7.com/is/image/Target/GUEST_045dd194-4cee-4bcf-b02e-d20e43a006d4",
+          "https://target.scene7.com/is/image/Target/GUEST_35606943-5b2c-42f2-8ef4-2e530a26959b"
+        ],
+        "main_visualization": "DUPLICATED_EXACT_DONOR_UNIT_IMAGE_PREVIEW_ONLY",
+        "represented_unit_count": 2,
+        "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+        "packaging_artwork_review_evidence_refs": [
+          "codex-review:20260726:ritz-pb-image-1-current-red-brown",
+          "codex-review:20260726:ritz-pb-image-13-current-product-promo",
+          "codex-review:20260726:ritz-pb-image-14-current-red-brown-front",
+          "codex-review:20260726:ritz-pb-image-2-exact-product-closeup",
+          "codex-review:20260726:ritz-pb-image-4-exact-product-lifestyle",
+          "codex-review:20260726:ritz-pb-image-8-exact-product-closeup"
+        ],
+        "excluded_donor_images": [
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_7816b395-eb83-4295-b2c2-0f389fefbbe1",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_f33a4497-976c-44f8-badc-99c7a56e2fcd",
+            "disposition": "REJECTED_OTHER_PRODUCT"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_adb8943c-eb63-4c21-91d3-f5590e301352",
+            "disposition": "REJECTED_OTHER_PRODUCT"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_3601e990-afa9-45f5-ae78-0aaffe126c26",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_441e9121-ef29-4ac7-8b73-6565a2dc4eec",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_6173a127-8cf6-4d12-9e6f-20494d28b6ab",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_ef7790b7-2542-4c3e-a016-0f06899d838d",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_97809998-a0fd-4d43-9915-cdfca2e890f1",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          }
+        ],
+        "publication_rights_status": "NOT_CLEARED_PREVIEW_ONLY"
+      },
+      "publication_readiness": {
+        "status": "BLOCKED_PREVIEW_ONLY",
+        "blockers": [
+          "FRESH_EXACT_PRODUCT_TRUTH_EVIDENCE_REQUIRED",
+          "COUNT_ACCURATE_RIGHTS_CLEARED_IMAGES_REQUIRED",
+          "CURRENT_POLICY_RECALL_ACCOUNT_AND_ITEM_SPEC_CHECKS_REQUIRED",
+          "UPC_NOT_RESERVED",
+          "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
+        ]
+      },
+      "preview_sha256": "66eab011ad37ac516e1534ad614177719f03f7e845c2d25d62be21a72d6aa0ea"
+    },
+    {
+      "preview_id": "wm-preview-3-4c7f667bbb4c",
+      "pack_count": 3,
+      "product_name": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz",
+      "brand": "Ritz",
+      "flavor": null,
+      "size_each": "8.8 oz",
+      "total_net_weight_oz": 26.4,
+      "category": "Dry",
+      "title": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks, 8.8 oz (Pack of 3)",
+      "bullets": [
+        "Includes 3 identical retail packages",
+        "Same Ritz product, size and variant in every package",
+        "Homogeneous multipack; not a mixed assortment",
+        "Original package labels provide ingredients, allergens and nutrition facts",
+        "Main image represents all 3 packages included"
+      ],
+      "description": "Stock up with 3 identical retail packages of RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks, 8.8 oz. This homogeneous multipack contains the same Ritz product, size and variant in every package; it is not a mixed assortment. You receive 3 complete packages together as one sellable unit. Each package remains separate, so the contents can be stored and opened one package at a time. This format makes it straightforward to keep an unopened package available while another package is in use. The package count in the title and main image refers to the total number of individual retail packages included. Products arrive new in their original retail packaging. Check every package before use and follow the information printed by the manufacturer. Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. Package design and labeling may change when the manufacturer updates them. The main image represents the full 3-package quantity included in the order. Compare the delivered product name, size, variant and package count with the order details.",
+      "source_description_preview": "Enjoy a tiny take on the classic RITZ peanut butter cracker sandwiches you know and love with RITZ Bits Peanut Butter Sandwich Crackers. The bite-sized snacks layer a delicious, peanut butter spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real peanut butter and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers with peanut butter hit the spot when you're looking for lightly salty snacks with creamy peanut butter filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these peanut butter crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing.",
+      "ingredients": "Unbleached enriched flour (wheat flour, niacin, reduced iron, thiamine mononitrate {vitamin b1}, riboflavin {vitamin b2}, folic acid), peanut butter (roasted peanuts, hydrogenated vegetable oil {rapeseed and/or cottonseed and/or soybean oils}, salt, peanut oil), vegetable oil (soybean and/or canola and/or palm and/or partially hydrogenated cottonseed oil), sugar, dextrose, leavening (baking soda and/or calcium phosphate), salt, soy lecithin, malted barley flour. milk.",
+      "price_cents": 4036,
+      "economics": {
+        "goods_cost_cents": 1191,
+        "packaging_cost_cents": 150,
+        "shipping_label_cents": 878,
+        "referral_fee_bps": 1500,
+        "referral_fee_cents": 606,
+        "target_margin_bps": 3000,
+        "item_price_cents": 4036,
+        "contribution_profit_cents": 1211,
+        "contribution_margin_bps": 3000
+      },
+      "comparable": {
+        "exact_component_unit_price_cents": 397,
+        "linearized_comparable_cents": 1191,
+        "proposed_to_comparable_ratio_bps": 33888,
+        "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+        "disposition": "WARNING_ONLY_NOT_CANDIDATE_REJECTION"
+      },
+      "gallery": {
+        "unit_image_urls": [
+          "https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e",
+          "https://target.scene7.com/is/image/Target/GUEST_9024bf68-2565-43e4-850c-f52952358485",
+          "https://target.scene7.com/is/image/Target/GUEST_09c0c1f6-ec26-45d2-aace-b30e09c981fe",
+          "https://target.scene7.com/is/image/Target/GUEST_ddf139ba-0661-4c5d-baf9-fb4443a48eda",
+          "https://target.scene7.com/is/image/Target/GUEST_045dd194-4cee-4bcf-b02e-d20e43a006d4",
+          "https://target.scene7.com/is/image/Target/GUEST_35606943-5b2c-42f2-8ef4-2e530a26959b"
+        ],
+        "main_visualization": "DUPLICATED_EXACT_DONOR_UNIT_IMAGE_PREVIEW_ONLY",
+        "represented_unit_count": 3,
+        "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+        "packaging_artwork_review_evidence_refs": [
+          "codex-review:20260726:ritz-pb-image-1-current-red-brown",
+          "codex-review:20260726:ritz-pb-image-13-current-product-promo",
+          "codex-review:20260726:ritz-pb-image-14-current-red-brown-front",
+          "codex-review:20260726:ritz-pb-image-2-exact-product-closeup",
+          "codex-review:20260726:ritz-pb-image-4-exact-product-lifestyle",
+          "codex-review:20260726:ritz-pb-image-8-exact-product-closeup"
+        ],
+        "excluded_donor_images": [
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_7816b395-eb83-4295-b2c2-0f389fefbbe1",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_f33a4497-976c-44f8-badc-99c7a56e2fcd",
+            "disposition": "REJECTED_OTHER_PRODUCT"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_adb8943c-eb63-4c21-91d3-f5590e301352",
+            "disposition": "REJECTED_OTHER_PRODUCT"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_3601e990-afa9-45f5-ae78-0aaffe126c26",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_441e9121-ef29-4ac7-8b73-6565a2dc4eec",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_6173a127-8cf6-4d12-9e6f-20494d28b6ab",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_ef7790b7-2542-4c3e-a016-0f06899d838d",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          },
+          {
+            "url": "https://target.scene7.com/is/image/Target/GUEST_97809998-a0fd-4d43-9915-cdfca2e890f1",
+            "disposition": "REJECTED_OLDER_PACKAGING"
+          }
+        ],
+        "publication_rights_status": "NOT_CLEARED_PREVIEW_ONLY"
+      },
+      "publication_readiness": {
+        "status": "BLOCKED_PREVIEW_ONLY",
+        "blockers": [
+          "FRESH_EXACT_PRODUCT_TRUTH_EVIDENCE_REQUIRED",
+          "COUNT_ACCURATE_RIGHTS_CLEARED_IMAGES_REQUIRED",
+          "CURRENT_POLICY_RECALL_ACCOUNT_AND_ITEM_SPEC_CHECKS_REQUIRED",
+          "UPC_NOT_RESERVED",
+          "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
+        ]
+      },
+      "preview_sha256": "51946f3c19bbe87c06d56168598533a2d7eaca6479fe94c5511c2972cc5add39"
+    }
+  ],
+  "artifact_sha256": "d078790ee31616eb0a3998c8852a876402dde6cdeed20d3b60a40b8a6cda9337"
+}

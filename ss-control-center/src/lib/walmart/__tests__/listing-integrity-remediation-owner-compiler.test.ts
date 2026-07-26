@@ -24,6 +24,7 @@ import {
   buildWalmartListingRepairSequenceBodyFromCompilationRequest,
   compileWalmartListingRepairOwnerDraft,
   finalizeWalmartListingRepairExecutionPackage,
+  verifyWalmartListingRepairCompilationRequest,
 } from "../listing-integrity-remediation-owner-compiler.ts";
 import {
   bootstrapWalmartListingRepairConsumptionLedger,
@@ -175,6 +176,14 @@ function compilationRequest() {
       confirmation_would_authorize_one_sku_package_compilation: true,
       current_walmart_write_authorized: false,
       current_mass_run_authorized: false,
+    },
+    assurance: {
+      network_calls: 0,
+      model_calls: 0,
+      database_reads: 0,
+      database_writes: 0,
+      walmart_reads: 0,
+      walmart_writes: 0,
     },
     next_required_inputs: [
       "fresh Get Spec receipt",
@@ -371,6 +380,21 @@ test("owner compiler creates one exact text-only execution package with zero eff
   });
 
   const request = compilationRequest();
+  const normalizedRequest =
+    verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(normalizedRequest.assurance, {
+    network_calls: 0,
+    model_calls: 0,
+    database_reads: 0,
+    database_writes: 0,
+    walmart_reads: 0,
+    walmart_writes: 0,
+  });
+  assert.equal(
+    verifyWalmartListingRepairCompilationRequest(normalizedRequest).body_sha256,
+    request.body_sha256,
+    "verified compilation requests must remain hash-valid when a caller verifies again",
+  );
   const requestFileSha = sha256(canonicalBytes(request));
   const ids = {
     sequence_id: "compiler-sequence-1",
