@@ -153,7 +153,8 @@ pause, so subscription usage and remaining work are visible to the owner.
     a deterministic standard-grocery gap for a leading `Pack of N`/`N-Pack`/
     `N Count`; searchable brand/product identity precedes variant/attributes and
     outer Pack Count, exact current Product Type spec retains hard-limit authority,
-    tests 3/3 and targeted ESLint PASS; `FaisalX-1183` title remains unchanged;
+    content validator plus future-release Qualification precheck focused 13/13
+    and targeted ESLint PASS; `FaisalX-1183` title remains unchanged;
   - [ ] 7.2 connect persistent API/state store, scheduler and resumable queue;
   - [ ] 7.3 show factual post-canary `До → После`, fresh Qualification and
     published/indexing status before waves are allowed.
