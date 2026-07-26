@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-25T21:04:43.817Z",
+  "target": {
+    "sku": "FaisalX-1208",
+    "item_id": "8406560524"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-1208",
+      "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+      "upc": "684611899187",
+      "gtin14": "00684611899187",
+      "wpid": "2EUJLXJH639L",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "8406560524",
+      "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+      "main_image_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-White-Bakery-Buns-8-count-Soft-Hamburger-Buns-19-oz-Bag-Pack-of-2_cd070b50-292c-48f0-9c54-767f94348ed3.4dfe95e288d9f04b4a3c4ac31bafb783.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "8406560524",
+      "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+      "identity_evidence": [
+        "product.item_id=8406560524",
+        "product.product_url=8406560524"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-1208",
+        "seller.ItemResponse[0].sku=FaisalX-1208",
+        "seller.ItemResponse[0].upc=684611899187",
+        "seller.normalized_gtin14=00684611899187",
+        "seller.wpid_not_itemId=2EUJLXJH639L",
+        "catalog.items[0].standardUpc~=00684611899187;itemId=8406560524",
+        "catalog.unique_numeric_public_itemId=8406560524"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=8406560524",
+        "product.product_url=8406560524"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "afae593b1d291ee03cd48dcb7db6288235ffb0668d78a4c66a0860fb0537ba39",
+    "catalog_search_payload_canonical_sha256": "e11977dd69762cb24521eb4d5a27d47ba2749a6ebf5502e95d8bda5dac17d4e7",
+    "resolution_canonical_sha256": "a97fd84b006ff0e4429e9a13e9a71b3e622233c1e0227e16d03d1a1aa9ed58fb",
+    "buyer_payload_canonical_sha256": "d5ca64024bc550e409cb0f2190631f4759ccb9d358d9ef84b65f2aecb9f0f27d"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-White-Bakery-Buns-8-count-Soft-Hamburger-Buns-19-oz-Bag-Pack-of-2_cd070b50-292c-48f0-9c54-767f94348ed3.4dfe95e288d9f04b4a3c4ac31bafb783.png",
+      "final_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-White-Bakery-Buns-8-count-Soft-Hamburger-Buns-19-oz-Bag-Pack-of-2_cd070b50-292c-48f0-9c54-767f94348ed3.4dfe95e288d9f04b4a3c4ac31bafb783.png",
+      "sha256": "40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894",
+      "bytes": 415240,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/cd774a5a-937e-4012-8e14-d264f3b992d3.6271e91a5bee4c6fc3b8dc5edd7573ed.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/cd774a5a-937e-4012-8e14-d264f3b992d3.6271e91a5bee4c6fc3b8dc5edd7573ed.jpeg",
+      "sha256": "28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e",
+      "bytes": 440007,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/beb37a13-96b7-4c49-abf9-19cb08f70f0a.b8a10e1de7bc15645e3652ce4b72828b.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/beb37a13-96b7-4c49-abf9-19cb08f70f0a.b8a10e1de7bc15645e3652ce4b72828b.jpeg",
+      "sha256": "510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122",
+      "bytes": 275025,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260725T210443Z-7d12a1b60194",
+  "body_sha256": "7d12a1b6019469ae21014190bbb46e4c73826fbbf90020f1613e33abdd24b1a7"
+}

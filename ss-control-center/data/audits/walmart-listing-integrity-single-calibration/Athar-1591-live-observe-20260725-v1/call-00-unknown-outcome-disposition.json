@@ -1,0 +1,39 @@
+{
+  "schema_version": "walmart-listing-single-observer-unknown-outcome-disposition/v1",
+  "created_at": "2026-07-25T21:19:06Z",
+  "listing_key": "walmart:1:Athar-1591",
+  "item_id": "7014571238",
+  "call": {
+    "call_index": 0,
+    "call_key": "c0321362504396840fd2efdff066d56dd748c4631883f0e644a8f0f10ff24b9f",
+    "shard_id": "single-observer-00-43cfd497730c77d9",
+    "scope_sha256": "b9e9329abb74a6c0a656865ee3dbed462532d609cf8c37caf60e3a8766f864a5",
+    "prompt_sha256": "e3ef5beed2968fdca1ddb5e64ad0614eb38d34fc44d1eac4a9c9633a647df3f8"
+  },
+  "local_evidence": {
+    "observer_plan_file_sha256": "b292c2930b363572082768741b27315dfe581b60d80135f83fc9b2c8fb9d07f3",
+    "observer_plan_body_sha256": "e950381001e6672c5b1af1cc081e5d58c903bbc1633ff0a2d04181f4a80c1603",
+    "worker_health_file_sha256": "0811aad13b01004088c95bdbbaa6aa22635cf5944e4d6a027f2db33bab272486",
+    "request_file_sha256": "f6ae56108c3e0ec10470dec2f6319e5ec6c9d014a35ae0e480bf9eedd8f5f117",
+    "response_file_present": false
+  },
+  "remote_reservation_evidence": {
+    "reservation_file_sha256": "fadc7bee49b2cc20865d9ef693bcf5b0d3b358d39dc0e7c32fdbe10e93bd611e",
+    "reserved_at": "2026-07-25T21:09:22.070Z",
+    "ledger_id": "ledger-2c53fa5f-f761-4660-80b9-24e934e172aa",
+    "ledger_epoch": "epoch-986b9a13-740b-4403-b433-378f2613d4f0",
+    "request_attestation_exact_match": true
+  },
+  "conclusion": {
+    "status": "UNKNOWN_OUTCOME",
+    "request_received_and_reserved": true,
+    "response_captured": false,
+    "model_completion_known": false,
+    "subscription_call_consumption": "UNKNOWN",
+    "observations_usable": false,
+    "automatic_replay_allowed": false,
+    "walmart_writes": 0,
+    "database_writes": 0,
+    "next_step": "DO_NOT_RETRY_EXCLUDE_FROM_CALIBRATION_AND_REVIEW_MANUALLY"
+  }
+}

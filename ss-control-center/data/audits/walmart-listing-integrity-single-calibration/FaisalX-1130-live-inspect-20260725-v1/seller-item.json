@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1130",
+      "condition": "New",
+      "availability": "Out_of_stock",
+      "wpid": "2IAXRO7DM5YP",
+      "upc": "684611898401",
+      "gtin": "00684611898401",
+      "productName": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+      "shelf": "Home Page/Food/Bakery & Bread/Bread/Multigrain Bread",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 14.43
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Faisalxbread032",
+      "variantGroupInfo": {
+        "isPrimary": true,
+        "groupingAttributes": [
+          {
+            "name": "number_of_pieces",
+            "value": "30"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

@@ -1,0 +1,106 @@
+{
+  "items": [
+    {
+      "itemId": "8412702942",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Whole-Grain-Thin-Sliced-15-Grain-Bread-22-oz-Pack-of-2_eb1686e7-0a89-41d9-9bb2-dd29b52a9a5c.900e6cc43fd167f73654dc95e9ec558e.png"
+        }
+      ],
+      "customerRating": "4.5",
+      "price": {
+        "amount": "14.43",
+        "currency": "USD"
+      },
+      "description": "<li>MULTIGRAIN BREAD: Pepperidge Farm 15 Grain Bread with the perfect touch of sweetness and a satisfying blend of grains</li><li>SMART CHOICE: 15 Grain bread with smaller, thin slices have whole</li>",
+      "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+      "brand": "Pepperidge Farm",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611898401"
+      ],
+      "properties": {
+        "numReviews": "2",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "Multigrain Bread"
+        ]
+      }
+    },
+    {
+      "itemId": "8412702942",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Whole-Grain-Thin-Sliced-15-Grain-Bread-22-oz-Pack-of-2_eb1686e7-0a89-41d9-9bb2-dd29b52a9a5c.900e6cc43fd167f73654dc95e9ec558e.png?odnHeight=180&odnWidth=180&odnBg=FFFFFF"
+        }
+      ],
+      "customerRating": "4.5",
+      "description": "<li>MULTIGRAIN BREAD: Pepperidge Farm 15 Grain Bread with the perfect touch of sweetness and a satisfying blend of grains</li><li>SMART CHOICE: 15 Grain bread with smaller, thin slices have whole</li>",
+      "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611898401"
+      ],
+      "properties": {
+        "variantItemsNum": "3",
+        "numReviews": "2",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "Multigrain Bread"
+        ],
+        "variants": {
+          "variantMeta": [
+            {
+              "name": "number_of_pieces"
+            }
+          ],
+          "variantData": [
+            {
+              "productImageUrl": "https://i5.walmartimages.com/asr/552a499e-248b-4cd1-95e2-ddc9a649857c.e05abffcc2f01f4b6bbd68f5a98b1713.png?odnHeight=180&odnWidth=180&odnBg=FFFFFF",
+              "itemId": "8427006266",
+              "isAvailable": "N",
+              "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 4)",
+              "variantValues": [
+                {
+                  "name": "number_of_pieces",
+                  "value": "4"
+                }
+              ]
+            },
+            {
+              "productImageUrl": "https://i5.walmartimages.com/asr/4b0fa3d5-f690-4050-b241-9cd9f065b82a.2d08ad847353f299fa933c2c963f5a59.png?odnHeight=180&odnWidth=180&odnBg=FFFFFF",
+              "itemId": "8412802867",
+              "isAvailable": "N",
+              "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 6)",
+              "variantValues": [
+                {
+                  "name": "number_of_pieces",
+                  "value": "6"
+                }
+              ]
+            },
+            {
+              "productImageUrl": "https://i5.walmartimages.com/asr/eb1686e7-0a89-41d9-9bb2-dd29b52a9a5c.900e6cc43fd167f73654dc95e9ec558e.png?odnHeight=180&odnWidth=180&odnBg=FFFFFF",
+              "itemId": "8412702942",
+              "isAvailable": "N",
+              "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+              "variantValues": [
+                {
+                  "name": "number_of_pieces",
+                  "value": "30"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "relatedQueries": []
+}

@@ -62,11 +62,25 @@ async function hasForeignKey(
 }
 
 /**
+ * Prove that schema metadata is readable before collecting structural gaps.
+ *
+ * The detailed checks below intentionally aggregate absent tables, triggers,
+ * indexes, and foreign keys. Without this sentinel, an unavailable remote
+ * database is caught by every aggregation branch and is misreported as an
+ * entirely missing schema. Connectivity and authorization failures must remain
+ * infrastructure failures, never Product Truth evidence.
+ */
+async function assertSchemaInspectionReadable(db: Client): Promise<void> {
+  await db.execute("SELECT 1 AS product_truth_schema_probe");
+}
+
+/**
  * Fail before retailer/API work when code requiring evidence separation is
  * deployed ahead of its schema migration. There is intentionally no legacy
  * fallback: a paid observation without durable provenance is not acceptable.
  */
 export async function assertProductTruthEvidenceSchema(db: Client): Promise<void> {
+  await assertSchemaInspectionReadable(db);
   const missing: string[] = [];
   try {
     const productColumns = await columns(db, "DonorProduct");
@@ -262,6 +276,7 @@ export async function assertProductTruthEvidenceSchema(db: Client): Promise<void
 }
 
 export async function assertDonorHarvestSchema(db: Client): Promise<void> {
+  await assertSchemaInspectionReadable(db);
   const missing: string[] = [];
   const table = "DonorHarvestState";
   const requiredColumns = [
@@ -325,6 +340,7 @@ export async function assertDonorHarvestSchema(db: Client): Promise<void> {
 
 /** Fail closed before any canonical listing-scoped cost read or write. */
 export async function assertProductTruthListingScopeSchema(db: Client): Promise<void> {
+  await assertSchemaInspectionReadable(db);
   const missing: string[] = [];
   const requiredTables: Record<string, readonly string[]> = {
     ProductTruthListingScope: [
@@ -407,6 +423,7 @@ export async function assertProductTruthListingScopeSchema(db: Client): Promise<
  * evidence schema without pretending that paid writes are enabled.
  */
 export async function assertProductTruthMeteredEvidenceSchema(db: Client): Promise<void> {
+  await assertSchemaInspectionReadable(db);
   const missing: string[] = [];
   const requiredTables: Record<string, readonly string[]> = {
     MeteredProviderBudget: [

@@ -1,0 +1,29 @@
+{
+  "schema_version": "walmart-listing-integrity-current-owner-review-index/v1",
+  "selected_at": "2026-07-25T22:45:00.000Z",
+  "review": {
+    "path": "FaisalX-1183-text-repair-review-20260725.json",
+    "sha256": "ce1b31e04b61d811684a3043287c4baf163c154466fd57f6a59de374cdecb72b"
+  },
+  "certification": {
+    "path": "FaisalX-1183-text-repair-certification-20260725.json",
+    "sha256": "10a9fafb0676a25079e6eb845decc7060ad59f4066254dbc8d84ab8c018de527"
+  },
+  "diagnosis": {
+    "path": "FaisalX-1183-live-diagnosis-20260725-v2.json",
+    "sha256": "419416f38dac390ab886ae5d3d347f5ab4dead21b52b5d6876d93f3671d53115"
+  },
+  "buyer_snapshot": {
+    "path": "FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/manifest.json",
+    "sha256": "693b96532d5d6176b056827b3adc85e84f1ab5fca85c7ea5e2e364cb4b0f5cb6"
+  },
+  "buyer_pdp": {
+    "path": "FaisalX-1183-live-inspect-20260725-v3/buyer-pdp.json",
+    "sha256": "2f1478e4420a4e435558281bf4d234c6cfdb08e2296891bf54ce55293a118cab"
+  },
+  "donor_audit": {
+    "path": "../product-truth-source-readiness/faisalx-1183-20260723T014559Z-codex-v1/sku-donor-audit.json",
+    "sha256": "aa700138f3cd65acbf7bfeaba6ccb3bfd75d4208ed09005e89d6ffa86ad14152"
+  },
+  "approval_instruction": "Подтверждаю FaisalX-1183 и diff ce1b31e0…cb72b. Изменить только description и bullets."
+}

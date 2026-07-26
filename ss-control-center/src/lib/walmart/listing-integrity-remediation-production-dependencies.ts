@@ -8,6 +8,9 @@ import type {
 } from "./listing-integrity-remediation-authority.ts";
 import { createWalmartListingRepairArtifactCustody } from "./listing-integrity-remediation-artifacts.ts";
 import { verifyWalmartListingRepairTargetImageCertificateBytes } from "./listing-integrity-remediation-image-certificate.ts";
+import {
+  verifyWalmartListingRepairUnchangedImageCertificateBytes,
+} from "./listing-integrity-remediation-unchanged-image-certificate.ts";
 import { createWalmartListingRepairLedgerAdapter } from "./listing-integrity-remediation-ledger-adapter.ts";
 import {
   buildWalmartListingSurgicalRequest,
@@ -238,11 +241,19 @@ export function createWalmartListingRepairProductionDependencies(
       return snapshot(truth, "product_truth_binding reread");
     },
     async verify_target_image_certificate({ plan, certificate_bytes, now }) {
-      const certificate = verifyWalmartListingRepairTargetImageCertificateBytes({
-        certificate_bytes,
-        plan,
-        at: now,
-      });
+      const imagesChanged = plan.changed_fields.includes("main")
+        || plan.changed_fields.includes("gallery");
+      const certificate = imagesChanged
+        ? verifyWalmartListingRepairTargetImageCertificateBytes({
+          certificate_bytes,
+          plan,
+          at: now,
+        })
+        : verifyWalmartListingRepairUnchangedImageCertificateBytes({
+          certificate_bytes,
+          plan,
+          at: now,
+        });
       return {
         status: "CERTIFIED_EXACT_TARGET_IMAGES",
         certificate_sha256: bytesSha256(certificate_bytes),

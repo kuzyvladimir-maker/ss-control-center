@@ -434,7 +434,9 @@ function projectAttribute(
   if (name === "brand" && typeof value === "string" && value.trim()) {
     return { field_path: fieldPath, kind: "brand", text: compactBuyerText(value, fieldPath) };
   }
-  if ((name === "product type" || name === "product category")
+  if ((name === "product type"
+      || name === "product category"
+      || name === "bread bun type")
     && typeof value === "string" && value.trim()) {
     return { field_path: fieldPath, kind: "product", text: compactBuyerText(value, fieldPath) };
   }

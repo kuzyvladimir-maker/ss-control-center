@@ -5,12 +5,19 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { loadListingIntegrityShadowData } from "../listing-integrity-shadow.server.ts";
+import listingIntegrityShadowServer from "../listing-integrity-shadow.server.ts";
+
+const { loadListingIntegrityShadowData } = listingIntegrityShadowServer;
 
 const ROOT = path.resolve(
   import.meta.dirname,
   "../../../..",
   "data/audits/walmart-listing-integrity-fresh-controls",
+);
+const REVIEW_ROOT = path.resolve(
+  import.meta.dirname,
+  "../../../..",
+  "data/audits/walmart-listing-integrity-single-calibration",
 );
 
 test("projects the fresh quantity-confusion control into read-only Command Center data", async () => {
@@ -37,6 +44,24 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(data.engine.workerSecurityTestsPassed, 17);
   assert.equal(data.engine.shadowTestsPassed, 8);
   assert.equal(data.engine.walmartWrites, 0);
+  assert.equal(data.ownerRepairReview.status, "OWNER_REVIEW_REQUIRED");
+  assert.equal(data.ownerRepairReview.sku, "FaisalX-1183");
+  assert.equal(data.ownerRepairReview.itemId, "8419413379");
+  assert.deepEqual(data.ownerRepairReview.changedFields, ["description", "bullets"]);
+  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 6);
+  assert.equal(data.ownerRepairReview.productTruth.singleUnitInnerCount, 8);
+  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 48);
+  assert.equal(data.ownerRepairReview.current.images.length, 3);
+  assert.match(data.ownerRepairReview.current.bullets[2], /hamburger buns/u);
+  assert.match(data.ownerRepairReview.proposed.bullets[2], /PACK OF 6/u);
+  assert.equal(data.ownerRepairReview.qualificationPrecheck, "PASS");
+  assert.equal(data.ownerRepairReview.exactImageBytesVerified, true);
+  assert.equal(data.ownerRepairReview.walmartWriteAuthorized, false);
+  assert.equal(data.ownerRepairReview.databaseWriteAuthorized, false);
+  assert.equal(
+    data.ownerRepairReview.reviewFileSha256,
+    "ce1b31e04b61d811684a3043287c4baf163c154466fd57f6a59de374cdecb72b",
+  );
   assert.equal(data.productTruth.status, "BLOCKED_SKU_TRUTH_NOT_READY");
   assert.equal(data.productTruth.schemaReady, true);
   assert.equal(data.productTruth.pendingMigrations, 0);
@@ -77,14 +102,15 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(control.ownerVisualReview.proposedMainAcceptedAsSixPackages, true);
   assert.equal(control.ownerVisualReview.galleryAccepted, true);
   assert.equal(control.ownerVisualReview.walmartWriteAuthorized, false);
-  assert.match(data.gates.next, /Canonical Product Truth schema is ready/);
-  assert.match(data.gates.next, /LISTING_SCOPE_NOT_REGISTERED/);
+  assert.match(data.gates.next, /Owner reviews FaisalX-1183/);
+  assert.match(data.gates.next, /certified description\/bullets diff/);
   assert.deepEqual(control.changedFields, ["MAIN"]);
   assert.equal(control.currentImages.length, 3);
 });
 
 test("missing evidence root remains a safe empty shadow view", async () => {
   const data = await loadListingIntegrityShadowData(path.join(ROOT, "does-not-exist"));
+  assert.equal(data.ownerRepairReview, null);
   assert.deepEqual(data.cases, []);
   assert.equal(data.catalog.status, "NOT_CAPTURED");
   assert.equal(data.productTruth.status, "UNVERIFIED");
@@ -174,6 +200,62 @@ test("owner visual review fails closed when a reviewed byte changes", async (t) 
   await assert.rejects(
     loadListingIntegrityShadowData(tempRoot),
     /owner visual review SHA-256 mismatch/,
+  );
+});
+
+test("current owner repair review fails closed when selected review bytes change", async (t) => {
+  const tempParent = await mkdtemp(path.join(os.tmpdir(), "listing-integrity-current-review-"));
+  t.after(async () => {
+    await rm(tempParent, { recursive: true });
+  });
+  const tempReviewRoot = path.join(
+    tempParent,
+    "walmart-listing-integrity-single-calibration",
+  );
+  await mkdir(tempReviewRoot, { recursive: true });
+  const indexName = "current-owner-repair-review-index.json";
+  const sidecarName = "current-owner-repair-review-index.sha256";
+  await Promise.all([
+    cp(path.join(REVIEW_ROOT, indexName), path.join(tempReviewRoot, indexName)),
+    cp(path.join(REVIEW_ROOT, sidecarName), path.join(tempReviewRoot, sidecarName)),
+  ]);
+  const index = JSON.parse(await readFile(path.join(REVIEW_ROOT, indexName), "utf8"));
+  for (const role of [
+    "review",
+    "certification",
+    "diagnosis",
+    "buyer_snapshot",
+    "buyer_pdp",
+    "donor_audit",
+  ]) {
+    const source = path.resolve(REVIEW_ROOT, index[role].path);
+    const target = path.resolve(tempReviewRoot, index[role].path);
+    await mkdir(path.dirname(target), { recursive: true });
+    await cp(source, target);
+  }
+  const sourceSnapshotPath = path.resolve(REVIEW_ROOT, index.buyer_snapshot.path);
+  const targetSnapshotPath = path.resolve(tempReviewRoot, index.buyer_snapshot.path);
+  const snapshot = JSON.parse(await readFile(sourceSnapshotPath, "utf8"));
+  for (const asset of snapshot.assets) {
+    const source = path.resolve(path.dirname(sourceSnapshotPath), asset.local_path);
+    const target = path.resolve(path.dirname(targetSnapshotPath), asset.local_path);
+    await mkdir(path.dirname(target), { recursive: true });
+    await cp(source, target);
+  }
+  const selectedReviewPath = path.resolve(tempReviewRoot, index.review.path);
+  await chmod(selectedReviewPath, 0o600);
+  await writeFile(
+    selectedReviewPath,
+    Buffer.concat([await readFile(selectedReviewPath), Buffer.from(" ")]),
+  );
+  await assert.rejects(
+    loadListingIntegrityShadowData(
+      path.join(ROOT, "does-not-exist"),
+      null,
+      null,
+      tempReviewRoot,
+    ),
+    /current owner repair review review SHA-256 mismatch/,
   );
 });
 

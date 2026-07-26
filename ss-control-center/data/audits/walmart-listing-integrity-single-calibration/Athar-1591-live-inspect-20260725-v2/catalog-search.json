@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "itemId": "7014571238",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png"
+        }
+      ],
+      "price": {
+        "amount": "34.89",
+        "currency": "USD"
+      },
+      "description": "<li>15.25 oz. bag of LAY'S Barbecue Flavored Potato Chips</li><li>Tasty snack for the whole family to enjoy</li><li>Barbecue seasoning adds even more flavor to the LAYS chips you love</li>",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "brand": "Frito-Lay",
+      "productType": "Snack Chips",
+      "standardUpc": [
+        "00723326854620"
+      ],
+      "properties": {
+        "categories": [
+          "Food",
+          "Snacks, Cookies & Chips",
+          "Chips",
+          "Lay's Barbecue Chips"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

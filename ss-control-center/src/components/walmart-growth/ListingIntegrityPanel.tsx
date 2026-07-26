@@ -14,6 +14,7 @@ import {
 import { Panel, PanelBody, PanelHeader } from "@/components/kit";
 import type {
   ListingIntegrityCatalogOverview,
+  ListingIntegrityOwnerRepairReview,
   ListingIntegrityProductTruthReadiness,
   ListingIntegrityShadowCase,
   ListingIntegrityShadowData,
@@ -196,6 +197,231 @@ function ImageStage({ control }: { control: ListingIntegrityShadowCase }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function CurrentOwnerRepairReview({
+  review,
+}: {
+  review: ListingIntegrityOwnerRepairReview;
+}) {
+  const [selectedSlot, setSelectedSlot] = useState("MAIN");
+  const selectedImage = review.current.images.find((image) => image.slot === selectedSlot)
+    ?? review.current.images[0];
+  const pdpUrl = `https://www.walmart.com/ip/${review.itemId}`;
+  return (
+    <Panel className="overflow-hidden border-[var(--warn)]/45">
+      <PanelHeader
+        title={
+          <div className="flex flex-wrap items-center gap-2">
+            <span>Актуальное исправление</span>
+            <span className="font-mono">{review.sku}</span>
+            <StatusPill tone="neutral">Owner review</StatusPill>
+            <StatusPill tone="success">Precheck PASS</StatusPill>
+          </div>
+        }
+        right={
+          <a
+            href={pdpUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--green-ink)] hover:underline"
+          >
+            Buyer PDP <ExternalLink className="size-3" />
+          </a>
+        }
+      />
+      <PanelBody className="space-y-5">
+        <div>
+          <div className="text-[15px] font-semibold leading-snug text-ink">{review.title}</div>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-3">
+            <span>Item {review.itemId}</span>
+            <span>{review.publishedStatus}</span>
+            <span>{review.lifecycleStatus}</span>
+            <span>Change scope: {review.changedFields.join(", ")}</span>
+          </div>
+        </div>
+
+        <section className="rounded-lg border border-[var(--green)]/30 bg-[var(--green-soft)]/35 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
+                <span className="text-[12px] font-semibold text-ink">
+                  Exact Product Truth подтверждён для review
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-ink-2">
+                {review.productTruth.brand} · {review.productTruth.product} · {review.productTruth.variant}
+              </p>
+              <p className="mt-1 text-[11px] text-ink-2">
+                Pack of {review.productTruth.outerUnits}: каждая упаковка {review.productTruth.singleUnitSize},
+                {" "}{review.productTruth.singleUnitInnerCount} buns; всего {review.productTruth.totalUnits}.
+                UPC единичной упаковки {review.productTruth.singleUnitUpc}.
+              </p>
+            </div>
+            <StatusPill tone="success">Exact donor</StatusPill>
+          </div>
+          <div className="mt-2 font-mono text-[9px] text-ink-3">
+            donor {review.productTruth.donorProductId} · forbidden legacy donor {review.productTruth.wrongLegacyDonorId}
+          </div>
+        </section>
+
+        <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+          <section className="rounded-xl border border-rule p-3">
+            <div className="mb-3">
+              <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-ink-3">
+                Текущие live изображения · без изменений
+              </div>
+              <div className="mt-1 text-[12px] font-semibold text-ink">
+                MAIN уже показывает правильный multipack; gallery остаётся текущей
+              </div>
+            </div>
+            <div className="aspect-square overflow-hidden rounded-lg border border-rule bg-white">
+              {selectedImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={selectedImage.url}
+                  alt={`${review.sku} ${selectedImage.slot} current live`}
+                  className="h-full w-full object-contain"
+                />
+              )}
+            </div>
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+              {review.current.images.map((image) => (
+                <button
+                  type="button"
+                  key={image.slot}
+                  onClick={() => setSelectedSlot(image.slot)}
+                  className={cn(
+                    "relative size-14 shrink-0 overflow-hidden rounded-md border bg-white",
+                    selectedSlot === image.slot
+                      ? "border-[var(--green)] ring-2 ring-[var(--green)]/15"
+                      : "border-rule",
+                  )}
+                  aria-label={`Show current ${image.slot}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={image.url} alt="" className="h-full w-full object-contain" />
+                  <span className="absolute inset-x-0 bottom-0 bg-black/65 py-0.5 text-[8px] font-semibold text-white">
+                    {image.slot}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 rounded-md border border-dashed border-rule bg-bg-elev px-3 py-2 text-[10px] text-ink-2">
+              Exact bytes проверены сертификатом. Изображения, их порядок и URLs
+              в предлагаемом исправлении не меняются.
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-xl border border-rule">
+            <div className="flex items-center gap-2 border-b border-rule px-3 py-2.5">
+              <FileSearch className="size-4 text-ink-3" />
+              <span className="text-[12px] font-semibold text-ink">
+                Exact diff · только description и bullets
+              </span>
+            </div>
+            <div className="grid gap-0 lg:grid-cols-2">
+              <div className="border-b border-rule p-3 lg:border-b-0 lg:border-r">
+                <div className="mb-2 flex items-center gap-2">
+                  <AlertTriangle className="size-4 text-[var(--danger)]" />
+                  <span className="text-[11px] font-semibold text-[var(--danger)]">ДО · сейчас live</span>
+                </div>
+                <p className="max-h-52 overflow-y-auto whitespace-pre-wrap text-[10px] leading-relaxed text-ink-2">
+                  {review.current.description}
+                </p>
+                <div className="mt-3 space-y-1.5 border-t border-rule pt-3">
+                  {review.current.bullets.map((bullet, index) => (
+                    <p
+                      key={`${String(index)}-${bullet}`}
+                      className={cn(
+                        "text-[10px] leading-relaxed",
+                        /hamburger buns/iu.test(bullet)
+                          ? "rounded bg-[var(--danger-tint)] px-2 py-1 text-[var(--danger)]"
+                          : "text-ink-2",
+                      )}
+                    >
+                      • {bullet}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
+                  <span className="text-[11px] font-semibold text-[var(--green-ink)]">
+                    ПРЕДЛАГАЕМОЕ · ещё не live
+                  </span>
+                </div>
+                <p className="max-h-52 overflow-y-auto whitespace-pre-wrap text-[10px] leading-relaxed text-ink-2">
+                  {review.proposed.description}
+                </p>
+                <div className="mt-3 space-y-1.5 border-t border-rule pt-3">
+                  {review.proposed.bullets.map((bullet, index) => (
+                    <p
+                      key={`${String(index)}-${bullet}`}
+                      className={cn(
+                        "text-[10px] leading-relaxed",
+                        /pack of 6/iu.test(bullet)
+                          ? "rounded bg-[var(--green-soft)] px-2 py-1 text-[var(--green-ink)]"
+                          : "text-ink-2",
+                      )}
+                    >
+                      • {bullet}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <section className="rounded-lg border border-rule p-3">
+            <div className="text-[12px] font-semibold text-ink">Что гарантированно не меняется</div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {review.unchangedFields.map((field) => (
+                <StatusPill key={field} tone="neutral">{field}</StatusPill>
+              ))}
+            </div>
+          </section>
+          <section className="rounded-lg border border-[var(--green)]/30 bg-[var(--green-soft)]/35 p-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
+              <span className="text-[12px] font-semibold text-ink">Certified review</span>
+            </div>
+            <p className="mt-1 text-[10px] text-ink-2">
+              Qualification precheck = {review.qualificationPrecheck}; exact image bytes verified.
+              Walmart/DB write authority = false.
+            </p>
+            <div className="mt-2 break-all font-mono text-[9px] text-ink-3">
+              {review.certificationBodySha256}
+            </div>
+          </section>
+        </div>
+
+        <section className="rounded-lg border border-[var(--warn)]/45 bg-[var(--warn-tint)] px-3 py-3">
+          <div className="text-[12px] font-semibold text-ink">Следующий gate — ваше подтверждение</div>
+          <p className="mt-1 text-[11px] text-ink-2">
+            Это не кнопка публикации. После подтверждения будет подготовлен отдельный
+            one-SKU permit; массовый запуск останется закрыт.
+          </p>
+          <code className="mt-2 block select-all rounded-md border border-rule bg-surface px-3 py-2 text-[10px] text-ink">
+            {review.approvalInstruction}
+          </code>
+          <details className="mt-2 text-[9px] text-ink-3">
+            <summary className="cursor-pointer">SHA-bound evidence</summary>
+            <div className="mt-1 space-y-0.5 break-all font-mono">
+              <div>index {review.evidenceIndexSha256}</div>
+              <div>review {review.reviewFileSha256}</div>
+              <div>certificate {review.certificationFileSha256}</div>
+              <div>{review.evidenceIndexPath}</div>
+            </div>
+          </details>
+        </section>
+      </PanelBody>
+    </Panel>
   );
 }
 
@@ -418,6 +644,10 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
         </div>
       </div>
 
+      {data.ownerRepairReview && (
+        <CurrentOwnerRepairReview review={data.ownerRepairReview} />
+      )}
+
       <CatalogOverview catalog={data.catalog} />
 
       <div className={cn(
@@ -478,14 +708,22 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
         ))}
       </div>
 
-      {data.cases.length > 0 && (
-        <div className="text-[12px] font-semibold text-ink">
-          Контрольный canary — пример работы цикла, не граница каталога
-        </div>
-      )}
-      {data.cases.length ? data.cases.map((control) => (
-        <IntegrityCase key={control.controlId} control={control} productTruth={data.productTruth} />
-      )) : (
+      {data.cases.length ? (
+        <details className="rounded-lg border border-rule bg-bg-elev/35 px-3 py-2">
+          <summary className="cursor-pointer text-[12px] font-semibold text-ink">
+            Исторический контроль MAIN 1 → 6 — доказательство детектора, не актуальный payload
+          </summary>
+          <div className="mt-3 space-y-3">
+            {data.cases.map((control) => (
+              <IntegrityCase
+                key={control.controlId}
+                control={control}
+                productTruth={data.productTruth}
+              />
+            ))}
+          </div>
+        </details>
+      ) : (
         <Panel>
           <PanelBody className="flex items-center gap-3 text-[13px] text-ink-2">
             <FileSearch className="size-5 text-ink-3" />

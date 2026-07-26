@@ -1,0 +1,32 @@
+{
+  "schema_version": "walmart-listing-single-observer-execution/v1",
+  "listing_key": "walmart:1:FaisalX-1208",
+  "observer_plan_file_sha256": "ca94382d7ae5a4e2645b2111645214fd47227bb2ea9383abe10cfe3162db99ac",
+  "observer_plan_body_sha256": "b76f7df67ade732169a532a62cfcecc87ba49378f0ec52b8d44527cec045a107",
+  "worker_health_file_sha256": "0811aad13b01004088c95bdbbaa6aa22635cf5944e4d6a027f2db33bab272486",
+  "observations_file_sha256": "d81e72576b512c669a9f59699cdc8e6753da8b851c24de6d0a43ccd7212b193f",
+  "calls": [
+    {
+      "call_index": 0,
+      "call_key": "778af5bcb8f95ad7e1b9174e6d6f2f55593597ad427b860cb1561c65419e4e94",
+      "request_file_sha256": "67a6f9b60aefeb3cbbc6ccce169b45bc98599d3a434b89ea3c96c4f80854850a",
+      "response_file_sha256": "0f240a283a081c15212a2490b022381ff68af3ff3c2897216acee5caca5f0ce0",
+      "observations": 3,
+      "subscription_calls_consumed": 1,
+      "transport_attempts": 1,
+      "retries": 0
+    }
+  ],
+  "execution": {
+    "subscription_calls_consumed": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "e90e180133d9ffbccf9fb4832b516d18e0c6accc12c0ba1d9f7e41d5c48ea642"
+}

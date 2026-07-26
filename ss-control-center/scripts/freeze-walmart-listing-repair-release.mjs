@@ -21,6 +21,8 @@ const NORMALIZED_PIN = "__WALMART_LISTING_REPAIR_RELEASE_ID__";
 const RUNTIME_ENTRYPOINTS = Object.freeze([
   "scripts/verify-and-run-walmart-listing-repair.mjs",
   "scripts/walmart-listing-repair-operator.ts",
+  "scripts/walmart-listing-integrity-process.ts",
+  "scripts/walmart-listing-repair-owner-package.ts",
 ]);
 const TEST_ENTRYPOINTS = Object.freeze([
   "scripts/__tests__/walmart-listing-repair-operator.test.ts",
@@ -36,11 +38,17 @@ const TEST_ENTRYPOINTS = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-remediation-apply-evidence.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-apply-evidence-adapter.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-writer.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-owner-compiler.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-owner-material-capture.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-unchanged-image-certificate.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
 ]);
 const TARGETED_LINT = Object.freeze([
   "scripts/verify-and-run-walmart-listing-repair.mjs",
   "scripts/walmart-listing-repair-operator.ts",
   "scripts/freeze-walmart-listing-repair-release.mjs",
+  "scripts/walmart-listing-integrity-process.ts",
+  "scripts/walmart-listing-repair-owner-package.ts",
   "scripts/__tests__/walmart-listing-repair-operator.test.ts",
   "scripts/__tests__/verify-and-run-walmart-listing-repair.test.mjs",
   "src/lib/walmart/listing-integrity-remediation-authority.ts",
@@ -49,9 +57,16 @@ const TARGETED_LINT = Object.freeze([
   "src/lib/walmart/listing-integrity-remediation-transport.ts",
   "src/lib/walmart/listing-integrity-remediation-production-dependencies.ts",
   "src/lib/walmart/listing-integrity-remediation-execution-package.ts",
+  "src/lib/walmart/listing-integrity-remediation-owner-compiler.ts",
+  "src/lib/walmart/listing-integrity-remediation-owner-material-capture.ts",
+  "src/lib/walmart/listing-integrity-remediation-unchanged-image-certificate.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-transport.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-closed-loop.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-writer.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-owner-compiler.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-owner-material-capture.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-unchanged-image-certificate.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
 ]);
 const IMPORT_PATTERN = /(?:\bfrom\s*|\bimport\s*\()\s*["']([^"']+)["']/gu;
 

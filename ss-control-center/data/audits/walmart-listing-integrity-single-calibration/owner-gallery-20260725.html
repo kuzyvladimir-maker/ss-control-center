@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Walmart Listing Integrity — read-only калибровка</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #5b6877;
+      --line: #dce4ec;
+      --panel: #ffffff;
+      --canvas: #f3f6f9;
+      --good: #157f4a;
+      --good-bg: #e9f7ef;
+      --bad: #b42318;
+      --bad-bg: #fff0ee;
+      --blocked: #8a5b00;
+      --blocked-bg: #fff7df;
+      --blue: #0958d9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1480px, calc(100% - 40px)); margin: 32px auto 80px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(28px, 4vw, 46px); line-height: 1.08; margin-bottom: 12px; }
+    h2 { font-size: 25px; margin-bottom: 18px; }
+    h3 { font-size: 20px; margin-bottom: 8px; }
+    .lead { max-width: 980px; color: var(--muted); font-size: 17px; }
+    .notice {
+      margin: 24px 0;
+      padding: 16px 18px;
+      border: 1px solid #a9c7f8;
+      background: #edf5ff;
+      border-radius: 14px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 22px 0 32px;
+    }
+    .metric, section, article {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(23, 33, 43, .04);
+    }
+    .metric { padding: 16px; }
+    .metric strong { display: block; font-size: 26px; line-height: 1; margin-bottom: 8px; }
+    .metric span { color: var(--muted); }
+    section { padding: 24px; margin: 20px 0; }
+    article { padding: 22px; margin: 18px 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      vertical-align: middle;
+    }
+    .good { color: var(--good); background: var(--good-bg); }
+    .bad { color: var(--bad); background: var(--bad-bg); }
+    .blocked { color: var(--blocked); background: var(--blocked-bg); }
+    .neutral { color: #384557; background: #edf1f5; }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+    .sku { font: 700 13px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--blue); }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+    figure img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #fff;
+    }
+    figcaption { padding: 10px 12px; border-top: 1px solid var(--line); }
+    figcaption strong { display: block; }
+    figcaption small { color: var(--muted); overflow-wrap: anywhere; }
+    .facts {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 8px 14px;
+      margin: 16px 0 0;
+    }
+    .facts dt { color: var(--muted); }
+    .facts dd { margin: 0; }
+    .finding {
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-left: 4px solid var(--bad);
+      background: var(--bad-bg);
+      border-radius: 8px;
+    }
+    .finding code { white-space: normal; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    code { font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .foot { color: var(--muted); font-size: 13px; margin-top: 22px; }
+    @media (max-width: 900px) {
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .image-grid { grid-template-columns: 1fr; }
+      .facts { grid-template-columns: 1fr; }
+      .title-row { display: block; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="sku">WALMART LISTING INTEGRITY / OWNER REVIEW / 2026-07-25</div>
+    <h1>Read-only калибровка: что движок видит сейчас</h1>
+    <p class="lead">
+      Пять реальных Walmart SKU проверены по seller item, catalog item, buyer PDP,
+      MAIN, всей gallery и подписанным blind-наблюдениям. Это диагностическая галерея:
+      она не утверждает, что Product Truth готов, и не разрешает публикацию.
+    </p>
+  </header>
+
+  <div class="notice">
+    <strong>Критически важно:</strong> в рамках этой калибровки выполнено
+    <strong>0 Walmart writes</strong>. Для FaisalX-1183 исторический «До» и ранее
+    одобренная proposed MAIN показаны рядом со свежей live MAIN. Текущая live MAIN
+    визуально совпадает с proposed (dHash distance 0), но происхождение live-изменения
+    frozen writer receipt не доказано — поэтому ниже нет заявления «движок опубликовал».
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><strong>5</strong><span>успешных live-наблюдений</span></div>
+    <div class="metric"><strong>2</strong><span>явных текстовых противоречия</span></div>
+    <div class="metric"><strong>3</strong><span>без найденных противоречий</span></div>
+    <div class="metric"><strong>0</strong><span>Product Truth PASS</span></div>
+    <div class="metric"><strong>0</strong><span>Walmart writes</span></div>
+  </div>
+
+  <section>
+    <div class="title-row">
+      <div>
+        <div class="sku">FaisalX-1183 · Walmart item 8419413379</div>
+        <h2>Историческое исправление MAIN и новый текстовый дефект</h2>
+      </div>
+      <span class="badge bad">CONTRADICTION</span>
+    </div>
+    <p><strong>Live title:</strong> Pepperidge Farm Butter Hot Dog Buns, Top Sliced,
+      8-Ct Bag (Pack of 6)</p>
+    <div class="image-grid">
+      <figure>
+        <img src="../walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/raw/fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736.jpeg" alt="Историческая MAIN с одной упаковкой">
+        <figcaption>
+          <strong>Историческое ДО</strong>
+          <small>Одна упаковка при title Pack of 6 · fc49a951…</small>
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="../walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/raw/faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06.png" alt="Ранее одобренная MAIN с шестью упаковками">
+        <figcaption>
+          <strong>Ранее одобренная proposed MAIN</strong>
+          <small>Шесть точных упаковок · faebb77f…</small>
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png" alt="Свежая live MAIN с шестью упаковками">
+        <figcaption>
+          <strong>Свежая live MAIN</strong>
+          <small>Шесть упаковок; dHash = proposed · c6418095…</small>
+        </figcaption>
+      </figure>
+    </div>
+    <div class="image-grid">
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg" alt="Lifestyle image">
+        <figcaption><strong>Live gallery 1</strong><small>Lifestyle · 90279ca5…</small></figcaption>
+      </figure>
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg" alt="Nutrition facts image">
+        <figcaption><strong>Live gallery 2</strong><small>Nutrition Facts · bdc800e7…</small></figcaption>
+      </figure>
+    </div>
+    <div class="finding">
+      <strong>Найдено движком:</strong> title и изображения говорят
+      <em>hot dog buns</em>, а bullet 3 говорит
+      <em>“Pepperidge Farm hamburger buns…”</em>.
+      Это самостоятельное live-противоречие, но безопасный текстовый repair
+      остаётся заблокирован до exact Product Truth.
+    </div>
+  </section>
+
+  <article>
+    <div class="title-row">
+      <div>
+        <div class="sku">FaisalX-1181 · Walmart item 8389917875</div>
+        <h3>Pepperidge Farm Butter Hot Dog Buns · Pack of 2</h3>
+      </div>
+      <span class="badge bad">CONTRADICTION</span>
+    </div>
+    <div class="image-grid">
+      <figure><img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41.png" alt="Pack of 2 MAIN"><figcaption><strong>MAIN</strong><small>Две упаковки · 42dedfb7…</small></figcaption></figure>
+      <figure><img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg" alt="Lifestyle"><figcaption><strong>Gallery 1</strong><small>Lifestyle · 90279ca5…</small></figcaption></figure>
+      <figure><img src="FaisalX-1181-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210025Z-e05e94327065/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg" alt="Nutrition facts"><figcaption><strong>Gallery 2</strong><small>Nutrition Facts · bdc800e7…</small></figcaption></figure>
+    </div>
+    <div class="finding">
+      Тот же дефект bullet 3: listing объявляет <em>hot dog buns</em>,
+      но bullet называет товар <em>hamburger buns</em>.
+    </div>
+  </article>
+
+  <article>
+    <div class="title-row">
+      <div>
+        <div class="sku">FaisalX-1130 · Walmart item 8412702942</div>
+        <h3>Pepperidge Farm Thin Sliced 15 Grain Bread · Pack of 2</h3>
+      </div>
+      <span class="badge blocked">SOURCE REQUIRED</span>
+    </div>
+    <div class="image-grid">
+      <figure><img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/b9133ec39c2f525f1e282b20097c591e6c8af7ae4d07d3769eb04072d237124f.png" alt="15 Grain Bread Pack of 2"><figcaption><strong>MAIN</strong><small>Две упаковки · b9133ec3…</small></figcaption></figure>
+      <figure><img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/c5e37b052275e0df6dfe9989d69f63d64092110ea6466d80d8b654482f37bf4e.jpg" alt="Ingredients"><figcaption><strong>Gallery 1</strong><small>Ingredients · c5e37b05…</small></figcaption></figure>
+      <figure><img src="FaisalX-1130-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210216Z-1e93ba656672/assets/ee1d50dd6ca31a7a96a5f8cbd43f91f48c8500e96e88b4edaf9d1cbd7eb7e015.jpg" alt="Nutrition facts"><figcaption><strong>Gallery 2</strong><small>Nutrition Facts · ee1d50dd…</small></figcaption></figure>
+    </div>
+    <dl class="facts">
+      <dt>Self-consistency</dt><dd><span class="badge good">NO CONTRADICTION FOUND</span></dd>
+      <dt>Почему не PASS</dt><dd>Exact Product Truth recipe/content ещё отсутствует. Отсутствие найденной ошибки не доказывает правильность карточки.</dd>
+    </dl>
+  </article>
+
+  <article>
+    <div class="title-row">
+      <div>
+        <div class="sku">FaisalX-1208 · Walmart item 8406560524</div>
+        <h3>Sara Lee Artesano White Bakery Buns · Pack of 2</h3>
+      </div>
+      <span class="badge blocked">SOURCE REQUIRED</span>
+    </div>
+    <div class="image-grid">
+      <figure><img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894.png" alt="Sara Lee Pack of 2"><figcaption><strong>MAIN</strong><small>Две упаковки · 40fa8eb6…</small></figcaption></figure>
+      <figure><img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e.jpg" alt="Lifestyle"><figcaption><strong>Gallery 1</strong><small>Lifestyle · 28180c60…</small></figcaption></figure>
+      <figure><img src="FaisalX-1208-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210443Z-7d12a1b60194/assets/510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122.jpg" alt="Nutrition facts"><figcaption><strong>Gallery 2</strong><small>Nutrition Facts · 510cb7b5…</small></figcaption></figure>
+    </div>
+    <dl class="facts">
+      <dt>Self-consistency</dt><dd><span class="badge good">NO CONTRADICTION FOUND</span></dd>
+      <dt>Почему не PASS</dt><dd>Exact Product Truth recipe/content ещё отсутствует.</dd>
+    </dl>
+  </article>
+
+  <article>
+    <div class="title-row">
+      <div>
+        <div class="sku">Comm-05 · Walmart item 5410523365</div>
+        <h3>Pepperidge Farm Soft White Hoagie Rolls · 3-Pack</h3>
+      </div>
+      <span class="badge blocked">SOURCE REQUIRED</span>
+    </div>
+    <div class="image-grid">
+      <figure><img src="Comm-05-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210622Z-e4e249df5171/assets/76eb2b2da9b251f84347618bb8055ae1c3aecfe09b07af6693c74888ccf5c1e4.png" alt="Hoagie Rolls 3-Pack"><figcaption><strong>MAIN</strong><small>Три упаковки · 76eb2b2d…</small></figcaption></figure>
+      <figure><img src="Comm-05-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210622Z-e4e249df5171/assets/aae520057170d3cd734168ecbc7f59fca99657f5b918479e785a3e8aedc3d6f4.jpg" alt="Lifestyle"><figcaption><strong>Gallery 1</strong><small>Lifestyle · aae52005…</small></figcaption></figure>
+      <figure><img src="Comm-05-live-inspect-20260725-v1/buyer-snapshots/walmart-buyer-20260725T210622Z-e4e249df5171/assets/d83832d57aacfbc395b8d3fcfba0dd7fa92d43235d8e6f1a976b2b2a926921ba.png" alt="Nutrition facts"><figcaption><strong>Gallery 2</strong><small>Nutrition Facts · d83832d5…</small></figcaption></figure>
+    </div>
+    <dl class="facts">
+      <dt>Self-consistency</dt><dd><span class="badge good">NO CONTRADICTION FOUND</span></dd>
+      <dt>Почему не PASS</dt><dd>Exact Product Truth recipe/content ещё отсутствует.</dd>
+    </dl>
+  </article>
+
+  <section>
+    <h2>Честный итог готовности</h2>
+    <table>
+      <thead><tr><th>Часть</th><th>Статус</th><th>Доказательство / пробел</th></tr></thead>
+      <tbody>
+        <tr><td>Read-only intake одного SKU</td><td><span class="badge good">ГОТОВО</span></td><td>Exact seller → catalog → buyer PDP → все image bytes.</td></tr>
+        <tr><td>Quantity, identity, MAIN и gallery detector</td><td><span class="badge good">ГОТОВО</span></td><td>Тесты 20/20; golden replay v5: 12/12 BAD и 12/12 PASS.</td></tr>
+        <tr><td>Transport unknown outcome</td><td><span class="badge good">ЗАКРЫТО</span></td><td>Теперь сохраняется terminal UNKNOWN_OUTCOME; replay запрещён.</td></tr>
+        <tr><td>Repair + fresh reread + Qualification</td><td><span class="badge good">OFFLINE ГОТОВО</span></td><td>Closed-loop tests 10/10, но ещё нет доказанного live canary этого frozen процесса.</td></tr>
+        <tr><td>Exact Product Truth для показанных SKU</td><td><span class="badge blocked">НЕ ГОТОВО</span></td><td>Listing scopes/recipes не зарегистрированы; self-consistency не может разрешить write.</td></tr>
+        <tr><td>Массовый запуск</td><td><span class="badge bad">NO-GO</span></td><td>До одного полного live canary и 2–3 последовательных Qualification PASS.</td></tr>
+      </tbody>
+    </table>
+    <p class="foot">
+      Athar-1591 исключён: точный vision call был зарезервирован сервером, но ответ
+      не получен локально. Статус UNKNOWN_OUTCOME, автоматический повтор запрещён.
+    </p>
+  </section>
+</main>
+</body>
+</html>

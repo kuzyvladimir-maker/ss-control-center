@@ -1,0 +1,108 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_8bb5099adc11eb04a701",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "SOFT WHITE WITH SESAME SEEDS HOAGIE ROLLS",
+      "visible_variant_text": "BAKERY CLASSICS",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 3,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "6"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "BAKERY CLASSICS",
+        "6 SOFT WHITE WITH SESAME SEEDS",
+        "HOAGIE ROLLS",
+        "3 identical bags shown side by side"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_db66ee38e0caf1cb604e",
+      "visual_role": "back",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "SOFT WHITE HOAGIE ROLLS",
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "1 Roll (69g)"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "6 Servings Per Container"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "some",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Nutrition Facts",
+        "6 Servings Per Container",
+        "Serving Size 1 Roll (69g)",
+        "Calories 210",
+        "PEPPERIDGE FARM",
+        "SOFT WHITE HOAGIE ROLLS"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_44f9af644e716e9ad03e",
+      "visual_role": "single_product_front",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "SOFT WHITE WITH SESAME SEEDS HOAGIE ROLLS",
+      "visible_variant_text": "BAKERY CLASSICS",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "6"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "BAKERY CLASSICS",
+        "6 SOFT WHITE WITH SESAME SEEDS",
+        "HOAGIE ROLLS",
+        "NO HIGH FRUCTOSE CORN SYRUP",
+        "NO COLORS FROM ARTIFICIAL SOURCES"
+      ],
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "Comm-05",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "431H05RNU37O",
+      "upc": "364760754666",
+      "gtin": "00364760754666",
+      "productName": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "shelf": "Home Page/Food/Bakery & Bread/Buns/Hoagie Bun",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 20.76
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "B00002132024",
+      "variantGroupInfo": {
+        "isPrimary": true,
+        "groupingAttributes": [
+          {
+            "name": "size",
+            "value": "3-Pack"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

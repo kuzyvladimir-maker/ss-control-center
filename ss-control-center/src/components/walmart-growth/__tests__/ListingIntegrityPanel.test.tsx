@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
 
+import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { ListingIntegrityPanel } from "../ListingIntegrityPanel";
@@ -23,7 +24,20 @@ test("renders the fresh before/proposed-after shadow case without live controls"
   assert.match(html, /1964/);
   assert.match(html, /1\/57/);
   assert.match(html, /32 images/);
-  assert.match(html, /Контрольный canary — пример работы цикла, не граница каталога/);
+  assert.match(html, /Актуальное исправление/);
+  assert.match(html, /Exact Product Truth подтверждён для review/);
+  assert.match(html, /Change scope: description, bullets/);
+  assert.match(html, /Текущие live изображения · без изменений/);
+  assert.match(html, /Exact diff · только description и bullets/);
+  assert.match(html, /hamburger buns/);
+  assert.match(html, /PACK OF 6/);
+  assert.match(html, /Certified review/);
+  assert.match(html, /Walmart\/DB write authority = false/);
+  assert.match(html, /Подтверждаю FaisalX-1183 и diff ce1b31e0…cb72b/);
+  assert.match(
+    html,
+    /Исторический контроль MAIN 1 → 6 — доказательство детектора, не актуальный payload/,
+  );
   assert.match(html, /FaisalX-1183/);
   assert.match(html, /Показана 1 упаковка из 6/);
   assert.match(html, /Показаны все 6 упаковок/);

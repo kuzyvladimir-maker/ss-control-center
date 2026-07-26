@@ -41,6 +41,7 @@ import {
   evaluateWalmartListingRepairSequence,
   evaluateWalmartListingRepairSequenceForTest,
   inspectWalmartListingRepairQualificationProductionReadiness,
+  precheckWalmartListingRepairTargetForReview,
   walmartListingRepairTestRuntime,
   type WalmartListingRepairQualificationEvidencePackage,
   type WalmartListingRepairTargetImage,
@@ -49,6 +50,7 @@ import {
   WALMART_LISTING_INTEGRITY_INPUT_SCHEMA,
   WALMART_LISTING_INTEGRITY_REPORT_SCHEMA,
   walmartListingIntegritySha256,
+  type WalmartListingIntegrityInput,
   type WalmartListingSurface,
 } from "../listing-integrity-audit.ts";
 
@@ -775,7 +777,7 @@ test("production verifier is pinned and still rejects an owner key outside the p
   assert.deepEqual(inspectWalmartListingRepairQualificationProductionReadiness(), {
     verifier_release_pinned: true,
     verifier_engine_release_sha256:
-      "0d21ffcd5bf55c6e781daba80b3a750613f2d21bb89690a73ccbd66326aa246d",
+      "cb9d4f2b0a216e2c6cc2d9c7239bafab7867dc2bd37af3eed42d51b5a9138ae2",
     walmart_native_payload_validator_ready: true,
     frozen_apply_writer_attestation_ready: true,
   });
@@ -830,6 +832,72 @@ test("repair planning rejects a target that contradicts Product Truth before any
       now: new Date(PLAN_AT),
     }, RUNTIME),
     /target title does not express exact Product Truth identity\/count/,
+  );
+});
+
+test("FaisalX-1183 review target needs explicit Pack of 6 in description and bullets", () => {
+  const currentDescription =
+    "Pepperidge Farm Bakery Classics buns are baked with deliberate care. "
+    + "The whole family will love these classic butter hot dog buns. "
+    + "Our Top Sliced butter hot dog buns are supplied in an 8-count bag.";
+  const expected: WalmartListingIntegrityInput["expected"] = {
+    title: "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    outer_units: 6,
+    identity: {
+      brand_aliases: ["pepperidge farm"],
+      product_marker_groups: [["hot dog buns", "hotdog buns"]],
+      variant_marker_groups: [["butter"], ["top sliced", "top-sliced"]],
+      forbidden_markers: [{ role: "product", aliases: ["hamburger buns"] }],
+    },
+    package_facts: [
+      { kind: "net_content" as const, value: 14, unit: "oz", requirement: "required" as const },
+      { kind: "inner_item_count", value: 8, unit: "count", requirement: "required" },
+    ],
+    truth_source: "manual_verified",
+  };
+  const attributes: WalmartListingSurface["attribute_claims"] = [
+    { field_path: "brand", kind: "brand", text: "Pepperidge Farm" },
+    { field_path: "product", kind: "product", text: "Hot Dog Buns" },
+    { field_path: "variant", kind: "variant", text: "Top Sliced Butter" },
+    { field_path: "multipackQuantity", kind: "outer_units", value: 6, unit: "count" },
+    { field_path: "netContent", kind: "net_content", value: 14, unit: "oz" },
+    { field_path: "count", kind: "inner_item_count", value: 8, unit: "count" },
+  ];
+  const currentSurface: WalmartListingSurface = {
+    title: expected.title,
+    description: currentDescription,
+    bullets: [
+      "QUALITY INGREDIENTS: Made with real butter",
+      "PERFECT BUNS: Pepperidge Farm Top Sliced Butter Hot Dog Buns",
+      "Pepperidge Farm hamburger buns are carefully crafted",
+    ],
+    attribute_claims: attributes,
+    unmapped_attributes: [],
+  };
+  assert.throws(
+    () => precheckWalmartListingRepairTargetForReview({
+      surface: currentSurface,
+      expected,
+    }),
+    /description does not express exact Product Truth identity\/count/,
+  );
+
+  const proposedSurface = clone(currentSurface);
+  proposedSurface.description =
+    "PACK OF 6: This listing includes six 14 oz bags of Pepperidge Farm Bakery "
+    + "Classics Top Sliced Butter Hot Dog Buns. Each bag contains 8 buns.";
+  proposedSurface.bullets = [
+    "QUALITY INGREDIENTS: Made with real butter",
+    "PERFECT BUNS: Pepperidge Farm Top Sliced Butter Hot Dog Buns",
+    "PACK OF 6: Includes 6 packages of Pepperidge Farm Top Sliced Butter Hot Dog Buns; "
+      + "each 14 oz package contains 8 buns",
+  ];
+  assert.deepEqual(
+    precheckWalmartListingRepairTargetForReview({
+      surface: proposedSurface,
+      expected,
+    }),
+    { valid: true, marketplace_write_authorized: false },
   );
 });
 

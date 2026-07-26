@@ -7,6 +7,7 @@ import type {
   ListingIntegrityShadowCase,
   ListingIntegrityShadowData,
   ListingIntegrityShadowImage,
+  ListingIntegrityOwnerRepairReview,
   ListingIntegrityProductTruthReadiness,
   ListingIntegrityCatalogOverview,
 } from "./listing-integrity-shadow-contract";
@@ -39,6 +40,13 @@ const DEFAULT_CAPTURE_ROOT = path.join(
   "walmart-listing-integrity-captures",
 );
 
+const DEFAULT_OWNER_REVIEW_ROOT = path.join(
+  process.cwd(),
+  "data",
+  "audits",
+  "walmart-listing-integrity-single-calibration",
+);
+
 const VERIFICATION_FILE = "_verification.json";
 const VERIFICATION_SHA_FILE = "_verification.sha256";
 const PRODUCT_TRUTH_READINESS_FILE = "_product-truth-readiness.json";
@@ -47,6 +55,8 @@ const VISUAL_ATTESTATION_INDEX_FILE = "visual-attestation-index.json";
 const VISUAL_ATTESTATION_INDEX_SHA_FILE = "visual-attestation-index.sha256";
 const OWNER_VISUAL_REVIEW_INDEX_FILE = "owner-visual-review-index.json";
 const OWNER_VISUAL_REVIEW_INDEX_SHA_FILE = "owner-visual-review-index.sha256";
+const CURRENT_OWNER_REPAIR_REVIEW_INDEX_FILE = "current-owner-repair-review-index.json";
+const CURRENT_OWNER_REPAIR_REVIEW_INDEX_SHA_FILE = "current-owner-repair-review-index.sha256";
 const TRUSTED_VISION_KEY_ID = "walmart-listing-vision-aaf60dc3afc25bba";
 const TRUSTED_VISION_KEY_SHA256 = "aaf60dc3afc25bba5bac48086524b813ad62b0103c290886769a1352eb4b8ea3";
 const TRUSTED_VISION_WORKER_BUILD = "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9";
@@ -512,13 +522,386 @@ async function readShaBoundJson(input: {
 
 function resolveAuditAsset(value: unknown, label: string): string {
   const raw = text(value, label);
-  if (path.isAbsolute(raw)) throw new Error(`${label} must be workspace-relative`);
+  const auditPrefix = "data/audits/";
+  if (path.isAbsolute(raw) || !raw.startsWith(auditPrefix)) {
+    throw new Error(`${label} must be workspace-relative inside data/audits`);
+  }
+  const relative = raw.slice(auditPrefix.length);
+  if (!relative || relative.split("/").some((part) => !part || part === "..")) {
+    throw new Error(`${label} contains an invalid audit-relative path`);
+  }
   const auditRoot = path.resolve(process.cwd(), "data", "audits");
-  const resolved = path.resolve(process.cwd(), raw);
+  const resolved = path.resolve(auditRoot, relative);
   if (resolved !== auditRoot && !resolved.startsWith(`${auditRoot}${path.sep}`)) {
     throw new Error(`${label} must remain inside data/audits`);
   }
   return resolved;
+}
+
+async function loadCurrentOwnerRepairReview(
+  root: string | null,
+): Promise<ListingIntegrityOwnerRepairReview | null> {
+  if (!root) return null;
+  const indexPath = path.join(root, CURRENT_OWNER_REPAIR_REVIEW_INDEX_FILE);
+  const indexShaPath = path.join(root, CURRENT_OWNER_REPAIR_REVIEW_INDEX_SHA_FILE);
+  let indexArtifact: Awaited<ReturnType<typeof readShaBoundArtifact>>;
+  try {
+    indexArtifact = await readShaBoundArtifact(
+      indexPath,
+      indexShaPath,
+      "current owner repair review index",
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+  const index = record(indexArtifact.value, "current owner repair review index");
+  exactKeys(index, [
+    "schema_version",
+    "selected_at",
+    "review",
+    "certification",
+    "diagnosis",
+    "buyer_snapshot",
+    "buyer_pdp",
+    "donor_audit",
+    "approval_instruction",
+  ], "current owner repair review index");
+  if (index.schema_version
+    !== "walmart-listing-integrity-current-owner-review-index/v1") {
+    throw new Error("current owner repair review index schema is unsupported");
+  }
+  const auditRoot = path.resolve(root, "..");
+  const loadReference = async (
+    role: "review" | "certification" | "diagnosis" | "buyer_snapshot"
+      | "buyer_pdp" | "donor_audit",
+  ) => {
+    const reference = record(index[role], `current owner repair review index.${role}`);
+    exactKeys(reference, ["path", "sha256"], `current owner repair review index.${role}`);
+    const pathname = resolveContainedPath({
+      base: root,
+      containmentRoot: auditRoot,
+      relativePath: reference.path,
+      label: `current owner repair review index.${role}.path`,
+    });
+    const bytes = await readExactShaFile({
+      pathname,
+      expectedSha256: reference.sha256,
+      label: `current owner repair review ${role}`,
+      maxBytes: 50_000_000,
+    });
+    return {
+      pathname,
+      sha256: sha256(reference.sha256, `current owner repair review index.${role}.sha256`),
+      value: record(
+        JSON.parse(bytes.toString("utf8")),
+        `current owner repair review ${role}`,
+      ),
+    };
+  };
+  const [reviewRef, certificationRef, diagnosisRef, snapshotRef, pdpRef, donorRef] =
+    await Promise.all([
+      loadReference("review"),
+      loadReference("certification"),
+      loadReference("diagnosis"),
+      loadReference("buyer_snapshot"),
+      loadReference("buyer_pdp"),
+      loadReference("donor_audit"),
+    ]);
+
+  const review = reviewRef.value;
+  const certification = certificationRef.value;
+  const diagnosis = diagnosisRef.value;
+  const snapshot = snapshotRef.value;
+  const pdp = pdpRef.value;
+  const donor = donorRef.value;
+  if (review.schema_version !== "walmart-listing-integrity-owner-repair-review/v1"
+    || review.status !== "OWNER_REVIEW_REQUIRED"
+    || certification.schema_version !== "walmart-listing-single-review-certification/v1"
+    || certification.status !== "OWNER_REVIEW_REQUIRED") {
+    throw new Error("current owner repair review schema/status is unsupported");
+  }
+  const authority = record(review.authority, "current owner repair review.authority");
+  if (authority.mode !== "REVIEW_ONLY_NO_WALMART_WRITE") {
+    throw new Error("current owner repair review is not review-only");
+  }
+  exactFalse(
+    authority.authorizes_product_truth_activation,
+    "current owner repair review.authority.authorizes_product_truth_activation",
+  );
+  exactFalse(
+    authority.authorizes_walmart_write,
+    "current owner repair review.authority.authorizes_walmart_write",
+  );
+
+  const certificationBodySha = sha256(
+    certification.body_sha256,
+    "current owner repair certification.body_sha256",
+  );
+  const certificationBody = { ...certification };
+  delete certificationBody.body_sha256;
+  if (digestSha256(Buffer.from(canonicalJson(certificationBody), "utf8"))
+    !== certificationBodySha) {
+    throw new Error("current owner repair certification body SHA-256 mismatch");
+  }
+  const certificationBindings = [
+    ["proposal_sha256", reviewRef.sha256],
+    ["diagnosis_sha256", diagnosisRef.sha256],
+    ["buyer_snapshot_sha256", snapshotRef.sha256],
+    ["buyer_pdp_sha256", pdpRef.sha256],
+    ["donor_audit_sha256", donorRef.sha256],
+  ] as const;
+  for (const [field, expected] of certificationBindings) {
+    if (certification[field] !== expected) {
+      throw new Error(`current owner repair certification.${field} binding mismatch`);
+    }
+  }
+  if (certification.qualification_precheck !== "PASS"
+    || certification.exact_image_bytes_verified !== true) {
+    throw new Error("current owner repair certification precheck/image proof is incomplete");
+  }
+  exactFalse(
+    certification.marketplace_write_authorized,
+    "current owner repair certification.marketplace_write_authorized",
+  );
+  exactFalse(
+    certification.database_write_authorized,
+    "current owner repair certification.database_write_authorized",
+  );
+  const assurance = record(
+    certification.assurance,
+    "current owner repair certification.assurance",
+  );
+  for (const field of ["network_calls", "model_calls", "database_writes", "walmart_writes"]) {
+    zero(assurance[field], `current owner repair certification.assurance.${field}`);
+  }
+
+  const diagnosisBodySha = sha256(
+    diagnosis.body_sha256,
+    "current owner repair diagnosis.body_sha256",
+  );
+  const diagnosisBody = { ...diagnosis };
+  delete diagnosisBody.body_sha256;
+  if (digestSha256(Buffer.from(canonicalJson(diagnosisBody), "utf8")) !== diagnosisBodySha) {
+    throw new Error("current owner repair diagnosis body SHA-256 mismatch");
+  }
+  const snapshotBodySha = sha256(
+    snapshot.body_sha256,
+    "current owner repair buyer snapshot.body_sha256",
+  );
+  const snapshotBody = { ...snapshot };
+  delete snapshotBody.body_sha256;
+  delete snapshotBody.snapshot_id;
+  if (digestSha256(Buffer.from(canonicalJson(snapshotBody), "utf8")) !== snapshotBodySha) {
+    throw new Error("current owner repair buyer snapshot body SHA-256 mismatch");
+  }
+
+  const listing = record(review.listing, "current owner repair review.listing");
+  const target = record(snapshot.target, "current owner repair buyer snapshot.target");
+  const product = record(pdp.product, "current owner repair buyer PDP.product");
+  const listingKey = text(listing.listing_key, "current owner repair review.listing_key");
+  const sku = text(listing.sku, "current owner repair review.sku");
+  const itemId = text(listing.item_id, "current owner repair review.item_id");
+  const title = text(listing.title, "current owner repair review.title");
+  if (certification.listing_key !== listingKey
+    || diagnosis.listing_key !== listingKey
+    || target.sku !== sku
+    || target.item_id !== itemId
+    || product.item_id !== itemId
+    || product.title !== title) {
+    throw new Error("current owner repair exact listing binding mismatch");
+  }
+
+  const fresh = record(
+    review.fresh_live_evidence,
+    "current owner repair review.fresh_live_evidence",
+  );
+  for (const [field, expected] of [
+    ["diagnosis_sha256", diagnosisRef.sha256],
+    ["buyer_snapshot_sha256", snapshotRef.sha256],
+    ["buyer_pdp_sha256", pdpRef.sha256],
+    ["donor_audit_sha256", donorRef.sha256],
+  ] as const) {
+    if (fresh[field] !== expected) {
+      throw new Error(`current owner repair review.${field} binding mismatch`);
+    }
+  }
+
+  if (!Array.isArray(snapshot.assets) || snapshot.assets.length < 1
+    || snapshot.assets.length > 20) {
+    throw new Error("current owner repair buyer snapshot assets are invalid");
+  }
+  const images: ListingIntegrityShadowImage[] = [];
+  for (const [indexInSnapshot, rawAsset] of snapshot.assets.entries()) {
+    const asset = record(
+      rawAsset,
+      `current owner repair buyer snapshot.assets[${indexInSnapshot}]`,
+    );
+    const assetPath = resolveContainedPath({
+      base: path.dirname(snapshotRef.pathname),
+      containmentRoot: auditRoot,
+      relativePath: asset.local_path,
+      label: `current owner repair buyer snapshot.assets[${indexInSnapshot}].local_path`,
+    });
+    await readExactShaFile({
+      pathname: assetPath,
+      expectedSha256: asset.sha256,
+      label: `current owner repair buyer image ${String(indexInSnapshot)}`,
+      maxBytes: 15_000_000,
+    });
+    const byteCount = count(
+      asset.bytes,
+      `current owner repair buyer snapshot.assets[${indexInSnapshot}].bytes`,
+    );
+    const fileBytes = await lstat(assetPath);
+    if (!fileBytes.isFile() || fileBytes.size !== byteCount) {
+      throw new Error(`current owner repair buyer image ${String(indexInSnapshot)} byte mismatch`);
+    }
+    images.push({
+      slot: text(asset.slot, `current owner repair buyer snapshot.assets[${indexInSnapshot}].slot`),
+      url: exactImageUrl(
+        asset.final_url ?? asset.source_url,
+        `current owner repair buyer snapshot.assets[${indexInSnapshot}].url`,
+      ),
+      sha256: sha256(
+        asset.sha256,
+        `current owner repair buyer snapshot.assets[${indexInSnapshot}].sha256`,
+      ),
+      width: count(
+        asset.decoded_width,
+        `current owner repair buyer snapshot.assets[${indexInSnapshot}].decoded_width`,
+      ),
+      height: count(
+        asset.decoded_height,
+        `current owner repair buyer snapshot.assets[${indexInSnapshot}].decoded_height`,
+      ),
+      role: indexInSnapshot === 0 ? "current_live_main" : "current_live_gallery",
+    });
+  }
+  if (images.filter((image) => image.slot === "MAIN").length !== 1
+    || fresh.main_image_sha256 !== images.find((image) => image.slot === "MAIN")?.sha256
+    || !sameStringList(
+      stringList(fresh.gallery_image_sha256, "current owner repair gallery hashes"),
+      images.filter((image) => image.slot !== "MAIN").map((image) => image.sha256),
+    )) {
+    throw new Error("current owner repair image order/SHA binding mismatch");
+  }
+
+  const candidate = record(
+    review.exact_product_truth_candidate,
+    "current owner repair review.exact_product_truth_candidate",
+  );
+  const exactDonor = record(
+    donor.exact_content_candidate,
+    "current owner repair donor.exact_content_candidate",
+  );
+  const wrongDonor = record(
+    candidate.legacy_wrong_donor_forbidden,
+    "current owner repair review.legacy_wrong_donor_forbidden",
+  );
+  const legacyDonor = record(
+    donor.current_legacy_component,
+    "current owner repair donor.current_legacy_component",
+  );
+  if (candidate.donor_product_id !== exactDonor.donor_product_id
+    || candidate.single_unit_upc !== exactDonor.upc
+    || candidate.single_unit_size !== exactDonor.size
+    || candidate.single_unit_inner_count !== exactDonor.inner_count
+    || wrongDonor.donor_product_id !== legacyDonor.donor_product_id
+    || legacyDonor.finding !== "WRONG_PRODUCT_DONOR"
+    || legacyDonor.canonical_use_allowed !== false) {
+    throw new Error("current owner repair Product Truth donor binding mismatch");
+  }
+
+  const repair = record(review.proposed_repair, "current owner repair review.proposed_repair");
+  const changedFields = stringList(
+    repair.changed_fields,
+    "current owner repair review.changed_fields",
+  );
+  if (!sameStringList(changedFields, ["description", "bullets"])) {
+    throw new Error("current owner repair changed fields must be description and bullets");
+  }
+  const before = record(repair.before, "current owner repair review.before");
+  const after = record(repair.after, "current owner repair review.after");
+  const currentDescription = text(
+    product.description,
+    "current owner repair buyer PDP.description",
+    50_000,
+  );
+  const currentBullets = stringList(
+    product.feature_bullets,
+    "current owner repair buyer PDP.feature_bullets",
+  );
+  if (before.description !== currentDescription
+    || !sameStringList(
+      stringList(before.bullets, "current owner repair review.before.bullets"),
+      currentBullets,
+    )) {
+    throw new Error("current owner repair review before-text differs from buyer PDP");
+  }
+
+  return {
+    status: "OWNER_REVIEW_REQUIRED",
+    selectedAt: text(index.selected_at, "current owner repair review index.selected_at"),
+    createdAt: text(review.created_at, "current owner repair review.created_at"),
+    listingKey,
+    sku,
+    itemId,
+    title,
+    publishedStatus: text(
+      listing.published_status,
+      "current owner repair review.published_status",
+    ),
+    lifecycleStatus: text(
+      listing.lifecycle_status,
+      "current owner repair review.lifecycle_status",
+    ),
+    productTruth: {
+      donorProductId: text(candidate.donor_product_id, "current owner repair donor id"),
+      brand: text(candidate.brand, "current owner repair brand"),
+      product: text(candidate.product, "current owner repair product"),
+      variant: text(candidate.variant, "current owner repair variant"),
+      singleUnitSize: text(candidate.single_unit_size, "current owner repair size"),
+      singleUnitInnerCount: count(
+        candidate.single_unit_inner_count,
+        "current owner repair inner count",
+      ),
+      singleUnitUpc: text(candidate.single_unit_upc, "current owner repair UPC"),
+      outerUnits: count(candidate.outer_units, "current owner repair outer units"),
+      totalUnits: count(candidate.total_buns, "current owner repair total units"),
+      wrongLegacyDonorId: text(
+        wrongDonor.donor_product_id,
+        "current owner repair wrong legacy donor id",
+      ),
+    },
+    current: {
+      description: currentDescription,
+      bullets: currentBullets,
+      images,
+    },
+    proposed: {
+      description: text(after.description, "current owner repair proposed description", 50_000),
+      bullets: stringList(after.bullets, "current owner repair proposed bullets"),
+    },
+    changedFields: ["description", "bullets"],
+    unchangedFields: stringList(
+      repair.unchanged_fields,
+      "current owner repair review.unchanged_fields",
+    ),
+    qualificationPrecheck: "PASS",
+    exactImageBytesVerified: true,
+    certificationBodySha256: certificationBodySha,
+    reviewFileSha256: reviewRef.sha256,
+    certificationFileSha256: certificationRef.sha256,
+    evidenceIndexPath: path.relative(process.cwd(), indexPath),
+    evidenceIndexSha256: indexArtifact.fileSha256,
+    approvalInstruction: text(
+      index.approval_instruction,
+      "current owner repair review index.approval_instruction",
+    ),
+    walmartWriteAuthorized: false,
+    databaseWriteAuthorized: false,
+  };
 }
 
 async function verifyAssetBytes(asset: JsonRecord, label: string): Promise<void> {
@@ -1436,6 +1819,9 @@ export async function loadListingIntegrityShadowData(
   captureRoot: string | null = path.resolve(root) === path.resolve(DEFAULT_ROOT)
     ? DEFAULT_CAPTURE_ROOT
     : null,
+  ownerReviewRoot: string | null = path.resolve(root) === path.resolve(DEFAULT_ROOT)
+    ? DEFAULT_OWNER_REVIEW_ROOT
+    : null,
 ): Promise<ListingIntegrityShadowData> {
   let entries: Dirent[];
   let rootExists = true;
@@ -1503,8 +1889,10 @@ export async function loadListingIntegrityShadowData(
     ));
   }
   const catalog = await loadCatalogOverview(catalogRoot, captureRoot);
+  const ownerRepairReview = await loadCurrentOwnerRepairReview(ownerReviewRoot);
   return {
     mode: "SHADOW_READ_ONLY",
+    ownerRepairReview,
     catalog,
     productTruth,
     engine,
@@ -1513,7 +1901,9 @@ export async function loadListingIntegrityShadowData(
       productTruth: productTruth.status,
       liveCanary: "LOCKED",
       massRun: "LOCKED",
-      next: productTruth.status === "BLOCKED_SCHEMA_NOT_READY"
+      next: ownerRepairReview
+        ? `Owner reviews ${ownerRepairReview.sku} exact Product Truth and the certified description/bullets diff; live canary remains locked until exact approval.`
+        : productTruth.status === "BLOCKED_SCHEMA_NOT_READY"
         ? `Canonical Product Truth schema is not ready; ${String(productTruth.pendingMigrations ?? "unknown")} migrations remain.`
         : productTruth.status === "BLOCKED_SKU_TRUTH_NOT_READY"
         ? `Canonical Product Truth schema is ready, but ${productTruth.listingKey ?? "the exact listing"} is blocked: ${productTruth.blockers.join(", ")}.`

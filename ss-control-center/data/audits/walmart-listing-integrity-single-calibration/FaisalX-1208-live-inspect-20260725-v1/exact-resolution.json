@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1208",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1208",
+    "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+    "upc": "684611899187",
+    "gtin14": "00684611899187",
+    "wpid": "2EUJLXJH639L",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "8406560524",
+    "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-White-Bakery-Buns-8-count-Soft-Hamburger-Buns-19-oz-Bag-Pack-of-2_cd070b50-292c-48f0-9c54-767f94348ed3.4dfe95e288d9f04b4a3c4ac31bafb783.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "afae593b1d291ee03cd48dcb7db6288235ffb0668d78a4c66a0860fb0537ba39",
+    "catalog_search_payload_canonical_sha256": "e11977dd69762cb24521eb4d5a27d47ba2749a6ebf5502e95d8bda5dac17d4e7"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1208",
+    "seller.ItemResponse[0].sku=FaisalX-1208",
+    "seller.ItemResponse[0].upc=684611899187",
+    "seller.normalized_gtin14=00684611899187",
+    "seller.wpid_not_itemId=2EUJLXJH639L",
+    "catalog.items[0].standardUpc~=00684611899187;itemId=8406560524",
+    "catalog.unique_numeric_public_itemId=8406560524"
+  ]
+}

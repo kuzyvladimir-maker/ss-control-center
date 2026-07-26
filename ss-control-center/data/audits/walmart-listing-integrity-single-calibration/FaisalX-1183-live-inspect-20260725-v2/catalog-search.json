@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "itemId": "8419413379",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-6_1907a57d-9f26-4671-93b7-b2b79534219b.597e2d703f689db6597ddecad0b164fe.png"
+        }
+      ],
+      "customerRating": "0.0",
+      "price": {
+        "amount": "44.29",
+        "currency": "USD"
+      },
+      "description": "<li>QUALITY INGREDIENTS: Made with real butter; no high-fructose corn syrup</li><li>PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls</li><li>PEPPERIDGE FARM BAKES IT</li>",
+      "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+      "brand": "Pepperidge Farm",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611898937"
+      ],
+      "properties": {
+        "numReviews": "0",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Buns",
+          "Hot Dog Buns"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}
