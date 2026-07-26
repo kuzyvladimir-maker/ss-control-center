@@ -74,8 +74,11 @@
   GET-only без report-create. Manifest policy commit `9090580e` прошёл clean
   Product Truth `453/453`; final report-bound disposition и authoritative manifest
   v3 готовы: `5935` live listings, `3` exact reports, `0` blockers, canonical SHA
-  `94359db1…9062c`. G5 разрешён только как read-only `backfill-plan`; apply,
-  G6 activation и G7–G8 не разрешены. Живой checklist и acceptance gates:
+  `94359db1…9062c`. G5 read-only plan `162b2dbd…53cf78` построен из clean checkout
+  `0fdbc0c9`: `5935` scope imports, `5935` artifact-only review tasks, обе ledgers
+  ready, writers/FK blockers, canonical cost recomputes, provider calls и DB writes
+  = `0`. Scope-only apply, G6 activation и G7–G8 не разрешены. Живой checklist и
+  acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
 - 🟢 Отдельный roadmap с gates, критериями Phase 1/2 и owner-решениями записан.
@@ -495,7 +498,8 @@
   второй SKU, волны 15–20 и расписание не разрешены.
 - 🟡 **Production activation:** exact 8 Product Truth migrations применены к Turso и
   независимо сертифицированы; post-commit plan подтверждает 8/8 и обе ledgers.
-  Authoritative Phase 1 manifest v3 готов; business-data backfill не выполнен,
+  Authoritative Phase 1 manifest v3 и G5 read-only backfill preview готовы;
+  scope-only business-data apply не выполнен,
   consumer cutover на единый Product Truth read-contract = **0 из 4**. Legacy
   `DonorProduct`/`SkuComponent`/`SkuCost`/views не доказывают readiness.
   Свежий source-readiness audit сохранил sanitized production snapshots. Read-only
@@ -509,8 +513,8 @@
   ITEM v6 содержит `5236` rows и даёт `3891 PUBLISHED` live listings. Exact bytes
   всех трёх reports, successor census и disposition связаны manifest SHA
   `94359db1…9062c`. Отчёты и census нельзя подменять mutable listing mirrors.
-  Следующий разрешённый шаг — read-only `backfill-plan`; apply требует отдельного
-  owner gate.
+  Следующий шаг — только отдельный owner gate на exact scope-only
+  `backfill-apply`; sealed preview сам apply не разрешает.
   Внешние listing/DB writes = 0.
 - 🟡 **ChannelMAX VC same-model canary / no-spend:** state machine и точные 103-byte
   forward/rollback артефакты готовы; добавлен finite CDP adapter skeleton с exact
