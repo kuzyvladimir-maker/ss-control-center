@@ -374,9 +374,11 @@ test("remote-compatible read-only guard permits reads and blocks every write cap
     args: [],
   });
   await guarded.execute('PRAGMA table_info("DonorProduct")');
+  await guarded.execute('PRAGMA table_xinfo("DonorProduct")');
   await guarded.execute('PRAGMA foreign_key_list("DonorOffer")');
   await guarded.execute('PRAGMA index_list("DonorOffer")');
   await guarded.execute('PRAGMA index_info("DonorOffer_retailer_retailerProductId_key")');
+  await guarded.execute('PRAGMA index_xinfo("DonorOffer_retailer_retailerProductId_key")');
   await guarded.execute("PRAGMA foreign_keys");
   await guarded.execute("PRAGMA foreign_key_check");
   await guarded.batch([
@@ -390,9 +392,11 @@ test("remote-compatible read-only guard permits reads and blocks every write cap
     "SELECT id FROM DonorProduct WHERE title = 'DELETE is a word'",
     "WITH exact AS (SELECT id FROM DonorProduct) SELECT id FROM exact",
     'PRAGMA table_info("DonorProduct")',
+    'PRAGMA table_xinfo("DonorProduct")',
     'PRAGMA foreign_key_list("DonorOffer")',
     'PRAGMA index_list("DonorOffer")',
     'PRAGMA index_info("DonorOffer_retailer_retailerProductId_key")',
+    'PRAGMA index_xinfo("DonorOffer_retailer_retailerProductId_key")',
     "PRAGMA foreign_keys",
     "PRAGMA foreign_key_check",
     "BATCH:read:2",
@@ -418,7 +422,7 @@ test("remote-compatible read-only guard permits reads and blocks every write cap
   assert.throws(() => guarded.executeMultiple("SELECT 1"), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
   assert.throws(() => guarded.migrate(["SELECT 1"]), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
   assert.throws(() => guarded.sync(), /READ_ONLY_CLIENT_CAPABILITY_FORBIDDEN/u);
-  assert.equal(executed.length, 11);
+  assert.equal(executed.length, 13);
 });
 
 test("matcher-replay is exact-corpus offline-only and writes immutable certification artifacts", async () => {

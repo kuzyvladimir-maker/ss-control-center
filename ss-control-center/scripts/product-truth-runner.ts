@@ -73,6 +73,7 @@ import {
   type ProductTruthMigrationCertification,
 } from "../src/lib/sourcing/product-truth-backfill-readiness";
 import {
+  PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION,
   PRODUCT_TRUTH_OWNER_BACKFILL_APPROVAL_VERSION,
   PRODUCT_TRUTH_OWNER_BACKFILL_PLAN_VERSION,
   applyProductTruthOwnerBackfill,
@@ -81,6 +82,7 @@ import {
   writeProductTruthBackfillReportArtifacts,
   type ProductTruthOwnerBackfillApproval,
   type ProductTruthOwnerBackfillPlan,
+  type ProductTruthMigrationContinuity,
 } from "./product-truth-backfill-writer";
 import {
   parseProductTruthMatcherReplayCorpus,
@@ -93,7 +95,9 @@ import {
   migrationSetSha256,
   planProductTruthMigrations,
   resolveDatabaseTarget,
+  type ProductTruthMigrationFile,
   type ProductTruthMigrationPlan,
+  type ProductTruthSchemaFingerprint,
 } from "./product-truth-migration-plan";
 
 const APPROVAL_INSTRUCTIONS_VERSION =
@@ -746,6 +750,75 @@ interface VerifiedProductTruthMigrationBridge extends LoadedProductTruthMigratio
   liveSchemaFingerprintSha256: string;
   liveReceiptLedger: "ready";
   livePrismaLedger: "ready";
+  continuity: ProductTruthMigrationContinuity;
+}
+
+const PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE = {
+  tableName: "ProductTruthListingScope",
+  canonicalObjects: [
+    "ProductTruthListingScope",
+    "ProductTruthListingScope_channel_store_sku_key",
+    "ProductTruthListingScope_manifest_idx",
+    "ProductTruthListingScope_duplicate_insert_guard",
+    "ProductTruthListingScope_update_guard",
+    "ProductTruthListingScope_delete_guard",
+  ],
+  sqliteObjects: ["sqlite_autoindex_ProductTruthListingScope_1"],
+} as const;
+
+function assertProtectedBackfillWriteSurface(input: {
+  schema: ProductTruthSchemaFingerprint;
+  canonicalFiles: readonly ProductTruthMigrationFile[];
+}): void {
+  const expectedDefinitions = new Map(
+    input.canonicalFiles.flatMap((file) => file.expectedDefinitions)
+      .map((definition) => [definition.name, definition] as const),
+  );
+  const expectedNames = new Set<string>([
+    ...PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE.canonicalObjects,
+    ...PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE.sqliteObjects,
+  ]);
+  const actualObjects = input.schema.objects
+    .filter((object) =>
+      object.tableName === PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE.tableName)
+    .sort((left, right) =>
+      `${left.type}:${left.name}`.localeCompare(`${right.type}:${right.name}`, "en-US"));
+  const actualNames = new Set(actualObjects.map((object) => object.name));
+  const missing = [...expectedNames]
+    .filter((name) => !actualNames.has(name))
+    .sort((left, right) => left.localeCompare(right, "en-US"));
+  const unexpected = [...actualNames]
+    .filter((name) => !expectedNames.has(name))
+    .sort((left, right) => left.localeCompare(right, "en-US"));
+  const changed = PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE.canonicalObjects
+    .flatMap((name) => {
+      const expected = expectedDefinitions.get(name);
+      const actual = actualObjects.find((object) => object.name === name);
+      if (!expected || !actual) return [];
+      return actual.type === expected.type && actual.sqlSha256 === expected.sha256
+        ? []
+        : [name];
+    })
+    .sort((left, right) => left.localeCompare(right, "en-US"));
+  const missingCanonicalDefinitions =
+    PRODUCT_TRUTH_BACKFILL_WRITE_SURFACE.canonicalObjects
+      .filter((name) => !expectedDefinitions.has(name));
+  if (
+    missing.length > 0
+    || unexpected.length > 0
+    || changed.length > 0
+    || missingCanonicalDefinitions.length > 0
+  ) {
+    fail(
+      "MIGRATION_BRIDGE_PROTECTED_WRITE_SURFACE_DRIFT",
+      [
+        `missing=${missing.join(",") || "none"}`,
+        `unexpected=${unexpected.join(",") || "none"}`,
+        `changed=${changed.join(",") || "none"}`,
+        `canonicalDefinitionsMissing=${missingCanonicalDefinitions.join(",") || "none"}`,
+      ].join("; "),
+    );
+  }
 }
 
 function exactArtifactSha256(value: unknown, label: string): asserts value is string {
@@ -1102,31 +1175,52 @@ async function verifyCanonicalMigrationBridge(input: {
       "migration report differs from the live target or current activation contract",
     );
   }
-  if (
-    livePlan.canApply !== true
-    || livePlan.blockers.length !== 0
-    || livePlan.receiptLedger !== "ready"
-    || livePlan.prismaLedger !== "ready"
-    || livePlan.migrations.some((migration) =>
-      migration.state !== "applied" || migration.tracking !== "tracked")
-  ) {
+  const liveSchema = livePlan.schema;
+  if (!liveSchema) {
+    fail(
+      "MIGRATION_BRIDGE_SCHEMA_FINGERPRINT_MISMATCH",
+      "live schema fingerprint is absent",
+    );
+  }
+  const liveSchemaFingerprintSha256 = liveSchema.sha256;
+  if (certification.schemaFingerprintSha256 !== report.schemaAfterSha256) {
+    fail(
+      "MIGRATION_BRIDGE_SCHEMA_FINGERPRINT_MISMATCH",
+      "migration certification and activation report bind different activation schemas",
+    );
+  }
+  const activationSchemaFingerprintSha256 = certification.schemaFingerprintSha256;
+  const exactDatabaseSchema =
+    liveSchemaFingerprintSha256 === activationSchemaFingerprintSha256;
+  const acceptedDriftBlocker =
+    `MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT: receipt=${
+      activationSchemaFingerprintSha256
+    }; current=${liveSchemaFingerprintSha256}`;
+  const liveProtectedSchemaReady =
+    livePlan.orderValid === true
+    && livePlan.receiptLedger === "ready"
+    && livePlan.prismaLedger === "ready"
+    && livePlan.migrations.length === canonicalFiles.length
+    && livePlan.migrations.every((migration) =>
+      migration.state === "applied"
+      && migration.tracking === "tracked"
+      && migration.blockers.length === 0);
+  const fullSchemaStateAllowed = exactDatabaseSchema
+    ? livePlan.canApply === true && livePlan.blockers.length === 0
+    : livePlan.canApply === false
+      && livePlan.blockers.length === 1
+      && livePlan.blockers[0] === acceptedDriftBlocker;
+  if (!liveProtectedSchemaReady || !fullSchemaStateAllowed) {
     fail(
       "MIGRATION_BRIDGE_LIVE_LEDGER_INVALID",
       livePlan.blockers.join("; ")
-        || "live Product Truth and Prisma migration ledgers are not both exact and ready",
+        || "live protected Product Truth schema and dual migration ledgers are not exact",
     );
   }
-  const liveSchemaFingerprintSha256 = livePlan.schema?.sha256;
-  if (
-    !liveSchemaFingerprintSha256
-    || certification.schemaFingerprintSha256 !== liveSchemaFingerprintSha256
-    || report.schemaAfterSha256 !== liveSchemaFingerprintSha256
-  ) {
-    fail(
-      "MIGRATION_BRIDGE_SCHEMA_FINGERPRINT_MISMATCH",
-      "certification and report do not match the exact live schema fingerprint",
-    );
-  }
+  assertProtectedBackfillWriteSurface({
+    schema: liveSchema,
+    canonicalFiles,
+  });
 
   if (
     report.actions.length !== canonicalFiles.length
@@ -1149,12 +1243,29 @@ async function verifyCanonicalMigrationBridge(input: {
       "migration report final states differ from the exact live dual-ledger state",
     );
   }
+  const continuity: ProductTruthMigrationContinuity = {
+    schemaVersion: PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION,
+    mode: exactDatabaseSchema
+      ? "EXACT_DATABASE_SCHEMA"
+      : "PROTECTED_PRODUCT_TRUTH_SCHEMA",
+    canonicalMigrationSetSha256,
+    activationContractSha256: report.activationContractSha256,
+    migrationReportSha256: bridge.reportSha256,
+    migrationCertificationSha256: bridge.certificationSha256,
+    activationSchemaFingerprintSha256,
+    liveSchemaFingerprintSha256,
+    protectedMigrationCount: canonicalFiles.length,
+    acceptedFullSchemaDriftCode: exactDatabaseSchema
+      ? null
+      : "MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT",
+  };
   return {
     ...bridge,
     canonicalMigrationSetSha256,
     liveSchemaFingerprintSha256,
     liveReceiptLedger: "ready",
     livePrismaLedger: "ready",
+    continuity,
   };
 }
 
@@ -1355,7 +1466,7 @@ function assertBackfillPlanArtifactShape(
   if (!isRecord(value)) fail("BACKFILL_PLAN_ARTIFACT_INVALID", "backfill plan must be an object");
   exactKeys(value, [
     "schemaVersion", "planId", "createdAt", "expiresAt", "databaseTargetFingerprint",
-    "manifest", "migrationCertification", "readinessPlanSha256", "preconditions",
+    "manifest", "migrationCertification", "migrationContinuity", "readinessPlanSha256", "preconditions",
     "operations", "rollbackPolicy", "claims", "planSha256",
   ], "backfill plan");
   if (value.schemaVersion !== PRODUCT_TRUTH_OWNER_BACKFILL_PLAN_VERSION) {
@@ -1367,6 +1478,32 @@ function assertBackfillPlanArtifactShape(
   if (!isRecord(value.manifest)) fail("BACKFILL_PLAN_ARTIFACT_INVALID", "plan.manifest must be an object");
   exactKeys(value.manifest, ["schemaVersion", "sha256", "asOf", "listingCount"], "plan.manifest");
   assertMigrationCertificationArtifactShape(value.migrationCertification);
+  if (!isRecord(value.migrationContinuity)) {
+    fail(
+      "BACKFILL_PLAN_ARTIFACT_INVALID",
+      "plan.migrationContinuity must be an object",
+    );
+  }
+  exactKeys(value.migrationContinuity, [
+    "schemaVersion", "mode", "canonicalMigrationSetSha256",
+    "activationContractSha256", "migrationReportSha256",
+    "migrationCertificationSha256", "activationSchemaFingerprintSha256",
+    "liveSchemaFingerprintSha256", "protectedMigrationCount",
+    "acceptedFullSchemaDriftCode",
+  ], "plan.migrationContinuity");
+  if (
+    value.migrationContinuity.schemaVersion
+      !== PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION
+    || ![
+      "EXACT_DATABASE_SCHEMA",
+      "PROTECTED_PRODUCT_TRUTH_SCHEMA",
+    ].includes(String(value.migrationContinuity.mode))
+  ) {
+    fail(
+      "BACKFILL_PLAN_ARTIFACT_INVALID",
+      "plan.migrationContinuity has an unsupported schema version or mode",
+    );
+  }
   if (!isRecord(value.preconditions)) {
     fail("BACKFILL_PLAN_ARTIFACT_INVALID", "plan.preconditions must be an object");
   }
@@ -1885,7 +2022,7 @@ export function assertProductTruthReadOnlySql(statement: unknown): void {
   // forms. Require one exact quoted identifier and no comments or suffixes.
   if (
     /^PRAGMA\s+(?:foreign_keys|foreign_key_check)$/iu.test(sql)
-    || /^PRAGMA\s+(?:table_info|foreign_key_list|index_list|index_info)\s*\(\s*"(?:[^"]|"")+"(?:\s*)\)$/iu.test(sql)
+    || /^PRAGMA\s+(?:table_info|table_xinfo|foreign_key_list|index_list|index_info|index_xinfo)\s*\(\s*"(?:[^"]|"")+"(?:\s*)\)$/iu.test(sql)
   ) {
     return;
   }
@@ -2452,6 +2589,7 @@ async function buildBackfillPlanArtifacts(input: {
       manifestSha256: manifestFile.manifestSha256,
       databaseTargetFingerprint: input.resolved.target.fingerprint,
       migrationCertification: migrationBridge.certification,
+      migrationContinuity: migrationBridge.continuity,
       createdAt: input.now,
       expiresAt: input.options.expiresAt,
     });
@@ -2476,6 +2614,7 @@ async function buildBackfillPlanArtifacts(input: {
     migrationReportSha256: migrationBridge.reportSha256,
     canonicalMigrationSetSha256: migrationBridge.canonicalMigrationSetSha256,
     liveSchemaFingerprintSha256: migrationBridge.liveSchemaFingerprintSha256,
+    migrationContinuity: migrationBridge.continuity,
     migrationLedgers: {
       productTruth: migrationBridge.liveReceiptLedger,
       prisma: migrationBridge.livePrismaLedger,

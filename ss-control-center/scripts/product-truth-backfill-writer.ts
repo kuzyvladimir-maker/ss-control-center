@@ -37,15 +37,20 @@ import {
   assertProductTruthListingScopeSchema,
   assertProductTruthMeteredEvidenceSchema,
 } from "../src/lib/sourcing/product-truth-schema-gate";
+import {
+  inspectProductTruthSchemaFingerprint,
+} from "./product-truth-migration-plan";
 
 export const PRODUCT_TRUTH_OWNER_BACKFILL_PLAN_VERSION =
-  "product-truth-owner-backfill-plan/1.0.0" as const;
+  "product-truth-owner-backfill-plan/1.1.0" as const;
 export const PRODUCT_TRUTH_OWNER_BACKFILL_APPROVAL_VERSION =
   "product-truth-owner-backfill-approval/1.0.0" as const;
 export const PRODUCT_TRUTH_OWNER_BACKFILL_REPORT_VERSION =
   "product-truth-owner-backfill-report/1.0.0" as const;
 export const PRODUCT_TRUTH_OWNER_BACKFILL_ARTIFACT_INDEX_VERSION =
   "product-truth-owner-backfill-artifact-index/1.0.0" as const;
+export const PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION =
+  "product-truth-migration-continuity/1.0.0" as const;
 
 type SqlReader = Pick<Client, "execute"> | Pick<Transaction, "execute">;
 
@@ -90,6 +95,19 @@ export interface ProductTruthBackfillPreconditionState {
   foreignKeyViolations: string[];
 }
 
+export interface ProductTruthMigrationContinuity {
+  schemaVersion: typeof PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION;
+  mode: "EXACT_DATABASE_SCHEMA" | "PROTECTED_PRODUCT_TRUTH_SCHEMA";
+  canonicalMigrationSetSha256: string;
+  activationContractSha256: string;
+  migrationReportSha256: string;
+  migrationCertificationSha256: string;
+  activationSchemaFingerprintSha256: string;
+  liveSchemaFingerprintSha256: string;
+  protectedMigrationCount: number;
+  acceptedFullSchemaDriftCode: null | "MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT";
+}
+
 export interface ProductTruthScopeImportOperation {
   operation: "INSERT_IMMUTABLE_AUTHORITATIVE_LISTING_SCOPE";
   ordinal: number;
@@ -126,6 +144,7 @@ export interface ProductTruthOwnerBackfillPlan {
     listingCount: number;
   };
   migrationCertification: ProductTruthMigrationCertification;
+  migrationContinuity: ProductTruthMigrationContinuity;
   readinessPlanSha256: string;
   preconditions: {
     stateSha256: string;
@@ -256,6 +275,76 @@ function instant(value: unknown, label: string): string {
     fail("BACKFILL_WRITER_INPUT_INVALID", `${label} must be a canonical UTC ISO-8601 instant`);
   }
   return text;
+}
+
+function migrationContinuity(
+  value: ProductTruthMigrationContinuity,
+): ProductTruthMigrationContinuity {
+  if (!value || typeof value !== "object") {
+    fail("BACKFILL_MIGRATION_CONTINUITY_INVALID", "migration continuity must be an object");
+  }
+  if (value.schemaVersion !== PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION) {
+    fail(
+      "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+      `migration continuity must use ${PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION}`,
+    );
+  }
+  for (const [label, digest] of [
+    ["canonicalMigrationSetSha256", value.canonicalMigrationSetSha256],
+    ["activationContractSha256", value.activationContractSha256],
+    ["migrationReportSha256", value.migrationReportSha256],
+    ["migrationCertificationSha256", value.migrationCertificationSha256],
+    ["activationSchemaFingerprintSha256", value.activationSchemaFingerprintSha256],
+    ["liveSchemaFingerprintSha256", value.liveSchemaFingerprintSha256],
+  ] as const) {
+    exactSha(digest, `migrationContinuity.${label}`);
+  }
+  if (
+    !Number.isSafeInteger(value.protectedMigrationCount)
+    || value.protectedMigrationCount <= 0
+  ) {
+    fail(
+      "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+      "protectedMigrationCount must be a positive safe integer",
+    );
+  }
+  if (value.mode === "EXACT_DATABASE_SCHEMA") {
+    if (
+      value.acceptedFullSchemaDriftCode !== null
+      || value.activationSchemaFingerprintSha256 !== value.liveSchemaFingerprintSha256
+    ) {
+      fail(
+        "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+        "exact schema continuity cannot accept drift or bind different fingerprints",
+      );
+    }
+  } else if (value.mode === "PROTECTED_PRODUCT_TRUTH_SCHEMA") {
+    if (
+      value.acceptedFullSchemaDriftCode !== "MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT"
+      || value.activationSchemaFingerprintSha256 === value.liveSchemaFingerprintSha256
+    ) {
+      fail(
+        "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+        "protected Product Truth continuity requires one explicit full-schema drift",
+      );
+    }
+  } else {
+    fail("BACKFILL_MIGRATION_CONTINUITY_INVALID", "unknown migration continuity mode");
+  }
+  return value;
+}
+
+async function assertSealedLiveSchemaFingerprint(
+  db: SqlReader,
+  continuity: ProductTruthMigrationContinuity,
+): Promise<void> {
+  const current = await inspectProductTruthSchemaFingerprint(db);
+  if (current.sha256 !== continuity.liveSchemaFingerprintSha256) {
+    fail(
+      "BACKFILL_SCHEMA_CONTINUITY_CHANGED",
+      `sealed live schema=${continuity.liveSchemaFingerprintSha256}; current=${current.sha256}`,
+    );
+  }
 }
 
 function sortedUnique(values: readonly string[]): string[] {
@@ -512,6 +601,7 @@ export async function planProductTruthOwnerBackfill(
     manifestSha256: string;
     databaseTargetFingerprint: string;
     migrationCertification: ProductTruthMigrationCertification;
+    migrationContinuity: ProductTruthMigrationContinuity;
     createdAt: string;
     expiresAt: string;
   },
@@ -530,6 +620,21 @@ export async function planProductTruthOwnerBackfill(
   if (validityMs <= 0 || validityMs > 24 * 60 * 60 * 1000) {
     fail("BACKFILL_PLAN_TIME_INVALID", "plan validity must be greater than zero and no more than 24 hours");
   }
+  const continuity = migrationContinuity(input.migrationContinuity);
+  if (
+    continuity.canonicalMigrationSetSha256
+      !== input.migrationCertification.migrationSetSha256
+    || continuity.migrationReportSha256
+      !== input.migrationCertification.migrationReportSha256
+    || continuity.activationSchemaFingerprintSha256
+      !== input.migrationCertification.schemaFingerprintSha256
+  ) {
+    fail(
+      "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+      "migration continuity does not bind the supplied activation certification",
+    );
+  }
+  await assertSealedLiveSchemaFingerprint(db, continuity);
   const binding = manifestBinding(input);
   await assertBackfillSchema(db);
 
@@ -601,6 +706,7 @@ export async function planProductTruthOwnerBackfill(
       listingCount: input.manifest.listings.length,
     },
     migrationCertification: readiness.migrationCertification,
+    migrationContinuity: continuity,
     readinessPlanSha256: readiness.planSha256,
     preconditions: {
       stateSha256: stateSha256(state),
@@ -650,6 +756,20 @@ function validatePlanAndManifest(input: {
 }): { planSha256: string; expectedRows: Map<string, ProductTruthBackfillScopeStateRow> } {
   if (input.plan.schemaVersion !== PRODUCT_TRUTH_OWNER_BACKFILL_PLAN_VERSION) {
     fail("BACKFILL_PLAN_INVALID", "plan schema version is not current");
+  }
+  const continuity = migrationContinuity(input.plan.migrationContinuity);
+  if (
+    continuity.canonicalMigrationSetSha256
+      !== input.plan.migrationCertification.migrationSetSha256
+    || continuity.migrationReportSha256
+      !== input.plan.migrationCertification.migrationReportSha256
+    || continuity.activationSchemaFingerprintSha256
+      !== input.plan.migrationCertification.schemaFingerprintSha256
+  ) {
+    fail(
+      "BACKFILL_MIGRATION_CONTINUITY_INVALID",
+      "sealed continuity and migration certification do not match",
+    );
   }
   const embeddedHash = exactSha(input.plan.planSha256, "plan.planSha256");
   const { planSha256: _omitted, ...body } = input.plan;
@@ -953,6 +1073,7 @@ export async function applyProductTruthOwnerBackfill(
     confirmation: input.confirmation,
     appliedAt,
   });
+  await assertSealedLiveSchemaFingerprint(db, input.plan.migrationContinuity);
   await assertBackfillSchema(db);
 
   const before = await capturePreconditionState(db, input.manifest);
@@ -978,6 +1099,7 @@ export async function applyProductTruthOwnerBackfill(
   } else {
     const tx = await db.transaction("write");
     try {
+      await assertSealedLiveSchemaFingerprint(tx, input.plan.migrationContinuity);
       const lockedState = await capturePreconditionState(tx, input.manifest);
       if (stateSha256(lockedState) !== input.plan.preconditions.stateSha256) {
         fail("BACKFILL_PRECONDITION_CHANGED", "database state changed while acquiring writer lock");

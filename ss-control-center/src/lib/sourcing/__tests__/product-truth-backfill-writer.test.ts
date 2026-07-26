@@ -22,6 +22,7 @@ import {
   type ProductTruthMigrationCertification,
 } from "../product-truth-backfill-readiness";
 import {
+  PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION,
   PRODUCT_TRUTH_OWNER_BACKFILL_APPROVAL_VERSION,
   ProductTruthBackfillWriterError,
   applyProductTruthOwnerBackfill,
@@ -30,6 +31,7 @@ import {
   verifyProductTruthBackfillScopeImport,
   writeProductTruthBackfillPlanArtifacts,
   writeProductTruthBackfillReportArtifacts,
+  type ProductTruthMigrationContinuity,
   type ProductTruthOwnerBackfillApproval,
   type ProductTruthOwnerBackfillPlan,
 } from "../../../../scripts/product-truth-backfill-writer";
@@ -45,6 +47,7 @@ import {
   applyProductTruthMigrations,
   buildProductTruthMigrationConfirmationToken,
   canonicalProductTruthMigrationArtifact,
+  inspectProductTruthSchemaFingerprint,
   planProductTruthMigrations,
   productTruthMigrationArtifactSha256,
   writeProductTruthMigrationPlanArtifact,
@@ -126,16 +129,36 @@ function manifest(): Phase1ScopeManifest {
   return value;
 }
 
-function certification(): ProductTruthMigrationCertification {
+function certification(schemaFingerprintSha256: string): ProductTruthMigrationCertification {
   return {
     contractVersion: PRODUCT_TRUTH_MIGRATION_CERTIFICATION_VERSION,
     migrationSetSha256: "2".repeat(64),
     migrationReportSha256: "3".repeat(64),
-    schemaFingerprintSha256: "4".repeat(64),
+    schemaFingerprintSha256,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
     allMigrationsApplied: true,
     allReceiptsTracked: true,
     receiptLedgerReady: true,
+  };
+}
+
+async function migrationContinuity(
+  db: Client,
+  migrationCertification: ProductTruthMigrationCertification,
+): Promise<ProductTruthMigrationContinuity> {
+  const liveSchemaFingerprintSha256 =
+    (await inspectProductTruthSchemaFingerprint(db)).sha256;
+  return {
+    schemaVersion: PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION,
+    mode: "EXACT_DATABASE_SCHEMA",
+    canonicalMigrationSetSha256: migrationCertification.migrationSetSha256,
+    activationContractSha256: "4".repeat(64),
+    migrationReportSha256: migrationCertification.migrationReportSha256,
+    migrationCertificationSha256: "5".repeat(64),
+    activationSchemaFingerprintSha256: liveSchemaFingerprintSha256,
+    liveSchemaFingerprintSha256,
+    protectedMigrationCount: MIGRATION_IDS.length,
+    acceptedFullSchemaDriftCode: null,
   };
 }
 
@@ -324,13 +347,17 @@ async function buildPlan(db: Client): Promise<{
   const scope = manifest();
   const manifestJson = renderPhase1ScopeManifestJson(scope);
   const manifestSha256 = sha256Hex(manifestJson);
+  const liveSchemaFingerprintSha256 =
+    (await inspectProductTruthSchemaFingerprint(db)).sha256;
+  const migrationCertification = certification(liveSchemaFingerprintSha256);
   const plan = await planProductTruthOwnerBackfill(db, {
     planId: "owner-backfill-test-1",
     manifest: scope,
     manifestJson,
     manifestSha256,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
-    migrationCertification: certification(),
+    migrationCertification,
+    migrationContinuity: await migrationContinuity(db, migrationCertification),
     createdAt: CREATED_AT,
     expiresAt: "2026-07-19T13:00:00.000Z",
   });
@@ -533,8 +560,6 @@ test("approval, target, and state drift fail closed before any scope write", asy
 test("an insert failure rolls the entire scope import transaction back", async (t) => {
   const db = await migratedDb(t);
   try {
-    const prepared = await buildPlan(db);
-    const approved = approval(prepared.plan);
     await db.executeMultiple(`
       CREATE TRIGGER test_abort_second_scope
       BEFORE INSERT ON ProductTruthListingScope
@@ -543,6 +568,8 @@ test("an insert failure rolls the entire scope import transaction back", async (
         SELECT RAISE(ABORT, 'TEST_ABORT_SECOND_SCOPE');
       END;
     `);
+    const prepared = await buildPlan(db);
+    const approved = approval(prepared.plan);
     await assert.rejects(
       applyProductTruthOwnerBackfill(db, {
         plan: prepared.plan,
@@ -622,6 +649,18 @@ test("canonical CLI exposes explicit sealed backfill-plan and backfill-apply ste
     planResult.migrationCertificationSha256,
     migrationActivation.migrationCertificationSha256,
   );
+  assert.deepEqual(planResult.migrationContinuity, {
+    schemaVersion: PRODUCT_TRUTH_MIGRATION_CONTINUITY_VERSION,
+    mode: "EXACT_DATABASE_SCHEMA",
+    canonicalMigrationSetSha256: migrationActivation.finalPlan.migrationSetSha256,
+    activationContractSha256: migrationActivation.finalPlan.activationContractSha256,
+    migrationReportSha256: migrationActivation.reportSha256,
+    migrationCertificationSha256: migrationActivation.migrationCertificationSha256,
+    activationSchemaFingerprintSha256: migrationActivation.schemaAfterSha256,
+    liveSchemaFingerprintSha256: migrationActivation.schemaAfterSha256,
+    protectedMigrationCount: MIGRATION_IDS.length,
+    acceptedFullSchemaDriftCode: null,
+  });
   assert.deepEqual(planResult.migrationLedgers, { productTruth: "ready", prisma: "ready" });
 
   const planPath = join(root, "plan", "plan.json");
@@ -754,6 +793,101 @@ test("canonical CLI exposes explicit sealed backfill-plan and backfill-apply ste
     stderr: (text) => remoteStderr.push(text),
   }), 64);
   assert.match(remoteStderr.join(""), /REMOTE_DATABASE_AUTH_ENV_REQUIRED/);
+});
+
+test("backfill planning accepts unrelated additive schema drift but rejects write-surface drift", async (t) => {
+  const preparedDb = await baseDatabase(t);
+  await preparedDb.db.close();
+  const root = await realpath(await mkdtemp(join(tmpdir(), "product-truth-backfill-drift-")));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const migrationActivation = await activateCanonicalMigrations({
+    databaseUrl: preparedDb.url,
+    artifactRoot: root,
+  });
+  const scope = manifest();
+  const manifestPath = join(root, "manifest.json");
+  await writeFile(manifestPath, renderPhase1ScopeManifestJson(scope), "utf8");
+
+  const db = createClient({ url: preparedDb.url, concurrency: 1 });
+  try {
+    await db.execute(`
+      CREATE TABLE UnrelatedPostActivationSurface (
+        id TEXT PRIMARY KEY,
+        createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  } finally {
+    await db.close();
+  }
+
+  const driftPlanStdout: string[] = [];
+  assert.equal(await runProductTruthRunnerCli([
+    "backfill-plan",
+    "--manifest", manifestPath,
+    "--migration-certification", migrationActivation.migrationCertificationPath,
+    "--migration-certification-sha", migrationActivation.migrationCertificationSha256Path,
+    "--migration-report", migrationActivation.reportPath,
+    "--migration-report-sha", migrationActivation.reportSha256Path,
+    "--plan-id", "owner-backfill-unrelated-drift",
+    "--expires-at", "2026-07-19T13:00:00.000Z",
+    "--url", preparedDb.url,
+    "--out", join(root, "unrelated-drift-plan"),
+  ], {
+    cwd: root,
+    now: () => CREATED_AT,
+    stdout: (text) => driftPlanStdout.push(text),
+    stderr: assert.fail,
+  }), 0);
+  const driftPlanResult = JSON.parse(
+    driftPlanStdout.join(""),
+  ) as { migrationContinuity: ProductTruthMigrationContinuity };
+  assert.equal(
+    driftPlanResult.migrationContinuity.mode,
+    "PROTECTED_PRODUCT_TRUTH_SCHEMA",
+  );
+  assert.equal(
+    driftPlanResult.migrationContinuity.acceptedFullSchemaDriftCode,
+    "MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT",
+  );
+  assert.notEqual(
+    driftPlanResult.migrationContinuity.activationSchemaFingerprintSha256,
+    driftPlanResult.migrationContinuity.liveSchemaFingerprintSha256,
+  );
+
+  const driftDb = createClient({ url: preparedDb.url, concurrency: 1 });
+  try {
+    await driftDb.execute(`
+      CREATE TRIGGER untrusted_scope_insert_guard
+      BEFORE INSERT ON ProductTruthListingScope
+      BEGIN
+        SELECT RAISE(ABORT, 'UNTRUSTED_SCOPE_INSERT_GUARD');
+      END
+    `);
+  } finally {
+    await driftDb.close();
+  }
+  const protectedDriftStderr: string[] = [];
+  assert.equal(await runProductTruthRunnerCli([
+    "backfill-plan",
+    "--manifest", manifestPath,
+    "--migration-certification", migrationActivation.migrationCertificationPath,
+    "--migration-certification-sha", migrationActivation.migrationCertificationSha256Path,
+    "--migration-report", migrationActivation.reportPath,
+    "--migration-report-sha", migrationActivation.reportSha256Path,
+    "--plan-id", "owner-backfill-protected-drift",
+    "--expires-at", "2026-07-19T13:00:00.000Z",
+    "--url", preparedDb.url,
+    "--out", join(root, "protected-drift-plan"),
+  ], {
+    cwd: root,
+    now: () => CREATED_AT,
+    stdout: assert.fail,
+    stderr: (text) => protectedDriftStderr.push(text),
+  }), 1);
+  assert.match(
+    protectedDriftStderr.join(""),
+    /MIGRATION_BRIDGE_PROTECTED_WRITE_SURFACE_DRIFT/,
+  );
 });
 
 test("writer source has no provider, marketplace, credential, or cost mutation path", async () => {
