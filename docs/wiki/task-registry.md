@@ -77,8 +77,12 @@
   `94359db1…9062c`. G5 read-only plan `162b2dbd…53cf78` построен из clean checkout
   `0fdbc0c9`: `5935` scope imports, `5935` artifact-only review tasks, обе ledgers
   ready, writers/FK blockers, canonical cost recomputes, provider calls и DB writes
-  = `0`. Scope-only apply, G6 activation и G7–G8 не разрешены. Живой checklist и
-  acceptance gates:
+  = `0`. По отдельному owner approval scope-only apply завершён `APPLIED`:
+  inserted/exact scopes = `5935/5935`, missing/conflict/unexpected/writers/FK =
+  `0`, cost/legacy/provider/paid/marketplace/procurement effects = `0`.
+  Full-denominator readiness reconciled `5935/5935`, но четыре consumers имеют
+  `0 ready` на `CURRENT_SCOPED_SKU_COST_MISSING`; G6 activation и G7–G8 не
+  разрешены. Живой checklist и acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
 - 🟢 Отдельный roadmap с gates, критериями Phase 1/2 и owner-решениями записан.
@@ -498,9 +502,11 @@
   второй SKU, волны 15–20 и расписание не разрешены.
 - 🟡 **Production activation:** exact 8 Product Truth migrations применены к Turso и
   независимо сертифицированы; post-commit plan подтверждает 8/8 и обе ledgers.
-  Authoritative Phase 1 manifest v3 и G5 read-only backfill preview готовы;
-  scope-only business-data apply не выполнен,
-  consumer cutover на единый Product Truth read-contract = **0 из 4**. Legacy
+  Authoritative Phase 1 manifest v3 готов; G5 scope-only apply завершён и verified
+  `5935/5935`. Canonical cost/legacy/provider/paid/marketplace/procurement effects
+  были `0`. Post-apply full-denominator readiness reconciled все `5935`, но
+  consumer cutover на единый Product Truth read-contract = **0 из 4** и
+  каждый consumer blocked на `CURRENT_SCOPED_SKU_COST_MISSING`. Legacy
   `DonorProduct`/`SkuComponent`/`SkuCost`/views не доказывают readiness.
   Свежий source-readiness audit сохранил sanitized production snapshots. Read-only
   live verification 2026-07-23 доказала: Amazon store1/store3 участвуют в US
@@ -513,9 +519,10 @@
   ITEM v6 содержит `5236` rows и даёт `3891 PUBLISHED` live listings. Exact bytes
   всех трёх reports, successor census и disposition связаны manifest SHA
   `94359db1…9062c`. Отчёты и census нельзя подменять mutable listing mirrors.
-  Следующий шаг — только отдельный owner gate на exact scope-only
-  `backfill-apply`; sealed preview сам apply не разрешает.
-  Внешние listing/DB writes = 0.
+  Следующий шаг — no-paid evidence-bound canonical materialization plan из
+  уже удерживаемых source artifacts. Любой его DB apply требует нового exact owner
+  gate; G5 approval consumed и не переносится. Внешние listing writes = 0; единственная
+  разрешённая новая DB write surface дала ровно `5935` scope rows.
 - 🟡 **ChannelMAX VC same-model canary / no-spend:** state machine и точные 103-byte
   forward/rollback артефакты готовы; добавлен finite CDP adapter skeleton с exact
   target/hash/one-row/one-submit контрактами. Browser execution остаётся hard-disabled:

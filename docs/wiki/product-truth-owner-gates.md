@@ -29,8 +29,8 @@
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
-| G5. Backfill apply | `READY_FOR_READ_ONLY_PLAN` | Manifest v3 готов; apply всё ещё требует отдельный exact owner gate |
-| G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
+| G5. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified; canonical business data intentionally not materialized |
+| G6. Consumer SHADOW activation | `NOT_READY` | Readiness `0/5935` для 4/4 consumers: `CURRENT_SCOPED_SKU_COST_MISSING` |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
@@ -305,9 +305,18 @@ Quarantined session и старые permit/authorization bytes повторно 
    provider calls и DB writes = `0`.
 3. Preview доказал обе migration ledgers ready, exact 8/8 protected migrations,
    exact `ProductTruthListingScope`, writer activity/FK violations = `0`.
-4. Следующий gate — отдельное exact решение владельца на scope-only
-   `backfill-apply`. Plan preview, consumed schema approval и любые общие фразы
-   разрешением apply не являются.
+4. Владелец отдельно разрешил записать ровно `5935` позиций каналов продаж в
+   `ProductTruthListingScope` и запретил иные production-действия.
+5. Scope-only apply завершён `APPLIED`: inserted/exact scopes = `5935/5935`;
+   missing/conflicting/unexpected/writers/FK = `0`; canonical cost recomputes,
+   legacy promotions, provider/paid calls и marketplace/procurement mutations =
+   `0`.
+6. Post-apply read-only readiness reconciled `5935/5935`, но четыре consumers
+   остаются `0 ready`; единый blocker —
+   `CURRENT_SCOPED_SKU_COST_MISSING`.
+7. Consumed G5 approval не разрешает canonical business-data materialization,
+   consumer activation, paid enrichment или marketplace actions. Следующий DB
+   writer требует нового exact owner gate.
 
 ## Удобный комбинированный ответ
 

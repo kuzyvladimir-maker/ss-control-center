@@ -807,12 +807,19 @@ canonical manifest SHA
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.
-Business-data backfill не выполнялся. G5 read-only `backfill-plan` создан из clean
-checkout `0fdbc0c9`: plan `162b2dbd…53cf78`, `5935` scope imports, `5935`
-artifact-only review tasks, обе ledgers ready, writers/FK blockers `0`,
-canonical cost recomputes/provider calls/DB writes `0`. Следующий шаг требует
-отдельного exact owner approval на scope-only `backfill-apply`; preview сам по себе
-ничего не разрешает. Реальный
+Canonical business-data materialization не выполнялась. G5 read-only
+`backfill-plan` создан из clean checkout `0fdbc0c9`: plan
+`162b2dbd…53cf78`, `5935` scope imports, `5935` artifact-only review tasks,
+обе ledgers ready, writers/FK blockers `0`, canonical cost recomputes/provider
+calls/DB writes `0`. По отдельному exact owner approval scope-only
+`backfill-apply` завершён `APPLIED`: inserted/exact manifest scopes =
+`5935/5935`, missing/conflicting/unexpected/writers/FK = `0`, canonical cost
+recomputes, legacy promotions, provider/paid calls и marketplace/procurement
+mutations = `0`. Full-denominator read-only readiness reconciled `5935/5935`,
+но все четыре consumers имеют `0 ready` на
+`CURRENT_SCOPED_SKU_COST_MISSING`; cutover = `0/4`. Этот consumed approval не
+разрешает no-paid canonical materialization apply, activation или платный run.
+Реальный
 386-case corpus v2.2 собран и offline replay выполнен, но 86 cases остаются
 `UNRESOLVED_EVIDENCE`; Unit Economics SHADOW runtime локально готов, но owner activation
 не выдан и consumer cutover равен 0/4; paid provider canary или иной платный Product

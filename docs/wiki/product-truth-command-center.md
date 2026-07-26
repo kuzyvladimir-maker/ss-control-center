@@ -1,7 +1,7 @@
 # Product Truth Control Center — план постоянного внедрения
 
 > **Статус:** active implementation board, owner direction 2026-07-19; сверено
-> 2026-07-25.
+> 2026-07-26.
 >
 > **Верхний канон:** [[product-catalog-architecture]]. Порядок бизнес-gates:
 > [[donor-catalog-execution-roadmap]]. Operator safety:
@@ -305,16 +305,22 @@ entrypoint.
   только в режиме `PROTECTED_PRODUCT_TRUTH_SCHEMA` при exact 8/8 migrations и exact
   `ProductTruthListingScope` write surface. Clean checkout `0fdbc0c9`, Product Truth
   `454/454`, TypeScript и ESLint pass.
-- [ ] Получить отдельный owner-reviewed no-paid approval на exact scope-only
-  `backfill-apply`, затем выполнить full-denominator readiness. Истёкший или
-  изменившийся plan требует нового read-only plan; текущий preview сам ничего не
-  разрешает.
+- [x] По отдельному owner approval выполнить exact scope-only `backfill-apply`:
+  status `APPLIED`, inserted/exact manifest scopes = `5935/5935`, missing,
+  conflicting, unexpected, active writers и FK violations = `0`; canonical cost
+  recomputes, legacy promotions, provider/paid calls и marketplace/procurement
+  mutations = `0`. Post-apply read-only readiness reconciled `5935/5935`, но все
+  четыре consumers остаются blocked на
+  `CURRENT_SCOPED_SKU_COST_MISSING`; cutover = `0/4`.
+- [ ] Построить отдельный no-paid evidence-bound canonical materialization plan из
+  уже удерживаемых source artifacts. Он не может автоматически повышать mutable
+  legacy truth; любой его DB apply требует нового exact owner gate.
 - [ ] Закрывать 86 `UNRESOLVED_EVIDENCE` только authoritative evidence.
 
 **Exit:** production schema доказана отдельно от локального кода; authoritative
-manifest и read-only backfill preview готовы. Scope-only apply, business-data
+manifest и exact sales-listing scope импортированы. Business-data materialization,
 readiness и four-consumer cutover остаются отдельными owner-gated этапами; consumed
-schema approval и plan preview их не разрешают.
+schema/scope approvals их не разрешают.
 
 ### ⬜ Phase 6 — Staged consumer cutover
 
@@ -390,8 +396,9 @@ smokes и shadow adapters выполняются до этих gates.
 - существующий Catalog UI остаётся legacy: direct mutable reads, устаревшие cron
   assumptions и видимая Enrich form при tombstoned POST;
 - exact восемь Turso schema migrations применены и сертифицированы; authoritative
-  Phase 1 manifest v3 готов (`5935` live listings, `0` blockers), business-data
-  backfill не выполнялся;
+  Phase 1 manifest v3 готов (`5935` live listings, `0` blockers);
+  `ProductTruthListingScope` содержит exact `5935/5935`, но business-data
+  materialization не выполнялась;
   consumer cutover `0/4`; paid Product Truth run не выполнялся.
 
 Следовательно, Phase 1 начинается только после точной release-materialization карты;
@@ -404,10 +411,14 @@ conditional create request `019f9f34…319a` достиг `READY`; повтор�
 выполнялся. Fresh Amazon store1/store3 и Walmart store1 reports связаны с manifest
 SHA `94359db1…9062c`; denominator = `5935`, blockers = `0`. G5 read-only plan
 `162b2dbd…53cf78` доказал `5935` scope imports, `5935` artifact-only review tasks,
-writers/FK blockers `0` и любые plan-time writes/calls `0`. Quarantined session и
-старые permit bytes переиспользовать запрещено. Следующая точка — отдельный exact
-owner gate на scope-only `backfill-apply`; consumer activation, paid run и
-marketplace actions не разрешены.
+writers/FK blockers `0` и любые plan-time writes/calls `0`. По отдельному owner gate
+scope-only apply завершён `APPLIED`: inserted/exact scopes = `5935/5935`, missing,
+conflict, unexpected, writers и FK violations = `0`; cost/legacy/provider/paid/
+marketplace/procurement effects = `0`. Full-denominator read-only readiness
+reconciled `5935/5935`, но четыре consumers имеют `0 ready` из-за
+`CURRENT_SCOPED_SKU_COST_MISSING`; cutover остаётся `0/4`. Следующая точка —
+no-paid evidence-bound canonical materialization plan; его DB apply, consumer
+activation, paid run и marketplace actions не разрешены текущим gate.
 
 ---
 

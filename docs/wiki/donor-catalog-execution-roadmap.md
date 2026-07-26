@@ -284,13 +284,15 @@ Exit gate:
   independent post-commit plan имеет `blockers=[]`; schema after SHA-256 =
   `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`;
 - 🟡 P0 продолжается на data/cutover gates: schema, authoritative Phase 1 manifest
-  v3 и sealed G5 read-only backfill preview готовы, но owner-gated scope apply,
-  runtime scope readiness и отдельный owner-approved provider canary ещё не
-  выполнены;
-- 🟡 production schema transaction = `1`; business-data backfill, paid provider calls,
-  marketplace mutations и consumer activation не выполнялись. Consumer cutover на
-  единый read-contract равен **0 из 4**; legacy views/tables не являются
-  доказательством production readiness;
+  v3 и exact G5 scope apply готовы. `ProductTruthListingScope` verified
+  `5935/5935`; post-apply readiness reconciled весь denominator, но все consumers
+  blocked на `CURRENT_SCOPED_SKU_COST_MISSING`. No-paid canonical materialization,
+  отдельный owner-approved provider canary и cutover ещё не выполнены;
+- 🟡 production schema transaction = `1`, scope-only apply transaction = `1`;
+  canonical business-data materialization, paid provider calls, marketplace
+  mutations и consumer activation не выполнялись. Consumer cutover на единый
+  read-contract равен **0 из 4**; legacy views/tables не являются доказательством
+  production readiness;
 - 🟢 fresh Amazon `GET_MERCHANT_LISTINGS_ALL_DATA` reports повторно захвачены
   GET-only для текущего snapshot: store1 = `1571` строк, SHA
   `b3839047…d5e14`; store3 = `502`, SHA `51e331ed…5842`; report-create calls = `0`.
@@ -303,12 +305,16 @@ Exit gate:
   listings, `3` exact reports, `0` blockers, canonical SHA
   `94359db1…9062c`. G5 plan `162b2dbd…53cf78` read-only подтвердил exact
   denominator, `5935` scope imports, `5935` artifact-only review tasks, обе ledgers
-  ready и ноль writes/provider calls;
+  ready и ноль plan-time writes/provider calls. По отдельному owner approval
+  scope-only apply завершён `APPLIED`: `5935/5935` вставлены и verified,
+  missing/conflict/unexpected/writer/FK = `0`, cost/legacy/provider/paid/
+  marketplace/procurement effects = `0`;
 - ⚪ paid/provider canary, платный gap enrichment и любой иной платный Product Truth
   run не запускались.
 
-До owner-gated scope backfill apply, runtime scope verification,
-отдельного provider canary и consumer cutover Phase 0 не считается завершённой.
+До no-paid evidence-bound canonical materialization, нового owner gate на его
+DB apply, отдельного provider canary и consumer cutover Phase 0 не считается
+завершённой.
 Успешная активация schema сама по себе не означает content/price readiness или
 разрешение marketplace actions.
 
@@ -617,10 +623,13 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    заморожен на `(channel, positive storeIndex, raw SKU)`: `5935` live listings,
    `0` blockers, SHA `94359db1…9062c`.
 6. 🟡 **Production schema/backfill/cutover** — Turso schema activation завершена и
-   сертифицирована 8/8; authoritative manifest v3 готов. Sealed read-only G5 plan
-   `162b2dbd…53cf78` содержит `5935` exact scope imports и `5935` artifact-only
-   review tasks при нуле DB/provider/cost writes. Scope apply/readiness и перевод
-   всех четырёх consumers не выполнены; consumer cutover = 0.
+   сертифицирована 8/8; authoritative manifest v3 готов. Sealed G5 scope apply
+   завершён `APPLIED`: `5935/5935` exact scopes verified, без cost/legacy/provider/
+   paid/marketplace/procurement effects. Full-denominator readiness reconciled
+   `5935/5935`, но каждый consumer имеет `0 ready` на blocker
+   `CURRENT_SCOPED_SKU_COST_MISSING`. Следующие независимые шаги — no-paid canonical
+   materialization plan, новый owner gate на его apply и только затем staged
+   cutover; consumer cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам, cheap-first plan, explicit owner gate.
 8. ⚪ **Canary** — 5–10 SKU с жестким лимитом и ручной проверкой.
 9. ⚪ **Controlled waves** — только после успешного canary и отдельного approval.
