@@ -257,21 +257,23 @@ Exit gate:
   `CAPTURED`/`ABSENCE_ONLY` files признаны недоверенными. RequestId не принят, create
   POST не повторялся; session и reconciliation code quarantined read-only. См.
   `ss-control-center/docs/WALMART_ITEM_RECONCILIATION_PROVENANCE_INCIDENT_2026-07-19.md`;
-- 🟢 отдельный Walmart source-evidence/reissue engine реализован и проходил
-  certification, но его live precondition сейчас не выполнен: quarantined
-  `ABSENCE_ONLY` нельзя связывать с permit. Legacy ITEM create retired; новый permit/
-  POST запрещён до отдельного owner disposition и свежего eligible evidence;
+- 🟢 отдельный Walmart source-evidence/reissue engine заменён one-token successor:
+  exact historical-window absence GET, conditional create POST и continuation
+  используют один OAuth transport. Commit `c8cb50fe…1826` прошёл no-hardlink clean
+  checkout `227/227`; frozen bundle `09e108c1…2ffca`, manifest
+  `5ce2ec88…ea94f`. Quarantined `ABSENCE_ONLY` не используется как свежая
+  authorization; runtime guard сам fail-closed проверяет exact absence перед POST;
 - 🟢 актуальный frozen operator closure сохранён в
   `release-artifacts/product-truth-operational-closure-2026-07-19/`: третья patch-дельта
   применяется только поверх exact predecessor tree из release README и даёт новый
   external checksum-bound executable tree. Clean tree прошёл полный Product Truth suite, targeted stress,
   source-release tests, help/Prisma smokes и checksum verification. Gate 1 packet
   перепривязан к этому executable tree и заново прошёл SHA256SUMS verification;
-- 🟡 replacement report-create не выполнялся и сейчас не имеет допустимой команды:
-  сначала нужны owner disposition по provenance incident и новый eligible evidence
-  chain. Только после этого отдельный owner-custodied permit, независимо переданные
-  hashes, exact confirmation и явное принятие duplicate-request risk могут стать
-  предметом нового gate; Claude Code не создаёт permit;
+- 🟡 replacement report-create не выполнялся. Новый private ledger и distinct
+  replacement plan созданы офлайн; signing request `c34c4497…668c9` прошёл
+  owner-key inspect. OAuth/Walmart/provider calls = `0`. Frozen executable готов,
+  но live entrypoint остаётся закрытым до exact owner confirmation, detached Ed25519
+  signature и verified assembly. Старые session/permit/confirmation запрещены;
 - 🟡 будущий v1 at-most-once будет технически доказан только внутри одной intact local
   session/custody root и не имеет distributed consumption ledger. Quarantined session
   нельзя переиспользовать как этот root;

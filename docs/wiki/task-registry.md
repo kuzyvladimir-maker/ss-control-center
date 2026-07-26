@@ -66,8 +66,14 @@
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются
   только через successor census/manifest. G4 теперь активен и разрешает одну новую
   zero-retry read-only ITEM v6 попытку, но старую quarantined session и permit bytes
-  переиспользовать нельзя. Final report-bound disposition/manifest ждут exact G4 bytes.
-  G5–G8 не разрешены. Живой checklist и acceptance gates:
+  переиспользовать нельзя. Двух-OAuth конфликт устранён one-token successor engine:
+  commit `c8cb50fe…1826`, no-hardlink clean checkout `227/227`, frozen bundle
+  `09e108c1…2ffca`, manifest `5ce2ec88…ea94f`. Новый ledger, replacement plan и
+  signing request `c34c4497…668c9` созданы офлайн; owner-key inspect прошёл, live
+  OAuth/Walmart calls = `0`. Следующая ручная граница — exact owner confirmation и
+  один sealed запуск. Final report-bound
+  disposition/manifest ждут exact G4 bytes. G5–G8 не разрешены. Живой checklist и
+  acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
 - 🟢 Отдельный roadmap с gates, критериями Phase 1/2 и owner-решениями записан.

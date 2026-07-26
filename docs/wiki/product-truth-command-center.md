@@ -270,6 +270,16 @@ entrypoint.
   receipt sealed в evidence commit `e129060e`.
 - [ ] Получить authoritative Walmart ITEM v6 report через новый sealed G4 workflow,
   выпустить exact report-bound `phase1-scope-disposition/v3` и заморозить manifest v3.
+  One-token successor engine уже собран в commit
+  `c8cb50fe4a56480f90b207531453206f83ab1826`: один OAuth transport выполняет
+  exact historical-window absence GET и только при `0 rows + no cursor` допускает
+  единственный create POST, затем poll/download/compile в том же процессе. Любой
+  non-zero/ambiguous/invalid GET запрещает POST и сжигает authorization. Clean
+  checkout прошёл TypeScript, targeted ESLint и `227/227`; frozen bundle SHA
+  `09e108c1…2ffca`, engine manifest SHA `5ce2ec88…ea94f`. Live network calls пока `0`;
+  signing request SHA `c34c4497…668c9` прошёл owner-key inspect и действует до
+  `2026-07-26T15:23:41.000Z`. Остались exact owner confirmation, один запуск и
+  report-bound artifacts.
 - [x] Подготовить exact Turso migration plan и остановиться на owner gate; reserved
   `approvalId` внутри plan не является решением владельца.
 - [x] Снять свежий self-contained backup exact target перед owner gate: portable SHA
@@ -376,10 +386,13 @@ UI не соединяется напрямую с legacy endpoints или CLI.
 
 Текущая execution-точка 2026-07-26: G1 импортирован и сертифицирован; G2 Stage A
 реализован и сертифицирован с runtime hardcoded `OFF`; G3 owner scope/census sealed.
-Следующая активная фаза — G4. Он одобрен по intent, но исполнение остаётся закрытым
-до новой sealed authorization; quarantined session и старые permit bytes
-переиспользовать запрещено. Final report-bound disposition/manifest появятся только
-после exact ITEM v6 bytes.
+В G4 устранён старый двух-OAuth конфликт: exact one-token successor закоммичен,
+сертифицирован из no-hardlink clean checkout и заморожен. Новый private ledger,
+replacement plan и short-lived signing request созданы офлайн; request
+`c34c4497…668c9` проверен против active owner public key. OAuth/Walmart calls пока
+`0`. Следующая точка — exact owner confirmation и один sealed запуск.
+Quarantined session и старые permit bytes переиспользовать запрещено. Final
+report-bound disposition/manifest появятся только после exact ITEM v6 bytes.
 
 ---
 

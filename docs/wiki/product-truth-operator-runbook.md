@@ -788,11 +788,17 @@ replay и one-shot Walmart ITEM reissue инструменты реализов�
 retired. Единственная live reconciliation session quarantined после provenance
 incident, а её поздний конфликтующий `ABSENCE_ONLY` не авторитетен. Поэтому replacement
 POST не может использовать старую session/permit provenance. Владелец 2026-07-26
-разрешил ровно одну новую zero-retry read-only попытку, но она остаётся
-неисполняемой до выпуска новой engine-generated sealed authorization/permit и exact
-confirmation. Старые hashes/confirmation это требование не закрывают. Owner facts
-для store scope подтверждены, но canonical owner-bound census artifact и
-authoritative Walmart ITEM v6 report ещё не выпущены.
+разрешил ровно одну новую zero-retry read-only попытку. Двух-OAuth противоречие
+устранено successor engine: один shared transport выполняет exact absence GET,
+conditional create, poll/download/compile. Commit
+`c8cb50fe4a56480f90b207531453206f83ab1826` прошёл no-hardlink clean checkout
+`227/227`; frozen bundle `09e108c1…2ffca`, manifest `5ce2ec88…ea94f`. Новый ledger,
+replacement plan и signing request `c34c4497…668c9` созданы офлайн; owner-key inspect
+прошёл, live calls = `0`. Запуск остаётся закрытым до exact owner confirmation,
+detached Ed25519 signature и verified assembly. Старые hashes/confirmation это
+требование не закрывают. Owner
+facts для store scope подтверждены, но authoritative Walmart ITEM v6 report ещё не
+выпущен.
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.

@@ -28,7 +28,7 @@
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census и owner scope receipt sealed; финальный report-bound disposition ждёт G4 |
-| G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_SEALED_AUTHORIZATION` | Нет новой engine-generated authorization/permit и authoritative report bytes |
+| G4. Walmart ITEM v6 read-only report | `APPROVED_AWAITING_EXACT_CONFIRMATION` | One-token release/ledger/replacement готовы; нет owner signature и authoritative report bytes |
 | G5. Backfill apply | `NOT_READY` | Сначала G3/G4 → manifest → read-only plan |
 | G6. Consumer SHADOW activation | `NOT_READY` | Сначала authoritative manifest/backfill/readiness |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
@@ -258,6 +258,30 @@ G4 исполняется только готовым sealed operator workflow. 
 заменяет требуемые engine-generated authorization/permit bytes, hashes и exact
 confirmation. Quarantined session и старые permit/authorization bytes повторно
 использовать запрещено.
+
+### Consumed implementation evidence 2026-07-26
+
+- one-token successor commit:
+  `c8cb50fe4a56480f90b207531453206f83ab1826`;
+- один shared OAuth transport выполняет точный absence guard GET и допускает create
+  POST только при exact `0 rows` без cursor; любой иной результат запрещает POST;
+- clean checkout: TypeScript, targeted ESLint, `git diff --check` и `227/227` —
+  `PASS`;
+- frozen bundle SHA-256:
+  `09e108c1fb59c6868ab6dacc42d02fa7f943254d55b0f31ff73ce8f015b2ffca`;
+- engine manifest SHA-256:
+  `5ce2ec8807784529fc0afc0edf2af86cc9165ca27a4f8f6caa478db598fea94f`;
+- новый private consumption ledger и distinct replacement plan созданы офлайн;
+  network/OAuth/Walmart/provider/database/model calls = `0`.
+- signing request SHA-256
+  `c34c4497eb1fc68d7b6283a5802e88c7429df10391a4e151ed0c078a76a668c9`
+  прошёл owner-key inspect; signing message SHA-256
+  `bf43c71bac32e189420f72492a7b705c1b28359c07f033232be14e87bced556d`,
+  expiry `2026-07-26T15:23:41.000Z`.
+
+Это не означает, что G4 live уже выполнен. Inspect короткоживущего signing request
+пройден; следующая ручная граница — точная machine-generated owner confirmation.
+Только после Ed25519 signature/assembly разрешён один sealed запуск.
 
 ## Что произойдёт после G3 + G4
 
