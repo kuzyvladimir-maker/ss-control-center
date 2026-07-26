@@ -500,6 +500,45 @@ test("rejects non-canonical report formats and ambiguous required columns", () =
   assert.ok(blockerCodes(ambiguousManifest).includes("AMBIGUOUS_REQUIRED_COLUMN"));
 });
 
+test("accepts production ITEM v6 Item ID plus WPID and classifies SYSTEM_PROBLEM as non-live", () => {
+  const productionWalmartReport = [
+    "SKU,Item ID,Product Name,Publish Status,Lifecycle Status,WPID",
+    "WM-LIVE,12345,Published Item,PUBLISHED,ACTIVE,WPID-LIVE",
+    "WM-PROBLEM,23456,System Problem Item,SYSTEM_PROBLEM,ACTIVE,WPID-PROBLEM",
+    "WM-OFF,34567,Unpublished Item,UNPUBLISHED,ARCHIVED,WPID-OFF",
+  ].join("\n");
+  const manifest = buildPhase1ScopeManifest({
+    ...input(),
+    disposition: {
+      schemaVersion: PHASE1_SCOPE_DISPOSITION_VERSION,
+      scopes: [
+        inScope("amazon", "store1", amazonReport),
+        inScope("walmart", "store1", productionWalmartReport),
+      ],
+    },
+    reports: [
+      report("amazon", "store1", amazonReport),
+      report("walmart", "store1", productionWalmartReport),
+    ],
+  });
+
+  assert.equal(manifest.authoritative, true);
+  assert.equal(manifest.blockers.length, 0);
+  assert.equal(
+    manifest.listings.some((listing) => listing.sku === "WM-PROBLEM"),
+    false,
+  );
+  const live = manifest.listings.find((listing) => listing.sku === "WM-LIVE");
+  assert.equal(live?.listingId, "12345");
+  assert.notEqual(live?.listingId, "WPID-LIVE");
+  const walmartSource = manifest.sourceReports.find(
+    (source) => source.channel === "walmart",
+  );
+  assert.equal(walmartSource?.statusCounts["PUBLISHED|ACTIVE"], 1);
+  assert.equal(walmartSource?.statusCounts["SYSTEM_PROBLEM|ACTIVE"], 1);
+  assert.equal(walmartSource?.statusCounts["UNPUBLISHED|ARCHIVED"], 1);
+});
+
 test("preserves exact raw SKU grain by blocking whitespace/control normalization", () => {
   const paddedSkuReport = amazonReport.replace("\tAMZ-1\t", "\t AMZ-1 \t");
   const manifest = buildPhase1ScopeManifest({

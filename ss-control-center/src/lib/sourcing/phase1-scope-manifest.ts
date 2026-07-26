@@ -14,7 +14,7 @@ import {
 export const PHASE1_SCOPE_DISPOSITION_VERSION =
   "phase1-scope-disposition/v3" as const;
 export const PHASE1_SCOPE_BUILDER_POLICY_VERSION =
-  "phase1-scope-builder-policy/1.2.0" as const;
+  "phase1-scope-builder-policy/1.3.0" as const;
 export const PHASE1_SCOPE_MANIFEST_VERSION =
   "phase1-authoritative-scope-manifest/v3" as const;
 
@@ -285,7 +285,7 @@ const EXPECTED_REPORT_DELIMITERS: Record<
  */
 const KNOWN_SOURCE_STATUSES: Record<Phase1Channel, ReadonlySet<string>> = {
   amazon: new Set(["ACTIVE", "INACTIVE", "INCOMPLETE"]),
-  walmart: new Set(["PUBLISHED", "UNPUBLISHED"]),
+  walmart: new Set(["PUBLISHED", "SYSTEM_PROBLEM", "UNPUBLISHED"]),
 };
 
 const KNOWN_WALMART_LIFECYCLE_STATUSES = new Set([
@@ -502,7 +502,9 @@ const AMAZON_COLUMNS = {
 
 const WALMART_COLUMNS = {
   sku: ["SKU", "Seller SKU", "sellerSku", "merchantSku"],
-  listingId: ["Item ID", "itemId", "WPID", "Walmart Item ID"],
+  // ITEM v6 can contain both Item ID and WPID. They are distinct evidence:
+  // the marketplace listing identity comes from Item ID, never from WPID.
+  listingId: ["Item ID", "itemId", "Walmart Item ID"],
   title: ["Product Name", "Item Name", "Product Title", "title"],
   status: [
     "Published Status",
