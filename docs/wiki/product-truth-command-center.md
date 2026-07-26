@@ -119,9 +119,13 @@ Truth, а не функциями matcher replay.
   warning.
 - [x] Получить owner decision G1 на локальный import без push/deploy/production:
   подтверждено 2026-07-26.
-- [ ] Собрать `r5` поверх current shared base
+- [x] Собрать `r5` поверх current shared base
   `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`, сохранив семь более свежих owner
-  документов, и повторить clean-checkout certification.
+  документов. Новый schema-probe из shared base выявил пять одинаковых падений
+  одного устаревшего fake-client; fake приведён к read-only probe contract.
+- [x] Повторить no-hardlink clean-checkout certification: `npm ci`, Product Truth
+  `445/445`, TypeScript, targeted ESLint, production build, Wiki-Brain (`0` orphan,
+  `0` broken links) и `git diff --check` — `PASS`.
 - [ ] Импортировать exact certified `r5` в shared local `main` через recovery-stash
   только пересекающихся release paths; unrelated dirty worktree не менять.
 - [ ] Повторить certification/build/Wiki-Brain в shared tree и записать consumed

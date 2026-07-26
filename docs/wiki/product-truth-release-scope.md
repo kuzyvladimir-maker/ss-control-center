@@ -10,11 +10,13 @@
 > переданным исполнителю».
 
 > **Current continuation 2026-07-26:** исторический `NO-GO` ниже описывает исходный
-> handoff 2026-07-19, а не текущий permanent candidate. Reconciled `r5` собирается
+> handoff 2026-07-19, а не текущий permanent candidate. Reconciled `r5` собран
 > поверх shared base `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e` с сохранением
-> более свежих owner-документов. Его exact commit/tree/bundle hashes и certification
-> count записываются только после clean-checkout gate; до локального import G1
-> остаётся `APPROVED_IN_PROGRESS`. Это не разрешает push/deploy/production.
+> более свежих owner-документов. No-hardlink clean checkout прошёл Product Truth
+> `445/445`, TypeScript, targeted ESLint, production build, Wiki-Brain `0/0` и
+> diff-check. Exact final commit/tree/bundle hashes хранятся в соседнем
+> checksum-bound release artifact; до локального import G1 остаётся
+> `APPROVED_IN_PROGRESS`. Это не разрешает push/deploy/production.
 
 > **Актуализация:** третья frozen closure имеет exact tree
 > `a1616dc605e474e6c70065d199b6b5c3aefc9805`. Поверх неё собирается отдельная

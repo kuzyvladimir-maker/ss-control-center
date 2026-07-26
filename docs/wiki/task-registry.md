@@ -44,10 +44,12 @@
   подтвердил, что готовый engine должен стать постоянным backend существующего
   модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Reconciled
   `r4` прошёл clean Product Truth `444/444`, TypeScript, targeted ESLint, production
-  build и Wiki-Brain. 2026-07-26 owner одобрил G1–G4 в точных безопасных границах:
-  `r5` собирается поверх current shared base
-  `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`, сохраняя семь более свежих owner
-  документов; G1 import выполняется без push/deploy/production. G2 Stage A разрешён
+  build и Wiki-Brain. 2026-07-26 owner одобрил G1–G4 в точных безопасных границах.
+  Reconciled `r5` собран поверх current shared base
+  `af403b1ffbbfa7c039935824c8b9cd8bd59aa99e`, сохраняет семь более свежих owner
+  документов и проходит no-hardlink clean checkout: Product Truth `445/445`,
+  TypeScript, targeted ESLint, production build, Wiki-Brain `0/0` и diff-check.
+  G1 import выполняется без push/deploy/production. G2 Stage A разрешён
   только с runtime hardcoded `OFF`. G3 scope: Amazon store1 `Salutem Solutions`,
   store3 `AMZ Commerce` и Walmart store1 `SIRIUS TRADING INTERNATIONAL LLC`; Amazon
   store2/store4/store5 исключены из текущего snapshot как blocked и возвращаются
