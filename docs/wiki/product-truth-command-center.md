@@ -297,13 +297,24 @@ entrypoint.
   after SHA-256
   `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`,
   post-commit `blockers=[]`.
-- [ ] После migration certification и authoritative manifest v3 построить exact
-  backfill plan; отдельный owner-reviewed no-paid apply и full-denominator readiness.
+- [x] После migration certification и authoritative manifest v3 построить exact
+  read-only backfill plan. G5 plan `162b2dbd…53cf78` на exact denominator `5935`
+  содержит `5935` immutable scope imports и `5935` artifact-only review tasks,
+  canonical cost recomputes/provider calls/DB writes = `0`; обе migration ledgers
+  ready, writer activity/FK violations = `0`. Additive shared-database drift принят
+  только в режиме `PROTECTED_PRODUCT_TRUTH_SCHEMA` при exact 8/8 migrations и exact
+  `ProductTruthListingScope` write surface. Clean checkout `0fdbc0c9`, Product Truth
+  `454/454`, TypeScript и ESLint pass.
+- [ ] Получить отдельный owner-reviewed no-paid approval на exact scope-only
+  `backfill-apply`, затем выполнить full-denominator readiness. Истёкший или
+  изменившийся plan требует нового read-only plan; текущий preview сам ничего не
+  разрешает.
 - [ ] Закрывать 86 `UNRESOLVED_EVIDENCE` только authoritative evidence.
 
-**Exit:** production schema уже доказана отдельно от локального кода. Authoritative
-manifest, business-data backfill и four-consumer readiness остаются отдельными
-owner-gated этапами; consumed schema approval их не разрешает.
+**Exit:** production schema доказана отдельно от локального кода; authoritative
+manifest и read-only backfill preview готовы. Scope-only apply, business-data
+readiness и four-consumer cutover остаются отдельными owner-gated этапами; consumed
+schema approval и plan preview их не разрешают.
 
 ### ⬜ Phase 6 — Staged consumer cutover
 
@@ -391,10 +402,12 @@ UI не соединяется напрямую с legacy endpoints или CLI.
 G4 и G4.5 закрыты exact Walmart ITEM v6 и authoritative manifest v3. Единственный
 conditional create request `019f9f34…319a` достиг `READY`; повторный create не
 выполнялся. Fresh Amazon store1/store3 и Walmart store1 reports связаны с manifest
-SHA `94359db1…9062c`; denominator = `5935`, blockers = `0`. Quarantined session и
-старые permit bytes переиспользовать запрещено. Следующая точка — только read-only
-G5 `backfill-plan`; apply, consumer activation, paid run и marketplace actions не
-разрешены.
+SHA `94359db1…9062c`; denominator = `5935`, blockers = `0`. G5 read-only plan
+`162b2dbd…53cf78` доказал `5935` scope imports, `5935` artifact-only review tasks,
+writers/FK blockers `0` и любые plan-time writes/calls `0`. Quarantined session и
+старые permit bytes переиспользовать запрещено. Следующая точка — отдельный exact
+owner gate на scope-only `backfill-apply`; consumer activation, paid run и
+marketplace actions не разрешены.
 
 ---
 

@@ -283,9 +283,10 @@ Exit gate:
   migrations применены и tracked в production Turso, обе migration ledgers ready,
   independent post-commit plan имеет `blockers=[]`; schema after SHA-256 =
   `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`;
-- 🟡 P0 продолжается на data/cutover gates: schema и authoritative Phase 1 manifest
-  v3 готовы, но business-data backfill, runtime scope readiness и отдельный
-  owner-approved provider canary ещё не выполнены;
+- 🟡 P0 продолжается на data/cutover gates: schema, authoritative Phase 1 manifest
+  v3 и sealed G5 read-only backfill preview готовы, но owner-gated scope apply,
+  runtime scope readiness и отдельный owner-approved provider canary ещё не
+  выполнены;
 - 🟡 production schema transaction = `1`; business-data backfill, paid provider calls,
   marketplace mutations и consumer activation не выполнялись. Consumer cutover на
   единый read-contract равен **0 из 4**; legacy views/tables не являются
@@ -300,11 +301,13 @@ Exit gate:
   сохранены в denominator и закрыты только явным owner exclusion. Final
   report-bound disposition v3 и authoritative manifest v3 готовы: `5935` live
   listings, `3` exact reports, `0` blockers, canonical SHA
-  `94359db1…9062c`;
+  `94359db1…9062c`. G5 plan `162b2dbd…53cf78` read-only подтвердил exact
+  denominator, `5935` scope imports, `5935` artifact-only review tasks, обе ledgers
+  ready и ноль writes/provider calls;
 - ⚪ paid/provider canary, платный gap enrichment и любой иной платный Product Truth
   run не запускались.
 
-До authoritative manifest, owner-gated backfill, runtime scope verification,
+До owner-gated scope backfill apply, runtime scope verification,
 отдельного provider canary и consumer cutover Phase 0 не считается завершённой.
 Успешная активация schema сама по себе не означает content/price readiness или
 разрешение marketplace actions.
@@ -614,9 +617,10 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    заморожен на `(channel, positive storeIndex, raw SKU)`: `5935` live listings,
    `0` blockers, SHA `94359db1…9062c`.
 6. 🟡 **Production schema/backfill/cutover** — Turso schema activation завершена и
-   сертифицирована 8/8; authoritative manifest v3 готов. Business-data
-   backfill/readiness и перевод всех четырёх consumers не выполнены; consumer
-   cutover = 0.
+   сертифицирована 8/8; authoritative manifest v3 готов. Sealed read-only G5 plan
+   `162b2dbd…53cf78` содержит `5935` exact scope imports и `5935` artifact-only
+   review tasks при нуле DB/provider/cost writes. Scope apply/readiness и перевод
+   всех четырёх consumers не выполнены; consumer cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам, cheap-first plan, explicit owner gate.
 8. ⚪ **Canary** — 5–10 SKU с жестким лимитом и ручной проверкой.
 9. ⚪ **Controlled waves** — только после успешного canary и отдельного approval.

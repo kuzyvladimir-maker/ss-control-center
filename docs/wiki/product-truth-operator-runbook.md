@@ -362,8 +362,15 @@ npm run product-truth -- backfill-plan \
   --out /ABS/artifacts/backfill-plan-NEW
 ```
 
-`backfill-plan` подключается read-only и повторно доказывает exact canonical migration
-set, live schema fingerprint и обе migration ledgers. После owner approval:
+`backfill-plan` подключается read-only и повторно доказывает canonical migration
+set, обе migration ledgers и schema continuity. Exact full-database fingerprint
+используется, когда shared schema не менялась. Если после Product Truth activation
+общая БД получила отдельно управляемые additive surfaces, допустим только
+`PROTECTED_PRODUCT_TRUTH_SCHEMA`: exact 8/8 migration definitions/receipts плюс
+exact table/index/trigger set единственной backfill write surface
+`ProductTruthListingScope`. Любой иной blocker или дополнительный/изменённый объект
+на write surface останавливает plan. Sealed full live fingerprint повторно
+проверяется до и внутри будущей write transaction. После отдельного owner approval:
 
 ```bash
 npm run product-truth -- backfill-apply \
@@ -800,8 +807,12 @@ canonical manifest SHA
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.
-Business-data backfill не выполнялся; следующий разрешённый шаг — только read-only
-`backfill-plan`. Реальный
+Business-data backfill не выполнялся. G5 read-only `backfill-plan` создан из clean
+checkout `0fdbc0c9`: plan `162b2dbd…53cf78`, `5935` scope imports, `5935`
+artifact-only review tasks, обе ledgers ready, writers/FK blockers `0`,
+canonical cost recomputes/provider calls/DB writes `0`. Следующий шаг требует
+отдельного exact owner approval на scope-only `backfill-apply`; preview сам по себе
+ничего не разрешает. Реальный
 386-case corpus v2.2 собран и offline replay выполнен, но 86 cases остаются
 `UNRESOLVED_EVIDENCE`; Unit Economics SHADOW runtime локально готов, но owner activation
 не выдан и consumer cutover равен 0/4; paid provider canary или иной платный Product

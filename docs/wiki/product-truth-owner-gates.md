@@ -300,9 +300,14 @@ Quarantined session и старые permit/authorization bytes повторно 
 ## Что происходит после закрытия G3 + G4
 
 1. Canonical census/disposition и authoritative Phase 1 manifest v3 уже готовы.
-2. Codex/оператор выполняет только read-only `backfill-plan`.
-3. Владелец увидит denominator, writes preview, blockers и no-paid claims.
-4. Только после этого может появиться отдельный G5 на exact backfill apply.
+2. Read-only `backfill-plan` выполнен: plan `162b2dbd…53cf78`, denominator/scope
+   imports/review tasks = `5935/5935/5935`, canonical cost recomputes,
+   provider calls и DB writes = `0`.
+3. Preview доказал обе migration ledgers ready, exact 8/8 protected migrations,
+   exact `ProductTruthListingScope`, writer activity/FK violations = `0`.
+4. Следующий gate — отдельное exact решение владельца на scope-only
+   `backfill-apply`. Plan preview, consumed schema approval и любые общие фразы
+   разрешением apply не являются.
 
 ## Удобный комбинированный ответ
 
