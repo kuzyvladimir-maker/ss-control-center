@@ -59,7 +59,7 @@ import {
 } from "./item-report-capture-session.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_POLICY =
-  "walmart-item-report-reissue-executor/3.1.0" as const;
+  "walmart-item-report-reissue-executor/3.2.0" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_PREFLIGHT_SCHEMA =
   "walmart-item-report-reissue-executor-preflight/v3" as const;
 export const WALMART_ITEM_REPORT_REISSUE_EXECUTOR_V2_CHECKPOINT_SCHEMA =
@@ -989,7 +989,7 @@ async function prepareWalmartItemReportReissueExecutorV2(
     || authorization.maximum_create_post_calls !== 1
     || authorization.maximum_walmart_report_api_calls_before_create !== 2
     || authorization.maximum_total_http_calls_before_create !== 3
-    || authorization.maximum_total_http_calls !== 73
+    || authorization.maximum_total_http_calls !== 53
     || authorization.retry_attempts_allowed !== 0
     || authorization.redirects_followed_allowed !== 0
     || authorization.original_session_writes_allowed !== 0
@@ -1015,8 +1015,8 @@ async function prepareWalmartItemReportReissueExecutorV2(
     || !sameJson(authorization.continuation, {
       same_oauth_transport_required: true,
       polling_authorized: true,
-      maximum_poll_observations: 60,
-      poll_interval_ms: 10_000,
+      maximum_poll_observations: 40,
+      poll_interval_ms: 30_000,
       download_locator_calls_maximum: 1,
       presigned_download_calls_maximum: 9,
       compile_network_calls_maximum: 0,
@@ -2045,7 +2045,7 @@ async function completeReportWithSameOauthTransport(
     }));
   try {
     let ready = false;
-    for (let attempt = 1; attempt <= 60; attempt += 1) {
+    for (let attempt = 1; attempt <= 40; attempt += 1) {
       const before = transport.get_http_call_counts();
       if (!validCounts(before) || before.oauth_token_calls !== 1
         || before.walmart_api_calls !== attempt + 1
@@ -2064,7 +2064,7 @@ async function completeReportWithSameOauthTransport(
         ready = true;
         break;
       }
-      if (attempt < 60) await sleep(10_000);
+      if (attempt < 40) await sleep(30_000);
     }
     if (!ready) {
       return {
@@ -2096,7 +2096,7 @@ async function completeReportWithSameOauthTransport(
     if (!validCounts(finalCounts) || finalCounts.oauth_token_calls !== 1
       || finalCounts.walmart_api_calls > 63
       || finalCounts.presigned_file_calls > 9
-      || finalCounts.total_http_calls > 73) {
+      || finalCounts.total_http_calls > 53) {
       fail("CONTINUATION_HTTP_ACCOUNTING_VIOLATION", "continuation exceeded owner bounds");
     }
     return {
