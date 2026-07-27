@@ -11,7 +11,7 @@ import {
   WalmartListingRepairOperatorError,
 } from "../walmart-listing-repair-operator.ts";
 
-const RELEASE_ID = "dbb14ad1debc798e7b5b5493a46b67a91ee85e3919643fd1c098cf0e1ffe97ac";
+const RELEASE_ID = "b319982a297b1f75ec69f5f2f549620d3ebdec5a53d459c6d9038ba2b41431a6";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(
@@ -115,6 +115,28 @@ test("command flag allowlists reject implicit scope and live shortcuts", () => {
   assert.equal(
     parseWalmartListingRepairOperatorArgs(["resume-recovered"]).command,
     "resume-recovered",
+  );
+  const resume = parseWalmartListingRepairOperatorArgs([
+    "resume",
+    "--package", "/private/tmp/package.json",
+    "--package-sha256", "a".repeat(64),
+    "--confirm", `RESUME_EXACT_FEED_GET_ONLY:${"b".repeat(64)}`,
+    "--out", "/private/tmp/resume.json",
+  ]);
+  assert.equal(resume.command, "resume");
+  assert.equal(resume.doctor_receipt_path, null);
+  assert.equal(resume.plan_receipt_path, null);
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "resume", "--doctor-receipt", "/private/tmp/stale-doctor.json",
+    ]),
+    /forbidden or repeated/u,
+  );
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "resume", "--plan-receipt", "/private/tmp/stale-plan.json",
+    ]),
+    /forbidden or repeated/u,
   );
   const qualify = parseWalmartListingRepairOperatorArgs([
     "qualify",

@@ -63,7 +63,7 @@ const FIELD_ORDER = Object.freeze([
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
 const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
-  "dbb14ad1debc798e7b5b5493a46b67a91ee85e3919643fd1c098cf0e1ffe97ac";
+  "b319982a297b1f75ec69f5f2f549620d3ebdec5a53d459c6d9038ba2b41431a6";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE

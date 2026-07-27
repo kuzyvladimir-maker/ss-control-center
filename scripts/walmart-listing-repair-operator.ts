@@ -81,8 +81,7 @@ const COMMAND_FLAGS: Readonly<Record<Command, ReadonlySet<string>>> = Object.fre
     "confirm", "out",
   ]),
   resume: new Set([
-    "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
-    "plan-receipt", "plan-receipt-sha256", "confirm", "out",
+    "package", "package-sha256", "confirm", "out",
   ]),
   qualify: new Set([
     "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
@@ -481,6 +480,40 @@ export async function runWalmartListingRepairOperator(
     }), args.out);
   }
 
+  if (args.command === "resume") {
+    const permit = permitFromExecution(loaded.execution);
+    const exactConfirm =
+      `RESUME_EXACT_FEED_GET_ONLY:${permit.authorization_sha256}`;
+    if (args.confirm !== exactConfirm) {
+      fail(
+        "CONFIRMATION_MISMATCH",
+        `exact confirmation required: ${exactConfirm}`,
+      );
+    }
+    const result = await resumeWalmartListingRepairFeedPoll(loaded.execution);
+    return emit(receipt({
+      command: args.command,
+      completed_at: now.toISOString(),
+      status: result.status,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: result.listing,
+      plan_id: result.plan_id,
+      plan_body_sha256: result.plan_body_sha256,
+      permit_authorization_sha256: result.permit_authorization_sha256,
+      feed_id: result.feed_id,
+      reason_code: result.reason_code,
+      marketplace_write_calls: result.marketplace_write_calls,
+      continuation_marketplace_write_calls: 0,
+      automatic_reapply_allowed: false,
+      next_action: result.next_action,
+      evidence_sha256: resultEvidenceHashes(result),
+      transport_counts: result.transport_counts,
+      external_effects: externalEffects("BOUNDED_GET_ONLY"),
+      next_command: result.next_action,
+    }), args.out);
+  }
+
   const doctor = await loadReceipt({
     path: args.doctor_receipt_path,
     sha256: args.doctor_receipt_sha256,
@@ -641,14 +674,12 @@ export async function runWalmartListingRepairOperator(
   if (planReceipt.permit_authorization_sha256 !== permit.authorization_sha256) {
     fail("STALE_OPERATOR_RECEIPT", "plan receipt does not bind the exact owner permit");
   }
-  const exactConfirm = args.command === "execute"
-    ? `EXECUTE_ONE_WALMART_SKU:${permit.signed_body.listing.listing_key}:${permit.signed_body.plan_body_sha256}`
-    : `RESUME_EXACT_FEED_GET_ONLY:${permit.authorization_sha256}`;
+  const exactConfirm =
+    `EXECUTE_ONE_WALMART_SKU:${permit.signed_body.listing.listing_key}:`
+    + permit.signed_body.plan_body_sha256;
   if (args.confirm !== exactConfirm) fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
 
-  const result = args.command === "execute"
-    ? await executeWalmartListingRepairOneSku(loaded.execution)
-    : await resumeWalmartListingRepairFeedPoll(loaded.execution);
+  const result = await executeWalmartListingRepairOneSku(loaded.execution);
   return emit(receipt({
     command: args.command,
     completed_at: now.toISOString(),
@@ -667,9 +698,10 @@ export async function runWalmartListingRepairOperator(
     next_action: result.next_action,
     evidence_sha256: resultEvidenceHashes(result),
     transport_counts: result.transport_counts,
-    external_effects: args.command === "execute"
-      ? { ...result.external_effects, network_calls: result.transport_counts?.total_http_calls ?? 0 }
-      : externalEffects("BOUNDED_GET_ONLY"),
+    external_effects: {
+      ...result.external_effects,
+      network_calls: result.transport_counts?.total_http_calls ?? 0,
+    },
     next_command: result.next_action,
   }), args.out);
 }
