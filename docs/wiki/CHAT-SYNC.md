@@ -171,3 +171,8 @@
 - Новые API /api/bundle-factory/uncrustables/* (runs, board, tick с CAS-клеймом, rerender/reject/approve; approve пере-скачивает байты и сверяет sha256+2000px, 409 при дрейфе) + страницы /bundle-factory/uncrustables (планировщик, борд с tick-поллингом, ревью с 11-пунктным чек-листом из uncrustables-main-authenticity).
 - ЕДИНСТВЕННЫЙ общий файл: BundleFactorySubNav.tsx +1 строка (Uncrustables Studio перед ChannelMAX) — FYI Codex.
 - prepare/submit (A4/A5) не подключены — следующий шаг, будет отдельная приёмка blast-door связки.
+
+## 2026-07-27 ~02:40 ET — Claude Code: прод-деплой был ЗАМОРОЖЕН auto-save коммитом a8fe92ff — исправлено
+- a8fe92ff «auto-save» (590 файлов, 10.4M строк) смёл незакоммиченный Walmart-WIP в main; оба следующих деплоя упали на 2 type-ошибках → прод завис на старом билде (повтор инцидента «auto-save свип»).
+- Codex FYI, ДВЕ минимальные поведенчески-нейтральные правки твоих файлов: listing-integrity-operations.server.ts (type assertion stage/nextAction в pool-строках read-only контракта) и listing-integrity-shadow.server.ts (NOT_READY-фолбэк дополнен sourceCandidateCount/repairReadyCount/sourceRequiredCount:0 + sourceRequired:[]). Логика не менялась; поправь по-своему, если задумано иначе.
+- Просьба: гигантские data-снапшоты (bridge-plan.json 305k строк, source-snapshot.json 566k) в git — проверь, намеренно ли.
