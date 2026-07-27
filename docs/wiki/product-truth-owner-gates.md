@@ -33,9 +33,26 @@
 | G5b. No-paid legacy bridge canary | `CONSUMED_2026-07-26` | Exact five-listing plan applied: `35/35` rows, no paid/provider/marketplace actions |
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
-| G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `19/5935`, Unit Economics `19 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
+| G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
+| G7. Provider canary / paid wave | `AWAITING_OWNER_APPROVAL` | Exact 5-listing plan `ae810cb1…5360e`, max `17.5` units, reserve floor `15000`, expires `2026-07-28T12:39:07Z` |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
+
+## Рабочий режим без повторных вопросов — owner direction 2026-07-27
+
+Владелец потребовал выполнять задачу под ключ и не спрашивать разрешение на каждый
+обычный технический шаг. Без нового owner prompt выполняются все уже находящиеся в
+scope безопасные действия: чтение, исследование, код, тесты, build, Wiki-Brain,
+локальные/immutable artifacts, read-only marketplace checks, preview, fresh
+shipping-template reads и предусмотренные движком internal pilot preparation
+steps, которые явно сообщают `marketplace_mutated: false`.
+
+Эта standing direction устраняет повторные вопросы, но не превращается в подпись или
+фактическое evidence. Она не разрешает paid provider spend, новую production
+migration/backfill вне уже consumed gate, Walmart feed POST, delist, repricing,
+purchase, расширение pilot, waves или schedule. Для live Walmart new-SKU apply
+по-прежнему нужен exact candidate-bound Ed25519 owner permit по
+[[walmart-new-sku-operator-runbook]]. Общая фраза «разрешаю всё» не может заменить
+SKU/UPC/payload/account/evidence-bound permit.
 
 ## Owner decision 2026-07-26
 
@@ -412,6 +429,183 @@ preflight или row ceiling `>100` fail closed. Policy не разрешает 
 - production writes в этом audit = `0`; provider/paid/retailer/marketplace/
   procurement actions = `0`. Standing policy не потреблялась новым DB write,
   потому что допустимого следующего content-complete scope нет.
+
+### G5d consumed no-paid Target-content wave 2026-07-27
+
+- exact live-image/base-unit barcode evidence:
+  `5e6cc6681f64f00ade0b654c0b989c59e5866227e254e8f422cd15226389a254`;
+- exact Target raw HTML:
+  `2636f1aac6b378c2d0a2d96d2b94d1a84653e9cf3c04077c95ec2c637a4a844b`;
+- exact scope: `walmart:1:FaisalX-1148`, Target item `17189284`, one listing,
+  maximum `7` canonical rows;
+- apply plan SHA-256:
+  `972848eece53befd761b6210f627d1d6bf6d2a03b595b9ef0ce6dc837ed5706b`;
+- preflight = `READY_TO_APPLY`, absent `7`, exact-existing `0`, FK violations
+  `0`; standing policy SHA `0ede5d62…2696`;
+- apply inserted `7/7`, donor transition `1`, Bundle Factory/Listing Improvement
+  ready `1/1`, Unit Economics `UNSOURCEABLE`, Procurement `0`;
+- independent postcheck SHA-256
+  `300236beadee234766e1fad676016b96d0d557a28cca4bb0c4416ab9857243d9`
+  = `ALREADY_APPLIED`;
+- historical apply report SHA-256
+  `8bc6a11037dc40c116b1574975a70108c20a79cce3037ad68b156ed4b999ccf4`
+  содержит operator timestamp anomaly (`completedAt < startedAt`). Data graph
+  независимо подтверждён postcheck и fresh read-only audit; append-only rows не
+  переписывались. Successor engine fail-closed отклоняет future/inverted
+  timestamps до write transaction.
+- successor certification: targeted `25/25`, full Product Truth `481/481`,
+  TypeScript и ESLint = `PASS`;
+- full readiness report SHA-256
+  `5c56c4250272b6a138d209e91d79f8f6a91ac09676d31fb3ebf6d0064b18e92b`:
+  `5935/5935`, content-ready `20`, Unit Economics `20 UNSOURCEABLE` /
+  `5915 missing`, Procurement `0`; provider calls/DB writes `0`.
+
+Consumed standing authority разрешила только no-paid/read-only evidence и
+collision-free canonical wave выше. Она не разрешает paid/provider calls,
+marketplace writes, price/inventory changes, delisting, activation или
+procurement.
+
+### G5d consumed generic direct-Target wave 2026-07-27
+
+- generic direct-Target contract:
+  `product-truth-direct-target-content-evidence/1.0.0`; exact donor, offer, GTIN,
+  Target item/URL, raw HTML SHA, canonical artifact SHA, freshness и нулевые
+  paid/provider/model/database/marketplace counters проверяются fail closed;
+- выполнены ровно два first-party GET без retry:
+  - Arnold Target `12973001` — evidence
+    `1fd29173fb1c6523b2dd0c885860a768e7cc27770e66352069d99218306c7988`,
+    raw HTML
+    `d7bebfde3a428eac694b29cd1392f889ae3540dfe783166405792c4d62066f69`;
+  - Iberia Target `80838482` — explicit allergen warning отсутствует, поэтому
+    evidence artifact не создан и никакой allergen truth не выдуман;
+- fresh read-only bridge source
+  `7b50ae07618f87328d3e50b4f38e2667cfdaf2774e8c934b43eff60f4469e601`,
+  plan
+  `9a0d5980e7e01f593337bd8d8294fe749ec09379e58d8101f3ac27aaa59ee7ed`
+  допустили только `walmart:1:FaisalX-1228`;
+- apply plan
+  `91181832553738c70a0bb945844a8962a35f778572425b4fcf95193f2120a069`:
+  `1` listing, maximum `7` rows, paid/provider/marketplace/procurement `0`;
+  preflight
+  `16527f8a093558ff9d034eba0e3e807fb0aa7ffbff68110726b68179d368cf35`
+  = `READY_TO_APPLY`;
+- standing-policy apply report
+  `869eebaa4c0e22d195286a4d9749d905bf0a45a2b56a1a58af06894768ab9ca5`
+  = `APPLIED`, `7/7`, donor transition `1`; independent postcheck
+  `5705560d74826d2a09f045dd89d80f64e16d3ff4c82763c5929cc27f25407cc5`
+  = `ALREADY_APPLIED`;
+- successor read-only audit source
+  `487e168197df258431b1997d898e00e06c24627115b559c4bbdb41392bb76204`,
+  plan
+  `b29071792a11ddc832d18e139463b6d8b095dc266e81afe54b07c125761dfded`:
+  `21 ALREADY_CANONICAL`, `0` новых no-paid content-only candidates,
+  `81` identity-only, `5833` quarantine;
+- full readiness report
+  `cac3725728c0a3d78792d68425492ba40ae1c232993a05aac37c5a8f57944192`:
+  denominator `5935/5935`, Bundle Factory/Listing Improvement `21 ready`,
+  Unit Economics `21 UNSOURCEABLE` / `5914 missing`, Procurement `0`;
+  provider calls и DB writes `0`;
+- первый readiness attempt получил transient metadata-read false negative по
+  существующему trigger `ProductContentObservation_hash_contract_insert`.
+  Независимый `sqlite_master` read и полный schema gate подтвердили trigger,
+  повторный immutable readiness v5 завершился успешно. Schema не изменялась;
+- certification: Product Truth `487/487`, TypeScript и ESLint = `PASS`.
+
+Эта consumed wave не открывает G7, consumer activation, marketplace/listing
+writes, prices/inventory, delisting или procurement.
+
+### G7 exact canary proposal 2026-07-27
+
+Локальный proposal (не plan, не permit и не approval):
+`ss-control-center/data/audits/product-truth-g7-proposal/20260727T133500Z-canary-v1/proposal.json`;
+SHA-256 =
+`df3da1596619216a1b94908123381bfb618bf450284640356cb018837e065b88`.
+
+Предложенный canary содержит пять explicit unique listings и пять
+collision-free donor/variant graphs:
+
+1. `walmart:1:RizwanX-3237` — Glory Mustard Greens, missing `ALLERGENS`,
+   текущий priority = `2` orders / `2` units;
+2. `walmart:1:FaisalX-1315` — Fritos Flamin' Hot, missing `STORAGE`;
+3. `walmart:1:RizwanX-3481` — Popeye Leaf Spinach, missing
+   `ALLERGENS + NUTRITION`;
+4. `walmart:1:RizwanX-3499` — GOYA Pinto Beans, missing `ALLERGENS`,
+   donor может покрыть `4` listings;
+5. `walmart:1:FaisalX-2195` — Mott's Apple Juice, missing
+   `ALLERGENS + STORAGE`.
+
+Каждый graph имеет exact numeric first-party direct Walmart offer с current
+`sourceApi=oxylabs`; clubs и BJ's исключены, concurrency `1`, attempt ceiling
+`1`. Консервативный worst-case proposal: до `5` Oxylabs query calls/units и до
+`5` Unwrangle detail calls / `12.5` units, суммарно максимум `17.5` provider
+units. Это ceiling proposal, а не разрешение потратить.
+
+Для owner review выбраны recommended values: `UNWRANGLE_RESERVE_FLOOR=15000`
+и exact maximum `17.5` provider units. Это не owner approval. Они
+материализованы только как offline unapproved request, после чего canonical
+existing planner выпустил exact plan; proposal и plan generation создали
+`0` provider calls, `0` database/marketplace writes и не изменили consumers:
+
+- plan:
+  `ss-control-center/data/audits/product-truth-g7-plan/20260727T133907Z-canary-v1/plan.json`;
+- plan SHA-256:
+  `ae810cb1a3badcc0e562b6d229912bc3c961a296f68062405b7548710b55360e`;
+- target-set SHA-256:
+  `f72840147c5fd436f8c4741af902abafebad36ddc920e2d292dc3f5f0f58c2ab`;
+- run ID: `pt-g7-canary-20260727T133907Z`;
+- expires: `2026-07-28T12:39:07.000Z`;
+- ceilings: Oxylabs query `5 calls / 5 units`, Unwrangle detail
+  `5 calls / 12.5 units`, Unwrangle reserve floor `15000`;
+- plan generation: offline, DB connections `0`, provider calls `0`;
+- automatic publish/delist/reprice/purchase = `false`.
+
+G7 теперь ожидает только exact owner money/provider approval для этих bytes,
+fresh balance evidence, plan-bound metered permit и execution confirmation.
+Если plan истечёт, approval не переносится: нужен новый fresh plan SHA.
+
+### Walmart Listing Integrity v14 canary authority 2026-07-27
+
+Владелец дал точную standing-команду:
+`В продолжании останавливайся. Я все подтверждаю и разрешаю полностью продолжить. Без дополнительных моих разрешений.`
+
+Она потребляется только как owner confirmation для одного exact
+`walmart:1:FaisalX-1148` canary через frozen release v14
+`e9bc8e4f…dbc00e`, после SHA-bound review и отдельного Ed25519 one-SKU permit.
+Разрешённый diff: только `description`, `bullets`, `MAIN`; title, attributes,
+gallery, price, inventory, identifiers, status и delisting неизменны. Один
+`MP_MAINTENANCE` POST maximum, retry/replay запрещены; после принятия разрешены
+только GET того же feed и fresh Qualification. Эта команда не разрешает второй
+SKU, controlled wave, mass/automatic apply, repricing, inventory, delisting,
+purchase, paid provider spend или consumer activation.
+
+Authority consumed for the exact canary: execution package
+`47db1f096ce31042eba42a4176bbed189f481e33fe80e600682b8a114e22401f`,
+payload `a9ca3439072385ce2409c4329babc662480300fc5a133e67006badccb452b50e`,
+feed `18C62987D97D584A8C474291F416F0F8@AX8BBgA`; one POST, zero retry.
+Повторный POST по этому permit запрещён. Пока feed nonterminal, authority
+ограничена exact same-feed GET и последующей fresh Qualification.
+
+### Walmart Listing Integrity attribute-only canary authority 2026-07-27
+
+После завершения предыдущего gate владелец отдельно дал новую standing-команду:
+`В продолжании останавливайся. Я все подтверждаю и разрешаю полностью продолжить.
+Без дополнительных моих разрешений.`
+
+В этой execution chain она была ограничена одним exact
+`walmart:1:FaisalX-2768` attributes-only repair. Exact reviewed payload SHA
+`5171d7171a9117342185d754da1556851501c7ac4042fe916adbb5a49b521a84`
+разрешал только `flavor`, `count`, `countPerPack`, `multipackQuantity`. Title,
+description, bullets, MAIN, gallery, price, inventory, identifiers, status,
+delisting и другие SKU не входили в payload. Первый permit завершился definite
+`HTTP 520` без `feedId` и не replay. Новый plan/permit после byte-identical fresh
+read выполнил один POST; feed
+`18C632A8D8735E4599AF541E02A79070@AX8BBwA` terminal `SUCCEEDED`.
+
+Оставшаяся authority по этому SKU — только fresh no-write Qualification до
+buyer `PASS`/доказанного `FAIL` и формирование фактической галереи. Эта standing
+команда не превращается в automatic/mass apply, не разрешает price, inventory,
+delisting, purchase, paid provider spend или параллельный write. Следующий SKU
+до Qualification `PASS` заблокирован.
 
 ## Удобный комбинированный ответ
 

@@ -1,6 +1,6 @@
 # Walmart New SKU — execution board
 
-> **Статус:** active implementation board, обновлено 2026-07-26.
+> **Статус:** active implementation board, обновлено 2026-07-27.
 >
 > **Канон:** [[product-catalog-architecture]]. Операторский workflow:
 > [[walmart-new-sku-operator-runbook]]. Product Truth prerequisites:
@@ -53,6 +53,50 @@ Walmart template. Всегда `landed total = item price + customer shipping`; 
 default — free shipping. Paid shipping допускается только как controlled experiment,
 реально более быстрый service либо экономически необходимое исключение. Полный канон:
 [[walmart-new-sku-shipping-price-strategy]].
+
+## Текущий итоговый срез — 2026-07-27
+
+- ✅ **Выполнение: движок.** Frozen operator release v32:
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`; engine SHA
+  `cc086942…89898`, manifest SHA `efa8e8cd…135b`, certificate SHA
+  `17bfde04…050c`. Product Truth `472/472`, focused Walmart `21/21`, fake-live
+  `3/3`, TypeScript PASS. V31 и старше — только audit history.
+- ✅ **Выполнение: Product Truth.** Exact Target content активирован для RITZ Bits
+  Cheese 8.8 oz, donor `75422f18-e3d2-4c62-ae62-7287aaa75119`, canonical variant
+  `cpv1:ba797…194a9`, observation `pco:68af…d59e`, activation receipt SHA
+  `bdbfb3b2…e8aa1`. Seller listing catalog не использовался.
+- ✅ **Выполнение: Walmart spec и shipping.** Current Get Spec принимает Product Type
+  `Snack Crackers` в `MP_ITEM 5.0.20260501-19_21_29-api`; generic `Crackers`
+  отклонён. Pilot использует active free `Default Template`, ID
+  `202402999000149568`, normalized snapshot SHA `b009dc3f…84a1b`. Mutable values
+  повторно читаются непосредственно перед certification.
+- ✅ **Выполнение: pilot 1.** Pack of 2 staged как SKU `WM-5861-AF0E`, UPC
+  `756441906004`, accepted owner-preview price target `$33.13`, wave
+  `WM-PILOT-20260727-b305eb4f`, candidate
+  `wm-e241c5c8317dc0b5`, stage SHA `f31fd5d4…c97c`; Walmart mutation `false`.
+- ✅ **Выполнение: pilot 2.** Pack of 3 staged как SKU `WM-E031-D5C4`, UPC
+  `756441906011`, accepted owner-preview price target `$40.36`, wave
+  `WM-PILOT-20260727-a3d70341`, candidate
+  `wm-753c7be4172d0da9`, stage SHA `b467491c…fc3a`; Walmart mutation `false`.
+- ✅ **Выполнение: owner preview.** Owner-only Sites version 9, source commit
+  `d5daebe4e01161335416dabc4d5e717a9cd976d4`, успешно развернута:
+  `https://walmart-new-sku-owner-preview.kuzy-09.chatgpt.site`. В ней показаны два
+  staged pilot SKU и отдельная readiness page.
+- ⛔ **Внешний evidence gate.** Нельзя честно запечатать certification без реальных
+  Seller Center health/ingestible privilege, resale/image-rights evidence,
+  UPC registry/assignment authority, physical packed measurements, country of
+  origin, expiration/lot SOP и fulfillment-center/lag. Разрешение «делай всё» не
+  заменяет эти факты.
+- ⛔ **Live owner gate.** После evidence → certification → dry-run → approval →
+  apply-preview нужен отдельный Ed25519-signed permit на exact payload первого SKU.
+  Текущий snapshot не публиковал Walmart listing. Волны 15–20 и schedule не
+  разрешены.
+
+UPC reservations текущих staged artifacts истекают
+`2026-07-28T13:52:56.990Z` / `2026-07-28T13:55:59.720Z`. После expiry оператор не
+правит JSON и не выбирает UPC вручную; он запускает новый v32 doctor и следует exact
+recovery `next_command`. `rotate-upc` разрешён только после доказанного
+`MP_ITEM_MATCH`.
 
 ## Правило статусов
 

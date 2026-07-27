@@ -1,7 +1,7 @@
 # Product Truth Control Center — план постоянного внедрения
 
 > **Статус:** active implementation board, owner direction 2026-07-19; сверено
-> 2026-07-26.
+> 2026-07-27.
 >
 > **Верхний канон:** [[product-catalog-architecture]]. Порядок бизнес-gates:
 > [[donor-catalog-execution-roadmap]]. Operator safety:
@@ -37,6 +37,28 @@
 
 `Walmart Growth` и `Amazon Growth` остаются channel-specific consumers. Они не владеют
 каталогом и не создают собственный retailer sourcing.
+
+### Walmart new-SKU consumer proof — 2026-07-27
+
+Bundle Factory Walmart branch доказала canonical read boundary на реальном pilot
+candidate без seller-listing catalog и без собственного retailer-harvest:
+
+- donor `75422f18-e3d2-4c62-ae62-7287aaa75119` связан с canonical variant
+  `cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9`;
+- exact Target content observation
+  `pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e`
+  активирован production receipt SHA
+  `bdbfb3b2103c65b894e63ff58841aaf8ae6e3efee54e403af917e7c2eade8aa1`;
+- Walmart new-SKU release v32 прочитал этот exact content и создал два независимых
+  sealed plans/stages: pack-of-2 `WM-5861-AF0E` /
+  `afb04afa…aaae` / `f31fd5d4…c97c`, pack-of-3 `WM-E031-D5C4` /
+  `e6db2d2c…db53` / `b467491c…fc3a`;
+- оба stage зарезервировали owner-pool UPC во внутренней lifecycle DB, но не меняли
+  Walmart. Content readiness доказана независимо от оставшихся mutable
+  price/account/category/rights/physical-package evidence.
+
+Это consumer-specific proof, а не уменьшение Phase 1 denominator и не замена
+authoritative cross-channel manifest/backfill.
 
 ---
 
@@ -397,8 +419,90 @@ entrypoint.
   content-complete no-paid candidates, `82` identity-only, `5834` quarantine.
   `FaisalX-3816` теперь явно блокируется
   `CANONICAL_DONOR_VARIANT_CONFLICT`; writes/provider/paid/retailer calls = `0`.
-- [ ] Построить read-only приоритет и budget forecast для оставшихся `5916`
-  scopes. Никаких paid/provider calls до отдельного G7.
+- [x] Повысить bridge snapshot/plan до `1.2.0` и отделить seller outer UPC от
+  manufacturer UPC базовой упаковки: UPC листинга разрешён как component identity
+  только для explicit single-unit scope. Для multipack `FaisalX-1148` exact
+  base-unit GTIN `00014100070931` доказан barcode из live gallery, buyer PDP
+  quantity `2` и exact Target item `17189284`. Direct Target HTML evidence SHA
+  `5e6cc668…a254`, raw HTML SHA `2636f1aa…844b`; один бесплатный retailer GET,
+  provider/paid/model/database/Walmart writes = `0`.
+- [x] Материализовать `FaisalX-1148` по standing policy: apply plan
+  `972848ee…706b`, fresh preflight `READY_TO_APPLY`, `1` listing / maximum `7`
+  rows. Apply вставил `7/7`, donor transition `1`; independent postcheck
+  `300236be…43d9` = `ALREADY_APPLIED`. Fresh canonical-aware audit source
+  `e07ac33b…0a33`, plan `c2c7f466…80f1` показывает `20 ALREADY_CANONICAL`.
+  Historical apply report имел inverted operator timestamps; canonical rows
+  отдельно verified, а engine теперь отклоняет future/inverted timestamps до
+  write transaction.
+- [x] Передать exact Product Truth `FaisalX-1148` в Listing Integrity без
+  competing catalog: buyer-facing дефекты ограничены description/bullets и MAIN.
+  Reviewed MAIN `d5f5a7d9…35858` детерминированно пересобирается из exact
+  single-unit source `8d70a272…55c00`, signed blind Qualification = `PASS`,
+  gallery неизменна. Frozen release v14 `e9bc8e4f…dbc00e`, manifest
+  `438fcf4d…fa1d1`, clean suite `146/146`; one-SKU feed завершён
+  `SUCCEEDED`, fresh frozen Qualification = 14/14 `PASS`, factual gallery =
+  20/20 `PASS`. Mass apply остаётся закрыт.
+- [x] Передать exact Product Truth `FaisalX-2768` в Listing Integrity без
+  competing catalog: buyer-visible text уже однозначно задаёт Golden Mushroom
+  Soup, Quantity of 4; exact attributes-only payload ограничен `flavor`,
+  `count`, `countPerPack`, `multipackQuantity` и достиг terminal successful feed.
+  Frozen v20 read-only Qualification = `PENDING_PROPAGATION`, потому что buyer
+  PDP ещё показывает старые attributes; текст, все изображения, публикация и
+  индексация сохранены. V20 использует опубликованную Walmart шестичасовую SLA,
+  а не прежний ложный двухчасовой failure gate. До buyer PASS разрешён только
+  fresh no-write reread.
+- [x] Повторить full-denominator readiness: `5935/5935` reconciled, Bundle
+  Factory и Listing Improvement `20 ready`, Unit Economics `20 UNSOURCEABLE` /
+  `5915 missing`, Procurement `0`; report `5c56c425…e92b`, provider calls и
+  writes `0`, cutover `0/4`.
+- [x] Построить read-only priority/budget forecast оставшихся gaps. Из `82`
+  identity-only listings: `48` donor groups, из них `41` collision-free groups /
+  `64` listings и `7` collision groups / `18` listings. Source map safe groups:
+  `31` Walmart/Oxylabs, `8` legacy Walmart/BlueCart route и `2`
+  Target/Unwrangle. Консервативный provider ceiling всей safe выборки = `99.5`
+  credits, но это не approval. Старая очередь `1458` не является canonical
+  execution scope и не может запускаться вслепую.
+- [x] Обобщить бесплатный bounded direct-Target content evidence lane:
+  donor/offer/GTIN/Target-item/URL/freshness/raw-HTML/artifact SHA и safety
+  counters проверяются fail closed; evidence разрешено только после
+  `STRICT_TITLE_MATCH=EXACT_IDENTITY`, а apply хранит отдельный
+  `directTargetContentEvidenceSha256`. Snapshot/plan повышены до `1.3.0`,
+  apply plan до `2.1.0`, content observation до `1.3.0`. Полный Product Truth
+  suite `487/487`, TypeScript и ESLint = `PASS`.
+- [x] Выполнить ровно два бесплатных first-party Target GET для двух safe donor
+  groups, без retry. Arnold item `12973001` дал exact evidence SHA
+  `1fd29173…c7988`, raw HTML `d7bebfde…6f69`; Iberia item `80838482` не содержит
+  явного allergen warning, поэтому evidence не выпущен и два listings остались
+  identity-only с единственным blocker `ALLERGENS`.
+- [x] Материализовать `walmart:1:FaisalX-1228` по standing policy. Fresh audit
+  source `7b50ae07…9e601`, bridge plan `9a0d5980…ee7ed`; apply plan
+  `91181832…0a069`, `1` listing / максимум `7` rows; preflight
+  `16527f8a…cf35` = `READY_TO_APPLY`. Apply report
+  `869eebaa…b9ca5` = `APPLIED`, `7/7`, donor transition `1`; independent
+  postcheck `5705560d…07cc5` = `ALREADY_APPLIED`.
+- [x] Fresh canonical-aware audit после wave: source `487e1681…6204`, plan
+  `b2907179…fded`, `21 ALREADY_CANONICAL`, `0` новых бесплатных content-only
+  candidates, `81` identity-only, `5833` quarantine. Full readiness report
+  `cac37257…44192`: `5935/5935`, Bundle Factory и Listing Improvement
+  `21 ready`, Unit Economics `21 UNSOURCEABLE` / `5914 missing`, Procurement
+  `0`; provider calls/DB writes `0`, cutover `0/4`.
+- [ ] Для оставшихся identity/content/price gaps требуется отдельный G7
+  paid/provider plan либо новое authoritative бесплатное first-party evidence;
+  прямых Target content-only candidates больше нет.
+- [x] Подготовить exact G7 proposal без provider calls. Переиспользуется
+  canonical `doctor → plan → execute`, новый движок не создан. Proposal
+  `df3da159…65b88` выбирает `5` unique collision-free Walmart graphs,
+  разные missing-field профили и worst-case ceiling `17.5` units
+  (`5` Oxylabs query + `12.5` Unwrangle detail). Это не plan/permit/approval.
+- [x] Зафиксировать recommended review inputs: maximum `17.5` provider units
+  и Unwrangle reserve floor `15000`. Они не являются owner approval.
+- [x] Материализовать эти inputs в offline unapproved request и
+  canonical plan: plan `ae810cb1…5360e`, target set `f7284014…c2ab`,
+  expiry `2026-07-28T12:39:07Z`, max `17.5` units, reserve floor `15000`.
+  Plan generation имела DB connections/provider calls `0`; automatic
+  publish/delist/reprice/purchase = `false`.
+- [ ] Получить exact owner approval для plan `ae810cb1…5360e`, затем только
+  fresh balance evidence + plan-bound permit/confirmation и execute.
 - [ ] Закрывать 86 `UNRESOLVED_EVIDENCE` только authoritative evidence.
 
 **Exit:** production schema доказана отдельно от локального кода; authoritative

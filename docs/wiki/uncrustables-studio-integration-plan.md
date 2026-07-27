@@ -96,6 +96,23 @@ Human gates: **APPROVE** (шаг 3 — zoom 2048px, кропы по рядам, 
   `runValidationForDraft` на Uncrustables-драфте — скрипты Stage 6 обходили) →
   A5 submit+live через существующую инфраструктуру. Ship gate: один полный
   проход на новом рецепте с dry-run на ревью владельцу.
+
+  **Прогресс 2026-07-27 (все lib-экстракции ЗАВЕРШЕНЫ, в main с тестами):**
+  - ✅ A0: `audit/uncrustables-owner-approval-manifests.ts` — union-загрузчик
+    (статические + register API под DB-манифесты), preflight делегирует без
+    изменения API; 6 тестов; DRY-конвейер перепроверен.
+  - ✅ `uncrustables-render-contract.ts` v14 (+SMUCKER'S BANNER, +COUNT BADGES)
+    в lockstep со скриптом, golden parity 4/4.
+  - ✅ `uncrustables-render-runner.ts` — рендер + немедленный sha256/dims
+    postcheck (2000px+); 6 тестов.
+  - ✅ `uncrustables-stage.ts` — вся stage-последовательность как функция с
+    инъекцией deps, fail-closed на каждом этапе; 6 тестов.
+  - ✅ `audit/uncrustables-owner-approval-minting.ts` — proof+манифест с
+    реальным reviewer/session/timestamps; 5 тестов на реальных байтах забега.
+  - ⛔ Следующее (A1-A5: API routes, планировщик, борд, review, prepare,
+    submit) блокировано **owner gate на миграцию схемы** (три модели:
+    UncrustablesStudioRun / UncrustablesStudioCandidate /
+    UncrustablesOwnerApprovalManifestRecord) + CHAT-SYNC окно с Codex-лейном.
 - **Phase B:** обобщение до brand-agnostic StudioCandidate + реестр
   scene-контрактов + gift-set планировщик (Mode B, Salutem Vita); sealed
   authenticity manifest остаётся own-brand-only; Walmart исключён (pilot lane).

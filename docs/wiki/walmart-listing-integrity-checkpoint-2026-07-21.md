@@ -23,9 +23,13 @@
   Expanded detector/exact-resolution/PDP suite = **37/37 PASS**; Walmart listing
   writes = `0`.
 
-> **Status:** phases 0–6 are complete, including two separately authorized
-> one-SKU live canaries with fresh Qualification PASS and factual galleries.
-> Phase 7 permanent operations is in progress. Automatic/mass apply remains
+> **Status:** phases 0–6 are complete. Three separately authorized one-SKU live
+> repairs (`FaisalX-1183`, `FaisalX-1181`, `FaisalX-1148`) have fresh
+> Qualification PASS and factual galleries. The fourth controlled SKU
+> `FaisalX-2768` has a terminal successful attribute-only feed and is waiting
+> only for buyer-surface propagation; its first fresh Qualification is honestly
+> `PENDING_PROPAGATION`. Phase 7 permanent operations is in progress.
+> Automatic/mass apply remains
 > **NO-GO**. This is an
 > operational checkpoint, not a replacement for
 > [[walmart-listing-integrity-platform]] or [[product-catalog-architecture]].
@@ -290,15 +294,57 @@ pause, so subscription usage and remaining work are visible to the owner.
     - [x] 7.2b add a fail-closed operations loader plus GET-only API and retire
       the legacy QC POST that could enqueue an unconstrained A-to-Z rewrite in
       `WalmartRemediationQueue`; the retired route now returns HTTP `410`;
+    - [x] 7.2b.1 freeze reviewed-MAIN release v14
+      `e9bc8e4f…dbc00e` / manifest `438fcf4d…fa1d1`: clean checkout
+      `146/146`, TypeScript, ESLint and diff-check PASS. The compiler rebuilds
+      the candidate from exact single-unit bytes, verifies the signed blind
+      observation and preserves gallery exactly; one-SKU write remains separate;
     - [ ] 7.2c persist per-SKU state transitions and connect the default-OFF
       scheduler/resumable worker to the frozen one-SKU operator. Unknown POST
       outcomes remain non-replayable and max live apply in-flight remains `1`;
+      - [x] close `FaisalX-1148` through exact v14 execute → same-feed
+        continuation → fresh Qualification → factual `До → После`;
+        - [x] exact package `47db1f09…2401f`, payload
+          `a9ca3439…2b50e` and one-SKU permit compiled; Walmart accepted the sole
+          POST as feed `18C62987D97D584A8C474291F416F0F8@AX8BBgA`;
+        - [x] the same feed reached terminal `SUCCEEDED`; frozen v15
+          Qualification at `2026-07-27T15:46:32Z` is `PASS` on all 14 facets,
+          receipt SHA `a0e98b9d…815cf`, body `005139c0…8e05`. Factual gallery
+          verification has 20/20 checks, body `6588948d…ed55e`, HTML SHA
+          `dbee9f5b…e43e9`; PUBLISHED/ACTIVE and indexing are preserved;
+      - [ ] close `FaisalX-2768` attribute-only repair through buyer propagation
+        and factual `До → После`;
+        - [x] v18 exact payload `5171d717…1a84` contains only `flavor=Golden
+          Mushroom`, `count=4`, `countPerPack=1`, `multipackQuantity=4`;
+          title, description, bullets, images, price, inventory and status are
+          absent;
+        - [x] first bounded POST ended definite `HTTP 520 /
+          SYSTEM_ERROR.GMP_GATEWAY_API`, with no `feedId`; terminal permit was
+          not replayed. A fresh item/spec reread was byte-identical;
+        - [x] a new one-SKU plan/permit submitted the same exact payload once;
+          feed `18C632A8D8735E4599AF541E02A79070@AX8BBwA` reached terminal
+          `SUCCEEDED`, POST `1`, retry `0`;
+        - [x] seal read-only verifier v20 `84230eba…7417b5`, manifest
+          `326e1511…6aeed2d`, clean certification `156/156`, ESLint/diff-check
+          PASS. It accepts v18 only as the historical source for Qualification,
+          corrects the false two-hour failure gate to Walmart's published
+          six-hour catalog-availability SLA and adds no POST authority;
+        - [ ] fresh v20 `2026-07-27T17:41:44Z` buyer reread still exposes
+          `Flavor=qty 4`, `Count=1` and no multipack quantity. Qualification is
+          `PENDING_PROPAGATION`, receipt SHA `f71371a1…f9d22`, all unchanged
+          text/image/publication facets PASS; exact failure boundary is
+          `2026-07-27T22:35:24.791Z`. Perform only sparse fresh no-write rereads
+          until PASS or that six-hour Walmart catalog-availability SLA boundary;
   - [x] 7.3 wire the complete factual post-canary `До → После`, fresh
     Qualification and published/indexing status into the persistent Command
     Center screen. Both final galleries are served through exact-SKU internal
     routes, the screen shows `18/18 PASS` for each canary and the ten-row pool,
-    and contains no mutation form. Operations/route/UI focused tests `9/9`,
-    TypeScript, targeted ESLint and production build PASS.
+    and contains no mutation form. The factual gallery verifier now accepts
+    only the two compiler-authorized shapes (`description/bullets` or
+    `description/bullets/MAIN`), proves unchanged title and gallery slots,
+    and requires fresh Qualification `main=PASS` for a changed MAIN; the
+    text-only regression is `20/20 PASS`. Operations/route/UI focused tests
+    `9/9`, TypeScript, targeted ESLint and production build PASS.
 
 ## Phase 0–5 verification
 

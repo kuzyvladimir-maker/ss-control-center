@@ -22,11 +22,11 @@ verified prefix is:
 ```bash
 /opt/homebrew/Cellar/node@24/24.18.0/bin/node \
   --env-file="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/.env" \
-  "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v13/engine/ss-control-center/scripts/verify-and-run-walmart-listing-repair.mjs" \
-  --engine-root "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v13/engine/ss-control-center" \
-  --manifest "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v13/evidence-final-v13/release-manifest.json" \
-  --manifest-sha256 fb912f22700376ed305887a65015672fd66d9319292cd9c53bfff31237639041 \
-  --release-id-sha256 6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0 \
+  "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v20/engine/ss-control-center/scripts/verify-and-run-walmart-listing-repair.mjs" \
+  --engine-root "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v20/engine/ss-control-center" \
+  --manifest "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v20/release-manifest.json" \
+  --manifest-sha256 326e1511d1acfa5c04834788ff474312e24726a2c4f09cc02c9f6c4406aeed2d \
+  --release-id-sha256 84230eba28c5ab1a9a14369bca03ac30097fc188a48cb39e3f0f10d4bb7417b5 \
   -- <command> <exact flags>
 ```
 
@@ -62,7 +62,7 @@ Claude Code command. Its zero-write readiness check inside this same frozen
 release is:
 
 ```bash
-cd "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v13/engine/ss-control-center"
+cd "/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-listing-repair-engine-2026-07-27-v20/engine/ss-control-center"
 /opt/homebrew/Cellar/node@24/24.18.0/bin/node \
   --env-file="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/.env" \
   --import tsx scripts/walmart-listing-repair-owner-package.ts doctor
@@ -117,15 +117,16 @@ to the verifier prefix above. Claude Code never creates or signs this package.
 
 ## Current release state
 
-As of 2026-07-27, release v13 is sealed. Clean-checkout certification passed
-**142/142** declared tests plus targeted ESLint and diff-check. Release ID is
-`6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0`;
+As of 2026-07-27, release v20 is sealed. Clean-checkout certification passed
+**156/156** declared tests plus targeted ESLint and diff-check. Release ID is
+`84230eba28c5ab1a9a14369bca03ac30097fc188a48cb39e3f0f10d4bb7417b5`;
 manifest SHA-256 is
-`fb912f22700376ed305887a65015672fd66d9319292cd9c53bfff31237639041`.
-The normalized runtime closure contains 53 files and four sealed entrypoints:
-the verifier-wrapper, bounded operator, one-SKU process and owner package
-compiler. Automatic retry and caller dependency injection are disabled;
-marketplace writes are bounded to one.
+`326e1511d1acfa5c04834788ff474312e24726a2c4f09cc02c9f6c4406aeed2d`.
+The normalized runtime closure contains 60 files and nine sealed entrypoints:
+the verifier-wrapper, bounded operator, one-SKU process, owner package compiler,
+four reviewed-MAIN preparation commands and the attributes-only request builder.
+Automatic retry and caller
+dependency injection are disabled; marketplace writes are bounded to one.
 V5 superseded v4 because the v4 compiler accepted an exact request containing
 the legitimate zero-effect `assurance` object, then dropped that object during
 normalization and falsely rejected the second internal SHA verification. V5
@@ -173,6 +174,33 @@ by the second canary: the initial poll can last 20 minutes while doctor/permit l
 15 minutes. Normal `resume` is now a one-GET route that needs no stale write-gate
 receipts, accepts only the current release or the exact pinned v11 predecessor,
 requires durable `ACCEPTED` ledger custody and has no POST authority.
+V14 adds the missing production path for an owner-reviewed MAIN replacement.
+It accepts only the exact `description + bullets + MAIN` diff, preserves every
+gallery slot, rebuilds the 2200×2200 multipack PNG from the exact SHA-bound
+single-unit source, independently verifies the signed blind-worker receipt and
+PASS decision, binds the content-addressed public bytes, Product Truth and owner
+review into a separate evidence certificate, and still requires a distinct
+one-SKU Ed25519 permit. Price, inventory, title, attributes, status, delisting,
+retry and mass apply remain outside the write authority.
+V18 adds the exact attributes-only lane used by `FaisalX-2768`. It accepts only
+the four reviewed Product Truth mappings `flavor`, `count`, `countPerPack` and
+`multipackQuantity`, preserves every opaque attribute by omission and keeps
+title, description, bullets, MAIN, gallery, price, inventory and listing state
+outside the payload. The first bounded POST received a definite Walmart
+`HTTP 520 / SYSTEM_ERROR.GMP_GATEWAY_API` with no `feedId`; its permit is
+terminal and was not replayed. A new owner-bound plan reread the same live item,
+submitted the same exact payload once and reached terminal `SUCCEEDED`.
+V19 fixed the subsequently exposed read-only Qualification gap: the earlier
+live verifier only understood text-only and reviewed-MAIN plans. V19 accepts
+v18 as its sole predecessor for post-write inspection, validates the exact
+buyer-visible attribute target, proves opaque attributes and all unchanged
+text/image bytes are preserved, and returns `PENDING_PROPAGATION` until Walmart
+actually exposes the new values. V19 adds no POST authority.
+V20 corrects the post-write failure boundary from two hours to six hours from
+terminal feed success, matching Walmart's published Item Management SLA for
+catalog/Walmart.com availability. An unchanged live surface before that
+boundary remains no-write `PENDING_PROPAGATION`; a regression proves the old
+three-hour false-FAIL path is closed. V20 adds no POST authority.
 Both the verified-wrapper `doctor` and owner-package `doctor` return `READY`.
 These are local engine readiness checks only and authorize no write.
 An exact one-SKU package, ordinary owner confirmation and fresh post-write

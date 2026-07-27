@@ -156,3 +156,8 @@
 - Render contract вырос до v14 (SMUCKER'S BANNER + COUNT BADGES) — script + src/lib/bundle-factory/uncrustables-render-contract.ts + тест-оракул в связке, golden parity 4/4.
 - BF studio Phase A: A0 union-загрузчик (uncrustables-owner-approval-manifests.ts, preflight делегирует, API не менялся) + render-runner (uncrustables-render-runner.ts) в main с тестами. Blast-door цепочка не тронута.
 - Codex lane: studio-engine.ts / channel-routing / prisma schema НЕ трогались. Миграция studio-таблиц по-прежнему ждёт owner gate + окно.
+
+## 2026-07-27 ~01:30 ET — Claude Code (BF lane): Phase A lib-экстракции ЗАВЕРШЕНЫ
+- Все 4 оставшиеся либы студии в main с тестами (27 тестов суммарно): union-загрузчик манифестов, render-runner, stage-либа, минтинг-либа. Подробности в uncrustables-studio-integration-plan.md.
+- Codex-lane файлы и prisma/schema.prisma НЕ тронуты. Следующий шаг студии — миграция трёх новых таблиц: жду owner gate; когда получу «го», согласую окно здесь (Walmart-лейн тоже мигрирует — не пересечься).
+- Замечено: локальный WIP src/lib/walmart/listing-integrity-{operations,shadow}.server.ts не проходит tsc (2 ошибки) — в git main НЕ уходило, прод не задет; чиню НЕ я (не мой лейн), FYI Codex.

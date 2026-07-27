@@ -40,6 +40,31 @@
 
 ### Текущее состояние и следующие ветки
 
+- 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-27:** Walmart остаётся
+  отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
+  донорский справочник. Frozen release v32 выдан в
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`: engine
+  `cc086942…89898`, manifest `efa8e8cd…135b`, certificate `17bfde04…050c`;
+  Product Truth `472/472`, focused Walmart `21/21`, fake-live `3/3`, TypeScript PASS.
+  Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
+  `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
+  `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,
+  owner-preview target `$33.13`,
+  stage `f31fd5d4…c97c`; pack-of-3 SKU `WM-E031-D5C4`, UPC `756441906011`,
+  owner-preview target `$40.36`, stage `b467491c…fc3a`. Walmart writes `0`;
+  внутренние UPC reservations
+  действуют до `2026-07-28T13:52:56.990Z` /
+  `2026-07-28T13:55:59.720Z`. Exact Walmart Product Type = `Snack Crackers`;
+  выбран current active free Default Template `202402999000149568`. Owner-only
+  preview/readiness Sites version 9 развернута из commit
+  `d5daebe4e01161335416dabc4d5e717a9cd976d4` по прежнему URL. Следующий допустимый
+  шаг — получить реальные candidate-bound Seller Center/category, rights, UPC
+  authority, physical/package/country/expiration/fulfillment evidence, после чего
+  engine выполняет certification→dry-run→approval→apply-preview. Live apply остаётся
+  отдельным exact signed owner gate; массовые волны и schedule не разрешены.
+  Канон: [[walmart-new-sku-operator-runbook]] и
+  [[walmart-new-sku-command-center]]. Старые v26 current-status записи ниже —
+  audit chronology, не operator authority.
 - 🟡 **Product Truth Control Center / permanent productization:** owner 2026-07-19
   подтвердил, что готовый engine должен стать постоянным backend существующего
   модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Reconciled
@@ -132,8 +157,33 @@
   `19 ALREADY_CANONICAL`, `0` новых content-complete no-paid candidates,
   `82` identity-only, `5834` quarantine. `FaisalX-3816` явно блокируется
   donor→different-variant conflict; audit writes/calls = `0`. Следующая активная
-  локальная работа — read-only priority/budget forecast оставшихся `5916`;
-  фактический spend остаётся за G7.
+  работа повысила bridge до `1.2.0`: outer seller UPC больше не доказывает
+  multipack component, а live gallery barcode + exact Target item может дать
+  immutable no-paid content evidence. `FaisalX-1148` materialized по standing
+  policy: `7/7` rows, postcheck `300236be…43d9` = `ALREADY_APPLIED`. Fresh
+  readiness `5c56c425…e92b`: `5935/5935`, content-ready `20`, Unit Economics
+  `20 UNSOURCEABLE` / `5915 missing`, Procurement `0`. Successor timestamp guard
+  и exact-content apply regression прошли; full Product Truth `481/481`.
+  Read-only forecast: `82` identity-only scopes, `48` donor groups, `41`
+  collision-free groups / `64` listings, conservative paid ceiling `99.5`
+  credits без approval. Generic direct-Target lane `1.0.0` завершён: два GET
+  без retry; Arnold item `12973001` дал exact evidence `1fd29173…c7988`,
+  Iberia item `80838482` не имел allergen warning и остался fail-closed.
+  `FaisalX-1228` materialized по standing policy: `7/7`, apply report
+  `869eebaa…b9ca5`, postcheck `5705560d…07cc5` = `ALREADY_APPLIED`.
+  Successor audit = `21 ALREADY_CANONICAL`, `0` новых no-paid content-only,
+  `81` identity-only, `5833` quarantine. Readiness `cac37257…44192`:
+  `5935/5935`, content-ready `21`, Unit Economics `21 UNSOURCEABLE` /
+  `5914 missing`, Procurement `0`; Product Truth certification `487/487`.
+  Canonical planner переиспользован; локальный G7 proposal
+  `df3da159…65b88` выбрал пять unique collision-free Walmart graphs с
+  worst-case ceiling `17.5` units и нулём calls/writes. Фактический provider
+  spend остаётся заблокирован до owner-defined reserve floor, exact maximum
+  units и последующего fresh plan-bound permit/approval.
+  Recommended values материализованы offline: exact plan
+  `ae810cb1…5360e`, target set `f7284014…c2ab`, max `17.5` units, reserve floor
+  `15000`, expiry `2026-07-28T12:39:07Z`; plan-time DB/provider calls `0`.
+  Статус G7 = `AWAITING_OWNER_APPROVAL`.
   Живой checklist и acceptance gates:
   [[product-truth-command-center]]; единый ledger: [[product-truth-owner-gates]].
 - 🟢 Канон v2.0 с четырьмя потребителями, двумя фазами и законами достоверности записан.
@@ -703,8 +753,9 @@ state machine; Claude Code остаётся release/emergency operator, не е�
 Текущий execution checkpoint, постоянный owner-visible phase checklist, тесты и
 точные оставшиеся блокеры: [[walmart-listing-integrity-checkpoint-2026-07-21]].
 Исторический pause snapshot: [[walmart-listing-integrity-checkpoint-2026-07-19]].
-Два отдельно подтверждённых live canary закрыты fresh Qualification PASS;
-автоматический/mass run остаётся `NO-GO`.
+Три отдельно подтверждённых live canary закрыты fresh Qualification PASS;
+четвёртый exact SKU имеет terminal successful feed и ждёт только buyer
+propagation. Автоматический/mass run остаётся `NO-GO`.
 
 **Главная цель (ствол):** исправить все Walmart-листинги так, чтобы фактически
 отгружаемый товар, вариант, размер, состав набора и количество полностью совпадали с
@@ -968,6 +1019,53 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   TypeScript, targeted ESLint and production build PASS. Remaining Phase 7.2
   work is persistent per-SKU transition state plus default-OFF scheduler/
   resumable worker; no automatic or mass apply is authorized.
+- 🟢 **Reviewed MAIN engine v14 / `FaisalX-1148` canary завершён
+  (2026-07-27)** — exact defect = ambiguous description/bullets plus current
+  MAIN showing `8` packages for outer Pack of `2`; title, attributes, gallery,
+  price, inventory and status remain unchanged. Candidate MAIN
+  `d5f5a7d9…35858` is rebuilt byte-for-byte from exact Product Truth single-unit
+  source `8d70a272…55c00`, signed blind decision is `PASS`, R2 public bytes match,
+  and both gallery slots are preserved. Frozen release v14
+  `e9bc8e4f…dbc00e`, manifest `438fcf4d…fa1d1`, clean certification
+  `146/146` plus TypeScript/ESLint/diff-check PASS. Exact one-SKU execution and
+  fresh Qualification remain the current step. Exact execution package
+  `47db1f09…2401f`, payload `a9ca3439…2b50e` was accepted exactly once as feed
+  `18C62987D97D584A8C474291F416F0F8@AX8BBgA`; POST `1`, retry `0`, item
+  failures `0`. Тот же feed достиг terminal `SUCCEEDED`; frozen v15
+  Qualification вернула `PASS` на всех 14 facets, receipt SHA
+  `a0e98b9d…815cf`, body `005139c0…8e05`. Final factual gallery = `20/20 PASS`,
+  verification body `6588948d…ed55e`, HTML SHA `dbee9f5b…e43e9`; publication,
+  indexing, title и gallery сохранены. The factual-gallery
+  verifier now handles the exact reviewed-MAIN diff separately from text-only:
+  changed MAIN must have fresh Qualification `PASS`, while title and both
+  gallery slots remain exact; the prior text-only canary regression is
+  `20/20 PASS`. Mass/automatic run is `NO-GO`.
+- 🟡 **Attribute-only canary `FaisalX-2768` / terminal feed, buyer propagation
+  (2026-07-27)** — Product Truth и buyer text однозначно задают Campbell's
+  Condensed Golden Mushroom Soup, Quantity of 4, но структурированные buyer
+  attributes оставались `Flavor=qty 4`, `Count=1` без multipack quantity.
+  Frozen v18 допускает только четыре mappings: `flavor=Golden Mushroom`,
+  `count=4`, `countPerPack=1`, `multipackQuantity=4`; все opaque attributes
+  сохраняются omission-ом, а title/description/bullets/MAIN/gallery/price/
+  inventory/status отсутствуют в payload. Exact payload SHA
+  `5171d717…1a84`. Первый bounded POST получил definite Walmart
+  `HTTP 520 / SYSTEM_ERROR.GMP_GATEWAY_API` без `feedId`; ledger terminal
+  `FAILED`, повтор этого permit не выполнялся. Fresh live item/spec bytes затем
+  совпали с baseline. Новый independently signed one-SKU plan выполнил один
+  POST того же exact payload; feed
+  `18C632A8D8735E4599AF541E02A79070@AX8BBwA` достиг `SUCCEEDED`, retry `0`.
+  Первый post-write verifier обнаружил собственный coverage gap для
+  attributes-only plan до выдачи verdict. V20 сохраняет read-only
+  Qualification, принимает v18 как единственный predecessor и sealed как
+  release `84230eba…7417b5`, manifest `326e1511…6aeed2d`, clean suite
+  `156/156` + ESLint/diff-check PASS. Он также исправляет прежний ложный
+  двухчасовой failure gate на опубликованную Walmart шестичасовую SLA.
+  Fresh v20 buyer reread в `17:41:44Z`
+  подтверждает unchanged title/description/bullets/images, PUBLISHED/ACTIVE и
+  indexing, но ещё видит старые attributes; Qualification честно
+  `PENDING_PROPAGATION`, receipt SHA `f71371a1…f9d22`, exact failure boundary
+  `2026-07-27T22:35:24.791Z`. Следующий шаг — только sparse fresh no-write
+  reread; новый POST запрещён, следующий SKU остаётся заблокирован до `PASS`.
 - 🟢 **One-SKU remediation + Qualification closed loop (2026-07-22)** — локальные
   фазы 0–5 закрыты: real source-aware BAD → exact surgical repair → propagation
   `RECHECK_NO_WRITE` → fresh buyer reread → Qualification PASS; следующий SKU до

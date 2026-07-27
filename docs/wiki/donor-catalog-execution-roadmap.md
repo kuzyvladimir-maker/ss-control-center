@@ -321,9 +321,22 @@ Exit gate:
 
 До отдельного provider canary и consumer cutover Phase 0 не считается
 завершённой. Standing policy разрешает только collision-free no-paid wave
-`≤100` rows после fresh `READY_TO_APPLY`; canonical-aware audit сейчас не нашёл
-ни одного следующего content-complete кандидата. Paid/provider работа по
-оставшимся gaps требует отдельного G7.
+`≤100` rows после fresh `READY_TO_APPLY`. Snapshot/plan `1.3.0` отделяет outer
+marketplace UPC от base-unit identity и поддерживает два независимых immutable
+пути: live-image barcode и generic direct-Target content. После `FaisalX-1148`
+generic Target lane выполнил ровно два GET без retry: Arnold `12973001` дал
+exact evidence, Iberia `80838482` не содержал allergen warning и остался
+fail-closed. Standing wave для `FaisalX-1228` вставила `7/7` rows; postcheck =
+`ALREADY_APPLIED`. Full readiness теперь `21` content-ready /
+`21 UNSOURCEABLE`, `5914` missing, Procurement `0`. Full certification
+`487/487`. Новых бесплатных Target content-only candidates нет; paid/provider
+работа по остальным gaps требует отдельного G7. Локальный exact G7 proposal
+`df3da159…65b88` уже готов: пять collision-free Walmart listings, worst-case
+ceiling `17.5` provider units, calls/writes `0`. Recommended review values
+материализованы canonical offline planner-ом без provider/DB calls: exact plan
+`ae810cb1…5360e`, пять listings, ceiling `17.5`, reserve floor `15000`,
+expiry `2026-07-28T12:39:07Z`; plan-time DB/provider calls `0`. G7 execution
+остаётся закрыт до plan-bound owner approval, fresh balance evidence и permit.
 Успешная активация schema сама по себе не означает content/price readiness или
 разрешение marketplace actions.
 
