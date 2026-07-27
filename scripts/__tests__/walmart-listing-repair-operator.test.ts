@@ -11,7 +11,7 @@ import {
   WalmartListingRepairOperatorError,
 } from "../walmart-listing-repair-operator.ts";
 
-const RELEASE_ID = "b319982a297b1f75ec69f5f2f549620d3ebdec5a53d459c6d9038ba2b41431a6";
+const RELEASE_ID = "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(

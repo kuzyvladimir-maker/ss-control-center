@@ -40,13 +40,20 @@ export const WALMART_LISTING_REPAIR_REQUEST_TIMEOUT_MS = 60_000;
 
 /** Filled only by the final frozen release. Null is an intentional production NO-GO. */
 const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null =
-  "b319982a297b1f75ec69f5f2f549620d3ebdec5a53d459c6d9038ba2b41431a6";
+  "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
 /**
  * One exact predecessor is accepted only by the no-replay recovery entrypoint.
  * It is never used by normal plan/execute and cannot authorize a new POST.
  */
 const PINNED_ACCEPTED_POST_RECOVERY_SOURCE_RELEASE_SHA256 =
   "bd0f903ecbf8b3cc6ee570904516de31975b3c79c2ccc15c0b7e741f34f24100";
+/**
+ * The immediately preceding release may be continued only after its durable
+ * ledger is already ACCEPTED. This authority is consumed exclusively by the
+ * GET-only resume path and cannot reach the POST implementation.
+ */
+const PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256 =
+  "dbb14ad1debc798e7b5b5493a46b67a91ee85e3919643fd1c098cf0e1ffe97ac";
 
 export function inspectWalmartListingRepairWriterProductionReadiness(): {
   apply_writer_release_pinned: boolean;
@@ -1911,6 +1918,24 @@ function acceptedPostRecoveryAuthorityRuntime(): WriterAuthorityRuntime {
   };
 }
 
+function getOnlyContinuationAuthorityRuntime(
+  applyReleaseSha256: string,
+): WriterAuthorityRuntime {
+  const expected = applyReleaseSha256 === PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256
+    ? PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256
+    : applyReleaseSha256 === PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256
+      ? PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256
+      : fail(
+        "APPLY_RELEASE_MISMATCH",
+        "GET-only continuation rejects an unpinned apply release",
+      );
+  return {
+    verifySequence: verifyWalmartListingRepairSequenceAuthorization,
+    verifyCurrentPermit: verifyCurrentWalmartListingRepairOneSkuPermit,
+    expected_apply_engine_release_sha256: expected,
+  };
+}
+
 function snapshotProductionExecutionInput(
   input: WalmartListingRepairProductionExecutionInput,
 ): WalmartListingRepairProductionExecutionInput {
@@ -2409,7 +2434,11 @@ export async function resumeWalmartListingRepairRecoveredFeed(
   );
 }
 
-/** Production GET-only continuation using the same non-injectable dependency closure. */
+/**
+ * Production one-GET continuation for the current release or the exact pinned
+ * immediate predecessor. Durable ACCEPTED ledger state is still mandatory
+ * inside resumeInternal; neither route has POST authority.
+ */
 export async function resumeWalmartListingRepairFeedPoll(
   input: WalmartListingRepairProductionExecutionInput,
 ): Promise<WalmartListingRepairWriterResult> {
@@ -2420,10 +2449,21 @@ export async function resumeWalmartListingRepairFeedPoll(
     );
   }
   const execution = snapshotProductionExecutionInput(input);
-  const runtime = productionAuthorityRuntime();
+  const runtime = getOnlyContinuationAuthorityRuntime(
+    execution.writer_input.plan.apply_engine_release_sha256,
+  );
   const { createWalmartListingRepairProductionDependencies } = await import(
     "./listing-integrity-remediation-production-dependencies.ts"
   );
   const dependencies = createWalmartListingRepairProductionDependencies(execution);
-  return resumeInternal({ writer_input: execution.writer_input }, dependencies, runtime);
+  return resumeInternal(
+    {
+      writer_input: {
+        ...execution.writer_input,
+        poll_policy: { max_attempts: 1, delay_ms: 0 },
+      },
+    },
+    dependencies,
+    runtime,
+  );
 }
