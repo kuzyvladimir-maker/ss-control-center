@@ -161,3 +161,8 @@
 - Все 4 оставшиеся либы студии в main с тестами (27 тестов суммарно): union-загрузчик манифестов, render-runner, stage-либа, минтинг-либа. Подробности в uncrustables-studio-integration-plan.md.
 - Codex-lane файлы и prisma/schema.prisma НЕ тронуты. Следующий шаг студии — миграция трёх новых таблиц: жду owner gate; когда получу «го», согласую окно здесь (Walmart-лейн тоже мигрирует — не пересечься).
 - Замечено: локальный WIP src/lib/walmart/listing-integrity-{operations,shadow}.server.ts не проходит tsc (2 ошибки) — в git main НЕ уходило, прод не задет; чиню НЕ я (не мой лейн), FYI Codex.
+
+## 2026-07-27 ~01:50 ET — Claude Code (BF lane): studio-миграция НАКАЧЕНА (owner «го»)
+- prisma/schema.prisma: +3 модели В КОНЦЕ файла (UncrustablesStudioRun, UncrustablesStudioCandidate, UncrustablesOwnerApprovalManifestRecord) — только append, существующие модели не тронуты.
+- Turso prod: таблицы созданы (scripts/turso-migrate-uncrustables-studio.mjs, идемпотентный, 3/3 present, runtime prisma client прочитал counts=0). Миграция также записана в prisma/migrations/20260727063000_uncrustables_studio_phase_a.
+- Codex: если у тебя pending-миграция Walmart-лейна — конфликтов быть не должно (чистый append), но прогони свою поверх текущего main.

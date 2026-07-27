@@ -1956,16 +1956,16 @@ model SkuCost {
   notes       String?
 
   // Reproducibility of the recipe/evidence used for this effective period.
-  observationKey     String? @unique // idempotent immutable evidence fingerprint
-  recipeHash         String?
-  evidenceJson       String?
-  evidenceOutcome    String? // FACT | ESTIMATE | UNSOURCEABLE (required for retail:batch)
-  matcherVersion     String?
+  observationKey              String? @unique // idempotent immutable evidence fingerprint
+  recipeHash                  String?
+  evidenceJson                String?
+  evidenceOutcome             String? // FACT | ESTIMATE | UNSOURCEABLE (required for retail:batch)
+  matcherVersion              String?
   matcherImplementationSha256 String?
   matcherReleaseSha256        String?
-  pricePolicyVersion String?
-  runId              String?
-  approvalId         String?
+  pricePolicyVersion          String?
+  runId                       String?
+  approvalId                  String?
 
   componentEvidence SkuComponentEvidence[]
   listingScopeLink  SkuCostListingScopeLink?
@@ -2000,8 +2000,8 @@ model ProductTruthListingScope {
   sourceCapturedAt      DateTime
   createdAt             DateTime @default(now())
 
-  costLinks      SkuCostListingScopeLink[]
-  enrichmentJobs EnrichmentJob[]
+  costLinks        SkuCostListingScopeLink[]
+  enrichmentJobs   EnrichmentJob[]
   operationalItems ProductTruthOperationalRunItem[]
 
   @@unique([channel, storeIndex, sku], map: "ProductTruthListingScope_channel_store_sku_key")
@@ -2182,15 +2182,15 @@ model DonorProduct {
   currency        String  @default("USD")
 
   // Dedup key: normalized brand+line+size+container so 1 real product = 1 row.
-  identityKey            String    @unique
-  identityStatus         String    @default("legacy_unverified") // candidate | exact_confirmed | legacy_unverified | rejected
-  identityMatcherVersion String?
+  identityKey                         String    @unique
+  identityStatus                      String    @default("legacy_unverified") // candidate | exact_confirmed | legacy_unverified | rejected
+  identityMatcherVersion              String?
   identityMatcherImplementationSha256 String?
   identityMatcherReleaseSha256        String?
-  identityEvidenceJson   String?
-  identityConfirmedAt    DateTime?
-  confidence             Float? // identify confidence
-  needsReview            Boolean   @default(false)
+  identityEvidenceJson                String?
+  identityConfirmedAt                 DateTime?
+  confidence                          Float? // identify confidence
+  needsReview                         Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2240,22 +2240,22 @@ model CanonicalProductVariant {
 // Append-only matcher decisions. The migration enforces a partial unique index
 // allowing at most one exact_confirmed canonical variant per DonorProduct.
 model DonorProductVariantDecision {
-  id                 String                   @id
-  decisionKey        String                   @unique
-  donorProductId     String
-  donorProduct       DonorProduct             @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalVariantId String?
-  canonicalVariant   CanonicalProductVariant? @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  decisionStatus     String
-  matcherVersion     String
+  id                          String                   @id
+  decisionKey                 String                   @unique
+  donorProductId              String
+  donorProduct                DonorProduct             @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId          String?
+  canonicalVariant            CanonicalProductVariant? @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  decisionStatus              String
+  matcherVersion              String
   matcherImplementationSha256 String
   matcherReleaseSha256        String
-  evidenceHash       String
-  evidenceJson       String
-  decidedAt          DateTime
-  runId              String?
-  approvalId         String?
-  createdAt          DateTime                 @default(now())
+  evidenceHash                String
+  evidenceJson                String
+  decidedAt                   DateTime
+  runId                       String?
+  approvalId                  String?
+  createdAt                   DateTime                 @default(now())
 
   contentObservations ProductContentObservation[]
   offerObservations   DonorOfferObservation[]
@@ -2376,30 +2376,30 @@ model DonorOfferObservation {
 // pair is exact-target-only and may coexist with FACT, ESTIMATE, REJECT, or
 // MANUAL_FACT, so content readiness never depends on price availability.
 model SkuComponentEvidence {
-  id                        String                     @id
-  evidenceKey               String                     @unique
-  skuCostId                 String
-  skuCost                   SkuCost                    @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  componentIndex            Int
-  evidenceStatus            String // price axis: FACT | MANUAL_FACT | ESTIMATE | REJECT
-  targetCanonicalVariantId  String
-  targetCanonicalVariant    CanonicalProductVariant    @relation("SkuComponentEvidenceTargetVariant", fields: [targetCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  contentCanonicalVariantId String?
-  contentCanonicalVariant   CanonicalProductVariant?   @relation("SkuComponentEvidenceContentVariant", fields: [contentCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  priceCanonicalVariantId   String?
-  priceCanonicalVariant     CanonicalProductVariant?   @relation("SkuComponentEvidencePriceVariant", fields: [priceCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  contentObservationId      String?
-  contentObservation        ProductContentObservation? @relation(fields: [contentObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  priceObservationId        String?
-  priceObservation          DonorOfferObservation?     @relation(fields: [priceObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  matchTier                 String
-  matcherVersion            String
+  id                          String                     @id
+  evidenceKey                 String                     @unique
+  skuCostId                   String
+  skuCost                     SkuCost                    @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  componentIndex              Int
+  evidenceStatus              String // price axis: FACT | MANUAL_FACT | ESTIMATE | REJECT
+  targetCanonicalVariantId    String
+  targetCanonicalVariant      CanonicalProductVariant    @relation("SkuComponentEvidenceTargetVariant", fields: [targetCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentCanonicalVariantId   String?
+  contentCanonicalVariant     CanonicalProductVariant?   @relation("SkuComponentEvidenceContentVariant", fields: [contentCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceCanonicalVariantId     String?
+  priceCanonicalVariant       CanonicalProductVariant?   @relation("SkuComponentEvidencePriceVariant", fields: [priceCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentObservationId        String?
+  contentObservation          ProductContentObservation? @relation(fields: [contentObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceObservationId          String?
+  priceObservation            DonorOfferObservation?     @relation(fields: [priceObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  matchTier                   String
+  matcherVersion              String
   matcherImplementationSha256 String
   matcherReleaseSha256        String
-  pricePolicyVersion        String
-  evidenceHash              String
-  evidenceJson              String
-  createdAt                 DateTime                   @default(now())
+  pricePolicyVersion          String
+  evidenceHash                String
+  evidenceJson                String
+  createdAt                   DateTime                   @default(now())
 
   @@unique([skuCostId, componentIndex])
   @@index([targetCanonicalVariantId, evidenceStatus])
@@ -2567,10 +2567,10 @@ model EnrichmentJob {
 // Cross-table transition, lease, budget, and append-only event-chain rules are
 // enforced by 20260719004000_product_truth_operational_run.
 model ProductTruthOperationalRun {
-  runId                String   @id
-  approvalId           String   @unique
+  runId                String    @id
+  approvalId           String    @unique
   planSchemaVersion    String
-  planSha256           String   @unique
+  planSha256           String    @unique
   planJson             String
   mode                 String
   environment          String
@@ -2580,14 +2580,14 @@ model ProductTruthOperationalRun {
   targetCount          Int
   sourcePolicyJson     String
   providerCeilingsJson String
-  status               String   @default("prepared")
+  status               String    @default("prepared")
   leaseOwner           String?
   leaseToken           String?
   leaseExpiresAt       DateTime?
   heartbeatAt          DateTime?
   startedAt            DateTime?
   finishedAt           DateTime?
-  eventChainHead       String   @default("0000000000000000000000000000000000000000000000000000000000000000")
+  eventChainHead       String    @default("0000000000000000000000000000000000000000000000000000000000000000")
   reportSha256         String?
   artifactIndexSha256  String?
   createdAt            DateTime
@@ -2600,18 +2600,18 @@ model ProductTruthOperationalRun {
 }
 
 model ProductTruthOperationalRunItem {
-  id               String   @id
+  id               String                     @id
   runId            String
   run              ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
   listingKey       String
-  listingScope     ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  listingScope     ProductTruthListingScope   @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
   ordinal          Int
   requestedFields  String
-  queueJobId       String?  @unique
-  queueJob         EnrichmentJob? @relation(fields: [queueJobId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  status           String   @default("pending")
-  stage            String   @default("QUEUED")
-  attempts         Int      @default(0)
+  queueJobId       String?                    @unique
+  queueJob         EnrichmentJob?             @relation(fields: [queueJobId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status           String                     @default("pending")
+  stage            String                     @default("QUEUED")
+  attempts         Int                        @default(0)
   leaseToken       String?
   leaseExpiresAt   DateTime?
   checkpointJson   String?
@@ -2632,9 +2632,9 @@ model ProductTruthOperationalRunItem {
 }
 
 model ProductTruthOperationalEvent {
-  id            String   @id
+  id            String                          @id
   runId         String
-  run           ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  run           ProductTruthOperationalRun      @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
   eventIndex    Int
   eventType     String
   itemId        String?
@@ -2642,7 +2642,7 @@ model ProductTruthOperationalEvent {
   previousHash  String
   payloadJson   String
   payloadSha256 String
-  eventHash     String   @unique
+  eventHash     String                          @unique
   createdAt     DateTime
 
   @@unique([runId, eventIndex])
@@ -2655,27 +2655,27 @@ model ProductTruthOperationalEvent {
 model ProductTruthControlCommand {
   commandId String @id
 
-  schemaVersion String
-  commandKind   String
-  gateClass     String
-  status        String @default("DRAFT")
+  schemaVersion  String
+  commandKind    String
+  gateClass      String
+  status         String @default("DRAFT")
   idempotencyKey String @unique
   requestSha256  String @unique
 
   requestedByUserId String
   requestedAt       DateTime
 
-  engineReleaseId       String
-  engineCommitSha       String
-  engineTreeSha         String
-  executableTreeSha256  String
-  environment           String
+  engineReleaseId           String
+  engineCommitSha           String
+  engineTreeSha             String
+  executableTreeSha256      String
+  environment               String
   databaseTargetFingerprint String
-  manifestSha256        String
+  manifestSha256            String
 
-  runId        String?
-  planSha256   String?
-  approvalId   String?
+  runId      String?
+  planSha256 String?
+  approvalId String?
 
   requestArtifactId             String?
   planArtifactId                String?
@@ -2687,18 +2687,18 @@ model ProductTruthControlCommand {
   reportArtifactId              String?
   zeroAttemptEvidenceArtifactId String?
 
-  ownerKeyId                    String?
-  ownerNonce                    String? @unique
-  ownerSignatureSha256          String?
-  ownerAuthorizedAt             DateTime?
-  ownerAuthorizationExpiresAt   DateTime?
+  ownerKeyId                  String?
+  ownerNonce                  String?   @unique
+  ownerSignatureSha256        String?
+  ownerAuthorizedAt           DateTime?
+  ownerAuthorizationExpiresAt DateTime?
 
   workerLeaseOwner       String?
   workerLeaseTokenSha256 String?
   workerLeaseExpiresAt   DateTime?
   workerHeartbeatAt      DateTime?
-  attempts               Int @default(0)
-  maxAttempts            Int @default(1)
+  attempts               Int       @default(0)
+  maxAttempts            Int       @default(1)
   executionStartedAt     DateTime?
   executionBoundary      String?
 
@@ -2719,7 +2719,7 @@ model ProductTruthControlCommand {
 // Exact bounded bytes under append-only DB triggers. `locator` is
 // command-scoped/content-addressed; public image storage is not used.
 model ProductTruthControlArtifact {
-  artifactId String @id
+  artifactId String                     @id
   commandId  String
   command    ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
 
@@ -2729,7 +2729,7 @@ model ProductTruthControlArtifact {
   content            Bytes
   byteSize           Int
   sha256             String
-  locator            String @unique
+  locator            String   @unique
   createdAt          DateTime
   createdByPrincipal String
 
@@ -2740,20 +2740,20 @@ model ProductTruthControlArtifact {
 // Immutable per-command hash chain. SQL triggers enforce exact next sequence,
 // predecessor binding and append-only behavior.
 model ProductTruthControlEvent {
-  eventId   String @id
+  eventId   String                     @id
   commandId String
   command   ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
 
-  schemaVersion    String
-  sequence         Int
-  eventType        String
-  source           String
-  occurredAt       DateTime
-  payload          Bytes
-  payloadSha256    String
+  schemaVersion     String
+  sequence          Int
+  eventType         String
+  source            String
+  occurredAt        DateTime
+  payload           Bytes
+  payloadSha256     String
   previousEventHash String
-  eventHash        String @unique
-  createdAt        DateTime @default(now())
+  eventHash         String   @unique
+  createdAt         DateTime @default(now())
 
   @@unique([commandId, sequence], map: "ProductTruthControlEvent_command_sequence_key")
   @@index([commandId, occurredAt], map: "ProductTruthControlEvent_command_occurred_idx")
@@ -3274,35 +3274,35 @@ model ChannelSKU {
 // fence: it equals channel_sku_id while an attempt can still have marketplace
 // side effects and becomes NULL only after terminal/retry-safe disposition.
 model MarketplaceSubmissionAttempt {
-  id                        String     @id
-  channel_sku_id            String
-  channel_sku               ChannelSKU @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  marketplace               String
-  idempotency_key           String     @unique
-  active_key                String?    @unique
-  pilot_permit_sha256       String     @unique
-  pilot_permit_id           String     @unique
-  owner_key_id              String
-  owner_signature_sha256    String     @unique
-  pilot_slot                Int        @unique
-  pilot_approval_sha256     String
-  certification_sha256      String
+  id                                String     @id
+  channel_sku_id                    String
+  channel_sku                       ChannelSKU @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  marketplace                       String
+  idempotency_key                   String     @unique
+  active_key                        String?    @unique
+  pilot_permit_sha256               String     @unique
+  pilot_permit_id                   String     @unique
+  owner_key_id                      String
+  owner_signature_sha256            String     @unique
+  pilot_slot                        Int        @unique
+  pilot_approval_sha256             String
+  certification_sha256              String
   seller_account_fingerprint_sha256 String
-  payload_hash              String
-  claim_token               String     @unique
-  state                     String // CLAIMED | REQUESTING | ACCEPTED | UNKNOWN | PENDING_REVIEW | BUYER_VERIFIED | REJECTED | RETRYABLE
-  request_count             Int        @default(0)
-  recovery_count            Int        @default(0)
-  marketplace_submission_id String?
-  marketplace_disposition   String?
-  error_json                String?
-  claimed_at                DateTime
-  requested_at              DateTime?
-  accepted_at               DateTime?
-  terminal_at               DateTime?
-  retry_after               DateTime?
-  created_at                DateTime   @default(now())
-  updated_at                DateTime   @updatedAt
+  payload_hash                      String
+  claim_token                       String     @unique
+  state                             String // CLAIMED | REQUESTING | ACCEPTED | UNKNOWN | PENDING_REVIEW | BUYER_VERIFIED | REJECTED | RETRYABLE
+  request_count                     Int        @default(0)
+  recovery_count                    Int        @default(0)
+  marketplace_submission_id         String?
+  marketplace_disposition           String?
+  error_json                        String?
+  claimed_at                        DateTime
+  requested_at                      DateTime?
+  accepted_at                       DateTime?
+  terminal_at                       DateTime?
+  retry_after                       DateTime?
+  created_at                        DateTime   @default(now())
+  updated_at                        DateTime   @updatedAt
 
   walmart_buyer_evidence WalmartBuyerPublicationEvidence[]
 
@@ -3597,7 +3597,7 @@ model UPCPool {
   // If RESERVED — which BundleDraft holds it (with TTL)
   // One draft may hold at most one UPC. The unique constraint is also the
   // database-level race fence used by the Walmart new-SKU engine.
-  reserved_for_id String? @unique
+  reserved_for_id String?   @unique
   reserved_at     DateTime?
   reserved_until  DateTime?
 
@@ -4524,4 +4524,87 @@ model CardEntry {
   createdAt   DateTime @default(now())
 
   @@index([cardId])
+}
+
+// ===================== Uncrustables Studio (Bundle Factory, Phase A) =====================
+// Owner gate: «го» 2026-07-27. Машина состояний кандидата и append-only
+// записи sealed owner-approval манифестов — см.
+// docs/wiki/uncrustables-studio-integration-plan.md.
+
+model UncrustablesStudioRun {
+  id          String   @id @default(cuid())
+  name        String
+  status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  owner_order String // точная формулировка мандата владельца
+  created_by  String // актор/сессия, создавшая забег
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  candidates UncrustablesStudioCandidate[]
+
+  @@index([status])
+}
+
+model UncrustablesStudioCandidate {
+  id     String                @id @default(cuid())
+  run_id String
+  run    UncrustablesStudioRun @relation(fields: [run_id], references: [id], onDelete: Cascade)
+
+  slug  String
+  state String @default("PLANNED") // PLANNED|RENDER_QUEUED|RENDERING|RENDERED|REJECTED|APPROVED|STAGED|VALIDATED|PROOFED|SUBMITTED|LIVE|FAILED
+
+  // Планировщик (box-planner snapshot)
+  recipe_json  String // comps: flavor/qty/donor_title/box_size/box_count
+  title        String
+  bullets_json String // JSON array
+  description  String
+  price_cents  Int
+  cost_cents   Int?
+  pack_count   Int
+
+  // Рендер (render-runner)
+  render_attempts Int     @default(0)
+  prompt          String?
+  reference_urls  String? // JSON array
+  main_image_url  String?
+  image_sha256    String?
+  pixel_width     Int?
+  pixel_height    Int?
+
+  // Review gate (human)
+  reviewed_by   String?
+  reviewed_at   DateTime?
+  reject_reason String?
+
+  // Stage → proof → submit linkage
+  draft_id           String?
+  master_bundle_id   String?
+  channel_sku_id     String?
+  sku                String?
+  proof_id           String?
+  manifest_record_id String?
+  submission_id      String?
+  asin               String?
+
+  last_error String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([run_id, slug])
+  @@index([state])
+  @@index([run_id])
+}
+
+// Append-only: строки НИКОГДА не обновляются и не удаляются; манифест
+// хранится целиком запечатанным JSON-ом, sha256 = печать содержимого.
+// Union-загрузчик переверифицирует каждую запись при чтении (fail closed).
+model UncrustablesOwnerApprovalManifestRecord {
+  id          String   @id @default(cuid())
+  manifest_id String   @unique
+  sha256      String   @unique
+  body_json   String // полный sealed manifest JSON
+  entry_count Int
+  approved_by String
+  captured_at DateTime
+  created_at  DateTime @default(now())
 }
