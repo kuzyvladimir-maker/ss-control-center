@@ -17,6 +17,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHead, Btn } from "@/components/kit";
+import {
+  WalmartShippingTemplateSelector,
+  type WalmartShippingSelection,
+} from "@/components/bundle-factory/WalmartShippingTemplateSelector";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 
@@ -34,8 +38,7 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_RETAILER", label: "Amazon · Retailer Distributor" },
   {
     value: "WALMART",
-    label: "Walmart · safe pilot via Claude Code",
-    disabled: true,
+    label: "Walmart · canonical new-SKU pilot",
   },
 ];
 
@@ -61,6 +64,8 @@ export default function StudioStartPage() {
 
   const [prompt, setPrompt] = useState("");
   const [channel, setChannel] = useState("AMAZON_SALUTEM");
+  const [walmartShipping, setWalmartShipping] =
+    useState<WalmartShippingSelection | null>(null);
 
   // Flavor picker: real catalog flavors for the typed theme. Selected labels
   // are sent as an exact structured filter — the engine fails closed on any
@@ -115,7 +120,16 @@ export default function StudioStartPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canGenerate = prompt.trim().length > 0 && !submitting;
+  const walmartShippingReady =
+    channel !== "WALMART" ||
+    (
+      walmartShipping != null &&
+      walmartShipping.template_status === "ACTIVE"
+    );
+  const canGenerate =
+    prompt.trim().length > 0 &&
+    walmartShippingReady &&
+    !submitting;
 
   async function onGenerate() {
     if (!canGenerate) return;
@@ -134,6 +148,22 @@ export default function StudioStartPage() {
           image_quality: imageQuality,
           uncrustables_image_mode: uncrustablesImageMode,
           target_margin_pct: targetMargin ? Number(targetMargin) : null,
+          ...(channel === "WALMART" && walmartShipping
+            ? {
+                walmart_shipping: {
+                  store_index: walmartShipping.store_index,
+                  account_name: walmartShipping.account_name,
+                  template_id: walmartShipping.template_id,
+                  template_name: walmartShipping.template_name,
+                  template_status: walmartShipping.template_status,
+                  rate_model_type: walmartShipping.rate_model_type,
+                  is_free_shipping: walmartShipping.is_free_shipping,
+                  template_sha256: walmartShipping.template_sha256,
+                  template_modified_at:
+                    walmartShipping.template_modified_at,
+                },
+              }
+            : {}),
           ...(selectedFlavors.size > 0 && flavors
             ? {
                 // Keys are the engine's own identity tokens (same dedupe run) —
@@ -320,6 +350,13 @@ export default function StudioStartPage() {
           </select>
         </div>
 
+        {channel === "WALMART" && (
+          <WalmartShippingTemplateSelector
+            value={walmartShipping}
+            onChange={setWalmartShipping}
+          />
+        )}
+
         {/* ADVANCED — only what the operator might want to tune: brand, model, photos, margin. */}
         <div className="rounded-[12px] border border-rule bg-surface-tint/40">
           <button
@@ -420,7 +457,11 @@ export default function StudioStartPage() {
           <Btn variant="primary" size="md" onClick={onGenerate} disabled={!canGenerate} loading={submitting} icon={<Sparkles size={15} strokeWidth={1.9} />}>
             Generate listings
           </Btn>
-          <span className="text-[12px] text-ink-3">Nothing publishes until you approve the batch.</span>
+          <span className="text-[12px] text-ink-3">
+            {channel === "WALMART" && !walmartShippingReady
+              ? "Select an active Walmart shipping template first."
+              : "Nothing publishes until you approve the batch."}
+          </span>
         </div>
       </div>
     </>

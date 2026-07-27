@@ -1,29 +1,29 @@
 {
   "schema_version": "walmart-listing-integrity-current-owner-review-index/v1",
-  "selected_at": "2026-07-25T22:45:00.000Z",
+  "selected_at": "2026-07-27T00:06:10.359Z",
   "review": {
-    "path": "FaisalX-1183-text-repair-review-20260725.json",
-    "sha256": "ce1b31e04b61d811684a3043287c4baf163c154466fd57f6a59de374cdecb72b"
+    "path": "../walmart-listing-integrity-next-pool/FaisalX-1181-text-repair-review-20260727-v1.json",
+    "sha256": "8e6e4e21727396b74d3314566fec42a6e8628ac2ac1c8491a165bb8fe0a7dc48"
   },
   "certification": {
-    "path": "FaisalX-1183-text-repair-certification-20260725.json",
-    "sha256": "10a9fafb0676a25079e6eb845decc7060ad59f4066254dbc8d84ab8c018de527"
+    "path": "../walmart-listing-integrity-next-pool/FaisalX-1181-text-repair-certification-20260727-v1.json",
+    "sha256": "dc0ac3ce9384ea288d91ef61b55df5ac510ba795b5b19837c883743f60bf6706"
   },
   "diagnosis": {
-    "path": "FaisalX-1183-live-diagnosis-20260725-v2.json",
-    "sha256": "419416f38dac390ab886ae5d3d347f5ab4dead21b52b5d6876d93f3671d53115"
+    "path": "../walmart-listing-integrity-next-pool/FaisalX-1181-diagnosis-20260727-v1.json",
+    "sha256": "4b2641abf3f4e2911ef1eee4a6ce51552b279a66b3c9333c6546f82ad645a6ee"
   },
   "buyer_snapshot": {
-    "path": "FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/manifest.json",
-    "sha256": "693b96532d5d6176b056827b3adc85e84f1ab5fca85c7ea5e2e364cb4b0f5cb6"
+    "path": "../walmart-listing-integrity-next-pool/FaisalX-1181-20260727T0005Z/buyer-snapshots/walmart-buyer-20260727T000104Z-fd8371e3af88/manifest.json",
+    "sha256": "9b49e2c2cbead49dca4a50cd268deb837fb8125b1ea4939f98a5f0ab05ce298c"
   },
   "buyer_pdp": {
-    "path": "FaisalX-1183-live-inspect-20260725-v3/buyer-pdp.json",
-    "sha256": "2f1478e4420a4e435558281bf4d234c6cfdb08e2296891bf54ce55293a118cab"
+    "path": "../walmart-listing-integrity-next-pool/FaisalX-1181-20260727T0005Z/buyer-pdp.json",
+    "sha256": "4c333a9b6ccb70dbfe1c461030318e04bc505c76e2e8d1357e24ef5487619398"
   },
   "donor_audit": {
-    "path": "../product-truth-source-readiness/faisalx-1183-20260723T014559Z-codex-v1/sku-donor-audit.json",
-    "sha256": "aa700138f3cd65acbf7bfeaba6ccb3bfd75d4208ed09005e89d6ffa86ad14152"
+    "path": "../product-truth-source-readiness/faisalx-1181-20260727T000104Z-codex-v1/sku-donor-audit.json",
+    "sha256": "a2d8066b231ed5e17db7534dc47ce10c7f557ff55f6c8ab2c9ca1da502c4eaa0"
   },
-  "approval_instruction": "Подтверждаю FaisalX-1183 и diff ce1b31e0…cb72b. Изменить только description и bullets."
+  "approval_instruction": "Подтверждаю FaisalX-1181 и diff 8e6e4e21…7dc48. Изменить только description и bullets."
 }

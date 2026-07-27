@@ -209,6 +209,45 @@ test("definite accepted POST is durable and permits only GET-only continuation",
   );
 });
 
+test("Walmart feed IDs containing @ survive ACCEPTED and terminal rereads", async (t) => {
+  const item = await fixture(t);
+  const request = await requesting(item);
+  const observedFeedId = "18C5F5E0D07A5E6BB8B1380E4B6C6018@AX8BBgA";
+  const acceptedReceipt = await recordWalmartListingRepairPermitAccepted({
+    ...ledgerOptions(item),
+    requesting: request,
+    accepted_at: ACCEPTED_AT,
+    apply_id: "apply-observed-feed-id",
+    feed_id: observedFeedId,
+    response_http_receipt_sha256: RESPONSE_HTTP_SHA,
+    response_payload_sha256: RESPONSE_SHA,
+  });
+  assert.equal(acceptedReceipt.feed_id, observedFeedId);
+  const loadedAccepted = await loadWalmartListingRepairPermitAccepted({
+    ...ledgerOptions(item),
+    permit_authorization_sha256: AUTHORIZATION_SHA,
+  });
+  assert.equal(loadedAccepted.receipt.feed_id, observedFeedId);
+  const terminal = await terminalizeWalmartListingRepairPermit({
+    ...ledgerOptions(item),
+    prior: loadedAccepted.receipt,
+    random_uuid: () => CONSUMPTION_UUID,
+    outcome: {
+      state: "SUCCEEDED",
+      terminal_at: TERMINAL_AT,
+      apply_id: "apply-observed-feed-id",
+      marketplace_write_calls: 1,
+      feed_id: observedFeedId,
+      response_http_receipt_sha256: RESPONSE_HTTP_SHA,
+      response_payload_sha256: RESPONSE_SHA,
+      feed_status_http_receipt_sha256: STATUS_HTTP_SHA,
+      feed_status_payload_sha256: STATUS_SHA,
+      error_code: null,
+    },
+  });
+  assert.equal(terminal.feed_id, observedFeedId);
+});
+
 test("SUCCEEDED requires ACCEPTED plus exact feed-status evidence and cumulative head", async (t) => {
   const item = await fixture(t);
   const acceptedReceipt = await accepted(item);

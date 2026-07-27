@@ -45,12 +45,12 @@ const KEYCHAIN_SERVICE = "com.ss-command-center.walmart-owner-control.v1";
 const ALLOWED_SIGNING_DOMAINS = Object.freeze([
   "WALMART_ITEM_V6_CATALOG_ACTIVATE",
   "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
-  "WALMART_MP_ITEM_SUBMIT",
+  "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
 ]);
-const REQUEST_SCHEMA = "walmart-new-sku-owner-permit/2.0.0";
-const ACTION = "WALMART_MP_ITEM_SUBMIT";
+const REQUEST_SCHEMA = "walmart-new-sku-owner-permit/3.0.0";
+const ACTION = "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT";
 const DOMAIN = Buffer.from(
-  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v2\0",
+  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v3\0",
   "utf8",
 );
 const SHA256 = /^[a-f0-9]{64}$/u;
@@ -77,6 +77,9 @@ const BODY_KEYS = Object.freeze([
   "permit_id",
   "pilot_slot",
   "seller_account_fingerprint_sha256",
+  "shipping_template_association_payload_sha256",
+  "shipping_template_fulfillment_center_id",
+  "shipping_template_id",
   "sku",
   "store_index",
   "upc",
@@ -88,6 +91,7 @@ const CLAIM_KEYS = Object.freeze([
   "purchase",
   "reprice",
   "schedule",
+  "shipping_template_map_submission_max",
 ]);
 
 export class WalmartNewSkuOwnerSignerError extends Error {
@@ -529,6 +533,7 @@ function parseSigningRequest(bytes, enrollment, now = new Date()) {
     "apply_preview_receipt_sha256",
     "certification_sha256",
     "payload_sha256",
+    "shipping_template_association_payload_sha256",
     "seller_account_fingerprint_sha256",
     "database_target_fingerprint_sha256",
   ];
@@ -546,6 +551,7 @@ function parseSigningRequest(bytes, enrollment, now = new Date()) {
     || body.store_index !== 1 || ![1, 2].includes(body.pilot_slot)
     || body.max_pilot_skus !== 2
     || claims.exact_one_sku !== true || claims.marketplace_submission_max !== 1
+    || claims.shipping_template_map_submission_max !== 1
     || claims.delist !== false || claims.reprice !== false || claims.purchase !== false
     || claims.schedule !== false
     || digestFields.some((field) => !SHA256.test(String(body[field])))
@@ -553,6 +559,8 @@ function parseSigningRequest(bytes, enrollment, now = new Date()) {
     || !IDENTIFIER.test(String(body.candidate_key))
     || !IDENTIFIER.test(String(body.channel_sku_id))
     || !IDENTIFIER.test(String(body.sku))
+    || !IDENTIFIER.test(String(body.shipping_template_id))
+    || !IDENTIFIER.test(String(body.shipping_template_fulfillment_center_id))
     || !/^\d{12,14}$/u.test(String(body.upc))
     || typeof body.approved_by !== "string" || !body.approved_by.trim()
     || !Number.isFinite(issuedAt) || !Number.isFinite(expiresAt)
@@ -591,11 +599,18 @@ function parseSigningRequest(bytes, enrollment, now = new Date()) {
       sku: body.sku,
       upc: body.upc,
       payload_sha256: body.payload_sha256,
+      shipping_template_id: body.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        body.shipping_template_fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        body.shipping_template_association_payload_sha256,
       seller_account_fingerprint_sha256: body.seller_account_fingerprint_sha256,
       engine_release_sha256: body.engine_release_sha256,
       issued_at: body.issued_at,
       expires_at: body.expires_at,
       marketplace_submission_max: claims.marketplace_submission_max,
+      shipping_template_map_submission_max:
+        claims.shipping_template_map_submission_max,
       delist: claims.delist,
       reprice: claims.reprice,
       purchase: claims.purchase,

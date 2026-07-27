@@ -1,0 +1,25 @@
+{
+  "schema_version": "walmart-listing-single-review-certification/v1",
+  "status": "OWNER_REVIEW_REQUIRED",
+  "listing_key": "walmart:1:FaisalX-1181",
+  "proposal_sha256": "8e6e4e21727396b74d3314566fec42a6e8628ac2ac1c8491a165bb8fe0a7dc48",
+  "diagnosis_sha256": "4b2641abf3f4e2911ef1eee4a6ce51552b279a66b3c9333c6546f82ad645a6ee",
+  "buyer_snapshot_sha256": "9b49e2c2cbead49dca4a50cd268deb837fb8125b1ea4939f98a5f0ab05ce298c",
+  "buyer_pdp_sha256": "4c333a9b6ccb70dbfe1c461030318e04bc505c76e2e8d1357e24ef5487619398",
+  "donor_audit_sha256": "a2d8066b231ed5e17db7534dc47ce10c7f557ff55f6c8ab2c9ca1da502c4eaa0",
+  "changed_fields": [
+    "description",
+    "bullets"
+  ],
+  "qualification_precheck": "PASS",
+  "exact_image_bytes_verified": true,
+  "marketplace_write_authorized": false,
+  "database_write_authorized": false,
+  "assurance": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "database_writes": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "a3542f39db55b3e1d1faa8240f2bb48663fefab7893df7da1a9fe60b1453be74"
+}

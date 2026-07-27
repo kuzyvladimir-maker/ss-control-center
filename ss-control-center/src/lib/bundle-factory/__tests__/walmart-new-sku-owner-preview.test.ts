@@ -70,6 +70,14 @@ test("owner preview emits two deterministic non-publishable Walmart projections"
   assert.equal(first.listing_previews.length, 2);
   assert.equal(first.listing_previews[0]!.price_cents, 3_313);
   assert.equal(first.listing_previews[1]!.price_cents, 4_036);
+  assert.deepEqual(first.listing_previews[0]!.shipping, {
+    selection_status: "FREE_SHIPPING_OWNER_PREVIEW",
+    customer_shipping_charge_cents: 0,
+    customer_total_cents: 3_313,
+    live_template_id: null,
+    live_template_binding_status: "REQUIRED_BEFORE_CERTIFICATION",
+  });
+  assert.equal(first.rules.current_previews_use_free_shipping, true);
   assert.match(first.listing_previews[0]!.title, /8\.8 oz \(Pack of 2\)$/);
   assert.equal(
     first.listing_previews[0]!.comparable

@@ -148,6 +148,9 @@ function lazyArtifactSink(input: {
     async loadAccepted(loadInput) {
       return (await custody()).loadAccepted(loadInput);
     },
+    async loadAcceptedPostFromRequesting(loadInput) {
+      return (await custody()).loadAcceptedPostFromRequesting(loadInput);
+    },
   };
   return Object.freeze(sink);
 }

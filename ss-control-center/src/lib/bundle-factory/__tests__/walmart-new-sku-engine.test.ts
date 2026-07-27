@@ -20,6 +20,7 @@ import {
 } from "@/lib/sourcing/canonical-product-match-provenance";
 
 import {
+  WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
   WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
   assertWalmartNewSkuEvidenceSealDraftBinding,
   assertWalmartNewSkuPlanIntegrity,
@@ -57,6 +58,8 @@ import type {
 } from "@/lib/sourcing/product-truth-read-contract";
 import type { ProductTruthNewSkuRecipeComponentEvidence } from "@/lib/sourcing/product-truth-read-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "@/lib/sourcing/product-truth-read-contract";
+import { buildWalmartSkuTemplateMapContract } from
+  "../walmart-shipping-template-association";
 
 function component(qty = 2): ProductTruthNewSkuRecipeComponentEvidence {
   return {
@@ -496,6 +499,11 @@ test("certification template is bound to the sealed plan, stage and exact image 
   assert.equal(template.wave_id, plan.wave_id);
   assert.equal(template.stage_sha256, stage.stage_sha256);
   assert.equal(template.shipping_in_price, null);
+  const templateShipping =
+    template.shipping_template as Record<string, unknown>;
+  assert.equal(templateShipping.store_index, 1);
+  assert.match(String(templateShipping.template_id), /^TODO_/);
+  assert.equal(templateShipping.item_quantity, 1);
   const templatePrepublication = template.prepublication as Record<string, unknown>;
   const templateAccount =
     templatePrepublication.seller_account_health as Record<string, unknown>;
@@ -644,8 +652,14 @@ test("certification template is bound to the sealed plan, stage and exact image 
     /EVIDENCE_SEAL_POLICY_ROW_BINDING_INVALID/,
   );
 
+  const shippingAssociation =
+    buildWalmartSkuTemplateMapContract({
+      sku: stage.proposed_sku,
+      shipping_template_id: "fixture-template-1",
+      fulfillment_center_id: "fixture-fc-1",
+    });
   const certification = sealWalmartNewSkuCertificationArtifact({
-    schema_version: "walmart-new-sku-certification/1.9.0",
+    schema_version: WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
     wave_id: plan.wave_id,
     plan_sha256: plan.plan_sha256,
     stage_sha256: stage.stage_sha256,
@@ -683,13 +697,23 @@ test("certification template is bound to the sealed plan, stage and exact image 
     fulfillment_compliance_evidence_ref:
       "walmart-fulfillment-compliance://fixture",
     fulfillment_compliance_verified_at: "2026-07-18T13:09:00.000Z",
+    shipping_template_id: "fixture-template-1",
+    shipping_template_sha256: "7".repeat(64),
+    shipping_template_evidence_ref:
+      "walmart-shipping-template://fixture",
+    shipping_template_fulfillment_center_id: "fixture-fc-1",
+    shipping_template_association_payload_sha256:
+      shippingAssociation.payload_sha256,
+    shipping_scenario_id: "STANDARD:0:0",
+    customer_shipping_charge_cents: 0,
+    customer_total_cents: 3_000,
     item_spec_schema_sha256: "5".repeat(64),
     source_evidence_sha256: "6".repeat(64),
     marketplace_mutation_allowed: false,
   });
   assert.equal(
     certification.schema_version,
-    "walmart-new-sku-certification/1.9.0",
+    WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
   );
   assert.deepEqual(
     certification.seller_catalog_authority,

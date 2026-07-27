@@ -38,6 +38,9 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
   const { hashWalmartPayload } = await import(
     "@/lib/bundle-factory/distribution/walmart-payload-hash"
   );
+  const { buildWalmartSkuTemplateMapContract } = await import(
+    "@/lib/bundle-factory/walmart-shipping-template-association"
+  );
   const {
     claimWalmartSubmission,
     recordWalmartSynchronousFailure,
@@ -221,13 +224,22 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
   };
   const payload = buildWalmartPayload(sku, buildOptions);
   const payloadHash = hashWalmartPayload(payload);
+  const shippingTemplateAssociation = {
+    sku: sku.sku,
+    shipping_template_id: "template-free-1",
+    fulfillment_center_id: "DEFAULT",
+  };
+  const shippingTemplateContract =
+    buildWalmartSkuTemplateMapContract(
+      shippingTemplateAssociation,
+    );
   const approvalSha256 = "2".repeat(64);
   const sellerFingerprint = "7".repeat(64);
   const permitRequest = buildWalmartOwnerPermitSigningRequest({
     key_id: "owner-one-shot-fixture-key",
     signed_body: {
       permit_id: "owner-permit://one-shot/sku-one-shot",
-      action: "WALMART_MP_ITEM_SUBMIT",
+      action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
       environment: "TEST_FIXTURE_ONLY",
       engine_release_sha256: "1".repeat(64),
       approval_sha256: approvalSha256,
@@ -239,6 +251,12 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
       sku: sku.sku,
       upc: sku.upc!,
       payload_sha256: payloadHash,
+      shipping_template_id:
+        shippingTemplateAssociation.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        shippingTemplateAssociation.fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        shippingTemplateContract.payload_sha256,
       store_index: 1,
       seller_account_fingerprint_sha256: sellerFingerprint,
       database_target_fingerprint_sha256: "8".repeat(64),
@@ -252,6 +270,7 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
       claims: {
         exact_one_sku: true,
         marketplace_submission_max: 1,
+        shipping_template_map_submission_max: 1,
         delist: false,
         reprice: false,
         purchase: false,
@@ -332,6 +351,7 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
       beforeFeedPost() {},
       ownerPermitAuthorization,
       lifecyclePostClaim: claim,
+      shippingTemplateAssociation,
       client,
     });
 
@@ -351,12 +371,13 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
 
   const first = await submit({ attemptId: "attempt-one-shot", claimToken });
   assert.equal(first.ok, true);
-  assert.equal(feedPosts, 1);
+  assert.equal(feedPosts, 2);
+  assert.equal(first.shipping_template_feed_id, "one-shot-feed");
 
   const replay = await submit({ attemptId: "attempt-one-shot", claimToken });
   assert.equal(replay.ok, false);
   assert.match(replay.error ?? "", /already consumed/i);
-  assert.equal(feedPosts, 1);
+  assert.equal(feedPosts, 2);
   const recorded = await recordWalmartSynchronousFailure({
     channelSkuId: sku.id,
     attemptId: "attempt-one-shot",
@@ -384,7 +405,7 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
   assert.equal(retry.claimed, false);
   assert.equal(retry.prior_state, "UNKNOWN");
   assert.match(retry.reason ?? "", /already has UNKNOWN attempt/i);
-  assert.equal(feedPosts, 1);
+  assert.equal(feedPosts, 2);
 
   const attempt = await db.execute(
     `SELECT state, request_count, active_key

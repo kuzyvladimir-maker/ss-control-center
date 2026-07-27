@@ -1,5 +1,5 @@
 {
-  "schema_version": "walmart-new-sku-owner-preview-gallery/1.1.0",
+  "schema_version": "walmart-new-sku-owner-preview-gallery/1.2.0",
   "generated_at": "2026-07-26T16:25:00.000Z",
   "channel": "WALMART_US",
   "source": {
@@ -15,6 +15,8 @@
     "referral_fee_bps": 1500,
     "comparable_is_informational_not_hard_reject": true,
     "walmart_pricing_rule_can_still_unpublish": true,
+    "current_previews_use_free_shipping": true,
+    "shipping_template_binding_required_before_certification": true,
     "marketplace_mutated": false,
     "database_mutated": false,
     "upc_reserved": false
@@ -41,6 +43,13 @@
       "source_description_preview": "Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.",
       "ingredients": "UNBLEACHED ENRICHED FLOUR (WHEAT FLOUR, NIACIN, REDUCED IRON, THIAMINE MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID), CANOLA OIL, PALM OIL, SUGAR, WHEY, LEAVENING (CALCIUM PHOSPHATE, BAKING SODA), CHEDDAR CHEESE POWDER (PASTEURIZED MILK, CHEESE CULTURES, SALT, ENZYMES), SALT, SODIUM PHOSPHATE, NATURAL FLAVOR, SOY LECITHIN, YEAST EXTRACT, CORNSTARCH, TURMERIC, ANNATTO EXTRACTS.",
       "price_cents": 3313,
+      "shipping": {
+        "selection_status": "FREE_SHIPPING_OWNER_PREVIEW",
+        "customer_shipping_charge_cents": 0,
+        "customer_total_cents": 3313,
+        "live_template_id": null,
+        "live_template_binding_status": "REQUIRED_BEFORE_CERTIFICATION"
+      },
       "economics": {
         "goods_cost_cents": 794,
         "packaging_cost_cents": 150,
@@ -49,6 +58,8 @@
         "referral_fee_cents": 497,
         "target_margin_bps": 3000,
         "item_price_cents": 3313,
+        "customer_shipping_charge_cents": 0,
+        "customer_total_cents": 3313,
         "contribution_profit_cents": 994,
         "contribution_margin_bps": 3000
       },
@@ -124,7 +135,7 @@
           "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
         ]
       },
-      "preview_sha256": "307148f65bd177b5aef3c5feb3bc4bdf9e7555014bd53d7fff770af5b6fe326c"
+      "preview_sha256": "2be086d02cb502d6e0ab61712d80577f499f3b1a6513b8ca63aceb8da7ce81aa"
     },
     {
       "preview_id": "wm-preview-3-753c7be4172d",
@@ -147,6 +158,13 @@
       "source_description_preview": "Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.",
       "ingredients": "UNBLEACHED ENRICHED FLOUR (WHEAT FLOUR, NIACIN, REDUCED IRON, THIAMINE MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID), CANOLA OIL, PALM OIL, SUGAR, WHEY, LEAVENING (CALCIUM PHOSPHATE, BAKING SODA), CHEDDAR CHEESE POWDER (PASTEURIZED MILK, CHEESE CULTURES, SALT, ENZYMES), SALT, SODIUM PHOSPHATE, NATURAL FLAVOR, SOY LECITHIN, YEAST EXTRACT, CORNSTARCH, TURMERIC, ANNATTO EXTRACTS.",
       "price_cents": 4036,
+      "shipping": {
+        "selection_status": "FREE_SHIPPING_OWNER_PREVIEW",
+        "customer_shipping_charge_cents": 0,
+        "customer_total_cents": 4036,
+        "live_template_id": null,
+        "live_template_binding_status": "REQUIRED_BEFORE_CERTIFICATION"
+      },
       "economics": {
         "goods_cost_cents": 1191,
         "packaging_cost_cents": 150,
@@ -155,6 +173,8 @@
         "referral_fee_cents": 606,
         "target_margin_bps": 3000,
         "item_price_cents": 4036,
+        "customer_shipping_charge_cents": 0,
+        "customer_total_cents": 4036,
         "contribution_profit_cents": 1211,
         "contribution_margin_bps": 3000
       },
@@ -230,8 +250,8 @@
           "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
         ]
       },
-      "preview_sha256": "4d2c79b8596cf883965fbe89e799f19a31ca58020b7c3dc4603f9d4a14724c40"
+      "preview_sha256": "d21c94603538bcd3a9f50e09c892c7d4779e45985e2ab55e054f8e2ac6bd1a45"
     }
   ],
-  "artifact_sha256": "3e0a406f6f7ae57377884cea149136df6ee551dfc30b1e2ebbfaac2fecd3d030"
+  "artifact_sha256": "f650c3d361fee269087f0553a645d9592a31d11d14f08e72ec9a896116386531"
 }

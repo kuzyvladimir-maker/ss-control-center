@@ -49,6 +49,20 @@ export default async function StudioBatchPage({
   const houseBrand = typeof req.house_brand === "string" ? req.house_brand : "—";
   const textModel = req.text_model === "opus" ? "Opus 4.8" : req.text_model === "sonnet" ? "Sonnet 4.6" : "—";
   const photos = req.photo_strategy === "generate" ? "Generated" : "Catalog photos";
+  const isCanonicalWalmart =
+    req.workflow === "CANONICAL_WALMART_NEW_SKU";
+  const walmartShipping =
+    req.walmart_shipping &&
+      typeof req.walmart_shipping === "object" &&
+      !Array.isArray(req.walmart_shipping)
+      ? req.walmart_shipping as Record<string, unknown>
+      : null;
+  const template =
+    walmartShipping?.template &&
+      typeof walmartShipping.template === "object" &&
+      !Array.isArray(walmartShipping.template)
+      ? walmartShipping.template as Record<string, unknown>
+      : null;
 
   return (
     <>
@@ -76,7 +90,48 @@ export default async function StudioBatchPage({
           </div>
         </div>
 
-        <BatchProgress batchId={job.id} />
+        {isCanonicalWalmart ? (
+          <div className="rounded-[14px] border border-rule bg-surface p-5">
+            <div className="text-[13.5px] font-semibold text-ink">
+              Walmart request is ready for the canonical engine
+            </div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
+              Nothing has been published. Claude Code can now execute the
+              sealed Walmart workflow; every step remains visible and stops
+              before live publication until the owner gate.
+            </p>
+            <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
+              <div>
+                Account:{" "}
+                <span className="font-medium text-ink">
+                  {String(walmartShipping?.account_name ?? "—")}
+                </span>
+              </div>
+              <div>
+                Shipping template:{" "}
+                <span className="font-medium text-ink">
+                  {String(template?.name ?? "—")}
+                </span>
+              </div>
+              <div>
+                Delivery charged to buyer:{" "}
+                <span className="font-medium text-ink">
+                  {template?.is_free_shipping === true
+                    ? "$0.00 (free shipping)"
+                    : "Calculated from the selected template"}
+                </span>
+              </div>
+              <div>
+                Target margin:{" "}
+                <span className="font-medium text-ink">
+                  {String(req.target_margin_pct ?? 30)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <BatchProgress batchId={job.id} />
+        )}
       </div>
     </>
   );

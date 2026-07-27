@@ -27,7 +27,7 @@ function fixture() {
   const now = new Date("2026-07-18T20:00:00.000Z");
   const body: WalmartOwnerPermitSignedBody = {
     permit_id: "owner-permit://fixture/one",
-    action: "WALMART_MP_ITEM_SUBMIT",
+    action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
     environment: "TEST_FIXTURE_ONLY",
     engine_release_sha256: "1".repeat(64),
     approval_sha256: "2".repeat(64),
@@ -39,6 +39,9 @@ function fixture() {
     sku: "PILOT-SKU-1",
     upc: "012345678905",
     payload_sha256: "6".repeat(64),
+    shipping_template_id: "template-free-1",
+    shipping_template_fulfillment_center_id: "FC-1",
+    shipping_template_association_payload_sha256: "9".repeat(64),
     store_index: 1,
     seller_account_fingerprint_sha256: "7".repeat(64),
     database_target_fingerprint_sha256: "8".repeat(64),
@@ -52,6 +55,7 @@ function fixture() {
     claims: {
       exact_one_sku: true,
       marketplace_submission_max: 1,
+      shipping_template_map_submission_max: 1,
       delist: false,
       reprice: false,
       purchase: false,
@@ -93,6 +97,11 @@ test("valid Ed25519 owner permit verifies with exact bindings", () => {
       sku: fx.body.sku,
       upc: fx.body.upc,
       payload_sha256: fx.body.payload_sha256,
+      shipping_template_id: fx.body.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        fx.body.shipping_template_fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        fx.body.shipping_template_association_payload_sha256,
       store_index: fx.body.store_index,
       seller_account_fingerprint_sha256:
         fx.body.seller_account_fingerprint_sha256,

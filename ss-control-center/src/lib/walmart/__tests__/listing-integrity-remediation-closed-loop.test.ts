@@ -2347,7 +2347,7 @@ async function completedClosedLoop(t: TestContext): Promise<ClosedLoopFixture> {
     new Date("2026-07-21T12:04:01.000Z"),
   );
   assert.equal(operatorStatus.status, "SUCCEEDED");
-  assert.equal(operatorStatus.next_command, "fresh-live-reread-and-qualification");
+  assert.equal(operatorStatus.next_command, "qualify");
   assert.equal(operatorReport.status, "SUCCEEDED");
   assert.equal((await stat(operatorStatusPath)).mode & 0o777, 0o400);
   assert.equal((await stat(operatorReportPath)).mode & 0o777, 0o400);

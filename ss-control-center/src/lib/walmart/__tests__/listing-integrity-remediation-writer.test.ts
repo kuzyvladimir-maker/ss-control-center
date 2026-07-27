@@ -8,6 +8,7 @@ import {
   executeWalmartListingRepairOneSkuForTest,
   inspectWalmartListingRepairWriterProductionReadiness,
   reconcileWalmartListingRepairRequestingNoNetworkForTest,
+  recoverWalmartListingRepairAcceptedPostForTest,
   resumeWalmartListingRepairFeedPollForTest,
   WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
   WALMART_LISTING_REPAIR_SURGICAL_REQUEST_MANIFEST_SCHEMA,
@@ -81,6 +82,7 @@ interface FixtureOptions {
   readyPositionDriftOnFinal?: boolean;
   imageCertificateDriftOnFinal?: boolean;
   underreportReturnedGet?: boolean;
+  recoveryClockAfterPost?: boolean;
   artifactStore?: Map<string, Uint8Array>;
   correlationNamespace?: string;
 }
@@ -94,7 +96,13 @@ function fixture(options: FixtureOptions = {}) {
   const terminal: WalmartListingRepairLedgerTerminalOutcome[] = [];
   let durableAccepted: WalmartListingRepairAcceptedReceipt | null = null;
   let clockIndex = 0;
-  const clocks = options.sequenceExpiredDuringAsyncGate
+  const clocks = options.recoveryClockAfterPost
+    ? [
+        new Date("2026-07-20T12:01:00.000Z"),
+        new Date("2026-07-20T12:01:01.000Z"),
+        new Date("2026-07-20T12:01:02.000Z"),
+      ]
+    : options.sequenceExpiredDuringAsyncGate
     ? [
         new Date("2026-07-20T12:00:03.000Z"),
         new Date("2026-07-20T12:00:04.000Z"),
@@ -542,6 +550,12 @@ function fixture(options: FixtureOptions = {}) {
         response_http_receipt_bytes: artifactStore.get("response-http.json")!,
         response_payload_bytes: artifactStore.get("response-payload.bin")!,
       }),
+      loadAcceptedPostFromRequesting: async () => ({
+        request_manifest_bytes: artifactStore.get("request-manifest.json")!,
+        request_payload_bytes: artifactStore.get("request-payload.json")!,
+        response_http_receipt_bytes: artifactStore.get("response-http.json")!,
+        response_payload_bytes: artifactStore.get("response-payload.bin")!,
+      }),
     },
     rebuild_sequence_ready_proof: async () => {
       readyCalls += 1;
@@ -636,7 +650,7 @@ function fixture(options: FixtureOptions = {}) {
   };
 }
 
-test("writer reaches REQUESTING before transport/OAuth, posts once, and qualifies exact feed success", async () => {
+test("writer preflights transport before REQUESTING, starts OAuth only after burn, and qualifies exact feed success", async () => {
   const f = fixture();
   const result = await executeWalmartListingRepairOneSkuForTest(
     f.writerInput,
@@ -649,8 +663,11 @@ test("writer reaches REQUESTING before transport/OAuth, posts once, and qualifie
   assert.equal(result.next_action, "QUALIFY_WITH_FRESH_LIVE_REREAD");
   assert.equal(result.transport_counts?.maintenance_post_calls, 1);
   assert.equal(result.transport_counts?.feed_status_get_calls, 1);
-  assert.ok(f.events.indexOf("REQUESTING") < f.events.indexOf("OPEN_TRANSPORT"));
+  assert.ok(f.events.indexOf("OPEN_TRANSPORT") < f.events.indexOf("PERSIST:PREPARED_REQUEST"));
+  assert.ok(f.events.indexOf("OPEN_TRANSPORT") < f.events.indexOf("REQUESTING"));
   assert.ok(f.events.indexOf("OPEN_TRANSPORT") < f.events.indexOf("POST"));
+  assert.ok(f.events.indexOf("REQUESTING") < f.events.indexOf("POST"));
+  assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 1);
   assert.ok(f.events.indexOf("PERSIST:POST_RESPONSE") < f.events.indexOf("ACCEPTED"));
   assert.ok(f.events.indexOf("ACCEPTED") < f.events.indexOf("GET"));
   assert.equal(f.events.filter((row) => row === "POST").length, 1);
@@ -734,7 +751,33 @@ test("GET-only continuation loads durable ACCEPTED custody and cannot call POST"
   assert.equal(new Set(afterResumeNames).size, afterResumeNames.length);
 });
 
-test("account drift fails after REQUESTING and before OAuth/POST", async () => {
+test("durable accepted POST recovery records ACCEPTED and performs GET only", async () => {
+  const first = fixture({ feed: "PENDING" });
+  const pending = await executeWalmartListingRepairOneSkuForTest(
+    first.writerInput,
+    first.dependencies,
+    first.runtime,
+  );
+  assert.equal(pending.status, "APPLIED_PROPAGATING");
+
+  const recovery = fixture({
+    feed: "SUCCESS",
+    artifactStore: first.artifactStore,
+    correlationNamespace: "accepted-post-recovery",
+    recoveryClockAfterPost: true,
+  });
+  const result = await recoverWalmartListingRepairAcceptedPostForTest({
+    writer_input: recovery.writerInput,
+  }, recovery.dependencies, recovery.runtime);
+  assert.equal(result.status, "SUCCEEDED");
+  assert.equal(result.feed_id, "feed-repair-1");
+  assert.equal(recovery.events.filter((row) => row === "POST").length, 0);
+  assert.equal(recovery.events.filter((row) => row === "GET").length, 1);
+  assert.ok(recovery.events.indexOf("LOAD_REQUESTING") < recovery.events.indexOf("ACCEPTED"));
+  assert.ok(recovery.events.indexOf("ACCEPTED") < recovery.events.indexOf("GET"));
+});
+
+test("account drift fails before artifact persistence, permit burn, OAuth, or POST", async () => {
   const f = fixture({ accountMismatch: true });
   const result = await executeWalmartListingRepairOneSkuForTest(
     f.writerInput,
@@ -743,8 +786,32 @@ test("account drift fails after REQUESTING and before OAuth/POST", async () => {
   );
   assert.equal(result.status, "FAILED");
   assert.equal(result.reason_code, "ACCOUNT_BINDING_MISMATCH");
+  assert.equal(f.events.filter((row) => row === "PERSIST:PREPARED_REQUEST").length, 0);
+  assert.equal(f.events.filter((row) => row === "REQUESTING").length, 0);
   assert.equal(f.events.filter((row) => row === "POST").length, 0);
-  assert.deepEqual(f.terminal.map((row) => row.state), ["FAILED"]);
+  assert.deepEqual(f.terminal, []);
+});
+
+test("missing Walmart credentials are reported exactly without consuming the permit", async () => {
+  const f = fixture();
+  f.dependencies.open_transport = () => {
+    f.events.push("OPEN_TRANSPORT");
+    throw Object.assign(new Error("credential scope is incomplete"), {
+      code: "MISSING_WALMART_CREDENTIALS",
+    });
+  };
+  const result = await executeWalmartListingRepairOneSkuForTest(
+    f.writerInput,
+    f.dependencies,
+    f.runtime,
+  );
+  assert.equal(result.status, "FAILED");
+  assert.equal(result.reason_code, "MISSING_WALMART_CREDENTIALS");
+  assert.equal(result.marketplace_write_calls, 0);
+  assert.equal(f.events.filter((row) => row === "PERSIST:PREPARED_REQUEST").length, 0);
+  assert.equal(f.events.filter((row) => row === "REQUESTING").length, 0);
+  assert.equal(f.events.filter((row) => row === "POST").length, 0);
+  assert.deepEqual(f.terminal, []);
 });
 
 test("permit expiry is rechecked after REQUESTING and immediately before send", async () => {
@@ -800,7 +867,7 @@ test("target image certificate drift after permit burn blocks POST", async () =>
     f.events.filter((row) => row.startsWith("IMAGE_CERTIFICATE:")),
     ["IMAGE_CERTIFICATE:1", "IMAGE_CERTIFICATE:2"],
   );
-  assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 0);
+  assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 1);
   assert.equal(f.events.filter((row) => row === "POST").length, 0);
   assert.deepEqual(f.terminal.map((row) => row.state), ["FAILED"]);
 });
@@ -870,7 +937,7 @@ test("READY or Product Truth drift during deferred final certificate verificatio
       assert.equal(productTruthCalls, 2);
       assert.ok(f.events.indexOf("IMAGE_CERTIFICATE:2") < f.events.indexOf("READY:2"));
       assert.ok(f.events.indexOf("IMAGE_CERTIFICATE:2") < f.events.indexOf("PRODUCT_TRUTH:2"));
-      assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 0);
+      assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 1);
       assert.equal(f.events.filter((row) => row === "POST").length, 0);
       assert.deepEqual(f.terminal.map((row) => row.state), ["FAILED"]);
     });
@@ -917,9 +984,11 @@ test("production closure is pinned and malformed data cannot reach any executabl
   assert.deepEqual(inspectWalmartListingRepairWriterProductionReadiness(), {
     apply_writer_release_pinned: true,
     apply_engine_release_sha256:
-      "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d",
+      "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0",
     fixed_dependency_factory_ready: true,
     native_one_shot_transport_ready: true,
+    accepted_post_recovery_source_release_sha256:
+      "bd0f903ecbf8b3cc6ee570904516de31975b3c79c2ccc15c0b7e741f34f24100",
     caller_dependency_injection_allowed: false,
   });
   await assert.rejects(

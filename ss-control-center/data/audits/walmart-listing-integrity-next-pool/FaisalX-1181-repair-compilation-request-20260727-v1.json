@@ -1,0 +1,188 @@
+{
+  "schema_version": "walmart-listing-single-repair-compilation-request/v1",
+  "created_at": "2026-07-27T00:06:10.359Z",
+  "status": "READY_FOR_CONNECTED_MATERIALS",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1181",
+    "listing_key": "walmart:1:FaisalX-1181",
+    "item_id": "8389917875",
+    "seller_upc": "684611898913",
+    "captured_at": "2026-07-27T00:01:04.706Z",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE",
+    "composition": "same_product"
+  },
+  "frozen_review": {
+    "proposal_file_sha256": "8e6e4e21727396b74d3314566fec42a6e8628ac2ac1c8491a165bb8fe0a7dc48",
+    "proposal_body_sha256": "1f1d7c281cb8b85f13631531c15e7725b38c063a781d8cb2b21bcb81c5fed117",
+    "certification_file_sha256": "dc0ac3ce9384ea288d91ef61b55df5ac510ba795b5b19837c883743f60bf6706",
+    "certification_body_sha256": "a3542f39db55b3e1d1faa8240f2bb48663fefab7893df7da1a9fe60b1453be74",
+    "diagnosis_file_sha256": "4b2641abf3f4e2911ef1eee4a6ce51552b279a66b3c9333c6546f82ad645a6ee",
+    "buyer_snapshot_file_sha256": "9b49e2c2cbead49dca4a50cd268deb837fb8125b1ea4939f98a5f0ab05ce298c",
+    "buyer_pdp_file_sha256": "4c333a9b6ccb70dbfe1c461030318e04bc505c76e2e8d1357e24ef5487619398",
+    "donor_audit_file_sha256": "a2d8066b231ed5e17db7534dc47ce10c7f557ff55f6c8ab2c9ca1da502c4eaa0"
+  },
+  "product_truth_candidate": {
+    "candidate_sha256": "f80c345ef527a5d185a8bc10e979fb008e63d3a1be2fa710a22ca83fa54fe355",
+    "expected_sha256": "adc922332ddc475719911700cb4f56c780b89c8b7dbfb7fc95ffb01e8338cc52",
+    "donor_product_id": "e8f7a13f-d6ae-4b04-badb-d62dd3d22ba6",
+    "single_unit_upc": "014100050162",
+    "outer_units": 2
+  },
+  "repair": {
+    "baseline_surface": {
+      "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+      "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic butter hot dog buns. Our Top Sliced butter hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns. Shelf-stable product.",
+      "bullets": [
+        "QUALITY INGREDIENTS: Made with real butter; no high-fructose corn syrup",
+        "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+        "PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm hamburger buns are carefully crafted with quality ingredients"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "review.brand",
+          "kind": "brand",
+          "text": "Pepperidge Farm"
+        },
+        {
+          "field_path": "review.product",
+          "kind": "product",
+          "text": "Bakery Classics Top Sliced Butter Hot Dog Buns"
+        },
+        {
+          "field_path": "review.variant",
+          "kind": "variant",
+          "text": "Butter, Top Sliced"
+        },
+        {
+          "field_path": "review.outer_units",
+          "kind": "outer_units",
+          "value": 2,
+          "unit": "count"
+        },
+        {
+          "field_path": "review.package_facts.0",
+          "kind": "net_content",
+          "value": 14,
+          "unit": "oz"
+        },
+        {
+          "field_path": "review.package_facts.1",
+          "kind": "inner_item_count",
+          "value": 8,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": []
+    },
+    "target_surface": {
+      "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+      "description": "PACK OF 2: This listing includes two 14 oz bags of Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns. Each bag contains 8 buns, for 16 buns total. Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic butter hot dog buns. Our Top Sliced butter hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with these delicious Pepperidge Farm hot dog buns. Shelf-stable product.",
+      "bullets": [
+        "QUALITY INGREDIENTS: Made with real butter; no high-fructose corn syrup",
+        "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+        "PACK OF 2: Includes 2 bags of Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns; each 14 oz bag contains 8 buns"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "review.brand",
+          "kind": "brand",
+          "text": "Pepperidge Farm"
+        },
+        {
+          "field_path": "review.product",
+          "kind": "product",
+          "text": "Bakery Classics Top Sliced Butter Hot Dog Buns"
+        },
+        {
+          "field_path": "review.variant",
+          "kind": "variant",
+          "text": "Butter, Top Sliced"
+        },
+        {
+          "field_path": "review.outer_units",
+          "kind": "outer_units",
+          "value": 2,
+          "unit": "count"
+        },
+        {
+          "field_path": "review.package_facts.0",
+          "kind": "net_content",
+          "value": 14,
+          "unit": "oz"
+        },
+        {
+          "field_path": "review.package_facts.1",
+          "kind": "inner_item_count",
+          "value": 8,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": []
+    },
+    "baseline_images": [
+      {
+        "slot": "main",
+        "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-2_f92848b1-1be3-4446-ac88-882af6266000.2cc7895d0cbd232ee1b0a2d123e6e034.png",
+        "sha256": "42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41"
+      },
+      {
+        "slot": "gallery-1",
+        "source_url": "https://i5.walmartimages.com/asr/6141a75b-b058-4c54-8ced-9b40610023f4.9722f02f31301c22b0a8acba419dcb1d.jpeg",
+        "sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88"
+      },
+      {
+        "slot": "gallery-2",
+        "source_url": "https://i5.walmartimages.com/asr/a5e9bfe7-7a52-479a-9dce-e8f85cdfa863.92bf704f4fc6dc8f2a2cb00bda67d192.jpeg",
+        "sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd"
+      }
+    ],
+    "target_images": [
+      {
+        "slot": "main",
+        "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-2_f92848b1-1be3-4446-ac88-882af6266000.2cc7895d0cbd232ee1b0a2d123e6e034.png",
+        "sha256": "42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41"
+      },
+      {
+        "slot": "gallery-1",
+        "source_url": "https://i5.walmartimages.com/asr/6141a75b-b058-4c54-8ced-9b40610023f4.9722f02f31301c22b0a8acba419dcb1d.jpeg",
+        "sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88"
+      },
+      {
+        "slot": "gallery-2",
+        "source_url": "https://i5.walmartimages.com/asr/a5e9bfe7-7a52-479a-9dce-e8f85cdfa863.92bf704f4fc6dc8f2a2cb00bda67d192.jpeg",
+        "sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd"
+      }
+    ],
+    "changed_fields": [
+      "description",
+      "bullets"
+    ],
+    "unchanged_image_bytes": true
+  },
+  "owner_gate": {
+    "exact_confirmation": "Подтверждаю FaisalX-1181 и diff 8e6e4e21…7dc48. Изменить только description и bullets.",
+    "confirms_only_reviewed_diff": true,
+    "confirmation_would_authorize_product_truth_activation": true,
+    "confirmation_would_authorize_one_sku_package_compilation": true,
+    "current_walmart_write_authorized": false,
+    "current_mass_run_authorized": false
+  },
+  "next_required_inputs": [
+    "ACTIVE_SHARED_PRODUCT_TRUTH_BINDING",
+    "FRESH_WALMART_MP_MAINTENANCE_SPEC",
+    "FRESH_WALMART_LIVE_ITEM_RECEIPT",
+    "FRESH_ONE_SKU_OWNER_PERMIT"
+  ],
+  "assurance": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "b09fb637126b4a67582193e3d56ed32140c19281fd5ae9d24497af9045afeabb"
+}

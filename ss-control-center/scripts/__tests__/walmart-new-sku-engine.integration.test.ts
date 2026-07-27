@@ -28,7 +28,9 @@ import type {
   "@/lib/bundle-factory/walmart-new-sku-engine";
 import {
   assertWalmartNewSkuCertificationInput,
+  WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
   WALMART_NEW_SKU_PLAN_SCHEMA,
+  WALMART_NEW_SKU_VERIFY_RECEIPT_SCHEMA,
   sealWalmartNewSkuVerifyReceipt,
 } from "@/lib/bundle-factory/walmart-new-sku-engine";
 import {
@@ -1322,6 +1324,30 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     fulfillment_center_id: "FIXTURE_FC_1",
     fulfillment_lag_time: 1,
   };
+  certification.shipping_template = {
+    store_index: 1,
+    template_id: "fixture-free-shipping-template-1",
+    template_name: "Fixture Free Shipping",
+    template_status: "ACTIVE",
+    rate_model_type: "PER_SHIPMENT_PRICING",
+    template_sha256: "8".repeat(64),
+    fetched_at: evidenceAt,
+    modified_at: evidenceAt,
+    is_free_shipping: true,
+    item_quantity: 1,
+    scenarios: [{
+      scenario_id: "STANDARD:48_STATE:STREET",
+      ship_method: "STANDARD",
+      transit_time_days: 5,
+      address_types: ["STREET"],
+      region_codes: ["C"],
+      region_names: ["48 State"],
+      state_codes: ["FL"],
+      customer_shipping_charge_cents: 0,
+      currency: "USD",
+    }],
+    evidence_ref: "fixture-evidence://shipping-template/free-v1",
+  };
   certification.prepublication = {
     seller_account_health: {
       status: "HEALTHY_AND_ACCEPTING_NEW_ITEMS",
@@ -1359,6 +1385,11 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       policy_source_id: "pricing-rules",
       basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
       proposed_item_price_cents: 3000,
+      shipping_template_id:
+        certification.shipping_template.template_id,
+      shipping_template_sha256:
+        certification.shipping_template.template_sha256,
+      shipping_scenario_id: "STANDARD:48_STATE:STREET",
       customer_shipping_charge_cents: 0,
       proposed_customer_total_cents: 3000,
       comparable: {
@@ -1382,6 +1413,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       target_margin_bps: 3_000,
       contribution_profit_cents: 952,
       contribution_margin_bps: 3_173,
+      worst_case_contribution_margin_bps: 3_173,
       reviewed_at: evidenceAt,
       reviewer: "fixture-human-pricing-reviewer",
       evidence_ref: "fixture-evidence://pricing/current-comparable-v1",
@@ -1435,6 +1467,10 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     [
       "fixture-evidence://pricing/current-comparable-v1",
       "PRICE_COMPETITIVENESS",
+    ],
+    [
+      "fixture-evidence://shipping-template/free-v1",
+      "SHIPPING_TEMPLATE",
     ],
     ["fixture-evidence://recall-check/current-v1", "RECALL_CHECK"],
     ["fixture-evidence://brand-rights/example-brand-v1", "BRAND_RIGHTS"],
@@ -1646,6 +1682,60 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     plan: plan as never,
     stage: stage as never,
   }));
+  const paidShipping = structuredClone(sealedCertification);
+  paidShipping.price_cents = 1801;
+  paidShipping.shipping_template.template_id =
+    "fixture-paid-shipping-template-1";
+  paidShipping.shipping_template.template_name =
+    "Fixture $11.99 Shipping";
+  paidShipping.shipping_template.template_sha256 = "9".repeat(64);
+  paidShipping.shipping_template.is_free_shipping = false;
+  paidShipping.shipping_template.scenarios[0]!
+    .customer_shipping_charge_cents = 1199;
+  paidShipping.prepublication.pricing_competitiveness
+    .proposed_item_price_cents = 1801;
+  paidShipping.prepublication.pricing_competitiveness
+    .shipping_template_id = paidShipping.shipping_template.template_id;
+  paidShipping.prepublication.pricing_competitiveness
+    .shipping_template_sha256 =
+      paidShipping.shipping_template.template_sha256;
+  paidShipping.prepublication.pricing_competitiveness
+    .customer_shipping_charge_cents = 1199;
+  paidShipping.prepublication.pricing_competitiveness
+    .proposed_customer_total_cents = 3000;
+  assert.doesNotThrow(() => assertWalmartNewSkuCertificationInput({
+    certification: paidShipping,
+    plan: plan as never,
+    stage: stage as never,
+  }));
+  assert.equal(
+    paidShipping.price_cents +
+      paidShipping.prepublication.pricing_competitiveness
+        .customer_shipping_charge_cents,
+    3000,
+  );
+  const mismatchedShippingTemplate = structuredClone(sealedCertification);
+  mismatchedShippingTemplate.shipping_template.template_id =
+    "tampered-template-id";
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: mismatchedShippingTemplate,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
+  );
+  const mismatchedShippingCharge = structuredClone(sealedCertification);
+  mismatchedShippingCharge.shipping_template.scenarios[0]!
+    .customer_shipping_charge_cents = 1199;
+  assert.throws(
+    () => assertWalmartNewSkuCertificationInput({
+      certification: mismatchedShippingCharge,
+      plan: plan as never,
+      stage: stage as never,
+    }),
+    /SHIPPING_TEMPLATE_BINDING_INVALID|PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
+  );
   const missingPricing = structuredClone(sealedCertification);
   delete (missingPricing.prepublication as Partial<
     typeof missingPricing.prepublication
@@ -1944,13 +2034,13 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuCertificationArtifact;
   assert.equal(
     certificationArtifact.schema_version,
-    "walmart-new-sku-certification/1.9.0",
+    WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
   );
   const buyerAttemptId = "fixture-buyer-seal-attempt";
   const buyerItemId = "123456789";
   const buyerCapturedAt = new Date().toISOString();
   const buyerSealVerifyReceipt = sealWalmartNewSkuVerifyReceipt({
-    schema_version: "walmart-new-sku-verify-receipt/1.1.0",
+    schema_version: WALMART_NEW_SKU_VERIFY_RECEIPT_SCHEMA,
     certification_sha256: certificationArtifact.certification_sha256,
     channel_sku_id: certificationArtifact.channel_sku_id,
     sku: certificationArtifact.sku,
@@ -1987,6 +2077,32 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       evidence_id: null,
       evidence_hash: null,
       captured_at: null,
+    },
+    shipping_template_association: {
+      status: "VERIFIED",
+      checked_at: buyerCapturedAt,
+      expected: {
+        sku: certificationArtifact.sku,
+        shipping_template_id:
+          certificationArtifact.shipping_template_id,
+        fulfillment_center_id:
+          certificationArtifact
+            .shipping_template_fulfillment_center_id,
+      },
+      match: {
+        sku: certificationArtifact.sku,
+        shipping_template_id:
+          certificationArtifact.shipping_template_id,
+        shipping_template_name: "Fixture Free Shipping",
+        shipping_template_type: "CUSTOM",
+        fulfillment_center_id:
+          certificationArtifact
+            .shipping_template_fulfillment_center_id,
+        fulfillment_center_name:
+          "Fixture fulfillment center",
+      },
+      correlation_id: "fixture-shipping-association-cid",
+      response_sha256: "a".repeat(64),
     },
   }, certificationArtifact);
   const {
@@ -2706,7 +2822,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as Record<string, unknown>;
   assert.equal(
     initialLiveReceipt.schema_version,
-    "walmart-new-sku-verify-receipt/1.1.0",
+    WALMART_NEW_SKU_VERIFY_RECEIPT_SCHEMA,
   );
   assert.equal(
     initialLiveReceipt.payload_sha256,
@@ -2974,18 +3090,35 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     trace.filter(
       (entry) => entry.method === "POST" && new URL(entry.url).pathname === "/v3/feeds",
     ).length,
-    1,
+    2,
   );
   t.diagnostic(
-    "frozen fake Walmart flow: exactly one feed POST; generated buyer worksheet sealed to BUYER_VERIFIED/LIVE; replays made no second POST",
+    "frozen fake Walmart flow: exactly one MP_ITEM plus one SKU_TEMPLATE_MAP POST; generated buyer worksheet sealed to BUYER_VERIFIED/LIVE; replays made no second POST",
   );
   const feedPayloadEvents = trace.filter(
     (entry) => (entry as { kind?: string }).kind === "feed-payload",
-  ) as unknown as Array<{ canonical_payload_sha256: string }>;
-  assert.equal(feedPayloadEvents.length, 1);
+  ) as unknown as Array<{
+    canonical_payload_sha256: string;
+    url: string;
+  }>;
+  assert.equal(feedPayloadEvents.length, 2);
+  const itemFeedEvent = feedPayloadEvents.find(
+    (entry) =>
+      new URL(entry.url).searchParams.get("feedType") === "MP_ITEM",
+  );
+  const shippingFeedEvent = feedPayloadEvents.find(
+    (entry) =>
+      new URL(entry.url).searchParams.get("feedType") ===
+        "SKU_TEMPLATE_MAP",
+  );
   assert.equal(
-    feedPayloadEvents[0].canonical_payload_sha256,
+    itemFeedEvent?.canonical_payload_sha256,
     certificationArtifact.payload_sha256,
+  );
+  assert.equal(
+    shippingFeedEvent?.canonical_payload_sha256,
+    certificationArtifact
+      .shipping_template_association_payload_sha256,
   );
   assert.ok(
     trace.every((entry) => [

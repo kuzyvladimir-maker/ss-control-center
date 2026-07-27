@@ -26,7 +26,8 @@ test("material capture performs only three exact non-retrying read attempts", as
   const exactItem = {
     ItemResponse: [{
       sku: "capture-pack-6",
-      itemId: "1234567890",
+      mart: "WALMART_US",
+      wpid: "157F37H8RG4R",
       productType: "Bakery",
       publishedStatus: "PUBLISHED",
       lifecycleStatus: "ACTIVE",

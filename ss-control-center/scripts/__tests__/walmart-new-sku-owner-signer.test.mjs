@@ -21,7 +21,7 @@ import {
 } from "../walmart-new-sku-owner-signer.mjs";
 
 const DOMAIN = Buffer.from(
-  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v2\0",
+  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v3\0",
   "utf8",
 );
 const FIXED_RANDOM = Buffer.from("0123456789abcdef0123456789abcdef", "utf8");
@@ -49,7 +49,7 @@ function signingRequest(enrollment, overrides = {}) {
   const issuedAt = "2026-07-23T03:00:00.000Z";
   const body = {
     permit_id: "owner-permit://walmart/pilot-1",
-    action: "WALMART_MP_ITEM_SUBMIT",
+    action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
     environment: "PRODUCTION",
     engine_release_sha256: "1".repeat(64),
     approval_sha256: "2".repeat(64),
@@ -61,6 +61,9 @@ function signingRequest(enrollment, overrides = {}) {
     sku: "WM-PILOT-RITZ-2PK",
     upc: "012345678905",
     payload_sha256: "6".repeat(64),
+    shipping_template_id: "template-free-1",
+    shipping_template_fulfillment_center_id: "FC-1",
+    shipping_template_association_payload_sha256: "9".repeat(64),
     store_index: 1,
     seller_account_fingerprint_sha256: "7".repeat(64),
     database_target_fingerprint_sha256: "8".repeat(64),
@@ -74,6 +77,7 @@ function signingRequest(enrollment, overrides = {}) {
     claims: {
       exact_one_sku: true,
       marketplace_submission_max: 1,
+      shipping_template_map_submission_max: 1,
       delist: false,
       reprice: false,
       purchase: false,
@@ -82,7 +86,7 @@ function signingRequest(enrollment, overrides = {}) {
     ...overrides,
   };
   const envelope = {
-    schema_version: "walmart-new-sku-owner-permit/2.0.0",
+    schema_version: "walmart-new-sku-owner-permit/3.0.0",
     algorithm: "Ed25519",
     key_id: enrollment.key_id,
     owner_public_key_spki_sha256: enrollment.public_key_spki_sha256,
@@ -156,7 +160,7 @@ test("init keeps an encrypted key outside the repository and discloses only enro
   assert.deepEqual(fx.enrollment.allowed_signing_domains, [
     "WALMART_ITEM_V6_CATALOG_ACTIVATE",
     "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
-    "WALMART_MP_ITEM_SUBMIT",
+    "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
   ]);
   assert.equal(fx.enrollment.public_key_spki_sha256, fx.init.public_key_spki_sha256);
   assert.equal(fx.init.network_calls, 0);
@@ -192,6 +196,10 @@ test("inspect shows exact one-SKU risk and sign emits one valid raw signature", 
   assert.equal(inspected.summary.sku, "WM-PILOT-RITZ-2PK");
   assert.equal(inspected.summary.upc, "012345678905");
   assert.equal(inspected.summary.marketplace_submission_max, 1);
+  assert.equal(
+    inspected.summary.shipping_template_map_submission_max,
+    1,
+  );
   assert.equal(inspected.summary.delist, false);
   assert.equal(inspected.summary.schedule, false);
 
@@ -228,6 +236,7 @@ test("modified scope, wrong request hash and repository custody fail closed", as
     claims: {
       exact_one_sku: true,
       marketplace_submission_max: 1,
+      shipping_template_map_submission_max: 1,
       delist: false,
       reprice: false,
       purchase: false,

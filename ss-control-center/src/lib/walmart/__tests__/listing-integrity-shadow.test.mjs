@@ -45,22 +45,22 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(data.engine.shadowTestsPassed, 8);
   assert.equal(data.engine.walmartWrites, 0);
   assert.equal(data.ownerRepairReview.status, "OWNER_REVIEW_REQUIRED");
-  assert.equal(data.ownerRepairReview.sku, "FaisalX-1183");
-  assert.equal(data.ownerRepairReview.itemId, "8419413379");
+  assert.equal(data.ownerRepairReview.sku, "FaisalX-1181");
+  assert.equal(data.ownerRepairReview.itemId, "8389917875");
   assert.deepEqual(data.ownerRepairReview.changedFields, ["description", "bullets"]);
-  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 6);
+  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 2);
   assert.equal(data.ownerRepairReview.productTruth.singleUnitInnerCount, 8);
-  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 48);
+  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 16);
   assert.equal(data.ownerRepairReview.current.images.length, 3);
   assert.match(data.ownerRepairReview.current.bullets[2], /hamburger buns/u);
-  assert.match(data.ownerRepairReview.proposed.bullets[2], /PACK OF 6/u);
+  assert.match(data.ownerRepairReview.proposed.bullets[2], /PACK OF 2/u);
   assert.equal(data.ownerRepairReview.qualificationPrecheck, "PASS");
   assert.equal(data.ownerRepairReview.exactImageBytesVerified, true);
   assert.equal(data.ownerRepairReview.walmartWriteAuthorized, false);
   assert.equal(data.ownerRepairReview.databaseWriteAuthorized, false);
   assert.equal(
     data.ownerRepairReview.reviewFileSha256,
-    "ce1b31e04b61d811684a3043287c4baf163c154466fd57f6a59de374cdecb72b",
+    "8e6e4e21727396b74d3314566fec42a6e8628ac2ac1c8491a165bb8fe0a7dc48",
   );
   assert.equal(data.productTruth.status, "BLOCKED_SKU_TRUTH_NOT_READY");
   assert.equal(data.productTruth.schemaReady, true);
@@ -102,7 +102,7 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(control.ownerVisualReview.proposedMainAcceptedAsSixPackages, true);
   assert.equal(control.ownerVisualReview.galleryAccepted, true);
   assert.equal(control.ownerVisualReview.walmartWriteAuthorized, false);
-  assert.match(data.gates.next, /Owner reviews FaisalX-1183/);
+  assert.match(data.gates.next, /Owner reviews FaisalX-1181/);
   assert.match(data.gates.next, /certified description\/bullets diff/);
   assert.deepEqual(control.changedFields, ["MAIN"]);
   assert.equal(control.currentImages.length, 3);

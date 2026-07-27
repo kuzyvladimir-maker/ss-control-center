@@ -3144,6 +3144,8 @@ async function runVerify(args: ParsedArgs): Promise<void> {
     buyer_evidence_recorded: result.buyer_evidence_recorded,
     poll_result: result.poll_result,
     buyer_evidence_status: result.buyer_evidence_status,
+    shipping_template_association:
+      result.shipping_template_association,
   }, certification);
   const outputPath = args.out
     ? resolve(args.out)
@@ -3190,8 +3192,20 @@ async function runVerify(args: ParsedArgs): Promise<void> {
       `${JSON.stringify(template, null, 2)}\n`,
     );
   }
+  const associationRetry =
+    !buyerEvidenceTemplate &&
+    result.submission_attempt_binding &&
+    result.shipping_template_association.status !== "VERIFIED"
+      ? [
+          "verify",
+          "--certification", resolve(args.certificationPath),
+          "--mode", "status",
+        ]
+      : null;
   process.stdout.write(`${JSON.stringify({
-    ok: result.listing_status === "LIVE",
+    ok:
+      result.listing_status === "LIVE" &&
+      result.shipping_template_association.status === "VERIFIED",
     command: "verify",
     marketplace_mutated: false,
     listing_status: result.listing_status,
@@ -3199,20 +3213,26 @@ async function runVerify(args: ParsedArgs): Promise<void> {
     poll_result: result.poll_result,
     buyer_evidence_status: result.buyer_evidence_status,
     buyer_evidence_template: buyerEvidenceTemplate,
+    shipping_template_association:
+      result.shipping_template_association,
     receipt_sha256: receipt.receipt_sha256,
     output: outputPath,
     disposition,
-    ...operatorNext(buyerEvidenceTemplate ? [
-      "verify",
-      "--certification", resolve(args.certificationPath),
-      "--verify-receipt", outputPath,
-      "--buyer-evidence", buyerEvidenceTemplate,
-      "--mode", "seal-evidence",
-      "--out", resolve(
-        dirname(buyerEvidenceTemplate),
-        `buyer-evidence-sealed-${certification.candidate_key}-${attemptId}-${receipt.receipt_sha256.slice(0, 12)}.json`,
-      ),
-    ] : null),
+    ...operatorNext(
+      buyerEvidenceTemplate
+        ? [
+            "verify",
+            "--certification", resolve(args.certificationPath),
+            "--verify-receipt", outputPath,
+            "--buyer-evidence", buyerEvidenceTemplate,
+            "--mode", "seal-evidence",
+            "--out", resolve(
+              dirname(buyerEvidenceTemplate),
+              `buyer-evidence-sealed-${certification.candidate_key}-${attemptId}-${receipt.receipt_sha256.slice(0, 12)}.json`,
+            ),
+          ]
+        : associationRetry,
+    ),
   }, null, 2)}\n`);
 }
 

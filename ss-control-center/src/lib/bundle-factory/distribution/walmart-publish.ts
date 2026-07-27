@@ -36,6 +36,11 @@ import {
   markWalmartSubmissionRequesting,
   type WalmartFeedPostLifecycleClaim,
 } from "./walmart-publish-lifecycle";
+import {
+  buildWalmartSkuTemplateMapContract,
+  type WalmartShippingAssociationExpectation,
+  type WalmartSkuTemplateMapContract,
+} from "../walmart-shipping-template-association";
 
 export interface WalmartPublishOwnerPermitAuthorization {
   signedPermit: WalmartOwnerPermit;
@@ -68,6 +73,10 @@ export interface WalmartPublishInput {
    * own: submitToWalmart atomically consumes the exact DB row immediately
    * before POST, and replay/forgery fails the CLAIMED -> REQUESTING CAS. */
   lifecyclePostClaim?: WalmartFeedPostLifecycleClaim;
+  /** Exact certified SKU -> shipping template -> fulfillment-center mapping.
+   * Live new-SKU submission requires it and sends one SKU_TEMPLATE_MAP feed
+   * after Walmart accepts the MP_ITEM feed. */
+  shippingTemplateAssociation?: WalmartShippingAssociationExpectation;
 }
 
 export interface WalmartPublishIssue {
@@ -79,8 +88,11 @@ export interface WalmartPublishIssue {
 export interface WalmartPublishResult {
   ok: boolean;
   feed_id: string | null;
+  shipping_template_feed_id: string | null;
   walmart_status: string | null;
+  shipping_template_status: string | null;
   payload: Record<string, unknown>;
+  shipping_template_payload: WalmartSkuTemplateMapContract["payload"] | null;
   issues: WalmartPublishIssue[];
   error?: string;
   dry_run: boolean;
@@ -309,6 +321,11 @@ export function buildWalmartMultipartBody(
 
 function baseFailure(args: {
   payload?: Record<string, unknown>;
+  feedId?: string | null;
+  walmartStatus?: string | null;
+  shippingTemplateContract?: WalmartSkuTemplateMapContract | null;
+  shippingTemplateFeedId?: string | null;
+  shippingTemplateStatus?: string | null;
   issues?: WalmartPublishIssue[];
   error: string;
   dryRun: boolean;
@@ -317,9 +334,15 @@ function baseFailure(args: {
 }): WalmartPublishResult {
   return {
     ok: false,
-    feed_id: null,
-    walmart_status: null,
+    feed_id: args.feedId ?? null,
+    shipping_template_feed_id:
+      args.shippingTemplateFeedId ?? null,
+    walmart_status: args.walmartStatus ?? null,
+    shipping_template_status:
+      args.shippingTemplateStatus ?? null,
     payload: args.payload ?? {},
+    shipping_template_payload:
+      args.shippingTemplateContract?.payload ?? null,
     issues: args.issues ?? [],
     error: args.error,
     dry_run: args.dryRun,
@@ -334,6 +357,8 @@ export async function submitToWalmart(
   const dryRun = input.dryRun === true;
   let contract: WalmartPublicListingContract;
   let payload: Record<string, unknown>;
+  let shippingTemplateContract: WalmartSkuTemplateMapContract | null =
+    null;
   try {
     contract = parseWalmartPublicItemContract(
       input.sku.attributes,
@@ -345,6 +370,20 @@ export async function submitToWalmart(
       physicalPackageSpecs: input.physicalPackageSpecs,
       walmart: contract,
     });
+    if (input.shippingTemplateAssociation) {
+      if (
+        input.shippingTemplateAssociation.sku !== input.sku.sku ||
+        input.shippingTemplateAssociation.fulfillment_center_id !==
+          contract.offer_handoff.fulfillment_center_id
+      ) {
+        throw new Error(
+          "Shipping-template association differs from the exact SKU or offer fulfillment center",
+        );
+      }
+      shippingTemplateContract = buildWalmartSkuTemplateMapContract(
+        input.shippingTemplateAssociation,
+      );
+    }
   } catch (error) {
     const issues = error instanceof WalmartItemContractError
       ? error.issues.map((message) => ({
@@ -364,8 +403,14 @@ export async function submitToWalmart(
     return {
       ok: true,
       feed_id: null,
+      shipping_template_feed_id: null,
       walmart_status: "DRY_RUN_LOCAL_ONLY",
+      shipping_template_status: shippingTemplateContract
+        ? "DRY_RUN_LOCAL_ONLY"
+        : null,
       payload,
+      shipping_template_payload:
+        shippingTemplateContract?.payload ?? null,
       issues: [],
       dry_run: true,
       offer_handoff: contract.offer_handoff,
@@ -377,7 +422,8 @@ export async function submitToWalmart(
     !dryRun &&
     (typeof input.beforeFeedPost !== "function"
       || !input.ownerPermitAuthorization
-      || !input.lifecyclePostClaim)
+      || !input.lifecyclePostClaim
+      || !shippingTemplateContract)
   ) {
     return baseFailure({
       payload,
@@ -385,11 +431,11 @@ export async function submitToWalmart(
         {
           code: "WALMART_MUTATION_FENCE_MISSING",
           message:
-            "Real Walmart submission requires a mutation-adjacent fence, signed external owner permit, and durable one-shot lifecycle claim",
+            "Real Walmart submission requires a mutation-adjacent fence, signed external owner permit, durable one-shot lifecycle claim, and exact shipping-template association",
         },
       ],
       error:
-        "Real Walmart submission requires beforeFeedPost, signed owner authorization, and lifecyclePostClaim",
+        "Real Walmart submission requires beforeFeedPost, signed owner authorization, lifecyclePostClaim, and shippingTemplateAssociation",
       dryRun: false,
       contract,
     });
@@ -429,8 +475,14 @@ export async function submitToWalmart(
     return {
       ok: true,
       feed_id: null,
+      shipping_template_feed_id: null,
       walmart_status: "DRY_RUN_SPEC_VALIDATED",
+      shipping_template_status: shippingTemplateContract
+        ? "DRY_RUN_SPEC_VALIDATED"
+        : null,
       payload,
+      shipping_template_payload:
+        shippingTemplateContract?.payload ?? null,
       issues: [],
       dry_run: true,
       offer_handoff: contract.offer_handoff,
@@ -456,6 +508,12 @@ export async function submitToWalmart(
       body.upc !== input.sku.upc ||
       body.store_index !== input.storeIndex ||
       body.payload_sha256 !== hashWalmartPayload(payload)
+      || body.shipping_template_id !==
+        input.shippingTemplateAssociation!.shipping_template_id
+      || body.shipping_template_fulfillment_center_id !==
+        input.shippingTemplateAssociation!.fulfillment_center_id
+      || body.shipping_template_association_payload_sha256 !==
+        shippingTemplateContract!.payload_sha256
     ) {
       throw new Error("Signed owner permit differs from current Walmart POST");
     }
@@ -498,11 +556,45 @@ export async function submitToWalmart(
         schemaValidation,
       });
     }
+    const shippingResponse = await client.requestRaw(
+      "POST",
+      "/feeds",
+      {
+        params: { feedType: "SKU_TEMPLATE_MAP" },
+        file: shippingTemplateContract!.file,
+      },
+    );
+    const shippingBody =
+      shippingResponse.body &&
+        typeof shippingResponse.body === "object"
+        ? shippingResponse.body as {
+            feedId?: string;
+            status?: string;
+          }
+        : null;
+    const shippingFeedId = shippingBody?.feedId ?? null;
+    if (!shippingResponse.ok || !shippingFeedId) {
+      return baseFailure({
+        payload,
+        feedId,
+        walmartStatus: body?.status ?? "RECEIVED",
+        shippingTemplateContract,
+        error:
+          `Walmart SKU_TEMPLATE_MAP multipart feed returned HTTP ${shippingResponse.status} without a feedId`,
+        dryRun: false,
+        contract,
+        schemaValidation,
+      });
+    }
     return {
       ok: true,
       feed_id: feedId,
+      shipping_template_feed_id: shippingFeedId,
       walmart_status: body?.status ?? "RECEIVED",
+      shipping_template_status:
+        shippingBody?.status ?? "RECEIVED",
       payload,
+      shipping_template_payload: shippingTemplateContract!.payload,
       issues: [],
       dry_run: false,
       offer_handoff: contract.offer_handoff,

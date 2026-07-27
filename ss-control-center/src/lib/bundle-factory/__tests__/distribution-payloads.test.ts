@@ -39,6 +39,8 @@ import {
 } from "@/lib/bundle-factory/walmart-owner-permit";
 import { hashWalmartPayload } from
   "@/lib/bundle-factory/distribution/walmart-payload-hash";
+import { buildWalmartSkuTemplateMapContract } from
+  "@/lib/bundle-factory/walmart-shipping-template-association";
 
 const OWNER_KEYS = generateKeyPairSync("ed25519");
 const OWNER_PUBLIC_DER = OWNER_KEYS.publicKey.export({
@@ -515,11 +517,14 @@ function ownerAuthorization(sku: ChannelSKU) {
   const now = new Date();
   const approvalSha256 = "2".repeat(64);
   const sellerFingerprint = "7".repeat(64);
+  const association = shippingAssociation(sku);
+  const associationContract =
+    buildWalmartSkuTemplateMapContract(association);
   const request = buildWalmartOwnerPermitSigningRequest({
     key_id: "owner-payload-fixture-key",
     signed_body: {
       permit_id: `owner-permit://payload-test/${sku.id}`,
-      action: "WALMART_MP_ITEM_SUBMIT",
+      action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
       environment: "TEST_FIXTURE_ONLY",
       engine_release_sha256: "1".repeat(64),
       approval_sha256: approvalSha256,
@@ -533,6 +538,11 @@ function ownerAuthorization(sku: ChannelSKU) {
       payload_sha256: hashWalmartPayload(
         buildWalmartPayload(sku, WALMART_BUILD_OPTIONS),
       ),
+      shipping_template_id: association.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        association.fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        associationContract.payload_sha256,
       store_index: 1,
       seller_account_fingerprint_sha256: sellerFingerprint,
       database_target_fingerprint_sha256: "8".repeat(64),
@@ -546,6 +556,7 @@ function ownerAuthorization(sku: ChannelSKU) {
       claims: {
         exact_one_sku: true,
         marketplace_submission_max: 1,
+        shipping_template_map_submission_max: 1,
         delist: false,
         reprice: false,
         purchase: false,
@@ -566,6 +577,14 @@ function ownerAuthorization(sku: ChannelSKU) {
     engineReleaseSha256: signedPermit.signed_body.engine_release_sha256,
     approvalSha256,
     sellerAccountFingerprintSha256: sellerFingerprint,
+  };
+}
+
+function shippingAssociation(sku: ChannelSKU) {
+  return {
+    sku: sku.sku,
+    shipping_template_id: "template-free-1",
+    fulfillment_center_id: "DEFAULT",
   };
 }
 
@@ -822,6 +841,7 @@ test("submitToWalmart — live schema failure prevents the feed call", async () 
     beforeFeedPost() {},
     ownerPermitAuthorization: ownerAuthorization(sku),
     lifecyclePostClaim: unconsumedLifecycleClaim(),
+    shippingTemplateAssociation: shippingAssociation(sku),
     client: {
       async requestRaw(_method, path) {
         calls.push(path);
@@ -888,6 +908,7 @@ test("submitToWalmart — a signed permit alone cannot bypass the durable claim"
     dryRun: false,
     beforeFeedPost() {},
     ownerPermitAuthorization: ownerAuthorization(sku),
+    shippingTemplateAssociation: shippingAssociation(sku),
     client: {
       async requestRaw() {
         calls += 1;
@@ -916,6 +937,7 @@ test("submitToWalmart — production transport rejects a test-fixture permit", a
     },
     ownerPermitAuthorization: ownerAuthorization(sku),
     lifecyclePostClaim: unconsumedLifecycleClaim(),
+    shippingTemplateAssociation: shippingAssociation(sku),
     client: {
       async requestRaw(_method, path, options) {
         sequence.push(path);
@@ -961,6 +983,7 @@ test("submitToWalmart — mutation-adjacent fence can still block the feed", asy
     },
     ownerPermitAuthorization: ownerAuthorization(sku),
     lifecyclePostClaim: unconsumedLifecycleClaim(),
+    shippingTemplateAssociation: shippingAssociation(sku),
     client: {
       async requestRaw(_method, path) {
         calls.push(path);

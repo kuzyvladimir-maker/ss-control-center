@@ -13,20 +13,22 @@ import {
 import { stableWalmartJson } from "./walmart-listing-contract";
 
 export const WALMART_OWNER_PERMIT_SCHEMA =
-  "walmart-new-sku-owner-permit/2.0.0" as const;
+  "walmart-new-sku-owner-permit/3.0.0" as const;
 export const WALMART_OWNER_PERMIT_ALGORITHM = "Ed25519" as const;
-export const WALMART_OWNER_PERMIT_ACTION = "WALMART_MP_ITEM_SUBMIT" as const;
+export const WALMART_OWNER_PERMIT_ACTION =
+  "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT" as const;
 export type WalmartOwnerPermitEnvironment =
   | "PRODUCTION"
   | "TEST_FIXTURE_ONLY";
 const SIGNING_DOMAIN = Buffer.from(
-  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v2\0",
+  "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v3\0",
   "utf8",
 );
 
 export interface WalmartOwnerPermitClaims {
   exact_one_sku: true;
   marketplace_submission_max: 1;
+  shipping_template_map_submission_max: 1;
   delist: false;
   reprice: false;
   purchase: false;
@@ -47,6 +49,9 @@ export interface WalmartOwnerPermitSignedBody {
   sku: string;
   upc: string;
   payload_sha256: string;
+  shipping_template_id: string;
+  shipping_template_fulfillment_center_id: string;
+  shipping_template_association_payload_sha256: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
   database_target_fingerprint_sha256: string;
@@ -308,6 +313,9 @@ export interface WalmartOwnerPermitExpectedBindings {
   sku: string;
   upc: string;
   payload_sha256: string;
+  shipping_template_id: string;
+  shipping_template_fulfillment_center_id: string;
+  shipping_template_association_payload_sha256: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
   database_target_fingerprint_sha256: string;
@@ -342,6 +350,7 @@ export function assertWalmartOwnerPermitSignature(
     body?.apply_preview_receipt_sha256,
     body?.certification_sha256,
     body?.payload_sha256,
+    body?.shipping_template_association_payload_sha256,
     body?.seller_account_fingerprint_sha256,
     body?.database_target_fingerprint_sha256,
   ];
@@ -388,6 +397,9 @@ export function assertWalmartOwnerPermitSignature(
     body?.max_pilot_skus !== 2 ||
     body?.claims?.exact_one_sku !== true ||
     body?.claims?.marketplace_submission_max !== 1 ||
+    body?.claims?.shipping_template_map_submission_max !== 1 ||
+    !body?.shipping_template_id?.trim() ||
+    !body?.shipping_template_fulfillment_center_id?.trim() ||
     body?.claims?.delist !== false ||
     body?.claims?.reprice !== false ||
     body?.claims?.purchase !== false ||

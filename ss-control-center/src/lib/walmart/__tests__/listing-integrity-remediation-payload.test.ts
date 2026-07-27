@@ -639,6 +639,32 @@ test("rejects caller field paths as Walmart keys and mappings for unchanged clai
 });
 
 test("pins the configured spec and exact fresh live item identity/state from raw bytes", () => {
+  const marketplaceShape = fixture({
+    liveItemMutator: (row) => {
+      delete row.itemId;
+      row.mart = "WALMART_US";
+      row.wpid = "157F37H8RG4R";
+    },
+  });
+  assert.doesNotThrow(() => build(marketplaceShape));
+
+  const wrongMarketplace = fixture({
+    liveItemMutator: (row) => {
+      delete row.itemId;
+      row.mart = "OTHER_MART";
+      row.wpid = "157F37H8RG4R";
+    },
+  });
+  assert.throws(() => build(wrongMarketplace), /exact WALMART_US marketplace/i);
+
+  const missingMarketplaceProductId = fixture({
+    liveItemMutator: (row) => {
+      delete row.itemId;
+      row.mart = "WALMART_US";
+    },
+  });
+  assert.throws(() => build(missingMarketplaceProductId), /live item wpid/i);
+
   const oldSpec = fixture({
     contractMutator: (body) => {
       (body.spec as Record<string, unknown>).version = "5.0.20260101-00_00_00-api";

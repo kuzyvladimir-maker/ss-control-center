@@ -1058,16 +1058,32 @@ function verifyLiveItem(input: {
     fail("live item response is not PUBLISHED/ACTIVE");
   }
 
-  const mart = row.mart === undefined || row.mart === null
-    ? null
-    : record(row.mart, "live item mart");
+  let mart: JsonRecord | null = null;
+  let marketplaceMart: string | null = null;
+  if (row.mart !== undefined && row.mart !== null) {
+    if (typeof row.mart === "string") {
+      marketplaceMart = text(row.mart, "live item mart", 64);
+      if (marketplaceMart !== "WALMART_US") {
+        fail("live item mart string is not the exact WALMART_US marketplace");
+      }
+    } else {
+      mart = record(row.mart, "live item mart");
+    }
+  }
   const itemIds = new Set<string>();
   const directItemId = optionalExactNumericItemId(row.itemId, "live item itemId");
   const martItemId = optionalExactNumericItemId(mart?.itemId, "live item mart.itemId");
   if (directItemId) itemIds.add(directItemId);
   if (martItemId) itemIds.add(martItemId);
-  if (itemIds.size !== 1 || !itemIds.has(input.contract.listing.item_id)) {
+  if (itemIds.size > 1
+    || (itemIds.size === 1 && !itemIds.has(input.contract.listing.item_id))) {
     fail("live item response does not prove one exact matching numeric itemId");
+  }
+  if (itemIds.size === 0) {
+    if (marketplaceMart !== "WALMART_US") {
+      fail("live item response without numeric itemId lacks exact marketplace identity");
+    }
+    text(row.wpid, "live item wpid", 64);
   }
 
   const identifiers = liveIdentifierCandidates(

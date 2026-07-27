@@ -23,6 +23,14 @@ import {
   studioChannelRoute,
   WALMART_CANONICAL_OPERATOR_MESSAGE,
 } from "@/lib/bundle-factory/studio-channel-routing";
+import {
+  parseWalmartShippingTemplateDetails,
+  parseWalmartShippingTemplateList,
+} from "@/lib/bundle-factory/walmart-shipping-templates";
+import {
+  getWalmartClient,
+  getWalmartStoreStatus,
+} from "@/lib/walmart";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +55,6 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
     return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
   }
-  if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED") {
-    return badRequest(WALMART_CANONICAL_OPERATOR_MESSAGE);
-  }
-
   const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
   const textModel = isOneOf(TEXT_MODELS, body.text_model) ? body.text_model : "opus";
   const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
@@ -85,6 +89,139 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
       return badRequest("listing_count must be a whole number from 1 to 500.");
     }
     listingCount = rawCount;
+  }
+  if (
+    channel === "WALMART" &&
+    listingCount != null &&
+    listingCount > 2
+  ) {
+    return badRequest(
+      "The current owner-gated Walmart pilot allows 1–2 SKU per request.",
+    );
+  }
+
+  if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED") {
+    const selected =
+      body.walmart_shipping &&
+        typeof body.walmart_shipping === "object" &&
+        !Array.isArray(body.walmart_shipping)
+        ? body.walmart_shipping as Record<string, unknown>
+        : null;
+    const storeIndex = Number(selected?.store_index);
+    const templateId =
+      typeof selected?.template_id === "string"
+        ? selected.template_id.trim()
+        : "";
+    if (
+      !Number.isInteger(storeIndex) ||
+      storeIndex < 1 ||
+      storeIndex > 5 ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(templateId)
+    ) {
+      return badRequest(
+        `${WALMART_CANONICAL_OPERATOR_MESSAGE} Select a Walmart account and one active shipping template.`,
+      );
+    }
+    const account = getWalmartStoreStatus(storeIndex);
+    if (!account.configured) {
+      return badRequest(
+        `Walmart account ${storeIndex} is not configured.`,
+      );
+    }
+    const client = getWalmartClient(storeIndex);
+    const [listResponse, detailResponse] = await Promise.all([
+      client.requestRaw("GET", "/settings/shipping/templates", {
+        noRetryOn429: true,
+      }),
+      client.requestRaw(
+        "GET",
+        `/settings/shipping/templates/${templateId}`,
+        { noRetryOn429: true },
+      ),
+    ]);
+    if (
+      !listResponse.ok ||
+      listResponse.status !== 200 ||
+      !detailResponse.ok ||
+      detailResponse.status !== 200
+    ) {
+      return badRequest(
+        "Walmart could not reconfirm the selected shipping template.",
+      );
+    }
+    const list = parseWalmartShippingTemplateList(
+      listResponse.body,
+    );
+    const listRow = list.find((row) => row.id === templateId);
+    const template = parseWalmartShippingTemplateDetails(
+      detailResponse.body,
+    );
+    if (
+      !listRow ||
+      listRow.status !== "ACTIVE" ||
+      template.status !== "ACTIVE" ||
+      listRow.id !== template.id ||
+      listRow.name !== template.name ||
+      listRow.rate_model_type !== template.rate_model_type ||
+      (
+        typeof selected?.template_sha256 === "string" &&
+        selected.template_sha256 !== template.template_sha256
+      )
+    ) {
+      return badRequest(
+        "The selected Walmart shipping template changed or is no longer active. Re-open it and select again.",
+      );
+    }
+    const batchRequest = {
+      studio_version: 3,
+      workflow: "CANONICAL_WALMART_NEW_SKU",
+      source: "prompt",
+      prompt,
+      channel,
+      listing_count: listingCount ?? 2,
+      target_margin_pct: targetMarginPct ?? 30,
+      photo_strategy: "reuse-donor",
+      walmart_shipping: {
+        store_index: storeIndex,
+        account_name: account.storeName,
+        selected_at: new Date().toISOString(),
+        template,
+      },
+      operator_contract: {
+        engine: "npm run walmart:new-sku",
+        marketplace_mutation_authorized: false,
+        next_step:
+          "Claude Code follows docs/wiki/walmart-new-sku-operator-runbook.md and the engine's exact next_command.",
+      },
+    };
+    const job = await prisma.generationJob.create({
+      data: {
+        brief: JSON.stringify(batchRequest),
+        current_stage: "WALMART_REQUEST_READY",
+        status: "PENDING",
+        bundles_target: listingCount ?? 2,
+        user_id: "user",
+        notes: JSON.stringify({
+          progress: {
+            status: "PENDING",
+            phase: "walmart-owner-request",
+            step: WALMART_CANONICAL_OPERATOR_MESSAGE,
+            total: listingCount ?? 2,
+            done: 0,
+            failed: 0,
+            done_flag: false,
+          },
+        }),
+      },
+      select: { id: true },
+    });
+    return NextResponse.json(
+      {
+        batch_id: job.id,
+        workflow: "CANONICAL_WALMART_NEW_SKU",
+      },
+      { status: 201 },
+    );
   }
 
   const batchRequest = {

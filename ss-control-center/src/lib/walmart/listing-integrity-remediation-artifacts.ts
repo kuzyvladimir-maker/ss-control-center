@@ -41,6 +41,7 @@ import {
   WALMART_LISTING_REPAIR_MAX_SUPPORT_BYTES,
   type WalmartListingRepairAcceptedReceipt,
   type WalmartListingRepairArtifactSink,
+  type WalmartListingRepairRequestingReceipt,
 } from "./listing-integrity-remediation-writer.ts";
 import type {
   WalmartListingRepairPermitTerminalReceipt,
@@ -262,6 +263,15 @@ export interface WalmartListingRepairArtifactCustody
   extends WalmartListingRepairArtifactSink {
   readonly custody_root: string;
   readonly permit_authorization_sha256: string;
+  loadAcceptedPostFromRequesting(input: {
+    permit: WalmartListingRepairOneSkuPermit;
+    requesting: WalmartListingRepairRequestingReceipt;
+  }): Promise<{
+    request_manifest_bytes: Uint8Array;
+    request_payload_bytes: Uint8Array;
+    response_http_receipt_bytes: Uint8Array;
+    response_payload_bytes: Uint8Array;
+  }>;
   readEvidence(): Promise<WalmartListingRepairArtifactCustodyEvidence>;
   loadSucceededTerminal(input: {
     permit: WalmartListingRepairOneSkuPermit;
@@ -1773,6 +1783,70 @@ class ArtifactCustodySink implements WalmartListingRepairArtifactCustody {
         || sha256(response["response-http.json"]!) !== input.accepted.response_http_receipt_sha256
         || sha256(response["response-payload.bin"]!) !== input.accepted.response_payload_sha256) {
         fail("ARTIFACT_BINDING_MISMATCH", "accepted receipt hashes/feed differ from custody bytes");
+      }
+      return {
+        request_manifest_bytes: Buffer.from(request["request-manifest.json"]!),
+        request_payload_bytes: Buffer.from(request["request-payload.json"]!),
+        response_http_receipt_bytes: Buffer.from(response["response-http.json"]!),
+        response_payload_bytes: Buffer.from(response["response-payload.bin"]!),
+      };
+    });
+  }
+
+  async loadAcceptedPostFromRequesting(input: {
+    permit: WalmartListingRepairOneSkuPermit;
+    requesting: WalmartListingRepairRequestingReceipt;
+  }): Promise<{
+    request_manifest_bytes: Uint8Array;
+    request_payload_bytes: Uint8Array;
+    response_http_receipt_bytes: Uint8Array;
+    response_payload_bytes: Uint8Array;
+  }> {
+    return withArtifactOperation(this.custody_root, async (operationLock) => {
+      const supplied = permitBinding(input.permit).binding;
+      if (supplied.permit_authorization_sha256 !== this.permit_authorization_sha256
+        || input.requesting.state !== "REQUESTING"
+        || input.requesting.authorization_sha256 !== supplied.permit_authorization_sha256
+        || input.requesting.request_manifest_sha256 !== supplied.request_manifest_sha256
+        || input.requesting.request_payload_sha256 !== supplied.request_payload_sha256
+        || !exactEqual(
+          input.requesting.consumption_ledger,
+          input.permit.signed_body.consumption_ledger,
+        )) {
+        fail(
+          "ARTIFACT_BINDING_MISMATCH",
+          "requesting recovery supplied another permit or request",
+        );
+      }
+      const scan = await scanCustody(await openCustody(
+        this.custody_root,
+        input.permit,
+        operationLock,
+      ));
+      const prepared = scan.commits.filter((entry) => entry.stage === "PREPARED_REQUEST");
+      const responses = scan.commits.filter(
+        (entry) => entry.stage === "POST_RESPONSE"
+          && entry.artifact_set === "POST_RESPONSE_ACCEPTED/v1",
+      );
+      if (prepared.length !== 1 || responses.length !== 1 || !responses[0]!.feed_id) {
+        fail(
+          "ARTIFACT_CORRUPT",
+          "requesting recovery requires one prepared request and one accepted POST response",
+        );
+      }
+      const request = referencesToMap(scan, prepared[0]!);
+      const response = referencesToMap(scan, responses[0]!);
+      const feedId = responses[0]!.feed_id;
+      if (sha256(request["request-manifest.json"]!) !== input.requesting.request_manifest_sha256
+        || sha256(request["request-payload.json"]!) !== input.requesting.request_payload_sha256
+        || new TextDecoder("utf-8", { fatal: true }).decode(
+          response["accepted-feed-id.txt"]!,
+        ) !== feedId
+        || feedIdFromResponse(response["response-payload.bin"]!) !== feedId) {
+        fail(
+          "ARTIFACT_BINDING_MISMATCH",
+          "requesting recovery response does not bind the exact request and feed",
+        );
       }
       return {
         request_manifest_bytes: Buffer.from(request["request-manifest.json"]!),

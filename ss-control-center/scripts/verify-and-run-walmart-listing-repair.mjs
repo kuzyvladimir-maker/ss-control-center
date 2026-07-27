@@ -17,7 +17,8 @@ const OPERATOR_PATH = "scripts/walmart-listing-repair-operator.ts";
 const WRITER_PATH = "src/lib/walmart/listing-integrity-remediation-writer.ts";
 const QUALIFICATION_PATH = "src/lib/walmart/listing-integrity-remediation-qualification.ts";
 const ALLOWED_COMMANDS = Object.freeze([
-  "doctor", "plan", "execute", "resume", "status", "report",
+  "doctor", "plan", "execute", "recover-accepted", "resume-recovered",
+  "resume", "qualify", "status", "report",
 ]);
 
 export class WalmartListingRepairReleaseVerificationError extends Error {

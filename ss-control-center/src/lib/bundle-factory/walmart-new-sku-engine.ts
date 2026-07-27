@@ -47,6 +47,9 @@ import {
   walmartNewSkuComparableSignal,
   type WalmartNewSkuPriceCompetitivenessSignal,
 } from "./walmart-new-sku-economics";
+import {
+  buildWalmartSkuTemplateMapContract,
+} from "./walmart-shipping-template-association";
 
 export {
   SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS,
@@ -62,9 +65,9 @@ export const WALMART_NEW_SKU_STAGE_SCHEMA =
 export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
   "walmart-new-sku-upc-rotation-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_INPUT_SCHEMA =
-  "walmart-new-sku-certification-input/1.7.0" as const;
+  "walmart-new-sku-certification-input/1.8.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_SCHEMA =
-  "walmart-new-sku-certification/1.9.0" as const;
+  "walmart-new-sku-certification/1.11.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_RECEIPT_SCHEMA =
   "walmart-new-sku-certification-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_DRY_RUN_RECEIPT_SCHEMA =
@@ -75,7 +78,7 @@ export const WALMART_NEW_SKU_OWNER_PERMIT_SCHEMA = WALMART_OWNER_PERMIT_SCHEMA;
 export const WALMART_NEW_SKU_APPLY_RECEIPT_SCHEMA =
   "walmart-new-sku-apply-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_VERIFY_RECEIPT_SCHEMA =
-  "walmart-new-sku-verify-receipt/1.1.0" as const;
+  "walmart-new-sku-verify-receipt/1.2.0" as const;
 export const WALMART_NEW_SKU_PILOT_MAX_APPLY = 2;
 export const WALMART_NEW_SKU_PILOT_PACK_COUNTS = [2, 3] as const;
 export const WALMART_NEW_SKU_DRY_RUN_MAX_AGE_MS = 30 * 60 * 1_000;
@@ -249,6 +252,7 @@ export type WalmartNewSkuEvidenceArtifactKind =
   | "PRODUCT_IDENTIFIER"
   | "SELLER_ACCOUNT_HEALTH"
   | "FULFILLMENT_COMPLIANCE"
+  | "SHIPPING_TEMPLATE"
   | "LOT_CONTROL_PROCEDURE"
   | "EXPIRATION_SOURCE";
 
@@ -267,7 +271,10 @@ export interface WalmartNewSkuPricingCompetitivenessInput {
   policy_source_id: "pricing-rules";
   basis: "EXACT_COMPONENT_VARIANT_LINEARIZED";
   proposed_item_price_cents: number;
-  customer_shipping_charge_cents: 0;
+  shipping_template_id: string;
+  shipping_template_sha256: string;
+  shipping_scenario_id: string;
+  customer_shipping_charge_cents: number;
   proposed_customer_total_cents: number;
   comparable: {
     canonical_variant_id: string;
@@ -290,8 +297,36 @@ export interface WalmartNewSkuPricingCompetitivenessInput {
   target_margin_bps: typeof SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS;
   contribution_profit_cents: number;
   contribution_margin_bps: number;
+  worst_case_contribution_margin_bps: number;
   reviewed_at: string;
   reviewer: string;
+  evidence_ref: string;
+}
+
+export interface WalmartNewSkuShippingScenarioInput {
+  scenario_id: string;
+  ship_method: string;
+  transit_time_days: number;
+  address_types: string[];
+  region_codes: string[];
+  region_names: string[];
+  state_codes: string[];
+  customer_shipping_charge_cents: number;
+  currency: "USD";
+}
+
+export interface WalmartNewSkuShippingTemplateInput {
+  store_index: number;
+  template_id: string;
+  template_name: string;
+  template_status: "ACTIVE";
+  rate_model_type: "TIERED_PRICING" | "PER_SHIPMENT_PRICING";
+  template_sha256: string;
+  fetched_at: string;
+  modified_at: string | null;
+  is_free_shipping: boolean;
+  item_quantity: 1;
+  scenarios: WalmartNewSkuShippingScenarioInput[];
   evidence_ref: string;
 }
 
@@ -304,6 +339,7 @@ export interface WalmartNewSkuCertificationInput {
   packaging_cost_cents: number;
   shipping_label_cents: number;
   shipping_in_price: boolean;
+  shipping_template: WalmartNewSkuShippingTemplateInput;
   evidence_artifacts: WalmartNewSkuEvidenceArtifactInput[];
   images: Array<{
     role: "MAIN" | "SECONDARY" | "NUTRITION";
@@ -463,6 +499,14 @@ export interface WalmartNewSkuCertificationArtifact {
   seller_account_health_verified_at: string;
   fulfillment_compliance_evidence_ref: string;
   fulfillment_compliance_verified_at: string;
+  shipping_template_id: string;
+  shipping_template_sha256: string;
+  shipping_template_evidence_ref: string;
+  shipping_template_fulfillment_center_id: string;
+  shipping_template_association_payload_sha256: string;
+  shipping_scenario_id: string;
+  customer_shipping_charge_cents: number;
+  customer_total_cents: number;
   item_spec_schema_sha256: string;
   source_evidence_sha256: string;
   marketplace_mutation_allowed: false;
@@ -613,6 +657,29 @@ export interface WalmartNewSkuVerifyReceipt {
   buyer_evidence_recorded: boolean;
   poll_result: unknown;
   buyer_evidence_status: unknown;
+  shipping_template_association: {
+    status:
+      | "NOT_SUBMITTED"
+      | "WAITING_FOR_ITEM"
+      | "PENDING"
+      | "VERIFIED";
+    checked_at: string | null;
+    expected: {
+      sku: string;
+      shipping_template_id: string;
+      fulfillment_center_id: string;
+    };
+    match: {
+      sku: string;
+      shipping_template_id: string;
+      shipping_template_name: string;
+      shipping_template_type: string;
+      fulfillment_center_id: string;
+      fulfillment_center_name: string;
+    } | null;
+    correlation_id: string | null;
+    response_sha256: string | null;
+  };
 }
 
 export class WalmartNewSkuPlanError extends Error {
@@ -629,6 +696,7 @@ export class WalmartNewSkuPlanError extends Error {
 const PLACEHOLDER_TEXT = /(?:^|[^A-Z0-9])(?:TODO|TBD)(?:$|[^A-Z0-9])|PLACEHOLDER|TO_FILL|REPLACE_ME|UNKNOWN_EVIDENCE/i;
 const ACCOUNT_EVIDENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1_000;
 const SELLER_ACCOUNT_HEALTH_MAX_AGE_MS = 60 * 60 * 1_000;
+const SHIPPING_TEMPLATE_MAX_AGE_MS = 30 * 60 * 1_000;
 const POLICY_REVIEW_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
 const RECALL_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1_000;
 
@@ -1796,6 +1864,7 @@ export function assertWalmartNewSkuCertificationInput(input: {
     "PRODUCT_IDENTIFIER",
     "SELLER_ACCOUNT_HEALTH",
     "FULFILLMENT_COMPLIANCE",
+    "SHIPPING_TEMPLATE",
     "LOT_CONTROL_PROCEDURE",
     "EXPIRATION_SOURCE",
   ]);
@@ -1854,6 +1923,105 @@ export function assertWalmartNewSkuCertificationInput(input: {
     (item) => item.candidate_key === stage.candidate_key,
   )!;
   const component = candidate.recipe_input.components[0];
+  const shipping = certification.shipping_template;
+  const shippingScenarioById = new Map<
+    string,
+    WalmartNewSkuShippingScenarioInput
+  >();
+  let shippingTemplateInvalid = false;
+  if (
+    !shipping ||
+    shipping.store_index !== plan.store_index ||
+    typeof shipping.template_id !== "string" ||
+    !shipping.template_id.trim() ||
+    typeof shipping.template_name !== "string" ||
+    !shipping.template_name.trim() ||
+    shipping.template_status !== "ACTIVE" ||
+    !["TIERED_PRICING", "PER_SHIPMENT_PRICING"].includes(
+      shipping.rate_model_type,
+    ) ||
+    !/^[a-f0-9]{64}$/.test(shipping.template_sha256) ||
+    !isFreshPastIso(
+      shipping.fetched_at,
+      SHIPPING_TEMPLATE_MAX_AGE_MS,
+      now,
+    ) ||
+    !(
+      shipping.modified_at === null ||
+      (
+        typeof shipping.modified_at === "string" &&
+        Number.isFinite(Date.parse(shipping.modified_at)) &&
+        Date.parse(shipping.modified_at) <= now.getTime()
+      )
+    ) ||
+    typeof shipping.is_free_shipping !== "boolean" ||
+    shipping.item_quantity !== 1 ||
+    !Array.isArray(shipping.scenarios) ||
+    shipping.scenarios.length === 0 ||
+    !isEvidenceReference(shipping.evidence_ref)
+  ) {
+    shippingTemplateInvalid = true;
+  } else {
+    for (const [index, scenario] of shipping.scenarios.entries()) {
+      const coverageValues = [
+        ...(Array.isArray(scenario.region_codes)
+          ? scenario.region_codes
+          : []),
+        ...(Array.isArray(scenario.region_names)
+          ? scenario.region_names
+          : []),
+        ...(Array.isArray(scenario.state_codes)
+          ? scenario.state_codes
+          : []),
+      ];
+      if (
+        typeof scenario.scenario_id !== "string" ||
+        !scenario.scenario_id.trim() ||
+        shippingScenarioById.has(scenario.scenario_id) ||
+        typeof scenario.ship_method !== "string" ||
+        !scenario.ship_method.trim() ||
+        !Number.isSafeInteger(scenario.transit_time_days) ||
+        scenario.transit_time_days <= 0 ||
+        !Array.isArray(scenario.address_types) ||
+        scenario.address_types.length === 0 ||
+        scenario.address_types.some(
+          (value) => typeof value !== "string" || !value.trim(),
+        ) ||
+        !Array.isArray(scenario.region_codes) ||
+        !Array.isArray(scenario.region_names) ||
+        !Array.isArray(scenario.state_codes) ||
+        coverageValues.length === 0 ||
+        coverageValues.some(
+          (value) => typeof value !== "string" || !value.trim(),
+        ) ||
+        !Number.isSafeInteger(
+          scenario.customer_shipping_charge_cents,
+        ) ||
+        scenario.customer_shipping_charge_cents < 0 ||
+        scenario.currency !== "USD"
+      ) {
+        failures.push(`SHIPPING_TEMPLATE_SCENARIO_${index}_INVALID`);
+        shippingTemplateInvalid = true;
+        continue;
+      }
+      shippingScenarioById.set(scenario.scenario_id, scenario);
+    }
+    const computedFree = shipping.scenarios.every(
+      (scenario) => scenario.customer_shipping_charge_cents === 0,
+    );
+    if (shipping.is_free_shipping !== computedFree) {
+      shippingTemplateInvalid = true;
+    }
+  }
+  if (shippingTemplateInvalid) {
+    failures.push("SHIPPING_TEMPLATE_BINDING_INVALID");
+  } else {
+    requireEvidence(
+      shipping.evidence_ref,
+      "SHIPPING_TEMPLATE",
+      "SHIPPING_TEMPLATE",
+    );
+  }
   const componentKeys = new Set([component.component_key]);
   const observationIds = new Set([component.content_observation_id]);
   const main = certification.images.filter((image) => image.role === "MAIN");
@@ -2246,6 +2414,9 @@ export function assertWalmartNewSkuCertificationInput(input: {
     );
   }
   const pricing = manual.pricing_competitiveness;
+  const selectedShippingScenario = shippingScenarioById.get(
+    pricing?.shipping_scenario_id,
+  );
   const comparable = pricing?.comparable;
   const comparableTotal =
     Number.isSafeInteger(comparable?.item_price_cents) &&
@@ -2292,10 +2463,37 @@ export function assertWalmartNewSkuCertificationInput(input: {
       packagingCostCents: certification.packaging_cost_cents,
       shippingLabelCents: certification.shipping_label_cents,
       itemPriceCents: certification.price_cents,
+      customerShippingChargeCents:
+        pricing?.customer_shipping_charge_cents,
     });
   } catch {
     derivedEconomics = null;
   }
+  const allShippingEconomics = [...shippingScenarioById.values()].map(
+    (scenario) => {
+      try {
+        return calculateWalmartNewSkuEconomics({
+          goodsCostCents,
+          packagingCostCents: certification.packaging_cost_cents,
+          shippingLabelCents: certification.shipping_label_cents,
+          itemPriceCents: certification.price_cents,
+          customerShippingChargeCents:
+            scenario.customer_shipping_charge_cents,
+        });
+      } catch {
+        return null;
+      }
+    },
+  );
+  const worstCaseContributionMarginBps =
+    allShippingEconomics.length > 0 &&
+    allShippingEconomics.every((economics) => economics !== null)
+      ? Math.min(
+        ...allShippingEconomics.map(
+          (economics) => economics!.contribution_margin_bps,
+        ),
+      )
+      : Number.NaN;
   const referralFeeCents =
     derivedEconomics?.referral_fee_cents ?? Number.NaN;
   const contributionProfitCents =
@@ -2309,7 +2507,11 @@ export function assertWalmartNewSkuCertificationInput(input: {
     pricing?.policy_source_id !== "pricing-rules" ||
     pricing?.basis !== "EXACT_COMPONENT_VARIANT_LINEARIZED" ||
     pricing?.proposed_item_price_cents !== certification.price_cents ||
-    pricing?.customer_shipping_charge_cents !== 0 ||
+    pricing?.shipping_template_id !== shipping?.template_id ||
+    pricing?.shipping_template_sha256 !== shipping?.template_sha256 ||
+    !selectedShippingScenario ||
+    pricing?.customer_shipping_charge_cents !==
+      selectedShippingScenario?.customer_shipping_charge_cents ||
     pricing?.proposed_customer_total_cents !== proposedCustomerTotal ||
     comparable?.canonical_variant_id !== candidate.canonical_variant_id ||
     typeof comparable?.url !== "string" ||
@@ -2345,10 +2547,20 @@ export function assertWalmartNewSkuCertificationInput(input: {
       SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS ||
     pricing?.contribution_profit_cents !== contributionProfitCents ||
     pricing?.contribution_margin_bps !== contributionMarginBps ||
+    pricing?.worst_case_contribution_margin_bps !==
+      worstCaseContributionMarginBps ||
     contributionProfitCents < 0 ||
     contributionProfitCents * 10_000 <
-      certification.price_cents *
+      proposedCustomerTotal *
         SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS ||
+    allShippingEconomics.some(
+      (economics) =>
+        economics === null ||
+        economics.contribution_profit_cents * 10_000 <
+          economics.customer_total_cents *
+        SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS ||
+        economics.contribution_profit_cents < 0,
+    ) ||
     !isFreshPastIso(
       pricing?.reviewed_at,
       WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
@@ -2587,6 +2799,16 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
       "fulfillment_compliance_evidence_ref",
       artifact.fulfillment_compliance_evidence_ref,
     ],
+    ["shipping_template_id", artifact.shipping_template_id],
+    [
+      "shipping_template_evidence_ref",
+      artifact.shipping_template_evidence_ref,
+    ],
+    [
+      "shipping_template_fulfillment_center_id",
+      artifact.shipping_template_fulfillment_center_id,
+    ],
+    ["shipping_scenario_id", artifact.shipping_scenario_id],
   ]) {
     if (typeof value !== "string" || !value.trim()) {
       throw new WalmartNewSkuPlanError([
@@ -2612,6 +2834,20 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
       "CERTIFICATION_SELLER_ACCOUNT_HEALTH_TIMESTAMP_INVALID",
     ]);
   }
+  const associationContract = buildWalmartSkuTemplateMapContract({
+    sku: artifact.sku,
+    shipping_template_id: artifact.shipping_template_id,
+    fulfillment_center_id:
+      artifact.shipping_template_fulfillment_center_id,
+  });
+  if (
+    artifact.shipping_template_association_payload_sha256 !==
+      associationContract.payload_sha256
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "CERTIFICATION_SHIPPING_TEMPLATE_ASSOCIATION_HASH_MISMATCH",
+    ]);
+  }
   if (
     !Number.isFinite(Date.parse(artifact.fulfillment_compliance_verified_at)) ||
     Date.parse(artifact.fulfillment_compliance_verified_at) >
@@ -2619,6 +2855,17 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
   ) {
     throw new WalmartNewSkuPlanError([
       "CERTIFICATION_FULFILLMENT_COMPLIANCE_TIMESTAMP_INVALID",
+    ]);
+  }
+  if (
+    !Number.isSafeInteger(artifact.customer_shipping_charge_cents) ||
+    artifact.customer_shipping_charge_cents < 0 ||
+    !Number.isSafeInteger(artifact.customer_total_cents) ||
+    artifact.customer_total_cents <=
+      artifact.customer_shipping_charge_cents
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "CERTIFICATION_SHIPPING_ECONOMICS_INVALID",
     ]);
   }
   const truth = artifact.product_truth_binding;
@@ -2649,6 +2896,11 @@ export function assertWalmartNewSkuCertificationArtifactIntegrity(
     ["certification_input_sha256", artifact.certification_input_sha256],
     ["payload_sha256", artifact.payload_sha256],
     ["product_truth_recipe_hash", artifact.product_truth_recipe_hash],
+    ["shipping_template_sha256", artifact.shipping_template_sha256],
+    [
+      "shipping_template_association_payload_sha256",
+      artifact.shipping_template_association_payload_sha256,
+    ],
     ["item_spec_schema_sha256", artifact.item_spec_schema_sha256],
     ["source_evidence_sha256", artifact.source_evidence_sha256],
   ]) {
@@ -2959,6 +3211,11 @@ export function assertWalmartNewSkuOwnerPermitIntegrity(
         sku: certification.sku,
         upc: certification.upc,
         payload_sha256: certification.payload_sha256,
+        shipping_template_id: certification.shipping_template_id,
+        shipping_template_fulfillment_center_id:
+          certification.shipping_template_fulfillment_center_id,
+        shipping_template_association_payload_sha256:
+          certification.shipping_template_association_payload_sha256,
         store_index: certification.store_index,
         seller_account_fingerprint_sha256:
           doctor.seller_account_fingerprint_sha256,
@@ -2996,7 +3253,7 @@ export function buildWalmartNewSkuOwnerPermitTemplate(input: {
     owner_public_key_spki_sha256: trust.active_key_fingerprints[0],
     signed_body: {
       permit_id: "TODO_OWNER_GENERATED_UNIQUE_PERMIT_ID",
-      action: "WALMART_MP_ITEM_SUBMIT",
+      action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
       environment: permitEnvironment,
       engine_release_sha256: input.engineReleaseSha256,
       approval_sha256: input.approval.approval_sha256,
@@ -3008,6 +3265,12 @@ export function buildWalmartNewSkuOwnerPermitTemplate(input: {
       sku: input.certification.sku,
       upc: input.certification.upc,
       payload_sha256: input.certification.payload_sha256,
+      shipping_template_id:
+        input.certification.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        input.certification.shipping_template_fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        input.certification.shipping_template_association_payload_sha256,
       store_index: input.certification.store_index,
       seller_account_fingerprint_sha256: "TODO_FROM_FRESH_DOCTOR_RECEIPT",
       database_target_fingerprint_sha256: "TODO_FROM_FRESH_DOCTOR_RECEIPT",
@@ -3023,6 +3286,7 @@ export function buildWalmartNewSkuOwnerPermitTemplate(input: {
       claims: {
         exact_one_sku: true,
         marketplace_submission_max: 1,
+        shipping_template_map_submission_max: 1,
         delist: false,
         reprice: false,
         purchase: false,
@@ -3080,7 +3344,7 @@ export function buildWalmartNewSkuOwnerPermitSigningRequest(input: {
     env: input.env,
     signed_body: {
       permit_id: input.permitId,
-      action: "WALMART_MP_ITEM_SUBMIT",
+      action: "WALMART_MP_ITEM_AND_SKU_TEMPLATE_MAP_SUBMIT",
       environment: permitEnvironment,
       engine_release_sha256: input.engineReleaseSha256,
       approval_sha256: input.approval.approval_sha256,
@@ -3092,6 +3356,12 @@ export function buildWalmartNewSkuOwnerPermitSigningRequest(input: {
       sku: input.certification.sku,
       upc: input.certification.upc,
       payload_sha256: input.certification.payload_sha256,
+      shipping_template_id:
+        input.certification.shipping_template_id,
+      shipping_template_fulfillment_center_id:
+        input.certification.shipping_template_fulfillment_center_id,
+      shipping_template_association_payload_sha256:
+        input.certification.shipping_template_association_payload_sha256,
       store_index: input.certification.store_index,
       seller_account_fingerprint_sha256:
         input.doctor.seller_account_fingerprint_sha256,
@@ -3109,6 +3379,7 @@ export function buildWalmartNewSkuOwnerPermitSigningRequest(input: {
       claims: {
         exact_one_sku: true,
         marketplace_submission_max: 1,
+        shipping_template_map_submission_max: 1,
         delist: false,
         reprice: false,
         purchase: false,
@@ -3186,6 +3457,67 @@ export function sealWalmartNewSkuVerifyReceipt(
         "VERIFY_RECEIPT_POLL_ATTEMPT_BINDING_INVALID",
       ]);
     }
+  }
+  const shipping = input.shipping_template_association;
+  const expectedShipping = {
+    sku: certification.sku,
+    shipping_template_id: certification.shipping_template_id,
+    fulfillment_center_id:
+      certification.shipping_template_fulfillment_center_id,
+  };
+  if (
+    !shipping ||
+    stableWalmartJson(shipping.expected) !==
+      stableWalmartJson(expectedShipping) ||
+    ![
+      "NOT_SUBMITTED",
+      "WAITING_FOR_ITEM",
+      "PENDING",
+      "VERIFIED",
+    ].includes(shipping.status)
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "VERIFY_RECEIPT_SHIPPING_ASSOCIATION_INVALID",
+    ]);
+  }
+  const associationWasChecked =
+    shipping.status === "PENDING" ||
+    shipping.status === "VERIFIED";
+  if (
+    associationWasChecked !==
+      (
+        typeof shipping.checked_at === "string" &&
+        Number.isFinite(Date.parse(shipping.checked_at))
+      ) ||
+    associationWasChecked !==
+      (
+        typeof shipping.correlation_id === "string" &&
+        shipping.correlation_id.trim().length > 0
+      ) ||
+    associationWasChecked !==
+      (
+        typeof shipping.response_sha256 === "string" &&
+        /^[a-f0-9]{64}$/.test(shipping.response_sha256)
+      ) ||
+    (
+      shipping.status === "VERIFIED" &&
+      (
+        !shipping.match ||
+        shipping.match.sku !== certification.sku ||
+        shipping.match.shipping_template_id !==
+          certification.shipping_template_id ||
+        shipping.match.fulfillment_center_id !==
+          certification.shipping_template_fulfillment_center_id
+      )
+    ) ||
+    (
+      shipping.status !== "VERIFIED" &&
+      shipping.match !== null
+    )
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "VERIFY_RECEIPT_SHIPPING_ASSOCIATION_INVALID",
+    ]);
   }
   return { ...input, receipt_sha256: sha256WalmartJson(input) };
 }
@@ -3338,6 +3670,32 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
     packaging_cost_cents: null,
     shipping_label_cents: null,
     shipping_in_price: null,
+    shipping_template: {
+      store_index: input.plan.store_index,
+      template_id: "TODO_EXACT_ACTIVE_WALMART_SHIPPING_TEMPLATE_ID",
+      template_name: "TODO_EXACT_WALMART_SHIPPING_TEMPLATE_NAME",
+      template_status: "TODO_ACTIVE_AFTER_FRESH_READ",
+      rate_model_type:
+        "TODO_TIERED_PRICING_OR_PER_SHIPMENT_PRICING",
+      template_sha256:
+        "TODO_LOWERCASE_SHA256_OF_NORMALIZED_TEMPLATE_SNAPSHOT",
+      fetched_at: "TODO_CANONICAL_UTC_AFTER_TEMPLATE_READ",
+      modified_at: "TODO_CANONICAL_UTC_FROM_WALMART_OR_NULL",
+      is_free_shipping: null,
+      item_quantity: 1,
+      scenarios: [{
+        scenario_id: "TODO_EXACT_TEMPLATE_CONFIGURATION_ID",
+        ship_method: "TODO_EXACT_SHIP_METHOD",
+        transit_time_days: null,
+        address_types: [],
+        region_codes: [],
+        region_names: [],
+        state_codes: [],
+        customer_shipping_charge_cents: null,
+        currency: "USD",
+      }],
+      evidence_ref: "TODO_EVIDENCE_REF_SHIPPING_TEMPLATE",
+    },
     evidence_artifacts: [
       ["TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN", "IMAGE_RIGHTS"],
       ["TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY", "IMAGE_RIGHTS"],
@@ -3352,6 +3710,7 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
       ["TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER", "PRODUCT_IDENTIFIER"],
       ["TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH", "SELLER_ACCOUNT_HEALTH"],
       ["TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE", "FULFILLMENT_COMPLIANCE"],
+      ["TODO_EVIDENCE_REF_SHIPPING_TEMPLATE", "SHIPPING_TEMPLATE"],
       ["TODO_EVIDENCE_REF_LOT_CONTROL", "LOT_CONTROL_PROCEDURE"],
       ["TODO_EVIDENCE_REF_EXPIRATION_SOURCE", "EXPIRATION_SOURCE"],
     ].map(([ref, kind]) => ({
@@ -3490,6 +3849,12 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         policy_source_id: "pricing-rules",
         basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
         proposed_item_price_cents: null,
+        shipping_template_id:
+          "TODO_SAME_EXACT_ACTIVE_WALMART_SHIPPING_TEMPLATE_ID",
+        shipping_template_sha256:
+          "TODO_SAME_LOWERCASE_SHA256_OF_NORMALIZED_TEMPLATE_SNAPSHOT",
+        shipping_scenario_id:
+          "TODO_SAME_EXACT_TEMPLATE_CONFIGURATION_ID",
         customer_shipping_charge_cents: 0,
         proposed_customer_total_cents: null,
         comparable: {
@@ -3514,6 +3879,7 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         target_margin_bps: SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS,
         contribution_profit_cents: null,
         contribution_margin_bps: null,
+        worst_case_contribution_margin_bps: null,
         reviewed_at: "TODO_CANONICAL_UTC_AFTER_PRICE_REVIEW",
         reviewer: "TODO_HUMAN_REVIEWER_ID",
         evidence_ref: "TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS",

@@ -124,6 +124,30 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
     "--", "doctor", "--out", "/private/tmp/doctor.json",
   ]);
   assert.equal(parsed.operator_args[0], "doctor");
+  const recovery = parseWalmartListingRepairReleaseWrapperArgs([
+    "--engine-root", "/private/tmp/engine",
+    "--manifest", "/private/tmp/release-manifest.json",
+    "--manifest-sha256", "a".repeat(64),
+    "--release-id-sha256", "b".repeat(64),
+    "--", "recover-accepted", "--package", "/private/tmp/package.json",
+  ]);
+  assert.equal(recovery.operator_args[0], "recover-accepted");
+  const recoveredResume = parseWalmartListingRepairReleaseWrapperArgs([
+    "--engine-root", "/private/tmp/engine",
+    "--manifest", "/private/tmp/release-manifest.json",
+    "--manifest-sha256", "a".repeat(64),
+    "--release-id-sha256", "b".repeat(64),
+    "--", "resume-recovered", "--package", "/private/tmp/package.json",
+  ]);
+  assert.equal(recoveredResume.operator_args[0], "resume-recovered");
+  const qualify = parseWalmartListingRepairReleaseWrapperArgs([
+    "--engine-root", "/private/tmp/engine",
+    "--manifest", "/private/tmp/release-manifest.json",
+    "--manifest-sha256", "a".repeat(64),
+    "--release-id-sha256", "b".repeat(64),
+    "--", "qualify", "--package", "/private/tmp/package.json",
+  ]);
+  assert.equal(qualify.operator_args[0], "qualify");
   assert.throws(
     () => parseWalmartListingRepairReleaseWrapperArgs([
       "--engine-root", "/private/tmp/engine", "--", "execute",

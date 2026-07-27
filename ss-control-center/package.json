@@ -35,6 +35,8 @@
     "product-truth:census": "node --import tsx scripts/build-phase1-connected-store-census.ts",
     "product-truth:manifest": "node --import tsx scripts/build-phase1-scope-manifest.ts",
     "product-truth:migrations": "node --import tsx scripts/product-truth-migration-plan.ts",
+    "product-truth:legacy-bridge-plan": "node --import tsx scripts/build-product-truth-legacy-bridge-plan.ts",
+    "product-truth:legacy-bridge-canary": "node --import tsx scripts/product-truth-legacy-bridge-canary.ts",
     "channelmax:worker": "node --import tsx scripts/channelmax-browser-worker.ts",
     "channelmax:preflight-uncrustables": "node --import tsx scripts/preflight-uncrustables-channelmax-mutation.ts",
     "test:channelmax-worker": "node --import tsx --test src/lib/channelmax-agent/__tests__/browser-worker.test.ts",

@@ -11,7 +11,7 @@ import {
   WalmartListingRepairOperatorError,
 } from "../walmart-listing-repair-operator.ts";
 
-const RELEASE_ID = "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d";
+const RELEASE_ID = "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(
@@ -100,6 +100,61 @@ test("command flag allowlists reject implicit scope and live shortcuts", () => {
   );
   assert.throws(
     () => parseWalmartListingRepairOperatorArgs(["doctor", "--out", "/tmp/a", "--out", "/tmp/b"]),
+    /forbidden or repeated/u,
+  );
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "recover-accepted", "--plan-receipt", "/tmp/forbidden",
+    ]),
+    /forbidden or repeated/u,
+  );
+  assert.equal(
+    parseWalmartListingRepairOperatorArgs(["recover-accepted"]).command,
+    "recover-accepted",
+  );
+  assert.equal(
+    parseWalmartListingRepairOperatorArgs(["resume-recovered"]).command,
+    "resume-recovered",
+  );
+  const resume = parseWalmartListingRepairOperatorArgs([
+    "resume",
+    "--package", "/private/tmp/package.json",
+    "--package-sha256", "a".repeat(64),
+    "--confirm", `RESUME_EXACT_FEED_GET_ONLY:${"b".repeat(64)}`,
+    "--out", "/private/tmp/resume.json",
+  ]);
+  assert.equal(resume.command, "resume");
+  assert.equal(resume.doctor_receipt_path, null);
+  assert.equal(resume.plan_receipt_path, null);
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "resume", "--doctor-receipt", "/private/tmp/stale-doctor.json",
+    ]),
+    /forbidden or repeated/u,
+  );
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "resume", "--plan-receipt", "/private/tmp/stale-plan.json",
+    ]),
+    /forbidden or repeated/u,
+  );
+  const qualify = parseWalmartListingRepairOperatorArgs([
+    "qualify",
+    "--package", "/private/tmp/package.json",
+    "--package-sha256", "a".repeat(64),
+    "--doctor-receipt", "/private/tmp/doctor.json",
+    "--doctor-receipt-sha256", "b".repeat(64),
+    "--capture-dir", "/private/tmp/fresh-capture",
+    "--out", "/private/tmp/qualification.json",
+  ]);
+  assert.equal(qualify.command, "qualify");
+  assert.equal(qualify.capture_dir, "/private/tmp/fresh-capture");
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs(["qualify", "--confirm", "forbidden"]),
+    /forbidden or repeated/u,
+  );
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs(["qualify", "--all", "true"]),
     /forbidden or repeated/u,
   );
   assert.equal(parseWalmartListingRepairOperatorArgs(["status"]).command, "status");

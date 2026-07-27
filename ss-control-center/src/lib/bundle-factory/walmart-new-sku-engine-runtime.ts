@@ -76,6 +76,11 @@ import {
   parseAndValidateWalmartNewSkuPolicyReviewEvidence,
 } from "./walmart-new-sku-policy-review-evidence";
 import {
+  buildWalmartItemAssociationsRequest,
+  buildWalmartSkuTemplateMapContract,
+  findExactWalmartShippingAssociation,
+} from "./walmart-shipping-template-association";
+import {
   verifyWalmartExactIdentifierDuplicateGuardBinding,
   type SealedWalmartExactIdentifierDuplicateGuardBinding,
 } from "./walmart-new-sku-catalog-authority";
@@ -115,6 +120,7 @@ import {
   type WalmartNewSkuStageArtifact,
   type WalmartNewSkuUpcRotationPreview,
   type WalmartNewSkuUpcRotationReceipt,
+  type WalmartNewSkuVerifyReceipt,
   WalmartNewSkuPlanError,
 } from "./walmart-new-sku-engine";
 
@@ -1886,6 +1892,15 @@ export async function certifyWalmartNewSkuCandidate(input: {
     },
   };
 
+  const shippingAssociationContract =
+    buildWalmartSkuTemplateMapContract({
+      sku: input.stage.proposed_sku,
+      shipping_template_id:
+        input.certification.shipping_template.template_id,
+      fulfillment_center_id:
+        input.certification.walmart.offer_handoff
+          .fulfillment_center_id,
+    });
   const artifact = sealWalmartNewSkuCertificationArtifact({
     schema_version: WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
     wave_id: input.plan.wave_id,
@@ -1928,6 +1943,26 @@ export async function certifyWalmartNewSkuCandidate(input: {
       input.certification.prepublication.fulfillment_compliance.evidence_ref,
     fulfillment_compliance_verified_at:
       input.certification.prepublication.fulfillment_compliance.verified_at,
+    shipping_template_id:
+      input.certification.shipping_template.template_id,
+    shipping_template_sha256:
+      input.certification.shipping_template.template_sha256,
+    shipping_template_evidence_ref:
+      input.certification.shipping_template.evidence_ref,
+    shipping_template_fulfillment_center_id:
+      input.certification.walmart.offer_handoff
+        .fulfillment_center_id,
+    shipping_template_association_payload_sha256:
+      shippingAssociationContract.payload_sha256,
+    shipping_scenario_id:
+      input.certification.prepublication.pricing_competitiveness
+        .shipping_scenario_id,
+    customer_shipping_charge_cents:
+      input.certification.prepublication.pricing_competitiveness
+        .customer_shipping_charge_cents,
+    customer_total_cents:
+      input.certification.prepublication.pricing_competitiveness
+        .proposed_customer_total_cents,
     item_spec_schema_sha256: fetchedSpec.schema_sha256,
     source_evidence_sha256: sha256WalmartJson(sourceReceipt),
     marketplace_mutation_allowed: false,
@@ -2396,6 +2431,14 @@ export async function applyCertifiedWalmartNewSku(input: {
     bundle_draft_id: draft.id,
     apply: input.live,
     actor,
+    walmartShippingTemplateAssociation: {
+      sku: input.certification.sku,
+      shipping_template_id:
+        input.certification.shipping_template_id,
+      fulfillment_center_id:
+        input.certification
+          .shipping_template_fulfillment_center_id,
+    },
     beforeWalmartFeedPost: input.live
       ? async () => {
           try {
@@ -2523,6 +2566,8 @@ export interface VerifyCertifiedWalmartNewSkuResult {
   listing_status: string;
   lifecycle_status: string;
   submission_attempt_binding: WalmartCertifiedSubmissionAttemptBinding | null;
+  shipping_template_association:
+    WalmartNewSkuVerifyReceipt["shipping_template_association"];
 }
 
 /** Read Walmart state and reconcile the local lifecycle. It never mutates
@@ -2635,6 +2680,60 @@ export async function verifyCertifiedWalmartNewSku(input: {
       "Walmart verify result escaped the exact certified submission attempt",
     );
   }
+  const expectedShippingAssociation = {
+    sku: input.certification.sku,
+    shipping_template_id:
+      input.certification.shipping_template_id,
+    fulfillment_center_id:
+      input.certification
+        .shipping_template_fulfillment_center_id,
+  };
+  let shippingTemplateAssociation:
+    WalmartNewSkuVerifyReceipt["shipping_template_association"] = {
+      status: attemptBinding
+        ? "WAITING_FOR_ITEM"
+        : "NOT_SUBMITTED",
+      checked_at: null,
+      expected: expectedShippingAssociation,
+      match: null,
+      correlation_id: null,
+      response_sha256: null,
+    };
+  if (
+    attemptBinding &&
+    (
+      Boolean(after.walmart_item_id) ||
+      after.listing_status === "LIVE"
+    )
+  ) {
+    assertCurrentWalmartSellerAccountBinding(input.certification);
+    const associationResponse = await getWalmartClient(
+      input.certification.store_index,
+    ).requestRaw("POST", "/items/associations", {
+      body: buildWalmartItemAssociationsRequest(
+        input.certification.sku,
+      ),
+      noRetryOn429: true,
+    });
+    if (!associationResponse.ok || associationResponse.status !== 200) {
+      throw new Error(
+        `Walmart item-association read failed with HTTP ${associationResponse.status}`,
+      );
+    }
+    const associationMatch = findExactWalmartShippingAssociation(
+      associationResponse.body,
+      expectedShippingAssociation,
+    );
+    shippingTemplateAssociation = {
+      status: associationMatch ? "VERIFIED" : "PENDING",
+      checked_at: new Date().toISOString(),
+      expected: expectedShippingAssociation,
+      match: associationMatch,
+      correlation_id: associationResponse.correlationId,
+      response_sha256:
+        sha256WalmartJson(associationResponse.body),
+    };
+  }
   return {
     poll_result: pollResult,
     buyer_evidence_recorded: buyerEvidenceRecorded,
@@ -2642,5 +2741,7 @@ export async function verifyCertifiedWalmartNewSku(input: {
     listing_status: after.listing_status,
     lifecycle_status: after.lifecycle_status,
     submission_attempt_binding: attemptBinding,
+    shipping_template_association:
+      shippingTemplateAssociation,
   };
 }

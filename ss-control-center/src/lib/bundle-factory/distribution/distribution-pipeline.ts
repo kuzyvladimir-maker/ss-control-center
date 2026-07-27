@@ -58,6 +58,9 @@ import {
   assertWalmartOwnerPermitSignature,
   walmartOwnerPermitTransportEnvironment,
 } from "../walmart-owner-permit";
+import type {
+  WalmartShippingAssociationExpectation,
+} from "../walmart-shipping-template-association";
 
 // Amazon SP-API Listings PUT: 5 req/sec per store; we use 4 to leave
 // headroom. Walmart: 8 req/sec per store; we use 6.
@@ -86,6 +89,8 @@ export interface RunDistributionInput {
   republish?: boolean;
   actor?: string;
   walmartPilotPermit?: WalmartPilotSubmissionPermit;
+  walmartShippingTemplateAssociation?:
+    WalmartShippingAssociationExpectation;
   /** Engine-only mutation-adjacent guard. It runs after the durable claim and
    * immediately before Walmart POST /feeds. */
   beforeWalmartFeedPost?: () => void | Promise<void>;
@@ -110,6 +115,9 @@ export interface ChannelDistributionOutcome {
   dry_run: boolean;
   /** The exact payload we sent (or would have sent in dry-run). */
   payload: Record<string, unknown>;
+  shipping_template_submission_id?: string | null;
+  shipping_template_status?: string | null;
+  shipping_template_payload?: unknown;
   error?: string;
 }
 
@@ -130,6 +138,8 @@ export interface RunWalmartPilotDistributionInput {
   apply?: boolean;
   actor?: string;
   walmartPilotPermit?: WalmartPilotSubmissionPermit;
+  walmartShippingTemplateAssociation:
+    WalmartShippingAssociationExpectation;
   beforeWalmartFeedPost?: () => void | Promise<void>;
 }
 
@@ -410,6 +420,8 @@ export async function runDistribution(
         packCount: masterBundle?.pack_count,
         physicalPackageSpecs: verifiedPhysicalSpecs,
         dryRun: true,
+        shippingTemplateAssociation:
+          input.walmartShippingTemplateAssociation,
       });
       if (!prepared.ok) {
         throw new Error(
@@ -705,6 +717,8 @@ export async function runDistribution(
             packCount: masterBundle?.pack_count,
             physicalPackageSpecs: verifiedPhysicalSpecs,
             dryRun: true,
+            shippingTemplateAssociation:
+              input.walmartShippingTemplateAssociation,
           }));
         if (!apply || !prepared.ok) {
           outcome = {
@@ -718,6 +732,12 @@ export async function runDistribution(
             marketplace_status: prepared.walmart_status,
             dry_run: true,
             payload: prepared.payload,
+            shipping_template_submission_id:
+              prepared.shipping_template_feed_id,
+            shipping_template_status:
+              prepared.shipping_template_status,
+            shipping_template_payload:
+              prepared.shipping_template_payload,
             error: prepared.error,
           };
         } else {
@@ -782,6 +802,8 @@ export async function runDistribution(
                   attemptId: claim.attempt_id,
                   claimToken: claim.claim_token,
                 },
+                shippingTemplateAssociation:
+                  input.walmartShippingTemplateAssociation,
               });
               if (hashWalmartPayload(r.payload) !== claim.payload_hash) {
                 submitError =
@@ -812,6 +834,12 @@ export async function runDistribution(
                 marketplace_status: r.walmart_status,
                 dry_run: false,
                 payload: r.payload,
+                shipping_template_submission_id:
+                  r.shipping_template_feed_id,
+                shipping_template_status:
+                  r.shipping_template_status,
+                shipping_template_payload:
+                  r.shipping_template_payload,
               };
             } else {
               const failure = await recordWalmartSynchronousFailure({
@@ -954,6 +982,8 @@ export async function runWalmartPilotDistribution(
     batchSize: WALMART_PILOT_MAX_APPLY_SKUS,
     actor: input.actor ?? "walmart-pilot-engine",
     walmartPilotPermit: input.walmartPilotPermit,
+    walmartShippingTemplateAssociation:
+      input.walmartShippingTemplateAssociation,
     beforeWalmartFeedPost: input.beforeWalmartFeedPost,
   });
 }

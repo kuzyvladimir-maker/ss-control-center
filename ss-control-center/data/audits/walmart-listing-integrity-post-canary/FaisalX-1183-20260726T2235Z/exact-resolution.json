@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1183",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1183",
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    "upc": "684611898937",
+    "gtin14": "00684611898937",
+    "wpid": "157F37H8RG4R",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "8419413379",
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-6_1907a57d-9f26-4671-93b7-b2b79534219b.597e2d703f689db6597ddecad0b164fe.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "82140fa859604cf56b71b2fe20169d173d16fead7445bea1b5202cb2dc391fe8",
+    "catalog_search_payload_canonical_sha256": "9592026d060b6b659dea31a53787c844c2c8db11c25e0f8a9179578c65ad84b4"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1183",
+    "seller.ItemResponse[0].sku=FaisalX-1183",
+    "seller.ItemResponse[0].upc=684611898937",
+    "seller.normalized_gtin14=00684611898937",
+    "seller.wpid_not_itemId=157F37H8RG4R",
+    "catalog.items[0].standardUpc~=00684611898937;itemId=8419413379",
+    "catalog.unique_numeric_public_itemId=8419413379"
+  ]
+}

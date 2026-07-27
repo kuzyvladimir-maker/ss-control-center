@@ -11,7 +11,7 @@ import {
 } from "./walmart-new-sku-packaging-artwork";
 
 export const WALMART_NEW_SKU_OWNER_PREVIEW_SCHEMA =
-  "walmart-new-sku-owner-preview-gallery/1.1.0" as const;
+  "walmart-new-sku-owner-preview-gallery/1.2.0" as const;
 
 export interface WalmartNewSkuOwnerPreviewSource {
   generatedAt: string;
@@ -169,6 +169,14 @@ export function buildWalmartNewSkuOwnerPreviewGallery(
       source_description_preview: description,
       ingredients,
       price_cents: economics.item_price_cents,
+      shipping: {
+        selection_status: "FREE_SHIPPING_OWNER_PREVIEW" as const,
+        customer_shipping_charge_cents: 0,
+        customer_total_cents: economics.customer_total_cents,
+        live_template_id: null,
+        live_template_binding_status:
+          "REQUIRED_BEFORE_CERTIFICATION" as const,
+      },
       economics,
       comparable: {
         exact_component_unit_price_cents: input.unitPriceCents,
@@ -215,6 +223,8 @@ export function buildWalmartNewSkuOwnerPreviewGallery(
       referral_fee_bps: 1_500,
       comparable_is_informational_not_hard_reject: true,
       walmart_pricing_rule_can_still_unpublish: true,
+      current_previews_use_free_shipping: true,
+      shipping_template_binding_required_before_certification: true,
       marketplace_mutated: false,
       database_mutated: false,
       upc_reserved: false,

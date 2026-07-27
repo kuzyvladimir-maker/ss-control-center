@@ -1,0 +1,496 @@
+{
+  "schema_version": "walmart-new-sku-doctor-diagnostic/1.0.0",
+  "artifact_role": "BLOCKED_DOCTOR_DIAGNOSTIC_ONLY",
+  "acceptable_as_doctor_receipt": false,
+  "requested_doctor_receipt": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/doctor/20260727T040500Z-v26-pack2/doctor.json",
+  "engine": "walmart-new-sku-engine",
+  "command": "doctor",
+  "checked_at": "2026-07-27T04:04:09.163Z",
+  "read_only": true,
+  "database": "ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+  "store": {
+    "store_index": 1,
+    "configured": true,
+    "store_name": "SIRIUS TRADING INTERNATIONAL LLC",
+    "seller_id_present": true
+  },
+  "item_spec": {
+    "configured_version": "5.0.20260501-19_21_29-api",
+    "live_get_spec_required_before_certification": true
+  },
+  "walmart_api_probe": {
+    "method": "GET",
+    "path": "/v3/items/walmart/search",
+    "response_format": "SPEC",
+    "upc_sha256": "6452b6c92ba2036a989df1e80de8700cf9135a3bcb0a3f890880e4dfda86ac5b",
+    "http_status": 200,
+    "correlation_id": "bca17313-1477-42ea-ad16-b5a7daf688b4",
+    "response_sha256": "ffc9a1b820797401f98a10ec956ae014346653694ec72f337a0665119907c73e",
+    "authenticated_catalog_read": true
+  },
+  "database_target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "database_schema_sha256": "e16bdce3e2878b1b3aa57b92b6ad554c2c7edaa6b8cb20d5849b5daf8e5ffa7b",
+  "engine_release_sha256": "e44553afaf59ff57b0d02181bcfb8bcbcd3f0914043116a44db1681c57a78135",
+  "expected_engine_release_sha256": "e44553afaf59ff57b0d02181bcfb8bcbcd3f0914043116a44db1681c57a78135",
+  "release_manifest_sha256": "e441a1c00a368b3d831004c1f87fceac26d1336a328d1eb19c1d746286991460",
+  "frozen_release_verified": true,
+  "frozen_release_source_modes_verified": true,
+  "planning_scope": {
+    "as_of": "2026-07-27T04:03:30.000Z",
+    "zip": "33765",
+    "max_price_age_ms": 86400000,
+    "limit": 1,
+    "pack_count": 2
+  },
+  "owner_permit_trust": {
+    "ready": true,
+    "active_key_ids": [
+      "walmart-owner-control-2026-01"
+    ],
+    "active_key_fingerprints": [
+      "ca74a2134808ab46eb162b14dfe481730fc69df00b57283cffd7a7bb1d37883a"
+    ]
+  },
+  "product_truth": {
+    "schema_ready": true,
+    "error": null,
+    "current_candidate_count_sample": 0,
+    "commercial_discovery": {
+      "schema_version": "walmart-new-sku-commercial-discovery/1.1.0",
+      "authority": "PROVISIONAL_PRODUCT_TRUTH_GAP_PRIORITY_ONLY_NOT_LISTING_TRUTH",
+      "as_of": "2026-07-27T04:03:30.000Z",
+      "pack_count": 2,
+      "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+      "full_seller_catalog_read": false,
+      "paid_provider_calls": 0,
+      "marketplace_calls": 0,
+      "candidates": [
+        {
+          "donor_product_id": "ead83741-636f-4e27-a089-50a7bdd83c7c",
+          "title": "Kool-Aid Unsweetened Black Cherry Powdered Soft Drink Mix, 0.13 oz Packet, Powders",
+          "brand": "Kool-Aid",
+          "size": "0.13 oz",
+          "category": "Dry",
+          "manufacturer_upc": "043000955673",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10292781",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Black-Cherry-Artificially-Flavored-Powdered-Soft-Drink-Mix-0-13-oz-Packet/10292781?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-08T03:48:56.847Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10292781",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Black-Cherry-Artificially-Flavored-Powdered-Soft-Drink-Mix-0-13-oz-Packet/10292781?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-08T03:48:56.847Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 94,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2040,
+            "linearized_walmart_comparable_cents": 94,
+            "proposed_to_comparable_ratio_bps": 217022,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "0ece0519-8925-4593-9ade-df0536327c9a",
+          "title": "Kool-Aid Unsweetened Blue Raspberry Lemonade Powdered Drink Mix, 0.22 oz. Packet",
+          "brand": "Kool-Aid",
+          "size": "0.22 oz",
+          "category": "Dry",
+          "manufacturer_upc": "043000955475",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "19757603",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Blue-Raspberry-Lemonade-Artificially-Flavored-Powdered-Drink-Mix-0-22-oz-Packet/19757603?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-08T03:48:56.848Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "19757603",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Blue-Raspberry-Lemonade-Artificially-Flavored-Powdered-Drink-Mix-0-22-oz-Packet/19757603?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-08T03:48:56.848Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 94,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2040,
+            "linearized_walmart_comparable_cents": 94,
+            "proposed_to_comparable_ratio_bps": 217022,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "ad475c02-c425-44ff-a683-54d3e51f8860",
+          "title": "Kool-Aid Unsweetened Cherry Powdered Soft Drink Mix, 0.13 oz Packet, Powders",
+          "brand": "Kool-Aid",
+          "size": "0.13 oz",
+          "category": "Dry",
+          "manufacturer_upc": "043000955628",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10292779",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Cherry-Artificially-Flavored-Powdered-Soft-Drink-Mix-0-13-oz-Packet/10292779?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-10T12:59:11.630Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10292779",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Cherry-Artificially-Flavored-Powdered-Soft-Drink-Mix-0-13-oz-Packet/10292779?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-10T12:59:11.630Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 94,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2040,
+            "linearized_walmart_comparable_cents": 94,
+            "proposed_to_comparable_ratio_bps": 217022,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "2df5fd0a-6701-4c9b-8685-d61af55c3ddb",
+          "title": "Kool-Aid Unsweetened Grape Powdered Drink Mix, 0.14 oz. Packet",
+          "brand": "Kool-Aid",
+          "size": "0.14 oz",
+          "category": "Dry",
+          "manufacturer_upc": "043000955635",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10292780",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Grape-Artificially-Flavored-Powdered-Drink-Mix-0-14-oz-Packet/10292780?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-10T12:59:11.630Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10292780",
+            "product_url": "https://www.walmart.com/ip/Kool-Aid-Unsweetened-Grape-Artificially-Flavored-Powdered-Drink-Mix-0-14-oz-Packet/10292780?classType=VARIANT&athbdg=L1102",
+            "unit_price_cents": 47,
+            "fetched_at": "2026-07-10T12:59:11.630Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 94,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2040,
+            "linearized_walmart_comparable_cents": 94,
+            "proposed_to_comparable_ratio_bps": 217022,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "5da54611-89be-4ba9-976c-360613ef50d8",
+          "title": "Cheetos Flamin Hot Flavored Single-Serve Puffed Snacks Chips, 0.87 Ounce Bag (Packaging May Vary)",
+          "brand": "Cheetos",
+          "size": null,
+          "category": "Dry",
+          "manufacturer_upc": "028400091473",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "118830401",
+            "product_url": "https://www.walmart.com/ip/Cheetos-Flamin-Hot-Flavored-Single-Serve-Puffed-Snacks-Chips-0-87-Ounce-Bag-Packaging-May-Vary/118830401?classType=VARIANT",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-08T02:34:11.292Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "118830401",
+            "product_url": "https://www.walmart.com/ip/Cheetos-Flamin-Hot-Flavored-Single-Serve-Puffed-Snacks-Chips-0-87-Ounce-Bag-Packaging-May-Vary/118830401?classType=VARIANT",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-08T02:34:11.292Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 96,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2045,
+            "linearized_walmart_comparable_cents": 96,
+            "proposed_to_comparable_ratio_bps": 213021,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "03c91c3c-e16c-4181-8d9d-8dbac945f6b2",
+          "title": "Chester's Fries Flamin' Hot Flavored Corn & Potato Snacks, 1 oz Bag (Packaging may vary)",
+          "brand": "Chester'S",
+          "size": "1 oz",
+          "category": "Dry",
+          "manufacturer_upc": "028400069151",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "912214594",
+            "product_url": "https://www.walmart.com/ip/Chester-s-Fries-Flamin-Hot-Flavored-Corn-Potato-Snacks-1-oz-Bag-Packaging-may-vary/912214594?classType=REGULAR",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-08T15:30:09.166Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "912214594",
+            "product_url": "https://www.walmart.com/ip/Chester-s-Fries-Flamin-Hot-Flavored-Corn-Potato-Snacks-1-oz-Bag-Packaging-may-vary/912214594?classType=REGULAR",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-08T15:30:09.166Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 96,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2045,
+            "linearized_walmart_comparable_cents": 96,
+            "proposed_to_comparable_ratio_bps": 213021,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "2f7e75b0-9e1f-4719-810d-3127869423eb",
+          "title": "Fritos The Original Flavored Corn Chips Snack Chips, 1oz Bag",
+          "brand": "Fritos",
+          "size": "1 oz",
+          "category": "Dry",
+          "manufacturer_upc": "028400040037",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "17177094",
+            "product_url": "https://www.walmart.com/ip/Fritos-The-Original-Flavored-Corn-Chips-Snack-Chips-1oz-Bag/17177094?classType=VARIANT",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-10T13:22:23.616Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "17177094",
+            "product_url": "https://www.walmart.com/ip/Fritos-The-Original-Flavored-Corn-Chips-Snack-Chips-1oz-Bag/17177094?classType=VARIANT",
+            "unit_price_cents": 48,
+            "fetched_at": "2026-07-10T13:22:23.616Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 96,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2045,
+            "linearized_walmart_comparable_cents": 96,
+            "proposed_to_comparable_ratio_bps": 213021,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "50a63e7d-5bec-460e-93c3-25559fcdd010",
+          "title": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+          "brand": "Maruchan",
+          "size": "2.25 oz",
+          "category": "Dry",
+          "manufacturer_upc": "041789001215",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10450893",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Chicken-Flavor-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450893?classType=VARIANT&athbdg=L1600",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-11T13:59:21.074Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10450893",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Chicken-Flavor-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450893?classType=VARIANT&athbdg=L1600",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-11T13:59:21.074Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 128,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2103,
+            "linearized_walmart_comparable_cents": 128,
+            "proposed_to_comparable_ratio_bps": 164297,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "f16018b7-0029-4f20-9894-8389104557df",
+          "title": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+          "brand": "Maruchan",
+          "size": "2.25 oz",
+          "category": "Dry",
+          "manufacturer_upc": "041789001437",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10450899",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Hot-Spicy-Chicken-Flavor-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450899?classType=VARIANT",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-10T13:19:22.613Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10450899",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Hot-Spicy-Chicken-Flavor-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450899?classType=VARIANT",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-10T13:19:22.613Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 128,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2103,
+            "linearized_walmart_comparable_cents": 128,
+            "proposed_to_comparable_ratio_bps": 164297,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        },
+        {
+          "donor_product_id": "f0bcd1b5-334d-4654-92dd-393a19ce6346",
+          "title": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+          "brand": "Maruchan",
+          "size": "2.25 oz",
+          "category": "Dry",
+          "manufacturer_upc": "041789001055",
+          "pack_count": 2,
+          "source_offer": {
+            "retailer": "walmart",
+            "retailer_product_id": "10450891",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Lime-Flavor-with-Shrimp-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450891?classType=REGULAR&athbdg=L1600",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-10T13:48:08.673Z",
+            "stale_or_unparseable": true
+          },
+          "walmart_comparable": {
+            "retailer_product_id": "10450891",
+            "product_url": "https://www.walmart.com/ip/Maruchan-Instant-Lunch-Lime-Flavor-with-Shrimp-Ramen-Noodles-2-25-oz-Shelf-Stable-Cup/10450891?classType=REGULAR&athbdg=L1600",
+            "unit_price_cents": 64,
+            "fetched_at": "2026-07-10T13:48:08.673Z",
+            "stale_or_unparseable": true
+          },
+          "provisional_economics": {
+            "goods_cents": 128,
+            "packaging_cents": 150,
+            "seller_shipping_label_cents": 878,
+            "referral_fee_bps": 1500,
+            "target_margin_bps": 3000,
+            "minimum_item_price_cents": 2103,
+            "linearized_walmart_comparable_cents": 128,
+            "proposed_to_comparable_ratio_bps": 164297,
+            "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+            "source_discount_bps": 0
+          },
+          "evidence_status": "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE"
+        }
+      ],
+      "claims": {
+        "candidates_are_not_canonical_listing_inputs": true,
+        "fresh_exact_product_truth_evidence_required": true,
+        "fresh_exact_walmart_comparable_required": true,
+        "walmart_comparable_is_informational_not_candidate_rejection": true,
+        "walmart_pricing_rule_can_still_unpublish": true,
+        "exact_dimensions_and_shipping_quote_required": true,
+        "clubs_require_separate_owner_approved_plan": true
+      }
+    },
+    "commercial_discovery_error": null,
+    "commercial_discovery_can_enter_plan": false
+  },
+  "duplicate_guard": {
+    "binding_id": "walmart-exact-identifier-guard-065d91563e2f0a42",
+    "body_sha256": "065d91563e2f0a42d60ffeea231333063f93cd286f97fb8b289ab7801486e53c",
+    "mode": "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+    "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+    "full_seller_catalog_required": false,
+    "exact_seller_sku_absence_required_before_certification": true,
+    "exact_upc_catalog_search_required_before_certification": true,
+    "error": null
+  },
+  "upc_pool": {
+    "available": 13043,
+    "available_with_legacy_checksum_flag_and_provenance": 13043,
+    "duplicate_draft_reservations": 0,
+    "legacy_gs1_validated_field_is_not_registry_proof": true,
+    "certification_requires_fresh_registry_brand_and_seller_authority_evidence": true
+  },
+  "publish_lifecycle": {
+    "submission_ledger_schema_ready": true,
+    "buyer_evidence_schema_ready": true,
+    "canonical_schema_ready": true,
+    "missing": [],
+    "error": null,
+    "processed_feed_alone_can_mark_live": false
+  },
+  "ready_for_plan": false,
+  "infrastructure_ready_for_pilot": false,
+  "ready_for_live_apply": false,
+  "live_apply_requires": [
+    "SEALED_CANDIDATE_CERTIFICATION",
+    "FRESH_DRY_RUN_RECEIPT",
+    "FRESH_DOCTOR_RECEIPT",
+    "SEALED_INTERNAL_APPROVAL",
+    "APPLY_PREVIEW_REVIEW",
+    "EXTERNAL_OWNER_PERMIT"
+  ],
+  "blockers": [
+    "NO_CURRENT_CANONICAL_PILOT_CANDIDATES"
+  ],
+  "doctor_receipt": null,
+  "doctor_receipt_sha256": null,
+  "doctor_receipt_written": false,
+  "next_argv": null,
+  "next_command": null
+}

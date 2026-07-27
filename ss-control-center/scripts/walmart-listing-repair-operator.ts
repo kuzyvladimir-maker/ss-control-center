@@ -23,6 +23,9 @@ import {
   readWalmartListingRepairPermitLedgerEvidence,
 } from "../src/lib/walmart/listing-integrity-remediation-ledger.ts";
 import {
+  qualifyWalmartListingRepairFreshLive,
+} from "../src/lib/walmart/listing-integrity-remediation-live-qualification.ts";
+import {
   createWalmartListingRepairProductionDependencies,
 } from "../src/lib/walmart/listing-integrity-remediation-production-dependencies.ts";
 import {
@@ -31,15 +34,22 @@ import {
 import {
   executeWalmartListingRepairOneSku,
   inspectWalmartListingRepairWriterProductionReadiness,
+  recoverWalmartListingRepairAcceptedPost,
   resumeWalmartListingRepairFeedPoll,
+  resumeWalmartListingRepairRecoveredFeed,
   type WalmartListingRepairProductionExecutionInput,
   type WalmartListingRepairWriterResult,
 } from "../src/lib/walmart/listing-integrity-remediation-writer.ts";
+import {
+  executeWalmartListingSingleProcess,
+} from "./walmart-listing-integrity-process.ts";
 
 export const WALMART_LISTING_REPAIR_OPERATOR_RECEIPT_SCHEMA =
   "walmart-listing-repair-operator-receipt/v1" as const;
 
-type Command = "doctor" | "plan" | "execute" | "resume" | "status" | "report" | "help";
+type Command =
+  | "doctor" | "plan" | "execute" | "recover-accepted"
+  | "resume-recovered" | "resume" | "qualify" | "status" | "report" | "help";
 type JsonRecord = Record<string, unknown>;
 
 interface ParsedArgs {
@@ -50,6 +60,7 @@ interface ParsedArgs {
   doctor_receipt_sha256: string | null;
   plan_receipt_path: string | null;
   plan_receipt_sha256: string | null;
+  capture_dir: string | null;
   confirm: string | null;
   out: string | null;
 }
@@ -61,9 +72,20 @@ const COMMAND_FLAGS: Readonly<Record<Command, ReadonlySet<string>>> = Object.fre
     "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
     "plan-receipt", "plan-receipt-sha256", "confirm", "out",
   ]),
-  resume: new Set([
+  "recover-accepted": new Set([
     "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
-    "plan-receipt", "plan-receipt-sha256", "confirm", "out",
+    "confirm", "out",
+  ]),
+  "resume-recovered": new Set([
+    "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
+    "confirm", "out",
+  ]),
+  resume: new Set([
+    "package", "package-sha256", "confirm", "out",
+  ]),
+  qualify: new Set([
+    "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
+    "capture-dir", "out",
   ]),
   status: new Set(["package", "package-sha256", "out"]),
   report: new Set(["package", "package-sha256", "out"]),
@@ -118,7 +140,10 @@ function exactPath(value: string | null, label: string): string {
 
 function parseCommand(value: string | undefined): Command {
   const command = value ?? "help";
-  if (!["doctor", "plan", "execute", "resume", "status", "report", "help"].includes(command)) {
+  if (![
+    "doctor", "plan", "execute", "recover-accepted",
+    "resume-recovered", "resume", "qualify", "status", "report", "help",
+  ].includes(command)) {
     fail("INVALID_CLI", `unknown command ${command}`);
   }
   return command as Command;
@@ -149,6 +174,7 @@ export function parseWalmartListingRepairOperatorArgs(argv: readonly string[]): 
     doctor_receipt_sha256: values.get("doctor-receipt-sha256") ?? null,
     plan_receipt_path: values.get("plan-receipt") ?? null,
     plan_receipt_sha256: values.get("plan-receipt-sha256") ?? null,
+    capture_dir: values.get("capture-dir") ?? null,
     confirm: values.get("confirm") ?? null,
     out: values.get("out") ?? null,
   };
@@ -305,13 +331,19 @@ function permitFromExecution(
   return structuredClone(execution.writer_input.one_sku_permit) as WalmartListingRepairOneSkuPermit;
 }
 
-function externalEffects(networkCalls: number | "BOUNDED_GET_ONLY" = 0) {
+function externalEffects(
+  networkCalls: number | "BOUNDED_GET_ONLY" | "BOUNDED_LIVE_REREAD" = 0,
+) {
   return {
     network_calls: networkCalls,
     model_calls: 0,
     paid_provider_calls: 0,
     database_writes: 0,
-    walmart_content_writes: networkCalls === 0 || networkCalls === "BOUNDED_GET_ONLY" ? 0 : 1,
+    walmart_content_writes:
+      networkCalls === 0
+      || networkCalls === "BOUNDED_GET_ONLY"
+      || networkCalls === "BOUNDED_LIVE_REREAD"
+        ? 0 : 1,
   };
 }
 
@@ -390,7 +422,10 @@ export async function runWalmartListingRepairOperator(
     return emit(receipt({
       command: "help",
       status: "OK",
-      commands: ["doctor", "plan", "execute", "resume", "status", "report"],
+      commands: [
+        "doctor", "plan", "execute", "recover-accepted",
+        "resume-recovered", "resume", "qualify", "status", "report",
+      ],
       marketplace_write_authorized: false,
       external_effects: externalEffects(),
       next_command: "doctor --out <ABS>",
@@ -419,14 +454,14 @@ export async function runWalmartListingRepairOperator(
       expected_binding: permit.signed_body.consumption_ledger,
       permit_authorization_sha256: permit.authorization_sha256,
     });
-    const state = String((ledger as JsonRecord).state ?? "NOT_INITIALIZED");
+    const state = String((ledger as unknown as JsonRecord).state ?? "NOT_INITIALIZED");
     const artifacts = state === "READY" ? null : await readWalmartListingRepairArtifactCustodyEvidence({
       custody_root: loaded.execution.production_context.artifact_custody_root,
       permit,
     });
     const nextCommand = state === "ACCEPTED"
       ? "resume"
-      : state === "SUCCEEDED" ? "fresh-live-reread-and-qualification"
+      : state === "SUCCEEDED" ? "qualify"
       : state === "REQUESTING" || state === "AMBIGUOUS"
         ? null : "owner-review-replan";
     return emit(receipt({
@@ -442,6 +477,40 @@ export async function runWalmartListingRepairOperator(
       automatic_reapply_allowed: false,
       external_effects: externalEffects(),
       next_command: nextCommand,
+    }), args.out);
+  }
+
+  if (args.command === "resume") {
+    const permit = permitFromExecution(loaded.execution);
+    const exactConfirm =
+      `RESUME_EXACT_FEED_GET_ONLY:${permit.authorization_sha256}`;
+    if (args.confirm !== exactConfirm) {
+      fail(
+        "CONFIRMATION_MISMATCH",
+        `exact confirmation required: ${exactConfirm}`,
+      );
+    }
+    const result = await resumeWalmartListingRepairFeedPoll(loaded.execution);
+    return emit(receipt({
+      command: args.command,
+      completed_at: now.toISOString(),
+      status: result.status,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: result.listing,
+      plan_id: result.plan_id,
+      plan_body_sha256: result.plan_body_sha256,
+      permit_authorization_sha256: result.permit_authorization_sha256,
+      feed_id: result.feed_id,
+      reason_code: result.reason_code,
+      marketplace_write_calls: result.marketplace_write_calls,
+      continuation_marketplace_write_calls: 0,
+      automatic_reapply_allowed: false,
+      next_action: result.next_action,
+      evidence_sha256: resultEvidenceHashes(result),
+      transport_counts: result.transport_counts,
+      external_effects: externalEffects("BOUNDED_GET_ONLY"),
+      next_command: result.next_action,
     }), args.out);
   }
 
@@ -478,6 +547,119 @@ export async function runWalmartListingRepairOperator(
     }), args.out);
   }
 
+  if (args.command === "qualify") {
+    const permit = permitFromExecution(loaded.execution);
+    const ledger = await readWalmartListingRepairPermitLedgerEvidence({
+      state_directory: loaded.execution.production_context.ledger_state_directory,
+      expected_binding: permit.signed_body.consumption_ledger,
+      permit_authorization_sha256: permit.authorization_sha256,
+    });
+    if (String((ledger as unknown as JsonRecord).state ?? "") !== "SUCCEEDED") {
+      fail("QUALIFICATION_NOT_READY", "fresh Qualification requires terminal SUCCEEDED ledger state");
+    }
+    const artifacts = await readWalmartListingRepairArtifactCustodyEvidence({
+      custody_root: loaded.execution.production_context.artifact_custody_root,
+      permit,
+    });
+    const captureDir = exactPath(args.capture_dir, "--capture-dir");
+    const capture = await executeWalmartListingSingleProcess({
+      command: "inspect",
+      sku: loaded.execution.writer_input.plan.listing.sku,
+      store_index: loaded.execution.writer_input.plan.listing.store_index,
+      output_dir: captureDir,
+    });
+    const qualification = await qualifyWalmartListingRepairFreshLive({
+      plan: loaded.execution.writer_input.plan,
+      permit_authorization_sha256: permit.authorization_sha256,
+      ledger_evidence: ledger,
+      artifact_custody_evidence: artifacts,
+      fresh_capture_directory: captureDir,
+      capture_summary: capture,
+      evaluated_at: new Date(),
+    });
+    return emit(receipt({
+      command: args.command,
+      completed_at: qualification.qualified_at,
+      status: qualification.verdict,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: qualification.listing,
+      plan_id: qualification.plan_id,
+      plan_body_sha256: qualification.plan_body_sha256,
+      permit_authorization_sha256: qualification.permit_authorization_sha256,
+      feed_id: qualification.feed_id,
+      qualification,
+      marketplace_write_authorized: false,
+      automatic_reapply_allowed: false,
+      external_effects: externalEffects("BOUNDED_LIVE_REREAD"),
+      next_command: qualification.verdict === "PASS"
+        ? null : "qualify --fresh-live-reread-no-write",
+    }), args.out);
+  }
+
+  if (args.command === "recover-accepted") {
+    const permit = permitFromExecution(loaded.execution);
+    const exactConfirm =
+      `RECOVER_ACCEPTED_WALMART_POST_GET_ONLY:${permit.authorization_sha256}:`
+      + permit.signed_body.request_payload_sha256;
+    if (args.confirm !== exactConfirm) {
+      fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
+    }
+    const result = await recoverWalmartListingRepairAcceptedPost(loaded.execution);
+    return emit(receipt({
+      command: args.command,
+      completed_at: now.toISOString(),
+      status: result.status,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: result.listing,
+      plan_id: result.plan_id,
+      plan_body_sha256: result.plan_body_sha256,
+      permit_authorization_sha256: result.permit_authorization_sha256,
+      feed_id: result.feed_id,
+      reason_code: result.reason_code,
+      marketplace_write_calls: result.marketplace_write_calls,
+      recovery_marketplace_write_calls: 0,
+      automatic_reapply_allowed: false,
+      next_action: result.next_action,
+      evidence_sha256: resultEvidenceHashes(result),
+      transport_counts: result.transport_counts,
+      external_effects: externalEffects("BOUNDED_GET_ONLY"),
+      next_command: result.next_action,
+    }), args.out);
+  }
+
+  if (args.command === "resume-recovered") {
+    const permit = permitFromExecution(loaded.execution);
+    const exactConfirm =
+      `RESUME_RECOVERED_WALMART_FEED_GET_ONLY:${permit.authorization_sha256}`;
+    if (args.confirm !== exactConfirm) {
+      fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
+    }
+    const result = await resumeWalmartListingRepairRecoveredFeed(loaded.execution);
+    return emit(receipt({
+      command: args.command,
+      completed_at: now.toISOString(),
+      status: result.status,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: result.listing,
+      plan_id: result.plan_id,
+      plan_body_sha256: result.plan_body_sha256,
+      permit_authorization_sha256: result.permit_authorization_sha256,
+      feed_id: result.feed_id,
+      reason_code: result.reason_code,
+      marketplace_write_calls: result.marketplace_write_calls,
+      continuation_marketplace_write_calls: 0,
+      automatic_reapply_allowed: false,
+      next_action: result.next_action,
+      evidence_sha256: resultEvidenceHashes(result),
+      transport_counts: result.transport_counts,
+      external_effects: externalEffects("BOUNDED_GET_ONLY"),
+      next_command: result.next_action,
+    }), args.out);
+  }
+
   const planReceipt = await loadReceipt({
     path: args.plan_receipt_path,
     sha256: args.plan_receipt_sha256,
@@ -492,14 +674,12 @@ export async function runWalmartListingRepairOperator(
   if (planReceipt.permit_authorization_sha256 !== permit.authorization_sha256) {
     fail("STALE_OPERATOR_RECEIPT", "plan receipt does not bind the exact owner permit");
   }
-  const exactConfirm = args.command === "execute"
-    ? `EXECUTE_ONE_WALMART_SKU:${permit.signed_body.listing.listing_key}:${permit.signed_body.plan_body_sha256}`
-    : `RESUME_EXACT_FEED_GET_ONLY:${permit.authorization_sha256}`;
+  const exactConfirm =
+    `EXECUTE_ONE_WALMART_SKU:${permit.signed_body.listing.listing_key}:`
+    + permit.signed_body.plan_body_sha256;
   if (args.confirm !== exactConfirm) fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
 
-  const result = args.command === "execute"
-    ? await executeWalmartListingRepairOneSku(loaded.execution)
-    : await resumeWalmartListingRepairFeedPoll(loaded.execution);
+  const result = await executeWalmartListingRepairOneSku(loaded.execution);
   return emit(receipt({
     command: args.command,
     completed_at: now.toISOString(),
@@ -518,9 +698,10 @@ export async function runWalmartListingRepairOperator(
     next_action: result.next_action,
     evidence_sha256: resultEvidenceHashes(result),
     transport_counts: result.transport_counts,
-    external_effects: args.command === "execute"
-      ? { ...result.external_effects, network_calls: result.transport_counts?.total_http_calls ?? 0 }
-      : externalEffects("BOUNDED_GET_ONLY"),
+    external_effects: {
+      ...result.external_effects,
+      network_calls: result.transport_counts?.total_http_calls ?? 0,
+    },
     next_command: result.next_action,
   }), args.out);
 }

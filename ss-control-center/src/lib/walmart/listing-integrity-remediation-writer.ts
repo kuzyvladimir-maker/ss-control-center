@@ -40,13 +40,22 @@ export const WALMART_LISTING_REPAIR_REQUEST_TIMEOUT_MS = 60_000;
 
 /** Filled only by the final frozen release. Null is an intentional production NO-GO. */
 const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null =
-  "e561faa313121ea92e933f1f954624a50de2012d2e4296b6485b91b8d981c12d";
+  "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
+/**
+ * One exact predecessor is accepted only by the no-replay recovery entrypoint.
+ * It is never used by normal plan/execute and cannot authorize a new POST.
+ */
+const PINNED_ACCEPTED_POST_RECOVERY_SOURCE_RELEASE_SHA256 =
+  "bd0f903ecbf8b3cc6ee570904516de31975b3c79c2ccc15c0b7e741f34f24100";
+const PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256 =
+  "dbb14ad1debc798e7b5b5493a46b67a91ee85e3919643fd1c098cf0e1ffe97ac";
 
 export function inspectWalmartListingRepairWriterProductionReadiness(): {
   apply_writer_release_pinned: boolean;
   apply_engine_release_sha256: string | null;
   fixed_dependency_factory_ready: true;
   native_one_shot_transport_ready: true;
+  accepted_post_recovery_source_release_sha256: string;
   caller_dependency_injection_allowed: false;
 } {
   return Object.freeze({
@@ -54,6 +63,8 @@ export function inspectWalmartListingRepairWriterProductionReadiness(): {
     apply_engine_release_sha256: PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256,
     fixed_dependency_factory_ready: true,
     native_one_shot_transport_ready: true,
+    accepted_post_recovery_source_release_sha256:
+      PINNED_ACCEPTED_POST_RECOVERY_SOURCE_RELEASE_SHA256,
     caller_dependency_injection_allowed: false,
   });
 }
@@ -282,6 +293,20 @@ export interface WalmartListingRepairArtifactSink {
   loadAccepted(input: {
     permit: WalmartListingRepairOneSkuPermit;
     accepted: WalmartListingRepairAcceptedReceipt;
+  }): Promise<{
+    request_manifest_bytes: Uint8Array;
+    request_payload_bytes: Uint8Array;
+    response_http_receipt_bytes: Uint8Array;
+    response_payload_bytes: Uint8Array;
+  }>;
+  /**
+   * Recovery-only custody read for the exact crash window where Walmart's
+   * accepted POST response is durable but the ACCEPTED ledger event is not.
+   * It must not create artifacts or perform network I/O.
+   */
+  loadAcceptedPostFromRequesting?(input: {
+    permit: WalmartListingRepairOneSkuPermit;
+    requesting: WalmartListingRepairRequestingReceipt;
   }): Promise<{
     request_manifest_bytes: Uint8Array;
     request_payload_bytes: Uint8Array;
@@ -1146,6 +1171,15 @@ function emptyEvidence(
   };
 }
 
+function boundedErrorCode(error: unknown, fallback: string): string {
+  if (error instanceof WalmartListingRepairWriterError) return error.code;
+  if (error && typeof error === "object" && "code" in error) {
+    const code = (error as { code?: unknown }).code;
+    if (typeof code === "string" && /^[A-Z][A-Z0-9_]{1,127}$/u.test(code)) return code;
+  }
+  return fallback;
+}
+
 function resultBase(input: {
   status: WalmartListingRepairWriterResult["status"];
   plan: SealedWalmartListingRepairPlan;
@@ -1526,6 +1560,32 @@ async function executeInternal(
     built.qualification_support_artifacts["target-image-certificate.json"],
     initialCertificateCheckAt,
   );
+
+  // Opening the native transport is side-effect free. Resolve credentials and
+  // prove the seller-account binding before persisting artifacts or burning the
+  // one-SKU permit so a missing/mis-scoped environment cannot consume owner
+  // authority. The same credential snapshot is rechecked synchronously at the
+  // final send boundary; OAuth/network still cannot start before REQUESTING.
+  let transport: WalmartListingRepairOneShotTransport;
+  try {
+    transport = dependencies.open_transport();
+    validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
+    assertAccountBinding(transport, sequence, plan);
+    validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
+  } catch (error) {
+    return resultBase({
+      status: "FAILED",
+      plan,
+      permit,
+      feed_id: null,
+      reason_code: boundedErrorCode(error, "TRANSPORT_PREFLIGHT_FAILED"),
+      writes: 0,
+      next_action: "OWNER_REVIEW_REPLAN",
+      evidence: emptyEvidence(built),
+      counts: null,
+    });
+  }
+
   await dependencies.artifact_sink.persist("PREPARED_REQUEST", {
     "request-manifest.json": built.request_manifest_bytes,
     "request-payload.json": built.payload_bytes,
@@ -1546,7 +1606,6 @@ async function executeInternal(
   // From this point the permit is permanently burned. Every failure returns a
   // terminal/no-retry state or a GET-only continuation.
   const beforePostEvidence = emptyEvidence(built);
-  let transport: WalmartListingRepairOneShotTransport | null = null;
   let postPromise: Promise<WalmartListingRepairTransportResponse> | null = null;
   let postInvoked = false;
   try {
@@ -1576,7 +1635,8 @@ async function executeInternal(
     ]);
 
     // Final synchronous boundary: current sequence, plan, permit, fresh READY,
-    // Product Truth, and target-image certificate are rebound before transport opens.
+    // Product Truth, target-image certificate, and the preflighted credential
+    // snapshot are rebound before POST.
     // There is deliberately no await between this block and POST invocation.
     const finalNow = nowDate(dependencies.now);
     const finalSequence = runtime.verifySequence(input.sequence_authorization, finalNow);
@@ -1599,7 +1659,6 @@ async function executeInternal(
       finalCertificateCheckAt,
       finalNow,
     );
-    transport = dependencies.open_transport();
     validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
     assertAccountBinding(transport, finalSequence, finalPlan);
     validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
@@ -1619,7 +1678,7 @@ async function executeInternal(
       max_response_bytes: WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES,
     });
   } catch (error) {
-    if (postInvoked && transport) {
+    if (postInvoked) {
       return postInvocationFailureResult({
         dependencies,
         transport,
@@ -1638,15 +1697,13 @@ async function executeInternal(
       outcome: terminalOutcome({
         state: "FAILED",
         terminal_at: nowDate(dependencies.now).toISOString(),
-        error_code: error instanceof WalmartListingRepairWriterError
-          ? error.code : "FINAL_PRE_SEND_GATE_FAILED",
+        error_code: boundedErrorCode(error, "FINAL_PRE_SEND_GATE_FAILED"),
         apply_id: applyId,
         writes: 0,
         evidence: beforePostEvidence,
       }),
       status: "FAILED",
-      reason_code: error instanceof WalmartListingRepairWriterError
-        ? error.code : "FINAL_PRE_SEND_GATE_FAILED",
+      reason_code: boundedErrorCode(error, "FINAL_PRE_SEND_GATE_FAILED"),
       feed_id: null,
       evidence: beforePostEvidence,
       counts: null,
@@ -1655,12 +1712,11 @@ async function executeInternal(
 
   let response: WalmartListingRepairTransportResponse;
   try {
-    if (!transport || !postPromise) {
+    if (!postPromise) {
       fail("FINAL_PRE_SEND_GATE_FAILED", "POST promise was not created at send boundary");
     }
     response = await postPromise;
   } catch {
-    if (!transport) fail("FINAL_PRE_SEND_GATE_FAILED", "transport is unavailable after POST");
     return postInvocationFailureResult({
       dependencies,
       transport,
@@ -1845,6 +1901,33 @@ function productionAuthorityRuntime(): WriterAuthorityRuntime {
     verifySequence: verifyWalmartListingRepairSequenceAuthorization,
     verifyCurrentPermit: verifyCurrentWalmartListingRepairOneSkuPermit,
     expected_apply_engine_release_sha256: PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256,
+  };
+}
+
+function acceptedPostRecoveryAuthorityRuntime(): WriterAuthorityRuntime {
+  return {
+    verifySequence: verifyWalmartListingRepairSequenceAuthorization,
+    verifyCurrentPermit: verifyCurrentWalmartListingRepairOneSkuPermit,
+    expected_apply_engine_release_sha256:
+      PINNED_ACCEPTED_POST_RECOVERY_SOURCE_RELEASE_SHA256,
+  };
+}
+
+function getOnlyContinuationAuthorityRuntime(
+  applyReleaseSha256: string,
+): WriterAuthorityRuntime {
+  const expected = applyReleaseSha256 === PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256
+    ? PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256
+    : applyReleaseSha256 === PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256
+      ? PINNED_GET_ONLY_CONTINUATION_SOURCE_RELEASE_SHA256
+      : fail(
+        "APPLY_RELEASE_MISMATCH",
+        "GET-only continuation rejects an unpinned apply release",
+      );
+  return {
+    verifySequence: verifyWalmartListingRepairSequenceAuthorization,
+    verifyCurrentPermit: verifyCurrentWalmartListingRepairOneSkuPermit,
+    expected_apply_engine_release_sha256: expected,
   };
 }
 
@@ -2127,6 +2210,145 @@ async function resumeInternal(input: {
   });
 }
 
+/**
+ * Reconciles the exact crash window where POST_RESPONSE_ACCEPTED custody is
+ * durable but the ledger is still REQUESTING. No POST is available in this
+ * function. Only after immutable HTTP 2xx/feedId evidence is revalidated is
+ * ACCEPTED recorded; continuation then enters the existing GET-only poller.
+ */
+async function recoverAcceptedPostInternal(
+  input: { writer_input: WalmartListingRepairWriterInput },
+  dependencies: WalmartListingRepairWriterDependencies,
+  runtime: WriterAuthorityRuntime,
+): Promise<WalmartListingRepairWriterResult> {
+  assertPollPolicy(input.writer_input.poll_policy);
+  const rawPermit = record(input.writer_input.one_sku_permit, "one-SKU permit");
+  const rawPermitBody = record(rawPermit.signed_body, "one-SKU permit signed_body");
+  const permitIssuedAt = new Date(instant(rawPermitBody.issued_at, "permit issued_at"));
+  const permit = runtime.verifyCurrentPermit(input.writer_input.one_sku_permit, permitIssuedAt);
+  const rawPlan = record(input.writer_input.plan, "repair plan");
+  const planCreatedAt = new Date(instant(rawPlan.created_at, "plan created_at"));
+  const sequence = runtime.verifySequence(input.writer_input.sequence_authorization, planCreatedAt);
+  const plan = verifyPlan(input.writer_input.plan, planCreatedAt, runtime);
+  assertSequencePlanBinding(sequence, plan);
+  assertPermitBinding(sequence, permit, plan);
+  const correlation = correlationId(
+    input.writer_input.request_correlation_id,
+    "request correlation id",
+  );
+  const built = validateBuiltRequest({
+    built: await dependencies.payload_builder.build({
+      plan,
+      sequence,
+      permit,
+      request_correlation_id_sha256: sha256(correlation),
+      context: input.writer_input.payload_context,
+    }),
+    plan,
+    sequence,
+    permit,
+    request_correlation_id_sha256: sha256(correlation),
+  });
+  dependencies.exact_request_verifier.verifyExactBytes({
+    plan,
+    sequence,
+    permit,
+    context: input.writer_input.payload_context,
+    request_payload_bytes: Uint8Array.from(built.payload_bytes),
+    request_manifest_bytes: Uint8Array.from(built.request_manifest_bytes),
+    request_payload_sha256: built.payload_sha256,
+    request_manifest_sha256: built.request_manifest_sha256,
+  });
+  const requesting = await dependencies.ledger.loadRequesting({
+    permit,
+    request_manifest_sha256: built.request_manifest_sha256,
+    request_payload_sha256: built.payload_sha256,
+  });
+  assertRequestingReceipt(requesting, permit, built);
+  const requestingAt = new Date(instant(requesting.requesting_at, "recovery requesting_at"));
+  const historicalSequence = runtime.verifySequence(
+    input.writer_input.sequence_authorization,
+    requestingAt,
+  );
+  const historicalPermit = runtime.verifyCurrentPermit(
+    input.writer_input.one_sku_permit,
+    requestingAt,
+  );
+  const historicalPlan = verifyPlan(input.writer_input.plan, requestingAt, runtime);
+  assertSequencePlanBinding(historicalSequence, historicalPlan);
+  assertPermitBinding(historicalSequence, historicalPermit, historicalPlan);
+  if (historicalSequence.authorization_sha256 !== sequence.authorization_sha256
+    || historicalPermit.authorization_sha256 !== permit.authorization_sha256
+    || historicalPlan.body_sha256 !== plan.body_sha256) {
+    fail("ACCEPTED_POST_RECOVERY_MISMATCH", "authority differs at durable REQUESTING time");
+  }
+  const loadAcceptedPost = dependencies.artifact_sink.loadAcceptedPostFromRequesting;
+  if (typeof loadAcceptedPost !== "function") {
+    fail(
+      "ACCEPTED_POST_RECOVERY_UNAVAILABLE",
+      "production custody does not expose the no-network accepted POST recovery reader",
+    );
+  }
+  const durable = await loadAcceptedPost({ permit, requesting });
+  if (sha256(durable.request_manifest_bytes) !== built.request_manifest_sha256
+    || sha256(durable.request_payload_bytes) !== built.payload_sha256) {
+    fail(
+      "ACCEPTED_POST_RECOVERY_MISMATCH",
+      "durable accepted POST is not bound to the exact approved request",
+    );
+  }
+  const responseBody = boundedBytes(
+    durable.response_payload_bytes,
+    "durable recovery accepted response",
+    WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES,
+  );
+  const responseHttp = boundedBytes(
+    durable.response_http_receipt_bytes,
+    "durable recovery accepted HTTP receipt",
+    WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES,
+  );
+  const feedId = feedIdFromResponse(responseBody);
+  const httpReceipt = parseJsonBytes(
+    responseHttp,
+    "durable recovery accepted HTTP receipt",
+    WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES,
+  );
+  const postResponseStatus = Number(httpReceipt.status);
+  const responseCapturedAt = instant(
+    httpReceipt.captured_at,
+    "durable recovery response captured_at",
+  );
+  const recoveryNow = nowDate(dependencies.now);
+  if (httpReceipt.schema_version !== WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA
+    || httpReceipt.operation !== "MAINTENANCE_POST"
+    || httpReceipt.method !== "POST"
+    || httpReceipt.path !== "/v3/feeds"
+    || httpReceipt.feed_id !== null
+    || !canonicalEqual(httpReceipt.query, { feedType: "MP_MAINTENANCE" })
+    || !Number.isSafeInteger(postResponseStatus) || postResponseStatus < 200
+    || postResponseStatus >= 300
+    || httpReceipt.content_length !== responseBody.byteLength
+    || httpReceipt.request_correlation_id_sha256 !== sha256(correlation)
+    || Date.parse(responseCapturedAt) < requestingAt.getTime()
+    || Date.parse(responseCapturedAt) > recoveryNow.getTime()) {
+    fail(
+      "ACCEPTED_POST_RECOVERY_MISMATCH",
+      "durable custody is not the exact successful POST response",
+    );
+  }
+  const accepted = await dependencies.ledger.recordAccepted({
+    permit,
+    requesting,
+    accepted_at: recoveryNow.toISOString(),
+    apply_id: `repair-apply-${permit.authorization_sha256}`,
+    feed_id: feedId,
+    response_http_receipt_sha256: sha256(responseHttp),
+    response_payload_sha256: sha256(responseBody),
+  });
+  assertAcceptedReceipt(accepted, requesting, feedId, responseHttp, responseBody);
+  return resumeInternal(input, dependencies, runtime);
+}
+
 export async function resumeWalmartListingRepairFeedPollForTest(
   input: Parameters<typeof resumeInternal>[0],
   dependencies: WalmartListingRepairWriterDependencies,
@@ -2138,7 +2360,76 @@ export async function resumeWalmartListingRepairFeedPollForTest(
   return resumeInternal(input, dependencies, runtime);
 }
 
-/** Production GET-only continuation using the same non-injectable dependency closure. */
+export async function recoverWalmartListingRepairAcceptedPostForTest(
+  input: Parameters<typeof recoverAcceptedPostInternal>[0],
+  dependencies: WalmartListingRepairWriterDependencies,
+  runtime: WriterAuthorityRuntime,
+): Promise<WalmartListingRepairWriterResult> {
+  if (process.env.NODE_ENV !== "test" || process.env.WALMART_LISTING_REPAIR_TEST_MODE !== "1") {
+    fail("TEST_INJECTION_DISABLED", "writer accepted POST recovery injection is disabled");
+  }
+  return recoverAcceptedPostInternal(input, dependencies, runtime);
+}
+
+/**
+ * Production continuation for the single pinned predecessor crash window.
+ * The predecessor package can only be reconciled from immutable accepted POST
+ * custody and then polled by exact feed GET; it can never be executed again.
+ */
+export async function recoverWalmartListingRepairAcceptedPost(
+  input: WalmartListingRepairProductionExecutionInput,
+): Promise<WalmartListingRepairWriterResult> {
+  if (arguments.length !== 1) {
+    fail(
+      "CALLER_DEPENDENCY_INJECTION_FORBIDDEN",
+      "production accepted POST recovery accepts one data-only package",
+    );
+  }
+  const execution = snapshotProductionExecutionInput(input);
+  const { createWalmartListingRepairProductionDependencies } = await import(
+    "./listing-integrity-remediation-production-dependencies.ts"
+  );
+  const dependencies = createWalmartListingRepairProductionDependencies(execution);
+  return recoverAcceptedPostInternal(
+    { writer_input: execution.writer_input },
+    dependencies,
+    acceptedPostRecoveryAuthorityRuntime(),
+  );
+}
+
+/**
+ * One-GET continuation for an ACCEPTED package from the pinned v7 recovery
+ * source. The original package may carry a longer poll policy; recovery clamps
+ * it in memory to one immediate GET so long Walmart reviews never outlive the
+ * non-refreshing OAuth session or create request noise.
+ */
+export async function resumeWalmartListingRepairRecoveredFeed(
+  input: WalmartListingRepairProductionExecutionInput,
+): Promise<WalmartListingRepairWriterResult> {
+  if (arguments.length !== 1) {
+    fail(
+      "CALLER_DEPENDENCY_INJECTION_FORBIDDEN",
+      "production recovered-feed continuation accepts one data-only package",
+    );
+  }
+  const execution = snapshotProductionExecutionInput(input);
+  const { createWalmartListingRepairProductionDependencies } = await import(
+    "./listing-integrity-remediation-production-dependencies.ts"
+  );
+  const dependencies = createWalmartListingRepairProductionDependencies(execution);
+  return resumeInternal(
+    {
+      writer_input: {
+        ...execution.writer_input,
+        poll_policy: { max_attempts: 1, delay_ms: 0 },
+      },
+    },
+    dependencies,
+    acceptedPostRecoveryAuthorityRuntime(),
+  );
+}
+
+/** Production one-GET continuation for the current or exact predecessor release. */
 export async function resumeWalmartListingRepairFeedPoll(
   input: WalmartListingRepairProductionExecutionInput,
 ): Promise<WalmartListingRepairWriterResult> {
@@ -2149,10 +2440,21 @@ export async function resumeWalmartListingRepairFeedPoll(
     );
   }
   const execution = snapshotProductionExecutionInput(input);
-  const runtime = productionAuthorityRuntime();
+  const runtime = getOnlyContinuationAuthorityRuntime(
+    execution.writer_input.plan.apply_engine_release_sha256,
+  );
   const { createWalmartListingRepairProductionDependencies } = await import(
     "./listing-integrity-remediation-production-dependencies.ts"
   );
   const dependencies = createWalmartListingRepairProductionDependencies(execution);
-  return resumeInternal({ writer_input: execution.writer_input }, dependencies, runtime);
+  return resumeInternal(
+    {
+      writer_input: {
+        ...execution.writer_input,
+        poll_policy: { max_attempts: 1, delay_ms: 0 },
+      },
+    },
+    dependencies,
+    runtime,
+  );
 }

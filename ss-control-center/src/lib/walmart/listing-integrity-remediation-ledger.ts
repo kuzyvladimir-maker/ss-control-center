@@ -58,6 +58,7 @@ const ACCEPTED_FILE_PATTERN = /^\.([a-f0-9]{64})\.accepted\.json$/u;
 const TERMINAL_FILE_PATTERN = /^\.([a-f0-9]{64})\.terminal\.json$/u;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/u;
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$/u;
+const SAFE_WALMART_FEED_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,511}$/u;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const PRIVATE_DIRECTORY_MODE = 0o700;
@@ -406,6 +407,15 @@ function safeIdentifier(value: unknown, label: string, code = "INVALID_INPUT"): 
   if (typeof value !== "string" || value !== value.trim()
     || !SAFE_IDENTIFIER_PATTERN.test(value) || value.includes("//") || value.endsWith("/")) {
     fail(code, `${label} must be a safe exact identifier`);
+  }
+  return value;
+}
+
+function safeWalmartFeedId(value: unknown, label: string, code = "INVALID_INPUT"): string {
+  if (typeof value !== "string" || value !== value.trim()
+    || !SAFE_WALMART_FEED_ID_PATTERN.test(value)
+    || value.includes("//") || value.endsWith("/")) {
+    fail(code, `${label} must be a safe exact Walmart feed identifier`);
   }
   return value;
 }
@@ -853,7 +863,7 @@ function parseAccepted(
       "LEDGER_CORRUPT",
     ),
     apply_id: safeIdentifier(raw.apply_id, "accepted apply_id", "LEDGER_CORRUPT"),
-    feed_id: safeIdentifier(raw.feed_id, "accepted feed_id", "LEDGER_CORRUPT"),
+    feed_id: safeWalmartFeedId(raw.feed_id, "accepted feed_id", "LEDGER_CORRUPT"),
     response_http_receipt_sha256: digest(
       raw.response_http_receipt_sha256,
       "response HTTP receipt hash",
@@ -938,7 +948,7 @@ function parseTerminal(
     ),
     apply_id: safeIdentifier(raw.apply_id, "terminal apply_id", "LEDGER_CORRUPT"),
     feed_id: raw.feed_id === null
-      ? null : safeIdentifier(raw.feed_id, "terminal feed_id", "LEDGER_CORRUPT"),
+      ? null : safeWalmartFeedId(raw.feed_id, "terminal feed_id", "LEDGER_CORRUPT"),
     response_http_receipt_sha256: nullableDigest(
       raw.response_http_receipt_sha256,
       "terminal response HTTP receipt hash",
@@ -1718,7 +1728,7 @@ export async function recordWalmartListingRepairPermitAccepted(options: {
   response_payload_sha256: string;
 }): Promise<WalmartListingRepairPermitAcceptedReceipt> {
   const applyId = safeIdentifier(options.apply_id, "apply_id");
-  const feedId = safeIdentifier(options.feed_id, "feed_id");
+  const feedId = safeWalmartFeedId(options.feed_id, "feed_id");
   const responseHttpSha = digest(options.response_http_receipt_sha256, "response HTTP receipt hash");
   const responseSha = digest(options.response_payload_sha256, "response payload hash");
   return mutate(options, async (opened) => {
@@ -1806,7 +1816,7 @@ function parseOutcome(
     marketplace_write_calls: raw.marketplace_write_calls === 0
       ? 0 as const : raw.marketplace_write_calls === 1
         ? 1 as const : fail("INVALID_INPUT", "marketplace_write_calls must be zero or one"),
-    feed_id: raw.feed_id === null ? null : safeIdentifier(raw.feed_id, "feed_id"),
+    feed_id: raw.feed_id === null ? null : safeWalmartFeedId(raw.feed_id, "feed_id"),
     response_http_receipt_sha256: nullableDigest(
       raw.response_http_receipt_sha256,
       "response HTTP receipt hash",

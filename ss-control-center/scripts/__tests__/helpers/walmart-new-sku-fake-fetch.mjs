@@ -126,8 +126,14 @@ globalThis.fetch = async (input, init = {}) => {
             .update(JSON.stringify(canonical(payload)))
             .digest("hex"),
         });
+        const feedType = url.searchParams.get("feedType");
         return json(
-          { feedId: "fixture-feed-id-1", status: "RECEIVED" },
+          {
+            feedId: feedType === "SKU_TEMPLATE_MAP"
+              ? "fixture-shipping-template-feed-id-1"
+              : "fixture-feed-id-1",
+            status: "RECEIVED",
+          },
           200,
           { "wm_qos.correlation_id": "fixture-feed-cid" },
         );
@@ -173,6 +179,48 @@ globalThis.fetch = async (input, init = {}) => {
           mart: { itemId },
         }],
       });
+    }
+    if (
+      url.pathname === "/v3/items/associations" &&
+      method === "POST" &&
+      process.env.WALMART_NEW_SKU_TEST_POLL_READY === "1"
+    ) {
+      const sku = process.env.WALMART_NEW_SKU_TEST_POLL_SKU;
+      const parsedBody =
+        typeof init.body === "string"
+          ? JSON.parse(init.body)
+          : null;
+      if (
+        !sku ||
+        parsedBody?.items?.length !== 1 ||
+        parsedBody.items[0]?.sku !== sku
+      ) {
+        throw new Error(
+          "TEST_ASSOCIATION_FIXTURE: request must target exact SKU",
+        );
+      }
+      return json(
+        {
+          items: [{
+            sku,
+            associations: [{
+              shippingTemplate: {
+                name: "Fixture Free Shipping",
+                type: "CUSTOM",
+                id: "fixture-free-shipping-template-1",
+              },
+              shipNodeName: "Fixture fulfillment center",
+              shipNode: "FIXTURE_FC_1",
+            }],
+            errors: [],
+          }],
+        },
+        200,
+        {
+          "wm_qos.correlation_id":
+            "fixture-shipping-association-cid",
+        },
+      );
     }
     throw new Error(`Unexpected fake Walmart request: ${method} ${url.pathname}`);
   }
