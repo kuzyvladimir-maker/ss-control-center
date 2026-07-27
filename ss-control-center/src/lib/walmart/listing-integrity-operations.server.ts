@@ -245,8 +245,11 @@ export async function loadListingIntegrityOperationsState(
       itemId: item.itemId,
       title: item.title,
       outerUnits: item.titleOuterCount,
-      stage: item.stage,
-      nextAction: item.nextAction,
+      // pool.items carries only PRODUCT_TRUTH_READY rows at runtime (the
+      // SOURCE_REQUIRED ones live in pool.sourceRequiredItems below); the
+      // source union is wider than this read-only web row contract.
+      stage: item.stage as "PRODUCT_TRUTH_READY",
+      nextAction: item.nextAction as "FRESH_SOURCE_AWARE_AUDIT",
       deterministicFindings: [...item.deterministicFindings],
       performance: {
         units90: item.performance.units90,

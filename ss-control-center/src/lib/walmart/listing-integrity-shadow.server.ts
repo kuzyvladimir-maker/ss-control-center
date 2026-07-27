@@ -1903,8 +1903,12 @@ export async function loadListingIntegrityShadowData(
         maxApplyInFlight: 1 as const,
         walmartWritesAllowed: false as const,
         modelCallsAllowed: false as const,
+        sourceCandidateCount: 0,
+        repairReadyCount: 0,
+        sourceRequiredCount: 0,
         completed: [],
         pool: [],
+        sourceRequired: [],
       };
   const loadedOwnerRepairReview = await loadCurrentOwnerRepairReview(ownerReviewRoot);
   const ownerRepairReview = loadedOwnerRepairReview
