@@ -1,0 +1,625 @@
+/**
+ * Walmart Marketplace API client.
+ *
+ * - OAuth 2.0 client_credentials flow against /v3/token (Basic Auth header).
+ * - Cached access token, refreshes 60s before expiry.
+ * - Rate-limit aware: respects x-current-token-count + x-next-replenish-time
+ *   (sleeps automatically if tokens < 2). Exponential backoff on 429/5xx.
+ * - Adds the full required US/global header set (WM_SEC.ACCESS_TOKEN,
+ *   WM_QOS.CORRELATION_ID, WM_SVC.NAME, WM_GLOBAL_VERSION, WM_MARKET, Accept)
+ *   on every business API call.
+ *
+ * Per-store credentials: WALMART_CLIENT_ID_STORE{N},
+ * WALMART_CLIENT_SECRET_STORE{N}, WALMART_STORE{N}_NAME,
+ * WALMART_STORE{N}_SELLER_ID. Construct WalmartClient(storeIndex).
+ */
+
+import { randomUUID } from "crypto";
+
+const DEFAULT_BASE_URL =
+  process.env.WALMART_API_BASE_URL || "https://marketplace.walmartapis.com";
+const API_VERSION = process.env.WALMART_API_VERSION || "v3";
+const SVC_NAME = "Walmart Marketplace";
+const GLOBAL_API_VERSION = "3.1";
+const MARKET = "us";
+
+const TOKEN_REFRESH_BUFFER_MS = 60 * 1000; // refresh 60s before expiry
+const MIN_TOKENS_BEFORE_SLEEP = 2;
+const MAX_RETRIES = 4;
+const BACKOFF_BASE_MS = 1000;
+const BACKOFF_MAX_MS = 60_000;
+
+export interface WalmartCredentials {
+  clientId: string;
+  clientSecret: string;
+  sellerId: string;
+  storeName: string;
+}
+
+export interface WalmartTokenInfo {
+  accessToken: string;
+  expiresAt: Date;
+}
+
+export interface WalmartRequestOptions {
+  params?: Record<string, string | number | boolean | undefined>;
+  body?: unknown;
+  /**
+   * Multipart file upload. Walmart's item-feed endpoints require a
+   * `multipart/form-data` request with a binary `file` part; sending the JSON
+   * document as an `application/json` request body is not the same API
+   * contract. `fetch` owns the multipart boundary, so callers must not set a
+   * Content-Type header when this option is used.
+   */
+  file?: {
+    content: string;
+    filename: string;
+    contentType?: string;
+    fieldName?: string;
+  };
+  /** Override Accept header (default application/json). */
+  accept?: string;
+  /** Return raw Response (e.g. for binary downloads like XLSX). */
+  raw?: boolean;
+  /** Extra headers to merge in. */
+  headers?: Record<string, string>;
+  /** Fail fast on HTTP 429 instead of the 5x backoff retry. For the /reports
+   *  endpoint, whose rate bucket is tiny: a REQUEST_THRESHOLD_VIOLATED can't
+   *  succeed on same-invocation retry and just deepens the violation — the caller
+   *  (report state machines) defers to the next cron tick instead. */
+  noRetryOn429?: boolean;
+}
+
+export class WalmartApiError extends Error {
+  status: number;
+  path: string;
+  correlationId: string;
+  errorBody: unknown;
+
+  constructor(args: {
+    status: number;
+    path: string;
+    correlationId: string;
+    errorBody: unknown;
+    message?: string;
+  }) {
+    super(
+      args.message ||
+        `Walmart API ${args.status} on ${args.path} (cid=${args.correlationId})`
+    );
+    this.name = "WalmartApiError";
+    this.status = args.status;
+    this.path = args.path;
+    this.correlationId = args.correlationId;
+    this.errorBody = args.errorBody;
+  }
+}
+
+/**
+ * Non-throwing config probe. Returns whether a Walmart store has all three
+ * required env vars and the resolved name when so. Used by status surfaces
+ * (`/api/integrations`, `/api/amazon/stores`, `/api/customer-hub`) so they
+ * report Walmart accurately instead of hardcoding "not configured".
+ */
+export function getWalmartStoreStatus(storeIndex: number): {
+  configured: boolean;
+  storeName: string;
+  sellerId: string | null;
+} {
+  const n = storeIndex;
+  const clientId = process.env[`WALMART_CLIENT_ID_STORE${n}`];
+  const clientSecret = process.env[`WALMART_CLIENT_SECRET_STORE${n}`];
+  const sellerId = process.env[`WALMART_STORE${n}_SELLER_ID`];
+  const storeName =
+    process.env[`WALMART_STORE${n}_NAME`] || `Walmart Store ${n}`;
+  return {
+    configured: Boolean(clientId && clientSecret && sellerId),
+    storeName,
+    sellerId: sellerId || null,
+  };
+}
+
+function getCredentials(storeIndex: number): WalmartCredentials {
+  const s = getWalmartStoreStatus(storeIndex);
+  if (!s.configured) {
+    throw new Error(
+      `Walmart credentials missing for store ${storeIndex}. ` +
+        `Set WALMART_CLIENT_ID_STORE${storeIndex}, ` +
+        `WALMART_CLIENT_SECRET_STORE${storeIndex}, ` +
+        `WALMART_STORE${storeIndex}_SELLER_ID in env.`
+    );
+  }
+  const n = storeIndex;
+  return {
+    clientId: process.env[`WALMART_CLIENT_ID_STORE${n}`]!,
+    clientSecret: process.env[`WALMART_CLIENT_SECRET_STORE${n}`]!,
+    sellerId: s.sellerId!,
+    storeName: s.storeName,
+  };
+}
+
+/** Sleep helper with jitter for backoff. */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function buildQueryString(params?: Record<string, string | number | boolean | undefined>): string {
+  if (!params) return "";
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== null && v !== ""
+  );
+  if (entries.length === 0) return "";
+  const search = new URLSearchParams();
+  for (const [k, v] of entries) {
+    search.append(k, String(v));
+  }
+  return `?${search.toString()}`;
+}
+
+/**
+ * The generic/retrying client is never an authorized Walmart ITEM report-create
+ * transport. The canonical one-shot capture engine uses its own bounded native
+ * transport after owner-permit verification. Keep this guard before OAuth so a
+ * stale route, diagnostic, JS caller, or type cast cannot bypass that engine.
+ */
+function assertLegacyItemReportCreateRetired(
+  method: string,
+  requestPath: string,
+  exactQueryString: string,
+): void {
+  if (String(method).trim().toUpperCase() !== "POST") return;
+  const rawPath = String(requestPath);
+  let decodedPath = rawPath;
+  for (let pass = 0; pass < 2; pass += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(decodedPath);
+    } catch {
+      throw new Error("AMBIGUOUS_WALMART_REPORT_PATH: request path has invalid encoding");
+    }
+    if (next === decodedPath) break;
+    decodedPath = next;
+  }
+  const queryOffset = decodedPath.indexOf("?");
+  const pathOnly = queryOffset < 0 ? decodedPath : decodedPath.slice(0, queryOffset);
+  const leadingSlashPath = pathOnly.startsWith("/") ? pathOnly : `/${pathOnly}`;
+  const collapsedPath = leadingSlashPath.replace(/\/{2,}/gu, "/");
+  const effectivePath = new URL(
+    `/${API_VERSION}${collapsedPath}`,
+    "https://walmart-report-policy.invalid",
+  ).pathname.replace(/\/+$/gu, "");
+  if (!effectivePath.endsWith("/reports/reportRequests")) return;
+
+  const embedded = queryOffset < 0
+    ? []
+    : new URLSearchParams(decodedPath.slice(queryOffset + 1)).getAll("reportType");
+  const appended = new URLSearchParams(
+    exactQueryString.startsWith("?") ? exactQueryString.slice(1) : exactQueryString,
+  ).getAll("reportType");
+  const advertised = [
+    ...embedded,
+    ...appended,
+  ].map((value) => String(value).trim().toUpperCase());
+  const distinct = new Set(advertised);
+  if (distinct.size > 1) {
+    throw new Error(
+      "AMBIGUOUS_WALMART_REPORT_TYPE: embedded and parameter reportType values conflict",
+    );
+  }
+  if (advertised.includes("ITEM")) {
+    throw new Error(
+      "LEGACY_ITEM_REPORT_CREATE_RETIRED_OWNER_PERMIT_REQUIRED: use the canonical one-shot capture engine",
+    );
+  }
+}
+
+/** Convert the caller's body contract to a fetch BodyInit. Shared by
+ * `request` and `requestRaw` so the two paths cannot drift into different feed
+ * transports. It creates a fresh FormData for every retry attempt. */
+function buildRequestBody(
+  options: WalmartRequestOptions,
+  headers: Record<string, string>,
+): BodyInit | undefined {
+  if (options.file && options.body !== undefined) {
+    throw new Error("Walmart request cannot contain both body and file");
+  }
+  if (options.file) {
+    const filename = options.file.filename.trim();
+    if (!filename) throw new Error("Walmart multipart filename is required");
+    for (const key of Object.keys(headers)) {
+      if (key.toLowerCase() === "content-type") delete headers[key];
+    }
+    const form = new FormData();
+    form.append(
+      options.file.fieldName?.trim() || "file",
+      new Blob([options.file.content], {
+        type: options.file.contentType || "application/json",
+      }),
+      filename,
+    );
+    // Do not set Content-Type: fetch adds the required multipart boundary.
+    return form;
+  }
+  if (options.body === undefined) return undefined;
+  if (typeof options.body === "string") return options.body;
+  headers["Content-Type"] = "application/json";
+  return JSON.stringify(options.body);
+}
+
+export class WalmartClient {
+  readonly storeIndex: number;
+  readonly credentials: WalmartCredentials;
+  private token: WalmartTokenInfo | null = null;
+  /** Wait until this Date before issuing the next request (rate-limit aware). */
+  private rateLimitWaitUntil: Date | null = null;
+
+  constructor(storeIndex = 1) {
+    this.storeIndex = storeIndex;
+    this.credentials = getCredentials(storeIndex);
+  }
+
+  /** Get a cached or fresh access token. Refreshed 60s before expiry. */
+  async getAccessToken(): Promise<WalmartTokenInfo> {
+    const now = Date.now();
+    if (
+      this.token &&
+      this.token.expiresAt.getTime() > now + TOKEN_REFRESH_BUFFER_MS
+    ) {
+      return this.token;
+    }
+
+    const basic = Buffer.from(
+      `${this.credentials.clientId}:${this.credentials.clientSecret}`
+    ).toString("base64");
+
+    const correlationId = randomUUID();
+    const url = `${DEFAULT_BASE_URL}/${API_VERSION}/token`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basic}`,
+        "WM_QOS.CORRELATION_ID": correlationId,
+        "WM_SVC.NAME": SVC_NAME,
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      throw new WalmartApiError({
+        status: res.status,
+        path: "/token",
+        correlationId,
+        errorBody: errBody,
+        message: `Walmart token request failed: ${res.status} ${errBody.slice(0, 200)}`,
+      });
+    }
+
+    const json = (await res.json()) as { access_token: string; expires_in: number };
+    const expiresAt = new Date(Date.now() + (json.expires_in - 60) * 1000);
+    this.token = { accessToken: json.access_token, expiresAt };
+
+    console.log(
+      `[WALMART][STORE${this.storeIndex}] token issued, expires at ${expiresAt.toISOString()}`
+    );
+
+    return this.token;
+  }
+
+  /** Issue a request to the Walmart API. Path should NOT include the /v3 prefix. */
+  async request<T = unknown>(
+    method: string,
+    path: string,
+    options: WalmartRequestOptions = {}
+  ): Promise<T> {
+    method = String(method);
+    path = String(path);
+    const queryString = buildQueryString(options.params);
+    assertLegacyItemReportCreateRetired(method, path, queryString);
+    const tokenInfo = await this.getAccessToken();
+
+    // Rate-limit gate — sleep if previous response told us we're nearly out
+    if (this.rateLimitWaitUntil) {
+      const waitMs = this.rateLimitWaitUntil.getTime() - Date.now();
+      if (waitMs > 0) {
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] rate-limit wait ${waitMs}ms before ${method} ${path}`
+        );
+        await sleep(waitMs);
+      }
+      this.rateLimitWaitUntil = null;
+    }
+
+    const fullPath = `/${API_VERSION}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
+    const url = `${DEFAULT_BASE_URL}${fullPath}`;
+
+    let lastError: unknown = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const correlationId = randomUUID();
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${tokenInfo.accessToken}`,
+        "WM_SEC.ACCESS_TOKEN": tokenInfo.accessToken,
+        "WM_QOS.CORRELATION_ID": correlationId,
+        "WM_SVC.NAME": SVC_NAME,
+        "WM_GLOBAL_VERSION": GLOBAL_API_VERSION,
+        "WM_MARKET": MARKET,
+        Accept: options.accept || "application/json",
+        ...options.headers,
+      };
+
+      const body = buildRequestBody(options, headers);
+
+      const startedAt = Date.now();
+      let res: Response;
+      try {
+        res = await fetch(url, { method, headers, body });
+      } catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.min(
+            BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+            BACKOFF_MAX_MS
+          );
+          console.warn(
+            `[WALMART][STORE${this.storeIndex}] network error on ${method} ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+          );
+          await sleep(delay);
+          continue;
+        }
+        throw err;
+      }
+
+      const elapsed = Date.now() - startedAt;
+      const tokensLeft = res.headers.get("x-current-token-count");
+      const replenishAt = res.headers.get("x-next-replenish-time");
+
+      console.log(
+        `[WALMART][STORE${this.storeIndex}] ${method} ${fullPath} → ${res.status} ` +
+          `(tokens: ${tokensLeft ?? "?"}, ${elapsed}ms, cid=${correlationId})`
+      );
+
+      // Schedule a wait for next request if we're running low
+      if (tokensLeft !== null && replenishAt) {
+        const remaining = parseInt(tokensLeft, 10);
+        if (Number.isFinite(remaining) && remaining < MIN_TOKENS_BEFORE_SLEEP) {
+          const replenishMs = parseInt(replenishAt, 10);
+          if (Number.isFinite(replenishMs) && replenishMs > Date.now()) {
+            this.rateLimitWaitUntil = new Date(replenishMs);
+          }
+        }
+      }
+
+      if (res.ok) {
+        if (options.raw) return res as unknown as T;
+        if (res.status === 204) return undefined as T;
+        const text = await res.text();
+        if (!text) return undefined as T;
+        try {
+          return JSON.parse(text) as T;
+        } catch {
+          return text as unknown as T;
+        }
+      }
+
+      // 401 — token might have died early; clear cache and retry once
+      if (res.status === 401 && attempt === 0) {
+        this.token = null;
+        const fresh = await this.getAccessToken();
+        tokenInfo.accessToken = fresh.accessToken;
+        continue;
+      }
+
+      // Retry on 429 / 5xx
+      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+        let delay = Math.min(
+          BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+          BACKOFF_MAX_MS
+        );
+        // Honor Retry-After if present
+        const retryAfter = res.headers.get("retry-after");
+        if (retryAfter) {
+          const ra = parseInt(retryAfter, 10);
+          if (Number.isFinite(ra)) delay = Math.max(delay, ra * 1000);
+        }
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] ${res.status} on ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+        );
+        await sleep(delay);
+        continue;
+      }
+
+      // Non-retryable error
+      const errBody = await res.text().catch(() => "");
+      let parsed: unknown = errBody;
+      try {
+        parsed = JSON.parse(errBody);
+      } catch {
+        // not JSON
+      }
+      throw new WalmartApiError({
+        status: res.status,
+        path: fullPath,
+        correlationId,
+        errorBody: parsed,
+      });
+    }
+
+    throw (
+      lastError ||
+      new Error(`Walmart request failed after ${MAX_RETRIES} retries: ${method} ${url}`)
+    );
+  }
+
+  /**
+   * Like `request`, but never throws on 2xx-but-empty (HTTP 204) or
+   * application-level 4xx — instead returns `{ status, body, ok }` so the
+   * caller can react to "no data yet" (204) and to per-metric errors (400/
+   * 403/404) without bringing down the whole fan-out.
+   *
+   * Retries on 5xx / 429 / network glitches with the same backoff +
+   * rate-limit gate as `request`. 401 still gets one fresh-token retry,
+   * same as `request`.
+   *
+   * Used by the Seller Performance API where each metric is a separate
+   * call and we want partial-success semantics (Promise.allSettled style).
+   */
+  async requestRaw(
+    method: string,
+    path: string,
+    options: WalmartRequestOptions = {}
+  ): Promise<{ status: number; ok: boolean; body: unknown; correlationId: string }> {
+    method = String(method);
+    path = String(path);
+    const queryString = buildQueryString(options.params);
+    assertLegacyItemReportCreateRetired(method, path, queryString);
+    const tokenInfo = await this.getAccessToken();
+
+    if (this.rateLimitWaitUntil) {
+      const waitMs = this.rateLimitWaitUntil.getTime() - Date.now();
+      if (waitMs > 0) {
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] rate-limit wait ${waitMs}ms before ${method} ${path}`
+        );
+        await sleep(waitMs);
+      }
+      this.rateLimitWaitUntil = null;
+    }
+
+    const fullPath = `/${API_VERSION}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
+    const url = `${DEFAULT_BASE_URL}${fullPath}`;
+
+    let lastError: unknown = null;
+    let lastCorrelation = "";
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      // Each parallel call must get its own UUID — Walmart will dedupe
+      // requests that share a correlation id, which silently breaks
+      // parallel sync. randomUUID() per attempt is the contract.
+      const correlationId = randomUUID();
+      lastCorrelation = correlationId;
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${tokenInfo.accessToken}`,
+        "WM_SEC.ACCESS_TOKEN": tokenInfo.accessToken,
+        "WM_QOS.CORRELATION_ID": correlationId,
+        "WM_SVC.NAME": SVC_NAME,
+        "WM_GLOBAL_VERSION": GLOBAL_API_VERSION,
+        "WM_MARKET": MARKET,
+        Accept: options.accept || "application/json",
+        ...options.headers,
+      };
+
+      const body = buildRequestBody(options, headers);
+
+      const startedAt = Date.now();
+      let res: Response;
+      try {
+        res = await fetch(url, { method, headers, body });
+      } catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.min(
+            BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+            BACKOFF_MAX_MS
+          );
+          console.warn(
+            `[WALMART][STORE${this.storeIndex}] network error on ${method} ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+          );
+          await sleep(delay);
+          continue;
+        }
+        throw err;
+      }
+
+      const elapsed = Date.now() - startedAt;
+      const tokensLeft = res.headers.get("x-current-token-count");
+      const replenishAt = res.headers.get("x-next-replenish-time");
+
+      console.log(
+        `[WALMART][STORE${this.storeIndex}] ${method} ${fullPath} → ${res.status} ` +
+          `(tokens: ${tokensLeft ?? "?"}, ${elapsed}ms, cid=${correlationId})`
+      );
+
+      if (tokensLeft !== null && replenishAt) {
+        const remaining = parseInt(tokensLeft, 10);
+        if (Number.isFinite(remaining) && remaining < MIN_TOKENS_BEFORE_SLEEP) {
+          const replenishMs = parseInt(replenishAt, 10);
+          if (Number.isFinite(replenishMs) && replenishMs > Date.now()) {
+            this.rateLimitWaitUntil = new Date(replenishMs);
+          }
+        }
+      }
+
+      // 401 — token might have died early; clear cache and retry once.
+      if (res.status === 401 && attempt === 0) {
+        this.token = null;
+        const fresh = await this.getAccessToken();
+        tokenInfo.accessToken = fresh.accessToken;
+        continue;
+      }
+
+      // Retry on 429 / 5xx only — 4xx (other than 401 first attempt) are
+      // application errors, return them straight to the caller. Callers on a
+      // strictly-rate-limited endpoint (e.g. /reports) pass noRetryOn429 so a 429
+      // returns immediately instead of hammering the bucket 5x before deferring.
+      const retriable429 = res.status === 429 && !options.noRetryOn429;
+      if ((retriable429 || res.status >= 500) && attempt < MAX_RETRIES) {
+        let delay = Math.min(
+          BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+          BACKOFF_MAX_MS
+        );
+        const retryAfter = res.headers.get("retry-after");
+        if (retryAfter) {
+          const ra = parseInt(retryAfter, 10);
+          if (Number.isFinite(ra)) delay = Math.max(delay, ra * 1000);
+        }
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] ${res.status} on ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+        );
+        await sleep(delay);
+        continue;
+      }
+
+      // Decode body — text first, then JSON when it parses.
+      let parsedBody: unknown = null;
+      if (res.status !== 204) {
+        const text = await res.text();
+        if (text) {
+          try {
+            parsedBody = JSON.parse(text);
+          } catch {
+            parsedBody = text;
+          }
+        }
+      }
+
+      return {
+        status: res.status,
+        ok: res.ok,
+        body: parsedBody,
+        correlationId,
+      };
+    }
+
+    throw (
+      lastError ||
+      new Error(
+        `Walmart requestRaw failed after ${MAX_RETRIES} retries: ${method} ${url} (cid=${lastCorrelation})`
+      )
+    );
+  }
+}
+
+let cachedDefaultClient: WalmartClient | null = null;
+
+/** Convenience accessor for the default store (index 1). */
+export function getWalmartClient(storeIndex = 1): WalmartClient {
+  if (storeIndex === 1) {
+    if (!cachedDefaultClient) cachedDefaultClient = new WalmartClient(1);
+    return cachedDefaultClient;
+  }
+  return new WalmartClient(storeIndex);
+}

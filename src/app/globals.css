@@ -1,0 +1,305 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ────────────────────────────────────────────────────────────────────
+   Salutem design system v1.0 — see /design/DESIGN_TOKENS.md
+   ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* === Neutrals (cool off-white, silver-adjacent) === */
+  --bg:           #F4F3EF;
+  --bg-elev:      #EDECE7;
+  --surface:      #FFFFFF;
+  --surface-tint: #F8F7F3;
+
+  /* === Ink (greenish undertone, never pure black) === */
+  --ink:          #15201B;
+  --ink-2:        #4E554F;
+  --ink-3:        #7A807B;
+  --ink-4:        #AEB2AD;
+
+  /* === Rules / hairlines === */
+  --rule:         rgba(21, 32, 27, 0.08);
+  --rule-strong:  rgba(21, 32, 27, 0.16);
+
+  /* === Salutem GREEN — primary === */
+  --green:        #1F4D3F;
+  --green-deep:   #14352B;
+  --green-mid:    #3A6B5D;
+  /* Fresh sage between `green-mid` and `green-soft2`. Used on the AHR
+     healthy-zone progress bar where the deeper greens read as black at
+     thin-bar scale. Vladimir's request 2026-05-15. */
+  --green-light:  #6FAA8E;
+  --green-soft:   #E6EEE9;
+  --green-soft2:  #CDDDD5;
+  --green-ink:    #12362C;
+  --green-cream:  #F0E8D0;
+
+  /* === Salutem SILVER — accent === */
+  --silver:       #B5B8B5;
+  --silver-dark:  #8E918E;
+  --silver-tint:  #EAEBE9;
+  --silver-line:  #D2D4D1;
+
+  /* === Semantic === */
+  --frozen:       #2E6FA8;
+  --frozen-tint:  #E5EEF6;
+  --dry:          #8B6B1C;
+  --dry-tint:     #F3EDDD;
+  --warn:         #A05B20;
+  --warn-tint:    #F5E9DC;
+  --warn-strong:  #8B4A18;
+  --danger:       #9B2C2C;
+  --danger-tint:  #F5E1E1;
+  --info:         #2E6FA8;
+  --info-tint:    #E5EEF6;
+  --purple:       #5B4A7A;
+  --purple-tint:  #EBE7F0;
+
+  /* === Layout === */
+  --sidebar-width:    236px;
+  --topbar-height:    56px;
+  --content-max:      1480px;
+  --content-padding:  28px 32px 40px;
+
+  /* === Radii === */
+  --radius-sm:  6px;
+  --radius:     10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* === Fonts (set by next/font in layout.tsx) === */
+  --font-sans:  var(--font-inter-tight), 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --font-mono:  var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── shadcn/ui mapping → our tokens ───────────────────────────── */
+  --background:           var(--bg);
+  --foreground:           var(--ink);
+  --card:                 var(--surface);
+  --card-foreground:      var(--ink);
+  --popover:              var(--surface);
+  --popover-foreground:   var(--ink);
+  --primary:              var(--green);
+  --primary-foreground:   var(--green-cream);
+  --secondary:            var(--surface-tint);
+  --secondary-foreground: var(--ink);
+  --muted:                var(--bg-elev);
+  --muted-foreground:     var(--ink-3);
+  --accent:               var(--green-soft);
+  --accent-foreground:    var(--green-ink);
+  --destructive:          var(--danger);
+  --border:               var(--rule);
+  --input:                var(--rule);
+  --ring:                 var(--green-mid);
+  --chart-1: var(--green);
+  --chart-2: var(--green-mid);
+  --chart-3: var(--silver-dark);
+  --chart-4: var(--frozen);
+  --chart-5: var(--dry);
+  --sidebar:                       var(--surface);
+  --sidebar-foreground:            var(--ink);
+  --sidebar-primary:               var(--green);
+  --sidebar-primary-foreground:    var(--green-cream);
+  --sidebar-accent:                var(--green-soft);
+  --sidebar-accent-foreground:     var(--green-ink);
+  --sidebar-border:                var(--rule);
+  --sidebar-ring:                  var(--green-mid);
+}
+
+@theme inline {
+  /* shadcn vars */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Salutem semantic tokens — usable as `bg-surface`, `text-ink`, etc. */
+  --color-bg:            var(--bg);
+  --color-bg-elev:       var(--bg-elev);
+  --color-surface:       var(--surface);
+  --color-surface-tint:  var(--surface-tint);
+  --color-ink:           var(--ink);
+  --color-ink-2:         var(--ink-2);
+  --color-ink-3:         var(--ink-3);
+  --color-ink-4:         var(--ink-4);
+  --color-rule:          var(--rule);
+  --color-rule-strong:   var(--rule-strong);
+  --color-green:         var(--green);
+  --color-green-deep:    var(--green-deep);
+  --color-green-mid:     var(--green-mid);
+  --color-green-light:   var(--green-light);
+  --color-green-soft:    var(--green-soft);
+  --color-green-soft2:   var(--green-soft2);
+  --color-green-ink:     var(--green-ink);
+  --color-green-cream:   var(--green-cream);
+  --color-silver:        var(--silver);
+  --color-silver-dark:   var(--silver-dark);
+  --color-silver-tint:   var(--silver-tint);
+  --color-silver-line:   var(--silver-line);
+  --color-frozen:        var(--frozen);
+  --color-frozen-tint:   var(--frozen-tint);
+  --color-dry:           var(--dry);
+  --color-dry-tint:      var(--dry-tint);
+  --color-warn:          var(--warn);
+  --color-warn-tint:     var(--warn-tint);
+  --color-warn-strong:   var(--warn-strong);
+  --color-danger:        var(--danger);
+  --color-danger-tint:   var(--danger-tint);
+  --color-info:          var(--info);
+  --color-info-tint:     var(--info-tint);
+  --color-purple:        var(--purple);
+  --color-purple-tint:   var(--purple-tint);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Base layer
+   ──────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    font-family: var(--font-sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-feature-settings: "ss01", "cv01";
+  }
+
+  /* Numbers — tabular by default in finance/KPI contexts */
+  .num,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Mono helper */
+  .mono,
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Salutem-specific utilities
+   ──────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  /* Hairline border */
+  .hairline { border: 1px solid var(--rule); }
+  .hairline-strong { border: 1px solid var(--rule-strong); }
+
+  /* Page micro-label (uppercase mono) */
+  .micro-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* KPI-style number */
+  .kpi-number {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Pulsing "live" dot */
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: live-pulse 1.6s infinite ease-in-out;
+  }
+
+  /* Keyboard hint */
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 5px;
+    border: 1px solid var(--silver-line);
+    border-radius: 4px;
+    background: var(--surface-tint);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-2);
+  }
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Smooth interactions everywhere */
+button,
+a,
+[role="button"] {
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/* Hide scrollbar in horizontal containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
