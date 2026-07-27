@@ -30,7 +30,7 @@ test("builds the exact deterministic one-call dry-run plan", () => {
   assert.equal(first.request.endpoint, OXYLABS_REALTIME_QUERIES_ENDPOINT);
   assert.deepEqual(first.request.body, {
     source: "walmart_product",
-    query: ITEM_ID,
+    product_id: ITEM_ID,
     parse: true,
   });
   assert.equal(first.execution_contract.max_primary_calls, 1);

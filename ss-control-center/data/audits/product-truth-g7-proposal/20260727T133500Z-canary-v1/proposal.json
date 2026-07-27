@@ -1,0 +1,152 @@
+{
+  "authorization": {
+    "consumerActivation": false,
+    "databaseWrites": 0,
+    "delisting": false,
+    "inventoryChanges": false,
+    "marketplaceWrites": false,
+    "paidCalls": 0,
+    "priceChanges": false,
+    "procurement": false,
+    "providerCalls": 0
+  },
+  "budgetProposal": {
+    "maximumCalls": {
+      "oxylabsQuery": 5,
+      "unwrangleDetail": 5
+    },
+    "maximumUnits": {
+      "oxylabs": 5,
+      "total": 17.5,
+      "unwrangle": 12.5
+    },
+    "reserveFloor": null,
+    "reserveFloorStatus": "OWNER_REQUIRED"
+  },
+  "createdAt": "2026-07-27T13:35:00.000Z",
+  "decisionRequired": {
+    "freshBalanceEvidenceRequiredAfterPlan": true,
+    "ownerApprovalRequiredAfterPlan": true,
+    "ownerInputs": [
+      "UNWRANGLE_RESERVE_FLOOR",
+      "EXACT_MAXIMUM_PROVIDER_UNITS"
+    ],
+    "providerPermitRequiredAfterPlan": true,
+    "statement": "This proposal is not a Product Truth plan, permit, approval, or execution grant."
+  },
+  "schemaVersion": "product-truth-g7-canary-proposal/1.0.0",
+  "selectionPolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "candidateEvidence": "STRICT_TITLE_MATCH_EXACT_IDENTITY",
+    "collisionFreeDonorVariant": true,
+    "exactFirstPartyDirectWalmartOffer": true,
+    "listingConcurrency": 1,
+    "maximumAttemptsPerListing": 1,
+    "selectionOrder": [
+      "NONZERO_30D_ORDERS",
+      "MISSING_FIELD_DIVERSITY",
+      "DOWNSTREAM_LISTING_COVERAGE",
+      "LISTING_KEY"
+    ],
+    "zip": "33765"
+  },
+  "source": {
+    "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "bridgePlanSchemaVersion": "product-truth-legacy-bridge-plan/1.3.0",
+    "bridgePlanSha256": "b29071792a11ddc832d18e139463b6d8b095dc266e81afe54b07c125761dfded",
+    "capturedAt": "2026-07-27T13:25:47.000Z",
+    "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+    "sourceSnapshotSha256": "487e168197df258431b1997d898e00e06c24627115b559c4bbdb41392bb76204"
+  },
+  "status": "OWNER_INPUT_REQUIRED",
+  "targets": [
+    {
+      "canonicalVariantId": "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+      "donorProductId": "8936f4ab-6336-4169-8592-83b496799d51",
+      "donorTitle": "Glory Foods Seasoned Southern Style Mustard Greens, 27 oz., Can",
+      "listingCoverage": 2,
+      "listingKey": "walmart:1:RizwanX-3237",
+      "missingFields": [
+        "ALLERGENS"
+      ],
+      "retailerOffer": {
+        "id": "do:walmart:10532985",
+        "productUrl": "https://www.walmart.com/ip/Glory-Foods-Seasoned-Southern-Style-Mustard-Greens-27-oz-Can/10532985?classType=VARIANT",
+        "retailerProductId": "10532985",
+        "sourceApi": "oxylabs"
+      },
+      "selectionReason": "2 orders and 2 units in the current 30-day priority snapshot"
+    },
+    {
+      "canonicalVariantId": "cpv1:884643487f06a4e964641e3551d61aafef6558e27dc71756ddb5b5d7bad56598",
+      "donorProductId": "2bcb325a-17e4-4ebc-94d7-1228effbf6e8",
+      "donorTitle": "Fritos Flamin' Hot Flavored Corn Chips, 9.25 oz Bag (Packaging May Vary)",
+      "listingCoverage": 1,
+      "listingKey": "walmart:1:FaisalX-1315",
+      "missingFields": [
+        "STORAGE"
+      ],
+      "retailerOffer": {
+        "id": "do:walmart:49909665",
+        "productUrl": "https://www.walmart.com/ip/Fritos-Flamin-Hot-Flavored-Corn-Chips-9-25-oz-Bag-Packaging-May-Vary/49909665?classType=REGULAR",
+        "retailerProductId": "49909665",
+        "sourceApi": "oxylabs"
+      },
+      "selectionReason": "adds storage-field coverage to the canary"
+    },
+    {
+      "canonicalVariantId": "cpv1:5f7018c1aae41349a66c8e96e899a694c8a1748ae3625735ecd4228c8eb83d9d",
+      "donorProductId": "cc0c7f6f-c607-456b-8b46-272d835b2133",
+      "donorTitle": "Popeye Leaf Spinach, 13.5 oz., Can",
+      "listingCoverage": 3,
+      "listingKey": "walmart:1:RizwanX-3481",
+      "missingFields": [
+        "ALLERGENS",
+        "NUTRITION"
+      ],
+      "retailerOffer": {
+        "id": "do:walmart:10312200",
+        "productUrl": "https://www.walmart.com/ip/Popeye-Leaf-Spinach-13-5-oz/10312200?classType=VARIANT",
+        "retailerProductId": "10312200",
+        "sourceApi": "oxylabs"
+      },
+      "selectionReason": "adds nutrition-field coverage and can unlock three listings"
+    },
+    {
+      "canonicalVariantId": "cpv1:77ac684ddb29fe03a00709531d1fe15917ae67ac89f31b20703fe4bc7c64616a",
+      "donorProductId": "72b01aae-2cf7-498d-bd8a-f752006cad9e",
+      "donorTitle": "GOYA Pinto Beans 15.5 oz Can",
+      "listingCoverage": 4,
+      "listingKey": "walmart:1:RizwanX-3499",
+      "missingFields": [
+        "ALLERGENS"
+      ],
+      "retailerOffer": {
+        "id": "do:walmart:30856904",
+        "productUrl": "https://www.walmart.com/ip/GOYA-Pinto-Beans-15-5-Oz/30856904?classType=VARIANT",
+        "retailerProductId": "30856904",
+        "sourceApi": "oxylabs"
+      },
+      "selectionReason": "highest downstream listing coverage among remaining exact Walmart groups"
+    },
+    {
+      "canonicalVariantId": "cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7",
+      "donorProductId": "13ff39b9-b2c7-4c31-96d4-5d2b1456c91c",
+      "donorTitle": "Mott's 100% Juice Original Apple Juice, 48 fl oz, Bottle",
+      "listingCoverage": 2,
+      "listingKey": "walmart:1:FaisalX-2195",
+      "missingFields": [
+        "ALLERGENS",
+        "STORAGE"
+      ],
+      "retailerOffer": {
+        "id": "do:walmart:2918451132",
+        "productUrl": "https://www.walmart.com/ip/Mott-s-100-Juice-Original-Apple-Juice-48-fl-oz-Bottle/2918451132?classType=VARIANT",
+        "retailerProductId": "2918451132",
+        "sourceApi": "oxylabs"
+      },
+      "selectionReason": "adds a second product form and combined allergen/storage gap"
+    }
+  ]
+}

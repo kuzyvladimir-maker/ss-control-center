@@ -1,0 +1,635 @@
+{
+  "contractVersion": "product-truth-read-contract/3.2.0",
+  "snapshot": {
+    "sku": "FaisalX-2768",
+    "channel": "walmart",
+    "storeIndex": 1,
+    "listingKey": "walmart:1:FaisalX-2768",
+    "asOf": "2026-07-27T16:46:57.534Z",
+    "maxPriceAgeMs": 2592000000,
+    "skuCostId": "retail:FaisalX-2768:bridge:4ad7791816b05ab1b0e70278"
+  },
+  "recipe": {
+    "components": [
+      {
+        "componentEvidenceId": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+        "componentIndex": 0,
+        "product": "Condensed Soup",
+        "flavor": "Golden Mushroom",
+        "size": "10.5 oz",
+        "qty": 4,
+        "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+        "evidenceStatus": "REJECT",
+        "content": {
+          "canonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "identity": {
+            "variantKey": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+            "identityHash": "4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+            "keyVersion": "canonical-product-variant-key/1.0.0",
+            "brand": "campbells",
+            "productLine": "condensed soup",
+            "flavor": "golden mushroom",
+            "modifiers": [],
+            "form": "can",
+            "sizeDimension": "MASS",
+            "sizeBaseAmount": 297.6699928125,
+            "sizeBaseUnit": "g",
+            "outerPackCount": 1,
+            "identity": {
+              "schemaVersion": "canonical-product-variant-identity/1.0.0",
+              "brand": "campbells",
+              "productLine": "condensed soup",
+              "flavor": "golden mushroom",
+              "modifiers": [],
+              "form": "can",
+              "size": {
+                "dimension": "MASS",
+                "baseAmount": 297.6699928125,
+                "baseUnit": "g"
+              },
+              "outerPackCount": 1
+            }
+          },
+          "facts": {
+            "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can",
+            "description": "Add rich, savory flavor to your favorite dishes with Campbell's Condensed Golden Mushroom Soup. This condensed mushroom soup is crafted with tender mushrooms, beef stock and tomato puree to provide a delicious foundation to any recipe. Use it as the hero ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more. Campbell’s convenient canned soup is a year-round pantry staple and a must-have for creating something quick and easy. It's also delicious on its own, topped with fresh herbs or a drizzle of olive oil, or enjoyed with a sandwich or salad. Simply mix the condensed soup with 1 can of water and microwave on high for 3 to 3.5 minutes in a covered microwave-safe bowl, or heat in a pot on the stove, stirring occasionally. Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining. From Golden Mushroom to Chicken Noodle and everything in between, Campbell's makes delicious soups in flavors your family knows and loves, with quality, farm-grown ingredients in every can. M'm! M'm! Good! This product is packaged in a metal can, and is shelf-stable. One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy This product is packaged in a metal can, and is shelf-stable.",
+            "bullets": [
+              "One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup",
+              "Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor",
+              "Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more",
+              "This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad",
+              "Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining",
+              "Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy",
+              "This product is packaged in a metal can, and is shelf-stable."
+            ],
+            "attributes": [
+              {
+                "name": "Flavor",
+                "value": "Golden Mushroom"
+              },
+              {
+                "name": "Meat type",
+                "value": "Beef"
+              },
+              {
+                "name": "Net content statement",
+                "value": "10.5 OZ (298g)"
+              },
+              {
+                "name": "Shelf life",
+                "value": "730 days"
+              },
+              {
+                "name": "Food condition",
+                "value": "Shelf-Stable"
+              },
+              {
+                "name": "Vegetable type",
+                "value": "Tomato, Celery, Mushrooms"
+              },
+              {
+                "name": "Nutrition facts label image",
+                "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+              },
+              {
+                "name": "Ingredient list image",
+                "value": "https://images.salsify.com/image/upload/s--WWZicBWw--/w_2400,h_2400,dn_300,c_pad/eda3f2bf3b033bd87252efc8ae82cecf578b1cc7.jpg"
+              },
+              {
+                "name": "Brand",
+                "value": "Campbell's"
+              },
+              {
+                "name": "Instructions",
+                "value": "MIX SOUP + 1 CAN WATER\nMICROWAVE on HIGH 3 to 3 1/2 min.* in covered microwaveable bowl. Let stand 1 min. Carefully\nremove and stir.\nSTOVE: Heat, stirring occasionally.\n*Microwaves vary; time is approximate."
+              },
+              {
+                "name": "Product line",
+                "value": "Condensed"
+              },
+              {
+                "name": "Container type",
+                "value": "Can"
+              },
+              {
+                "name": "Food preparation method",
+                "value": "Fully Cooked"
+              }
+            ],
+            "nutritionFacts": [
+              {
+                "name": "Nutrition facts label image",
+                "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+              }
+            ],
+            "ingredients": "Ingredients: Beef Stock (Water, Dried Beef Stock), Water, Mushrooms, Tomato Puree (Water, Tomato Paste), Modified Cornstarch, Wheat Flour, Vegetable Oil (Corn, Canola, And/Or Soybean), Contains Less Than 2% Of: Salt, Sauterne Wine, Yeast Extract, Monosodium Glutamate, Potassium Salt, Beef Tallow, Beta Carotene For Color, Natural Flavoring, Celery Extract, Onion Extract, Garlic Extract.\nContains: Wheat",
+            "mainImageUrl": "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+            "imageUrls": [
+              "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+              "https://i5.walmartimages.com/asr/46c94f13-3c24-48c0-aa56-37868cf0fd0f.d59556c975c3b2aca3001862ccc9bd4c.jpeg",
+              "https://i5.walmartimages.com/asr/7be807d4-4649-4654-b483-daa931c34b4f.2bb86c5d3b70a8d208b92d47a95b1039.jpeg",
+              "https://i5.walmartimages.com/asr/ac43d13d-60c4-419d-b2a0-92ed4923b40a.71297b925aec405428105e5bae8ea281.jpeg",
+              "https://i5.walmartimages.com/asr/952b1774-fe2b-4d9d-bf29-bd71cb79eef8.4e3f6df32e08e36ae8d854cf9850fbbc.jpeg",
+              "https://i5.walmartimages.com/asr/6b148e6a-6bf2-476c-91e7-f5d427f80800.0d631d0696ace8f66c702f415d0fbba8.jpeg",
+              "https://i5.walmartimages.com/asr/0df8bc46-0920-46a9-932f-7ccb4dd072ff.09b37c53ce4af3c54b3e12ae7816b31f.jpeg",
+              "https://i5.walmartimages.com/asr/ca2ab80f-55a1-43a3-911e-2542a2803312.58e587694c959330970be204d33cc740.jpeg",
+              "https://i5.walmartimages.com/asr/a3351b2c-f158-48f0-ae2d-9f47545ca868.18dc7ceb889be4fb27f074ad8474739e.jpeg",
+              "https://i5.walmartimages.com/asr/6b9d0a40-bb8a-4507-b8a9-beb323e4d386.fe60fdd45ef2c0745130f916a4b56c07.jpeg",
+              "https://i5.walmartimages.com/asr/9ea17628-9caa-44fc-9597-da8190ad549c.3907917110e934aa6542db9dd0b15247.jpeg",
+              "https://i5.walmartimages.com/asr/7f85b49c-1e70-436d-addb-c86301e52083.ae1c4ac0c913819e8751223187ee6b5a.avif"
+            ]
+          },
+          "provenance": {
+            "contentObservationId": "pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+            "observationKey": "e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+            "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+            "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f",
+            "matcherVersion": "canonical-product-match/1.2.1",
+            "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+            "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+            "decisionEvidenceHash": "32ca2e80da2bbf0d6e49cf8c1e9f0460913f48b2eef7f5a01e66e8fba05d60ac",
+            "contentHash": "1fff2d25fd8086ff1a91311837e5d3ba006d1b6d2fa9aca19b72a0295c27084d",
+            "fieldHashes": {
+              "allergens": "4ab0e1b951e386ebbd36b46cf26f019b81b33070c6ffa728d98ea1b98e126d74",
+              "attributes": "06d50d185be6c61b7579ee00fbe70b3e2ef6f8365a349290b319e7096e2fa2ef",
+              "bullets": "f13f0cc3fe8771c8e8adcdfe09768d7155e397417976a4883a5b3636e549dc27",
+              "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+              "description": "04e6ba546e659542c8940d7a43fc5c06f94ff1e53d2819991b510a12feb9adde",
+              "imageUrls": "639cd014631c166e97beb52b53bde4a6672166331e8a8c1ea00d115672ef7c2a",
+              "ingredients": "c405f47ff8e7a2599620b13b3f0a5de016543edb4acf80210ed1e921395a27c0",
+              "mainImageUrl": "0edd91f454a54d9d728ae2b9ef1374ec3fca950bd5b8f23a47a06a986f1ec865",
+              "nutritionFacts": "890a2d0d7193238469daad335acc774df93adaa76004a06567e1d2b2c6f08f59",
+              "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+              "title": "6e10ed16aa568b0ee41bad2b4bc79f4e52dec30af613909ee95c4759c4a3c9a4",
+              "upc": "15b519471452c0db4a5d39921fb35706dfb870a0f5e7c3958e58b8401a15f26d"
+            },
+            "sourceUrl": "https://www.walmart.com/ip/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-oz-Can/10321692?classType=REGULAR&athbdg=L1600",
+            "sourceApi": "legacy-materialized-bridge",
+            "observedAt": "2026-07-10T12:34:46.618Z",
+            "runId": "ptlb-wave-cb890414ab73b579d117599a",
+            "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+            "meteredReceiptId": null
+          }
+        },
+        "contentBlockers": []
+      }
+    ],
+    "blockers": []
+  },
+  "views": {
+    "bundleFactory": {
+      "consumer": "BUNDLE_FACTORY",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+          "componentIndex": 0,
+          "product": "Condensed Soup",
+          "flavor": "Golden Mushroom",
+          "size": "10.5 oz",
+          "qty": 4,
+          "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+            "identity": {
+              "variantKey": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "identityHash": "4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "campbells",
+              "productLine": "condensed soup",
+              "flavor": "golden mushroom",
+              "modifiers": [],
+              "form": "can",
+              "sizeDimension": "MASS",
+              "sizeBaseAmount": 297.6699928125,
+              "sizeBaseUnit": "g",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "campbells",
+                "productLine": "condensed soup",
+                "flavor": "golden mushroom",
+                "modifiers": [],
+                "form": "can",
+                "size": {
+                  "dimension": "MASS",
+                  "baseAmount": 297.6699928125,
+                  "baseUnit": "g"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can",
+              "description": "Add rich, savory flavor to your favorite dishes with Campbell's Condensed Golden Mushroom Soup. This condensed mushroom soup is crafted with tender mushrooms, beef stock and tomato puree to provide a delicious foundation to any recipe. Use it as the hero ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more. Campbell’s convenient canned soup is a year-round pantry staple and a must-have for creating something quick and easy. It's also delicious on its own, topped with fresh herbs or a drizzle of olive oil, or enjoyed with a sandwich or salad. Simply mix the condensed soup with 1 can of water and microwave on high for 3 to 3.5 minutes in a covered microwave-safe bowl, or heat in a pot on the stove, stirring occasionally. Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining. From Golden Mushroom to Chicken Noodle and everything in between, Campbell's makes delicious soups in flavors your family knows and loves, with quality, farm-grown ingredients in every can. M'm! M'm! Good! This product is packaged in a metal can, and is shelf-stable. One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy This product is packaged in a metal can, and is shelf-stable.",
+              "bullets": [
+                "One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup",
+                "Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor",
+                "Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more",
+                "This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad",
+                "Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining",
+                "Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy",
+                "This product is packaged in a metal can, and is shelf-stable."
+              ],
+              "attributes": [
+                {
+                  "name": "Flavor",
+                  "value": "Golden Mushroom"
+                },
+                {
+                  "name": "Meat type",
+                  "value": "Beef"
+                },
+                {
+                  "name": "Net content statement",
+                  "value": "10.5 OZ (298g)"
+                },
+                {
+                  "name": "Shelf life",
+                  "value": "730 days"
+                },
+                {
+                  "name": "Food condition",
+                  "value": "Shelf-Stable"
+                },
+                {
+                  "name": "Vegetable type",
+                  "value": "Tomato, Celery, Mushrooms"
+                },
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+                },
+                {
+                  "name": "Ingredient list image",
+                  "value": "https://images.salsify.com/image/upload/s--WWZicBWw--/w_2400,h_2400,dn_300,c_pad/eda3f2bf3b033bd87252efc8ae82cecf578b1cc7.jpg"
+                },
+                {
+                  "name": "Brand",
+                  "value": "Campbell's"
+                },
+                {
+                  "name": "Instructions",
+                  "value": "MIX SOUP + 1 CAN WATER\nMICROWAVE on HIGH 3 to 3 1/2 min.* in covered microwaveable bowl. Let stand 1 min. Carefully\nremove and stir.\nSTOVE: Heat, stirring occasionally.\n*Microwaves vary; time is approximate."
+                },
+                {
+                  "name": "Product line",
+                  "value": "Condensed"
+                },
+                {
+                  "name": "Container type",
+                  "value": "Can"
+                },
+                {
+                  "name": "Food preparation method",
+                  "value": "Fully Cooked"
+                }
+              ],
+              "nutritionFacts": [
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+                }
+              ],
+              "ingredients": "Ingredients: Beef Stock (Water, Dried Beef Stock), Water, Mushrooms, Tomato Puree (Water, Tomato Paste), Modified Cornstarch, Wheat Flour, Vegetable Oil (Corn, Canola, And/Or Soybean), Contains Less Than 2% Of: Salt, Sauterne Wine, Yeast Extract, Monosodium Glutamate, Potassium Salt, Beef Tallow, Beta Carotene For Color, Natural Flavoring, Celery Extract, Onion Extract, Garlic Extract.\nContains: Wheat",
+              "mainImageUrl": "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+              "imageUrls": [
+                "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+                "https://i5.walmartimages.com/asr/46c94f13-3c24-48c0-aa56-37868cf0fd0f.d59556c975c3b2aca3001862ccc9bd4c.jpeg",
+                "https://i5.walmartimages.com/asr/7be807d4-4649-4654-b483-daa931c34b4f.2bb86c5d3b70a8d208b92d47a95b1039.jpeg",
+                "https://i5.walmartimages.com/asr/ac43d13d-60c4-419d-b2a0-92ed4923b40a.71297b925aec405428105e5bae8ea281.jpeg",
+                "https://i5.walmartimages.com/asr/952b1774-fe2b-4d9d-bf29-bd71cb79eef8.4e3f6df32e08e36ae8d854cf9850fbbc.jpeg",
+                "https://i5.walmartimages.com/asr/6b148e6a-6bf2-476c-91e7-f5d427f80800.0d631d0696ace8f66c702f415d0fbba8.jpeg",
+                "https://i5.walmartimages.com/asr/0df8bc46-0920-46a9-932f-7ccb4dd072ff.09b37c53ce4af3c54b3e12ae7816b31f.jpeg",
+                "https://i5.walmartimages.com/asr/ca2ab80f-55a1-43a3-911e-2542a2803312.58e587694c959330970be204d33cc740.jpeg",
+                "https://i5.walmartimages.com/asr/a3351b2c-f158-48f0-ae2d-9f47545ca868.18dc7ceb889be4fb27f074ad8474739e.jpeg",
+                "https://i5.walmartimages.com/asr/6b9d0a40-bb8a-4507-b8a9-beb323e4d386.fe60fdd45ef2c0745130f916a4b56c07.jpeg",
+                "https://i5.walmartimages.com/asr/9ea17628-9caa-44fc-9597-da8190ad549c.3907917110e934aa6542db9dd0b15247.jpeg",
+                "https://i5.walmartimages.com/asr/7f85b49c-1e70-436d-addb-c86301e52083.ae1c4ac0c913819e8751223187ee6b5a.avif"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+              "observationKey": "e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+              "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+              "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "32ca2e80da2bbf0d6e49cf8c1e9f0460913f48b2eef7f5a01e66e8fba05d60ac",
+              "contentHash": "1fff2d25fd8086ff1a91311837e5d3ba006d1b6d2fa9aca19b72a0295c27084d",
+              "fieldHashes": {
+                "allergens": "4ab0e1b951e386ebbd36b46cf26f019b81b33070c6ffa728d98ea1b98e126d74",
+                "attributes": "06d50d185be6c61b7579ee00fbe70b3e2ef6f8365a349290b319e7096e2fa2ef",
+                "bullets": "f13f0cc3fe8771c8e8adcdfe09768d7155e397417976a4883a5b3636e549dc27",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "04e6ba546e659542c8940d7a43fc5c06f94ff1e53d2819991b510a12feb9adde",
+                "imageUrls": "639cd014631c166e97beb52b53bde4a6672166331e8a8c1ea00d115672ef7c2a",
+                "ingredients": "c405f47ff8e7a2599620b13b3f0a5de016543edb4acf80210ed1e921395a27c0",
+                "mainImageUrl": "0edd91f454a54d9d728ae2b9ef1374ec3fca950bd5b8f23a47a06a986f1ec865",
+                "nutritionFacts": "890a2d0d7193238469daad335acc774df93adaa76004a06567e1d2b2c6f08f59",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "6e10ed16aa568b0ee41bad2b4bc79f4e52dec30af613909ee95c4759c4a3c9a4",
+                "upc": "15b519471452c0db4a5d39921fb35706dfb870a0f5e7c3958e58b8401a15f26d"
+              },
+              "sourceUrl": "https://www.walmart.com/ip/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-oz-Can/10321692?classType=REGULAR&athbdg=L1600",
+              "sourceApi": "legacy-materialized-bridge",
+              "observedAt": "2026-07-10T12:34:46.618Z",
+              "runId": "ptlb-wave-cb890414ab73b579d117599a",
+              "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "listingImprovement": {
+      "consumer": "LISTING_IMPROVEMENT",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+          "componentIndex": 0,
+          "product": "Condensed Soup",
+          "flavor": "Golden Mushroom",
+          "size": "10.5 oz",
+          "qty": 4,
+          "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+            "identity": {
+              "variantKey": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "identityHash": "4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "campbells",
+              "productLine": "condensed soup",
+              "flavor": "golden mushroom",
+              "modifiers": [],
+              "form": "can",
+              "sizeDimension": "MASS",
+              "sizeBaseAmount": 297.6699928125,
+              "sizeBaseUnit": "g",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "campbells",
+                "productLine": "condensed soup",
+                "flavor": "golden mushroom",
+                "modifiers": [],
+                "form": "can",
+                "size": {
+                  "dimension": "MASS",
+                  "baseAmount": 297.6699928125,
+                  "baseUnit": "g"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can",
+              "description": "Add rich, savory flavor to your favorite dishes with Campbell's Condensed Golden Mushroom Soup. This condensed mushroom soup is crafted with tender mushrooms, beef stock and tomato puree to provide a delicious foundation to any recipe. Use it as the hero ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more. Campbell’s convenient canned soup is a year-round pantry staple and a must-have for creating something quick and easy. It's also delicious on its own, topped with fresh herbs or a drizzle of olive oil, or enjoyed with a sandwich or salad. Simply mix the condensed soup with 1 can of water and microwave on high for 3 to 3.5 minutes in a covered microwave-safe bowl, or heat in a pot on the stove, stirring occasionally. Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining. From Golden Mushroom to Chicken Noodle and everything in between, Campbell's makes delicious soups in flavors your family knows and loves, with quality, farm-grown ingredients in every can. M'm! M'm! Good! This product is packaged in a metal can, and is shelf-stable. One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy This product is packaged in a metal can, and is shelf-stable.",
+              "bullets": [
+                "One (1) 10.5 oz can of Campbell's Condensed Golden Mushroom Soup",
+                "Condensed mushroom soup crafted with tender mushrooms, beef stock and tomato puree for a rich and savory flavor",
+                "Use it as an ingredient in recipes like Easy Beef Pot Pie, try it as a stew or soup base, or add it to homemade gravies, sauces and more",
+                "This convenient canned soup is also delicious on its own, topped with fresh herbs or olive oil, or enjoyed with a sandwich or salad",
+                "Each 10.5 oz recyclable can contains about 2.5 servings of microwave soup and features a non-BPA lining",
+                "Campbell's condensed soup is a year-round pantry staple and a must-have for creating something quick and easy",
+                "This product is packaged in a metal can, and is shelf-stable."
+              ],
+              "attributes": [
+                {
+                  "name": "Flavor",
+                  "value": "Golden Mushroom"
+                },
+                {
+                  "name": "Meat type",
+                  "value": "Beef"
+                },
+                {
+                  "name": "Net content statement",
+                  "value": "10.5 OZ (298g)"
+                },
+                {
+                  "name": "Shelf life",
+                  "value": "730 days"
+                },
+                {
+                  "name": "Food condition",
+                  "value": "Shelf-Stable"
+                },
+                {
+                  "name": "Vegetable type",
+                  "value": "Tomato, Celery, Mushrooms"
+                },
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+                },
+                {
+                  "name": "Ingredient list image",
+                  "value": "https://images.salsify.com/image/upload/s--WWZicBWw--/w_2400,h_2400,dn_300,c_pad/eda3f2bf3b033bd87252efc8ae82cecf578b1cc7.jpg"
+                },
+                {
+                  "name": "Brand",
+                  "value": "Campbell's"
+                },
+                {
+                  "name": "Instructions",
+                  "value": "MIX SOUP + 1 CAN WATER\nMICROWAVE on HIGH 3 to 3 1/2 min.* in covered microwaveable bowl. Let stand 1 min. Carefully\nremove and stir.\nSTOVE: Heat, stirring occasionally.\n*Microwaves vary; time is approximate."
+                },
+                {
+                  "name": "Product line",
+                  "value": "Condensed"
+                },
+                {
+                  "name": "Container type",
+                  "value": "Can"
+                },
+                {
+                  "name": "Food preparation method",
+                  "value": "Fully Cooked"
+                }
+              ],
+              "nutritionFacts": [
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--oMuVffSy--/w_2400,h_2400,dn_300,c_pad/99c61a2eb60daadb31c6988dcfe0656d5aef8260.jpg"
+                }
+              ],
+              "ingredients": "Ingredients: Beef Stock (Water, Dried Beef Stock), Water, Mushrooms, Tomato Puree (Water, Tomato Paste), Modified Cornstarch, Wheat Flour, Vegetable Oil (Corn, Canola, And/Or Soybean), Contains Less Than 2% Of: Salt, Sauterne Wine, Yeast Extract, Monosodium Glutamate, Potassium Salt, Beef Tallow, Beta Carotene For Color, Natural Flavoring, Celery Extract, Onion Extract, Garlic Extract.\nContains: Wheat",
+              "mainImageUrl": "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+              "imageUrls": [
+                "https://i5.walmartimages.com/asr/a52069c5-2894-4c24-a4a2-43a70957b4c1.3e274772bf4e5d82dfa0b20fe3deacad.jpeg",
+                "https://i5.walmartimages.com/asr/46c94f13-3c24-48c0-aa56-37868cf0fd0f.d59556c975c3b2aca3001862ccc9bd4c.jpeg",
+                "https://i5.walmartimages.com/asr/7be807d4-4649-4654-b483-daa931c34b4f.2bb86c5d3b70a8d208b92d47a95b1039.jpeg",
+                "https://i5.walmartimages.com/asr/ac43d13d-60c4-419d-b2a0-92ed4923b40a.71297b925aec405428105e5bae8ea281.jpeg",
+                "https://i5.walmartimages.com/asr/952b1774-fe2b-4d9d-bf29-bd71cb79eef8.4e3f6df32e08e36ae8d854cf9850fbbc.jpeg",
+                "https://i5.walmartimages.com/asr/6b148e6a-6bf2-476c-91e7-f5d427f80800.0d631d0696ace8f66c702f415d0fbba8.jpeg",
+                "https://i5.walmartimages.com/asr/0df8bc46-0920-46a9-932f-7ccb4dd072ff.09b37c53ce4af3c54b3e12ae7816b31f.jpeg",
+                "https://i5.walmartimages.com/asr/ca2ab80f-55a1-43a3-911e-2542a2803312.58e587694c959330970be204d33cc740.jpeg",
+                "https://i5.walmartimages.com/asr/a3351b2c-f158-48f0-ae2d-9f47545ca868.18dc7ceb889be4fb27f074ad8474739e.jpeg",
+                "https://i5.walmartimages.com/asr/6b9d0a40-bb8a-4507-b8a9-beb323e4d386.fe60fdd45ef2c0745130f916a4b56c07.jpeg",
+                "https://i5.walmartimages.com/asr/9ea17628-9caa-44fc-9597-da8190ad549c.3907917110e934aa6542db9dd0b15247.jpeg",
+                "https://i5.walmartimages.com/asr/7f85b49c-1e70-436d-addb-c86301e52083.ae1c4ac0c913819e8751223187ee6b5a.avif"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+              "observationKey": "e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+              "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+              "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "32ca2e80da2bbf0d6e49cf8c1e9f0460913f48b2eef7f5a01e66e8fba05d60ac",
+              "contentHash": "1fff2d25fd8086ff1a91311837e5d3ba006d1b6d2fa9aca19b72a0295c27084d",
+              "fieldHashes": {
+                "allergens": "4ab0e1b951e386ebbd36b46cf26f019b81b33070c6ffa728d98ea1b98e126d74",
+                "attributes": "06d50d185be6c61b7579ee00fbe70b3e2ef6f8365a349290b319e7096e2fa2ef",
+                "bullets": "f13f0cc3fe8771c8e8adcdfe09768d7155e397417976a4883a5b3636e549dc27",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "04e6ba546e659542c8940d7a43fc5c06f94ff1e53d2819991b510a12feb9adde",
+                "imageUrls": "639cd014631c166e97beb52b53bde4a6672166331e8a8c1ea00d115672ef7c2a",
+                "ingredients": "c405f47ff8e7a2599620b13b3f0a5de016543edb4acf80210ed1e921395a27c0",
+                "mainImageUrl": "0edd91f454a54d9d728ae2b9ef1374ec3fca950bd5b8f23a47a06a986f1ec865",
+                "nutritionFacts": "890a2d0d7193238469daad335acc774df93adaa76004a06567e1d2b2c6f08f59",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "6e10ed16aa568b0ee41bad2b4bc79f4e52dec30af613909ee95c4759c4a3c9a4",
+                "upc": "15b519471452c0db4a5d39921fb35706dfb870a0f5e7c3958e58b8401a15f26d"
+              },
+              "sourceUrl": "https://www.walmart.com/ip/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-oz-Can/10321692?classType=REGULAR&athbdg=L1600",
+              "sourceApi": "legacy-materialized-bridge",
+              "observedAt": "2026-07-10T12:34:46.618Z",
+              "runId": "ptlb-wave-cb890414ab73b579d117599a",
+              "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "unitEconomics": {
+      "consumer": "UNIT_ECONOMICS",
+      "status": "UNSOURCEABLE",
+      "current": {
+        "id": "retail:FaisalX-2768:bridge:4ad7791816b05ab1b0e70278",
+        "observationKey": "4ad7791816b05ab1b0e702788d1e88b397368f6a948eb03b4d50dddc54b84f2c",
+        "recipeHash": "f5c47fc3b8d54d3a13d5d8c93c7d5e41958c4191b3e682d6c7607ffaa4343d51",
+        "sku": "FaisalX-2768",
+        "effectiveDate": "2026-07-27T12:16:37.000Z",
+        "createdAt": "2026-07-27T12:16:37.000Z",
+        "source": "retail:batch",
+        "productCost": null,
+        "packagingCost": null,
+        "iceCost": null,
+        "totalCost": null,
+        "costPerUnit": null,
+        "packSize": null,
+        "currency": "USD",
+        "needsReview": true,
+        "matcherVersion": "canonical-product-match/1.2.1",
+        "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+        "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+        "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+        "evidenceOutcome": "UNSOURCEABLE",
+        "evidence": {
+          "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+          "channel": "walmart",
+          "components": [
+            {
+              "contentCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "contentDonorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+              "contentObservationId": "pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563",
+              "flavor": "Golden Mushroom",
+              "idx": 0,
+              "matchTier": "EXACT_IDENTITY",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "method": "no-fresh-first-party-price",
+              "perUnit": null,
+              "priceCanonicalVariantId": null,
+              "priceEvidenceDonorProductId": null,
+              "priceEvidenceObservationId": null,
+              "priceEvidenceOfferId": null,
+              "priceEvidenceStatus": "REJECT",
+              "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+              "priceVariantDecisionId": null,
+              "product": "Condensed Soup",
+              "qty": 4,
+              "size": "10.5 oz",
+              "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+              "targetComparableUnitPrice": null
+            }
+          ],
+          "evaluatedAt": "2026-07-27T12:16:37.000Z",
+          "listingKey": "walmart:1:FaisalX-2768",
+          "listingKeyVersion": "product-truth-listing-key/1.0.0",
+          "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+          "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+          "matcherVersion": "canonical-product-match/1.2.1",
+          "outcome": "UNSOURCEABLE",
+          "procurementZip": "33765",
+          "recipeHash": "f5c47fc3b8d54d3a13d5d8c93c7d5e41958c4191b3e682d6c7607ffaa4343d51",
+          "runId": "ptlb-wave-cb890414ab73b579d117599a",
+          "schemaVersion": "product-truth-cogs-evidence/1.0.0",
+          "sourcePolicy": {
+            "evidence": "existing-catalog-only",
+            "maxPriceAgeMs": 86400000,
+            "paidCalls": 0,
+            "providerCalls": 0
+          },
+          "storeIndex": 1
+        },
+        "runId": "ptlb-wave-cb890414ab73b579d117599a",
+        "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+        "componentProvenance": [
+          {
+            "componentIndex": 0,
+            "kind": "REJECT",
+            "matcher": {
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2"
+            },
+            "manualCost": null
+          }
+        ]
+      },
+      "factualCost": null,
+      "estimatedCost": null,
+      "blockers": []
+    },
+    "procurement": {
+      "consumer": "PROCUREMENT",
+      "ready": false,
+      "components": [
+        {
+          "componentIndex": 0,
+          "product": "Condensed Soup",
+          "requiredQuantity": 4,
+          "factualOptions": [],
+          "estimateOptions": [],
+          "manualCost": null,
+          "blockers": [
+            "PRICE_EVIDENCE_NOT_ACCEPTED",
+            "SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+            "NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+          ]
+        }
+      ],
+      "blockers": [
+        "COMPONENT_0:PRICE_EVIDENCE_NOT_ACCEPTED",
+        "COMPONENT_0:SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+        "COMPONENT_0:NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+      ]
+    }
+  }
+}

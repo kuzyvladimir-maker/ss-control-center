@@ -212,14 +212,19 @@ function isUniqueConstraintError(error: unknown): boolean {
   );
 }
 
-function shelfStableCategory(value: string | null): string {
+function shelfStableCategory(
+  value: string | null,
+  storageClassification: string | null,
+): string {
   const normalized = (value ?? "").trim();
+  const normalizedStorage = (storageClassification ?? "").trim();
   if (/frozen|refrigerated|chilled|cold/i.test(normalized)) {
     throw new Error(`Cold-chain candidate is not eligible for Walmart pilot: ${normalized}`);
   }
-  if (!/dry|shelf|grocery|snack|food|pantry/i.test(normalized)) {
+  if (!normalized || normalizedStorage !== "SHELF_STABLE") {
     throw new Error(
-      `Pilot requires an explicit shelf-stable grocery category; got ${normalized || "missing"}`,
+      "Pilot requires an explicit category and sealed SHELF_STABLE classification; " +
+      `got category=${normalized || "missing"} storage=${normalizedStorage || "missing"}`,
     );
   }
   return "SHELF_STABLE";
@@ -458,7 +463,10 @@ async function ensureDraft(input: {
     (item) => item.candidate_key === input.candidateKey,
   )!;
   const component = candidate.recipe_input.components[0];
-  const category = shelfStableCategory(candidate.source_candidate.category);
+  const category = shelfStableCategory(
+    candidate.source_candidate.category,
+    candidate.source_candidate.storage_classification,
+  );
   const unitPriceCents = Math.round(component.price_evidence.price_per_unit * 100);
   if (!Number.isInteger(unitPriceCents) || unitPriceCents <= 0) {
     throw new Error("Canonical component cost must be positive integer cents");

@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "itemId": "1838619805",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg"
+        }
+      ],
+      "customerRating": "0.0",
+      "price": {
+        "amount": "17.66",
+        "currency": "USD"
+      },
+      "description": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "brand": "Campbell's",
+      "productType": "Prepared & Packaged Soups",
+      "standardUpc": [
+        "00660251345376"
+      ],
+      "properties": {
+        "numReviews": "0",
+        "categories": [
+          "Food",
+          "Pantry",
+          "Soup",
+          "Condensed Soup"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

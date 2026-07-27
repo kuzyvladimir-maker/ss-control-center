@@ -35,7 +35,7 @@ const DECISION_EVIDENCE_JSON = JSON.stringify({
   matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
-  schemaVersion: "donor-source-identity-evidence/1.1.0",
+  schemaVersion: "donor-source-identity-evidence/1.2.0",
 });
 const DECISION_EVIDENCE_HASH = createHash("sha256")
   .update(DECISION_EVIDENCE_JSON)
@@ -394,6 +394,38 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
       trialExhausted: false,
     },
   }).retailerProductId, "34312392");
+  const currentWalmartTitle =
+    "RITZ Bits Cheese Sandwich Crackers, Snacks for Kids and Adults, Lunch Snacks, 8.8 oz";
+  const currentWalmartOffer = selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{ ...exactOffer, title: currentWalmartTitle }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  });
+  assert.equal(currentWalmartOffer.title, currentWalmartTitle);
+  assert.equal(
+    currentWalmartOffer.identityEvidenceTitle,
+    "RITZ Bits Cheese Sandwich Crackers, Snacks, Lunch Snacks, 8.8 oz",
+  );
+  assert.equal(
+    currentWalmartOffer.identityEvidenceNormalization,
+    "walmart-inclusive-audience-phrase/1.0.0",
+  );
+  assert.throws(() => selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        ...exactOffer,
+        title: "RITZ Bits Cheese Sandwich Crackers, Snacks for Kids, Lunch Snacks, 8.8 oz",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  }), /TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN/);
   assert.throws(() => selectExactTargetedWalmartOffer({
     target,
     result: {

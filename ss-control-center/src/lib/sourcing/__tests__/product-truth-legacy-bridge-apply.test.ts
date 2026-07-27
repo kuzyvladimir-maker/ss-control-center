@@ -6,15 +6,19 @@ import { test, type TestContext } from "node:test";
 
 import { createClient, type Client } from "@libsql/client";
 
+import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
 import {
-  applyProductTruthLegacyBridgeCanary,
+  applyProductTruthLegacyBridgeWave,
   expectedProductTruthLegacyBridgeConfirmation,
   planProductTruthLegacyBridgeApply,
-  preflightProductTruthLegacyBridgeCanary,
+  preflightProductTruthLegacyBridgeWave,
   renderProductTruthLegacyBridgeApplyPlan,
   renderProductTruthLegacyBridgeApproval,
+  renderProductTruthLegacyBridgePreflightReport,
+  renderProductTruthLegacyBridgeStandingPolicy,
   PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
   type ProductTruthLegacyBridgeApproval,
+  type ProductTruthLegacyBridgeStandingPolicy,
 } from "../product-truth-legacy-bridge-apply";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
@@ -22,8 +26,10 @@ import {
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
+  type ProductTruthDirectTargetContentEvidence,
   type ProductTruthLegacyBridgeSnapshot,
 } from "../product-truth-legacy-bridge";
+import { renderProductTruthOperationalJson } from "../product-truth-operational-run-contract";
 import { readProductTruthSnapshot } from "../product-truth-read-contract";
 
 const CAPTURED_AT = "2026-07-26T10:00:00.000Z";
@@ -168,6 +174,10 @@ function sourceFixture(): {
     components,
     donors,
     offers,
+    canonicalDonorBindings: [],
+    canonicalListingComponents: [],
+    componentBarcodeEvidence: [],
+    directTargetContentEvidence: [],
   };
   const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
   const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);
@@ -190,6 +200,279 @@ function sourceFixture(): {
   };
 }
 
+function rebuildFixture(
+  snapshot: ProductTruthLegacyBridgeSnapshot,
+): ReturnType<typeof sourceFixture> {
+  const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
+  const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);
+  const bridgePlan = compileProductTruthLegacyBridgePlan({
+    snapshot,
+    snapshotJson,
+    snapshotSha256,
+    generatedAt: CAPTURED_AT,
+  });
+  assert.equal(bridgePlan.counts.contentOnlyCanonicalizationCandidates, 5);
+  const bridgePlanJson = renderProductTruthLegacyBridgePlan(bridgePlan);
+  return {
+    snapshot,
+    snapshotJson,
+    snapshotSha256,
+    bridgePlan,
+    bridgePlanJson,
+    bridgePlanSha256: productTruthLegacyBridgeBytesSha256(bridgePlanJson),
+    listingKeys: snapshot.listings.map((listing) => listing.listingKey),
+  };
+}
+
+function liveBarcodeFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  const listing = snapshot.listings[0];
+  const component = snapshot.components[0];
+  const donor = snapshot.donors[0];
+  const offer = snapshot.offers[0];
+  assert.ok(listing);
+  assert.ok(component);
+  assert.ok(donor);
+  assert.ok(offer);
+
+  listing.productIdentityJson = JSON.stringify({
+    brand: "Pepperidge Farm",
+    product_line: "Hot Dog Buns",
+    flavor: "White",
+    size: "8 count",
+    container_type: "Bag",
+    units_in_listing: 2,
+    is_bundle: false,
+    components: [],
+  });
+  component.product = "Hot Dog Buns";
+  component.flavor = "White";
+  component.size = "8 count";
+  component.qty = 2;
+  component.matchedTitle =
+    "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct";
+  component.retailer = "target";
+  donor.brand = "Pepperidge Farm";
+  donor.productLine = "Hot Dog Buns";
+  donor.flavor = "White";
+  donor.containerType = "Bag";
+  donor.size = "8 count";
+  donor.category = "Bakery";
+  donor.upc = "014100070931";
+  donor.title =
+    "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct";
+  donor.description = null;
+  donor.attributes = null;
+  donor.nutritionFacts = null;
+  donor.ingredients = null;
+  offer.retailer = "target";
+  offer.retailerProductId = "17189284";
+  offer.productUrl =
+    "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284";
+  offer.sourceApi = "unwrangle";
+
+  snapshot.componentBarcodeEvidence = [{
+    schemaVersion: "product-truth-live-image-barcode-evidence/1.0.0",
+    evidenceArtifactSha256: "1".repeat(64),
+    listingKey: listing.listingKey,
+    componentIndex: 0,
+    capturedAt: "2026-07-26T09:30:00.000Z",
+    sourceImageFile: "barcode-source.jpeg",
+    image: {
+      imageId: "image-1",
+      slot: "gallery-2",
+      sourceAssetSha256: "2".repeat(64),
+      modelAssetSha256: "3".repeat(64),
+    },
+    barcode: {
+      decoder: "APPLE_VISION_VNDETECTBARCODESREQUEST",
+      symbology: "VNBarcodeSymbologyEAN13",
+      payload: "0014100070931",
+      normalizedGtin14: "00014100070931",
+      confidence: 0.99,
+    },
+    visualObservation: {
+      brandText: "PEPPERIDGE FARM",
+      productText: "TOP SLICED SOFT WHITE HOT DOG BUNS",
+      readableIdentity: "clear",
+      multipleDistinctProducts: "no",
+      gridCellKind: "single_sellable_package",
+      externalPackageCount: 1,
+      identityModifiers: ["top sliced"],
+    },
+    buyerPdp: {
+      title: "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      brand: "Pepperidge Farm",
+      productType: "Hot Dog Buns",
+      productLine: "Bakery Classics",
+      flavor: "White",
+      count: 8,
+      multipackQuantity: 2,
+      containerType: "Bag",
+      netContent: "14 Ounces",
+      foodCondition: "Shelf-Stable",
+    },
+    retailerContent: {
+      retailer: "target",
+      retailerProductId: "17189284",
+      productUrl: offer.productUrl,
+      finalUrl: offer.productUrl,
+      httpStatus: 200,
+      fetchedAt: "2026-07-26T09:30:00.000Z",
+      htmlFile: "retailer-content.html",
+      htmlSha256: "c".repeat(64),
+      normalizedGtin14: "00014100070931",
+      title: donor.title,
+      description: "Exact Target description.",
+      bullets: ["8 BUNS: 8-count bag"],
+      attributes: ["State of Readiness: Ready to Eat"],
+      nutritionFacts: { servings_per_container: "8" },
+      ingredients: "Wheat flour, water.",
+      allergens: "Contains: Wheat, Milk, Sesame Seeds.",
+    },
+    sourceHashes: {
+      intakeIndexFileSha256: "4".repeat(64),
+      intakeIndexBodySha256: "5".repeat(64),
+      buyerPdpFileSha256: "6".repeat(64),
+      observerPlanFileSha256: "7".repeat(64),
+      observerPlanBodySha256: "8".repeat(64),
+      observationsFileSha256: "9".repeat(64),
+      executionIndexFileSha256: "a".repeat(64),
+      executionIndexBodySha256: "b".repeat(64),
+    },
+    safety: {
+      modelCalls: 0,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerReads: 1,
+      databaseWrites: 0,
+      walmartWrites: 0,
+    },
+  }];
+  return rebuildFixture(snapshot);
+}
+
+function directTargetContentFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  const donor = snapshot.donors[0];
+  const offer = snapshot.offers[0];
+  assert.ok(donor);
+  assert.ok(offer);
+  donor.attributes = JSON.stringify([
+    { label: "State of Readiness", value: "Ready to Eat" },
+  ]);
+  donor.nutritionFacts = JSON.stringify({ calories: 120 });
+  donor.ingredients = "Corn, oil.";
+  offer.retailer = "target";
+  offer.retailerProductId = "12973001";
+  offer.productUrl =
+    "https://www.target.com/p/acme-brand-1-crunch-chips/-/A-12973001";
+  offer.sourceApi = "unwrangle";
+  const evidence: ProductTruthDirectTargetContentEvidence = {
+    schemaVersion: "product-truth-direct-target-content-evidence/1.0.0",
+    donorProductId: donor.id,
+    offerId: offer.id,
+    capturedAt: "2026-07-26T09:30:00.000Z",
+    retailerContent: {
+      retailer: "target",
+      retailerProductId: offer.retailerProductId,
+      productUrl: offer.productUrl,
+      finalUrl: offer.productUrl,
+      httpStatus: 200,
+      fetchedAt: "2026-07-26T09:30:00.000Z",
+      htmlFile: "retailer-content.html",
+      htmlSha256: "d".repeat(64),
+      normalizedGtin14: "00036000291452",
+      title: donor.title!,
+      description: "Exact direct Target description.",
+      bullets: ["One exact bag"],
+      attributes: ["State of Readiness: Ready to Eat"],
+      nutritionFacts: { calories: 120 },
+      ingredients: "Corn, oil.",
+      allergens: "Contains: Milk.",
+    },
+    safety: {
+      modelCalls: 0,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerReads: 1,
+      databaseWrites: 0,
+      walmartWrites: 0,
+    },
+  };
+  snapshot.directTargetContentEvidence = [{
+    ...evidence,
+    evidenceArtifactSha256: productTruthLegacyBridgeBytesSha256(
+      renderProductTruthOperationalJson(evidence),
+    ),
+  }];
+  return rebuildFixture(snapshot);
+}
+
+function sharedGraphFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  const sharedDonor = snapshot.donors[0];
+  const sharedOffer = snapshot.offers[0];
+  assert.ok(sharedDonor);
+  assert.ok(sharedOffer);
+  for (let index = 0; index < 3; index += 1) {
+    const listing = snapshot.listings[index];
+    const component = snapshot.components[index];
+    assert.ok(listing);
+    assert.ok(component);
+    listing.productIdentityJson = JSON.stringify({
+      brand: sharedDonor.brand,
+      product_line: sharedDonor.productLine,
+      flavor: sharedDonor.flavor,
+      size: sharedDonor.size,
+      container_type: sharedDonor.containerType,
+      units_in_listing: index + 1,
+      is_bundle: false,
+      components: [],
+    });
+    component.donorProductId = sharedDonor.id;
+    component.product = sharedDonor.productLine;
+    component.flavor = sharedDonor.flavor;
+    component.size = sharedDonor.size;
+    component.matchedTitle = sharedDonor.title;
+    component.retailer = sharedOffer.retailer;
+  }
+  snapshot.donors = snapshot.donors.filter(
+    (donor) => donor.id !== "donor-2" && donor.id !== "donor-3",
+  );
+  snapshot.offers = snapshot.offers.filter(
+    (offer) => offer.donorProductId !== "donor-2" && offer.donorProductId !== "donor-3",
+  );
+  return rebuildFixture(snapshot);
+}
+
+function donorVariantCollisionFixture(): ReturnType<typeof sourceFixture> {
+  const fixture = sharedGraphFixture();
+  const bridgePlan = structuredClone(fixture.bridgePlan);
+  const componentPlan = bridgePlan.scopes[1]?.components[0];
+  assert.ok(componentPlan?.targetIdentity);
+  const targetIdentity = {
+    ...componentPlan.targetIdentity,
+    flavor: null,
+  };
+  const variant = buildCanonicalProductVariantKey(targetIdentity);
+  componentPlan.targetIdentity = targetIdentity;
+  componentPlan.targetVariant = {
+    canonicalVariantId: variant.canonicalVariantId,
+    variantKey: variant.variantKey,
+    identityHash: variant.identityHash,
+    keyVersion: variant.keyVersion,
+    identityJson: variant.identityJson,
+  };
+  const bridgePlanJson = renderProductTruthLegacyBridgePlan(bridgePlan);
+  return {
+    ...fixture,
+    bridgePlan,
+    bridgePlanJson,
+    bridgePlanSha256: productTruthLegacyBridgeBytesSha256(bridgePlanJson),
+  };
+}
+
 function applyPlan(fixture = sourceFixture()) {
   const plan = planProductTruthLegacyBridgeApply({
     ...fixture,
@@ -203,8 +486,8 @@ function applyPlan(fixture = sourceFixture()) {
 
 function approval(input: ReturnType<typeof applyPlan>) {
   const value: ProductTruthLegacyBridgeApproval = {
-    schemaVersion: "product-truth-legacy-bridge-approval/1.0.0",
-    decision: "APPROVE_NO_PAID_LEGACY_BRIDGE_CANARY",
+    schemaVersion: "product-truth-legacy-bridge-approval/2.0.0",
+    decision: "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE",
     approvedBy: "owner",
     approvalId: input.plan.expectedApprovalId,
     planId: input.plan.planId,
@@ -225,6 +508,42 @@ function approval(input: ReturnType<typeof applyPlan>) {
     expiresAt: PLAN_EXPIRES_AT,
   };
   const json = renderProductTruthLegacyBridgeApproval(value);
+  return {
+    value,
+    json,
+    sha256: productTruthLegacyBridgeBytesSha256(json),
+  };
+}
+
+function standingPolicy(
+  overrides: Partial<ProductTruthLegacyBridgeStandingPolicy> = {},
+) {
+  const value: ProductTruthLegacyBridgeStandingPolicy = {
+    schemaVersion: "product-truth-legacy-bridge-standing-policy/1.0.0",
+    policyId: "fixture-standing-policy",
+    approvedBy: "owner",
+    issuedAt: "2026-07-26T11:00:00.000Z",
+    expiresAt: null,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    manifestSha256: MANIFEST_SHA256,
+    maximumDatabaseRowsPerWave: 100,
+    maximumPreflightAgeMs: 15 * 60 * 1_000,
+    requiresCollisionFree: true,
+    requiresFreshReadyToApplyPreflight: true,
+    allowCanonicalMaterialization: true,
+    allowProviderCalls: false,
+    allowPaidCalls: false,
+    allowMarketplaceListingWrites: false,
+    allowPriceChanges: false,
+    allowInventoryChanges: false,
+    allowDelisting: false,
+    allowConsumerActivation: false,
+    allowProcurement: false,
+    revocationRequiresOwnerDecision: true,
+    ownerStatement: "Fixture owner authorizes bounded no-paid collision-free waves.",
+    ...overrides,
+  };
+  const json = renderProductTruthLegacyBridgeStandingPolicy(value);
   return {
     value,
     json,
@@ -440,7 +759,7 @@ async function executeApproved(
   confirmation = expectedProductTruthLegacyBridgeConfirmation(input.plan, input.planSha256),
 ) {
   const permit = approval(input);
-  return applyProductTruthLegacyBridgeCanary({
+  return applyProductTruthLegacyBridgeWave({
     db,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
     plan: input.plan,
@@ -455,7 +774,7 @@ async function executeApproved(
   });
 }
 
-test("legacy bridge apply plan is byte-deterministic and limited to five existing catalog graphs", () => {
+test("legacy bridge wave plan is byte-deterministic for explicitly selected catalog graphs", () => {
   const first = applyPlan();
   const second = applyPlan(first.fixture);
   assert.equal(first.planJson, second.planJson);
@@ -467,11 +786,278 @@ test("legacy bridge apply plan is byte-deterministic and limited to five existin
   assert.equal(first.plan.claims.marketplaceMutations, 0);
 });
 
-test("approved canary atomically materializes exact content with an honest UNSOURCEABLE cost and is idempotent", async (t) => {
+test("graph-aware wave materializes one shared donor/content graph for several listings", async (t) => {
+  const input = applyPlan(sharedGraphFixture());
+  assert.equal(input.plan.targets.length, 5);
+  assert.deepEqual(input.plan.databaseWrites, {
+    maximumRows: 27,
+    canonicalProductVariants: 3,
+    donorVariantDecisions: 3,
+    donorIdentityTransitions: 3,
+    productContentObservations: 3,
+    skuCostListingScopeLinks: 5,
+    skuComponentEvidence: 5,
+    skuCosts: 5,
+  });
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const first = await executeApproved(db, input);
+  assert.equal(first.status, "APPLIED");
+  assert.equal(first.counts.insertedRows, 27);
+  assert.equal(first.counts.donorIdentityTransitions, 3);
+  assert.equal(first.verification.bundleFactoryReady, 5);
+  assert.equal(first.verification.listingImprovementReady, 5);
+  assert.equal(first.verification.unitEconomicsUnsourceable, 5);
+  assert.equal(first.verification.procurementReady, 0);
+  const counts = await Promise.all([
+    db.execute("SELECT COUNT(*) AS count FROM CanonicalProductVariant"),
+    db.execute("SELECT COUNT(*) AS count FROM DonorProductVariantDecision"),
+    db.execute("SELECT COUNT(*) AS count FROM ProductContentObservation"),
+    db.execute("SELECT COUNT(*) AS count FROM SkuCost"),
+  ]);
+  assert.deepEqual(
+    counts.map((result) => Number(result.rows[0]?.count)),
+    [3, 3, 3, 5],
+  );
+  const second = await executeApproved(db, input);
+  assert.equal(second.status, "ALREADY_APPLIED");
+  assert.equal(second.counts.exactExistingRows, 27);
+});
+
+test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {
+  const input = applyPlan(liveBarcodeFixture());
+  const target = input.plan.targets.find((row) => row.listingKey === "walmart:1:SKU-1");
+  assert.ok(target);
+  assert.equal(target.sourceBinding.componentBarcodeEvidenceSha256, "1".repeat(64));
+  assert.equal(target.content.sourceApi, "target_direct_html");
+  assert.equal(
+    target.content.sourceUrl,
+    "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284",
+  );
+  const plannedContent = JSON.parse(target.content.contentJson) as {
+    description: string;
+    nutritionFacts: Record<string, unknown>;
+    ingredients: string;
+    allergens: string;
+    storage: string;
+    sourceBinding: {
+      exactContentEvidenceArtifactSha256: string;
+      exactContentRawHtmlSha256: string;
+      originalSourceApi: string;
+    };
+  };
+  assert.equal(plannedContent.description, "Exact Target description.");
+  assert.deepEqual(plannedContent.nutritionFacts, { servings_per_container: "8" });
+  assert.equal(plannedContent.ingredients, "Wheat flour, water.");
+  assert.equal(plannedContent.allergens, "Contains: Wheat, Milk, Sesame Seeds.");
+  assert.equal(plannedContent.storage, "Shelf-Stable");
+  assert.equal(plannedContent.sourceBinding.originalSourceApi, "target_direct_html");
+  assert.equal(
+    plannedContent.sourceBinding.exactContentEvidenceArtifactSha256,
+    "1".repeat(64),
+  );
+  assert.equal(plannedContent.sourceBinding.exactContentRawHtmlSha256, "c".repeat(64));
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  const persisted = (await db.execute({
+    sql: "SELECT sourceApi,contentJson FROM ProductContentObservation WHERE id=?",
+    args: [target.content.id],
+  })).rows[0];
+  assert.equal(persisted?.sourceApi, "target_direct_html");
+  assert.equal(String(persisted?.contentJson), target.content.contentJson);
+});
+
+test("direct Target content is separately hash-bound and materialized", async (t) => {
+  const input = applyPlan(directTargetContentFixture());
+  const target = input.plan.targets.find((row) => row.listingKey === "walmart:1:SKU-1");
+  assert.ok(target);
+  const evidenceSha256 =
+    input.fixture.snapshot.directTargetContentEvidence[0]?.evidenceArtifactSha256;
+  assert.ok(evidenceSha256);
+  assert.equal(target.sourceBinding.componentBarcodeEvidenceSha256, null);
+  assert.equal(
+    target.sourceBinding.directTargetContentEvidenceSha256,
+    evidenceSha256,
+  );
+  assert.equal(target.content.sourceApi, "target_direct_html");
+  const plannedContent = JSON.parse(target.content.contentJson) as {
+    description: string;
+    allergens: string;
+    storage: string;
+    sourceBinding: {
+      exactContentEvidenceArtifactSha256: string;
+      exactContentRawHtmlSha256: string;
+      rowHashes: {
+        directTargetContentEvidenceSha256: string;
+      };
+    };
+  };
+  assert.equal(plannedContent.description, "Exact direct Target description.");
+  assert.equal(plannedContent.allergens, "Contains: Milk.");
+  assert.equal(plannedContent.storage, "Ready to Eat");
+  assert.equal(
+    plannedContent.sourceBinding.exactContentEvidenceArtifactSha256,
+    evidenceSha256,
+  );
+  assert.equal(plannedContent.sourceBinding.exactContentRawHtmlSha256, "d".repeat(64));
+  assert.equal(
+    plannedContent.sourceBinding.rowHashes.directTargetContentEvidenceSha256,
+    evidenceSha256,
+  );
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  const persisted = (await db.execute({
+    sql: "SELECT sourceApi,contentJson FROM ProductContentObservation WHERE id=?",
+    args: [target.content.id],
+  })).rows[0];
+  assert.equal(persisted?.sourceApi, "target_direct_html");
+  assert.equal(String(persisted?.contentJson), target.content.contentJson);
+});
+
+test("standing no-paid policy authorizes a fresh bounded READY_TO_APPLY wave", async (t) => {
   const input = applyPlan();
   const db = await seededDatabase(t, input.fixture);
   t.after(() => db.close());
-  const before = await preflightProductTruthLegacyBridgeCanary({
+  const preflight = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  const preflightJson = renderProductTruthLegacyBridgePreflightReport(preflight);
+  const policy = standingPolicy();
+  const report = await applyProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    standingPolicy: policy.value,
+    standingPolicyJson: policy.json,
+    standingPolicySha256: policy.sha256,
+    standingPreflightReport: preflight,
+    standingPreflightReportJson: preflightJson,
+    standingPreflightReportSha256:
+      productTruthLegacyBridgeBytesSha256(preflightJson),
+    startedAt: APPLY_AT,
+    completedAt: APPLY_AT,
+  });
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.counts.insertedRows, 35);
+  assert.deepEqual(report.authorization, {
+    mode: "STANDING_NO_PAID_POLICY",
+    standingPolicyId: policy.value.policyId,
+    standingPolicySha256: policy.sha256,
+    preflightReportSha256: productTruthLegacyBridgeBytesSha256(preflightJson),
+  });
+});
+
+test("inverted apply timestamps fail before any canonical write", async (t) => {
+  const input = applyPlan();
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const permit = approval(input);
+  await assert.rejects(
+    applyProductTruthLegacyBridgeWave({
+      db,
+      databaseTargetFingerprint: TARGET_FINGERPRINT,
+      plan: input.plan,
+      planJson: input.planJson,
+      planSha256: input.planSha256,
+      approval: permit.value,
+      approvalJson: permit.json,
+      approvalSha256: permit.sha256,
+      confirmation: expectedProductTruthLegacyBridgeConfirmation(
+        input.plan,
+        input.planSha256,
+      ),
+      startedAt: APPLY_AT,
+      completedAt: "2026-07-26T12:59:59.999Z",
+    }),
+    /LEGACY_BRIDGE_TIMESTAMP_INVALID/,
+  );
+  const count = await db.execute("SELECT COUNT(*) AS count FROM SkuCost");
+  assert.equal(Number(count.rows[0]?.count), 0);
+});
+
+test("standing policy rejects an over-ceiling or stale wave before writes", async (t) => {
+  const input = applyPlan();
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const preflight = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  const preflightJson = renderProductTruthLegacyBridgePreflightReport(preflight);
+  const tooSmall = standingPolicy({ maximumDatabaseRowsPerWave: 34 });
+  await assert.rejects(
+    applyProductTruthLegacyBridgeWave({
+      db,
+      databaseTargetFingerprint: TARGET_FINGERPRINT,
+      plan: input.plan,
+      planJson: input.planJson,
+      planSha256: input.planSha256,
+      standingPolicy: tooSmall.value,
+      standingPolicyJson: tooSmall.json,
+      standingPolicySha256: tooSmall.sha256,
+      standingPreflightReport: preflight,
+      standingPreflightReportJson: preflightJson,
+      standingPreflightReportSha256:
+        productTruthLegacyBridgeBytesSha256(preflightJson),
+      startedAt: APPLY_AT,
+      completedAt: APPLY_AT,
+    }),
+    /LEGACY_BRIDGE_STANDING_POLICY_INVALID/,
+  );
+  const stalePolicy = standingPolicy({ maximumPreflightAgeMs: 1 });
+  await assert.rejects(
+    applyProductTruthLegacyBridgeWave({
+      db,
+      databaseTargetFingerprint: TARGET_FINGERPRINT,
+      plan: input.plan,
+      planJson: input.planJson,
+      planSha256: input.planSha256,
+      standingPolicy: stalePolicy.value,
+      standingPolicyJson: stalePolicy.json,
+      standingPolicySha256: stalePolicy.sha256,
+      standingPreflightReport: preflight,
+      standingPreflightReportJson: preflightJson,
+      standingPreflightReportSha256:
+        productTruthLegacyBridgeBytesSha256(preflightJson),
+      startedAt: "2026-07-26T13:00:00.002Z",
+      completedAt: "2026-07-26T13:00:00.002Z",
+    }),
+    /LEGACY_BRIDGE_STANDING_PREFLIGHT_STALE/,
+  );
+  const count = await db.execute("SELECT COUNT(*) AS count FROM SkuCost");
+  assert.equal(Number(count.rows[0]?.count), 0);
+});
+
+test("one donor mapping to two canonical variants fails before a wave plan exists", () => {
+  const fixture = donorVariantCollisionFixture();
+  assert.throws(
+    () => applyPlan(fixture),
+    /LEGACY_BRIDGE_DONOR_VARIANT_COLLISION/,
+  );
+});
+
+test("approved wave atomically materializes exact content with an honest UNSOURCEABLE cost and is idempotent", async (t) => {
+  const input = applyPlan();
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const before = await preflightProductTruthLegacyBridgeWave({
     db,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
     plan: input.plan,
@@ -487,7 +1073,7 @@ test("approved canary atomically materializes exact content with an honest UNSOU
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
   assert.equal(second.counts.exactExistingRows, 35);
-  const after = await preflightProductTruthLegacyBridgeCanary({
+  const after = await preflightProductTruthLegacyBridgeWave({
     db,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
     plan: input.plan,
@@ -564,7 +1150,7 @@ test("approval or source drift fails before any canonical write", async (t) => {
   );
 });
 
-test("an injected database failure rolls the entire canary back", async (t) => {
+test("an injected database failure rolls the entire wave back", async (t) => {
   const input = applyPlan();
   const db = await seededDatabase(t, input.fixture);
   t.after(() => db.close());

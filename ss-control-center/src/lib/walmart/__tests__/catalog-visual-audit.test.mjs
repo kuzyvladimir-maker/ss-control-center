@@ -341,6 +341,24 @@ test("an explicit wrong brand is BAD", () => {
   assert.match(decision.hard_failures.join(" "), /visible brand is not an allowed alias: Twinings/);
 });
 
+test("possessive brand and role-drifted non-brand markers remain exact identity", () => {
+  const campbells = caseWith({
+    identity: {
+      brand_aliases: ["campbells"],
+      product_marker_groups: [["condensed soup"]],
+      variant_marker_groups: [["golden mushroom"]],
+      forbidden_markers: [],
+    },
+  });
+  const decision = decideBlind(campbells, image, observation({
+    visible_brand_text: "Campbell's",
+    visible_product_text: "Golden Mushroom Soup",
+    visible_variant_text: "Condensed",
+  }));
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.identity, "MATCH");
+});
+
 test("allowed-brand OCR conflicting with an explicit blind wrong brand yields REVIEW", () => {
   const decision = decideBlind(teaCase, image, observation({
     visible_brand_text: "Twinings",

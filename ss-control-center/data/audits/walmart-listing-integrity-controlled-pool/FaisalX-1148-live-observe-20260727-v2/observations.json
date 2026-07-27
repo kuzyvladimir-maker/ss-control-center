@@ -1,0 +1,108 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_228e6132204dd56d8b35",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "Pepperidge Farm",
+      "visible_product_text": "Top Sliced Soft White Hot Dog Buns",
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "14oz"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 8,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "8 Top Sliced Soft White",
+        "14oz",
+        "Hot Dog Buns"
+      ],
+      "inner_contents_claims": [
+        "8 Top Sliced Soft White"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "'Pepperidge Farm' visible on each bag",
+        "'8 Top Sliced Soft White' on each bag front",
+        "'14oz' on each bag front",
+        "'Hot Dog Buns' on each bag front",
+        "8 individual retail bags visible in tiled layout"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_5ceeac6c5d108387bb44",
+      "visual_role": "nutrition",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 Servings Per Container",
+        "Serving Size 1 Bun (50g)"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "'Nutrition Facts' header visible",
+        "'8 Servings Per Container'",
+        "'Serving Size 1 Bun (50g)'",
+        "'Calories 140'"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_cb236c1e3dfa7aadc7d1",
+      "visual_role": "back",
+      "visible_brand_text": "Pepperidge Farm",
+      "visible_product_text": "Top Sliced Soft White Hot Dog Buns",
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "some",
+      "background": "near_white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "'Pepperidge Farm' logo on back panel",
+        "'Top Sliced Soft White Hot Dog Buns' text on back",
+        "'ESTD. 1937' visible",
+        "Blue twist-tie closure with 'TOP SLICED ST WHITE' text",
+        "Buns visible through clear plastic packaging"
+      ],
+      "flags": []
+    }
+  ]
+}

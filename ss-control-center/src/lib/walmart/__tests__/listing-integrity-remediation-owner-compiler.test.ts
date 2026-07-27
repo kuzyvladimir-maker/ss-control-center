@@ -197,6 +197,210 @@ function compilationRequest() {
   };
 }
 
+function mainCompilationRequest() {
+  const textOnly = compilationRequest();
+  const body = structuredClone(textOnly) as Record<string, unknown>
+    & Omit<typeof textOnly, "body_sha256">;
+  delete body.body_sha256;
+  const expected = {
+    title: "Pepperidge Farm Hot Dog Buns, 14 oz, Pack of 6",
+    outer_units: 6,
+    identity: {
+      brand_aliases: ["Pepperidge Farm"],
+      product_marker_groups: [["hot dog", "buns"]],
+      variant_marker_groups: [],
+      forbidden_markers: [],
+    },
+    package_facts: [],
+    truth_source: "manual_verified",
+  };
+  const baselineImages = body.repair.baseline_images;
+  const evidence = Object.fromEntries([
+    "candidate_asset",
+    "candidate_manifest",
+    "observer_plan",
+    "observer_request",
+    "observer_response",
+    "product_truth",
+    "qualification",
+    "r2_staging",
+    "single_unit_source",
+  ].map((role, index) => [role, {
+    absolute_path: path.join(tmpdir(), `reviewed-main-${role}`),
+    file_sha256: index.toString(16).repeat(64),
+  }]));
+  const mainBody = {
+    ...body,
+    schema_version: "walmart-listing-single-repair-compilation-request/v2",
+    product_truth_candidate: {
+      ...body.product_truth_candidate,
+      expected_sha256: walmartListingIntegritySha256(expected),
+      expected,
+    },
+    repair: {
+      ...body.repair,
+      target_images: [{
+        slot: "main",
+        source_url: `https://assets.example.invalid/${"a".repeat(64)}.png`,
+        sha256: "a".repeat(64),
+      }, ...structuredClone(baselineImages.slice(1))],
+      changed_fields: ["description", "bullets", "main"],
+      unchanged_image_bytes: false,
+      changed_main_evidence: evidence,
+    },
+  };
+  return {
+    ...mainBody,
+    body_sha256: walmartListingIntegritySha256(mainBody),
+  };
+}
+
+function attributeCompilationRequest() {
+  const main = mainCompilationRequest();
+  const body = structuredClone(main) as Record<string, unknown>
+    & Omit<typeof main, "body_sha256">;
+  delete body.body_sha256;
+  const baselineSurface = structuredClone(body.repair.baseline_surface);
+  baselineSurface.attribute_claims = [
+    {
+      field_path: "product.specifications[0].Brand",
+      kind: "brand",
+      text: "Pepperidge Farm",
+    },
+    {
+      field_path: "product.specifications[1].Flavor",
+      kind: "variant",
+      text: "qty 6",
+    },
+    {
+      field_path: "product.specifications[2].Count",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+  ];
+  baselineSurface.unmapped_attributes = [{
+    field_path: "product.specifications[3].Product net content parent",
+    value_sha256: "a".repeat(64),
+  }];
+  const targetSurface = structuredClone(baselineSurface);
+  targetSurface.attribute_claims = [
+    baselineSurface.attribute_claims[0],
+    {
+      field_path: "product.specifications[1].Flavor",
+      kind: "variant",
+      text: "Hot Dog",
+    },
+    {
+      field_path: "product.specifications[2].Count",
+      kind: "inner_item_count",
+      value: 6,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.countPerPack",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.multipackQuantity",
+      kind: "outer_units",
+      value: 6,
+      unit: "count",
+    },
+  ];
+  const attributeBody = {
+    ...body,
+    schema_version: "walmart-listing-single-repair-compilation-request/v3",
+    repair: {
+      baseline_surface: baselineSurface,
+      target_surface: targetSurface,
+      baseline_images: structuredClone(body.repair.baseline_images),
+      target_images: structuredClone(body.repair.baseline_images),
+      changed_fields: ["attributes"],
+      unchanged_image_bytes: true,
+    },
+  };
+  return {
+    ...attributeBody,
+    body_sha256: walmartListingIntegritySha256(attributeBody),
+  };
+}
+
+test("owner compiler accepts only an exact reviewed description/bullets/MAIN diff", () => {
+  const request = mainCompilationRequest();
+  const verified = verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(verified.repair.changed_fields, [
+    "description",
+    "bullets",
+    "main",
+  ]);
+  assert.equal(
+    verified.repair.changed_main_evidence?.single_unit_source.file_sha256,
+    "8".repeat(64),
+  );
+  assert.equal(
+    verified.product_truth_candidate.expected_sha256,
+    walmartListingIntegritySha256(
+      verified.product_truth_candidate.expected,
+    ),
+  );
+
+  const removedSource = structuredClone(request);
+  delete (
+    removedSource.repair.changed_main_evidence as Record<string, unknown>
+  ).single_unit_source;
+  const removedBody = structuredClone(removedSource) as Record<string, unknown>;
+  delete removedBody.body_sha256;
+  removedSource.body_sha256 = walmartListingIntegritySha256(removedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(removedSource),
+    /changed_main_evidence fields are not exact/u,
+  );
+
+  const changedGallery = structuredClone(request);
+  changedGallery.repair.target_images[1]!.sha256 = "b".repeat(64);
+  const changedBody = structuredClone(changedGallery) as Record<string, unknown>;
+  delete changedBody.body_sha256;
+  changedGallery.body_sha256 = walmartListingIntegritySha256(changedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(changedGallery),
+    /unchanged gallery/u,
+  );
+});
+
+test("owner compiler accepts only the exact v3 attributes diff and preserves opaque fields", () => {
+  const request = attributeCompilationRequest();
+  const verified = verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(verified.repair.changed_fields, ["attributes"]);
+  assert.equal(verified.repair.unchanged_image_bytes, true);
+  assert.deepEqual(
+    verified.repair.target_surface.unmapped_attributes,
+    verified.repair.baseline_surface.unmapped_attributes,
+  );
+
+  const removedOpaque = structuredClone(request);
+  removedOpaque.repair.target_surface.unmapped_attributes = [];
+  const removedBody = structuredClone(removedOpaque) as Record<string, unknown>;
+  delete removedBody.body_sha256;
+  removedOpaque.body_sha256 = walmartListingIntegritySha256(removedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(removedOpaque),
+    /opaque fields\/images preserved/u,
+  );
+
+  const changedDescription = structuredClone(request);
+  changedDescription.repair.target_surface.description = "Unexpected text change";
+  const changedBody = structuredClone(changedDescription) as Record<string, unknown>;
+  delete changedBody.body_sha256;
+  changedDescription.body_sha256 = walmartListingIntegritySha256(changedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(changedDescription),
+    /attributes-only diff/u,
+  );
+});
+
 function maintenanceSchema() {
   return {
     $schema: "http://json-schema.org/draft-07/schema#",

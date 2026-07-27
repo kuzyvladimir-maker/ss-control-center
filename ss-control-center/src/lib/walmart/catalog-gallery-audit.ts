@@ -108,6 +108,7 @@ function normalizeGalleryText(value: string): string {
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
+    .replace(/['’ʼ]/g, "")
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
@@ -167,11 +168,29 @@ function containsAlias(value: string | null, aliases: readonly string[]): boolea
   });
 }
 
+function containsIdentityAlias(
+  value: string | null,
+  aliases: readonly string[],
+): boolean {
+  const tokens = new Set(normalizeGalleryText(value ?? "").split(" ").filter(Boolean));
+  return aliases.some((alias) => {
+    const required = normalizeGalleryText(alias).split(" ").filter(Boolean);
+    return required.length > 0 && required.every((token) => tokens.has(token));
+  });
+}
+
 function ocrContainsAlias(values: readonly string[], aliases: readonly string[]): boolean {
   // OCR rows are independent literal lines. Never build a token bag across
   // lines: unrelated brand/product words elsewhere in a panel must not
   // combine into a synthetic identity match.
   return values.some((value) => containsAlias(value, aliases));
+}
+
+function ocrContainsIdentityAlias(
+  values: readonly string[],
+  aliases: readonly string[],
+): boolean {
+  return values.some((value) => containsIdentityAlias(value, aliases));
 }
 
 function roleText(observation: BlindObservation, role: IdentityRole): string | null {
@@ -262,14 +281,38 @@ function assessIdentity(
       .map((marker) => `${marker.role}:${marker.aliases.join("|")}`).join(", ")}`);
   }
 
+  const blindNonBrandIdentity = [
+    observation.visible_product_text,
+    observation.visible_variant_text,
+  ].filter((value): value is string => value !== null).join(" ");
   const roleAssessments: Array<{
     role: IdentityRole;
     blind: string | null;
     groups: readonly string[][];
+    matches: typeof containsAlias;
+    ocrMatches: typeof ocrContainsAlias;
   }> = [
-    { role: "brand", blind: observation.visible_brand_text, groups: [expected.brand_aliases] },
-    { role: "product", blind: observation.visible_product_text, groups: expected.product_marker_groups },
-    { role: "variant", blind: observation.visible_variant_text, groups: expected.variant_marker_groups },
+    {
+      role: "brand",
+      blind: observation.visible_brand_text,
+      groups: [expected.brand_aliases],
+      matches: containsAlias,
+      ocrMatches: ocrContainsAlias,
+    },
+    {
+      role: "product",
+      blind: blindNonBrandIdentity,
+      groups: expected.product_marker_groups,
+      matches: containsIdentityAlias,
+      ocrMatches: ocrContainsIdentityAlias,
+    },
+    {
+      role: "variant",
+      blind: blindNonBrandIdentity,
+      groups: expected.variant_marker_groups,
+      matches: containsIdentityAlias,
+      ocrMatches: ocrContainsIdentityAlias,
+    },
   ];
 
   let everyRequiredGroupMatches = true;
@@ -277,10 +320,10 @@ function assessIdentity(
   let blindSuppliedEvidence = false;
   for (const role of roleAssessments) {
     if (role.groups.length === 0) continue;
-    const blindGroupMatches = role.groups.map((aliases) => containsAlias(role.blind, aliases));
+    const blindGroupMatches = role.groups.map((aliases) => role.matches(role.blind, aliases));
     if (blindGroupMatches.some(Boolean)) blindSuppliedEvidence = true;
     const supportedGroupMatches = role.groups.map((aliases, index) => {
-      const ocrMatch = ocrContainsAlias(ocrTexts, aliases);
+      const ocrMatch = role.ocrMatches(ocrTexts, aliases);
       if (!blindGroupMatches[index] && ocrMatch) ocrSuppliedEvidence = true;
       return blindGroupMatches[index] || ocrMatch;
     });
@@ -384,10 +427,12 @@ function packageSizesFromBlind(observation: BlindObservation): Record<PackageFac
       && !/\bnet\s*(?:wt|weight|contents?)\b/i.test(row.literal)) return [];
     return row.sizes.filter((size) => size.unit !== "count");
   }));
-  const inner = dedupeSizes(observation.inner_contents_claims.flatMap((literal) => {
+  const inner = dedupeSizes(observation.inner_contents_claims
+    .filter((literal) => !isNutrientLiteral(literal))
+    .flatMap((literal) => {
     const count = bareCount(literal);
     return [...parseGallerySizeTexts(literal), ...(count ? [count] : [])];
-  }));
+    }));
   return {
     net_content: netVisible,
     inner_item_count: dedupeSizes([...visible, ...inner]).filter((size) => size.unit === "count"),

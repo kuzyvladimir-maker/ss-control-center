@@ -34,6 +34,13 @@ export type RetailOffer = {
   localityEvidence: "zip_scoped" | "store_scoped" | "national_unscoped" | null;
   observedAt: string;
   title: string | null;
+  /**
+   * Optional, explicitly audited identity-comparison title. The observed title
+   * above is never replaced. This is used only for a narrowly versioned
+   * retailer-copy normalization whose exact rule is retained in evidence.
+   */
+  identityEvidenceTitle?: string | null;
+  identityEvidenceNormalization?: string | null;
   description: string | null;
   keyFeatures: string[];
   imageUrls: string[];
@@ -47,6 +54,61 @@ export type RetailOffer = {
   meteredRunId?: string | null;
   meteredApprovalId?: string | null;
 };
+
+export const WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION =
+  "walmart-inclusive-audience-phrase/1.0.0" as const;
+const WALMART_INCLUSIVE_AUDIENCE_PHRASE = /\bfor\s+kids\s+and\s+adults\b/gi;
+
+export type WalmartIdentityEvidenceTitle = {
+  observedTitle: string | null;
+  identityEvidenceTitle: string | null;
+  identityEvidenceNormalization: typeof WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION | null;
+};
+
+/**
+ * Walmart can insert the complete merchandising phrase "for kids and adults"
+ * into an otherwise unchanged grocery title. The full phrase is audience copy,
+ * not a product variant. The observed title stays intact and a separate
+ * comparison title is produced only when that complete phrase occurs once.
+ * Partial audience wording remains identity-bearing and is never normalized.
+ */
+export function walmartIdentityEvidenceTitle(
+  value: string | null | undefined,
+): WalmartIdentityEvidenceTitle {
+  const observedTitle = value?.trim() || null;
+  if (!observedTitle) {
+    return {
+      observedTitle: null,
+      identityEvidenceTitle: null,
+      identityEvidenceNormalization: null,
+    };
+  }
+  const occurrences = observedTitle.match(WALMART_INCLUSIVE_AUDIENCE_PHRASE);
+  if (occurrences?.length !== 1) {
+    return {
+      observedTitle,
+      identityEvidenceTitle: observedTitle,
+      identityEvidenceNormalization: null,
+    };
+  }
+  const identityEvidenceTitle = observedTitle
+    .replace(WALMART_INCLUSIVE_AUDIENCE_PHRASE, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+  if (!identityEvidenceTitle || identityEvidenceTitle === observedTitle) {
+    return {
+      observedTitle,
+      identityEvidenceTitle: observedTitle,
+      identityEvidenceNormalization: null,
+    };
+  }
+  return {
+    observedTitle,
+    identityEvidenceTitle,
+    identityEvidenceNormalization: WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION,
+  };
+}
 
 function meteredOfferProvenance(
   authorization: MeteredProviderAuthorization | null,
@@ -371,7 +433,7 @@ export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffe
   const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false, identityMatch: null as CanonicalProductMatchResult | null };
   if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
   if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
-  const tg = tokenGate(offer.title, cp);
+  const tg = tokenGate(offer.identityEvidenceTitle ?? offer.title, cp);
   if (!tg.ok) return { ...base, rejectReason: tg.reason, identityMatch: tg.identityMatch };
   if (offer.price === null) return { ...base, rejectReason: "no price" };
   const isBase = (offer.packSizeSeen ?? 1) === 1;

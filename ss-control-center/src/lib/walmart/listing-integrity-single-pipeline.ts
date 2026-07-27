@@ -37,7 +37,7 @@ import type {
 } from "../sourcing/product-truth-read-contract.ts";
 
 export const WALMART_LISTING_SINGLE_PIPELINE_TRUTH_ADAPTER_VERSION =
-  "walmart-listing-single-pipeline-truth-adapter/v1" as const;
+  "walmart-listing-single-pipeline-truth-adapter/v5" as const;
 
 export type WalmartListingSingleTruthProjection =
   | {
@@ -117,6 +117,63 @@ function uniqueTexts(values: readonly unknown[]): string[] {
   return [...new Set(values.map(exactText).filter((value): value is string => value !== null))];
 }
 
+function normalizeIdentityText(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/gu, "")
+    .toLowerCase()
+    .replace(/['’ʼ]/gu, "")
+    .replace(/[^a-z0-9]+/gu, " ")
+    .trim()
+    .replace(/\s+/gu, " ");
+}
+
+function uniqueNormalizedTexts(values: readonly unknown[]): string[] {
+  const byNormalized = new Map<string, string>();
+  for (const value of uniqueTexts(values)) {
+    const normalized = normalizeIdentityText(value);
+    if (normalized && !byNormalized.has(normalized)) byNormalized.set(normalized, value);
+  }
+  return [...byNormalized.values()];
+}
+
+/**
+ * Canonical variant keys intentionally sort identity tokens. Recover a
+ * buyer-readable brand order only when the exact same token multiset appears
+ * as one contiguous span in the exact content-donor title.
+ */
+function recoverOrderedIdentityAlias(
+  canonicalValue: string,
+  exactContentTitle: string | null,
+): string | null {
+  if (!exactContentTitle) return null;
+  const canonicalTokens = normalizeIdentityText(canonicalValue).split(" ").filter(Boolean);
+  const titleDisplayTokens = exactContentTitle
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/gu, "")
+    .replace(/[^A-Za-z0-9]+/gu, " ")
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean);
+  const titleTokens = titleDisplayTokens.map(normalizeIdentityText);
+  if (canonicalTokens.length < 2 || titleTokens.length < canonicalTokens.length) return null;
+  const expected = [...canonicalTokens].sort().join("\0");
+  for (let index = 0; index <= titleTokens.length - canonicalTokens.length; index += 1) {
+    const candidate = titleTokens.slice(index, index + canonicalTokens.length);
+    if ([...candidate].sort().join("\0") === expected) {
+      return titleDisplayTokens.slice(index, index + canonicalTokens.length).join(" ");
+    }
+  }
+  return null;
+}
+
+function displayModifier(value: unknown): string | null {
+  const text = exactText(value);
+  if (!text) return null;
+  const stripped = text.replace(/^token:/u, "");
+  return stripped || null;
+}
+
 function packageFact(component: ProductTruthRecipeComponent): ExpectedPackageFact | null {
   const identity = component.content?.identity;
   if (!identity || !Number.isFinite(identity.sizeBaseAmount) || identity.sizeBaseAmount <= 0) {
@@ -192,9 +249,11 @@ export function projectProductTruthForWalmartSingleListing(
   if (!Number.isSafeInteger(component.qty) || component.qty < 1) {
     blockers.push("LISTING_OUTER_QUANTITY_INVALID");
   }
-  if (component.evidenceStatus !== "FACT" && component.evidenceStatus !== "MANUAL_FACT") {
-    blockers.push(`COMPONENT_EVIDENCE_NOT_FACT:${component.evidenceStatus}`);
-  }
+  // `evidenceStatus` belongs to the independent price/COGS axis. Listing
+  // Improvement is allowed to consume exact canonical content even when the
+  // component has no current factual buy price. The shared read contract
+  // already fail-closes this content axis through `listingImprovement.ready`,
+  // `contentBlockers`, canonical-variant equality, and donor outer-pack checks.
   blockers.push(...component.contentBlockers.map((value) => `CONTENT:${value}`));
   if (!component.content) {
     blockers.push("EXACT_CONTENT_MISSING");
@@ -209,19 +268,28 @@ export function projectProductTruthForWalmartSingleListing(
     );
   }
 
-  const brandAliases = uniqueTexts([component.content.identity.brand]);
-  const productAliases = uniqueTexts([
+  const canonicalBrand = component.content.identity.brand;
+  const contentTitle = exactText(component.content.facts.title);
+  const brandAliases = uniqueNormalizedTexts([
+    recoverOrderedIdentityAlias(canonicalBrand, contentTitle),
+    canonicalBrand,
+  ]);
+  const productAliases = uniqueNormalizedTexts([
     component.content.identity.productLine,
     component.product,
   ]);
   const variantGroups = [
-    ...uniqueTexts([component.content.identity.flavor, component.flavor])
+    ...uniqueNormalizedTexts([component.content.identity.flavor, component.flavor])
       .map((value) => [value]),
-    ...uniqueTexts([component.content.identity.form]).map((value) => [value]),
     ...(Array.isArray(component.content.identity.modifiers)
       ? component.content.identity.modifiers
-        .map(exactText)
+        .map(displayModifier)
         .filter((value): value is string => value !== null)
+        .filter((value, index, values) => (
+          values.findIndex((candidate) =>
+            normalizeIdentityText(candidate) === normalizeIdentityText(value)
+          ) === index
+        ))
         .map((value) => [value])
       : []),
   ];

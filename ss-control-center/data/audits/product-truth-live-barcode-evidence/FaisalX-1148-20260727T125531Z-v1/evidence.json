@@ -1,0 +1,59 @@
+{
+  "barcode": {
+    "confidence": 0.990443051,
+    "decoder": "APPLE_VISION_VNDETECTBARCODESREQUEST",
+    "normalizedGtin14": "00014100070931",
+    "payload": "0014100070931",
+    "symbology": "VNBarcodeSymbologyEAN13"
+  },
+  "buyerPdp": {
+    "brand": "Pepperidge Farm",
+    "containerType": "Bag",
+    "count": 8,
+    "flavor": "White",
+    "multipackQuantity": 2,
+    "netContent": "14 Ounces",
+    "productLine": "Bakery Classics",
+    "productType": "Hot Dog Buns",
+    "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)"
+  },
+  "capturedAt": "2026-07-27T12:55:31.000Z",
+  "componentIndex": 0,
+  "image": {
+    "imageId": "i_cb236c1e3dfa7aadc7d1",
+    "modelAssetSha256": "06e317658c4e323bdafb38413ce56841ccab61730551484c972ede34fde37f2d",
+    "slot": "gallery-2",
+    "sourceAssetSha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4"
+  },
+  "listingKey": "walmart:1:FaisalX-1148",
+  "safety": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-live-image-barcode-evidence/1.0.0",
+  "sourceHashes": {
+    "buyerPdpFileSha256": "7867773c68bfc4d64b0e593bdeec257269efe61c4b2fa161c527ae23e61e40c8",
+    "executionIndexBodySha256": "7c5abc542d4275dc9b20afd03dc8a10c4d637e1901edd38b69deb8c76419f60d",
+    "executionIndexFileSha256": "516b5b7de95fe1cb91fa1ee381ab3307a5ebc401a98a7a5f8ca3ce18773944b6",
+    "intakeIndexBodySha256": "482ec3e26bc5475785eae743bbc306ea809e115a6954275f185ee9568ce79f3f",
+    "intakeIndexFileSha256": "67a806e08a9409e31eb8fdeb196e47b4f2ced72492759d53a6b6d1834a55a9de",
+    "observationsFileSha256": "0c71a7dfc94d310840a903c7d68bff4df90e6066500303611bec90e4d19fda69",
+    "observerPlanBodySha256": "dd731d0cf926ff0df4a2f03e9b1bfb9d66a335bbd2088588cbbe96905f808d74",
+    "observerPlanFileSha256": "27febc0877a11d71881dc7d47065bf17735c7d8b5bf5edddb584c1a7d54171a2"
+  },
+  "sourceImageFile": "barcode-source.jpeg",
+  "visualObservation": {
+    "brandText": "PEPPERIDGE FARM",
+    "externalPackageCount": 1,
+    "gridCellKind": "single_sellable_package",
+    "identityModifiers": [
+      "top sliced"
+    ],
+    "multipleDistinctProducts": "no",
+    "productText": "TOP SLICED SOFT WHITE Hot Dog Buns",
+    "readableIdentity": "clear"
+  }
+}

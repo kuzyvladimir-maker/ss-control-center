@@ -12,9 +12,9 @@ import { withMeteredProviderCall } from "./metered-provider-call";
 export const OXYLABS_REALTIME_QUERIES_ENDPOINT =
   "https://realtime.oxylabs.io/v1/queries" as const;
 export const OXYLABS_WALMART_PRODUCT_CALIBRATION_PLAN_SCHEMA =
-  "oxylabs-walmart-product-calibration-plan/v1" as const;
+  "oxylabs-walmart-product-calibration-plan/v2" as const;
 export const OXYLABS_WALMART_PRODUCT_CALIBRATION_RECEIPT_SCHEMA =
-  "oxylabs-walmart-product-calibration-receipt/v1" as const;
+  "oxylabs-walmart-product-calibration-receipt/v2" as const;
 export const OXYLABS_WALMART_PRODUCT_RESPONSE_MAX_BYTES = 16 * 1024 * 1024;
 export const OXYLABS_WALMART_PRODUCT_TIMEOUT_MS = 60_000;
 
@@ -33,7 +33,7 @@ export interface OxylabsWalmartProductCalibrationPlanBody {
     content_type: "application/json";
     body: {
       source: "walmart_product";
-      query: string;
+      product_id: string;
       parse: true;
     };
   };
@@ -110,7 +110,7 @@ export interface OxylabsWalmartProductCalibrationReceiptBody {
     authorization: "basic_auth_present_redacted";
     body: {
       source: "walmart_product";
-      query: string;
+      product_id: string;
       parse: true;
     };
   };
@@ -237,7 +237,7 @@ export function buildOxylabsWalmartProductCalibrationPlan(
       endpoint: OXYLABS_REALTIME_QUERIES_ENDPOINT,
       method: "POST",
       content_type: "application/json",
-      body: { source: "walmart_product", query: itemId, parse: true },
+      body: { source: "walmart_product", product_id: itemId, parse: true },
     },
     execution_contract: {
       owner_approval_required: true,

@@ -71,9 +71,10 @@ import {
   type ProductTruthTargetedWalmartEvidencePlan,
   type ProductTruthTargetedWalmartEvidenceTarget,
 } from "./product-truth-targeted-walmart-evidence-contract";
-import { oxylabsWalmartSearch } from "./oxylabs-fetch";
+import { oxylabsWalmartProduct } from "./oxylabs-fetch";
 import {
   scoreOffer,
+  walmartIdentityEvidenceTitle,
   type CanonicalProduct,
   type RetailOffer,
   type ScoredOffer,
@@ -103,7 +104,7 @@ export interface ProductTruthTargetedWalmartSearchResult {
 
 export interface ProductTruthTargetedWalmartEvidenceAdapter {
   probeRuntime(): Promise<ProductTruthTargetedEvidenceRuntimeProbe>;
-  search(query: string): Promise<ProductTruthTargetedWalmartSearchResult>;
+  lookupExactItem(itemId: string): Promise<ProductTruthTargetedWalmartSearchResult>;
   persistOffer(
     db: Client,
     offer: ScoredOffer,
@@ -290,6 +291,23 @@ function canonicalProductFromTarget(target: ProductTruthTargetedWalmartEvidenceT
   };
 }
 
+/**
+ * Walmart currently inserts the inclusive merchandising phrase
+ * "for kids and adults" into otherwise identical grocery titles. It describes
+ * the same all-ages item, not a kids-only/adults-only variant. Preserve the
+ * source title and record a second comparison title only when the complete
+ * phrase occurs exactly once; partial audience wording remains identity-bearing.
+ */
+function withTargetedWalmartIdentityEvidenceTitle(offer: RetailOffer): RetailOffer {
+  const evidence = walmartIdentityEvidenceTitle(offer.title);
+  if (!evidence.identityEvidenceNormalization) return offer;
+  return {
+    ...offer,
+    identityEvidenceTitle: evidence.identityEvidenceTitle,
+    identityEvidenceNormalization: evidence.identityEvidenceNormalization,
+  };
+}
+
 /** Filter all provider rows before the one permitted catalog write. */
 export function selectExactTargetedWalmartOffer(input: {
   result: ProductTruthTargetedWalmartSearchResult;
@@ -305,7 +323,9 @@ export function selectExactTargetedWalmartOffer(input: {
   const canonicalIdentity: CanonicalProductIdentity = canonicalIdentityFromTarget(input.target);
   const canonicalProduct = canonicalProductFromTarget(input.target);
   const matches: ScoredOffer[] = [];
-  for (const offer of input.result.offers) {
+  const rejectedChecks: string[] = [];
+  for (const [index, observedOffer] of input.result.offers.entries()) {
+    const offer = withTargetedWalmartIdentityEvidenceTitle(observedOffer);
     let normalizedUrl: string;
     try {
       normalizedUrl = normalizeExactWalmartProductUrl(
@@ -313,36 +333,56 @@ export function selectExactTargetedWalmartOffer(input: {
         input.target.retailerProductId,
       );
     } catch {
+      rejectedChecks.push(`${index}:PRODUCT_URL_INVALID`);
       continue;
     }
     const titleMatch = matchCanonicalProductTitle(canonicalIdentity, {
-      title: offer.title,
+      title: offer.identityEvidenceTitle ?? offer.title,
     });
     const scored = scoreOffer(offer, canonicalProduct);
-    if (
-      offer.retailer === "walmart"
-      && offer.retailerProductId === input.target.retailerProductId
-      && normalizedUrl === input.target.normalizedProductUrl
-      && offer.sourceApi === "oxylabs"
-      && (offer.via ?? "direct") === "direct"
-      && offer.sellerName === "Walmart.com"
-      && offer.isMarketplaceItem === false
-      && offer.zip === "33765"
-      && offer.localityEvidence === "zip_scoped"
-      && offer.inStock === true
-      && offer.packSizeSeen === 1
-      && typeof offer.price === "number"
-      && Number.isFinite(offer.price)
-      && offer.price > 0
-      && offer.currency === "USD"
-      && titleMatch.verdict === "EXACT_IDENTITY"
-      && scored.accepted
-      && scored.isBaseUnit
-      && scored.identityMatch?.verdict === "EXACT_IDENTITY"
-      && scoredDonorOfferCanonicalVariantId(scored) === input.target.canonicalVariantId
-      && Boolean(scored.meteredReceiptId && scored.meteredRunId && scored.meteredApprovalId)
-    ) {
+    const checks: Array<readonly [boolean, string]> = [
+      [offer.retailer === "walmart", "RETAILER"],
+      [offer.retailerProductId === input.target.retailerProductId, "ITEM_ID"],
+      [normalizedUrl === input.target.normalizedProductUrl, "PRODUCT_URL"],
+      [offer.sourceApi === "oxylabs", "SOURCE_API"],
+      [(offer.via ?? "direct") === "direct", "VIA"],
+      [offer.sellerName === "Walmart.com", "SELLER"],
+      [offer.isMarketplaceItem === false, "FIRST_PARTY"],
+      [offer.zip === "33765", "ZIP"],
+      [offer.localityEvidence === "zip_scoped", "LOCALITY"],
+      [offer.inStock === true, "IN_STOCK"],
+      [offer.packSizeSeen === 1, "BASE_PACK"],
+      [
+        typeof offer.price === "number"
+          && Number.isFinite(offer.price)
+          && offer.price > 0,
+        "PRICE",
+      ],
+      [offer.currency === "USD", "CURRENCY"],
+      [
+        titleMatch.verdict === "EXACT_IDENTITY",
+        `TITLE_${titleMatch.reasonCodes.join("+") || "REJECT"}`,
+      ],
+      [scored.accepted, "SCORE_ACCEPTED"],
+      [scored.isBaseUnit, "SCORE_BASE_UNIT"],
+      [
+        scored.identityMatch?.verdict === "EXACT_IDENTITY",
+        `SCORE_IDENTITY_${scored.identityMatch?.reasonCodes.join("+") || "MISSING"}`,
+      ],
+      [
+        scoredDonorOfferCanonicalVariantId(scored) === input.target.canonicalVariantId,
+        "CANONICAL_VARIANT",
+      ],
+      [
+        Boolean(scored.meteredReceiptId && scored.meteredRunId && scored.meteredApprovalId),
+        "METERED_PROVENANCE",
+      ],
+    ];
+    const failed = checks.filter(([passed]) => !passed).map(([, code]) => code);
+    if (!failed.length) {
       matches.push(scored);
+    } else {
+      rejectedChecks.push(`${index}:${failed.join(",")}`);
     }
   }
   if (matches.length !== 1) {
@@ -350,7 +390,9 @@ export function selectExactTargetedWalmartOffer(input: {
       matches.length === 0
         ? "TARGETED_WALMART_EXACT_OFFER_MISSING"
         : "TARGETED_WALMART_EXACT_OFFER_AMBIGUOUS",
-      `expected exactly one exact Walmart item; found ${matches.length}`,
+      `expected exactly one exact Walmart item; found ${matches.length}; `
+        + `provider rows ${input.result.offers.length}; rejected checks `
+        + `${rejectedChecks.join("|") || "NONE"}`,
     );
   }
   return matches[0]!;
@@ -474,7 +516,8 @@ const LEGACY_NEUTRAL_TOKENS = new Set<string>(CANONICAL_TITLE_NEUTRAL_TOKENS);
  * legacy donor row. The complete post-brand title signature is kept as the
  * product-line discriminator, so uncertainty produces a false reject rather
  * than silently collapsing adjacent flavors/forms. A fresh exact Walmart
- * search must still prove this identity before any canonical row is written.
+ * direct item lookup must still prove this identity before any canonical row is
+ * written.
  */
 export function deriveTargetedWalmartLegacyCanonicalIdentity(input: {
   donorProductRow: Record<string, unknown>;
@@ -1534,7 +1577,7 @@ export const PRODUCT_TRUTH_TARGETED_WALMART_PRODUCTION_ADAPTER = (
   probeRuntime: ProductTruthTargetedWalmartEvidenceAdapter["probeRuntime"],
 ): ProductTruthTargetedWalmartEvidenceAdapter => ({
   probeRuntime,
-  search: (query) => oxylabsWalmartSearch(query),
+  lookupExactItem: (itemId) => oxylabsWalmartProduct(itemId),
   persistOffer: persistScoredDonorOffer,
   harvest: (db, input) => executeDonorHarvestCandidate({
     ...input,
@@ -1773,16 +1816,26 @@ export async function executeProductTruthTargetedWalmartEvidence(
         adapter: raw.adapter, asOf: canonicalNow(now),
       });
       if (state.decision.action === "CALL_OXYLABS") {
-        if (!jobLeaseToken) fail("TARGETED_EVIDENCE_JOB_LEASE_REQUIRED", "search requires the exact product job lease");
+        if (!jobLeaseToken) {
+          fail(
+            "TARGETED_EVIDENCE_JOB_LEASE_REQUIRED",
+            "exact Walmart item lookup requires the product job lease",
+          );
+        }
         assertExecutionDeadline("before Oxylabs query");
-        const searchResult = await raw.adapter.search(plan.targets[0].query);
+        const searchResult = await raw.adapter.lookupExactItem(
+          plan.targets[0].retailerProductId,
+        );
         assertExecutionDeadline("after Oxylabs query");
         const exactOffer = selectExactTargetedWalmartOffer({ result: searchResult, target: plan.targets[0] });
         if (
           exactOffer.meteredRunId !== plan.runId
           || exactOffer.meteredApprovalId !== raw.validatedApproval.approval.approvalId
         ) {
-          fail("TARGETED_EVIDENCE_SEARCH_PROVENANCE_MISMATCH", "Oxylabs result belongs to another run/approval");
+          fail(
+            "TARGETED_EVIDENCE_SEARCH_PROVENANCE_MISMATCH",
+            "Oxylabs exact-item result belongs to another run/approval",
+          );
         }
         // Recheck every immutable binding after the paid response and before catalog write.
         await assertRuntimeBindings({ db, plan, adapter: raw.adapter });

@@ -8,6 +8,7 @@ import type {
 } from "./listing-integrity-remediation-authority.ts";
 import { createWalmartListingRepairArtifactCustody } from "./listing-integrity-remediation-artifacts.ts";
 import { verifyWalmartListingRepairTargetImageCertificateBytes } from "./listing-integrity-remediation-image-certificate.ts";
+import { verifyWalmartListingRepairReviewedMainCertificateBytes } from "./listing-integrity-remediation-reviewed-main-certificate.ts";
 import {
   verifyWalmartListingRepairUnchangedImageCertificateBytes,
 } from "./listing-integrity-remediation-unchanged-image-certificate.ts";
@@ -247,11 +248,25 @@ export function createWalmartListingRepairProductionDependencies(
       const imagesChanged = plan.changed_fields.includes("main")
         || plan.changed_fields.includes("gallery");
       const certificate = imagesChanged
-        ? verifyWalmartListingRepairTargetImageCertificateBytes({
-          certificate_bytes,
-          plan,
-          at: now,
-        })
+        ? (() => {
+          try {
+            return verifyWalmartListingRepairReviewedMainCertificateBytes({
+              certificate_bytes,
+              plan,
+              at: now,
+            });
+          } catch (reviewedMainError) {
+            try {
+              return verifyWalmartListingRepairTargetImageCertificateBytes({
+                certificate_bytes,
+                plan,
+                at: now,
+              });
+            } catch {
+              throw reviewedMainError;
+            }
+          }
+        })()
         : verifyWalmartListingRepairUnchangedImageCertificateBytes({
           certificate_bytes,
           plan,

@@ -11,7 +11,10 @@ import {
   type MeteredRunPermit,
 } from "../metered-call-guard";
 import { MeteredBudgetLedgerUnavailableError } from "../metered-provider-call";
-import { oxylabsWalmartSearch } from "../oxylabs-fetch";
+import {
+  oxylabsWalmartProduct,
+  oxylabsWalmartSearch,
+} from "../oxylabs-fetch";
 import { bluecartWalmartSearch, unwrangleSearch } from "../retail-fetch";
 import { askVisionJson, visionFreeOnly } from "../vision";
 
@@ -81,6 +84,7 @@ test("BlueCart and Unwrangle adapters fail before network without a permit", asy
 
 test("Oxylabs and Gemini adapters fail before network without a permit", async () => {
   await assertBlocked(() => oxylabsWalmartSearch("test cereal"));
+  await assertBlocked(() => oxylabsWalmartProduct("34312392"));
   await assertBlocked(() => identifyImageViaGemini(["/9j/test"], "identify"));
 });
 

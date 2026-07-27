@@ -1,0 +1,152 @@
+{
+  "capturedAt": "2026-07-27T13:22:36.000Z",
+  "donorProductId": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+  "offerId": "do:target:12973001",
+  "retailerContent": {
+    "allergens": "CONTAINS WHEAT, SOY.\nMADE IN A BAKERY THAT MAY ALSO USE MILK, HAZELNUTS (FILBERTS).",
+    "attributes": [
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Form:</B> Sliced",
+      "<B>Package Quantity:</B> 1"
+    ],
+    "bullets": [
+      "Enjoy 24 ounces of product for easy portion control and on‑the‑go snacking",
+      "Soft and delicious bread made for everyday snacking, lunches, and quick treats!",
+      "Indulgent Healthy (multi-grain) flavor that pairs perfectly with any meal, lunchboxes, and snack breaks",
+      "Contains soy, wheat; made in a facility that may also use hazelnuts (filberts), milk",
+      "Packed in a convenient bag that is ideal for pantry storage, sharing, and stocking up"
+    ],
+    "description": "Are you ready to enjoy the delicious taste of Arnold Whole Grains Healthy Bread, 24 oz?",
+    "fetchedAt": "2026-07-27T13:22:36.000Z",
+    "finalUrl": "https://www.target.com/p/arnold-healthy-multigrain-bread-24oz/-/A-12973001",
+    "htmlFile": "retailer-content.html",
+    "htmlSha256": "d7bebfde3a428eac694b29cd1392f889ae3540dfe783166405792c4d62066f69",
+    "httpStatus": 200,
+    "ingredients": "Whole Wheat Flour, Water, Wheat Gluten, Sugar, Brown and Golden Flaxseed, Oats, Honey, Yeast, Bulgur Wheat, Vegetable Oil (Soybean), Cornmeal, Brown Rice, Sea Salt, Natural Flavors, Oat Fiber, Sunflower Seeds, Fermented Wheat Flour, Grain Vinegar, Soy Lecithin, Citric Acid",
+    "normalizedGtin14": "00073410013854",
+    "nutritionFacts": {
+      "ingredients": "Whole Wheat Flour, Water, Wheat Gluten, Sugar, Brown and Golden Flaxseed, Oats, Honey, Yeast, Bulgur Wheat, Vegetable Oil (Soybean), Cornmeal, Brown Rice, Sea Salt, Natural Flavors, Oat Fiber, Sunflower Seeds, Fermented Wheat Flour, Grain Vinegar, Soy Lecithin, Citric Acid ",
+      "nutrition_label_type_code": "LEGACY_FORMAT",
+      "value_prepared_list": [
+        {
+          "nutrients": [
+            {
+              "name": "Calories",
+              "quantity": 120,
+              "unit_of_measurement": "Cal"
+            },
+            {
+              "name": "Total Fat",
+              "percentage": 3,
+              "quantity": 2.5,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Saturated Fat",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Trans Fat",
+              "quantity": 0,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Polyunsaturated Fat",
+              "quantity": 1.5,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Monounsaturated Fat",
+              "quantity": 0,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Cholesterol",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Sodium",
+              "percentage": 7,
+              "quantity": 170,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Total Carbohydrate",
+              "percentage": 7,
+              "quantity": 19,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Dietary Fiber",
+              "percentage": 11,
+              "quantity": 3,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Sugars",
+              "quantity": 4,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Added Sugars",
+              "percentage": 6,
+              "quantity": 3,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Protein",
+              "percentage": 3,
+              "quantity": 5,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Vitamin D",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "mcg"
+            },
+            {
+              "name": "Calcium",
+              "percentage": 2,
+              "quantity": 25,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Iron",
+              "percentage": 6,
+              "quantity": 0.9,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Potassium",
+              "percentage": 2,
+              "quantity": 100,
+              "unit_of_measurement": "mg"
+            }
+          ],
+          "serving_size": "43.0",
+          "serving_size_unit_of_measurement": "g",
+          "servings_per_container": "16"
+        }
+      ],
+      "warning": "CONTAINS WHEAT, SOY.\nMADE IN A BAKERY THAT MAY ALSO USE MILK, HAZELNUTS (FILBERTS)."
+    },
+    "productUrl": "https://www.target.com/p/arnold-healthy-multigrain-bread-24oz/-/A-12973001",
+    "retailer": "target",
+    "retailerProductId": "12973001",
+    "title": "Arnold Healthy Multigrain Bread - 24oz"
+  },
+  "safety": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "retailerReads": 1,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-direct-target-content-evidence/1.0.0"
+}

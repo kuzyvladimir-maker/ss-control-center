@@ -429,6 +429,7 @@ function projectAttribute(
   fieldPath: string,
   rawName: string,
   value: unknown,
+  options: { preferCountOverPieceCount?: boolean } = {},
 ): ListingAttributeClaim | null {
   const name = normalizedAttributeName(rawName);
   if (name === "brand" && typeof value === "string" && value.trim()) {
@@ -449,13 +450,14 @@ function projectAttribute(
     return count === null ? null
       : { field_path: fieldPath, kind: "outer_units", value: count, unit: "count" };
   }
-  if (name === "inner item count") {
+  if (name === "inner item count"
+    || name === "count"
+    || (name === "piece count" && options.preferCountOverPieceCount !== true)) {
     const count = exactPositiveInteger(value);
     return count === null ? null
       : { field_path: fieldPath, kind: "inner_item_count", value: count, unit: "count" };
   }
-  if (name === "net content" || name === "net weight" || name === "net volume"
-    || name === "product net content parent") {
+  if (name === "net content" || name === "net weight" || name === "net volume") {
     const parsed = structuredNetContent(value);
     return parsed === null ? null
       : { field_path: fieldPath, kind: "net_content", ...parsed };
@@ -535,9 +537,15 @@ export function projectWalmartListingSurfaceFromBuyerPdp(
   for (const key of Object.keys(product).sort()) {
     if (BUYER_SURFACE_CONSUMED_KEYS.has(key)) continue;
     if (ATTRIBUTE_CONTAINER_KEYS.has(key)) {
-      for (const entry of inventoryAttributeContainer(key, product[key])) {
+      const entries = inventoryAttributeContainer(key, product[key]);
+      const preferCountOverPieceCount = entries.some((entry) => (
+        normalizedAttributeName(entry.name) === "count"
+      ));
+      for (const entry of entries) {
         const claim = entry.name
-          ? projectAttribute(entry.field_path, entry.name, entry.value)
+          ? projectAttribute(entry.field_path, entry.name, entry.value, {
+            preferCountOverPieceCount,
+          })
           : null;
         if (claim) attributeClaims.push(claim);
         else unmappedAttributes.push({
@@ -565,6 +573,7 @@ export function projectWalmartListingSurfaceFromBuyerPdp(
 
 function normalize(value: string): string {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/gu, "").toLowerCase()
+    .replace(/['’ʼ]/gu, "")
     .replace(/&/gu, " and ").replace(/[^a-z0-9]+/gu, " ").trim().replace(/\s+/gu, " ");
 }
 
@@ -573,6 +582,14 @@ function containsAlias(value: string, aliases: readonly string[]): boolean {
   return aliases.some((alias) => {
     const needle = normalize(alias);
     return needle.length > 0 && haystack.includes(` ${needle} `);
+  });
+}
+
+function containsIdentityAlias(value: string, aliases: readonly string[]): boolean {
+  const tokens = new Set(normalize(value).split(" ").filter(Boolean));
+  return aliases.some((alias) => {
+    const required = normalize(alias).split(" ").filter(Boolean);
+    return required.length > 0 && required.every((token) => tokens.has(token));
   });
 }
 
@@ -948,7 +965,10 @@ function auditText(input: WalmartListingIntegrityInput): ListingTextAuditDecisio
   }
   const groups = identityGroups(expected);
   const titleMissing = groups.flatMap(({ role, groups: required }) => required
-    .filter((aliases) => !containsAlias(surface.title, aliases)).map(() => role));
+    .filter((aliases) => !(role === "brand"
+      ? containsAlias(surface.title, aliases)
+      : containsIdentityAlias(surface.title, aliases)))
+    .map(() => role));
   const forbiddenText = [surface.title, surface.description ?? "", ...surface.bullets].join("\n");
   const forbidden = expected.identity.forbidden_markers.filter((marker) => containsAlias(forbiddenText, marker.aliases));
   if (forbidden.length) hard.push(`text contains forbidden identity: ${forbidden.map((row) => row.aliases.join("|")).join(",")}`);
@@ -992,7 +1012,9 @@ function auditText(input: WalmartListingIntegrityInput): ListingTextAuditDecisio
   const body = [surface.description ?? "", ...surface.bullets].join("\n");
   if (!surface.description) review.push("description is missing");
   if (!surface.bullets.length) review.push("bullets are missing");
-  const bodyMatches = groups.every(({ groups: required }) => required.every((aliases) => containsAlias(body, aliases)));
+  const bodyMatches = groups.every(({ role, groups: required }) => required.every((aliases) => (
+    role === "brand" ? containsAlias(body, aliases) : containsIdentityAlias(body, aliases)
+  )));
   checks.body_identity = bodyMatches ? "MATCH" : "UNKNOWN";
   if (!bodyMatches) review.push("description/bullets contain no expected identity evidence");
   const bodyClaims = [surface.description ?? "", ...surface.bullets].map((value) => claimCounts(value));
@@ -1042,7 +1064,11 @@ function auditText(input: WalmartListingIntegrityInput): ListingTextAuditDecisio
     // variant. Only an explicit Product Truth forbidden marker is a hard
     // identity contradiction. Otherwise fail closed to REVIEW instead of
     // producing a false BAD that could drive an unnecessary repair.
-    if (required.some((aliases) => !claims.some((claim) => containsAlias(claim.text, aliases)))) {
+    if (required.some((aliases) => !claims.some((claim) => (
+      role === "brand"
+        ? containsAlias(claim.text, aliases)
+        : containsIdentityAlias(claim.text, aliases)
+    )))) {
       identityUnknown = true;
     }
   }

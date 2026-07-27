@@ -1,0 +1,86 @@
+{
+  "schema_version": "walmart-listing-integrity-repair-preview/v2",
+  "created_at": "2026-07-27T13:18:02.664Z",
+  "status": "READY_FOR_OWNER_VISUAL_REVIEW",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "store_index": 1,
+  "sku": "FaisalX-1148",
+  "item_id": "15144369671",
+  "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+  "outer_units": 2,
+  "exact_product_truth": {
+    "component_evidence_id": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+    "canonical_variant_id": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+    "content_observation_id": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+    "content_hash": "076fa2524ac32f6eee59afc06bb88b210d38264b03454bad62bbe4752365fd70",
+    "product_truth_file_sha256": "8306d9f000249aae7e2106c02a0c5b9cb1256f6c580515e048ae2d957779cae5"
+  },
+  "changed_fields": [
+    "description",
+    "bullets",
+    "main"
+  ],
+  "before": {
+    "text": {
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns. Shelf-stable product.",
+      "bullets": [
+        "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+        "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+        "COOKOUT READY: Quality buns your family and friends will appreciate"
+      ]
+    },
+    "images": {
+      "main_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1148-live-capture-20260727-v3/buyer-snapshots/walmart-buyer-20260727T130804Z-97df58bab5e7/assets/a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a.png",
+      "main_sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+      "visible_outer_units": 8,
+      "gallery_unchanged": true
+    }
+  },
+  "after": {
+    "text": {
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "description": "PACK OF 2: This listing includes two 14 oz bags of Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns. Each bag contains 8 buns, for 16 buns total. Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Shelf-stable product.",
+      "bullets": [
+        "PACK OF 2: Includes 2 bags of Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns; each 14 oz bag contains 8 buns, for 16 buns total",
+        "TOP SLICED HOT DOG BUNS: A classic white hot dog bun for easy filling",
+        "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+        "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+        "COOKOUT READY: Quality buns your family and friends will appreciate",
+        "8 BUNS: 8-count bag of Pepperidge Farm Top Sliced Soft White hot dog buns"
+      ]
+    },
+    "images": {
+      "main_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1148-main-candidate-20260727-v1/proposed-main-pack.png",
+      "main_sha256": "d5f5a7d94bb33e235f03699176e2df50ec174ee5dd3ca3f1c2a180c712035858",
+      "represented_outer_units": 2,
+      "qualification_body_sha256": "9888618b4767ff90fe3739c9be0cb4381d10fb125c5f248eba04821a7828575a",
+      "gallery_unchanged": true
+    }
+  },
+  "unchanged_fields": [
+    "title",
+    "attributes",
+    "gallery",
+    "price",
+    "inventory",
+    "identifiers",
+    "published_status",
+    "lifecycle_status"
+  ],
+  "source_files": {
+    "diagnosis_sha256": "10f58b36cab0e7e5fc7531e10879b8d235b18a4cdabbcc5b80417d0a8b9bf1eb",
+    "buyer_snapshot_sha256": "c658732922e123735275ab7bc5319b541ef689780d4d7a112fcdffd35655acc0",
+    "buyer_pdp_sha256": "7867773c68bfc4d64b0e593bdeec257269efe61c4b2fa161c527ae23e61e40c8",
+    "candidate_manifest_sha256": "5c684a31261bbc6ab74c8c5640e5fbb9f223718f739877e0bb5161623489239a",
+    "qualification_sha256": "e7a55fb9c2190cec3714a7fb1e664111c680e371685f7f50f0d6a7bc6303698f"
+  },
+  "safety": {
+    "marketplace_write_authorized": false,
+    "walmart_writes": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "model_calls": 0
+  },
+  "body_sha256": "8f2703da3c3181cbb45cda3fed501fb7b3f0a7e688f6cda0ebaf6bc9aeae97f1"
+}

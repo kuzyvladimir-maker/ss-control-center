@@ -1,0 +1,15 @@
+{
+  "approvalSha256": "3a7c6f36283716e1211186f69b7e9efbc8af10a5324b80b208a28fca9f7a1033",
+  "artifacts": [
+    {
+      "file": "apply-report.json",
+      "role": "apply_report",
+      "sha256": "38ddef906750b789827a372eee9c57fe9fedbfbfc929bc95169004e363eb9284"
+    }
+  ],
+  "completedAt": "2026-07-27T12:27:41.066Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "367ffc2fead16f897235387a17cad8583d184fc23f605fedaf4218b687d60354",
+  "schemaVersion": "product-truth-legacy-bridge-wave-result-index/2.0.0",
+  "status": "APPLIED"
+}

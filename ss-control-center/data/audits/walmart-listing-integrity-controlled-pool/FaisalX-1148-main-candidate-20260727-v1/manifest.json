@@ -1,0 +1,43 @@
+{
+  "schema_version": "walmart-listing-main-candidate/v1",
+  "created_at": "2026-07-27T13:14:15.718Z",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "sku": "FaisalX-1148",
+  "component_index": 0,
+  "canonical_variant_id": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+  "represented_outer_units": 2,
+  "source": {
+    "url": "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+    "content_type": "image/jpeg",
+    "file": "exact-single-unit-source.bin",
+    "sha256": "8d70a272c49b9814edc3502e24233ee7fa7a1d740c8bdffc607f1a7b4df55c00",
+    "bytes": 38691,
+    "product_truth_file_sha256": "8306d9f000249aae7e2106c02a0c5b9cb1256f6c580515e048ae2d957779cae5",
+    "content_observation_id": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+    "content_hash": "076fa2524ac32f6eee59afc06bb88b210d38264b03454bad62bbe4752365fd70"
+  },
+  "candidate": {
+    "file": "proposed-main-pack.png",
+    "sha256": "d5f5a7d94bb33e235f03699176e2df50ec174ee5dd3ca3f1c2a180c712035858",
+    "bytes": 2014002,
+    "width": 2200,
+    "height": 2200,
+    "format": "png",
+    "derivation": "DETERMINISTIC_EXACT_SINGLE_UNIT_TILE"
+  },
+  "diagnosis": {
+    "file_sha256": "10f58b36cab0e7e5fc7531e10879b8d235b18a4cdabbcc5b80417d0a8b9bf1eb",
+    "required_defect": "MAIN_OUTER_QUANTITY_MISMATCH"
+  },
+  "safety": {
+    "image_gets": 1,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "099280e1485d3d2174bebd02e422b77dd077dec86a5e6bd1671e4c5ef3c38dc8"
+}

@@ -19,6 +19,7 @@ import {
 import { PRODUCT_TRUTH_PROCUREMENT_ZIP } from "./price-evidence-policy";
 
 export type OxylabsRetailer = "bjs" | "publix" | "aldi" | "instacart";
+export const PRODUCT_TRUTH_WALMART_STORE_ID = "2081" as const;
 
 export function oxylabsCreds(): { user: string; pass: string } | null {
   const user = (process.env.OXYLABS_USERNAME || "").trim().replace(/^['"]|['"]$/g, "");
@@ -82,8 +83,15 @@ export function inferOxylabsWalmartInStock(item: unknown): boolean | null {
   if (!item || typeof item !== "object") return null;
   const record = item as {
     general?: { out_of_stock?: unknown };
-    fulfillment?: { pickup?: unknown; delivery?: unknown; shipping?: unknown };
+    fulfillment?: {
+      out_of_stock?: unknown;
+      pickup?: unknown;
+      delivery?: unknown;
+      shipping?: unknown;
+    };
   };
+  if (record.fulfillment?.out_of_stock === true) return false;
+  if (record.fulfillment?.out_of_stock === false) return true;
   if (record.general?.out_of_stock === true) return false;
   if (record.general?.out_of_stock === false) return true;
 
@@ -253,6 +261,193 @@ export async function oxylabsWalmartSearch(
     responseZip: locality.responseZip,
     localityProven: locality.localityProven,
   };
+}
+
+function walmartItemIdFromUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const parsed = new URL(
+      value.startsWith("http") ? value : `https://www.walmart.com${value}`,
+    );
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    const ipIndex = segments.indexOf("ip");
+    if (ipIndex < 0) return null;
+    const candidate = segments.at(-1);
+    return candidate && /^\d{1,20}$/.test(candidate) ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+function exactWalmartProductUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  return value.startsWith("http")
+    ? value
+    : `https://www.walmart.com${value.startsWith("/") ? "" : "/"}${value}`;
+}
+
+export function buildOxylabsWalmartProductQuery(
+  itemId: string,
+): {
+  source: "walmart_product";
+  product_id: string;
+  parse: true;
+  delivery_zip: typeof PRODUCT_TRUTH_PROCUREMENT_ZIP;
+  store_id: typeof PRODUCT_TRUTH_WALMART_STORE_ID;
+} {
+  if (!/^\d{1,20}$/.test(itemId)) {
+    throw new Error("OXYLABS_WALMART_PRODUCT_ID_INVALID");
+  }
+  return {
+    source: "walmart_product",
+    product_id: itemId,
+    parse: true,
+    delivery_zip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
+    store_id: PRODUCT_TRUTH_WALMART_STORE_ID,
+  };
+}
+
+/**
+ * Parse one direct Oxylabs `walmart_product` result. The requested item ID is
+ * never used as response identity: the parsed payload must independently expose
+ * the same numeric ID through its Walmart product URL. `general.meta.sku` is a
+ * separate Walmart catalog SKU and is deliberately not treated as the Item ID.
+ */
+export function parseOxylabsWalmartProductResult(
+  result: unknown,
+  requestedItemId: string,
+  authorization: MeteredProviderAuthorization | null = null,
+  observedAt = new Date().toISOString(),
+): {
+  creditsRemaining: number | null;
+  offers: RetailOffer[];
+  trialExhausted: boolean;
+  responseZip: string | null;
+  localityProven: boolean;
+} {
+  const locality = proveOxylabsWalmartLocality(result);
+  const outer = result && typeof result === "object"
+    ? result as { content?: unknown; url?: unknown }
+    : null;
+  const content = outer?.content && typeof outer.content === "object"
+    ? outer.content as {
+      general?: unknown;
+      price?: unknown;
+      seller?: unknown;
+      fulfillment?: unknown;
+    }
+    : null;
+  const general = content?.general && typeof content.general === "object"
+    ? content.general as {
+      url?: unknown;
+      title?: unknown;
+      description?: unknown;
+      main_image?: unknown;
+      images?: unknown;
+      meta?: unknown;
+    }
+    : null;
+  const productUrl = exactWalmartProductUrl(general?.url ?? outer?.url);
+  const responseIds = [...new Set([
+    walmartItemIdFromUrl(general?.url),
+    walmartItemIdFromUrl(outer?.url),
+  ].filter((value): value is string => value !== null))];
+  const responseItemId = responseIds.length === 1 ? responseIds[0]! : "";
+  const title = typeof general?.title === "string" ? general.title.trim() : "";
+  const seller = content?.seller && typeof content.seller === "object"
+    ? content.seller as { name?: unknown }
+    : null;
+  const sellerName = typeof seller?.name === "string" ? seller.name.trim() : null;
+  const priceBlock = content?.price && typeof content.price === "object"
+    ? content.price as { price?: unknown; currency?: unknown }
+    : null;
+  const imageCandidates = [
+    ...(typeof general?.main_image === "string" ? [general.main_image] : []),
+    ...(Array.isArray(general?.images)
+      ? general.images.filter((value): value is string => typeof value === "string")
+      : []),
+  ];
+  const imageUrls = [...new Set(imageCandidates
+    .filter((value) => /^https?:\/\//i.test(value))
+    .map((value) => value.split("?")[0]!))];
+
+  if (
+    !/^\d{1,20}$/.test(requestedItemId)
+    || !title
+    || !productUrl
+    || !responseItemId
+    || responseItemId !== requestedItemId
+  ) {
+    return {
+      creditsRemaining: null,
+      offers: [],
+      trialExhausted: false,
+      responseZip: locality.responseZip,
+      localityProven: locality.localityProven,
+    };
+  }
+
+  const offer: RetailOffer = {
+    retailer: "walmart",
+    retailerProductId: responseItemId,
+    price: typeof priceBlock?.price === "number" ? priceBlock.price : null,
+    currency: typeof priceBlock?.currency === "string"
+      ? priceBlock.currency
+      : "USD",
+    inStock: inferOxylabsWalmartInStock(content),
+    productUrl,
+    zip: locality.localityProven ? locality.responseZip : null,
+    localityEvidence: locality.localityProven ? "zip_scoped" : "national_unscoped",
+    observedAt,
+    title,
+    description: typeof general?.description === "string"
+      ? general.description
+      : null,
+    keyFeatures: [],
+    imageUrls,
+    packSizeSeen: extractPackSize(title),
+    isMarketplaceItem: sellerName
+      ? !/^walmart\.com$/i.test(sellerName)
+      : null,
+    sellerName,
+    sourceApi: "oxylabs",
+    via: "direct",
+    ...(authorization ? {
+      meteredReceiptId: authorization.receiptId,
+      meteredRunId: authorization.runId,
+      meteredApprovalId: authorization.approvalId,
+    } : {}),
+  };
+  return {
+    creditsRemaining: null,
+    offers: [offer],
+    trialExhausted: false,
+    responseZip: locality.responseZip,
+    localityProven: locality.localityProven,
+  };
+}
+
+/**
+ * Verify one already-known Walmart item directly. A product lookup is
+ * deterministic for the sealed item ID; it does not depend on Walmart search
+ * ranking returning that item for a title query.
+ */
+export async function oxylabsWalmartProduct(
+  itemId: string,
+): Promise<ReturnType<typeof parseOxylabsWalmartProductResult>> {
+  if (!oxylabsEnabled()) {
+    return {
+      creditsRemaining: null,
+      offers: [],
+      trialExhausted: true,
+      responseZip: null,
+      localityProven: false,
+    };
+  }
+  const { result, authorization } = await oxylabsQuery(
+    buildOxylabsWalmartProductQuery(itemId),
+  );
+  return parseOxylabsWalmartProductResult(result, itemId, authorization);
 }
 
 // ── Google Shopping via Oxylabs STRUCTURED source ────────────────────────────

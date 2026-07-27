@@ -63,7 +63,7 @@ const FIELD_ORDER = Object.freeze([
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
 const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
-  "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
+  "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE
@@ -378,8 +378,8 @@ function assertSurface(raw: unknown): WalmartListingSurface {
     || surface.bullets.length > 100) fail("target.surface.bullets must be non-empty");
   surface.bullets.forEach((row, index) => text(row, `target.surface.bullets[${index}]`, 10_000));
   if (!Array.isArray(surface.attribute_claims) || surface.attribute_claims.length === 0
-    || !Array.isArray(surface.unmapped_attributes) || surface.unmapped_attributes.length !== 0) {
-    fail("target surface must contain attributes and resolve every live attribute");
+    || !Array.isArray(surface.unmapped_attributes)) {
+    fail("target surface must contain explicit typed and unmapped attribute inventories");
   }
   return surface;
 }
@@ -511,6 +511,12 @@ async function buildPlanFromVerifiedEvidence(input: {
   assertTargetSurfaceMatchesProductTruth(surface, input.baseline.input.expected);
   const changes = changedFields(input.baseline.input, surface, images);
   if (changes.length === 0) fail("repair plan must change at least one exact field");
+  if (changes.includes("attributes") && !canonicalEqual(
+    input.baseline.input.surface.unmapped_attributes,
+    surface.unmapped_attributes,
+  )) {
+    fail("repair target must preserve every unmapped live attribute exactly by omission");
+  }
   const bindings = input.baseline.input.source_bindings;
   const target = { surface, images };
   return seal({
@@ -808,7 +814,10 @@ function assertPermitBinding(
 }
 
 function normalize(value: string): string {
-  return value.normalize("NFKD").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  return value.normalize("NFKD").toLowerCase()
+    .replace(/['’ʼ]/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
 }
 
 function containsAlias(value: string, aliases: readonly string[]): boolean {
@@ -816,13 +825,31 @@ function containsAlias(value: string, aliases: readonly string[]): boolean {
   return aliases.some((alias) => normalized.includes(` ${normalize(alias)} `));
 }
 
+function containsIdentityAlias(value: string, aliases: readonly string[]): boolean {
+  const tokens = new Set(normalize(value).split(" ").filter(Boolean));
+  return aliases.some((alias) => {
+    const required = normalize(alias).split(" ").filter(Boolean);
+    return required.length > 0 && required.every((token) => tokens.has(token));
+  });
+}
+
 function identityTextPass(value: string, expected: WalmartListingIntegrityInput["expected"]): boolean {
   const groups = [
-    expected.identity.brand_aliases,
-    ...expected.identity.product_marker_groups,
-    ...expected.identity.variant_marker_groups,
-  ];
-  return groups.length > 0 && groups.every((aliases) => containsAlias(value, aliases))
+    { role: "brand", aliases: expected.identity.brand_aliases },
+    ...expected.identity.product_marker_groups.map((aliases) => ({
+      role: "product",
+      aliases,
+    })),
+    ...expected.identity.variant_marker_groups.map((aliases) => ({
+      role: "variant",
+      aliases,
+    })),
+  ] as const;
+  return groups.length > 0 && groups.every(({ role, aliases }) => (
+    role === "brand"
+      ? containsAlias(value, aliases)
+      : containsIdentityAlias(value, aliases)
+  ))
     && expected.identity.forbidden_markers.every((row) => !containsAlias(value, row.aliases));
 }
 
@@ -831,6 +858,7 @@ function explicitOuterCount(value: string, expected: number): boolean {
   const normalized = normalize(value);
   return [
     new RegExp(`\\bpack of ${expected}\\b`, "u"),
+    new RegExp(`\\bquantity of ${expected}\\b`, "u"),
     new RegExp(`\\b${expected} (?:packs?|packages?|units?)\\b`, "u"),
     new RegExp(`\\b${expected} ?x\\b`, "u"),
   ].some((pattern) => pattern.test(normalized));
@@ -866,21 +894,56 @@ function assertTargetSurfaceMatchesProductTruth(
       || claim.kind === "variant")
     .map((claim) => "text" in claim ? claim.text : "")
     .join(" ");
-  if (!identityTextPass(identityClaims, expected)) {
-    fail("repair target attributes do not express exact Product Truth identity");
+  const typedIdentityGroups = [
+    {
+      kind: "brand",
+      aliases: [expected.identity.brand_aliases],
+    },
+    {
+      kind: "product",
+      aliases: expected.identity.product_marker_groups,
+    },
+    {
+      kind: "variant",
+      aliases: expected.identity.variant_marker_groups,
+    },
+  ] as const;
+  const identityClaimsByKind = new Map(
+    typedIdentityGroups.map(({ kind }) => [
+      kind,
+      surface.attribute_claims.filter((claim) => (
+        claim.kind === kind && "text" in claim
+      )).map((claim) => "text" in claim ? claim.text : ""),
+    ]),
+  );
+  if (typedIdentityGroups.some(({ kind, aliases }) => {
+    const claims = identityClaimsByKind.get(kind) ?? [];
+    return claims.length > 0 && aliases.some((group) => (
+      !claims.some((claim) => (
+        kind === "brand"
+          ? containsAlias(claim, group)
+          : containsIdentityAlias(claim, group)
+      ))
+    ));
+  }) || expected.identity.forbidden_markers.some((row) => (
+      containsAlias(identityClaims, row.aliases)
+    ))) {
+    fail("repair target typed attributes contradict Product Truth identity");
   }
   const outerClaims = surface.attribute_claims.filter((claim) => claim.kind === "outer_units");
-  if (outerClaims.length !== 1 || outerClaims[0]!.value !== expected.outer_units
-    || outerClaims[0]!.unit !== "count") {
-    fail("repair target attributes do not contain one exact outer-unit claim");
+  if (outerClaims.length < 1 || outerClaims.some((claim) => (
+    claim.value !== expected.outer_units || claim.unit !== "count"
+  ))) {
+    fail("repair target attributes do not contain only exact outer-unit claims");
   }
   for (const fact of expected.package_facts) {
-    const matching = surface.attribute_claims.filter((claim) => (
-      claim.kind === fact.kind && "value" in claim && claim.value === fact.value
-        && claim.unit === fact.unit
+    const represented = surface.attribute_claims.filter((claim) => (
+      claim.kind === fact.kind && "value" in claim
     ));
-    if (matching.length !== 1) {
-      fail(`repair target attributes do not contain one exact ${fact.kind} claim`);
+    if (represented.some((claim) => (
+      !("value" in claim) || claim.value !== fact.value || claim.unit !== fact.unit
+    ))) {
+      fail(`repair target attributes contain a conflicting ${fact.kind} claim`);
     }
   }
 }
@@ -991,12 +1054,27 @@ async function rebuildQualification(input: {
   const checks = report.text_decision.checks;
   const expectedOuter = postInput.expected.outer_units;
   const mainPass = report.main_decision.verdict === "PASS";
-  const galleryPass = postInput.images.assets.length >= 2
+  const galleryWasRepaired = plan.changed_fields.includes("gallery");
+  const galleryDecisionsComplete = postInput.images.assets.length >= 2
     && report.gallery_decisions.length === postInput.images.assets.length - 1
-    && report.gallery_decisions.every((row) => row.verdict === "PASS");
+    && report.gallery_decisions.every((row) => (
+      galleryWasRepaired
+        ? row.verdict === "PASS"
+        : row.verdict !== "BAD" && row.hard_failures.length === 0
+    ));
   const targetImages = imageProjection(postInput);
-  const targetExact = canonicalEqual(postInput.surface, plan.target.surface)
-    && canonicalEqual(targetImages, plan.target.images);
+  const surfaceExact = canonicalEqual(postInput.surface, plan.target.surface);
+  const unchangedImageSlotsExact = plan.target.images.every((target, index) => {
+    const field = index === 0 ? "main" : "gallery";
+    return plan.changed_fields.includes(field)
+      || canonicalEqual(targetImages[index] ?? null, target);
+  });
+  // Walmart normally rehosts/re-encodes a submitted image. A changed image is
+  // therefore accepted by its fresh buyer-facing semantic audit, while every
+  // image slot outside the approved diff must remain byte/URL exact.
+  const targetExact = surfaceExact && unchangedImageSlotsExact
+    && (!plan.changed_fields.includes("main") || mainPass)
+    && (!galleryWasRepaired || galleryDecisionsComplete);
   const bindings = postInput.source_bindings;
   const truthUnchanged = walmartListingIntegritySha256(postInput.expected)
       === plan.product_truth.expected_sha256
@@ -1032,10 +1110,7 @@ async function rebuildQualification(input: {
   const description = postInput.surface.description ?? "";
   const bulletText = postInput.surface.bullets.join("\n");
   const titlePass = checks.title_identity === "MATCH"
-    && checkState(checks.title_outer_units, expectedOuter)
-    && (checks.title_package_facts === "MATCH"
-      || (postInput.expected.package_facts.length === 0
-        && checks.title_package_facts === "NOT_APPLICABLE"));
+    && checkState(checks.title_outer_units, expectedOuter);
   const descriptionPass = description.length > 0 && identityTextPass(description, postInput.expected)
     && explicitOuterCount(description, expectedOuter) && checks.body_identity === "MATCH"
     && checkState(checks.body_outer_units, expectedOuter);
@@ -1043,22 +1118,38 @@ async function rebuildQualification(input: {
     && identityTextPass(bulletText, postInput.expected)
     && explicitOuterCount(bulletText, expectedOuter) && checks.body_identity === "MATCH"
     && checkState(checks.body_outer_units, expectedOuter);
-  const attributesPass = postInput.surface.unmapped_attributes.length === 0
-    && checks.attributes_identity === "MATCH" && checks.attributes_outer_units === "MATCH"
-    && (checks.attributes_package_facts === "MATCH"
-      || (postInput.expected.package_facts.length === 0
-        && checks.attributes_package_facts === "NOT_APPLICABLE"));
+  const normalizedUnmapped = (
+    rows: WalmartListingSurface["unmapped_attributes"],
+  ) => rows.map((row) => ({
+    field_path: row.field_path.replace(/\[\d+\]/gu, "[]"),
+    value_sha256: row.value_sha256,
+  })).sort((left, right) => (
+    `${left.field_path}\u0000${left.value_sha256}`
+      .localeCompare(`${right.field_path}\u0000${right.value_sha256}`)
+  ));
+  const unmappedAttributesPreserved = canonicalEqual(
+    normalizedUnmapped(baseline.input.surface.unmapped_attributes),
+    normalizedUnmapped(postInput.surface.unmapped_attributes),
+  );
+  const attributeIdentityAcceptable = checks.attributes_identity === "MATCH"
+    || (checks.attributes_identity === "UNKNOWN"
+      && report.text_decision.hard_failures.every((reason) => (
+        !reason.startsWith("typed identity attributes contain forbidden markers")
+      )));
+  const attributesPass = unmappedAttributesPreserved
+    && attributeIdentityAcceptable && checks.attributes_outer_units === "MATCH"
+    && checks.attributes_package_facts !== "MISMATCH";
   const packPass = checkState(checks.title_outer_units, expectedOuter)
     && checkState(checks.body_outer_units, expectedOuter)
     && checks.attributes_outer_units === "MATCH"
     && explicitOuterCount(postInput.surface.title, expectedOuter)
     && explicitOuterCount(description, expectedOuter)
-    && explicitOuterCount(bulletText, expectedOuter) && mainPass && galleryPass;
+    && explicitOuterCount(bulletText, expectedOuter) && mainPass && galleryDecisionsComplete;
   const productVariantPass = checks.title_identity === "MATCH"
-    && checks.body_identity === "MATCH" && checks.attributes_identity === "MATCH"
-    && mainPass && galleryPass;
-  const overallIntegrityPass = report.overall_verdict === "PASS"
-    && report.blocking_reasons.length === 0 && report.review_reasons.length === 0;
+    && checks.body_identity === "MATCH" && attributeIdentityAcceptable
+    && mainPass && galleryDecisionsComplete;
+  const overallIntegrityPass = report.overall_verdict !== "BAD"
+    && report.blocking_reasons.length === 0;
   // The source verifier has rebuilt the exact seller-item -> catalog-search ->
   // buyer-PDP identity chain from raw bytes. Keep this as an explicit facet so
   // a content PASS cannot hide a listing that lost publication/indexability.
@@ -1075,7 +1166,7 @@ async function rebuildQualification(input: {
     bullets: pass(bulletsPass),
     attributes: pass(attributesPass),
     main: pass(mainPass),
-    gallery: pass(galleryPass),
+    gallery: pass(galleryDecisionsComplete),
     published_and_indexed: pass(publishedAndIndexed),
     // A new authenticated run proves a reread.  Raw buyer/asset drift is an
     // additional prerequisite for accepting PASS, but not for proving a

@@ -582,6 +582,49 @@ test("supports an explicitly mapped newly added target claim", () => {
   assert.equal(visible.multipackQuantity, 6);
 });
 
+test("fails closed when an ordinary one-SKU attribute repair changes a live variant-group key", () => {
+  const activeVariantKey = fixture({
+    liveItemMutator: (row) => {
+      row.variantGroupId = "exact-live-variant-group";
+      row.variantGroupInfo = {
+        isPrimary: false,
+        groupingAttributes: [{
+          name: "Multipack Quantity",
+          value: "1",
+        }],
+      };
+    },
+  });
+  assert.throws(
+    () => build(activeVariantKey),
+    /VARIANT_GROUP_REPAIR_REQUIRED.*multipackQuantity.*exact-live-variant-group/iu,
+  );
+
+  const nonGroupingAttribute = fixture({
+    liveItemMutator: (row) => {
+      row.variantGroupId = "exact-live-variant-group";
+      row.variantGroupInfo = {
+        isPrimary: false,
+        groupingAttributes: [{
+          name: "flavor",
+          value: "Chocolate",
+        }],
+      };
+    },
+  });
+  assert.doesNotThrow(() => build(nonGroupingAttribute));
+
+  const incompleteVariantEvidence = fixture({
+    liveItemMutator: (row) => {
+      row.variantGroupId = "exact-live-variant-group";
+    },
+  });
+  assert.throws(
+    () => build(incompleteVariantEvidence),
+    /VARIANT_GROUP_REPAIR_REQUIRED.*incomplete variant-group evidence/iu,
+  );
+});
+
 test("rejects caller field paths as Walmart keys and mappings for unchanged claims", () => {
   const reservedCaseVariant = fixture({
     contractMutator: (body) => {

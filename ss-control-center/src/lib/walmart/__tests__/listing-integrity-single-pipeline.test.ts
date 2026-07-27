@@ -50,6 +50,7 @@ function snapshot(overrides: {
   ready?: boolean;
   content?: boolean;
   componentCount?: number;
+  evidenceStatus?: "FACT" | "MANUAL_FACT" | "ESTIMATE" | "REJECT";
 } = {}): ProductTruthSnapshot {
   const component = {
     componentEvidenceId: "evidence-1",
@@ -59,7 +60,7 @@ function snapshot(overrides: {
     size: "24 oz",
     qty: overrides.qty ?? 6,
     targetCanonicalVariantId: "variant-oat-24oz",
-    evidenceStatus: "FACT" as const,
+    evidenceStatus: overrides.evidenceStatus ?? "FACT",
     content: overrides.content === false ? null : {
       canonicalVariantId: "variant-oat-24oz",
       identity: {
@@ -306,6 +307,48 @@ test("one canonical component becomes exact one-SKU detector truth", () => {
   }]);
 });
 
+test("exact canonical content remains usable when price evidence is unsourceable", () => {
+  const contentOnly = snapshot({
+    evidenceStatus: "REJECT",
+  });
+  const component = contentOnly.views.listingImprovement.components[0]!;
+  component.product = "Hot Dog Buns";
+  component.flavor = "White";
+  component.content!.identity.brand = "farm pepperidge";
+  component.content!.identity.productLine = "bakery buns classics dog hot";
+  component.content!.identity.flavor = "white";
+  component.content!.identity.form = "bag";
+  component.content!.identity.modifiers = ["token:sliced", "token:top"];
+  component.content!.facts.title =
+    "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct";
+  const result = projectProductTruthForWalmartSingleListing(contentOnly);
+  assert.equal(result.status, "READY");
+  if (result.status !== "READY") return;
+  assert.equal(result.adapter_version, "walmart-listing-single-pipeline-truth-adapter/v5");
+  assert.equal(result.expected.outer_units, 6);
+  assert.deepEqual(result.expected.identity.brand_aliases, [
+    "Pepperidge Farm",
+    "farm pepperidge",
+  ]);
+  assert.deepEqual(result.expected.identity.variant_marker_groups, [
+    ["white"],
+    ["sliced"],
+    ["top"],
+  ]);
+  assert.deepEqual(result.blockers, []);
+});
+
+test("product aliases are deduplicated after detector normalization", () => {
+  const duplicateCaseAlias = snapshot();
+  const component = duplicateCaseAlias.views.listingImprovement.components[0]!;
+  component.content!.identity.productLine = "condensed soup";
+  component.product = "Condensed Soup";
+  const result = projectProductTruthForWalmartSingleListing(duplicateCaseAlias);
+  assert.equal(result.status, "READY");
+  if (result.status !== "READY") return;
+  assert.deepEqual(result.expected.identity.product_marker_groups, [["condensed soup"]]);
+});
+
 test("a multipack donor is rejected instead of becoming a multipack-of-multipacks", () => {
   const result = projectProductTruthForWalmartSingleListing(snapshot({ donorOuter: 2 }));
   assert.equal(result.status, "SOURCE_REQUIRED");
@@ -362,6 +405,72 @@ test("full one-SKU diagnostic proves a wrong MAIN package count is BAD", async (
     const outcome = classifyWalmartSingleDiagnostic(result);
     assert.equal(outcome.status, "BAD");
     assert.equal(outcome.next_step, "BUILD_REPAIR_PREVIEW");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("full diagnostic accepts possessive brand, interleaved title tokens, and observer role drift", async () => {
+  const fixture = await diagnosticFixture();
+  try {
+    const truth = snapshot();
+    const component = truth.views.listingImprovement.components[0]!;
+    component.product = "Condensed Soup";
+    component.flavor = "Golden Mushroom";
+    component.content!.identity.brand = "campbells";
+    component.content!.identity.productLine = "condensed soup";
+    component.content!.identity.flavor = "golden mushroom";
+    component.content!.identity.sizeBaseAmount = 297.6699928125;
+    component.content!.facts.title =
+      "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can";
+    const payload = structuredClone(diagnosticBuyerPayload);
+    payload.product.title =
+      "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can (Pack of 6)";
+    payload.product.description =
+      "Campbell's Condensed Golden Mushroom Soup. Pack of 6. Each can is 10.5 oz.";
+    payload.product.feature_bullets = [
+      "Campbell's Golden Mushroom condensed soup",
+      "Pack of 6",
+    ];
+    payload.product.attributes = {
+      Brand: "Campbell's",
+      "Product Type": "Condensed Soup",
+      Flavor: "Golden Mushroom",
+      "Multipack Quantity": 6,
+      "Net Weight": "10.5 oz",
+    };
+    fixture.blind_observations[0] = observation(
+      fixture.blind_observations[0]!.image_id,
+      {
+        visible_brand_text: "Campbell's",
+        visible_product_text: "Golden Mushroom Soup",
+        visible_variant_text: "Condensed",
+        visible_size_texts: ["10.5 oz"],
+      },
+    );
+    fixture.blind_observations[1] = observation(
+      fixture.blind_observations[1]!.image_id,
+      {
+        visual_role: "single_product_front",
+        visible_brand_text: "Campbell's",
+        visible_product_text: "Golden Mushroom Soup",
+        visible_variant_text: "Condensed",
+        visible_size_texts: ["10.5 oz"],
+        external_package_count: { mode: "exact", value: 1, min: null, max: null },
+      },
+    );
+    const result = await diagnoseWalmartSingleListing({
+      product_truth: truth,
+      buyer_snapshot: fixture.buyer_snapshot,
+      buyer_pdp_payload: payload,
+      image_bytes_by_sha256: fixture.image_bytes_by_sha256,
+      blind_observations: fixture.blind_observations,
+    });
+    assert.equal(result.status, "DIAGNOSED");
+    if (result.status !== "DIAGNOSED") return;
+    assert.equal(result.report.text_decision.checks.title_identity, "MATCH");
+    assert.equal(result.report.main_decision.checks.identity, "MATCH");
+    assert.equal(result.report.gallery_decisions[0]?.checks.identity, "MATCH");
   } finally {
     await fixture.cleanup();
   }

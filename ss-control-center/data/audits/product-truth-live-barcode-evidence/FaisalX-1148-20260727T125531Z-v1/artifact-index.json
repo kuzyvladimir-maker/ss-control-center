@@ -1,0 +1,25 @@
+{
+  "artifacts": [
+    {
+      "file": "evidence.json",
+      "role": "evidence",
+      "sha256": "508b816edb0ea9ee5fce7ab4d9f3f9679df51cdfb206b9884e3ba3ebbc692aea"
+    },
+    {
+      "file": "barcode-source.jpeg",
+      "role": "source_image",
+      "sha256": "06e317658c4e323bdafb38413ce56841ccab61730551484c972ede34fde37f2d"
+    }
+  ],
+  "componentIndex": 0,
+  "createdAt": "2026-07-27T12:55:31.000Z",
+  "listingKey": "walmart:1:FaisalX-1148",
+  "safety": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-live-image-barcode-artifact-index/1.0.0"
+}

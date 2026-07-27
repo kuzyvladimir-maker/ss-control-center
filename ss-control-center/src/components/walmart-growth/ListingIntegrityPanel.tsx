@@ -14,6 +14,7 @@ import {
 import { Panel, PanelBody, PanelHeader } from "@/components/kit";
 import type {
   ListingIntegrityCatalogOverview,
+  ListingIntegrityOperationsState,
   ListingIntegrityOwnerRepairReview,
   ListingIntegrityProductTruthReadiness,
   ListingIntegrityShadowCase,
@@ -151,6 +152,217 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
             <div>{catalog.evidencePath}</div>
             <div>census {catalog.censusFileSha256}</div>
             <div>plan {catalog.planFileSha256}</div>
+          </div>
+        </details>
+      </PanelBody>
+    </Panel>
+  );
+}
+
+function formatMoney(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function ListingIntegrityOperations({
+  operations,
+}: {
+  operations: ListingIntegrityOperationsState;
+}) {
+  if (operations.status === "NOT_READY") {
+    return (
+      <Panel>
+        <PanelBody className="flex items-center gap-3 text-[13px] text-ink-2">
+          <FileSearch className="size-5 text-ink-3" />
+          Постоянная контролируемая очередь ещё не опубликована.
+        </PanelBody>
+      </Panel>
+    );
+  }
+  return (
+    <Panel>
+      <PanelHeader
+        title={
+          <div className="flex flex-wrap items-center gap-2">
+            <span>Listing Integrity · производственный контур</span>
+            <StatusPill tone="success">{operations.completed.length} qualified</StatusPill>
+            <StatusPill tone="neutral">{operations.pool.length} repair-ready</StatusPill>
+            <StatusPill tone="neutral">{operations.sourceRequiredCount} source-required</StatusPill>
+          </div>
+        }
+        right={
+          <span className="text-[10px] font-mono text-ink-3">Strict sequence · 1 SKU</span>
+        }
+      />
+      <PanelBody className="space-y-5">
+        <div className="rounded-lg border border-[var(--green)]/30 bg-[var(--green-soft)]/35 px-3 py-3">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--green-ink)]" />
+            <div>
+              <div className="text-[12px] font-semibold text-ink">
+                Замкнутый цикл доказан на {operations.completed.length} live SKU
+              </div>
+              <p className="mt-1 text-[11px] text-ink-2">
+                Walmart принял feed, buyer-facing карточка перечитана, PUBLISHED/ACTIVE и
+                изображения сохранены, frozen Qualification = PASS.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <div className="mb-2 text-[12px] font-semibold text-ink">
+            Завершённые исправления · фактическое ДО → ПОСЛЕ
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {operations.completed.map((entry) => (
+              <div
+                key={entry.listingKey}
+                className="rounded-lg border border-[var(--green)]/30 bg-surface p-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <div className="font-mono text-[13px] font-semibold text-ink">{entry.sku}</div>
+                    <div className="mt-0.5 text-[10px] text-ink-3">Item {entry.itemId}</div>
+                  </div>
+                  <StatusPill tone="success">Qualification PASS</StatusPill>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="rounded border border-rule bg-bg-elev px-2 py-1.5">
+                    <span className="text-ink-3">Проверки</span>
+                    <div className="font-mono font-semibold text-ink">
+                      {entry.checksPassed}/{entry.checksPassed} PASS
+                    </div>
+                  </div>
+                  <div className="rounded border border-rule bg-bg-elev px-2 py-1.5">
+                    <span className="text-ink-3">Публикация / индексация</span>
+                    <div className="font-semibold text-[var(--green-ink)]">Сохранены</div>
+                  </div>
+                </div>
+                <div className="mt-2 text-[10px] text-ink-3">
+                  До {formatCapturedAt(entry.beforeCapturedAt)} UTC
+                  <br />
+                  После {formatCapturedAt(entry.afterCapturedAt)} UTC
+                </div>
+                <a
+                  href={entry.galleryHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--green-ink)] hover:underline"
+                >
+                  Открыть фактическую галерею ДО → ПОСЛЕ
+                  <ExternalLink className="size-3" />
+                </a>
+                <details className="mt-2 break-all text-[9px] text-ink-3">
+                  <summary className="cursor-pointer">Feed и SHA-bound evidence</summary>
+                  <div className="mt-1 font-mono">
+                    <div>feed {entry.feedId}</div>
+                    <div>payload {entry.payloadSha256}</div>
+                    <div>gallery {entry.galleryFileSha256}</div>
+                  </div>
+                </details>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="text-[12px] font-semibold text-ink">
+                Product Truth-ready repair pool
+              </div>
+              <div className="text-[10px] text-ink-3">
+                Следующий: источник → диагноз → точный diff → один apply → reread → Qualification
+              </div>
+            </div>
+            <StatusPill tone="neutral">No Walmart writes</StatusPill>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-rule">
+            <table className="w-full min-w-[820px] text-left text-[10px]">
+              <thead className="bg-bg-elev font-mono uppercase tracking-[0.08em] text-ink-3">
+                <tr>
+                  <th className="px-3 py-2"># / SKU</th>
+                  <th className="px-3 py-2">Товар</th>
+                  <th className="px-3 py-2">Pack</th>
+                  <th className="px-3 py-2">90 дней</th>
+                  <th className="px-3 py-2">Причина</th>
+                  <th className="px-3 py-2">Стадия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {operations.pool.map((item) => (
+                  <tr key={item.listingKey} className="border-t border-rule align-top">
+                    <td className="px-3 py-2">
+                      <span className="mr-2 text-ink-3">{item.ordinal + 1}</span>
+                      <span className="font-mono font-semibold text-ink">{item.sku}</span>
+                    </td>
+                    <td className="max-w-[360px] px-3 py-2 text-ink-2">{item.title}</td>
+                    <td className="px-3 py-2 font-mono text-ink">
+                      {item.outerUnits ?? "review"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-2">
+                      {item.performance.returns90} returns / {item.performance.units90} units
+                      <br />
+                      {formatMoney(item.performance.sales90)}
+                    </td>
+                    <td className="px-3 py-2">
+                      {item.deterministicFindings.length ? (
+                        <StatusPill tone="danger">Count conflict</StatusPill>
+                      ) : item.performance.returns90 > 0 ? (
+                        <StatusPill tone="danger">Return priority</StatusPill>
+                      ) : (
+                        <StatusPill tone="neutral">Multipack audit</StatusPill>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-ink">Product Truth READY · fresh audit</div>
+                      <div className="mt-0.5 text-ink-3">Write authority: false</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-2 text-[12px] font-semibold text-ink">
+            SOURCE_REQUIRED · не расходовать visual/model calls
+          </div>
+          <div className="rounded-lg border border-[var(--warn)]/35 bg-[var(--warn-tint)]/35 p-3">
+            <div className="text-[11px] text-ink-2">
+              {operations.sourceRequiredCount} из {operations.sourceCandidateCount} кандидатов
+              не имеют точного Product Truth для safe repair lane. Ни один из них не получает
+              write authority; ниже показан приоритетный preview очереди обогащения.
+            </div>
+            <div className="mt-3 grid gap-2 lg:grid-cols-2">
+              {operations.sourceRequired.map((item) => (
+                <div key={item.listingKey} className="rounded border border-rule bg-surface px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] font-semibold text-ink">{item.sku}</span>
+                    <StatusPill tone="neutral">SOURCE_REQUIRED</StatusPill>
+                  </div>
+                  <div className="mt-1 line-clamp-2 text-[10px] text-ink-2">{item.title}</div>
+                  <div className="mt-1 text-[9px] text-ink-3">
+                    {item.productTruthBlockers.join(" · ")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <details className="text-[9px] text-ink-3">
+          <summary className="cursor-pointer font-medium">Immutable pool evidence</summary>
+          <div className="mt-1 space-y-0.5 break-all font-mono">
+            <div>{operations.poolId}</div>
+            <div>body {operations.poolBodySha256}</div>
+            <div>file {operations.poolFileSha256}</div>
+            <div>{operations.poolEvidencePath}</div>
           </div>
         </details>
       </PanelBody>
@@ -632,17 +844,27 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
         <div className="flex items-start gap-3">
           <Eye className="mt-0.5 size-5 shrink-0 text-[var(--warn-strong)]" />
           <div>
-            <div className="text-[13px] font-semibold text-ink">Полный каталог · только наблюдение</div>
+            <div className="text-[13px] font-semibold text-ink">
+              Постоянный Listing Integrity · контролируемая работа
+            </div>
             <div className="mt-0.5 text-[11px] text-ink-2">
-              Движок охватывает весь Walmart-каталог, находит дефекты и формирует очереди. Walmart writes отключены.
+              Движок ведёт каталог и очередь; исправления выполняются строго по одному SKU
+              с обязательным reread и Qualification.
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <StatusPill tone="neutral"><LockKeyhole className="mr-1 size-3" />Repairs locked</StatusPill>
+          <StatusPill tone="success">
+            {data.operations.status === "READ_ONLY_POOL_READY"
+              ? data.operations.completed.length
+              : 0} canaries qualified
+          </StatusPill>
+          <StatusPill tone="neutral"><LockKeyhole className="mr-1 size-3" />Exact payload only</StatusPill>
           <StatusPill tone="neutral"><LockKeyhole className="mr-1 size-3" />Mass run locked</StatusPill>
         </div>
       </div>
+
+      <ListingIntegrityOperations operations={data.operations} />
 
       {data.ownerRepairReview && (
         <CurrentOwnerRepairReview review={data.ownerRepairReview} />

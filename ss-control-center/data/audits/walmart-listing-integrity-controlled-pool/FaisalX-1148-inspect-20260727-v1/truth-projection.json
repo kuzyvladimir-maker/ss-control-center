@@ -1,0 +1,13 @@
+{
+  "status": "SOURCE_REQUIRED",
+  "adapter_version": "walmart-listing-single-pipeline-truth-adapter/v1",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "expected": null,
+  "component_evidence_id": null,
+  "canonical_variant_id": null,
+  "blockers": [
+    "LISTING_IMPROVEMENT_NOT_READY",
+    "PRODUCT_TRUTH:CURRENT_SCOPED_SKU_COST_MISSING",
+    "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+  ]
+}

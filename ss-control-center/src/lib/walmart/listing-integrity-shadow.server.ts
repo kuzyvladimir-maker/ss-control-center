@@ -16,6 +16,7 @@ import {
   type WalmartListingIntegrityCatalogCensus,
   type WalmartListingIntegrityScanPlan,
 } from "./listing-integrity-catalog-orchestrator.ts";
+import { loadListingIntegrityOperationsState } from "./listing-integrity-operations.server";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -1889,11 +1890,34 @@ export async function loadListingIntegrityShadowData(
     ));
   }
   const catalog = await loadCatalogOverview(catalogRoot, captureRoot);
-  const ownerRepairReview = await loadCurrentOwnerRepairReview(ownerReviewRoot);
+  const operations = path.resolve(root) === path.resolve(DEFAULT_ROOT)
+    ? await loadListingIntegrityOperationsState()
+    : {
+        status: "NOT_READY" as const,
+        poolId: null,
+        poolBodySha256: null,
+        poolFileSha256: null,
+        poolCreatedAt: null,
+        poolEvidencePath: null,
+        strictSequence: true as const,
+        maxApplyInFlight: 1 as const,
+        walmartWritesAllowed: false as const,
+        modelCallsAllowed: false as const,
+        completed: [],
+        pool: [],
+      };
+  const loadedOwnerRepairReview = await loadCurrentOwnerRepairReview(ownerReviewRoot);
+  const ownerRepairReview = loadedOwnerRepairReview
+    && operations.completed.some(
+      (entry) => entry.listingKey === loadedOwnerRepairReview.listingKey,
+    )
+    ? null
+    : loadedOwnerRepairReview;
   return {
     mode: "SHADOW_READ_ONLY",
     ownerRepairReview,
     catalog,
+    operations,
     productTruth,
     engine,
     cases,

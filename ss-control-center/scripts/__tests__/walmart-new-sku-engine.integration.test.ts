@@ -347,7 +347,7 @@ async function seedCanonicalPilotFixture(
       "https://images.fixture.test/source-main.png",
       "https://images.fixture.test/source-nutrition.png",
     ],
-    category: "Snack Foods",
+    category: "Crackers",
     storageTemp: "Shelf Stable",
     upc: "012345678905",
     attributes: { netContent: "8 oz" },
@@ -1024,7 +1024,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     doctor.next_command,
     `npm run walmart:new-sku -- plan --doctor-receipt ${renderPosixArg(doctorPath)} ` +
       `--store-index 1 --limit 1 --pack-count 2 --zip 33765 ` +
-      `--as-of ${asOf} --max-price-age-hours 24`,
+      `--as-of ${asOf} --max-price-age-hours 24 ` +
+      `--out ${renderPosixArg(planPath)}`,
   );
   assert.deepEqual(doctor.next_argv, [
     "npm", "run", "walmart:new-sku", "--", "plan",
@@ -1035,6 +1036,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--zip", "33765",
     "--as-of", asOf,
     "--max-price-age-hours", "24",
+    "--out", planPath,
   ]);
 
   const planned = await runCli([

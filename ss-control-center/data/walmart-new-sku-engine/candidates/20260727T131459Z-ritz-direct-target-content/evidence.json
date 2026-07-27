@@ -1,0 +1,144 @@
+{
+  "capturedAt": "2026-07-27T13:24:10.000Z",
+  "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+  "offerId": "do:target:14920182",
+  "retailerContent": {
+    "allergens": "CONTAINS: WHEAT, MILK, SOY.\nMAY CONTAIN: PEANUT.",
+    "attributes": [
+      "<B>Features:</B> No High Fructose Corn Syrup",
+      "<B>Dietary Needs:</B> 0 Grams Trans Fat, Naturally Flavored",
+      "<B>State of Readiness:</B> Ready to Eat",
+      "<B>Form:</B> Pieces",
+      "<B>Package Quantity:</B> 1"
+    ],
+    "bullets": [
+      "One 8.8 oz box of RITZ Bits Cheese Sandwich Crackers (packaging may vary)",
+      "Smooth and creamy cheese spread between two tiny RITZ snack crackers",
+      "Bite-sized, mini crackers featuring filling made with real cheese and containing no high-fructose corn syrup for a deliciously crunchy snack",
+      "RITZ snack crackers with cheese that make great office snacks and after-school snacks for kids and adults; wonderful on the go snacks and travel snacks",
+      "Box of cheese and crackers for anytime, anywhere snacking",
+      "Packaging may vary. Please refer to the actual packaging for current information for this product"
+    ],
+    "description": "Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.",
+    "fetchedAt": "2026-07-27T13:24:10.000Z",
+    "finalUrl": "https://www.target.com/p/ritz-bits-cracker-sandwiches-with-cheese-8-8oz/-/A-14920182",
+    "htmlFile": "retailer-content.html",
+    "htmlSha256": "db86708b98e63122042fb84493031420e3d3d3940652366da31184b2178f000a",
+    "httpStatus": 200,
+    "ingredients": "Unbleached Enriched Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate [Vitamin B1], Riboflavin [Vitamin B2], Folic Acid), Palm Oil, Soybean and/or Canola Oil, Whey (From Milk), Sugar, Cheddar Cheese Powder (Pasteurized Milk, Cheese Cultures, Salt, Enzymes), Leavening (Calcium Phosphate, Baking Soda), Salt, Sodium Phosphate, Natural Flavor, Yeast Extract, Soy Lecithin, Cornstarch, Turmeric, Annatto Extracts (For Color)",
+    "normalizedGtin14": "00044000035457",
+    "nutritionFacts": {
+      "ingredients": "Unbleached Enriched Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate [Vitamin B1], Riboflavin [Vitamin B2], Folic Acid), Palm Oil, Soybean and/or Canola Oil, Whey (From Milk), Sugar, Cheddar Cheese Powder (Pasteurized Milk, Cheese Cultures, Salt, Enzymes), Leavening (Calcium Phosphate, Baking Soda), Salt, Sodium Phosphate, Natural Flavor, Yeast Extract, Soy Lecithin, Cornstarch, Turmeric, Annatto Extracts (For Color) ",
+      "nutrition_label_type_code": "LEGACY_FORMAT",
+      "value_prepared_list": [
+        {
+          "nutrients": [
+            {
+              "name": "Calories",
+              "quantity": 150,
+              "unit_of_measurement": "Cal"
+            },
+            {
+              "name": "Total Fat",
+              "percentage": 12,
+              "quantity": 9,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Saturated Fat",
+              "percentage": 15,
+              "quantity": 3,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Trans Fat",
+              "quantity": 0,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Cholesterol",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Sodium",
+              "percentage": 5,
+              "quantity": 125,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Total Carbohydrate",
+              "percentage": 6,
+              "quantity": 17,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Dietary Fiber",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Sugars",
+              "quantity": 4,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Added Sugars",
+              "percentage": 4,
+              "quantity": 2,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Protein",
+              "quantity": 2,
+              "unit_of_measurement": "g"
+            },
+            {
+              "name": "Vitamin D",
+              "percentage": 0,
+              "quantity": 0,
+              "unit_of_measurement": "mcg"
+            },
+            {
+              "name": "Calcium",
+              "percentage": 4,
+              "quantity": 60,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Iron",
+              "percentage": 4,
+              "quantity": 0.8,
+              "unit_of_measurement": "mg"
+            },
+            {
+              "name": "Potassium",
+              "percentage": 0,
+              "quantity": 80,
+              "unit_of_measurement": "mg"
+            }
+          ],
+          "serving_size": "29.0",
+          "serving_size_unit_of_measurement": "g",
+          "servings_per_container": "9"
+        }
+      ],
+      "warning": "CONTAINS: WHEAT, MILK, SOY.\nMAY CONTAIN: PEANUT."
+    },
+    "productUrl": "https://www.target.com/p/ritz-bits-cracker-sandwiches-with-cheese-8-8oz/-/A-14920182",
+    "retailer": "target",
+    "retailerProductId": "14920182",
+    "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz"
+  },
+  "safety": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "retailerReads": 1,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-direct-target-content-evidence/1.0.0"
+}

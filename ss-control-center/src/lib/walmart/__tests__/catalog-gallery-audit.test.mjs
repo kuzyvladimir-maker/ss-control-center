@@ -73,6 +73,27 @@ test("correct lifestyle ignores all main-image count, grid, front, and backgroun
   assert.deepEqual(decision.hard_failures, []);
 });
 
+test("gallery identity tolerates possessive punctuation and product/variant role drift", () => {
+  const decision = auditGallerySlot({
+    ...observedInput({
+      visible_brand_text: "Campbell's",
+      visible_product_text: "Golden Mushroom Soup",
+      visible_variant_text: "Condensed",
+    }),
+    expected: {
+      ...expected,
+      identity: {
+        brand_aliases: ["campbells"],
+        product_marker_groups: [["condensed soup"]],
+        variant_marker_groups: [["golden mushroom"]],
+        forbidden_markers: [],
+      },
+    },
+  });
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.identity, "MATCH");
+});
+
 test("correct back and nutrition gallery observations pass with or without visible package facts", () => {
   const back = auditGallerySlot(observedInput({
     visual_role: "back",
@@ -123,6 +144,25 @@ test("a nutrition panel without enough product identity is REVIEW", () => {
   }));
   assert.equal(servingSizeOnly.verdict, "PASS");
   assert.equal(servingSizeOnly.checks.package_facts.net_content, "NOT_VISIBLE");
+});
+
+test("nutrition serving counts never contradict package inner-item count", () => {
+  const decision = auditGallerySlot(observedInput({
+    visual_role: "nutrition",
+    visible_brand_text: null,
+    visible_product_text: null,
+    visible_variant_text: null,
+    readable_identity: "none",
+    visible_size_texts: [],
+    inner_contents_claims: [
+      "8 Servings Per Container",
+      "Serving Size 1 Bun (50g)",
+    ],
+    evidence: ["Nutrition Facts", "Serving Size 1 Bun (50g)"],
+  }));
+  assert.equal(decision.verdict, "REVIEW");
+  assert.equal(decision.checks.package_facts.inner_item_count, "NOT_VISIBLE");
+  assert.deepEqual(decision.hard_failures, []);
 });
 
 test("synthetic injected foreign brand, product, and variant are each BAD", () => {

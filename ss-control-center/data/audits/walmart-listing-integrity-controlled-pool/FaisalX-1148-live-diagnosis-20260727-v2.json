@@ -1,0 +1,609 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-27T13:09:09.264Z",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "inputs": {
+    "product_truth_file_sha256": "8306d9f000249aae7e2106c02a0c5b9cb1256f6c580515e048ae2d957779cae5",
+    "buyer_snapshot_file_sha256": "c658732922e123735275ab7bc5319b541ef689780d4d7a112fcdffd35655acc0",
+    "buyer_pdp_file_sha256": "7867773c68bfc4d64b0e593bdeec257269efe61c4b2fa161c527ae23e61e40c8",
+    "observations_file_sha256": "ed891b0e6066515ee9b143a8f4a616a3b44b2cf257d8b8726123395bc5c34c73",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+        "bytes": 438179
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a",
+        "bytes": 245582
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4",
+        "bytes": 346437
+      }
+    ]
+  },
+  "outcome": {
+    "status": "BAD",
+    "blockers": [
+      "title is missing required identity roles: brand,variant",
+      "description/bullets outer quantity contradicts 2",
+      "MAIN: visible brand is not an allowed alias: Pepperidge Farm",
+      "MAIN: outer count 8 != 2",
+      "gallery-1: blind package fact contradicts inner_item_count: 1 count != 8 count",
+      "gallery-2: visible brand is not allowed: Pepperidge Farm"
+    ],
+    "next_step": "BUILD_REPAIR_PREVIEW"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1148",
+    "captured_at": "2026-07-27T13:08:04.127Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 2,
+      "phrases": [
+        "Pack of 2"
+      ]
+    },
+    "verdict": "CONTRADICTION",
+    "findings": [
+      {
+        "severity": "CONTRADICTION",
+        "code": "MAIN_VISIBLE_OUTER_QUANTITY_CONTRADICTS_LIVE_TITLE",
+        "slot": "main",
+        "evidence": [
+          "title=2",
+          "visible=8"
+        ]
+      }
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "347f68e9fd4edf846c5161c50054de1d434c1f38a46989ebdf42f1ce16c18cae"
+  },
+  "detector_input": {
+    "schema_version": "walmart-listing-integrity-input/v1",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1148",
+      "listing_key": "walmart:1:FaisalX-1148",
+      "item_id": "15144369671",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-27T13:08:04.127Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1148",
+      "product_truth_snapshot_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1148",
+      "catalog_truth_export_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1148",
+      "catalog_truth_preflight_sha256": "3f031c50bd5e86d270c3867f75d01d15accec44b8f1e565ecd107b738affb9e6",
+      "truth_revision_id": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+      "truth_revision_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "truth_approval_sha256": "264360149f2674e4873a50cfa7d320281371e4b032627c55541a6c1b5fa87c28",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1148",
+      "buyer_index_body_sha256": "97df58bab5e753bf2857c4b712f3b9a0abb30638aeb7df288bebfe09d7a5592f",
+      "buyer_snapshot_id": "walmart-buyer-20260727T130804Z-97df58bab5e7",
+      "buyer_snapshot_body_sha256": "97df58bab5e753bf2857c4b712f3b9a0abb30638aeb7df288bebfe09d7a5592f",
+      "buyer_payload_sha256": "24e27eced1d601cc358c645dccd3c32be73796e2f5f2f81eb21359d5603000d9",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1148",
+      "surface_snapshot_body_sha256": "742a766101d979d7f328a4e2baab4bb29c490d2bb761ea101f15fb6e1a9a3212",
+      "surface_payload_sha256": "24e27eced1d601cc358c645dccd3c32be73796e2f5f2f81eb21359d5603000d9"
+    },
+    "expected": {
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "outer_units": 2,
+      "identity": {
+        "brand_aliases": [
+          "farm pepperidge"
+        ],
+        "product_marker_groups": [
+          [
+            "bakery buns classics dog hot",
+            "Hot Dog Buns"
+          ]
+        ],
+        "variant_marker_groups": [
+          [
+            "white"
+          ],
+          [
+            "White"
+          ],
+          [
+            "bag"
+          ],
+          [
+            "token:sliced"
+          ],
+          [
+            "token:top"
+          ]
+        ],
+        "forbidden_markers": []
+      },
+      "package_facts": [
+        {
+          "kind": "inner_item_count",
+          "requirement": "required",
+          "value": 8,
+          "unit": "count"
+        }
+      ],
+      "truth_source": "recipe"
+    },
+    "surface": {
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns. Shelf-stable product.",
+      "bullets": [
+        "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+        "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+        "COOKOUT READY: Quality buns your family and friends will appreciate"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Brand",
+          "kind": "brand",
+          "text": "Pepperidge Farm"
+        },
+        {
+          "field_path": "product.specifications[1].Bread & bun type",
+          "kind": "product",
+          "text": "Hot Dog Buns"
+        },
+        {
+          "field_path": "product.specifications[3].Flavor",
+          "kind": "variant",
+          "text": "White"
+        },
+        {
+          "field_path": "product.specifications[6].Multipack quantity",
+          "kind": "outer_units",
+          "value": 2,
+          "unit": "count"
+        },
+        {
+          "field_path": "product.specifications[12].Product net content parent",
+          "kind": "net_content",
+          "value": 14,
+          "unit": "oz"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Grain type",
+          "value_sha256": "ddd7314bf74d7edde40a2cf2381aeb152ba1ce315e6a21111313528406243079"
+        },
+        {
+          "field_path": "product.specifications[4].Count",
+          "value_sha256": "ade1a1c2a61af0f279a4978dfddcdb6acd33f5a8b61e62c5fd881e8a88a387bc"
+        },
+        {
+          "field_path": "product.specifications[5].Piece count",
+          "value_sha256": "ade1a1c2a61af0f279a4978dfddcdb6acd33f5a8b61e62c5fd881e8a88a387bc"
+        },
+        {
+          "field_path": "product.specifications[7].Food form",
+          "value_sha256": "2c16f9fbedfd892cff140cabbee5c88e091d392dfe6e84cb906fc070fdf431e9"
+        },
+        {
+          "field_path": "product.specifications[8].Size",
+          "value_sha256": "ef0aa3de2fb8fce9f4aa77c5e52d6cf8eff2707ccbb6d77f3d5a58b062b0e860"
+        },
+        {
+          "field_path": "product.specifications[9].Food condition",
+          "value_sha256": "b65dff99b92126fd18da6c81549b731415dc24aa5acdf2144c50fbe073ef63a0"
+        },
+        {
+          "field_path": "product.specifications[10].Texture",
+          "value_sha256": "d266d83ec490df4e229674bf9ef59479c309d1d6655cf563a13f10d7957de437"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "17b1293bcc3fef323c5406dec70c0195ae6a8295fefe87b595e3b86bf3cb7b16"
+        },
+        {
+          "field_path": "product.specifications[13].Manufacturer",
+          "value_sha256": "ae7711d7be2014f9f431421038f7d724b6e4909a7c716febc01543b4e5254bf7"
+        },
+        {
+          "field_path": "product.specifications[14].Product line",
+          "value_sha256": "b20f8bfab6f74046518336ac488adfde4b688dc073a1a99e1c1311b9b6a25db5"
+        },
+        {
+          "field_path": "product.specifications[15].Container type",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[16].Material",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[17].Occasion",
+          "value_sha256": "da8cb7f11d17e77940294e495aea9e4f477400b38abf3f130f7141ac0d070293"
+        },
+        {
+          "field_path": "product.specifications[18].Size descriptor",
+          "value_sha256": "cf73746490803a9f136376b95338ad86c3831e081d99da1523e9e2d02e906634"
+        },
+        {
+          "field_path": "product.specifications[19].Food preparation method",
+          "value_sha256": "4f61b1db70c3ce957b7201c18bb20955cd1e1325a8c545d573e696d1e4d05234"
+        },
+        {
+          "field_path": "product.specifications[20].Food & drug fact label type",
+          "value_sha256": "8e430f6676bd105e00c2a0859a45e5a3540815f9dc8037537758f7fd9ee10230"
+        }
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "main",
+          "source_url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png",
+          "sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+          "byte_length": 438179,
+          "decoded_width": 2200,
+          "decoded_height": 2200,
+          "dhash64": "00d2905299286868",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-1",
+          "source_url": "https://i5.walmartimages.com/asr/36d06a94-ca37-49c9-a800-58f094fbedb3.e84cb21e914b1066caa0619dd212be36.jpeg",
+          "sha256": "74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a",
+          "byte_length": 245582,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "00340020002c1400",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-2",
+          "source_url": "https://i5.walmartimages.com/asr/eb4f7403-9575-4d86-950c-36aa63b4429f.73ebbdf1b8b371e86efa07f5c7c9aeb1.jpeg",
+          "sha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4",
+          "byte_length": 346437,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "04683010cca8ccd8",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        }
+      ],
+      "evidence": [
+        {
+          "slot": "main",
+          "asset_sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_228e6132204dd56d8b35",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Top Sliced Soft White Hot Dog Buns",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "14oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 8,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "8 Top Sliced Soft White",
+              "14oz",
+              "Hot Dog Buns"
+            ],
+            "inner_contents_claims": [
+              "8 Top Sliced Soft White"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "'Pepperidge Farm' visible on each bag",
+              "'8 Top Sliced Soft White' on each bag front",
+              "'14oz' on each bag front",
+              "'Hot Dog Buns' on each bag front",
+              "8 individual retail bags visible in tiled layout"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-1",
+          "asset_sha256": "74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_5ceeac6c5d108387bb44",
+            "visual_role": "nutrition",
+            "visible_brand_text": null,
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 Servings Per Container",
+              "Serving Size 1 Bun (50g)"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "none",
+            "evidence": [
+              "'Nutrition Facts' header visible",
+              "'8 Servings Per Container'",
+              "'Serving Size 1 Bun (50g)'",
+              "'Calories 140'"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-2",
+          "asset_sha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_cb236c1e3dfa7aadc7d1",
+            "visual_role": "back",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Top Sliced Soft White Hot Dog Buns",
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 1,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "some",
+            "background": "near_white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "'Pepperidge Farm' logo on back panel",
+              "'Top Sliced Soft White Hot Dog Buns' text on back",
+              "'ESTD. 1937' visible",
+              "Blue twist-tie closure with 'TOP SLICED ST WHITE' text",
+              "Buns visible through clear plastic packaging"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        }
+      ],
+      "duplicate_summary": null
+    }
+  },
+  "detector_report": {
+    "schema_version": "walmart-listing-integrity-report/v1",
+    "input_body_sha256": "6595783e9d736de2c1ec828c63d5fa8dee319164b394d00400c73dd69afdd934",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1148",
+      "listing_key": "walmart:1:FaisalX-1148",
+      "item_id": "15144369671",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-27T13:08:04.127Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1148",
+      "product_truth_snapshot_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1148",
+      "catalog_truth_export_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1148",
+      "catalog_truth_preflight_sha256": "3f031c50bd5e86d270c3867f75d01d15accec44b8f1e565ecd107b738affb9e6",
+      "truth_revision_id": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+      "truth_revision_body_sha256": "ddba865ad20ce72005b7ce2fcb3440461037984a91f6175d37e6eefd40c61491",
+      "truth_approval_sha256": "264360149f2674e4873a50cfa7d320281371e4b032627c55541a6c1b5fa87c28",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1148",
+      "buyer_index_body_sha256": "97df58bab5e753bf2857c4b712f3b9a0abb30638aeb7df288bebfe09d7a5592f",
+      "buyer_snapshot_id": "walmart-buyer-20260727T130804Z-97df58bab5e7",
+      "buyer_snapshot_body_sha256": "97df58bab5e753bf2857c4b712f3b9a0abb30638aeb7df288bebfe09d7a5592f",
+      "buyer_payload_sha256": "24e27eced1d601cc358c645dccd3c32be73796e2f5f2f81eb21359d5603000d9",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1148",
+      "surface_snapshot_body_sha256": "742a766101d979d7f328a4e2baab4bb29c490d2bb761ea101f15fb6e1a9a3212",
+      "surface_payload_sha256": "24e27eced1d601cc358c645dccd3c32be73796e2f5f2f81eb21359d5603000d9"
+    },
+    "text_decision": {
+      "verdict": "BAD",
+      "checks": {
+        "title_identity": "MISMATCH",
+        "title_outer_units": "MATCH",
+        "title_package_facts": "UNKNOWN",
+        "body_identity": "UNKNOWN",
+        "body_outer_units": "MISMATCH",
+        "body_package_facts": "NOT_APPLICABLE",
+        "attributes_identity": "UNKNOWN",
+        "attributes_outer_units": "MATCH",
+        "attributes_package_facts": "UNKNOWN"
+      },
+      "hard_failures": [
+        "title is missing required identity roles: brand,variant",
+        "description/bullets outer quantity contradicts 2"
+      ],
+      "review_reasons": [
+        "title package fact is missing or only total-pack value is visible",
+        "description/bullets contain no expected identity evidence",
+        "typed identity attributes are incomplete or non-matching",
+        "required typed package attributes are missing",
+        "16 source attributes are not covered by the deterministic mapper"
+      ]
+    },
+    "main_decision": {
+      "verdict": "BAD",
+      "checks": {
+        "identity": "MISMATCH",
+        "package_facts": {
+          "net_content": "NOT_APPLICABLE",
+          "inner_item_count": "UNKNOWN"
+        },
+        "external_quantity": "MISMATCH",
+        "single_package_per_cell": "MATCH",
+        "front": "MATCH",
+        "background": "MATCH",
+        "no_mixed_product": "MATCH"
+      },
+      "hard_failures": [
+        "visible brand is not an allowed alias: Pepperidge Farm",
+        "outer count 8 != 2"
+      ],
+      "unknowns": [
+        "required package fact inner_item_count is not visible"
+      ]
+    },
+    "gallery_decisions": [
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-1",
+        "verdict": "BAD",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_APPLICABLE",
+            "inner_item_count": "MISMATCH"
+          }
+        },
+        "hard_failures": [
+          "blind package fact contradicts inner_item_count: 1 count != 8 count"
+        ],
+        "review_reasons": [
+          "required brand evidence missing: farm pepperidge",
+          "required product evidence missing: bakery buns classics dog hot|Hot Dog Buns",
+          "required variant evidence missing: white, White, bag, token:sliced, token:top",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is none"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-2",
+        "verdict": "BAD",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MISMATCH",
+          "package_facts": {
+            "net_content": "NOT_APPLICABLE",
+            "inner_item_count": "NOT_VISIBLE"
+          }
+        },
+        "hard_failures": [
+          "visible brand is not allowed: Pepperidge Farm"
+        ],
+        "review_reasons": [],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    ],
+    "duplicate_summary": {
+      "source_binding_sha256": "4b7e4dae69f6ae041630bbc0be67bc7acf43b9c8f574ec56b075ab8fd991b7ef",
+      "dhash_distance_threshold": 5,
+      "exact_duplicate_groups": 0,
+      "near_duplicate_pairs": 0,
+      "missing_assets": 0,
+      "technical_errors": 0
+    },
+    "engine_versions": {
+      "listing_engine": "walmart-listing-integrity-engine/v1",
+      "blind_prompt": "walmart-visual-blind/v4",
+      "main_comparator": "walmart-visual-comparator/v5",
+      "gallery_comparator": "walmart-gallery-audit/v1"
+    },
+    "overall_verdict": "BAD",
+    "blocking_reasons": [
+      "title is missing required identity roles: brand,variant",
+      "description/bullets outer quantity contradicts 2",
+      "MAIN: visible brand is not an allowed alias: Pepperidge Farm",
+      "MAIN: outer count 8 != 2",
+      "gallery-1: blind package fact contradicts inner_item_count: 1 count != 8 count",
+      "gallery-2: visible brand is not allowed: Pepperidge Farm"
+    ],
+    "review_reasons": [
+      "title package fact is missing or only total-pack value is visible",
+      "description/bullets contain no expected identity evidence",
+      "typed identity attributes are incomplete or non-matching",
+      "required typed package attributes are missing",
+      "16 source attributes are not covered by the deterministic mapper",
+      "MAIN contains an unparsed outer-package claim",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-2: visible package count differs from offer quantity"
+    ],
+    "provenance": null,
+    "assurance": {
+      "compilation_mode": "input_only",
+      "source_artifacts_verified": false,
+      "surface_snapshot_verified": false,
+      "asset_bytes_verified": false,
+      "observation_artifacts_verified": false,
+      "caller_verdicts_accepted": false,
+      "image_decisions_recomputed": true,
+      "unknown_promoted_to_pass": false,
+      "network_calls": 0,
+      "model_calls": 0,
+      "marketplace_writes": 0,
+      "database_writes": 0
+    },
+    "report_id": "walmart-integrity-1-79ca75881ffe8db4",
+    "body_sha256": "79ca75881ffe8db4667d9cf18ed1d0828c0a930eaea11eaf5435448be024cef1"
+  },
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "c3bd356e3c794dac657c0d195f7e6d9f9cd1021fc3c34564344e772785e38ad2"
+}

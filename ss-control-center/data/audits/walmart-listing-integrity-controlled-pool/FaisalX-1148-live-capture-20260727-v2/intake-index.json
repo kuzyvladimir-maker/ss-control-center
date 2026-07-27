@@ -1,0 +1,32 @@
+{
+  "schema_version": "walmart-listing-single-intake-index/v1",
+  "created_at": "2026-07-27T13:07:08.616Z",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "status": "SOURCE_REQUIRED",
+  "files": [
+    {
+      "role": "product_truth",
+      "path": "product-truth.json",
+      "file_sha256": "819cf202acfac2fdf4149993f57c69c0c4f61dca1b267d3ac3ded7c4cdfb0c5d",
+      "bytes": 45894
+    },
+    {
+      "role": "truth_projection",
+      "path": "truth-projection.json",
+      "file_sha256": "9186f993aa7148d53823efbc21b94a90bbfae05ed762ebf28e21fb835b845dd5",
+      "bytes": 297
+    }
+  ],
+  "buyer_snapshot_id": null,
+  "buyer_snapshot_body_sha256": null,
+  "execution": {
+    "product_truth_reads": 1,
+    "walmart_logical_gets": 0,
+    "buyer_pdp_gets": 0,
+    "image_gets": 0,
+    "model_calls": 0,
+    "database_writes": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "c480d73dd3b8495aee5f51d559de5eb7e165b488bd6f64d1d720246183875447"
+}

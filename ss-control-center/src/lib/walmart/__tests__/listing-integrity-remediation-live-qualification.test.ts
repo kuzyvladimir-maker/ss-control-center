@@ -4,18 +4,22 @@ import { mkdtemp, mkdir, realpath, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import sharp from "sharp";
 
 import {
   walmartListingIntegritySha256,
 } from "../listing-integrity-audit.ts";
 import {
+  assertWalmartListingRepairLiveQualificationSourceRelease,
   qualifyWalmartListingRepairFreshLive,
 } from "../listing-integrity-remediation-live-qualification.ts";
 import type {
   SealedWalmartListingRepairPlan,
 } from "../listing-integrity-remediation-qualification.ts";
 
-const H = (value: string) => createHash("sha256").update(value).digest("hex");
+const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
+const CURRENT_RELEASE =
+  "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -33,10 +37,17 @@ const BULLETS = [
 ];
 const TITLE = "Pepperidge Farm Butter Hot Dog Buns, Top Sliced (Pack of 6)";
 
-function plan(): SealedWalmartListingRepairPlan {
+function plan(input: {
+  changed_fields?: ["description", "bullets"] | ["description", "bullets", "main"]
+    | ["attributes"];
+  main_url?: string;
+  main_sha256?: string;
+} = {}): SealedWalmartListingRepairPlan {
   const value = {
     schema_version: "walmart-listing-integrity-repair-plan/v2",
     plan_id: "plan-live-qualification",
+    verifier_engine_release_sha256: CURRENT_RELEASE,
+    apply_engine_release_sha256: CURRENT_RELEASE,
     listing: {
       channel: "WALMART_US",
       store_index: 1,
@@ -64,22 +75,71 @@ function plan(): SealedWalmartListingRepairPlan {
         unmapped_attributes: [],
       },
       images: [
-        { slot: "main", source_url: URLS[0], sha256: IMAGE_SHA[0] },
+        {
+          slot: "main",
+          source_url: input.main_url ?? URLS[0],
+          sha256: input.main_sha256 ?? IMAGE_SHA[0],
+        },
         { slot: "gallery-1", source_url: URLS[1], sha256: IMAGE_SHA[1] },
         { slot: "gallery-2", source_url: URLS[2], sha256: IMAGE_SHA[2] },
       ],
       target_sha256: H("target"),
     },
-    changed_fields: ["description", "bullets"],
+    changed_fields: input.changed_fields ?? ["description", "bullets"],
     body_sha256: H("plan"),
   };
   return value as unknown as SealedWalmartListingRepairPlan;
+}
+
+function attributePlan(): SealedWalmartListingRepairPlan {
+  const value = structuredClone(plan({ changed_fields: ["attributes"] }));
+  value.target.surface.attribute_claims = [
+    {
+      field_path: "product.specifications[0].Brand",
+      kind: "brand",
+      text: "Pepperidge Farm",
+    },
+    {
+      field_path: "product.specifications[1].Flavor",
+      kind: "variant",
+      text: "Butter",
+    },
+    {
+      field_path: "product.specifications[2].Count",
+      kind: "inner_item_count",
+      value: 6,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.countPerPack",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.multipackQuantity",
+      kind: "outer_units",
+      value: 6,
+      unit: "count",
+    },
+  ];
+  value.target.surface.unmapped_attributes = [{
+    field_path: "product.specifications[4].Product net content parent",
+    value_sha256: walmartListingIntegritySha256("14 Ounces"),
+  }];
+  return value as SealedWalmartListingRepairPlan;
 }
 
 async function fixture(input: {
   terminal_at?: string;
   captured_at?: string;
   description?: string;
+  main_image_bytes?: Uint8Array;
+  main_image_url?: string;
+  multipack_quantity?: number;
+  seller_grouping_quantity?: number;
+  flavor?: string;
+  count?: number;
 } = {}) {
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "walmart-live-qualification-")),
@@ -94,12 +154,16 @@ async function fixture(input: {
       title: TITLE,
       description: input.description ?? DESCRIPTION,
       feature_bullets: BULLETS,
-      main_image: URLS[0],
-      images: URLS,
+      main_image: input.main_image_url ?? URLS[0],
+      images: [input.main_image_url ?? URLS[0], ...URLS.slice(1)],
       specifications: [
         { name: "Brand", value: "Pepperidge Farm" },
-        { name: "Flavor", value: "Butter" },
-        { name: "Count", value: "8" },
+        { name: "Flavor", value: input.flavor ?? "Butter" },
+        { name: "Count", value: String(input.count ?? 8) },
+        {
+          name: "Multipack quantity",
+          value: String(input.multipack_quantity ?? 6),
+        },
         { name: "Product net content parent", value: "14 Ounces" },
       ],
     },
@@ -111,16 +175,20 @@ async function fixture(input: {
       publishedStatus: "PUBLISHED",
       lifecycleStatus: "ACTIVE",
       variantGroupInfo: {
-        groupingAttributes: [{ name: "number_of_pieces", value: "6" }],
+        groupingAttributes: [{
+          name: "number_of_pieces",
+          value: String(input.seller_grouping_quantity ?? 6),
+        }],
       },
     }],
   };
   const catalog = { items: [{ itemId: "12345" }] };
+  const mainImageBytes = Buffer.from(input.main_image_bytes ?? IMAGE_BYTES[0]);
   const fileValues = [
     ["buyer_pdp_payload", "buyer-pdp.json", Buffer.from(`${JSON.stringify(buyer)}\n`)],
     ["seller_item_payload", "seller-item.json", Buffer.from(`${JSON.stringify(seller)}\n`)],
     ["catalog_search_payload", "catalog-search.json", Buffer.from(`${JSON.stringify(catalog)}\n`)],
-    ["buyer_image_main", "assets/main.png", IMAGE_BYTES[0]],
+    ["buyer_image_main", "assets/main.png", mainImageBytes],
     ["buyer_image_gallery_1", "assets/gallery-1.jpg", IMAGE_BYTES[1]],
     ["buyer_image_gallery_2", "assets/gallery-2.jpg", IMAGE_BYTES[2]],
   ] as const;
@@ -206,7 +274,41 @@ test("a mismatch inside the propagation window remains no-write PENDING", async 
   assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
 });
 
-test("a mismatched reread after the failure window halts on FAIL", async () => {
+test("attribute-only live Qualification PASSes only after exact buyer-visible propagation", async () => {
+  const fx = await fixture({ count: 6, multipack_quantity: 6 });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: attributePlan(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.facets.attributes, "PASS");
+  assert.equal(result.facets.unchanged_fields_preserved, "PASS");
+  assert.equal(result.next_sku_unblocked, true);
+});
+
+test("attribute-only live Qualification remains no-write PENDING on the stale buyer surface", async () => {
+  const fx = await fixture({ count: 8, flavor: "qty 6", multipack_quantity: 6 });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: attributePlan(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.attributes, "FAIL");
+  assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
+  assert.equal(result.external_effects.walmart_writes, 0);
+});
+
+test("a mismatched reread after the former two-hour window remains PENDING under Walmart's SLA", async () => {
   const fx = await fixture({
     captured_at: "2030-01-01T03:00:00.000Z",
     description: "Old description without outer pack facts",
@@ -220,7 +322,127 @@ test("a mismatched reread after the failure window halts on FAIL", async () => {
     capture_summary: fx.capture,
     evaluated_at: new Date("2030-01-01T03:01:00.000Z"),
   });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.next_sku_unblocked, false);
+  assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
+});
+
+test("a mismatched reread after the six-hour failure window halts on FAIL", async () => {
+  const fx = await fixture({
+    captured_at: "2030-01-01T06:01:00.000Z",
+    description: "Old description without outer pack facts",
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T06:02:00.000Z"),
+  });
   assert.equal(result.verdict, "FAIL");
   assert.equal(result.next_sku_unblocked, false);
   assert.equal(result.next_action, "OWNER_REVIEW_REPLAN");
+});
+
+test("reviewed MAIN accepts only a SHA-bound perceptually identical Walmart rehost", async () => {
+  const candidate = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).composite([{
+    input: Buffer.from(
+      '<svg width="96" height="96"><rect x="10" y="18" width="30" height="60" fill="#1268b3"/><rect x="56" y="18" width="30" height="60" fill="#1268b3"/></svg>',
+    ),
+  }]).png({ compressionLevel: 0 }).toBuffer();
+  const rehosted = await sharp(candidate).png({ compressionLevel: 9 }).toBuffer();
+  assert.notEqual(H(candidate), H(rehosted));
+  const fx = await fixture({
+    main_image_bytes: rehosted,
+    main_image_url: "https://i5.walmartimages.com/rehosted-main.png",
+    multipack_quantity: 6,
+    seller_grouping_quantity: 4,
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      changed_fields: ["description", "bullets", "main"],
+      main_url: "https://owner.example/exact-reviewed-main.png",
+      main_sha256: H(candidate),
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+    target_main_bytes: candidate,
+  });
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.facets.main, "PASS");
+  assert.equal(result.facets.gallery, "PASS");
+  assert.equal(result.main_equivalence.mode, "WALMART_REHOSTED_EQUIVALENT");
+  assert.equal(result.main_equivalence.dhash_distance, 0);
+  assert.equal(result.main_equivalence.equivalent, true);
+  assert.equal(result.quantity_evidence.buyer_multipack_quantity, 6);
+  assert.equal(result.quantity_evidence.seller_grouping_number_of_pieces, 4);
+  assert.equal(result.quantity_evidence.seller_grouping_used_as_offer_quantity, false);
+  assert.equal(result.external_effects.target_main_gets, 1);
+});
+
+test("reviewed MAIN does not accept a different image under a Walmart URL", async () => {
+  const candidate = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).composite([{
+    input: Buffer.from(
+      '<svg width="96" height="96"><rect x="10" y="18" width="30" height="60" fill="#1268b3"/><rect x="56" y="18" width="30" height="60" fill="#1268b3"/></svg>',
+    ),
+  }]).png().toBuffer();
+  const wrong = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 180, g: 20, b: 20 },
+    },
+  }).png().toBuffer();
+  const fx = await fixture({
+    main_image_bytes: wrong,
+    main_image_url: "https://i5.walmartimages.com/wrong-main.png",
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      changed_fields: ["description", "bullets", "main"],
+      main_url: "https://owner.example/exact-reviewed-main.png",
+      main_sha256: H(candidate),
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+    target_main_bytes: candidate,
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.main, "FAIL");
+  assert.equal(result.main_equivalence.equivalent, false);
+});
+
+test("live Qualification rejects a source release outside current and exact predecessor", () => {
+  const invalid = structuredClone(plan());
+  invalid.verifier_engine_release_sha256 = "b".repeat(64);
+  invalid.apply_engine_release_sha256 = "b".repeat(64);
+  assert.throws(
+    () => assertWalmartListingRepairLiveQualificationSourceRelease(invalid),
+    /unpinned current\/predecessor source release/,
+  );
 });

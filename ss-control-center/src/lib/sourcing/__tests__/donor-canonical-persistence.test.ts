@@ -533,7 +533,7 @@ test("two exact retailer source rows remain separate and alias one canonical var
       assert.equal(decision.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
       assert.equal(decision.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
       const evidence = JSON.parse(String(decision.evidenceJson));
-      assert.equal(evidence.schemaVersion, "donor-source-identity-evidence/1.1.0");
+      assert.equal(evidence.schemaVersion, "donor-source-identity-evidence/1.2.0");
       assert.equal(evidence.matcherVersion, decision.matcherVersion);
       assert.equal(evidence.matcherImplementationSha256, CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256);
       assert.equal(evidence.matcherReleaseSha256, CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256);
@@ -846,7 +846,7 @@ test("production writers create one complete exact snapshot consumed by the Walm
           meteredReceiptId: null,
         },
         detailIdentity: {
-          title: "Acme Potato Chips Original Bag, 8 oz",
+          title: "Acme Potato Chips Original Bag for Kids and Adults, 8 oz",
           retailerProductId: "wm-complete-8",
           productUrl: null,
         },
@@ -953,6 +953,17 @@ test("production writers create one complete exact snapshot consumed by the Walm
               FROM DonorProduct WHERE id=?`,
         args: [search.donorProductId],
       })).rows[0]!, beforeWrongDetail);
+      await assert.rejects(
+        persistCompleteExactContentObservation(db, {
+          ...completeInput,
+          detailIdentity: {
+            ...completeInput.detailIdentity,
+            title: "Acme Potato Chips Original Bag for Kids, 8 oz",
+          },
+        }),
+        (error: unknown) => error instanceof ExactContentSnapshotBlockedError
+          && error.blockers.includes("DETAIL_RESPONSE_TITLE_IDENTITY_MISMATCH"),
+      );
       const complete = await persistCompleteExactContentObservation(db, completeInput);
       const completeReplay = await persistCompleteExactContentObservation(db, completeInput);
 
@@ -998,6 +1009,18 @@ test("production writers create one complete exact snapshot consumed by the Walm
       assert.equal(content.category, "Snack Foods");
       assert.equal(content._fieldSources.title.binding, "EXACT_VARIANT_SEARCH");
       assert.equal(content._fieldSources.mainImageUrl.binding, "EXACT_RETAILER_ITEM");
+      assert.equal(
+        content._fieldSources.mainImageUrl.responseIdentity.title,
+        "Acme Potato Chips Original Bag for Kids and Adults, 8 oz",
+      );
+      assert.equal(
+        content._fieldSources.mainImageUrl.responseIdentity.identityEvidenceTitle,
+        "Acme Potato Chips Original Bag, 8 oz",
+      );
+      assert.equal(
+        content._fieldSources.mainImageUrl.responseIdentity.identityEvidenceNormalization,
+        "walmart-inclusive-audience-phrase/1.0.0",
+      );
       assert.equal(content._fieldSources.nutritionFacts.binding, "EXACT_UPC");
       assert.equal(content._fieldSources.nutritionFacts.upc, "012345678905");
       assert.equal(
@@ -1047,6 +1070,98 @@ test("production writers create one complete exact snapshot consumed by the Walm
     } finally {
       globalThis.fetch = networkFetch;
     }
+  });
+});
+
+test("direct Target HTML path binds exact URL, manufacturer GTIN, title, gallery and classification without a search row", async () => {
+  await withScratchDb(async (db) => {
+    const exact = await persistScoredDonorOffer(db, sourceOffer({
+      target: EIGHT_OZ,
+      retailer: "target",
+      retailerProductId: "14920182",
+      title: "Acme Potato Chips Original Bag, 8 oz",
+      observedAt: "2026-07-18T20:00:00.000Z",
+    }), EIGHT_OZ, NOW);
+    const targetUrl = "https://www.target.com/p/acme-potato-chips/-/A-14920182";
+    await db.execute({
+      sql: `UPDATE DonorOffer SET productUrl=? WHERE id=?`,
+      args: [targetUrl, exact.donorOfferId],
+    });
+    await db.execute({
+      sql: `UPDATE DonorProduct SET upc=?,gtin=? WHERE id=?`,
+      args: ["012345678905", "00012345678905", exact.donorProductId],
+    });
+
+    const input = {
+      donorProductId: exact.donorProductId,
+      retailer: "target",
+      retailerProductId: "14920182",
+      sourceUrl: targetUrl,
+      sourceApi: "target_direct_html",
+      observedAt: DETAIL_OBSERVED_AT,
+      processingNow: DETAIL_PROCESSING_NOW,
+      provenance: {
+        runId: "direct-target-test",
+        approvalId: "owner-direct-target-test",
+        meteredReceiptId: null,
+      },
+      identityPath: "DIRECT_TARGET_EXACT_GTIN" as const,
+      detailIdentity: {
+        title: "Acme Potato Chips Original Bag, 8 oz",
+        retailerProductId: "14920182",
+        productUrl: targetUrl,
+      },
+      content: {
+        description: "Exact direct Target description",
+        bullets: ["One 8 oz bag"],
+        attributes: {
+          targetClassification: {
+            departmentName: "SNACKS",
+            productTypeName: "GROCERY",
+            itemTypeName: "Potato Chips",
+          },
+        },
+        nutritionFacts: { calories: 150 },
+        ingredients: "Potatoes, oil, salt.",
+        allergens: [],
+        mainImageUrl: "https://target.scene7.com/is/image/Target/front",
+        imageUrls: [
+          "https://target.scene7.com/is/image/Target/front",
+          "https://target.scene7.com/is/image/Target/back",
+        ],
+        upc: "00012345678905",
+        category: "Potato Chips",
+        storage: "Shelf Stable",
+      },
+      requireBaseUnit: true,
+      upcConflictPolicy: "block" as const,
+    };
+
+    await assert.rejects(
+      persistCompleteExactContentObservation(db, {
+        ...input,
+        sourceApi: "untrusted-direct-source",
+      }),
+      (error: unknown) => error instanceof ExactContentSnapshotBlockedError
+        && error.blockers.includes("DIRECT_TARGET_EXACT_GTIN_BINDING_INVALID"),
+    );
+
+    const result = await persistCompleteExactContentObservation(db, input);
+    assert.equal(result.donorProductId, exact.donorProductId);
+    assert.equal(result.canonicalVariantId, exact.canonicalVariantId);
+    assert.equal(result.imageCount, 2);
+    const row = (await db.execute({
+      sql: `SELECT sourceUrl,sourceApi,contentJson FROM ProductContentObservation WHERE id=?`,
+      args: [result.contentObservationId],
+    })).rows[0]!;
+    const content = JSON.parse(String(row.contentJson));
+    assert.equal(row.sourceUrl, targetUrl);
+    assert.equal(row.sourceApi, "target_direct_html");
+    assert.equal(content._capture, "exact_complete_v1");
+    assert.equal(content._fieldSources.title.binding, "EXACT_RETAILER_ITEM");
+    assert.equal(content._fieldSources.title.responseIdentity.retailerProductId, "14920182");
+    assert.equal(content.storageTemp, "Shelf Stable");
+    assert.equal(content.upc, "00012345678905");
   });
 });
 

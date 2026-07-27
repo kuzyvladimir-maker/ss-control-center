@@ -604,11 +604,11 @@ function changedTargetClaims(
   baseline: WalmartListingSurface,
   target: WalmartListingSurface,
 ): Map<string, ListingAttributeClaim> {
-  if (target.unmapped_attributes.length !== 0) {
-    fail("repair target cannot write unresolved/unmapped attributes");
-  }
-  if (baseline.unmapped_attributes.length !== 0) {
-    fail("removing opaque baseline attributes is unsupported without clear semantics");
+  if (!canonicalEqual(
+    baseline.unmapped_attributes,
+    target.unmapped_attributes,
+  )) {
+    fail("opaque baseline attributes must be preserved exactly by omission");
   }
   const before = claimMap(baseline.attribute_claims, "baseline attribute claims");
   const after = claimMap(target.attribute_claims, "target attribute claims");
@@ -1012,6 +1012,64 @@ function liveIdentifierCandidates(
   return values;
 }
 
+function normalizedWalmartAttributeName(value: string): string {
+  return value.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]/gu, "");
+}
+
+function rejectOrdinaryAttributeRepairForVariantGroupKey(input: {
+  row: JsonRecord;
+  contract: WalmartListingSurgicalSchemaContract;
+}): void {
+  if (input.contract.attribute_mappings.length === 0) return;
+  const rawGroupId = input.row.variantGroupId;
+  const rawGroupInfo = input.row.variantGroupInfo;
+  if ((rawGroupId === undefined || rawGroupId === null)
+    && (rawGroupInfo === undefined || rawGroupInfo === null)) {
+    return;
+  }
+  if (rawGroupId === undefined || rawGroupId === null
+    || rawGroupInfo === undefined || rawGroupInfo === null) {
+    fail(
+      "VARIANT_GROUP_REPAIR_REQUIRED: live item has incomplete variant-group "
+      + "evidence, so an ordinary one-SKU attribute repair cannot prove safety",
+    );
+  }
+  const groupId = text(rawGroupId, "live item variantGroupId", 512);
+  const groupInfo = record(rawGroupInfo, "live item variantGroupInfo");
+  if (!Array.isArray(groupInfo.groupingAttributes)
+    || groupInfo.groupingAttributes.length < 1
+    || groupInfo.groupingAttributes.length > 100) {
+    fail(
+      `VARIANT_GROUP_REPAIR_REQUIRED: live variant group ${groupId} does not `
+      + "provide a bounded non-empty groupingAttributes list",
+    );
+  }
+  const groupingFields = new Set(
+    groupInfo.groupingAttributes.map((entry, index) => {
+      const grouping = record(
+        entry,
+        `live item variantGroupInfo.groupingAttributes[${index}]`,
+      );
+      return normalizedWalmartAttributeName(text(
+        grouping.name,
+        `live item variantGroupInfo.groupingAttributes[${index}].name`,
+        512,
+      ));
+    }),
+  );
+  const overlappingFields = input.contract.attribute_mappings
+    .map((mapping) => mapping.walmart_visible_field)
+    .filter((field) => groupingFields.has(normalizedWalmartAttributeName(field)))
+    .sort();
+  if (overlappingFields.length > 0) {
+    fail(
+      `VARIANT_GROUP_REPAIR_REQUIRED: ordinary one-SKU attribute repair cannot `
+      + `change active variant-group field(s) ${overlappingFields.join(", ")} `
+      + `for ${groupId}`,
+    );
+  }
+}
+
 function verifyLiveItem(input: {
   contract: WalmartListingSurgicalSchemaContract;
   receipt: WalmartListingSurgicalLiveItemReceipt;
@@ -1094,6 +1152,10 @@ function verifyLiveItem(input: {
     || !identifiers.has(input.contract.listing.product_identifier.productId)) {
     fail("live item response does not prove one exact matching product identifier");
   }
+  rejectOrdinaryAttributeRepairForVariantGroupKey({
+    row,
+    contract: input.contract,
+  });
 }
 
 function validateContractBindings(input: {

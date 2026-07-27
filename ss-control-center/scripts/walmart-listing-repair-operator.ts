@@ -23,6 +23,7 @@ import {
   readWalmartListingRepairPermitLedgerEvidence,
 } from "../src/lib/walmart/listing-integrity-remediation-ledger.ts";
 import {
+  assertWalmartListingRepairLiveQualificationSourceRelease,
   qualifyWalmartListingRepairFreshLive,
 } from "../src/lib/walmart/listing-integrity-remediation-live-qualification.ts";
 import {
@@ -92,6 +93,7 @@ const COMMAND_FLAGS: Readonly<Record<Command, ReadonlySet<string>>> = Object.fre
   help: new Set<string>(),
 });
 const MAX_INPUT_BYTES = 512 * 1024 * 1024;
+const MAX_TARGET_MAIN_BYTES = 16 * 1024 * 1024;
 const DOCTOR_MAX_AGE_MS = 15 * 60 * 1_000;
 const SHA256 = /^[a-f0-9]{64}$/u;
 
@@ -347,6 +349,73 @@ function externalEffects(
   };
 }
 
+export async function fetchExactReviewedMainSource(
+  execution: WalmartListingRepairProductionExecutionInput,
+): Promise<Uint8Array | undefined> {
+  const plan = execution.writer_input.plan;
+  assertWalmartListingRepairLiveQualificationSourceRelease(plan);
+  if (!plan.changed_fields.includes("main")) return undefined;
+  const main = plan.target.images[0];
+  if (!main || main.slot !== "main") {
+    fail("INVALID_REVIEWED_MAIN_TARGET", "owner-signed plan has no exact MAIN target");
+  }
+  let url: URL;
+  try {
+    url = new URL(main.source_url);
+  } catch {
+    return fail("INVALID_REVIEWED_MAIN_TARGET", "owner-signed MAIN source URL is invalid");
+  }
+  if (url.protocol !== "https:" || url.username || url.password
+    || url.search || url.hash) {
+    fail("INVALID_REVIEWED_MAIN_TARGET", "owner-signed MAIN source URL is not bounded HTTPS");
+  }
+  const response = await fetch(url, {
+    method: "GET",
+    redirect: "error",
+    cache: "no-store",
+    signal: AbortSignal.timeout(45_000),
+    headers: {
+      accept: "image/*",
+      "user-agent": "SSCommandCenter-WalmartListingQualification/1.0",
+    },
+  });
+  const declared = response.headers.get("content-length");
+  if (!response.ok
+    || response.url !== url.toString()
+    || !response.headers.get("content-type")?.toLocaleLowerCase("en-US").startsWith("image/")
+    || (declared !== null && (!/^\d+$/u.test(declared)
+      || Number(declared) < 1 || Number(declared) > MAX_TARGET_MAIN_BYTES))
+    || !response.body) {
+    fail("REVIEWED_MAIN_SOURCE_GET_FAILED", "exact reviewed MAIN source GET was not bounded");
+  }
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const current = await reader.read();
+    if (current.done) break;
+    total += current.value.byteLength;
+    if (total > MAX_TARGET_MAIN_BYTES) {
+      await reader.cancel();
+      fail("REVIEWED_MAIN_SOURCE_GET_FAILED", "reviewed MAIN source exceeded byte limit");
+    }
+    chunks.push(current.value);
+  }
+  if (total < 1) {
+    fail("REVIEWED_MAIN_SOURCE_GET_FAILED", "reviewed MAIN source was empty");
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  if (sha256(bytes) !== main.sha256) {
+    fail("REVIEWED_MAIN_SOURCE_SHA_MISMATCH", "reviewed MAIN public bytes differ from owner plan");
+  }
+  return bytes;
+}
+
 async function preflightExecutionPackage(
   execution: WalmartListingRepairProductionExecutionInput,
   now: Date,
@@ -561,6 +630,7 @@ export async function runWalmartListingRepairOperator(
       custody_root: loaded.execution.production_context.artifact_custody_root,
       permit,
     });
+    const targetMainBytes = await fetchExactReviewedMainSource(loaded.execution);
     const captureDir = exactPath(args.capture_dir, "--capture-dir");
     const capture = await executeWalmartListingSingleProcess({
       command: "inspect",
@@ -576,6 +646,7 @@ export async function runWalmartListingRepairOperator(
       fresh_capture_directory: captureDir,
       capture_summary: capture,
       evaluated_at: new Date(),
+      ...(targetMainBytes ? { target_main_bytes: targetMainBytes } : {}),
     });
     return emit(receipt({
       command: args.command,

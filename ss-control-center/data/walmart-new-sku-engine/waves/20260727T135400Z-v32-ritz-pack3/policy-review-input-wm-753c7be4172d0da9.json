@@ -1,0 +1,226 @@
+{
+  "schema_version": "walmart-new-sku-policy-review-evidence/1.2.0",
+  "binding": {
+    "wave_id": "WM-PILOT-20260727-a3d70341",
+    "plan_sha256": "e6db2d2c675fb51dd790f04b2cd927056487f96976c2a7500833dac06a65db53",
+    "stage_sha256": "b467491c2b0250d2e7697bceb7256486baedfb25ac39b86a7a652bffe923fc3a",
+    "candidate_key": "wm-753c7be4172d0da9",
+    "candidate_sha256": "925514c1d20e7f46635ac02fec833769a4d994e6368613da67efffd58f332e17",
+    "store_index": 1,
+    "business_seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+    "sku": "WM-E031-D5C4",
+    "upc": "756441906011",
+    "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+    "product_type": "TODO_FROM_WALMART_ITEM_SPEC_BROWSER"
+  },
+  "policy_version": "walmart-us-prepublication/2026-07-26.1",
+  "reviewed_at": "TODO_CANONICAL_UTC_AFTER_HUMAN_POLICY_REVIEW",
+  "reviewer": {
+    "reviewer_id": "TODO_REAL_HUMAN_OR_OWNER_IDENTITY",
+    "role": "TODO_HUMAN_COMPLIANCE_REVIEWER_OR_OWNER"
+  },
+  "decision": "TODO_CLEARED_OR_BLOCKED_AFTER_REVIEW",
+  "official_sources": [
+    {
+      "source_id": "account-health-compliance",
+      "url": "https://marketplacelearn.walmart.com/guides/Getting%20started/Account%20settings/account-health-compliance-overview",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "duplicate-listings-policy",
+      "url": "https://marketplacelearn.walmart.com/guides/Policies%20%26%20standards/Product%20listings/duplicate-listings-policy?locale=en-US",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "food-products",
+      "url": "https://marketplacelearn.walmart.com/guides/Prohibited-Products-Policy%3A-Food-products",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "image-guidelines",
+      "url": "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content%2C%20imagery%2C%20and%20media/Product-detail-page%3A-Image-guidelines-%26-requirements?locale=en-US",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "pricing-rules",
+      "url": "https://marketplacelearn.walmart.com/guides/Catalog%20management/Price%20management/Pricing-rules",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "product-claims",
+      "url": "https://marketplacelearn.walmart.com/guides/prohibited-products-policy-product-claims",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "product-details-policy",
+      "url": "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20content%2C%20imagery%2C%20and%20media/Product-Detail-Page%3A-overview",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "product-identifier-policy",
+      "url": "https://marketplacelearn.walmart.com/guides/Item%20setup/Item%20setup/Choose-a-product-identifier",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "prohibited-products-overview",
+      "url": "https://marketplacelearn.walmart.com/guides/Policies%20%26%20standards/Prohibited%20products%20%26%20brands/Prohibited-products-policy%3A-overview?locale=en-US",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "recalled-products",
+      "url": "https://marketplacelearn.walmart.com/guides/Prohibited-products-policy%3A-recalled-products",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "resold-products",
+      "url": "https://marketplacelearn.walmart.com/guides/prohibited-products-policy-resold-products",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "restricted-illegal-products",
+      "url": "https://marketplacelearn.walmart.com/guides/Prohibited-products-policy%3A-restricted-and-illegal-products",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "selling-privileges",
+      "url": "https://marketplacelearn.walmart.com/guides/Getting%20started/Getting%20ready%20to%20sell/selling-privileges",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    },
+    {
+      "source_id": "shipping-fulfillment-policy",
+      "url": "https://marketplacelearn.walmart.com/guides/Seller%20Fulfillment%20Services/Shipping%20methods/Shipping-and-fulfillment-policy",
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CAPTURE",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_SOURCE_CHECK"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "account-publish-eligibility",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_ACCOUNT-PUBLISH-ELIGIBILITY",
+      "policy_source_ids": [
+        "account-health-compliance",
+        "selling-privileges"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "category-preapproval",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_CATEGORY-PREAPPROVAL",
+      "policy_source_ids": [
+        "prohibited-products-overview"
+      ],
+      "required_approval_scopes": [
+        "INGESTIBLE_PRODUCTS"
+      ]
+    },
+    {
+      "finding_id": "condition-resale-rights",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_CONDITION-RESALE-RIGHTS",
+      "policy_source_ids": [
+        "resold-products"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "food-labeling-prohibited",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_FOOD-LABELING-PROHIBITED",
+      "policy_source_ids": [
+        "food-products",
+        "prohibited-products-overview"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "pricing-competitiveness",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_PRICING-COMPETITIVENESS",
+      "policy_source_ids": [
+        "pricing-rules"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "product-claims",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_PRODUCT-CLAIMS",
+      "policy_source_ids": [
+        "product-claims"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "product-detail-content",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_PRODUCT-DETAIL-CONTENT",
+      "policy_source_ids": [
+        "image-guidelines",
+        "product-details-policy"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "product-identifier-and-duplicates",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_PRODUCT-IDENTIFIER-AND-DUPLICATES",
+      "policy_source_ids": [
+        "duplicate-listings-policy",
+        "product-identifier-policy"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "recall-safety",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_RECALL-SAFETY",
+      "policy_source_ids": [
+        "recalled-products"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "shipping-fulfillment",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_SHIPPING-FULFILLMENT",
+      "policy_source_ids": [
+        "shipping-fulfillment-policy"
+      ],
+      "required_approval_scopes": []
+    },
+    {
+      "finding_id": "territory-legal-sanctions",
+      "disposition": "TODO_CLEARED_REQUIRES_APPROVAL_PROHIBITED_OR_UNRESOLVED",
+      "summary": "TODO_HUMAN_REVIEW_DECISION_FOR_TERRITORY-LEGAL-SANCTIONS",
+      "policy_source_ids": [
+        "prohibited-products-overview",
+        "restricted-illegal-products"
+      ],
+      "required_approval_scopes": []
+    }
+  ],
+  "required_category_approvals": [
+    {
+      "scope": "INGESTIBLE_PRODUCTS",
+      "status": "TODO_APPROVED_AFTER_EXACT_ACCOUNT_EVIDENCE",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_CATEGORY_APPROVAL_CHECK",
+      "evidence_ref": "TODO_EVIDENCE_REF_CATEGORY_APPROVAL"
+    }
+  ]
+}

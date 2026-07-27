@@ -1,0 +1,180 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_99b438e2ccfbc4c60bfa",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "Campbell's",
+      "visible_product_text": "Golden Mushroom Soup",
+      "visible_variant_text": "Condensed",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 4,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Campbell's",
+        "CONDENSED",
+        "Golden Mushroom",
+        "SOUP",
+        "4 identical cans arranged side by side"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_fc330ebe81a7ddb0dd51",
+      "visual_role": "single_product_front",
+      "visible_brand_text": "Campbell's",
+      "visible_product_text": "Golden Mushroom Soup",
+      "visible_variant_text": "Condensed",
+      "visible_size_texts": [
+        "10.5 oz",
+        "298g"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Campbell's",
+        "CONDENSED",
+        "Golden Mushroom",
+        "SOUP",
+        "NET WT. 10.5 OZ. (298g)"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_27de7c52579f5dd08348",
+      "visual_role": "infographic",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Great with crackers"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_b9a4e97d7950bf46c988",
+      "visual_role": "infographic",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Soup",
+        "Milk",
+        "Yum"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_f92b4a04cc57dfd3a24a",
+      "visual_role": "infographic",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Infinitely recyclable"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_8859f12204415c7b3dfb",
+      "visual_role": "infographic",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Easy open pop top"
+      ],
+      "flags": []
+    }
+  ]
+}

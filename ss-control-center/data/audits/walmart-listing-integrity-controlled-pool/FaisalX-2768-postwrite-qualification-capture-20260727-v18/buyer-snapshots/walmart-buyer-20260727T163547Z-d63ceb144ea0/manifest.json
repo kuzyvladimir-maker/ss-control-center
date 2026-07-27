@@ -1,0 +1,149 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-27T16:35:47.101Z",
+  "target": {
+    "sku": "FaisalX-2768",
+    "item_id": "1838619805"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-2768",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "upc": "660251345376",
+      "gtin14": "00660251345376",
+      "wpid": "1MD37R331C2K",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "1838619805",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "main_image_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "1838619805",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "identity_evidence": [
+        "product.item_id=1838619805",
+        "product.product_url=1838619805"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-2768",
+        "seller.ItemResponse[0].sku=FaisalX-2768",
+        "seller.ItemResponse[0].upc=660251345376",
+        "seller.normalized_gtin14=00660251345376",
+        "seller.wpid_not_itemId=1MD37R331C2K",
+        "catalog.items[0].standardUpc~=00660251345376;itemId=1838619805",
+        "catalog.unique_numeric_public_itemId=1838619805"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=1838619805",
+        "product.product_url=1838619805"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "d8213b5abd4e02007513ccc4d65b7021bb4f7c8afe7c5436c81aff265138f423",
+    "catalog_search_payload_canonical_sha256": "3291fc463845b41b6c28656cc60e29b3031172895e41e9b88ede470b67fa1a6c",
+    "resolution_canonical_sha256": "b5b0af1409f1a509b80d0e097573971f95edc5ddfe0ab0c82b41b29b1b54087e",
+    "buyer_payload_canonical_sha256": "1a9ba83bdaee87e87da9d37b2dea4c7510373f3923b0bf7694835dba5a4ad75d"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+      "final_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+      "sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7",
+      "bytes": 250586,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2822,
+      "decoded_height": 1230,
+      "local_path": "assets/138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7.jpg"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+      "sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc",
+      "bytes": 270541,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+      "sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68",
+      "bytes": 112250,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 1500,
+      "decoded_height": 1500,
+      "local_path": "assets/a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68.jpg"
+    },
+    {
+      "slot": "GALLERY_3",
+      "source_url": "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+      "sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088",
+      "bytes": 49507,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 1500,
+      "decoded_height": 1500,
+      "local_path": "assets/f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088.jpg"
+    },
+    {
+      "slot": "GALLERY_4",
+      "source_url": "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+      "sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef",
+      "bytes": 78681,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 1500,
+      "decoded_height": 1500,
+      "local_path": "assets/c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef.jpg"
+    },
+    {
+      "slot": "GALLERY_5",
+      "source_url": "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg",
+      "sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf",
+      "bytes": 64453,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 1500,
+      "decoded_height": 1500,
+      "local_path": "assets/c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260727T163547Z-d63ceb144ea0",
+  "body_sha256": "d63ceb144ea0bec2b2f177016f454aca79c9edd77a14c3fcb6d8e746f1a56c0a"
+}

@@ -64,9 +64,46 @@ test("projects the exact primary Walmart PDP and every ordered image", () => {
   assert.deepEqual(surface.attribute_claims, [
     { field_path: "product.specifications[0].Brand", kind: "brand", text: "Pepperidge Farm" },
     { field_path: "product.specifications[1].Multipack quantity", kind: "outer_units", value: 2, unit: "count" },
-    { field_path: "product.specifications[3].Product net content parent", kind: "net_content", value: 22, unit: "oz" },
+    { field_path: "product.specifications[2].Count", kind: "inner_item_count", value: 30, unit: "count" },
   ]);
-  assert.equal(surface.unmapped_attributes.length, 1);
+  assert.deepEqual(surface.unmapped_attributes, [{
+    field_path: "product.specifications[3].Product net content parent",
+    value_sha256:
+      "902214605395b720d6874db95e8c125ee0270316386e9721661ffddc0ed5e452",
+  }]);
+});
+
+test("prefers Count over duplicate Piece count while preserving the duplicate as unmapped evidence", () => {
+  const payload = projectWalmartPublicBuyerPdpHtml(html({
+    idml: undefined,
+  }), ITEM_ID);
+  payload.product.specifications = [
+    { name: "Brand", value: "Pepperidge Farm" },
+    { name: "Multipack quantity", value: "2" },
+    { name: "Count", value: "8" },
+    { name: "Piece count", value: "8" },
+    { name: "Product net content parent", value: "14 Ounces" },
+  ];
+  const surface = projectWalmartListingSurfaceFromBuyerPdp(payload, {
+    sku: "FaisalX-1148",
+    item_id: ITEM_ID,
+  });
+  assert.deepEqual(
+    surface.attribute_claims.filter((claim) => claim.kind === "inner_item_count"),
+    [{
+      field_path: "product.specifications[2].Count",
+      kind: "inner_item_count",
+      value: 8,
+      unit: "count",
+    }],
+  );
+  assert.deepEqual(
+    surface.unmapped_attributes.map((row) => row.field_path),
+    [
+      "product.specifications[3].Piece count",
+      "product.specifications[4].Product net content parent",
+    ],
+  );
 });
 
 test("rejects related-item substitution, duplicate NEXT_DATA, and duplicate images", () => {

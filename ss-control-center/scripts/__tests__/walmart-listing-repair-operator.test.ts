@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, realpath, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -6,12 +7,16 @@ import test from "node:test";
 
 import {
   assertWalmartListingRepairFrozenReleaseAttestation,
+  fetchExactReviewedMainSource,
   parseWalmartListingRepairOperatorArgs,
   runWalmartListingRepairOperator,
   WalmartListingRepairOperatorError,
 } from "../walmart-listing-repair-operator.ts";
+import type {
+  WalmartListingRepairProductionExecutionInput,
+} from "../../src/lib/walmart/listing-integrity-remediation-writer.ts";
 
-const RELEASE_ID = "6c74f28d8e3578e8f17c8ab18dce5bd7b0d29ab6072dd25248ddde66450c42c0";
+const RELEASE_ID = "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(
@@ -158,4 +163,55 @@ test("command flag allowlists reject implicit scope and live shortcuts", () => {
     /forbidden or repeated/u,
   );
   assert.equal(parseWalmartListingRepairOperatorArgs(["status"]).command, "status");
+});
+
+test("reviewed MAIN source is fetched once and must match owner-signed bytes", async () => {
+  const originalFetch = globalThis.fetch;
+  const bytes = Buffer.from("exact reviewed MAIN bytes");
+  const sourceUrl = "https://owner.example/exact-main.png";
+  const execution = {
+    writer_input: {
+      plan: {
+        verifier_engine_release_sha256: RELEASE_ID,
+        apply_engine_release_sha256: RELEASE_ID,
+        changed_fields: ["description", "bullets", "main"],
+        target: {
+          images: [{
+            slot: "main",
+            source_url: sourceUrl,
+            sha256: createHash("sha256").update(bytes).digest("hex"),
+          }],
+        },
+      },
+    },
+  } as unknown as WalmartListingRepairProductionExecutionInput;
+  let calls = 0;
+  try {
+    globalThis.fetch = (async () => {
+      calls += 1;
+      const response = new Response(bytes, {
+        status: 200,
+        headers: {
+          "content-length": String(bytes.byteLength),
+          "content-type": "image/png",
+        },
+      });
+      Object.defineProperty(response, "url", { value: sourceUrl });
+      return response;
+    }) as typeof fetch;
+    const fetched = await fetchExactReviewedMainSource(execution);
+    assert.deepEqual(Buffer.from(fetched ?? []), bytes);
+    assert.equal(calls, 1);
+
+    const drifted = structuredClone(execution);
+    drifted.writer_input.plan.target.images[0]!.sha256 = "f".repeat(64);
+    await assert.rejects(
+      fetchExactReviewedMainSource(drifted),
+      (error: unknown) => error instanceof WalmartListingRepairOperatorError
+        && error.code === "REVIEWED_MAIN_SOURCE_SHA_MISMATCH",
+    );
+    assert.equal(calls, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

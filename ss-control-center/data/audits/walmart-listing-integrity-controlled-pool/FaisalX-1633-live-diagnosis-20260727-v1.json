@@ -1,0 +1,82 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-27T15:51:20.691Z",
+  "listing_key": "walmart:1:FaisalX-1633",
+  "inputs": {
+    "product_truth_file_sha256": "5d8fce82b23fd21da8590a7e42a0574ef9687db840a623ad10196f3c02102839",
+    "buyer_snapshot_file_sha256": "882279dc2770bb6cd6afcaca66216600f764c8111e5788ec2c35c251d7748daf",
+    "buyer_pdp_file_sha256": "f10aed993b03cf87cd60d8e7cadb4fc43cc446c8fa00b51dbf73401d4afe4e4a",
+    "observations_file_sha256": "feb6a89d0c9ba13cfb8bb49e7723e1cdd512f6a2bf83f3732987b5eb689b3c26",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "7a7e4935c95e3621ca2502a647702124dd15fbc2454a0a7d282067358b7f7e0c",
+        "bytes": 258807
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "647e87fcb7e89b95be090cfe15cfdb1a5001c2519a746bfe47b98ae64d040d3e",
+        "bytes": 685602
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "81f306833d7e466d6bc26eeaab9822787136b14d143f260ac5ef6b0273debf48",
+        "bytes": 5888
+      }
+    ]
+  },
+  "outcome": {
+    "status": "SOURCE_REQUIRED_WITH_CONTRADICTIONS",
+    "blockers": [
+      "LISTING_IMPROVEMENT_NOT_READY",
+      "PRODUCT_TRUTH:CURRENT_SCOPED_SKU_COST_MISSING",
+      "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0",
+      "DECLARED_CONTRADICTION:IMAGE_VARIANT_NOT_CORROBORATED_BY_LIVE_LISTING_TEXT:main"
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1633",
+    "captured_at": "2026-07-27T15:48:55.148Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 7,
+      "phrases": [
+        "Pack of 7"
+      ]
+    },
+    "verdict": "CONTRADICTION",
+    "findings": [
+      {
+        "severity": "CONTRADICTION",
+        "code": "IMAGE_VARIANT_NOT_CORROBORATED_BY_LIVE_LISTING_TEXT",
+        "slot": "main",
+        "evidence": [
+          "BRIOCHE",
+          "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)"
+        ]
+      }
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "f4d092e7278eda1d4628212d1f41706d077338fef21a9532b8cba2cb21eb1316"
+  },
+  "detector_input": null,
+  "detector_report": null,
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "43471f690b47c88114c057bd873137d84aaee53301aaf079c03159e782193744"
+}

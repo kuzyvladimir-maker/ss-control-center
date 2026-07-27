@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-07-27T13:24:15.000Z",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "counts": {
+    "absentRows": 7,
+    "donorIdentityTransitionsRequired": 1,
+    "exactExistingRows": 0,
+    "targets": 1
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "walmart:1:FaisalX-1228"
+  ],
+  "planId": "ptlb-wave-c4074ac885d3741917999b5d",
+  "planSha256": "91181832553738c70a0bb945844a8962a35f778572425b4fcf95193f2120a069",
+  "schemaVersion": "product-truth-legacy-bridge-preflight-report/2.0.0",
+  "status": "READY_TO_APPLY"
+}

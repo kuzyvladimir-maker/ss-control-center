@@ -285,6 +285,43 @@ function compile(mutator = () => {}) {
   return { input, report: compileWalmartListingIntegrityReport(input) };
 }
 
+test("listing identity tolerates possessive punctuation, interleaved title tokens, and vision role drift", () => {
+  const { report } = compile((input) => {
+    input.expected.title =
+      "Campbell's Condensed Golden Mushroom Soup, 20 oz, 12 Count (Pack of 2)";
+    input.expected.identity = {
+      brand_aliases: ["campbells"],
+      product_marker_groups: [["condensed soup"]],
+      variant_marker_groups: [["golden mushroom"]],
+      forbidden_markers: [],
+    };
+    input.surface = surface(input.expected.title);
+    input.surface.description =
+      "Campbell's Condensed Golden Mushroom Soup. Each package has net weight 20 oz "
+      + "and contains 12 servings. Pack of 2.";
+    input.surface.bullets = ["Campbell's Golden Mushroom condensed soup"];
+    input.surface.attribute_claims = input.surface.attribute_claims.map((claim) => {
+      if (claim.kind === "brand") return { ...claim, text: "Campbell's" };
+      if (claim.kind === "product") return { ...claim, text: "Condensed Soup" };
+      if (claim.kind === "variant") return { ...claim, text: "Golden Mushroom" };
+      return claim;
+    });
+    input.images.evidence[0].observation = mainObservation(MAIN_SHA, {
+      visible_brand_text: "Campbell's",
+      visible_product_text: "Golden Mushroom Soup",
+      visible_variant_text: "Condensed",
+    });
+    input.images.evidence[1].observation = galleryObservation("gallery-1", GALLERY_SHA, {
+      visible_brand_text: "Campbell's",
+      visible_product_text: "Golden Mushroom Soup",
+      visible_variant_text: "Condensed",
+    });
+  });
+  assert.equal(report.text_decision.checks.title_identity, "MATCH");
+  assert.equal(report.main_decision.checks.identity, "MATCH");
+  assert.equal(report.gallery_decisions[0].checks.identity, "MATCH");
+});
+
 function truthEvidence(sourceRefId, sourceKind, supports) {
   return {
     source_ref_id: sourceRefId,

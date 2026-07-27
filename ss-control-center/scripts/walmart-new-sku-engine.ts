@@ -1608,6 +1608,7 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
       "--zip", args.zip,
       "--as-of", args.asOf.toISOString(),
       "--max-price-age-hours", String(PILOT_MAX_PRICE_AGE_HOURS),
+      "--out", resolve(dirname(receiptOutput), "plan.json"),
     ] : null),
   }, null, 2)}\n`);
   await db.close();

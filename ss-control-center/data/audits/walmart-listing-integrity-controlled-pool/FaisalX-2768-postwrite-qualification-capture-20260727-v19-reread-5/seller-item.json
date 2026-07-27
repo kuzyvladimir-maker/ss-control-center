@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-2768",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "1MD37R331C2K",
+      "upc": "660251345376",
+      "gtin": "00660251345376",
+      "productName": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "shelf": "Home Page/Food/Pantry/Soup/Condensed soup",
+      "productType": "Prepared & Packaged Soups",
+      "price": {
+        "currency": "USD",
+        "amount": 15.39
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "campCondGoldMush",
+      "variantGroupInfo": {
+        "isPrimary": false,
+        "groupingAttributes": [
+          {
+            "name": "flavor",
+            "value": "qty 4"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

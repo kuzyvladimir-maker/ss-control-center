@@ -1382,7 +1382,7 @@ async function fetchWorkerJson(
   };
 }
 
-async function sshWorkerJson(
+export async function sshWorkerJson(
   action: "health" | "analyze",
   body: string,
   timeoutMs: number,

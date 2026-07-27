@@ -10,6 +10,7 @@ import crypto from "crypto";
 import {
   unwrangleSearch,
   scoreOffer,
+  walmartIdentityEvidenceTitle,
   type CanonicalProduct,
   type ScoredOffer,
 } from "./retail-fetch";
@@ -45,7 +46,7 @@ import { evaluatePriceEvidenceEligibility } from "./price-evidence-policy";
 type SqlExecutor = Pick<Client, "execute">;
 
 const SOURCE_IDENTITY_EVIDENCE_VERSION =
-  "donor-source-identity-evidence/1.1.0" as const;
+  "donor-source-identity-evidence/1.2.0" as const;
 const PRODUCT_CONTENT_OBSERVATION_VERSION =
   "product-content-observation/1.0.0" as const;
 
@@ -366,6 +367,11 @@ function specificationValue(
 function normalizedManufacturerCode(value: unknown): string | null {
   const digits = String(value ?? "").replace(/\D/g, "");
   return /^\d{12,14}$/.test(digits) ? digits : null;
+}
+
+function normalizedManufacturerGtin14(value: unknown): string | null {
+  const code = normalizedManufacturerCode(value);
+  return code ? code.padStart(14, "0") : null;
 }
 
 // Unwrangle product detail. Reservations follow the provider's retailer tier:
@@ -1068,6 +1074,8 @@ function sourceIdentityEvidence(input: {
       retailer: input.offer.retailer,
       retailerProductId: input.offer.retailerProductId,
       title: input.offer.title ?? null,
+      identityEvidenceTitle: input.offer.identityEvidenceTitle ?? null,
+      identityEvidenceNormalization: input.offer.identityEvidenceNormalization ?? null,
       productUrl: exactHttpUrl(input.offer.productUrl),
       sourceApi: input.offer.sourceApi,
       observedAt: input.offer.observedAt,
@@ -1477,6 +1485,13 @@ export interface PersistCompleteExactContentObservationInput {
     retailerProductId: string | null;
     productUrl: string | null;
   };
+  /**
+   * The normal provider path binds the detail title to an earlier exact-item
+   * search observation. A bounded direct Target HTML capture may instead prove
+   * identity with the exact Target URL plus the manufacturer GTIN echoed by the
+   * same response. No other retailer/source combination may use this path.
+   */
+  identityPath?: "SEARCH_BOUND_DETAIL" | "DIRECT_TARGET_EXACT_GTIN";
   content: {
     description?: string | null;
     bullets?: string[] | null;
@@ -1553,6 +1568,23 @@ function exactWalmartItemIdFromUrl(value: unknown): string | null {
       || !parts.some((part) => part.toLowerCase() === "ip")
     ) return null;
     return parts.at(-1) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function exactTargetItemIdFromUrl(value: unknown): string | null {
+  const raw = nonEmptyText(value);
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (
+      url.protocol !== "https:"
+      || !["target.com", "www.target.com"].includes(url.hostname.toLowerCase())
+      || url.username
+      || url.password
+    ) return null;
+    return url.pathname.match(/\/A-(\d+)(?:\/|$)/)?.[1] ?? null;
   } catch {
     return null;
   }
@@ -1794,6 +1826,8 @@ export async function persistCompleteExactContentObservation(
       sql: `SELECT decision.id AS variantDecisionId,
                    decision.canonicalVariantId,
                    variant.identityJson AS canonicalIdentityJson,
+                   product.upc AS storedProductUpc,
+                   product.gtin AS storedProductGtin,
                    offer.productUrl AS storedProductUrl,
                    offer.packSizeSeen AS storedPackSizeSeen
             FROM "DonorProduct" product
@@ -1838,11 +1872,39 @@ export async function persistCompleteExactContentObservation(
       exactSource.canonicalIdentityJson,
       alias.canonicalVariantId,
     );
+    const identityPath = input.identityPath ?? "SEARCH_BOUND_DETAIL";
+    const directTargetIdentity = identityPath === "DIRECT_TARGET_EXACT_GTIN";
+    const detailIdentityEvidence = retailer === "walmart"
+      ? walmartIdentityEvidenceTitle(detailTitle)
+      : {
+          observedTitle: detailTitle,
+          identityEvidenceTitle: detailTitle,
+          identityEvidenceNormalization: null,
+        };
     const detailIdentityBlockers: string[] = [];
+    if (
+      directTargetIdentity
+      && (
+        retailer !== "target"
+        || sourceApi !== "target_direct_html"
+        || !detailProductUrl
+        || detailProductUrl !== storedSourceUrl
+        || exactTargetItemIdFromUrl(storedSourceUrl) !== retailerProductId
+        || exactTargetItemIdFromUrl(detailProductUrl) !== retailerProductId
+        || (
+          normalizedManufacturerGtin14(exactSource.storedProductUpc)
+            ?? normalizedManufacturerGtin14(exactSource.storedProductGtin)
+        ) !== normalizedManufacturerGtin14(upc)
+      )
+    ) {
+      detailIdentityBlockers.push("DIRECT_TARGET_EXACT_GTIN_BINDING_INVALID");
+    }
     if (!canonicalIdentity) {
       detailIdentityBlockers.push("CANONICAL_VARIANT_IDENTITY_INVALID");
     } else if (
-      matchCanonicalProductTitle(canonicalIdentity, { title: detailTitle }).verdict
+      matchCanonicalProductTitle(canonicalIdentity, {
+        title: detailIdentityEvidence.identityEvidenceTitle,
+      }).verdict
       !== "EXACT_IDENTITY"
     ) {
       detailIdentityBlockers.push("DETAIL_RESPONSE_TITLE_IDENTITY_MISMATCH");
@@ -1898,7 +1960,7 @@ export async function persistCompleteExactContentObservation(
         return valid ? { row, content: content!, title: title! } : null;
       })
       .find((candidate) => candidate !== null);
-    if (!searchEvidence) {
+    if (!searchEvidence && !directTargetIdentity) {
       throw new ExactContentSnapshotBlockedError([
         searchRows.length
           ? "SEARCH_CONTENT_EVIDENCE_INVALID"
@@ -1916,23 +1978,28 @@ export async function persistCompleteExactContentObservation(
       sourceUrl,
       observedAt,
       responseIdentity: {
-        title: detailTitle,
+        title: detailIdentityEvidence.observedTitle,
+        identityEvidenceTitle: detailIdentityEvidence.identityEvidenceTitle,
+        identityEvidenceNormalization:
+          detailIdentityEvidence.identityEvidenceNormalization,
         retailerProductId: detailRetailerProductId,
         productUrl: detailProductUrl,
         matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
         verdict: "EXACT_IDENTITY",
       },
     };
-    const searchFieldSource = {
-      binding: "EXACT_VARIANT_SEARCH",
-      canonicalVariantId: alias.canonicalVariantId,
-      variantDecisionId: alias.variantDecisionId,
-      observationId: String(searchEvidence.row.id),
-      observationKey: String(searchEvidence.row.observationKey),
-      sourceApi: String(searchEvidence.row.sourceApi),
-      sourceUrl: String(searchEvidence.row.sourceUrl),
-      observedAt: String(searchEvidence.row.observedAt),
-    };
+    const searchFieldSource = searchEvidence
+      ? {
+          binding: "EXACT_VARIANT_SEARCH",
+          canonicalVariantId: alias.canonicalVariantId,
+          variantDecisionId: alias.variantDecisionId,
+          observationId: String(searchEvidence.row.id),
+          observationKey: String(searchEvidence.row.observationKey),
+          sourceApi: String(searchEvidence.row.sourceApi),
+          sourceUrl: String(searchEvidence.row.sourceUrl),
+          observedAt: String(searchEvidence.row.observedAt),
+        }
+      : null;
     const supplementalFieldSource = (field: CompleteExactContentSupplementalField) => {
       const supplemental = normalizedSupplemental.get(field);
       return supplemental
@@ -1948,17 +2015,17 @@ export async function persistCompleteExactContentObservation(
         : detailFieldSource;
     };
     const detailDescription = nonEmptyText(input.content.description);
-    const searchDescription = nonEmptyText(searchEvidence.content.description);
+    const searchDescription = nonEmptyText(searchEvidence?.content.description);
     const description = detailDescription ?? searchDescription;
     const detailBullets = Array.isArray(input.content.bullets)
       ? input.content.bullets.map(nonEmptyText).filter((value): value is string => !!value)
       : [];
-    const searchBullets = Array.isArray(searchEvidence.content.bullets)
+    const searchBullets = Array.isArray(searchEvidence?.content.bullets)
       ? searchEvidence.content.bullets.map(nonEmptyText).filter((value): value is string => !!value)
       : [];
     const bullets = detailBullets.length ? detailBullets : searchBullets;
     const fieldSources: Record<string, unknown> = {
-      title: searchFieldSource,
+      title: directTargetIdentity ? detailFieldSource : searchFieldSource,
       description: detailDescription ? detailFieldSource : searchFieldSource,
       bullets: detailBullets.length ? detailFieldSource : searchFieldSource,
       attributes: detailFieldSource,
@@ -1972,8 +2039,9 @@ export async function persistCompleteExactContentObservation(
       category: detailFieldSource,
       storageTemp: detailFieldSource,
     };
+    const materializedTitle = (directTargetIdentity ? detailTitle : searchEvidence!.title)!;
     const fullContent: Record<string, unknown> = {
-      title: searchEvidence.title,
+      title: materializedTitle,
       description,
       bullets,
       attributes: attributes ?? {},
@@ -2009,7 +2077,7 @@ export async function persistCompleteExactContentObservation(
               upc=?, needsReview=1, updatedAt=?
             WHERE id=? AND identityStatus='exact_confirmed'`,
       args: [
-        searchEvidence.title, description, stableJson(bullets),
+        materializedTitle, description, stableJson(bullets),
         stableJson(attributes ?? {}), stableJson(input.content.nutritionFacts),
         ingredients, requestedMainImage, stableJson(imageUrls), upc,
         processingNow!, donorProductId!,
@@ -2029,7 +2097,7 @@ export async function persistCompleteExactContentObservation(
       donorProductId: donorProductId!,
       canonicalVariantId: alias.canonicalVariantId,
       variantDecisionId: alias.variantDecisionId,
-      title: searchEvidence.title,
+      title: materializedTitle,
       upc: upc!,
       imageCount: imageUrls.length,
       upcConflicts,

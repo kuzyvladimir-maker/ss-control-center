@@ -1,0 +1,382 @@
+{
+  "schema_version": "walmart-new-sku-certification-input/1.8.0",
+  "wave_id": "WM-PILOT-20260727-a3d70341",
+  "candidate_key": "wm-753c7be4172d0da9",
+  "stage_sha256": "b467491c2b0250d2e7697bceb7256486baedfb25ac39b86a7a652bffe923fc3a",
+  "price_cents": null,
+  "packaging_cost_cents": null,
+  "shipping_label_cents": null,
+  "shipping_in_price": null,
+  "shipping_template": {
+    "store_index": 1,
+    "template_id": "TODO_EXACT_ACTIVE_WALMART_SHIPPING_TEMPLATE_ID",
+    "template_name": "TODO_EXACT_WALMART_SHIPPING_TEMPLATE_NAME",
+    "template_status": "TODO_ACTIVE_AFTER_FRESH_READ",
+    "rate_model_type": "TODO_TIERED_PRICING_OR_PER_SHIPMENT_PRICING",
+    "template_sha256": "TODO_LOWERCASE_SHA256_OF_NORMALIZED_TEMPLATE_SNAPSHOT",
+    "fetched_at": "TODO_CANONICAL_UTC_AFTER_TEMPLATE_READ",
+    "modified_at": "TODO_CANONICAL_UTC_FROM_WALMART_OR_NULL",
+    "is_free_shipping": null,
+    "item_quantity": 1,
+    "scenarios": [
+      {
+        "scenario_id": "TODO_EXACT_TEMPLATE_CONFIGURATION_ID",
+        "ship_method": "TODO_EXACT_SHIP_METHOD",
+        "transit_time_days": null,
+        "address_types": [],
+        "region_codes": [],
+        "region_names": [],
+        "state_codes": [],
+        "customer_shipping_charge_cents": null,
+        "currency": "USD"
+      }
+    ],
+    "evidence_ref": "TODO_EVIDENCE_REF_SHIPPING_TEMPLATE"
+  },
+  "evidence_artifacts": [
+    {
+      "ref": "TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN",
+      "kind": "IMAGE_RIGHTS",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY",
+      "kind": "IMAGE_RIGHTS",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_IMAGE_TRUTH_MAIN",
+      "kind": "IMAGE_TRUTH",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_IMAGE_TRUTH_MAIN",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_IMAGE_TRUTH_SECONDARY",
+      "kind": "IMAGE_TRUTH",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_IMAGE_TRUTH_SECONDARY",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_COUNTRY_OF_ORIGIN",
+      "kind": "COUNTRY_OF_ORIGIN",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_COUNTRY_OF_ORIGIN",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_CATEGORY_APPROVAL",
+      "kind": "CATEGORY_APPROVAL",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_CATEGORY_APPROVAL",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_POLICY_REVIEW",
+      "kind": "POLICY_REVIEW",
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/waves/20260727T135400Z-v32-ritz-pack3/policy-review-input-wm-753c7be4172d0da9.json",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": "https://marketplacelearn.walmart.com/guides/Policies%20%26%20standards/Prohibited%20products%20%26%20brands/Prohibited-products-policy%3A-overview?locale=en-US"
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS",
+      "kind": "PRICE_COMPETITIVENESS",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": "TODO_SAME_AS_CURRENT_EXACT_VARIANT_COMPARABLE_URL"
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_RECALL_CHECK",
+      "kind": "RECALL_CHECK",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_RECALL_CHECK",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_BRAND_RIGHTS",
+      "kind": "BRAND_RIGHTS",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_BRAND_RIGHTS",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER",
+      "kind": "PRODUCT_IDENTIFIER",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH",
+      "kind": "SELLER_ACCOUNT_HEALTH",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE",
+      "kind": "FULFILLMENT_COMPLIANCE",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_SHIPPING_TEMPLATE",
+      "kind": "SHIPPING_TEMPLATE",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_SHIPPING_TEMPLATE",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_LOT_CONTROL",
+      "kind": "LOT_CONTROL_PROCEDURE",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_LOT_CONTROL",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    },
+    {
+      "ref": "TODO_EVIDENCE_REF_EXPIRATION_SOURCE",
+      "kind": "EXPIRATION_SOURCE",
+      "path": "/TODO_ABSOLUTE_IMMUTABLE_EVIDENCE_PATH/TODO_EVIDENCE_REF_EXPIRATION_SOURCE",
+      "sha256": "TODO_LOWERCASE_SHA256_OF_EVIDENCE_BYTES",
+      "byte_size": null,
+      "captured_at": "TODO_CANONICAL_UTC_AFTER_EVIDENCE_CAPTURE",
+      "source_url": null
+    }
+  ],
+  "images": [
+    {
+      "role": "MAIN",
+      "url": "TODO_QUERY_FREE_HTTPS_JPEG_OR_PNG",
+      "output_sha256": "TODO_LOWERCASE_SHA256_OF_FINAL_MAIN_IMAGE_BYTES",
+      "depicted_component_keys": [
+        "component-0-cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9"
+      ],
+      "source_content_observation_ids": [
+        "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e"
+      ],
+      "represented_unit_count": 3,
+      "construction_method": "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      "source_asset_sha256s": [
+        "TODO_LOWERCASE_SHA256_OF_EXACT_DONOR_UNIT_IMAGE"
+      ],
+      "rendered_unit_source_sha256s": [
+        "TODO_SAME_EXACT_DONOR_UNIT_SHA256",
+        "TODO_SAME_EXACT_DONOR_UNIT_SHA256",
+        "TODO_SAME_EXACT_DONOR_UNIT_SHA256"
+      ],
+      "generative_model_used": false,
+      "package_artwork_unchanged": true,
+      "package_artwork_revision_id": "TODO_PAR1_PACKAGE_ARTWORK_REVISION_ID_FROM_REVIEW",
+      "added_graphics_or_text_overlay": false,
+      "exact_variant_identity_match_bps": null,
+      "image_truth_evidence_ref": "TODO_EVIDENCE_REF_IMAGE_TRUTH_MAIN",
+      "rights_basis": "TODO_OWNED_LICENSED_OR_SOURCE_ALLOWED",
+      "rights_evidence_ref": "TODO_EVIDENCE_REF_IMAGE_RIGHTS_MAIN",
+      "reviewed_at": "TODO_CANONICAL_UTC_AFTER_IMAGE_REVIEW"
+    },
+    {
+      "role": "SECONDARY",
+      "url": "TODO_DISTINCT_QUERY_FREE_HTTPS_JPEG_OR_PNG",
+      "output_sha256": "TODO_LOWERCASE_SHA256_OF_FINAL_SECONDARY_IMAGE_BYTES",
+      "depicted_component_keys": [
+        "component-0-cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9"
+      ],
+      "source_content_observation_ids": [
+        "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e"
+      ],
+      "represented_unit_count": 3,
+      "construction_method": "TODO_EXACT_SOURCE_ASSET_OR_DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      "source_asset_sha256s": [
+        "TODO_LOWERCASE_SHA256_OF_EXACT_DONOR_IMAGE"
+      ],
+      "rendered_unit_source_sha256s": [],
+      "generative_model_used": false,
+      "package_artwork_unchanged": true,
+      "package_artwork_revision_id": "TODO_SAME_PAR1_PACKAGE_ARTWORK_REVISION_ID",
+      "added_graphics_or_text_overlay": false,
+      "exact_variant_identity_match_bps": null,
+      "image_truth_evidence_ref": "TODO_EVIDENCE_REF_IMAGE_TRUTH_SECONDARY",
+      "rights_basis": "TODO_OWNED_LICENSED_OR_SOURCE_ALLOWED",
+      "rights_evidence_ref": "TODO_EVIDENCE_REF_IMAGE_RIGHTS_SECONDARY",
+      "reviewed_at": "TODO_CANONICAL_UTC_AFTER_IMAGE_REVIEW"
+    }
+  ],
+  "physical_package": {
+    "schema_version": "bundle-factory.verified-physical-package/v1",
+    "source": "OPERATOR_SHIP_SPECS",
+    "verified_at": "TODO_CANONICAL_UTC_AFTER_PHYSICAL_MEASUREMENT",
+    "weight_oz": null,
+    "length_in": null,
+    "width_in": null,
+    "height_in": null
+  },
+  "walmart": {
+    "product_type": "TODO_FROM_WALMART_ITEM_SPEC_BROWSER",
+    "country_of_origin_substantial_transformation": "TODO_VERIFIED_COUNTRY",
+    "country_of_origin_evidence": {
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "content_observation_id": "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+      "value": "TODO_VERIFIED_COUNTRY",
+      "source": "TODO_PRODUCT_LABEL_MANUFACTURER_DOCUMENT_OR_AUTHORIZED_BRAND_RECORD",
+      "evidence_ref": "TODO_EVIDENCE_REF_COUNTRY_OF_ORIGIN",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_COUNTRY_VERIFICATION"
+    },
+    "public_attributes": {
+      "multipackQuantity": 3,
+      "countPerPack": 1,
+      "count": 3
+    },
+    "public_attribute_evidence": {},
+    "offer_handoff": {
+      "mode": "INLINE",
+      "quantity": 1,
+      "fulfillment_center_id": "TODO_WALMART_FULFILLMENT_CENTER_ID",
+      "fulfillment_lag_time": null
+    }
+  },
+  "prepublication": {
+    "seller_account_health": {
+      "status": "TODO_HEALTHY_AND_ACCEPTING_NEW_ITEMS_AFTER_CHECK",
+      "store_index": 1,
+      "seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_ACCOUNT_CHECK",
+      "evidence_ref": "TODO_EVIDENCE_REF_SELLER_ACCOUNT_HEALTH"
+    },
+    "fulfillment_compliance": {
+      "method": "SELLER_FULFILLED",
+      "inventory_owned_by_seller": true,
+      "direct_retailer_fulfillment": false,
+      "competitor_branded_packaging": false,
+      "third_party_promotional_materials": false,
+      "fulfillment_center_id": "TODO_WALMART_FULFILLMENT_CENTER_ID",
+      "fulfillment_lag_time": null,
+      "lag_exemption_status": "TODO_NOT_REQUIRED_OR_APPROVED",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_FULFILLMENT_POLICY_CHECK",
+      "evidence_ref": "TODO_EVIDENCE_REF_FULFILLMENT_COMPLIANCE"
+    },
+    "category_approvals": [
+      {
+        "scope": "INGESTIBLE_PRODUCTS",
+        "status": "TODO_APPROVED_AFTER_EXACT_ACCOUNT_EVIDENCE",
+        "verified_at": "TODO_CANONICAL_UTC_AFTER_CATEGORY_APPROVAL_CHECK",
+        "evidence_ref": "TODO_EVIDENCE_REF_CATEGORY_APPROVAL"
+      }
+    ],
+    "sku_policy_review": {
+      "status": "TODO_CLEARED_AFTER_STRUCTURED_HUMAN_REVIEW",
+      "reviewed_at": "TODO_CANONICAL_UTC_MATCHING_POLICY_ARTIFACT",
+      "evidence_ref": "TODO_EVIDENCE_REF_POLICY_REVIEW"
+    },
+    "pricing_competitiveness": {
+      "status": "TODO_REVIEWED_AFTER_CURRENT_COMPARABLE_REVIEW",
+      "policy_source_id": "pricing-rules",
+      "basis": "EXACT_COMPONENT_VARIANT_LINEARIZED",
+      "proposed_item_price_cents": null,
+      "shipping_template_id": "TODO_SAME_EXACT_ACTIVE_WALMART_SHIPPING_TEMPLATE_ID",
+      "shipping_template_sha256": "TODO_SAME_LOWERCASE_SHA256_OF_NORMALIZED_TEMPLATE_SNAPSHOT",
+      "shipping_scenario_id": "TODO_SAME_EXACT_TEMPLATE_CONFIGURATION_ID",
+      "customer_shipping_charge_cents": 0,
+      "proposed_customer_total_cents": null,
+      "comparable": {
+        "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+        "url": "TODO_CURRENT_HTTPS_EXACT_VARIANT_COMPARABLE_URL",
+        "observed_at": "TODO_CANONICAL_UTC_AFTER_PRICE_OBSERVATION",
+        "pack_count": null,
+        "item_price_cents": null,
+        "customer_shipping_charge_cents": null,
+        "customer_total_cents": null
+      },
+      "linearized_comparable_total_cents": null,
+      "proposed_to_comparable_ratio_bps": null,
+      "price_competitiveness_signal": "TODO_AT_OR_BELOW_OR_ABOVE_COMPARABLE_WARNING",
+      "risk_disposition": "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT",
+      "goods_cost_cents": null,
+      "packaging_cost_cents": null,
+      "shipping_label_cents": null,
+      "referral_fee_bps": 1500,
+      "referral_fee_cents": null,
+      "target_margin_bps": 3000,
+      "contribution_profit_cents": null,
+      "contribution_margin_bps": null,
+      "worst_case_contribution_margin_bps": null,
+      "reviewed_at": "TODO_CANONICAL_UTC_AFTER_PRICE_REVIEW",
+      "reviewer": "TODO_HUMAN_REVIEWER_ID",
+      "evidence_ref": "TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS"
+    },
+    "recall_check": {
+      "status": "TODO_CLEAR_AFTER_OFFICIAL_RECALL_CHECK",
+      "checked_at": "TODO_CANONICAL_UTC_AFTER_OFFICIAL_RECALL_CHECK",
+      "source": "TODO_CURRENT_OFFICIAL_RECALL_SOURCES",
+      "evidence_ref": "TODO_EVIDENCE_REF_RECALL_CHECK"
+    },
+    "brand_rights": {
+      "brand": "ritz",
+      "basis": "TODO_BRAND_OWNER_OR_AUTHORIZED_RESELLER",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_BRAND_RIGHTS_CHECK",
+      "evidence_ref": "TODO_EVIDENCE_REF_BRAND_RIGHTS"
+    },
+    "product_identifier": {
+      "identifier_type": "UPC",
+      "value": "756441906011",
+      "checksum_valid": true,
+      "pool_acquired_from": "SpeedyBarcode",
+      "pool_recorded_owner": "Salutem Solutions LLC (SpeedyBarcode)",
+      "registry_status": "TODO_VERIFIED_AFTER_CURRENT_REGISTRY_CHECK",
+      "registry_registrant_name": "TODO_EXACT_CURRENT_REGISTRY_NAME",
+      "aligned_brand": "ritz",
+      "brand_alignment_status": "TODO_VERIFIED_ONLY_AFTER_EXACT_BRAND_OR_DOCUMENTED_ASSIGNMENT_REVIEW",
+      "seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+      "seller_assignment_authority_status": "TODO_VERIFIED_ONLY_AFTER_SELLING_ENTITY_AUTHORITY_REVIEW",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_PRODUCT_IDENTIFIER_REVIEW",
+      "evidence_ref": "TODO_EVIDENCE_REF_PRODUCT_IDENTIFIER"
+    },
+    "condition": {
+      "value": "TODO_VERIFY_EXACT_ITEM_CONDITION_IS_NEW",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_CONDITION_CHECK"
+    },
+    "expiration": {
+      "applicable": "TODO_CONFIRM_EXPIRATION_CONTROL_APPLIES",
+      "shelf_life_days": null,
+      "minimum_days_remaining_at_ship": null,
+      "lot_check_procedure_ref": "TODO_EVIDENCE_REF_LOT_CONTROL",
+      "source_ref": "TODO_EVIDENCE_REF_EXPIRATION_SOURCE",
+      "verified_at": "TODO_CANONICAL_UTC_AFTER_EXPIRATION_CONTROL_CHECK"
+    }
+  }
+}

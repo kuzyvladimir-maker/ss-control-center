@@ -521,6 +521,7 @@ export function normalizeVisibleText(value: string): string {
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
+    .replace(/['’ʼ]/g, "")
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
@@ -674,8 +675,21 @@ function textContainsAliases(value: string | null, aliases: readonly string[]): 
   });
 }
 
+function textContainsIdentityAliases(
+  value: string | null,
+  aliases: readonly string[],
+): boolean {
+  const tokens = new Set(normalizeVisibleText(value ?? "").split(" ").filter(Boolean));
+  return aliases.some((alias) => {
+    const required = normalizeVisibleText(alias).split(" ").filter(Boolean);
+    return required.length > 0 && required.every((token) => tokens.has(token));
+  });
+}
+
 function missingRoleMarkerGroups(value: string | null, groups: readonly string[][]): string[] {
-  return groups.filter((aliases) => !textContainsAliases(value, aliases)).map((aliases) => aliases.join("|"));
+  return groups
+    .filter((aliases) => !textContainsIdentityAliases(value, aliases))
+    .map((aliases) => aliases.join("|"));
 }
 
 function hasLexicallySpecificText(value: string | null): boolean {
@@ -988,11 +1002,11 @@ export function decideBlind(
     && blindAllVariantMarkersMatch;
   const brandMatches = blindBrandMatches || ocrBrandMatches;
   const missingProductMarkers = identity.product_marker_groups
-    .filter((aliases) => !textContainsAliases(blindNonBrandIdentity, aliases)
+    .filter((aliases) => !textContainsIdentityAliases(blindNonBrandIdentity, aliases)
       && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const missingVariantMarkers = identity.variant_marker_groups
-    .filter((aliases) => !textContainsAliases(blindNonBrandIdentity, aliases)
+    .filter((aliases) => !textContainsIdentityAliases(blindNonBrandIdentity, aliases)
       && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const ocrSuppliedIdentity = (!blindBrandMatches && ocrBrandMatches)

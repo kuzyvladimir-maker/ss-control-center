@@ -20,6 +20,7 @@ import {
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeComponentRow,
+  type ProductTruthLegacyBridgeComponentPlan,
   type ProductTruthLegacyBridgeDonorRow,
   type ProductTruthLegacyBridgeListingRow,
   type ProductTruthLegacyBridgeOfferRow,
@@ -47,16 +48,18 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/1.1.0" as const;
+  "product-truth-legacy-bridge-apply-plan/2.1.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
-  "product-truth-legacy-bridge-approval/1.0.0" as const;
+  "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/1.0.0" as const;
+  "product-truth-legacy-bridge-apply-report/2.1.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
-  "product-truth-legacy-bridge-preflight-report/1.0.0" as const;
+  "product-truth-legacy-bridge-preflight-report/2.0.0" as const;
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
+  "product-truth-legacy-bridge-standing-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION =
-  "product-content-observation/1.1.0" as const;
-export const PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY_COUNT = 5 as const;
+  "product-content-observation/1.3.0" as const;
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS = 50 as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE =
   "legacy-materialized-bridge" as const;
 
@@ -156,6 +159,8 @@ export interface ProductTruthLegacyBridgeSourceBinding {
   donorProductSha256: string;
   donorContentSha256: string;
   contentSourceOfferSha256: string;
+  componentBarcodeEvidenceSha256: string | null;
+  directTargetContentEvidenceSha256: string | null;
 }
 
 export interface ProductTruthLegacyBridgeVariantRow {
@@ -360,7 +365,7 @@ export interface ProductTruthLegacyBridgeApplyPlan {
 
 export interface ProductTruthLegacyBridgeApproval {
   schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION;
-  decision: "APPROVE_NO_PAID_LEGACY_BRIDGE_CANARY";
+  decision: "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE";
   approvedBy: "owner";
   approvalId: string;
   planId: string;
@@ -381,6 +386,31 @@ export interface ProductTruthLegacyBridgeApproval {
   expiresAt: string;
 }
 
+export interface ProductTruthLegacyBridgeStandingPolicy {
+  schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION;
+  policyId: string;
+  approvedBy: "owner";
+  issuedAt: string;
+  expiresAt: string | null;
+  databaseTargetFingerprint: string;
+  manifestSha256: string;
+  maximumDatabaseRowsPerWave: number;
+  maximumPreflightAgeMs: number;
+  requiresCollisionFree: true;
+  requiresFreshReadyToApplyPreflight: true;
+  allowCanonicalMaterialization: true;
+  allowProviderCalls: false;
+  allowPaidCalls: false;
+  allowMarketplaceListingWrites: false;
+  allowPriceChanges: false;
+  allowInventoryChanges: false;
+  allowDelisting: false;
+  allowConsumerActivation: false;
+  allowProcurement: false;
+  revocationRequiresOwnerDecision: true;
+  ownerStatement: string;
+}
+
 export interface ProductTruthLegacyBridgeApplyReport {
   schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION;
   status: "APPLIED" | "ALREADY_APPLIED";
@@ -388,6 +418,12 @@ export interface ProductTruthLegacyBridgeApplyReport {
   planSha256: string;
   approvalId: string;
   approvalSha256: string;
+  authorization: {
+    mode: "EXACT_OWNER_PLAN" | "STANDING_NO_PAID_POLICY";
+    standingPolicyId: string | null;
+    standingPolicySha256: string | null;
+    preflightReportSha256: string | null;
+  };
   databaseTargetFingerprint: string;
   startedAt: string;
   completedAt: string;
@@ -525,11 +561,19 @@ function exactProjectionFields(
 function contentPayload(input: {
   donor: ProductTruthLegacyBridgeDonorRow;
   offer: ProductTruthLegacyBridgeOfferRow;
-  listing: ProductTruthLegacyBridgeListingRow;
-  component: ProductTruthLegacyBridgeComponentRow;
   storageEvidence: unknown;
   allergensEvidence: unknown;
-  sourceBinding: ProductTruthLegacyBridgeSourceBinding;
+  contentOverride: NonNullable<
+    NonNullable<ProductTruthLegacyBridgeComponentPlan["contentAssessment"]>["contentOverride"]
+  > | null;
+  graphSourceBinding: Pick<
+    ProductTruthLegacyBridgeSourceBinding,
+    | "donorProductSha256"
+    | "donorContentSha256"
+    | "contentSourceOfferSha256"
+    | "componentBarcodeEvidenceSha256"
+    | "directTargetContentEvidenceSha256"
+  >;
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
 }): Record<string, unknown> {
@@ -539,15 +583,16 @@ function contentPayload(input: {
   }
   const upc = normalizeProductTruthBridgeGtin(input.donor.upc);
   if (!upc) fail("LEGACY_BRIDGE_CONTENT_INVALID", `${input.donor.id} UPC is invalid`);
+  const content = input.contentOverride;
   return {
     _schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION,
     _capture: "legacy_materialized_bridge",
-    title: input.donor.title,
-    description: input.donor.description,
-    bullets: parseJson(input.donor.bullets),
-    attributes: parseJson(input.donor.attributes),
-    nutritionFacts: parseJson(input.donor.nutritionFacts),
-    ingredients: input.donor.ingredients,
+    title: content?.title ?? input.donor.title,
+    description: content?.description ?? input.donor.description,
+    bullets: content?.bullets ?? parseJson(input.donor.bullets),
+    attributes: content?.attributes ?? parseJson(input.donor.attributes),
+    nutritionFacts: content?.nutritionFacts ?? parseJson(input.donor.nutritionFacts),
+    ingredients: content?.ingredients ?? input.donor.ingredients,
     allergens: evidenceValue(input.allergensEvidence),
     category: input.donor.category,
     storage: evidenceValue(input.storageEvidence),
@@ -558,16 +603,16 @@ function contentPayload(input: {
     sourceBinding: {
       policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
       materializationRoute: PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
-      originalSourceApi: input.offer.sourceApi,
+      originalSourceApi: content?.sourceApi ?? input.offer.sourceApi,
+      exactContentEvidenceArtifactSha256: content?.evidenceArtifactSha256 ?? null,
+      exactContentRawHtmlSha256: content?.rawHtmlSha256 ?? null,
       sourceSnapshotSha256: input.sourceSnapshotSha256,
       bridgePlanSha256: input.bridgePlanSha256,
-      listingKey: input.listing.listingKey,
-      legacyComponentId: input.component.id,
       donorProductId: input.donor.id,
       donorOfferId: input.offer.id,
       donorUpdatedAt: input.donor.updatedAt,
       offerFetchedAt: input.offer.fetchedAt,
-      rowHashes: input.sourceBinding,
+      rowHashes: input.graphSourceBinding,
     },
   };
 }
@@ -659,7 +704,7 @@ function targetFromScope(input: {
   const listing = input.snapshot.listings.find((row) => row.listingKey === input.listingKey);
   const scope = input.bridgePlan.scopes.find((row) => row.listingKey === input.listingKey);
   if (!listing || !scope) {
-    fail("LEGACY_BRIDGE_CANARY_SCOPE_INVALID", `${input.listingKey} is absent from source`);
+    fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} is absent from source`);
   }
   if (
     !scope.writeEligible
@@ -667,15 +712,28 @@ function targetFromScope(input: {
     || scope.components.length !== 1
   ) {
     fail(
-      "LEGACY_BRIDGE_CANARY_SCOPE_INVALID",
+      "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
       `${input.listingKey} must be a one-component content-only candidate`,
     );
   }
   const componentPlan = scope.components[0];
+  const barcodeEvidence = input.snapshot.componentBarcodeEvidence.find(
+    (row) => row.listingKey === input.listingKey && row.componentIndex === 0,
+  ) ?? null;
+  const directTargetContentEvidence =
+    input.snapshot.directTargetContentEvidence.find(
+      (row) => row.donorProductId === componentPlan.donorProductId,
+    ) ?? null;
+  const strictTitleProof =
+    componentPlan.matcherVerdict === "EXACT_IDENTITY"
+    && componentPlan.identityProof === "STRICT_TITLE_MATCH";
+  const exactLiveBarcodeProof =
+    componentPlan.matcherVerdict === null
+    && componentPlan.identityProof === "EXACT_LIVE_IMAGE_BARCODE"
+    && barcodeEvidence !== null;
   if (
     componentPlan.disposition !== "EXACT_CONTENT_ONLY_CANDIDATE"
-    || componentPlan.matcherVerdict !== "EXACT_IDENTITY"
-    || componentPlan.identityProof !== "STRICT_TITLE_MATCH"
+    || (!strictTitleProof && !exactLiveBarcodeProof)
     || !componentPlan.targetIdentity
     || !componentPlan.targetVariant
     || !componentPlan.contentAssessment?.complete
@@ -684,8 +742,37 @@ function targetFromScope(input: {
     || !componentPlan.contentSourceOfferId
   ) {
     fail(
-      "LEGACY_BRIDGE_CANARY_SCOPE_INVALID",
+      "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
       `${input.listingKey} has incomplete exact content proof`,
+    );
+  }
+  const overrideEvidenceType =
+    componentPlan.contentAssessment.contentOverride?.evidenceType ?? null;
+  if (
+    (
+      overrideEvidenceType === "LIVE_IMAGE_BARCODE"
+      && (
+        !barcodeEvidence
+        || componentPlan.contentAssessment.contentOverride?.evidenceArtifactSha256
+          !== barcodeEvidence.evidenceArtifactSha256
+      )
+    )
+    || (
+      overrideEvidenceType === "DIRECT_TARGET_CONTENT"
+      && (
+        !directTargetContentEvidence
+        || componentPlan.contentAssessment.contentOverride?.evidenceArtifactSha256
+          !== directTargetContentEvidence.evidenceArtifactSha256
+      )
+    )
+    || (
+      overrideEvidenceType === null
+      && componentPlan.contentAssessment.contentOverride !== null
+    )
+  ) {
+    fail(
+      "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
+      `${input.listingKey} exact content evidence binding is incomplete`,
     );
   }
   const component = input.snapshot.components.find(
@@ -702,14 +789,14 @@ function targetFromScope(input: {
     || component.sku !== listing.sku
     || offer.donorProductId !== donor.id
   ) {
-    fail("LEGACY_BRIDGE_CANARY_SCOPE_INVALID", `${input.listingKey} source graph is broken`);
+    fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} source graph is broken`);
   }
   const rebuiltVariant = buildCanonicalProductVariantKey(componentPlan.targetIdentity);
   if (
     rebuiltVariant.canonicalVariantId !== componentPlan.targetVariant.canonicalVariantId
     || rebuiltVariant.identityJson !== componentPlan.targetVariant.identityJson
   ) {
-    fail("LEGACY_BRIDGE_CANARY_SCOPE_INVALID", `${input.listingKey} variant projection drifted`);
+    fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} variant projection drifted`);
   }
   const sourceBinding: ProductTruthLegacyBridgeSourceBinding = {
     listingSha256: rowHash(sourceListingFields(listing)),
@@ -717,9 +804,26 @@ function targetFromScope(input: {
     donorProductSha256: rowHash(donor),
     donorContentSha256: rowHash(sourceContentFields(donor)),
     contentSourceOfferSha256: rowHash(contentSourceOfferFields(offer)),
+    componentBarcodeEvidenceSha256:
+      overrideEvidenceType === "LIVE_IMAGE_BARCODE"
+        ? barcodeEvidence?.evidenceArtifactSha256 ?? null
+        : null,
+    directTargetContentEvidenceSha256:
+      overrideEvidenceType === "DIRECT_TARGET_CONTENT"
+        ? directTargetContentEvidence?.evidenceArtifactSha256 ?? null
+        : null,
+  };
+  const graphSourceBinding = {
+    donorProductSha256: sourceBinding.donorProductSha256,
+    donorContentSha256: sourceBinding.donorContentSha256,
+    contentSourceOfferSha256: sourceBinding.contentSourceOfferSha256,
+    componentBarcodeEvidenceSha256:
+      sourceBinding.componentBarcodeEvidenceSha256,
+    directTargetContentEvidenceSha256:
+      sourceBinding.directTargetContentEvidenceSha256,
   };
   const decisionEvidence = {
-    schemaVersion: "product-truth-legacy-bridge-variant-decision-evidence/1.0.0",
+    schemaVersion: "product-truth-legacy-bridge-variant-decision-evidence/2.0.0",
     policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
     verdict: "EXACT_IDENTITY",
     identityProof: componentPlan.identityProof,
@@ -731,10 +835,9 @@ function targetFromScope(input: {
     canonicalVariantId: rebuiltVariant.canonicalVariantId,
     donorProductId: donor.id,
     donorTitle: donor.title,
-    listingKey: listing.listingKey,
     sourceSnapshotSha256: input.snapshotSha256,
     bridgePlanSha256: input.bridgePlanSha256,
-    sourceBinding,
+    sourceBinding: graphSourceBinding,
   };
   const decisionEvidenceJson = canonicalJson(decisionEvidence);
   const decisionEvidenceHash = sha256Text(decisionEvidenceJson);
@@ -748,32 +851,42 @@ function targetFromScope(input: {
   const payload = contentPayload({
     donor,
     offer,
-    listing,
-    component,
     storageEvidence: componentPlan.contentAssessment.storageEvidence,
     allergensEvidence: componentPlan.contentAssessment.allergensEvidence,
-    sourceBinding,
+    contentOverride: componentPlan.contentAssessment.contentOverride,
+    graphSourceBinding,
     sourceSnapshotSha256: input.snapshotSha256,
     bridgePlanSha256: input.bridgePlanSha256,
   });
   const contentJson = canonicalJson(payload);
   const contentHash = sha256Text(contentJson);
   const fieldHashesJson = canonicalJson(contentFieldHashes(payload));
-  const observedAt = canonicalInstant(donor.updatedAt, `${donor.id}.updatedAt`);
+  const observedAt = canonicalInstant(
+    componentPlan.contentAssessment.contentOverride?.observedAt ?? donor.updatedAt,
+    `${donor.id}.contentObservedAt`,
+  );
   if (Date.parse(observedAt) > Date.parse(input.createdAt)) {
-    fail("LEGACY_BRIDGE_CANARY_SCOPE_INVALID", `${donor.id} content is from the future`);
+    fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${donor.id} content is from the future`);
   }
   const observationKey = rowHash({
     donorProductId: donor.id,
     canonicalVariantId: rebuiltVariant.canonicalVariantId,
     variantDecisionId: decisionId,
-    sourceUrl: offer.productUrl,
-    sourceApi: PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
+    sourceUrl:
+      componentPlan.contentAssessment.contentOverride?.sourceUrl ?? offer.productUrl,
+    sourceApi:
+      componentPlan.contentAssessment.contentOverride?.sourceApi
+      ?? PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
     contentHash,
     observedAt,
     sourceSnapshotSha256: input.snapshotSha256,
   });
-  if (!offer.productUrl?.startsWith("https://") || !offer.sourceApi) {
+  const contentSourceUrl =
+    componentPlan.contentAssessment.contentOverride?.sourceUrl ?? offer.productUrl;
+  const contentSourceApi =
+    componentPlan.contentAssessment.contentOverride?.sourceApi
+    ?? PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE;
+  if (!contentSourceUrl?.startsWith("https://") || !contentSourceApi) {
     fail("LEGACY_BRIDGE_CONTENT_INVALID", `${offer.id} source provenance is incomplete`);
   }
   const contentId = prefixedId("pco", observationKey);
@@ -930,8 +1043,8 @@ function targetFromScope(input: {
       donorProductId: donor.id,
       canonicalVariantId: rebuiltVariant.canonicalVariantId,
       variantDecisionId: decisionId,
-      sourceUrl: offer.productUrl,
-      sourceApi: PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
+      sourceUrl: contentSourceUrl,
+      sourceApi: contentSourceApi,
       contentHash,
       fieldHashesJson,
       contentJson,
@@ -1000,6 +1113,87 @@ function targetFromScope(input: {
   };
 }
 
+function uniqueExactRows<T>(
+  values: readonly T[],
+  keyOf: (value: T) => string,
+  label: string,
+): T[] {
+  const rows = new Map<string, T>();
+  for (const value of values) {
+    const key = keyOf(value);
+    const existing = rows.get(key);
+    if (existing && canonicalJson(existing) !== canonicalJson(value)) {
+      fail(
+        "LEGACY_BRIDGE_GRAPH_COLLISION",
+        `${label} ${key} has conflicting projections inside the wave`,
+      );
+    }
+    rows.set(key, value);
+  }
+  return [...rows.values()];
+}
+
+function waveRows(targets: readonly ProductTruthLegacyBridgeApplyTarget[]): {
+  variants: ProductTruthLegacyBridgeVariantRow[];
+  decisions: ProductTruthLegacyBridgeDecisionRow[];
+  donorTransitions: ProductTruthLegacyBridgeDonorTransition[];
+  contents: ProductTruthLegacyBridgeContentRow[];
+} {
+  const donorVariants = new Map<string, string>();
+  for (const target of targets) {
+    const existingVariant = donorVariants.get(target.donorProductId);
+    if (existingVariant && existingVariant !== target.variant.id) {
+      fail(
+        "LEGACY_BRIDGE_DONOR_VARIANT_COLLISION",
+        [
+          `donor ${target.donorProductId} maps to both`,
+          `${existingVariant} and ${target.variant.id}`,
+        ].join(" "),
+      );
+    }
+    donorVariants.set(target.donorProductId, target.variant.id);
+  }
+  return {
+    variants: uniqueExactRows(targets.map((target) => target.variant), (row) => row.id, "variant"),
+    decisions: uniqueExactRows(
+      targets.map((target) => target.decision),
+      (row) => row.id,
+      "decision",
+    ),
+    donorTransitions: uniqueExactRows(
+      targets.map((target) => target.donorTransition),
+      (row) => row.donorProductId,
+      "donor transition",
+    ),
+    contents: uniqueExactRows(
+      targets.map((target) => target.content),
+      (row) => row.id,
+      "content observation",
+    ),
+  };
+}
+
+function expectedDatabaseWrites(
+  targets: readonly ProductTruthLegacyBridgeApplyTarget[],
+): ProductTruthLegacyBridgeApplyPlan["databaseWrites"] {
+  const rows = waveRows(targets);
+  return {
+    maximumRows:
+      rows.variants.length
+      + rows.decisions.length
+      + rows.donorTransitions.length
+      + rows.contents.length
+      + targets.length * 3,
+    canonicalProductVariants: rows.variants.length,
+    donorVariantDecisions: rows.decisions.length,
+    donorIdentityTransitions: rows.donorTransitions.length,
+    productContentObservations: rows.contents.length,
+    skuCostListingScopeLinks: targets.length,
+    skuComponentEvidence: targets.length,
+    skuCosts: targets.length,
+  };
+}
+
 export function planProductTruthLegacyBridgeApply(input: {
   snapshot: ProductTruthLegacyBridgeSnapshot;
   snapshotJson: string;
@@ -1018,12 +1212,17 @@ export function planProductTruthLegacyBridgeApply(input: {
     fail("LEGACY_BRIDGE_APPLY_INPUT_INVALID", "expiresAt must be after createdAt");
   }
   if (
-    input.listingKeys.length !== PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY_COUNT
-    || new Set(input.listingKeys).size !== PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY_COUNT
+    input.listingKeys.length < 1
+    || input.listingKeys.length > PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS
+    || new Set(input.listingKeys).size !== input.listingKeys.length
   ) {
     fail(
-      "LEGACY_BRIDGE_CANARY_SCOPE_INVALID",
-      `the first canary requires exactly ${PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY_COUNT} unique listings`,
+      "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
+      [
+        "wave requires 1-",
+        String(PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS),
+        " unique explicitly selected listings",
+      ].join(""),
     );
   }
   const listingKeys = [...input.listingKeys].sort((left, right) =>
@@ -1034,7 +1233,7 @@ export function planProductTruthLegacyBridgeApply(input: {
     listingKeys,
     createdAt,
   };
-  const planId = `ptlb-canary-${rowHash(planSeed).slice(0, 24)}`;
+  const planId = `ptlb-wave-${rowHash(planSeed).slice(0, 24)}`;
   const expectedApprovalId = `owner-${planId}`;
   const targets = listingKeys.map((listingKey, ordinal) => targetFromScope({
     ordinal,
@@ -1047,16 +1246,7 @@ export function planProductTruthLegacyBridgeApply(input: {
     approvalId: expectedApprovalId,
     createdAt,
   }));
-  if (
-    new Set(targets.map((target) => target.donorProductId)).size !== targets.length
-    || new Set(targets.map((target) => target.variant.id)).size !== targets.length
-  ) {
-    fail(
-      "LEGACY_BRIDGE_CANARY_SCOPE_INVALID",
-      "the first canary requires five independent donor/variant graphs",
-    );
-  }
-  const count = targets.length;
+  const databaseWrites = expectedDatabaseWrites(targets);
   return {
     schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION,
     planId,
@@ -1074,16 +1264,7 @@ export function planProductTruthLegacyBridgeApply(input: {
     },
     targetsSha256: rowHash(targets),
     targets,
-    databaseWrites: {
-      maximumRows: count * 7,
-      canonicalProductVariants: count,
-      donorVariantDecisions: count,
-      donorIdentityTransitions: count,
-      productContentObservations: count,
-      skuCostListingScopeLinks: count,
-      skuComponentEvidence: count,
-      skuCosts: count,
-    },
+    databaseWrites,
     rollbackPolicy: {
       transactionMode: "SINGLE_WRITE_TRANSACTION",
       rollbackBeforeCommit: true,
@@ -1118,6 +1299,12 @@ export function renderProductTruthLegacyBridgeApproval(
   return canonicalJson(value);
 }
 
+export function renderProductTruthLegacyBridgeStandingPolicy(
+  value: ProductTruthLegacyBridgeStandingPolicy,
+): string {
+  return canonicalJson(value);
+}
+
 export function renderProductTruthLegacyBridgeApplyReport(
   value: ProductTruthLegacyBridgeApplyReport,
 ): string {
@@ -1135,7 +1322,7 @@ export function expectedProductTruthLegacyBridgeConfirmation(
   planSha256: string,
 ): string {
   return [
-    "APPROVE_PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY",
+    "APPROVE_PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE",
     plan.planId,
     exactSha(planSha256, "planSha256"),
     `${plan.targets.length}_LISTINGS`,
@@ -1160,9 +1347,11 @@ function validatePlan(
     fail("LEGACY_BRIDGE_APPLY_PLAN_INVALID", "plan SHA-256 mismatch");
   }
   if (
-    plan.targets.length !== PRODUCT_TRUTH_LEGACY_BRIDGE_CANARY_COUNT
+    plan.targets.length < 1
+    || plan.targets.length > PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS
     || rowHash(plan.targets) !== plan.targetsSha256
-    || plan.databaseWrites.maximumRows !== plan.targets.length * 7
+    || canonicalJson(plan.databaseWrites)
+      !== canonicalJson(expectedDatabaseWrites(plan.targets))
     || plan.claims.providerCalls !== 0
     || plan.claims.paidCalls !== 0
     || plan.claims.marketplaceMutations !== 0
@@ -1193,7 +1382,7 @@ function validateApproval(input: {
     fail("LEGACY_BRIDGE_APPROVAL_INVALID", "approval SHA-256 mismatch");
   }
   if (
-    approval.decision !== "APPROVE_NO_PAID_LEGACY_BRIDGE_CANARY"
+    approval.decision !== "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE"
     || approval.approvedBy !== "owner"
     || approval.approvalId !== plan.expectedApprovalId
     || approval.planId !== plan.planId
@@ -1230,6 +1419,152 @@ function validateApproval(input: {
       !== expectedProductTruthLegacyBridgeConfirmation(plan, input.planSha256)
   ) {
     fail("LEGACY_BRIDGE_CONFIRMATION_MISMATCH", "exact owner confirmation is required");
+  }
+}
+
+function assertExactObjectKeys(
+  value: unknown,
+  expected: readonly string[],
+  label: string,
+): asserts value is Record<string, unknown> {
+  const record = recordValue(value);
+  if (!record) {
+    fail("LEGACY_BRIDGE_STANDING_POLICY_INVALID", `${label} must be an object`);
+  }
+  const actual = Object.keys(record).sort((left, right) => left.localeCompare(right));
+  const wanted = [...expected].sort((left, right) => left.localeCompare(right));
+  if (canonicalJson(actual) !== canonicalJson(wanted)) {
+    fail(
+      "LEGACY_BRIDGE_STANDING_POLICY_INVALID",
+      `${label} has missing or unexpected fields`,
+    );
+  }
+}
+
+function validateStandingPolicyAuthorization(input: {
+  plan: ProductTruthLegacyBridgeApplyPlan;
+  planSha256: string;
+  policy: ProductTruthLegacyBridgeStandingPolicy;
+  policyJson: string;
+  policySha256: string;
+  preflightReport: ProductTruthLegacyBridgePreflightReport;
+  preflightReportJson: string;
+  preflightReportSha256: string;
+  now: string;
+}): void {
+  assertExactObjectKeys(input.policy, [
+    "allowCanonicalMaterialization",
+    "allowConsumerActivation",
+    "allowDelisting",
+    "allowInventoryChanges",
+    "allowMarketplaceListingWrites",
+    "allowPaidCalls",
+    "allowPriceChanges",
+    "allowProcurement",
+    "allowProviderCalls",
+    "approvedBy",
+    "databaseTargetFingerprint",
+    "expiresAt",
+    "issuedAt",
+    "manifestSha256",
+    "maximumDatabaseRowsPerWave",
+    "maximumPreflightAgeMs",
+    "ownerStatement",
+    "policyId",
+    "requiresCollisionFree",
+    "requiresFreshReadyToApplyPreflight",
+    "revocationRequiresOwnerDecision",
+    "schemaVersion",
+  ], "standing policy");
+  const { policy, plan, preflightReport } = input;
+  if (
+    policy.schemaVersion !== PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION
+    || renderProductTruthLegacyBridgeStandingPolicy(policy) !== input.policyJson
+    || sha256Text(input.policyJson)
+      !== exactSha(input.policySha256, "standingPolicySha256")
+  ) {
+    fail(
+      "LEGACY_BRIDGE_STANDING_POLICY_INVALID",
+      "standing policy bytes, version, or SHA-256 mismatch",
+    );
+  }
+  const issuedAt = Date.parse(canonicalInstant(policy.issuedAt, "policy.issuedAt"));
+  const now = Date.parse(canonicalInstant(input.now, "now"));
+  const expiresAt = policy.expiresAt === null
+    ? null
+    : Date.parse(canonicalInstant(policy.expiresAt, "policy.expiresAt"));
+  if (
+    policy.approvedBy !== "owner"
+    || exactText(policy.policyId, "policy.policyId", 160) !== policy.policyId
+    || exactText(policy.ownerStatement, "policy.ownerStatement", 2_000)
+      !== policy.ownerStatement
+    || issuedAt > now
+    || (expiresAt !== null && now > expiresAt)
+    || policy.databaseTargetFingerprint !== plan.databaseTargetFingerprint
+    || policy.manifestSha256 !== plan.source.manifestSha256
+    || !Number.isInteger(policy.maximumDatabaseRowsPerWave)
+    || policy.maximumDatabaseRowsPerWave < 1
+    || policy.maximumDatabaseRowsPerWave > 100
+    || !Number.isInteger(policy.maximumPreflightAgeMs)
+    || policy.maximumPreflightAgeMs < 1
+    || policy.maximumPreflightAgeMs > 15 * 60 * 1_000
+    || policy.requiresCollisionFree !== true
+    || policy.requiresFreshReadyToApplyPreflight !== true
+    || policy.allowCanonicalMaterialization !== true
+    || policy.allowProviderCalls !== false
+    || policy.allowPaidCalls !== false
+    || policy.allowMarketplaceListingWrites !== false
+    || policy.allowPriceChanges !== false
+    || policy.allowInventoryChanges !== false
+    || policy.allowDelisting !== false
+    || policy.allowConsumerActivation !== false
+    || policy.allowProcurement !== false
+    || policy.revocationRequiresOwnerDecision !== true
+    || plan.databaseWrites.maximumRows > policy.maximumDatabaseRowsPerWave
+    || Date.parse(plan.createdAt) < issuedAt
+  ) {
+    fail(
+      "LEGACY_BRIDGE_STANDING_POLICY_INVALID",
+      "standing policy does not authorize this exact bounded wave",
+    );
+  }
+  if (
+    renderProductTruthLegacyBridgePreflightReport(preflightReport)
+      !== input.preflightReportJson
+    || sha256Text(input.preflightReportJson)
+      !== exactSha(input.preflightReportSha256, "preflightReportSha256")
+    || preflightReport.schemaVersion
+      !== PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION
+    || preflightReport.status !== "READY_TO_APPLY"
+    || preflightReport.planId !== plan.planId
+    || preflightReport.planSha256 !== input.planSha256
+    || preflightReport.databaseTargetFingerprint !== plan.databaseTargetFingerprint
+    || preflightReport.counts.targets !== plan.targets.length
+    || preflightReport.counts.absentRows !== plan.databaseWrites.maximumRows
+    || preflightReport.counts.exactExistingRows !== 0
+    || preflightReport.counts.donorIdentityTransitionsRequired
+      !== plan.databaseWrites.donorIdentityTransitions
+    || preflightReport.foreignKeyViolations.length !== 0
+    || canonicalJson(preflightReport.listingKeys)
+      !== canonicalJson(plan.targets.map((target) => target.listingKey))
+    || canonicalJson(preflightReport.claims) !== canonicalJson(plan.claims)
+  ) {
+    fail(
+      "LEGACY_BRIDGE_STANDING_PREFLIGHT_INVALID",
+      "standing policy requires the exact fresh READY_TO_APPLY preflight",
+    );
+  }
+  const checkedAt = Date.parse(
+    canonicalInstant(preflightReport.checkedAt, "preflightReport.checkedAt"),
+  );
+  if (
+    checkedAt > now
+    || now - checkedAt > policy.maximumPreflightAgeMs
+  ) {
+    fail(
+      "LEGACY_BRIDGE_STANDING_PREFLIGHT_STALE",
+      "standing-policy preflight is not fresh at apply start",
+    );
   }
 }
 
@@ -1548,49 +1883,10 @@ async function insertRow(
   });
 }
 
-async function applyTarget(
+async function applyListingRows(
   tx: Transaction,
   target: ProductTruthLegacyBridgeApplyTarget,
 ): Promise<void> {
-  await insertRow(
-    tx,
-    "CanonicalProductVariant",
-    target.variant as unknown as Record<string, unknown>,
-  );
-  await insertRow(
-    tx,
-    "DonorProductVariantDecision",
-    target.decision as unknown as Record<string, unknown>,
-  );
-  const projection = target.donorTransition.exactProjection;
-  await tx.execute({
-    sql: `UPDATE "DonorProduct" SET
-      identityKey=?, brand=?, productLine=?, flavor=?, containerType=?, size=?,
-      identityStatus=?, identityMatcherVersion=?,
-      identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
-      identityEvidenceJson=?, identityConfirmedAt=?
-      WHERE id=?`,
-    args: [
-      projection.identityKey,
-      projection.brand,
-      projection.productLine,
-      projection.flavor,
-      projection.containerType,
-      projection.size,
-      projection.identityStatus,
-      projection.identityMatcherVersion,
-      projection.identityMatcherImplementationSha256,
-      projection.identityMatcherReleaseSha256,
-      projection.identityEvidenceJson,
-      projection.identityConfirmedAt,
-      target.donorProductId,
-    ],
-  });
-  await insertRow(
-    tx,
-    "ProductContentObservation",
-    target.content as unknown as Record<string, unknown>,
-  );
   await insertRow(
     tx,
     "SkuCostListingScopeLink",
@@ -1608,6 +1904,69 @@ async function applyTarget(
   );
 }
 
+async function applyWaveRows(
+  tx: Transaction,
+  targets: readonly ProductTruthLegacyBridgeApplyTarget[],
+): Promise<void> {
+  const rows = waveRows(targets);
+  for (const variant of rows.variants) {
+    await insertRow(
+      tx,
+      "CanonicalProductVariant",
+      variant as unknown as Record<string, unknown>,
+    );
+  }
+  for (const decision of rows.decisions) {
+    await insertRow(
+      tx,
+      "DonorProductVariantDecision",
+      decision as unknown as Record<string, unknown>,
+    );
+  }
+  for (const transition of rows.donorTransitions) {
+    const projection = transition.exactProjection;
+    const result = await tx.execute({
+      sql: `UPDATE "DonorProduct" SET
+        identityKey=?, brand=?, productLine=?, flavor=?, containerType=?, size=?,
+        identityStatus=?, identityMatcherVersion=?,
+        identityMatcherImplementationSha256=?, identityMatcherReleaseSha256=?,
+        identityEvidenceJson=?, identityConfirmedAt=?
+        WHERE id=?`,
+      args: [
+        projection.identityKey,
+        projection.brand,
+        projection.productLine,
+        projection.flavor,
+        projection.containerType,
+        projection.size,
+        projection.identityStatus,
+        projection.identityMatcherVersion,
+        projection.identityMatcherImplementationSha256,
+        projection.identityMatcherReleaseSha256,
+        projection.identityEvidenceJson,
+        projection.identityConfirmedAt,
+        transition.donorProductId,
+      ],
+    });
+    if (result.rowsAffected !== 1) {
+      fail(
+        "LEGACY_BRIDGE_DONOR_TRANSITION_FAILED",
+        `${transition.donorProductId} did not update exactly one donor row`,
+      );
+    }
+  }
+  for (const content of rows.contents) {
+    await insertRow(
+      tx,
+      "ProductContentObservation",
+      content as unknown as Record<string, unknown>,
+    );
+  }
+  for (const target of targets) {
+    await applyListingRows(tx, target);
+  }
+}
+
 async function foreignKeyViolations(db: SqlReader): Promise<string[]> {
   const result = await db.execute("PRAGMA foreign_key_check");
   return result.rows.map((row) => canonicalJson(rowObject(row)).trim());
@@ -1623,7 +1982,7 @@ async function verifyAppliedTarget(
   }
 }
 
-export async function preflightProductTruthLegacyBridgeCanary(input: {
+export async function preflightProductTruthLegacyBridgeWave(input: {
   db: Client;
   databaseTargetFingerprint: string;
   plan: ProductTruthLegacyBridgeApplyPlan;
@@ -1652,7 +2011,7 @@ export async function preflightProductTruthLegacyBridgeCanary(input: {
     }
     const exactGraphs = states.filter((state) => state.absentRows === 0).length;
     if (exactGraphs !== 0 && exactGraphs !== input.plan.targets.length) {
-      fail("LEGACY_BRIDGE_PARTIAL_CANARY", "canary is partially applied");
+      fail("LEGACY_BRIDGE_PARTIAL_WAVE", "wave is partially applied");
     }
     const violations = await foreignKeyViolations(tx);
     if (violations.length) {
@@ -1669,11 +2028,15 @@ export async function preflightProductTruthLegacyBridgeCanary(input: {
       checkedAt,
       counts: {
         targets: input.plan.targets.length,
-        absentRows: states.reduce((total, state) => total + state.absentRows, 0),
-        exactExistingRows: states.reduce((total, state) => total + state.exactRows, 0),
-        donorIdentityTransitionsRequired: states.filter(
-          (state) => state.donorNeedsTransition,
-        ).length,
+        absentRows: exactGraphs === 0 ? input.plan.databaseWrites.maximumRows : 0,
+        exactExistingRows:
+          exactGraphs === input.plan.targets.length
+            ? input.plan.databaseWrites.maximumRows
+            : 0,
+        donorIdentityTransitionsRequired:
+          exactGraphs === 0
+            ? input.plan.databaseWrites.donorIdentityTransitions
+            : 0,
       },
       listingKeys: input.plan.targets.map((target) => target.listingKey),
       foreignKeyViolations: [],
@@ -1684,33 +2047,110 @@ export async function preflightProductTruthLegacyBridgeCanary(input: {
   }
 }
 
-export async function applyProductTruthLegacyBridgeCanary(input: {
+type ProductTruthLegacyBridgeWaveAuthorizationInput =
+  | {
+      approval: ProductTruthLegacyBridgeApproval;
+      approvalJson: string;
+      approvalSha256: string;
+      confirmation: string;
+      standingPolicy?: never;
+      standingPolicyJson?: never;
+      standingPolicySha256?: never;
+      standingPreflightReport?: never;
+      standingPreflightReportJson?: never;
+      standingPreflightReportSha256?: never;
+    }
+  | {
+      approval?: never;
+      approvalJson?: never;
+      approvalSha256?: never;
+      confirmation?: never;
+      standingPolicy: ProductTruthLegacyBridgeStandingPolicy;
+      standingPolicyJson: string;
+      standingPolicySha256: string;
+      standingPreflightReport: ProductTruthLegacyBridgePreflightReport;
+      standingPreflightReportJson: string;
+      standingPreflightReportSha256: string;
+    };
+
+export async function applyProductTruthLegacyBridgeWave(input: {
   db: Client;
   databaseTargetFingerprint: string;
   plan: ProductTruthLegacyBridgeApplyPlan;
   planJson: string;
   planSha256: string;
-  approval: ProductTruthLegacyBridgeApproval;
-  approvalJson: string;
-  approvalSha256: string;
-  confirmation: string;
   startedAt: string;
   completedAt?: string;
-}): Promise<ProductTruthLegacyBridgeApplyReport> {
+} & ProductTruthLegacyBridgeWaveAuthorizationInput): Promise<ProductTruthLegacyBridgeApplyReport> {
   validatePlan(input.plan, input.planJson, input.planSha256);
   const startedAt = canonicalInstant(input.startedAt, "startedAt");
+  const invocationTime = Date.now();
+  if (Date.parse(startedAt) > invocationTime) {
+    fail(
+      "LEGACY_BRIDGE_TIMESTAMP_INVALID",
+      "startedAt cannot be later than the apply invocation",
+    );
+  }
+  const requestedCompletedAt = input.completedAt === undefined
+    ? null
+    : canonicalInstant(input.completedAt, "completedAt");
+  if (
+    requestedCompletedAt !== null
+    && (
+      Date.parse(requestedCompletedAt) < Date.parse(startedAt)
+      || Date.parse(requestedCompletedAt) > invocationTime
+    )
+  ) {
+    fail(
+      "LEGACY_BRIDGE_TIMESTAMP_INVALID",
+      "completedAt must be between startedAt and the apply invocation",
+    );
+  }
   if (input.databaseTargetFingerprint !== input.plan.databaseTargetFingerprint) {
     fail("LEGACY_BRIDGE_DATABASE_TARGET_MISMATCH", "database fingerprint differs from plan");
   }
-  validateApproval({
-    plan: input.plan,
-    planSha256: input.planSha256,
-    approval: input.approval,
-    approvalJson: input.approvalJson,
-    approvalSha256: input.approvalSha256,
-    confirmation: input.confirmation,
-    now: startedAt,
-  });
+  let authorization: ProductTruthLegacyBridgeApplyReport["authorization"];
+  let authorizationId: string;
+  let authorizationSha256: string;
+  if (input.standingPolicy) {
+    validateStandingPolicyAuthorization({
+      plan: input.plan,
+      planSha256: input.planSha256,
+      policy: input.standingPolicy,
+      policyJson: input.standingPolicyJson,
+      policySha256: input.standingPolicySha256,
+      preflightReport: input.standingPreflightReport,
+      preflightReportJson: input.standingPreflightReportJson,
+      preflightReportSha256: input.standingPreflightReportSha256,
+      now: startedAt,
+    });
+    authorization = {
+      mode: "STANDING_NO_PAID_POLICY",
+      standingPolicyId: input.standingPolicy.policyId,
+      standingPolicySha256: input.standingPolicySha256,
+      preflightReportSha256: input.standingPreflightReportSha256,
+    };
+    authorizationId = input.plan.expectedApprovalId;
+    authorizationSha256 = input.standingPolicySha256;
+  } else {
+    validateApproval({
+      plan: input.plan,
+      planSha256: input.planSha256,
+      approval: input.approval,
+      approvalJson: input.approvalJson,
+      approvalSha256: input.approvalSha256,
+      confirmation: input.confirmation,
+      now: startedAt,
+    });
+    authorization = {
+      mode: "EXACT_OWNER_PLAN",
+      standingPolicyId: null,
+      standingPolicySha256: null,
+      preflightReportSha256: null,
+    };
+    authorizationId = input.approval.approvalId;
+    authorizationSha256 = input.approvalSha256;
+  }
   let insertedRows = 0;
   let exactExistingRows = 0;
   let donorIdentityTransitions = 0;
@@ -1728,15 +2168,13 @@ export async function applyProductTruthLegacyBridgeCanary(input: {
     }
     const exactGraphs = preflight.filter((state) => state.absentRows === 0).length;
     if (exactGraphs !== 0 && exactGraphs !== input.plan.targets.length) {
-      fail("LEGACY_BRIDGE_PARTIAL_CANARY", "canary is partially applied");
+      fail("LEGACY_BRIDGE_PARTIAL_WAVE", "wave is partially applied");
     }
     if (exactGraphs === 0) {
-      for (const target of input.plan.targets) {
-        await applyTarget(tx, target);
-        insertedRows += 6;
-        donorIdentityTransitions += 1;
-      }
-      insertedRows += donorIdentityTransitions;
+      await applyWaveRows(tx, input.plan.targets);
+      insertedRows = input.plan.databaseWrites.maximumRows;
+      donorIdentityTransitions =
+        input.plan.databaseWrites.donorIdentityTransitions;
     } else {
       exactExistingRows = input.plan.databaseWrites.maximumRows;
     }
@@ -1804,17 +2242,15 @@ export async function applyProductTruthLegacyBridgeCanary(input: {
   if (violations.length) {
     fail("LEGACY_BRIDGE_POST_VERIFY_FAILED", violations.join("; "));
   }
-  const completedAt = canonicalInstant(
-    input.completedAt ?? startedAt,
-    "completedAt",
-  );
+  const completedAt = requestedCompletedAt ?? new Date().toISOString();
   return {
     schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION,
     status: insertedRows > 0 ? "APPLIED" : "ALREADY_APPLIED",
     planId: input.plan.planId,
     planSha256: input.planSha256,
-    approvalId: input.approval.approvalId,
-    approvalSha256: input.approvalSha256,
+    approvalId: authorizationId,
+    approvalSha256: authorizationSha256,
+    authorization,
     databaseTargetFingerprint: input.databaseTargetFingerprint,
     startedAt,
     completedAt,

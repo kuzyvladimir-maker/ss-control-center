@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FaisalX-1148 — Walmart Listing Integrity</title>
+<style>
+body{font-family:Inter,Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+main{max-width:1420px;margin:28px auto;padding:0 24px}
+h1{margin:0 0 8px}.sub{color:#526078;margin-bottom:20px}
+.status{background:#e9f8ef;border:1px solid #9bd8af;padding:14px 18px;border-radius:12px;margin:18px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:white;border:1px solid #dce3ee;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px #20305010}
+.head{display:flex;justify-content:space-between;padding:14px 18px;font-weight:800}
+.before .head{background:#fff0ef;color:#9f251e}.after .head{background:#e9f8ef;color:#176b36}
+.image{height:600px;display:flex;align-items:center;justify-content:center;padding:18px;background:#fff}
+.image img{width:100%;height:100%;object-fit:contain}
+.body{padding:18px}.label{font-weight:800;margin:10px 0 6px}.bad{color:#a12620}.good{color:#176b36}
+.text-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.text{white-space:pre-wrap;line-height:1.48;font-size:14px}
+li{margin:8px 0;line-height:1.4}
+.unchanged{margin-top:22px;background:#eef4ff;border:1px solid #b8cdf4;border-radius:12px;padding:16px}
+code{background:#edf1f7;padding:2px 5px;border-radius:5px}
+@media(max-width:900px){.grid,.text-grid{grid-template-columns:1fr}.image{height:420px}}
+</style></head><body><main>
+<h1>FaisalX-1148 — точное исправление Walmart</h1>
+<div class="sub">Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2) · item 15144369671</div>
+<div class="status"><b>Qualification MAIN: PASS.</b> Точный товар, ровно 2
+ упаковки, белый фон, правильный front, без смешения товаров.</div>
+<section class="grid">
+<article class="card before"><div class="head"><span>ДО</span><span>LIVE SNAPSHOT</span></div>
+<div class="image"><img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1148-live-capture-20260727-v3/buyer-snapshots/walmart-buyer-20260727T130804Z-97df58bab5e7/assets/a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a.png"></div>
+<div class="body"><div class="label bad">Ошибка</div>
+MAIN показывает 8 упаковок, хотя листинг продаёт
+ Pack of 2.</div></article>
+<article class="card after"><div class="head"><span>ПОСЛЕ</span><span>QUALIFIED PREVIEW</span></div>
+<div class="image"><img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1148-main-candidate-20260727-v1/proposed-main-pack.png"></div>
+<div class="body"><div class="label good">Исправление</div>
+MAIN показывает ровно 2 реальные упаковки точного товара.
+ SHA-256: <code>d5f5a7d94bb33e235f03699176e2df50ec174ee5dd3ca3f1c2a180c712035858</code></div></article>
+</section>
+<section class="text-grid">
+<article class="card before"><div class="head"><span>ТЕКСТ ДО</span></div><div class="body">
+<div class="label bad">Description</div><div class="text">Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns. Shelf-stable product.</div>
+<div class="label bad">Bullets</div><ul><li>QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup</li><li>PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls</li><li>COOKOUT READY: Quality buns your family and friends will appreciate</li></ul>
+</div></article>
+<article class="card after"><div class="head"><span>ТЕКСТ ПОСЛЕ</span></div><div class="body">
+<div class="label good">Description</div><div class="text">PACK OF 2: This listing includes two 14 oz bags of Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns. Each bag contains 8 buns, for 16 buns total. Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Shelf-stable product.</div>
+<div class="label good">Bullets</div><ul><li>PACK OF 2: Includes 2 bags of Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns; each 14 oz bag contains 8 buns, for 16 buns total</li><li>TOP SLICED HOT DOG BUNS: A classic white hot dog bun for easy filling</li><li>QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup</li><li>PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls</li><li>COOKOUT READY: Quality buns your family and friends will appreciate</li><li>8 BUNS: 8-count bag of Pepperidge Farm Top Sliced Soft White hot dog buns</li></ul>
+</div></article>
+</section>
+<div class="unchanged"><b>Без изменений:</b> title, attributes, gallery, price, inventory,
+ identifiers, publication и lifecycle. Title остаётся product-first; количество не переносится
+ в начало.</div>
+</main></body></html>

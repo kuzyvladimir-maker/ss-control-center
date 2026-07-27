@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1148",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "478W7UD0DCQ9",
+      "upc": "742132418239",
+      "gtin": "00742132418239",
+      "productName": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "shelf": "Home Page/Food/Bakery & Bread/Bread/Pepperidge Farm Bread",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 20.25
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Faisalxbread038",
+      "variantGroupInfo": {
+        "isPrimary": true,
+        "groupingAttributes": [
+          {
+            "name": "number_of_pieces",
+            "value": "4"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

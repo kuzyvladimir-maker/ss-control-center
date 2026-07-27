@@ -1,25 +1,34 @@
 import { createClient, type Client } from "@libsql/client";
+import { createHash } from "node:crypto";
 import {
   mkdir,
   open,
   readFile,
   realpath,
 } from "node:fs/promises";
-import { dirname, isAbsolute, resolve } from "node:path";
+import { basename, dirname, isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION,
+  PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
+  type ProductTruthLegacyBridgeCanonicalDonorBindingRow,
+  type ProductTruthLegacyBridgeCanonicalListingComponentRow,
   type ProductTruthLegacyBridgeComponentRow,
+  type ProductTruthLegacyBridgeComponentBarcodeEvidenceRow,
   type ProductTruthLegacyBridgeDonorRow,
+  type ProductTruthLegacyBridgeDirectTargetContentEvidenceRow,
   type ProductTruthLegacyBridgeListingRow,
   type ProductTruthLegacyBridgeOfferRow,
   type ProductTruthLegacyBridgeSnapshot,
+  type ProductTruthLiveImageBarcodeEvidence,
+  type ProductTruthDirectTargetContentEvidence,
 } from "../src/lib/sourcing/product-truth-legacy-bridge";
 import {
   PHASE1_SCOPE_MANIFEST_VERSION,
@@ -39,6 +48,8 @@ type CliOptions = {
   manifestPath: string;
   capturedAt: string;
   outDir: string;
+  componentBarcodeEvidencePaths: string[];
+  directTargetContentEvidencePaths: string[];
 };
 
 function fail(code: string, message: string): never {
@@ -51,6 +62,8 @@ function usage(): string {
     "  node --import tsx scripts/build-product-truth-legacy-bridge-plan.ts",
     "    (--url URL | --url-env ENV_NAME)",
     "    --manifest ABS_PATH --captured-at ISO --out ABS_NEW_DIR",
+    "    [--component-barcode-evidence ABS_EVIDENCE_JSON] (repeatable)",
+    "    [--direct-target-content-evidence ABS_EVIDENCE_JSON] (repeatable)",
     "    [--allow-remote --auth-token-env ENV_NAME]",
     "",
     "Safety: read-only SQL, zero provider/retailer calls, zero database writes.",
@@ -59,6 +72,8 @@ function usage(): string {
 
 function parseOptions(argv: readonly string[]): CliOptions {
   const values = new Map<string, string>();
+  const componentBarcodeEvidencePaths: string[] = [];
+  const directTargetContentEvidencePaths: string[] = [];
   let allowRemote = false;
   for (let index = 0; index < argv.length; index += 1) {
     const item = argv[index];
@@ -67,13 +82,28 @@ function parseOptions(argv: readonly string[]): CliOptions {
       allowRemote = true;
       continue;
     }
-    if (!["--url", "--url-env", "--auth-token-env", "--manifest", "--captured-at", "--out"].includes(item)) {
+    if (![
+      "--url",
+      "--url-env",
+      "--auth-token-env",
+      "--manifest",
+      "--captured-at",
+      "--out",
+      "--component-barcode-evidence",
+      "--direct-target-content-evidence",
+    ].includes(item)) {
       fail("CLI_ARGUMENT_UNKNOWN", item);
     }
-    if (values.has(item)) fail("CLI_ARGUMENT_DUPLICATE", item);
     const value = argv[index + 1];
     if (!value || value.startsWith("--")) fail("CLI_ARGUMENT_VALUE_REQUIRED", item);
-    values.set(item, value);
+    if (item === "--component-barcode-evidence") {
+      componentBarcodeEvidencePaths.push(value);
+    } else if (item === "--direct-target-content-evidence") {
+      directTargetContentEvidencePaths.push(value);
+    } else {
+      if (values.has(item)) fail("CLI_ARGUMENT_DUPLICATE", item);
+      values.set(item, value);
+    }
     index += 1;
   }
   const required = (flag: string): string => {
@@ -85,8 +115,19 @@ function parseOptions(argv: readonly string[]): CliOptions {
   if (!Number.isFinite(Date.parse(capturedAt))) fail("CAPTURED_AT_INVALID", capturedAt);
   const manifestPath = required("--manifest");
   const outDir = required("--out");
-  if (!isAbsolute(manifestPath) || !isAbsolute(outDir)) {
-    fail("ABSOLUTE_PATH_REQUIRED", "--manifest and --out must be absolute paths");
+  if (
+    !isAbsolute(manifestPath)
+    || !isAbsolute(outDir)
+    || componentBarcodeEvidencePaths.some((path) => !isAbsolute(path))
+    || directTargetContentEvidencePaths.some((path) => !isAbsolute(path))
+  ) {
+    fail(
+      "ABSOLUTE_PATH_REQUIRED",
+      [
+        "--manifest, --out and every --component-barcode-evidence/",
+        "--direct-target-content-evidence must be absolute paths",
+      ].join(""),
+    );
   }
   const literalUrl = values.get("--url")?.trim() || null;
   const urlEnv = values.get("--url-env")?.trim() || null;
@@ -102,6 +143,8 @@ function parseOptions(argv: readonly string[]): CliOptions {
     manifestPath,
     capturedAt: new Date(capturedAt).toISOString(),
     outDir,
+    componentBarcodeEvidencePaths,
+    directTargetContentEvidencePaths,
   };
 }
 
@@ -160,6 +203,99 @@ async function loadManifest(path: string): Promise<{
     json,
     sha256: productTruthLegacyBridgeBytesSha256(json),
   };
+}
+
+async function loadComponentBarcodeEvidence(
+  paths: readonly string[],
+): Promise<ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[]> {
+  const rows: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[] = [];
+  const keys = new Set<string>();
+  for (const path of paths) {
+    const resolved = await realpath(path);
+    const bytes = await readFile(resolved);
+    const json = bytes.toString("utf8");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      fail("BARCODE_EVIDENCE_JSON_INVALID", resolved);
+    }
+    const evidence = parsed as ProductTruthLiveImageBarcodeEvidence;
+    if (
+      evidence.schemaVersion !== PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION
+      || renderProductTruthOperationalJson(evidence) !== json
+      || !evidence.listingKey
+      || !Number.isInteger(evidence.componentIndex)
+      || evidence.componentIndex < 0
+      || !evidence.sourceImageFile
+      || basename(evidence.sourceImageFile) !== evidence.sourceImageFile
+      || !evidence.retailerContent?.htmlFile
+      || basename(evidence.retailerContent.htmlFile) !== evidence.retailerContent.htmlFile
+    ) fail("BARCODE_EVIDENCE_CONTRACT_INVALID", resolved);
+    const imagePath = resolve(dirname(resolved), evidence.sourceImageFile);
+    const imageBytes = await readFile(imagePath);
+    const imageSha256 = createHash("sha256").update(imageBytes).digest("hex");
+    if (imageSha256 !== evidence.image.modelAssetSha256) {
+      fail("BARCODE_EVIDENCE_IMAGE_SHA256_MISMATCH", imagePath);
+    }
+    const htmlPath = resolve(dirname(resolved), evidence.retailerContent.htmlFile);
+    const htmlBytes = await readFile(htmlPath);
+    const htmlSha256 = createHash("sha256").update(htmlBytes).digest("hex");
+    if (htmlSha256 !== evidence.retailerContent.htmlSha256) {
+      fail("BARCODE_EVIDENCE_RETAILER_HTML_SHA256_MISMATCH", htmlPath);
+    }
+    const evidenceArtifactSha256 = productTruthLegacyBridgeBytesSha256(json);
+    const key = `${evidence.listingKey}:${evidence.componentIndex}`;
+    if (keys.has(key)) fail("BARCODE_EVIDENCE_DUPLICATE", key);
+    keys.add(key);
+    rows.push({ ...evidence, evidenceArtifactSha256 });
+  }
+  return rows.sort((left, right) =>
+    left.listingKey.localeCompare(right.listingKey)
+    || left.componentIndex - right.componentIndex);
+}
+
+async function loadDirectTargetContentEvidence(
+  paths: readonly string[],
+): Promise<ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[]> {
+  const rows: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[] = [];
+  const donorIds = new Set<string>();
+  for (const path of paths) {
+    const resolved = await realpath(path);
+    const bytes = await readFile(resolved);
+    const json = bytes.toString("utf8");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      fail("DIRECT_TARGET_CONTENT_EVIDENCE_JSON_INVALID", resolved);
+    }
+    const evidence = parsed as ProductTruthDirectTargetContentEvidence;
+    if (
+      evidence.schemaVersion !== PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION
+      || renderProductTruthOperationalJson(evidence) !== json
+      || !evidence.donorProductId
+      || !evidence.offerId
+      || !evidence.retailerContent?.htmlFile
+      || basename(evidence.retailerContent.htmlFile) !== evidence.retailerContent.htmlFile
+    ) fail("DIRECT_TARGET_CONTENT_EVIDENCE_CONTRACT_INVALID", resolved);
+    const htmlPath = resolve(dirname(resolved), evidence.retailerContent.htmlFile);
+    const htmlBytes = await readFile(htmlPath);
+    const htmlSha256 = createHash("sha256").update(htmlBytes).digest("hex");
+    if (htmlSha256 !== evidence.retailerContent.htmlSha256) {
+      fail("DIRECT_TARGET_CONTENT_EVIDENCE_HTML_SHA256_MISMATCH", htmlPath);
+    }
+    if (donorIds.has(evidence.donorProductId)) {
+      fail("DIRECT_TARGET_CONTENT_EVIDENCE_DUPLICATE", evidence.donorProductId);
+    }
+    donorIds.add(evidence.donorProductId);
+    rows.push({
+      ...evidence,
+      evidenceArtifactSha256: productTruthLegacyBridgeBytesSha256(json),
+    });
+  }
+  return rows.sort((left, right) =>
+    left.donorProductId.localeCompare(right.donorProductId));
 }
 
 async function readListings(
@@ -309,6 +445,99 @@ async function readOffers(db: Client): Promise<ProductTruthLegacyBridgeOfferRow[
     }));
 }
 
+async function readCanonicalDonorBindings(
+  db: Client,
+  capturedAt: string,
+): Promise<ProductTruthLegacyBridgeCanonicalDonorBindingRow[]> {
+  const result = await db.execute({
+    sql: `SELECT donorProductId, canonicalVariantId, id AS decisionId,
+            decisionStatus, decidedAt
+          FROM DonorProductVariantDecision
+          WHERE decisionStatus='exact_confirmed'
+            AND canonicalVariantId IS NOT NULL
+            AND julianday(decidedAt)<=julianday(?)
+            AND julianday(createdAt)<=julianday(?)
+          ORDER BY donorProductId, decidedAt, id`,
+    args: [capturedAt, capturedAt],
+  });
+  return result.rows.map((row): ProductTruthLegacyBridgeCanonicalDonorBindingRow => ({
+    donorProductId: text(row.donorProductId, "DonorProductVariantDecision.donorProductId"),
+    canonicalVariantId: text(
+      row.canonicalVariantId,
+      "DonorProductVariantDecision.canonicalVariantId",
+    ),
+    decisionId: text(row.decisionId, "DonorProductVariantDecision.id"),
+    decisionStatus: text(row.decisionStatus, "DonorProductVariantDecision.decisionStatus"),
+    decidedAt: text(row.decidedAt, "DonorProductVariantDecision.decidedAt"),
+  }));
+}
+
+async function readCanonicalListingComponents(
+  db: Client,
+  manifestSha256: string,
+  capturedAt: string,
+): Promise<ProductTruthLegacyBridgeCanonicalListingComponentRow[]> {
+  const result = await db.execute({
+    sql: `WITH ranked_costs AS (
+            SELECT
+              scope.listingKey,
+              cost.id AS skuCostId,
+              ROW_NUMBER() OVER (
+                PARTITION BY scope.listingKey
+                ORDER BY
+                  julianday(cost.effectiveDate) DESC,
+                  cost.effectiveDate DESC,
+                  julianday(cost.createdAt) DESC,
+                  cost.createdAt DESC,
+                  cost.id DESC
+              ) AS rank
+            FROM ProductTruthListingScope scope
+            JOIN SkuCostListingScopeLink link ON link.listingKey=scope.listingKey
+            JOIN SkuCost cost ON cost.id=link.skuCostId
+            WHERE scope.manifestSha256=?
+              AND cost.source='retail:batch'
+              AND cost.effectiveDate IS NOT NULL
+              AND julianday(cost.effectiveDate)<=julianday(?)
+              AND julianday(cost.createdAt)<=julianday(?)
+          )
+          SELECT
+            ranked.listingKey,
+            ranked.skuCostId,
+            evidence.componentIndex,
+            evidence.evidenceStatus,
+            evidence.targetCanonicalVariantId,
+            evidence.contentCanonicalVariantId,
+            evidence.contentObservationId,
+            content.canonicalVariantId AS observedContentCanonicalVariantId,
+            decision.decisionStatus,
+            decision.canonicalVariantId AS decisionCanonicalVariantId
+          FROM ranked_costs ranked
+          JOIN SkuComponentEvidence evidence ON evidence.skuCostId=ranked.skuCostId
+          LEFT JOIN ProductContentObservation content
+            ON content.id=evidence.contentObservationId
+          LEFT JOIN DonorProductVariantDecision decision
+            ON decision.id=content.variantDecisionId
+          WHERE ranked.rank=1
+          ORDER BY ranked.listingKey, evidence.componentIndex, evidence.id`,
+    args: [manifestSha256, capturedAt, capturedAt],
+  });
+  return result.rows.map((row): ProductTruthLegacyBridgeCanonicalListingComponentRow => ({
+    listingKey: text(row.listingKey, "ProductTruthListingScope.listingKey"),
+    skuCostId: text(row.skuCostId, "SkuCost.id"),
+    componentIndex: numberValue(row.componentIndex, "SkuComponentEvidence.componentIndex"),
+    evidenceStatus: text(row.evidenceStatus, "SkuComponentEvidence.evidenceStatus"),
+    targetCanonicalVariantId: text(
+      row.targetCanonicalVariantId,
+      "SkuComponentEvidence.targetCanonicalVariantId",
+    ),
+    contentCanonicalVariantId: nullableText(row.contentCanonicalVariantId),
+    contentObservationId: nullableText(row.contentObservationId),
+    observedContentCanonicalVariantId: nullableText(row.observedContentCanonicalVariantId),
+    decisionStatus: nullableText(row.decisionStatus),
+    decisionCanonicalVariantId: nullableText(row.decisionCanonicalVariantId),
+  }));
+}
+
 async function buildSnapshot(
   db: Client,
   input: {
@@ -316,14 +545,24 @@ async function buildSnapshot(
     targetFingerprint: string;
     manifest: Phase1ScopeManifest;
     manifestSha256: string;
+    componentBarcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[];
+    directTargetContentEvidence:
+      ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
   },
 ): Promise<ProductTruthLegacyBridgeSnapshot> {
   const listings = await readListings(db, input.manifest, input.manifestSha256);
   const skuSet = new Set(listings.map((row) => row.sku));
   const components = await readComponents(db, skuSet);
-  const [donors, offers] = await Promise.all([
+  const [
+    donors,
+    offers,
+    canonicalDonorBindings,
+    canonicalListingComponents,
+  ] = await Promise.all([
     readDonors(db),
     readOffers(db),
+    readCanonicalDonorBindings(db, input.capturedAt),
+    readCanonicalListingComponents(db, input.manifestSha256, input.capturedAt),
   ]);
   return {
     schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
@@ -339,6 +578,10 @@ async function buildSnapshot(
     components,
     donors,
     offers,
+    canonicalDonorBindings,
+    canonicalListingComponents,
+    componentBarcodeEvidence: input.componentBarcodeEvidence,
+    directTargetContentEvidence: input.directTargetContentEvidence,
   };
 }
 
@@ -364,6 +607,18 @@ async function run(options: CliOptions): Promise<void> {
     fail("REMOTE_DATABASE_AUTH_REQUIRED", "--auth-token-env must name a populated environment variable");
   }
   const manifest = await loadManifest(options.manifestPath);
+  const componentBarcodeEvidence = await loadComponentBarcodeEvidence(
+    options.componentBarcodeEvidencePaths,
+  );
+  const directTargetContentEvidence = await loadDirectTargetContentEvidence(
+    options.directTargetContentEvidencePaths,
+  );
+  const manifestListingKeys = new Set(manifest.manifest.listings.map((row) => row.listingKey));
+  for (const evidence of componentBarcodeEvidence) {
+    if (!manifestListingKeys.has(evidence.listingKey)) {
+      fail("BARCODE_EVIDENCE_OUTSIDE_MANIFEST", evidence.listingKey);
+    }
+  }
   const db = createClient({ url: target.clientUrl, ...(authToken ? { authToken } : {}) });
   try {
     const snapshot = await buildSnapshot(db, {
@@ -371,6 +626,8 @@ async function run(options: CliOptions): Promise<void> {
       targetFingerprint: target.fingerprint,
       manifest: manifest.manifest,
       manifestSha256: manifest.sha256,
+      componentBarcodeEvidence,
+      directTargetContentEvidence,
     });
     const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
     const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);

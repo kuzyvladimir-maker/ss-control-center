@@ -39,7 +39,11 @@ export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION =
 
 export const TARGETED_WALMART_PRICE_TTL_MS = 24 * 60 * 60 * 1_000;
 export const TARGETED_WALMART_MIN_IMAGES = 2 as const;
-export const TARGETED_WALMART_MAX_WALL_CLOCK_MS = 180_000 as const;
+// Two authenticated remote schema checks plus two sequential evidence providers
+// can legitimately exceed three minutes. Six minutes remains a hard, sealed
+// ceiling while leaving enough time to persist the already-returned detail
+// response instead of terminalizing it at the write boundary.
+export const TARGETED_WALMART_MAX_WALL_CLOCK_MS = 360_000 as const;
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION =
   "product-truth-targeted-walmart-legacy-snapshot/1.0.0" as const;

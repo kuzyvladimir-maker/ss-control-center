@@ -1,0 +1,130 @@
+{
+  "schema_version": "walmart-listing-main-candidate-qualification/v1",
+  "created_at": "2026-07-27T13:16:16.073Z",
+  "status": "PASS",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "candidate_sha256": "d5f5a7d94bb33e235f03699176e2df50ec174ee5dd3ca3f1c2a180c712035858",
+  "candidate_manifest_file_sha256": "5c684a31261bbc6ab74c8c5640e5fbb9f223718f739877e0bb5161623489239a",
+  "candidate_manifest_body_sha256": "099280e1485d3d2174bebd02e422b77dd077dec86a5e6bd1671e4c5ef3c38dc8",
+  "diagnosis_file_sha256": "10f58b36cab0e7e5fc7531e10879b8d235b18a4cdabbcc5b80417d0a8b9bf1eb",
+  "observer_plan_body_sha256": "3164a137c72d0cb4535c5a0bb751a51890eb24bb421750c4d257b99d75709960",
+  "call_key": "42a43a5bb75429715612b2de3ab1a5e42fc56e4f5a3654b7e0bce7f5ab498e1f",
+  "observation": {
+    "image_id": "i_460d70e55951c68ed3ac",
+    "visual_role": "tiled_main",
+    "visible_brand_text": "PEPPERIDGE FARM",
+    "visible_product_text": "HOT DOG BUNS",
+    "visible_variant_text": "TOP SLICED SOFT WHITE",
+    "visible_size_texts": [
+      "8"
+    ],
+    "external_package_count": {
+      "mode": "exact",
+      "value": 2,
+      "min": null,
+      "max": null
+    },
+    "outer_package_claims": [
+      "8 TOP SLICED SOFT WHITE HOT DOG BUNS"
+    ],
+    "inner_contents_claims": [
+      "8"
+    ],
+    "case_package_claims": [],
+    "unclear_quantity_claims": [],
+    "grid_cell_kind": "single_sellable_package",
+    "front_visibility": "all",
+    "background": "white",
+    "multiple_distinct_products": "no",
+    "readable_identity": "clear",
+    "evidence": [
+      "PEPPERIDGE FARM",
+      "BAKERY CLASSICS",
+      "8 TOP SLICED",
+      "SOFT WHITE",
+      "HOT DOG BUNS",
+      "Baked with Care SOFT"
+    ],
+    "flags": []
+  },
+  "decision": {
+    "verdict": "PASS",
+    "checks": {
+      "identity": "MATCH",
+      "package_facts": {
+        "net_content": "NOT_APPLICABLE",
+        "inner_item_count": "MATCH"
+      },
+      "external_quantity": "MATCH",
+      "single_package_per_cell": "MATCH",
+      "front": "MATCH",
+      "background": "MATCH",
+      "no_mixed_product": "MATCH"
+    },
+    "hard_failures": [],
+    "unknowns": []
+  },
+  "worker_receipt": {
+    "schema_version": "vision-worker-receipt/v2",
+    "key_id": "walmart-listing-vision-aaf60dc3afc25bba",
+    "public_key_spki_der_base64": "MCowBQYDK2VwAyEAgTO4k5KCPKIu4j7y8gU9nfi7AiL7CwfWEIwzSiBOoak=",
+    "public_key_spki_sha256": "aaf60dc3afc25bba5bac48086524b813ad62b0103c290886769a1352eb4b8ea3",
+    "body": {
+      "issued_at": "2026-07-27T13:16:16.115Z",
+      "reservation_reserved_at": "2026-07-27T13:16:02.974Z",
+      "request_attestation": {
+        "schema_version": "vision-request-attestation/v2",
+        "run_lock_sha256": "6dac6bba1da164e37c60abbe44aacdeb4fe580d7366b6a725b8a52fbdfccbb5c",
+        "shard_id": "single-observer-00-917f7379b307dd1b",
+        "call_index": 0,
+        "call_key": "42a43a5bb75429715612b2de3ab1a5e42fc56e4f5a3654b7e0bce7f5ab498e1f",
+        "prompt_sha256": "27d469da9191b36665b8caebd83e23e33cec36f8bdbce44775a5a4039b94dbe9",
+        "execution_permit_sha256": "3e86f5d9380f2a3723422e06b374cd8483788573513c2bb51d4066ad017e4394",
+        "partition_id": "walmart:1:FaisalX-1148",
+        "image_sha256": [
+          "a02ccea5814422097357e72193ca1172a43d1930f2aa3dd43717d8746cbc462a"
+        ]
+      },
+      "result_canonical_sha256": "67afeec30a2a027ee374edecb1d3f6d147acdf7bcd46b24951faea04648a760d",
+      "worker_contract": {
+        "input_image_count": 1,
+        "vision_provider": "claude_cli_subscription",
+        "vision_model": "sonnet",
+        "vision_reasoning_effort": null,
+        "cli_version": "2.1.179 (Claude Code)",
+        "node_version": "v20.20.1",
+        "runtime_platform": "linux",
+        "runtime_arch": "x64",
+        "worker_build": "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9",
+        "reservation_ledger": {
+          "schema_version": "vision-call-reservation-ledger-contract/v1",
+          "ledger_id": "ledger-2c53fa5f-f761-4660-80b9-24e934e172aa",
+          "ledger_epoch": "epoch-986b9a13-740b-4403-b433-378f2613d4f0",
+          "state_directory_path_sha256": "ae43d594a2a43b6bc856529cfa729d73d9784d1dd3f3e4dffddf27feccfece53",
+          "directory_identity_sha256": "c0e7a611777a5b7063c36a94c3c4c27ea6943e34ba2622944c0426d7685c0db1",
+          "identity_artifact_sha256": "ffd380901c51e88205454d1ddd68141d94e811c286b62d556c60e335e84e3a68"
+        },
+        "vision_timeout_ms": 300000
+      },
+      "subscription_policy": {
+        "auth_mode": "claude_subscription_oauth",
+        "paid_api_environment_absent": true,
+        "alternate_cloud_routing_absent": true
+      }
+    },
+    "signature_base64": "J0miJJiBI+WQunedd7mbrA4tGR+pZhuUpoIk9JIPanh1MrUNd2eMi0XXLSNUmuGvxGCarM6XlH0biUbDqc3KBg=="
+  },
+  "safety": {
+    "subscription_calls_consumed": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "9888618b4767ff90fe3739c9be0cb4381d10fb125c5f248eba04821a7828575a"
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1633",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1633",
+    "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+    "upc": "742259721021",
+    "gtin14": "00742259721021",
+    "wpid": "1OYN8ZYPZ7FB",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "7437908121",
+    "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-Original-Bread-20-oz-Soft-White-Pre-sliced-White-Bread-Bag-Pack-of-7_9ed6d8bb-fdef-48a0-943d-6e30061540a1.1b8e593577f07d68f3705443accc3303.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "00836dc594c86f601571ad7edd107c733ae5114fe20b7b564781d18e1c6e882e",
+    "catalog_search_payload_canonical_sha256": "8cc398418b3aee21067962471bdc3e132f178f04b2e8c490b46afda3c0e05d8a"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1633",
+    "seller.ItemResponse[0].sku=FaisalX-1633",
+    "seller.ItemResponse[0].upc=742259721021",
+    "seller.normalized_gtin14=00742259721021",
+    "seller.wpid_not_itemId=1OYN8ZYPZ7FB",
+    "catalog.items[0].standardUpc~=00742259721021;itemId=7437908121",
+    "catalog.unique_numeric_public_itemId=7437908121"
+  ]
+}

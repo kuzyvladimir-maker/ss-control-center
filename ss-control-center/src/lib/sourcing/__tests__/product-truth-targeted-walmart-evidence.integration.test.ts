@@ -533,13 +533,18 @@ async function createFixture(input: {
         canonicalMigrationsApplied: true,
       };
     },
-    search: async (query) => {
+    lookupExactItem: async (itemId) => {
+      assert.equal(itemId, WALMART_ITEM_ID);
       let authorization: MeteredProviderAuthorization | null = null;
       await withMeteredProviderCall({
         provider: "oxylabs",
         operation: "query",
         units: 1,
-        requestFingerprint: { platform: "walmart", query, zip: "33765" },
+        requestFingerprint: {
+          platform: "walmart_product",
+          itemId,
+          zip: "33765",
+        },
         onAuthorized: (value) => { authorization = value; },
       }, async () => {
         counters.oxylabs += 1;
@@ -657,7 +662,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
         executionInput(fixture, "execute", {
           monotonicNow: () => {
             monotonicReads += 1;
-            return monotonicReads >= 8 ? 180_000 : 0;
+            return monotonicReads >= 8 ? 360_000 : 0;
           },
         }),
       );
@@ -877,7 +882,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
           executionInput(fixture, "execute", {
             monotonicNow: () => {
               monotonicReads += 1;
-              return monotonicReads >= 8 ? 180_000 : 0;
+              return monotonicReads >= 8 ? 360_000 : 0;
             },
           }),
         );

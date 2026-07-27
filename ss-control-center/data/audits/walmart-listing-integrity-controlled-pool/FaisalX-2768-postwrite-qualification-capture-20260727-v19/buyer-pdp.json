@@ -1,0 +1,76 @@
+{
+  "product": {
+    "item_id": "1838619805",
+    "product_url": "https://www.walmart.com/ip/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4/1838619805",
+    "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+    "main_image": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+    "images": [
+      "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+      "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+      "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+      "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+      "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+      "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg"
+    ],
+    "description": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+    "feature_bullets": [
+      "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "Campbell's Condensed Soup",
+      "he perfect pantry staple to pull out as part of an easy weeknight dinner"
+    ],
+    "specifications": [
+      {
+        "name": "Flavor",
+        "value": "qty 4"
+      },
+      {
+        "name": "Brand",
+        "value": "Campbell's"
+      },
+      {
+        "name": "Container type",
+        "value": "Can"
+      },
+      {
+        "name": "Size",
+        "value": "10.5"
+      },
+      {
+        "name": "Instructions",
+        "value": "Simply mix the condensed soup with 1 can of water and microwave on high for 3 to 3.5 minutes in a covered microwave-safe bowl, or heat in a pot on the stove, stirring occasionally."
+      },
+      {
+        "name": "Vegetable type",
+        "value": "Mushroom"
+      },
+      {
+        "name": "Material",
+        "value": "Metal"
+      },
+      {
+        "name": "Cuisine",
+        "value": "Meal"
+      },
+      {
+        "name": "Count",
+        "value": "1"
+      },
+      {
+        "name": "Food form",
+        "value": "Liquids"
+      },
+      {
+        "name": "Product net content parent",
+        "value": "3 Pound"
+      },
+      {
+        "name": "Product net content uom",
+        "value": "Pound"
+      },
+      {
+        "name": "Food & drug fact label type",
+        "value": "No Fact Panel"
+      }
+    ]
+  }
+}

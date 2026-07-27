@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-2768",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-2768",
+    "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+    "upc": "660251345376",
+    "gtin14": "00660251345376",
+    "wpid": "1MD37R331C2K",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "1838619805",
+    "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+    "main_image_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "d8213b5abd4e02007513ccc4d65b7021bb4f7c8afe7c5436c81aff265138f423",
+    "catalog_search_payload_canonical_sha256": "3291fc463845b41b6c28656cc60e29b3031172895e41e9b88ede470b67fa1a6c"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-2768",
+    "seller.ItemResponse[0].sku=FaisalX-2768",
+    "seller.ItemResponse[0].upc=660251345376",
+    "seller.normalized_gtin14=00660251345376",
+    "seller.wpid_not_itemId=1MD37R331C2K",
+    "catalog.items[0].standardUpc~=00660251345376;itemId=1838619805",
+    "catalog.unique_numeric_public_itemId=1838619805"
+  ]
+}

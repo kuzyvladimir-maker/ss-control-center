@@ -1,0 +1,109 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_228e6132204dd56d8b35",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "TOP SLICED SOFT WHITE HOT DOG BUNS",
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "14oz"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 8,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "8 TOP SLICED SOFT WHITE",
+        "14oz"
+      ],
+      "inner_contents_claims": [
+        "8 buns per bag"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "8 TOP SLICED SOFT WHITE visible on each bag label",
+        "HOT DOG BUNS visible on each bag label",
+        "14oz visible on each bag label",
+        "PEPPERIDGE FARM visible on each bag",
+        "8 repeated packages shown in tiled grid"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_5ceeac6c5d108387bb44",
+      "visual_role": "nutrition",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 Servings Per Container",
+        "Serving Size 1 Bun (50g)"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Nutrition Facts panel visible",
+        "8 Servings Per Container",
+        "Serving Size 1 Bun (50g)",
+        "Calories 140",
+        "Total Fat 2g"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_cb236c1e3dfa7aadc7d1",
+      "visual_role": "back",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "TOP SLICED SOFT WHITE Hot Dog Buns",
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "some",
+      "background": "near_white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM ESTD. 1937 visible on label",
+        "TOP SLICED SOFT WHITE Hot Dog Buns text on label",
+        "Blue twist-tie closure at top with TOP SLICED ST WHITE text",
+        "Baked With Care text visible",
+        "1-888-737-7374 visible on back panel",
+        "Barcode visible lower left"
+      ],
+      "flags": []
+    }
+  ]
+}

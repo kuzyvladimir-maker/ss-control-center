@@ -13,27 +13,43 @@ const ROOT = path.resolve(
   "data/audits/walmart-listing-integrity-fresh-controls",
 );
 
-test("renders the fresh before/proposed-after shadow case without live controls", async () => {
+test("renders qualified canaries and the sealed controlled pool without mutation controls", async () => {
   const data = await loadListingIntegrityShadowData(ROOT);
   const html = renderToStaticMarkup(<ListingIntegrityPanel data={data} />);
 
-  assert.match(html, /Полный каталог/);
-  assert.match(html, /3936\/3936 SKU/);
-  assert.match(html, /1464/);
-  assert.match(html, /1431/);
-  assert.match(html, /1964/);
-  assert.match(html, /1\/57/);
-  assert.match(html, /32 images/);
-  assert.match(html, /Актуальное исправление/);
-  assert.match(html, /Exact Product Truth подтверждён для review/);
-  assert.match(html, /Change scope: description, bullets/);
-  assert.match(html, /Текущие live изображения · без изменений/);
-  assert.match(html, /Exact diff · только description и bullets/);
-  assert.match(html, /hamburger buns/);
-  assert.match(html, /PACK OF 6/);
-  assert.match(html, /Certified review/);
-  assert.match(html, /Walmart\/DB write authority = false/);
-  assert.match(html, /Подтверждаю FaisalX-1183 и diff ce1b31e0…cb72b/);
+  assert.match(html, /Постоянный Listing Integrity · контролируемая работа/);
+  assert.match(html, /Listing Integrity · производственный контур/);
+  assert.match(html, /3 qualified/);
+  assert.match(html, /10 repair-ready/);
+  assert.match(html, /1376 source-required/);
+  assert.match(html, /Замкнутый цикл доказан на 3 live SKU/);
+  assert.match(html, /FaisalX-1148/);
+  assert.match(html, /FaisalX-1181/);
+  assert.match(html, /FaisalX-1183/);
+  assert.match(html, /18\/18 PASS/);
+  assert.match(html, /20\/20 PASS/);
+  assert.match(html, /Публикация \/ индексация/);
+  assert.match(html, /Открыть фактическую галерею ДО → ПОСЛЕ/);
+  assert.match(
+    html,
+    /\/api\/walmart\/growth\/listing-integrity\/gallery\/FaisalX-1181/,
+  );
+  assert.match(html, /Product Truth-ready repair pool/);
+  assert.match(html, /FaisalX-2768/);
+  assert.match(html, /FaisalX-1633/);
+  assert.match(html, /Multipack audit/);
+  assert.match(html, /SOURCE_REQUIRED/);
+  assert.match(html, /1376 из 1391 кандидатов/);
+  assert.match(html, /Write authority: false/);
+  assert.match(html, /controlled-pool-010609ed49f99760f5a4/);
+  assert.doesNotMatch(html, /Актуальное исправление/);
+  assert.match(html, /Весь каталог Walmart/);
+  assert.match(html, /4042\/4042 SKU/);
+  assert.match(html, /1504/);
+  assert.match(html, /1495/);
+  assert.match(html, /929/);
+  assert.match(html, /58/);
+  assert.match(html, /2017/);
   assert.match(
     html,
     /Исторический контроль MAIN 1 → 6 — доказательство детектора, не актуальный payload/,
@@ -45,13 +61,6 @@ test("renders the fresh before/proposed-after shadow case without live controls"
   assert.match(html, /38\/38/);
   assert.match(html, /17\/17/);
   assert.match(html, /8\/8/);
-  assert.match(html, /Product Truth readiness/);
-  assert.match(html, /Schema активирована и подтверждена 8\/8/);
-  assert.match(html, /LISTING_SCOPE_NOT_REGISTERED/);
-  assert.match(html, /Canonical shared Product Truth read-contract/);
-  assert.match(html, /Execution package: NO-GO/);
-  assert.match(html, /Walmart write: LOCKED/);
-  assert.match(html, /Mass run: LOCKED/);
   assert.match(html, /exact-byte custody verified/);
   assert.match(html, /Source-aware visual attestation/);
   assert.match(html, /Подписанная визуальная проверка завершена/);
@@ -62,7 +71,7 @@ test("renders the fresh before/proposed-after shadow case without live controls"
   assert.match(html, /Owner visual review of target MAIN and gallery/);
   assert.match(html, /Owner approved/);
   assert.match(html, /ещё не live/);
-  assert.match(html, /Repairs locked/);
+  assert.match(html, /Exact payload only/);
   assert.match(html, /Mass run locked/);
   assert.doesNotMatch(html, /method="post"/i);
   assert.doesNotMatch(html, /Publish now/i);

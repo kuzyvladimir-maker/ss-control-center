@@ -169,10 +169,81 @@ export interface ListingIntegrityCatalogOverview {
   };
 }
 
+export interface ListingIntegrityCompletedOperation {
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  feedId: string;
+  payloadSha256: string;
+  beforeCapturedAt: string;
+  afterCapturedAt: string;
+  checksPassed: number;
+  qualification: "PASS";
+  publishedAndActive: true;
+  indexingPreserved: true;
+  galleryHref: string;
+  galleryFileSha256: string;
+  verificationFileSha256: string;
+}
+
+export interface ListingIntegrityControlledPoolRow {
+  ordinal: number;
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  title: string;
+  outerUnits: number | null;
+  stage: "PRODUCT_TRUTH_READY";
+  nextAction: "FRESH_SOURCE_AWARE_AUDIT";
+  deterministicFindings: string[];
+  performance: {
+    units90: number;
+    sales90: number;
+    returns90: number;
+    returnRate90: number | null;
+    computedAt: string | null;
+  };
+  walmartWriteAuthorized: false;
+}
+
+export interface ListingIntegritySourceRequiredRow {
+  ordinal: number;
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  title: string;
+  outerUnits: number | null;
+  stage: "SOURCE_REQUIRED";
+  nextAction: "ENRICH_EXACT_PRODUCT_TRUTH";
+  deterministicFindings: string[];
+  productTruthBlockers: string[];
+  walmartWriteAuthorized: false;
+}
+
+export interface ListingIntegrityOperationsState {
+  status: "NOT_READY" | "READ_ONLY_POOL_READY";
+  poolId: string | null;
+  poolBodySha256: string | null;
+  poolFileSha256: string | null;
+  poolCreatedAt: string | null;
+  poolEvidencePath: string | null;
+  strictSequence: true;
+  maxApplyInFlight: 1;
+  walmartWritesAllowed: false;
+  modelCallsAllowed: false;
+  sourceCandidateCount: number;
+  repairReadyCount: number;
+  sourceRequiredCount: number;
+  completed: ListingIntegrityCompletedOperation[];
+  pool: ListingIntegrityControlledPoolRow[];
+  sourceRequired: ListingIntegritySourceRequiredRow[];
+}
+
 export interface ListingIntegrityShadowData {
   mode: "SHADOW_READ_ONLY";
   ownerRepairReview: ListingIntegrityOwnerRepairReview | null;
   catalog: ListingIntegrityCatalogOverview;
+  operations: ListingIntegrityOperationsState;
   productTruth: ListingIntegrityProductTruthReadiness;
   engine: {
     closedLoopTestsPassed: number;

@@ -21,6 +21,7 @@ function parseArgs(argv) {
     "execution-package",
     "feed-receipt",
     "terminal-report",
+    "qualification-receipt",
     "output-dir",
   ];
   if (flags.size !== required.length || required.some((key) => !flags.has(key))) {
@@ -106,10 +107,28 @@ function renderBullets(values) {
   return `<ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>`;
 }
 
+function specificationMap(product) {
+  if (!Array.isArray(product.specifications)) fail("buyer specifications must be an array");
+  return new Map(product.specifications.map((row) => [row.name, row.value]));
+}
+
+function renderSpecifications(product) {
+  return `<table>${product.specifications.map((row) => (
+    `<tr><th>${escapeHtml(row.name)}</th><td>${escapeHtml(row.value)}</td></tr>`
+  )).join("")}</table>`;
+}
+
 function renderHtml(verification, before, after, plan) {
   const beforeProduct = before.product;
   const afterProduct = after.product;
   const targetImages = plan.target.images;
+  const mainChanged = plan.changed_fields.includes("main");
+  const attributeOnly = exactArray(plan.changed_fields, ["attributes"]);
+  const statusCopy = attributeOnly
+    ? "Walmart опубликовал точные структурированные Product Truth атрибуты. Title, description, bullets, MAIN и дополнительные изображения не менялись."
+    : mainChanged
+      ? "Walmart опубликовал точный approved text target и прошедшую независимую визуальную Qualification новую MAIN. Title и дополнительные изображения не менялись."
+      : "Walmart опубликовал точный approved target. Title и изображения не менялись; изменены только description и bullets.";
   const cards = targetImages.map((image, index) => `
     <div class="image-pair">
       <div class="image-card before">
@@ -132,7 +151,7 @@ function renderHtml(verification, before, after, plan) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Walmart Listing Integrity · FaisalX-1183 · Фактическое До → После</title>
+  <title>Walmart Listing Integrity · ${escapeHtml(verification.listing.sku)} · Фактическое До → После</title>
   <style>
     :root{color-scheme:light;font-family:Inter,Arial,sans-serif;color:#172033;background:#f4f7fb}
     body{margin:0}.page{max-width:1320px;margin:0 auto;padding:32px}
@@ -146,6 +165,7 @@ function renderHtml(verification, before, after, plan) {
     img{width:100%;height:330px;object-fit:contain;background:#fff;border-radius:12px}
     .arrow{text-align:center;font-size:30px;color:#0b67d0}.section{margin-top:28px}
     p,li{line-height:1.55}.text{white-space:pre-wrap}.changed{background:#fff3c4;padding:2px 4px;border-radius:4px}
+    table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #e6ebf2;text-align:left;vertical-align:top}th{width:42%;color:#596579}
     code{display:block;overflow-wrap:anywhere;font-size:11px;color:#607086;margin-top:10px}
     .checks{columns:2;list-style:none;padding:0}.checks li{break-inside:avoid;margin:7px 0}
     .pass{color:#176b37}.fail{color:#a52a22}
@@ -154,9 +174,9 @@ function renderHtml(verification, before, after, plan) {
   </style>
 </head>
 <body><main class="page">
-  <h1>FaisalX-1183 · фактическое ДО → ПОСЛЕ</h1>
+  <h1>${escapeHtml(verification.listing.sku)} · фактическое ДО → ПОСЛЕ</h1>
   <div class="meta">Walmart item ${escapeHtml(verification.listing.item_id)} · feed ${escapeHtml(verification.feed_id)} · live reread ${escapeHtml(verification.after.captured_at)}</div>
-  <div class="status"><strong>LIVE SURFACE PASS</strong><br>Walmart опубликовал точный approved target. Title и изображения не менялись; изменены только description и bullets.</div>
+  <div class="status"><strong>LIVE SURFACE PASS</strong><br>${escapeHtml(statusCopy)}</div>
 
   <section class="section">
     <h2>Изображения</h2>
@@ -188,6 +208,14 @@ function renderHtml(verification, before, after, plan) {
   </section>
 
   <section class="section">
+    <h2>Структурированные атрибуты</h2>
+    <div class="grid">
+      <div class="panel before"><div class="label">ДО</div>${renderSpecifications(beforeProduct)}</div>
+      <div class="panel after"><div class="label">ПОСЛЕ${attributeOnly ? " · исправлено" : ""}</div>${renderSpecifications(afterProduct)}</div>
+    </div>
+  </section>
+
+  <section class="section">
     <h2>Проверки</h2>
     <div class="panel"><ul class="checks">${checks}</ul></div>
     <details><summary>Техническая оговорка</summary>
@@ -200,7 +228,18 @@ function renderHtml(verification, before, after, plan) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const [beforeIndex, afterIndex, beforePdp, afterPdp, beforeSeller, afterSeller, execution, feed, terminal] = await Promise.all([
+  const [
+    beforeIndex,
+    afterIndex,
+    beforePdp,
+    afterPdp,
+    beforeSeller,
+    afterSeller,
+    execution,
+    feed,
+    terminal,
+    qualification,
+  ] = await Promise.all([
     verifyIntake(args.before_dir),
     verifyIntake(args.after_dir),
     readJson(path.join(args.before_dir, "buyer-pdp.json")),
@@ -210,6 +249,7 @@ async function main() {
     readJson(args.execution_package),
     readJson(args.feed_receipt),
     readJson(args.terminal_report),
+    readJson(args.qualification_receipt),
   ]);
   const plan = execution.value?.execution?.writer_input?.plan;
   if (!plan || plan.schema_version !== "walmart-listing-integrity-repair-plan/v2") {
@@ -224,8 +264,77 @@ async function main() {
   const beforeImages = imageRows(beforeIndex.value);
   const afterImages = imageRows(afterIndex.value);
   const targetImages = plan.target.images;
+  const outerUnitsClaim = target.attribute_claims?.find(
+    (claim) => claim.kind === "outer_units" && claim.unit === "count",
+  );
+  const outerUnits = outerUnitsClaim?.value;
+  if (!Number.isSafeInteger(outerUnits) || outerUnits < 1) {
+    fail("repair plan has no exact positive outer-unit count");
+  }
+  const packPrefix = new RegExp(`^PACK OF ${outerUnits}:`, "u");
+  const explicitOuterQuantity = new RegExp(
+    `(?:PACK\\s+OF\\s+${outerUnits}|Quantity\\s+of\\s+${outerUnits})`,
+    "iu",
+  );
+  const qualificationResult = qualification.value?.qualification;
+  const textOnly = exactArray(plan.changed_fields, ["description", "bullets"]);
+  const reviewedMain = exactArray(plan.changed_fields, ["description", "bullets", "main"]);
+  const attributeOnly = exactArray(plan.changed_fields, ["attributes"]);
+  if (!textOnly && !reviewedMain && !attributeOnly) {
+    fail(`unsupported approved diff for live gallery: ${JSON.stringify(plan.changed_fields)}`);
+  }
+  const mainUrlChangedAsApproved = reviewedMain
+    ? before.main_image !== after.main_image
+    : before.main_image === after.main_image;
+  const galleryUrlsUnchanged = exactArray(before.images.slice(1), after.images.slice(1));
+  const galleryBytesUnchanged =
+    beforeImages.length === afterImages.length
+    && beforeImages.slice(1).every(
+      (row, index) => row.file_sha256 === afterImages[index + 1].file_sha256,
+    );
+  const mainBytesChangedAsApproved = reviewedMain
+    ? beforeImages[0]?.file_sha256 !== afterImages[0]?.file_sha256
+    : beforeImages[0]?.file_sha256 === afterImages[0]?.file_sha256;
+  const targetGalleryUrls = targetImages.slice(1).map((row) => row.source_url);
+  const targetGalleryBytes = targetImages.slice(1).map((row) => row.sha256);
+  const afterSpecs = specificationMap(after);
+  const targetFlavor = target.attribute_claims?.find(
+    (claim) => claim.kind === "variant" && claim.field_path.endsWith(".Flavor"),
+  )?.text;
+  const targetBrand = target.attribute_claims?.find(
+    (claim) => claim.kind === "brand" && claim.field_path.endsWith(".Brand"),
+  )?.text;
+  const targetCount = target.attribute_claims?.find(
+    (claim) => claim.kind === "inner_item_count" && claim.field_path.endsWith(".Count"),
+  )?.value;
+  const targetCountPerPack = target.attribute_claims?.find(
+    (claim) => claim.field_path === "walmart.Visible.countPerPack",
+  )?.value;
+  const visibleCountPerPack = Number(
+    afterSpecs.get("Count per pack") ?? afterSpecs.get("Count Per Pack"),
+  );
+  const attributesExactTarget = !attributeOnly || (
+    afterSpecs.get("Flavor") === targetFlavor
+    && afterSpecs.get("Brand") === targetBrand
+    && Number(afterSpecs.get("Count")) === targetCount
+    && Number(afterSpecs.get("Multipack quantity")) === outerUnits
+    && (Number.isSafeInteger(visibleCountPerPack)
+      ? visibleCountPerPack === targetCountPerPack
+      : targetCountPerPack === 1 && Number(afterSpecs.get("Count")) === outerUnits)
+  );
+  const textChangedAsApproved = attributeOnly
+    ? before.description === after.description
+      && exactArray(before.feature_bullets, after.feature_bullets)
+    : before.description !== after.description
+      && !exactArray(before.feature_bullets, after.feature_bullets);
   const checks = {
     feed_terminal_succeeded: feed.value.status === "SUCCEEDED" && terminal.value.status === "SUCCEEDED",
+    frozen_qualification_pass:
+      qualification.value.status === "PASS"
+      && qualificationResult?.verdict === "PASS"
+      && qualificationResult?.next_sku_unblocked === true
+      && qualificationResult?.listing?.listing_key === plan.listing.listing_key
+      && qualificationResult?.feed_id === feed.value.feed_id,
     exact_listing_identity:
       afterSellerRow.sku === plan.listing.sku
       && after.product_url?.endsWith(`/${plan.listing.item_id}`)
@@ -237,28 +346,41 @@ async function main() {
     description_exact_target: after.description === target.description,
     bullets_exact_target: exactArray(after.feature_bullets, target.bullets),
     title_unchanged: before.title === after.title,
-    main_url_unchanged: before.main_image === after.main_image,
-    gallery_urls_unchanged: exactArray(before.images, after.images),
-    image_urls_exact_target:
-      exactArray(after.images, targetImages.map((row) => row.source_url)),
-    image_bytes_exact_target:
-      afterImages.length === targetImages.length
-      && afterImages.every((row, index) => row.file_sha256 === targetImages[index].sha256),
-    image_bytes_unchanged:
-      beforeImages.length === afterImages.length
-      && beforeImages.every((row, index) => row.file_sha256 === afterImages[index].file_sha256),
-    description_changed: before.description !== after.description,
-    bullets_changed: !exactArray(before.feature_bullets, after.feature_bullets),
+    main_url_changed_only_if_approved: mainUrlChangedAsApproved,
+    main_bytes_changed_only_if_approved: mainBytesChangedAsApproved,
+    main_semantic_qualification_pass: qualificationResult?.facets?.main === "PASS",
+    gallery_urls_unchanged: galleryUrlsUnchanged,
+    gallery_bytes_unchanged: galleryBytesUnchanged,
+    gallery_urls_exact_target:
+      exactArray(after.images.slice(1), targetGalleryUrls),
+    gallery_bytes_exact_target:
+      exactArray(afterImages.slice(1).map((row) => row.file_sha256), targetGalleryBytes),
+    attributes_exact_target: attributesExactTarget,
+    attributes_qualification_pass:
+      !attributeOnly || qualificationResult?.facets?.attributes === "PASS",
+    attributes_changed_only_if_approved:
+      attributeOnly
+        ? canonical(before.specifications) !== canonical(after.specifications)
+        : true,
+    text_changed_only_if_approved: textChangedAsApproved,
     only_approved_fields_changed:
-      exactArray(plan.changed_fields, ["description", "bullets"])
+      (textOnly || reviewedMain || attributeOnly)
       && before.title === after.title
-      && exactArray(before.images, after.images),
+      && (!attributeOnly
+        || (before.description === after.description
+          && exactArray(before.feature_bullets, after.feature_bullets)))
+      && galleryUrlsUnchanged
+      && galleryBytesUnchanged
+      && mainUrlChangedAsApproved
+      && mainBytesChangedAsApproved,
     quantity_explicit_in_description:
-      /^PACK OF 6:/u.test(after.description)
-      && /six 14 oz bags/u.test(after.description)
-      && /48 buns total/u.test(after.description),
+      attributeOnly
+        ? explicitOuterQuantity.test(after.description)
+        : packPrefix.test(after.description),
     quantity_explicit_in_bullets:
-      after.feature_bullets.some((row) => /^PACK OF 6:/u.test(row) && /6 bags/u.test(row) && /8 buns/u.test(row)),
+      after.feature_bullets.some((row) => (
+        attributeOnly ? explicitOuterQuantity.test(row) : packPrefix.test(row)
+      )),
   };
   const passed = Object.values(checks).every(Boolean);
   if (!passed) fail(`live canary verification failed: ${JSON.stringify(checks)}`);
@@ -278,6 +400,7 @@ async function main() {
     execution_package_file_sha256: execution.file_sha256,
     terminal_feed_receipt_file_sha256: feed.file_sha256,
     terminal_report_file_sha256: terminal.file_sha256,
+    qualification_receipt_file_sha256: qualification.file_sha256,
     before: {
       captured_at: beforeIndex.value.created_at,
       intake_index_file_sha256: beforeIndex.file_sha256,
@@ -301,8 +424,8 @@ async function main() {
     checks,
     qualification_boundary: {
       buyer_facing_live_surface_verified: true,
-      frozen_sequence_gate_receipt_emitted: false,
-      next_sku_unblocked: false,
+      frozen_sequence_gate_receipt_emitted: true,
+      next_sku_unblocked: true,
     },
   };
   const verification = { ...verificationBody, body_sha256: bodySha(verificationBody) };
@@ -318,7 +441,7 @@ async function main() {
     html_path: htmlPath,
     body_sha256: verification.body_sha256,
     checks: Object.keys(checks).length,
-    next_sku_unblocked: false,
+    next_sku_unblocked: true,
   }, null, 2)}\n`);
 }
 

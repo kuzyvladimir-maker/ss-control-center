@@ -1,0 +1,890 @@
+{
+  "contractVersion": "product-truth-read-contract/3.2.0",
+  "snapshot": {
+    "sku": "FaisalX-1148",
+    "channel": "walmart",
+    "storeIndex": 1,
+    "listingKey": "walmart:1:FaisalX-1148",
+    "asOf": "2026-07-27T13:08:04.127Z",
+    "maxPriceAgeMs": 2592000000,
+    "skuCostId": "retail:FaisalX-1148:bridge:6c6c0347a09e0ee7d2f19831"
+  },
+  "recipe": {
+    "components": [
+      {
+        "componentEvidenceId": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+        "componentIndex": 0,
+        "product": "Hot Dog Buns",
+        "flavor": "White",
+        "size": "8 count",
+        "qty": 2,
+        "targetCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+        "evidenceStatus": "REJECT",
+        "content": {
+          "canonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+          "identity": {
+            "variantKey": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+            "identityHash": "9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+            "keyVersion": "canonical-product-variant-key/1.0.0",
+            "brand": "farm pepperidge",
+            "productLine": "bakery buns classics dog hot",
+            "flavor": "white",
+            "modifiers": [
+              "token:sliced",
+              "token:top"
+            ],
+            "form": "bag",
+            "sizeDimension": "COUNT",
+            "sizeBaseAmount": 8,
+            "sizeBaseUnit": "count",
+            "outerPackCount": 1,
+            "identity": {
+              "schemaVersion": "canonical-product-variant-identity/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bakery buns classics dog hot",
+              "flavor": "white",
+              "modifiers": [
+                "token:sliced",
+                "token:top"
+              ],
+              "form": "bag",
+              "size": {
+                "dimension": "COUNT",
+                "baseAmount": 8,
+                "baseUnit": "count"
+              },
+              "outerPackCount": 1
+            }
+          },
+          "facts": {
+            "title": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+            "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns.",
+            "bullets": [
+              "TOP SLICED HOT DOG BUNS: A classic white hot dog bun for easy filling",
+              "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+              "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+              "COOKOUT READY: Quality buns your family and friends will appreciate",
+              "8 BUNS: 8-count bag of Pepperidge Farm Top Sliced Soft White hot dog buns",
+              "PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm hamburger buns are carefully crafted with quality ingredients"
+            ],
+            "attributes": [
+              "<B>Features:</B> No High Fructose Corn Syrup, No Artificial Flavors, No Artificial Colors",
+              "<B>State of Readiness:</B> Ready to Eat",
+              "<B>Package Quantity:</B> 1"
+            ],
+            "nutritionFacts": {
+              "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds ",
+              "nutrition_label_type_code": "LEGACY_FORMAT",
+              "value_prepared_list": [
+                {
+                  "nutrients": [
+                    {
+                      "name": "Calories",
+                      "quantity": 140,
+                      "unit_of_measurement": "Cal"
+                    },
+                    {
+                      "name": "Total Fat",
+                      "percentage": 3,
+                      "quantity": 2,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Saturated Fat",
+                      "percentage": 3,
+                      "quantity": 0.5,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Trans Fat",
+                      "quantity": 0,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Polyunsaturated Fat",
+                      "quantity": 1,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Monounsaturated Fat",
+                      "quantity": 0,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Cholesterol",
+                      "percentage": 0,
+                      "quantity": 0,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Sodium",
+                      "percentage": 10,
+                      "quantity": 220,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Total Carbohydrate",
+                      "percentage": 9,
+                      "quantity": 26,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Dietary Fiber",
+                      "percentage": 4,
+                      "quantity": 1,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Sugars",
+                      "quantity": 6,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Added Sugars",
+                      "percentage": 8,
+                      "quantity": 4,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Protein",
+                      "quantity": 5,
+                      "unit_of_measurement": "g"
+                    },
+                    {
+                      "name": "Vitamin D",
+                      "percentage": 0,
+                      "quantity": 0,
+                      "unit_of_measurement": "mcg"
+                    },
+                    {
+                      "name": "Calcium",
+                      "percentage": 4,
+                      "quantity": 40,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Iron",
+                      "percentage": 6,
+                      "quantity": 1.2,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Potassium",
+                      "percentage": 0,
+                      "quantity": 60,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Thiamin",
+                      "percentage": 25,
+                      "quantity": 0.27,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Riboflavin",
+                      "percentage": 15,
+                      "quantity": 0.18,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Niacin",
+                      "percentage": 10,
+                      "quantity": 1.6,
+                      "unit_of_measurement": "mg"
+                    },
+                    {
+                      "name": "Folate",
+                      "percentage": 20,
+                      "quantity": 75,
+                      "unit_of_measurement": "mcg DFE"
+                    },
+                    {
+                      "name": "Folic Acid",
+                      "quantity": 40,
+                      "unit_of_measurement": "mcg"
+                    }
+                  ],
+                  "serving_size": "50",
+                  "serving_size_unit_of_measurement": "g",
+                  "servings_per_container": "8"
+                }
+              ],
+              "warning": "DO NOT PURCHASE IF PACKAGE IS OPEN OR TORN., Contains: Wheat, Milk, Sesame Seeds."
+            },
+            "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds",
+            "mainImageUrl": "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+            "imageUrls": [
+              "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+              "https://target.scene7.com/is/image/Target/GUEST_6cefeb89-a551-4941-8fe1-02a22b87b3f3",
+              "https://target.scene7.com/is/image/Target/GUEST_c58378b8-097b-4ef1-8de7-788db474b80d",
+              "https://target.scene7.com/is/image/Target/GUEST_febeccfb-6a05-4dfb-af11-7459a297d3e8",
+              "https://target.scene7.com/is/image/Target/GUEST_ff7fed00-3381-4e36-bd0b-ff3b9519a436",
+              "https://target.scene7.com/is/image/Target/GUEST_35931cb5-7ea2-4537-84e5-045894843120",
+              "https://target.scene7.com/is/image/Target/GUEST_e2e6447a-d996-45d3-b3dc-5f97af7d1333",
+              "https://target.scene7.com/is/image/Target/GUEST_672a5e95-5640-45cd-9160-6b085f8ead6b"
+            ]
+          },
+          "provenance": {
+            "contentObservationId": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+            "observationKey": "d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+            "donorProductId": "f6bd4b69-0146-41b1-8578-4ecbe24caf67",
+            "variantDecisionId": "dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36",
+            "matcherVersion": "canonical-product-match/1.2.1",
+            "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+            "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+            "decisionEvidenceHash": "55c2b962a2d9f134482b6e130be4d8a2eb954c7eff47913c5d096c2d45f78bcb",
+            "contentHash": "076fa2524ac32f6eee59afc06bb88b210d38264b03454bad62bbe4752365fd70",
+            "fieldHashes": {
+              "allergens": "3edeefc97e1adca53083b39f15e8bffc19d4f28ac7aad603d8f71f2921430811",
+              "attributes": "c156ca7874c65e7882846fc76dce89e41108789f4866a589d3005664442f91b5",
+              "bullets": "c2ba2faa0024d5912feff63744c032187e6a7e127c759f225d06963bc9e5dfce",
+              "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+              "description": "537aa7c0dbfe0d8c7b191573415553767f71b84798e6346c9c83f822d0a43f0e",
+              "imageUrls": "580589101fadaf8dbc7bcc6c8df35284852efa1fbaf8adc80d7f04b17d2b13ca",
+              "ingredients": "68553fc2554d938addfdb96d8a382ca01092da6f036d7d6ee41c99dd6e437c91",
+              "mainImageUrl": "e7f6c99190789385b9be88cdc8a972880a1bcff2cfb247cf83e896cf922a21e2",
+              "nutritionFacts": "3c9f335dbded629685d3102d82a397c28e414c1ad3c21377153d920f5a683883",
+              "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+              "title": "b146659ec74f613adddab223b08991e28b7447c1d128b97bb22dd957b39c8685",
+              "upc": "60272efee64c4f82a13060cd60a0482f07eaaaf3c12f68f26f4873ca5462b68a"
+            },
+            "sourceUrl": "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284",
+            "sourceApi": "target_direct_html",
+            "observedAt": "2026-07-27T13:01:01.000Z",
+            "runId": "ptlb-wave-814d7f6456c4d90f7e7bc43d",
+            "approvalId": "owner-ptlb-wave-814d7f6456c4d90f7e7bc43d",
+            "meteredReceiptId": null
+          }
+        },
+        "contentBlockers": []
+      }
+    ],
+    "blockers": []
+  },
+  "views": {
+    "bundleFactory": {
+      "consumer": "BUNDLE_FACTORY",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+          "componentIndex": 0,
+          "product": "Hot Dog Buns",
+          "flavor": "White",
+          "size": "8 count",
+          "qty": 2,
+          "targetCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+            "identity": {
+              "variantKey": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "identityHash": "9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bakery buns classics dog hot",
+              "flavor": "white",
+              "modifiers": [
+                "token:sliced",
+                "token:top"
+              ],
+              "form": "bag",
+              "sizeDimension": "COUNT",
+              "sizeBaseAmount": 8,
+              "sizeBaseUnit": "count",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "farm pepperidge",
+                "productLine": "bakery buns classics dog hot",
+                "flavor": "white",
+                "modifiers": [
+                  "token:sliced",
+                  "token:top"
+                ],
+                "form": "bag",
+                "size": {
+                  "dimension": "COUNT",
+                  "baseAmount": 8,
+                  "baseUnit": "count"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+              "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns.",
+              "bullets": [
+                "TOP SLICED HOT DOG BUNS: A classic white hot dog bun for easy filling",
+                "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+                "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+                "COOKOUT READY: Quality buns your family and friends will appreciate",
+                "8 BUNS: 8-count bag of Pepperidge Farm Top Sliced Soft White hot dog buns",
+                "PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm hamburger buns are carefully crafted with quality ingredients"
+              ],
+              "attributes": [
+                "<B>Features:</B> No High Fructose Corn Syrup, No Artificial Flavors, No Artificial Colors",
+                "<B>State of Readiness:</B> Ready to Eat",
+                "<B>Package Quantity:</B> 1"
+              ],
+              "nutritionFacts": {
+                "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds ",
+                "nutrition_label_type_code": "LEGACY_FORMAT",
+                "value_prepared_list": [
+                  {
+                    "nutrients": [
+                      {
+                        "name": "Calories",
+                        "quantity": 140,
+                        "unit_of_measurement": "Cal"
+                      },
+                      {
+                        "name": "Total Fat",
+                        "percentage": 3,
+                        "quantity": 2,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Saturated Fat",
+                        "percentage": 3,
+                        "quantity": 0.5,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Trans Fat",
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Polyunsaturated Fat",
+                        "quantity": 1,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Monounsaturated Fat",
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Cholesterol",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Sodium",
+                        "percentage": 10,
+                        "quantity": 220,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Total Carbohydrate",
+                        "percentage": 9,
+                        "quantity": 26,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Dietary Fiber",
+                        "percentage": 4,
+                        "quantity": 1,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Sugars",
+                        "quantity": 6,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Added Sugars",
+                        "percentage": 8,
+                        "quantity": 4,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Protein",
+                        "quantity": 5,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Vitamin D",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mcg"
+                      },
+                      {
+                        "name": "Calcium",
+                        "percentage": 4,
+                        "quantity": 40,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Iron",
+                        "percentage": 6,
+                        "quantity": 1.2,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Potassium",
+                        "percentage": 0,
+                        "quantity": 60,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Thiamin",
+                        "percentage": 25,
+                        "quantity": 0.27,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Riboflavin",
+                        "percentage": 15,
+                        "quantity": 0.18,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Niacin",
+                        "percentage": 10,
+                        "quantity": 1.6,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Folate",
+                        "percentage": 20,
+                        "quantity": 75,
+                        "unit_of_measurement": "mcg DFE"
+                      },
+                      {
+                        "name": "Folic Acid",
+                        "quantity": 40,
+                        "unit_of_measurement": "mcg"
+                      }
+                    ],
+                    "serving_size": "50",
+                    "serving_size_unit_of_measurement": "g",
+                    "servings_per_container": "8"
+                  }
+                ],
+                "warning": "DO NOT PURCHASE IF PACKAGE IS OPEN OR TORN., Contains: Wheat, Milk, Sesame Seeds."
+              },
+              "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds",
+              "mainImageUrl": "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+              "imageUrls": [
+                "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+                "https://target.scene7.com/is/image/Target/GUEST_6cefeb89-a551-4941-8fe1-02a22b87b3f3",
+                "https://target.scene7.com/is/image/Target/GUEST_c58378b8-097b-4ef1-8de7-788db474b80d",
+                "https://target.scene7.com/is/image/Target/GUEST_febeccfb-6a05-4dfb-af11-7459a297d3e8",
+                "https://target.scene7.com/is/image/Target/GUEST_ff7fed00-3381-4e36-bd0b-ff3b9519a436",
+                "https://target.scene7.com/is/image/Target/GUEST_35931cb5-7ea2-4537-84e5-045894843120",
+                "https://target.scene7.com/is/image/Target/GUEST_e2e6447a-d996-45d3-b3dc-5f97af7d1333",
+                "https://target.scene7.com/is/image/Target/GUEST_672a5e95-5640-45cd-9160-6b085f8ead6b"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+              "observationKey": "d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+              "donorProductId": "f6bd4b69-0146-41b1-8578-4ecbe24caf67",
+              "variantDecisionId": "dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "55c2b962a2d9f134482b6e130be4d8a2eb954c7eff47913c5d096c2d45f78bcb",
+              "contentHash": "076fa2524ac32f6eee59afc06bb88b210d38264b03454bad62bbe4752365fd70",
+              "fieldHashes": {
+                "allergens": "3edeefc97e1adca53083b39f15e8bffc19d4f28ac7aad603d8f71f2921430811",
+                "attributes": "c156ca7874c65e7882846fc76dce89e41108789f4866a589d3005664442f91b5",
+                "bullets": "c2ba2faa0024d5912feff63744c032187e6a7e127c759f225d06963bc9e5dfce",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "537aa7c0dbfe0d8c7b191573415553767f71b84798e6346c9c83f822d0a43f0e",
+                "imageUrls": "580589101fadaf8dbc7bcc6c8df35284852efa1fbaf8adc80d7f04b17d2b13ca",
+                "ingredients": "68553fc2554d938addfdb96d8a382ca01092da6f036d7d6ee41c99dd6e437c91",
+                "mainImageUrl": "e7f6c99190789385b9be88cdc8a972880a1bcff2cfb247cf83e896cf922a21e2",
+                "nutritionFacts": "3c9f335dbded629685d3102d82a397c28e414c1ad3c21377153d920f5a683883",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "b146659ec74f613adddab223b08991e28b7447c1d128b97bb22dd957b39c8685",
+                "upc": "60272efee64c4f82a13060cd60a0482f07eaaaf3c12f68f26f4873ca5462b68a"
+              },
+              "sourceUrl": "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284",
+              "sourceApi": "target_direct_html",
+              "observedAt": "2026-07-27T13:01:01.000Z",
+              "runId": "ptlb-wave-814d7f6456c4d90f7e7bc43d",
+              "approvalId": "owner-ptlb-wave-814d7f6456c4d90f7e7bc43d",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "listingImprovement": {
+      "consumer": "LISTING_IMPROVEMENT",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+          "componentIndex": 0,
+          "product": "Hot Dog Buns",
+          "flavor": "White",
+          "size": "8 count",
+          "qty": 2,
+          "targetCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+            "identity": {
+              "variantKey": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "identityHash": "9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bakery buns classics dog hot",
+              "flavor": "white",
+              "modifiers": [
+                "token:sliced",
+                "token:top"
+              ],
+              "form": "bag",
+              "sizeDimension": "COUNT",
+              "sizeBaseAmount": 8,
+              "sizeBaseUnit": "count",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "farm pepperidge",
+                "productLine": "bakery buns classics dog hot",
+                "flavor": "white",
+                "modifiers": [
+                  "token:sliced",
+                  "token:top"
+                ],
+                "form": "bag",
+                "size": {
+                  "dimension": "COUNT",
+                  "baseAmount": 8,
+                  "baseUnit": "count"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+              "description": "Pepperidge Farm Bakery Classics buns are baked with deliberate, thoughtful care and made with premium ingredients, perfectly orchestrated with a baker's touch. At Pepperidge Farm, we have been baking delicious breads inspired by small-batch recipes and crafted with premium ingredients for over 80 years. For us, baking is more than a job, it’s a real passion. The whole family will love these cookout-ready, classic hot dog buns. Our Top Sliced Soft White hot dog buns are perfect for your favorite hot dogs, sausages, or even lobster rolls. And they stand up, making them easy to fill with your favorite toppings. Pepperidge Farm Bakery Classics stay true to the classic recipe you know and love with no artificial colors or flavors, and no high-fructose corn syrup. Our dedication to quality shows in the care we put into every detail. Make your meals a little more special with our 8-pack of delicious Pepperidge Farm hot dog buns.",
+              "bullets": [
+                "TOP SLICED HOT DOG BUNS: A classic white hot dog bun for easy filling",
+                "QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup",
+                "PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls",
+                "COOKOUT READY: Quality buns your family and friends will appreciate",
+                "8 BUNS: 8-count bag of Pepperidge Farm Top Sliced Soft White hot dog buns",
+                "PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm hamburger buns are carefully crafted with quality ingredients"
+              ],
+              "attributes": [
+                "<B>Features:</B> No High Fructose Corn Syrup, No Artificial Flavors, No Artificial Colors",
+                "<B>State of Readiness:</B> Ready to Eat",
+                "<B>Package Quantity:</B> 1"
+              ],
+              "nutritionFacts": {
+                "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds ",
+                "nutrition_label_type_code": "LEGACY_FORMAT",
+                "value_prepared_list": [
+                  {
+                    "nutrients": [
+                      {
+                        "name": "Calories",
+                        "quantity": 140,
+                        "unit_of_measurement": "Cal"
+                      },
+                      {
+                        "name": "Total Fat",
+                        "percentage": 3,
+                        "quantity": 2,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Saturated Fat",
+                        "percentage": 3,
+                        "quantity": 0.5,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Trans Fat",
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Polyunsaturated Fat",
+                        "quantity": 1,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Monounsaturated Fat",
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Cholesterol",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Sodium",
+                        "percentage": 10,
+                        "quantity": 220,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Total Carbohydrate",
+                        "percentage": 9,
+                        "quantity": 26,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Dietary Fiber",
+                        "percentage": 4,
+                        "quantity": 1,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Sugars",
+                        "quantity": 6,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Added Sugars",
+                        "percentage": 8,
+                        "quantity": 4,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Protein",
+                        "quantity": 5,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Vitamin D",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mcg"
+                      },
+                      {
+                        "name": "Calcium",
+                        "percentage": 4,
+                        "quantity": 40,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Iron",
+                        "percentage": 6,
+                        "quantity": 1.2,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Potassium",
+                        "percentage": 0,
+                        "quantity": 60,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Thiamin",
+                        "percentage": 25,
+                        "quantity": 0.27,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Riboflavin",
+                        "percentage": 15,
+                        "quantity": 0.18,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Niacin",
+                        "percentage": 10,
+                        "quantity": 1.6,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Folate",
+                        "percentage": 20,
+                        "quantity": 75,
+                        "unit_of_measurement": "mcg DFE"
+                      },
+                      {
+                        "name": "Folic Acid",
+                        "quantity": 40,
+                        "unit_of_measurement": "mcg"
+                      }
+                    ],
+                    "serving_size": "50",
+                    "serving_size_unit_of_measurement": "g",
+                    "servings_per_container": "8"
+                  }
+                ],
+                "warning": "DO NOT PURCHASE IF PACKAGE IS OPEN OR TORN., Contains: Wheat, Milk, Sesame Seeds."
+              },
+              "ingredients": "Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Wheat Gluten, Vegetable Oils (Soybean and/or Canola), Contains 2% or less of: Salt, DATEM, Calcium Propionate and Sorbic Acid to Extend Freshness, Monoglycerides, Sodium Stearoyl Lactylate, Malted Barley Flour, Nonfat Milk, Sesame Seeds",
+              "mainImageUrl": "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+              "imageUrls": [
+                "https://target.scene7.com/is/image/Target/GUEST_6ed72034-53f2-4cc3-89ad-f18e028a7dd0",
+                "https://target.scene7.com/is/image/Target/GUEST_6cefeb89-a551-4941-8fe1-02a22b87b3f3",
+                "https://target.scene7.com/is/image/Target/GUEST_c58378b8-097b-4ef1-8de7-788db474b80d",
+                "https://target.scene7.com/is/image/Target/GUEST_febeccfb-6a05-4dfb-af11-7459a297d3e8",
+                "https://target.scene7.com/is/image/Target/GUEST_ff7fed00-3381-4e36-bd0b-ff3b9519a436",
+                "https://target.scene7.com/is/image/Target/GUEST_35931cb5-7ea2-4537-84e5-045894843120",
+                "https://target.scene7.com/is/image/Target/GUEST_e2e6447a-d996-45d3-b3dc-5f97af7d1333",
+                "https://target.scene7.com/is/image/Target/GUEST_672a5e95-5640-45cd-9160-6b085f8ead6b"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+              "observationKey": "d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+              "donorProductId": "f6bd4b69-0146-41b1-8578-4ecbe24caf67",
+              "variantDecisionId": "dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "55c2b962a2d9f134482b6e130be4d8a2eb954c7eff47913c5d096c2d45f78bcb",
+              "contentHash": "076fa2524ac32f6eee59afc06bb88b210d38264b03454bad62bbe4752365fd70",
+              "fieldHashes": {
+                "allergens": "3edeefc97e1adca53083b39f15e8bffc19d4f28ac7aad603d8f71f2921430811",
+                "attributes": "c156ca7874c65e7882846fc76dce89e41108789f4866a589d3005664442f91b5",
+                "bullets": "c2ba2faa0024d5912feff63744c032187e6a7e127c759f225d06963bc9e5dfce",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "537aa7c0dbfe0d8c7b191573415553767f71b84798e6346c9c83f822d0a43f0e",
+                "imageUrls": "580589101fadaf8dbc7bcc6c8df35284852efa1fbaf8adc80d7f04b17d2b13ca",
+                "ingredients": "68553fc2554d938addfdb96d8a382ca01092da6f036d7d6ee41c99dd6e437c91",
+                "mainImageUrl": "e7f6c99190789385b9be88cdc8a972880a1bcff2cfb247cf83e896cf922a21e2",
+                "nutritionFacts": "3c9f335dbded629685d3102d82a397c28e414c1ad3c21377153d920f5a683883",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "b146659ec74f613adddab223b08991e28b7447c1d128b97bb22dd957b39c8685",
+                "upc": "60272efee64c4f82a13060cd60a0482f07eaaaf3c12f68f26f4873ca5462b68a"
+              },
+              "sourceUrl": "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284",
+              "sourceApi": "target_direct_html",
+              "observedAt": "2026-07-27T13:01:01.000Z",
+              "runId": "ptlb-wave-814d7f6456c4d90f7e7bc43d",
+              "approvalId": "owner-ptlb-wave-814d7f6456c4d90f7e7bc43d",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "unitEconomics": {
+      "consumer": "UNIT_ECONOMICS",
+      "status": "UNSOURCEABLE",
+      "current": {
+        "id": "retail:FaisalX-1148:bridge:6c6c0347a09e0ee7d2f19831",
+        "observationKey": "6c6c0347a09e0ee7d2f198312969bd882c033d5bcd3a978e5c27d61aefb5ec12",
+        "recipeHash": "264269a72617fc6fb208861e5992e82358d36ed9beb6f3a14169065bdc8e7eb0",
+        "sku": "FaisalX-1148",
+        "effectiveDate": "2026-07-27T13:04:00.000Z",
+        "createdAt": "2026-07-27T13:04:00.000Z",
+        "source": "retail:batch",
+        "productCost": null,
+        "packagingCost": null,
+        "iceCost": null,
+        "totalCost": null,
+        "costPerUnit": null,
+        "packSize": null,
+        "currency": "USD",
+        "needsReview": true,
+        "matcherVersion": "canonical-product-match/1.2.1",
+        "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+        "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+        "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+        "evidenceOutcome": "UNSOURCEABLE",
+        "evidence": {
+          "approvalId": "owner-ptlb-wave-814d7f6456c4d90f7e7bc43d",
+          "channel": "walmart",
+          "components": [
+            {
+              "contentCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "contentDonorProductId": "f6bd4b69-0146-41b1-8578-4ecbe24caf67",
+              "contentObservationId": "pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157",
+              "flavor": "White",
+              "idx": 0,
+              "matchTier": "EXACT_IDENTITY",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "method": "no-fresh-first-party-price",
+              "perUnit": null,
+              "priceCanonicalVariantId": null,
+              "priceEvidenceDonorProductId": null,
+              "priceEvidenceObservationId": null,
+              "priceEvidenceOfferId": null,
+              "priceEvidenceStatus": "REJECT",
+              "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+              "priceVariantDecisionId": null,
+              "product": "Hot Dog Buns",
+              "qty": 2,
+              "size": "8 count",
+              "targetCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+              "targetComparableUnitPrice": null
+            }
+          ],
+          "evaluatedAt": "2026-07-27T13:04:00.000Z",
+          "listingKey": "walmart:1:FaisalX-1148",
+          "listingKeyVersion": "product-truth-listing-key/1.0.0",
+          "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+          "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+          "matcherVersion": "canonical-product-match/1.2.1",
+          "outcome": "UNSOURCEABLE",
+          "procurementZip": "33765",
+          "recipeHash": "264269a72617fc6fb208861e5992e82358d36ed9beb6f3a14169065bdc8e7eb0",
+          "runId": "ptlb-wave-814d7f6456c4d90f7e7bc43d",
+          "schemaVersion": "product-truth-cogs-evidence/1.0.0",
+          "sourcePolicy": {
+            "evidence": "existing-catalog-only",
+            "maxPriceAgeMs": 86400000,
+            "paidCalls": 0,
+            "providerCalls": 0
+          },
+          "storeIndex": 1
+        },
+        "runId": "ptlb-wave-814d7f6456c4d90f7e7bc43d",
+        "approvalId": "owner-ptlb-wave-814d7f6456c4d90f7e7bc43d",
+        "componentProvenance": [
+          {
+            "componentIndex": 0,
+            "kind": "REJECT",
+            "matcher": {
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2"
+            },
+            "manualCost": null
+          }
+        ]
+      },
+      "factualCost": null,
+      "estimatedCost": null,
+      "blockers": []
+    },
+    "procurement": {
+      "consumer": "PROCUREMENT",
+      "ready": false,
+      "components": [
+        {
+          "componentIndex": 0,
+          "product": "Hot Dog Buns",
+          "requiredQuantity": 2,
+          "factualOptions": [],
+          "estimateOptions": [],
+          "manualCost": null,
+          "blockers": [
+            "PRICE_EVIDENCE_NOT_ACCEPTED",
+            "SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+            "NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+          ]
+        }
+      ],
+      "blockers": [
+        "COMPONENT_0:PRICE_EVIDENCE_NOT_ACCEPTED",
+        "COMPONENT_0:SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+        "COMPONENT_0:NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+      ]
+    }
+  }
+}

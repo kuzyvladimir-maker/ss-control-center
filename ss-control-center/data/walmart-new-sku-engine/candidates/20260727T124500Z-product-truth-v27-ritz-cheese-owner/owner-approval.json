@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "owner-ritz-pack2-v27-20260727t124330z",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99702.5,
+      "evidenceSha256": "175d92ca8050503d711a0962127112e0d21134c31870841364fb14cf0d26f117",
+      "observedAt": "2026-07-27T12:43:17.246Z",
+      "provider": "unwrangle",
+      "reserveFloor": 100
+    }
+  ],
+  "expiresAt": "2026-07-27T13:28:30.000Z",
+  "issuedAt": "2026-07-27T12:43:30.000Z",
+  "meteredPermit": {
+    "approvalId": "owner-ritz-pack2-v27-20260727t124330z",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-27T13:28:30.000Z",
+    "issuedAt": "2026-07-27T12:43:30.000Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "20260727T124500Z-v27-ritz-cheese-pack2",
+    "version": 1
+  },
+  "planSha256": "9bde1422d448a755a60f2d3442003c6e648525b1ea64f5cc1c57bf459cadebfe",
+  "runId": "20260727T124500Z-v27-ritz-cheese-pack2",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}
