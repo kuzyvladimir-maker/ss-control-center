@@ -1,5 +1,11 @@
 # 💰 COGS / True-Cost Agent — справедливая себестоимость по всем SKU
 
+> **Реализует [OWNER CANON Product Truth Platform](product-catalog-architecture.md).**
+> Sourcing-контур владеет датированными retail acquisition observations и
+> product-cost roll-up. Packaging, лёд/cold-chain, shipping, marketplace fees и
+> полная unit economics принадлежат Economics-слою; их нельзя задваивать. Текущий
+> порядок стабилизации и paid gates: [[donor-catalog-execution-roadmap]].
+>
 > **Статус:** проектирование (2026-06-07). Phase 2 модуля Sales Overview.
 > **Владелец идеи:** Владимир. Этот документ — первичный захват замысла из чата
 > «Check Amazon API shipping template modification» (обвалился из-за вставки CSV),

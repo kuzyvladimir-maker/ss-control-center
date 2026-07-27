@@ -1,5 +1,17 @@
 # 📚 Reference Catalog (Donor DB) + Engine Parser — архитектура
 
+> **Подчинён [OWNER CANON Product Truth Platform](product-catalog-architecture.md).**
+> Этот файл сохраняет технический замысел и историю реализации. При расхождении
+> сущностей, фаз, источников, потребителей или правил бюджета побеждает канон;
+> текущий порядок работ и gates находятся в
+> [donor-catalog-execution-roadmap.md](donor-catalog-execution-roadmap.md).
+>
+> **CURRENT OVERRIDE 2026-07-18:** нижние retailer priorities и provider notes —
+> исторические. BJ's запрещён текущей source policy; BlueCart считается недоступным;
+> Sam's/Costco допустимы только отдельным owner-approved club plan. Исполнимый путь —
+> только `product-truth-operator-runbook.md`; описанная ниже legacy cron/queue схема
+> не должна включаться.
+>
 > Спецификация по итогам разбора с Владимиром (2026-06-19). Это эволюция
 > [Product Sourcing Engine](product-sourcing-engine.md): движок Engine Parser
 > наполняет **донорскую (справочную) базу**, из которой питаются все модули.
@@ -82,6 +94,8 @@ retail 8/15 oz vs опт 32/64/128 oz). **Размер/вес единицы о�
 2. **Bundle Factory** — собирать новые наборы/бандлы/киты ИЗ донорской базы (сперва читает её; если
    товара нет → ставит EnrichmentJob → потом собирает). Для Amazon/Walmart/eBay/своего сайта.
 3. **Экономика** — реальная себестоимость каждой единицы → репрайсер (margin floor) + чистая прибыль.
+4. **Procurement Planning** — продажа → рецепт SKU → дефицит → свежие локальные
+   first-party офферы → оптимальная комбинация фасовок, магазинов и стоимости.
 
 ## 🪜 Этапы
 | # | Этап |

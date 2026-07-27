@@ -285,11 +285,18 @@ Exit gate:
   `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`;
 - 🟡 P0 продолжается на data/cutover gates: schema, authoritative Phase 1 manifest
   v3 и exact G5 scope apply готовы. `ProductTruthListingScope` verified
-  `5935/5935`; post-apply readiness reconciled весь denominator, но все consumers
-  blocked на `CURRENT_SCOPED_SKU_COST_MISSING`. No-paid canonical materialization,
-  отдельный owner-approved provider canary и cutover ещё не выполнены;
-- 🟡 production schema transaction = `1`, scope-only apply transaction = `1`;
-  canonical business-data materialization, paid provider calls, marketplace
+  `5935/5935`. Две отдельные no-paid legacy bridge transactions материализовали
+  `19` exact-content listings (`5` canary + `14` graph-aware wave), `105/105`
+  canonical rows; оба postcheck = `ALREADY_APPLIED`, partial/FK violations = `0`.
+  Full-denominator readiness: Bundle Factory `19 ready`, Listing Improvement
+  `19 ready`, Unit Economics `19 UNSOURCEABLE`, Procurement `0 ready`;
+  остальные `5916` scopes ещё не materialized. Fresh canonical-aware bridge
+  audit `a97497ca…6cd7` показывает `19 ALREADY_CANONICAL`, `0` новых
+  content-complete no-paid candidates, `82` identity-only и `5834` quarantine,
+  поэтому уже записанные строки больше не предлагаются повторно. Provider canary
+  и cutover ещё не выполнены;
+- 🟡 production schema transaction = `1`, scope-only apply transaction = `1`,
+  no-paid content transactions = `2`; paid provider calls, marketplace
   mutations и consumer activation не выполнялись. Consumer cutover на единый
   read-contract равен **0 из 4**; legacy views/tables не являются доказательством
   production readiness;
@@ -312,9 +319,11 @@ Exit gate:
 - ⚪ paid/provider canary, платный gap enrichment и любой иной платный Product Truth
   run не запускались.
 
-До no-paid evidence-bound canonical materialization, нового owner gate на его
-DB apply, отдельного provider canary и consumer cutover Phase 0 не считается
-завершённой.
+До отдельного provider canary и consumer cutover Phase 0 не считается
+завершённой. Standing policy разрешает только collision-free no-paid wave
+`≤100` rows после fresh `READY_TO_APPLY`; canonical-aware audit сейчас не нашёл
+ни одного следующего content-complete кандидата. Paid/provider работа по
+оставшимся gaps требует отдельного G7.
 Успешная активация schema сама по себе не означает content/price readiness или
 разрешение marketplace actions.
 
@@ -626,10 +635,12 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    сертифицирована 8/8; authoritative manifest v3 готов. Sealed G5 scope apply
    завершён `APPLIED`: `5935/5935` exact scopes verified, без cost/legacy/provider/
    paid/marketplace/procurement effects. Full-denominator readiness reconciled
-   `5935/5935`, но каждый consumer имеет `0 ready` на blocker
-   `CURRENT_SCOPED_SKU_COST_MISSING`. Следующие независимые шаги — no-paid canonical
-   materialization plan, новый owner gate на его apply и только затем staged
-   cutover; consumer cutover = 0.
+   `5935/5935`. Первый no-paid canary применил `35/35` approved rows для `5`
+   listings: Bundle Factory/Listing Improvement `5 ready`, Unit Economics
+   `5 UNSOURCEABLE`, Procurement `0 ready`; `5930` scopes ещё не materialized.
+   Следующий независимый шаг — graph-aware no-paid plan с fail-closed
+   donor→multiple-variant collision, новый owner gate на exact wave и только
+   после достаточного покрытия staged cutover; consumer cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам, cheap-first plan, explicit owner gate.
 8. ⚪ **Canary** — 5–10 SKU с жестким лимитом и ручной проверкой.
 9. ⚪ **Controlled waves** — только после успешного canary и отдельного approval.

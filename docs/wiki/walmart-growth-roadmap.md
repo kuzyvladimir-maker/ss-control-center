@@ -5,17 +5,49 @@
 + Buy Box). Память: `reference_walmart_ranking_criteria`, `project_walmart_growth_levers`,
 `project_fulfillment_model`, `project_cogs_pricing_parallel`, `project_product_sourcing_engine`.
 
+> **Новое owner-решение, 2026-07-19:** постоянный контур проверки и исправления
+> карточек размещается отдельной вкладкой **Listing Integrity** внутри Walmart
+> Growth. Backend работает как resumable state machine и общий Product Truth
+> consumer; Claude Code не является ежедневным runtime. Канон и честный статус:
+> [[walmart-listing-integrity-platform]].
+>
+> **Evidence correction, 2026-07-26:** Walmart не публикует точный порядок или
+> проценты secret ranking factors. Предыдущие shorthand weights ниже заменены
+> официально доказанными факторами. Каноническая стратегия item price vs shipping:
+> [[walmart-new-sku-shipping-price-strategy]].
+
 ## Что уже построено и LIVE
 - **Action Center** — «доктор»: сканит аккаунт, ранжирует проблемы простым языком, говорит что делать. (`growth-diagnosis.ts`)
 - **Listing Quality** — score 53/100 + worklist по 4017 товарам с правками. (`listing-quality.ts`)
 - **Buy Box** — 3761 товар, win-rate 60.4%, 1341 переоценён на $22.7k vs BB. (`reports-insights.ts`, отчёт приходит ZIP)
 
-## Критерии Walmart (по важности) — см. `reference_walmart_ranking_criteria`
-Buy Box: цена landed (#1) → скорость доставки (#2) → в наличии (гейт) → перформанс → …
-Polaris (выдача): Полнота карточки 40% · Перформанс 30% · Цена 20% · Контент 10% + boost за 2-day/WFS.
+## Официально подтверждённые факторы Walmart
+
+Buy Box использует конкурентный landed price (`item + shipping`), shipping speed,
+shipping cost, inventory, content и post-purchase experience. US Listing Quality
+отдельно измеряет content, external price competitiveness, promised delivery speed
+по ZIP, in-stock и ratings/reviews. Walmart не публикует стабильные веса или строгий
+порядок этих факторов; внутренний selector не должен их выдумывать.
 
 ## Ценообразование — ПРАВИЛО
-Buy Box цена = **справочный сигнал, НЕ цель**. Победитель BB может быть производитель/Walmart ниже нашей себестоимости → матчить = минус. Наша цена = COGS + прямые затраты (комиссия + компенсация шиппинга + упаковка) + маржа 20-30%. **Репрайсер: пол = маржа, всегда.** Не дотягиваемся в марже — не режем (абсурдно дорогие позже удаляем). Зависит от COGS (параллельный движок).
+
+Buy Box landed price = **справочный сигнал, НЕ цель**. Победитель BB может быть
+производитель/Walmart ниже нашей себестоимости → матчить = минус. Наша required
+customer total покрывает COGS, packaging, реальную label cost, referral с
+`item + shipping` и target margin. Затем total делится по exact template:
+`item price = required total - customer shipping`.
+
+При одинаковой скорости и landed total default — free shipping. Paid shipping не
+получает price-algorithm advantage и разрешается только как controlled experiment,
+реально более быстрый service либо экономически необходимое исключение.
+**Репрайсер: пол = маржа, всегда.** Не дотягиваемся в марже — не режем.
+
+**Реализовано для новых SKU в Bundle Factory (2026-07-26):** после выбора Walmart
+владелец выбирает active shipping template именно выбранного аккаунта и может открыть
+его exact настройки. Free template оставляет всю required total в item price; paid
+template вычитается из item price. Frozen v25 подписывает item и
+`SKU_TEMPLATE_MAP` payload и после публикации требует exact SKU→template/
+fulfillment-center read-back. Текущие шесть pilot previews используют free shipping.
 
 ## Скорость доставки — стратегия (2 оси)
 Корень провала (shipping 14.9): шаблоны декларируют медленный transit; fast-тег нужен ≤2-3 дня. Модель fulfillment: buy-to-order, handling 1 день типично / 2 худший случай, ~99% меток через Walmart SWW. Две оси ускорения:

@@ -1,5 +1,11 @@
 # Economics / Profit module (Phase 7)
 
+> **Товарный фундамент:** [[product-catalog-architecture]]. Economics читает рецепт,
+> датированную закупочную стоимость и provenance из общего Product Truth Platform,
+> не матчится с донорами и не добывает retailer-данные самостоятельно. Packaging,
+> ice/cold-chain, shipping и fees добавляются здесь ровно один раз поверх product
+> acquisition cost.
+>
 **Status:** 7.0 + 7.1 shipped (2026-06-20). 7.2 (OpEx + business P&L) pending
 Vladimir's Sellerboard expenses CSV. 7.3 (settlement reconciliation) later.
 

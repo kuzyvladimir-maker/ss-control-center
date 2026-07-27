@@ -1,5 +1,11 @@
 # Bundle Factory — массовое создание gift sets
 
+> **Product-data contract:** Bundle Factory реализует
+> [OWNER CANON Product Truth Platform](product-catalog-architecture.md). Каталог —
+> единственный источник подтвержденных товарных фактов; отсутствующий вариант
+> заказывается через общий enrichment-контур. При конфликте старой research-логики
+> с каноном побеждает канон.
+>
 > **Source of truth:** [`docs/BUNDLE_FACTORY_CONCEPT_v1_0.md`](../BUNDLE_FACTORY_CONCEPT_v1_0.md)
 > **Status:** Concept finalized 2026-05-17, ready for Phase 0 (KB research)
 > **Replaces:** Phase 2 placeholder "Product Listings"
@@ -15,7 +21,8 @@ Bundle Factory — фабрика по массовому созданию gift 
 ## 🧠 Семь стадий pipeline
 
 1. **Brief** — пользователь вводит brand, # listings, price range, bundle types
-2. **Research** — Perplexity + scraping (walmart.com, target.com, brand-sites) → product database
+2. **Catalog resolution** — точные варианты и факты читаются из Product Truth
+   Platform; отсутствующее ставится в единую enrichment-очередь → product database
 3. **Variation Matrix** — генератор bundle конфигураций (flavors × pack sizes × use cases)
 4. **AI Content** — title, bullets, description, search terms по правилам Marketplace KB
 5. **Image Generation** — main image AI-generated (с фирменной коробкой "GIFT SET N COUNT" + Salutem Solutions logo), 3-5 secondary из donor sources

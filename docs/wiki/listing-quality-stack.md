@@ -1,5 +1,11 @@
 # Listing Quality Stack — общий фундамент для создания И улучшения листингов
 
+> **Контракт товарных фактов:** [[product-catalog-architecture]] — OWNER CANON.
+> Listing Quality Stack может преобразовывать подтвержденные факты под правила
+> канала, но не придумывает состав, nutrition, вариант, размер или count из title.
+> Неизвестное поле остаётся неизвестным/`needsReview`; отсутствующие данные
+> заказываются через единый enrichment-контур.
+>
 > **Owner-принцип (Vladimir, 2026-06-27):** логика «как делать хороший листинг»
 > (картинки, полный набор атрибутов, сборка по базе знаний, проверка QA-офицером)
 > — это **один общий стек**, а не три копии. Им пользуются и фабрика новых
@@ -75,14 +81,22 @@
 
 ## Walmart re-fix — две механики в `remediate.ts`
 
+> **Статус 2026-07-19:** этот раздел описывает исторический legacy writer, а не
+> production-допуск. Direct/batch `MP_MAINTENANCE`, `buildOnly` и retry нельзя
+> использовать как новый массовый Listing Integrity runtime. Постоянный контур
+> требует Product Truth-bound one-SKU permit, durable ledger, exact raw evidence и
+> независимый live reread; см. [[walmart-listing-integrity-platform]].
+
 Улучшатель текущих Walmart-листингов (`buildAndSubmitOne`,
 `src/lib/walmart/multipack/remediate.ts`) несёт два принципа стека:
 
 1. **A-to-Z гарантия (жёсткое правило Vladimir):** НИКОГДА не оставлять листинг
    голым. Даже если донорский detail вернулся пустым (нет BlueCart itemId,
-   Target-only fallback, упавший detail-вызов) — всё равно просим Claude написать
-   фактические буллеты + описание из названия + пака. Title-only — это нормальный
-   листинг; пустой — тот самый «ужасный листинг», который велено исключить.
+   Target-only fallback, упавший detail-вызов) — допускается ограниченный нейтральный
+   draft только из уже известных title/pack facts. Нельзя выводить из названия
+   ingredients, nutrition, claims, точный размер или иные неподтвержденные факты;
+   такой результат получает `needsReview` и enrichment request. Пустой листинг нужно
+   исключать, но полноту нельзя подменять выдуманной фактичностью.
    (Раньше polish запускался только при непустом доноре — исправлено.)
 
 2. **`buildOnly` batch-feed (обход throttle):** флаг `opts.buildOnly` собирает и

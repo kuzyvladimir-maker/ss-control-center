@@ -1,22 +1,49 @@
 # Bundle Factory — Master Plan (весь модуль)
 
+> **Обязательная зависимость:** товарные варианты, изображения, факты, фасовки и
+> закупочные цены берутся из [[product-catalog-architecture|Product Truth Platform]].
+> Bundle Factory не строит собственный донорский каталог и не запускает параллельный
+> retailer-harvest; пробелы заказывает через общий enrichment-контур.
+>
 > Полный форвард-план модуля (owner 2026-07-01). НЕ тонуть в одной ячейке —
 > строим всю матрицу. Связано: [[bundle-factory-listing-studio]],
 > [[bundle-factory-pricing-and-images]], [[bundle-factory-rebuild-plan]].
 > Память: `project_bundle_factory_vision`, `project_bf_pricing_image_capacity`.
+>
+> **Owner clarification 2026-07-22:** «один движок» означает одну точку управления,
+> общие Product Truth/job/draft/approval primitives и единый UI, а не один одинаковый
+> listing pipeline. Amazon, Walmart и будущие каналы — независимые channel engines со
+> своими content, attributes, images, compliance, payload, publish и verify lifecycle.
 
 ## Видение (одной фразой)
-ОДИН промт-движок: «сделай N листингов [бренд/тема] на [канал+аккаунт] с [маржой]» → движок сам **находит товары → собирает → ценит → рисует → пишет → публикует → доводит до LIVE**. Оператор только **одобряет пачкой**.
+ОДНА точка управления: «сделай N листингов [бренд/тема] на [канал+аккаунт] с
+[маржой]» → общий orchestrator выбирает соответствующий channel engine, а тот по своим
+правилам **читает Product Truth → сверяет каталог наших listings → собирает → ценит →
+рисует → пишет → проверяет → публикует → доводит до LIVE**. Массовое одобрение
+разрешается только после доказанного channel-specific pilot и отдельного owner gate.
 
 ## Матрица — что модуль ДОЛЖЕН уметь
 - **Режимы:** A) **Own-brand exception** (Uncrustables/Smucker's — листим под их брендом, count-accurate картинки). B) **Gift-set** (всё остальное — под Salutem Vita, «Gift Set» на кулере).
 - **Категории** (гонят упаковку/цену/картинки/публикацию): **Frozen** | **Refrigerated** (= frozen: кулер+лёд) | **Dry/shelf-stable** (обычная коробка, ambient).
 - **Каналы** (у каждого свой листинг-путь): **Amazon** (frozen \| dry) | **Walmart** (МУЛЬТИПАК-логика, не gift-set) | **eBay** | **Shopify** (свой сайт — дубль).
 
-Каждая ячейка (режим × категория × канал) = свои правила цены/картинок/контента/публикации, но ОДИН общий движок.
+Каждая ячейка (режим × категория × канал) имеет свои правила цены, изображений,
+контента, compliance, payload, публикации и проверки результата. Общими остаются
+Product Truth, recipe semantics, job/draft/approval framework и точка управления.
 
 ## Конвейер (на один листинг)
-`source (каталог) → compose (по вместимости кулера / фасовке) → price (per-category, derived-margin, shipping отдельным template) → content (per channel/mode/category) → images (per rules) → compliance/validate → publish → self-heal → LIVE`. Оператор одобряет пачкой (nothing publishes без approve).
+
+```text
+Product Truth / донорский каталог ─┐
+                                   ├─ общий orchestrator ─┬─ Amazon channel engine
+Наши channel listings / novelty ───┘                      ├─ Walmart channel engine
+                                                          └─ будущий channel engine
+```
+
+Внутри выбранной ветки:
+`compose → price → channel content → channel images → channel compliance/spec →
+channel payload → publish → seller/buyer verify → LIVE`. Ничего не публикуется без
+соответствующего owner approval.
 
 ## Где мы сейчас (2026-07-01)
 - ✅ **Amazon · frozen · own-brand (Uncrustables):** E2E доказан — 3 ASIN BUYABLE. Цена/картинки/shipping-template — доводим (P0).
@@ -31,4 +58,9 @@
 - **P4 — UI/UX:** переделать интерфейс (wizard → batch review/approve → управление), красиво/стильно/информативно; 2–3 макета на выбор.
 
 ## Принцип
-Uncrustables-frozen-Amazon — это ОДНА ячейка. Всё, что отладили на ней (cooler-by-count, shipping-template, derived-margin, count-accurate images), **обобщается**: dry просто меняет упаковку/шиппинг, Walmart/eBay/Shopify — публикационный адаптер, Mode B — «Gift Set» брендинг. Не переписываем — параметризуем.
+Uncrustables-frozen-Amazon — это ОДНА ячейка. Переиспользуем только действительно
+общие primitives: Product Truth, recipe, economics building blocks, job lifecycle,
+approval и immutable evidence. Walmart не является заменой Amazon publication URL:
+это отдельный channel engine с multipack semantics, Walmart taxonomy/policy/spec,
+собственным payload, seller lifecycle и buyer-visible verification. Не переписываем
+общую платформу, но и не сводим разные marketplaces к одному listing path.

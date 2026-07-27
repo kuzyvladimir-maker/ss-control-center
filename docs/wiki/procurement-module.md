@@ -1,5 +1,12 @@
 # PROCUREMENT MODULE — Алгоритм и спецификация v1.0
 
+> **Граница документа:** это спецификация текущего мобильного execution UI вокруг
+> Veeqo. Будущий Procurement Planning/Optimization обязан реализовать
+> [[product-catalog-architecture|OWNER CANON Product Truth Platform]]:
+> `sale → SKU recipe → inventory deficit → fresh local first-party offers → pack/store
+> optimizer → shopping plan`. Ручной `SKUStorePriority` не является товарной истиной.
+> Любая фактическая покупка остаётся отдельным owner-gated действием.
+>
 > **Date:** 2026-05-03
 > **Repo:** `kuzyvladimir-maker/ss-control-center`
 > **Owner:** Vladimir

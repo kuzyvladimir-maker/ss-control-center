@@ -1,6 +1,6 @@
 # Product Truth operational runner — runbook оператора
 
-> **Операционный контракт v1.5, 2026-07-20.** Этот runbook подчинён
+> **Операционный контракт v1.6, актуализирован 2026-07-27.** Этот runbook подчинён
 > [[product-catalog-architecture]] и [[donor-catalog-execution-roadmap]]. Он описывает,
 > как оператор исполняет уже готовый движок, но не даёт разрешения на production,
 > платный прогон или изменение бизнес-данных. Каждый такой запуск по-прежнему требует
@@ -53,8 +53,9 @@ Claude Code запрещено:
   заказывать или покупать товар;
 - для `TARGETED_WALMART_EVIDENCE` самостоятельно выбирать/исправлять canonical
   identity, редактировать engine-generated request/plan либо подменять связанный
-  legacy donor/offer. Owner-proposed identity приходит отдельным внешним exact-файлом;
-  Claude Code только передаёт его путь готовому `doctor`.
+  legacy donor/offer. Для eligible bootstrap identity детерминированно выводит сам
+  движок из sealed donor/offer bytes; ручной identity-файл и
+  `--canonical-identity` запрещены.
 
 Если CLI или входные артефакты не позволяют продолжить, Claude Code фиксирует точную
 ошибку и передаёт её владельцу/Codex. **Ошибка не является разрешением редактировать
@@ -807,18 +808,27 @@ canonical manifest SHA
 Exact v3 schema activation выполнена один раз: 8/8 migrations applied/tracked,
 обе migration ledgers ready, post-commit plan `blockers=[]`, schema after SHA-256
 `8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511`.
-Canonical business-data materialization не выполнялась. G5 read-only
-`backfill-plan` создан из clean checkout `0fdbc0c9`: plan
+G5 read-only `backfill-plan` создан из clean checkout `0fdbc0c9`: plan
 `162b2dbd…53cf78`, `5935` scope imports, `5935` artifact-only review tasks,
 обе ledgers ready, writers/FK blockers `0`, canonical cost recomputes/provider
 calls/DB writes `0`. По отдельному exact owner approval scope-only
 `backfill-apply` завершён `APPLIED`: inserted/exact manifest scopes =
 `5935/5935`, missing/conflicting/unexpected/writers/FK = `0`, canonical cost
 recomputes, legacy promotions, provider/paid calls и marketplace/procurement
-mutations = `0`. Full-denominator read-only readiness reconciled `5935/5935`,
-но все четыре consumers имеют `0 ready` на
-`CURRENT_SCOPED_SKU_COST_MISSING`; cutover = `0/4`. Этот consumed approval не
-разрешает no-paid canonical materialization apply, activation или платный run.
+  mutations = `0`. После этого две no-paid legacy bridge transactions
+  переиспользовали существующие legacy donor/BOM bytes: canary
+  `ba899ce9…fae3d` материализовал `5` listings / `35` rows, graph-aware wave
+  `367ffc2f…0354` — ещё `14` listings / `70` rows; оба postcheck =
+  `ALREADY_APPLIED`, partial/FK violations `0`. Full-denominator readiness
+  reconciled `5935/5935`: Bundle Factory/Listing Improvement `19 ready`, Unit
+  Economics `19 UNSOURCEABLE`, Procurement `0 ready`, остальные `5916` не
+  materialized; cutover = `0/4`. Standing no-paid policy
+  `0ede5d62…2696` теперь проверяется движком до transaction и разрешает только
+  collision-free waves `≤100` rows после fresh `READY_TO_APPLY`; paid/provider,
+  marketplace, activation и procurement остаются закрыты. Fresh canonical-aware
+  bridge audit `a97497ca…6cd7` классифицирует `19 ALREADY_CANONICAL`, не находит
+  новых content-complete no-paid candidates и оставляет `82` identity-only /
+  `5834` quarantine, поэтому повторный DB apply сейчас не требуется.
 Реальный
 386-case corpus v2.2 собран и offline replay выполнен, но 86 cases остаются
 `UNRESOLVED_EVIDENCE`; Unit Economics SHADOW runtime локально готов, но owner activation
@@ -839,16 +849,16 @@ Claude исполняет только untouched sealed
 wrapper manifest из §4.0.3; очередь 1 458 не разрешена.
 
 `TARGETED_WALMART_EVIDENCE` с `EXISTING_EXACT` и
-`EVIDENCE_VERIFIED_BOOTSTRAP` выпущен в current immutable Walmart release v23:
-`release-artifacts/walmart-new-sku-pilot-engine-2026-07-23-v23`, engine SHA
-`94ec292870b398aa08385c6d951454b790aaa7db662d6aa796337f7026340f5f`,
+`EVIDENCE_VERIFIED_BOOTSTRAP` входит в current immutable Walmart release v26:
+`release-artifacts/walmart-new-sku-pilot-engine-2026-07-26-v26`, engine SHA
+`e44553afaf59ff57b0d02181bcfb8bcbcd3f0914043116a44db1681c57a78135`,
 manifest SHA
-`7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`,
+`e441a1c00a368b3d831004c1f87fceac26d1336a328d1eb19c1d746286991460`,
 certificate SHA
-`cc5603d8d56421c151b92b5a6726c1cf10c3dfa52732614763cde6dc6fec9242`.
-Полный Product Truth suite `429/429`, Walmart unit/security с exit `0` и frozen
-fake-live `3/3` прошли. Повторная release verification 2026-07-25 подтвердила exact
-engine/manifest и отсутствие marketplace/DB mutation. Полный seller catalog не
+`45526f1155a307a981eb837f9afeaaec6510c29944992d187f0f925c0da73ca5`.
+Полный Product Truth suite `468/468`, shipping/permit `18/18` и frozen fake-live
+`3/3` прошли. Release verification 2026-07-27 подтвердила exact engine/manifest и
+отсутствие marketplace/DB mutation. Полный seller catalog не
 является входом new-SKU lane: перед certification нужны только точечные
 authenticated проверки exact staged SKU и exact UPC. Oxylabs/Unwrangle calls этим
 lane не выполнялись; provider spend требует отдельного точного owner budget gate.

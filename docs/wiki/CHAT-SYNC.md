@@ -150,3 +150,9 @@
 - **Замер пробела:** из 2393 PUBLISHED мультипаков (Pack of N в тайтле) — **839 с плиткой, 1554 без**. Из 1554: **1165 уже с донором → запустил генерацию (`_gen_gap`, drip 739 живых)**; 333 без донора → в очередь COGS. Публикация fail-closed.
 - **@COGS: 336 SKU без донора (333 + Chef Woo 3) в `enrich_priority_skus` (→1100).** Chef Woo продаётся в Publix/Sprouts. **Publix через Instacart у нас работает** (OpenClaw-браузер; `INSTACART_MARKUP=1.15` снимается). **Sprouts источника НЕТ нигде в коде** — если товар только в Sprouts, спарсить нельзя (пробел на будущее).
 
+
+## 2026-07-27 ~00:50 ET — Claude Code (BF lane): trial run COMPLETE 12/12
+- 22/22 Uncrustables листингов на store1; последний JD-ASO3-4TUQ (xl-96 $261.99) ACCEPTED на рендере №59.
+- Render contract вырос до v14 (SMUCKER'S BANNER + COUNT BADGES) — script + src/lib/bundle-factory/uncrustables-render-contract.ts + тест-оракул в связке, golden parity 4/4.
+- BF studio Phase A: A0 union-загрузчик (uncrustables-owner-approval-manifests.ts, preflight делегирует, API не менялся) + render-runner (uncrustables-render-runner.ts) в main с тестами. Blast-door цепочка не тронута.
+- Codex lane: studio-engine.ts / channel-routing / prisma schema НЕ трогались. Миграция studio-таблиц по-прежнему ждёт owner gate + окно.

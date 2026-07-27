@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-26.
+> **Статус:** живой decision ledger, сверено 2026-07-27.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -29,8 +29,11 @@
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
-| G5. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified; canonical business data intentionally not materialized |
-| G6. Consumer SHADOW activation | `NOT_READY` | Readiness `0/5935` для 4/4 consumers: `CURRENT_SCOPED_SKU_COST_MISSING` |
+| G5a. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified |
+| G5b. No-paid legacy bridge canary | `CONSUMED_2026-07-26` | Exact five-listing plan applied: `35/35` rows, no paid/provider/marketplace actions |
+| G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
+| G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
+| G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `19/5935`, Unit Economics `19 UNSOURCEABLE`, Procurement `0 ready` |
 | G7. Provider canary / paid wave | `NOT_READY` | Отдельный plan, permit, budget, balance и owner approval |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
@@ -311,12 +314,104 @@ Quarantined session и старые permit/authorization bytes повторно 
    missing/conflicting/unexpected/writers/FK = `0`; canonical cost recomputes,
    legacy promotions, provider/paid calls и marketplace/procurement mutations =
    `0`.
-6. Post-apply read-only readiness reconciled `5935/5935`, но четыре consumers
-   остаются `0 ready`; единый blocker —
-   `CURRENT_SCOPED_SKU_COST_MISSING`.
-7. Consumed G5 approval не разрешает canonical business-data materialization,
-   consumer activation, paid enrichment или marketplace actions. Следующий DB
-   writer требует нового exact owner gate.
+6. Отдельный no-paid bridge canary plan `ba899ce9…fae3d` применён по отдельному
+   owner gate: `35/35` canonical rows для `5` listings, donor transitions `5`,
+   partial/FK violations `0`; postcheck = `ALREADY_APPLIED`.
+7. Post-canary readiness reconciled `5935/5935`: Bundle Factory и Listing
+   Improvement `5 ready`, Unit Economics `5 UNSOURCEABLE`, Procurement `0 ready`;
+   остальные `5930` scopes ещё не materialized.
+8. Consumed G5a/G5b approvals не разрешают graph-aware wave, consumer activation,
+   paid enrichment или marketplace actions. Следующий DB writer требует нового
+   immutable plan и нового exact owner gate.
+
+### G5c consumed evidence 2026-07-27
+
+- fresh source snapshot SHA-256:
+  `0f0b0d48841661c6caad3fcd0da1ded0da6dc5a0cf243876822dfb6a4b2bc4ed`;
+- fresh bridge plan SHA-256:
+  `1f5f90a71944520fcc6a65460555f54405d8886a35099e9d3746d451aadc5b5c`;
+- graph-aware apply plan SHA-256:
+  `367ffc2fead16f897235387a17cad8583d184fc23f605fedaf4218b687d60354`;
+- preflight report SHA-256:
+  `07706ccf11252db1e03705b58fe9a963a9644bd6affe1b78e671c5f18562d72c`;
+- exact scope: `14` listings, `7` unique donor-content graphs, maximum `70`
+  canonical rows, donor transitions `7`;
+- preflight: `READY_TO_APPLY`, absent `70`, exact-existing `0`, FK violations
+  `0`;
+- `FaisalX-3816` не входит в план и остаётся quarantined;
+- provider/paid/retailer/marketplace/procurement calls/actions и consumer cutover
+  равны `0`;
+- plan expires `2026-07-29T12:16:37Z`.
+
+Owner approval artifact SHA-256 =
+`3a7c6f36283716e1211186f69b7e9efbc8af10a5324b80b208a28fca9f7a1033`.
+Fresh pre-send preflight SHA-256 =
+`73b7456dd53101c9eef37eac76c44372dd7754da6128a0ca324f8bb8b801bc37`
+повторно дал `READY_TO_APPLY`. Apply завершён `APPLIED`: inserted `70/70`,
+donor transitions `7`, FK violations `0`; report SHA-256 =
+`38ddef906750b789827a372eee9c57fe9fedbfbfc929bc95169004e363eb9284`.
+Independent postcheck SHA-256 =
+`43bb220736bae30de924948632291a8d359f0b381dacda335ca73ed09f600262`
+подтвердил `ALREADY_APPLIED`, exact-existing `70`, absent `0`.
+
+Full readiness report SHA-256 =
+`014770f0a8c4045e9a8ec0770caae86709c533683590c4c1fa10ecd2d33ec644`:
+`5935/5935` reconciled, Bundle Factory/Listing Improvement `19 ready`, Unit
+Economics `19 UNSOURCEABLE` / `5916 missing`, Procurement `0 ready`; provider
+calls/DB writes `0`, cutover `0/4`.
+
+Этот consumed gate разрешал только exact plan выше одной transaction. Он не
+разрешает paid enrichment, retailer fetch, consumer activation, исправление
+`FaisalX-3816`, публикацию/изменение листингов, цены, inventory или закупку.
+
+### G5c exact owner phrase
+
+```text
+APPROVE_PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE:ptlb-wave-cb890414ab73b579d117599a:367ffc2fead16f897235387a17cad8583d184fc23f605fedaf4218b687d60354:14_LISTINGS:70_MAX_ROWS:NO_PAID_CALLS:NO_MARKETPLACE_MUTATIONS
+```
+
+### G5d standing no-paid policy
+
+Владелец 2026-07-27 установил постоянное правило:
+
+- Codex автономно выполняет local work и read-only production;
+- collision-free Product Truth canonical materialization wave может применяться
+  автономно, если exact row ceiling не превышает `100` и fresh preflight имеет
+  status `READY_TO_APPLY`;
+- paid/provider calls, marketplace/listing writes, price/inventory changes,
+  delisting, consumer activation и procurement всегда требуют отдельного owner
+  gate.
+
+Canonical policy artifact:
+`ss-control-center/data/audits/product-truth-legacy-bridge/standing-policy-20260727-v1.json`;
+SHA-256 =
+`0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696`.
+Он pinned к current production target fingerprint и authoritative manifest
+`94359db1…9062c`; смена target/manifest, identity collision, stale/non-ready
+preflight или row ceiling `>100` fail closed. Policy не разрешает self-expansion
+своих границ.
+
+### G5d implementation evidence 2026-07-27
+
+- wave apply report contract `2.1.0` принимает либо exact one-time approval, либо
+  canonical standing policy + fresh immutable preflight;
+- standing verifier проверяет exact keys, canonical bytes/SHA, target/manifest,
+  ceiling `≤100`, freshness `≤15 min`, `READY_TO_APPLY`, collision-free scope и
+  все no-paid/no-marketplace safety assertions до открытия write transaction;
+- targeted tests `21/21`, TypeScript, targeted ESLint и полный Product Truth
+  certification `477/477` прошли;
+- fresh canonical-aware read-only production snapshot SHA-256
+  `95f247db29524122cebe60495731c265743da1db87bc9167f8aede4428f30e3c`;
+- bridge plan SHA-256
+  `a97497cadf652891c06ae100e919ca01d6049831cc751b08a0568a69c0f06cd7`;
+- artifact index SHA-256
+  `46c7412c89c34a7247137e392246d793322f9c4267ef3e07d5024749ead12008`;
+- exact result: `19 ALREADY_CANONICAL`, `0` новых content-complete no-paid
+  candidates, `82` identity-only, `5834` quarantined; `FaisalX-3816` fail-closed
+  на exact donor→different-variant conflict;
+- production writes в этом audit = `0`; provider/paid/retailer/marketplace/
+  procurement actions = `0`. Standing policy не потреблялась новым DB write,
+  потому что допустимого следующего content-complete scope нет.
 
 ## Удобный комбинированный ответ
 

@@ -1,19 +1,70 @@
 # 🔄 SESSION HANDOFF — читать ПЕРВЫМ при продолжении на любой машине
 
-> **⚡ КОНТРАКТ МЕЖДУ ЧАТАМИ (утверждён владельцем 2026-07-08, ОБЯЗАТЕЛЕН ОБОИМ ЧАТАМ):**
+> **OWNER CANON 2026-07-18:** этот файл — датированный оперативный журнал и содержит
+> исторические статусы, которые могут устареть. Перед продолжением любой работы с
+> donor catalog / COGS / Bundle Factory / листингами / Economics / Procurement сначала
+> прочитать **[Product Truth Platform — КАНОН](product-catalog-architecture.md)** и
+> **[актуальную дорожную карту](donor-catalog-execution-roadmap.md)**. Канон закрепляет
+> четыре потребителя и стратегию: Phase 1 = весь текущий продаваемый Amazon+Walmart
+> ассортимент; Phase 2 = системное расширение по брендам, группам и ретейлерам.
+>
+> **⚡ ТЕКУЩИЙ КОНТРАКТ ОБОГАЩЕНИЯ (OWNER CANON):**
 > **[Разделение труда: обогащение → потребители](enrichment-division-of-labor.md).**
-> Коротко: **обогащает только COGS-чат** (vision-identify листингов + retail-search +
-> DonorProduct/DonorOffer + рецепт SkuComponent + SkuCost) — один раз за SKU.
-> **Картинки/контент-чат НЕ вызывает identify / retail-search / donor-harvest** —
-> читает готовое из общих таблиц; срочные SKU заказывает через Setting
-> `enrich_priority_skus` (JSON-массив SKU). Весь vision — через единый роутер
-> `askVisionJson` (vision.ts, circuit-breaker); проверка СВОИХ сгенерённых картинок —
-> ок, это не обогащение. Причина: двойной конвейер жёг лимиты ×2 (−9.4k Unwrangle за
-> ночь при +30 SKU) и два слепых балансировщика душили vision-линии друг друга.
+> Product Truth Platform имеет один unified Sourcing/Enrichment writer. Bundle
+> Factory, Listing Improvement, Unit Economics и Procurement читают единый versioned
+> canonical read-contract и не создают собственный retailer-harvest или параллельный
+> каталог. Если exact данных нет, consumer ставит запрос в общую canonical queue.
+> Legacy Setting `enrich_priority_skus` может быть только входным сигналом для
+> совместимости; он не является authority, approval на paid spend или обходом sealed
+> plan/permit/budget ledger. Исторические упоминания «COGS-чата» ниже описывают старый
+> процесс, а не действующий ownership contract.
 >
 > **Как пользоваться:** на новой машине скажи Claude: *«прочитай вики и найди
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
+
+> **WALMART NEW-SKU UPDATE 2026-07-19 (Codex):** executable read-only operator release
+> выдан в
+> `/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-new-sku-pilot-engine-2026-07-19/release`.
+> Engine SHA =
+> `1396a6453b0b80142aaf6e6149d2956917a8c5f7809b5f20eaf92092fba82258`, manifest SHA =
+> `64b31718db8513c0962ad6f319b0e025a60803aede1ba767edbf123511a0ec06`, certificate SHA =
+> `23d4d1ef1e42b1bed2f2a569540342d7ef2140514a8b41999b4967a2075e17df`.
+> Operational frozen tests 146/146, full final-source Walmart 159/159, fake-live 3/3,
+> Product Truth 411/411; real production/Walmart writes = 0. Движок
+> требует independently pinned полный all-status ITEM v6 source, byte-exact authority
+> binding к store 1/current credential scope/`WalmartCatalogItem`/matching
+> `WalmartReport` и повторяет recheck перед каждой prepublication mutation и перед
+> первым `/feeds` POST. Spec: `MP_ITEM` `5.0.20260501-19_21_29-api`. Контракты:
+> source release `3.2.0`, frozen manifest `2.1.0`, dependency closure `1.1.0`, doctor
+> `1.4.0`, plan `1.3.0`, certification input `1.2.0`, certification `1.4.0`, policy
+> evidence `1.0.0`, owner permit `2.0.0`; policy snapshot
+> `walmart-us-prepublication/2026-07-19.2`. Sealed source exclusion исключает
+> `.DS_Store`, а frozen verifier отклоняет его появление.
+> Изолированный полный CLI сценарий с `TEST_FIXTURE_ONLY` permit прошёл вплоть до fake
+> POST и accepted-state re-invocation/readback: один attempt, один POST, второй POST не
+> создаётся; это не retry unknown outcome. Structured POLICY_REVIEW разбирается
+> машинно, но raw seller/category/recall/brand evidence требует реальной human/owner
+> проверки, а six-domain screen не гарантирует полноту меняющихся правил Walmart.
+> Pending buyer worksheet нельзя передавать прямо в status: emitted
+> `verify --mode seal-evidence` связывает его с immutable verify receipt/latest
+> attempt/item, сам хеширует screenshot и только затем выдаёт final status argv.
+> Verify receipt `1.1.0`/schema activation v3 теперь неизменно связывают attempt с
+> exact certification SHA, payload SHA, seller fingerprint и idempotency key; poller
+> проверяет этот же active attempt до GET и в write transaction. Frozen fake flow
+> прошёл generated worksheet→seal→`BUYER_VERIFIED/LIVE` и replay при одном POST;
+> old-cert/newer-attempt отклонён до HTTP/DB.
+> Production
+> остаётся NO-GO: нужны отдельные owner gates на Product Truth activation/backfill,
+> fresh lifecycle activation, свежий полный ITEM v6 capture+atomic catalog activation,
+> production public-key enrollment, fresh seller-health proof, exact candidate
+> evidence и exact signed permit на один SKU. Наличие выданного release не разрешает
+> ни один из этих production steps и не разрешает `apply --mode live`.
+> Claude Code исполняет только verified frozen engine/`next_argv`, не пишет код/SQL и не
+> запускает capture/activation/publish самостоятельно. Catalog activation обязан
+> отдельно доказать active Store 1 seller/capture credential scope и внешний
+> Ed25519-signed owner approval; вычисляемая оператором строка не является gate. См.
+> [[walmart-new-sku-operator-runbook]] и актуальный блок в [[task-registry]].
 >
 > **Последнее обновление:** 2026-07-08 ночь (Bundle Factory чат, Fable 5) — **🎉 ПИЛОТ 50 UNCRUSTABLES: ВСЕ 50 ОПУБЛИКОВАНЫ НА AMAZON (47 PENDING_REVIEW + 3 SUBMITTED).** Батч `cmra8yv2k…` полностью каноничен: тексты 50/50 (count-семантика = сэндвичам не коробкам, **бренд=Uncrustables**, факт-стиль), картинки 50/50 (**правило коробок владельца**: count кратно retail-фасовке → коробки; не кратно → сэндвичи россыпью в индив.упаковках), цена+min(ROI-70)/max(target) band в фиде (ChannelMAX подтянет сам), Small Frozen шаблон + вес/габариты авто, UPC из пула. **ВСЯ ИИ-цепочка на подписках ($0):** тексты Claude Max (`/text-claude`), картинки Codex/ChatGPT Pro (владелец апнул на **Pro 5x $100**), rule-6 vision Claude (`/analyze-claude`); платный API — только резерв. **Волна 2 идёт СЕЙЧАС:** батч `cmrbdh4dm…`, 111 текстов готовы (150 минус 39 дублей пилота — wave-dedup гвард), свой image-driver+finisher публикуют автоматически. **Инфра-урок:** nginx `/codex-image/` timeout=300s рубит 4-мин генерацию под нагрузкой (504) — драйверы теперь ОТЛИЧАЮТ транзиентный таймаут (ждут+повтор) от квоты (стоп); auto-mode не дал поднять общий nginx-таймаут (там параллельные чаты). **⚠️ ВЛАДЕЛЬЦУ:** (1) ChannelMAX Min=Max для 3 СТАРЫХ ASIN (86.25/128.57/250.47) — 4-й день висит; (2) один published-листинг с брендом Smucker's → патч на Uncrustables после ревью. Полный ключевой код: коммиты `f7aeb25`→`b0f27e3`. См. блок «🆕 СЕССИЯ 2026-07-07/08» ниже.
 >

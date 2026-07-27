@@ -312,9 +312,93 @@ entrypoint.
   mutations = `0`. Post-apply read-only readiness reconciled `5935/5935`, но все
   четыре consumers остаются blocked на
   `CURRENT_SCOPED_SKU_COST_MISSING`; cutover = `0/4`.
-- [ ] Построить отдельный no-paid evidence-bound canonical materialization plan из
-  уже удерживаемых source artifacts. Он не может автоматически повышать mutable
-  legacy truth; любой его DB apply требует нового exact owner gate.
+- [x] Построить отдельный no-paid evidence-bound canonical materialization bridge
+  поверх уже удерживаемых `DonorProduct`/`DonorOffer`/`SkuComponent`/`SkuCost`, не
+  создавая третий каталог и не выполняя повторный enrichment. Read-only audit
+  сохранил полный source snapshot SHA `e13cd87b…03e8` и bridge plan SHA
+  `27b1d6ae…2360`: из `5935` exact listing scopes только `20` имеют полный exact
+  content, `0` имеют цену, проходящую текущую 24-hour policy.
+- [x] Первый owner-approved canary plan v1 `c6996af9…9bbd` остановился внутри
+  единой transaction на production-only
+  `PRODUCT_CONTENT_OBSERVATION_METERED_RECEIPT_INVALID`: legacy observation
+  ошибочно наследовал имя metered provider без исторического receipt. Transaction
+  полностью rollback; повторный read-only preflight доказал exact-existing `0`,
+  absent `35`, FK violations `0`.
+- [x] Исправить provenance без фабрикации receipt: apply-plan v1.1 записывает
+  canonical materialization route `legacy-materialized-bridge`, а original
+  `Oxylabs`/`Unwrangle`/`BlueCart` сохраняет внутри immutable source binding.
+  Regression использует `oxylabs` и все восемь production migrations; полный
+  Product Truth suite = `468/468`, targeted ESLint = `PASS`.
+- [x] Пересобрать новый exact five-graph plan SHA `ba899ce9…fae3d`, maximum DB
+  rows `35`, provider/paid/retailer/marketplace/procurement calls = `0`, consumer
+  cutover = `false`. Новый read-only production preflight
+  `ae64cdd6…be6db` подтвердил `READY_TO_APPLY`, absent rows `35`,
+  exact-existing `0`, FK violations `0`.
+- [x] По новому exact owner gate применить только plan `ba899ce9…fae3d` как
+  5-SKU content canary одной transaction. Status `APPLIED`, inserted rows `35`,
+  donor identity transitions `5`, FK violations `0`; apply-report SHA
+  `49568cd4…2e15`. Независимый postcheck SHA `28e8254e…9a18` подтвердил
+  `ALREADY_APPLIED`, exact-existing `35`, absent `0`.
+- [x] Выполнить полный read-only readiness denominator `5935/5935` после canary:
+  Bundle Factory ready `5`, Listing Improvement ready `5`, Unit Economics
+  `UNSOURCEABLE 5`, Procurement ready `0`; остальные `5930` scope остаются без
+  canonical materialization. Report SHA `27d83878…2dfa`, provider calls и DB
+  writes `0`, consumer cutover остаётся `0/4`.
+- [x] Проверить оставшиеся `15` content-only candidates перед повторным apply.
+  Они не являются пятнадцатью независимыми графами: найдено `8` donor/variant
+  групп и один fail-closed collision — один College Inn donor для `FaisalX-3816`
+  претендует на другой canonical variant, чем `FaisalX-3814/3815`. Старый
+  fixed-five контракт для этой волны запрещён.
+- [x] Реализовать graph-aware legacy bridge wave contract v2: explicit scope
+  `1–50`, unique variant/decision/donor/content rows материализуются один раз,
+  listing cost/evidence/scope links остаются раздельными, row ceiling считается
+  из фактического graph fanout. `donor → multiple canonical variants` блокирует
+  выпуск плана; provider/paid/retailer/marketplace/procurement calls и consumer
+  cutover остаются `0`. Shared-graph, collision, idempotency и atomic rollback
+  regression прошли; полный Product Truth suite `470/470`, TypeScript, targeted
+  ESLint, CLI help и diff-check = `PASS`.
+- [x] Построить fresh read-only production snapshot/bridge plan: snapshot SHA
+  `0f0b0d48…c4ed`, bridge plan SHA `1f5f90a7…5b5c`, `5935` listings,
+  `20` content-only candidates, DB/provider/paid/retailer writes/calls = `0`.
+  Первые `5` уже materialized; `FaisalX-3816` исключён из auto-write из-за
+  donor→multiple-variant collision.
+- [x] Выпустить immutable graph-aware wave v2 для `14` бесконфликтных listings /
+  `7` unique donor-content graphs: plan `367ffc2f…0354`, maximum DB rows `70`,
+  paid/provider/marketplace/procurement calls/actions = `0`. Fresh production
+  read-only preflight `07706ccf…d72c` = `READY_TO_APPLY`, absent `70`,
+  exact-existing `0`, donor transitions `7`, FK violations `0`.
+- [x] Exact owner gate на plan `367ffc2f…0354` получен и зафиксирован approval
+  artifact SHA `3a7c6f36…1033`. Fresh pre-send preflight
+  `73b7456d…bc37` повторно дал `READY_TO_APPLY`.
+- [x] Graph-aware wave применена одной transaction: status `APPLIED`, inserted
+  `70/70`, donor transitions `7`, FK violations `0`; apply report
+  `38ddef90…9284`. Independent postcheck `43bb2207…0262` =
+  `ALREADY_APPLIED`, exact-existing `70`, absent `0`.
+- [x] Full-denominator readiness после wave reconciled `5935/5935`: Bundle
+  Factory и Listing Improvement `19 ready`, Unit Economics
+  `19 UNSOURCEABLE` / `5916 missing`, Procurement `0 ready`; report
+  `014770f0…c644`, provider calls/DB writes `0`, cutover `0/4`.
+- [x] Владелец установил standing no-paid policy для будущих collision-free
+  canonical materialization waves максимум `100` DB rows после fresh
+  `READY_TO_APPLY` preflight. Policy artifact SHA `0ede5d62…2696`; paid/provider,
+  marketplace/listing, price/inventory, delisting, consumer activation и
+  procurement остаются за отдельными owner gates.
+- [x] Встроить standing-policy verifier в wave engine: exact policy bytes/SHA,
+  production target, manifest, ceiling `≤100`, collision checks и fresh
+  `READY_TO_APPLY ≤15 min` fail closed проверяются до transaction. Exact approval
+  остаётся альтернативным однократным режимом. Targeted `21/21`, TypeScript,
+  targeted ESLint и полный Product Truth suite `477/477` = `PASS`.
+- [x] Устранить повторное обнаружение уже записанных legacy scopes. Snapshot/plan
+  `1.1.0` теперь читает exact-confirmed donor bindings и latest scoped component
+  evidence, классифицирует полный совпадающий граф как `ALREADY_CANONICAL`, а
+  partial/cross-variant state — как quarantine. Fresh read-only production audit:
+  source SHA `95f247db…0e3c`, plan SHA `a97497ca…6cd7`, index SHA
+  `46c7412c…008`. Из `5935`: `19 ALREADY_CANONICAL`, `0` новых
+  content-complete no-paid candidates, `82` identity-only, `5834` quarantine.
+  `FaisalX-3816` теперь явно блокируется
+  `CANONICAL_DONOR_VARIANT_CONFLICT`; writes/provider/paid/retailer calls = `0`.
+- [ ] Построить read-only приоритет и budget forecast для оставшихся `5916`
+  scopes. Никаких paid/provider calls до отдельного G7.
 - [ ] Закрывать 86 `UNRESOLVED_EVIDENCE` только authoritative evidence.
 
 **Exit:** production schema доказана отдельно от локального кода; authoritative
@@ -416,9 +500,15 @@ scope-only apply завершён `APPLIED`: inserted/exact scopes = `5935/5935`
 conflict, unexpected, writers и FK violations = `0`; cost/legacy/provider/paid/
 marketplace/procurement effects = `0`. Full-denominator read-only readiness
 reconciled `5935/5935`, но четыре consumers имеют `0 ready` из-за
-`CURRENT_SCOPED_SKU_COST_MISSING`; cutover остаётся `0/4`. Следующая точка —
-no-paid evidence-bound canonical materialization plan; его DB apply, consumer
-activation, paid run и marketplace actions не разрешены текущим gate.
+`CURRENT_SCOPED_SKU_COST_MISSING`; cutover остаётся `0/4`. No-paid bridge поверх
+существующего каталога завершён и сертифицирован `468/468`. V1 canary transaction
+полностью rollback на production metered-receipt guard; исправленный provenance
+прошёл все восемь production migrations. Exact v1.1 5-SKU plan
+`ba899ce9…fae3d` применён по отдельному owner gate: `35/35` exact canonical rows,
+partial/FK violations `0`. Full readiness reconciled `5935/5935`: Bundle Factory
+и Listing Improvement `5 ready`, Unit Economics `5 UNSOURCEABLE`, Procurement
+`0 ready`; остальные `5930` ещё не materialized. Consumer activation, paid run и
+marketplace actions этим gate не разрешались и остаются выключены.
 
 ---
 

@@ -59,22 +59,43 @@
 
 ## 3. Заголовок (title)
 
-- **≤150 символов**, Title Case (не ALL CAPS).
-- Структура: **Brand + ключевые атрибуты (размер/вес/count) + название товара**.
-- Есть маркер количества: «N-Pack» / «N Count».
+- **Оптимизационная цель 50–75 символов**, Title Case (не ALL CAPS).
+  Hard boundary и обязательный порядок полей всегда берём из свежего exact
+  Walmart Product Type Get Spec / Style Guide; общий диапазон не заменяет
+  category-specific spec.
+- Структура для стандартного grocery/multipack:
+  **Brand + точное название/тип товара + вариант/вкус/стиль + ключевые атрибуты +
+  размер/count одной упаковки + внешний Pack Count**.
+- Поисковая идентичность товара должна идти **до** внешнего количества. Не начинаем
+  обычный grocery-title с `Pack of N`, `N-Pack` или `N Count`; маркер количества
+  обязателен, но стоит после товара/варианта. Исключение — только обязательный
+  prefix из свежего category Style Guide.
+- Walmart публично не раскрывает численную формулу веса первых символов.
+  Доказано другое: title должен содержать релевантные keywords, быть чистым и
+  кратким; category и корректно заполненные attributes также непосредственно
+  влияют на search/browse discoverability.
 - **Запрещено:** промо-слова, спецсимволы, URL, имена ритейлеров/конкурентов, повтор слов, годы, не-английский (кроме имени бренда).
 - Brand-voice владельца: без emoji, без promo-прилагательных (ultimate/best/premium…).
 
+Для `FaisalX-1183` текущий title уже соответствует этому порядку и не меняется:
+`Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)`
+(69 символов с пробелами).
+
 ## 4. Описание (description)
 
-- **≥150 слов**, прозой (НЕ буллеты), фичи+бенефиты, бренд + ключевые слова естественно.
+- Подробная проза (НЕ буллеты), фичи+бенефиты, бренд + ключевые слова естественно.
+  Около **150 слов** — общая U.S. optimization guidance; category-specific
+  требование и hard limit берём из свежего exact Product Type spec.
 - Ведущее предложение про количество: «This listing is a multipack of N …: one order ships all N together — selecting quantity 1 sends N, not 1.»
 - Curator/assembler disclaimer для gift-basket линеек (см. CLAUDE.md).
 - **Запрещено:** emoji, промо, буллеты, URL, спецсимволы, повтор слов, HTML для grocery.
 
 ## 5. Ключевые особенности (key features / bullets)
 
-- **3-10 буллетов**, каждый **≤80 символов** (с пробелами).
+- **3–10 буллетов** по публичному U.S. optimization guide. Держим их короткими;
+  hard limit берём из свежего exact Product Type spec. `≤80 символов` остаётся
+  хорошей целью краткости и опубликовано для Walmart Canada, но не считается
+  универсальным U.S. hard reject.
 - Короткие фактические фразы, без повторов, без emoji/HTML/промо.
 
 ## 6. Атрибуты (Walmart MP_ITEM 5.0) — МАКСИМАЛЬНАЯ полнота = главный SEO-рычаг

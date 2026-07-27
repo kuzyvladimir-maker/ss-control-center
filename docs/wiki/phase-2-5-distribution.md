@@ -1,5 +1,11 @@
 # 🚀 Phase 2.5 — Distribution
 
+> **Исторический snapshot, не текущий Walmart runtime contract.** Описанный ниже
+> `MP_ITEM_4.7`, простой feed-poller и универсальный publish route нельзя применять
+> для создания новых Walmart SKU. Актуальный new-SKU контур использует текущий
+> `MP_ITEM` 5.0 contract, живой Get Spec, exact-GTIN catalog search, Product Truth,
+> отдельные sealed approval/lifecycle/buyer-proof gates и операторский runbook.
+
 > **Started:** 2026-05-20 · **Status:** Shipped (Stage 7 — Amazon SP-API PUT + Walmart MP_ITEM_4.7 feed + DRY-RUN safety + status poller)
 > **Spec:** continuation of Phase 2.4 — picks up `ChannelSKU.validation_status='PASSED'`
 
@@ -10,7 +16,8 @@
 **This is the first stage that actually writes to marketplaces.** Until this stage the pipeline lives entirely on internal DB + R2; from here on, Amazon and Walmart see real PUT/POST calls.
 
 * **Amazon** — `PUT /listings/2021-08-01/items/{sellerId}/{sku}` with the constructed listing payload. Optional `?mode=VALIDATION_PREVIEW` query param for a server-side dry-run that never publishes. PUT is idempotent (same payload to same SKU = same submission_id on retry).
-* **Walmart** — Items API feed submission, `feedType=MP_ITEM_4.7` (MP_ITEM_FEED family).
+* **Walmart (исторически)** — Items API feed submission, `feedType=MP_ITEM_4.7`
+  (MP_ITEM_FEED family); для новых SKU этот adapter запрещён.
 * **DRY RUN is default** — `apply: false` is the default; the API route only writes for real when the query param is `dryRun=false` (anything else, including absent, is treated as dry-run).
 * **Status poller** — Amazon `GET /listings/.../issues` + Walmart feed status. Background-cron-friendly route lets n8n keep PENDING/SUBMITTED rows progressing toward LIVE / FAILED.
 

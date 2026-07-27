@@ -1,6 +1,6 @@
 # Walmart New SKU — execution board
 
-> **Статус:** active implementation board, обновлено 2026-07-25.
+> **Статус:** active implementation board, обновлено 2026-07-26.
 >
 > **Канон:** [[product-catalog-architecture]]. Операторский workflow:
 > [[walmart-new-sku-operator-runbook]]. Product Truth prerequisites:
@@ -45,6 +45,14 @@ goods, packaging materials, seller shipping label и Walmart referral fee. Walma
 comparable не отклоняет candidate внутри Bundle Factory: это обязательный warning для
 owner review, потому что бизнес доставляет в зоны, где retail delivery недоступен.
 При этом официальный Walmart Pricing Rule остаётся внешним риском unpublish/Buy Box.
+
+Уточнение владельца и evidence review от 2026-07-26: требуемая customer total до
+налога может делиться между `item price` и customer shipping по уже существующему
+Walmart template. Всегда `landed total = item price + customer shipping`; referral
+и contribution margin считаются с landed total. При одинаковых speed/coverage/total
+default — free shipping. Paid shipping допускается только как controlled experiment,
+реально более быстрый service либо экономически необходимое исключение. Полный канон:
+[[walmart-new-sku-shipping-price-strategy]].
 
 ## Правило статусов
 
@@ -224,10 +232,16 @@ track и больше не обозначается blocker текущего Wal
   доменов: отдельно добавлены account publish eligibility, image policy,
   shipping/fulfillment и pricing competitiveness.
 - [x] Зафиксировать owner commercial contract: fresh exact-variant comparable,
-  линейная нормализация pack count, нулевая customer shipping charge, положительный
-  shipping label внутри item price, referral `15%` и contribution margin не ниже
-  `30%`. Comparable — warning, не hard reject; официальный Walmart Pricing Rule
-  остаётся отдельным внешним риском.
+  линейная нормализация pack count, required landed total как сумма item price и
+  exact customer shipping charge, referral с landed total и contribution margin не
+  ниже `30%`. Current preview с нулевой customer shipping charge остаётся только
+  free-shipping scenario. Comparable — warning, не hard reject; официальный Walmart
+  Pricing Rule остаётся отдельным внешним риском.
+- [x] Провести отдельное official/academic/seller-community исследование
+  free shipping против partitioned price и закрепить
+  [[walmart-new-sku-shipping-price-strategy]]: Walmart price competitiveness видит
+  `item + shipping`; shipping cost/speed отдельно влияют на Buy Box; fast/free
+  является default при равной скорости; paid shipping требует experiment/exception.
 - [x] Сделать обязательными fresh Seller Center Health & compliance evidence,
   `INGESTIBLE_PRODUCTS=APPROVED`, owned inventory, отсутствие retail arbitrage,
   competitor packaging/promotional inserts и exact fulfillment center/lag binding.
@@ -306,10 +320,20 @@ track и больше не обозначается blocker текущего Wal
   `7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`,
   certificate SHA
   `cc5603d8d56421c151b92b5a6726c1cf10c3dfa52732614763cde6dc6fec9242`.
+- [x] После owner Image Truth correction выпустить immutable release v24:
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-26-v24`; engine SHA
+  `67804f05b9fc515f71c258f29e4655d4cda5c3c2470f05c582744bf4657c2127`,
+  manifest SHA
+  `2a973a4fcdb9076820561e1f07d1f0a24a94c2d9985bceed7b12fee329933236`,
+  certificate SHA
+  `8f7d4bf262adbfad4773e22e0f1d50dd612ff4ea4bf9c5a44aaa2f9255114893`.
+  Persistent frozen bytes прошли self-verify, focused Image Truth `93/93`,
+  Product Truth certification `445/445`, fake-live `3/3` на том же engine SHA,
+  workspace typecheck с errors `0`; реальных Walmart/DB/provider writes `0`.
 - [x] Новый и старый one-shot ITEM v6 executors оставить только audit evidence;
   authorization/POST/activation не выполнять.
 
-### ⛔ Owner gate — Фаза 6: два owner preview одного кандидата
+### ✅ Фаза 6 — owner preview принят, template-aware pricing
 
 - [x] Собрать только provisional shortlist из legacy donor bytes для ускорения
   последующей exact-проверки: RITZ Bits Cheese 8.8 oz, RITZ Bits Peanut Butter
@@ -403,18 +427,126 @@ track и больше не обозначается blocker текущего Wal
   `N` полных exact-source единиц; права на публикацию остаются независимым gate.
   Walmart MAIN не содержит добавленный `PACK OF N` badge, а product group целится
   в `95%` длинной стороны квадратной рамки без distortion/overlap/clipping.
-- [ ] Выпустить gallery version `4`: deterministic exact-pixel composition,
-  unit-canvas clipping вместо overlap, минимальный визуальный gap, увеличенный
-  product frame и regression для no overlay/exact count.
-- [ ] Владелец визуально принимает либо возвращает на доработку pack-of-2/pack-of-3.
+- [x] Полностью классифицировать все `20/20` изображений exact Target donor:
+  current red/orange artwork разрешён; old purple artwork `#2/#18/#19` и
+  два не доказанных exact-product promo `#6/#14` исключены. Новый fail-closed
+  packaging-artwork manifest требует решения по каждому обнаруженному URL,
+  одного `canonical_variant_id` и одной current artwork revision; неизвестный
+  либо смешанный artwork не проходит в preview/listing manifest.
+- [x] Выпустить gallery version `5`, superseding историческую version `4`:
+  compositor удаляет только связанный с краями near-white canvas, сохраняет
+  exact donor package pixels и детерминированно составляет ровно `2` либо `3`
+  видимые упаковки на белом `2200×2200` canvas. Generative redraw, новый дизайн,
+  badge/overlay и opaque-white перекрытие отсутствуют; product group занимает
+  почти всю рамку. Engine regression `101/101`, gallery lint/build/render `3/3`.
+  Новый preview artifact
+  `data/walmart-new-sku-engine/previews/20260726T162500Z-ritz-cheese-pack2-pack3-owner-preview.json`,
+  SHA `3e0a406f6f7ae57377884cea149136df6ee551dfc30b1e2ebbfaac2fecd3d030`.
+  Owner-only Sites version `5` из clean commit
+  `df13727dc21731d1cb5746795abd433649778cf3` успешно развернута по прежнему URL
+  `https://walmart-new-sku-owner-preview.kuzy-09.chatgpt.site`.
+  Walmart, UPC, Product Truth DB и paid providers не вызывались.
+- [x] Владелец 2026-07-26 явно принял buyer-view целиком для pack-of-2/pack-of-3:
+  exact-source изображения, количество упаковок, title, описание, цену и общий вид
+  листинга. Это закрывает owner review текущего preview, но не является разрешением
+  на UPC reservation, certification либо Walmart publication.
+- [x] После принятия первого preview подготовить следующие exact donor candidates
+  без seller-catalog scan, Walmart API, paid providers или production writes:
+  RITZ Bits Peanut Butter 8.8 oz — Product Truth plan SHA
+  `d24f00aacf998e3ddd04a0a9869b92874b6e0edf613e91bc6136d1c488791727`;
+  OREO Thins Mint 11.78 oz — plan SHA
+  `c71857dbdfe8019c3eb691882ad0791c38262c406be63bc1905acea4f94225e6`.
+  Оба plan имеют provider calls `0`, DB writes `0` и привязаны к одному exact
+  canonical variant.
+- [x] Обобщить Image Truth tooling: contact-sheet builder классифицирует каждый
+  exact donor URL; owner preview принимает override MAIN только если URL уже входит
+  в donor Product Truth gallery; multipack builder выбирает отдельную
+  aspect-aware композицию для широких упаковок без distortion, generative redraw,
+  badge и opaque-white overlap. Focused artwork/multipack/preview regression `8/8`,
+  workspace TypeScript errors `0`.
+- [x] Сгенерировать ещё четыре non-publishable owner preview:
+  RITZ Peanut Butter pack-of-2/3 artifact SHA
+  `d078790ee31616eb0a3998c8852a876402dde6cdeed20d3b60a40b8a6cda9337`;
+  OREO Mint pack-of-2/3 artifact SHA
+  `ea3594afb244ef9b54915b30da441428cd808d1aadb59e3a78d1548333e7b7eb`.
+  RITZ использует только current red/brown artwork; old purple и mixed-product
+  images исключены. OREO legacy MAIN исключён, current donor image подтверждён
+  exact current revision. Все четыре MAIN имеют `2200×2200` и показывают ровно
+  заявленные `2/3` полные упаковки.
+- [x] Развернуть owner-only Sites version `6` из exact gallery commit
+  `ffe5924152ceaf777f1ddffc9667aac290923742`, archive SHA
+  `c5922a5f1caddc2c270ced4fcfeedb78b0684cf6fbd00ba9d22efdcfdf2189fc`.
+  Галерея теперь содержит три exact товара и шесть buyer-view карточек с отдельным
+  выбором товара и Pack of 2/3; lint, production build и rendered tests `3/3`.
+  URL прежний:
+  `https://walmart-new-sku-owner-preview.kuzy-09.chatgpt.site`; access остаётся
+  owner-only. Walmart, UPC, Product Truth DB и paid-provider effects равны `0`.
+- [x] Owner review version `6` выявил UX-дефект: данные всех шести preview были
+  доступны, но buyer PDP по умолчанию показывал только один листинг, а переключатели
+  товара были недостаточно заметны. Version `7` из commit
+  `d4e4728e451883ac396cf668b9abbb67a79e91bd`, archive SHA
+  `5e3e22a679afec159b03db67194560c1f4a58af9ee59ba597f3e57643a915ceb`,
+  открывается явным catalog overview: одновременно видны все `6` карточек,
+  `3` товара, Pack of 2/3, MAIN, title, price и owner-review status. Каждая карточка
+  имеет отдельный переход в полный Walmart buyer-view и явный возврат
+  `All 6 listings`. Gallery lint/build/render `3/3`; owner-only URL не изменился,
+  marketplace/UPC/DB/provider effects `0`.
+- [x] Владелец подтвердил формулу split: если required total `$33.13`, а exact
+  template charge `$11.99`, item price равен `$21.14`; суммарно сохраняется `$33.13`.
+  Shipping нельзя добавлять поверх уже all-in рассчитанной цены.
+- [x] Исследовать влияние split на Walmart algorithm и покупателей; зафиксировать
+  evidence hierarchy, fast/free default, paid-shipping exception и matched-pair
+  experiment в [[walmart-new-sku-shipping-price-strategy]].
+- [x] Заменить zero-shipping-only economics на template-aware contract:
+  exact template ID/rates, scenario charges, referral с landed total, worst-case
+  margin, preview breakdown и post-publish association verification. Bundle Factory
+  показывает account-scoped active templates, открывает exact детали в modal и
+  сохраняет выбранный template snapshot в канонической Walmart request.
+- [x] Реализовать official SKU association contract: после одного `MP_ITEM` engine
+  отправляет ровно один `SKU_TEMPLATE_MAP` для того же SKU/template/fulfillment
+  center; permit подписывает hashes обоих payload, replay не отправляет ни один feed
+  повторно. `verify` читает `/items/associations` и не завершает pilot без exact
+  template + fulfillment-center match.
+- [x] Текущие шесть owner previews перевести на явный free-shipping selection:
+  customer shipping `$0`, required total целиком остаётся item price. Новые artifact
+  SHA: RITZ Cheese `f650c3d3…6531`, RITZ Peanut Butter `5611ecae…c32`, OREO Mint
+  `2bc66a49…0e21`.
+- [x] Развернуть owner-only Sites version `8` из exact gallery commit
+  `7fcdc6f2937be9ea3b119bb30efb63635df6bbce`, archive SHA
+  `ee316d8dabd7673da9e9e94b9d7a0872c658d3c120a23af0aef8ac951562f361`.
+  URL прежний; одновременно видны все шесть free-shipping preview.
+- [x] Выпустить и сертифицировать production-template-compatible frozen release v26:
+  engine SHA `e44553af…a78135`, manifest SHA `e441a1c0…91460`, certificate SHA
+  `45526f11…73ca5`. Persistent self-verify PASS; frozen Product Truth `468/468`,
+  shipping/permit `18/18`, fake-live `3/3`, Control Center production build PASS.
+  Fake flow сделал один `MP_ITEM` + один `SKU_TEMPLATE_MAP`, exact association
+  read-back и ноль дополнительных POST при replay. Production read-only store1 probe
+  разобрал все `11` active templates, включая легитимно отсутствующий неиспользуемый
+  zero variable charge; free templates = `3`. Реальные Walmart writes/DB/provider
+  effects равны `0`; v25 и старше не использовать для нового execution.
 - [ ] После принятия preview повторить `doctor→plan` против fresh production target;
   максимум один Oxylabs query и один Unwrangle detail требуют отдельного понятного
   owner budget gate.
 - [ ] Перед certification доказать отсутствие только exact staged seller SKU и
   выделенного UPC; полный seller-catalog novelty scan не нужен.
 
-### ⬜ Фаза 7 — Exact evidence кандидата
+### 🔄 Выполнение — Фаза 7: Exact evidence кандидата
 
+- [x] Выполнить fresh production `doctor` из frozen v26 для store1, pack-of-2,
+  limit 1. Infrastructure gates прошли: authenticated Walmart exact-UPC GET `200`,
+  Product Truth schema ready, lifecycle schema ready, owner trust ready,
+  UPC available `13043`, duplicate draft reservations `0`. Единственный blocker:
+  `NO_CURRENT_CANONICAL_PILOT_CANDIDATES`; `next_command=null`, поэтому plan/stage
+  не запускались. Immutable diagnostic SHA
+  `cb0727fd2094d606b1ac9ed22547dd235c0b2de7cc1513484ca64bab208d2dbc`.
+- [x] Выбрать только уже принятый owner-preview target RITZ Bits Cheese 8.8 oz:
+  donor `75422f18-e3d2-4c62-ae62-7287aaa75119`, direct first-party Walmart item
+  `34312392`, exact query
+  `RITZ Bits Cheese Sandwich Crackers Lunch Snacks 8.8 oz`. Старый v12 plan
+  истёк и запрещён к исполнению.
+- [ ] Получить отдельный owner budget gate на fresh targeted Product Truth
+  `doctor→plan→execute`: максимум один Oxylabs query (`1` credit) и один Unwrangle
+  detail (`2.5` credits), reserve floor `100`, без listing/UPC/marketplace actions.
 - [ ] Связать новый viable candidate с одним exact Product Truth variant и direct
   first-party offer.
 - [ ] Получить точные content, dimensions/weight, images/rights, category, brand,
@@ -441,8 +573,9 @@ track и больше не обозначается blocker текущего Wal
 - [ ] Сохранить полную immutable artifact chain и итоговый отчёт.
 - [ ] Передать Claude Code только verified frozen release и exact operator prompt.
 - [ ] Отдельно решить: остановиться или повторить весь цикл для второго pilot SKU.
-- [ ] После успешного pilot подключить этот же защищённый Walmart adapter как опцию
-  общего Bundle Factory Studio UI, не возвращая legacy mutable `DonorProduct` reads.
+- [ ] После успешного pilot автоматизировать текущую каноническую request handoff
+  между уже подключённым Walmart Studio UI и frozen operator run, не возвращая
+  legacy mutable `DonorProduct` reads и не расширяя owner gate.
 
 ### ⬜ Фаза 11 — Post-pilot release для волн 15–20
 
@@ -466,12 +599,13 @@ track и больше не обозначается blocker текущего Wal
 ## Текущий доказанный boundary
 
 - Current persistent Walmart pilot release:
-  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-23-v23`; engine SHA
-  `94ec292870b398aa08385c6d951454b790aaa7db662d6aa796337f7026340f5f`,
-  manifest SHA `7c7baa79bb965c21cc8f9d7b1fb631d0a6f153719193b172c3d468ac31656a5c`,
-  certificate SHA `cc5603d8d56421c151b92b5a6726c1cf10c3dfa52732614763cde6dc6fec9242`.
-- Product Truth `429/429`, frozen Walmart unit/security exit `0`, fake-live `3/3`;
-  legacy full-catalog binding rejection включён в active regression.
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-26-v26`; engine SHA
+  `e44553afaf59ff57b0d02181bcfb8bcbcd3f0914043116a44db1681c57a78135`,
+  manifest SHA `e441a1c00a368b3d831004c1f87fceac26d1336a328d1eb19c1d746286991460`,
+  certificate SHA `45526f1155a307a981eb837f9afeaaec6510c29944992d187f0f925c0da73ca5`.
+- Product Truth `468/468`, focused shipping/permit `18/18`, fake-live `3/3`;
+  legacy full-catalog binding rejection, exact shipping association и replay fence
+  включены в active regression.
 - Legacy prompt Studio не является вторым Walmart creation path; канонический
   Walmart adapter остаётся внутри общего Bundle Factory.
 - Product Truth production schema применена и подтверждена: 8/8 migrations,
@@ -486,12 +620,16 @@ track и больше не обозначается blocker текущего Wal
 - RITZ Bits Cheese 8.8 oz имеет два owner preview: pack-of-2 `$33.13` с profit
   `$9.94` и pack-of-3 `$40.36` с profit `$12.11`; contribution margin = `30%`.
   Preview artifact SHA
-  `a84a84d6786a249c4f40760fbc5090f60edc88320ae065aa8b2dadda7559596d`.
-  Exact comparable остаётся warning; права на count-accurate final images ещё не
-  доказаны. Provider calls, UPC reservation, certification и Walmart writes не
-  выполнялись.
+  `f650c3d361fee269087f0553a645d9592a31d11d14f08e72ec9a896116386531`.
+  Count-accurate exact-pixel preview images готовы и защищены от смешения старого
+  и нового artwork; template selection — explicit free shipping; publication rights
+  остаются отдельным недоказанным gate.
+  Provider calls, UPC reservation, certification и Walmart writes не выполнялись.
 - Frozen v20 zero-candidate doctor и RITZ reject сохраняются только как аудит старой
-  политики. Current v23 production doctor после owner visual review ещё не запускался.
+  политики. Current v26 production doctor выполнен read-only: infrastructure ready,
+  но `NO_CURRENT_CANONICAL_PILOT_CANDIDATES`; diagnostic SHA
+  `cb0727fd…d2dbc`. Следующий допустимый шаг — отдельный owner-gated targeted evidence
+  для принятого RITZ Cheese donor.
   SKIPPY по-прежнему не является кандидатом из-за cross-size merge
   `16.3 oz / 64 oz / 80 oz`.
 - Lifecycle local rehearsal на backup-копии прошла, включая post-apply replay fence и
