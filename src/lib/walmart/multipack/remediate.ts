@@ -1,0 +1,710 @@
+// Shared per-SKU multipack remediation: build the corrected listing (tiled main
+// image showing N units + badge + donor gallery + Claude-polished copy) and
+// submit it to Walmart as a partial MP_MAINTENANCE feed. Used by BOTH the CLI
+// batch script and the serverless cron worker so there is ONE pipeline.
+//
+// The pipeline is SCOPE-AWARE: the Builder's "what to change" checkboxes
+// (image/gallery/title/bullets/description) decide which fields the partial feed
+// touches. Price, UPC, brand and productType are never changed.
+
+import type { Client } from "@libsql/client";
+import { composeTiledMainImage, renderBadgeImage, fetchImageBuffer, highResImageUrl } from "./composite";
+import { buildMultipackListing, inferUnitNoun, quantityLeadSentence, scrubBrandVoice } from "./content";
+import { uploadToR2, multipackImageKey } from "./r2";
+import { polishListingCopy } from "./polish";
+import { validateListingContent } from "./guidelines";
+import { ensureDonorImage, fetchAndStoreDetail, titleMatchesListing } from "../../sourcing/enrich";
+import { pickBestFront, pickBestFrontFromPool, qualifyDonorFront, qualifyTiledMain } from "../../sourcing/vision";
+import { resolveDonorPhoto } from "../../sourcing/resolve-donor";
+import { logRemediation } from "./analytics";
+import { buildFoodAttributes } from "./attributes";
+import { SPEC_VERSION } from "./spec-version";
+
+export { SPEC_VERSION };
+const DONOR_IMAGE_CAP = 6;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+export interface RemediateScope { image?: boolean; gallery?: boolean; title?: boolean; bullets?: boolean; description?: boolean; attributes?: boolean; }
+const ALL_SCOPE: RemediateScope = { image: true, gallery: true, title: true, bullets: true, description: true, attributes: true };
+
+export interface RemediateResult {
+  status: "SUBMITTED" | "POST_FAILED" | "SKIP" | "DRY" | "ERROR" | "BUILT";
+  feedId: string | null; url: string; title: string | null; detail: string;
+  packCount: number; noun: string; meta: RemediateMeta | null;
+  // Populated only when opts.buildOnly — the ready-to-submit MPItem entry + its
+  // productType + upc, so a batch driver can pack many SKUs into ONE feed (the
+  // fix for Walmart's per-feed REQUEST_THRESHOLD_VIOLATED throttle).
+  mpItem?: Record<string, any> | null;
+  productType?: string | null;
+  upc?: string | null;
+}
+export interface RemediateMeta {
+  wpid: string | null; upc: string; packCount: number; newTitle: string | null;
+  bulletsCount: number; imagesCount: number; descriptionLength: number;
+  mainImageUrl: string | null; usedAiPolish: boolean; contentIssues: string[]; gaps: any[];
+  attributesCount?: number;
+}
+
+/** Known CONTENT gaps for this SKU from the listing-quality mirror (closed loop). */
+async function itemContentIssues(db: Client, sku: string): Promise<string[]> {
+  try {
+    const r = await db.execute({ sql: `SELECT issuesSummary FROM WalmartListingQualityItem WHERE sku=? LIMIT 1`, args: [sku] });
+    const raw = (r.rows[0] as any)?.issuesSummary;
+    if (!raw) return [];
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((x: any) => x && x.component === "content")
+      .map((x: any) => `${x.title}${x.detail && x.detail !== x.title ? ` — ${x.detail}` : ""}`)
+      .filter(Boolean).slice(0, 12);
+  } catch { return []; }
+}
+
+/** Pack size, mirroring the optimizer's packExpr EXACTLY (SkuShippingData →
+ *  SkuCost → WalmartCatalogItem.titlePackCount → WalmartListingQualityItem.titlePackCount).
+ *  The last fallback is the one that's actually populated catalog-wide — without
+ *  it pack resolves to 0 for almost every SKU and the worker SKIPs them. 0 if unknown. */
+async function resolvePack(db: Client, sku: string, storeIndex = 1): Promise<number> {
+  const p = await db.execute({
+    sql: `SELECT COALESCE(
+            (SELECT unitsInListing FROM SkuShippingData WHERE sku=? LIMIT 1),
+            (SELECT packSize FROM SkuCost WHERE sku=? ORDER BY COALESCE(effectiveDate,'') DESC, updatedAt DESC LIMIT 1),
+            (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1),
+            (SELECT titlePackCount FROM WalmartListingQualityItem WHERE sku=? AND storeIndex=? LIMIT 1)
+          ) AS pack`,
+    args: [sku, sku, sku, storeIndex, sku, storeIndex],
+  });
+  return Number((p.rows[0] as any)?.pack) || 0;
+}
+
+/** Pack count + clean donor photo. Pack resolution mirrors the optimizer's
+ *  packExpr EXACTLY (SkuShippingData → SkuCost → catalog titlePackCount →
+ *  listing-quality titlePackCount) so the pipeline treats the same listings as
+ *  multipacks that the UI surfaced as multipacks. The quality-item fallback is the
+ *  populated one (catalog titlePackCount is NULL catalog-wide). */
+async function loadCandidate(db: Client, sku: string, liveTitle: string, storeIndex = 1) {
+  const p = await db.execute({
+    sql: `SELECT COALESCE(s.unitsInListing, c.packSize, cat.titlePackCount, q.titlePackCount) AS pack
+          FROM (SELECT ? AS sku) k
+          LEFT JOIN SkuShippingData s ON s.sku=k.sku
+          LEFT JOIN SkuCost c ON c.id=(SELECT id FROM SkuCost WHERE sku=k.sku ORDER BY COALESCE(effectiveDate,'') DESC, updatedAt DESC LIMIT 1)
+          LEFT JOIN WalmartCatalogItem cat ON cat.sku=k.sku AND cat.storeIndex=?
+          LEFT JOIN WalmartListingQualityItem q ON q.sku=k.sku AND q.storeIndex=?
+          LIMIT 1`,
+    args: [sku, storeIndex, storeIndex],
+  });
+  const pack = Number((p.rows[0] as any)?.pack) || 0;
+  if (pack < 2) return null;
+  const r = await db.execute({
+    sql: `SELECT imageUrls, retailerProductId FROM RetailPrice
+          WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls != ''
+          ORDER BY (CASE WHEN sourceApi='bluecart' THEN 0 ELSE 1 END),
+                   (CASE WHEN COALESCE(packSizeSeen,1)=1 THEN 0 ELSE 1 END), confidence DESC LIMIT 1`,
+    args: [sku],
+  });
+  const rr = r.rows[0] as any;
+  if (!rr) return null;
+  let imgs: string[] = [];
+  try { imgs = JSON.parse(rr.imageUrls); } catch { imgs = [rr.imageUrls]; }
+  const raw = imgs.find((u) => typeof u === "string" && u.startsWith("http")) ?? "";
+  if (!raw) return null;
+  return { sku, walmartTitle: liveTitle || sku, packCount: pack, baseImageUrl: highResImageUrl(raw), itemId: String(rr.retailerProductId || "") };
+}
+
+/** Resolve the buyer-facing walmart.com URL for the pack variant. */
+async function buyerUrl(client: any, upc: string, packCount: number): Promise<string> {
+  try {
+    const s: any = (await client.requestRaw("GET", "/items/walmart/search", { params: { upc } })).body;
+    const items = s?.items ?? [];
+    const match = items.find((it: any) => new RegExp(`pack of ${packCount}\\b`, "i").test(it.title || "")) || items[0];
+    return match ? `https://www.walmart.com/ip/${match.itemId}` : "(url pending)";
+  } catch { return "(url pending)"; }
+}
+
+/**
+ * Build + submit one SKU. Returns the feedId (poll separately) and a meta blob
+ * for analytics logging. Honors `scope`; defaults to the full set (parity with
+ * the original 5-listing pipeline).
+ */
+export async function buildAndSubmitOne(
+  db: Client, client: any, sku: string,
+  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean; buildOnly?: boolean },
+): Promise<RemediateResult> {
+  const scope: RemediateScope = opts.scope && Object.values(opts.scope).some(Boolean) ? opts.scope : ALL_SCOPE;
+  const stamp = opts.stamp;
+  const storeIndex = opts.storeIndex ?? 1;
+  const blank: RemediateResult = { status: "SKIP", feedId: null, url: "—", title: null, detail: "", packCount: 0, noun: "", meta: null };
+
+  const itemRes: any = (await client.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body;
+  const cur = itemRes?.ItemResponse?.[0];
+  if (!cur) return { ...blank, detail: "not found on Walmart" };
+  const upc = cur.upc, productType = cur.productType;
+
+  // Resolve pack FIRST (so we never spend an enrichment credit on a non-multipack).
+  const pack0 = await resolvePack(db, sku, storeIndex);
+  if (pack0 < 2) return { ...blank, detail: "not a multipack (pack < 2)" };
+
+  // On-demand enrichment: if the catalog has no donor photo, ask the Sourcing
+  // Engine to fetch+persist one (BlueCart, 1 credit). Disabled via enrich:false
+  // when the budget guard trips.
+  let enrichNote = "";
+  if (opts.enrich !== false) {
+    try { const e = await ensureDonorImage(db, { sku, upc, title: cur.productName }); if (!e.alreadyHad && !e.found) enrichNote = e.reason || "enrich found nothing"; }
+    catch (e: any) { enrichNote = `enrich error: ${e?.message?.slice(0, 60)}`; }
+  }
+
+  let cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  // No donor at all (SKIP case: only an old bad main, no catalog content) → force a
+  // DEEP re-search across every retailer for real content + a clean front, then retry.
+  if (!cand && opts.enrich !== false) {
+    try { await ensureDonorImage(db, { sku, upc, title: cur.productName, deep: true }); } catch {}
+    cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  }
+  if (!cand) return { ...blank, detail: `no donor photo${enrichNote ? ` (${enrichNote})` : ""}` };
+  const noun = inferUnitNoun(cand.walmartTitle);
+
+  // ALWAYS capture the full BlueCart detail (gallery, bullets, description, specs,
+  // ingredients, raw) into our catalog — even on image-only runs. We're building a
+  // knowledge base; the returned data also feeds the listing when scope needs it.
+  const donor = cand.itemId ? await fetchAndStoreDetail(db, sku, cand.itemId) : null;
+  const content = buildMultipackListing(cand.walmartTitle, cand.packCount, { noun, donorBullets: donor?.bullets, donorDescription: donor?.description });
+  const contentIssues = await itemContentIssues(db, sku);
+  // Claude polish ONLY when we're actually sending content fields (title/desc/
+  // bullets). Image-only runs skip it — no Anthropic spend.
+  const wantContent = !!(scope.title || scope.description || scope.bullets);
+  // A-to-Z GUARANTEE (Vladimir's hard rule): NEVER leave a listing bare. Even when
+  // the donor detail came back empty (no BlueCart itemId, Target-only fallback, or
+  // a failed detail call), we STILL ask Claude to write factual bullets +
+  // description from the product name + pack. A title-only listing is fine copy;
+  // an empty one is the "ужасный листинг" we were told to eliminate.
+  const polished = wantContent
+    ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor?.bullets ?? [], donorDescription: donor?.description ?? "", contentIssues })
+    : null;
+  if (polished) {
+    content.keyFeatures = polished.keyFeatures.map(scrubBrandVoice).filter(Boolean);
+    content.description = `${quantityLeadSentence(cand.packCount, noun)}\n\n${polished.description}`;
+  }
+
+  // Main image — VISION-GUARDED. Wave 1 tiled whatever came first (often the
+  // nutrition/back/lifestyle/promo shot → ugly). Now: (1) a vision model PICKS
+  // the cleanest front-on-white photo from the candidate pool; (2) we tile it;
+  // (3) the vision model VERIFIES the tile before we publish. If no clean front
+  // exists, or the tile fails verification, we DO NOT touch the main image
+  // (do-no-harm) and record why.
+  let mainUrl: string | null = null;
+  let imageNote = "";
+  const secondaryImageUrls: string[] = [];
+
+  // Candidate image pool, built ONCE = the full donor detail gallery + EVERY image
+  // captured for this SKU across all offers + the base. Used for BOTH the main
+  // selector AND the secondary gallery, so a thin-donor SKU still gets photos.
+  // Pool built matched-FIRST: photos from RetailPrice offers whose TITLE is the
+  // SAME product+variant as this listing lead, so the picker (which caps at 16)
+  // sees the correct-variant photos before any legacy same-brand junk still in the
+  // pool. Without this, enrichment can add the right photo yet the picker never
+  // reaches it (the 2026-07-01 low-recall case). donor-detail images (this SKU's
+  // own) lead; the base image (possibly a polluted first row) goes last.
+  const poolListingTitle = cur.productName || cand.walmartTitle;
+  const matchedImgs: string[] = [];
+  const otherImgs: string[] = [];
+  try {
+    const rps = await db.execute({ sql: `SELECT imageUrls, title FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
+    for (const row of rps.rows as any[]) {
+      let arr: any[] = []; try { arr = JSON.parse((row as any).imageUrls || "[]"); } catch {}
+      const bucket = titleMatchesListing(poolListingTitle, String((row as any).title || "")) ? matchedImgs : otherImgs;
+      for (const u of arr) if (typeof u === "string" && u.startsWith("http")) bucket.push(u.split("?")[0]);
+    }
+  } catch {}
+  const seen = new Set<string>();
+  const pool: string[] = [];
+  for (const u of [
+    ...(donor?.images ?? []).filter(Boolean).map((u) => u.split("?")[0]),
+    ...matchedImgs, ...otherImgs,
+    ...(cand.baseImageUrl ? [cand.baseImageUrl.split("?")[0]] : []),
+  ]) { if (u && !seen.has(u)) { seen.add(u); pool.push(u); } }
+
+  if (scope.image) {
+    const listingId = cur.productName || cand.walmartTitle;
+    // SINGLE CHOKE POINT for turning a chosen donor URL into a published main.
+    // IDENTITY GATE FIRST (fail-closed): the donor MUST be the same product+variant
+    // as this listing — this is what stops a generic same-brand front (e.g.
+    // Pepperidge "Soft White" buns) landing on a different product (rye / hot-dog /
+    // Sara Lee), the 2026-07-01 wrong-image batch. Then tile, then the structural
+    // verify. Any failure → null: leave the current main untouched (do-no-harm).
+    const tileVerifiedMain = async (donorUrl: string, keySuffix: string, o?: { donorGated?: boolean }): Promise<{ url: string | null; note: string }> => {
+      const src = highResImageUrl(donorUrl);
+      // GATE 1 (donor) — same product AND exactly ONE single unit of the listing's
+      // size + upright front on white. Rejects a "12 Pack" caddy / case / shrink-
+      // pack (the 2026-07-04 multipack-tile bug). Skipped only when the caller
+      // already ran this gate (the live-waterfall resolver).
+      if (!o?.donorGated) {
+        const dg = await qualifyDonorFront(src, listingId);
+        if (!dg.pass) {
+          const bad = (["brand", "type", "variant", "singleUnit", "front", "whiteBg"] as const).filter((k) => !dg[k]).join("/");
+          return { url: null, note: `donor rejected (${bad}${dg.reason ? ": " + dg.reason : ""})` };
+        }
+      }
+      const base = await fetchImageBuffer(src);
+      const main = await composeTiledMainImage(base, cand.packCount);
+      const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}${keySuffix}`));
+      // GATE 2 (finished tile) — EACH cell is ONE unit, count ≈ N, identity + front
+      // + white. Replaces the weaker verifyMainImage (which never counted units).
+      const tv = await qualifyTiledMain(candidateUrl, listingId, cand.packCount);
+      if (!tv.pass) {
+        const bad = (["identity", "eachCellSingle", "countOk", "front", "whiteBg"] as const).filter((k) => !tv[k]).join("/");
+        return { url: null, note: `tile rejected (${bad}${tv.reason ? ": " + tv.reason : ""})` };
+      }
+      return { url: candidateUrl, note: "" };
+    };
+
+    // keep = the current main already qualifies → we neither rebuild nor run any
+    // fallback (avoids churn). Declared HERE (not inside the else) so EVERY fallback
+    // below honors it — otherwise rescue/deep/live-waterfall (all guarded on
+    // `!mainUrl`, which stays null on a keep) would replace a main we chose to keep.
+    let keep = false;
+    // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT that is the
+    // SAME variant as the listing (pickBestFront now fails CLOSED on a mixed pool).
+    const best = await pickBestFront(pool, { listingTitle: listingId, preferUrl: cand.baseImageUrl });
+    if (!best) {
+      imageNote = "no matching product-front in source — left unchanged (needs enrich/manual)";
+    } else {
+      // KEEP/REPLACE (Vladimir): don't churn a listing whose current main is already
+      // correct. "Correct" now means BOTH structurally good AND the same product+
+      // variant (identity) — the old keep-check ignored identity and would preserve a
+      // wrong-product tile from an earlier bad run. forceImage always replaces.
+      if (!opts.forceImage) {
+        try {
+          const r = await db.execute({ sql: `SELECT mainImageUrl FROM WalmartListingRemediation WHERE sku=? AND storeIndex=? AND ok=1 AND mainImageUrl IS NOT NULL AND mainImageUrl != '' ORDER BY runAt DESC LIMIT 1`, args: [sku, storeIndex] });
+          const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
+          if (curMain) {
+            // Keep ONLY if the current main passes the SAME per-listing gate as a
+            // fresh build (single-unit cells + count + identity + front + white).
+            // The old keep-check (mainImageAcceptable) never checked single-unit, so
+            // it could preserve a multipack-of-multipacks tile from an earlier run.
+            const tv = await qualifyTiledMain(curMain, listingId, cand.packCount);
+            if (tv.pass) { keep = true; imageNote = "current main already qualifies (single-unit grid) — kept"; }
+          }
+        } catch {}
+      }
+      if (!keep) {
+        const t = await tileVerifiedMain(best.url, "");
+        if (t.url) mainUrl = t.url; else imageNote = `${t.note} — left unchanged`;
+      }
+    }
+    // RESCUE: strict path left no main; show the WHOLE pool to Sonnet in one call to
+    // pick the best same-variant package-front, then run it through the SAME identity
+    // + verify gate (no shortcut — that gate is exactly what was missing before).
+    if (!keep && !mainUrl && pool.length) {
+      try {
+        const rescueUrl = await pickBestFrontFromPool(pool, listingId);
+        if (rescueUrl) {
+          const t = await tileVerifiedMain(rescueUrl, "r");
+          if (t.url) { mainUrl = t.url; imageNote = "rescue front (whole-pool Sonnet pick)"; }
+          else imageNote = t.note;
+        }
+      } catch { /* rescue is best-effort */ }
+    }
+    // DEEP RE-ENRICH fallback: our catalog has no matching front; force a re-search
+    // across EVERY retailer, add those photos to the pool, re-pick, and gate again.
+    if (!keep && !mainUrl && opts.enrich !== false) {
+      try {
+        const before = pool.length;
+        await ensureDonorImage(db, { sku, upc, title: cur.productName, deep: true });
+        const p2 = new Set<string>(pool);
+        const rps2 = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
+        for (const row of rps2.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) p2.add(u.split("?")[0]); } catch {} }
+        const pool2 = Array.from(p2);
+        if (pool2.length > before) {
+          const b2 = await pickBestFront(pool2, { listingTitle: listingId });
+          const pickUrl = b2?.url || (await pickBestFrontFromPool(pool2, listingId));
+          if (pickUrl) {
+            const t = await tileVerifiedMain(pickUrl, "e");
+            if (t.url) { mainUrl = t.url; imageNote = `deep re-enrich (+${pool2.length - before} photos) → new front`; }
+            else imageNote = t.note;
+          }
+        }
+      } catch { /* deep enrich is best-effort */ }
+    }
+    // LIVE WATERFALL — the local catalog had no qualifying single-unit front. Search
+    // Walmart 1P + Google Images + Sam's/Target LIVE (each candidate gated by
+    // qualifyDonorFront inside the resolver), then tile + qualifyTiledMain. This
+    // adds the Google-Images tier the prod pipeline never had → coverage parity
+    // with the validated trial. Slower/pricier per SKU, by design (quality > speed).
+    if (!keep && !mainUrl) {
+      try {
+        const dp = await resolveDonorPhoto(listingId);
+        if (dp) {
+          const t = await tileVerifiedMain(dp.url, "w", { donorGated: true });
+          if (t.url) { mainUrl = t.url; imageNote = `live ${dp.src}`; }
+          else imageNote = t.note;
+        } else if (!imageNote) imageNote = "no single-unit donor on Walmart/Google/Sam's/Target";
+      } catch { /* live waterfall is best-effort */ }
+    }
+  }
+  if (scope.gallery) {
+    // Gallery = the product's OTHER photos (single-unit shot, nutrition panel,
+    // ingredients, lifestyle). Broadened from donor.images to the FULL pool so a
+    // SKU whose BlueCart DETAIL came back thin still shows secondary photos —
+    // donor-detail images first (best quality/order), then any other captured.
+    const ordered = [...(donor?.images ?? []).map((u) => u.split("?")[0]), ...pool];
+    const seen = new Set<string>();
+    for (const u of ordered) {
+      if (!u || seen.has(u)) continue;
+      seen.add(u); secondaryImageUrls.push(u);
+      if (secondaryImageUrls.length >= DONOR_IMAGE_CAP) break;
+    }
+  }
+
+  // Scope-aware Visible block — only the chosen fields are sent. We deliberately
+  // do NOT send `brand`: it's a catalog-identity field we never change, and
+  // sending it triggers Walmart's ERR_EXT_DATA_0101119 ("Product ID exists with
+  // different details") conflict (the "QARTH" failures) when our value differs
+  // from the shared catalog. Omitting it lets the image/content update apply.
+  const visible: Record<string, any> = {};
+  if (scope.title) visible.productName = content.title;
+  if (scope.description) visible.shortDescription = content.description;
+  if (scope.bullets) visible.keyFeatures = content.keyFeatures;
+  if (mainUrl) visible.mainImageUrl = mainUrl;
+  if (secondaryImageUrls.length) visible.productSecondaryImageURL = secondaryImageUrls;
+
+  // ATTRIBUTES (Walmart MP_ITEM 5.0) — the quantity trio (multipackQuantity /
+  // countPerPack / count) is the data-level fix for the "ordered 1, got N"
+  // confusion; the rest (manufacturer/ingredients/allergens/netContent/flavor)
+  // come from Walmart-sourced donor data and lift the listing-quality score.
+  let attributesFilled: string[] = [];
+  if (scope.attributes) {
+    try {
+      const { attrs, filled } = await buildFoodAttributes(db, sku, cand.packCount);
+      Object.assign(visible, attrs);
+      attributesFilled = filled;
+    } catch { /* attributes are best-effort */ }
+  }
+
+  // Nothing safe to send (image-only run but no clean image found) → SKIP, don't
+  // submit an empty feed. Flagged so it shows up as "needs a better photo".
+  if (Object.keys(visible).length === 0) {
+    return { ...blank, detail: imageNote || "nothing to update" };
+  }
+
+  const payload = {
+    MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION },
+    MPItem: [{ Orderable: { sku, productIdentifiers: { productIdType: "UPC", productId: upc } }, Visible: { [productType]: visible } }],
+  };
+
+  const imagesCount = (mainUrl ? 1 : 0) + secondaryImageUrls.length;
+  if (opts.dry) {
+    return { status: "DRY", feedId: null, url: "(dry)", title: content.title, detail: `${imagesCount} imgs, ${content.keyFeatures.length} bullets`, packCount: cand.packCount, noun, meta: null };
+  }
+
+  const gaps = validateListingContent({ title: content.title, keyFeatures: content.keyFeatures, description: content.description, imageCount: imagesCount });
+  const buildMeta: RemediateMeta = {
+    wpid: cur.wpid ?? null, upc, packCount: cand.packCount, newTitle: scope.title ? content.title : null,
+    bulletsCount: scope.bullets ? content.keyFeatures.length : 0, imagesCount,
+    descriptionLength: scope.description ? content.description.length : 0,
+    mainImageUrl: mainUrl, usedAiPolish: !!polished, contentIssues, gaps,
+    attributesCount: attributesFilled.length,
+  };
+
+  // BUILD-ONLY: everything is composed and validated but NOT submitted. Return the
+  // single MPItem entry so a batch driver can pack many into ONE MP_MAINTENANCE
+  // feed — this is what sidesteps Walmart's per-feed REQUEST_THRESHOLD_VIOLATED.
+  if (opts.buildOnly) {
+    return {
+      status: "BUILT", feedId: null, url: "(built)", title: content.title, detail: "",
+      packCount: cand.packCount, noun, meta: buildMeta,
+      mpItem: payload.MPItem[0], productType, upc,
+    };
+  }
+
+  const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
+  const feedId = resp.body?.feedId ?? null;
+  const url = await buyerUrl(client, upc, cand.packCount);
+  return {
+    status: feedId ? "SUBMITTED" : "POST_FAILED", feedId, url, title: content.title,
+    detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 160), packCount: cand.packCount, noun, meta: buildMeta,
+    // Expose the sent item so the caller (worker) can persist the generated
+    // content for the QC review screen, same as the batch driver.
+    mpItem: payload.MPItem[0], productType, upc,
+  };
+}
+
+// ————————————————————————————————————————————————————————————————————————
+// SELF-CHECKING BATCH DRIVER
+// Fixes two failure modes of the naïve one-feed-per-SKU loop:
+//   1) Walmart REQUEST_THRESHOLD_VIOLATED — dozens of individual feeds trip the
+//      per-feed rate limit. We instead pack many SKUs into ONE MP_MAINTENANCE
+//      feed (Walmart's MPItem array is built for this) → a handful of feeds.
+//   2) Silent waste — a broken pipeline (bad key, vision down, empty donors)
+//      would burn credits + feed quota over 1000s of SKUs before anyone noticed.
+//      We run a CANARY: build the first few, check they came out FULL A-to-Z,
+//      and ABORT the whole run if the success rate is too low.
+// ————————————————————————————————————————————————————————————————————————
+
+/**
+ * Grade a built listing against the ideal-listing spec (эталон, 6 blocks).
+ *  - `imageOk` : the MAIN image PASSED qualifyTiledMain (single-unit cells + count
+ *                + identity + front + white). meta.mainImageUrl is only set on pass,
+ *                so this means "qualified", not merely "exists".
+ *  - `textOk`  : the PIPELINE-HEALTH signal the canary gates on. Content run =
+ *                3–10 bullets AND a real (≥700-char) description. IMAGE-ONLY run
+ *                (no text requested) → falls back to imageOk, so the canary judges
+ *                image production, not absent text (else it aborts a healthy run).
+ *  - `full`    : A-to-Z ideal = every IN-SCOPE block green (main + ≥4 images +
+ *                title ≤150 + description ≥700 + 3–10 bullets + ≥3 attributes).
+ * Pass `scope` so a scoped run isn't failed for fields it never built (an image-only
+ * retry has no title/bullets/description → those blocks are N/A). No scope → grade
+ * everything (the full A-to-Z standard).
+ */
+export function assessRemediation(meta: RemediateMeta | null, scope?: RemediateScope | null): { full: boolean; textOk: boolean; imageOk: boolean; galleryOk: boolean; reasons: string[] } {
+  if (!meta) return { full: false, textOk: false, imageOk: false, galleryOk: false, reasons: ["no build meta"] };
+  const reasons: string[] = [];
+  // Only grade blocks this run actually built, so a scoped run isn't failed for N/A
+  // fields. No scope → grade everything (the full A-to-Z standard). The main-image
+  // URL is only set when it PASSED qualifyTiledMain, so mainOk means "qualified".
+  const s = scope && Object.values(scope).some(Boolean) ? scope : ALL_SCOPE;
+  const wantText = !!(s.title || s.bullets || s.description);
+  const wantGallery = !!(s.image || s.gallery);
+  const wantAttrs = !!s.attributes;
+  // Block 1 — MAIN image (qualified at build; null if it failed the gate).
+  const mainOk = !!meta.mainImageUrl;
+  // Block 2 — ≥4 images total (main + secondary).
+  const galleryOk = (meta.imagesCount ?? 0) >= 4;
+  // Block 3 — title present + within the 150-char ceiling.
+  const titleLen = (meta.newTitle ?? "").length;
+  const titleOk = !!meta.newTitle && titleLen <= 150;
+  // Block 4 — description ~150+ words (≥700 chars).
+  const descOk = (meta.descriptionLength ?? 0) >= 700;
+  // Block 5 — 3–10 key-feature bullets.
+  const bulletsOk = (meta.bulletsCount ?? 0) >= 3 && (meta.bulletsCount ?? 0) <= 10;
+  // Block 6 — attributes filled (at minimum the quantity trio = 3).
+  const attrsOk = (meta.attributesCount ?? 0) >= 3;
+  if (s.image && !mainOk) reasons.push("MAIN photo failed qualification (needs re-source / manual)");
+  if (wantGallery && !galleryOk) reasons.push(`only ${meta.imagesCount ?? 0} images (<4)`);
+  if (s.title && !titleOk) reasons.push(meta.newTitle ? `title ${titleLen} chars > 150` : "no rebuilt title");
+  if (s.description && !descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars < 700)`);
+  if (s.bullets && !bulletsOk) reasons.push(`bullets out of 3–10 range (${meta.bulletsCount ?? 0})`);
+  if (wantAttrs && !attrsOk) reasons.push(`only ${meta.attributesCount ?? 0} attributes (<3)`);
+  // textOk = canary health. Content run → text produced; image-only → image produced.
+  const textOk = wantText ? (bulletsOk && descOk) : mainOk;
+  // full A-to-Z ideal = every IN-SCOPE block green.
+  const full = (!s.image || mainOk) && (!wantGallery || galleryOk) && (!s.title || titleOk) &&
+    (!s.description || descOk) && (!s.bullets || bulletsOk) && (!wantAttrs || attrsOk);
+  return { full, textOk, imageOk: mainOk, galleryOk, reasons };
+}
+
+/** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
+ *  throttle with exponential backoff (60s, 120s, …). Non-throttle errors return
+ *  immediately (they won't fix themselves). Exported so the serverless queue
+ *  worker can pack a whole tick's SKUs into ONE feed instead of one-per-SKU. */
+export async function submitFeedBatch(client: any, mpItems: Record<string, any>[], tries = 5): Promise<{ feedId: string | null; error?: string }> {
+  const payload = { MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION }, MPItem: mpItems };
+  const throttled = (s: string) => /REQUEST_THRESHOLD_VIOLATED|TOO_MANY_REQUESTS|throttl|\b429\b/i.test(s);
+  let lastErr = "";
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
+      const feedId = resp.body?.feedId ?? null;
+      if (feedId) return { feedId };
+      lastErr = JSON.stringify(resp.body || {}).slice(0, 200);
+      if (!throttled(lastErr)) return { feedId: null, error: lastErr };
+    } catch (e: any) {
+      lastErr = String(e?.message || e).slice(0, 200);
+      if (!throttled(lastErr)) return { feedId: null, error: lastErr };
+    }
+    if (attempt < tries - 1) await sleep(60000 * (attempt + 1));
+  }
+  return { feedId: null, error: `throttled after ${tries} tries: ${lastErr}` };
+}
+
+export interface BatchProgress {
+  phase: "build" | "canary" | "submit" | "done" | "abort";
+  i?: number; total?: number; sku?: string; status?: string; full?: boolean;
+  note?: string; fullRate?: number; submitted?: number; failed?: number;
+}
+export type BuiltResult = RemediateResult & { sku: string; full: boolean };
+export interface BatchOutcome {
+  aborted: boolean; abortReason?: string;
+  results: BuiltResult[]; submitted: number; failed: number; built: number; skipped: number;
+  canaryFullRate: number;
+}
+export interface BatchOptions {
+  scope?: RemediateScope | null; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean;
+  batchSize?: number;        // MPItems per feed (default 15)
+  canarySize?: number;       // first-N health sample (default 6)
+  minFullRate?: number;      // abort build if canary full-rate below this (default 0.5)
+  batchSpacingMs?: number;   // pause between feed POSTs (default 20000)
+  log?: boolean;             // write WalmartListingRemediation rows (default true)
+  onProgress?: (ev: BatchProgress) => void;
+}
+
+/**
+ * Build every SKU (buildOnly — no submit), health-check a canary sample, then
+ * submit in batched feeds with throttle-retry. This is the ONE entry point for
+ * multi-SKU remediation (CLI re-runs, the full-catalog sweep, and the QC console
+ * "Run" button) so the self-check lives in exactly one place.
+ */
+export async function buildAndSubmitMany(db: Client, client: any, skus: string[], opts: BatchOptions): Promise<BatchOutcome> {
+  const batchSize = opts.batchSize ?? 15;
+  const canarySize = Math.min(opts.canarySize ?? 6, skus.length);
+  const minFullRate = opts.minFullRate ?? 0.5;
+  const spacing = opts.batchSpacingMs ?? 20000;
+  const storeIndex = opts.storeIndex ?? 1;
+  const emit = (ev: BatchProgress) => { try { opts.onProgress?.(ev); } catch { /* progress must never break the run */ } };
+
+  // ---- Phase 1: BUILD (with canary health-gate) ----
+  const built: BuiltResult[] = [];
+  let canaryHealthy = 0, canaryDone = 0, canaryRate = 1;
+  for (let i = 0; i < skus.length; i++) {
+    const sku = skus[i];
+    let r: RemediateResult;
+    try {
+      r = await buildAndSubmitOne(db, client, sku, {
+        scope: opts.scope, stamp: opts.stamp, enrich: opts.enrich, storeIndex, forceImage: opts.forceImage, buildOnly: true,
+      });
+    } catch (e: any) {
+      r = { status: "ERROR", feedId: null, url: "—", title: null, detail: String(e?.message || e).slice(0, 140), packCount: 0, noun: "", meta: null };
+    }
+    const a = assessRemediation(r.meta, opts.scope);
+    const full = r.status === "BUILT" && a.full;
+    const textOk = r.status === "BUILT" && a.textOk;
+    built.push({ ...r, sku, full });
+    emit({ phase: "build", i: i + 1, total: skus.length, sku, status: r.status, full, note: full ? "FULL" : a.reasons.join("; ") });
+
+    // Canary gates on PIPELINE HEALTH (text produced), not on the ideal — a few
+    // hard-photo SKUs must not abort a healthy run; a systemic break (no text at
+    // all) must.
+    if (i + 1 <= canarySize) { canaryDone++; if (textOk) canaryHealthy++; }
+    if (i + 1 === canarySize && canaryDone > 0) {
+      canaryRate = canaryHealthy / canaryDone;
+      emit({ phase: "canary", i: canaryDone, total: canarySize, fullRate: canaryRate });
+      if (canaryRate < minFullRate) {
+        emit({ phase: "abort", fullRate: canaryRate, note: "canary below threshold — nothing submitted" });
+        return {
+          aborted: true,
+          abortReason: `canary healthy-rate ${(canaryRate * 100).toFixed(0)}% < ${(minFullRate * 100).toFixed(0)}% over first ${canaryDone} SKUs (pipeline not producing content) — stopped before wasting credits/quota on the remaining ${skus.length - canaryDone}`,
+          results: built, submitted: 0, failed: 0,
+          built: built.filter((b) => b.status === "BUILT").length,
+          skipped: built.filter((b) => b.status !== "BUILT").length,
+          canaryFullRate: canaryRate,
+        };
+      }
+    }
+  }
+
+  // ---- Phase 2: SUBMIT in batched feeds (throttle-safe) ----
+  const submittable = built.filter((b) => b.status === "BUILT" && b.mpItem);
+  let submitted = 0, failed = 0;
+  for (let off = 0; off < submittable.length; off += batchSize) {
+    const chunk = submittable.slice(off, off + batchSize);
+    const feed = await submitFeedBatch(client, chunk.map((c) => c.mpItem as Record<string, any>));
+    for (const c of chunk) {
+      if (feed.feedId) { c.status = "SUBMITTED"; c.feedId = feed.feedId; submitted++; }
+      else { c.status = "POST_FAILED"; c.detail = feed.error || "batch feed failed"; failed++; }
+    }
+    emit({ phase: "submit", i: Math.min(off + batchSize, submittable.length), total: submittable.length, submitted, failed, note: feed.feedId || feed.error });
+    if (opts.log !== false) {
+      for (const c of chunk) {
+        try {
+          // Persist the full generated Visible block (title/bullets/description/
+          // gallery/attributes) so the in-module QC screen can show before/after
+          // WITHOUT Walmart's propagation lag (the whole point of the review UI).
+          const vis = c.mpItem?.Visible ? Object.values(c.mpItem.Visible)[0] : null;
+          await logRemediation(db, {
+            sku: c.sku, storeIndex, wpid: c.meta?.wpid ?? null, upc: c.upc ?? c.meta?.upc ?? null,
+            feedId: c.feedId, feedType: "MP_MAINTENANCE", feedStatus: c.feedId ? "SUBMITTED" : "POST_FAILED", ok: c.status === "SUBMITTED",
+            packCount: c.packCount, newTitle: c.meta?.newTitle ?? undefined, titleChanged: !!c.meta?.newTitle,
+            bulletsCount: c.meta?.bulletsCount, imagesCount: c.meta?.imagesCount, descriptionLength: c.meta?.descriptionLength,
+            mainImageUrl: c.meta?.mainImageUrl ?? undefined, usedAiPolish: c.meta?.usedAiPolish,
+            changeSummary: { batch: true, full: c.full, attributesCount: c.meta?.attributesCount ?? 0, content: vis },
+            notes: c.full ? "A-to-Z (full donor)" : "A-to-Z (thin donor — title-based copy)",
+          });
+        } catch { /* logging must never break the run */ }
+      }
+    }
+    if (off + batchSize < submittable.length) await sleep(spacing);
+  }
+
+  emit({ phase: "done", total: skus.length, submitted, failed });
+  return {
+    aborted: false, results: built, submitted, failed, built: submittable.length,
+    skipped: built.filter((b) => b.status !== "SUBMITTED" && b.status !== "POST_FAILED").length,
+    canaryFullRate: canaryRate,
+  };
+}
+
+/** Publish ONLY a main image for a SKU (used by the manual generation lever's
+ *  "apply" step). Reuses the MP_MAINTENANCE partial-feed path — touches nothing
+ *  but mainImageUrl. Returns the feedId (poll with checkFeed). */
+export async function submitMainImageOnly(client: any, sku: string, mainImageUrl: string): Promise<{ feedId: string | null; error?: string }> {
+  const itemRes: any = (await client.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body;
+  const cur = itemRes?.ItemResponse?.[0];
+  if (!cur) return { feedId: null, error: "not found on Walmart" };
+  const payload = {
+    MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION },
+    MPItem: [{ Orderable: { sku, productIdentifiers: { productIdType: "UPC", productId: cur.upc } }, Visible: { [cur.productType]: { mainImageUrl } } }],
+  };
+  const resp: any = (await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload })).body;
+  return { feedId: resp?.feedId ?? null, error: resp?.feedId ? undefined : JSON.stringify(resp).slice(0, 160) };
+}
+
+/** Check one feed's terminal status. Returns null while still processing. */
+export async function checkFeed(client: any, feedId: string): Promise<{ status: "PROCESSED" | "ERROR"; ok: boolean; detail: string } | null> {
+  const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
+  const st = d?.feedStatus;
+  if (st !== "PROCESSED" && st !== "ERROR") return null;
+  let detail = `ok=${d.itemsSucceeded} fail=${d.itemsFailed}`;
+  const errs = d?.itemDetails?.itemIngestionStatus?.[0]?.ingestionErrors?.ingestionError ?? [];
+  if (errs.length) detail += " — " + errs.map((e: any) => e.field).join(", ");
+  const ok = st === "PROCESSED" && Number(d.itemsFailed) === 0 && Number(d.itemsSucceeded) > 0;
+  return { status: st, ok, detail };
+}
+
+/** Per-item feed result. checkFeed only reads item[0]; this returns EVERY item's
+ *  sku + status + errors — needed to finalize a BATCHED feed per-SKU (half our
+ *  cards are QARTH-locked, so a batch feed is always mixed) and to see exactly
+ *  which attribute each item rejected. Returns null while still processing. */
+export async function checkFeedItems(client: any, feedId: string): Promise<{ status: "PROCESSED" | "ERROR"; items: Array<{ sku: string; ok: boolean; ingestionStatus: string; errorFields: string[]; errors: string[] }> } | null> {
+  const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
+  const st = d?.feedStatus;
+  if (st !== "PROCESSED" && st !== "ERROR") return null;
+  const arr = d?.itemDetails?.itemIngestionStatus ?? [];
+  const items = (Array.isArray(arr) ? arr : []).map((it: any) => {
+    const errs = it?.ingestionErrors?.ingestionError ?? [];
+    return {
+      sku: it?.sku || it?.martItemId || "?",
+      ingestionStatus: it?.ingestionStatus || "?",
+      ok: it?.ingestionStatus === "SUCCESS",
+      errorFields: errs.map((e: any) => String(e?.field || e?.type || "")).filter(Boolean),
+      errors: errs.map((e: any) => `${e?.field || e?.type || "?"}: ${String(e?.description || "").slice(0, 90)}`),
+    };
+  });
+  return { status: st, items };
+}
+
+/** Item-level truth WITHOUT waiting for the feed to finish.
+ *
+ *  A batched feed keeps `feedStatus: INPROGRESS` until its LAST item settles, but Walmart
+ *  populates `itemDetails.itemIngestionStatus` per item as each one lands. Observed live
+ *  on feed 18C0B21C… : `INPROGRESS, itemsReceived 47, itemsSucceeded 45, itemsProcessing 2`
+ *  with 45 SUCCESS rows already readable. `checkFeedItems` throws all of that away and
+ *  returns null, so a single slow item strands 46 others as "submitted" for hours.
+ *
+ *  Use this in re-pollers: settle the items that are done, leave the rest for next tick.
+ *  `done` tells you whether the feed itself is terminal (nothing left to re-poll). */
+export async function checkFeedItemsPartial(client: any, feedId: string): Promise<{ feedStatus: string; done: boolean; items: Array<{ sku: string; ok: boolean; settled: boolean; ingestionStatus: string; errors: string[] }> }> {
+  const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
+  const feedStatus = String(d?.feedStatus || "?");
+  const arr = d?.itemDetails?.itemIngestionStatus ?? [];
+  const items = (Array.isArray(arr) ? arr : []).map((it: any) => {
+    const errs = it?.ingestionErrors?.ingestionError ?? [];
+    const ingestionStatus = String(it?.ingestionStatus || "?");
+    return {
+      sku: it?.sku || it?.martItemId || "?",
+      ingestionStatus,
+      ok: ingestionStatus === "SUCCESS",
+      settled: ingestionStatus !== "INPROGRESS", // anything else is a final per-item verdict
+      errors: errs.map((e: any) => `${e?.field || e?.type || "?"}: ${String(e?.description || "").slice(0, 90)}`),
+    };
+  });
+  return { feedStatus, done: feedStatus === "PROCESSED" || feedStatus === "ERROR", items };
+}

@@ -1,0 +1,443 @@
+// Product Sourcing Engine — Stage B fetchers (LIVE IN OUR PROJECT).
+// Given a brain-resolved canonical product (Stage A), fetch the base-unit shelf
+// price + content + images from multiple retailers, normalize to one shape, and
+// run the verification gates that keep our own/reseller multipack listings out of
+// COGS. The orchestrator stores every accepted offer (multi-offer per SKU) and
+// picks the cheapest clean base unit as the procurement source.
+//
+// Services (accounts on info@salutem.solutions, keys in .env.local):
+//   - BlueCart (Traject Data)  → Walmart.com, exposes is_marketplace_item (1P flag)
+//   - Unwrangle                → Target / Sam's / Costco (+ Walmart, but no 1P filter)
+// Oxylabs+Instacart (Publix/BJ's/ALDI) is a separate scrape path, added later.
+
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+  type MeteredProviderAuthorization,
+} from "./metered-provider-call";
+import {
+  matchCanonicalProductTitle,
+  normalizeIdentityTokens,
+  type CanonicalProductIdentity,
+  type CanonicalProductMatchResult,
+} from "./canonical-product-match";
+
+export type RetailOffer = {
+  retailer: string; // walmart | target | samsclub | costco | ...
+  retailerProductId: string;
+  price: number | null;
+  currency: string;
+  inStock: boolean | null;
+  productUrl: string | null;
+  /** ZIP/store scope proven by the transport; never copied from the caller's wish. */
+  zip: string | null;
+  localityEvidence: "zip_scoped" | "store_scoped" | "national_unscoped" | null;
+  observedAt: string;
+  title: string | null;
+  /**
+   * Optional, explicitly audited identity-comparison title. The observed title
+   * above is never replaced. This is used only for a narrowly versioned
+   * retailer-copy normalization whose exact rule is retained in evidence.
+   */
+  identityEvidenceTitle?: string | null;
+  identityEvidenceNormalization?: string | null;
+  description: string | null;
+  keyFeatures: string[];
+  imageUrls: string[];
+  packSizeSeen: number | null;
+  isMarketplaceItem: boolean | null; // true = 3P/reseller (incl. our own); false = first-party
+  sellerName: string | null;
+  sourceApi: string; // bluecart | unwrangle | oxylabs
+  via?: "direct" | "instacart"; // instacart prices are inflated → de-marked-up downstream
+  /** Exact durable paid-call receipt that produced this source observation. */
+  meteredReceiptId?: string | null;
+  meteredRunId?: string | null;
+  meteredApprovalId?: string | null;
+};
+
+export const WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION =
+  "walmart-inclusive-audience-phrase/1.0.0" as const;
+const WALMART_INCLUSIVE_AUDIENCE_PHRASE = /\bfor\s+kids\s+and\s+adults\b/gi;
+
+export type WalmartIdentityEvidenceTitle = {
+  observedTitle: string | null;
+  identityEvidenceTitle: string | null;
+  identityEvidenceNormalization: typeof WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION | null;
+};
+
+/**
+ * Walmart can insert the complete merchandising phrase "for kids and adults"
+ * into an otherwise unchanged grocery title. The full phrase is audience copy,
+ * not a product variant. The observed title stays intact and a separate
+ * comparison title is produced only when that complete phrase occurs once.
+ * Partial audience wording remains identity-bearing and is never normalized.
+ */
+export function walmartIdentityEvidenceTitle(
+  value: string | null | undefined,
+): WalmartIdentityEvidenceTitle {
+  const observedTitle = value?.trim() || null;
+  if (!observedTitle) {
+    return {
+      observedTitle: null,
+      identityEvidenceTitle: null,
+      identityEvidenceNormalization: null,
+    };
+  }
+  const occurrences = observedTitle.match(WALMART_INCLUSIVE_AUDIENCE_PHRASE);
+  if (occurrences?.length !== 1) {
+    return {
+      observedTitle,
+      identityEvidenceTitle: observedTitle,
+      identityEvidenceNormalization: null,
+    };
+  }
+  const identityEvidenceTitle = observedTitle
+    .replace(WALMART_INCLUSIVE_AUDIENCE_PHRASE, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+  if (!identityEvidenceTitle || identityEvidenceTitle === observedTitle) {
+    return {
+      observedTitle,
+      identityEvidenceTitle: observedTitle,
+      identityEvidenceNormalization: null,
+    };
+  }
+  return {
+    observedTitle,
+    identityEvidenceTitle,
+    identityEvidenceNormalization: WALMART_INCLUSIVE_AUDIENCE_NORMALIZATION,
+  };
+}
+
+function meteredOfferProvenance(
+  authorization: MeteredProviderAuthorization | null,
+): Pick<RetailOffer, "meteredReceiptId" | "meteredRunId" | "meteredApprovalId"> {
+  return authorization ? {
+    meteredReceiptId: authorization.receiptId,
+    meteredRunId: authorization.runId,
+    meteredApprovalId: authorization.approvalId,
+  } : {};
+}
+
+// Canonical product the brain produced (subset we need here).
+export type CanonicalProduct = {
+  brand?: string;
+  product_line?: string;
+  flavor?: string;
+  modifiers?: string | readonly string[];
+  size?: string;
+  retail_search_query?: string;
+  base_unit?: string;
+  container_type?: string;
+  outer_pack_count?: number;
+};
+
+// Our own storefronts + the resellers we've seen polluting search — never a COGS source.
+const OWN_OR_RESELLER = [
+  "starfitstore", "salutem", "minixpress", "brit commerce", "harris online",
+  "blueline", "deals", "trading", "wholesale", "marketplace",
+];
+
+export function isOwnOrReseller(seller?: string | null): boolean {
+  if (!seller) return false;
+  const s = seller.toLowerCase();
+  return OWN_OR_RESELLER.some((b) => s.includes(b));
+}
+
+// FIRST-PARTY ONLY (Vladimir's rule #8): on a retailer's own marketplace we buy
+// ONLY from the retailer itself, never third-party resellers — their prices are
+// inflated and are not our procurement source. BlueCart exposes is_marketplace_item
+// per offer; we trust that flag first, then fall back to the seller name. Anything
+// not provably first-party is rejected (better a miss than a wrong/reseller cost).
+export function isFirstParty(offer: { isMarketplaceItem: boolean | null; sellerName: string | null; retailer: string }): boolean {
+  if (offer.isMarketplaceItem === true) return false; // explicit third-party/reseller
+  if (offer.isMarketplaceItem === false) return true; // explicit first-party
+  // Flag unknown → accept only when the seller name IS the retailer itself.
+  const s = (offer.sellerName || "").toLowerCase().replace(/\s+/g, "");
+  if (!s) return false; // unknown seller + unknown flag → not provably 1P
+  return (
+    s.startsWith(offer.retailer.toLowerCase()) ||
+    s.includes("walmart.com") ||
+    s.includes("samsclub") ||
+    s.includes("target.com")
+  );
+}
+
+// Parse a pack/multipack count out of a title. Returns 1 when nothing multipack-y is found.
+export function extractPackSize(title?: string | null): number {
+  if (!title) return 1;
+  const t = title.toLowerCase();
+  // Only MULTI-PACKAGE markers divide the price. "N count"/"N ct" denote pieces
+  // INSIDE one retail package (12-count tortilla bag, 10-count Uncrustables box) —
+  // that package IS the base unit, so they must NOT divide (fixes La Abuela $0.26).
+  const pats = [
+    /pack of\s*(\d+)/, /(\d+)\s*[- ]?pack\b/, /(\d+)\s*[- ]?pk\b/, /case of\s*(\d+)/,
+    // "12 Units" = 12 separate packages (a case) — distinct from "N count" (pieces
+    // inside one package). "12x12 Oz" / "12 x 12 oz" = 12 packages of 12 oz each.
+    // These case markers were silently treated as 1 → the $33.99-for-12 → "$33.99/u"
+    // 12x overcount (Mueller's Egg Noodles).
+    /(\d+)\s*units\b/,
+    /(\d+)\s*x\s*[\d.]+\s*(?:oz|lb|lbs|fl|ml|g|kg|ct|count|pcs)\b/,
+    /\blot of\s*(\d+)/,              // "Lot of 3" = 3 packages
+    /\b(\d+)\s*x\s+[a-z]/,           // "2x Reeses" / "3 x Oreo" = N packages (number then x then a word)
+    /\bset of\s*(\d+)/,
+  ];
+  for (const re of pats) {
+    const m = t.match(re);
+    if (m) { const n = parseInt(m[1], 10); if (n > 1 && n <= 96) return n; }
+  }
+  return 1;
+}
+
+// Rough per-category price sanity bands (single base unit), USD. Outside → flag suspect.
+const SANITY: Record<string, [number, number]> = {
+  bread: [1.5, 9], loaf: [1.5, 9], tortilla: [1.5, 8],
+  soup: [1, 5], can: [0.6, 4.5], ramen: [0.5, 3], cup: [0.5, 3],
+  default: [0.4, 40],
+};
+export function priceSuspect(price: number | null, hint?: string): boolean {
+  if (price === null) return false;
+  const key = Object.keys(SANITY).find((k) => k !== "default" && (hint || "").toLowerCase().includes(k));
+  const [lo, hi] = SANITY[key || "default"];
+  return price < lo || price > hi;
+}
+
+function canonicalIdentity(cp: CanonicalProduct): CanonicalProductIdentity {
+  return {
+    brand: cp.brand,
+    productLine: cp.product_line,
+    flavor: cp.flavor,
+    modifiers: cp.modifiers,
+    form: cp.container_type || cp.base_unit,
+    size: cp.size,
+    outerPackCount: cp.outer_pack_count,
+  };
+}
+
+function hasStructuredDiscriminator(cp: CanonicalProduct): boolean {
+  return !!(cp.product_line || cp.flavor || cp.container_type || cp.base_unit);
+}
+
+// SKU-specific searches use the canonical title bridge. Brand-only campaigns
+// use a narrow whole-token discovery gate; those rows remain isolated candidates
+// and cannot become exact content/cost evidence until separately certified.
+export function tokenGate(
+  offerTitle: string | null,
+  cp: CanonicalProduct
+): { ok: boolean; reason: string; identityMatch: CanonicalProductMatchResult | null } {
+  if (!offerTitle?.trim()) return { ok: false, reason: "no title", identityMatch: null };
+  if (hasStructuredDiscriminator(cp)) {
+    const identityMatch = matchCanonicalProductTitle(canonicalIdentity(cp), { title: offerTitle });
+    return identityMatch.verdict === "REJECT"
+      ? { ok: false, reason: `canonical reject: ${identityMatch.reasonCodes.join(",")}`, identityMatch }
+      : { ok: true, reason: identityMatch.verdict, identityMatch };
+  }
+
+  const brandTokens = normalizeIdentityTokens(cp.brand);
+  const titleTokens = new Set(normalizeIdentityTokens(offerTitle));
+  if (!brandTokens.length) return { ok: false, reason: "brand missing", identityMatch: null };
+  const missing = brandTokens.filter((token) => !titleTokens.has(token));
+  return missing.length
+    ? { ok: false, reason: `brand tokens absent: ${missing.join(",")}`, identityMatch: null }
+    : { ok: true, reason: "brand discovery candidate", identityMatch: null };
+}
+
+// Dedup image URLs (BlueCart often returns main_image === images[0], which showed
+// up as "two identical photos" on un-harvested rows). Keeps first-seen order.
+function dedupImages(arr: (string | null | undefined)[]): string[] {
+  const seen = new Set<string>(); const out: string[] = [];
+  for (const u of arr) { if (typeof u === "string" && u.startsWith("http") && !seen.has(u)) { seen.add(u); out.push(u); } }
+  return out;
+}
+
+// Raw metered-provider transport. Every call site below invokes it only as the
+// network executor of withMeteredProviderCall after a durable reservation.
+async function getJson(url: string, timeoutMs = 20000): Promise<any> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  let r: Response;
+  try {
+    r = await fetch(url, { signal: ctrl.signal });
+  } catch (e: any) {
+    if (e.name === "AbortError") throw new Error(`timeout after ${timeoutMs}ms`);
+    throw e;
+  } finally {
+    clearTimeout(t);
+  }
+  const text = await r.text();
+  let j: any = null;
+  try { j = JSON.parse(text); } catch { /* leave null */ }
+  if (!r.ok) {
+    const msg = j?.message || j?.error || text.slice(0, 120);
+    const err: any = new Error(`HTTP ${r.status}: ${msg}`);
+    err.status = r.status; err.body = j;
+    throw err;
+  }
+  return j;
+}
+
+// --- BlueCart (Walmart.com) ---------------------------------------------------
+export async function bluecartWalmartSearch(
+  query: string
+): Promise<{ creditsRemaining: number | null; offers: RetailOffer[]; trialExhausted: boolean }> {
+  const key = process.env.BLUECART_API_KEY;
+  if (!key) throw new Error("BLUECART_API_KEY missing");
+  const url = `https://api.bluecartapi.com/request?api_key=${key}&type=search&search_term=${encodeURIComponent(query)}&walmart_domain=walmart.com`;
+  let j: any;
+  let authorization: MeteredProviderAuthorization | null = null;
+  try {
+    j = await withMeteredProviderCall(
+      {
+        provider: "bluecart",
+        operation: "search",
+        requestFingerprint: { query, type: "search", walmartDomain: "walmart.com" },
+        onAuthorized: (value) => { authorization = value; },
+      },
+      () => getJson(url),
+    );
+  } catch (e: any) {
+    throwIfMeteredProviderControlError(e);
+    if (e.status === 401 || e.status === 402 || /credit|quota|limit/i.test(e.message))
+      return { creditsRemaining: 0, offers: [], trialExhausted: true };
+    throw e;
+  }
+  const observedAt = new Date().toISOString();
+  const offers: RetailOffer[] = (j.search_results || []).map((x: any) => {
+    const p = x.product || {};
+    const o = x.offers?.primary || x.offers || {};
+    return {
+      retailer: "walmart",
+      retailerProductId: String(p.item_id ?? p.us_item_id ?? ""),
+      price: o.price ?? null,
+      currency: o.currency || "USD",
+      inStock: x.inventory?.in_stock ?? null,
+      productUrl: p.link ?? null,
+      zip: null,
+      localityEvidence: "national_unscoped",
+      observedAt,
+      title: p.title ?? null,
+      description: p.description ?? null,
+      keyFeatures: Array.isArray(p.feature_bullets) ? p.feature_bullets : [],
+      imageUrls: dedupImages([p.main_image, ...(p.images || [])]),
+      packSizeSeen: extractPackSize(p.title),
+      isMarketplaceItem: x.offers?.is_marketplace_item ?? null,
+      sellerName: o.seller?.name ?? x.seller?.name ?? null,
+      sourceApi: "bluecart",
+      ...meteredOfferProvenance(authorization),
+    } as RetailOffer;
+  });
+  return { creditsRemaining: j.request_info?.credits_remaining ?? null, offers, trialExhausted: false };
+}
+
+// --- Unwrangle (Target / Sam's / Costco / Walmart) ----------------------------
+const UNWRANGLE_PLATFORM: Record<string, string> = {
+  target: "target_search", samsclub: "samsclub_search", costco: "costco_search", walmart: "walmart_search",
+};
+// Conservative credit reservations from the source capability contract. Club
+// calls are deliberately charged at the known 10-credit tier so a maxUnits cap
+// cannot authorize 10× more spend than the owner approved.
+const UNWRANGLE_CREDIT_UNITS: Record<"target" | "samsclub" | "costco" | "walmart", number> = {
+  target: 1,
+  samsclub: 10,
+  costco: 10,
+  walmart: 2.5,
+};
+export async function unwrangleSearch(
+  retailer: "target" | "samsclub" | "costco" | "walmart",
+  query: string
+): Promise<{ creditsRemaining: number | null; offers: RetailOffer[]; trialExhausted: boolean }> {
+  const key = process.env.UNWRANGLE_API_KEY;
+  if (!key) throw new Error("UNWRANGLE_API_KEY missing");
+  const platform = UNWRANGLE_PLATFORM[retailer];
+  const url = `https://data.unwrangle.com/api/getter/?platform=${platform}&search=${encodeURIComponent(query)}&api_key=${key}`;
+  let j: any;
+  let authorization: MeteredProviderAuthorization | null = null;
+  try {
+    // Unwrangle search routinely takes 30-60s (it scrapes live), so the default
+    // 20s cap was ABORTING every call → the enrichment thought "no product found"
+    // when the request simply hadn't returned yet (root cause of the 2026-07-01
+    // "Unwrangle finds nothing" symptom). Give it a real 90s budget.
+    j = await withMeteredProviderCall(
+      {
+        provider: "unwrangle",
+        operation: "search",
+        units: UNWRANGLE_CREDIT_UNITS[retailer],
+        requestFingerprint: { platform, query, retailer },
+        onAuthorized: (value) => { authorization = value; },
+      },
+      () => getJson(url, 90000),
+    );
+  } catch (e: any) {
+    throwIfMeteredProviderControlError(e);
+    if (e.status === 401 || e.status === 402 || /credit|quota|limit|insufficient/i.test(e.message))
+      return { creditsRemaining: 0, offers: [], trialExhausted: true };
+    throw e;
+  }
+  if (j && j.success === false && /credit|quota|limit/i.test(JSON.stringify(j)))
+    return { creditsRemaining: j.remaining_credits ?? 0, offers: [], trialExhausted: true };
+  // Unwrangle returns its array under `results` (not `products`), HTML-encodes
+  // names (Bush&#39;s), and uses per-platform field names. Decode + normalize.
+  const observedAt = new Date().toISOString();
+  const decode = (s: string | null): string | null =>
+    s == null ? null : s
+      .replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/&quot;|&#34;/g, '"')
+      .replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(+d)).trim();
+  const offers: RetailOffer[] = (j.results || j.products || []).map((x: any) => {
+    const title = decode(x.name || x.title || null);
+    const imgs: string[] = dedupImages(
+      (Array.isArray(x.images) && x.images.length ? x.images : [x.image_url, x.thumbnail, x.main_image])
+    );
+    // A missing seller_name = the retailer's own catalog card (1P). A named seller
+    // that ISN'T the retailer itself = 3P marketplace (Walmart Marketplace, Target
+    // Plus "Sold & shipped by …", etc). Audit 2026-07-07 caught a Target Plus office-
+    // supply reseller ($15.83 gouged 20ct box) leaking as 1P because everything
+    // non-Walmart was hardcoded first-party.
+    const SELF_SELLER: Record<string, RegExp> = { walmart: /^walmart/i, target: /^target/i, samsclub: /^sam'?s/i, costco: /^costco/i };
+    const isMkt: boolean | null = x.seller_name
+      ? !(SELF_SELLER[retailer] || /$^/).test(String(x.seller_name).trim())
+      : false;
+    return {
+      retailer,
+      retailerProductId: String(x.id ?? x.item_id ?? x.url ?? ""),
+      price: x.price ?? x.min_price ?? null,
+      currency: x.currency || "USD",
+      inStock: x.in_stock ?? null,
+      productUrl: x.url || x.link || null,
+      zip: null,
+      localityEvidence: "national_unscoped",
+      observedAt,
+      title,
+      description: decode(x.description ?? null),
+      keyFeatures: Array.isArray(x.features) ? x.features : [],
+      imageUrls: imgs,
+      packSizeSeen: extractPackSize(title),
+      isMarketplaceItem: isMkt,
+      sellerName: x.seller_name ?? (retailer === "walmart" ? null : retailer),
+      sourceApi: "unwrangle",
+      ...meteredOfferProvenance(authorization),
+    } as RetailOffer;
+  });
+  return { creditsRemaining: j.remaining_credits ?? null, offers, trialExhausted: false };
+}
+
+// Score one offer against the canonical product. Returns the offer annotated with
+// gate verdicts; the orchestrator decides which to keep as the COGS source.
+export type ScoredOffer = RetailOffer & {
+  accepted: boolean;
+  rejectReason: string | null;
+  isBaseUnit: boolean;
+  identityMatch: CanonicalProductMatchResult | null;
+};
+export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffer {
+  const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false, identityMatch: null as CanonicalProductMatchResult | null };
+  if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
+  if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
+  const tg = tokenGate(offer.identityEvidenceTitle ?? offer.title, cp);
+  if (!tg.ok) return { ...base, rejectReason: tg.reason, identityMatch: tg.identityMatch };
+  if (offer.price === null) return { ...base, rejectReason: "no price" };
+  const isBase = (offer.packSizeSeen ?? 1) === 1;
+  if (priceSuspect(offer.price, `${offer.title} ${cp.base_unit || ""}`))
+    return { ...base, isBaseUnit: isBase, rejectReason: `price suspect ($${offer.price})`, identityMatch: tg.identityMatch };
+  return { ...base, accepted: true, rejectReason: null, isBaseUnit: isBase, identityMatch: tg.identityMatch };
+}

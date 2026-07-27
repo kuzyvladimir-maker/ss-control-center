@@ -1,0 +1,32 @@
+живых плиток: 805 · с заголовком листинга: 627 · к проверке: 62 (CONC 4)
+
+  ✗ FaisalX-3434 q8 [new]  Wrong flavor shown: Molten Chili Chicken, not Sizzlin' Rich Pork; 8 single cups 
+  ✗ FaisalX-3711 q8 [new]  Wrong flavor/variant: cans show 'Savory Beef Barley Vegetable' but listing speci
+  ✗ FaisalX-3583 q4 [new]  Image shows Pringles Original 5.2 oz cans, not Ranch 5.5 oz; 4 single front-faci
+  ✗ FaisalX-3893 q6 [new]  Wrong flavor: image shows Jack Link's Beef Jerky PEPPERED, but listing specifies
+  ✗ FaisalX-3843 q8 [new]  Shows 8 tiles on white, but the product is 50% Less Sodium variant and the tiled
+  ✗ FaisalX-3952 q4 [new]  Product shown is Oreo Reese's Chocolate Sandwich Cookies, not Reese's Assorted M
+  ✗ FaisalX-3993 q8 [new]  Product shown is Oreo Reese's Peanut Butter Chocolate Sandwich Cookies, not Rees
+  ✗ FaisalX-3396 q10 [new]  Product shown is Nissin Cup Noodles Stir Fry Teriyaki Beef Flavor, but listing t
+  ✗ FaisalX-3414 q10 [new]  The bowls shown read 'Molten Chili Chicken' beneath the Fire Wok branding, not t
+  ✗ FaisalX-3426 q10 [new]  Product shown is Nissin Fire Wok flat bag, not the Hot & Spicy Blazing Hot Flavo
+  ✗ FaisalX-3398 q8 [new]  Wrong flavor: image shows Nissin Cup Noodles Stir Fry Teriyaki Beef Flavor, but 
+  ✗ FaisalX-344 q7 [new]  Product shown is Pepperidge Farm Farmhouse Thin & Crispy Butter Crisp cookies, n
+  … 25/62  OK 13 · BAD 12 · ERR 0
+  ✗ FaisalX-3435 q10 [new]  Flavor mismatch: bowls shown display 'Molten Chili Chicken' variant, but listing
+  ✗ FaisalX-3422 q8 [new]  Product shown is Nissin Cup Noodles Stir Fry Korean BBQ flavor, not the Original
+  ✗ FaisalX-3438 q10 [new]  Listing is Beef Flavor but image shows Rice-A-Roni Chicken flavor boxes.
+  ✗ FaisalX-3442 q6 [new]  Product shown is Rice-A-Roni Chicken Lower Sodium, not Creamy Four Cheese Rice &
+  ✗ FaisalX-3443 q8 [new]  Wrong flavor/variant: image shows Rice-A-Roni Chicken Lower Sodium, but listing 
+  ✗ FaisalX-347 q10 [new]  Product shown is Pepperidge Farm Farmhouse Butter Bread (a sandwich bread loaf),
+  ✗ FaisalX-3494 q8 [new]  Image shows Hamburger Helper Deluxe Beef Stroganoff boxes tiled 8 times on a whi
+  ✗ FaisalX-349 q12 [new]  Image shows Pepperidge Farm Farmhouse thin-sliced butter bread loaves, not hambu
+  ✗ FaisalX-3500 q8 [new]  Image shows Double Cheeseburger Macaroni boxes, not Four Cheese Lasagna.
+  … 50/62  OK 29 · BAD 21 · ERR 0
+  ✗ FaisalX-3534 q10 [new]  Image shows Hamburger Helper Cheeseburger Macaroni boxes, not Pasta Stroganoff; 
+  ✗ FaisalX-1217 q2 [new]  Image shows Sara Lee Artesano Brioche bakery bread loaf, not hot dog buns.
+  ✗ FaisalX-1301 q4 [new]  Image shows Fritos Flavor Twists Spicy Dill Pickle bags, not Fritos Original Cor
+  ✗ FaisalX-1238 q2 [new]  Image shows Arnold Small Slice 100% Whole Wheat bread, not the listed Oatnut var
+
+=== ИТОГ === проверено 622 · OK 402 · ПЛОХИХ 220 · ERR 0
+плохих по волнам: new 216 · old245 4

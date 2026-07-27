@@ -1,0 +1,4527 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Auth — users who can log in to the Control Center
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  displayName  String?
+  // "admin" can manage invites and other users; "member" is a regular user.
+  // The first registered user is automatically admin.
+  role         String   @default("member")
+  createdAt    DateTime @default(now())
+}
+
+// RBAC roles. The built-in `admin` role bypasses all permission checks and
+// is the only role that can reach Settings (where roles are managed). Every
+// other role (the built-in `member` and any custom role an admin creates)
+// is granted a set of module keys it may open.
+//
+// `User.role` and `Invite.role` reference this table by `key` (a plain
+// string), so adding roles never requires touching the User/Invite models.
+model Role {
+  id        String   @id @default(cuid())
+  // URL-/code-safe identifier referenced by User.role + Invite.role.
+  key       String   @unique
+  // Human-friendly label shown in the UI.
+  name      String
+  // JSON array of module keys this role may open, e.g. ["finance","shipping"].
+  // See src/lib/rbac/modules.ts for the canonical key list. The `admin` role
+  // ignores this field (it sees everything).
+  modules   String   @default("[]")
+  // System roles (admin/member) can't be deleted or renamed by the UI.
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Single-use invitations issued by an admin. A new user can only register
+// by visiting an invite link with a valid (unused, unexpired) token.
+model Invite {
+  id               String    @id @default(cuid())
+  email            String // target email (lower-cased)
+  token            String    @unique // unguessable URL-safe token
+  role             String    @default("member") // role to assign on accept
+  createdById      String // user.id of the admin who created it
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime // typically now() + 7 days
+  acceptedAt       DateTime? // null while pending
+  acceptedByUserId String? // user.id once accepted
+  revokedAt        DateTime? // admin can revoke before use
+
+  @@index([email])
+}
+
+model CsCase {
+  id            String  @id @default(cuid())
+  channel       String // Amazon | Walmart
+  store         String?
+  orderId       String?
+  customerName  String?
+  product       String?
+  productType   String? // Frozen | Dry | Unknown
+  category      String? // C1-C10
+  categoryName  String?
+  priority      String? // LOW | MEDIUM | HIGH | CRITICAL
+  language      String? // English | Spanish
+  branch        String? // A | B (for C3)
+  branchName    String?
+  response      String?
+  action        String? // REPLACEMENT | REFUND | A2Z_GUARANTEE | ESCALATE | INFO | PHOTO_REQUEST
+  urgency       String?
+  internalNotes String?
+  imageData     String? // base64 screenshot
+
+  // Carrier delay detection (v1.2)
+  carrierDelayDetected Boolean  @default(false)
+  carrierBadge         String? // "Claims Protected" | "Late Delivery Risk" | "Unknown"
+  shippedOnTime        Boolean?
+  promisedEdd          String? // YYYY-MM-DD
+  actualDelivery       String? // YYYY-MM-DD
+  daysLate             Int?
+
+  status     String    @default("open") // open | responded | resolved
+  resolution String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model ShippingPlan {
+  id        String             @id @default(cuid())
+  date      String // YYYY-MM-DD
+  status    String             @default("draft") // draft | approved | completed
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  items     ShippingPlanItem[]
+}
+
+model ShippingPlanItem {
+  id               String       @id @default(cuid())
+  planId           String
+  plan             ShippingPlan @relation(fields: [planId], references: [id])
+  orderNumber      String
+  orderId          String // Veeqo order ID
+  channel          String
+  // Normalised marketplace bucket — "Amazon", "Walmart", "eBay", etc.
+  // Drives the Drive folder path. Falls back to `channel` for legacy
+  // rows created before this column existed.
+  channelKind      String?
+  product          String
+  sku              String?
+  qty              Int          @default(1)
+  productType      String // Frozen | Dry
+  weight           Float?
+  boxSize          String?
+  budgetMax        Float?
+  carrier          String?
+  service          String?
+  price            Float?
+  edd              String? // EDD date
+  deliveryBy       String? // Delivery By date
+  // Per-order dual-date model (MASTER_PROMPT v3.3 §0.1).
+  //   labelDate         — what Amazon sees on the label; drives Late
+  //                       Shipment Rate. Defaults to today; only
+  //                       pushed to next business day when shipBy >
+  //                       today AND past 3 PM ET cutoff.
+  //   physicalShipDate  — when warehouse hands the package to the
+  //                       carrier. Same as labelDate for normal flow;
+  //                       pushed to next Monday when Frozen Ship Date
+  //                       Trick fires.
+  // `actualShipDay` is kept as an alias for physicalShipDate during
+  // the migration so existing rows don't lose data. New writes set
+  // both to the same value; legacy column drops once every reader
+  // uses physicalShipDate.
+  labelDate        String? // Date Amazon sees on the label
+  physicalShipDate String? // When warehouse hands package to carrier
+  actualShipDay    String? // Legacy alias for physicalShipDate
+  notes            String?
+  status           String       @default("pending") // pending | approved | bought | error | stop
+  trackingNumber   String?
+  labelPdfUrl      String?
+  allocationId     String?
+  carrierId        String?
+  remoteShipmentId String?
+  serviceType      String?
+  subCarrierId     String?
+  serviceCarrier   String?
+  totalNetCharge   String?
+  baseRate         String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([planId])
+  @@index([orderId])
+}
+
+model Store {
+  id         String   @id @default(cuid())
+  name       String
+  channel    String // Amazon | Walmart
+  signature  String   @default("") // Name used in CS responses
+  active     Boolean  @default(true)
+  // Bridge to the underlying order/transaction tables. Amazon stores use a
+  // 1..5 integer (matches AmazonOrder.storeIndex / AtozzClaim.storeIndex /
+  // BuyerMessage.storeIndex). Walmart stores use the Marketplace Seller ID.
+  storeIndex Int?
+  sellerId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model ProductTypeOverride {
+  id             String   @id @default(cuid())
+  productId      Int      @unique // Veeqo product ID
+  type           String // "Frozen" | "Dry"
+  // Who/what set the type — manual classification by the operator or AI
+  // (Claude) suggestion that was confirmed in the Shipping Labels UI.
+  source         String   @default("manual") // "manual" | "ai"
+  aiConfidence   Float?
+  aiReasoning    String?
+  // Veeqo round-trip: the canonical tag lives on the Veeqo product too so
+  // legacy paths keep working. syncedToVeeqo is true after a successful
+  // setProductTag; veeqoSyncError records the last failure for retry.
+  syncedToVeeqo  Boolean  @default(false)
+  veeqoSyncError String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Frozen Delivery Analytics
+model FrozenIncident {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Link to CS case
+  csCaseId String?
+
+  // Order data
+  orderId        String
+  amazonOrderId  String?
+  trackingNumber String?
+
+  // Product
+  sku         String
+  productName String
+  boxSize     String? // XS/S/M/L/XL
+  weightLbs   Float?
+
+  // Shipping
+  carrier              String // ups / fedex / usps
+  service              String // "2nd Day Air" / "Ground" / etc.
+  shipDate             String // YYYY-MM-DD
+  promisedEdd          String? // YYYY-MM-DD
+  actualDelivery       String? // YYYY-MM-DD
+  daysInTransit        Int?
+  daysLate             Int?
+  claimsProtectedBadge Boolean?
+  labelCost            Float?
+
+  // Destination
+  destZip   String?
+  destCity  String?
+  destState String?
+  destLat   Float?
+  destLon   Float?
+
+  // Weather — origin (Tampa, FL)
+  originTempF       Float?
+  originFeelsLikeF  Float?
+  originTempHighF   Float?
+  originWeatherDesc String?
+
+  // Weather — destination
+  destTempF       Float?
+  destFeelsLikeF  Float?
+  destTempHighF   Float?
+  destWeatherDesc String?
+
+  // Outcome
+  outcome            String  @default("thawed") // thawed | unclear | ok
+  customerComplained Boolean @default(true)
+  resolution         String? // a2z_guarantee / replacement / refund
+  notes              String?
+
+  // Frozen Analytics v2.0 — back-link from incident to the proactive risk
+  // alert (if any) that predicted this incident. Set by the learning loop in
+  // collectFrozenIncidentData() so the Patterns dashboard can compute
+  // detection rate (true positives = incidents that had a linked alert).
+  linkedAlertId String?
+
+  @@index([linkedAlertId])
+}
+
+model SkuRiskProfile {
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+
+  sku         String @unique
+  productName String
+
+  totalIncidents Int    @default(0)
+  thawedCount    Int    @default(0)
+  thawRate       Float?
+
+  avgDaysInTransit Float?
+  avgOriginTempF   Float?
+  avgDestTempF     Float?
+
+  mostCommonCarrier String?
+  mostCommonService String?
+
+  riskScore Int    @default(0) // 0-100
+  riskLevel String @default("unknown") // low / medium / high / critical
+
+  lastIncidentDate String?
+}
+
+// Shipping Adjustments Monitor
+model ShippingAdjustment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  externalId String  @unique // stable ID for dedup: amazon:<store>:<type>:<postedDate>:<amountCents> or walmart:<recon>:<line>
+  channel    String // Amazon | Walmart
+  storeId    String? // store1..5 (Amazon) or walmart-store1 — null for legacy / manual rows
+  currency   String? // ISO 4217 — defaults to USD
+
+  // orderId is optional because Amazon's PostageBilling_PostageAdjustment
+  // events (the real "carrier reweigh recharge") have no per-order
+  // attribution. Order/SKU linkage comes from Settlement Reports in Phase B.
+  orderId        String?
+  amazonOrderId  String?
+  walmartOrderId String?
+
+  adjustmentDate   String // YYYY-MM-DD
+  adjustmentType   String // WeightAdjustment | WeightAdjustmentRefund | ReturnShipping | Other
+  adjustmentAmount Float // negative USD when charged, positive when refunded
+  adjustmentReason String?
+  rawType          String? // Original Amazon AdjustmentType (e.g. PostageBilling_PostageAdjustment) — for traceability
+
+  sku               String?
+  productName       String?
+  productImageUrl   String?
+  carrier           String?
+  service           String?
+  trackingNumber    String?
+  declaredWeightLbs Float?
+  declaredDimL      Float?
+  declaredDimW      Float?
+  declaredDimH      Float?
+  originalLabelCost Float?
+
+  adjustedWeightLbs Float?
+  adjustedDimL      Float?
+  adjustedDimW      Float?
+  adjustedDimH      Float?
+
+  reviewed     Boolean @default(false)
+  skuDataFixed Boolean @default(false)
+  notes        String?
+
+  // Dispute tracking. Once filed via Amazon Seller Central Buy
+  // Shipping support, the operator pastes the Case ID here so the
+  // page can show "Disputed · #XXXXX" instead of "New" and the
+  // sidebar pillCount drops the row from the actionable queue.
+  disputeCaseId String?
+  disputedAt    DateTime?
+
+  @@index([channel, createdAt])
+  @@index([adjustmentDate])
+  @@index([sku])
+}
+
+model SkuAdjustmentProfile {
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+
+  sku         String  @unique
+  productName String?
+
+  totalAdjustments    Int    @default(0)
+  totalAmountLost     Float  @default(0)
+  avgAdjustmentAmount Float?
+
+  mostCommonType   String? // WeightAdjustment | DIMadjustment
+  needsSkuDbUpdate Boolean @default(false)
+  suggestedWeight  Float?
+
+  lastAdjustmentDate String?
+  channel            String? // where more frequent
+}
+
+// A-to-Z & Chargeback Claims
+model AtozzClaim {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amazonOrderId String
+  claimType     String // A_TO_Z | CHARGEBACK
+  claimReason   String? // INR | SNAD | Defective | Fraud
+  amount        Float?
+  storeIndex    Int     @default(1)
+  storeName     String?
+  // Full order context pulled from SP-API on enrichment
+  customerName  String?
+  product       String?
+  orderDate     String?
+  orderTotal    Float?
+  claimText     String? // The buyer's actual claim/complaint text
+
+  detectedAt        DateTime @default(now())
+  deadline          String? // YYYY-MM-DD
+  daysUntilDeadline Int?
+
+  gmailMessageId String?
+
+  // Evidence
+  trackingNumber       String?
+  carrier              String?
+  shipDate             String?
+  firstScanDate        String?
+  deliveredDate        String?
+  shippedOnTime        Boolean?
+  claimsProtectedBadge Boolean?
+  evidenceSummary      String? // JSON
+
+  // Strategy & Response
+  strategyType       String? // BUY_SHIPPING_PROTECTION | PROOF_OF_DELIVERY | INR_DEFENSE | CARRIER_DELAY_DEFENSE | MANUAL_REVIEW
+  strategyConfidence String? // HIGH | MEDIUM | LOW
+  generatedResponse  String?
+  editedResponse     String?
+
+  // Status: NEW → EVIDENCE_GATHERED → RESPONSE_READY → SUBMITTED → DECIDED → APPEALED → CLOSED
+  status String @default("NEW")
+
+  // Amazon decision
+  amazonDecision String? // IN_OUR_FAVOR | AGAINST_US | AMAZON_FUNDED
+  decisionDate   String?
+  amountCharged  Float?
+  amountSaved    Float?
+
+  // Appeal
+  appealSubmitted Boolean @default(false)
+  appealText      String?
+  appealDecision  String?
+
+  vladimirNotes String?
+  csCaseId      String?
+}
+
+// Feedback Manager
+model SellerFeedback {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  amazonFeedbackId String  @unique
+  orderId          String
+  amazonOrderId    String?
+  rating           Int // 1-5
+  comments         String?
+  feedbackDate     String // YYYY-MM-DD
+
+  store   String?
+  channel String  @default("Amazon")
+
+  // AI classification
+  removable         Boolean?
+  removalCategory   String? // PRODUCT_REVIEW | CARRIER_DELAY | OBSCENE | PERSONAL_INFO | PROMOTIONAL | PRICING_ONLY
+  removalConfidence String? // HIGH | MEDIUM | LOW
+  suggestedAction   String? // REQUEST_REMOVAL | CONTACT_BUYER | RESPOND_PUBLICLY | MONITOR
+  aiReasoning       String?
+
+  removalRequestText String?
+  publicResponse     String? // Claude-generated public reply for non-removable negative/positive feedback
+
+  // Status: NEW → ANALYZED → REMOVAL_SUBMITTED → REMOVED | DENIED | CONTACT_SENT | CLOSED
+  status String @default("NEW")
+
+  removalSubmittedAt DateTime?
+  removalDecision    String? // REMOVED | DENIED
+  removalDecisionAt  DateTime?
+
+  buyerContactSent   Boolean   @default(false)
+  buyerContactText   String?
+  buyerContactSentAt DateTime?
+
+  csCaseId      String?
+  vladimirNotes String?
+}
+
+model ProductReview {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  asin       String
+  reviewId   String  @unique
+  rating     Int // 1-5
+  title      String?
+  body       String?
+  reviewDate String
+  verified   Boolean @default(false)
+
+  store String?
+
+  responseGenerated   String?
+  responseSubmitted   Boolean   @default(false)
+  responseSubmittedAt DateTime?
+
+  vladimirNotes String?
+}
+
+// Account Health Monitor
+model AccountHealthSnapshot {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  storeId   String
+  storeName String?
+  sellerId  String?
+  status    String   @default("pending") // healthy | warning | critical | error | pending
+
+  // ODR (60 days)
+  orderDefectRate       Float?
+  odrOrders60d          Int? // total orders in 60d
+  negativeFeedbackCount Int?
+  negativeFeedbackRate  Float?
+  atozClaimsCount       Int?
+  atozClaimsRate        Float?
+  chargebackCount       Int?
+  chargebackRate        Float?
+
+  // Late Shipment Rate — 10-day window
+  lateShipmentRate10d Float?
+  lsr10dLate          Int? // late orders
+  lsr10dTotal         Int? // total orders
+
+  // Late Shipment Rate — 30-day window
+  lateShipmentRate30d Float?
+  lsr30dLate          Int?
+  lsr30dTotal         Int?
+
+  // Pre-fulfillment Cancel Rate (7 days)
+  preFulfillmentCancelRate Float?
+  cancelCancelled          Int?
+  cancelTotal              Int?
+
+  // Valid Tracking Rate (30 days)
+  validTrackingRate Float?
+  vtrTracked        Int?
+  vtrTotal          Int?
+
+  // On-Time Delivery Rate (14 days)
+  onTimeDeliveryRate Float?
+  otdrOnTime         Int?
+  otdrTotal          Int?
+
+  // Sync
+  syncStatus String    @default("pending") // pending | syncing | done | error
+  syncError  String?
+  syncedAt   DateTime?
+
+  alertCount    Int     @default(0)
+  criticalCount Int     @default(0)
+  alertsJson    String?
+
+  // ── Account Health v2 additions ─────────────────────────────────────────
+
+  // Aggregate AHR (0..1000) and zone label fetched alongside the ODR/LSR
+  // metrics. May be null when SP-API Selling Partner Insights role isn't
+  // approved yet — see src/lib/amazon-sp-api/account-health-rating.ts.
+  accountHealthRating       Int?
+  accountHealthRatingStatus String? // AT_RISK_OF_DEACTIVATION | AT_RISK | GOOD
+
+  // Operational state of the account on Amazon.com (independent of AHR).
+  // An account can be deactivated (selling privileges removed by Amazon)
+  // even while its AHR score is healthy — Retailer Distributor on
+  // 2026-05-17 is the canonical case: AHR=220 Healthy, but a "Your account
+  // has been deactivated" banner appears on Seller Central.
+  //   ACTIVE                   — selling normally
+  //   AT_RISK_OF_DEACTIVATION  — AHR < 200 (Amazon's own label)
+  //   DEACTIVATED              — Sellers API reports isParticipating=false
+  //                              on US Amazon.com (ATVPDKIKX0DER)
+  // Derived in report-orchestrator after each report parse — see
+  // resolveAccountState() in src/lib/amazon-sp-api/account-state.ts.
+  accountState String? // ACTIVE | AT_RISK_OF_DEACTIVATION | DEACTIVATED
+
+  // ODR breakdown by fulfillment channel
+  odrSellerFulfilled         Float?
+  odrSellerFulfilledOrders   Int?
+  odrFulfilledByAmazon       Float?
+  odrFulfilledByAmazonOrders Int?
+
+  // Customer-service sub-metrics by fulfillment channel
+  negativeFeedbackSF  Float?
+  negativeFeedbackFBA Float?
+  atozClaimsRateSF    Float?
+  atozClaimsRateFBA   Float?
+  chargebackRateSF    Float?
+  chargebackRateFBA   Float?
+
+  policyCategories PolicyViolationCategory[]
+
+  @@index([storeId, createdAt])
+}
+
+// ─── Account Health v2: Policy Compliance ──────────────────────────────────
+// One row per category per snapshot (10 fixed categories). Drill-down to
+// individual listings lives in PolicyViolationDetail.
+model PolicyViolationCategory {
+  id         String                @id @default(cuid())
+  snapshotId String
+  snapshot   AccountHealthSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  category    String // SUSPECTED_IP | RECEIVED_IP_COMPLAINTS | PRODUCT_AUTHENTICITY | PRODUCT_CONDITION | FOOD_SAFETY | LISTING_POLICY | RESTRICTED_PRODUCT | CUSTOMER_REVIEWS_POLICY | OTHER_POLICY | REGULATORY_COMPLIANCE
+  displayName String
+  count       Int      @default(0)
+  status      String // OK | WARNING | CRITICAL
+  detectedAt  DateTime @default(now())
+
+  details PolicyViolationDetail[]
+
+  @@index([snapshotId])
+  @@index([category])
+}
+
+model PolicyViolationDetail {
+  id         String                  @id @default(cuid())
+  categoryId String
+  category   PolicyViolationCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  asin              String?
+  sku               String?
+  listingTitle      String?
+  violationType     String
+  severity          String // CRITICAL | HIGH | MEDIUM | LOW
+  message           String
+  reportedAt        DateTime
+  resolvedAt        DateTime?
+  status            String    @default("OPEN") // OPEN | RESOLVED | IN_REVIEW
+  amazonReferenceId String?
+
+  @@index([categoryId])
+  @@index([asin])
+  @@index([status])
+}
+
+model AccountAlert {
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  storeId    String
+  storeName  String
+  level      String // WARNING | CRITICAL
+  metric     String
+  value      Float
+  threshold  Float
+  message    String
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+}
+
+model ReportSyncJob {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  storeId          String
+  reportType       String
+  amazonReportId   String?
+  amazonDocumentId String?
+  status           String    @default("requested") // requested | processing | downloading | done | error
+  error            String?
+  completedAt      DateTime?
+}
+
+// Amazon Orders (synced from SP-API)
+model AmazonOrder {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amazonOrderId  String    @unique
+  storeIndex     Int
+  status         String // Pending | Unshipped | Shipped | Canceled
+  purchaseDate   DateTime
+  lastUpdateDate DateTime?
+  orderTotal     Float     @default(0)
+  currency       String    @default("USD")
+
+  buyerName  String?
+  buyerEmail String?
+
+  shipCity    String?
+  shipState   String?
+  shipZip     String?
+  shipCountry String?
+
+  latestShipDate     DateTime?
+  latestDeliveryDate DateTime?
+  numberOfItems      Int       @default(0)
+  fulfillmentChannel String?
+  salesChannel       String?
+  cancellationReason String?
+
+  @@index([storeIndex, status])
+  @@index([purchaseDate])
+}
+
+/**
+ * Amazon shipment metadata per order — carrier, service, tracking.
+ * Populated by /api/cron/orders-shipments-amazon (Reports API:
+ * GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL).
+ * Exists so adjustment enrichment can join ShippingAdjustment.amazonOrderId
+ * → carrier/service WITHOUT calling SP-API per-row at render time. One
+ * row per (amazonOrderId, sku) — Amazon orders can have multiple items
+ * shipped on different labels.
+ */
+model AmazonOrderShipment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amazonOrderId String
+  sku           String?
+  asin          String?
+
+  storeIndex Int?
+
+  // From Veeqo shipment record (was: from Orders Report — but Amazon
+  // doesn't expose carrier/tracking for MFN orders, so Veeqo is the
+  // source of truth now).
+  carrier          String? // e.g. "UPS", "FEDEX", "USPS"
+  trackingNumber   String?
+  shipServiceLevel String? // e.g. "Standard", "Expedited"
+  shipDate         String? // YYYY-MM-DD
+  promiseDate      String?
+
+  // What Vladimir originally paid for the outbound label (Veeqo's
+  // outbound_label_charges.value). Copied onto ShippingAdjustment.
+  // originalLabelCost during enrichment so the page can show
+  // "Original: $X → +adjustment: $Y → effective: $X+Y".
+  outboundLabelCost Float?
+
+  // Product context from Veeqo line_items[].sellable. Used to populate
+  // ShippingAdjustment.productName + render an image in the expansion.
+  productName     String?
+  productImageUrl String?
+
+  // Declared package dimensions Vladimir set when buying the label
+  // (Veeqo allocation_package). The point of surfacing these on the
+  // /adjustments page is so Vladimir can verify whether Amazon's
+  // reweigh charge was justified — if declared 16 lbs and Amazon
+  // reweighed 16 lbs, the charge is bogus and disputable.
+  packageWeightLbs Float?
+  packageDimL      Float? // depth (inches)
+  packageDimW      Float?
+  packageDimH      Float?
+  packageName      String? // e.g. "S", "M", "Custom"
+
+  // Inferred from trackingNumber regex when carrier is "Other" or null.
+  carrierInferred String?
+
+  @@unique([amazonOrderId, sku], name: "amazon_order_shipment_dedup")
+  @@index([amazonOrderId])
+  @@index([trackingNumber])
+}
+
+// Customer Hub — Buyer Messages
+model BuyerMessage {
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  // When Amazon actually delivered the message to us (from email Date header).
+  // Used for the 24-hour Amazon response deadline — createdAt is when we
+  // synced it into our DB, which can be hours/days later.
+  receivedAt DateTime?
+
+  gmailMessageId String? @unique
+  gmailThreadId  String?
+
+  channel    String  @default("Amazon") // Amazon | Walmart
+  source     String  @default("gmail") // gmail | screenshot
+  storeIndex Int
+  storeName  String
+  storeEmail String?
+
+  customerName  String?
+  customerEmail String?
+  language      String  @default("English")
+
+  amazonOrderId   String?
+  // Walmart-specific identifiers — populated when channel='Walmart' and
+  // the source is the direct Marketplace API (not a screenshot upload).
+  walmartOrderId  String?
+  walmartReturnId String?
+  orderDate       String?
+  orderTotal      Float?
+
+  product     String?
+  asin        String?
+  productType String?
+  quantity    Int?
+
+  carrier                  String?
+  service                  String?
+  trackingNumber           String?
+  shipDate                 String?
+  promisedEdd              String?
+  actualDelivery           String?
+  trackingStatus           String?
+  daysInTransit            Int?
+  daysLate                 Int?
+  // Shipping service tracking — detects mismatches between what the
+  // customer paid for (Amazon order's ShipmentServiceLevelCategory) and
+  // what we actually shipped via Veeqo. Drives T21 classification.
+  requestedShippingService String?
+  actualShippingService    String?
+  shippingMismatch         Boolean  @default(false)
+  carrierEstimatedDelivery String?
+  // JSON array of carrier tracking events from the carrier's direct API
+  // (currently UPS; FedEx/USPS to follow). Shape:
+  //   [{date, time, description, status, location}, ...]
+  // Fed into the analyzer prompt so the model sees the full carrier
+  // history instead of just the latest summary field.
+  trackingEvents           String?
+  boughtThroughVeeqo       Boolean  @default(false)
+  claimsProtected          Boolean  @default(false)
+  shippedOnTime            Boolean?
+
+  direction           String  @default("incoming")
+  customerMessage     String?
+  // Russian translation cache. customerMessageRu is populated when the
+  // message is first synced; suggestedResponseRu + editedResponseRu are
+  // populated whenever their EN counterparts change. Used by the bilingual
+  // UI so Vladimir can read/edit in RU without copy-pasting to a translator.
+  customerMessageRu   String?
+  suggestedResponseRu String?
+  editedResponseRu    String?
+
+  problemType     String?
+  problemTypeName String?
+  riskLevel       String?
+  category        String?
+  categoryName    String?
+  priority        String?
+  action          String?
+  secondaryAction String?
+  whoShouldPay    String?
+  internalAction  String?
+  foodSafetyRisk  Boolean @default(false)
+  atozRisk        String?
+
+  suggestedResponse String?
+  editedResponse    String?
+  responseSentAt    DateTime?
+  responseSentVia   String?
+
+  // Structured supplier-reorder note generated by the analyzer when
+  // action=replacement. Format: "{product} × {qty} | reason: {short} |
+  // ship to: {address hint}". Surfaced in MessageDetail as a prominent
+  // banner so the operator can clone the order in Veeqo for the
+  // replacement label run. Phase 2 will auto-clone via Veeqo API.
+  supplierReorderNote String?
+
+  status     String  @default("NEW")
+  resolution String?
+
+  frozenIncidentId String?
+  vladimirNotes    String?
+  imageData        String?
+
+  // JSON blob of the last FactCheckResult from message-analyzer.ts. Stored
+  // so the UI can render warnings + confidence without recomputing on every
+  // render. Shape: { passed, confidence, mismatches: [{field, inResponse,
+  // actual, severity}] }
+  factCheckJson String?
+
+  // AI reasoning + audit trail. Holds the internal "why this decision"
+  // explanation from the analyzer, plus any [AUTO-FIXED: …] markers
+  // appended by the validator. Used by the UI to surface the auto-fix
+  // banner and (eventually) for debugging.
+  reasoning String?
+
+  @@index([amazonOrderId])
+  @@index([storeIndex, status])
+}
+
+// Sync log
+model SyncLog {
+  id          String    @id @default(cuid())
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  jobName     String // orders | finances | feedback | health | claims
+  storeIndex  Int?
+  status      String  @default("running") // running | done | error
+  itemsSynced Int     @default(0)
+  error       String?
+}
+
+// Featured-Offer repricer audit log.
+// One row per SKU evaluated by /api/cron/reprice-amazon. Records the
+// before/after price (or why we skipped) so Vladimir can see history and
+// roll a price back if needed. `action` explains the outcome; on a real
+// (non-dryRun) reprice `oldPrice`/`newPrice` are what we changed.
+model RepriceLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  storeIndex   Int
+  sku          String
+  asin         String?
+  title        String?
+  oldPrice     Float // our listing price before the run
+  newPrice     Float? // our new listing price (null when skipped)
+  shipping     Float    @default(0) // our shipping at decision time
+  targetLanded Float? // competitor featured-offer landed price we matched
+  competitors  Int      @default(0) // total offers on the listing
+  action       String // repriced | skipped_winning | skipped_raise | skipped_cap | skipped_floor | no_competition | error
+  reason       String?
+  dryRun       Boolean  @default(false)
+
+  @@index([storeIndex, createdAt])
+  @@index([sku])
+}
+
+// Customer Hub — Knowledge Base
+// Stores resolved customer-support cases so the Decision Engine can find
+// similar past situations before generating a new response. Seeded with
+// canonical scenarios (e.g. T21 shipping mismatch) and extended either
+// manually from the Save-to-KB button in MessageDetail or automatically
+// from high-confidence resolved cases.
+model KnowledgeBaseEntry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Кейс
+  problemType  String // T1-T21
+  scenario     String // краткое описание ситуации
+  customerSaid String // что написал клиент (ключевые фразы)
+
+  // Контекст
+  trackingStatus   String?
+  shippingMismatch Boolean @default(false)
+  productType      String? // Frozen | Dry
+
+  // Решение
+  correctAction   String // replacement | partial_refund | full_refund | redirect_amazon | etc.
+  correctResponse String // текст правильного ответа
+  reasoning       String // почему это решение правильное
+  whoShouldPay    String? // us | amazon | carrier
+
+  // Результат
+  outcome           String? // positive | negative | neutral
+  customerSatisfied Boolean?
+  atozFiled         Boolean  @default(false)
+
+  // Метаданные
+  source  String  @default("manual") // manual | auto_from_resolved_case
+  tags    String? // comma-separated tags
+  channel String  @default("Amazon") // Amazon | Walmart — different rulebooks
+
+  @@index([problemType])
+}
+
+// ----------------------------------------------------------------------------
+// Walmart Marketplace API — direct integration models
+// ----------------------------------------------------------------------------
+
+// Walmart orders synced from /v3/orders. Mirrors the AmazonOrder pattern.
+model WalmartOrder {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String  @unique // Walmart PO ID — primary key in their API
+  customerOrderId String // human-friendly order number
+  customerEmailId String?
+  storeIndex      Int     @default(1)
+
+  status                String // Created | Acknowledged | Shipped | Delivered | Cancelled
+  shipNodeType          String? // SellerFulfilled | WFSFulfilled | 3PLFulfilled
+  orderType             String?
+  orderDate             DateTime
+  estimatedShipDate     DateTime?
+  estimatedDeliveryDate DateTime?
+
+  orderTotal Float  @default(0)
+  currency   String @default("USD")
+
+  shipCity    String?
+  shipState   String?
+  shipZip     String?
+  shipCountry String?
+
+  numberOfItems Int    @default(0)
+  // JSON dump of the full order payload — preserves every field we don't
+  // model explicitly so reanalysis / debugging never has to re-fetch.
+  rawData       String
+
+  @@index([storeIndex, status])
+  @@index([orderDate])
+  @@index([customerOrderId])
+}
+
+// Durable record of a Ship-with-Walmart label WE bought, written the instant
+// /api/shipping/walmart/buy succeeds. This is the authoritative "already
+// bought" signal — Walmart's own GET /shipping/labels/purchase-orders/{po}
+// lookup is eventually consistent and returns EMPTY for minutes after a buy,
+// during which the order looked buyable again and a re-buy wasn't caught
+// (double-charge). We OR this local record with the live Walmart lookup in
+// both the buy guard and the dashboard's bought-detection so a label we just
+// bought can never reappear as buyable, regardless of Walmart's index lag.
+// One row per PO; `discardedAt` is set when the label is discarded so a
+// fresh label can be bought afterwards.
+model WalmartLabelPurchase {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  purchaseOrderId String    @unique // Walmart PO — one active label per PO
+  customerOrderId String // Veeqo order.number — dashboard joins on this
+  storeIndex      Int       @default(1)
+  trackingNumber  String
+  carrierName     String
+  serviceType     String?
+  boughtAt        DateTime  @default(now())
+  // Set when the label is discarded/cancelled → the order becomes buyable
+  // again. A non-null value means "no active label" for guard/detection.
+  discardedAt     DateTime?
+
+  @@index([customerOrderId])
+}
+
+// Per-row reconciliation report transactions. Each row is one money event.
+model WalmartReconTransaction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  storeIndex                 Int      @default(1)
+  reportDate                 DateTime // settlement date the row came from
+  transactionPostedTimestamp DateTime
+  transactionType            String // Sales | Refunds | Adjustments | Fees
+  transactionDescription     String?
+
+  purchaseOrderId String?
+  customerOrderId String?
+  sku             String?
+  productName     String?
+  quantity        Int?
+  amount          Float
+  feeType         String?
+
+  rawData String
+
+  // Dedup compound key: same posted-timestamp + PO + type + amount = same row.
+  @@unique([transactionPostedTimestamp, purchaseOrderId, transactionType, amount], name: "walmart_recon_dedup")
+  @@index([reportDate])
+  @@index([transactionType])
+  @@index([storeIndex, reportDate])
+}
+
+// Snapshot of a Walmart Seller Performance metric at a point in time.
+// We keep history so trends can be plotted over weeks/months. NOTE: this
+// model is per-metric (one row per metric per sync) — the Account Health v2
+// UI reads the latest row of each metric and aggregates at query time, so
+// nothing here is denormalized.
+model WalmartPerformanceSnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+
+  storeIndex Int     @default(1)
+  windowDays Int // 14 | 30 | 60 | 90
+  metric     String // onTimeDelivery | validTrackingRate | ...
+  value      Float // percent or ratio
+  threshold  Float? // Walmart's healthy threshold for this metric
+  isHealthy  Boolean
+
+  // Status bucket for the UI (GOOD | MONITOR | URGENT). Added in v2 so the
+  // sync layer doesn't have to re-derive it from value+threshold on every
+  // read, and so the alerts engine can filter cheaply.
+  status String?
+
+  rawData String
+
+  @@index([storeIndex, metric, capturedAt])
+}
+
+// ─── Account Health v2: Walmart Item Compliance ────────────────────────────
+// Per-item compliance issue. Pulled from the Walmart Items API filtered by
+// lifecycleStatus (TROUBLED / BLOCKED / PUBLISHED_WITH_ERRORS / etc).
+model WalmartItemCompliance {
+  id         String   @id @default(cuid())
+  storeIndex Int      @default(1)
+  capturedAt DateTime @default(now())
+
+  itemId       String
+  sku          String?
+  title        String?
+  issueType    String // TROUBLED_LISTING | BLOCKED | PUBLISHED_WITH_ERRORS | STAGE | SYSTEM_PROBLEM
+  issueDetails String?
+  severity     String // URGENT | MONITOR | INFO
+  status       String    @default("OPEN") // OPEN | RESOLVED
+  reportedAt   DateTime
+  resolvedAt   DateTime?
+
+  // Dedup by (item + issueType) so a re-sync updates the existing row
+  // instead of duplicating.
+  @@unique([itemId, issueType], name: "walmart_item_compliance_dedup")
+  @@index([storeIndex])
+  @@index([status])
+}
+
+// ─── Walmart Catalog Cache ─────────────────────────────────────────────────
+// Local mirror of the full Walmart item catalog, refreshed nightly by
+/**
+ * Tracks buyer-initiated cancellation requests detected on Walmart orders
+ * (orderLineStatus.intentToCancel === "TRUE"). Populated by the
+ * /api/cron/walmart-cancellation-watchdog cron every 30 min. Used to:
+ * * dedupe — don't process the same PO twice across cron runs
+ * * audit — track what action we took (auto-cancel vs Telegram alert)
+ * * SLA visibility — Walmart auto-cancels after 48h if seller doesn't act
+ */
+model WalmartCancellationRequest {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String    @unique
+  storeIndex      Int       @default(1)
+  customerOrderId String?
+  productName     String?
+  orderTotal      Float?
+  shipBy          DateTime?
+
+  detectedAt   DateTime  @default(now())
+  actionedAt   DateTime?
+  // PENDING | AUTO_CANCELLED | ALERTED_LABEL_BOUGHT | ALERTED_SHIPPED | RESOLVED_MANUALLY | FAILED
+  action       String    @default("PENDING")
+  telegramSent Boolean   @default(false)
+  notes        String?
+
+  @@index([action])
+  @@index([detectedAt])
+}
+
+// Quantity-clarification outreach to Walmart customers. When a procurement
+// card looks like a multipack mis-order (e.g. 3 × "Pack of 8" = 24 units),
+// Vladimir can send the buyer a polite "did you mean this quantity?" email
+// through Walmart's per-order relay address (customerEmailId) from the
+// registered Sirius CS mailbox (info.siriustrading@gmail.com). One row per
+// purchase order. The /api/cron/walmart-quantity-inquiry-poll cron reads the
+// Sirius inbox twice a day, flips SENT → ANSWERED when the buyer replies, or
+// SENT → TIMEOUT after 48h. See docs/wiki/walmart-quantity-inquiry.md.
+model WalmartCustomerInquiry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String  @unique
+  customerOrderId String?
+  storeIndex      Int     @default(1)
+
+  // The Walmart relay address we emailed (4C11…@relay.walmart.com) — also the
+  // From address of the buyer's reply, which is how the poll cron matches.
+  relayEmail   String
+  sentByEmail  String // info.siriustrading@gmail.com (registered CS mailbox)
+  customerName String?
+
+  // Snapshot of the line we asked about (for the card chip + audit).
+  sku          String?
+  productTitle String?
+  orderedQty   Int?
+  packSize     Int?
+  totalUnits   Int?
+
+  subject  String
+  bodySent String
+
+  sentAt DateTime @default(now())
+  // SENT | ANSWERED | TIMEOUT
+  status String   @default("SENT")
+
+  replyText String?
+  repliedAt DateTime?
+
+  @@index([status])
+  @@index([sentAt])
+  @@index([customerOrderId])
+}
+
+// /api/cron/walmart (syncCatalog). Exists because Walmart's /v3/items API has
+// NO server-side text search — finding "every SKU whose title contains X"
+// otherwise means paginating all ~5 000 items live (~20 sequential API calls,
+// 40-60 s). With this table Jackie's walmart_items_search hits the DB in a few
+// ms. Inventory WRITES still go straight to Walmart in real time; only the
+// name→SKU lookup is served from this cache.
+model WalmartCatalogItem {
+  id         String @id @default(cuid())
+  storeIndex Int    @default(1)
+
+  sku             String
+  itemId          String? // Walmart wpid / itemId
+  title           String?
+  lifecycleStatus String? // ACTIVE | RETIRED | TROUBLED_LISTING | ...
+  publishedStatus String? // PUBLISHED | UNPUBLISHED | STAGE | ...
+
+  // Stamped with the start time of each sync pass. After a pass finishes,
+  // rows whose syncedAt is older than that pass are deleted (they left the
+  // catalog). A mid-sync failure therefore prunes nothing — no data loss.
+  syncedAt DateTime @default(now())
+
+  // Walmart Marketplace API doesn't expose product images and scraping the
+  // public product page from datacenter IPs hits Walmart's bot-wall captcha.
+  // So we pull images from Veeqo (which already mirrors our full catalog and
+  // serves thumbnails via its own CDN). Looked up lazily on first use via
+  // /products?query={sku} and cached here. Refreshed when older than 7 days.
+  mainImageUrl       String?
+  mainImageFetchedAt DateTime?
+
+  // One row per (account, SKU). Re-sync upserts onto this key.
+  @@unique([storeIndex, sku], name: "walmart_catalog_item_dedup")
+  @@index([storeIndex, publishedStatus])
+}
+
+// ─── Walmart Growth: Listing Quality ───────────────────────────────────────
+// The "Grow Sales" engine. Walmart ranks listings + gates Buy Box / Pro Seller
+// off the Listing Quality Score. Both models are fed by the nightly
+// /api/cron/walmart sub-job (syncListingQuality) which calls the Insights API.
+
+// Seller-level headline + 6 component scores. One history row per sync so we
+// can chart the score climbing as we fix items (mirrors WalmartPerformanceSnapshot).
+model WalmartListingQualitySnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+  storeIndex Int      @default(1)
+
+  listingQuality       Float // overall 0-100
+  offerScore           Float?
+  ratingReviewScore    Float?
+  contentScore         Float?
+  priceScore           Float?
+  shippingScore        Float?
+  transactibilityScore Float? // "Published and in stock"
+  itemDefectCnt        Int?
+  defectRatio          Float?
+
+  rawData String
+
+  @@index([storeIndex, capturedAt])
+}
+
+// Per-SKU quality + the specific issues to fix = the worklist. Upserted on
+// (storeIndex, sku); a re-sync refreshes the row. Rows whose syncedAt predates
+// the latest pass are pruned (item left the feed) — same safe-degradation as
+// WalmartCatalogItem. We DON'T store the full raw item (4 000 rows × ~20
+// attributes is heavy); `issuesSummary` holds the distilled actionable list.
+model WalmartListingQualityItem {
+  id         String @id @default(cuid())
+  storeIndex Int    @default(1)
+
+  sku          String
+  itemId       String?
+  productId    String? // Walmart wpid
+  productName  String?
+  productType  String?
+  categoryName String?
+  condition    String?
+
+  lqScore  Float? // item overall 0-100
+  priority String? // Walmart's own fix-priority: HIGH | MEDIUM | LOW
+
+  // Component scores 0-100 (null = N/A for this item)
+  ratingReviewScore Float?
+  shippingScore     Float?
+  publishScore      Float? // "Published and in stock"
+  contentScore      Float?
+  priceScore        Float?
+  offerScore        Float?
+
+  // Structural levers / quick facts
+  isInStock             Boolean @default(false)
+  isFastAndFreeShipping Boolean @default(false)
+  wfsEnabled            Boolean @default(false)
+  ratingCount           Int?
+
+  // 30-day perf embedded in the LQ feed (lets us rank "traffic but low score")
+  pageViews30d      Int?
+  conversionRate30d Float?
+  gmv30d            Float?
+  orders30d         Int?
+  units30d          Int?
+
+  // Highest-leverage component to fix + distilled issue list (JSON LqIssue[]).
+  topFixComponent String?
+  issueCount      Int     @default(0)
+  issuesSummary   String? // JSON
+
+  scoredAt DateTime? // Walmart's updatedTimestamp for the item
+  syncedAt DateTime  @default(now())
+
+  @@unique([storeIndex, sku], name: "walmart_lq_item_dedup")
+  @@index([storeIndex, lqScore])
+  @@index([storeIndex, priority])
+  @@index([storeIndex, syncedAt])
+}
+
+// Resumable-sweep state for the Listing Quality item feed. The Insights
+// /items endpoint has a tiny rate bucket (~1 call / 12-15s sustained), so a
+// full 21-page (4 000-item) sweep can't finish inside one cron's 300s budget.
+// Instead each cron run pulls as many pages as its budget + the bucket allow,
+// saves the opaque `cursor`, and the next run resumes. Snapshot is written at
+// sweep start; stale items are pruned only when a sweep completes.
+model WalmartLqSyncState {
+  storeIndex Int @id @default(1)
+
+  // Opaque Walmart nextCursor mid-sweep; null = no sweep in progress (next
+  // run starts a fresh one).
+  cursor          String?
+  sweepStartedAt  DateTime?
+  pagesThisSweep  Int       @default(0)
+  itemsThisSweep  Int       @default(0)
+  lastFullSweepAt DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+// ─── Walmart Growth: async Insights reports (Buy Box) ───────────────────────
+// On-request reports (POST /v3/reports/reportRequests) generate async over
+// 15-45 min and the endpoint has a tiny rate bucket, so the cron drives a
+// state machine across runs: request → poll → download. One row per request.
+model WalmartReport {
+  id              String    @id @default(cuid())
+  storeIndex      Int       @default(1)
+  reportType      String // BUYBOX | ITEM_PERFORMANCE
+  requestId       String    @unique
+  // REQUESTED | INPROGRESS | READY | DOWNLOADED | ERROR
+  status          String    @default("REQUESTED")
+  requestedAt     DateTime  @default(now())
+  statusCheckedAt DateTime?
+  readyAt         DateTime?
+  downloadedAt    DateTime?
+  rowCount        Int?
+  error           String?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([storeIndex, reportType, requestedAt])
+  @@index([status])
+}
+
+// Parsed Buy Box report rows — who holds the Buy Box per SKU and the price
+// gap. This is the answer to "traffic but no sale": if isWinner=false the
+// offer that converts is someone else's. Upserted on (storeIndex, sku).
+model WalmartBuyBoxItem {
+  id              String  @id @default(cuid())
+  storeIndex      Int     @default(1)
+  sku             String
+  itemId          String?
+  productName     String?
+  productCategory String?
+
+  sellerItemPrice  Float?
+  sellerShipPrice  Float?
+  sellerTotalPrice Float?
+
+  isWinner         Boolean @default(false)
+  buyBoxItemPrice  Float?
+  buyBoxShipPrice  Float?
+  buyBoxTotalPrice Float?
+  // sellerTotal - buyBoxTotal. Positive ⇒ we're priced above the Buy Box by $X.
+  priceGap         Float?
+
+  capturedAt DateTime @default(now())
+  syncedAt   DateTime @default(now())
+
+  @@unique([storeIndex, sku], name: "walmart_buybox_dedup")
+  @@index([storeIndex, isWinner])
+  @@index([storeIndex, priceGap])
+}
+
+// Per-SKU REAL fulfillment speed, computed from our own order history
+// (WalmartOrder.rawData → orderLine shipDateTime − orderDate, business days).
+// Walmart's API gives only account-level on-time-delivery; this gives true
+// per-SKU handling so we can put genuinely-fast SKUs on a faster shipping
+// template and keep slow ones off fast promises (avoids OTD penalties).
+// Recomputed by the nightly /api/cron/walmart sub-job. Upserted on (store, sku).
+model WalmartSkuFulfillment {
+  id              String    @id @default(cuid())
+  storeIndex      Int       @default(1)
+  sku             String
+  orders          Int // # shipped order-lines observed
+  avgHandlingDays Float // avg business days order → actual ship
+  minHandlingDays Int
+  maxHandlingDays Int
+  classification  String // FAST (<=1) | MEDIUM (<=2) | SLOW (>2)
+  carriers        String? // comma-separated carriers seen
+  lastOrderAt     DateTime?
+  computedAt      DateTime  @default(now())
+
+  @@unique([storeIndex, sku], name: "walmart_sku_fulfillment_dedup")
+  @@index([storeIndex, classification])
+  @@index([storeIndex, avgHandlingDays])
+}
+
+// ─── Amazon Growth (Listing Health) ─────────────────────────────────────────
+// Amazon has NO native Listing Quality Score (unlike Walmart Insights), so we
+// COMPUTE our own "Listing Health Score" (0-100) from several real SP-API
+// signals: Listings Items issues + status, FYP suppressed-listings report,
+// Sales & Traffic conversion, Catalog content, and our compliance gate.
+// Design doc: docs/wiki/amazon-growth-roadmap.md. Mirrors the Walmart Grow
+// data-mirror pattern (snapshot history + per-SKU worklist + resumable sweep).
+model AmazonListingHealthSnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+  storeIndex Int      @default(1)
+
+  // Seller-level rollup of the computed health score + component averages.
+  healthScore     Float // overall 0-100 (catalog avg)
+  buyabilityScore Float?
+  issuesScore     Float?
+  contentScore    Float?
+  complianceScore Float?
+  buyBoxScore     Float?
+  conversionScore Float?
+
+  totalListings     Int
+  suppressedCount   Int @default(0)
+  errorIssueCount   Int @default(0)
+  warningIssueCount Int @default(0)
+
+  rawData String?
+
+  @@index([storeIndex, capturedAt])
+}
+
+// Per-SKU computed health + the specific issues to fix = the worklist.
+// Upserted on (storeIndex, sku); a re-sync refreshes the row. Rows whose
+// syncedAt predates the latest sweep are pruned. `issuesSummary` holds the
+// distilled actionable issue list (JSON), not the full raw item.
+model AmazonListingHealthItem {
+  id         String @id @default(cuid())
+  storeIndex Int    @default(1)
+
+  sku           String
+  asin          String?
+  productType   String?
+  itemName      String?
+  conditionType String?
+  mainImageUrl  String?
+
+  healthScore     Float? // item overall 0-100 (computed)
+  // buyability | issues | content | compliance | buyBox | conversion
+  topFixComponent String?
+
+  // Component scores 0-100 (null = N/A / not yet enriched for this item)
+  buyabilityScore Float?
+  issuesScore     Float?
+  contentScore    Float?
+  complianceScore Float?
+  buyBoxScore     Float?
+  conversionScore Float?
+
+  // Status / structural facts (from Listings Items summaries)
+  isBuyable            Boolean @default(false)
+  isDiscoverable       Boolean @default(false)
+  isSuppressed         Boolean @default(false) // search-suppressed (FYP / not discoverable)
+  fulfillmentAvailable Boolean @default(false)
+
+  // Issues (from Listings Items issues[])
+  errorIssueCount   Int     @default(0)
+  warningIssueCount Int     @default(0)
+  issuesSummary     String? // JSON distilled issue list
+
+  // Featured Offer / Buy Box (Pricing API — Phase B)
+  hasFeaturedOffer Boolean @default(false)
+  buyBoxWinner     Boolean @default(false)
+  priceGap         Float?
+
+  // Conversion / productivity (Sales & Traffic report — Phase B)
+  sessions30d      Int?
+  pageViews30d     Int?
+  unitsOrdered30d  Int?
+  buyBoxPercentage Float?
+  unitSessionPct   Float? // conversion % (units / sessions)
+  revenue30d       Float? // orderedProductSales — $ at risk/earned
+
+  // Returns (refund/return data)
+  returns30d Int?
+  returnRate Float? // returns / unitsOrdered
+
+  // Funnel from Brand Analytics Search Query Performance (keyword-level → ASIN).
+  // Impressions → clicks (CTR) → cart-adds (rate) → purchases (rate). Slow async,
+  // brand-registry-gated. Null until SQP ingest populates them.
+  impressions30d Int?
+  clicks30d      Int?
+  ctr            Float? // clicks / impressions
+  cartAdds30d    Int?
+  cartAddRate    Float? // cart-adds / clicks
+  purchases30d   Int?
+  purchaseRate   Float? // purchases / clicks
+
+  // Computed sales-upside rank — what to work on FIRST to grow sales.
+  opportunityScore Float?
+
+  // Suppression detail (FYP report — Phase B)
+  suppressionReason String?
+
+  lastUpdatedAt DateTime? // listing lastUpdatedDate from Amazon
+  syncedAt      DateTime  @default(now())
+
+  @@unique([storeIndex, sku], name: "amazon_health_item_dedup")
+  @@index([storeIndex, healthScore])
+  @@index([storeIndex, isSuppressed])
+  @@index([storeIndex, syncedAt])
+  @@index([storeIndex, opportunityScore])
+}
+
+// Resumable-sweep state for the Listings Items feed. Listings API is 5 req/s,
+// ~100 pages for our ~2000 listings (fits one cron run), but we keep the
+// resumable cursor pattern for safety + consistency with Walmart. Snapshot is
+// written at sweep start; stale items pruned only on a clean sweep completion.
+model AmazonHealthSyncState {
+  storeIndex Int @id @default(1)
+
+  cursor          String? // Amazon nextToken mid-sweep; null = no sweep in progress
+  sweepStartedAt  DateTime?
+  pagesThisSweep  Int       @default(0)
+  itemsThisSweep  Int       @default(0)
+  lastFullSweepAt DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+// Async SP-API reports that enrich the health score across cron runs:
+// FYP (suppressed listings), SALES_TRAFFIC (per-ASIN conversion),
+// BRAND_ANALYTICS_SQP (search visibility — slow, >5min). State machine:
+// REQUESTED → IN_PROGRESS → DONE → (parsed into items) | ERROR. One row/request.
+model AmazonGrowthReport {
+  id              String    @id @default(cuid())
+  storeIndex      Int       @default(1)
+  reportType      String // FYP | SALES_TRAFFIC | BRAND_ANALYTICS_SQP
+  reportId        String    @unique
+  status          String    @default("REQUESTED") // REQUESTED | IN_PROGRESS | DONE | PARSED | ERROR
+  requestedAt     DateTime  @default(now())
+  statusCheckedAt DateTime?
+  doneAt          DateTime?
+  rowCount        Int?
+  error           String?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([storeIndex, reportType, requestedAt])
+  @@index([status])
+}
+
+// Impact tracking for the Optimizer (mirror of Walmart's remediation history).
+// One row per applied fix: stores the BEFORE metrics at apply time; a later
+// sweep fills the AFTER metrics so we can prove (and chart) the lift. This is
+// what closes the Grow loop — "did the fix actually improve the listing?".
+model AmazonListingRemediation {
+  id         String   @id @default(cuid())
+  storeIndex Int      @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+  runAt      DateTime @default(now())
+
+  fixKinds     String // JSON array of FixKind, e.g. ["title-scrub","dedupe-attribute"]
+  changeCount  Int     @default(0)
+  submissionId String?
+  ok           Boolean @default(true)
+
+  // BEFORE (captured at apply)
+  beforeHealthScore     Float?
+  beforeErrorCount      Int?
+  beforeComplianceScore Float?
+
+  // AFTER (filled by the next sweep that re-reads the SKU)
+  afterMeasuredAt      DateTime?
+  afterHealthScore     Float?
+  afterErrorCount      Int?
+  afterComplianceScore Float?
+
+  @@index([storeIndex, runAt])
+  @@index([storeIndex, afterMeasuredAt])
+}
+
+// Bulk remediation queue (mirror of Walmart's remediation worker). The operator
+// filters the catalog → pool of listings → "Fix all matching" enqueues them; a
+// cron worker drains the queue, applying the chosen safe fixes per listing
+// (dedupe + brand-voice scrub + derivable suppression attributes) and recording
+// the outcome. One row per (store, sku).
+model AmazonRemediationQueue {
+  id         String  @id @default(cuid())
+  storeIndex Int     @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+
+  scope  String // JSON: { dedupe, brandVoice, suppression } which fixes to attempt
+  status String @default("REQUESTED") // REQUESTED | RUNNING | DONE | SKIPPED | ERROR
+
+  changesApplied Int     @default(0)
+  result         String? // JSON summary of what was done / why skipped
+  error          String?
+
+  queuedAt    DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([storeIndex, sku], name: "amazon_remediation_queue_dedup")
+  @@index([storeIndex, status])
+  @@index([status, queuedAt])
+}
+
+// Bulk AI-advisor queue (the "stage 2" after the deterministic Optimizer).
+// Filter → pool → "Analyze & fix" enqueues here; a worker runs the LLM advisor
+// per listing, stores the diagnosis + action plan, and auto-applies the SAFE
+// executable subset (deterministic optimizer + structural unit_count/item_weight).
+// LLM = real cost, so this is operator-triggered (no cron).
+model AmazonAdvisorQueue {
+  id         String  @id @default(cuid())
+  storeIndex Int     @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+
+  status    String  @default("REQUESTED") // REQUESTED | RUNNING | DONE | SKIPPED | ERROR
+  autoApply Boolean @default(true) // apply the safe executable subset, not just analyze
+
+  // LLM advisor output
+  diagnosis       String?
+  rootCause       String?
+  expectedOutcome String?
+  confidence      String?
+  actionsJson     String? // full AdvisorAction[] (for the UI to render the plan)
+  actionsApplied  Int     @default(0) // how many actions we auto-executed
+  result          String? // human note: what was applied / why skipped
+  error           String?
+
+  queuedAt    DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([storeIndex, sku], name: "amazon_advisor_queue_dedup")
+  @@index([storeIndex, status])
+  @@index([status, queuedAt])
+}
+
+// Change log / audit trail — EVERY write we make to an Amazon listing lands one
+// row here, regardless of which path made it (optimizer, advisor, bulk worker).
+// Captures: what listing, what field, before→after VALUES (for rollback), when,
+// who/which source, the exact JSON-Patch sent, the BEFORE metrics (health,
+// conversion, opportunity) at write time; a later sweep fills the AFTER metrics
+// and classifies the outcome (useful / neutral / harmful). This is the
+// before/after analytics + rollback ledger, wired into the core write helper.
+model AmazonChangeLog {
+  id         String  @id @default(cuid())
+  storeIndex Int     @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+
+  source       String // optimizer | advisor | bulk | manual
+  changeType   String // attribute-set | dedupe | title-scrub | …
+  field        String? // unit_count | item_name | generic_keyword | …
+  beforeValue  String? // JSON snapshot of the field BEFORE (for rollback)
+  afterValue   String? // JSON snapshot AFTER
+  patch        String? // exact JSON-Patch ops sent
+  submissionId String?
+  amazonStatus String? // ACCEPTED
+
+  // BEFORE metrics (at write time)
+  beforeHealthScore Float?
+  beforeConversion  Float?
+  beforeOpportunity Float?
+  beforeErrorCount  Int?
+
+  // AFTER metrics (filled by a later sweep, after a measurement window)
+  afterMeasuredAt  DateTime?
+  afterHealthScore Float?
+  afterConversion  Float?
+  afterErrorCount  Int?
+
+  outcome String? // useful | neutral | harmful
+
+  // Diff-in-diff lift (Phase 1): control-adjusted, from daily history. Honest
+  // measure of whether the change actually moved sales vs an unchanged control.
+  didMeasuredAt    DateTime?
+  didConfidence    String? // insufficient | low | medium | high
+  didLiftConvPp    Float? // conversion lift in percentage points (DiD)
+  didLiftRevPerDay Float? // revenue/day lift in $ (DiD)
+  didControlN      Int? // size of the matched control group
+
+  rolledBack   Boolean   @default(false)
+  rolledBackAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([storeIndex, createdAt])
+  @@index([storeIndex, sku])
+  @@index([outcome])
+  @@index([afterMeasuredAt])
+}
+
+// ── Experiment engine, Phase 0: data backbone ──
+
+// Per-ASIN per-DAY funnel history (Sales & Traffic, one 1-day report/day + the
+// ~2yr backfill). The raw material for trends, MoM/YoY, and — critically — the
+// pre/post + control-group diff-in-diff that makes lift measurement honest.
+model AmazonAsinDaily {
+  id         String   @id @default(cuid())
+  storeIndex Int      @default(1)
+  asin       String
+  date       DateTime // the calendar day (UTC midnight) this row covers
+
+  sessions            Int?
+  pageViews           Int?
+  unitsOrdered        Int?
+  totalOrderItems     Int?
+  orderedProductSales Float?
+  featuredOfferPct    Float? // ≈ buy-box %
+  unitSessionPct      Float? // conversion
+  avgSellingPrice     Float?
+
+  syncedAt DateTime @default(now())
+
+  @@unique([storeIndex, asin, date], name: "amazon_asin_daily_dedup")
+  @@index([storeIndex, asin])
+  @@index([storeIndex, date])
+}
+
+// Versioned content+config snapshot of a listing over time (title/bullets/images/
+// price + the funnel at that moment). Enables diff-in-diff baselines and recovery
+// of lost winners. We only write a new row when the content hash changes.
+model AmazonListingSnapshot {
+  id         String   @id @default(cuid())
+  storeIndex Int      @default(1)
+  sku        String
+  asin       String?
+  capturedAt DateTime @default(now())
+  source     String   @default("cron") // cron | pre-change | manual | backfill
+
+  brand          String?
+  productType    String?
+  title          String?
+  bulletsJson    String? // JSON string[]
+  description    String?
+  mainImageUrl   String?
+  imageCount     Int?
+  price          Float?
+  attributesJson String? // JSON of the full attributes blob (for exact restore)
+  contentHash    String // hash of the content fields — skip writing if unchanged
+
+  // Funnel at capture time (for "was selling well" judgement).
+  sessions30d    Int?
+  unitSessionPct Float?
+  revenue30d     Float?
+  healthScore    Float?
+
+  @@index([storeIndex, sku, capturedAt])
+  @@index([storeIndex, asin])
+}
+
+// A+ Content Factory job — one generated A+ document for one own-brand listing,
+// through its lifecycle: generate → qualification gate → human approve → publish.
+// Nothing publishes without status reaching APPROVED via the operator.
+model AmazonAplusJob {
+  id         String  @id @default(cuid())
+  storeIndex Int     @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+
+  // DRAFT (created) | GENERATED (LLM produced doc) | NEEDS_FIX (gate failed) |
+  // PENDING_APPROVAL | APPROVED | SUBMITTED (sent to Amazon) | PUBLISHED | REJECTED | FAILED
+  status  String  @default("DRAFT")
+  variant String  @default("A") // for A/B: A or B
+  concept String? // ownfood | cooler | coldpack | supplement | giftbasket (drives the template)
+
+  documentName      String?
+  contentJson       String? // the full A+ contentDocument JSON (modules, text, image refs)
+  imagePlanJson     String? // per-module image briefs + generated asset URLs (R2)
+  qualificationJson String? // gate result: { pass, violations[] }
+  qualified         Boolean @default(false)
+  comments          String? // operator's per-module comments / notes
+  progressJson      String? // live generation progress: { phase, done, total, label } — polled by the UI
+
+  contentReferenceKey String? // Amazon key after create
+  submissionId        String?
+  amazonStatus        String?
+  error               String?
+
+  // A/B + impact (measured later via diff-in-diff on the daily funnel)
+  beforeConversion Float?
+  afterConversion  Float?
+  measuredAt       DateTime?
+
+  createdAt   DateTime  @default(now())
+  generatedAt DateTime?
+  approvedAt  DateTime?
+  publishedAt DateTime?
+
+  @@unique([storeIndex, sku, variant], name: "amazon_aplus_job_dedup")
+  @@index([storeIndex, status])
+  @@index([storeIndex, asin])
+}
+
+// ─── Account Health v2: Critical Alerts ────────────────────────────────────
+// Generated by src/lib/account-health/critical-alert-evaluator.ts whenever
+// a fresh snapshot breaches a threshold defined in alert-rules.ts. Each row
+// is one detected breach — UI lists them as a bell-icon feed, and Telegram
+// delivery is tracked here too.
+model CriticalAlert {
+  id      String @id @default(cuid())
+  storeId String
+
+  channel   String // Amazon | Walmart
+  alertType String // metric name from alert-rules.ts
+  severity  String // CRITICAL | HIGH | WARNING
+
+  metricName      String
+  metricValue     String
+  metricThreshold String
+
+  title     String
+  message   String
+  actionUrl String?
+
+  detectedAt DateTime @default(now())
+
+  // Telegram delivery
+  telegramSent      Boolean   @default(false)
+  telegramSentAt    DateTime?
+  telegramMessageId String?
+
+  // UI acknowledgment
+  acknowledged   Boolean   @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+
+  // Resolution
+  resolvedAt DateTime?
+
+  @@index([storeId])
+  @@index([acknowledged])
+  @@index([detectedAt])
+  @@index([severity])
+}
+
+// Procurement: where to buy each SKU (store priority).
+// Populated/edited in later phases — Phase 1 only declares the schema.
+model SKUStorePriority {
+  id        String   @id @default(cuid())
+  sku       String
+  storeName String
+  priority  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sku, storeName])
+  @@index([sku])
+}
+
+// Procurement: action queue for offline mode (Phase 6).
+model ProcurementSyncQueue {
+  id           String    @id @default(cuid())
+  lineItemId   String
+  orderId      String
+  action       String
+  payload      Json
+  status       String    @default("pending")
+  createdAt    DateTime  @default(now())
+  syncedAt     DateTime?
+  errorMessage String?
+
+  @@index([status])
+}
+
+// Procurement: log of priority-order notifications (Phase 7).
+model ProcurementNotificationLog {
+  id         String   @id @default(cuid())
+  orderId    String   @unique
+  notifiedAt DateTime @default(now())
+
+  @@index([notifiedAt])
+}
+
+// Packing profile for multi-item / multi-qty orders. The default Shipping
+// Labels algorithm looks up box+weight in SkuShippingData by SKU, which only
+// works for single-line, single-quantity orders. When an order contains
+// multiple lines (or qty > 1) we need an explicit profile. This table is
+// populated by the operator the first time such an order appears; subsequent
+// orders with the same composition (same SKUs + quantities) reuse it
+// automatically.
+model PackingProfile {
+  id String @id @default(cuid())
+
+  // Deterministic signature of the composition:
+  // "SKU1:QTY1|SKU2:QTY2|..." sorted lexicographically by SKU.
+  // Example: "T4-Y0G0-ZHII:2|XM-A131-UXNC:1".
+  signature   String  @unique
+  description String?
+
+  boxSize     String
+  weight      Float // lbs, UPS/USPS/FedEx standard
+  weightFedex Float? // lbs, FedEx One Rate (falls back to weight × 1.25 when null)
+
+  itemCount  Int       @default(1)
+  totalQty   Int       @default(1)
+  usedCount  Int       @default(0)
+  lastUsedAt DateTime?
+
+  // Phase 2 hook: semantic-similarity matching across "looks like" orders.
+  // Stored as JSON-encoded float array. Not consumed today.
+  productEmbedding String?
+
+  source    String   @default("manual") // "manual" | "ai_suggested"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([signature])
+}
+
+// SKU Shipping Database — replaces the Google Sheets "SKU Shipping Database
+// v2" that the Shipping Labels module used to read. Migrated 2026-05-12.
+// Source of truth for: weight, dimensions, category (Frozen/Dry), and the
+// special FedEx One Rate weight (which is intentionally separate from the
+// regular weight because One Rate billable weight ≈ H × 1.25).
+// See docs/wiki/sku-database-migration.md for the migration story.
+model SkuShippingData {
+  id              String   @id @default(cuid())
+  sku             String   @unique
+  productTitle    String?
+  marketplace     String? // Amazon | Walmart | Both | Other
+  category        String? // Frozen | Dry
+  length          Float? // inches
+  width           Float? // inches
+  height          Float? // inches
+  weight          Float? // lbs — UPS / USPS / FedEx standard
+  weightFedex     Float? // lbs — FedEx One Rate only
+  sampleCount     Int      @default(0)
+  notes           String?
+  // Manufacturer UPC/GTIN pulled from our OWN marketplace listing (Stage 0b of
+  // the COGS sourcing engine). For straight-resale items this IS the real retail
+  // barcode → exact match at Walmart/Target. For our own Salutem/Starfit bundles
+  // it's an assigned UPCPool code with no retail equivalent (decompose instead).
+  upc             String? // 12/13/14-digit identifier as a string (keep leading zeros)
+  upcSource       String? // amazon_listing_report | walmart_item | manual
+  // Vision-identified product structure (scripts/cogs-identify.ts): the engine
+  // reads the listing photo+title and resolves the EXACT product + how many
+  // procurement base units are in this listing (handles packs / variety bundles).
+  productIdentity String? // JSON: {brand,size,container,units_in_listing,components,base_unit,...}
+  unitsInListing  Int? // total procurement base units in this listing
+  baseUnitDesc    String? // one shelf unit (drives the retail price lookup)
+  // Provenance: google_sheets_migration | manual | veeqo_history
+  source          String   @default("manual")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// SkuCost — dated true-cost history per SKU (COGS unit-economics engine).
+// One SKU can have MANY rows (cost periods over time, like Sellerboard's
+// CostPeriodStartDate), so there is no unique constraint on sku alone.
+// Costs are stored SEPARATELY (product / packaging / ice) so we can see where
+// to improve — Sellerboard's frozen number bundles all three, so for frozen we
+// source the bare product cost ourselves and compute packaging+ice here.
+// See docs/wiki/cogs-true-cost-agent.md + product-sourcing-engine-build-plan.md.
+model SkuCost {
+  id   String  @id @default(cuid())
+  sku  String
+  asin String? // Amazon match key when present
+
+  effectiveDate String? // ISO date the cost took effect (Sellerboard CostPeriodStartDate / sourcing date)
+
+  productCost   Float? // bare product cost (from retail / Sellerboard for dry)
+  packagingCost Float? // cooler cost (frozen only) — separate so it's visible
+  iceCost       Float? // gel-ice cost (frozen only): 0.8 × productWeightLb × $0.10
+  totalCost     Float? // productCost + packagingCost + iceCost (or Sellerboard total)
+  costPerUnit   Float? // totalCost / packSize
+  packSize      Int? // units per listing (pack of N)
+
+  // True when the source already includes packaging+ice (e.g. Sellerboard frozen)
+  // — guards against double-counting when we add our own packaging math.
+  includesPackaging Boolean @default(false)
+  currency          String  @default("USD")
+
+  // sellerboard | bluecart | unwrangle | scrapehero | decodo | manual | agent
+  source      String
+  confidence  Float? // 1.0 = exact UPC match; <1 = fuzzy/LLM match
+  needsReview Boolean @default(false)
+  notes       String?
+
+  // Reproducibility of the recipe/evidence used for this effective period.
+  observationKey     String? @unique // idempotent immutable evidence fingerprint
+  recipeHash         String?
+  evidenceJson       String?
+  evidenceOutcome    String? // FACT | ESTIMATE | UNSOURCEABLE (required for retail:batch)
+  matcherVersion     String?
+  matcherImplementationSha256 String?
+  matcherReleaseSha256        String?
+  pricePolicyVersion String?
+  runId              String?
+  approvalId         String?
+
+  componentEvidence SkuComponentEvidence[]
+  listingScopeLink  SkuCostListingScopeLink?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Multiple immutable observations may describe the same business period;
+  // observationKey, not the period, is the idempotency boundary.
+  @@index([sku, source, effectiveDate], map: "SkuCost_period_lookup_idx")
+  @@index([sku])
+  @@index([asin])
+  @@index([source])
+}
+
+// Immutable canonical marketplace listing registry. Rows are admitted only
+// from a checksummed authoritative Phase 1 manifest; raw-SKU legacy tables and
+// historical costs are never guessed/backfilled into this registry.
+model ProductTruthListingScope {
+  listingKey            String   @id
+  keyVersion            String
+  channel               String
+  storeIndex            Int
+  sku                   String
+  registrationKind      String
+  manifestSchemaVersion String
+  manifestSha256        String
+  manifestAsOf          DateTime
+  ownerDecisionId       String
+  sourceReportId        String
+  sourceContentSha256   String
+  sourceCapturedAt      DateTime
+  createdAt             DateTime @default(now())
+
+  costLinks      SkuCostListingScopeLink[]
+  enrichmentJobs EnrichmentJob[]
+  operationalItems ProductTruthOperationalRunItem[]
+
+  @@unique([channel, storeIndex, sku], map: "ProductTruthListingScope_channel_store_sku_key")
+  @@index([manifestSha256, listingKey], map: "ProductTruthListingScope_manifest_idx")
+}
+
+// One append-only retail:batch cost observation belongs to one exact listing
+// scope. The migration seals this child-first link atomically with SkuCost.
+model SkuCostListingScopeLink {
+  skuCostId   String   @id
+  listingKey  String
+  linkVersion String
+  createdAt   DateTime @default(now())
+
+  skuCost      SkuCost                  @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  listingScope ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([listingKey, skuCostId], map: "SkuCostListingScopeLink_listing_cost_idx")
+}
+
+// SkuComponent — the STRUCTURAL bill-of-materials behind one of our listings.
+// A plain product => 1 row (itself). A bundle / gift-set / variety pack => N rows,
+// one per DISTINCT component (decomposed from photos + description by identify.ts).
+// Each row carries the resolved per-unit cost + HOW we got it (costMethod) + a link
+// into DonorProduct for the harvested full content (photos / description / nutrition
+// / UPC). SkuCost stores the ROLL-UP total per SKU; SkuComponent stores the parts.
+// One catalog, three jobs: economics (SUM lineCost), NEW listings (reuse component
+// content), IMPROVE listings (pull donor photos/nutrition per component).
+model SkuComponent {
+  id      String  @id @default(cuid())
+  sku     String
+  channel String? // walmart | amazon
+  idx     Int     @default(0) // component order within the listing
+
+  product String // component product name, e.g. "Hormel Chili No Beans"
+  flavor  String?
+  size    String?
+  qty     Int     @default(1) // how many of this component per listing
+
+  perUnitCost Float? // resolved cost for ONE of this component
+  lineCost    Float? // perUnitCost * qty (this component's contribution to COGS)
+  currency    String @default("USD")
+
+  // Provenance of the price:
+  //   exact       — clean 1P direct match at the retailer
+  //   line-price  — same-brand + same-size sibling (variety line, ±cents)
+  //   google      — Google Shopping market estimate (universal fallback)
+  //   own-brand   — our own product, manual landed cost (own-brand-costs.ts)
+  //   none        — no price found (flagged for review)
+  costMethod   String?
+  retailer     String? // walmart | target | samsclub | costco | google | own-brand
+  matchedTitle String? // the donor/offer title we priced off
+
+  donorProductId              String? // DEPRECATED exact-only content link during migration
+  contentDonorProductId       String? // exact identity only
+  priceEvidenceDonorProductId String? // exact or typed price proxy
+  priceEvidenceOfferId        String?
+  priceEvidenceObservationId  String? // immutable DonorOfferObservation evidence
+  matchTier                   String? // EXACT_IDENTITY | CROSS_SIZE_ESTIMATE | ...
+  matcherVersion              String?
+  priceEvidenceStatus         String? // FACT | ESTIMATE | REJECT
+  pricePolicyVersion          String?
+  priceEvidenceJson           String?
+  isBundleComponent           Boolean @default(false) // true when part of a decomposed bundle
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sku, idx], name: "sku_component_idx")
+  @@index([sku])
+  @@index([donorProductId])
+  @@index([contentDonorProductId])
+  @@index([priceEvidenceDonorProductId])
+  @@index([priceEvidenceOfferId])
+  @@index([priceEvidenceObservationId])
+}
+
+// CatalogSnapshot — one hourly capture of catalog / COGS / enrichment progress.
+// The time-series behind the Catalog Status dashboard: how coverage, enrichment,
+// and quality move as the background crons grind through the catalog.
+model CatalogSnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+
+  walmartTotal     Int @default(0) // all mirror rows
+  walmartPublished Int @default(0) // publishedStatus=PUBLISHED
+
+  costedTotal     Int @default(0) // SkuCost source=retail:batch
+  costedPublished Int @default(0) // published Walmart SKUs that have a cost (coverage numerator)
+  needsReview     Int @default(0) // costed but soft (google/low-confidence)
+  ownBrand        Int @default(0) // costed via own-brand tier
+  exact           Int @default(0) // via clean 1P
+  linePrice       Int @default(0) // via line-price sibling
+  google          Int @default(0) // via Google Shopping estimate
+
+  donorProducts Int @default(0) // Reference/Donor catalog size
+  donorOffers   Int @default(0) // price points across retailers
+  withBom       Int @default(0) // SKUs with a SkuComponent bill-of-materials
+
+  @@index([capturedAt])
+}
+
+// RetailPrice — raw price/content findings from the retail sourcing engine
+// (Jackie's external services: BlueCart/Unwrangle/ScrapeHero/Decodo/SerpApi).
+// One row per (retailer, retailer_product_id). `isBaseUnit` distinguishes the
+// real single-unit shelf product from a multipack listing (the UPC-trap): only
+// base-unit rows feed COGS. Mirrors the agreed Jackie write-back payload.
+model RetailPrice {
+  id                String  @id @default(cuid())
+  sku               String? // our internal SKU when resolved
+  upc               String?
+  retailer          String // walmart | target | costco | sams | bjs | publix | aldi
+  retailerProductId String // item_id / TCIN / url-slug — cached forever
+
+  price       Float?
+  currency    String   @default("USD")
+  inStock     Boolean?
+  productUrl  String?
+  title       String?
+  description String?
+  keyFeatures String? // JSON array
+  imageUrls   String? // JSON array
+  zip         String? // required for bjs/publix/aldi (regional pricing)
+
+  packSizeSeen Int? // units in the matched listing (>1 = multipack)
+  isBaseUnit   Boolean? // true = single shelf unit (usable for COGS)
+  unitMismatch Boolean  @default(false) // matched a multipack, not the base unit
+
+  sourceApi   String? // bluecart | unwrangle | decodo | scrapehero | serpapi
+  matchMethod String? // upc | title | upc_rejected_multipack | llm | manual
+  confidence  Float? // 1.0 exact, <1 fuzzy
+  fetchedAt   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([retailer, retailerProductId], name: "retail_price_dedup")
+  @@index([sku])
+  @@index([upc])
+}
+
+// ─── Reference Catalog (Donor DB) — product-centric knowledge base ─────────
+// DonorProduct is a retailer/source product record, not the cross-retailer
+// identity itself. Exact source records map through an immutable decision to
+// CanonicalProductVariant, so one real variant can have many retailer sources.
+// Consumers reuse that channel-independent variant for COGS, procurement,
+// listing improvement, Bundle Factory, and new listings.
+model DonorProduct {
+  id String @id @default(cuid())
+
+  // Identity (from the vision/identify brain + retailer data)
+  brand         String?
+  productLine   String?
+  flavor        String?
+  containerType String? // can | cup | pouch | bag | box | jar | bottle | tray | loaf
+  size          String? // human-readable, e.g. "15 oz", "10 count"
+  unitMeasure   String? // normalized measure: oz | floz | count | lb
+  unitAmount    Float? // normalized amount, e.g. 15 (for "15 oz") — for price-per-measure
+  category      String? // Dry | Frozen | Refrigerated (from our DB when matched)
+
+  upc  String? // real manufacturer barcode when known
+  gtin String?
+
+  // Full harvested content (reused for listing improvement + new listings)
+  title          String?
+  description    String?
+  bullets        String? // JSON array
+  attributes     String? // JSON object
+  nutritionFacts String? // JSON or text
+  ingredients    String?
+  mainImageUrl   String? // front photo shown in the Reference Catalog table
+  imageUrls      String? // JSON array (≥5: main, ingredients, nutrition label, infographic)
+
+  // Best-cost rollup (denormalized from DonorOffer for fast catalog display)
+  bestPrice       Float? // cheapest clean first-party DIRECT per-unit price
+  bestRetailer    String?
+  pricePerMeasure Float? // bestPrice / unitAmount → $/oz (compare retail vs wholesale)
+  currency        String  @default("USD")
+
+  // Dedup key: normalized brand+line+size+container so 1 real product = 1 row.
+  identityKey            String    @unique
+  identityStatus         String    @default("legacy_unverified") // candidate | exact_confirmed | legacy_unverified | rejected
+  identityMatcherVersion String?
+  identityMatcherImplementationSha256 String?
+  identityMatcherReleaseSha256        String?
+  identityEvidenceJson   String?
+  identityConfirmedAt    DateTime?
+  confidence             Float? // identify confidence
+  needsReview            Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers              DonorOffer[]
+  harvestStates       DonorHarvestState[]
+  offerObservations   DonorOfferObservation[]
+  variantDecisions    DonorProductVariantDecision[]
+  contentObservations ProductContentObservation[]
+
+  @@index([brand])
+  @@index([category])
+  @@index([bestPrice])
+  @@index([identityStatus])
+}
+
+// Immutable channel-independent identity of one sellable package/variant.
+// `variantKey` is derived by canonical-product-variant.ts from normalized
+// identity; retailer source rows never manufacture their own cross-source key.
+model CanonicalProductVariant {
+  id                      String   @id
+  variantKey              String   @unique
+  identityHash            String   @unique
+  keyVersion              String
+  normalizedBrand         String
+  normalizedProductLine   String?
+  normalizedFlavor        String?
+  normalizedModifiersJson String   @default("[]")
+  normalizedForm          String?
+  sizeDimension           String
+  sizeBaseAmount          Float
+  sizeBaseUnit            String
+  outerPackCount          Int      @default(1)
+  identityJson            String
+  createdAt               DateTime @default(now())
+
+  sourceDecisions          DonorProductVariantDecision[]
+  contentObservations      ProductContentObservation[]
+  offerObservations        DonorOfferObservation[]
+  targetComponentEvidence  SkuComponentEvidence[]        @relation("SkuComponentEvidenceTargetVariant")
+  contentComponentEvidence SkuComponentEvidence[]        @relation("SkuComponentEvidenceContentVariant")
+  priceComponentEvidence   SkuComponentEvidence[]        @relation("SkuComponentEvidencePriceVariant")
+
+  @@index([normalizedBrand, normalizedProductLine])
+}
+
+// Append-only matcher decisions. The migration enforces a partial unique index
+// allowing at most one exact_confirmed canonical variant per DonorProduct.
+model DonorProductVariantDecision {
+  id                 String                   @id
+  decisionKey        String                   @unique
+  donorProductId     String
+  donorProduct       DonorProduct             @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String?
+  canonicalVariant   CanonicalProductVariant? @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  decisionStatus     String
+  matcherVersion     String
+  matcherImplementationSha256 String
+  matcherReleaseSha256        String
+  evidenceHash       String
+  evidenceJson       String
+  decidedAt          DateTime
+  runId              String?
+  approvalId         String?
+  createdAt          DateTime                 @default(now())
+
+  contentObservations ProductContentObservation[]
+  offerObservations   DonorOfferObservation[]
+
+  @@index([canonicalVariantId, decisionStatus])
+  @@index([donorProductId, decidedAt])
+}
+
+// Immutable full-content snapshot from one exact retailer source record.
+model ProductContentObservation {
+  id                 String                      @id
+  observationKey     String                      @unique
+  donorProductId     String
+  donorProduct       DonorProduct                @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String
+  canonicalVariant   CanonicalProductVariant     @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  variantDecisionId  String
+  variantDecision    DonorProductVariantDecision @relation(fields: [variantDecisionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sourceUrl          String
+  sourceApi          String
+  contentHash        String
+  fieldHashesJson    String
+  contentJson        String
+  observedAt         DateTime
+  runId              String?
+  approvalId         String?
+  meteredReceiptId   String?
+  createdAt          DateTime                    @default(now())
+
+  componentEvidence SkuComponentEvidence[]
+
+  @@index([canonicalVariantId, observedAt])
+  @@index([donorProductId, observedAt])
+}
+
+// DonorOffer — one price per retailer for a DonorProduct. Idempotent on
+// (retailer, retailerProductId). `via` flags Instacart (≈ +15% markup vs direct),
+// `isFirstParty` gates resellers out of the procurement cost.
+model DonorOffer {
+  id             String       @id @default(cuid())
+  donorProductId String
+  donorProduct   DonorProduct @relation(fields: [donorProductId], references: [id], onDelete: Cascade)
+
+  retailer          String // walmart | target | samsclub | costco | bjs | publix | aldi | winndixie | bravo | amazon
+  retailerProductId String // item_id / TCIN / url-slug — cached forever
+  via               String @default("direct") // direct | instacart (instacart ≈ +15% markup)
+
+  price            Float? // price of the matched listing
+  packSizeSeen     Int? // units in the matched listing (>1 = multipack)
+  pricePerUnit     Float? // price / packSizeSeen — per base-unit cost
+  currency         String   @default("USD")
+  zip              String? // regional pricing (required for bjs/publix/aldi)
+  localityEvidence String? // zip_scoped | store_scoped | national_unscoped
+  inStock          Boolean?
+
+  productUrl   String?
+  sellerName   String?
+  isFirstParty Boolean @default(false) // true = sold by the retailer itself, not a reseller
+
+  sourceApi String? // bluecart | unwrangle | oxylabs
+  fetchedAt String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  observations DonorOfferObservation[]
+
+  @@unique([retailer, retailerProductId], name: "donor_offer_dedup")
+  @@index([donorProductId])
+  @@index([retailer])
+}
+
+// Append-only source observations. DonorOffer is the current materialized row;
+// this table preserves the price/stock/locality evidence used by historical COGS.
+model DonorOfferObservation {
+  id                 String                       @id
+  observationKey     String                       @unique
+  donorOfferId       String
+  donorOffer         DonorOffer                   @relation(fields: [donorOfferId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  donorProductId     String
+  donorProduct       DonorProduct                 @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String?
+  canonicalVariant   CanonicalProductVariant?     @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  variantDecisionId  String?
+  variantDecision    DonorProductVariantDecision? @relation(fields: [variantDecisionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  retailer          String
+  retailerProductId String
+  via               String
+  title             String?
+  price             Float?
+  packSizeSeen      Int?
+  pricePerUnit      Float?
+  currency          String   @default("USD")
+  zip               String?
+  localityEvidence  String?
+  inStock           Boolean?
+  productUrl        String?
+  sellerName        String?
+  isFirstParty      Boolean
+  sourceApi         String?
+  observedAt        DateTime
+  runId             String?
+  approvalId        String?
+  meteredReceiptId  String?
+  createdAt         DateTime @default(now())
+
+  componentEvidence SkuComponentEvidence[]
+
+  @@index([donorOfferId, observedAt])
+  @@index([donorProductId, observedAt])
+  @@index([canonicalVariantId, observedAt])
+  @@index([retailer, retailerProductId, observedAt])
+}
+
+// Authoritative append-only component evidence for one immutable SkuCost row.
+// evidenceStatus governs only the price/manual-cost axis. The optional content
+// pair is exact-target-only and may coexist with FACT, ESTIMATE, REJECT, or
+// MANUAL_FACT, so content readiness never depends on price availability.
+model SkuComponentEvidence {
+  id                        String                     @id
+  evidenceKey               String                     @unique
+  skuCostId                 String
+  skuCost                   SkuCost                    @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  componentIndex            Int
+  evidenceStatus            String // price axis: FACT | MANUAL_FACT | ESTIMATE | REJECT
+  targetCanonicalVariantId  String
+  targetCanonicalVariant    CanonicalProductVariant    @relation("SkuComponentEvidenceTargetVariant", fields: [targetCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentCanonicalVariantId String?
+  contentCanonicalVariant   CanonicalProductVariant?   @relation("SkuComponentEvidenceContentVariant", fields: [contentCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceCanonicalVariantId   String?
+  priceCanonicalVariant     CanonicalProductVariant?   @relation("SkuComponentEvidencePriceVariant", fields: [priceCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentObservationId      String?
+  contentObservation        ProductContentObservation? @relation(fields: [contentObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceObservationId        String?
+  priceObservation          DonorOfferObservation?     @relation(fields: [priceObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  matchTier                 String
+  matcherVersion            String
+  matcherImplementationSha256 String
+  matcherReleaseSha256        String
+  pricePolicyVersion        String
+  evidenceHash              String
+  evidenceJson              String
+  createdAt                 DateTime                   @default(now())
+
+  @@unique([skuCostId, componentIndex])
+  @@index([targetCanonicalVariantId, evidenceStatus])
+  @@index([contentObservationId])
+  @@index([priceObservationId])
+}
+
+// Distributed owner-approved hard caps for paid Product Truth providers.
+// Safety triggers and immutable transition rules live in migration
+// 20260719000000_metered_budget_ledger and are intentionally stricter than the
+// application model below.
+model MeteredProviderBudget {
+  id                  String   @id
+  permitVersion       Int
+  runId               String
+  approvalId          String
+  approvedBy          String
+  provider            String
+  issuedAt            DateTime
+  expiresAt           DateTime
+  operations          String
+  maxCalls            Int
+  maxUnitsMicros      BigInt?
+  reservedCalls       Int      @default(0)
+  reservedUnitsMicros BigInt   @default(0)
+  createdAt           DateTime
+  updatedAt           DateTime
+
+  receipts MeteredReservationReceipt[]
+
+  @@unique([runId, provider], map: "MeteredProviderBudget_run_provider_key")
+  @@index([approvalId, expiresAt], map: "MeteredProviderBudget_approval_idx")
+}
+
+model MeteredReservationReceipt {
+  id             String                @id
+  budgetId       String
+  budget         MeteredProviderBudget @relation(fields: [budgetId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reservationKey String
+  operation      String
+  unitsMicros    BigInt
+  status         String
+  failureCode    String?
+  createdAt      DateTime
+  reservedAt     DateTime?
+  settledAt      DateTime?
+  updatedAt      DateTime
+
+  settlement MeteredReservationSettlement?
+
+  @@unique([budgetId, reservationKey], map: "MeteredReservationReceipt_budget_key")
+  @@index([budgetId, status, createdAt], map: "MeteredReservationReceipt_budget_status_idx")
+}
+
+model MeteredReservationSettlement {
+  id            String                    @id
+  reservationId String                    @unique(map: "MeteredReservationSettlement_reservation_key")
+  reservation   MeteredReservationReceipt @relation(fields: [reservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  outcome       String
+  detail        String?
+  settledAt     DateTime
+}
+
+// Bounded content-harvest lifecycle for one concrete donor/source/item.
+// Scheduler claims and budget denials do not count as source attempts; workers
+// claim with version-based CAS and never select terminal rows again.
+model DonorHarvestState {
+  id String @id
+
+  donorProductId    String
+  donorProduct      DonorProduct @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  source            String
+  retailerProductId String
+
+  status            String @default("pending")
+  requestedFields   String
+  completedFields   String @default("[]")
+  unavailableFields String @default("[]")
+
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  nextEligibleAt  DateTime?
+  terminalReason  String?
+  lastError       String?
+  lastBlockReason String?
+
+  runId                  String?
+  approvalId             String?
+  leaseOwner             String?
+  leaseToken             String?
+  leaseExpiresAt         DateTime?
+  claimedAt              DateTime?
+  sourceAttemptStartedAt DateTime?
+  finishedAt             DateTime?
+
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([donorProductId, source, retailerProductId], name: "DonorHarvestState_identity_key")
+  @@index([status, nextEligibleAt, attempts])
+  @@index([status, leaseExpiresAt])
+  @@index([runId])
+}
+
+// EnrichmentJob — the Reference Catalog work queue. Drained by a Vercel-cron
+// worker (same pattern as WalmartRemediationQueue). Producers: cron (auto),
+// the manual "vector" button on the Reference Catalog page, and Bundle Factory.
+model EnrichmentJob {
+  id String @id @default(cuid())
+
+  targetType       String // brand | product | sku | query
+  target           String // "Jimmy Dean" | "Uncrustables" | a sku | a search query
+  normalizedTarget String?
+  // Required for targetType=sku by the queue-v3 DB contract; forbidden for
+  // channel-independent brand/product/query work.
+  listingKey       String?
+  listingScope     ProductTruthListingScope? @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  idempotencyKey   String?
+  requestedFields  String                    @default("[]") // canonical sorted JSON array
+
+  status      String  @default("queued") // queued | running | retry_wait | partial | source_unavailable | done | error | cancelled
+  source      String  @default("manual") // cron | manual | bundle-factory
+  priority    Int     @default(0)
+  requestedBy String?
+
+  runId      String?
+  approvalId String?
+
+  estimatedSpendUnits Float @default(0)
+  actualSpendUnits    Float @default(0)
+
+  attempts          Int     @default(0)
+  providerAttempts  String? // JSON object keyed by provider/operation
+  result            String? // JSON: { productsFound, offersFound, ... }
+  error             String?
+  terminalReason    String?
+  completedFields   String? // JSON array
+  unavailableFields String? // JSON array
+  checkpoint        String? // JSON provider receipt / resumable state
+
+  nextEligibleAt DateTime?
+  leaseOwner     String?
+  leaseToken     String?
+  leaseExpiresAt DateTime?
+  heartbeatAt    DateTime?
+
+  queuedAt   DateTime  @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  operationalRunItem ProductTruthOperationalRunItem?
+
+  @@index([status, queuedAt])
+  @@index([status, nextEligibleAt])
+  @@index([leaseExpiresAt])
+  @@index([idempotencyKey])
+  @@index([listingKey, status], map: "EnrichmentJob_listing_scope_status_idx")
+  @@index([targetType, target])
+}
+
+// Sealed, owner-approved execution journal for the Product Truth runner.
+// Cross-table transition, lease, budget, and append-only event-chain rules are
+// enforced by 20260719004000_product_truth_operational_run.
+model ProductTruthOperationalRun {
+  runId                String   @id
+  approvalId           String   @unique
+  planSchemaVersion    String
+  planSha256           String   @unique
+  planJson             String
+  mode                 String
+  environment          String
+  targetFingerprint    String
+  manifestSha256       String
+  targetSetSha256      String
+  targetCount          Int
+  sourcePolicyJson     String
+  providerCeilingsJson String
+  status               String   @default("prepared")
+  leaseOwner           String?
+  leaseToken           String?
+  leaseExpiresAt       DateTime?
+  heartbeatAt          DateTime?
+  startedAt            DateTime?
+  finishedAt           DateTime?
+  eventChainHead       String   @default("0000000000000000000000000000000000000000000000000000000000000000")
+  reportSha256         String?
+  artifactIndexSha256  String?
+  createdAt            DateTime
+  updatedAt            DateTime
+
+  items  ProductTruthOperationalRunItem[]
+  events ProductTruthOperationalEvent[]
+
+  @@index([status, updatedAt], map: "ProductTruthOperationalRun_status_updated_idx")
+}
+
+model ProductTruthOperationalRunItem {
+  id               String   @id
+  runId            String
+  run              ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  listingKey       String
+  listingScope     ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  ordinal          Int
+  requestedFields  String
+  queueJobId       String?  @unique
+  queueJob         EnrichmentJob? @relation(fields: [queueJobId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status           String   @default("pending")
+  stage            String   @default("QUEUED")
+  attempts         Int      @default(0)
+  leaseToken       String?
+  leaseExpiresAt   DateTime?
+  checkpointJson   String?
+  checkpointSha256 String?
+  resultJson       String?
+  resultSha256     String?
+  lastError        String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime
+  updatedAt        DateTime
+
+  events ProductTruthOperationalEvent[]
+
+  @@unique([runId, listingKey])
+  @@unique([runId, ordinal])
+  @@index([runId, status, ordinal], map: "ProductTruthOperationalRunItem_claim_idx")
+}
+
+model ProductTruthOperationalEvent {
+  id            String   @id
+  runId         String
+  run           ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  eventIndex    Int
+  eventType     String
+  itemId        String?
+  item          ProductTruthOperationalRunItem? @relation(fields: [itemId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  previousHash  String
+  payloadJson   String
+  payloadSha256 String
+  eventHash     String   @unique
+  createdAt     DateTime
+
+  @@unique([runId, eventIndex])
+  @@index([runId, eventIndex], map: "ProductTruthOperationalEvent_run_idx")
+}
+
+// SS Command Center Web Operations Stage A custody. This is deliberately
+// separate from the frozen exact-eight Product Truth business-data schema.
+// Runtime remains hardcoded OFF; no web route or worker claims these rows.
+model ProductTruthControlCommand {
+  commandId String @id
+
+  schemaVersion String
+  commandKind   String
+  gateClass     String
+  status        String @default("DRAFT")
+  idempotencyKey String @unique
+  requestSha256  String @unique
+
+  requestedByUserId String
+  requestedAt       DateTime
+
+  engineReleaseId       String
+  engineCommitSha       String
+  engineTreeSha         String
+  executableTreeSha256  String
+  environment           String
+  databaseTargetFingerprint String
+  manifestSha256        String
+
+  runId        String?
+  planSha256   String?
+  approvalId   String?
+
+  requestArtifactId             String?
+  planArtifactId                String?
+  approvalArtifactId            String?
+  permitArtifactId              String?
+  balanceArtifactId             String?
+  resultArtifactId              String?
+  artifactIndexArtifactId       String?
+  reportArtifactId              String?
+  zeroAttemptEvidenceArtifactId String?
+
+  ownerKeyId                    String?
+  ownerNonce                    String? @unique
+  ownerSignatureSha256          String?
+  ownerAuthorizedAt             DateTime?
+  ownerAuthorizationExpiresAt   DateTime?
+
+  workerLeaseOwner       String?
+  workerLeaseTokenSha256 String?
+  workerLeaseExpiresAt   DateTime?
+  workerHeartbeatAt      DateTime?
+  attempts               Int @default(0)
+  maxAttempts            Int @default(1)
+  executionStartedAt     DateTime?
+  executionBoundary      String?
+
+  exitCode  Int?
+  outcome   String?
+  errorCode String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  artifacts ProductTruthControlArtifact[]
+  events    ProductTruthControlEvent[]
+
+  @@index([status, requestedAt], map: "ProductTruthControlCommand_status_requestedAt_idx")
+  @@index([workerLeaseExpiresAt], map: "ProductTruthControlCommand_leaseExpiresAt_idx")
+  @@index([commandKind, status], map: "ProductTruthControlCommand_kind_status_idx")
+}
+
+// Exact bounded bytes under append-only DB triggers. `locator` is
+// command-scoped/content-addressed; public image storage is not used.
+model ProductTruthControlArtifact {
+  artifactId String @id
+  commandId  String
+  command    ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
+
+  schemaVersion      String
+  role               String
+  mediaType          String
+  content            Bytes
+  byteSize           Int
+  sha256             String
+  locator            String @unique
+  createdAt          DateTime
+  createdByPrincipal String
+
+  @@unique([commandId, role, sha256], map: "ProductTruthControlArtifact_command_role_sha_key")
+  @@index([commandId, createdAt], map: "ProductTruthControlArtifact_command_created_idx")
+}
+
+// Immutable per-command hash chain. SQL triggers enforce exact next sequence,
+// predecessor binding and append-only behavior.
+model ProductTruthControlEvent {
+  eventId   String @id
+  commandId String
+  command   ProductTruthControlCommand @relation(fields: [commandId], references: [commandId], onDelete: Restrict, onUpdate: Restrict)
+
+  schemaVersion    String
+  sequence         Int
+  eventType        String
+  source           String
+  occurredAt       DateTime
+  payload          Bytes
+  payloadSha256    String
+  previousEventHash String
+  eventHash        String @unique
+  createdAt        DateTime @default(now())
+
+  @@unique([commandId, sequence], map: "ProductTruthControlEvent_command_sequence_key")
+  @@index([commandId, occurredAt], map: "ProductTruthControlEvent_command_occurred_idx")
+}
+
+// Durable command/evidence bridge for the OpenClaw worker that controls the
+// owner's already-authenticated ChannelMAX Chrome profile. Commands are a
+// small, schema-validated allow-list; this is deliberately not a generic
+// browser-automation or arbitrary-JavaScript queue.
+model ChannelMaxAgentJob {
+  id String @id @default(cuid())
+
+  operation          String
+  mutation           Boolean @default(false)
+  status             String  @default("QUEUED") // PENDING_APPROVAL | QUEUED | RUNNING | SUCCEEDED | FAILED | AMBIGUOUS
+  priority           Int     @default(0)
+  accountId          String
+  payloadJson        String
+  payloadSha256      String
+  requestSha256      String
+  mutationPlanSha256 String?
+  mutationPlanLock   String? @unique
+  idempotencyKey     String  @unique
+  requestedBy        String
+
+  // Mutation commands are accepted only with an exact owner-approved
+  // assignment digest. Read-only commands keep these fields null/false.
+  ownerApproved             Boolean   @default(false)
+  ownerApprovedBy           String?
+  ownerApprovedById         String?
+  ownerApprovedAt           DateTime?
+  assignmentArtifactSha256  String?
+  approvalSubjectJson       String?
+  approvalSha256            String?
+  approvalExpiresAt         DateTime?
+  approvalNonce             String?   @unique
+  approvalStepUpAssertionId String?   @unique
+  approvalStepUpMethod      String?
+  approvalStepUpCeremonyId  String?
+  approvalStepUpVerifiedAt  DateTime?
+
+  // Lease token itself is returned once to the worker; only its SHA-256 is
+  // stored. A mutation must record MUTATION_STARTED before the browser click.
+  workerId          String?
+  workerActorId     String?
+  accountLeaseKey   String?   @unique
+  browserLeaseKey   String?   @unique
+  leaseTokenSha256  String?
+  leaseExpiresAt    DateTime?
+  lastHeartbeatAt   DateTime?
+  attempts          Int       @default(0)
+  maxAttempts       Int       @default(3)
+  mutationStartedAt DateTime?
+  mutationOutcome   String? // CONFIRMED_APPLIED | CONFIRMED_NOT_APPLIED | AMBIGUOUS
+  ambiguityReason   String?
+  eventSequence     Int       @default(0)
+
+  cancelledAt              DateTime?
+  cancelledBy              String?
+  cancellationReason       String?
+  reconcilesJobId          String?
+  reconciliationTargetLock String?   @unique
+  reconciledByJobId        String?
+
+  resultJson   String?
+  resultSha256 String?
+  error        String?
+
+  queuedAt    DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  events   ChannelMaxAgentEvent[]
+  evidence ChannelMaxAgentEvidence[]
+
+  @@index([status, priority, queuedAt])
+  @@index([leaseExpiresAt])
+  @@index([operation, status])
+  @@index([mutationPlanSha256])
+  @@index([reconcilesJobId])
+}
+
+// Append-only structured progress and evidence metadata. The migration adds
+// SQLite triggers that reject UPDATE/DELETE, so screenshots/downloads/run-log
+// references cannot be silently rewritten after a worker reports them.
+model ChannelMaxAgentEvent {
+  id String @id @default(cuid())
+
+  jobId String
+  job   ChannelMaxAgentJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  sequence       Int
+  eventKey       String
+  type           String
+  source         String
+  message        String?
+  metadataJson   String
+  metadataSha256 String
+  evidenceJson   String
+  evidenceSha256 String
+  occurredAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([jobId, sequence])
+  @@unique([jobId, eventKey])
+  @@index([jobId, occurredAt])
+}
+
+// SSCC-owned immutable evidence bytes. Worker-supplied metadata is never
+// trusted by itself: event/completion references must resolve to one of these
+// rows for the exact job and match the server-computed digest and byte size.
+model ChannelMaxAgentEvidence {
+  id String @id @default(cuid())
+
+  jobId String
+  job   ChannelMaxAgentJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  kind       String
+  sha256     String
+  byteSize   Int
+  mediaType  String
+  capturedAt DateTime
+  uri        String   @unique
+  content    Bytes
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@unique([jobId, kind, sha256])
+  @@index([jobId, createdAt])
+}
+
+// One-use owner step-up proof, bound to one job and a short expiry. Password
+// re-authentication is implemented; WebAuthn/TOTP remain reserved methods.
+// Production mutation approval remains release-gated independently.
+model ChannelMaxStepUpAssertion {
+  id String @id @default(cuid())
+
+  userId     String
+  method     String // PASSWORD_REAUTH | WEBAUTHN | TOTP
+  ceremonyId String    @unique
+  verifiedAt DateTime
+  expiresAt  DateTime
+  usedAt     DateTime?
+  jobId      String
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([jobId, expiresAt])
+}
+
+// ─── Frozen Analytics v2.0 — Proactive Risk Prediction ─────────────────────
+// Nightly pipeline fetches Veeqo orders that will ship in the next 1-3 days,
+// pulls Open-Meteo forecast for Tampa (origin) and the destination ZIP, runs
+// the rule engine, and writes one row per (orderId, shipDate) pair. Status
+// transitions: pending → applied | ignored | resolved. The learning loop
+// fills resultedInComplaint / linkedIncidentId after the order delivers and
+// CS either logs a thaw incident or doesn't.
+model FrozenRiskAlert {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Order identification
+  orderId      String // Veeqo order number (e.g. "113-4567890")
+  veeqoOrderId String? // Internal Veeqo ID
+  storeIndex   Int? // 1-5 for Amazon stores when resolvable
+  storeName    String? // "Salutem Solutions" etc.
+  channel      String  @default("Amazon") // Amazon | Walmart
+
+  // Product
+  sku         String
+  productName String?
+  asin        String?
+
+  // Shipping plan (at time of alert generation)
+  shipDate       String // YYYY-MM-DD
+  edd            String? // YYYY-MM-DD expected delivery date
+  transitDays    Int?
+  plannedCarrier String? // ups | fedex | usps
+  plannedService String? // "Ground" | "2nd Day Air" etc.
+
+  // Destination
+  destZip   String
+  destCity  String?
+  destState String?
+  destLat   Float?
+  destLon   Float?
+
+  // Weather — Tampa (origin) on ship_date
+  originTempF       Float? // forecast mean (we store the daily max here for risk eval)
+  originFeelsLikeF  Float?
+  originTempMaxF    Float?
+  originNormalF     Float? // 30-year average
+  originAnomalyF    Float? // origin - normal
+  originWeatherDesc String?
+
+  // Weather — Destination on EDD
+  destTempF       Float?
+  destFeelsLikeF  Float?
+  destTempMaxF    Float?
+  destNormalF     Float?
+  destAnomalyF    Float?
+  destWeatherDesc String?
+
+  // Risk assessment
+  riskLevel       String // ok | low | medium | high | critical
+  riskScore       Int // 0-100
+  triggeredRules  String // JSON array: ["R3", "M1"]
+  recommendations String // JSON array of strings
+
+  // User action
+  status                 String    @default("pending") // pending | applied | ignored | resolved
+  appliedAt              DateTime?
+  appliedBy              String?
+  userNotes              String?
+  shippingChoiceFollowed Boolean? // Did user follow recommended carrier/service?
+
+  // Learning loop (filled after delivery)
+  resultedInComplaint Boolean? // Set when linked incident is found, or to false after lookback window passes
+  linkedIncidentId    String? // FrozenIncident.id if complaint came
+
+  @@unique([orderId, shipDate])
+  @@index([riskLevel, status])
+  @@index([shipDate])
+  @@index([sku])
+  @@index([storeIndex])
+}
+
+// Conditions and outcomes are stored as JSON strings so a future Phase-4 UI
+// rule editor can mutate them without schema changes. See
+// src/lib/frozen-analytics/rules-engine.ts for the runtime shape.
+model FrozenRule {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ruleCode    String @unique // "R1", "R2", ..., "M1", "M2", ...
+  ruleType    String // "base" | "modifier"
+  description String
+
+  // Conditions (JSON for flexibility)
+  conditions String // {"originMin":85,"originMax":90,"destMin":null,...}
+
+  // Outcome
+  riskLevel      String? // ok|low|medium|high|critical (for base rules)
+  modifier       Int? // +1, +2 (for modifier rules)
+  recommendation String? // text template
+
+  enabled  Boolean @default(true)
+  priority Int     @default(100) // lower = applied first
+}
+
+// ────────────────────────────────────────────────────────────────────
+// BUNDLE FACTORY (Phase 1) — see docs/BUNDLE_FACTORY_DATA_MODEL.md
+// ────────────────────────────────────────────────────────────────────
+//
+// All "enum-like" fields are stored as String because SQLite + Prisma do
+// not support native enum types. Allowed values are documented inline and
+// also exported as TypeScript const-unions from
+// `src/lib/bundle-factory/enums.ts` so application code stays type-safe.
+//
+// Enum reference:
+//   LifecycleState       = DRAFT | RESEARCHED | VARIATION_SELECTED | GENERATED |
+//                          APPROVED | QUEUED | SUBMITTED | PROCESSING | LIVE |
+//                          ERROR | SUSPENDED | SUNSET_REQUESTED | ARCHIVED
+//   ProductCategory      = FROZEN_GROCERY | REFRIGERATED | SHELF_STABLE |
+//                          PET_FOOD | HEALTH_BEAUTY | BABY | OTHER
+//   SalesChannel         = AMAZON_PERSONAL | AMAZON_SALUTEM | AMAZON_AMZCOM |
+//                          AMAZON_SIRIUS | AMAZON_RETAILER | WALMART | EBAY |
+//                          TIKTOK_1 | TIKTOK_2
+//   CompositionType      = SINGLE_FLAVOR | MIXED_FLAVOR | USE_CASE |
+//                          HOLIDAY_THEMED | CROSS_BRAND
+//   PipelineStage        = BRIEF | RESEARCH | VARIATION_MATRIX |
+//                          CONTENT_GENERATION | IMAGE_GENERATION |
+//                          VALIDATION | DISTRIBUTION
+//   StageStatus          = PENDING | IN_PROGRESS | COMPLETED | FAILED | SKIPPED
+//   ErrorCategory        = MISSING_REQUIRED_ATTRIBUTE | TITLE_LENGTH_EXCEEDED |
+//                          BANNED_WORD | IMAGE_URL_INACCESSIBLE | DUPLICATE_GTIN |
+//                          INVALID_BROWSE_NODE | POLICY_VIOLATION_BRAND |
+//                          POLICY_VIOLATION_BUNDLE | COMPLIANCE_GROCERY |
+//                          COMPLIANCE_FROZEN | UNKNOWN
+//   UPCStatus            = AVAILABLE | RESERVED | ASSIGNED | RETIRED | INVALID
+//   StoreType            = SUPERCENTER | NEIGHBORHOOD_MARKET | WAREHOUSE_CLUB |
+//                          STANDARD_GROCERY | DEPARTMENT_STORE | DISCOUNT_GROCERY |
+//                          PREMIUM_GROCERY | SPECIALTY
+//   StoreTier            = TIER_1 | TIER_2 | TIER_3 | TIER_4 | TIER_5
+//   GTINExemptionStatus  = NOT_REQUESTED | PENDING_APPLICATION | UNDER_REVIEW |
+//                          APPROVED | DENIED
+
+// MasterBundle — the canonical "recipe" for a gift set. One MasterBundle
+// fans out to many ChannelSKUs (one per marketplace/account combination).
+model MasterBundle {
+  id String @id @default(cuid())
+
+  // Identity
+  name          String
+  internal_slug String @unique
+  brand         String // "Salutem Vita" | "Starfit"
+  category      String // ProductCategory
+
+  // Composition
+  composition_type String // CompositionType
+  pack_count       Int
+  total_weight_oz  Float?
+  total_weight_lb  Float?
+
+  // Pricing (in cents). cost_breakdown holds the un-summed breakdown:
+  //   { goods_cents, packaging_cents, fba_cents, closing_cents,
+  //     shipping_label_cents, shipping_in_price, sourcing_overhead_cents }
+  cost_breakdown        String // JSON
+  estimated_cost_cents  Int
+  suggested_price_cents Int
+
+  // Packaging spec — { cooler_size, gel_packs_qty, outer_box, ... }
+  packaging_spec String // JSON
+
+  // Master images (default across all channels)
+  main_image_url        String
+  secondary_images      String // JSON array of URLs
+  image_generation_meta String? // JSON
+
+  // Lifecycle
+  lifecycle_status String @default("DRAFT") // LifecycleState
+
+  // Relations
+  components            BundleComponent[]
+  channel_skus          ChannelSKU[]
+  lifecycle_logs        ListingLifecycleLog[]
+  generation_job_id     String?
+  generation_job        GenerationJob?        @relation(fields: [generation_job_id], references: [id])
+  research_pool_seed_id String?
+  research_pool_seed    ResearchPool?         @relation(fields: [research_pool_seed_id], references: [id])
+
+  // Audit
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  created_by_user_id String?
+
+  @@index([brand])
+  @@index([category])
+  @@index([lifecycle_status])
+  @@index([created_at])
+}
+
+// BundleComponent — one input product inside a MasterBundle (e.g. "Jimmy
+// Dean Sausage, Egg & Cheese × 12"). A MasterBundle typically has 1–5.
+model BundleComponent {
+  id               String       @id @default(cuid())
+  master_bundle_id String
+  master_bundle    MasterBundle @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  // Product identity
+  product_name       String
+  manufacturer_brand String
+  manufacturer_upc   String?
+  flavor             String?
+  variant            String?
+
+  // Quantity & weight
+  qty            Int
+  unit_weight_oz Float?
+  unit_weight_lb Float?
+
+  // Cost & sourcing
+  unit_price_cents Int
+  source_store_id  String?
+  source_store     StoreRegistry? @relation(fields: [source_store_id], references: [id])
+  source_url       String?
+
+  // Compliance metadata
+  ingredients     String?
+  allergens       String? // JSON {contains:string[],may_contain:string[]}; legacy rows may be arrays
+  storage_temp    String? // "Frozen" | "Refrigerated" | "Shelf-stable"
+  expiration_days Int?
+
+  // Donor image pool (used in Stage 5 image gen)
+  donor_image_urls String // JSON array
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([master_bundle_id])
+  @@index([manufacturer_brand])
+}
+
+// ChannelSKU — one listing on one marketplace under one brand account.
+// A MasterBundle typically has 5–9 ChannelSKUs (one per active channel).
+model ChannelSKU {
+  id               String       @id @default(cuid())
+  master_bundle_id String
+  master_bundle    MasterBundle @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  // Channel binding
+  channel          String // SalesChannel
+  brand_account_id String?
+  brand_account    BrandAccount? @relation(fields: [brand_account_id], references: [id])
+
+  // Identity
+  sku         String   @unique // XX-XXXX-XXXX
+  upc         String   @unique
+  upc_pool_id String?  @unique
+  upc_pool    UPCPool? @relation(fields: [upc_pool_id], references: [id])
+
+  // Marketplace IDs (populated after publication)
+  asin              String?
+  walmart_item_id   String?
+  ebay_item_id      String?
+  tiktok_product_id String?
+
+  // Content (adapted per channel)
+  title        String
+  bullets      String // JSON array of 5 strings
+  description  String
+  search_terms String?
+  attributes   String // JSON object
+
+  // Category placement
+  channel_category    String?
+  channel_browse_node String?
+
+  // Pricing
+  price_cents          Int
+  business_price_cents Int?
+
+  // Lifecycle
+  lifecycle_status String @default("DRAFT") // LifecycleState
+
+  // Publication tracking
+  submitted_at  DateTime?
+  processing_at DateTime?
+  live_at       DateTime?
+  live_url      String?
+  last_error_at DateTime?
+  errors        String? // JSON array
+
+  // Sales tracking
+  units_sold_30d    Int? @default(0)
+  revenue_30d_cents Int? @default(0)
+
+  // Phase 2.0 Compliance Gate — protective gate for new listings before publish.
+  compliance_status          String    @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id        String?
+  compliance_blocked_at      DateTime?
+  compliance_blocked_reasons String? // JSON array of failed rule IDs
+
+  // Phase 2.3 Stage 5 — main image generated for this SKU's channel-level
+  // listing. Distinct from MasterBundle.main_image_url (the default)
+  // because some channels may need a re-rolled image variant.
+  main_image_url String?
+
+  // Phase 2.4 Stage 6 — Validation Pipeline. Per-channel pre-publish gate
+  // running the registered validators (universal + image + marketplace + identifier +
+  // operational). Status drives the can-publish-to-Stage-7 decision.
+  //   PENDING       — never validated
+  //   PASSED        — every validator passed (or warnings only)
+  //   NEEDS_REVIEW  — at least one warning, no hard errors
+  //   FAILED        — at least one error-severity violation
+  validation_status        String    @default("PENDING")
+  validation_errors        String? // JSON array of { validator_id, severity, message }
+  validated_at             DateTime?
+  validation_check_id      String?
+  validation_attempt_count Int       @default(0)
+
+  // Sellable bundle quantity derived from component stock during Stage 6.
+  // Null means inventory is unknown and is a hard publish block; the Amazon
+  // payload must never invent an arbitrary quantity.
+  available_quantity   Int?
+  inventory_checked_at DateTime?
+
+  // Phase 2.4 Stage 6 — operational fields validators check for presence.
+  // Filled by promote-draft (or manually by operator). Defaults so existing
+  // ChannelSKU rows don't need a backfill before the migration.
+  package_length_in Float?
+  package_width_in  Float?
+  package_height_in Float?
+  package_weight_oz Float?
+  country_of_origin String? @default("US")
+  item_type         String? // Walmart taxonomy or Amazon item_type
+
+  // Phase 2.5 Stage 7 — Distribution. Tracks the per-SKU submission to
+  // its marketplace (Amazon Listings Items PUT or Walmart MP_ITEM feed).
+  //   PENDING         — never published; validation must be PASSED first
+  //   SUBMITTED       — Amazon / Walmart accepted the payload; polling
+  //                     for terminal state
+  //   LIVE            — marketplace confirmed the listing is published
+  //   FAILED          — submission rejected (issues in distribution_errors)
+  //   PENDING_REVIEW  — marketplace requires manual seller-side action
+  listing_status             String    @default("PENDING")
+  submission_id              String? // Amazon submissionId or Walmart feedId
+  published_at               DateTime?
+  distribution_errors        String? // JSON array of {code, message, severity}
+  distribution_attempt_count Int       @default(0)
+  last_status_check_at       DateTime?
+
+  // Relations
+  lifecycle_logs          ListingLifecycleLog[]
+  compliance_checks       ComplianceCheck[]
+  marketplace_submissions MarketplaceSubmissionAttempt[]
+  walmart_buyer_evidence  WalmartBuyerPublicationEvidence[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([master_bundle_id])
+  @@index([channel])
+  @@index([lifecycle_status])
+  @@index([asin])
+  @@index([walmart_item_id])
+  @@index([compliance_status])
+  @@index([validation_status])
+  @@index([listing_status])
+}
+
+// Durable marketplace submission ledger. The stable idempotency key binds one
+// ChannelSKU to one canonical payload hash. `active_key` is the concurrency
+// fence: it equals channel_sku_id while an attempt can still have marketplace
+// side effects and becomes NULL only after terminal/retry-safe disposition.
+model MarketplaceSubmissionAttempt {
+  id                        String     @id
+  channel_sku_id            String
+  channel_sku               ChannelSKU @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  marketplace               String
+  idempotency_key           String     @unique
+  active_key                String?    @unique
+  pilot_permit_sha256       String     @unique
+  pilot_permit_id           String     @unique
+  owner_key_id              String
+  owner_signature_sha256    String     @unique
+  pilot_slot                Int        @unique
+  pilot_approval_sha256     String
+  certification_sha256      String
+  seller_account_fingerprint_sha256 String
+  payload_hash              String
+  claim_token               String     @unique
+  state                     String // CLAIMED | REQUESTING | ACCEPTED | UNKNOWN | PENDING_REVIEW | BUYER_VERIFIED | REJECTED | RETRYABLE
+  request_count             Int        @default(0)
+  recovery_count            Int        @default(0)
+  marketplace_submission_id String?
+  marketplace_disposition   String?
+  error_json                String?
+  claimed_at                DateTime
+  requested_at              DateTime?
+  accepted_at               DateTime?
+  terminal_at               DateTime?
+  retry_after               DateTime?
+  created_at                DateTime   @default(now())
+  updated_at                DateTime   @updatedAt
+
+  walmart_buyer_evidence WalmartBuyerPublicationEvidence[]
+
+  @@index([channel_sku_id, state])
+  @@index([state, retry_after])
+  @@index([marketplace_submission_id])
+}
+
+// Immutable proof that an exact Walmart seller SKU/item identity was observed
+// on the buyer-facing PDP as both published and buyable. A processed feed alone
+// never creates this row and can never promote ChannelSKU to LIVE.
+model WalmartBuyerPublicationEvidence {
+  id                    String                       @id
+  channel_sku_id        String
+  channel_sku           ChannelSKU                   @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  submission_attempt_id String
+  submission_attempt    MarketplaceSubmissionAttempt @relation(fields: [submission_attempt_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sku                   String
+  walmart_item_id       String
+  source_url            String
+  source_kind           String
+  captured_at           DateTime
+  exact_sku_match       Boolean
+  exact_item_id_match   Boolean
+  published             Boolean
+  buyable               Boolean
+  evidence_hash         String                       @unique
+  raw_evidence          String
+  created_at            DateTime                     @default(now())
+
+  @@index([channel_sku_id, captured_at])
+  @@index([submission_attempt_id, captured_at])
+  @@index([sku, walmart_item_id, captured_at])
+}
+
+// ResearchPool — products discovered by Stage 2 (Research). One row per
+// scraped product; used as a candidate pool when drafting a bundle.
+model ResearchPool {
+  id String @id @default(cuid())
+
+  // Search context
+  research_query    String
+  generation_job_id String?
+  generation_job    GenerationJob? @relation(fields: [generation_job_id], references: [id])
+
+  // Product data
+  product_name String
+  brand        String
+  manufacturer String?
+  upc          String?
+
+  // Variations
+  flavors    String? // JSON array
+  pack_sizes String? // JSON array
+  weight_oz  Float?
+  weight_lb  Float?
+
+  // Composition
+  ingredients     String?
+  allergens       String? // JSON array
+  nutrition       String? // JSON
+  storage_temp    String?
+  expiration_days Int?
+
+  // Reference images
+  reference_image_urls String // JSON array
+
+  // Pricing & sourcing
+  avg_price_cents    Int?
+  source_store_id    String?
+  source_store       StoreRegistry? @relation(fields: [source_store_id], references: [id])
+  source_url         String?
+  last_seen_in_stock DateTime?
+
+  // Quality scoring
+  freshness_score Float?
+
+  // Back-relation: bundles seeded from this product
+  master_bundles MasterBundle[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([brand])
+  @@index([generation_job_id])
+  @@index([last_seen_in_stock])
+}
+
+// BundleDraft — work-in-progress bundle (Stages 3–6 of pipeline). After
+// approval it converts to a MasterBundle + ChannelSKU set.
+model BundleDraft {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  // Draft state
+  draft_name       String
+  brand            String
+  category         String // ProductCategory
+  composition_type String // CompositionType
+  pack_count       Int
+
+  // Composition snapshot (selected components from ResearchPool)
+  draft_components String // JSON array
+
+  // Generated content (Stage 4)
+  draft_title        String?
+  draft_bullets      String? // JSON array
+  draft_description  String?
+  draft_search_terms String?
+
+  // Generated images (Stage 5)
+  draft_main_image_url   String?
+  draft_secondary_images String? // JSON array
+
+  // Phase 2.3 Stage 5 — set when the orchestrator finishes the per-channel
+  // image generation pass (every CAN_PUBLISH channel either got an image
+  // or hit the manual_review queue). Null until then.
+  image_generated_at DateTime?
+
+  // Cost estimate
+  draft_cost_cents            Int?
+  draft_suggested_price_cents Int?
+
+  // Status
+  status         String    @default("VARIATION_SELECTED") // LifecycleState
+  approval_notes String?
+  // Explicit human approval is recorded separately from the mutable lifecycle
+  // status so a later PUBLISHING/PUBLISHED transition does not erase the gate.
+  approved_at    DateTime?
+  approved_by    String?
+  published_at   DateTime?
+
+  // Stable recipe identity used to prevent concurrent/repeated studio runs from
+  // minting the same logical listing twice. Nullable for legacy drafts.
+  recipe_fingerprint String? @unique
+
+  // Selected channels for distribution
+  target_channels String // JSON array
+
+  // After approval — link to created MasterBundle
+  master_bundle_id String? @unique
+
+  // Phase 2.0 Compliance Gate — protective gate for new listings before publish.
+  compliance_status          String    @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id        String?
+  compliance_blocked_at      DateTime?
+  compliance_blocked_reasons String? // JSON array of failed rule IDs
+
+  // Relations
+  compliance_checks     ComplianceCheck[]
+  variation_matrix      VariationMatrix?
+  generated_content     GeneratedContent[]
+  generation_work_items GenerationWorkItem[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([generation_job_id])
+  @@index([status])
+  @@index([compliance_status])
+  @@index([approved_at])
+}
+
+// StoreRegistry — pre-seeded registry of 37 sourcing stores (Walmart, BJ's,
+// Target, Publix, Sam's, Costco, ALDI, Whole Foods, Trader Joe's, Fresh
+// Market, Winn-Dixie). See docs/BUNDLE_FACTORY_SOURCING_MAP.md.
+model StoreRegistry {
+  id         String @id // e.g. "walmart_sc_us19"
+  name       String
+  chain      String
+  store_type String // StoreType
+  tier       String // StoreTier
+
+  // Location
+  address         String
+  latitude        Float
+  longitude       Float
+  distance_mi     Float // from 1162 Kapp Dr
+  google_place_id String?
+  google_maps_url String?
+
+  // Operational
+  phone       String?
+  hours_text  String?
+  hours_json  String? // JSON
+  website_url String?
+
+  // Delivery
+  delivery_program    String?
+  delivery_cost_cents Int     @default(0)
+  delivery_notes      String?
+
+  // Status
+  is_active              Boolean   @default(true)
+  is_membership_required Boolean   @default(false)
+  membership_active      Boolean   @default(false)
+  membership_renewal     DateTime?
+
+  // Default priority used as seed when wiring SKUStorePriority elsewhere
+  default_priority Int
+
+  // Operational metadata
+  last_validated_at DateTime?
+  notes             String?
+
+  // Relations
+  components_sourced BundleComponent[]
+  research_pool      ResearchPool[]
+  fallback_from      ProductSourceFallback[] @relation("PrimarySource")
+  fallback_to        ProductSourceFallback[] @relation("FallbackSource")
+  stock_checks       StockCheckLog[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([chain])
+  @@index([tier])
+  @@index([is_active])
+  @@index([distance_mi])
+}
+
+// ProductSourceFallback — substitute graph: when primary store is OOS for
+// a manufacturer UPC, try these fallbacks in priority order.
+model ProductSourceFallback {
+  id String @id @default(cuid())
+
+  manufacturer_upc String
+  product_name     String
+
+  primary_store_id String
+  primary_store    StoreRegistry @relation("PrimarySource", fields: [primary_store_id], references: [id])
+
+  fallback_store_id String
+  fallback_store    StoreRegistry @relation("FallbackSource", fields: [fallback_store_id], references: [id])
+
+  fallback_priority Int
+
+  // Stats — populated by the sourcing pipeline as it runs
+  primary_oos_count     Int @default(0)
+  fallback_used_count   Int @default(0)
+  fallback_failed_count Int @default(0)
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([manufacturer_upc, primary_store_id, fallback_store_id])
+  @@index([manufacturer_upc])
+}
+
+// StockCheckLog — audit of stock-availability checks (pre-publication
+// re-check, quarterly sourcing validation, OOS pattern analytics).
+model StockCheckLog {
+  id String @id @default(cuid())
+
+  store_id String
+  store    StoreRegistry @relation(fields: [store_id], references: [id])
+
+  manufacturer_upc String?
+  product_name     String?
+
+  in_stock     Boolean
+  price_cents  Int?
+  source_url   String?
+  raw_response String? // JSON
+
+  checked_at   DateTime @default(now())
+  check_method String // "scraper" | "manual" | "api"
+
+  @@index([store_id])
+  @@index([manufacturer_upc])
+  @@index([checked_at])
+}
+
+// UPCPool — pool of UPC codes Vladimir owns (prefixes 742259/789232/617261).
+// Pre-seeded from the Active Listings Report; replenished manually later.
+model UPCPool {
+  id            String  @id @default(cuid())
+  upc           String  @unique
+  upc_prefix    String
+  gs1_validated Boolean @default(false)
+  gs1_owner     String?
+
+  status String @default("AVAILABLE") // UPCStatus
+
+  // If ASSIGNED — which ChannelSKU owns this UPC (1:1)
+  assigned_to_id String?     @unique
+  assigned_to    ChannelSKU?
+
+  // If RESERVED — which BundleDraft holds it (with TTL)
+  // One draft may hold at most one UPC. The unique constraint is also the
+  // database-level race fence used by the Walmart new-SKU engine.
+  reserved_for_id String? @unique
+  reserved_at     DateTime?
+  reserved_until  DateTime?
+
+  acquired_from String?
+  acquired_at   DateTime?
+  notes         String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([status])
+  @@index([upc_prefix])
+  @@index([gs1_validated])
+}
+
+// GTINExemption — per-brand × channel × category exemption status.
+// Vladimir submits applications for Salutem Vita / Starfit; this tracks them.
+model GTINExemption {
+  id       String @id @default(cuid())
+  brand    String // "Salutem Vita" | "Starfit"
+  channel  String // SalesChannel
+  category String // ProductCategory
+
+  status String @default("NOT_REQUESTED") // GTINExemptionStatus
+
+  application_date    DateTime?
+  approval_date       DateTime?
+  denial_reason       String?
+  application_pdf_url String?
+  reference_id        String? // Amazon case ID
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([brand, channel, category])
+  @@index([status])
+}
+
+// BrandAccount — mapping of brand × channel × account (brand owner vs
+// authorized seller). E.g. Salutem Vita on AMAZON_SALUTEM is the brand
+// owner; the same brand on AMAZON_PERSONAL is authorized seller.
+model BrandAccount {
+  id                   String  @id @default(cuid())
+  brand                String
+  channel              String // SalesChannel
+  is_brand_owner       Boolean
+  is_authorized_seller Boolean
+  selling_partner_id   String? // SP-API merchant ID / Walmart seller ID
+
+  is_active Boolean @default(true)
+  notes     String?
+
+  channel_skus ChannelSKU[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([brand, channel])
+  @@index([brand])
+  @@index([channel])
+}
+
+// GenerationJob — one execution of the pipeline (brief → drafts → bundles).
+model GenerationJob {
+  id String @id @default(cuid())
+
+  // Brief input (Stage 1) — full form from the user
+  brief String // JSON
+
+  // Status
+  current_stage String @default("BRIEF") // PipelineStage
+  status        String @default("PENDING") // StageStatus
+
+  // Stats
+  bundles_target    Int
+  bundles_generated Int @default(0)
+  bundles_approved  Int @default(0)
+  bundles_published Int @default(0)
+  bundles_error     Int @default(0)
+
+  // Resource consumption
+  openai_tokens_used Int @default(0)
+  perplexity_queries Int @default(0)
+  images_generated   Int @default(0)
+  cost_cents         Int @default(0)
+
+  user_id String?
+  notes   String?
+
+  // Relations
+  stages         GenerationStage[]
+  research_pool  ResearchPool[]
+  bundle_drafts  BundleDraft[]
+  master_bundles MasterBundle[]
+  work_items     GenerationWorkItem[]
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  completed_at DateTime?
+
+  @@index([status])
+  @@index([current_stage])
+}
+
+// Durable per-spec queue for Studio mass generation. `bundles_generated`
+// counts only SUCCEEDED items; locks and retry attempts live here so a timeout
+// cannot consume a listing slot or silently complete a partial batch.
+model GenerationWorkItem {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  spec_index      Int
+  spec_json       String
+  fingerprint     String
+  status          String       @default("PENDING") // PENDING | RUNNING | SUCCEEDED | FAILED | SKIPPED
+  attempts        Int          @default(0)
+  locked_at       DateTime?
+  last_error      String?
+  bundle_draft_id String?
+  bundle_draft    BundleDraft? @relation(fields: [bundle_draft_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([generation_job_id, spec_index])
+  @@unique([generation_job_id, fingerprint])
+  @@index([generation_job_id, status])
+  @@index([bundle_draft_id])
+  @@index([locked_at])
+}
+
+// GenerationStage — per-stage execution log for a GenerationJob.
+model GenerationStage {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  stage  String // PipelineStage
+  status String @default("PENDING") // StageStatus
+
+  started_at   DateTime?
+  completed_at DateTime?
+  duration_ms  Int?
+
+  input_snapshot  String? // JSON
+  output_snapshot String? // JSON
+  error           String?
+
+  @@index([generation_job_id])
+  @@index([stage])
+}
+
+// MarketplaceRule — DB cache of the Marketplace Rules KB. The Markdown
+// files in docs/marketplace-rules/ remain the source of truth; this table
+// is for hot lookup at validation/generation time.
+model MarketplaceRule {
+  id String @id @default(cuid())
+
+  channel    String // SalesChannel
+  category   String? // ProductCategory (null = global to channel)
+  rule_key   String
+  rule_value String // JSON (scalar or object)
+
+  // Provenance
+  source_doc_path String
+  source_url      String?
+  scraped_at      DateTime?
+  validated_at    DateTime?
+  is_current      Boolean   @default(true)
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([channel, category, rule_key])
+  @@index([channel])
+  @@index([rule_key])
+  @@index([is_current])
+}
+
+// ErrorPattern — accumulator of marketplace errors and their fix strategies
+// (Stage 6 learning loop).
+model ErrorPattern {
+  id String @id @default(cuid())
+
+  channel               String // SalesChannel
+  error_category        String // ErrorCategory
+  error_code            String
+  error_message_pattern String
+
+  // Fix strategy
+  fix_strategy     String // "AUTO_FIX_TITLE_TRUNCATE" | "AUTO_FIX_ADD_ATTRIBUTE" | "ESCALATE"
+  fix_handler_name String?
+
+  // Stats
+  occurrences      Int       @default(0)
+  auto_fix_success Int       @default(0)
+  auto_fix_failure Int       @default(0)
+  last_seen        DateTime?
+
+  // Documentation
+  description    String?
+  example_input  String? // JSON
+  example_output String? // JSON
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([channel])
+  @@index([error_category])
+  @@index([error_code])
+}
+
+// ListingLifecycleLog — audit trail for MasterBundle and ChannelSKU
+// lifecycle_status transitions.
+model ListingLifecycleLog {
+  id String @id @default(cuid())
+
+  // What changed
+  entity_type String // "MasterBundle" | "ChannelSKU"
+  entity_id   String
+
+  master_bundle_id String?
+  master_bundle    MasterBundle? @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  channel_sku_id String?
+  channel_sku    ChannelSKU? @relation(fields: [channel_sku_id], references: [id], onDelete: Cascade)
+
+  // Transition
+  from_status String? // LifecycleState
+  to_status   String // LifecycleState
+
+  // Context
+  trigger String // "user_approve" | "auto_publish" | "marketplace_error" | "sourcing_oos" | ...
+  details String? // JSON
+  user_id String?
+
+  created_at DateTime @default(now())
+
+  @@index([entity_type, entity_id])
+  @@index([master_bundle_id])
+  @@index([channel_sku_id])
+  @@index([created_at])
+}
+
+// ============================================================================
+// PHASE 2.0a — Listing Audit Tool
+// Scans existing active listings across 5 Amazon accounts, scores risk of
+// foreign-brand violations (like the 2026-05-17 Retailer Distributor block),
+// and tracks remediation through Bundle Factory's content/image pipelines.
+// ============================================================================
+
+model ListingAuditScan {
+  id           String @id @default(cuid())
+  initiated_by String // 'vladimir' | 'system_cron'
+
+  status String @default("pending") // 'pending' | 'running' | 'completed' | 'failed'
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  accounts_scanned String // JSON array of account keys
+
+  total_listings  Int @default(0)
+  blocked_count   Int @default(0)
+  warning_count   Int @default(0)
+  low_risk_count  Int @default(0)
+  compliant_count Int @default(0)
+
+  error_message String?
+
+  audit_results ListingAuditResult[]
+
+  @@index([initiated_by, started_at])
+  @@index([status])
+}
+
+model ListingAuditResult {
+  id      String @id @default(cuid())
+  scan_id String
+
+  asin    String
+  sku     String?
+  account String // 'SALUTEM' | 'PERSONAL' | 'AMZCOM' | 'SIRIUS' | 'RETAILER'
+
+  title                String
+  brand                String
+  browse_node          String?
+  main_image_url       String?
+  original_bullets     String // JSON array
+  original_description String  @default("")
+
+  risk_score    Int    @default(0)
+  risk_category String @default("COMPLIANT") // 'BLOCKED' | 'WARNING' | 'LOW_RISK' | 'COMPLIANT'
+  risk_reasons  String @default("[]") // JSON array
+
+  detected_brands   String? // JSON array
+  detected_logos    String? // JSON array (from Vision check)
+  vision_cost_cents Int     @default(0)
+
+  remediation_status String @default("PENDING") // 'PENDING' | 'REGENERATING' | 'UPDATED' | 'SKIPPED' | 'FAILED' | 'MANUAL_REVIEW'
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  scan        ListingAuditScan    @relation(fields: [scan_id], references: [id], onDelete: Cascade)
+  // 1:1 back-reference — actual FK column (audit_result_id) lives on
+  // ListingRemediation. We query by audit_result_id from there.
+  remediation ListingRemediation?
+
+  @@index([scan_id, risk_category])
+  @@index([asin])
+  @@index([account, risk_category])
+  @@index([remediation_status])
+}
+
+model ListingRemediation {
+  id              String @id @default(cuid())
+  audit_result_id String @unique
+
+  status String @default("pending") // 'pending' | 'generating' | 'validated' | 'updating' | 'completed' | 'failed' | 'manual_review'
+
+  original_title       String
+  new_title            String?
+  original_bullets     String // JSON array
+  new_bullets          String? // JSON array
+  original_description String
+  new_description      String?
+  original_image_url   String?
+  new_image_url        String?
+
+  ai_cost_cents Int @default(0)
+
+  sp_api_response String? // JSON
+  sp_api_error    String?
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  audit_result ListingAuditResult @relation(fields: [audit_result_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+// Permanent blocklist seeded from the 2026-05-17 incident (5 ASINs blocked
+// by Amazon for Trademark Logo Misuse under Salutem Vita). New incidents
+// can be appended here so risk-scoring picks them up automatically.
+model BrandConflict {
+  id      String  @id @default(cuid())
+  asin    String?
+  account String?
+
+  foreign_brand    String
+  product_keywords String // JSON array
+
+  incident_date DateTime
+  incident_type String // 'trademark_logo_misuse' | 'ip_complaint'
+  amazon_action String? // 'asin_block' | 'account_suspension'
+
+  notes String?
+
+  status      String    @default("active")
+  resolved_at DateTime?
+
+  created_at DateTime @default(now())
+
+  @@index([foreign_brand])
+  @@index([asin])
+  @@index([status])
+}
+
+// ============================================================================
+// Bundle Factory — Phase 2.0 Compliance Gate
+//
+// Protective gate run between Stage 4 (content gen) and Stage 7 (Distribution).
+// Each invocation evaluates 8 hard rules; a failed rule blocks the draft until
+// auto-fix or AI re-generation produces a passing version.
+// See docs/BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md.
+// ============================================================================
+
+model ComplianceCheck {
+  id              String  @id @default(cuid())
+  bundle_draft_id String
+  channel_sku_id  String?
+
+  decision          String // 'CAN_PUBLISH' | 'BLOCKED'
+  hard_rules_passed String // JSON array of rule IDs that passed
+  hard_rules_failed String // JSON array of { rule_id, reason }
+
+  detected_brands String? // JSON array — foreign brands detected (title/text)
+  detected_logos  String? // JSON array — logos detected on image
+
+  ai_vision_response String? // raw Claude Vision response (debug)
+  cost_cents         Int     @default(0)
+
+  created_at DateTime @default(now())
+
+  bundle_draft BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+  channel_sku  ChannelSKU? @relation(fields: [channel_sku_id], references: [id], onDelete: Cascade)
+
+  @@index([bundle_draft_id, created_at])
+  @@index([decision])
+}
+
+model ComplianceAuditLog {
+  id              String  @id @default(cuid())
+  bundle_draft_id String
+  channel_sku_id  String?
+
+  event_type    String // 'gate_check' | 'manual_override' | 'pattern_detected' | 'auto_fix'
+  event_details String // JSON
+
+  actor    String // 'system' | 'vladimir' | 'claude_code'
+  decision String? // 'CAN_PUBLISH' | 'BLOCKED' — present when event resulted in a decision
+
+  created_at DateTime @default(now())
+
+  @@index([bundle_draft_id, created_at])
+  @@index([event_type])
+}
+
+// ============================================================================
+// Bundle Factory — Phase 2.2 Variation Matrix + Content Generation
+//
+// VariationMatrix     — Stage 3 output: 5–10 composition variants generated
+//                       deterministically from the curated ResearchPool. The
+//                       user picks one, and `selected_variant_idx` indexes
+//                       into `variants_json`.
+// GeneratedContent    — Stage 4 output: one row per (BundleDraft, channel)
+//                       holding Claude-generated title + bullets + description
+//                       plus its post-compliance-gate status. When all rows
+//                       for a draft are CAN_PUBLISH, the draft flips to
+//                       status=GENERATED.
+// ============================================================================
+
+model VariationMatrix {
+  id              String      @id @default(cuid())
+  bundle_draft_id String      @unique
+  bundle_draft    BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+
+  /// JSON array of variant objects:
+  /// {
+  ///   idx: number,
+  ///   name: string,                  // e.g. "Variant B — 6×Lunchables + 6×Capri Sun"
+  ///   composition: [{ research_pool_id: string, qty: number }],
+  ///   cost_cents: number,
+  ///   suggested_price_cents: number,
+  ///   margin_cents: number,
+  ///   margin_pct: number,
+  ///   feasibility_score: number,     // 0–100, based on component freshness
+  ///   notes: string,
+  /// }
+  variants_json        String
+  selected_variant_idx Int?
+
+  generation_cost_cents Int @default(0) // 0 — deterministic, no AI call
+
+  generated_at DateTime  @default(now())
+  selected_at  DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([bundle_draft_id])
+}
+
+model GeneratedContent {
+  id              String      @id @default(cuid())
+  bundle_draft_id String
+  bundle_draft    BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+
+  /// SalesChannel value (e.g. 'AMAZON_SALUTEM', 'WALMART'). The same draft
+  /// has one row per target channel; siblings sharing a channel template
+  /// (5 Amazon accounts) carry identical content but exist as distinct rows
+  /// so per-account compliance + override stays per-row.
+  channel String
+
+  /// Channel template the content was generated under — 'amazon' | 'walmart'.
+  /// Multiple channels can share one Claude call (5 Amazon accounts share
+  /// the 'amazon' template), so this column is the dedupe key for the
+  /// generator and tells the cost-roll-up which row actually paid Claude.
+  template String
+
+  title        String
+  bullets_json String // JSON array of strings
+  description  String
+
+  /// Compliance gate result on this exact content. Set to BLOCKED while
+  /// the manual-review queue handles the row.
+  compliance_status      String  @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id    String?
+  compliance_attempts    Int     @default(0)
+  manual_review_required Boolean @default(false)
+  failed_rule_ids        String? // JSON array of rule IDs (last failure)
+
+  /// Anthropic billing accounting. Charged tokens are owned by the template
+  /// row; sibling rows that re-use the same generated text carry 0 cost.
+  generation_cost_cents Int     @default(0)
+  claude_response_id    String?
+  claude_input_tokens   Int     @default(0)
+  claude_output_tokens  Int     @default(0)
+  cache_read_tokens     Int     @default(0)
+  cache_write_tokens    Int     @default(0)
+
+  /// Phase 2.3 Stage 5 — main image generated via the GPT Image 2 worker.
+  /// One image per row (no template-sibling sharing here — each channel
+  /// pays its own image cost since main image is the per-channel ASIN-
+  /// visible asset). Set to the R2 public URL on success.
+  main_image_url              String?
+  image_generation_cost_cents Int       @default(0)
+  image_retry_count           Int       @default(0)
+  image_generated_at          DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([bundle_draft_id, channel])
+  @@index([bundle_draft_id])
+  @@index([compliance_status])
+  @@index([manual_review_required])
+}
+
+// ============================================================================
+// Walmart Listing Retirement — "Снять с продажи"
+//
+// Triggered from the Procurement page when Vladimir decides a product is no
+// longer worth restocking (supplier discontinued, price too high, etc.). The
+// modal fans the procurement title across the Walmart catalog cache, lets him
+// pick which SKUs to zero, and POSTs each chosen SKU to Walmart inventory
+// PUT amount=0. Each successful zeroing writes one row here so we can:
+//   * audit "what did we kill and why"
+//   * roll back later if the supplier comes back (we keep previousQty)
+// ============================================================================
+model WalmartListingRetirement {
+  id            String    @id @default(cuid())
+  sku           String
+  storeIndex    Int       @default(1)
+  itemId        String?
+  productTitle  String?
+  previousQty   Int?
+  reason        String?
+  triggeredFrom String? // e.g. "procurement:200014888886083"
+  searchQuery   String?
+  retiredAt     DateTime  @default(now())
+  rolledBackAt  DateTime?
+  rolledBackBy  String?
+
+  @@index([storeIndex, retiredAt])
+  @@index([sku])
+}
+
+// ============================================================================
+// Box size presets — picker on PackingProfileDialog / SkuDataDialog.
+//
+// Replaces the previously-hardcoded <select> options on the shipping page. The
+// initial seed mirrors the labels Vladimir already used (XS/S/M/L/XL + a few
+// named numeric sizes). New custom sizes typed into the picker get auto-added
+// here, and any non-builtin row can be deleted from the dropdown by clicking
+// the × next to it. resolveBoxDimensions() still handles "12x12x8"-style
+// strings directly, so an unsaved custom size still rate-quotes correctly.
+// ============================================================================
+model BoxSizePreset {
+  id        String   @id @default(cuid())
+  // Display label: a friendly name like "M" or the canonical "12x12x8".
+  // Lowercased + ×→x normalised by the API so the unique index doesn't trip
+  // on cosmetic variants ("12X12X8" / "12×12×8" / "12x12x8" → all the same).
+  label     String   @unique
+  length    Float
+  width     Float
+  height    Float
+  // builtin=true rows can't be deleted — protects the well-known XS..XL set
+  // from accidental clicks. Custom rows added by the operator are deletable.
+  builtin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Cache of marketplace-title -> search-friendly-title transformations.
+// /api/procurement/clean-title looks up the raw marketplace title here
+// before paying for a Claude Haiku call. Saves ~$0.0002 + ~500ms per cache hit.
+// Cleaned form drops pack-count noise + private-label brands (Salutem Vita /
+// Starfit) but keeps the real third-party brand + weight, so the operator
+// can paste the result straight into an online-store search.
+model ProductTitleCache {
+  id         String   @id @default(cuid())
+  // Raw title as it came from Veeqo / the marketplace. Keyed verbatim — case
+  // matters because a different case usually means a different listing.
+  rawTitle   String   @unique
+  cleanTitle String
+  // Provenance — "ai" when generated by Claude Haiku, "regex" when an
+  // operator-side fallback wrote it (we record fallback misses so a later
+  // backfill can promote them to AI-quality entries when the API is healthy).
+  source     String   @default("ai")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Cache of pack-size extractions from marketplace titles — see the
+// /api/procurement/pack-size endpoint. We key off the raw title (not
+// productId) because the same product can carry slightly different titles
+// across listings/marketplaces, and the title is the actual signal.
+// Each entry stores the multiplier ("Pack of N" → N) so the Procurement
+// page can multiply by orderQuantity to show physical units to pick.
+model ProductPackSizeCache {
+  id        String   @id @default(cuid())
+  // Raw title verbatim — same convention as ProductTitleCache.
+  rawTitle  String   @unique
+  // Multiplier: how many physical items live inside one listing unit.
+  // E.g. "Pack of 6" → 6, "Bundle of 2 Cartons" with 12 per carton → 24.
+  size      Int
+  // Human-readable label we surface in the UI ("Pack of 6", "Bundle of 2",
+  // "24 Cans", "Bundle of 2 × 12 Cartons").
+  label     String
+  // Provenance — "ai" (Haiku), "regex" (sync extractor), or "manual"
+  // (operator override, when we add that UI). Lets us re-run AI on regex
+  // entries later if the regex output looks off.
+  source    String   @default("ai")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Finance Core — Phase 1 (Funds) ────────────────────────────────────────
+// Cash-basis financial planning. Money in = marketplace payouts (already net of
+// marketplace fees). One global business pool, distributed by a priority
+// waterfall: RESERVE (restock: COGS+shipping+packaging) → FP1 → FP2 → FREE.
+// See docs/wiki/finance-funds.md + plan goofy-crafting-flamingo.md.
+
+// Payout — one marketplace deposit (Amazon settlement / Walmart recon payment).
+// `netAmount` (already net of marketplace fees) is the cash we distribute.
+model Payout {
+  id          String   @id @default(cuid())
+  // business = marketplace payouts (Finance Core). personal = personal income
+  // (owner's draw from the business + manual). Same waterfall engine, separate pool.
+  scope       String   @default("business")
+  marketplace String // amazon | walmart | personal
+  storeIndex  Int? // source store/account (for traceability; pool is global)
+  entity      String? // legal entity name (denormalized for later per-entity P&L)
+  externalId  String // settlement-id / recon batch id — dedup key
+  periodStart String? // ISO date the payout period starts
+  periodEnd   String? // ISO date the payout period ends
+  depositDate String? // ISO date funds were deposited
+  grossSales  Float? // optional: gross before fees
+  feesTotal   Float? // optional: marketplace fees deducted
+  netAmount   Float // the distributable cash (net deposit)
+  currency    String   @default("USD")
+  // Set once this payout has been run through fund distribution.
+  distributed Boolean  @default(false)
+  source      String   @default("settlement") // settlement | recon | manual
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([marketplace, externalId], name: "payout_dedup")
+  @@index([depositDate])
+  @@index([distributed])
+  @@index([scope])
+}
+
+// Fund — a configurable bucket (UI-CRUD). value = percent (0–100) when
+// allocationType="percent", else an absolute USD amount per run. `balance` is the
+// running accumulated amount. Seed: one RESERVE (priority 0) + one FREE (last).
+model Fund {
+  id             String   @id @default(cuid())
+  scope          String   @default("business") // business | personal
+  name           String
+  group          String // RESERVE | FP1 | FP2 | FREE
+  allocationType String   @default("percent") // percent | absolute
+  value          Float    @default(0)
+  priority       Int      @default(100) // lower = filled earlier
+  cap            Float? // optional per-run ceiling (USD)
+  balance        Float    @default(0)
+  active         Boolean  @default(true)
+  isSystem       Boolean  @default(false) // RESERVE / FREE seeded funds
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([group])
+  @@index([active])
+  @@index([scope])
+}
+
+// FundAllocation — one line of money moved into a fund during a run.
+model FundAllocation {
+  id        String   @id @default(cuid())
+  fundId    String
+  runId     String?
+  payoutId  String?
+  amount    Float
+  date      String? // ISO date of the run
+  createdAt DateTime @default(now())
+
+  @@index([fundId])
+  @@index([runId])
+}
+
+// PayoutLine — the bucketed breakdown of one payout ("разложить на молекулы"):
+// one row per (payout, bucket) with the signed summed amount. Powers the
+// Financial Plan statement view (sales / shipping / refunds / fees / ads / ...).
+model PayoutLine {
+  id          String   @id @default(cuid())
+  payoutId    String
+  marketplace String
+  bucket      String // sales | shipping_income | refunds | referral_fee | fba_fee | storage_fee | shipping_cost | ads | promo | fee_other | adjustment | tax_collected | reserve | other
+  amount      Float // signed, summed
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([payoutId])
+  @@index([bucket])
+}
+
+// FundEntry — the ledger of every movement on a fund: allocations (credits from
+// payout distribution), manual spends (debits), and planned expenses (debits that
+// only hit the balance once marked paid). Fund.balance is the running total of
+// APPLIED entries (can go negative). A fund detail view lists these.
+model FundEntry {
+  id          String   @id @default(cuid())
+  fundId      String
+  type        String // allocation | spend | planned_expense | adjustment
+  amount      Float // signed: +credit to fund, − debit/spend
+  description String?
+  status      String   @default("applied") // applied | planned
+  dueDate     String? // ISO date for planned expenses
+  runId       String?
+  // When this entry is an expense payment (pay_expense), the expense it paid — so an
+  // Undo / ledger-delete can give the money back AND reduce that expense's `paid`.
+  expenseId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([fundId])
+  @@index([status])
+}
+
+// RecurringExpense — the editable master list of business expenses (OpEx),
+// seeded from Sellerboard's expenses export. Category = the FP1 fund it belongs to
+// (Salaries / Warehouse & Logistics / Software / Subscriptions / …). frequency
+// drives the monthly obligation per fund (weekly × 52/12). Amounts are editable —
+// Vladimir keeps them current. Optional product/marketplace attribution.
+model RecurringExpense {
+  id              String   @id @default(cuid())
+  scope           String   @default("business") // business | personal
+  name            String
+  category        String // = fund name (FP1)
+  amount          Float
+  frequency       String   @default("monthly") // monthly | weekly | one_time
+  currency        String   @default("USD")
+  // Personal bills: owner = whose bill (Владимир | Анна); dueDay = day of month it's
+  // due (drives the personal payment calendar). Null for business OpEx.
+  owner           String?
+  dueDay          Int?
+  marketplace     String? // optional channel attribution
+  product         String? // optional product attribution
+  isAdSpend       Boolean  @default(false)
+  active          Boolean  @default(true)
+  source          String   @default("sellerboard") // sellerboard | manual
+  notes           String?
+  // Accrual ledger: `accrued` = начислено (gross, cumulative). Non-salary grows it
+  // daily (monthly cost ÷ 30.44) via the meter; SALARY grows it per worked day via
+  // the timesheet (toggle ±perDay). `paid` = выплачено (cumulative, grows when you
+  // press Paid). Owed (остаток) = accrued − paid. `lastAccruedDate` = cursor for the
+  // daily meter (non-salary only).
+  accrued         Float    @default(0)
+  paid            Float    @default(0)
+  lastAccruedDate String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([active])
+  @@index([scope])
+}
+
+// Receipt — a photographed purchase receipt. Uploaded to R2, OCR'd by Claude
+// vision (merchant/total/tax/date), then turned into a spend (FundEntry debit)
+// against the chosen fund (resale buys → Cost-of-Goods / Restock reserve fund).
+model Receipt {
+  id             String   @id @default(cuid())
+  scope          String   @default("business") // business | personal
+  imageUrl       String
+  merchant       String?
+  total          Float?
+  tax            Float?
+  date           String? // ISO date from the receipt
+  currency       String   @default("USD")
+  status         String   @default("parsed") // parsed | saved | home | review | refund
+  fundId         String?
+  fundEntryId    String? // the spend entry created on save
+  notes          String?
+  rawText        String? // raw vision JSON for audit
+  // Email auto-ingest (Jackie spec): online purchase/refund receipts parsed from Gmail.
+  channel        String? // walmart_business | walmart_com | target | bjs | samsclub | instacart | doordash | amazon
+  orderId        String? // store order number — dedup key with channel
+  classification String? // business | home | unknown
+  sourceInbox    String?
+  emailId        String? // gmail message id
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([fundId])
+  @@index([status])
+}
+
+// TimeLog — a timesheet (табель): one row = one worked DAY for one employee
+// (employee = a RecurringExpense in the Salaries category). Salary for a period =
+// worked days × per-day rate; that becomes a bill in the Salaries fund.
+model TimeLog {
+  id        String   @id @default(cuid())
+  expenseId String // the salary RecurringExpense (employee)
+  date      String // YYYY-MM-DD worked
+  createdAt DateTime @default(now())
+
+  @@unique([expenseId, date], name: "timelog_dedup")
+  @@index([expenseId])
+  @@index([date])
+}
+
+// Debt — a company debt tracked inside the Debt-repayment fund. `amount` = original
+// owed, `paid` = running paid (remaining = amount − paid). Paying debits the fund.
+// Listing debts does NOT make the fund negative — debts are a separate ledger; the
+// fund balance is money accumulated toward repaying them.
+model Debt {
+  id               String   @id @default(cuid())
+  scope            String   @default("business") // business | personal
+  fundId           String
+  amount           Float // original amount owed
+  paid             Float    @default(0)
+  // Personal loans (mortgage/auto/personal): owner = whose, dueDay = day of month,
+  // apr = annual interest %, termMonths = remaining term, kind = loan type. These
+  // power the personal calendar + Phase-2 amortization/payoff. Null for business debts.
+  owner            String?
+  dueDay           Int?
+  apr              Float?
+  termMonths       Int?
+  kind             String? // mortgage | auto | personal | student | sba | other
+  // For installment/scheduled debts (рассрочка): the per-period installment amount
+  // + its frequency. null = a lump/overdue debt with no schedule. The averaged
+  // monthly equivalent drives the fund's monthly "need".
+  monthlyPayment   Float? // per-period installment amount
+  paymentFrequency String? // weekly | biweekly | monthly | daily
+  // Daily-ticking owed counter (same meter as RecurringExpense): accrues the monthly
+  // installment ÷ 30.44 each day, reduced when an installment is paid. Drives the
+  // Installments fund's "Needed". null cursor = not yet ticked.
+  accrued          Float    @default(0)
+  lastAccruedDate  String?
+  description      String?
+  dateIncurred     String? // ISO date the debt first arose (to see how old it is)
+  status           String   @default("open") // open | settled
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([fundId])
+  @@index([scope])
+}
+
+// FinancePlanRun — one weekly (or manual) distribution pass.
+model FinancePlanRun {
+  id               String   @id @default(cuid())
+  scope            String   @default("business") // business | personal
+  runDate          String // ISO date
+  periodStart      String?
+  periodEnd        String?
+  totalIn          Float    @default(0)
+  totalReserved    Float    @default(0)
+  totalDistributed Float    @default(0)
+  reserveRateUsed  Float    @default(0)
+  payoutCount      Int      @default(0)
+  source           String   @default("manual") // manual | cron
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  @@index([runDate])
+  @@index([scope])
+}
+
+// CreditCard — a revolving credit line (the centerpiece of Personal Finance).
+// Unlike a Debt (installment), a card's balance fluctuates with spending. We track
+// the current balance, the statement balance (pay in full → no interest), the
+// credit limit (→ utilization, a credit-score driver), APR, the minimum payment
+// rule, and the statement/due days (→ the payment calendar). Paying a card debits
+// its `fundId` fund and lowers the balance (see CardEntry).
+model CreditCard {
+  id               String   @id @default(cuid())
+  scope            String   @default("personal") // personal | business
+  owner            String? // Владимир | Анна | <legal entity> for business cards
+  issuer           String // Chase | Amex | Capital One | Citi | …
+  name             String? // nickname: "Chase Freedom", "BJ's"
+  last4            String?
+  creditLimit      Float    @default(0)
+  currentBalance   Float    @default(0) // owed right now
+  statementBalance Float    @default(0) // balance at last statement close (pay in full = no interest)
+  apr              Float? // annual interest rate %
+  minPaymentFixed  Float    @default(0) // floor of the minimum payment ($35)
+  minPaymentPct    Float    @default(0) // % of balance for the minimum (2 = 2%)
+  statementDay     Int? // day of month the statement closes (1..31)
+  dueDay           Int? // day of month the payment is due (1..31)
+  autopay          String   @default("none") // none | min | statement | full | fixed
+  autopayAmount    Float? // for autopay = fixed
+  fundId           String? // which fund pays this card
+  active           Boolean  @default(true)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([scope])
+  @@index([owner])
+  @@index([active])
+}
+
+// CardEntry — the ledger of one credit card: charges (+balance), payments
+// (−balance, debit a fund), interest, fees. Lets us show history and undo.
+model CardEntry {
+  id          String   @id @default(cuid())
+  cardId      String
+  type        String // charge | payment | interest | fee | adjustment
+  amount      Float // signed: +increases balance (charge/interest/fee), −payment
+  description String?
+  fundId      String? // fund the payment was drawn from (type=payment)
+  fundEntryId String? // the FundEntry created for a payment (for undo)
+  date        String? // ISO date
+  createdAt   DateTime @default(now())
+
+  @@index([cardId])
+}

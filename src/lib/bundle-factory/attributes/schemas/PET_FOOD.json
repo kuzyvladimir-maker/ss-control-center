@@ -1,0 +1,517 @@
+[
+ {
+  "key": "age_range_description",
+  "label": "Age Range Description",
+  "required": false
+ },
+ {
+  "key": "allergen_information",
+  "label": "Allergen Information",
+  "required": false
+ },
+ {
+  "key": "animal_food_diet_type",
+  "label": "Animal Food Diet Type",
+  "required": false
+ },
+ {
+  "key": "animal_food_ingredient_claim",
+  "label": "Animal Food Ingredient Claim",
+  "required": false
+ },
+ {
+  "key": "animal_food_nutrient_content_claim",
+  "label": "Animal Food Nutrient Content Claim",
+  "required": false
+ },
+ {
+  "key": "brand",
+  "label": "Brand Name",
+  "required": true
+ },
+ {
+  "key": "breed_recommendation",
+  "label": "Breed Recommendation",
+  "required": false
+ },
+ {
+  "key": "bullet_point",
+  "label": "Key Product Features",
+  "required": true
+ },
+ {
+  "key": "california_proposition_65",
+  "label": "California Proposition 65",
+  "required": false
+ },
+ {
+  "key": "child_parent_sku_relationship",
+  "label": "Child Parent Sku Relationship",
+  "required": false
+ },
+ {
+  "key": "color",
+  "label": "Color",
+  "required": false
+ },
+ {
+  "key": "compliance_media",
+  "label": "Compliance Media",
+  "required": false
+ },
+ {
+  "key": "condition_note",
+  "label": "Offer Condition Note",
+  "required": false
+ },
+ {
+  "key": "condition_type",
+  "label": "Item Condition",
+  "required": false
+ },
+ {
+  "key": "container",
+  "label": "Container",
+  "required": false
+ },
+ {
+  "key": "contains_liquid_contents",
+  "label": "Contains Liquid Contents?",
+  "required": false
+ },
+ {
+  "key": "country_of_origin",
+  "label": "Country of Publication",
+  "required": true
+ },
+ {
+  "key": "directions",
+  "label": "Directions",
+  "required": false
+ },
+ {
+  "key": "dog_breed_size",
+  "label": "Dog Breed Size",
+  "required": false
+ },
+ {
+  "key": "externally_assigned_product_identifier",
+  "label": "External Product ID",
+  "required": false
+ },
+ {
+  "key": "fc_shelf_life",
+  "label": "Fulfillment Center Shelf Life",
+  "required": false
+ },
+ {
+  "key": "flavor",
+  "label": "Flavor",
+  "required": false
+ },
+ {
+  "key": "fulfillment_availability",
+  "label": "Fulfillment Availability",
+  "required": false
+ },
+ {
+  "key": "ghs_chemical_h_code",
+  "label": "GHS Chemical H Code",
+  "required": false
+ },
+ {
+  "key": "gift_options",
+  "label": "Gift Options",
+  "required": false
+ },
+ {
+  "key": "handmade_classification",
+  "label": "Handmade Classification",
+  "required": false
+ },
+ {
+  "key": "ingredients",
+  "label": "Ingredients",
+  "required": false
+ },
+ {
+  "key": "is_expiration_dated_product",
+  "label": "Expiration Dated Product",
+  "required": false
+ },
+ {
+  "key": "is_green_purchasing_law_compliant",
+  "label": "Is Green Purchasing Law Compliant",
+  "required": false
+ },
+ {
+  "key": "is_this_product_subject_to_buyer_age_restrictions",
+  "label": "Is This Product Subject To Buyer Age Restrictions",
+  "required": false
+ },
+ {
+  "key": "item_dimensions",
+  "label": "Item Dimensions",
+  "required": false
+ },
+ {
+  "key": "item_display_weight",
+  "label": "Item Display Weight",
+  "required": false
+ },
+ {
+  "key": "item_form",
+  "label": "Item Form",
+  "required": false
+ },
+ {
+  "key": "item_name",
+  "label": "Title",
+  "required": true
+ },
+ {
+  "key": "item_package_dimensions",
+  "label": "Item Package Dimensions",
+  "required": false
+ },
+ {
+  "key": "item_package_quantity",
+  "label": "Package Quantity",
+  "required": false
+ },
+ {
+  "key": "item_package_weight",
+  "label": "Package Weight",
+  "required": false
+ },
+ {
+  "key": "item_shape",
+  "label": "Item Shape",
+  "required": false
+ },
+ {
+  "key": "item_type_keyword",
+  "label": "Item Type Keyword",
+  "required": true
+ },
+ {
+  "key": "item_weight",
+  "label": "Item Weight",
+  "required": false
+ },
+ {
+  "key": "liquid_volume",
+  "label": "Liquid Volume",
+  "required": false
+ },
+ {
+  "key": "list_price",
+  "label": "List Price",
+  "required": false
+ },
+ {
+  "key": "main_offer_image_locator",
+  "label": "Main Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "main_product_image_locator",
+  "label": "Main Product Image Locator",
+  "required": false
+ },
+ {
+  "key": "manufacturer",
+  "label": "Manufacturer",
+  "required": false
+ },
+ {
+  "key": "map_policy",
+  "label": "Minimum Advertised Price Display",
+  "required": false
+ },
+ {
+  "key": "master_pack_layers_per_pallet_quantity",
+  "label": "Master Pack Layers per Pallet Quantity",
+  "required": false
+ },
+ {
+  "key": "master_packs_per_layer_quantity",
+  "label": "Master Packs Per Layer Quantity",
+  "required": false
+ },
+ {
+  "key": "material",
+  "label": "Material Type",
+  "required": false
+ },
+ {
+  "key": "max_order_quantity",
+  "label": "Max Order Quantity",
+  "required": false
+ },
+ {
+  "key": "merchant_release_date",
+  "label": "Offering Release Date",
+  "required": false
+ },
+ {
+  "key": "merchant_shipping_group",
+  "label": "Shipping Template",
+  "required": false
+ },
+ {
+  "key": "merchant_suggested_asin",
+  "label": "Merchant Suggested ASIN",
+  "required": false
+ },
+ {
+  "key": "model_number",
+  "label": "Model Number",
+  "required": false
+ },
+ {
+  "key": "number_of_items",
+  "label": "Number of Items",
+  "required": false
+ },
+ {
+  "key": "other_offer_image_locator_1",
+  "label": "Other Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "other_offer_image_locator_2",
+  "label": "Other Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "other_offer_image_locator_3",
+  "label": "Other Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "other_offer_image_locator_4",
+  "label": "Other Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "other_offer_image_locator_5",
+  "label": "Other Offer Image Locator",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_1",
+  "label": "Other Product Image Locator 1",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_2",
+  "label": "Other Product Image Locator 2",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_3",
+  "label": "Other Product Image Locator 3",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_4",
+  "label": "Other Product Image Locator 4",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_5",
+  "label": "Other Product Image Locator 5",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_6",
+  "label": "Other Product Image Locator 6",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_7",
+  "label": "Other Product Image Locator 7",
+  "required": false
+ },
+ {
+  "key": "other_product_image_locator_8",
+  "label": "Other Product Image Locator 8",
+  "required": false
+ },
+ {
+  "key": "package_contains_sku",
+  "label": "Package Contains SKU",
+  "required": false
+ },
+ {
+  "key": "package_level",
+  "label": "Package Level",
+  "required": false
+ },
+ {
+  "key": "package_size_name",
+  "label": "Package Size Name",
+  "required": false
+ },
+ {
+  "key": "parentage_level",
+  "label": "Parentage Level",
+  "required": false
+ },
+ {
+  "key": "part_number",
+  "label": "Manufacturer Part Number",
+  "required": false
+ },
+ {
+  "key": "pattern",
+  "label": "Pattern",
+  "required": false
+ },
+ {
+  "key": "pesticide_marking",
+  "label": "Pesticide Marking",
+  "required": false
+ },
+ {
+  "key": "pet_type",
+  "label": "Pet Type",
+  "required": false
+ },
+ {
+  "key": "product_benefit",
+  "label": "Product Benefits",
+  "required": false
+ },
+ {
+  "key": "product_description",
+  "label": "Product Description",
+  "required": true
+ },
+ {
+  "key": "product_expiration_type",
+  "label": "Product Expiration Type",
+  "required": false
+ },
+ {
+  "key": "product_site_launch_date",
+  "label": "Launch Date",
+  "required": false
+ },
+ {
+  "key": "product_tax_code",
+  "label": "Product Tax Code",
+  "required": false
+ },
+ {
+  "key": "purchasable_offer",
+  "label": "Purchasable Offer",
+  "required": false
+ },
+ {
+  "key": "recommended_uses_for_product",
+  "label": "Recommended Uses For Product",
+  "required": false
+ },
+ {
+  "key": "regulatory_compliance_certification",
+  "label": "Regulatory Compliance Certification",
+  "required": false
+ },
+ {
+  "key": "scent",
+  "label": "Scent Name",
+  "required": false
+ },
+ {
+  "key": "serving_recommendation",
+  "label": "Serving Recommendation",
+  "required": false
+ },
+ {
+  "key": "set_name",
+  "label": "Set Name",
+  "required": false
+ },
+ {
+  "key": "ships_globally",
+  "label": "Ships Globally",
+  "required": false
+ },
+ {
+  "key": "size",
+  "label": "Size",
+  "required": false
+ },
+ {
+  "key": "skip_offer",
+  "label": "Skip Offer",
+  "required": false
+ },
+ {
+  "key": "special_feature",
+  "label": "Additional Features",
+  "required": false
+ },
+ {
+  "key": "special_ingredients",
+  "label": "Special Ingredients",
+  "required": false
+ },
+ {
+  "key": "specific_uses_for_product",
+  "label": "Specific Uses For Product",
+  "required": false
+ },
+ {
+  "key": "storage_instructions",
+  "label": "Storage Instructions",
+  "required": false
+ },
+ {
+  "key": "style",
+  "label": "Style",
+  "required": false
+ },
+ {
+  "key": "supplemental_condition_information",
+  "label": "Supplemental Condition Information",
+  "required": false
+ },
+ {
+  "key": "supplier_declared_has_product_identifier_exemption",
+  "label": "Has GTIN exemption?",
+  "required": false
+ },
+ {
+  "key": "swatch_product_image_locator",
+  "label": "Swatch Product Image Locator",
+  "required": false
+ },
+ {
+  "key": "target_audience_keyword",
+  "label": "Target Audience",
+  "required": false
+ },
+ {
+  "key": "target_species",
+  "label": "Target Species",
+  "required": false
+ },
+ {
+  "key": "title_differentiation",
+  "label": "Item Highlight",
+  "required": false
+ },
+ {
+  "key": "unit_count",
+  "label": "Unit Count",
+  "required": false
+ },
+ {
+  "key": "variation_theme",
+  "label": "Variation Theme",
+  "required": false
+ }
+]

@@ -1,0 +1,1199 @@
+[
+ {
+  "sku": "FaisalX-1131",
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Pepperidge Farm Farmhouse Butter Bread, not Whole Grain Thin Sliced 15 Grain Bread ",
+  "donorId": "9e3119c5-b5dc-4021-8d15-b59694607fdd",
+  "donorTitle": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1132",
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Pepperidge Farm 8 Soft White Hamburger Buns, not Pepperidge Farm Whole Grain Thin S",
+  "donorId": "9e3119c5-b5dc-4021-8d15-b59694607fdd",
+  "donorTitle": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1140",
+  "listing": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Pepperidge Farm Soft White Hamburger Buns, not White Sandwich Bread as specified in",
+  "donorId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+  "donorTitle": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1144",
+  "listing": "Pepperidge Farm Very Thin 100% Whole Wheat Bread, 16 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong product: image shows Pepperidge Farm Farmhouse Butter Bread, but listing is for Pepperidge Far",
+  "donorId": "5d4f8fb8-9c2a-4f46-904e-3c239752b160",
+  "donorTitle": "Pepperidge Farm Very Thin 100% Whole Wheat Bread, 16 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1162",
+  "listing": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong variant: image shows Pepperidge Farm Farmhouse Butter Bread, but the listing title specifies M",
+  "donorId": "35f43665-6bc6-4b71-b427-43704d927727",
+  "donorTitle": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1174",
+  "listing": "Pepperidge Farm Farmhouse Potato Bread, 22 oz (Pack of 6)",
+  "pack": 6,
+  "was": "our feed never ingested — old image still live",
+  "donorId": "e17e04d6-e78a-4be6-95e0-0f15e6d902d6",
+  "donorTitle": "Pepperidge Farm Farmhouse Potato Bread - 22oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1176",
+  "listing": "Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Pepperidge Farm Soft White Hamburger Buns, not Jewish Rye Seeded Bread — wrong prod",
+  "donorId": "c8b542f1-ed9b-45c5-883c-dcf9e00944ea",
+  "donorTitle": "Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1179",
+  "listing": "Pepperidge Farm Whole Grain Oatmeal Bread, 4-Pack 24 oz. Loaves",
+  "pack": 4,
+  "was": "Product shown is Pepperidge Farm Farmhouse Butter Bread, not Whole Grain Oatmeal Bread as listed.",
+  "donorId": "ec31b38a-fe79-405b-a907-0e5f51399afd",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1180",
+  "listing": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Pepperidge Farm Soft White Hamburger Buns, not Whole Grain Oatmeal Bread — wrong pr",
+  "donorId": "ec31b38a-fe79-405b-a907-0e5f51399afd",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1191",
+  "listing": "Sara Lee Honey Wheat Bread, 20 oz, Soft Pre-sliced Wheat Bread, Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Wrong variant: image shows Sara Lee Delightful Healthy Multi-Grain bread, but listing specifies Hone",
+  "donorId": "ed513fcc-4089-48d1-b836-760b4e40c1a1",
+  "donorTitle": "Sara Lee Honey Wheat Bread 20 oz. Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1204",
+  "listing": "Sara Lee Butter Bread, 20 oz, Soft White Bread, Bag (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Sara Lee Delightful Healthy Multi-Grain bread, not Butter Bread (Soft White). Loave",
+  "donorId": "22956d73-b151-4692-a1ec-f317ced2e461",
+  "donorTitle": "Sara Lee Butter Bread, 20 oz, White Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1198",
+  "listing": "Sara Lee Whole Wheat Bread, 20 oz, Soft Wheat Bread, Bag (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong product: image shows Sara Lee Delightful Healthy Multi-Grain bread, not Sara Lee Whole Wheat b",
+  "donorId": "551d390b-9b50-4c91-bc26-8fdf1940a175",
+  "donorTitle": "Sara Lee 100% Whole Wheat Bread, 20 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1201",
+  "listing": "Sara Lee Delightful Honey Whole Wheat Bread, 20 oz, Soft Honey Wheat Bread, Bag (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows a single Sara Lee Delightful Honey Whole Wheat 20oz bread bag, count is 6, white bac",
+  "donorId": "5c70e29f-380c-476d-9d85-b2d5709e4194",
+  "donorTitle": "Sara Lee Delightful 100% Whole Wheat with Honey Bread - 20oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1213",
+  "listing": "Sara Lee Artesano Smooth Multigrain Bread, 20 oz, Soft Whole Wheat Pre-sliced Multigrain Bread, Bag -Pack Of 6",
+  "pack": 6,
+  "was": "Product shown is Sara Lee Artesano Golden Wheat, but the listing specifies Smooth Multigrain — diffe",
+  "donorId": "f8150a12-b26f-43b4-943c-322faeb45472",
+  "donorTitle": "Sara Lee Artesano Smooth Multigrain Bread, 20 oz, Whole Wheat Pre-sliced Multigrain Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1209",
+  "listing": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Sara Lee Artesano Brioche HOT DOG Buns, but the listing specifies Artesano White Ba",
+  "donorId": "f0809c35-5e33-4eba-b986-5b43208c1e87",
+  "donorTitle": "Sara Lee Artesano White Bakery Buns, 8 count, Hamburger Buns, 19 oz Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1206",
+  "listing": "Sara Lee Artesano Brioche Buns 8 ct 16 oz Hamburger Buns (Pack of 4)",
+  "pack": 4,
+  "was": "our feed never ingested — old image still live",
+  "donorId": "1e261324-064a-4967-ae9c-16c96f1ede60",
+  "donorTitle": "Sara Lee Artesano Brioche Buns, 8 count, Hamburger Buns, 16 oz Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1215",
+  "listing": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Soft Brioche Bread, Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Wrong product: image shows Sara Lee Delightful Healthy Multi-Grain bread, not Artesano Brioche Baker",
+  "donorId": "b66a82b8-8df7-4ab0-a0b0-e1623886a34b",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1227",
+  "listing": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Wrong brand and variant: image shows Sara Lee 100% Whole Wheat bread, not Arnold Whole Grains Health",
+  "donorId": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+  "donorTitle": "Arnold Whole Grains Healthy Bread, 24 oz, Multi-Grain Multigrain Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1228",
+  "listing": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+  "pack": 6,
+  "was": "Each bread loaf is angled at roughly 3/4 view rather than shown face-on with the wide front panel sq",
+  "donorId": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+  "donorTitle": "Arnold Whole Grains Healthy Bread, 24 oz, Multi-Grain Multigrain Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1236",
+  "listing": "Arnold Whole Grains 100% Bread, 24 oz, Soft Whole Wheat Wheat Bread, Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Arnold 100% Whole Wheat 8 Buns (hamburger buns), not the listed Arnold Whole Grains",
+  "donorId": "47f31554-c99b-4c4d-8c85-02083694d61f",
+  "donorTitle": "Arnold Whole Grains 100% Whole Wheat Bread, 24 oz, Whole Wheat Wheat Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1243",
+  "listing": "Arnold Keto Bread Loaf, 20 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Sara Lee 100% Whole Wheat bread, not Arnold Keto Bread — wrong brand and variant.",
+  "donorId": "7ab3e197-f9ab-4f02-9ca4-0039055f6407",
+  "donorTitle": "Arnold Keto bread, 20 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1242",
+  "listing": "Arnold Keto Bread Loaf, 20 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Wrong brand and product: image shows Sara Lee 100% Whole Wheat bread, not Arnold Keto Bread. Additio",
+  "donorId": "7ab3e197-f9ab-4f02-9ca4-0039055f6407",
+  "donorTitle": "Arnold Keto bread, 20 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1248",
+  "listing": "Arnold Jewish Rye Pumpernickel Bread, 16 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Arnold Keto White Bread, not Arnold Jewish Rye Pumpernickel Bread as required by th",
+  "donorId": "c92f78ab-8e16-466a-abd6-f8b252cc2a46",
+  "donorTitle": "Arnold Pumpernickel, Jewish Rye Bread, 16 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1264",
+  "listing": "Arnold Organic 22 Whole Grains & Seeds Bread 20 oz Thin Sliced Multigrain Loaf (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong brand and product: image shows Sara Lee Honey Wheat bread, not Arnold Organic 22 Whole Grains ",
+  "donorId": "84376bc4-f037-4928-b317-c08ecefd10ff",
+  "donorTitle": "Arnold Organic 22 Whole Grains & Seeds Bread, 20 oz, Thin Sliced Multigrain Bread, Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1267",
+  "listing": "Arnold Superior Seeded Keto Bread Loaf, 20 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Nature's Own Perfectly Crafted Thick Sliced White bread, not Arnold Superior Seeded",
+  "donorId": "8e2d6f91-32af-4dac-978f-2556fe1820bd",
+  "donorTitle": "Arnold Superior Keto Seeded Bread 20 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1287",
+  "listing": "Arnold Potato Buns, 8 count, Soft Hamburger Buns, 16 oz Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Each tile shows one Arnold Potato Buns bag (correct brand/variant, single retail package). Grid has ",
+  "donorId": "94ff0933-e735-45e5-b660-272c67bf88b9",
+  "donorTitle": "Arnold Potato Hamburger Buns - 16oz/8ct",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1284",
+  "listing": "Arnold Potato Buns, 8 count, Hot Dog Buns, 16 oz Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Brand (Arnold) and Potato variant match, but listing specifies Hot Dog Buns (elongated) while the im",
+  "donorId": "758c6ee6-8049-4b08-8ec9-fae5fcfd7d40",
+  "donorTitle": "Arnold Potato Hot Dog Buns - 16oz / 8ct",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1427",
+  "listing": "Maruchan Instant Lunch, Hot and Spicy Chicken (2.25 oz., Pack of 12)",
+  "pack": 12,
+  "was": "Each tile shows a cluster of multiple individual Maruchan cups bundled together rather than a single",
+  "donorId": "f16018b7-0029-4f20-9894-8389104557df",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+  "score": 0.6666666666666666
+ },
+ {
+  "sku": "FaisalX-1627",
+  "listing": "Wonder Bread Classic Hot Dog Buns, White Bread Hot Dog Buns, 8 Count -Pack Of 7",
+  "pack": 7,
+  "was": "Product shown is Wonder Classic Hamburger Buns (8 count), but listing title specifies Wonder Bread C",
+  "donorId": "1290a8c6-436a-49e3-870f-15244b888df4",
+  "donorTitle": "Wonder Bread Classic Extra Soft Hot Dog Buns, White Bread Buns, 18 oz., 12 Ct, Shelf-Stable",
+  "score": 0.7
+ },
+ {
+  "sku": "FaisalX-1638",
+  "listing": "Sara Lee Whole Wheat Bread, 16 oz, Soft Wheat Bread, Bag -Pack Of 5",
+  "pack": 5,
+  "was": "Product shown is Sara Lee Delightful 45 Calories bread, not Sara Lee Whole Wheat Bread as listed. Ea",
+  "donorId": "59132a39-9cc7-4bdd-a6d9-3a7f26fc2d87",
+  "donorTitle": "Sara Lee Whole Wheat, Bread, Wheat Bread, 16 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1659",
+  "listing": "Dave's Killer Bread® Powerseed® Organic Bread 25 oz. Loaf -Pack Of 5",
+  "pack": 5,
+  "was": "Product shown is Dave's Killer Bread 'Good Seed', but the listing specifies 'Powerseed' — different ",
+  "donorId": "79f83dcb-95eb-4a3e-8226-71fe14d6669a",
+  "donorTitle": "Dave's Killer Bread Powerseed, Seeded Organic Bread, 1g Sugar per Slice, 25 oz Loaf",
+  "score": 0.5555555555555556
+ },
+ {
+  "sku": "FaisalX-1771",
+  "listing": "Barq's Root Beer Soda Pop, 2 Liter Bottle (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows one Barq's Root Beer bottle face-on with label visible, 6 tiles total, but the backg",
+  "donorId": "6c638bc6-5bd9-46a5-a761-87c1e2f5ec25",
+  "donorTitle": "Barq's Root Beer Soda Pop Bottle, 20 fl oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1858",
+  "listing": "Jarritos Mineragua Sparkling Water, 1.5 Liter Bottle (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows a 12-pack case of Jarritos Mineragua bottles — a multipack of individually-sold bott",
+  "donorId": "b7cb5306-e286-4a29-8a59-f046f1f072ce",
+  "donorTitle": "Jarritos Mineragua Sparkling Water, 1.58 Qt",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1974",
+  "listing": "Simply Cheetos White Cheddar Crunchy Cheese Flavored Snacks, 8.5 oz Bag-Pack Of 5",
+  "pack": 5,
+  "was": "Product shown is Simply Cheetos Puffs (box of 8 bags), not White Cheddar Crunchy 8.5 oz single bag a",
+  "donorId": "114306d8-a295-46f4-828e-6dd5a73d4b9c",
+  "donorTitle": "Cheetos Simply Crunchy White Cheddar Cheese Flavored Snacks",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2225",
+  "listing": "Gatorade Thirst Quencher, Fruit Punch Sports Drinks, 28 fl oz, (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Gatorade Thirst Quencher Orange flavor, but listing specifies Fruit Punch flavor.",
+  "donorId": "1f3603aa-76e0-4c44-aafe-a6e47e8b37ed",
+  "donorTitle": "Gatorade Thirst Quencher, Fruit Punch Sports Drinks, 28 fl oz Bottle",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2264",
+  "listing": "BODYARMOR Lyte Dragonfruit Berry Sports Drink, 16 fl oz, (Pack of 4)",
+  "pack": 4,
+  "was": "Flavor mismatch: listing title specifies Dragonfruit Berry but image shows Blueberry Pomegranate; ba",
+  "donorId": "286cb8ee-98ab-411a-8a80-e5f74b6b046d",
+  "donorTitle": "BODYARMOR Lyte Dragonfruit Berry Sports Drink Bottle",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2265",
+  "listing": "BODYARMOR Lyte Dragonfruit Berry Sports Drink, 16 fl oz, (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows a multipack case/tray of several individual BODYARMOR bottles bundled together, not ",
+  "donorId": "286cb8ee-98ab-411a-8a80-e5f74b6b046d",
+  "donorTitle": "BODYARMOR Lyte Dragonfruit Berry Sports Drink Bottle",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2298",
+  "listing": "Prime Hydration Drink Glowberry 16 fl oz, (Pack of 6)",
+  "pack": 6,
+  "was": "Bottles are showing the Nutrition Facts/back label panel, not the front brand+product name panel; al",
+  "donorId": "2e9ef214-3490-4b05-8297-d1f22316677e",
+  "donorTitle": "Prime Hydration Sports Drink, Glowberry, 16.9 fl oz, Bottle",
+  "score": 0.75
+ },
+ {
+  "sku": "FaisalX-2496",
+  "listing": "HORMEL COMPLEATS Roast Beef & Mashed Potatoes, 9 oz Plastic Tray, (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Hormel Compleats 'Beef Tips with Mashed Potatoes', not 'Roast Beef & Mashed Potatoe",
+  "donorId": "05cfc7e7-6b9c-4403-81a6-5ba2d26ff7eb",
+  "donorTitle": "HORMEL COMPLEATS Roast Beef & Mashed Potatoes, Shelf-Stable, 14 grams Protein, 9 oz Plastic Microwaveable Tray",
+  "score": 0.6153846153846154
+ },
+ {
+  "sku": "FaisalX-2515",
+  "listing": "HORMEL COMPLEATS Beefy Macaroni & Cheese, 7.5 oz Plastic Tray, (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is HORMEL Compleats Tender Beef with Mashed Potatoes & Gravy (9 oz), not Beefy Macaron",
+  "donorId": "bb5daf70-d463-4365-a4d3-c5e8402f7cb8",
+  "donorTitle": "HORMEL COMPLEATS Beefy Macaroni and Cheese, Shelf Stable 7.5 oz Plastic Tray",
+  "score": 0.7777777777777778
+ },
+ {
+  "sku": "FaisalX-257",
+  "listing": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 8)",
+  "pack": 8,
+  "was": "Each tile shows a PROMOTIONAL GRAPHIC/ADVERTISEMENT with multiple loaf variants (Butter Bread, Potat",
+  "donorId": "246a8c02-c09c-405e-9896-c14f4b554006",
+  "donorTitle": "Martin's Old-Fashioned, Real Butter Bread",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2554",
+  "listing": "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can, (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong flavor: image shows Campbell's Chunky Hearty Chicken with Vegetables, but listing specifies Ch",
+  "donorId": "80675f9a-f94f-4484-a126-43542d6b1f75",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2626",
+  "listing": "Campbell’s Chunky Soup, Loaded Potato Seasoned with Bacon, 15.25 oz, (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Progresso Loaded Potato with Bacon 18.5 oz, but the listing specifies Campbell's Ch",
+  "donorId": "5ce5d008-6c10-4ab8-9d6b-f1d271aaa095",
+  "donorTitle": "Campbell's Chunky Soup Loaded Potato Seasoned with Bacon Microwavable Bowl - 15.25oz",
+  "score": 0.7777777777777778
+ },
+ {
+  "sku": "FaisalX-2727",
+  "listing": "Campbell's Condensed Chicken with Rice Soup 10.5 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile is a single Campbell's Condensed Soup can, 6 cans total on a white background, all shown f",
+  "donorId": "0fea3834-f623-46db-b9ca-736dfc1c0c8f",
+  "donorTitle": "Campbell's Condensed Chicken with Rice Soup - 10.5oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2703",
+  "listing": "Knorr No Artificial Flavors Creamy Garlic Spiral Pasta Cooks in 8 Minutes , 4.4 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Knorr Pasta Sides Butter & Herb (fettuccine), not the Creamy Garlic Spiral Pasta va",
+  "donorId": "f6b7c16e-6f18-4c2b-a21d-a8773559fc6b",
+  "donorTitle": "Knorr No Artificial Flavors Creamy Garlic Spiral Pasta Cooks in 8 Minutes , 4.4 oz Regular Pouch",
+  "score": 0.8181818181818182
+ },
+ {
+  "sku": "FaisalX-2808",
+  "listing": "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup, 10.5 oz Can (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Campbell's Cream of Mushroom with Roasted Garlic, but listing specifies 25% Less So",
+  "donorId": "406e933c-ab82-42ae-b325-df76804de236",
+  "donorTitle": "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup - 10.5oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-280",
+  "listing": "Martin's Potato Sandwich Rolls, Fresh 3.5 Inch Buns, (Pack of 9)",
+  "pack": 9,
+  "was": "Product shown is Martin's Sweet Dinner Rolls (12 Rolls), not Potato Sandwich Rolls 3.5 Inch Buns — w",
+  "donorId": "68ff16e4-0983-40ba-a338-7bacf90ae2c7",
+  "donorTitle": "Martin's Potato Sandwich Rolls, Fresh 3.5 inch Buns, Ready to Eat",
+  "score": 0.75
+ },
+ {
+  "sku": "FaisalX-3423",
+  "listing": "Nissin Cup Noodle Original Ramen Noodle Soup 2.4 oz (Pack of 10)",
+  "pack": 10,
+  "was": "Product shown is Nissin Cup Noodles BEEF flavor, not Original flavor as required by the listing titl",
+  "donorId": "68099eb7-f2e6-444c-ab27-661ed00d958c",
+  "donorTitle": "Nissin Foods Cup Noodle Ramen Noodle Soup Original, 2.4 oz Cup, Shelf-Stable",
+  "score": 0.6666666666666666
+ },
+ {
+  "sku": "FaisalX-3446",
+  "listing": "Rice-A-Roni Rice Chicken Flavor 6.9 oz (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is a single-serve microwaveable cup, not the 6.9 oz box format specified in the listin",
+  "donorId": "fbaabab4-d7fb-488e-8f19-395058ff5a5c",
+  "donorTitle": "Rice-A-Roni Chicken Rice Mix",
+  "score": 0.75
+ },
+ {
+  "sku": "FaisalX-3453",
+  "listing": "Rice a Roni Spanish Rice, 6.8 oz box (Pack of 10)",
+  "pack": 10,
+  "was": "Each tile shows TWO separate items — a Rice-a-Roni Spanish Rice box plus a small jar (appears to be ",
+  "donorId": "cdd7c0ee-344c-47c7-9559-5b8b38f5a1da",
+  "donorTitle": "Rice-A-Roni Rice, Spanish Flavor 6.8 oz Box",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3506",
+  "listing": "Hamburger Helper Cheeseburger Macaroni, 6.6 oz Box (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Hamburger Helper Double Cheeseburger Macaroni, but the listing title specifies 'Che",
+  "donorId": "ae8dcd33-8659-486f-970e-611228c3cfc3",
+  "donorTitle": "Hamburger Helper Cheeseburger Macaroni, 6.6 oz Box",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3527",
+  "listing": "Hamburger Helper Three Cheese Pasta, 6 oz Box (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Hamburger Helper Deluxe Beef Stroganoff, not Three Cheese Pasta as required by the ",
+  "donorId": "0afa45a4-dc62-443d-8f3b-dbe1eec3c248",
+  "donorTitle": "Hamburger Helper Pasta Three Cheese, 6 Ounces Box",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3554",
+  "listing": "Pringles Cheddar Cheese Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+  "pack": 6,
+  "was": "The product shown appears to be a multi-pack tray/caddy of Pringles canisters (each tile shows what ",
+  "donorId": "42b566ed-20e4-447f-83cc-b92515b6e348",
+  "donorTitle": "Pringles Cheddar Cheese Potato Crisps Chips, Lunch Snacks",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3713",
+  "listing": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Progresso Rich & Hearty Loaded Potato with Bacon, but the listing specifies Italian",
+  "donorId": "28d79438-421f-4abd-9e74-69efdc6e4b88",
+  "donorTitle": "Progresso Rich and Hearty, Italian Sausage and Potato Canned Soup, Gluten Free, 18.5 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3724",
+  "listing": "Progresso Lentil Soup, Vegetable Classics Canned Soup, Gluten Free, 19 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Progresso Mediterranean-Style Lentil soup, not the Vegetable Classics Lentil varian",
+  "donorId": "2fde741c-abc8-40b4-b68d-6f192c099cbe",
+  "donorTitle": "Progresso Vegetable Classics, Lentil With Roasted Vegetables Canned Soup, Gluten Free, 19 oz.",
+  "score": 0.7777777777777778
+ },
+ {
+  "sku": "FaisalX-3727",
+  "listing": "Progresso Vegetable Classics, Vegetarian Vegetable with Barley Canned Soup, 19 oz. (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Progresso Vegetable Classics Minestrone, but the listing specifies 'Vegetarian Vege",
+  "donorId": "71a7591b-c4a2-42fc-89cc-82a1e0d502e2",
+  "donorTitle": "Progresso Vegetable Classics, Vegetarian Vegetable with Barley Canned Soup, 19 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3755",
+  "listing": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz. (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Progresso Pitmaster Sausage & Beer Cheese with Potatoes, not the listed Progresso L",
+  "donorId": "18d18c13-7e6f-4c84-97d2-0a8f1ac37791",
+  "donorTitle": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3757",
+  "listing": "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz. (Pack of 4)",
+  "pack": 4,
+  "was": "Wrong variant: image shows Progresso LIGHT Chicken Noodle (130 cal/can), but listing is Chickpea & N",
+  "donorId": "efa91c1e-4d72-45b9-b073-374618eba556",
+  "donorTitle": "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3770",
+  "listing": "Progresso Light, Chicken Pot Pie Style Soup, 18.5 oz. (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Progresso Light Creamy Chicken Noodle, but listing title specifies Chicken Pot Pie ",
+  "donorId": "ffb98ad6-b916-484d-8ab0-5b3f547d71f9",
+  "donorTitle": "Progresso Light, Chicken Pot Pie Style Canned Soup, 18.5 oz",
+  "score": 0.8571428571428571
+ },
+ {
+  "sku": "FaisalX-3775",
+  "listing": "Progresso Italian-Style Bean & Pasta Protein Soup, Vegetarian, 18.5 oz. (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Progresso Italian-Style Wedding soup, but listing title specifies Italian-Style Bea",
+  "donorId": "edae4c26-8fc6-41b5-b001-2cb6404ac3e4",
+  "donorTitle": "Progresso Italian-Style Bean and Pasta Protein Soup, Vegetarian, 18.5 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3795",
+  "listing": "Progresso Light, Broccoli Cheese Canned Soup, Gluten Free, 18 oz. (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Progresso Light New England Clam Chowder 18.5 oz, but listing specifies Broccoli Ch",
+  "donorId": "a89d4544-8deb-40bd-80a9-d11f54eb8e64",
+  "donorTitle": "Progresso Light, Broccoli Cheese Canned Soup, Gluten Free, 18 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3792",
+  "listing": "Progresso Reduced Sodium, Roasted Chicken Noodle Soup, 19 oz. (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is 18.5 oz but listing title specifies 19 oz; brand, type, and flavor match otherwise.",
+  "donorId": "5ddc9483-ecd0-4f18-b061-98a3233064dc",
+  "donorTitle": "Progresso Reduced Sodium Canned Roasted Chicken Noodle Soup",
+  "score": 0.875
+ },
+ {
+  "sku": "FaisalX-3804",
+  "listing": "Progresso Chicken Broth, Reduced Sodium, Gluten Free, 32 oz. (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Progresso Chicken Broth CLASSIC, but the listing specifies Reduced Sodium — differe",
+  "donorId": "ada8f892-e01b-4bbb-801f-4dbda6798e35",
+  "donorTitle": "Progresso Gluten Free Reduced Sodium Chicken Broth - 32oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3868",
+  "listing": "Jack Link’s Beef Jerky, 100% Beef, Original, 2.85 oz, 10g of Protein per Serving (Pack of 4)",
+  "pack": 4,
+  "was": "Flavor mismatch: image shows Jack Link's Beef Jerky TERIYAKI, but listing title specifies Original f",
+  "donorId": "10fccbaf-eda0-46d0-9c49-d5b61fb1be31",
+  "donorTitle": "Jack Link’s Beef Jerky, Made with 100% Beef, Original Flavor, 10g of Protein per Serving, 10 Ounce Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-389",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Bread Loaf, 22 oz, (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Nature's Own Perfectly Crafted Multigrain bread, not Brioche Style as specified in ",
+  "donorId": "b5f40a4e-882b-41b1-b3cb-e2590a3ae7bc",
+  "donorTitle": "Nature's Own Perfectly crafted Brioche Bread - 22oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-393",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Bread Lo — 12-Pack (12 loaves)",
+  "pack": 12,
+  "was": "Product shown is Nature's Own Sourdough Bread; listing title specifies Perfectly Crafted Brioche Sty",
+  "donorId": "b5f40a4e-882b-41b1-b3cb-e2590a3ae7bc",
+  "donorTitle": "Nature's Own Perfectly crafted Brioche Bread - 22oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-399",
+  "listing": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, 20 oz, (Pack of 7)",
+  "pack": 7,
+  "was": "Wrong product: image shows Nature's Own Butter Bread, not WhiteWheat Healthy White Bread. Each tile ",
+  "donorId": "a801f269-29e7-4f93-aa5e-29a10bc42c4a",
+  "donorTitle": "Nature's Own WhiteWheat Healthy White Bread, Non-GMO Sliced White Bread, 20 oz Loaf",
+  "score": 0.75
+ },
+ {
+  "sku": "FaisalX-402",
+  "listing": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, 20 oz, (Pack of 10)",
+  "pack": 10,
+  "was": "Wrong product: image shows Nature's Own Butter Bread (not WhiteWheat Healthy White Bread). Each tile",
+  "donorId": "a801f269-29e7-4f93-aa5e-29a10bc42c4a",
+  "donorTitle": "Nature's Own WhiteWheat Healthy White Bread, Non-GMO Sliced White Bread, 20 oz Loaf",
+  "score": 0.75
+ },
+ {
+  "sku": "FaisalX-4044",
+  "listing": "Snack Factory Pretzel Crisps Gluten Free, Original Flavor, 5 Ounce (Pack of 8)",
+  "pack": 8,
+  "was": "Wrong SKU: listing specifies 5 oz bags but every tile shows the 14 OZ Party Size bag — different siz",
+  "donorId": "bd203c45-4f6e-4724-8624-94d553b607c7",
+  "donorTitle": "Snack Factory Pretzel Crisps Gluten Free, Original Flavor, 5 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4057",
+  "listing": "Dot's Homestyle Pretzels Honey Mustard Seasoned Pretzel Twists, 5 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Dot's Homestyle Pretzels ORIGINAL Seasoned Pretzel Twists (16 oz), but the listing ",
+  "donorId": "c76e5779-c8e8-4df7-8cce-bea7a170f9bd",
+  "donorTitle": "Dot's Homestyle Pretzels, Honey Mustard Seasoned Pretzel Twists, 5 oz Snack Size Bag",
+  "score": 0.8888888888888888
+ },
+ {
+  "sku": "FaisalX-4093",
+  "listing": "Orville Redenbacher's Movie Theater Butter Microwave Popcorn, Mini Bags, 1.5 oz, 12 Count-Pack of 4",
+  "pack": 4,
+  "was": "Each tile shows the main Orville Redenbacher's 12-count box alongside a '+' symbol and a separate sm",
+  "donorId": "1c736370-f7f7-45fa-8428-c3b498d5be92",
+  "donorTitle": "Orville Redenbacher’s Microwave Popcorn Mini Bags, Movie Theater Butter Flavor, 1.5 oz., 12-Count",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4101",
+  "listing": "Orville Redenbacher’s Movie Theater Butter Flavored Microwave Popcorn, 3.29 oz (Pack of 8)",
+  "pack": 8,
+  "was": "Each tile shows an Orville Redenbacher's Ultimate Butter Classic 12-Bag Value Size box — a multipack",
+  "donorId": "d26e2c75-9992-4146-9935-89727487517f",
+  "donorTitle": "Orville Redenbacher’s Microwave Popcorn, Movie Theater Butter Flavor, 3.29 oz., 6-Count",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4120",
+  "listing": "Snack Factory Garlic Parmesan Pretzel Crisps, 14 oz Party Size Bag (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Snack Factory Pretzel Crisps Party Size EVERYTHING flavor, but listing title specif",
+  "donorId": "f8b39564-1122-491f-9686-7907a0ae3212",
+  "donorTitle": "Snack Factory Garlic Parmesan Pretzel Crisps, 14 oz Party Size Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4178",
+  "listing": "La Banderita Carb Counter Snack Size Flour Tortillas 8 Count Bag (Pack of 6)",
+  "pack": 6,
+  "was": "Package shown is La Banderita Carb Counter Tortilla Wraps (16 count) but listing specifies Snack Siz",
+  "donorId": "75fc69f2-f86a-4575-a9d8-2b6cda56655e",
+  "donorTitle": "La Banderita Carb Counter Snack Size Flour Tortillas, 7.9 oz, 8 Count",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4187",
+  "listing": "La Banderita Flour 8\" Soft Taco Tortillas, 10 ct (Pack of 6)",
+  "pack": 6,
+  "was": "The listing specifies La Banderita Flour 8\" Soft Taco Tortillas, but the packages shown are branded ",
+  "donorId": "36c0852c-46ad-479a-90b7-e0b3cfc7ea2f",
+  "donorTitle": "La Banderita Taco Size Flour Tortillas - 16oz/10ct",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4218",
+  "listing": "Old El Paso Crunchy Taco Shells, Gluten-Free, 18 Ct., 6.89 oz. (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Old El Paso Protein Advantage Taco Shells (10 ct, 4.94 oz), not the listed Old El P",
+  "donorId": "e0d81be4-fc0c-497f-8c98-5342f1866cb9",
+  "donorTitle": "Old El Paso Crunchy Taco Shells, Gluten-Free, 18 Count., 6.89 oz.",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4235",
+  "listing": "RITZ Toasted Chips Sour Cream and Onion Crackers, 8.1 oz (Pack of 8)",
+  "pack": 8,
+  "was": "Bags shown are RITZ Toasted Chips ORIGINAL flavor, but the listing specifies Sour Cream and Onion — ",
+  "donorId": "26fd06be-80d6-438b-9932-b4de0f0ffe59",
+  "donorTitle": "RITZ Toasted Chips Sour Cream and Onion Crackers, Party Snacks, 8.1 oz",
+  "score": 0.7777777777777778
+ },
+ {
+  "sku": "FaisalX-4324",
+  "listing": "Toasteds Flatbreads Italian Herb Crackers, Party Snacks, 8.7 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows a multi-product promotional graphic (Town House Pita, Club, and Toasteds boxes toget",
+  "donorId": "3945cecc-23a5-47cd-a2c5-76d4a1349648",
+  "donorTitle": "Toasteds Flatbreads Italian Herb Crackers, Party Snacks, 8.7 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4454",
+  "listing": "Cheez-It Extra Toasty Cheese Crackers, Baked Snack Crackers, 21 oz (Pack of 8)",
+  "pack": 8,
+  "was": "Boxes show Cheez-It Extra Toasty Cheddar Jack 12.4 oz (Pantry Size), but listing specifies Extra Toa",
+  "donorId": "32fb2702-61f0-4d45-840a-fd78e0221356",
+  "donorTitle": "Cheez-It Extra Toasty Cheese Crackers, Baked Snack Crackers, 21 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4503",
+  "listing": "Cheez-It Grooves Bold Cheddar Cheese Crackers, Crunchy Snack Crackers, 9 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Flavor mismatch: image shows Cheez-It Grooves Sharp White Cheddar, but listing specifies Bold Chedda",
+  "donorId": "5eb3767d-32e5-4553-b751-8d2e06f05855",
+  "donorTitle": "Cheez-It Grooves Bold Cheddar Cheese Crackers, Crunchy Snack Crackers",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4533",
+  "listing": "Cheez-It Grooves Zesty Cheddar Ranch Cheese Crackers, Crunchy Snack Crackers, 9 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Cheez-It Grooves Sharp White Cheddar, but listing specifies Zesty Cheddar Ranch fla",
+  "donorId": "ba903878-3536-438c-b6e4-40421a81fe44",
+  "donorTitle": "Cheez-It Grooves Zesty Cheddar Ranch Cheese Crackers, Crunchy Snack Crackers",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4681",
+  "listing": "KIND Breakfast Peanut Butter Banana Dark Chocolate Gluten Free Protein Snack Bars, 1.76 oz, 12 Count (Pack of 4)",
+  "pack": 4,
+  "was": "All four tiles show a single KIND Breakfast Protein Peanut Butter Banana Dark Chocolate bar face-on ",
+  "donorId": "29d5339e-139a-40d8-a2b3-3a883c0dcd49",
+  "donorTitle": "KIND Breakfast Peanut Butter Banana Dark Chocolate Gluten Free Protein Snack Bars, 1.76 oz, 6 Count One box",
+  "score": 0.9166666666666666
+ },
+ {
+  "sku": "FaisalX-4756",
+  "listing": "SKIPPY Peanut Butter, Creamy, Plastic Jar 16.3 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Jars show 'Roasted Honey Nut Creamy' variant, not plain Creamy as listed; each of the 4 grid tiles d",
+  "donorId": "1c486bc3-dd3e-4180-a0cc-8bc572f0a279",
+  "donorTitle": "SKIPPY Peanut Butter, Creamy, Plastic Jar 16.3 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4761",
+  "listing": "OREO Mega Stuf Chocolate Sandwich Cookies, Party Size, 1 lb 9.35 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Each tile shows ~3 packages fanned/stacked behind the front one rather than a single unit; total vis",
+  "donorId": "50877b38-8ba7-4472-909e-55ce5918123f",
+  "donorTitle": "OREO Mega Stuf Chocolate Sandwich Cookies, Party Size, 1 lb 9.35 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4811",
+  "listing": "OREO Cakesters Soft Snack Cakes, 5 - 2.02 oz Snack Packs (Pack of 8)",
+  "pack": 8,
+  "was": "Listing title specifies 'OREO Cakesters' (chocolate/original) but image shows 'Golden OREO Cakesters",
+  "donorId": "ca4b0e77-9416-485f-a858-d1f14cbd0ef8",
+  "donorTitle": "OREO Cakesters Soft Snack Cakes, 5 - 2.02 oz Snack Packs",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4848",
+  "listing": "OREO Thins Golden Sandwich Cookies, Family Size, 11.78 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Listing title specifies OREO Thins Golden (vanilla/golden flavor), but the image shows OREO Thins Ch",
+  "donorId": "937772c8-0c82-4823-8e57-586a703148b7",
+  "donorTitle": "Oreo Thins Golden Sandwich Cookies Family Size - 11.78oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-5060",
+  "listing": "Celestial Seasonings Caffeine-Free Lemon Honey Drop Herbal Tea Bags 16 Count (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows the BACK/side panel of the box (Blendmaster's Notes, barcode, text panel visible) — ",
+  "donorId": "0879fa27-70e5-4b1b-af9b-5a223f1cb648",
+  "donorTitle": "Celestial Seasonings Caffeine-Free Lemon Honey Drop Herbal Tea Bags (16 Count)",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-5230",
+  "listing": "Sour Patch Kids, Soft & Chewy Candy, 3.5 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Sour Patch Kids ZOMBIE (Halloween theater box variant), not the standard Sour Patch",
+  "donorId": "be5029ed-7b56-404f-8960-3d0e26e30be3",
+  "donorTitle": "SOUR PATCH KIDS Kids Soft & Chewy Candy",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-5359",
+  "listing": "Trolli Sour Brite Crawlers, Candy, Very Berry, Sweet and Sour, Gummy Worms, 14 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Bags shown are standard Trolli Sour Brite Crawlers 5 oz — no 'Very Berry' flavor callout visible, an",
+  "donorId": "dca73c21-c738-4b15-b79e-1b47897f93a4",
+  "donorTitle": "Trolli Sour Brite Crawlers Candy, Very Berry, Sweet and Sour, Gummy Worms, 14 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-5417",
+  "listing": "Skittles Wild Berry Chewy Candy, Share Size - 4 oz Bag-Pack of 6",
+  "pack": 6,
+  "was": "Product shown is Skittles Gummies (Wild Berry variant not confirmed — package appears to be standard",
+  "donorId": "d2f4d034-92a9-46d9-b6e7-74ba263ecb45",
+  "donorTitle": "Skittles Wild Berry Chewy Candy, Share Size - 4 oz Bag",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-5434",
+  "listing": "SOUR PATCH KIDS Lemonade Fest Soft & Chewy Candy, 8.02 oz Bag-Pack of 4",
+  "pack": 4,
+  "was": "Each tile shows a group of 4 bags fanned together labeled '4 Pack', so each cell is a multipack of s",
+  "donorId": "ed73fb0f-a1ac-4ae1-9182-c070511c6914",
+  "donorTitle": "SOUR PATCH KIDS Lemonade Fest Soft & Chewy Gummy Candy - 8.02oz",
+  "score": 0.875
+ },
+ {
+  "sku": "FaisalX-764",
+  "listing": "Barilla Protein+ Spaghetti Pasta, Plant Based Pasta, 14.5oz, Pack of 10",
+  "pack": 10,
+  "was": "Each repeated tile shows a cluster of 4–5 individual Barilla Protein+ boxes rather than a single uni",
+  "donorId": "3b32c87f-48c6-4bd3-8a95-2714d81c0313",
+  "donorTitle": "Barilla Protein+ Spaghetti Pasta, Plant Based Pasta, 14.5oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-771",
+  "listing": "Barilla Gluten Free Penne Pasta, 12 oz, Pack of 10",
+  "pack": 10,
+  "was": "Each tile shows the Barilla Gluten Free Penne box from the front face, but the box is rotated roughl",
+  "donorId": "f873b932-7e98-427d-848d-efb7912a06f4",
+  "donorTitle": "Barilla Gluten Free Penne Pasta - 12oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-778",
+  "listing": "Barilla Gluten Free Spaghetti Pasta, 12 oz, Pack of 10",
+  "pack": 10,
+  "was": "Each tile shows the front panel of what appears to be the Barilla Gluten Free Spaghetti box, but the",
+  "donorId": "86010318-c99c-42b6-bdea-b078fee4d05f",
+  "donorTitle": "Barilla Gluten Free Spaghetti Pasta, 12 oz",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-814",
+  "listing": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Morena Pure Cane Sugar bags, not Lay's Dill Pickle Flavored Potato Chips. Grid show",
+  "donorId": "78e8276f-7355-418d-b27e-b94e7891160b",
+  "donorTitle": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag",
+  "score": 1
+ },
+ {
+  "sku": "Mine-12",
+  "listing": "Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz (Pack of 32)",
+  "pack": 32,
+  "was": "Each tile is a 12-count multipack carton of Fancy Feast cans (the number '12' is clearly printed on ",
+  "donorId": "5b59309b-f6a5-488d-abec-b5a997980c4b",
+  "donorTitle": "Purina Fancy Feast Gravy Lovers Wet Cat Food, Chicken & Beef in Gravy, 3 oz Can",
+  "score": 0.5
+ },
+ {
+  "sku": "Mine-21",
+  "listing": "Purina Fancy Feast Delights with Cheddar Wet Cat Food, Grilled Chicken, 3 oz Cans (24 Pack)",
+  "pack": 24,
+  "was": "Each tile appears to show a Fancy Feast Delights multi-can variety/box pack rather than a single 3 o",
+  "donorId": "797a3651-258e-4597-b053-39b3b35df75e",
+  "donorTitle": "Purina Fancy Feast Grilled Delights with Cheddar Wet Cat Food, Chicken & Cheddar, 3 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-138",
+  "listing": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 8)",
+  "pack": 8,
+  "was": "Each tile shows the back/side of the can with the Nutrition Facts panel facing the camera, not the w",
+  "donorId": "c92c9e5e-cdb3-42c2-aab4-e21d8103c94a",
+  "donorTitle": "Margaret Holmes Seasoned Cabbage, Canned Vegetables, 15 oz",
+  "score": 0.6666666666666666
+ },
+ {
+  "sku": "RizwanX-142",
+  "listing": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is 'Seasoned Field Peas & Snaps' but listing title specifies plain 'Field Peas and Sna",
+  "donorId": "800a4548-0ff8-4509-bdff-45bc7a09255f",
+  "donorTitle": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2211",
+  "listing": "Nissin Asian Noodles in Sauce, Sweet Chili Flavor Stir Fry Style (Pack of 8)",
+  "pack": 8,
+  "was": "All 8 cups show the back/side panel with Nutrition Facts and barcode visible, not the front face wit",
+  "donorId": "580a3c98-6300-414d-a20c-89f84a56a24b",
+  "donorTitle": "Nissin Asian Noodles in Sauce, Sweet Chili Flavor, Stir Fry Style",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2227",
+  "listing": "Chef Woo Braised Beef Ramen Cup Noodle 20g Protein 2.5 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Chef Woo Black Garlic Beef Ramen Noodles by Chef Ramsay, not 'Chef Woo Braised Beef",
+  "donorId": "d064fe8a-3c39-4da4-8f07-7486844f072c",
+  "donorTitle": "Chef Woo Braised Beef Ramen Cup Noodle, 20g Protein",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2285",
+  "listing": "Mueller's Spaghetti 16 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Mueller's Pot-Sized Thin Spaghetti, not Mueller's Spaghetti 16 oz as listed — diffe",
+  "donorId": "a6b1724c-98ce-45cc-b2b9-fc6e43534a65",
+  "donorTitle": "Mueller's Spaghetti",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2294",
+  "listing": "Mueller's Spaghetti Thin 16 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Mueller's Pot-Sized Thin Spaghetti (half-length cut variant), not the standard Thin",
+  "donorId": "eca8f8e5-b50f-4a9a-985b-23adee84b011",
+  "donorTitle": "Mueller's Thin Spaghetti",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2397",
+  "listing": "Ronzoni Elbows 16 oz Non-GMO Macaroni Pasta for Mac and Cheese (Pack of 8)",
+  "pack": 8,
+  "was": "Listing specifies 'Elbows 16 oz' but image shows Ronzoni Large Elbows No. 74 at 1 lb (454g) — same w",
+  "donorId": "49614823-06d9-4ff5-ba5d-5dd945230add",
+  "donorTitle": "Ronzoni Elbows, 16 oz, Non-GMO Macaroni Pasta for Mac and Cheese",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2406",
+  "listing": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-GMO (Pack of 8)",
+  "pack": 8,
+  "was": "Product shown is Ronzoni No. 73 Small Rigatoni, but listing title specifies Rigatoni Large Ribbed Tu",
+  "donorId": "30a6fe59-ca7a-4324-b1e0-721ae17d6302",
+  "donorTitle": "Ronzoni Rigatoni Pasta, 16 oz, Large, Ribbed Tubes, Non-GMO",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2412",
+  "listing": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+  "pack": 8,
+  "was": "All 8 tiles show the BACK panel of the Ronzoni Rotini box (cooking instructions, nutrition facts, ba",
+  "donorId": "61f88d40-b926-42dd-95b7-4070a5392407",
+  "donorTitle": "Ronzoni Rotini, 16 oz, Non-GMO Spiral Corkscrew Pasta",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2456",
+  "listing": "Mueller's Spaghetti 12 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Mueller's Thick Spaghetti, but listing title specifies Mueller's Spaghetti (standar",
+  "donorId": "a6b1724c-98ce-45cc-b2b9-fc6e43534a65",
+  "donorTitle": "Mueller's Spaghetti",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2711",
+  "listing": "Del Monte Very Cherry No Sugar Added Mixed Fruit Canned Fruit 14.5 oz Can (Pack of 4)",
+  "pack": 4,
+  "was": "Background is light gray/off-white, not plain white.",
+  "donorId": "882ba43d-6d45-44fa-a581-d43a65943bee",
+  "donorTitle": "Del Monte Very Cherry No Sugar Added Mixed Fruit, Canned Fruit, 14.5 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2968",
+  "listing": "Hunt's 100% Natural Tomato Sauce 15oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Hunt's Fire Roasted Tomato Sauce, but the listing title specifies Hunt's 100% Natur",
+  "donorId": "7c538fd2-eb48-4bb7-be73-464f9532ee6a",
+  "donorTitle": "Hunt's 100% Natural Tomato Sauce - 15oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-2974",
+  "listing": "(4 pack) Hunt's Garlic Fire Roasted Diced Tomatoes, 14.5 oz Can",
+  "pack": 4,
+  "was": "Each tile shows a Hunt's Fire Roasted Diced can being poured — correct brand/variant and one unit pe",
+  "donorId": "3785202c-e350-4990-96ef-3204df18600c",
+  "donorTitle": "Hunt's Fire Roasted Diced Tomatoes with Garlic",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3009",
+  "listing": "Contadina Tomato Paste with Roasted Garlic 6 oz Can (Pack of 8)",
+  "pack": 8,
+  "was": "Background is red (Contadina branded red), not white.",
+  "donorId": "fa59b172-1102-4d00-8c59-ccea8ddbfeba",
+  "donorTitle": "Contadina Tomato Paste with Roasted Garlic, 6 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3020",
+  "listing": "Contadina Fire Roasted Diced Tomatoes 14.5 oz Can (Pack of 6)",
+  "pack": 6,
+  "was": "Each of the 6 tiles shows one Contadina Diced Tomatoes can face-on matching the listing, but the bac",
+  "donorId": "b75d0fdf-83dc-4d55-a38c-289eabfe0330",
+  "donorTitle": "Contadina Fire Roasted Diced Tomatoes, 14.5 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3050",
+  "listing": "Glory Foods Seasoned Southern Style Honey Carrots Canned Vegetables 15.5 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile displays a 2-pack bundle (two cans plus an explicit '2 pack' badge), not a single unit; th",
+  "donorId": "7d8ce205-152c-46ee-a904-af92e1d2560e",
+  "donorTitle": "Glory Foods Seasoned Southern Style Honey Carrots, Canned Vegetables, 15.5 oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3098",
+  "listing": "Bush's Black Beans, Canned Beans, 15 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Listing says 'Black Beans' (standard), but all four cans shown are 'Reduced Sodium Black Beans' — di",
+  "donorId": "64bbcf47-f2dc-49e4-8def-0d45753d2794",
+  "donorTitle": "Bush's Seasoned Recipe Black Beans, Canned Beans, 15 oz",
+  "score": 0.6666666666666666
+ },
+ {
+  "sku": "RizwanX-3105",
+  "listing": "Bush's Great Northern Beans 15.8oz (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows a single can of Bush's Great Northern Beans alongside a yellow '12 Pack' case/box of",
+  "donorId": "d35c1113-a9dc-4b95-a75c-90571e55a639",
+  "donorTitle": "Bush's Great Northern Beans - 15.8oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3210",
+  "listing": "Muir Glen Fire Roasted Crushed 28oz (Pack of 6)",
+  "pack": 6,
+  "was": "Product shown is Muir Glen Organic Fire Roasted DICED Tomatoes 28oz, but listing title specifies Fir",
+  "donorId": "74c2a606-4ce3-49a2-a32d-d5a9c246fa49",
+  "donorTitle": "Muir Glen Fire Roasted Crushed - 28oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3251",
+  "listing": "Contadina Whole Peeled Tomatoes 28 oz Can — 4-Pack (4 cans)",
+  "pack": 4,
+  "was": "The image shows 4 blue placeholder rectangles with tiny unreadable text — no actual product photo of",
+  "donorId": "0650b7f8-13c6-49ac-b9b4-2238866811fd",
+  "donorTitle": "Contadina Whole Peeled Tomatoes, 28 oz Can",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3260",
+  "listing": "Green Giant Sweet Corn Whole Kernel 15.25 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Each of the 4 tiles shows one Green Giant Sweet Corn can (correct brand/variant/count/white bg), but",
+  "donorId": "b4df5766-74cf-436e-9880-e3e8426d0204",
+  "donorTitle": "Green Giant Whole Kernel Sweet Corn - 15.25oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3272",
+  "listing": "Green Giant Vegetable Blend 15 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Each tile shows one Green Giant Vegetable Blend can (correct brand/variant, single unit, 4 total, wh",
+  "donorId": "5e5aa288-c480-4b2f-adae-f0e7a9d52194",
+  "donorTitle": "Green Giant Vegetable Blend",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3273",
+  "listing": "Green Giant Vegetable Blend 15 oz (Pack of 6)",
+  "pack": 6,
+  "was": "Background is white but each cell contains large blue rectangular blocks (likely placeholder price/l",
+  "donorId": "5e5aa288-c480-4b2f-adae-f0e7a9d52194",
+  "donorTitle": "Green Giant Vegetable Blend",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3442",
+  "listing": "Joan of Arc Spicy Chili Beans 15 oz (Pack of 4)",
+  "pack": 4,
+  "was": "Each tile shows TWO cans side by side, not one single unit; the total visible count is 8 cans across",
+  "donorId": "02c320f9-828d-445a-a215-9fdbfcdf9eba",
+  "donorTitle": "Joan of Arc Spicy Chili Beans",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3579",
+  "listing": "Cirkul GoSip Strawberry Dream Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "was": "Each tile shows only a barcode/back panel — the brand name, product name, and front label are not vi",
+  "donorId": "273e1dec-20b4-4a96-9af8-1bfde81e9c59",
+  "donorTitle": "Cirkul GoSip Strawberry Dream Flavor Cartridge, Drink Mix, 1-Pack",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3584",
+  "listing": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Cirkul FitSip Mixed Berry, not Blackberry Burst as required by the listing title.",
+  "donorId": "2620bd1f-53f9-4d71-944d-70a4d11a8e46",
+  "donorTitle": "Cirkul FitSip Blackberry Burst Flavor Cartridge, Drink Mix, 1-Pack",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3585",
+  "listing": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "was": "Image shows a Cirkul water bottle (not a FitSip Blackberry Burst flavor cartridge); background is pu",
+  "donorId": "2620bd1f-53f9-4d71-944d-70a4d11a8e46",
+  "donorTitle": "Cirkul FitSip Blackberry Burst Flavor Cartridge, Drink Mix, 1-Pack",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3711",
+  "listing": "Swiss Miss Milk Chocolate Flavored Hot Cocoa Mix 8 Count Hot Cocoa Mix (Pack of 6)",
+  "pack": 6,
+  "was": "Product is Swiss Miss Salted Caramel, not Milk Chocolate Flavored — wrong flavor/variant. Each tile ",
+  "donorId": "bd1b4b23-6567-43a6-8562-5ff4d83c0765",
+  "donorTitle": "Swiss Miss Milk Chocolate Hot Cocoa Mix - 8ct",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3803",
+  "listing": "Stur Drinks Strawberry Lemonade Electrolytes Liquid Water Enhancer 1.62 fl oz (Pack of 4)",
+  "pack": 4,
+  "was": "Product shown is Stur Blue & Blackberry Liquid Water Enhancer, not Strawberry Lemonade Electrolytes ",
+  "donorId": "66ff3a45-a3aa-466b-95a7-00c8cc358570",
+  "donorTitle": "Stur Drinks Strawberry Lemonade Electrolytes Liquid Water Enhancer",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3807",
+  "listing": "Stur Drinks Blue & Blackberry Liquid Water Enhancer 1.62 fl oz (Pack of 6)",
+  "pack": 6,
+  "was": "Wrong flavor/variant: image shows Stur Pomegranate Cranberry, but listing title specifies Blue & Bla",
+  "donorId": "0ae3fd2a-765a-4d6a-8049-3279807bb08d",
+  "donorTitle": "Stur Drinks Blue & Blackberry, Liquid Water Enhancer",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3846",
+  "listing": "Guerrero Street Taco Size Zero Net Carbs Chipotle Tortillas 14ct/8.89oz (Pack of 6)",
+  "pack": 6,
+  "was": "Six single tortilla bags on white, but the back panel is shown and the Chipotle variant cannot be co",
+  "donorId": "066ae3dd-6528-4cce-afec-70b1ddbad77f",
+  "donorTitle": "Guerrero Street Taco Size Zero Net Carbs Chipotle Tortillas - 14ct/8.89oz",
+  "score": 1
+ },
+ {
+  "sku": "RizwanX-3869",
+  "listing": "Old El Paso Restaurant Style Grande Flour Tortillas 6 Count (Pack of 4)",
+  "pack": 4,
+  "was": "4 tiled units are shown and each tile includes one tortilla package, but the tiles are infographic/l",
+  "donorId": "33919545-9117-42f4-8136-6112c7968f8a",
+  "donorTitle": "Old El Paso Restaurant Style Grande Flour Tortillas, Meal Prep, 6 Count, 21.5 oz",
+  "score": 0.75
+ },
+ {
+  "sku": "RizwanX-4699",
+  "listing": "Purina Fancy Feast Gravy Lovers, Wet Cat Food, Turkey Feast in Gravy 3 oz Can (Pack of 9)",
+  "pack": 9,
+  "was": "Tiles show assorted/mismatched items and multiple separate packages per cell; not the listed single ",
+  "donorId": "50df2115-ef93-4f38-a0ce-23b752b21410",
+  "donorTitle": "Purina Fancy Feast Gravy Lovers Turkey Feast Grilled Gourmet Cat Food in Wet Cat Food Gravy",
+  "score": 0.8181818181818182
+ },
+ {
+  "sku": "RizwanX-4752",
+  "listing": "Purina Fancy Feast Gravy Lovers Pate Food Wet Cat Food — 15-Pack (15 cans)",
+  "pack": 15,
+  "was": "15 single cans on white background; front-facing, but image shows Chicken Feast in Gravy/Gravy Lover",
+  "donorId": "8f20b214-4e77-42fe-a48a-051ddc776b30",
+  "donorTitle": "Purina Fancy Feast Gravy Lovers Pate Food, Wet Cat Food, Beef Feast in Gravy, 3 oz Can",
+  "score": 0.9
+ },
+ {
+  "sku": "RizwanX-4788",
+  "listing": "Purina Fancy Feast Savory Centers Adult Wet Cat Food Pa — 15-Pack (15 cans)",
+  "pack": 15,
+  "was": "Each tile shows a Purina Fancy Feast 30-can variety pack (Poultry & Beef), which is a multipack/case",
+  "donorId": "99dd8d3c-56b4-4b68-9043-204b99f0c4fe",
+  "donorTitle": "Purina Fancy Feast Savory Centers Adult Wet Cat Food Pate with Beef and a Gravy Center, 3 oz Can",
+  "score": 0.6923076923076923
+ },
+ {
+  "sku": "RizwanX-4776",
+  "listing": "Purina Fancy Feast Medleys Wet Cat Food Beef Carne Asada Recipe with Potatoes and Carrots in Savory Juices 3 oz. Can (Pack of 15)",
+  "pack": 15,
+  "was": "15 single cans on white background; front views are shown, but the flavor/variant in the image appea",
+  "donorId": "ac2f3098-55dd-45e9-86b2-e9907a81745c",
+  "donorTitle": "Purina Fancy Feast Medleys Wet Cat Food Beef Carne Asada Recipe with Potatoes and Carrots in Savory Juices, 3 oz. Can",
+  "score": 1
+ }
+]
