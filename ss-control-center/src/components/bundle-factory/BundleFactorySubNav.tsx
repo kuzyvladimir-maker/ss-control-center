@@ -23,6 +23,7 @@ const ITEMS: SubNavItem[] = [
   { href: "/bundle-factory", label: "Overview" },
   { href: "/bundle-factory/drafts", label: "In progress" },
   { href: "/bundle-factory/live", label: "Published" },
+  { href: "/bundle-factory/uncrustables", label: "Uncrustables Studio" },
   { href: "/bundle-factory/channelmax", label: "ChannelMAX" },
   { href: "/bundle-factory/settings", label: "Settings" },
 ];
