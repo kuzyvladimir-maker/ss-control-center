@@ -19,7 +19,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "27afe11ac93e4c98d7c8ddd299435a0bf7b08a48ab10a5a7066221e1bed83755";
+  "5d6ee4061b6ec574e80a524535d0695412281a7c3e57cabf7505ab9c620e7d04";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -38,7 +38,8 @@ const BULLETS = [
 const TITLE = "Pepperidge Farm Butter Hot Dog Buns, Top Sliced (Pack of 6)";
 
 function plan(input: {
-  changed_fields?: ["description", "bullets"] | ["description", "bullets", "main"];
+  changed_fields?: ["description", "bullets"] | ["description", "bullets", "main"]
+    | ["attributes"];
   main_url?: string;
   main_sha256?: string;
 } = {}): SealedWalmartListingRepairPlan {
@@ -90,6 +91,45 @@ function plan(input: {
   return value as unknown as SealedWalmartListingRepairPlan;
 }
 
+function attributePlan(): SealedWalmartListingRepairPlan {
+  const value = structuredClone(plan({ changed_fields: ["attributes"] }));
+  value.target.surface.attribute_claims = [
+    {
+      field_path: "product.specifications[0].Brand",
+      kind: "brand",
+      text: "Pepperidge Farm",
+    },
+    {
+      field_path: "product.specifications[1].Flavor",
+      kind: "variant",
+      text: "Butter",
+    },
+    {
+      field_path: "product.specifications[2].Count",
+      kind: "inner_item_count",
+      value: 6,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.countPerPack",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.multipackQuantity",
+      kind: "outer_units",
+      value: 6,
+      unit: "count",
+    },
+  ];
+  value.target.surface.unmapped_attributes = [{
+    field_path: "product.specifications[4].Product net content parent",
+    value_sha256: walmartListingIntegritySha256("14 Ounces"),
+  }];
+  return value as SealedWalmartListingRepairPlan;
+}
+
 async function fixture(input: {
   terminal_at?: string;
   captured_at?: string;
@@ -98,6 +138,8 @@ async function fixture(input: {
   main_image_url?: string;
   multipack_quantity?: number;
   seller_grouping_quantity?: number;
+  flavor?: string;
+  count?: number;
 } = {}) {
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "walmart-live-qualification-")),
@@ -116,8 +158,8 @@ async function fixture(input: {
       images: [input.main_image_url ?? URLS[0], ...URLS.slice(1)],
       specifications: [
         { name: "Brand", value: "Pepperidge Farm" },
-        { name: "Flavor", value: "Butter" },
-        { name: "Count", value: "8" },
+        { name: "Flavor", value: input.flavor ?? "Butter" },
+        { name: "Count", value: String(input.count ?? 8) },
         {
           name: "Multipack quantity",
           value: String(input.multipack_quantity ?? 6),
@@ -230,6 +272,40 @@ test("a mismatch inside the propagation window remains no-write PENDING", async 
   assert.equal(result.verdict, "PENDING_PROPAGATION");
   assert.equal(result.next_sku_unblocked, false);
   assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
+});
+
+test("attribute-only live Qualification PASSes only after exact buyer-visible propagation", async () => {
+  const fx = await fixture({ count: 6, multipack_quantity: 6 });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: attributePlan(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.facets.attributes, "PASS");
+  assert.equal(result.facets.unchanged_fields_preserved, "PASS");
+  assert.equal(result.next_sku_unblocked, true);
+});
+
+test("attribute-only live Qualification remains no-write PENDING on the stale buyer surface", async () => {
+  const fx = await fixture({ count: 8, flavor: "qty 6", multipack_quantity: 6 });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: attributePlan(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.attributes, "FAIL");
+  assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
+  assert.equal(result.external_effects.walmart_writes, 0);
 });
 
 test("a mismatched reread after the failure window halts on FAIL", async () => {

@@ -13,7 +13,10 @@ import path from "node:path";
 import sharp from "sharp";
 
 import {
+  projectWalmartListingSurfaceFromBuyerPdp,
   walmartListingIntegritySha256,
+  type ListingAttributeClaim,
+  type WalmartListingSurface,
 } from "./listing-integrity-audit.ts";
 import {
   inspectWalmartListingRepairQualificationProductionReadiness,
@@ -33,7 +36,7 @@ const MAX_DECODED_IMAGE_PIXELS = 40_000_000;
 const REVIEWED_MAIN_MAX_DHASH_DISTANCE = 2;
 const REVIEWED_MAIN_MIN_PSNR_MILLIDB = 38_000;
 const PINNED_ACCEPTED_LIVE_QUALIFICATION_SOURCE_RELEASE_SHA256 =
-  "8192d5c9cb2506128b937e2e8eb0097c2a8f97df12fd993b5097a078fd5d749d";
+  "27afe11ac93e4c98d7c8ddd299435a0bf7b08a48ab10a5a7066221e1bed83755";
 const SHA256 = /^[a-f0-9]{64}$/u;
 
 type JsonRecord = Record<string, unknown>;
@@ -385,6 +388,125 @@ interface TargetFacts {
   inner_item_count: number;
 }
 
+function normalizedAttributePath(value: string): string {
+  return value.replace(/\[\d+\]/gu, "[]");
+}
+
+function normalizedAttributeText(value: string): string {
+  return value.normalize("NFKD")
+    .replace(/[\u0300-\u036f]/gu, "")
+    .toLocaleLowerCase("en-US")
+    .replace(/['’ʼ]/gu, "")
+    .replace(/[^a-z0-9]+/gu, " ")
+    .trim()
+    .replace(/\s+/gu, " ");
+}
+
+function claimValueExact(
+  live: ListingAttributeClaim,
+  target: ListingAttributeClaim,
+): boolean {
+  if (live.kind !== target.kind
+    || normalizedAttributePath(live.field_path)
+      !== normalizedAttributePath(target.field_path)) {
+    return false;
+  }
+  if ("text" in target) {
+    return "text" in live
+      && normalizedAttributeText(live.text) === normalizedAttributeText(target.text);
+  }
+  return "value" in live && live.value === target.value && live.unit === target.unit;
+}
+
+function normalizedUnmappedExact(
+  left: WalmartListingSurface["unmapped_attributes"],
+  right: WalmartListingSurface["unmapped_attributes"],
+): boolean {
+  const normalize = (
+    rows: WalmartListingSurface["unmapped_attributes"],
+  ) => rows.map((row) => ({
+    field_path: normalizedAttributePath(row.field_path),
+    value_sha256: row.value_sha256,
+  })).sort((first, second) => (
+    `${first.field_path}\u0000${first.value_sha256}`
+      .localeCompare(`${second.field_path}\u0000${second.value_sha256}`)
+  ));
+  return walmartListingIntegritySha256(normalize(left))
+    === walmartListingIntegritySha256(normalize(right));
+}
+
+function attributeOnlyTarget(input: {
+  plan: SealedWalmartListingRepairPlan;
+  buyer: JsonRecord;
+  specifications: Map<string, string>;
+}): {
+  outer_units: number;
+  live_surface: WalmartListingSurface;
+  direct_claims_match: boolean;
+  identity_claims_match: boolean;
+  opaque_attributes_preserved: boolean;
+  count_per_pack_match: boolean;
+} {
+  const targetSurface = input.plan.target.surface;
+  const liveSurface = projectWalmartListingSurfaceFromBuyerPdp(input.buyer, {
+    sku: input.plan.listing.sku,
+    item_id: input.plan.listing.item_id,
+  });
+  const outerClaims = targetSurface.attribute_claims.filter((claim) => (
+    claim.kind === "outer_units"
+  ));
+  if (outerClaims.length < 1
+    || outerClaims.some((claim) => claim.unit !== "count")
+    || new Set(outerClaims.map((claim) => claim.value)).size !== 1) {
+    fail("attribute-only owner target lacks one unambiguous outer quantity");
+  }
+  const outerUnits = outerClaims[0]!.value;
+  const directTargets = targetSurface.attribute_claims.filter((claim) => (
+    !claim.field_path.startsWith("walmart.Visible.")
+  ));
+  const directClaimsMatch = directTargets.every((target) => (
+    liveSurface.attribute_claims.filter((live) => (
+      normalizedAttributePath(live.field_path)
+        === normalizedAttributePath(target.field_path)
+    )).length === 1
+    && liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
+  ));
+  const identityTargets = directTargets.filter((claim) => (
+    claim.kind === "brand" || claim.kind === "product" || claim.kind === "variant"
+  ));
+  const identityClaimsMatch = identityTargets.every((target) => (
+    liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
+  ));
+  const syntheticCountPerPack = targetSurface.attribute_claims.filter((claim) => (
+    claim.field_path === "walmart.Visible.countPerPack"
+      && claim.kind === "inner_item_count"
+  ));
+  if (syntheticCountPerPack.length !== 1
+    || syntheticCountPerPack[0]!.unit !== "count") {
+    fail("attribute-only owner target lacks exact countPerPack");
+  }
+  const visibleCountPerPack = Number(
+    input.specifications.get("Count per pack")
+      ?? input.specifications.get("Count Per Pack"),
+  );
+  const visibleOverallCount = Number(input.specifications.get("Count"));
+  const countPerPackMatch = Number.isSafeInteger(visibleCountPerPack)
+    ? visibleCountPerPack === syntheticCountPerPack[0]!.value
+    : syntheticCountPerPack[0]!.value === 1
+      && visibleOverallCount === outerUnits;
+  return {
+    outer_units: outerUnits,
+    live_surface: liveSurface,
+    direct_claims_match: directClaimsMatch,
+    identity_claims_match: identityClaimsMatch,
+    opaque_attributes_preserved: normalizedUnmappedExact(
+      liveSurface.unmapped_attributes,
+      targetSurface.unmapped_attributes,
+    ),
+    count_per_pack_match: countPerPackMatch,
+  };
+}
+
 function targetFacts(plan: SealedWalmartListingRepairPlan): TargetFacts {
   const facts: Partial<TargetFacts> = {};
   for (const claim of plan.target.surface.attribute_claims) {
@@ -525,7 +647,6 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
   const buyerBullets = stringRows(product.feature_bullets, "buyer bullets");
   const buyerImages = stringRows(product.images, "buyer images");
   const spec = specifications(product);
-  const facts = targetFacts(plan);
   const combinedText = `${buyerTitle}\n${buyerDescription}\n${buyerBullets.join("\n")}`;
   const targetImages = plan.target.images;
   const liveImageFiles = [...byRole.entries()]
@@ -547,9 +668,14 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
     plan.changed_fields,
     ["description", "bullets", "main"],
   );
-  if (!textOnly && !reviewedMain) {
-    fail("live Qualification supports only exact text-only or reviewed-MAIN repairs");
+  const attributeOnly = exactChangedFields(plan.changed_fields, ["attributes"]);
+  if (!textOnly && !reviewedMain && !attributeOnly) {
+    fail("live Qualification supports only exact text-only, reviewed-MAIN, or attribute-only repairs");
   }
+  const facts = attributeOnly ? null : targetFacts(plan);
+  const attributeTarget = attributeOnly
+    ? attributeOnlyTarget({ plan, buyer, specifications: spec })
+    : null;
   const mainUrlSelfConsistent = buyerImages[0] === product.main_image;
   const galleryUrlsExact = exactArray(
     buyerImages.slice(1),
@@ -584,27 +710,51 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
     };
   const mainPass = mainUrlSelfConsistent && mainEquivalence.equivalent;
   const galleryPass = targetImages.length >= 2 && galleryUrlsExact && galleryBytesExact;
-  const outerUnits = facts.outer_units;
-  const outerText = new RegExp(`(?:pack\\s+of\\s+${outerUnits}|${outerUnits}\\s+(?:bags|packs|packages))`, "iu");
-  const innerText = new RegExp(`${facts.inner_item_count}\\s+buns`, "iu");
-  const netText = new RegExp(`${facts.net_content}\\s*oz`, "iu");
+  const outerUnits = attributeTarget?.outer_units ?? facts!.outer_units;
+  const outerText = new RegExp(
+    `(?:pack\\s+of\\s+${outerUnits}|quantity\\s+of\\s+${outerUnits}`
+      + `|${outerUnits}\\s+(?:bags|packs|packages))`,
+    "iu",
+  );
+  const innerText = facts
+    ? new RegExp(`${facts.inner_item_count}\\s+buns`, "iu")
+    : null;
+  const netText = facts
+    ? new RegExp(`${facts.net_content}\\s*oz`, "iu")
+    : null;
   const targetTitle = plan.target.surface.title;
   const targetDescription = plan.target.surface.description ?? "";
   const targetBullets = plan.target.surface.bullets;
-  const productAndVariant = includesNormalized(combinedText, facts.product)
-    && includesNormalized(combinedText, facts.brand)
-    && facts.variant.split(",").every((part) => includesNormalized(combinedText, part.trim()));
+  const productAndVariant = attributeTarget
+    ? attributeTarget.identity_claims_match
+      && plan.target.surface.attribute_claims
+        .filter((claim) => "text" in claim)
+        .every((claim) => !("text" in claim)
+          || includesNormalized(combinedText, claim.text))
+    : includesNormalized(combinedText, facts!.product)
+      && includesNormalized(combinedText, facts!.brand)
+      && facts!.variant.split(",")
+        .every((part) => includesNormalized(combinedText, part.trim()));
   const buyerMultipackQuantity = buyerOuterUnits(spec);
   const sellerGroupingQuantity = sellerOuterUnits(seller);
   const packCount = buyerMultipackQuantity === outerUnits
     && outerText.test(buyerTitle) && outerText.test(buyerDescription)
     && buyerBullets.some((row) => outerText.test(row))
-    && netText.test(combinedText) && innerText.test(combinedText);
-  const attributes = spec.get("Brand") === facts.brand
-    && includesNormalized(spec.get("Flavor") ?? "", facts.variant.split(",")[0] ?? "")
-    && Number(spec.get("Count")) === facts.inner_item_count
-    && includesNormalized(spec.get("Product net content parent") ?? "", `${facts.net_content} Ounces`)
-    && buyerMultipackQuantity === outerUnits;
+    && (attributeTarget !== null
+      || (netText!.test(combinedText) && innerText!.test(combinedText)));
+  const attributes = attributeTarget
+    ? attributeTarget.direct_claims_match
+      && attributeTarget.opaque_attributes_preserved
+      && attributeTarget.count_per_pack_match
+      && buyerMultipackQuantity === outerUnits
+    : spec.get("Brand") === facts!.brand
+      && includesNormalized(spec.get("Flavor") ?? "", facts!.variant.split(",")[0] ?? "")
+      && Number(spec.get("Count")) === facts!.inner_item_count
+      && includesNormalized(
+        spec.get("Product net content parent") ?? "",
+        `${facts!.net_content} Ounces`,
+      )
+      && buyerMultipackQuantity === outerUnits;
   const exactIdentity = seller.sku === plan.listing.sku
     && seller.mart === "WALMART_US"
     && String(product.item_id) === plan.listing.item_id;
@@ -626,11 +776,14 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
       buyerTitle === targetTitle
       && buyerDescription === targetDescription
       && exactArray(buyerBullets, targetBullets)
-      && mainPass && galleryPass
+      && mainPass && galleryPass && (!attributeOnly || attributes)
     ),
     unchanged_fields_preserved: pass(
-      (textOnly || reviewedMain)
+      (textOnly || reviewedMain || attributeOnly)
       && buyerTitle === plan.target.surface.title
+      && (!attributeOnly
+        || (buyerDescription === targetDescription
+          && exactArray(buyerBullets, targetBullets)))
       && galleryPass
       && mainPass
     ),
