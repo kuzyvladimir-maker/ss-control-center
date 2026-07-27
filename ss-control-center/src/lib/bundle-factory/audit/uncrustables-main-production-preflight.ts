@@ -12,65 +12,40 @@
 // and are bound to the MERGED registry (sealed v1 + the owner's 11-flavor
 // extension) because the new listings use extension-only flavors. The v1/v2
 // artifacts stay untouched on disk as history.
-import approvalsJson from "./data/uncrustables-main-owner-approvals-v3.json";
-import trialApprovalsJson from "./data/uncrustables-main-owner-approvals-trial1.json";
-
+//
+// 2026-07-27: manifest storage/verification extracted to the union loader
+// (uncrustables-owner-approval-manifests.ts) so the BF studio can register
+// sealed DB manifests; this module keeps its public API and delegates.
 import { MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
 
+import {
+  allUnionOwnerApprovedProofs,
+  unionManifestContainingProof,
+  unionUncrustablesOwnerApprovalManifests,
+  verifyUncrustablesOwnerApprovalManifestUnion,
+  STATIC_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS,
+  UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA,
+  type UncrustablesMainOwnerApprovalManifest,
+  type UncrustablesMainOwnerApprovalManifestBody,
+  type UncrustablesOwnerApprovedMainProof,
+} from "./uncrustables-owner-approval-manifests";
 import {
   evaluateUncrustablesMainAuthenticity,
   resolveReviewedUncrustablesFlavorId,
   uncrustablesAuthenticitySha256,
   uncrustablesAuthenticityStableJson,
-  verifyUncrustablesAuthenticityRegistry,
   type UncrustablesAuthenticityRegistry,
-  type UncrustablesMainAuthenticityInput,
   type UncrustablesMainAuthenticityResult,
 } from "./uncrustables-main-authenticity";
 
-export const UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA =
-  "uncrustables-main-owner-approvals/v2" as const;
+export {
+  UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA,
+  type UncrustablesMainOwnerApprovalManifest,
+  type UncrustablesMainOwnerApprovalManifestBody,
+  type UncrustablesOwnerApprovedMainProof,
+};
 export const UNCRUSTABLES_MAIN_PUBLISH_PERMIT_SCHEMA =
   "uncrustables-main-publish-permit/v2" as const;
-
-export interface UncrustablesOwnerApprovedMainProof
-  extends Omit<UncrustablesMainAuthenticityInput, "registry"> {
-  proof_id: string;
-  asin: string;
-  approval_scope: "style-reference-only" | "production-main";
-  production_eligible: boolean;
-  pixel_dimensions: { width: number; height: number };
-  /** Required for production-main. A transformed image is a different asset
-   * and must identify both its input and exact output bytes. */
-  production_provenance?: {
-    origin: "raw-generation" | "derived-artifact";
-    output_sha256: string;
-    source_image_sha256?: string;
-    transformation_manifest: {
-      kind: "generation-manifest";
-      locator: string;
-      sha256: string;
-    };
-  };
-  human_approval: NonNullable<
-    UncrustablesMainAuthenticityInput["human_approval"]
-  >;
-}
-
-export interface UncrustablesMainOwnerApprovalManifestBody {
-  schema_version: typeof UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA;
-  immutable: true;
-  manifest_id: string;
-  captured_at: string;
-  approved_by: string;
-  registry_sha256: string;
-  entries: UncrustablesOwnerApprovedMainProof[];
-}
-
-export interface UncrustablesMainOwnerApprovalManifest
-  extends UncrustablesMainOwnerApprovalManifestBody {
-  sha256: string;
-}
 
 export interface ProductionUncrustablesRecipeComponent {
   product_name: string;
@@ -141,32 +116,17 @@ export type UncrustablesMainImageBytesFetcher = (
 export const PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY =
   MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY as unknown as UncrustablesAuthenticityRegistry;
 export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS =
-  approvalsJson as unknown as UncrustablesMainOwnerApprovalManifest;
+  STATIC_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS[0];
 // Sealed manifests are additive: batch 1+2 (v3) stays immutable; each later
-// batch ships its own sealed manifest. Every manifest is verified in full and
-// proof_id/subject uniqueness is enforced ACROSS manifests.
-export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS = [
-  approvalsJson,
-  trialApprovalsJson,
-] as unknown as UncrustablesMainOwnerApprovalManifest[];
+// batch ships its own sealed manifest (plus studio-registered DB manifests via
+// the union loader). Every manifest is verified in full and proof_id/subject
+// uniqueness is enforced ACROSS manifests.
+export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS =
+  STATIC_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS;
 
-function allProductionOwnerApprovedProofs(): UncrustablesOwnerApprovedMainProof[] {
-  return PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS.flatMap(
-    (manifest) => manifest.entries,
-  );
-}
-
-function manifestContainingProof(
-  proofId: string,
-): UncrustablesMainOwnerApprovalManifest {
-  const manifest = PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS.find(
-    (candidate) => candidate.entries.some((proof) => proof.proof_id === proofId),
-  );
-  if (!manifest) {
-    throw new Error(`No sealed owner-approval manifest contains proof ${proofId}.`);
-  }
-  return manifest;
-}
+const allProductionOwnerApprovedProofs = allUnionOwnerApprovedProofs;
+const manifestContainingProof = unionManifestContainingProof;
+void unionUncrustablesOwnerApprovalManifests;
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
 const MAX_MAIN_IMAGE_BYTES = 25 * 1024 * 1024;
@@ -190,110 +150,13 @@ function finding(
   return details ? { code, message, details } : { code, message };
 }
 
-/** Throws when either production artifact, any proof, or any human seal drifts. */
+/** Throws when either production artifact, any proof, or any human seal drifts.
+ * Delegates to the union loader: static repo manifests plus any sealed studio
+ * manifests registered at runtime, with cross-manifest uniqueness. */
 export function verifyProductionUncrustablesAuthenticityArtifacts(): void {
-  const registry = PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY;
-  verifyUncrustablesAuthenticityRegistry(registry);
-  // Uniqueness sets span ALL manifests: a proof_id or review subject may
-  // never be approved twice, even across separately sealed batches.
-  const proofIds = new Set<string>();
-  const approvedSubjects = new Set<string>();
-  for (const manifest of PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS) {
-  if (
-    manifest.schema_version !== UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA ||
-    manifest.immutable !== true ||
-    !nonEmpty(manifest.manifest_id) ||
-    !nonEmpty(manifest.approved_by) ||
-    !nonEmpty(manifest.captured_at) ||
-    !Array.isArray(manifest.entries) ||
-    manifest.entries.length === 0 ||
-    !SHA256_PATTERN.test(manifest.sha256)
-  ) {
-    throw new Error("Owner-approval manifest is incomplete or unsupported.");
-  }
-  const { sha256: claimedManifestSha, ...manifestBody } = manifest;
-  if (claimedManifestSha.toLowerCase() !== digestObject(manifestBody)) {
-    throw new Error("Owner-approval manifest SHA-256 seal does not match.");
-  }
-  if (manifest.registry_sha256.toLowerCase() !== registry.sha256.toLowerCase()) {
-    throw new Error("Owner-approval manifest is bound to another registry.");
-  }
-
-  for (const proof of manifest.entries) {
-    if (
-      !nonEmpty(proof.proof_id) ||
-      !nonEmpty(proof.sku) ||
-      !nonEmpty(proof.asin) ||
-      proof.image?.kind !== "generated-main" ||
-      !SHA256_PATTERN.test(proof.image?.sha256 ?? "") ||
-      proof.generation_manifest?.kind !== "generation-manifest" ||
-      !SHA256_PATTERN.test(proof.generation_manifest?.sha256 ?? "") ||
-      !Number.isInteger(proof.pixel_dimensions?.width) ||
-      !Number.isInteger(proof.pixel_dimensions?.height) ||
-      proof.pixel_dimensions.width <= 0 ||
-      proof.pixel_dimensions.height <= 0 ||
-      !proof.human_approval
-    ) {
-      throw new Error("Owner-approval manifest contains an incomplete proof.");
-    }
-    if (proofIds.has(proof.proof_id)) {
-      throw new Error(`Duplicate owner-approved proof_id: ${proof.proof_id}.`);
-    }
-    proofIds.add(proof.proof_id);
-    if (approvedSubjects.has(proof.human_approval.subject_sha256.toLowerCase())) {
-      throw new Error("Two owner-approved proofs reuse the same review subject.");
-    }
-    approvedSubjects.add(proof.human_approval.subject_sha256.toLowerCase());
-    if (
-      proof.human_approval.reviewer !== manifest.approved_by ||
-      proof.human_approval.decision !== "APPROVED"
-    ) {
-      throw new Error(`Proof ${proof.proof_id} lacks the declared owner approval.`);
-    }
-    if (proof.approval_scope === "style-reference-only") {
-      if (proof.production_eligible !== false || proof.production_provenance) {
-        throw new Error(
-          `Style proof ${proof.proof_id} must not authorize production bytes.`,
-        );
-      }
-    } else if (proof.approval_scope === "production-main") {
-      const provenance = proof.production_provenance;
-      if (
-        proof.production_eligible !== true ||
-        proof.pixel_dimensions.width < 2000 ||
-        proof.pixel_dimensions.height < 2000 ||
-        !provenance ||
-        (provenance.origin !== "raw-generation" &&
-          provenance.origin !== "derived-artifact") ||
-        provenance.output_sha256.toLowerCase() !== proof.image.sha256.toLowerCase() ||
-        provenance.transformation_manifest?.kind !== "generation-manifest" ||
-        !nonEmpty(provenance.transformation_manifest.locator) ||
-        !SHA256_PATTERN.test(provenance.transformation_manifest.sha256) ||
-        (provenance.origin === "derived-artifact" &&
-          (!SHA256_PATTERN.test(provenance.source_image_sha256 ?? "") ||
-            provenance.source_image_sha256?.toLowerCase() ===
-              proof.image.sha256.toLowerCase()))
-      ) {
-        throw new Error(
-          `Production proof ${proof.proof_id} lacks 2000px+ exact derived/generation provenance.`,
-        );
-      }
-    } else {
-      throw new Error(`Proof ${proof.proof_id} has an unknown approval scope.`);
-    }
-    const result = evaluateUncrustablesMainAuthenticity({
-      ...proof,
-      registry,
-    });
-    if (!result.pass || !result.verified) {
-      throw new Error(
-        `Production proof ${proof.proof_id} fails authenticity: ${result.hard_fails
-          .map((item) => item.code)
-          .join(", ")}.`,
-      );
-    }
-  }
-  }
+  verifyUncrustablesOwnerApprovalManifestUnion(
+    PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+  );
 }
 
 interface RuntimeRecipeResolution {
