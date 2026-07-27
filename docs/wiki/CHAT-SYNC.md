@@ -166,3 +166,8 @@
 - prisma/schema.prisma: +3 модели В КОНЦЕ файла (UncrustablesStudioRun, UncrustablesStudioCandidate, UncrustablesOwnerApprovalManifestRecord) — только append, существующие модели не тронуты.
 - Turso prod: таблицы созданы (scripts/turso-migrate-uncrustables-studio.mjs, идемпотентный, 3/3 present, runtime prisma client прочитал counts=0). Миграция также записана в prisma/migrations/20260727063000_uncrustables_studio_phase_a.
 - Codex: если у тебя pending-миграция Walmart-лейна — конфликтов быть не должно (чистый append), но прогони свою поверх текущего main.
+
+## 2026-07-27 ~02:20 ET — Claude Code (BF lane): studio A1-A3 в main
+- Новые API /api/bundle-factory/uncrustables/* (runs, board, tick с CAS-клеймом, rerender/reject/approve; approve пере-скачивает байты и сверяет sha256+2000px, 409 при дрейфе) + страницы /bundle-factory/uncrustables (планировщик, борд с tick-поллингом, ревью с 11-пунктным чек-листом из uncrustables-main-authenticity).
+- ЕДИНСТВЕННЫЙ общий файл: BundleFactorySubNav.tsx +1 строка (Uncrustables Studio перед ChannelMAX) — FYI Codex.
+- prepare/submit (A4/A5) не подключены — следующий шаг, будет отдельная приёмка blast-door связки.
