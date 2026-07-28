@@ -735,9 +735,11 @@ G7 закончен как диагностический production canary, н�
 
 Следующий порядок:
 
-- 🔄 реализовать и сертифицировать listing-bound plan/request contract без provider
+- ✅ реализовать и сертифицировать listing-bound plan/request contract без provider
   calls и без изменения уже сохранённых evidence;
-- ⬜ доказать offline positive/negative fixtures для flavor/form/productLine/size;
+- ✅ доказать offline positive/negative fixtures для
+  flavor/form/productLine/size/multi-word brand;
+- 🔄 выпустить и повторно сертифицировать clean frozen release;
 - ⬜ провести новый single-SKU canary только на новом frozen release;
 - ⬜ после успешного bridge postcheck вернуться к bounded Phase 1 waves.
 
@@ -747,7 +749,12 @@ G7 закончен как диагностический production canary, н�
 - ✅ exact scope/shipping/component full-row binding и strict donor-title proof
   проверяются до provider boundary;
 - ✅ duplicate canonical ID regression добавлен;
-- ✅ TypeScript, unit `13/13`, integration `11/11`, полный suite `511/511`;
-- 🔄 готовится clean frozen release и один read-only candidate preflight;
+- ✅ первый read-only production preflight до provider boundary выявил
+  multi-word brand defect (`Pepperidge Farm` в raw listing против
+  token-sorted canonical brand); provider spend и production writes = `0`;
+- ✅ title proof теперь использует byte-bound raw listing identity, а canonical
+  variant ID остаётся неизменным; regression добавлен;
+- ✅ TypeScript, unit `14/14`, integration `11/11`, полный suite `512/512`;
+- 🔄 готовится superseding clean frozen release и повторный read-only preflight;
 - ⬜ provider canary остаётся ровно один SKU / no retry; следующая wave закрыта до
   fresh bridge postcheck.

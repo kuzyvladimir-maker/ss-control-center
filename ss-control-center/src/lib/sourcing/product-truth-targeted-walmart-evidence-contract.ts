@@ -672,18 +672,10 @@ export function deriveProductTruthTargetedWalmartListingCanonicalIdentity(input:
     );
   }
   const donorTitle = nullableIdentityText(input.donorProductRow.title);
-  const proof = matchCanonicalProductTitle(
-    {
-      brand: canonical.normalized.brand,
-      productLine: canonical.normalized.productLine,
-      flavor: canonical.normalized.flavor,
-      modifiers: canonical.normalized.modifiers,
-      form: canonical.normalized.form,
-      size: `${canonical.normalized.size.baseAmount} ${canonical.normalized.size.baseUnit}`,
-      outerPackCount: 1,
-    },
-    { title: donorTitle, brand: null },
-  );
+  const proof = matchCanonicalProductTitle(target, {
+    title: donorTitle,
+    brand: null,
+  });
   if (proof.verdict !== "EXACT_IDENTITY") {
     fail(
       "TARGETED_EVIDENCE_LISTING_DONOR_MATCH_REJECTED",
@@ -1633,4 +1625,33 @@ export function canonicalIdentityFromTarget(
     size,
     outerPackCount: typeof identity.outerPackCount === "number" ? identity.outerPackCount : null,
   };
+}
+
+/**
+ * Canonical identity JSON is token-normalized and may sort a multi-word brand
+ * for deterministic hashing. Title proof, however, must use the original
+ * listing-bound brand phrase ("Pepperidge Farm", not "farm pepperidge").
+ * The listing binding already proves that the raw phrase rebuilds to the same
+ * canonical ID, so restoring that phrase changes no identity or write target.
+ */
+export function canonicalMatchIdentityFromTarget(
+  target: ProductTruthTargetedWalmartEvidenceTarget,
+): CanonicalProductIdentity {
+  const canonical = canonicalIdentityFromTarget(target);
+  if (
+    target.identityMode !== "LISTING_BOUND_BOOTSTRAP"
+    || !target.legacySnapshot
+  ) return canonical;
+  const product = canonicalBoundRowJson(
+    target.legacySnapshot.donorProductRowJson,
+    "legacySnapshot.donorProductRowJson",
+  );
+  const rawBrand = nullableIdentityText(product.row.brand);
+  if (!rawBrand) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_IDENTITY_INCOMPLETE",
+      "listing-bound donor brand is missing",
+    );
+  }
+  return { ...canonical, brand: rawBrand };
 }

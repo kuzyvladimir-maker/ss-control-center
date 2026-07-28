@@ -16,6 +16,7 @@ import {
   buildProductTruthTargetedWalmartListingBinding,
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalIdentityFromTarget,
+  canonicalMatchIdentityFromTarget,
   parseProductTruthTargetedWalmartDonorSnapshot,
   PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION,
@@ -150,13 +151,31 @@ function bootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
   });
 }
 
-function listingBoundBootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
+function listingBoundBootstrapSnapshot(overrides: {
+  brand?: string;
+  productLine?: string;
+  flavor?: string;
+  title?: string;
+} = {}): ProductTruthTargetedWalmartDonorSnapshot {
+  const brand = overrides.brand ?? "Acme";
+  const productLine = overrides.productLine ?? "Potato Chips";
+  const flavor = overrides.flavor ?? "Original";
+  const title = overrides.title ?? "Acme Potato Chips Original Bag 8 oz";
+  const listingCanonical = buildCanonicalProductVariantKey({
+    brand,
+    productLine,
+    flavor,
+    modifiers: [],
+    form: "Bag",
+    size: "8 oz",
+    outerPackCount: 1,
+  });
   const product = {
     id: "donor-1",
     identityStatus: "legacy_unverified",
-    brand: "Acme",
+    brand,
     size: "8 oz",
-    title: "Acme Potato Chips Original Bag 8 oz",
+    title,
     createdAt: CREATED_AT,
     updatedAt: CREATED_AT,
   };
@@ -183,9 +202,9 @@ function listingBoundBootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapsh
   const shipping = {
     sku: "SKU-1",
     productIdentity: JSON.stringify({
-      brand: "Acme",
-      product_line: "Potato Chips",
-      flavor: "Original",
+      brand,
+      product_line: productLine,
+      flavor,
       container_type: "Bag",
       size: "8 oz",
       is_bundle: false,
@@ -208,16 +227,16 @@ function listingBoundBootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapsh
     donorOfferId: "offer-1",
     donorIdentityStatus: "legacy_unverified",
     variantDecisionId: null,
-    canonicalVariantId: canonical.canonicalVariantId,
+    canonicalVariantId: listingCanonical.canonicalVariantId,
     decisionStatus: null,
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
     matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
     matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     decisionEvidenceHash: null,
     decisionEvidenceJson: null,
-    canonicalVariantKeyVersion: canonical.keyVersion,
-    canonicalIdentityHash: canonical.identityHash,
-    canonicalIdentityJson: canonical.identityJson,
+    canonicalVariantKeyVersion: listingCanonical.keyVersion,
+    canonicalIdentityHash: listingCanonical.identityHash,
+    canonicalIdentityJson: listingCanonical.identityJson,
     retailer: "walmart",
     retailerProductId: "123456789",
     normalizedProductUrl: "https://www.walmart.com/ip/123456789",
@@ -391,6 +410,26 @@ test("listing-bound bootstrap prevents a second ID caused by field partition dri
       listingBinding: changedBinding,
     }),
     /TARGETED_EVIDENCE_LISTING_BINDING_INVALID/,
+  );
+});
+
+test("listing-bound title proof preserves original multi-word brand order", () => {
+  const snapshot = listingBoundBootstrapSnapshot({
+    brand: "Pepperidge Farm",
+    productLine: "Jewish Rye Seeded Bread",
+    flavor: "Seeded Rye",
+    title: "Pepperidge Farm Jewish Rye Seeded Bread, 8 oz Bag",
+  });
+  const target = {
+    ordinal: 0,
+    ...snapshot,
+    query: "Pepperidge Farm Jewish Rye Seeded Bread 8 oz",
+    donorSnapshotSha256: targetedWalmartDonorSnapshotSha256(snapshot),
+  } as ProductTruthTargetedWalmartEvidenceTarget;
+  assert.equal(canonicalIdentityFromTarget(target).brand, "farm pepperidge");
+  assert.equal(
+    canonicalMatchIdentityFromTarget(target).brand,
+    "Pepperidge Farm",
   );
 });
 

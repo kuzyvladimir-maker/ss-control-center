@@ -65,7 +65,7 @@ import {
   TARGETED_WALMART_MAX_WALL_CLOCK_MS,
   buildProductTruthTargetedWalmartListingBinding,
   buildProductTruthTargetedWalmartLegacySnapshot,
-  canonicalIdentityFromTarget,
+  canonicalMatchIdentityFromTarget,
   deriveProductTruthTargetedWalmartListingCanonicalIdentity,
   normalizeExactWalmartProductUrl,
   parseProductTruthTargetedWalmartDonorSnapshot,
@@ -289,7 +289,7 @@ function parseJsonOrNull(value: unknown): unknown {
 }
 
 function canonicalProductFromTarget(target: ProductTruthTargetedWalmartEvidenceTarget): CanonicalProduct {
-  const identity = canonicalIdentityFromTarget(target);
+  const identity = canonicalMatchIdentityFromTarget(target);
   return {
     brand: identity.brand ?? undefined,
     product_line: identity.productLine ?? undefined,
@@ -332,7 +332,8 @@ export function selectExactTargetedWalmartOffer(input: {
   ) {
     fail("TARGETED_WALMART_LOCALITY_UNPROVEN", "Oxylabs did not prove Walmart ZIP 33765");
   }
-  const canonicalIdentity: CanonicalProductIdentity = canonicalIdentityFromTarget(input.target);
+  const canonicalIdentity: CanonicalProductIdentity =
+    canonicalMatchIdentityFromTarget(input.target);
   const canonicalProduct = canonicalProductFromTarget(input.target);
   const matches: ScoredOffer[] = [];
   const rejectedChecks: string[] = [];

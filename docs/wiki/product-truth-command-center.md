@@ -809,11 +809,17 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   исторический artifact, но новый исполняемый plan из него не строится:
   `TARGETED_EVIDENCE_UNBOUND_BOOTSTRAP_RETIRED`.
 - [x] ✅ Regression воспроизводит прежний duplicate-ID defect и доказывает, что
-  listing-bound ID равен target ID листинга. TypeScript = PASS; unit `13/13`;
-  executor integration `11/11`; полный Product Truth suite `511/511`.
+  listing-bound ID равен target ID листинга.
+- [x] ✅ Первый read-only production preflight выявил до provider boundary
+  отдельный multi-word brand defect: canonical hash намеренно token-sorted, но
+  donor title proof обязан сохранять исходную фразу `Pepperidge Farm`. Исправление
+  использует byte-bound raw listing identity только для matcher proof и не меняет
+  canonical ID. Provider spend и production writes = `0`.
+- [x] ✅ TypeScript = PASS; unit `14/14`; executor integration `11/11`; полный
+  Product Truth suite `512/512`.
 - [x] ✅ Три ошибочно привязанных pilot donor aliases не менялись и остаются
   quarantined append-only history; их receipts не replay.
-- [ ] 🔄 Следующая граница: clean frozen release + read-only preflight одного
-  untouched listing-bound candidate.
+- [ ] 🔄 Следующая граница: superseding clean frozen release + повторный read-only
+  preflight одного untouched listing-bound candidate.
 - [ ] ⬜ После успешного preflight — один no-retry provider canary и обязательный
   fresh bridge postcheck до любой следующей wave.

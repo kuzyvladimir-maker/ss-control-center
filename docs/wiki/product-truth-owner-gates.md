@@ -776,9 +776,13 @@ frozen plan/release и отдельным свежим budget evidence.
 
 ### Listing-bound v1.4 implementation status
 
-Локальная реализация завершена и сертифицирована `511/511`. Это изменение не
-потребило provider units и не изменило production DB/marketplace. Старый unbound
-bootstrap больше не может выпустить новый plan. Следующий provider gate может
-потребляться только одним exact listing-bound plan, одним SKU, без retry, после
-fresh balance evidence; он не распространяется на controlled wave, consumer
-activation, repricing, inventory, delisting или procurement.
+Локальная реализация завершена и сертифицирована `512/512`. Первый read-only
+production preflight до provider boundary выявил multi-word brand defect:
+token-sorted canonical brand нельзя использовать как title phrase. Исправление
+сохраняет raw byte-bound listing brand только для matcher proof, не меняя canonical
+ID; regression входит в suite. Этот цикл потребил `0` provider units и не изменил
+production DB/marketplace. Старый unbound bootstrap больше не может выпустить новый
+plan. Следующий provider gate может потребляться только одним exact listing-bound
+plan, одним SKU, без retry, после fresh balance evidence; он не распространяется на
+controlled wave, consumer activation, repricing, inventory, delisting или
+procurement.
