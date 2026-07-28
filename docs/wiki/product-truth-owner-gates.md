@@ -27,6 +27,7 @@
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
+| G2b. Bundle Factory no-spend web bridge | `AWAITING_EXACT_OWNER_APPROVAL` | Production служебная migration и bounded `doctor → plan` activation |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
 | G5a. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified |
@@ -167,6 +168,43 @@ product-truth-web-operations-control-plane.md — отдельная SSCC
 schema/contracts/tests, отдельный Product Truth Ed25519 domain, runtime hardcoded
 OFF. Не разрешаю production activation, worker claim, DB apply, provider calls,
 paid spend или marketplace actions.
+```
+
+## G2b — Bundle Factory bounded no-spend web bridge
+
+### Уже доказано
+
+- clean release commit `8178f5194c149e473dddcb2ddfa9a2e15282a91f`,
+  tree `f4cc943349e69ba721d989315abf1900506d7d08`, executable SHA-256
+  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+- migration SHA-256
+  `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
+- Product Truth `508/508`, Bundle Factory UI/route `2/2`, TypeScript, focused
+  ESLint и production build = `PASS`;
+- Vercel deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` = `Ready`, но runtime
+  `OFF`;
+- read-only production preflight: все три control tables отсутствуют,
+  activation env отсутствует;
+- provider calls, Product Truth business writes и Walmart actions = `0`.
+
+### Точная граница
+
+Gate разрешает только служебные control-plane tables в основной SSCC DB и
+последовательную активацию `ADMISSION_ONLY → LOCAL_NO_SPEND →
+PRODUCTION_READ_ONLY` для `doctor` и `plan`. Он не разрешает `execute`, `resume`,
+provider call, paid spend, canonical/business-data write либо Walmart action.
+Каждый переход обязан пройти отдельный технический postcheck; ошибка
+останавливает sequence.
+
+### Exact owner phrase
+
+```text
+Разрешаю G2b для release 8178f519: применить только служебную Stage A migration
+к основной SSCC production DB и последовательно проверить ADMISSION_ONLY,
+local no-spend worker и PRODUCTION_READ_ONLY только для doctor и plan.
+Разрешаю отдельный worker token и чистый pinned worker. Не разрешаю execute,
+resume, provider calls, paid spend, Product Truth business writes или любые
+Walmart/marketplace actions.
 ```
 
 ## G3 — authoritative Phase 1 store dispositions

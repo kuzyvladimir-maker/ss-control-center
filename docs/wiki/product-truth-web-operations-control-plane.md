@@ -1,6 +1,7 @@
 # Product Truth Web Operations Control Plane
 
-> **Статус:** `DESIGN_READY / RUNTIME_OFF / OWNER_DECISION_REQUIRED`.
+> **Статус:** `NO_SPEND_BRIDGE_CODE_CERTIFIED / RUNTIME_OFF /
+> PRODUCTION_GATE_REQUIRED`.
 >
 > **Дата:** 2026-07-25.
 >
@@ -390,6 +391,58 @@ owner gate.
 - только read/artifact-plan commands;
 - отдельный owner activation;
 - результаты сравниваются с ручным sealed CLI.
+
+### Сертифицированный no-spend bridge candidate — 2026-07-28
+
+Bundle Factory Walmart demand fallback реализован только для bounded
+`doctor → plan` участка:
+
+- release commit:
+  `8178f5194c149e473dddcb2ddfa9a2e15282a91f`;
+- Git tree:
+  `f4cc943349e69ba721d989315abf1900506d7d08`;
+- executable tree SHA-256:
+  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+- Stage A migration SHA-256:
+  `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
+- authoritative Phase 1 manifest v3 SHA-256:
+  `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`;
+- production Product Truth target fingerprint:
+  `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`.
+
+Clean-checkout evidence: Product Truth `508/508`, Bundle Factory UI/route
+`2/2`, TypeScript, focused ESLint и production build = `PASS`. Worker до
+первого HTTP request доказывает clean checkout, exact commit/tree и производный
+SHA-256 executable tree; activation confirmation связывает stage, release,
+commit, tree, executable digest, target и manifest.
+
+Production deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` имеет статус
+`Ready` и назначен на `salutemsolutions.info`, но runtime остаётся `OFF`.
+Read-only production preflight доказал:
+
+- `ProductTruthControlCommand`, `ProductTruthControlArtifact` и
+  `ProductTruthControlEvent` в production отсутствуют;
+- activation/release/manifest/worker env отсутствуют;
+- provider calls, Product Truth business writes и Walmart actions = `0`.
+
+Этот candidate не реализует и не разрешает `execute`, `resume`, provider calls,
+paid spend, Product Truth business writes или marketplace actions. Для реального
+сбора данных после `plan` остаётся отдельный Stage F money/permit gate.
+
+### Exact owner gate для bounded no-spend activation
+
+Один комбинированный gate ниже разрешает не несколько денежных действий, а
+только последовательную проверяемую активацию служебного no-spend пути. При
+любой ошибке переход останавливается; Stage F не открывается.
+
+```text
+Разрешаю G2b для release 8178f519: применить только служебную Stage A migration
+к основной SSCC production DB и последовательно проверить ADMISSION_ONLY,
+local no-spend worker и PRODUCTION_READ_ONLY только для doctor и plan.
+Разрешаю отдельный worker token и чистый pinned worker. Не разрешаю execute,
+resume, provider calls, paid spend, Product Truth business writes или любые
+Walmart/marketplace actions.
+```
 
 ### Stage E — owner-gated DB writes
 
