@@ -289,3 +289,31 @@ function mockPlaceholderUrl(slug: string): string {
   // 1024×1024 grey square from placehold.co — no auth, no rate limit.
   return `https://placehold.co/1024x1024/e5e5e5/666666.png?text=mock+${safe}`;
 }
+
+/**
+ * Upload an audit artifact (proof archive copy) to the configured R2 bucket
+ * and return its public credential-free URL, or null when R2 is not
+ * configured (local dev fallback: caller archives to the repo filesystem).
+ * Used by the Uncrustables studio prepare step, where the serverless
+ * filesystem is read-only and repo-relative archive paths cannot exist.
+ */
+export async function uploadBundleFactoryAuditObject(
+  key: string,
+  body: Buffer | string,
+  contentType: string,
+): Promise<string | null> {
+  const r2 = getR2Client();
+  const r2PublicUrl = process.env.R2_PUBLIC_URL;
+  if (!r2 || !r2PublicUrl) return null;
+  const bucket = process.env.R2_BUCKET_NAME || DEFAULT_BUCKET;
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: typeof body === "string" ? Buffer.from(body, "utf8") : body,
+      ContentType: contentType,
+      CacheControl: "public, max-age=31536000",
+    }),
+  );
+  return `${r2PublicUrl.replace(/\/+$/, "")}/${key}`;
+}

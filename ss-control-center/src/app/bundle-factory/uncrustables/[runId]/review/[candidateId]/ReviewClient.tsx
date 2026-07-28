@@ -45,6 +45,41 @@ interface ReviewCandidate {
   reviewed_by: string | null;
   reject_reason: string | null;
   last_error: string | null;
+  sku: string | null;
+  proof_id: string | null;
+  submission_id: string | null;
+  asin: string | null;
+}
+
+/** Readable dry-run preview returned by POST .../submit {mode:"dry_run"}. */
+interface SubmitPreview {
+  channel: string;
+  store_index: number;
+  product_type: string;
+  brand: string;
+  category: string;
+  sku: string;
+  upc: string;
+  title: string;
+  bullets: string[];
+  description: string;
+  price_cents: number;
+  pack_count: number;
+  components: { flavor: string; qty: number; box_size: number; box_count: number }[];
+  ship_specs: { length_in: number; width_in: number; height_in: number; weight_oz: number };
+  allergens: string[];
+  main_image_url: string | null;
+  image_sha256: string | null;
+  available_quantity: number | null;
+  permit: {
+    proof_id: string;
+    permit_sha256_prefix: string;
+    main_image_sha256_prefix: string;
+    owner_approval_manifest_sha256_prefix: string;
+    registry_sha256_prefix: string;
+    approved_subject_sha256_prefix: string;
+  };
+  note?: string;
 }
 
 /** The 11-point checklist — the exact HumanVisualApprovalChecklist keys the
@@ -97,6 +132,16 @@ export function ReviewClient({ candidate }: { candidate: ReviewCandidate }) {
   const [rejectReason, setRejectReason] = useState("");
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // ---- publication (A4 prepare / A5 submit) state.
+  const [pubBusy, setPubBusy] = useState<
+    "prepare" | "preview" | "publish" | "status" | null
+  >(null);
+  const [pubError, setPubError] = useState<string | null>(null);
+  const [pubNote, setPubNote] = useState<string | null>(null);
+  const [preview, setPreview] = useState<SubmitPreview | null>(null);
+  const [confirmText, setConfirmText] = useState("");
+  const publishPhrase = candidate.sku ? `PUBLISH ${candidate.sku}` : null;
 
   // ---- zoom/pan state (plain CSS transform — no library).
   const [zoom, setZoom] = useState(1);
@@ -190,6 +235,156 @@ export function ReviewClient({ candidate }: { candidate: ReviewCandidate }) {
       setActionError(error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function prepare() {
+    if (pubBusy) return;
+    setPubBusy("prepare");
+    setPubError(null);
+    setPubNote(null);
+    try {
+      const response = await fetch(
+        `/api/bundle-factory/uncrustables/candidates/${candidate.id}/prepare`,
+        { method: "POST" },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        setPubError(
+          [
+            data.error,
+            data.stage ? `stage ${data.stage}` : null,
+            Array.isArray(data.blocked_rule_ids) && data.blocked_rule_ids.length > 0
+              ? `blocked rules: ${data.blocked_rule_ids.join(", ")}`
+              : null,
+            data.detail ?? null,
+          ]
+            .filter(Boolean)
+            .join(" — "),
+        );
+        router.refresh();
+        return;
+      }
+      setPubNote(`Staged as ${data.sku} and proofed (proof ${data.proof_id}).`);
+      router.refresh();
+    } catch (error) {
+      setPubError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPubBusy(null);
+    }
+  }
+
+  async function previewSubmission() {
+    if (pubBusy) return;
+    setPubBusy("preview");
+    setPubError(null);
+    setPubNote(null);
+    try {
+      const response = await fetch(
+        `/api/bundle-factory/uncrustables/candidates/${candidate.id}/submit`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "dry_run" }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        setPreview(null);
+        setPubError(
+          [
+            data.error,
+            Array.isArray(data.findings) && data.findings.length > 0
+              ? data.findings
+                  .map((f: { code?: string; message?: string }) => `${f.code}: ${f.message}`)
+                  .join("; ")
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" — "),
+        );
+        return;
+      }
+      setPreview(data.preview as SubmitPreview);
+    } catch (error) {
+      setPubError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPubBusy(null);
+    }
+  }
+
+  async function publishLive() {
+    if (pubBusy || !publishPhrase || confirmText.trim() !== publishPhrase) return;
+    setPubBusy("publish");
+    setPubError(null);
+    setPubNote(null);
+    try {
+      const response = await fetch(
+        `/api/bundle-factory/uncrustables/candidates/${candidate.id}/submit`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "live", confirm: confirmText.trim() }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        setPubError(
+          [
+            data.error,
+            Array.isArray(data.issues) && data.issues.length > 0
+              ? data.issues
+                  .map(
+                    (issue: { code?: string; severity?: string; message?: string }) =>
+                      `${issue.severity ?? "?"}:${issue.code ?? "?"} ${issue.message ?? ""}`,
+                  )
+                  .join("; ")
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" — "),
+        );
+        return;
+      }
+      setPubNote(
+        `Submitted to Amazon — submission ${data.submission_id ?? "n/a"} (${data.amazon_status ?? "status unknown"}).`,
+      );
+      setConfirmText("");
+      router.refresh();
+    } catch (error) {
+      setPubError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPubBusy(null);
+    }
+  }
+
+  async function checkStatus() {
+    if (pubBusy) return;
+    setPubBusy("status");
+    setPubError(null);
+    setPubNote(null);
+    try {
+      const response = await fetch(
+        `/api/bundle-factory/uncrustables/candidates/${candidate.id}`,
+        { cache: "no-store" },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        setPubError(data.error ?? `HTTP ${response.status}`);
+        return;
+      }
+      if (data.state && data.state !== candidate.state) {
+        router.refresh();
+        return;
+      }
+      const listing = data.submission?.listing_status ?? "unknown";
+      setPubNote(
+        `Marketplace status: ${listing}${data.poll_error ? ` (poll error: ${String(data.poll_error).slice(0, 160)})` : ""}`,
+      );
+    } catch (error) {
+      setPubError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPubBusy(null);
     }
   }
 
@@ -428,6 +623,208 @@ export function ReviewClient({ candidate }: { candidate: ReviewCandidate }) {
             </button>
           </div>
           {actionError && <p className="mt-3 text-[12px] text-red-600">{actionError}</p>}
+        </section>
+
+        <section className="rounded-[14px] border border-rule bg-surface p-4">
+          <h2 className="text-[13px] font-semibold text-ink">Publication</h2>
+          {candidate.sku && (
+            <p className="mt-1 font-mono text-[11.5px] tabular-nums text-ink-3">
+              SKU {candidate.sku}
+              {candidate.proof_id ? ` · proof ${candidate.proof_id}` : ""}
+            </p>
+          )}
+
+          {candidate.state === "APPROVED" && (
+            <>
+              <p className="mt-2 text-[12px] text-ink-2">
+                Prepare stages this candidate into the database (draft, compliance gate,
+                SKU and UPC mint, ship specs) and mints the sealed owner-approval proof
+                from the exact approved bytes.
+              </p>
+              <button
+                type="button"
+                onClick={() => void prepare()}
+                disabled={pubBusy !== null}
+                className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-md border border-green-soft2 bg-green-soft px-4 text-[12.5px] font-medium text-green-ink transition-colors hover:bg-green-soft2 disabled:opacity-40"
+              >
+                {pubBusy === "prepare"
+                  ? "Staging and minting proof..."
+                  : "Prepare for publication"}
+              </button>
+            </>
+          )}
+
+          {candidate.state === "PROOFED" && (
+            <>
+              <button
+                type="button"
+                onClick={() => void previewSubmission()}
+                disabled={pubBusy !== null}
+                className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-md border border-rule bg-surface px-4 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-bg-elev disabled:opacity-40"
+              >
+                {pubBusy === "preview" ? "Running dry-run preflight..." : "Preview submission"}
+              </button>
+              {preview && (
+                <div className="mt-3 rounded-md border border-rule bg-bg-elev p-3 text-[12px] text-ink-2">
+                  <dl className="space-y-1.5">
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Title</dt>
+                      <dd className="text-ink">{preview.title}</dd>
+                    </div>
+                    <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+                      <div>
+                        <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Price</dt>
+                        <dd className="font-mono tabular-nums text-ink">
+                          ${(preview.price_cents / 100).toFixed(2)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">SKU / UPC</dt>
+                        <dd className="font-mono tabular-nums text-ink">
+                          {preview.sku} / {preview.upc}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Count</dt>
+                        <dd className="font-mono tabular-nums text-ink">{preview.pack_count}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Quantity</dt>
+                        <dd className="font-mono tabular-nums text-ink">
+                          {preview.available_quantity ?? "n/a"}
+                        </dd>
+                      </div>
+                    </div>
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Target</dt>
+                      <dd>
+                        {preview.channel} (store{preview.store_index}) · {preview.product_type} ·{" "}
+                        {preview.brand} · {preview.category}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">
+                        Ship specs
+                      </dt>
+                      <dd className="font-mono tabular-nums">
+                        {preview.ship_specs.length_in}x{preview.ship_specs.width_in}x
+                        {preview.ship_specs.height_in} in · {preview.ship_specs.weight_oz} oz
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">
+                        Components
+                      </dt>
+                      <dd className="font-mono tabular-nums">
+                        {preview.components
+                          .map((comp) => `${comp.box_count} x ${comp.box_size}ct ${comp.flavor}`)
+                          .join(" + ")}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">
+                        Allergens
+                      </dt>
+                      <dd>{preview.allergens.join(", ") || "none"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10.5px] uppercase tracking-wider text-ink-3">Permit</dt>
+                      <dd className="break-words font-mono text-[11px] tabular-nums">
+                        proof {preview.permit.proof_id} · permit{" "}
+                        {preview.permit.permit_sha256_prefix}… · image{" "}
+                        {preview.permit.main_image_sha256_prefix}… · manifest{" "}
+                        {preview.permit.owner_approval_manifest_sha256_prefix}…
+                      </dd>
+                    </div>
+                  </dl>
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-[11px] text-ink-3">
+                      Full dry-run JSON
+                    </summary>
+                    <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap break-all text-[10.5px] text-ink-3">
+                      {JSON.stringify(preview, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              )}
+              <div className="mt-4 border-t border-rule pt-4">
+                <p className="text-[12px] text-ink-2">
+                  Publishing performs the real Amazon submission through the sealed permit
+                  chain. Type <span className="font-mono text-ink">{publishPhrase}</span> to
+                  enable the button.
+                </p>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={publishPhrase ?? "PUBLISH <sku>"}
+                  className="mt-2 h-9 w-full rounded-md border border-rule bg-surface px-3 font-mono text-[12.5px] text-ink outline-none focus:border-green-soft2"
+                />
+                <button
+                  type="button"
+                  onClick={() => void publishLive()}
+                  disabled={
+                    pubBusy !== null ||
+                    !publishPhrase ||
+                    confirmText.trim() !== publishPhrase
+                  }
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-green-soft2 bg-green-soft px-4 text-[12.5px] font-medium text-green-ink transition-colors hover:bg-green-soft2 disabled:opacity-40"
+                >
+                  {pubBusy === "publish" ? "Submitting to Amazon..." : "Publish to Amazon"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {(candidate.state === "SUBMITTED" || candidate.state === "LIVE") && (
+            <div className="mt-2 space-y-1.5 text-[12px] text-ink-2">
+              <p className="font-mono tabular-nums">
+                Submission {candidate.submission_id ?? "n/a"}
+              </p>
+              {candidate.asin ? (
+                <p className="font-mono tabular-nums">
+                  ASIN {candidate.asin} ·{" "}
+                  <a
+                    href={`https://www.amazon.com/dp/${candidate.asin}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-2"
+                  >
+                    open listing
+                  </a>
+                </p>
+              ) : (
+                <p>No ASIN yet — the listing is still processing on Amazon.</p>
+              )}
+              {candidate.state === "SUBMITTED" && (
+                <button
+                  type="button"
+                  onClick={() => void checkStatus()}
+                  disabled={pubBusy !== null}
+                  className="mt-1 inline-flex h-8 items-center rounded-md border border-rule bg-surface px-3 text-[11.5px] text-ink-2 transition-colors hover:bg-bg-elev disabled:opacity-40"
+                >
+                  {pubBusy === "status" ? "Checking..." : "Check status"}
+                </button>
+              )}
+            </div>
+          )}
+
+          {candidate.state === "FAILED" && (
+            <p className="mt-2 break-words text-[12px] text-red-700">
+              {candidate.last_error ?? "Prepare failed; use Rerender to loop back through render and approval."}
+            </p>
+          )}
+
+          {!["APPROVED", "PROOFED", "SUBMITTED", "LIVE", "FAILED"].includes(candidate.state) && (
+            <p className="mt-2 text-[12px] text-ink-3">
+              Publication opens after this candidate is APPROVED.
+            </p>
+          )}
+
+          {pubNote && <p className="mt-3 text-[12px] text-green-ink">{pubNote}</p>}
+          {pubError && (
+            <p className="mt-3 break-words text-[12px] text-red-600">{pubError}</p>
+          )}
         </section>
 
         <section className="rounded-[14px] border border-rule bg-surface p-4">

@@ -77,6 +77,10 @@ export default async function UncrustablesReviewPage({ params }: PageProps) {
           reviewed_by: candidate.reviewed_by,
           reject_reason: candidate.reject_reason,
           last_error: candidate.last_error,
+          sku: candidate.sku,
+          proof_id: candidate.proof_id,
+          submission_id: candidate.submission_id,
+          asin: candidate.asin,
         }}
       />
     </>

@@ -34,6 +34,9 @@ interface BoardCandidate {
   pixel_height: number | null;
   reviewed_by: string | null;
   reject_reason: string | null;
+  sku: string | null;
+  submission_id: string | null;
+  asin: string | null;
   last_error: string | null;
 }
 
@@ -46,6 +49,7 @@ interface BoardData {
 const ACTIVE_STATES = ["PLANNED", "RENDER_QUEUED", "RENDERING"];
 const QUEUEABLE_STATES = ["PLANNED", "RENDER_QUEUED"];
 const RERENDERABLE_STATES = ["RENDERED", "REJECTED", "FAILED"];
+const PUBLICATION_STATES = ["APPROVED", "STAGED", "VALIDATED", "PROOFED", "SUBMITTED", "LIVE"];
 
 const STATE_STYLES: Record<string, string> = {
   PLANNED: "border-rule bg-bg-elev text-ink-2",
@@ -216,6 +220,13 @@ export function RunBoardClient({ runId }: { runId: string }) {
                 </div>
               )}
               {c.reviewed_by && <div>Approved by {c.reviewed_by}</div>}
+              {c.sku && (
+                <div className="font-mono tabular-nums">
+                  SKU {c.sku}
+                  {c.submission_id ? ` · sub ${c.submission_id}` : ""}
+                  {c.asin ? ` · ASIN ${c.asin}` : ""}
+                </div>
+              )}
               {c.reject_reason && (
                 <div className="text-red-700">Reject: {c.reject_reason}</div>
               )}
@@ -232,6 +243,14 @@ export function RunBoardClient({ runId }: { runId: string }) {
                   className="inline-flex h-7 items-center rounded-md border border-green-soft2 bg-green-soft px-3 text-[11.5px] font-medium text-green-ink transition-colors hover:bg-green-soft2"
                 >
                   Review
+                </Link>
+              )}
+              {PUBLICATION_STATES.includes(c.state) && (
+                <Link
+                  href={`/bundle-factory/uncrustables/${runId}/review/${c.id}`}
+                  className="inline-flex h-7 items-center rounded-md border border-green-soft2 bg-green-soft px-3 text-[11.5px] font-medium text-green-ink transition-colors hover:bg-green-soft2"
+                >
+                  Publication
                 </Link>
               )}
               {RERENDERABLE_STATES.includes(c.state) && (
