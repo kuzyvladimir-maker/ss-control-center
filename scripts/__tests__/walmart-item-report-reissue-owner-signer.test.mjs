@@ -1,0 +1,290 @@
+import assert from "node:assert/strict";
+import {
+  createHash,
+  createPublicKey,
+  verify,
+} from "node:crypto";
+import {
+  chmod,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+
+import {
+  runWalmartItemReportReissueOwnerSignerCli,
+} from "../walmart-item-report-reissue-owner-signer.mjs";
+import { canonicalWalmartItemReportJson } from "../../src/lib/walmart/item-report-published-source.ts";
+
+const FIXED_RANDOM = Buffer.from("abcdef0123456789abcdef0123456789", "utf8");
+const DOMAIN = Buffer.from(
+  "SS_COMMAND_CENTER\0WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION\0v3\0",
+  "utf8",
+);
+
+async function fixture(t) {
+  const root = await realpath(await mkdtemp(path.join(os.tmpdir(), "walmart-owner-signer-")));
+  await chmod(root, 0o700);
+  t.after(async () => {
+    await chmod(root, 0o700).catch(() => {});
+    await rm(root, { recursive: true, force: true });
+  });
+  return {
+    root,
+    custody: path.join(root, "owner-custody"),
+    request: path.join(root, "signing-request.json"),
+    secrets: new Map(),
+  };
+}
+
+function fixedAuthorization() {
+  return {
+    report_create_post_authorized: true,
+    pre_create_absence_guard_required: true,
+    same_oauth_transport_required: true,
+    maximum_create_post_calls: 1,
+    maximum_oauth_token_calls: 1,
+    maximum_walmart_report_api_calls_before_create: 2,
+    maximum_total_http_calls_before_create: 3,
+    maximum_total_http_calls: 22,
+    maximum_request_timeout_ms: 60_000,
+    retry_attempts_allowed: 0,
+    fallbacks_allowed: 0,
+    redirects_followed_allowed: 0,
+    automatic_replay_allowed: false,
+    absence_guard: {
+      method: "GET",
+      endpoint: "/v3/reports/reportRequests",
+      query: {
+        reportType: "ITEM",
+        reportVersion: "v6",
+        requestSubmissionStartDate: "2026-07-19T03:55:00Z",
+        requestSubmissionEndDate: "2026-07-19T04:00:00Z",
+        src: "API",
+      },
+      exact_zero_results_required: true,
+      next_cursor_forbidden: true,
+    },
+    create_request: {
+      method: "POST",
+      endpoint: "/v3/reports/reportRequests",
+      report_type: "ITEM",
+      report_version: "v6",
+      request_body_sha256: createHash("sha256").update("{}", "utf8").digest("hex"),
+    },
+    continuation: {
+      same_oauth_transport_required: true,
+      polling_authorized: true,
+      maximum_poll_observations: 9,
+      poll_interval_ms: 180_000,
+      download_locator_calls_maximum: 1,
+      presigned_download_calls_maximum: 9,
+      compile_network_calls_maximum: 0,
+    },
+    request_id_adoption_from_prior: false,
+    original_session_writes_allowed: 0,
+    database_calls_allowed: 0,
+    model_calls_allowed: 0,
+    paid_provider_calls_allowed: 0,
+    listing_content_writes_allowed: 0,
+    scheduled_execution_allowed: false,
+  };
+}
+
+function fixedRisk() {
+  return {
+    historical_exact_probe_observed_no_api_visible_v6_request: true,
+    historical_exact_probe_does_not_prove_original_post_failed: true,
+    live_pre_create_guard_must_observe_exact_absence: true,
+    live_guard_and_create_must_share_one_oauth_transport: true,
+    non_absent_or_ambiguous_guard_forbids_create: true,
+    original_post_may_have_reached_walmart: true,
+    duplicate_report_request_risk_is_non_zero: true,
+    duplicate_report_request_risk_accepted: true,
+    exact_probe_account_match_is_operator_asserted_not_machine_verified: true,
+    operator_custody_metadata_is_not_walmart_signature_or_tls_transcript: true,
+    broad_probe_is_corroborating_only: true,
+    quarantined_terminal_failure_remains_authoritative: true,
+    prohibited_conflicting_final_must_not_be_consumed: true,
+    original_request_id_must_not_be_adopted: true,
+    crash_or_ambiguous_replacement_outcome_burns_authorization: true,
+    single_custody_ledger_is_not_distributed_at_most_once: true,
+  };
+}
+
+async function init(fx) {
+  return runWalmartItemReportReissueOwnerSignerCli([
+    "init",
+    `--custody-dir=${fx.custody}`,
+    "--key-id=walmart-item-v6-reissue-owner-test",
+  ], {
+    random_bytes: () => Buffer.from(FIXED_RANDOM),
+    store_secret: async (keyId, secret) => {
+      fx.secrets.set(keyId, Buffer.from(secret));
+    },
+    delete_secret: async (keyId) => {
+      fx.secrets.delete(keyId);
+    },
+    now: () => new Date("2026-07-22T07:00:00.000Z"),
+  });
+}
+
+async function writeRequest(fx, enrollment) {
+  const body = {
+    disposition_id: "item-v6-reissue-owner-test-disposition",
+    action: "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
+    environment: "PRODUCTION",
+    approved_by: "owner-test",
+    decision_ref: "urn:ss-command-center:test:item-reissue-owner-signer",
+    engine_release_sha256: "1".repeat(64),
+    source_evidence: {
+      artifact_sha256: "2".repeat(64),
+      release_id: "renewal-test",
+    },
+    account_scope: {
+      channel: "WALMART_US",
+      store_index: 1,
+      seller_id: "10001624309",
+      seller_account_fingerprint_sha256: "3".repeat(64),
+    },
+    prior_incident: { terminal_failure_retained: true },
+    replacement: { session_name: "replacement-session-test" },
+    consumption_ledger: { ledger_id: "ledger-test" },
+    issued_at: "2026-07-22T07:01:00.000Z",
+    expires_at: "2026-07-22T07:20:00.000Z",
+    evidence_fresh_until: "2026-07-23T06:39:07.290Z",
+    authorization: fixedAuthorization(),
+    owner_risk_acknowledgement: fixedRisk(),
+  };
+  const envelope = {
+    schema_version: "walmart-item-report-reissue-owner-disposition/v3",
+    algorithm: "Ed25519",
+    key_id: enrollment.key_id,
+    owner_public_key_spki_sha256: enrollment.public_key_spki_sha256,
+    signed_body: body,
+  };
+  const message = Buffer.concat([
+    DOMAIN,
+    Buffer.from(canonicalWalmartItemReportJson(envelope), "utf8"),
+  ]);
+  const request = {
+    ...envelope,
+    signing_message_base64: message.toString("base64"),
+    signature_base64: "TODO_EXTERNAL_OWNER_ED25519_SIGNATURE_BASE64",
+    signature_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
+    authorization_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
+  };
+  const bytes = Buffer.from(canonicalWalmartItemReportJson(request), "utf8");
+  await writeFile(fx.request, bytes, { flag: "wx", mode: 0o400 });
+  await chmod(fx.request, 0o400);
+  return { request, bytes, message };
+}
+
+test("init creates only an encrypted private key and public enrollment outside repo", async (t) => {
+  const fx = await fixture(t);
+  const result = await init(fx);
+  assert.equal(result.status, "OWNER_KEY_CREATED");
+  assert.equal(result.private_key_disclosed, false);
+  assert.equal(result.private_key_unlock_provider, "MACOS_LOGIN_KEYCHAIN");
+  assert.equal(result.user_managed_password_required, false);
+  assert.equal(result.network_calls, 0);
+  const privatePath = path.join(fx.custody, "walmart-owner-control-private-key.pem");
+  const enrollmentPath = path.join(fx.custody, "walmart-owner-control-public-enrollment.json");
+  assert.equal((await stat(fx.custody)).mode & 0o777, 0o700);
+  assert.equal((await stat(privatePath)).mode & 0o777, 0o400);
+  assert.equal((await stat(enrollmentPath)).mode & 0o777, 0o400);
+  const privateText = await readFile(privatePath, "utf8");
+  assert.match(privateText, /BEGIN ENCRYPTED PRIVATE KEY/);
+  const enrollmentBytes = await readFile(enrollmentPath);
+  const enrollment = JSON.parse(enrollmentBytes);
+  assert.equal(enrollment.domain, "WALMART_OWNER_CONTROL");
+  assert.equal(enrollment.private_key_unlock_provider, "MACOS_LOGIN_KEYCHAIN");
+  assert.equal(enrollment.user_managed_password_required, false);
+  assert.deepEqual(enrollment.allowed_signing_domains, [
+    "WALMART_ITEM_V6_CATALOG_ACTIVATE",
+    "WALMART_ITEM_V6_REPORT_CREATE_REISSUE",
+    "WALMART_MP_ITEM_SUBMIT",
+  ]);
+  assert.equal(enrollmentBytes.toString("utf8"),
+    canonicalWalmartItemReportJson(enrollment));
+});
+
+test("inspect exposes exact risk summary and sign emits one raw valid Ed25519 signature", async (t) => {
+  const fx = await fixture(t);
+  await init(fx);
+  const enrollment = JSON.parse(await readFile(
+    path.join(fx.custody, "walmart-owner-control-public-enrollment.json"),
+    "utf8",
+  ));
+  const request = await writeRequest(fx, enrollment);
+  const requestSha = createHash("sha256").update(request.bytes).digest("hex");
+  const inspection = await runWalmartItemReportReissueOwnerSignerCli([
+    "inspect",
+    `--custody-dir=${fx.custody}`,
+    `--request=${fx.request}`,
+    `--expect-request-sha256=${requestSha}`,
+  ]);
+  assert.equal(inspection.status, "OWNER_REVIEW_REQUIRED");
+  assert.equal(inspection.summary.maximum_create_post_calls, 1);
+  assert.equal(inspection.summary.retries_allowed, 0);
+  assert.equal(inspection.summary.duplicate_report_request_risk, true);
+  const signaturePath = path.join(fx.custody, "owner-signature-test.bin");
+  const signed = await runWalmartItemReportReissueOwnerSignerCli([
+    "sign",
+    `--custody-dir=${fx.custody}`,
+    `--request=${fx.request}`,
+    `--expect-request-sha256=${requestSha}`,
+    `--out=${signaturePath}`,
+    `--confirm=${inspection.required_confirmation}`,
+  ], {
+    read_secret: async (keyId) => Buffer.from(fx.secrets.get(keyId)),
+  });
+  assert.equal(signed.status, "DETACHED_SIGNATURE_CREATED");
+  assert.equal(signed.signature_byte_length, 64);
+  assert.equal(signed.network_calls, 0);
+  const signature = await readFile(signaturePath);
+  assert.equal((await stat(signaturePath)).mode & 0o777, 0o400);
+  const publicKey = createPublicKey({
+    key: Buffer.from(enrollment.public_key_spki_der_base64, "base64"),
+    format: "der",
+    type: "spki",
+  });
+  assert.equal(verify(null, request.message, publicKey, signature), true);
+});
+
+test("wrong confirmation never unlocks the key or creates a signature", async (t) => {
+  const fx = await fixture(t);
+  await init(fx);
+  const enrollment = JSON.parse(await readFile(
+    path.join(fx.custody, "walmart-owner-control-public-enrollment.json"),
+    "utf8",
+  ));
+  const request = await writeRequest(fx, enrollment);
+  const requestSha = createHash("sha256").update(request.bytes).digest("hex");
+  let prompts = 0;
+  const output = path.join(fx.custody, "must-not-exist.bin");
+  await assert.rejects(
+    runWalmartItemReportReissueOwnerSignerCli([
+      "sign",
+      `--custody-dir=${fx.custody}`,
+      `--request=${fx.request}`,
+      `--expect-request-sha256=${requestSha}`,
+      `--out=${output}`,
+      "--confirm=WRONG",
+    ], {
+      read_secret: async (keyId) => {
+        prompts += 1;
+        return Buffer.from(fx.secrets.get(keyId));
+      },
+    }),
+    (error) => error?.code === "CONFIRMATION_MISMATCH",
+  );
+  assert.equal(prompts, 0);
+  await assert.rejects(stat(output), /ENOENT/);
+});

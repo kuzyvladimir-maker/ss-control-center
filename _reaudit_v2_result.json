@@ -1,0 +1,2720 @@
+[
+  {
+    "sku": "Athar-1593",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.4 pack",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All 4 tiles show the same Lay's Barbecue Party Size bag face-on with full branding visible; each til"
+  },
+  {
+    "sku": "FaisalX-1149",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Brioche-style buns (visible blue 'Brioche' band), not the 'White' hot dog buns name"
+  },
+  {
+    "sku": "FaisalX-1239",
+    "was": "OK",
+    "now": "OK",
+    "title": "Arnold Whole Grains Small Slice Oatnut Bread Loaf, 18 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Arnold Whole Grains Oatnut bread loaf bags arranged in a 2x2 grid, each showing the "
+  },
+  {
+    "sku": "FaisalX-1294",
+    "was": "OK",
+    "now": "OK",
+    "title": "SunChips Garden Salsa Whole Grain Snacks, 7 oz Bag (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual SunChips Garden Salsa 7oz bags arranged in a 3x2 grid, each showing the front panel c"
+  },
+  {
+    "sku": "FaisalX-1352",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Cheetos Crunchy Cheese Puff Chips, 15 oz Bag (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows a Cheetos Crunchy 'Party Size' bag; the listing title specifies a 15 oz bag, but Par"
+  },
+  {
+    "sku": "FaisalX-1368",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cheetos Crunchy Cheese Flavored Snack Chips, 3.25 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Cheetos Crunchy 3.25 oz bags arranged in a 4x2 grid, each showing the front panel clear"
+  },
+  {
+    "sku": "FaisalX-1441",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Nissin Cup O'Noodles Ramen Noodle Soup, Beef Flavor 2.25oz (60 Pack)",
+    "units": 60,
+    "basis": "pack-of",
+    "reason": "3 rows of ~20 Nissin Cup Noodles cups each (≈60 total); each tile is a single retail cup shown face-"
+  },
+  {
+    "sku": "FaisalX-1442",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nissin Cup O'Noodles Ramen Noodle Soup, Beef Flavor 2",
+    "units": 120,
+    "basis": "pack-hint",
+    "reason": "Grid of ~3 rows × ~40 columns = ~120 single Nissin Cup O'Noodles cups; each tile is one retail cup s"
+  },
+  {
+    "sku": "FaisalX-1515",
+    "was": "OK",
+    "now": "OK",
+    "title": "Kellogg's Cheez-It White Cheddar Cheese Crackers Family Size (Pack of 14)",
+    "units": 14,
+    "basis": "pack-of",
+    "reason": "14 individual Kellogg's Cheez-It White Cheddar Family Size boxes arranged in a 5-5-4 grid, each show"
+  },
+  {
+    "sku": "FaisalX-1517",
+    "was": "OK",
+    "now": "OK",
+    "title": "Wellsley Farms Animal Crackers, 62 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Wellsley Farms Animal Crackers 62oz jars arranged in a 2x2 grid, each showing the fr"
+  },
+  {
+    "sku": "FaisalX-1623",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Thomas Everything Mini Bagels, 10 ct (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Each tile shows a promotional/marketing graphic (orange sunburst with 'NO HIGH FRUCTOSE CORN SYRUP' "
+  },
+  {
+    "sku": "FaisalX-1650",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag -Pack Of 5",
+    "units": 5,
+    "basis": "pack-of",
+    "reason": "Wrong product: image shows Sara Lee Artesano Brioche Style BAKERY BREAD (thick sliced sandwich loave"
+  },
+  {
+    "sku": "FaisalX-1657",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz -Pack Of 7",
+    "units": 7,
+    "basis": "pack-of",
+    "reason": "Each tile shows the back/end panel of the bread bag (red background with 'America's #1 Organic Bread"
+  },
+  {
+    "sku": "FaisalX-1659",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Dave's Killer Bread® Powerseed® Organic Bread 25 oz. Loaf -Pack Of 5",
+    "units": 5,
+    "basis": "pack-of",
+    "reason": "Product shown is Dave's Killer Bread Good Seed Thin-Sliced, not Powerseed as required by the listing"
+  },
+  {
+    "sku": "FaisalX-1810",
+    "was": "OK",
+    "now": "OK",
+    "title": "Canada Dry Caffeine Free Ginger Ale Soda Pop, 2 Liter Bottle (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Canada Dry Caffeine Free Ginger Ale 2L bottles arranged in a 3x2 grid, each showing t"
+  },
+  {
+    "sku": "FaisalX-1848",
+    "was": "OK",
+    "now": "OK",
+    "title": "A&W Zero Sugar Root Beer Soda Pop, 2 Liter Bottle (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "2x2 grid of 4 A&W Zero Sugar Root Beer 2L bottles, each tile shows exactly one bottle face-on with f"
+  },
+  {
+    "sku": "FaisalX-2022",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cheetos Crunchy Flamin' Hot Cheese Puff Chips, 15oz Bag-Pack Of 5",
+    "units": 5,
+    "basis": "pack-of",
+    "reason": "Five individual Cheetos Crunchy Flamin' Hot bags shown face-on in a 3+2 grid on a white background; "
+  },
+  {
+    "sku": "FaisalX-2066",
+    "was": "OK",
+    "now": "OK",
+    "title": "Chef Boyardee Beefaroni, Pasta in Meat Sauce, 14.25 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Chef Boyardee Beefaroni 14.25 oz microwavable bowls arranged in a 3x2 grid; each tile"
+  },
+  {
+    "sku": "FaisalX-2078",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Chef Boyardee Beef Lasagna, Microwave Pasta, 15 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Chef Boyardee Lasagna (not Beef Lasagna as specified in the listing title — the can"
+  },
+  {
+    "sku": "FaisalX-2087",
+    "was": "OK",
+    "now": "OK",
+    "title": "Chef Boyardee Spaghetti and Meatballs, Microwave Pasta, 7.5 oz Bowl (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Chef Boyardee Spaghetti & Meatballs 7.5 oz microwave bowls arranged in a 3x2 grid, ea"
+  },
+  {
+    "sku": "FaisalX-2134",
+    "was": "OK",
+    "now": "OK",
+    "title": "Iberia Ib Aloe Vera 1.5 Lt (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Iberia Aloe Vera Drink bottles arranged in a 4x2 grid, each showing a single retail uni"
+  },
+  {
+    "sku": "FaisalX-2195",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mott's 100% Juice Original Apple Juice, 48 fl oz, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Mott's 100% Apple Juice 64 fl oz bottles arranged in a 2x2 grid, each showing the fr"
+  },
+  {
+    "sku": "FaisalX-2235",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Gatorade Thirst Quencher, Orange Sports Drinks, 28 fl oz, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong flavor: image shows Gatorade Thirst Quencher Midnight Ice (dark purple liquid, 'Midnight Ice' "
+  },
+  {
+    "sku": "FaisalX-2243",
+    "was": "OK",
+    "now": "OK",
+    "title": "Gatorade Gatorlyte, Cherry Lime Sports Drinks, 20 fl oz, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Gatorade Gatorlyte Cherry Lime 20 fl oz bottles arranged in a 2x2 grid, each showing"
+  },
+  {
+    "sku": "FaisalX-2268",
+    "was": "OK",
+    "now": "OK",
+    "title": "BODYARMOR Tropical Punch Bottled Electrolyte Sports Drink, 16 fl oz, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual BODYARMOR Tropical Punch 16 fl oz bottles arranged in a 3x2 grid, each showing the fr"
+  },
+  {
+    "sku": "FaisalX-2279",
+    "was": "OK",
+    "now": "OK",
+    "title": "BODYARMOR Flash IV Strawberry Kiwi Electrolyte Hydration Sports Drink, 20 fl oz, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four tiles, each showing one BODYARMOR Flash IV Strawberry Kiwi 20oz bottle face-on with full front "
+  },
+  {
+    "sku": "FaisalX-228",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 12)",
+    "units": 12,
+    "basis": "pack-of",
+    "reason": "3x4 grid of 12 identical Nature's Own Perfectly Crafted Brioche Style Hamburger Buns bags; each tile"
+  },
+  {
+    "sku": "FaisalX-245",
+    "was": "OK",
+    "now": "OK",
+    "title": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 7)",
+    "units": 7,
+    "basis": "pack-of",
+    "reason": "4+3 grid totaling 7 units; each tile is one single Sara Lee Classic White loaf shown face-on with fu"
+  },
+  {
+    "sku": "FaisalX-2487",
+    "was": "OK",
+    "now": "OK",
+    "title": "HORMEL COMPLEATS Turkey & Dressing, Shelf Stable, 10 oz Plastic Tray, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four single Hormel Compleats Turkey & Dressing trays shown front-on against a white background."
+  },
+  {
+    "sku": "FaisalX-2490",
+    "was": "OK",
+    "now": "OK",
+    "title": "HORMEL COMPLEATS Chicken & Dressing, 9.5 oz Plastic Tray, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All 4 tiles show a single Hormel Compleats Chicken Breast & Dressing 9.5 oz tray face-on with full l"
+  },
+  {
+    "sku": "FaisalX-2502",
+    "was": "OK",
+    "now": "OK",
+    "title": "HORMEL COMPLEATS Beef Pot Roast, 9 oz Plastic Tray, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Hormel Compleats Beef Pot Roast 9oz trays arranged in a 2x2 grid, each showing a sin"
+  },
+  {
+    "sku": "FaisalX-2515",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "HORMEL COMPLEATS Beefy Macaroni & Cheese, 7.5 oz Plastic Tray, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong flavor/variant: image shows Hormel Compleats Tender Beef with Mashed Potatoes & Gravy (9 oz), "
+  },
+  {
+    "sku": "FaisalX-2554",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong flavor: image shows Campbell's Chunky Hearty Chicken with Vegetables, not Chicken Broccoli Che"
+  },
+  {
+    "sku": "FaisalX-2569",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Campbell’s Chunky Soup, Ready to Serve Hearty Bean Soup with Ham, 19 oz Can, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows a can lying on its side displaying only the narrow top/side label band, not the wide"
+  },
+  {
+    "sku": "FaisalX-2586",
+    "was": "OK",
+    "now": "OK",
+    "title": "Campbell's Chunky Soup, Ready to Serve Savory Chicken with White and Wild Rice Soup, 18.8 oz Can, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Campbell's Chunky Savory Chicken with White & Wild Rice soup cans arranged in a 2x2 "
+  },
+  {
+    "sku": "FaisalX-2607",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Campbell's Chunky Chili, Hot and Spicy Chili with Beans, 16.5 oz Can, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Cans display 'Chili with Beans' without any visible 'Hot and Spicy' text; listing specifies the Hot "
+  },
+  {
+    "sku": "FaisalX-2622",
+    "was": "OK",
+    "now": "OK",
+    "title": "Campbell’s Chunky Soup, Beef Soup with Country Vegetables, 15.25 oz, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Campbell's Chunky Beef with Country Vegetables cans in a 2x2 grid; each tile is one "
+  },
+  {
+    "sku": "FaisalX-2626",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Campbell’s Chunky Soup, Loaded Potato Seasoned with Bacon, 15.25 oz, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Brand/flavor mismatch: image shows Progresso Rich & Hearty Loaded Potato with Bacon 18.5 oz, but lis"
+  },
+  {
+    "sku": "FaisalX-2651",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Knorr No Artificial Flavors Creamy Butter Fettuccine Pasta, 4.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Identity false: listing specifies 'Creamy Butter Fettuccine' but the product shown is 'Butter Flavor"
+  },
+  {
+    "sku": "FaisalX-2652",
+    "was": "OK",
+    "now": "OK",
+    "title": "Knorr No Artificial Flavors Creamy Butter Fettuccine Pasta, 4.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Knorr Pasta Sides Butter Flavor Fettuccine pouches arranged in a 3x2 grid, each showi"
+  },
+  {
+    "sku": "FaisalX-2684",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Knorr No Artificial Flavors Creamy Pesto Rotini Pasta Cooks in 12 Minutes, 4.1 oz Regular Pouch (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Knorr Pasta Sides Butter & Herb Fettuccine, not the listed Creamy Pesto Rotini — wr"
+  },
+  {
+    "sku": "FaisalX-2688",
+    "was": "OK",
+    "now": "OK",
+    "title": "Knorr Creamy Alfredo Pasta Sauce Mix, 1.6 oz Regular Pouch (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 tiles in a 3x2 grid, each showing one Knorr Alfredo Sauce Mix 1.6 oz pouch front-face on a white b"
+  },
+  {
+    "sku": "FaisalX-2727",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Campbell's Condensed Chicken with Rice Soup 10.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "The listing specifies 'Chicken with Rice' but the cans shown are 'Chicken with White & Wild Rice' — "
+  },
+  {
+    "sku": "FaisalX-2791",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Campbell's Condensed Vegetable Beef Soup, 10.5 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Each tile shows a promotional banner image ('Stock Up on Classic Pantry Must-Haves') containing a ro"
+  },
+  {
+    "sku": "FaisalX-2815",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Campbell’s Condensed Heart Healthy Tomato Soup, 10.75 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Each tile shows only the Campbell's logo banner (red strip with brand name) — not the full can with "
+  },
+  {
+    "sku": "FaisalX-283",
+    "was": "wrong-product",
+    "now": "wrong-count",
+    "title": "Martin's Potato Sandwich Rolls, Fresh 3.5 Inch Buns, (Pack of 12)",
+    "units": 12,
+    "basis": "pack-of",
+    "reason": "Grid contains far more than 12 units (appears to be ~80-100 tiles arranged in a wide horizontal band"
+  },
+  {
+    "sku": "FaisalX-2832",
+    "was": "OK",
+    "now": "OK",
+    "title": "Campbell's Condensed 98% Fat Free Cream of Mushroom Soup, 10.5 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Campbell's Condensed 98% Fat Free Cream of Mushroom Soup cans in a 3x2 grid, each showi"
+  },
+  {
+    "sku": "FaisalX-315",
+    "was": "OK",
+    "now": "not-face-on",
+    "title": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 11)",
+    "units": 11,
+    "basis": "pack-of",
+    "reason": "Each tile displays what appears to be the BACK/INFO panel of the bag — the 'Let's be Real...' market"
+  },
+  {
+    "sku": "FaisalX-3186",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Purina Fancy Feast Gourmet Wet Cat Food Gravy Lovers, Salmon and Sole Feast In Gravy, 3 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Fancy Feast Medleys Wild Salmon Florentine with Garden Greens in a Delicate Sauce, "
+  },
+  {
+    "sku": "FaisalX-3289",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Sheba Perfect Portions Wet Kitten Food Paté Chicken Entree, Single 2.64 Oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows the BACK/BOTTOM of a dual-cup Perfect Portions tray (barcode and nutrition text visi"
+  },
+  {
+    "sku": "FaisalX-3297",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "SHEBA Wet Cat Food Cuts in Gravy Delicate White Fish & Tuna Entree, (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "Each tile shows only the back/top of the pouch with '100% Complete & Balanced' text and a cat photo "
+  },
+  {
+    "sku": "FaisalX-3305",
+    "was": "OK",
+    "now": "OK",
+    "title": "Iams Proactive Health Senior Soft Wet Dog Food Pate With Slow Cooked Chicken & Rice, 13 Oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 IAMS Proactive Health Healthy Aging 7+ Slow Cooked Chicken & Rice 13 oz cans in a 3×2 grid; each t"
+  },
+  {
+    "sku": "FaisalX-3308",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Iams Proactive Health Adult Soft Wet Dog Food Paté With Chicken & Whole Grain Rice, 13 Oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Shows Iams wet dog food cans, but the variant is Chunks beef/rice/carrots/green beans, not pate chic"
+  },
+  {
+    "sku": "FaisalX-3309",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Iams Proactive Health Adult Soft Wet Dog Food Paté With Chicken & Whole Grain Rice, 13 Oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Each tile shows a single IAMS 13 oz can and the count is 8 on a white background, but all cans are d"
+  },
+  {
+    "sku": "FaisalX-3312",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Iams Proactive Health Wet Dog Food, Chicken Chunks In Gravy, 13 Oz Can, (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 single IAMS 13 oz cans on white, but all are back/side views with barcode/info panel, not front-fa"
+  },
+  {
+    "sku": "FaisalX-3326",
+    "was": "OK",
+    "now": "OK",
+    "title": "Maruchan Instant Lunch w/Shrimp Instant Lunch, 2.25 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 single Maruchan Instant Lunch with Shrimp cups shown on a plain white background."
+  },
+  {
+    "sku": "FaisalX-3331",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Maruchan Instant Lunch Lime Chili Flavor w/Shrimp Instant Lunch, 2.25 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Image shows 6 single Maruchan Instant Lunch units on white, but flavor reads Lime Flavor with Shrimp"
+  },
+  {
+    "sku": "FaisalX-3338",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Maruchan Ramen Noodle Soup Chicken Flavor, 3 oz Shelf Stable Package (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Image shows Maruchan Ramen Noodle Soup Creamy Chicken Flavor, not Chicken Flavor; 8 single front-fac"
+  },
+  {
+    "sku": "FaisalX-3360",
+    "was": "OK",
+    "now": "OK",
+    "title": "Maruchan Instant Hot & Spicy Beef Ramen Soup, 2.25 oz Shelf Stable Cup (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 single Maruchan Instant Lunch Hot & Spicy Beef units, front-facing on a plain white background."
+  },
+  {
+    "sku": "FaisalX-3364",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Maruchan Instant Lunch Beef Flavor Noodle Soup, 2.25 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Image shows Chicken Flavor, not Beef; six single face-on units on white background."
+  },
+  {
+    "sku": "FaisalX-3374",
+    "was": "OK",
+    "now": "OK",
+    "title": "Maruchan Fire Bowl Spicy Beef (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Maruchan Fire Bowl Spicy Beef cups arranged in a 3-3-2 grid, each showing the front lab"
+  },
+  {
+    "sku": "FaisalX-3389",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nissin Foods, Bowl Noodle Hot & Spicy (Shrimp), 3.27 fFl Oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Nissin Bowl Noodle Hot & Spicy Shrimp bowls arranged in a 3-3-2 grid, each showing the "
+  },
+  {
+    "sku": "FaisalX-3408",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nissin Fire Wok Hot & Spicy Torched Teriyaki Chicken, 3.1oz Pillows (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 individual Nissin Fire Wok Hot & Spicy units arranged in a 5x2 grid, each showing the front label"
+  },
+  {
+    "sku": "FaisalX-3417",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nissin Top Ramen Beef Flavor Ramen Noodles 3.28 oz. Bowl (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 individual Nissin Top Ramen Beef bowl units arranged in a 5x2 grid, each showing the front label "
+  },
+  {
+    "sku": "FaisalX-3419",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cup Noodles Ramen Noodle Soup Seafood (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Cup Noodles Seafood cups arranged in a 4x2 grid; each tile is a single retail cup shown"
+  },
+  {
+    "sku": "FaisalX-3437",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni Beef Flavor Rice Mix, 6.8 oz Cardboard Regular Box (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Rice-A-Roni Beef Flavor 6.8 oz boxes arranged in a 4x2 grid, each showing the full fron"
+  },
+  {
+    "sku": "FaisalX-3452",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice a Roni Spanish Rice, 6.8 oz box (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Rice-a-Roni Spanish Rice 6.8oz boxes arranged in a 4x2 grid, each showing the front pan"
+  },
+  {
+    "sku": "FaisalX-3453",
+    "was": "wrong-product",
+    "now": "multipack-in-cell",
+    "title": "Rice a Roni Spanish Rice, 6.8 oz box (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "Each tile shows two Rice-A-Roni Spanish Rice boxes placed side by side (not one unit); the grid has "
+  },
+  {
+    "sku": "FaisalX-3454",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni Long Grain & Wild Rice Mix Packaged Meal, 4.3 oz Shelf-Stable Box (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Rice-A-Roni Long Grain & Wild Rice 4.3 oz boxes arranged in a 2x3 grid, each showing "
+  },
+  {
+    "sku": "FaisalX-3459",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni, Rice Pilaf Rice & Pasta Mix, 7.2 oz Box, Uncooked Dry Rice and Pasta (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 individual Rice-A-Roni Rice Pilaf 7.2oz boxes arranged in a 5x2 grid, each showing the full front"
+  },
+  {
+    "sku": "FaisalX-3460",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni, Cheddar Broccoli Rice, 2.11 oz Cup, Quick Cook Microwave Cup (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Rice-A-Roni Cheddar Broccoli microwave cups arranged in a 3x2 grid; each tile shows e"
+  },
+  {
+    "sku": "FaisalX-3461",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni, Cheddar Broccoli Rice, 2.11 oz Cup, Quick Cook Microwave Cup (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Rice-A-Roni Cheddar Broccoli microwave cups arranged in a 3-3-2 grid, each showing a si"
+  },
+  {
+    "sku": "FaisalX-3464",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni Chicken Rice & Vermicelli Mix, 1.97 oz Cup (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 Rice-A-Roni Chicken flavor single-serve cups tiled in a 3-3-2 grid; each tile is one individual cu"
+  },
+  {
+    "sku": "FaisalX-3466",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni, Creamy Four Cheese Rice and Vermicelli Mix, 2.25 oz Cup (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Rice-A-Roni Creamy Four Cheese cups arranged in a 2x3 grid, each showing the front la"
+  },
+  {
+    "sku": "FaisalX-3467",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rice-A-Roni, Creamy Four Cheese Rice and Vermicelli Mix, 2.25 oz Cup (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Rice-A-Roni Creamy Four Cheese cups tiled in a 3-3-2 grid, each showing the front label"
+  },
+  {
+    "sku": "FaisalX-3506",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Hamburger Helper Cheeseburger Macaroni, 6.6 oz Box (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Hamburger Helper Double Cheeseburger Macaroni, but listing title specifies Cheesebu"
+  },
+  {
+    "sku": "FaisalX-3510",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hamburger Helper Double Cheeseburger Macaroni, 6 oz Box (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "All 10 tiles show a single Hamburger Helper Double Cheeseburger box face-on with full front panel vi"
+  },
+  {
+    "sku": "FaisalX-3527",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Hamburger Helper Three Cheese Pasta, 6 oz Box (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Wrong flavor/variant: image shows Hamburger Helper Deluxe Beef Stroganoff, but listing specifies Thr"
+  },
+  {
+    "sku": "FaisalX-3533",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hamburger Helper Pasta Stroganoff, 6.4 oz Box (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Hamburger Helper Stroganoff 6.4oz boxes arranged in a 4x2 grid, each showing the front "
+  },
+  {
+    "sku": "FaisalX-3537",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hamburger Helper Deluxe Philly Cheesesteak Pasta, 4.8 oz Box (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 single Hamburger Helper Deluxe Philly Cheesesteak boxes arranged in a 4-3-3 grid, all face-on wit"
+  },
+  {
+    "sku": "FaisalX-3546",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hamburger Helper Four Cheese Lasagna, 8.8 oz Value Size Box (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 individual Hamburger Helper Four Cheese Lasagna boxes arranged in a 4-3-3 grid, each showing its "
+  },
+  {
+    "sku": "FaisalX-3554",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Pringles Cheddar Cheese Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows what appears to be a multi-pack tray/caddy containing multiple Pringles cans (not a "
+  },
+  {
+    "sku": "FaisalX-3555",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Cheddar Cheese Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Pringles Cheddar Cheese 5.5oz cans arranged 3+3+2, each showing the front label face-on"
+  },
+  {
+    "sku": "FaisalX-3562",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles, Potato Crisps Chips, Original, 5.2 Oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Pringles Original 5.2 oz cans arranged in a 2x2 grid, each showing its front label f"
+  },
+  {
+    "sku": "FaisalX-3569",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Pringles Chili Cheese Fries canisters arranged in a 3x2 grid, each showing the front la"
+  },
+  {
+    "sku": "FaisalX-3578",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Honey Mustard Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Pringles Honey Mustard cans arranged in a 3x2 grid, each showing the front label clea"
+  },
+  {
+    "sku": "FaisalX-3581",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Lightly Salted Original Flavor Potato Crisps 5.2 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Pringles Lightly Salted Original 5.2 oz cans arranged 3x2, each showing the full front "
+  },
+  {
+    "sku": "FaisalX-3585",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Pringles Ranch cans arranged in a 4x2 grid, each showing the front label clearly, on a "
+  },
+  {
+    "sku": "FaisalX-3600",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lay's Stax Sour Cream & Onion Potato Crisps, 5.5 oz Bag (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Lay's Stax Sour Cream & Onion canisters arranged in a 4x2 grid, each showing the front "
+  },
+  {
+    "sku": "FaisalX-3605",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Sour Cream and Onion Potato Crisps Chips, Lunch Snacks, 2.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Pringles Sour Cream & Onion cans in a 3x2 grid, each shown face-on with full label visi"
+  },
+  {
+    "sku": "FaisalX-3611",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pringles Everything Bagel Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Pringles Everything Bagel 5.5 oz cans arranged in a 3x2 grid, each showing the front la"
+  },
+  {
+    "sku": "FaisalX-3625",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Doritos Minis, Cool Ranch Flavored Snack Chips Canister, 5.125 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Doritos Minis Nacho Cheese, but the listing title specifies Cool Ranch flavor — fla"
+  },
+  {
+    "sku": "FaisalX-3654",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Traditional, Hearty Chicken & Rotini Canned Soup, 19 oz. (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Progresso Traditional Hearty Chicken & Rotini cans arranged in a 4x2 grid, each showing"
+  },
+  {
+    "sku": "FaisalX-367",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Nature's Own Life Sugar-Free 100% Whole Grain bread loaf bags in a 4×2 grid; each tile "
+  },
+  {
+    "sku": "FaisalX-368",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 9)",
+    "units": 9,
+    "basis": "pack-of",
+    "reason": "5 loaves in top row + 4 in bottom row = 9 units total; each tile is a single Nature's Own Life Sugar"
+  },
+  {
+    "sku": "FaisalX-3691",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Traditional Creamy Tomato with Penne Soup - 18.5oz pack of 4",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual 18.5oz Progresso Traditional Creamy Tomato with Penne cans arranged in a 2x2 grid, e"
+  },
+  {
+    "sku": "FaisalX-3694",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Italian-Style Wedding Soup, Traditional Canned Soup, 18.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Progresso Italian-Style Wedding Soup 18.5 oz cans arranged in a 2x2 grid, each showi"
+  },
+  {
+    "sku": "FaisalX-3709",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Beef Pot Roast with Country Vegetables Canned Soup, 18.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Progresso Beef Pot Roast with Country Vegetables 18.5 oz cans tiled in a 2x2 grid, e"
+  },
+  {
+    "sku": "FaisalX-3713",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong flavor: image shows 'Loaded Potato with Bacon' but listing requires 'Italian Sausage & Potato'"
+  },
+  {
+    "sku": "FaisalX-3716",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Rich & Hearty Gluten Free Broccoli Cheese Soup",
+    "units": 6,
+    "basis": "pack-hint",
+    "reason": "Wrong flavor: image shows Progresso Rich & Hearty Italian Sausage & Potato, but listing is Broccoli "
+  },
+  {
+    "sku": "FaisalX-3718",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Creamy Chicken & Homestyle Noodles Soup, Rich & Hearty Canned Soup, 18.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Progresso Rich & Hearty Creamy Chicken & Homestyle Noodles cans arranged in a 2x2 gr"
+  },
+  {
+    "sku": "FaisalX-3724",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Lentil Soup, Vegetable Classics Canned Soup, Gluten Free, 19 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Mediterranean-Style Lentil, but the listing specifies 'Vegetable Classics"
+  },
+  {
+    "sku": "FaisalX-3727",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Vegetable Classics, Vegetarian Vegetable with Barley Canned Soup, 19 oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Vegetable Classics Minestrone, but listing specifies 'Vegetarian Vegetabl"
+  },
+  {
+    "sku": "FaisalX-3731",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Minestrone Soup, Vegetable Classics Canned Soup, 19 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Progresso Vegetable Classics Minestrone 19oz cans arranged in a 3x2 grid, each showing "
+  },
+  {
+    "sku": "FaisalX-3743",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Vegetable Classics Soup, Creamy Mushroom, 18 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Progresso Vegetable Classics Creamy Mushroom 18oz cans arranged in a 3x2 grid, each sho"
+  },
+  {
+    "sku": "FaisalX-3744",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Vegetable Classics Soup, Creamy Mushroom, 18 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Progresso Vegetable Classics Creamy Mushroom 18oz cans arranged in a 3-3-2 grid, each s"
+  },
+  {
+    "sku": "FaisalX-3754",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Light Broccoli Cheese (18 oz), but listing specifies Creamy Potato With B"
+  },
+  {
+    "sku": "FaisalX-3755",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong product: image shows Progresso Pitmaster Sausage & Beer Cheese with Potatoes, but listing titl"
+  },
+  {
+    "sku": "FaisalX-3758",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Progresso Chickpea & Noodle 18.5 oz cans arranged in a 3x2 grid, each showing the ful"
+  },
+  {
+    "sku": "FaisalX-3759",
+    "was": "OK",
+    "now": "OK",
+    "title": "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz. (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Progresso Chickpea & Noodle 18.5 oz cans arranged in a 4x2 grid, each showing the full "
+  },
+  {
+    "sku": "FaisalX-3769",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Light, Chicken Pot Pie Style Soup, 18.5 oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Light Creamy Chicken Noodle, but listing title specifies Chicken Pot Pie "
+  },
+  {
+    "sku": "FaisalX-3770",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Light, Chicken Pot Pie Style Soup, 18.5 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Light Creamy Chicken Noodle, but the listing title specifies Chicken Pot "
+  },
+  {
+    "sku": "FaisalX-3792",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Reduced Sodium, Roasted Chicken Noodle Soup, 19 oz. (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Identity false: listing title specifies 19 oz but each can shown is 18.5 oz; also listing says 'Roas"
+  },
+  {
+    "sku": "FaisalX-3795",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Light, Broccoli Cheese Canned Soup, Gluten Free, 18 oz. (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Progresso Light New England Clam Chowder (18.5 oz), but the listing title specifies"
+  },
+  {
+    "sku": "FaisalX-3857",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Swanson 100% Natural, Gluten Free Vegetable Stock, 32 oz Carton (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Swanson Chicken Broth, not Vegetable Stock as required by the listing title. Additi"
+  },
+  {
+    "sku": "FaisalX-3861",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Swanson 100% Natural Unsalted Chicken Stock, 32 oz Carton (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Swanson Chicken Broth, but the listing specifies Chicken Stock (unsalted). These ar"
+  },
+  {
+    "sku": "FaisalX-3866",
+    "was": "OK",
+    "now": "OK",
+    "title": "Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Jack Link's Beef Jerky Teriyaki bags arranged in a 3x2 grid on a white background; ea"
+  },
+  {
+    "sku": "FaisalX-3868",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Jack Link’s Beef Jerky, 100% Beef, Original, 2.85 oz, 10g of Protein per Serving (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Jack Link's Beef Jerky TERIYAKI, but listing title specifies ORIGINAL flavor — flav"
+  },
+  {
+    "sku": "FaisalX-3883",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Jack Link’s Beef Jerky, Peppered, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Bags shown are 'Family Size' and display 9g protein per serving, but the listing specifies 2.85 oz w"
+  },
+  {
+    "sku": "FaisalX-3890",
+    "was": "OK",
+    "now": "OK",
+    "title": "2.85oz Jack Links Teriyaki Beef Tender Bites (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Jack Link's Beef Tender Bites Teriyaki bags arranged in a 3x2 grid, each showing the fu"
+  },
+  {
+    "sku": "FaisalX-390",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nature's Own Perfectly Crafted Brioche Style Bread Loaf, 22 oz, (Pack of 9)",
+    "units": 9,
+    "basis": "pack-of",
+    "reason": "5+4=9 units; each is a single Nature's Own Perfectly Crafted Brioche Style loaf shown face-on with f"
+  },
+  {
+    "sku": "FaisalX-3930",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Sahale Snacks Maple Pecans Glazed Mix, 1.5 Ounces (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Size mismatch: each tiled bag shows NET WT 4 OZ (113g), but the listing specifies 1.5 Ounces — diffe"
+  },
+  {
+    "sku": "FaisalX-3941",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rold Gold® Tiny Twists Original Pretzels 16.0 oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Rold Gold Tiny Twists Original 16 oz bags arranged in a 3x2 grid, each showing its wide"
+  },
+  {
+    "sku": "FaisalX-3943",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rold Gold Pretzel Sticks Snacks, 16 oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Rold Gold Pretzel Sticks Original 16 oz bags arranged in a 2x2 grid, each showing th"
+  },
+  {
+    "sku": "FaisalX-396",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, 20 oz, (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "2×2 grid of 4 Nature's Own Whitewheat Healthy White loaves; each tile is a single retail bag standin"
+  },
+  {
+    "sku": "FaisalX-3965",
+    "was": "OK",
+    "now": "OK",
+    "title": "Reese's Chocolate Peanut Butter Shell Topping, Bottle 7.25 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Reese's Chocolate Peanut Butter Shell Topping bottles arranged in a 3x2 grid, each sh"
+  },
+  {
+    "sku": "FaisalX-3966",
+    "was": "OK",
+    "now": "OK",
+    "title": "Reese's Chocolate Peanut Butter Shell Topping, Bottle 7.25 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Reese's Chocolate Peanut Butter Shell Topping bottles arranged in a 4x2 grid, each show"
+  },
+  {
+    "sku": "FaisalX-3970",
+    "was": "OK",
+    "now": "OK",
+    "title": "REESES PLANT BASED OAT CHOCOLATE CONFECTION & PEANUT BUTTER MINIATURE CUPS POUCH (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All 4 tiles show the same Reese's Plant Based Oat Chocolate Confection & Peanut Butter Miniature Cup"
+  },
+  {
+    "sku": "FaisalX-3977",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Reese's Pieces Peanut Butter In a Crunchy Shell Candy, Bag 5.3 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Reese's Pieces Eggs (10.8 oz, seasonal Easter variant), not Reese's Pieces Peanut B"
+  },
+  {
+    "sku": "FaisalX-399",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, 20 oz, (Pack of 7)",
+    "units": 7,
+    "basis": "pack-of",
+    "reason": "Wrong product: image shows Nature's Own Butter Bread (not WhiteWheat Healthy White Bread). Each tile"
+  },
+  {
+    "sku": "FaisalX-4003",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Identity false: listing specifies 4.84 oz bags but the image shows 10.1 oz (298g) bags — different s"
+  },
+  {
+    "sku": "FaisalX-4018",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Hershey's Kisses Milk Chocolate with Almonds Candy, Share 10 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Hershey's Kisses Milk Chocolate (plain, 10.8 oz), but listing specifies 'with Almon"
+  },
+  {
+    "sku": "FaisalX-402",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, 20 oz, (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "Product shown is Nature's Own Butter Bread (with a Sara Vita spread bundle), not Nature's Own WhiteW"
+  },
+  {
+    "sku": "FaisalX-4031",
+    "was": "OK",
+    "now": "OK",
+    "title": "Quinn Maple Almond Butter Filled Pretzel Nuggets, 5.0 oz, (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Quinn Maple Almond Butter Filled Pretzel Nuggets 5.0 oz bags arranged in a 3x2 grid, ea"
+  },
+  {
+    "sku": "FaisalX-4044",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Snack Factory Pretzel Crisps Gluten Free, Original Flavor, 5 Ounce (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Wrong size: each tile shows a 14 OZ PARTY SIZE bag, not the 5 oz bag listed. Party Size is a larger "
+  },
+  {
+    "sku": "FaisalX-4057",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Dot's Homestyle Pretzels Honey Mustard Seasoned Pretzel Twists, 5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Wrong flavor/variant: tiles show Dot's Homestyle Pretzels ORIGINAL Seasoned Pretzel Twists (16 oz), "
+  },
+  {
+    "sku": "FaisalX-4114",
+    "was": "OK",
+    "now": "OK",
+    "title": "Snack Factory Pretzel Crisps, Honey Mustard and Onion, 7.2 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All four tiles show a single Snack Factory Pretzel Crisps Honey Mustard & Onion 7.2 oz bag face-on w"
+  },
+  {
+    "sku": "FaisalX-4161",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Mission Zero Net Carbs Sriracha Ranch Street Taco Tortillas, 8.89 oz, 14 Count (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Mission Zero Net Carbs Original tortillas, but the listing specifies Sriracha Ranch"
+  },
+  {
+    "sku": "FaisalX-4173",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "La Banderita Carb Counter Carb Lean Tortillas Soft Taco Flour Tortillas 8 Count (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Wrong product: each tile shows La Banderita Carb Counter 'Birria' Spiced Flour Tortillas, not the Ca"
+  },
+  {
+    "sku": "FaisalX-4192",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "La Banderita Corn Tortillas Rica'S, 27.5 Oz. (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Packages show La Banderita White Corn Tortillas labeled ~34.8 oz / 30 tortillas; listing specifies 2"
+  },
+  {
+    "sku": "FaisalX-4211",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Taco Bell Mild Seasoned Flavor Crunchy Taco Shells, 12 ct, 4.8 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 tiles arranged in a 3+3+2 grid; each tile shows one Taco Bell Mild Seasoned Flavor Crunchy Taco Sh"
+  },
+  {
+    "sku": "FaisalX-4263",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ritz Toasted Chips, Garden Valley Veggie, 8.1 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Ritz Toasted Chips Veggie bags arranged in a 2x2 grid, each showing the front panel "
+  },
+  {
+    "sku": "FaisalX-4282",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nabisco Ritz Whole Wheat Classic Crackers, 12.9 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Nabisco Ritz Whole Wheat Crackers boxes arranged in a 3x2 grid, each showing the front "
+  },
+  {
+    "sku": "FaisalX-4383",
+    "was": "OK",
+    "now": "OK",
+    "title": "Town House FlipSides Original Oven Baked Crackers, Lunch Snacks, 9.2 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Town House FlipSides Original 9.2 oz boxes shown face-on in a 2x2 grid on plain whit"
+  },
+  {
+    "sku": "FaisalX-4386",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Town House FlipSides Minis House Seasoned Oven Baked Crackers, Lunch Snacks, 10.2 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Image shows Town House FlipSides Original 9.2 oz, but listing specifies FlipSides Minis Seasoned 10."
+  },
+  {
+    "sku": "FaisalX-4434",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Lance Sandwich Crackers, Malt with Peanut Butter, 10 Individually Wrapped Packs, 6 Sandwiches (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Each tile shows the back/nutrition-facts panel of the Lance Toasty Peanut Butter cracker pack, not t"
+  },
+  {
+    "sku": "FaisalX-4454",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Cheez-It Extra Toasty Cheese Crackers, Baked Snack Crackers, 21 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Boxes show Cheez-It Extra Toasty Cheddar Jack at 12.4 oz per unit; listing specifies Extra Toasty Ch"
+  },
+  {
+    "sku": "FaisalX-4456",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Cheez-It White Cheddar Cheese Crackers, Baked Snack Crackers, 21 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Clean 3×2 grid of 6 individual Cheez-It White Cheddar baked snack cracker boxes, each single retail "
+  },
+  {
+    "sku": "FaisalX-4463",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 12 Count (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 Cheez-It Original Pantry Size boxes arranged in a 3-3-2 grid on white background; each tile shows "
+  },
+  {
+    "sku": "FaisalX-4468",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 12.4 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Cheez-It Original 12.4 oz boxes arranged in a 3x2 grid, each showing the front panel cl"
+  },
+  {
+    "sku": "FaisalX-4498",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Cheez-It Extra Cheesy Cheese Crackers, Baked Snack Crackers, 12.4 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Cheez-It Extra Crunchy Bold Cheddar (Pantry Size), not Extra Cheesy as stated in th"
+  },
+  {
+    "sku": "FaisalX-4519",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Cheez-It Grooves Sharp White Cheddar Crunchy Cheese Crackers, Snack Crackers, 9 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows a 17 oz Family Size box; the listing specifies the 9 oz size — wrong size variant de"
+  },
+  {
+    "sku": "FaisalX-4532",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Cheez-It DUOZ Bacon and Cheddar Crackers, Baked Snack Crackers, 12.4 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Wrong flavor: image shows Cheez-It DUOZ Jalapeño & Cheddar Jack, but listing specifies Bacon and Che"
+  },
+  {
+    "sku": "FaisalX-4619",
+    "was": "OK",
+    "now": "OK",
+    "title": "Triscuit Roasted Garlic Whole Grain Wheat Crackers, Family Size, 12.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 Triscuit Roasted Garlic Family Size boxes arranged in a 4x2 grid, each showing the front face pane"
+  },
+  {
+    "sku": "FaisalX-4631",
+    "was": "OK",
+    "now": "OK",
+    "title": "Triscuit Garden Herb Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Triscuit Garden Herb 8.5 oz boxes arranged in a 4x2 grid, each showing the front panel "
+  },
+  {
+    "sku": "FaisalX-4693",
+    "was": "OK",
+    "now": "OK",
+    "title": "Jif Natural Creamy Peanut Butter Spread, 16-Ounce Jar-Pack Of 4",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Jif Natural Creamy Peanut Butter jars arranged in a 2x2 grid; each tile shows exactl"
+  },
+  {
+    "sku": "FaisalX-4723",
+    "was": "OK",
+    "now": "OK",
+    "title": "Jif Reduced Fat Creamy Peanut Butter 16 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Jif Reduced Fat Creamy Peanut Butter 16 oz jars arranged in a 2x2 grid, each showing"
+  },
+  {
+    "sku": "FaisalX-4730",
+    "was": "OK",
+    "now": "OK",
+    "title": "Jif Reduced Fat Creamy Peanut Butter Spread - 60% Pea",
+    "units": 6,
+    "basis": "pack-hint",
+    "reason": "Six individual Jif Reduced Fat Creamy jars arranged in a 3x2 grid, each showing a single unit front-"
+  },
+  {
+    "sku": "FaisalX-4736",
+    "was": "OK",
+    "now": "OK",
+    "title": "Jif No Added Sugar Creamy Peanut Butter Spread, 15.5 oz. - Smooth, Creamy Texture, No Stir Peanut Butter Spread-Pack Of 6",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Jif No Added Sugar Creamy Peanut Butter Spread jars arranged in a 3x2 grid, each show"
+  },
+  {
+    "sku": "FaisalX-4741",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Jif To Go Natural Creamy Peanut Butter Spread, 8- 1.5 Ounce Cups, Smooth and Creamy Texture, Snack Size (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Identity mismatch: the listing is for Jif To Go Natural Creamy 1.5 oz single-serve cups, but the ima"
+  },
+  {
+    "sku": "FaisalX-4753",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "SKIPPY Creamy Peanut Butter Squeeze Pack, 7g Protein per Serving, Shelf-Stable, 6 oz Plastic Pouch (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Wrong product: image shows SKIPPY Natural Creamy Peanut Butter (jar), but listing is for SKIPPY Crea"
+  },
+  {
+    "sku": "FaisalX-4778",
+    "was": "OK",
+    "now": "OK",
+    "title": "OREO Golden Sandwich Cookies, 13.29 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual OREO Golden 13.29 oz retail bags arranged in a 4x2 grid, each showing its front panel f"
+  },
+  {
+    "sku": "FaisalX-4784",
+    "was": "OK",
+    "now": "OK",
+    "title": "OREO Double Stuf Chocolate Sandwich Cookies, 14.03 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 tiles in a 4x2 grid, each showing one OREO Double Stuf 14.03 oz retail bag face-on with full brand"
+  },
+  {
+    "sku": "FaisalX-4792",
+    "was": "OK",
+    "now": "OK",
+    "title": "OREO Toffee Crunch Creme with Sugar Crystals Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual OREO Toffee Crunch Family Size bags arranged in a 3x2 grid, each showing the front pane"
+  },
+  {
+    "sku": "FaisalX-4795",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "OREO Peanut Butter Creme Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual OREO Peanut Butter Creme Family Size packages arranged in a 3x2 grid, each showing the "
+  },
+  {
+    "sku": "FaisalX-4811",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "OREO Cakesters Soft Snack Cakes, 5 - 2.02 oz Snack Packs (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Image shows Golden OREO Cakesters (vanilla/golden variant) but the listing title says 'OREO Cakester"
+  },
+  {
+    "sku": "FaisalX-4833",
+    "was": "OK",
+    "now": "OK",
+    "title": "belVita Soft Baked Oats & Chocolate Breakfast Biscuits, 5 Packs (1 Biscuit Per (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four belVita Soft Baked Oats & Chocolate boxes arranged in a 2x2 grid; each tile shows exactly one r"
+  },
+  {
+    "sku": "FaisalX-4845",
+    "was": "OK",
+    "now": "OK",
+    "title": "Grandma’s Cookies, Chocolate Chip Cookie, 2.875 oz Cookies Pack, (Single Pack) (Packaging May Vary)​ (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Grandma's Chocolate Chip Cookie 2.875 oz single-serve bags arranged in a 2x2 grid, e"
+  },
+  {
+    "sku": "FaisalX-4848",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "OREO Thins Golden Sandwich Cookies, Family Size, 11.78 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is OREO Thins Chocolate Sandwich Cookies (blue bag), but listing title specifies OREO "
+  },
+  {
+    "sku": "FaisalX-4855",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "OREO Thins Chocolate Sandwich Cookies, Family Size, 11.78 oz Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual OREO Thins Chocolate Sandwich Cookies Family Size packs tiled in a 3x2 grid, each showi"
+  },
+  {
+    "sku": "FaisalX-4889",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lipton Decaf Black Tea Bags, Hot or Iced Tea, 300 Total Bags (50ct - Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Lipton Yellow Label Black Tea Decaffeinated 50-count boxes arranged in a 3x2 grid, all "
+  },
+  {
+    "sku": "FaisalX-5060",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Celestial Seasonings Caffeine-Free Lemon Honey Drop Herbal Tea Bags 16 Count (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows the BACK panel of the box (Blendmaster's Notes, barcode visible), not the wide front"
+  },
+  {
+    "sku": "FaisalX-5230",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Sour Patch Kids, Soft & Chewy Candy, 3.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Sour Patch Kids Zombie (Halloween theater box), not the standard Sour Patch Kids So"
+  },
+  {
+    "sku": "FaisalX-5231",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Sour Patch Kids, Soft & Chewy Candy, 3.5 oz",
+    "units": 6,
+    "basis": "pack-hint",
+    "reason": "Image shows Sour Patch Kids Watermelon flavor, but listing title specifies no flavor variant, implyi"
+  },
+  {
+    "sku": "FaisalX-5266",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ferrara Sweetart Ropes, 3 oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "4 tiles of SweeTARTS Ropes Cherry Punch 3 oz single-unit bags, all face-on, white background, count="
+  },
+  {
+    "sku": "FaisalX-5317",
+    "was": "OK",
+    "now": "OK",
+    "title": "Tootsie Roll Chocolate Midgees, 15 Oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All four tiles show the same Tootsie Roll The Original 15 oz share-size bag, each is a single retail"
+  },
+  {
+    "sku": "FaisalX-5318",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Tootsie Roll Chocolate Midgees, 15 Oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Tiles show individual wrapped Tootsie Roll candy logs/bars, not 15 oz retail bags of Tootsie Roll Mi"
+  },
+  {
+    "sku": "FaisalX-5327",
+    "was": "OK",
+    "now": "OK",
+    "title": "Twizzlers Pull 'N' Peel Cherry Flavored Licorice Style Low Fat Candy, Big Bag 28 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Twizzlers Pull 'N' Peel Cherry Big Bag 28 oz units arranged in a 3x2 grid, each showi"
+  },
+  {
+    "sku": "FaisalX-5359",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Trolli Sour Brite Crawlers, Candy, Very Berry, Sweet and Sour, Gummy Worms, 14 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Packages show standard Trolli Sour Brite Crawlers (5 oz each, original mixed-color variety) but the "
+  },
+  {
+    "sku": "FaisalX-5396",
+    "was": "OK",
+    "now": "OK",
+    "title": "Skittles Littles Share Size Mega Tube (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Skittles Littles Share Size Mega Tubes arranged in a 3x2 grid, each showing a single "
+  },
+  {
+    "sku": "FaisalX-5417",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Skittles Wild Berry Chewy Candy, Share Size - 4 oz Bag-Pack of 6",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Skittles Gummies (not Skittles Wild Berry Chewy Candy), so identity fails — wrong p"
+  },
+  {
+    "sku": "FaisalX-5434",
+    "was": "wrong-product",
+    "now": "multipack-in-cell",
+    "title": "SOUR PATCH KIDS Lemonade Fest Soft & Chewy Candy, 8.02 oz Bag-Pack of 4",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Each tile already depicts a '4 Pack' multi-unit bundle (4 bags fanned together with '4 Pack' text), "
+  },
+  {
+    "sku": "FaisalX-5440",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Airheads Xtremes Belts Sweetly Sour Candy, Rainbow Berry, Nut Free, 3 oz Bag (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Identity mismatch: image shows Airheads Xtremes Bites Very Berry, but listing is for Airheads Xtreme"
+  },
+  {
+    "sku": "FaisalX-5456",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Skittles Original, Wild Berry & Shriekers Fun Size Chewy Halloween Candy - 20 Ct Bulk Bag-Pack of 6",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6-tile grid (3×2) of Skittles Party Size Fun Size bulk bags; each tile shows exactly one bag front-f"
+  },
+  {
+    "sku": "FaisalX-5525",
+    "was": "OK",
+    "now": "OK",
+    "title": "SmartSweets Sweet Fish Gummy Candy, 3.5 oz Pouch (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual SmartSweets Sweet Fish pouches arranged in a 3x2 grid, each showing the front panel c"
+  },
+  {
+    "sku": "FaisalX-5582",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Nerds Rope Very Berry, Crunchy and Gummy Candy, .92 oz, Individually Wrapped (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "The image shows only the Nutrition Facts panel (back/side of the package) repeated 6 times in a grid"
+  },
+  {
+    "sku": "FaisalX-757",
+    "was": "OK",
+    "now": "OK",
+    "title": "Barilla Protein+ Penne Pasta, Plant Based Pasta, 14.5oz, Pack of 10",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "10 single Barilla Protein+ Penne 14.5 oz boxes on plain white background, front panels visible."
+  },
+  {
+    "sku": "FaisalX-793",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lay's Wavy Original Potato Snack Chips,Party Size, 13 oz Bag (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Lay's Wavy Original Party Size 13 oz bags arranged in a 3x2 grid, each showing the fron"
+  },
+  {
+    "sku": "FaisalX-797",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lay's Cheddar & Sour Cream Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Lay's Cheddar & Sour Cream Party Size bags arranged in a 3x2 grid, each showing the ful"
+  },
+  {
+    "sku": "FaisalX-811",
+    "was": "OK",
+    "now": "OK",
+    "title": "Lay's Kettle Cooked Jalapeno Flavor Potato Snack Chips, 12.5 Ounce Bag (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "Grid shows 10 individual Lay's Kettle Cooked Jalapeno 12.5 oz bags arranged 5x2, each a single retai"
+  },
+  {
+    "sku": "Mine-12",
+    "was": "wrong-product",
+    "now": "multipack-in-cell",
+    "title": "Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz (Pack of 32)",
+    "units": 32,
+    "basis": "pack-of",
+    "reason": "Each tile is a multi-pack box labeled '12' (a 12-count caddy/tray of cans), not a single 3 oz can. W"
+  },
+  {
+    "sku": "Mine-18",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hellow Pet Fancy Feast Chicken Feast Classic Grain Free Wet Cat Food Pate - 3 oz. Can (Pack of 10)",
+    "units": 10,
+    "basis": "pack-of",
+    "reason": "All 10 tiles show a single Fancy Feast Chicken Feast Classic Pate 3 oz can face-on with full label v"
+  },
+  {
+    "sku": "Mine-22",
+    "was": "OK",
+    "now": "wrong-count",
+    "title": "Fancy Feast Delights With Cheddar Grilled Chicken & Cheddar Cheese Feast in Gravy Wet Cat Food, 3 OZ (Pack of 24)",
+    "units": 24,
+    "basis": "pack-of",
+    "reason": "Grid appears to contain approximately 44–48 individual cans (roughly 4 rows × 11–12 cans), approxima"
+  },
+  {
+    "sku": "RizwanX-111",
+    "was": "OK",
+    "now": "OK",
+    "title": "ROTEL Hot Diced Tomatoes With Habaneros, 10 oz. (Pack of 12)",
+    "units": 12,
+    "basis": "pack-of",
+    "reason": "12 individual RO-TEL Hot Diced Tomatoes With Habaneros cans arranged in a 2×6 grid, each showing the"
+  },
+  {
+    "sku": "RizwanX-120",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is RO*TEL Chunky Diced Tomatoes & Green Chilies, not Xtra Hot Diced Tomatoes With Ghos"
+  },
+  {
+    "sku": "RizwanX-126",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Margaret Holmes Seasoned Green Lima Beans, Canned Beans, 15 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "All 8 tiles show the back/nutrition-facts panel of the can, not the front label with brand and produ"
+  },
+  {
+    "sku": "RizwanX-137",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six single Margaret Holmes Seasoned Cabbage cans shown front-facing on a plain white background."
+  },
+  {
+    "sku": "RizwanX-138",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "All 8 cans are individual single units on a white background, but each can is rotated so the back/nu"
+  },
+  {
+    "sku": "RizwanX-140",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Canned Seasoned Butter Beans, 15 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Margaret Holmes Seasoned Butter Beans 15oz cans arranged in a 3x2 grid, each showing th"
+  },
+  {
+    "sku": "RizwanX-142",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "The listing title specifies 'Field Peas and Snaps' but the cans shown are labeled 'SEASONED Field Pe"
+  },
+  {
+    "sku": "RizwanX-146",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Squash with Vidalia Onions, 14.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "All 6 tiles show a single Margaret Holmes Squash with Vidalia Onions 14.5 oz can, face-on with full "
+  },
+  {
+    "sku": "RizwanX-152",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Canned Seasoned Blackeye Peas, 15 oz, Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Margaret Holmes Seasoned Blackeye Peas 15 oz cans arranged in a 3x2 grid, each showin"
+  },
+  {
+    "sku": "RizwanX-154",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Canned Tomatoes, Okra and Corn, 14.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Margaret Holmes Tomatoes, Okra & Corn cans arranged in a 2x2 grid, each showing the "
+  },
+  {
+    "sku": "RizwanX-156",
+    "was": "OK",
+    "now": "OK",
+    "title": "Margaret Holmes Canned Tomatoes, Okra and Corn, 14.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Margaret Holmes Tomatoes Okra and Corn cans arranged in a 3-3-2 grid, each showing the "
+  },
+  {
+    "sku": "RizwanX-157",
+    "was": "OK",
+    "now": "OK",
+    "title": "Veg-All Homestyle Large Cut Vegetables, 29 oz., Can (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Veg-All Homestyle Large Cut Vegetables 29 oz cans arranged in a 2x2 grid; each tile "
+  },
+  {
+    "sku": "RizwanX-159",
+    "was": "OK",
+    "now": "OK",
+    "title": "Veg-All Homestyle Large Cut Vegetables, 29 oz., Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Veg-All Homestyle Large Cut Vegetables cans arranged in a 4x2 grid, each showing the fu"
+  },
+  {
+    "sku": "RizwanX-161",
+    "was": "OK",
+    "now": "OK",
+    "title": "Veg-All Original Mixed Vegetables, 15 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Veg-All Original Mixed Vegetables 15oz cans arranged in a 3x2 grid, each showing the fr"
+  },
+  {
+    "sku": "RizwanX-162",
+    "was": "OK",
+    "now": "OK",
+    "title": "Veg-All Original Mixed Vegetables, 15 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Veg-All Original Mixed Vegetables 15oz cans arranged in a 4x2 grid, each showing the fr"
+  },
+  {
+    "sku": "RizwanX-176",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Sweet White Whole Kernel Corn, 15.25 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Del Monte Whole Kernel Sweet White Corn 15.25 oz cans arranged in a 3x2 grid, each show"
+  },
+  {
+    "sku": "RizwanX-179",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Del Monte Cut Green Beans Canned Vegetables, 14.5 oz Aluminum Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong variant: listing is 'Cut Green Beans' (14.5 oz aluminum can), but each tile shows a Del Monte "
+  },
+  {
+    "sku": "RizwanX-183",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Canned Beets Sliced Canned Vegetables, 14.5 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Del Monte Fresh Cut Sliced Beets 14.5 oz cans arranged in a 4x2 grid, each showing the "
+  },
+  {
+    "sku": "RizwanX-184",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Golden Sweet Whole Kernel Corn, 8.75 oz Aluminum Can (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Del Monte Golden Sweet Whole Kernel Corn 8.75 oz cans arranged in a 2x2 grid, each s"
+  },
+  {
+    "sku": "RizwanX-186",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Golden Sweet Whole Kernel Corn, 8.75 oz Aluminum Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Del Monte Golden Sweet Whole Kernel Corn cans arranged in a 4x2 grid, each showing the "
+  },
+  {
+    "sku": "RizwanX-191",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Stewed Tomatoes Original Recipe, 14.5 Oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Del Monte Stewed Tomatoes Original Recipe 14.5oz cans arranged in a 3x2 grid, each show"
+  },
+  {
+    "sku": "RizwanX-199",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 15.25 oz. Can (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Del Monte Sweet Peas No Salt Added 15.25 oz cans arranged in a 2x2 grid, each showin"
+  },
+  {
+    "sku": "RizwanX-200",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 15.25 oz. Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Del Monte Tender Petites Very Young Small Sweet Peas No Salt Added cans arranged in a 3"
+  },
+  {
+    "sku": "RizwanX-204",
+    "was": "OK",
+    "now": "OK",
+    "title": "Allens Popeye Spinach, Chopped, 13.5 Oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Allens Popeye Chopped Spinach 13.5oz cans arranged in a 4x2 grid, each tile shows a sin"
+  },
+  {
+    "sku": "RizwanX-2168",
+    "was": "OK",
+    "now": "OK",
+    "title": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Chef Woo Roasted Chicken Flavor Ramen cups arranged 3x2 on a white background, each s"
+  },
+  {
+    "sku": "RizwanX-2174",
+    "was": "wrong-product",
+    "now": "OK",
+    "title": "Snapdragon Chicken Ramen Cup 2.2 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Snapdragon Chicken Ramen cups tiled in a 2x2 grid, each showing a single unit face-o"
+  },
+  {
+    "sku": "RizwanX-2183",
+    "was": "OK",
+    "now": "OK",
+    "title": "Nissin Teriyaki Beef Flavor Noodles 4 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Nissin Chow Mein Teriyaki Beef bowls arranged in a 2x3 grid, each showing the front fac"
+  },
+  {
+    "sku": "RizwanX-2192",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Nissin Teriyaki Chicken Noodles 4 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Nissin Chow Mein (Teriyaki Chicken flavor appears plausible but label reads Chow Me"
+  },
+  {
+    "sku": "RizwanX-2227",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Chef Woo Braised Beef Ramen Cup Noodle 20g Protein 2.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Chef Ramsay Black Garlic Beef Ramen Noodles, not Chef Woo Braised Beef — wrong bran"
+  },
+  {
+    "sku": "RizwanX-2282",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rummo Spaghetti 12 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "2×2 grid of 4 individual Rummo Spaghetti No.3 Gluten Free retail packages, each shown face-on with b"
+  },
+  {
+    "sku": "RizwanX-2285",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Mueller's Spaghetti 16 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Mueller's Pot-Sized Thin Spaghetti, not the standard Mueller's Spaghetti 16 oz spec"
+  },
+  {
+    "sku": "RizwanX-2294",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Mueller's Spaghetti Thin 16 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong product variant: image shows Mueller's Pot-Sized Thin Spaghetti (half-length, pot-sized), but "
+  },
+  {
+    "sku": "RizwanX-2310",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Mueller's Angel Hair 16 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Each tile shows a Mueller's case/box labeled '20x13.25 Oz' — a bulk multipack case, not a single 16 "
+  },
+  {
+    "sku": "RizwanX-2330",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Barilla Al Bronzo Bucatini Pasta Bronze Cut Pasta Non",
+    "units": 4,
+    "basis": "pack-hint",
+    "reason": "Each tile shows a lifestyle/advertising graphic (fork with pasta and 'Sauce Grip' copy) — not a reta"
+  },
+  {
+    "sku": "RizwanX-2334",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ronzoni Angel Hair Pasta 16 oz Quick Cook Non-GMO Capelli D'Angelo (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Ronzoni Angel Hair boxes arranged in a 3-3-2 grid, all face-on, white background, each "
+  },
+  {
+    "sku": "RizwanX-2343",
+    "was": "OK",
+    "now": "OK",
+    "title": "Banza Linguine Pasta Gluten Free, High Protein Lower Carb (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Banza Linguine boxes arranged in a 2x3 grid, each showing the full front panel, on a wh"
+  },
+  {
+    "sku": "RizwanX-2344",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ronzoni Small Rigatoni 16 oz Ribbed Tubular Pasta Non GMO (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four Ronzoni Small Rigatoni 16 oz boxes arranged in a 2x2 grid, each showing a single unit face-on w"
+  },
+  {
+    "sku": "RizwanX-2345",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ronzoni Small Rigatoni 16 oz Ribbed Tubular Pasta Non GMO (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Ronzoni Small Rigatoni 16 oz boxes arranged in a 3x2 grid, each showing the full front "
+  },
+  {
+    "sku": "RizwanX-2351",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pasta Zara Spaghetti Organic (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four Pasta Zara Spaghetti packages tiled in a 2x2 grid, each showing a single retail unit face-on wi"
+  },
+  {
+    "sku": "RizwanX-2406",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-GMO (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Product shown is Ronzoni Small Rigatoni (No. 73), but the listing title specifies plain Rigatoni (no"
+  },
+  {
+    "sku": "RizwanX-2412",
+    "was": "wrong-product",
+    "now": "not-face-on",
+    "title": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Each tile shows the BACK panel (cooking instructions, barcode, nutrition facts area) of the Ronzoni "
+  },
+  {
+    "sku": "RizwanX-2417",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ronzoni Fettuccine 16 oz Non-GMO Pasta for Alfredo Sauce and (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Ronzoni Fettuccine 16oz boxes arranged in a 3x2 grid, each showing the front panel face"
+  },
+  {
+    "sku": "RizwanX-2423",
+    "was": "OK",
+    "now": "OK",
+    "title": "Ronzoni Oven Ready Lasagna No Boil Pasta for Baking (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Ronzoni Oven-Ready Lasagna boxes arranged in a 2x3 grid, each showing the front panel f"
+  },
+  {
+    "sku": "RizwanX-2425",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mueller's Penne 16 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Mueller's Penne 16 oz boxes arranged in a 2x2 grid, each showing a single retail uni"
+  },
+  {
+    "sku": "RizwanX-2431",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mueller's Corkscrews 16 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "4 tiles arranged in a 2x2 grid, each showing a single Mueller's Corkscrews 16 oz box face-on with fu"
+  },
+  {
+    "sku": "RizwanX-2436",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Mueller's Fettuccine 16 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "Image shows 8 blue placeholder rectangles with no visible product — brand, packaging, and label deta"
+  },
+  {
+    "sku": "RizwanX-2447",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mueller's Elbows Large 16 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Mueller's Large Elbows 16 oz boxes arranged in a 2x3 grid, each showing the front panel"
+  },
+  {
+    "sku": "RizwanX-2466",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mueller's Thin Spaghetti 12 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Mueller's Thin Spaghetti 12 oz boxes arranged in a 3x2 grid, each showing its front fac"
+  },
+  {
+    "sku": "RizwanX-2471",
+    "was": "OK",
+    "now": "OK",
+    "title": "Mueller's Linguine 16 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 Mueller's Linguine 16 oz boxes arranged in a 3x2 grid, each showing its wide front panel face-on w"
+  },
+  {
+    "sku": "RizwanX-2691",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Very Cherry Mixed Fruit in Extra Light Syrup Canned Fruit 15 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Del Monte Very Cherry Mixed Fruit cans arranged in a 3x2 grid, each showing the front l"
+  },
+  {
+    "sku": "RizwanX-2694",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Diced Mango in Extra Light Syrup, 15 oz Cans (Pack of 6) – Ripe Mango Chunks in Light Syrup, Non-GMO, Perfect for Snacking, Baking & Recipes",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Del Monte Diced Mangos in Extra Light Syrup cans arranged in a 3x2 grid, each showing"
+  },
+  {
+    "sku": "RizwanX-2735",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Pear Halves in 100% Juice Canned Fruit 15 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Del Monte Pear Halves in 100% Juice 15 oz cans arranged in a 2x2 grid, each tile sho"
+  },
+  {
+    "sku": "RizwanX-2748",
+    "was": "OK",
+    "now": "OK",
+    "title": "Del Monte Peaches Sliced 8.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Del Monte Sliced Peaches 8.5 oz cans arranged in a 4x2 grid, each showing the front lab"
+  },
+  {
+    "sku": "RizwanX-2759",
+    "was": "OK",
+    "now": "OK",
+    "title": "Dole Mandarin Oranges 15 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "4 individual Dole Mandarin Oranges 15oz cans arranged in a 2x2 grid, each showing the front label cl"
+  },
+  {
+    "sku": "RizwanX-2774",
+    "was": "OK",
+    "now": "OK",
+    "title": "Dole Pineapple Chunks 8 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Dole Pineapple Chunks 8 oz cans arranged in a 3x2 grid; each tile is exactly one sing"
+  },
+  {
+    "sku": "RizwanX-2967",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hunt's 100% Natural Basil Garlic & Oregano Diced Tomatoes 14.5oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Hunt's Diced Tomatoes Basil Garlic & Oregano 14.5oz cans arranged in a 4x2 grid, each s"
+  },
+  {
+    "sku": "RizwanX-2968",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Hunt's 100% Natural Tomato Sauce 15oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Hunt's Fire Roasted Tomato Sauce, but the listing title specifies Hunt's 100% Natur"
+  },
+  {
+    "sku": "RizwanX-2981",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hunt's Petite Diced Tomatoes 14.5 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Hunt's Petite Diced Tomatoes 14.5 oz cans arranged in a 2×3 grid, each showing the fr"
+  },
+  {
+    "sku": "RizwanX-2982",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hunt's Petite Diced Tomatoes 14.5 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Hunt's Petite Diced Tomatoes cans arranged in a 3-3-2 grid, each showing the front labe"
+  },
+  {
+    "sku": "RizwanX-3000",
+    "was": "OK",
+    "now": "OK",
+    "title": "Contadina Tomato Sauce 15 oz Can (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Contadina Tomato Sauce 15 oz cans tiled in a 4x2 grid, each showing the front label fac"
+  },
+  {
+    "sku": "RizwanX-3024",
+    "was": "OK",
+    "now": "OK",
+    "title": "Reese Quartered Artichoke Hearts 14oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Reese Quartered Artichoke Hearts 14oz cans arranged in a 3x2 grid, each showing the fro"
+  },
+  {
+    "sku": "RizwanX-3050",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Glory Foods Seasoned Southern Style Honey Carrots Canned Vegetables 15.5 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Each tile shows a '2 pack' bundle (two cans shrink-wrapped or grouped together with a '2 pack' label"
+  },
+  {
+    "sku": "RizwanX-3061",
+    "was": "OK",
+    "now": "OK",
+    "title": "Vigo Seasoned Italian Style Breadcrumbs 8 oz About 8 Servings per Container (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Vigo Seasoned Italian Style Breadcrumbs 8 oz cans arranged in a 2x2 grid, each showi"
+  },
+  {
+    "sku": "RizwanX-3084",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rosarita Spicy Jalapeño Refried Beans 16oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Rosarita Spicy Jalapeño Refried Beans 16oz cans arranged in a 4x2 grid; each tile is a "
+  },
+  {
+    "sku": "RizwanX-3088",
+    "was": "OK",
+    "now": "OK",
+    "title": "Rosarita Refried Beans 16 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All 4 tiles show individual Rosarita No Fat Traditional Refried Beans 16 oz cans facing front on a w"
+  },
+  {
+    "sku": "RizwanX-3165",
+    "was": "OK",
+    "now": "OK",
+    "title": "Bush's Brown Sugar Hickory Baked Beans 16oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Bush's Best Brown Sugar Hickory Baked Beans 16oz cans arranged in a 3x2 grid, each show"
+  },
+  {
+    "sku": "RizwanX-3167",
+    "was": "OK",
+    "now": "OK",
+    "title": "Bush's Maple Cured Bacon Baked Beans 16oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four Bush's Best Maple & Cured Bacon Baked Beans 16oz cans arranged in a 2x2 grid; each tile is a si"
+  },
+  {
+    "sku": "RizwanX-3168",
+    "was": "OK",
+    "now": "OK",
+    "title": "Bush's Maple Cured Bacon Baked Beans 16oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Bush's Best Maple & Cured Bacon Baked Beans 16oz cans arranged in a 3x2 grid; each ti"
+  },
+  {
+    "sku": "RizwanX-3169",
+    "was": "wrong-product",
+    "now": "wrong-count",
+    "title": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "The image displays 32 units, but the listing title specifies a 'Pack of 4'."
+  },
+  {
+    "sku": "RizwanX-3171",
+    "was": "OK",
+    "now": "OK",
+    "title": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 tiles in a 4x2 grid, each showing a single Bush's Best Vegetarian Baked Beans can face-on with ful"
+  },
+  {
+    "sku": "RizwanX-3180",
+    "was": "OK",
+    "now": "OK",
+    "title": "Bush's Grillin' Hot Honey Baked Bean 21.7oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Bush's Best Grillin' Beans Hot Honey 21.7oz cans arranged in a 3x2 grid; each tile is a"
+  },
+  {
+    "sku": "RizwanX-3228",
+    "was": "OK",
+    "now": "OK",
+    "title": "Glory Foods Canned Seasoned Collard Greens 27 oz Can (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Glory Foods Seasoned Collard Greens 27oz cans arranged in a 3x2 grid, each showing the "
+  },
+  {
+    "sku": "RizwanX-3254",
+    "was": "OK",
+    "now": "OK",
+    "title": "Contadina Diced Canned Tomatoes 28 oz Can (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Contadina Diced Tomatoes 28 oz cans arranged in a 2x2 grid, each showing the front l"
+  },
+  {
+    "sku": "RizwanX-3273",
+    "was": "OK",
+    "now": "OK",
+    "title": "Green Giant Vegetable Blend 15 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 tiles in a 3x2 grid, each showing a single Green Giant Vegetable Blend 15 oz can face-on with full"
+  },
+  {
+    "sku": "RizwanX-3281",
+    "was": "OK",
+    "now": "OK",
+    "title": "Green Giant Green Beans Cut No Salt Added 14.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "4 individual Green Giant Cut Green Beans No Salt Added 14.5oz cans arranged in a 2x2 grid, each show"
+  },
+  {
+    "sku": "RizwanX-33",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Kinder's Creamy Horseradish Dipping Sauce (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Brand mismatch: bottles show 'Bookbinder's Sassy Creamy Horseradish Sauce', not 'Kinder's Creamy Hor"
+  },
+  {
+    "sku": "RizwanX-3306",
+    "was": "OK",
+    "now": "OK",
+    "title": "Green Giant Sweet Corn Whole Kernel Family Size 29 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "6 individual Green Giant Family Size Whole Kernel Sweet Corn cans arranged in a 3x2 grid, each showi"
+  },
+  {
+    "sku": "RizwanX-3311",
+    "was": "OK",
+    "now": "OK",
+    "title": "Pack of 4 Green Giant Steam Crisp White Shoepeg Whole Kernel Corn - 11 oz - Package may vary",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Green Giant Steam Crisp White Shoepeg Whole Kernel Corn cans arranged in a 2x2 grid,"
+  },
+  {
+    "sku": "RizwanX-3321",
+    "was": "OK",
+    "now": "OK",
+    "title": "GreenWise Organic Sweet Peas 15 oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual GreenWise Organic Sweet Peas 15 oz cans arranged in a 3x2 grid, each showing the fron"
+  },
+  {
+    "sku": "RizwanX-3480",
+    "was": "OK",
+    "now": "OK",
+    "title": "Hanover Black Beans 15.5 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Hanover Black Beans 15.5 oz cans arranged in a 4x2 grid, each showing a single can face"
+  },
+  {
+    "sku": "RizwanX-3497",
+    "was": "OK",
+    "now": "OK",
+    "title": "GOYA Premium Chick Peas 15.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "4 individual Goya Chick Peas 15.5oz cans in a 2x2 grid, each showing the front label face-on, white "
+  },
+  {
+    "sku": "RizwanX-3500",
+    "was": "OK",
+    "now": "OK",
+    "title": "GOYA Pinto Beans 15.5 Oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual GOYA Pinto Beans 15.5 oz cans arranged in a 2x2 grid, each showing the full front la"
+  },
+  {
+    "sku": "RizwanX-3506",
+    "was": "OK",
+    "now": "OK",
+    "title": "Goya Red Kidney Beans 15.5 oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Goya Red Kidney Beans 15.5 oz cans arranged in a 2x2 grid, each showing the front la"
+  },
+  {
+    "sku": "RizwanX-3509",
+    "was": "OK",
+    "now": "OK",
+    "title": "Goya Pinto Beans 29 Oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Goya Pinto Beans 29 oz cans arranged in a 2x2 grid, each showing its front face labe"
+  },
+  {
+    "sku": "RizwanX-3576",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cirkul Sabrocita Strawberry Flavor Cartridge Drink Mix (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "All 6 tiles show a single Cirkul Sabrocita Fresa Strawberry flavor cartridge with its retail box, fa"
+  },
+  {
+    "sku": "RizwanX-3588",
+    "was": "wrong-product",
+    "now": "wrong-product",
+    "title": "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Wrong flavor: image shows Cirkul Wild Splash 'Alligator Apple' but listing title specifies 'Gecko Gr"
+  },
+  {
+    "sku": "RizwanX-3680",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Klass Aguas Frescas Tamarind with Vitamin C Multiserve Powdered Drink Mix 14.1oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Wrong flavor/variant: image shows Klass Sandia (Watermelon) Flavored Drink Mix, but listing specifie"
+  },
+  {
+    "sku": "RizwanX-3717",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cocoa Classics® Caramel & Chocolate Instant Hot Cocoa Mix 1.25 oz Serving Size 1 (35g) (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Cocoa Classics Caramel & Chocolate Cocoa Mix pouches arranged in a 4x2 grid, each showi"
+  },
+  {
+    "sku": "RizwanX-3732",
+    "was": "OK",
+    "now": "OK",
+    "title": "Cocoa Classics® Mint & Chocolate Instant Cocoa Mix 1.25 oz (Pack of 8)",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Cocoa Classics Mint & Chocolate pouches arranged in a 4x2 grid, each showing the front "
+  },
+  {
+    "sku": "RizwanX-3783",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Stur Drinks Blue Raspberry, Electrolytes Liquid Water Enhancer 1.62 fl oz (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Flavor mismatch: listing specifies 'Blue Raspberry' but the product shown is 'Blue & Blackberry'. Al"
+  },
+  {
+    "sku": "RizwanX-3794",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Stur Drinks Peach Mango Liquid Water Enhancer (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Stur Blue & Blackberry flavor, not Peach Mango as stated in the listing title."
+  },
+  {
+    "sku": "RizwanX-3795",
+    "was": "OK",
+    "now": "OK",
+    "title": "Stur Drinks Peach Mango Liquid Water Enhancer (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Stur Peach Mango liquid water enhancer bottles tiled in a 3x2 grid, each showing a si"
+  },
+  {
+    "sku": "RizwanX-3797",
+    "was": "OK",
+    "now": "OK",
+    "title": "Stur Drinks Coconut Pineapple Liquid Water Enhancer (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "All 4 tiles show a single Stur Coconut Pineapple Liquid Water Enhancer bottle, front-facing with ful"
+  },
+  {
+    "sku": "RizwanX-38",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Kinder's Fajita Cooking Sauce (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Kinder's Mexican Seasoning – The Fajita Blend (a dry seasoning packet), not a Fajit"
+  },
+  {
+    "sku": "RizwanX-3803",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Stur Drinks Strawberry Lemonade Electrolytes Liquid Water Enhancer 1.62 fl oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Product shown is Stur Blue & Blackberry Liquid Water Enhancer, not Strawberry Lemonade Electrolytes "
+  },
+  {
+    "sku": "RizwanX-39",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Kinder's Fajita Cooking Sauce (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Product shown is Kinder's Mexican Seasoning – The Fajita Blend (a dry seasoning packet), not a Fajit"
+  },
+  {
+    "sku": "RizwanX-4202",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Campbell’s Family Meal 12-Pack – A Delicious Assortment of Hearty, Creamy Soups for Every Day",
+    "units": 12,
+    "basis": "pack-of",
+    "reason": "Listing title says 'Assortment of Hearty, Creamy Soups' implying multiple varieties, but all 12 tile"
+  },
+  {
+    "sku": "RizwanX-4250",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Progresso Hearty 8-Pack Soup Collection – Deliciously Satisfying Soups for Any Occasion",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "All 8 cans are Progresso Vegetable Classics Minestrone (19 oz), not the Hearty product line called o"
+  },
+  {
+    "sku": "RizwanX-4297",
+    "was": "OK",
+    "now": "OK",
+    "title": "Campbell’s Chunky 8-Pack – Bold, Hearty Soups for Every Appetite",
+    "units": 8,
+    "basis": "pack-of",
+    "reason": "8 individual Campbell's Chunky Savory Pot Roast cans arranged in a 4x2 grid; each tile is one single"
+  },
+  {
+    "sku": "RizwanX-44",
+    "was": "OK",
+    "now": "OK",
+    "title": "Panda Express Kung Pao Stir Fry Sauce (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Panda Express Kung Pao Stir Fry Sauce bottles arranged in a 2x2 grid; each tile is a"
+  },
+  {
+    "sku": "RizwanX-4698",
+    "was": "OK",
+    "now": "OK",
+    "title": "Purina Fancy Feast Gravy Lovers Wet Cat Food, Chicken H",
+    "units": 15,
+    "basis": "pack-hint",
+    "reason": "15 single Fancy Feast Gravy Lovers Chicken Hearts & Liver cans in a 3×5 grid, each shown face-on wit"
+  },
+  {
+    "sku": "RizwanX-47",
+    "was": "OK",
+    "now": "OK",
+    "title": "Terry Hos Yum Yum Sauce, 16 fl oz (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Terry Ho's Yum Yum Sauce 'The Original' bottles arranged in a 2x2 grid, each a singl"
+  },
+  {
+    "sku": "RizwanX-4707",
+    "was": "OK",
+    "now": "OK",
+    "title": "Purina Fancy Feast Gravy Lovers Wet Cat Food Salmon & S",
+    "units": 15,
+    "basis": "pack-hint",
+    "reason": "3x5 grid of 15 individual Purina Fancy Feast Gravy Lovers Salmon cans, each a single retail unit sho"
+  },
+  {
+    "sku": "RizwanX-4714",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Purina Fancy Feast Classic Pate Kitten Food Wet Cat Food Cod Sole & Shrimp 3 oz Can (Pack of 9)",
+    "units": 9,
+    "basis": "pack-of",
+    "reason": "Product shown is Fancy Feast Classic Pate Senior 7+ variant, not the listed Kitten Food Cod Sole & S"
+  },
+  {
+    "sku": "RizwanX-4770",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Chi",
+    "units": 15,
+    "basis": "pack-hint",
+    "reason": "Product shown is Fancy Feast Flaked Chicken & Tuna Feast — not 'Grilled Kitten Food' as stated in th"
+  },
+  {
+    "sku": "RizwanX-4778",
+    "was": "OK",
+    "now": "wrong-product",
+    "title": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Liver & Chicken Feast in Gravy 3 oz Can (Pack of 12)",
+    "units": 12,
+    "basis": "pack-of",
+    "reason": "Wrong product: tiles show a dry/kibble cat food in a heart-shaped dish with 'new look same delight' "
+  },
+  {
+    "sku": "RizwanX-51",
+    "was": "OK",
+    "now": "OK",
+    "title": "Chick-fil-A Barbeque Sauce, 16 fl oz Squeeze Bottle (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Chick-fil-A Barbeque Sauce 16 fl oz squeeze bottles arranged in a 3x2 grid, each show"
+  },
+  {
+    "sku": "RizwanX-601",
+    "was": "OK",
+    "now": "OK",
+    "title": "Kellogg's Corn Pops Cold Breakfast Cereal Cup, 8 Vitamins and Minerals, Single Serve, Original, 1.5oz Cup (Pack of 6)",
+    "units": 6,
+    "basis": "pack-of",
+    "reason": "Six individual Kellogg's Corn Pops 1.5oz cups arranged in a 3x2 grid, each showing a single unit fac"
+  },
+  {
+    "sku": "RizwanX-77",
+    "was": "OK",
+    "now": "OK",
+    "title": "Buffalo Wild Wings Medium Buffalo Sauce, 12 fl. oz. (Pack of 4)",
+    "units": 4,
+    "basis": "pack-of",
+    "reason": "Four individual Buffalo Wild Wings Medium Buffalo Sauce 12 fl oz bottles arranged in a 2x2 grid, eac"
+  }
+]

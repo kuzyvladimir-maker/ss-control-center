@@ -1,0 +1,50 @@
+[
+ {
+  "sku": "FaisalX-1196·контроль",
+  "qty": 2,
+  "expect": "PASS",
+  "verdict": "FAIL",
+  "ok": false,
+  "reason": "Image shows 2 single Sara Lee bread loaves on white, but the package reads Honey Wheat, no"
+ },
+ {
+  "sku": "FaisalX-1196·подмена",
+  "qty": 2,
+  "expect": "FAIL",
+  "verdict": "PASS",
+  "ok": false,
+  "reason": "Two face-on single Sara Lee Honey Wheat 20oz bread loaves on white background."
+ },
+ {
+  "sku": "FaisalX-2664·контроль",
+  "qty": 6,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "Six face-on single Knorr Pasta Sides Buffalo Chicken 4.2 oz pouches on a plain white backg"
+ },
+ {
+  "sku": "FaisalX-2664·подмена",
+  "qty": 6,
+  "expect": "FAIL",
+  "verdict": "FAIL",
+  "ok": true,
+  "reason": "Image shows Knorr Pasta Sides Buffalo Chicken pouches, not the listed Rice Sides; six sing"
+ },
+ {
+  "sku": "FaisalX-2565·контроль",
+  "qty": 4,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "Four single front-facing Campbell's Chunky Jazzy Jambalaya cans on a plain white backgroun"
+ },
+ {
+  "sku": "FaisalX-2565·подмена",
+  "qty": 4,
+  "expect": "FAIL",
+  "verdict": "FAIL",
+  "ok": true,
+  "reason": "Image shows Campbell's Chunky Jazzy Jambalaya cans, not Classic Chicken Noodle; four singl"
+ }
+]

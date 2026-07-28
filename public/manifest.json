@@ -1,0 +1,25 @@
+{
+  "name": "Salutem Control",
+  "short_name": "Salutem",
+  "description": "Salutem Solutions e-commerce control center — orders, shipping, customer hub, procurement.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F3EF",
+  "theme_color": "#1F4D3F",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

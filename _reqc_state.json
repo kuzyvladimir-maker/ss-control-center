@@ -1,0 +1,4212 @@
+{
+ "FaisalX-1130": {
+  "sku": "FaisalX-1130",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "reason": "Product shown is Pepperidge Farm Whole Grain OATMEAL bread, but the listing title specifies 15 Grain",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-enriched.png"
+ },
+ "Athar-1594": {
+  "sku": "Athar-1594",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 5,
+  "listing": "Lay's Party Size Barbecue Potato Chips 15.25 oz.5 Pack",
+  "donorTitle": "Lay's Barbecue Flavor Party Size Potato Chips - 12.5oz",
+  "reason": "Bags displayed show 12.5 oz but listing title specifies 15.25 oz — different size SKU, so product id",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Athar-1594/main-enriched.png"
+ },
+ "FaisalX-1135": {
+  "sku": "FaisalX-1135",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 100% Whole Wheat Bread, 22 oz (Pack of 6)",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "reason": "Image shows Pepperidge Farm Whole Grain Oatmeal bread, not the listed Thin Sliced 100% Whole Wheat v",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1135/main-enriched.png"
+ },
+ "Comm-06": {
+  "sku": "Comm-06",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "Comm-07": {
+  "sku": "Comm-07",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "Comm-03": {
+  "sku": "Comm-03",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "Athar-1592": {
+  "sku": "Athar-1592",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "Athar-164": {
+  "sku": "Athar-164",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1142": {
+  "sku": "FaisalX-1142",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1160": {
+  "sku": "FaisalX-1160",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Farmhouse Homestyle Oat Bread, 24 oz Loaf",
+  "reason": "Identity fails: listing title specifies 'Multigrain' but the image shows 'Homestyle Oat' — different",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1160/main-enriched.png"
+ },
+ "FaisalX-1167": {
+  "sku": "FaisalX-1167",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Pepperidge Farm Jewish Pumpernickel Dark Pump Bread, 16 oz (Pack of 4)",
+  "donorTitle": "Pepperidge Farm Jewish Rye Seedless Bread, 16 oz. Bag",
+  "reason": "Image shows Pepperidge Farm Jewish Rye Seedless, not Jewish Pumpernickel Dark Pump; 4 single front-f",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1167/main-enriched.png"
+ },
+ "FaisalX-1150": {
+  "sku": "FaisalX-1150",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1146": {
+  "sku": "FaisalX-1146",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1145": {
+  "sku": "FaisalX-1145",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1172": {
+  "sku": "FaisalX-1172",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1178": {
+  "sku": "FaisalX-1178",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1211": {
+  "sku": "FaisalX-1211",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1181": {
+  "sku": "FaisalX-1181",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct",
+  "reason": "Product shown is Pepperidge Farm Sesame Hamburger Buns, but listing title specifies Butter Hot Dog B",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1181/main-enriched.png"
+ },
+ "FaisalX-1202": {
+  "sku": "FaisalX-1202",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Butter Bread, 20 oz, Soft White Bread, Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "reason": "Image shows Sara Lee Classic White 20 oz, not Butter Bread; two single front-facing loaf bags on whi",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1202/main-enriched.png"
+ },
+ "FaisalX-1196": {
+  "sku": "FaisalX-1196",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Whole Wheat Bread 20 oz Soft Pre-Sliced Loaf (Pack of 2)",
+  "donorTitle": "Sara Lee Honey Whole Wheat Bread - 20oz",
+  "reason": "Image shows Sara Lee Honey Wheat 20 oz, not Whole Wheat; two single face-on loaves on white backgrou",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1196/main-enriched.png"
+ },
+ "FaisalX-1208": {
+  "sku": "FaisalX-1208",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "reason": "Image shows Sara Lee Classic White sliced bread loaves, not Artesano White hamburger buns.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1208/main-enriched.png"
+ },
+ "FaisalX-1203": {
+  "sku": "FaisalX-1203",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1199": {
+  "sku": "FaisalX-1199",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1183": {
+  "sku": "FaisalX-1183",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+  "donorTitle": "Pepperidge Farm Chessmen Butter Cookies - 7.25oz (Packaging May Vary)",
+  "reason": "Image shows Pepperidge Farm Chessmen Butter cookies, not Butter Hot Dog Buns; 6 single front-facing ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-enriched.png"
+ },
+ "FaisalX-1226": {
+  "sku": "FaisalX-1226",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1220": {
+  "sku": "FaisalX-1220",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Artesano Bakery Bread Plain Sausage Rolls, 6 count, Soft Hot Dog Buns, 15 oz Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "reason": "Product shown is Sara Lee Artesano Bakery Bread BRIOCHE (sliced sandwich loaf), not Plain Sausage Ro",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1220/main-enriched.png"
+ },
+ "FaisalX-1240": {
+  "sku": "FaisalX-1240",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Arnold Whole Grains Small Slice Oatnut Bread Loaf, 18 oz (Pack of 6)",
+  "donorTitle": "Arnold Small Slice Whole Wheat Bread, 18 oz, Wheat Bread, Bag",
+  "reason": "Image shows Arnold Small Slice 100% Whole Wheat, not the Oatnut variant in the listing.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1240/main-enriched.png"
+ },
+ "FaisalX-1241": {
+  "sku": "FaisalX-1241",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1244": {
+  "sku": "FaisalX-1244",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1218": {
+  "sku": "FaisalX-1218",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 4)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "reason": "Shows Sara Lee Artesano Brioche bakery bread loaf, not hot dog buns.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1218/main-enriched.png"
+ },
+ "FaisalX-1232": {
+  "sku": "FaisalX-1232",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1250": {
+  "sku": "FaisalX-1250",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1305": {
+  "sku": "FaisalX-1305",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1274": {
+  "sku": "FaisalX-1274",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1298": {
+  "sku": "FaisalX-1298",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1308": {
+  "sku": "FaisalX-1308",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Fritos Mild Cheddar Flavored Cheese Dip, 9 oz (Pack of 6)",
+  "donorTitle": "Fritos Original Flavor Bean Dip, 9 fl oz",
+  "reason": "Image shows Fritos Bean Dip Original Flavor tubs, not Mild Cheddar Flavored Cheese Dip.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1308/main-enriched.png"
+ },
+ "FaisalX-1283": {
+  "sku": "FaisalX-1283",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Arnold Potato Buns, 8 count, Hot Dog Buns, 16 oz Bag (Pack of 2)",
+  "donorTitle": "Arnold Potato Hamburger Buns - 16oz/8ct",
+  "reason": "Image shows 2 single Arnold Potato Buns bags on white background, but the listing says Hot Dog Buns ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1283/main-enriched.png"
+ },
+ "FaisalX-1290": {
+  "sku": "FaisalX-1290",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1253": {
+  "sku": "FaisalX-1253",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1310": {
+  "sku": "FaisalX-1310",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Fritos Chili Cheese Corn Chips, 9.25 Oz (Pack of 6)",
+  "donorTitle": "Fritos Spicy Dill Pickle Twists Corn Snack Chips, 9.25 oz",
+  "reason": "Product shown is Fritos Flavor Twists Spicy Dill Pickle, not Fritos Chili Cheese Corn Chips — wrong ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1310/main-enriched.png"
+ },
+ "FaisalX-1321": {
+  "sku": "FaisalX-1321",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1360": {
+  "sku": "FaisalX-1360",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Simply Cheetos Puffs Cheese Flavored Snacks, White Cheddar, 8 oz (Pack of 6)",
+  "donorTitle": "Cheetos Simply NKD, No Dyes No Artificial Flavors Puffs Cheese Flavored Snacks Bag, 8 oz",
+  "reason": "Product shown is Cheetos Simply NKD Puffs (white cheddar-style, no dyes), but the listing title spec",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1360/main-enriched.png"
+ },
+ "FaisalX-1357": {
+  "sku": "FaisalX-1357",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Cheetos Puff Cheese Flavored Snack Chips, 8 oz (Pack of 3)",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "reason": "Wrong variant: image shows Cheetos Flamin' Hot Puffs, but listing title specifies regular Cheese Fla",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1357/main-enriched.png"
+ },
+ "FaisalX-1319": {
+  "sku": "FaisalX-1319",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1322": {
+  "sku": "FaisalX-1322",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1320": {
+  "sku": "FaisalX-1320",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1342": {
+  "sku": "FaisalX-1342",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1315": {
+  "sku": "FaisalX-1315",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1755": {
+  "sku": "FaisalX-1755",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Dr Pepper Soda Pop, 2 L, Bottle (Pack of 4)",
+  "donorTitle": "Diet Dr Pepper Soda Pop, 2 L, Bottle",
+  "reason": "Listing title is 'Dr Pepper Soda Pop' (regular), but every bottle shown is 'Diet Dr Pepper' — wrong ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1755/main-enriched.png"
+ },
+ "FaisalX-169": {
+  "sku": "FaisalX-169",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Thomas' Everything Bagels, 6 count, Soft Pre-sliced Bagels, 20 oz Bag (Pack of 8)",
+  "donorTitle": "Thomas' Everything Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "reason": "Image shows Thomas' mini everything bagels 10-count/15 oz bags, not the listed 6-count/20 oz bagels.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-169/main-enriched.png"
+ },
+ "FaisalX-1633": {
+  "sku": "FaisalX-1633",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 7,
+  "listing": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "reason": "Image shows Sara Lee Artesano Brioche bread, not the listed Original/Soft White variant; 7 single fr",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1633/main-enriched.png"
+ },
+ "FaisalX-1433": {
+  "sku": "FaisalX-1433",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1535": {
+  "sku": "FaisalX-1535",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "SkinnyPop Original Popcorn, 14 oz.Pack of 2",
+  "donorTitle": "Skinnypop Gluten Free Original Popcorn, 8.0 oz Family Size Bag, Skinny Pop, Popcorn Snacks",
+  "reason": "Two single front-facing SkinnyPop Original bags on white, but the bags shown are 8 oz Party Size, no",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1535/main-enriched.png"
+ },
+ "FaisalX-1632": {
+  "sku": "FaisalX-1632",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 5,
+  "listing": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag -Pack Of 5",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "reason": "Shows Artesano Brioche loaves, not Original/Soft White; 5 single bags on white, but units are angled",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1632/main-enriched.png"
+ },
+ "FaisalX-1686": {
+  "sku": "FaisalX-1686",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1374": {
+  "sku": "FaisalX-1374",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1833": {
+  "sku": "FaisalX-1833",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Jarritos Pineapple Soda, 1.5 Liter Bottle (Pack of 4)",
+  "donorTitle": "Jarritos Mandarin Zero Soda, 1.5L Bottle",
+  "reason": "Wrong flavor: bottles show Jarritos ZERO Mandarin, not Pineapple as listed.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1833/main-enriched.png"
+ },
+ "FaisalX-1760": {
+  "sku": "FaisalX-1760",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-223": {
+  "sku": "FaisalX-223",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1961": {
+  "sku": "FaisalX-1961",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Cheetos Puff Cheese Flavored Snack Chips, 8 oz-Pack Of 3",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "reason": "Image shows Cheetos Flamin' Hot Puffs bags; listing title does not match that flavor/variant. Three ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1961/main-enriched.png"
+ },
+ "FaisalX-1819": {
+  "sku": "FaisalX-1819",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1846": {
+  "sku": "FaisalX-1846",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1839": {
+  "sku": "FaisalX-1839",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2229": {
+  "sku": "FaisalX-2229",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Gatorade Lemon Lime, Sports Drink, 28 oz Bottle, Quantity of 6",
+  "donorTitle": "Gatorade Zero Sugar Thirst Quencher, Lemon Lime Sports Drinks, 28 fl oz Bottle",
+  "reason": "Image shows 6 single front-facing bottles on white, but the product is Gatorade Zero Lemon Lime whil",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2229/main-enriched.png"
+ },
+ "FaisalX-251": {
+  "sku": "FaisalX-251",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2565": {
+  "sku": "FaisalX-2565",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2269": {
+  "sku": "FaisalX-2269",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2434": {
+  "sku": "FaisalX-2434",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Coffee mate Original Powdered Coffee Creamer, 22 oz, (Pack of 6)",
+  "donorTitle": "Nestlé Coffee-mate Coffee Creamer, Hazelnut, Pump Bottle, 50.7 fl oz",
+  "reason": "Product shown is Coffee mate Hazelnut liquid creamer (pump bottle box), not Coffee mate Original Pow",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2434/main-enriched.png"
+ },
+ "FaisalX-2288": {
+  "sku": "FaisalX-2288",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Prime Hydration Drink Ice Pop 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "reason": "Image shows PRIME ICE Orange bottles, not the listed Prime Hydration Ice Pop variant.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2288/main-enriched.png"
+ },
+ "FaisalX-241": {
+  "sku": "FaisalX-241",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2495": {
+  "sku": "FaisalX-2495",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "HORMEL COMPLEATS Roast Beef & Mashed Potatoes, 9 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Beef Pot Roast, Shelf Stable 9 oz Plastic Tray",
+  "reason": "Shows 2 single front-facing Hormel Compleats trays on white, but the flavor/variant is Beef Pot Roas",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2495/main-enriched.png"
+ },
+ "FaisalX-2516": {
+  "sku": "FaisalX-2516",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-307": {
+  "sku": "FaisalX-307",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 3)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "reason": "Wrong variant: listing title specifies Brioche Style HOT DOG Buns, but all three packages shown are ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-307/main-enriched.png"
+ },
+ "FaisalX-286": {
+  "sku": "FaisalX-286",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2610": {
+  "sku": "FaisalX-2610",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1149": {
+  "sku": "FaisalX-1149",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-254": {
+  "sku": "FaisalX-254",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-288": {
+  "sku": "FaisalX-288",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 6)",
+  "donorTitle": "Wonder Round Top White Sliced Bread - 20oz",
+  "reason": "Shows six single Wonder packages on white, but the unit appears to be a loaf/23 oz package, not 15 o",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-288/main-enriched.png"
+ },
+ "FaisalX-313": {
+  "sku": "FaisalX-313",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 9,
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 9)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "reason": "Image shows Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, not Hot Dog Buns; grid has ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-313/main-enriched.png"
+ },
+ "FaisalX-2793": {
+  "sku": "FaisalX-2793",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Condensed Heart Healthy Cream of Chicken Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Heart Healthy Cream of Mushroom Soup, 10.5 oz Can",
+  "reason": "Shows Cream of Mushroom, not Cream of Chicken; six repeated single-can tiles on white, but presented",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2793/main-enriched.png"
+ },
+ "FaisalX-150": {
+  "sku": "FaisalX-150",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1434": {
+  "sku": "FaisalX-1434",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1619": {
+  "sku": "FaisalX-1619",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1614": {
+  "sku": "FaisalX-1614",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1437": {
+  "sku": "FaisalX-1437",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1213": {
+  "sku": "FaisalX-1213",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1439": {
+  "sku": "FaisalX-1439",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 60,
+  "listing": "NISSIN FOODS Top Ramen Chicken Flavor Cup Noodles - Chicken - 2.25 oz - 12 / Carton | Bundle of 5",
+  "donorTitle": "Nissin Foods Cup Noodle Ramen Noodle Soup Original, 2.4 oz Cup, Shelf-Stable",
+  "reason": "Image shows single Cup Noodles Original cups on white; count is about 60, but variant does not match",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1439/main-enriched.png"
+ },
+ "FaisalX-1615": {
+  "sku": "FaisalX-1615",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2005": {
+  "sku": "FaisalX-2005",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Pack of 2 - Cheetos Cheese Flavored Puffs 2.63 oz",
+  "donorTitle": "Cheetos Puffs Cheese Flavored Snacks Flamin' Hot Flavored, 2.5 oz Bag",
+  "reason": "Flavor mismatch (Flamin' Hot vs. Cheese Flavored Puffs) and weight mismatch (2.5 oz vs. 2.63 oz).",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2005/main-enriched.png"
+ },
+ "FaisalX-1622": {
+  "sku": "FaisalX-1622",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1975": {
+  "sku": "FaisalX-1975",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1685": {
+  "sku": "FaisalX-1685",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1634": {
+  "sku": "FaisalX-1634",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Sara Lee Delightful Multi-Grain Bread, 20 oz, Soft Multigrain Bread, Bag -Pack Of 3",
+  "donorTitle": "Sara Lee Delightful Multi-Grain Bread - 20oz",
+  "reason": "Three single front-facing bread bags on white; image shows Healthy Multi-Grain, which does not exact",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1634/main-enriched.png"
+ },
+ "FaisalX-2000": {
+  "sku": "FaisalX-2000",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1994": {
+  "sku": "FaisalX-1994",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1999": {
+  "sku": "FaisalX-1999",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2004": {
+  "sku": "FaisalX-2004",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2028": {
+  "sku": "FaisalX-2028",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2012": {
+  "sku": "FaisalX-2012",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2046": {
+  "sku": "FaisalX-2046",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 5,
+  "listing": "Doritos Nacho Cheese Flavored Tortilla Chips Snacks Chips, 9.25 oz-Pack Of 5",
+  "donorTitle": "Doritos Simply NKD No Dyes No Artificial Flavors Nacho Cheese Tortilla Chips Bag, 9.25 oz​",
+  "reason": "Shows 5 front-facing single bags on white, but the pictured product is Doritos Simply NKD Nacho Chee",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2046/main-enriched.png"
+ },
+ "FaisalX-2034": {
+  "sku": "FaisalX-2034",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 5,
+  "listing": "Doritos Tortilla Chips Cool Ranch Flavor Snack Chips, 9.25 oz Bag-Pack Of 5",
+  "donorTitle": "Doritos Simply NKD, No Dyes No Artificial Flavors Cool Ranch Tortilla Chips Bag, 9.25 oz",
+  "reason": "The bags shown are Doritos Simply NKD Cool Ranch (white/silver bag, 'Naked of Dyes' sub-line), which",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2034/main-enriched.png"
+ },
+ "FaisalX-2006": {
+  "sku": "FaisalX-2006",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Cheetos Puffs Cheese Flavored Snack Chips, 2.625 oz Bag-Pack Of 3",
+  "donorTitle": "Cheetos Puffs Cheese Flavored Snacks Flamin' Hot Flavored, 2.5 oz Bag",
+  "reason": "Image shows Cheetos Flamin' Hot Puffs bags, not the plain cheese-flavored variant in the title; 3 si",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2006/main-enriched.png"
+ },
+ "FaisalX-2001": {
+  "sku": "FaisalX-2001",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-208": {
+  "sku": "FaisalX-208",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-209": {
+  "sku": "FaisalX-209",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2080": {
+  "sku": "FaisalX-2080",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2073": {
+  "sku": "FaisalX-2073",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2067": {
+  "sku": "FaisalX-2067",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2081": {
+  "sku": "FaisalX-2081",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-212": {
+  "sku": "FaisalX-212",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2127": {
+  "sku": "FaisalX-2127",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-213": {
+  "sku": "FaisalX-213",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-220": {
+  "sku": "FaisalX-220",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 4)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "reason": "Each tile shows one bag of Nature's Own Perfectly Crafted Brioche Style Hamburger Buns — correct pro",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-220/main-enriched.png"
+ },
+ "FaisalX-2228": {
+  "sku": "FaisalX-2228",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Gatorade Lemon Lime, Sports Drink, 28 oz Bottle, Quantity of 4",
+  "donorTitle": "Gatorade Zero Sugar Thirst Quencher, Lemon Lime Sports Drinks, 28 fl oz Bottle",
+  "reason": "Image shows Gatorade Zero Lemon Lime bottles; listing title does not specify Zero.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2228/main-enriched.png"
+ },
+ "FaisalX-2256": {
+  "sku": "FaisalX-2256",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "POWERADE Electrolyte Enhanced Grape Sport Drink, 28 fl oz, (Pack of 6)",
+  "donorTitle": "POWERADE Fruit Punch Electrolyte Sports Drink Bottle, 28 fl oz",
+  "reason": "Shown product is POWERADE Fruit Punch bottles, not the Grape variant in the listing; 6 single front-",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2256/main-enriched.png"
+ },
+ "FaisalX-2223": {
+  "sku": "FaisalX-2223",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
+  "donorTitle": "Gatorade G Zero Sugar Thirst Quencher, Glacier Cherry, Bottle Gluten-Free 28 fl oz",
+  "reason": "Image shows Gatorade Zero Glacier Cherry bottles, not Gatorade Cool Blue Sports Drink; 6 single fron",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2223/main-enriched.png"
+ },
+ "FaisalX-214": {
+  "sku": "FaisalX-214",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2085": {
+  "sku": "FaisalX-2085",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Chef Boyardee Mini-Bites ABC's & 123's Pasta with Meatballs, 7.5 oz (Pack of 8)",
+  "donorTitle": "Chef Boyardee Mini Micro Beef Ravioli in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl",
+  "reason": "Shows Chef Boyardee Mini micro beef ravioli cups, not ABC's & 123's Pasta with Meatballs; grid has a",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2085/main-enriched.png"
+ },
+ "FaisalX-219": {
+  "sku": "FaisalX-219",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2090": {
+  "sku": "FaisalX-2090",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Chef Boyardee Macaroni and Cheese, Microwave Pasta, 7.5 oz (Pack of 6)",
+  "donorTitle": "Chef Boyardee Beefaroni, Pasta in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl",
+  "reason": "Image shows Chef Boyardee Beefaroni cups, not Macaroni and Cheese; six single front-facing units on ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2090/main-enriched.png"
+ },
+ "FaisalX-227": {
+  "sku": "FaisalX-227",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-240": {
+  "sku": "FaisalX-240",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 2)",
+  "donorTitle": "Sara Lee Whole Grain Soft White Bread - 20oz",
+  "reason": "Product shown is Sara Lee White Made With Whole Grain, not the Classic (plain white) bread listed. L",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-240/main-enriched.png"
+ },
+ "FaisalX-2430": {
+  "sku": "FaisalX-2430",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Coffee Mate Chocolate Crème Powder Coffee Creamer, 15 oz, (Pack of 4)",
+  "donorTitle": "Coffee mate Hazelnut Zero Sugar Powder Coffee Creamer, 10.2 oz",
+  "reason": "Image shows Coffee Mate Zero Sugar Hazelnut 10.2 oz, not Chocolate Creme 15 oz.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2430/main-enriched.png"
+ },
+ "FaisalX-242": {
+  "sku": "FaisalX-242",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2275": {
+  "sku": "FaisalX-2275",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "BODYARMOR SuperDrink Orange Mango Sports Drink, 16 fl oz, (Pack of 8)",
+  "donorTitle": "BODYARMOR Lyte Peach Mango Electrolyte Sports Drink Bottle, 16 fl oz",
+  "reason": "Image shows BODYARMOR Lyte Peach Mango bottles, not the listed Orange Mango variant.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2275/main-enriched.png"
+ },
+ "FaisalX-2270": {
+  "sku": "FaisalX-2270",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2283": {
+  "sku": "FaisalX-2283",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "BODYARMOR SuperDrink Fruit Punch Electrolyte Beverage, 16 fl oz, (Pack of 6)",
+  "donorTitle": "BODYARMOR Lyte Dragonfruit Berry Electrolyte Sports Drink Bottle, 16 fl oz",
+  "reason": "Image shows BODYARMOR Lyte Dragonfruit Berry bottles, not BODYARMOR SuperDrink Fruit Punch.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2283/main-enriched.png"
+ },
+ "FaisalX-2432": {
+  "sku": "FaisalX-2432",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Coffee mate Original Powdered Coffee Creamer, 22 oz, (Pack of 2)",
+  "donorTitle": "Nestle Coffee Mate, Chocolate Crème Zero-Sugar Powdered Coffee Creamer, 10.2 oz",
+  "reason": "Image shows Coffee mate Zero Sugar Chocolate Creme 10.2 oz, not Original 22 oz; two single front-fac",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2432/main-enriched.png"
+ },
+ "FaisalX-2513": {
+  "sku": "FaisalX-2513",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2501": {
+  "sku": "FaisalX-2501",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2486": {
+  "sku": "FaisalX-2486",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2450": {
+  "sku": "FaisalX-2450",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2511": {
+  "sku": "FaisalX-2511",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2505": {
+  "sku": "FaisalX-2505",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-246": {
+  "sku": "FaisalX-246",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 8)",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "reason": "Loaves stand upright on their heel/end with the twisted top visible at top; the wide long printed fr",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-246/main-enriched.png"
+ },
+ "FaisalX-2514": {
+  "sku": "FaisalX-2514",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-255": {
+  "sku": "FaisalX-255",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2520": {
+  "sku": "FaisalX-2520",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2526": {
+  "sku": "FaisalX-2526",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2534": {
+  "sku": "FaisalX-2534",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Campbell's Chunky Sirloin Steak with Hearty Vegetables Soup 18.8 oz - Pack of 2",
+  "donorTitle": "Campbell's Chunky Sirloin Steak With Hearty Vegetables Soup - 18.8oz",
+  "reason": "Two single front-facing Campbell's Chunky cans on white; count matches 2, but label reads Steak with",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2534/main-enriched.png"
+ },
+ "FaisalX-2506": {
+  "sku": "FaisalX-2506",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2509": {
+  "sku": "FaisalX-2509",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Hormel Compleats Dumplings & Chicken, 7.5 Oz Plastic Tray, (Pack of 6)",
+  "donorTitle": "HORMEL COMPLEATS Spaghetti & Meat Sauce, Shelf-Stable, 11 grams Protein, 7.5 oz Plastic Microwaveable Tray",
+  "reason": "Wrong variant: image shows Spaghetti & Meat Sauce, not Dumplings & Chicken.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2509/main-enriched.png"
+ },
+ "FaisalX-2545": {
+  "sku": "FaisalX-2545",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2530": {
+  "sku": "FaisalX-2530",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell’s Chunky Soup, Savory Pot Roast Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Savory Chicken with White & Wild Rice Soup - 18.8oz",
+  "reason": "Image shows Savory Chicken with White & Wild Rice, not Savory Pot Roast; 6 single front-facing cans ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2530/main-enriched.png"
+ },
+ "FaisalX-2557": {
+  "sku": "FaisalX-2557",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Beef Soup with Country Vegetables, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Hearty Beef and Barley Soup, 18.8 oz Can",
+  "reason": "Wrong flavor/variant: image shows Campbell's Chunky Hearty Beef Barley, but listing specifies Beef S",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2557/main-enriched.png"
+ },
+ "FaisalX-2543": {
+  "sku": "FaisalX-2543",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2544": {
+  "sku": "FaisalX-2544",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2562": {
+  "sku": "FaisalX-2562",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2559": {
+  "sku": "FaisalX-2559",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2596": {
+  "sku": "FaisalX-2596",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Soup, Sirloin Steak with Hearty Vegetables, 18.8 oz, Quantity of 6",
+  "donorTitle": "Campbell's Chunky Sirloin Steak With Hearty Vegetables Soup - 18.8oz",
+  "reason": "Image shows 6 single front-facing cans on white background, but the label reads 'Steak with Hearty V",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2596/main-enriched.png"
+ },
+ "FaisalX-2560": {
+  "sku": "FaisalX-2560",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2551": {
+  "sku": "FaisalX-2551",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2664": {
+  "sku": "FaisalX-2664",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2631": {
+  "sku": "FaisalX-2631",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Campbell’s Chunky OLD BAY Seasoned Clam Chowder, 15.25 oz, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Soup, Beef Soup with Country Vegetables, 15.25 oz Microwavable Bowl",
+  "reason": "Product shown is Campbell's Chunky Bowls Beef with Country Vegetables, not Chunky OLD BAY Seasoned C",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2631/main-enriched.png"
+ },
+ "FaisalX-2674": {
+  "sku": "FaisalX-2674",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 8)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "reason": "Image shows Knorr Rice Sides Cajun Chicken bags; listing title is for Chicken Long Grain Rice and Ve",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2674/main-enriched.png"
+ },
+ "FaisalX-2611": {
+  "sku": "FaisalX-2611",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Chunky Chili with Beans, 16.5 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Chili with Beans Microwaveable Bowl - 15.25oz",
+  "reason": "Image shows Campbell's Chunky Bowls chili, not the listed 16.5 oz can; six single front-facing units",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2611/main-enriched.png"
+ },
+ "FaisalX-2673": {
+  "sku": "FaisalX-2673",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 6)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "reason": "Image shows Knorr Rice Sides Cajun Chicken flavor; listing title is for Chicken Long Grain Rice and ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2673/main-enriched.png"
+ },
+ "FaisalX-2612": {
+  "sku": "FaisalX-2612",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-259": {
+  "sku": "FaisalX-259",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2613": {
+  "sku": "FaisalX-2613",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2757": {
+  "sku": "FaisalX-2757",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell’s Condensed 25% Less Sodium Chicken Noodle Soup 10.75 oz (Pack of 6)",
+  "donorTitle": "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup - 10.5oz",
+  "reason": "Product shown is Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup, but listing title spec",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2757/main-enriched.png"
+ },
+ "FaisalX-2760": {
+  "sku": "FaisalX-2760",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Condensed Chicken and Rice Soup, 22.4 oz Family Size Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Family Size Cream of Chicken Soup - 22.6oz",
+  "reason": "Product shown is Campbell's Condensed Cream of Chicken Soup, but listing title specifies Chicken and",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2760/main-enriched.png"
+ },
+ "FaisalX-2670": {
+  "sku": "FaisalX-2670",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2754": {
+  "sku": "FaisalX-2754",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2749": {
+  "sku": "FaisalX-2749",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2755": {
+  "sku": "FaisalX-2755",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2745": {
+  "sku": "FaisalX-2745",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2672": {
+  "sku": "FaisalX-2672",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 4)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "reason": "Image shows Knorr Rice Sides Cajun Chicken bags; listing title indicates Chicken/Long Grain Rice and",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2672/main-enriched.png"
+ },
+ "FaisalX-2775": {
+  "sku": "FaisalX-2775",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2820": {
+  "sku": "FaisalX-2820",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell’s Condensed Kids Soup, Paw Patrol Awesome Shapes Pasta with Chicken in Chicken Broth, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Kids' Creamy Chicken and Twists Soup - 10.5oz",
+  "reason": "Cans show 'Creamy Chicken & Twists' variant, not the listed 'Paw Patrol Awesome Shapes Pasta with Ch",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2820/main-enriched.png"
+ },
+ "FaisalX-2827": {
+  "sku": "FaisalX-2827",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Campbell’s Condensed Chicken Noodle Soup Dry Egg Noodle Recipe, 22.4 oz Family Size Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Chicken Noodle Soup - 10.75oz",
+  "reason": "Shows 8 single Campbell's Chicken Noodle cans, but the cans appear to be the regular-size variant, n",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2827/main-enriched.png"
+ },
+ "FaisalX-2768": {
+  "sku": "FaisalX-2768",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2770": {
+  "sku": "FaisalX-2770",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2824": {
+  "sku": "FaisalX-2824",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2822": {
+  "sku": "FaisalX-2822",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Campbell's Condensed Family Size Vegetable Beef Soup, 23 Ounce Can (Pack of 4)",
+  "donorTitle": "Campbell's Condensed Vegetable Beef Soup - 10.5oz",
+  "reason": "Shows 4 single front-facing Campbell's Vegetable Beef soup cans on white, but the can appears to be ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2822/main-enriched.png"
+ },
+ "FaisalX-2776": {
+  "sku": "FaisalX-2776",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-293": {
+  "sku": "FaisalX-293",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-285": {
+  "sku": "FaisalX-285",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2817": {
+  "sku": "FaisalX-2817",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-318": {
+  "sku": "FaisalX-318",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 3,
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 3)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "reason": "Shows 3 single Nature's Own Keto Soft White bread loaves on white background, not White Hamburger Bu",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-318/main-enriched.png"
+ },
+ "FaisalX-325": {
+  "sku": "FaisalX-325",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-306": {
+  "sku": "FaisalX-306",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 2)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "reason": "Image shows Brioche Style hamburger buns, not the listed hot dog buns.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-306/main-enriched.png"
+ },
+ "FaisalX-297": {
+  "sku": "FaisalX-297",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-284": {
+  "sku": "FaisalX-284",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-321": {
+  "sku": "FaisalX-321",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 6)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "reason": "Product shown is Nature's Own Keto Soft White bread loaf, not White Hamburger Butter Buns as listed.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-321/main-enriched.png"
+ },
+ "FaisalX-324": {
+  "sku": "FaisalX-324",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 9,
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 9)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "reason": "Shows 9 single Nature's Own Keto Soft White bread loaves on white background, not White Hamburger Bu",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-324/main-enriched.png"
+ },
+ "FaisalX-3329": {
+  "sku": "FaisalX-3329",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3327": {
+  "sku": "FaisalX-3327",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Maruchan Instant Lunch w/Shrimp Instant Lunch, 2.25 oz (Pack of 10)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+  "reason": "Product shown is 'Lime Flavor with Shrimp' but listing title specifies plain 'w/Shrimp' (standard sh",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3327/main-enriched.png"
+ },
+ "FaisalX-3333": {
+  "sku": "FaisalX-3333",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Maruchan Instant Lunch Lime Chili Flavor w/Shrimp Instant Lunch, 2.25 oz (Pack of 10)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+  "reason": "Pack count and tiling look correct, but the package text appears to be Lime Flavor with Shrimp, not ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3333/main-enriched.png"
+ },
+ "FaisalX-3323": {
+  "sku": "FaisalX-3323",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Instant Lunch Hot & Spicy Shrimp Flavor Noodle Soup, 2.25 oz Shelf Stable Cup (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+  "reason": "Image shows Hot & Spicy Chicken, not Hot & Spicy Shrimp; 8 single front-facing units on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3323/main-enriched.png"
+ },
+ "FaisalX-3330": {
+  "sku": "FaisalX-3330",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3345": {
+  "sku": "FaisalX-3345",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Maruchan Ramen Noodle Pork Flavor Soup, 3 Oz (Pack of 10)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Chicken flavor, not Pork; grid shows 10 single front-facing packages on white background",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3345/main-enriched.png"
+ },
+ "FaisalX-339": {
+  "sku": "FaisalX-339",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Pepperidge Farm Farmhouse Butter Hamburger Buns, (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Farmhouse Butter Bread, 22 oz Loaf",
+  "reason": "Product shown is Pepperidge Farm Farmhouse Butter BREAD (a sandwich bread loaf), not Farmhouse Butte",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-339/main-enriched.png"
+ },
+ "FaisalX-3356": {
+  "sku": "FaisalX-3356",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Ramen Noodle Soup Picante Chicken Flavor, 3 oz Shelf Stable Package (Pack of 8)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Product shown is Maruchan Ramen Noodle Soup Chicken Flavor, but the listing specifies Picante Chicke",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3356/main-enriched.png"
+ },
+ "FaisalX-3387": {
+  "sku": "FaisalX-3387",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin Bowl Noodles Hot & Spicy Beef Flavor Ramen Noodle Soup, 3.28 Oz (Pack of 10)",
+  "donorTitle": "Nissin Foods Hot & Spicy Chicken Bowl Noodles 3.32oz",
+  "reason": "Shows Nissin Hot & Spicy Chicken bowls, not the listed Beef flavor; grid has about 10 single front-f",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3387/main-enriched.png"
+ },
+ "FaisalX-3357": {
+  "sku": "FaisalX-3357",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Maruchan Ramen Noodle Soup Picante Chicken Flavor, 3 oz Shelf Stable Package (Pack of 10)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Maruchan Chicken Flavor, not Picante Chicken; grid shows 10 single front-facing packages",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3357/main-enriched.png"
+ },
+ "FaisalX-3353": {
+  "sku": "FaisalX-3353",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Creamy Chicken Ramen Noodles, 3 oz Packaged Soup, Pack of 8",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Maruchan Chicken Flavor, not Creamy Chicken; 8 single front-facing packs on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3353/main-enriched.png"
+ },
+ "FaisalX-3352": {
+  "sku": "FaisalX-3352",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "(6 pack) Maruchan Ramen Noodle Creamy Chicken Flavor Soup, 3 oz Shelf Stable Package",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Maruchan Chicken Flavor, not Creamy Chicken; 6 single front-facing packages on white bac",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3352/main-enriched.png"
+ },
+ "FaisalX-3346": {
+  "sku": "FaisalX-3346",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Maruchan Ramen Noodle Chili Flavor Soup, 3 oz (Pack of 6)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Maruchan Ramen Chicken Flavor packets, not Chili Flavor; 6 single front-facing units on ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3346/main-enriched.png"
+ },
+ "FaisalX-3350": {
+  "sku": "FaisalX-3350",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Ramen Noodle Beef Flavor Soup, 3 oz Shelf Stable Package (Pack of 8)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "reason": "Image shows Maruchan ramen chicken flavor, not beef; 8 single front-facing packages on white backgro",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3350/main-enriched.png"
+ },
+ "FaisalX-3535": {
+  "sku": "FaisalX-3535",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Hamburger Helper Pasta & Sauce Mix, Deluxe Cheesesteak, 4.8 oz Box, Quantity of 6",
+  "donorTitle": "Hamburger Helper Deluxe Beef Stroganoff Pasta, 5.5 oz Box",
+  "reason": "Product shown is Hamburger Helper Deluxe Beef Stroganoff, not Deluxe Cheesesteak as listed.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3535/main-enriched.png"
+ },
+ "FaisalX-3399": {
+  "sku": "FaisalX-3399",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin Cup Noodles Stir Fry Sweet Chili Flavor Asian Noodles in Sauce 2.89 oz. Cup (Pack of 10)",
+  "donorTitle": "Nissin Foods Cup Noodles Stir Fry Ramen Noodles, Teriyaki Beef Flavor, 3.0 oz Cup, Shelf-Stable",
+  "reason": "Flavor mismatch: image shows Nissin Cup Noodles Stir Fry Teriyaki Beef Flavor, but listing specifies",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3399/main-enriched.png"
+ },
+ "FaisalX-3501": {
+  "sku": "FaisalX-3501",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Hamburger Helper Four Cheese Lasagna, 5.5 oz Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Double Cheeseburger Macaroni, 6 oz Box",
+  "reason": "Wrong flavor/type shown: image is Double Cheeseburger Macaroni, not Four Cheese Lasagna.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3501/main-enriched.png"
+ },
+ "FaisalX-3528": {
+  "sku": "FaisalX-3528",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Hamburger Helper Three Cheese Pasta, 6 oz Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Deluxe Beef Stroganoff Pasta, 5.5 oz Box",
+  "reason": "Wrong variant shown: Deluxe Beef Stroganoff, not Three Cheese Pasta; grid shows 10 single boxes on w",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3528/main-enriched.png"
+ },
+ "FaisalX-3381": {
+  "sku": "FaisalX-3381",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3545": {
+  "sku": "FaisalX-3545",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hamburger Helper Four Cheese Lasagna, 8.8 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Four Cheese Lasagna - 5.5oz",
+  "reason": "Shows 8 single front-facing Hamburger Helper Four Cheese Lasagna boxes on white, but the pictured bo",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3545/main-enriched.png"
+ },
+ "FaisalX-3543": {
+  "sku": "FaisalX-3543",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3551": {
+  "sku": "FaisalX-3551",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hamburger Helper Cheeseburger Macaroni, 10.6 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Double Cheeseburger Macaroni, 9.6 oz Value Size Box",
+  "reason": "8 single boxes on white background; fronts are visible, but the box says Double Cheeseburger Macaron",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3551/main-enriched.png"
+ },
+ "FaisalX-3540": {
+  "sku": "FaisalX-3540",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Hamburger Helper Cheesy Italian Pasta Shells, 9.9 oz Value Size Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Cheesy Enchilada Rice, 7.5 oz Box",
+  "reason": "Product shown is Hamburger Helper Cheesy Enchilada, not Cheesy Italian Pasta Shells as stated in the",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3540/main-enriched.png"
+ },
+ "FaisalX-3557": {
+  "sku": "FaisalX-3557",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pringles BBQ Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Product shown is Pringles Ranch, not BBQ as specified in the listing title.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3557/main-enriched.png"
+ },
+ "FaisalX-3570": {
+  "sku": "FaisalX-3570",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch cans, not Chili Cheese Fries; 8 single front-facing units on white backgr",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3570/main-enriched.png"
+ },
+ "FaisalX-3561": {
+  "sku": "FaisalX-3561",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Sour Cream and Onion Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch, not Sour Cream and Onion; 8 single front-facing cans on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3561/main-enriched.png"
+ },
+ "FaisalX-3563": {
+  "sku": "FaisalX-3563",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pringles, Potato Crisps Chips, Original, 5.2 Oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch 5.5 oz cans, not Original 5.2 oz; six single front-facing cans on white b",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3563/main-enriched.png"
+ },
+ "FaisalX-3558": {
+  "sku": "FaisalX-3558",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles BBQ Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch cans, not BBQ; 8 single front-facing cans on white background.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3558/main-enriched.png"
+ },
+ "FaisalX-3560": {
+  "sku": "FaisalX-3560",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pringles Sour Cream and Onion Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch cans, not Sour Cream and Onion; 6 single face-on cans on white background",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3560/main-enriched.png"
+ },
+ "FaisalX-3547": {
+  "sku": "FaisalX-3547",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3580": {
+  "sku": "FaisalX-3580",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3587": {
+  "sku": "FaisalX-3587",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pringles, Potato Crisps Chips, Cheddar & Sour Cream, 5.5 Oz (Pack of 6)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "reason": "Wrong flavor: image shows Pringles Salt & Vinegar, but listing specifies Cheddar & Sour Cream.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3587/main-enriched.png"
+ },
+ "FaisalX-3599": {
+  "sku": "FaisalX-3599",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Lay's Stax Sour Cream & Onion Potato Crisps, 5.5 oz Bag (Pack of 6)",
+  "donorTitle": "Lay's Stax Sour Cream & Onion Flavored Potato Chips, 5.5 oz Canister",
+  "reason": "Six single front-facing Stax canisters on white; title says bag, so identity mismatches.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3599/main-enriched.png"
+ },
+ "FaisalX-3589": {
+  "sku": "FaisalX-3589",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3568": {
+  "sku": "FaisalX-3568",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 4)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch tubes, not Chili Cheese Fries; 4 single front-facing units on white backg",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3568/main-enriched.png"
+ },
+ "FaisalX-3567": {
+  "sku": "FaisalX-3567",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Philly Cheesesteak Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "reason": "Image shows Pringles Ranch cans, not Philly Cheesesteak; 8 single front-facing cans on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3567/main-enriched.png"
+ },
+ "FaisalX-3576": {
+  "sku": "FaisalX-3576",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Elote Mexican Street Corn Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "reason": "Image shows Pringles Salt & Vinegar cans, not Elote Mexican Street Corn; 8 single front-facing units",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3576/main-enriched.png"
+ },
+ "FaisalX-3582": {
+  "sku": "FaisalX-3582",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-359": {
+  "sku": "FaisalX-359",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 11,
+  "listing": "Dave's Killer Bread 21 Whole Grains and Seeds Organic Bread Loaf, 27 oz. (Pack of 11)",
+  "donorTitle": "Dave's Killer Bread Organic Thin Sliced 21 Whole Grains and Seeds Bread, 20.5 oz",
+  "reason": "Product shown is Dave's Killer Bread Thin-Sliced 21 Whole Grains and Seeds, but listing specifies th",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-359/main-enriched.png"
+ },
+ "FaisalX-3614": {
+  "sku": "FaisalX-3614",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "The Good Crisp Company Gluten Free Outback BBQ Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "reason": "Image shows Sea Salt & Vinegar cans, not the listed Outback BBQ flavor; 6 single front-facing units ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3614/main-enriched.png"
+ },
+ "FaisalX-3602": {
+  "sku": "FaisalX-3602",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3594": {
+  "sku": "FaisalX-3594",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Pizza Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "reason": "Image shows Pringles Salt & Vinegar tubes, not Pizza; 8 single front-facing units on white backgroun",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3594/main-enriched.png"
+ },
+ "FaisalX-3612": {
+  "sku": "FaisalX-3612",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pringles Everything Bagel Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "reason": "Image shows Pringles Salt & Vinegar cans, not Everything Bagel; 8 single front-facing units on white",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3612/main-enriched.png"
+ },
+ "FaisalX-3617": {
+  "sku": "FaisalX-3617",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "The Good Crisp Company Gluten Free Sour Cream and Onion Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "reason": "Image shows Sea Salt & Vinegar, not Sour Cream and Onion; six single front-facing packages on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3617/main-enriched.png"
+ },
+ "FaisalX-3597": {
+  "sku": "FaisalX-3597",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3591": {
+  "sku": "FaisalX-3591",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3610": {
+  "sku": "FaisalX-3610",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Pringles Everything Bagel Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 4)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "reason": "Product shown is Pringles Salt & Vinegar, not Everything Bagel flavor as required by the listing tit",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3610/main-enriched.png"
+ },
+ "FaisalX-362": {
+  "sku": "FaisalX-362",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3631": {
+  "sku": "FaisalX-3631",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3635": {
+  "sku": "FaisalX-3635",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3633": {
+  "sku": "FaisalX-3633",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3608": {
+  "sku": "FaisalX-3608",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Pringles Original Potato Crisps Chips, Lunch Snacks, 2.3 oz (Pack of 6)",
+  "donorTitle": "Pringles Potato Crisps Chips, Lunch Snacks, Office and Kids Snacks, Grab N' Go Pack, Cheddar Cheese, 2.5oz Can (1 Can)",
+  "reason": "Image shows Pringles Cheddar Cheese 2.5 oz, not Pringles Original 2.3 oz; grid has six single front-",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3608/main-enriched.png"
+ },
+ "FaisalX-3623": {
+  "sku": "FaisalX-3623",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3620": {
+  "sku": "FaisalX-3620",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "The Good Crisp Company Gluten Free Original Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "reason": "Image shows Sea Salt & Vinegar cans, not the Original listing variant; six single front-facing units",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3620/main-enriched.png"
+ },
+ "FaisalX-1121": {
+  "sku": "FaisalX-1121",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Nature’s Own Life Honey Wheat, 40 Calories per Slice Keto Friendly Sandwich Bread, 16 oz (Pack of 2)",
+  "donorTitle": "Nature's Own Life Protein Bread Loaf - 16oz",
+  "reason": "Product shown is Nature's Own Life Wheat +Protein (22g Protein, Keto Friendly), but listing title sp",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1121/main-enriched.png"
+ },
+ "FaisalX-1351": {
+  "sku": "FaisalX-1351",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1338": {
+  "sku": "FaisalX-1338",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1113": {
+  "sku": "FaisalX-1113",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1112": {
+  "sku": "FaisalX-1112",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3636": {
+  "sku": "FaisalX-3636",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3649": {
+  "sku": "FaisalX-3649",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3644": {
+  "sku": "FaisalX-3644",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1348": {
+  "sku": "FaisalX-1348",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1655": {
+  "sku": "FaisalX-1655",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1639": {
+  "sku": "FaisalX-1639",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 7,
+  "listing": "Sara Lee Whole Wheat Bread, 16 oz, Soft Wheat Bread, Bag -Pack Of 7",
+  "donorTitle": "Sara Lee Delightful Soft & Smooth Wheat Bread, 15 oz, Whole Wheat Bread Wheat Bread, Bag",
+  "reason": "Brand matches, but product variant and size do not: image shows Delightful Soft & Smooth Wheat 15 oz",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1639/main-enriched.png"
+ },
+ "FaisalX-1970": {
+  "sku": "FaisalX-1970",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1956": {
+  "sku": "FaisalX-1956",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-192": {
+  "sku": "FaisalX-192",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 9,
+  "listing": "Nature's Own Butterbread Sliced White Bread Loaf, 20 oz (Pack of 9)",
+  "donorTitle": "Nature's Own WhiteWheat Healthy White Bread, Non-GMO Sliced White Bread, 20 oz Loaf",
+  "reason": "Image shows Nature's Own Whitewheat Healthy White, not Butterbread; 9 single front-facing loaf packa",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-192/main-enriched.png"
+ },
+ "FaisalX-1834": {
+  "sku": "FaisalX-1834",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1334": {
+  "sku": "FaisalX-1334",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-229": {
+  "sku": "FaisalX-229",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2150": {
+  "sku": "FaisalX-2150",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-201": {
+  "sku": "FaisalX-201",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 7,
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 7)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "reason": "7 single Wonder bread loaves on white; identity/count OK, but loaves are standing upright on end, no",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-201/main-enriched.png"
+ },
+ "FaisalX-203": {
+  "sku": "FaisalX-203",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-204": {
+  "sku": "FaisalX-204",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2291": {
+  "sku": "FaisalX-2291",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Prime Hydration Drink Meta Moon 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "reason": "Bottle flavor shown is Orange, not Meta Moon; grid shows four single front-facing bottles on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2291/main-enriched.png"
+ },
+ "FaisalX-198": {
+  "sku": "FaisalX-198",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 4)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "reason": "Four single Wonder Classic White bread bags on white background, but the loaves are shown standing u",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-198/main-enriched.png"
+ },
+ "FaisalX-2295": {
+  "sku": "FaisalX-2295",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Prime Hydration Drink, Cherry Freeze, 16.9 fl oz, (Pack of 6)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "reason": "Shows Prime Ice Orange bottles, not Prime Hydration Cherry Freeze; six single front-facing bottles o",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2295/main-enriched.png"
+ },
+ "FaisalX-2575": {
+  "sku": "FaisalX-2575",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken Noodle Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken and Dumplings Soup, 18.8 oz Can",
+  "reason": "Product shown is Campbell's Chunky Creamy Chicken & Dumplings, but listing title specifies Creamy Ch",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2575/main-enriched.png"
+ },
+ "FaisalX-232": {
+  "sku": "FaisalX-232",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-230": {
+  "sku": "FaisalX-230",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-233": {
+  "sku": "FaisalX-233",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-235": {
+  "sku": "FaisalX-235",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2492": {
+  "sku": "FaisalX-2492",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2296": {
+  "sku": "FaisalX-2296",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Prime Hydration Drink, Cherry Freeze, 16.9 fl oz, (Pack of 8)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "reason": "Image shows Orange flavor bottles, not Cherry Freeze; otherwise 8 single front-facing units on white",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2296/main-enriched.png"
+ },
+ "FaisalX-2285": {
+  "sku": "FaisalX-2285",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Prime Hydration Drink Blue Raspberry, 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "reason": "Image shows Prime Hydration Orange bottles, not Blue Raspberry; 4 single front-facing bottles on whi",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2285/main-enriched.png"
+ },
+ "FaisalX-2802": {
+  "sku": "FaisalX-2802",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Condensed Chicken Gumbo Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Product shown is Campbell's Condensed Cream of Chicken Soup, but the listing title specifies Chicken",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2802/main-enriched.png"
+ },
+ "FaisalX-2581": {
+  "sku": "FaisalX-2581",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-2788": {
+  "sku": "FaisalX-2788",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Campbell's Condensed Chicken and Rice Soup with White and Wild Rice, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Image shows Campbell's Cream of Chicken soup cans, not Chicken and Rice with White and Wild Rice.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2788/main-enriched.png"
+ },
+ "FaisalX-317": {
+  "sku": "FaisalX-317",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 2)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "reason": "Wrong product identity: image shows Nature's Own Keto Soft White bread loaves, not White Hamburger B",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-317/main-enriched.png"
+ },
+ "FaisalX-2773": {
+  "sku": "FaisalX-2773",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Campbell's Condensed Cream of Potato Soup, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Image shows Campbell's Condensed Cream of Chicken, not Cream of Potato; 8 single cans on white backg",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2773/main-enriched.png"
+ },
+ "FaisalX-2766": {
+  "sku": "FaisalX-2766",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Campbell's Condensed Cream of Chicken Soup with Herbs, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Image shows 6 single Campbell's Cream of Chicken cans on white, but the visible label does not match",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2766/main-enriched.png"
+ },
+ "FaisalX-2767": {
+  "sku": "FaisalX-2767",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Campbell's Condensed Cream of Chicken Soup with Herbs, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Shows 8 single Campbell's Cream of Chicken cans on white, but the image does not show the 'with Herb",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2767/main-enriched.png"
+ },
+ "FaisalX-2728": {
+  "sku": "FaisalX-2728",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Campbell's Condensed Chicken with Rice Soup 10.5 oz (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "reason": "Shows Campbell's Cream of Chicken, not Chicken with Rice; 8 single front-facing cans on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2728/main-enriched.png"
+ },
+ "FaisalX-3362": {
+  "sku": "FaisalX-3362",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Instant Lunch Roast Chicken Flavor Soup, 2.25 oz Shelf Stable Cup (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "reason": "Cups shown are 'Chicken Flavor' but listing specifies 'Roast Chicken Flavor' — different variant; al",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3362/main-enriched.png"
+ },
+ "FaisalX-3365": {
+  "sku": "FaisalX-3365",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Maruchan Instant Lunch Beef Flavor Noodle Soup, 2.25 oz (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "reason": "Wrong flavor: image shows Maruchan Instant Lunch Chicken Flavor, but listing specifies Beef Flavor.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3365/main-enriched.png"
+ },
+ "FaisalX-3504": {
+  "sku": "FaisalX-3504",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3471": {
+  "sku": "FaisalX-3471",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Rice-A-Roni Stir Fried Rice Mix 6.2 oz. Box (Pack of 10)",
+  "donorTitle": "Rice-A-Roni Stir Fried Rice Mix 6.2 oz. Box",
+  "reason": "10 single boxes match the listing on white, but the packages are angled rather than fully face-on.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3471/main-enriched.png"
+ },
+ "FaisalX-365": {
+  "sku": "FaisalX-365",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3639": {
+  "sku": "FaisalX-3639",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3539": {
+  "sku": "FaisalX-3539",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hamburger Helper Cheesy Italian Pasta Shells, 9.9 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Cheesy Enchilada Rice, 7.5 oz Box",
+  "reason": "Image shows Hamburger Helper Cheesy Enchilada boxes, not Cheesy Italian Pasta Shells; 8 single boxes",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3539/main-enriched.png"
+ },
+ "FaisalX-3638": {
+  "sku": "FaisalX-3638",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3683": {
+  "sku": "FaisalX-3683",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3694": {
+  "sku": "FaisalX-3694",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-366": {
+  "sku": "FaisalX-366",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3677": {
+  "sku": "FaisalX-3677",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3714": {
+  "sku": "FaisalX-3714",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 8)",
+  "donorTitle": "Progresso Rich & Hearty, Lasagna-Style Soup With Italian Sausage, Canned Soup, 18.5 oz.",
+  "reason": "Image shows Progresso Lasagna-Style Soup with Italian Sausage, not Italian Sausage & Potato.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3714/main-enriched.png"
+ },
+ "FaisalX-371": {
+  "sku": "FaisalX-371",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3712": {
+  "sku": "FaisalX-3712",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 4)",
+  "donorTitle": "Progresso Rich & Hearty, Lasagna-Style Soup With Italian Sausage, Canned Soup, 18.5 oz.",
+  "reason": "Image shows Progresso Rich & Hearty Lasagna-Style Soup with Italian Sausage, not Italian Sausage & P",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3712/main-enriched.png"
+ },
+ "FaisalX-3665": {
+  "sku": "FaisalX-3665",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Progresso Traditional Soup, New England Clam Chowder (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Rich & Hearty Creamy Roasted Chicken Wild Rice Soup - 18.5oz",
+  "reason": "Image shows Progresso Rich & Hearty Creamy Roasted Chicken Wild Rice, not Traditional New England Cl",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3665/main-enriched.png"
+ },
+ "FaisalX-3747": {
+  "sku": "FaisalX-3747",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3690": {
+  "sku": "FaisalX-3690",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3688": {
+  "sku": "FaisalX-3688",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3737": {
+  "sku": "FaisalX-3737",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Progresso Vegetable Classics Soup, Hearty Tomato, 19 oz (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Vegetable Classics Lentil Soup - 19oz",
+  "reason": "Image shows Progresso Vegetable Classics Lentil, not Hearty Tomato; six single cans on white backgro",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3737/main-enriched.png"
+ },
+ "FaisalX-369": {
+  "sku": "FaisalX-369",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3745": {
+  "sku": "FaisalX-3745",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3720": {
+  "sku": "FaisalX-3720",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Progresso Creamy Chicken & Homestyle Noodles Soup, Rich & Hearty Canned Soup, 18.5 oz (Pack of 8)",
+  "donorTitle": "Progresso Gluten Free Rich & Hearty Creamy Roasted Chicken Wild Rice Soup - 18.5oz",
+  "reason": "Image shows Progresso Creamy Roasted Chicken Wild Rice, not Creamy Chicken & Homestyle Noodles; 8 si",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3720/main-enriched.png"
+ },
+ "FaisalX-3740": {
+  "sku": "FaisalX-3740",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Progresso Vegetable Soup, Vegetable Classics Canned Soup, 19 oz (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Vegetable Classics Lentil Soup - 19oz",
+  "reason": "Six single front-facing cans on white; image shows Lentil variant, which does not exactly match the ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3740/main-enriched.png"
+ },
+ "FaisalX-3790": {
+  "sku": "FaisalX-3790",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Progresso Reduced Sodium, Roasted Chicken Noodle Soup, 19 oz. (Pack of 4)",
+  "donorTitle": "Progresso Reduced Sodium Canned Soup, Roasted Chicken Noodle Soup, 18.5 oz",
+  "reason": "Product shown is 18.5 oz Roasted Chicken Noodle but listing specifies 19 oz; also listing says 'Roas",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3790/main-enriched.png"
+ },
+ "FaisalX-3779": {
+  "sku": "FaisalX-3779",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3784": {
+  "sku": "FaisalX-3784",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3794": {
+  "sku": "FaisalX-3794",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3741": {
+  "sku": "FaisalX-3741",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3786": {
+  "sku": "FaisalX-3786",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3773": {
+  "sku": "FaisalX-3773",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3764": {
+  "sku": "FaisalX-3764",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3802": {
+  "sku": "FaisalX-3802",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-383": {
+  "sku": "FaisalX-383",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-380": {
+  "sku": "FaisalX-380",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3803": {
+  "sku": "FaisalX-3803",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3820": {
+  "sku": "FaisalX-3820",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-385": {
+  "sku": "FaisalX-385",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3858": {
+  "sku": "FaisalX-3858",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3864": {
+  "sku": "FaisalX-3864",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Swanson 100% Natural Beef Stock, 32 oz Carton (Pack of 8)",
+  "donorTitle": "Swanson Natural Goodness Gluten Free 33% Less Sodium Chicken Broth - 32oz",
+  "reason": "Image shows Swanson Chicken Broth cartons, not the listed Beef Stock; 8 single front-facing cartons ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3864/main-enriched.png"
+ },
+ "FaisalX-3880": {
+  "sku": "FaisalX-3880",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Jack Link’s Beef Jerky, Sweet & Hot, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag (Pack of 4)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "reason": "Wrong flavor/variant: image shows Jack Link's x Doritos Spicy Sweet Chili Beef Jerky, but listing is",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3880/main-enriched.png"
+ },
+ "FaisalX-3885": {
+  "sku": "FaisalX-3885",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3875": {
+  "sku": "FaisalX-3875",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "2.85oz Jack Link's Spicy Dill Pickle Pork Jerky (Pack of 6)",
+  "donorTitle": "Jack Link's DUOS Original and Teriyaki Beef Jerky, 2.85oz",
+  "reason": "Image shows Jack Link's Duos Original/Teriyaki beef jerky, not Spicy Dill Pickle pork jerky; six sin",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3875/main-enriched.png"
+ },
+ "FaisalX-3839": {
+  "sku": "FaisalX-3839",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Swanson Chicken Broth 100% Natural (Pack of 6)",
+  "donorTitle": "Swanson Natural Goodness Chicken Broth, 48 oz Carton",
+  "reason": "Shows six single front-facing Swanson Chicken Broth cartons on white, but the visible variant is 33%",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3839/main-enriched.png"
+ },
+ "FaisalX-3886": {
+  "sku": "FaisalX-3886",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "2.85oz Jack Link's Spicy Red Pepper Beef Jerky (Pack of 4)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "reason": "Image shows Jack Link's Doritos Spicy Sweet Chili beef jerky, not Spicy Red Pepper; 4 single front-f",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3886/main-enriched.png"
+ },
+ "FaisalX-3884": {
+  "sku": "FaisalX-3884",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3872": {
+  "sku": "FaisalX-3872",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Jack Links Bacon Jerky, Hickory Smoked, 2.5 oz (Pack of 6)",
+  "donorTitle": "Jack Link's Original Beef Jerky Zero Sugar, 2.3 oz., 5 pk.",
+  "reason": "Shows Jack Link's Zero Sugar Beef Jerky Original 2.3 oz, not Bacon Jerky Hickory Smoked 2.5 oz.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3872/main-enriched.png"
+ },
+ "FaisalX-3865": {
+  "sku": "FaisalX-3865",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 4)",
+  "donorTitle": "Jack Link's DUOS Original and Teriyaki Beef Jerky, 2.85oz",
+  "reason": "Image shows Jack Link's Duos Original + Teriyaki bag, not the Teriyaki-only listing.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3865/main-enriched.png"
+ },
+ "FaisalX-3897": {
+  "sku": "FaisalX-3897",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3974": {
+  "sku": "FaisalX-3974",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Reese's Milk Chocolate Snack Size Peanut Butter Cups Halloween Candy, Bag 10.5 oz (Pack of 6)",
+  "donorTitle": "Reese's Fast Break Peanut Butter Nougat Snack Size Candy Bars - 2.68oz/4ct",
+  "reason": "Wrong product: image shows Reese's Fast Break Snack Size 4 Bars, not Reese's Milk Chocolate Peanut B",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3974/main-enriched.png"
+ },
+ "FaisalX-3945": {
+  "sku": "FaisalX-3945",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3983": {
+  "sku": "FaisalX-3983",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Reese's Minis Milk Chocolate Unwrapped Peanut Butter Cups Candy, Bag 7.6 oz (Pack of 6)",
+  "donorTitle": "Reese's Chocolate Peanut Butter Shell Topping, Bottle 7.25 oz",
+  "reason": "Image shows Reese's Shell topping bottles, not Reese's Minis candy bags from the listing.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3983/main-enriched.png"
+ },
+ "FaisalX-3973": {
+  "sku": "FaisalX-3973",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Reese's Milk Chocolate Snack Size Peanut Butter Cups Halloween Candy, Bag 10.5 oz (Pack of 4)",
+  "donorTitle": "Reese's Fast Break Milk Chocolate, Peanut Butter, Nougat King Size Candy Bar - 3.5oz",
+  "reason": "Image shows Reese's Fast Break King Size bars, not the listed Reese's Peanut Butter Cups snack-size ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3973/main-enriched.png"
+ },
+ "FaisalX-3939": {
+  "sku": "FaisalX-3939",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Sahale Snacks Maple Pecans Glazed Mix, Gluten-Free Snack, 4-Ounce (Pack of 8)",
+  "donorTitle": "Sahale Snacks Glazed Mix of Naturally Pomegranate Vanilla Flavored Cashews, 4oz Pouch – Sweet & Savory Nut Blend, Gluten-Free, Non-GMO",
+  "reason": "Image shows Sahale Snacks Pomegranate Vanilla Cashews, not Maple Pecans; 8 single front-facing bags ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3939/main-enriched.png"
+ },
+ "FaisalX-3881": {
+  "sku": "FaisalX-3881",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Jack Link’s Beef Jerky, Sweet & Hot, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag (Pack of 6)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "reason": "Image shows Jack Link's Doritos Spicy Sweet Chili beef jerky bags (about 6), not the listed Sweet & ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3881/main-enriched.png"
+ },
+ "FaisalX-3894": {
+  "sku": "FaisalX-3894",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Jack Link’s Beef Jerky, Inspired by the flavors of Dr Pepper, Made with 100% Beef, 9g of protein, 2.85 oz (Pack of 8)",
+  "donorTitle": "Jack Links Beef Jerky, Peppered, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag",
+  "reason": "Image shows Jack Link's Peppered Beef Jerky bags, not the Dr Pepper variant; 8 single front-facing b",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3894/main-enriched.png"
+ },
+ "FaisalX-4025": {
+  "sku": "FaisalX-4025",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Hershey's Kisses Rainbow Brownie Flavored Candy, Bag 4.2 oz (Pack of 6)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz",
+  "reason": "Product shown is Hershey's Kisses Milk Chocolate with Almonds, not Rainbow Brownie Flavored as requi",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4025/main-enriched.png"
+ },
+ "FaisalX-4008": {
+  "sku": "FaisalX-4008",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 8)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz",
+  "reason": "Bags shown are plain 'Hershey's Kisses Milk Chocolate' (no almonds indicated) at 4.84 oz; listing sp",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4008/main-enriched.png"
+ },
+ "FaisalX-4050": {
+  "sku": "FaisalX-4050",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Glutino Gluten Free Pretzel Twists, Gluten Free Snacks, 14.1 oz (Pack of 8)",
+  "donorTitle": "Glutino Gluten Free Pretzel Sticks, Gluten Free Snacks, 14.1 oz",
+  "reason": "Package shows Glutino Original pretzel sticks, not the listed pretzel twists; 8 single front-facing ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4050/main-enriched.png"
+ },
+ "FaisalX-4043": {
+  "sku": "FaisalX-4043",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3992": {
+  "sku": "FaisalX-3992",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Reese's Take 5 Pretzel, Peanut and Chocolate Snack Size Candy, Bag 11.25 oz pack of 6",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "reason": "Shows Oreo Reese's cookies, not Reese's Take 5 candy; 6 single front-facing packages on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3992/main-enriched.png"
+ },
+ "FaisalX-3991": {
+  "sku": "FaisalX-3991",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Reese's Take 5 Pretzel, Peanut and Chocolate Snack Size Candy, Bag 11.25 oz (Pack of 4)",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "reason": "Shows Oreo Reese's cookies, not Reese's Take 5 snack-size candy bags.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3991/main-enriched.png"
+ },
+ "FaisalX-4007": {
+  "sku": "FaisalX-4007",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 6)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz",
+  "reason": "Image shows regular Hershey's Kisses milk chocolate 4.84 oz, not with almonds 4.48 oz; grid shows si",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4007/main-enriched.png"
+ },
+ "FaisalX-3978": {
+  "sku": "FaisalX-3978",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Reese's Pieces Peanut Butter In a Crunchy Shell Candy, Bag 5.3 oz (Pack of 8)",
+  "donorTitle": "Reese's Pieces Peanut Butter in a Crunchy Shell Candy, Movie Theater Box Candy, 4 oz",
+  "reason": "Shows 8 front-facing single Reese's Pieces 4 oz boxes on white; listing is a 5.3 oz bag.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3978/main-enriched.png"
+ },
+ "FaisalX-4068": {
+  "sku": "FaisalX-4068",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4054": {
+  "sku": "FaisalX-4054",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4065": {
+  "sku": "FaisalX-4065",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Dot's Homestyle Honey Mustard Pretzels 16 oz (Pack of 8)",
+  "donorTitle": "Dot's Homestyle Pretzels BBQ Twists - 16oz",
+  "reason": "Image shows Dot's Homestyle Pretzels BBQ flavor bags, not Honey Mustard; 8 single face-on bags on wh",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4065/main-enriched.png"
+ },
+ "FaisalX-4064": {
+  "sku": "FaisalX-4064",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4071": {
+  "sku": "FaisalX-4071",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4062": {
+  "sku": "FaisalX-4062",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4070": {
+  "sku": "FaisalX-4070",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4060": {
+  "sku": "FaisalX-4060",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4072": {
+  "sku": "FaisalX-4072",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4073": {
+  "sku": "FaisalX-4073",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4155": {
+  "sku": "FaisalX-4155",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4122": {
+  "sku": "FaisalX-4122",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4137": {
+  "sku": "FaisalX-4137",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Mission Zero Net Carbs Sundried Tomato Basil Street Taco Tortillas, 8.89 oz, 14 Count (Pack of 8)",
+  "donorTitle": "Mission Zero Net Carbs Original Flour Tortillas, Street Tacos Size, 14 Count",
+  "reason": "Wrong flavor shown: image is Original, not Sundried Tomato Basil; grid shows about 8 single front-fa",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4137/main-enriched.png"
+ },
+ "FaisalX-4154": {
+  "sku": "FaisalX-4154",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4080": {
+  "sku": "FaisalX-4080",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4142": {
+  "sku": "FaisalX-4142",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4452": {
+  "sku": "FaisalX-4452",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4215": {
+  "sku": "FaisalX-4215",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Old El Paso Stand 'N Stuff Taco Shells, Gluten Free, Family Size, 20-count (Pack of 4)",
+  "donorTitle": "Old El Paso Stand 'N Stuff Crunchy Taco Shells, Zesty Ranch, Gluten Free, 10 Count, 5.4 oz",
+  "reason": "Wrong variant — image shows Old El Paso Zesty Ranch Flavored Taco Shells (10 shells), but listing is",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4215/main-enriched.png"
+ },
+ "FaisalX-4379": {
+  "sku": "FaisalX-4379",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4389": {
+  "sku": "FaisalX-4389",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4244": {
+  "sku": "FaisalX-4244",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4254": {
+  "sku": "FaisalX-4254",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "RITZ Original Crackers, 13.7 oz (Pack of 4)",
+  "donorTitle": "RITZ Hint of Salt Crackers, Snacks for Kids and Adults, Lunch Snacks, 13.7 oz",
+  "reason": "Image shows RITZ Hint of Salt boxes, not the Original variant; four single front-facing boxes on whi",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4254/main-enriched.png"
+ },
+ "FaisalX-4279": {
+  "sku": "FaisalX-4279",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4453": {
+  "sku": "FaisalX-4453",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4480": {
+  "sku": "FaisalX-4480",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4469": {
+  "sku": "FaisalX-4469",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4525": {
+  "sku": "FaisalX-4525",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Cheez-It White Cheddar Baked Snack Crackers, Cheese Crackers, 12 Count (Pack of 6)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "reason": "Shows 6 front-facing single Cheez-It White Cheddar boxes on white, but package appears to be 12.4 oz",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4525/main-enriched.png"
+ },
+ "FaisalX-4497": {
+  "sku": "FaisalX-4497",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4508": {
+  "sku": "FaisalX-4508",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4476": {
+  "sku": "FaisalX-4476",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4477": {
+  "sku": "FaisalX-4477",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4459": {
+  "sku": "FaisalX-4459",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Cheez-It Variety Pack Cheese Crackers, Baked Snack Crackers, 12 Count (Pack of 6)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "reason": "Image shows 6 single front-facing Cheez-It White Cheddar pantry-size boxes on white, not the listed ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4459/main-enriched.png"
+ },
+ "FaisalX-4520": {
+  "sku": "FaisalX-4520",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4516": {
+  "sku": "FaisalX-4516",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4521": {
+  "sku": "FaisalX-4521",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4534": {
+  "sku": "FaisalX-4534",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4535": {
+  "sku": "FaisalX-4535",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4514": {
+  "sku": "FaisalX-4514",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 21 oz (Pack of 8)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 21oz",
+  "reason": "Boxes show White Cheddar, not Original; 8 single front-facing boxes on white background.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4514/main-enriched.png"
+ },
+ "FaisalX-4526": {
+  "sku": "FaisalX-4526",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Cheez-It White Cheddar Baked Snack Crackers, Cheese Crackers, 12 Count (Pack of 8)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "reason": "8 single front-facing boxes on white, but image shows 12.4 oz pantry-size boxes, not the listed 12-c",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4526/main-enriched.png"
+ },
+ "FaisalX-4524": {
+  "sku": "FaisalX-4524",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4601": {
+  "sku": "FaisalX-4601",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Thin Crisps Zesty Jalapeno Whole Grain Wheat Crackers, 7.1 oz (Pack of 8)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "reason": "Product shown is Triscuit Thin Crisps Original (made with sea salt), not Zesty Jalapeno flavor as st",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4601/main-enriched.png"
+ },
+ "FaisalX-4592": {
+  "sku": "FaisalX-4592",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Cracked Pepper & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "reason": "Product shown is Triscuit Rosemary & Olive Oil, but the listing specifies Cracked Pepper & Olive Oil",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4592/main-enriched.png"
+ },
+ "FaisalX-4604": {
+  "sku": "FaisalX-4604",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Fire Roasted Tomato & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "reason": "Flavor mismatch: image shows Rosemary & Olive Oil, not Fire Roasted Tomato & Olive Oil.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4604/main-enriched.png"
+ },
+ "FaisalX-4580": {
+  "sku": "FaisalX-4580",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Roasted Garlic Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Hint of Sea Salt Whole Grain Wheat Crackers, Vegan Crackers, Vegan Snacks, 8.5 oz",
+  "reason": "Image shows Triscuit Hint of Sea Salt boxes, not Roasted Garlic; 8 single front-facing units on whit",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4580/main-enriched.png"
+ },
+ "FaisalX-4622": {
+  "sku": "FaisalX-4622",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "reason": "Image shows Triscuit Reduced Fat 11.5 oz, not Rosemary & Olive Oil 12.5 oz; 8 single front-facing bo",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4622/main-enriched.png"
+ },
+ "FaisalX-4589": {
+  "sku": "FaisalX-4589",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Original Whole Grain Wheat Crackers, Vegan Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "reason": "Boxes show Triscuit Reduced Fat 11.5 oz, not the listed Original 12.5 oz; grid shows 8 single front-",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4589/main-enriched.png"
+ },
+ "FaisalX-4597": {
+  "sku": "FaisalX-4597",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4625": {
+  "sku": "FaisalX-4625",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Triscuit Cracked Pepper & Olive Oil Whole Grain Wheat Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "reason": "Image shows Triscuit Reduced Fat 11.5 oz boxes, not Cracked Pepper & Olive Oil 12.5 oz; 8 single fro",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4625/main-enriched.png"
+ },
+ "FaisalX-4647": {
+  "sku": "FaisalX-4647",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "CLIF BAR - Chocolate Chip - Made with Organic Oats - 10g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz. (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "reason": "Wrong flavor/variant: image shows CLIF BAR Blueberry Almond Crisp (5 Energy Bars box), but listing t",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4647/main-enriched.png"
+ },
+ "FaisalX-4644": {
+  "sku": "FaisalX-4644",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "CLIF BAR - Crunchy Peanut Butter - Made with Organic Oats - 11g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz. (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "reason": "Wrong flavor/variant: image shows CLIF BAR Blueberry Almond Crisp (5 Energy Bars box), but listing i",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4644/main-enriched.png"
+ },
+ "FaisalX-4602": {
+  "sku": "FaisalX-4602",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Triscuit Fire Roasted Tomato & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 4)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "reason": "Image shows Triscuit Rosemary & Olive Oil boxes, not Fire Roasted Tomato & Olive Oil; 4 single front",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4602/main-enriched.png"
+ },
+ "FaisalX-4641": {
+  "sku": "FaisalX-4641",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "CLIF BAR - Chocolate Brownie Flavor - Made with Organic Oats - 10g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "reason": "Wrong flavor/variant shown: image is Blueberry Almond Crisp, not Chocolate Brownie.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4641/main-enriched.png"
+ },
+ "FaisalX-4719": {
+  "sku": "FaisalX-4719",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Jif 13 Ounce Natural Squeeze Pouch (Pack of 2)",
+  "donorTitle": "Jif Natural Squeeze Creamy Peanut Butter Spread - 13oz",
+  "reason": "Image shows 2 single Jif Natural Creamy 13 oz squeeze pouches on white; title omits the Creamy varia",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4719/main-enriched.png"
+ },
+ "FaisalX-4715": {
+  "sku": "FaisalX-4715",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4626": {
+  "sku": "FaisalX-4626",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Triscuit Thin Crisps Applewood Barbecue Whole Grain Wheat Crackers, 7.1 oz (Pack of 4)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "reason": "Shows Triscuit Thin Crisps Original, not Applewood Barbecue; 4 single front-facing boxes on white.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4626/main-enriched.png"
+ },
+ "FaisalX-4627": {
+  "sku": "FaisalX-4627",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Triscuit Thin Crisps Applewood Barbecue Whole Grain Wheat Crackers, 7.1 oz (Pack of 6)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "reason": "Shows Triscuit Thin Crisps Original, not Applewood Barbecue; grid has six single front-facing boxes ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4627/main-enriched.png"
+ },
+ "FaisalX-4713": {
+  "sku": "FaisalX-4713",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4684": {
+  "sku": "FaisalX-4684",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "KIND Breakfast Gluten Free Dark Chocolate Cocoa Protein Snack Bars, 1.76 oz, 12 Count (Pack of 4)",
+  "donorTitle": "KIND Breakfast Peanut Butter Banana Dark Chocolate Gluten Free Protein Snack Bars, 1.76 oz, 6 Count One box",
+  "reason": "Product shown is KIND Breakfast Protein Peanut Butter Banana Dark Chocolate, but the listing title s",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4684/main-enriched.png"
+ },
+ "FaisalX-4739": {
+  "sku": "FaisalX-4739",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4755": {
+  "sku": "FaisalX-4755",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4759": {
+  "sku": "FaisalX-4759",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "SKIPPY Peanut Butter, Creamy, 7 G Protein per Serving, 40 oz Plastic Jar (Pack of 4)",
+  "donorTitle": "SKIPPY Reduced Fat Creamy Peanut Butter Spread, Shelf-Stable, 40 oz Plastic Jar",
+  "reason": "Shows 4 single front-facing jars on white, but the label is SKIPPY Reduced Fat Creamy, which does no",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4759/main-enriched.png"
+ },
+ "FaisalX-4750": {
+  "sku": "FaisalX-4750",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "SKIPPY Squeeze Natural Creamy Peanut Butter, 6 oz (Pack of 4)",
+  "donorTitle": "SKIPPY Natural Creamy Peanut Butter Spread with Honey, 6 g Protein Per Serving, Shelf-Stable, 40 oz Plastic Jar",
+  "reason": "Image shows 4 single SKIPPY Natural with Honey 40 oz jars, not the listed Squeeze Natural Creamy 6 o",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4750/main-enriched.png"
+ },
+ "FaisalX-4738": {
+  "sku": "FaisalX-4738",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4746": {
+  "sku": "FaisalX-4746",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "SKIPPY Natural Creamy Peanut Butter Spread with Honey, 6 G Protein per Serving, 15 oz Plastic Jar (Pack of 2)",
+  "donorTitle": "SKIPPY Natural Peanut Butter Spread, Creamy, 7 G Protein per Serving, 15 oz Plastic Jar",
+  "reason": "Two single front-facing Skippy Natural Creamy jars on white; count matches 2, but the visible label ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4746/main-enriched.png"
+ },
+ "FaisalX-4762": {
+  "sku": "FaisalX-4762",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4770": {
+  "sku": "FaisalX-4770",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4769": {
+  "sku": "FaisalX-4769",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4766": {
+  "sku": "FaisalX-4766",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4771": {
+  "sku": "FaisalX-4771",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4764": {
+  "sku": "FaisalX-4764",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4775": {
+  "sku": "FaisalX-4775",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4734": {
+  "sku": "FaisalX-4734",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4774": {
+  "sku": "FaisalX-4774",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4785": {
+  "sku": "FaisalX-4785",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4791": {
+  "sku": "FaisalX-4791",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "OREO Toffee Crunch Creme with Sugar Crystals Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 4)",
+  "donorTitle": "Post Oreo Puffs Cereal - 16.5oz",
+  "reason": "Image shows Post Oreo Puffs cereal boxes, not Oreo Toffee Crunch Creme sandwich cookies.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4791/main-enriched.png"
+ },
+ "FaisalX-4777": {
+  "sku": "FaisalX-4777",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4798": {
+  "sku": "FaisalX-4798",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4799": {
+  "sku": "FaisalX-4799",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4779": {
+  "sku": "FaisalX-4779",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "OREO Golden Sandwich Cookies, Family Size, 18.12 oz (Pack of 4)",
+  "donorTitle": "OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz",
+  "reason": "Image shows 4 single front-facing Oreo Golden Double Stuf packages on white, but title says Oreo Gol",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4779/main-enriched.png"
+ },
+ "FaisalX-4802": {
+  "sku": "FaisalX-4802",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4796": {
+  "sku": "FaisalX-4796",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "OREO Peanut Butter Creme Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 8)",
+  "donorTitle": "OREO Chocolate Sandwich Cookies, Family Size, 18.12 oz",
+  "reason": "Packages shown display standard OREO classic packaging (blue bag, white-cream cookie splash graphic)",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4796/main-enriched.png"
+ },
+ "FaisalX-4859": {
+  "sku": "FaisalX-4859",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4863": {
+  "sku": "FaisalX-4863",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Nonni's, Cioccolati Biscotti, Dark Chocolate Almond Cookie, 6.8 oz (195g), 8 Count, Ready to Eat (Pack of 4)",
+  "donorTitle": "Nonni's Bakery Limoncello Biscotti - 6.88oz",
+  "reason": "Product shown is Nonni's Limoncello Biscotti, but listing specifies Cioccolati (Dark Chocolate Almon",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4863/main-enriched.png"
+ },
+ "FaisalX-4883": {
+  "sku": "FaisalX-4883",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4874": {
+  "sku": "FaisalX-4874",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Pocky Strawberry Covered Biscuit Sticks Share Pack 190 gram / 6.7 oz (Pack of 8)",
+  "donorTitle": "Glico Pocky Crunchy Strawberry Covered Biscuit Sticks, 1.79 oz",
+  "reason": "Boxes show Pocky Crunchy Strawberry at ~51g (1.76 oz) each, not the Strawberry Share Pack 190g/6.7oz",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4874/main-enriched.png"
+ },
+ "FaisalX-4861": {
+  "sku": "FaisalX-4861",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Nonni's Salted Caramel Biscotti Italian Cookies - 6 Boxes - Biscotti Individually Wrapped Cookies - Italian Biscotti Cookies w/Rich Milk Chocolate & Sea Salt - Kosher - 6.72 oz",
+  "donorTitle": "Nonni's Bakery, Salted Caramel Biscotti, Individually Wrapped, 10.08oz, 12ct Value Pack",
+  "reason": "Each tile shows a '12 PACK VALUE PACK-12 BISCOTTI' box, which is itself a multipack of 12 individual",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4861/main-enriched.png"
+ },
+ "FaisalX-4880": {
+  "sku": "FaisalX-4880",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4797": {
+  "sku": "FaisalX-4797",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "OREO Birthday Cake Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 4)",
+  "donorTitle": "OREO Chocolate Sandwich Cookies, Family Size, 18.12 oz",
+  "reason": "Image shows standard OREO Chocolate Sandwich Cookies (classic blue package) — not the Birthday Cake ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4797/main-enriched.png"
+ },
+ "FaisalX-1641": {
+  "sku": "FaisalX-1641",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 5,
+  "listing": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag -Pack Of 5",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "reason": "Wrong product: image shows Sara Lee Classic White bread loaves (20 oz), not Sara Lee Artesano White ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1641/main-enriched.png"
+ },
+ "FaisalX-1311": {
+  "sku": "FaisalX-1311",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4962": {
+  "sku": "FaisalX-4962",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4881": {
+  "sku": "FaisalX-4881",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1286": {
+  "sku": "FaisalX-1286",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-4882": {
+  "sku": "FaisalX-4882",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1613": {
+  "sku": "FaisalX-1613",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1245": {
+  "sku": "FaisalX-1245",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Arnold Seedless Jewish Rye Bread 16 oz Classic Rye Loaf (Pack of 4)",
+  "donorTitle": "Arnold Seeded Jewish Rye Bread - 16oz",
+  "reason": "Image shows Arnold Jewish Rye Seeded, but listing says Seedless; 4 single front-facing loaves on whi",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1245/main-enriched.png"
+ },
+ "FaisalX-1243": {
+  "sku": "FaisalX-1243",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1206": {
+  "sku": "FaisalX-1206",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1257": {
+  "sku": "FaisalX-1257",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1194": {
+  "sku": "FaisalX-1194",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1215": {
+  "sku": "FaisalX-1215",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1227": {
+  "sku": "FaisalX-1227",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1231": {
+  "sku": "FaisalX-1231",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1198": {
+  "sku": "FaisalX-1198",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1258": {
+  "sku": "FaisalX-1258",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1284": {
+  "sku": "FaisalX-1284",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1285": {
+  "sku": "FaisalX-1285",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1267": {
+  "sku": "FaisalX-1267",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1270": {
+  "sku": "FaisalX-1270",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1287": {
+  "sku": "FaisalX-1287",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1264": {
+  "sku": "FaisalX-1264",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1269": {
+  "sku": "FaisalX-1269",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1523": {
+  "sku": "FaisalX-1523",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1974": {
+  "sku": "FaisalX-1974",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1837": {
+  "sku": "FaisalX-1837",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1659": {
+  "sku": "FaisalX-1659",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1650": {
+  "sku": "FaisalX-1650",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1426": {
+  "sku": "FaisalX-1426",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1638": {
+  "sku": "FaisalX-1638",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-189": {
+  "sku": "FaisalX-189",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-315": {
+  "sku": "FaisalX-315",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-1986": {
+  "sku": "FaisalX-1986",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-2808": {
+  "sku": "FaisalX-2808",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-2225": {
+  "sku": "FaisalX-2225",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-2013": {
+  "sku": "FaisalX-2013",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-2063": {
+  "sku": "FaisalX-2063",
+  "verdict": "BAD",
+  "wave": "old245",
+  "qty": 6,
+  "listing": "Chef Boyardee Lasagna, Pasta in Chunky Tomato Sauce, 14.5 oz (Pack of 6)",
+  "donorTitle": "",
+  "reason": "Image shows Chef Boyardee Lasagna bowl, but label says chunky tomato & meat sauce, not chunky tomato",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2063/main-pipeline.png"
+ },
+ "FaisalX-3087": {
+  "sku": "FaisalX-3087",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-283": {
+  "sku": "FaisalX-283",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3305": {
+  "sku": "FaisalX-3305",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3165": {
+  "sku": "FaisalX-3165",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3297": {
+  "sku": "FaisalX-3297",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3186": {
+  "sku": "FaisalX-3186",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3289": {
+  "sku": "FaisalX-3289",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3308": {
+  "sku": "FaisalX-3308",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3277": {
+  "sku": "FaisalX-3277",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3309": {
+  "sku": "FaisalX-3309",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3890": {
+  "sku": "FaisalX-3890",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3339": {
+  "sku": "FaisalX-3339",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3453": {
+  "sku": "FaisalX-3453",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-389": {
+  "sku": "FaisalX-389",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3446": {
+  "sku": "FaisalX-3446",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3364": {
+  "sku": "FaisalX-3364",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3312": {
+  "sku": "FaisalX-3312",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3338": {
+  "sku": "FaisalX-3338",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4161": {
+  "sku": "FaisalX-4161",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4178": {
+  "sku": "FaisalX-4178",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4324": {
+  "sku": "FaisalX-4324",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4187": {
+  "sku": "FaisalX-4187",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4173": {
+  "sku": "FaisalX-4173",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4218": {
+  "sku": "FaisalX-4218",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4120": {
+  "sku": "FaisalX-4120",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4116": {
+  "sku": "FaisalX-4116",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4532": {
+  "sku": "FaisalX-4532",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4518": {
+  "sku": "FaisalX-4518",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4503": {
+  "sku": "FaisalX-4503",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4567": {
+  "sku": "FaisalX-4567",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4607": {
+  "sku": "FaisalX-4607",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4565": {
+  "sku": "FaisalX-4565",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4359": {
+  "sku": "FaisalX-4359",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4454": {
+  "sku": "FaisalX-4454",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4767": {
+  "sku": "FaisalX-4767",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4756": {
+  "sku": "FaisalX-4756",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4848": {
+  "sku": "FaisalX-4848",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4761": {
+  "sku": "FaisalX-4761",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4753": {
+  "sku": "FaisalX-4753",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4696": {
+  "sku": "FaisalX-4696",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4793": {
+  "sku": "FaisalX-4793",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-4741": {
+  "sku": "FaisalX-4741",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5359": {
+  "sku": "FaisalX-5359",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5231": {
+  "sku": "FaisalX-5231",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5575": {
+  "sku": "FaisalX-5575",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5440": {
+  "sku": "FaisalX-5440",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5555": {
+  "sku": "FaisalX-5555",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5165": {
+  "sku": "FaisalX-5165",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5230": {
+  "sku": "FaisalX-5230",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5434": {
+  "sku": "FaisalX-5434",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "Mine-12": {
+  "sku": "Mine-12",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "Mine-22": {
+  "sku": "Mine-22",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-764": {
+  "sku": "FaisalX-764",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-778": {
+  "sku": "FaisalX-778",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5576": {
+  "sku": "FaisalX-5576",
+  "verdict": "BAD",
+  "wave": "old245",
+  "qty": 6,
+  "listing": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (Pack of 6)",
+  "donorTitle": "",
+  "reason": "Shows 6 single Hot Tamales Fierce Cinnamon boxes on white; listing says pouch, so package type does ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5576/main-pipeline.png"
+ },
+ "FaisalX-771": {
+  "sku": "FaisalX-771",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-814": {
+  "sku": "FaisalX-814",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-5582": {
+  "sku": "FaisalX-5582",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2227": {
+  "sku": "RizwanX-2227",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-179": {
+  "sku": "RizwanX-179",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-138": {
+  "sku": "RizwanX-138",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-156": {
+  "sku": "RizwanX-156",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2179": {
+  "sku": "RizwanX-2179",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2181": {
+  "sku": "RizwanX-2181",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2211": {
+  "sku": "RizwanX-2211",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-165": {
+  "sku": "RizwanX-165",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2285": {
+  "sku": "RizwanX-2285",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2406": {
+  "sku": "RizwanX-2406",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2412": {
+  "sku": "RizwanX-2412",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2397": {
+  "sku": "RizwanX-2397",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2330": {
+  "sku": "RizwanX-2330",
+  "verdict": "BAD",
+  "wave": "old245",
+  "qty": 4,
+  "listing": "Barilla Al Bronzo Bucatini Pasta Bronze Cut Pasta Non — 4-Pack (4 packages)",
+  "donorTitle": "",
+  "reason": "Image shows 4 single front-facing Barilla Al Bronzo Bucatini packages on white, but the package says",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2330/main-pipeline.png"
+ },
+ "RizwanX-2466": {
+  "sku": "RizwanX-2466",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2456": {
+  "sku": "RizwanX-2456",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2404": {
+  "sku": "RizwanX-2404",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3026": {
+  "sku": "RizwanX-3026",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2711": {
+  "sku": "RizwanX-2711",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3210": {
+  "sku": "RizwanX-3210",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3234": {
+  "sku": "RizwanX-3234",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-2723": {
+  "sku": "RizwanX-2723",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3098": {
+  "sku": "RizwanX-3098",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3050": {
+  "sku": "RizwanX-3050",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3251": {
+  "sku": "RizwanX-3251",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3272": {
+  "sku": "RizwanX-3272",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3579": {
+  "sku": "RizwanX-3579",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3543": {
+  "sku": "RizwanX-3543",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3584": {
+  "sku": "RizwanX-3584",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3442": {
+  "sku": "RizwanX-3442",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3260": {
+  "sku": "RizwanX-3260",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "RizwanX-3588": {
+  "sku": "RizwanX-3588",
+  "verdict": "BAD",
+  "wave": "old245",
+  "qty": 6,
+  "listing": "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix (Pack of 6)",
+  "donorTitle": "",
+  "reason": "Shows 6 tiles on white, but each tile includes a cartridge box plus a bottle/dispenser and the box i",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3588/main-pipeline.png"
+ },
+ "RizwanX-3680": {
+  "sku": "RizwanX-3680",
+  "verdict": "OK",
+  "wave": "old245"
+ },
+ "FaisalX-3441": {
+  "sku": "FaisalX-3441",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3462": {
+  "sku": "FaisalX-3462",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3472": {
+  "sku": "FaisalX-3472",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3434": {
+  "sku": "FaisalX-3434",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Nissin Hot & Spicy Fire Wok Sizzlin' Rich Pork Flavor Asian Noodles in Sauce, 4.37 oz (Pack of 8)",
+  "donorTitle": "Nissin Foods Hot & Spicy Fire Wok Stir Fry Asian Noodles, Molten Chili Chicken Flavor, 4.37 oz Bowl, Shelf-Stable",
+  "reason": "Wrong flavor shown: Molten Chili Chicken, not Sizzlin' Rich Pork; 8 single cups on white background.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3434/main-enriched.png"
+ },
+ "FaisalX-3586": {
+  "sku": "FaisalX-3586",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3548": {
+  "sku": "FaisalX-3548",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3484": {
+  "sku": "FaisalX-3484",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3492": {
+  "sku": "FaisalX-3492",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3627": {
+  "sku": "FaisalX-3627",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3711": {
+  "sku": "FaisalX-3711",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Progresso Beef Pot Roast with Country Vegetables Canned Soup, 18.5 oz (Pack of 8)",
+  "donorTitle": "Progresso Rich & Hearty Savory Beef Barley Vegetable Soup - 18.6oz",
+  "reason": "Wrong flavor/variant: cans show 'Savory Beef Barley Vegetable' but listing specifies 'Beef Pot Roast",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3711/main-enriched.png"
+ },
+ "FaisalX-3590": {
+  "sku": "FaisalX-3590",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3583": {
+  "sku": "FaisalX-3583",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 4)",
+  "donorTitle": "Pringles Original Potato Crisps Chips, Lunch Snacks, 5.2 oz Canister",
+  "reason": "Image shows Pringles Original 5.2 oz cans, not Ranch 5.5 oz; 4 single front-facing units on white ba",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3583/main-enriched.png"
+ },
+ "FaisalX-3893": {
+  "sku": "FaisalX-3893",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Jack Link’s Beef Jerky, Inspired by the flavors of Dr Pepper, Made with 100% Beef, 9g of protein, 2.85 oz (Pack of 6)",
+  "donorTitle": "Jack Links Beef Jerky, Peppered, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag",
+  "reason": "Wrong flavor: image shows Jack Link's Beef Jerky PEPPERED, but listing specifies Dr Pepper-inspired ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3893/main-enriched.png"
+ },
+ "FaisalX-3762": {
+  "sku": "FaisalX-3762",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3843": {
+  "sku": "FaisalX-3843",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Swanson 100% Natural Beef Broth, 32 oz Carton (Pack of 8)",
+  "donorTitle": "Swanson Lower Sodium Beef Broth, 32 oz Carton",
+  "reason": "Shows 8 tiles on white, but the product is 50% Less Sodium variant and the tiled image includes info",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3843/main-enriched.png"
+ },
+ "FaisalX-3749": {
+  "sku": "FaisalX-3749",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3952": {
+  "sku": "FaisalX-3952",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Reese's Assorted Milk Chocolate Snack Size Peanut Butter Shapes Halloween Candy, Jumbo Bag 14.4 oz (Pack of 4)",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "reason": "Product shown is Oreo Reese's Chocolate Sandwich Cookies, not Reese's Assorted Milk Chocolate Snack ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3952/main-enriched.png"
+ },
+ "FaisalX-4052": {
+  "sku": "FaisalX-4052",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3993": {
+  "sku": "FaisalX-3993",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Reese's Take 5 Pretzel, Peanut and Chocolate Snack Size Candy, Bag 11.25 oz (Pack of 8)",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "reason": "Product shown is Oreo Reese's Peanut Butter Chocolate Sandwich Cookies, not Reese's Take 5 Pretzel, ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3993/main-enriched.png"
+ },
+ "FaisalX-3396": {
+  "sku": "FaisalX-3396",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin Cup Noodles Stir Fry Korean BBQ Flavor Noodles (Pack of 10)",
+  "donorTitle": "Nissin Foods Cup Noodles Stir Fry Ramen Noodles, Teriyaki Beef Flavor, 3.0 oz Cup, Shelf-Stable",
+  "reason": "Product shown is Nissin Cup Noodles Stir Fry Teriyaki Beef Flavor, but listing title specifies Korea",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3396/main-enriched.png"
+ },
+ "FaisalX-3414": {
+  "sku": "FaisalX-3414",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin Fire Wok Hot & Spicy Volcanic Mongolian Beef, 4.3 Ounce Bowl (Pack of 10)",
+  "donorTitle": "Nissin Foods Hot & Spicy Fire Wok Stir Fry Asian Noodles, Molten Chili Chicken Flavor, 4.37 oz Bowl, Shelf-Stable",
+  "reason": "The bowls shown read 'Molten Chili Chicken' beneath the Fire Wok branding, not the listed 'Volcanic ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3414/main-enriched.png"
+ },
+ "FaisalX-3392": {
+  "sku": "FaisalX-3392",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3426": {
+  "sku": "FaisalX-3426",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin® Hot & Spicy Blazing Hot Flavor Ramen Noodle Soup 3.26 oz. Bowl (Pack of 10)",
+  "donorTitle": "Nissin Foods Hot & Spicy Fire Wok Chili-Infused Asian Noodles, Screamin' Sichuan Beef Flavor, 3.10 oz Bag, Shelf-Stable",
+  "reason": "Product shown is Nissin Fire Wok flat bag, not the Hot & Spicy Blazing Hot Flavor bowl (3.26 oz bowl",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3426/main-enriched.png"
+ },
+ "FaisalX-3398": {
+  "sku": "FaisalX-3398",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Nissin Cup Noodles Stir Fry Sweet Chili Flavor Asian Noodles in Sauce 2.89 oz. Cup (Pack of 8)",
+  "donorTitle": "Nissin Foods Cup Noodles Stir Fry Ramen Noodles, Teriyaki Beef Flavor, 3.0 oz Cup, Shelf-Stable",
+  "reason": "Wrong flavor: image shows Nissin Cup Noodles Stir Fry Teriyaki Beef Flavor, but listing specifies Sw",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3398/main-enriched.png"
+ },
+ "FaisalX-344": {
+  "sku": "FaisalX-344",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 7,
+  "listing": "Pepperidge Farm Farmhouse Butter Hamburger Buns, 8-ct (Pack of 7)",
+  "donorTitle": "Pepperidge Farm Farmhouse Thin & Crispy Butter Crisp Cookies, 6.9 oz Bag",
+  "reason": "Product shown is Pepperidge Farm Farmhouse Thin & Crispy Butter Crisp cookies, not Farmhouse Butter ",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-344/main-enriched.png"
+ },
+ "FaisalX-3435": {
+  "sku": "FaisalX-3435",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Nissin Hot & Spicy Fire Wok Sizzlin' Rich Pork Flavor Asian Noodles in Sauce, 4.37 oz (Pack of 10)",
+  "donorTitle": "Nissin Foods Hot & Spicy Fire Wok Stir Fry Asian Noodles, Molten Chili Chicken Flavor, 4.37 oz Bowl, Shelf-Stable",
+  "reason": "Flavor mismatch: bowls shown display 'Molten Chili Chicken' variant, but listing specifies 'Sizzlin\\",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3435/main-enriched.png"
+ },
+ "FaisalX-3407": {
+  "sku": "FaisalX-3407",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3422": {
+  "sku": "FaisalX-3422",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Nissin Cup Noodle Original Ramen Noodle Soup 2.4 oz (Pack of 8)",
+  "donorTitle": "Nissin Foods Cup Noodles Stir Fry Ramen Noodles, Korean BBQ Flavor, 2.89 oz Cup, Shelf-Stable",
+  "reason": "Product shown is Nissin Cup Noodles Stir Fry Korean BBQ flavor, not the Original Ramen Noodle Soup l",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3422/main-enriched.png"
+ },
+ "FaisalX-3440": {
+  "sku": "FaisalX-3440",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3438": {
+  "sku": "FaisalX-3438",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Rice-A-Roni Beef Flavor Rice Mix, 6.8 oz Cardboard Regular Box (Pack of 10)",
+  "donorTitle": "Rice-A-Roni Chicken Broth and Herbs Flavor Rice & Vermicelli Packaged Meal, Shelf-Stable 6.9 oz Box",
+  "reason": "Listing is Beef Flavor but image shows Rice-A-Roni Chicken flavor boxes.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3438/main-enriched.png"
+ },
+ "FaisalX-3442": {
+  "sku": "FaisalX-3442",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 6,
+  "listing": "Rice-A-Roni Creamy Four Cheese Rice & Vermicelli Mix, 6.4 oz Cardboard Regular Box (Pack of 6)",
+  "donorTitle": "Rice-A-Roni Lower Sodium Rice & Vermicelli Mix, Chicken, 6.9 oz Cardboard Box, Packaged Meals",
+  "reason": "Product shown is Rice-A-Roni Chicken Lower Sodium, not Creamy Four Cheese Rice & Vermicelli Mix as r",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3442/main-enriched.png"
+ },
+ "FaisalX-3450": {
+  "sku": "FaisalX-3450",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3443": {
+  "sku": "FaisalX-3443",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Rice-A-Roni Creamy Four Cheese Rice & Vermicelli Mix, 6.4 oz Cardboard Regular Box (Pack of 8)",
+  "donorTitle": "Rice-A-Roni Lower Sodium Rice & Vermicelli Mix, Chicken, 6.9 oz Cardboard Box, Packaged Meals",
+  "reason": "Wrong flavor/variant: image shows Rice-A-Roni Chicken Lower Sodium, but listing is Creamy Four Chees",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3443/main-enriched.png"
+ },
+ "FaisalX-3451": {
+  "sku": "FaisalX-3451",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3469": {
+  "sku": "FaisalX-3469",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-347": {
+  "sku": "FaisalX-347",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Pepperidge Farm Farmhouse Butter Hamburger Buns, (Pack of 10)",
+  "donorTitle": "Pepperidge Farm Farmhouse Butter Bread, 22 oz Loaf",
+  "reason": "Product shown is Pepperidge Farm Farmhouse Butter Bread (a sandwich bread loaf), not Farmhouse Butte",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-347/main-enriched.png"
+ },
+ "FaisalX-3480": {
+  "sku": "FaisalX-3480",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3460": {
+  "sku": "FaisalX-3460",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3473": {
+  "sku": "FaisalX-3473",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3465": {
+  "sku": "FaisalX-3465",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3478": {
+  "sku": "FaisalX-3478",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3474": {
+  "sku": "FaisalX-3474",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3470": {
+  "sku": "FaisalX-3470",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3486": {
+  "sku": "FaisalX-3486",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3487": {
+  "sku": "FaisalX-3487",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3494": {
+  "sku": "FaisalX-3494",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hamburger Helper Beef Pasta with Rich Beef Flavor, 5.9 oz Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Deluxe Beef Stroganoff Pasta, 5.5 oz Box",
+  "reason": "Image shows Hamburger Helper Deluxe Beef Stroganoff boxes tiled 8 times on a white background; count",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3494/main-enriched.png"
+ },
+ "FaisalX-349": {
+  "sku": "FaisalX-349",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 12,
+  "listing": "Pepperidge Farm Farmhouse Butter Hamburger Buns, (Pack of 12)",
+  "donorTitle": "Pepperidge Farm Farmhouse Thin Sliced Butter Bread - 14oz",
+  "reason": "Image shows Pepperidge Farm Farmhouse thin-sliced butter bread loaves, not hamburger buns.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-349/main-enriched.png"
+ },
+ "FaisalX-3500": {
+  "sku": "FaisalX-3500",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 8,
+  "listing": "Hamburger Helper Four Cheese Lasagna, 5.5 oz Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Double Cheeseburger Macaroni, 6 oz Box",
+  "reason": "Image shows Double Cheeseburger Macaroni boxes, not Four Cheese Lasagna.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3500/main-enriched.png"
+ },
+ "FaisalX-3508": {
+  "sku": "FaisalX-3508",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3502": {
+  "sku": "FaisalX-3502",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-3534": {
+  "sku": "FaisalX-3534",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 10,
+  "listing": "Hamburger Helper Pasta Stroganoff, 6.4 oz Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Cheeseburger Macaroni Pasta Meal Kit - 6.6oz",
+  "reason": "Image shows Hamburger Helper Cheeseburger Macaroni boxes, not Pasta Stroganoff; 10 single front-faci",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3534/main-enriched.png"
+ },
+ "FaisalX-1217": {
+  "sku": "FaisalX-1217",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "reason": "Image shows Sara Lee Artesano Brioche bakery bread loaf, not hot dog buns.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1217/main-enriched.png"
+ },
+ "FaisalX-1129": {
+  "sku": "FaisalX-1129",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "Comm-05": {
+  "sku": "Comm-05",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1173": {
+  "sku": "FaisalX-1173",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1154": {
+  "sku": "FaisalX-1154",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1200": {
+  "sku": "FaisalX-1200",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1301": {
+  "sku": "FaisalX-1301",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 4,
+  "listing": "Fritos Corn Chips, Original, 3.5 oz Bag (Pack of 4)",
+  "donorTitle": "Fritos Flavor Twists  Spicy Dill Pickle Corn Chips Bag, 3.375 oz",
+  "reason": "Image shows Fritos Flavor Twists Spicy Dill Pickle bags, not Fritos Original Corn Chips; 4 single fr",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1301/main-enriched.png"
+ },
+ "FaisalX-1238": {
+  "sku": "FaisalX-1238",
+  "verdict": "BAD",
+  "wave": "new",
+  "qty": 2,
+  "listing": "Arnold Whole Grains Small Slice Oatnut Bread Loaf, 18 oz (Pack of 2)",
+  "donorTitle": "Arnold Small Slice Whole Wheat Bread, 18 oz, Wheat Bread, Bag",
+  "reason": "Image shows Arnold Small Slice 100% Whole Wheat bread, not the listed Oatnut variant.",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1238/main-enriched.png"
+ },
+ "FaisalX-1277": {
+  "sku": "FaisalX-1277",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1706": {
+  "sku": "FaisalX-1706",
+  "verdict": "OK",
+  "wave": "new"
+ },
+ "FaisalX-1669": {
+  "sku": "FaisalX-1669",
+  "verdict": "OK",
+  "wave": "new"
+ }
+}
