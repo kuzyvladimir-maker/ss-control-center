@@ -19,7 +19,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "b2852a34706508afedcaea952e52734f9e1bab5d1e95f512c7900e8dd3f5826a";
+  "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
