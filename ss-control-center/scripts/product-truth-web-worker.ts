@@ -402,7 +402,9 @@ async function executeClaim(
     `/api/external/product-truth/control/${claim.command_id}/start`,
     { lease_token: claim.lease_token },
   );
-  const root = await mkdtemp(join(tmpdir(), "sscc-product-truth-worker-"));
+  const root = await realpath(
+    await mkdtemp(join(tmpdir(), "sscc-product-truth-worker-")),
+  );
   try {
     const command = await runnerArgs(runtime, claim, root);
     const execution = await spawnRunner({

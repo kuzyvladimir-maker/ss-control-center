@@ -129,6 +129,17 @@ test("worker proves its clean pinned checkout before its first control API call"
   );
 });
 
+test("worker canonicalizes its temporary artifact root before invoking the strict runner", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    script,
+    /const root = await realpath\(\s*await mkdtemp\(/u,
+  );
+});
+
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {
   const proxy = await readFile(
     new URL("../../../proxy.ts", import.meta.url),
