@@ -212,7 +212,15 @@ async function api(
     || typeof value !== "object"
     || Array.isArray(value)
   ) {
-    fail(`control API ${path} returned HTTP ${response.status}`);
+    const code =
+      value !== null
+      && typeof value === "object"
+      && !Array.isArray(value)
+      && "code" in value
+      && typeof value.code === "string"
+        ? ` (${value.code})`
+        : "";
+    fail(`control API ${path} returned HTTP ${response.status}${code}`);
   }
   return value as Record<string, unknown>;
 }
@@ -341,13 +349,28 @@ async function spawnRunner(input: {
     child.stdout.on("data", (chunk: Buffer) => stdout.push(chunk));
     child.stderr.on("data", (chunk: Buffer) => stderr.push(chunk));
     child.on("error", rejectPromise);
+    let heartbeatInFlight: Promise<void> | null = null;
+    let heartbeatError: unknown;
     const timer = setInterval(() => {
-      void input.heartbeat().catch(() => {
-        child.kill("SIGTERM");
-      });
+      if (heartbeatInFlight !== null) return;
+      heartbeatInFlight = input
+        .heartbeat()
+        .catch((error: unknown) => {
+          heartbeatError = error;
+          child.kill("SIGTERM");
+        })
+        .finally(() => {
+          heartbeatInFlight = null;
+        });
     }, HEARTBEAT_MS);
-    child.on("close", (code) => {
+    child.on("close", async (code) => {
       clearInterval(timer);
+      const pendingHeartbeat = heartbeatInFlight;
+      if (pendingHeartbeat !== null) await pendingHeartbeat;
+      if (heartbeatError !== undefined) {
+        rejectPromise(heartbeatError);
+        return;
+      }
       resolvePromise({
         exitCode: typeof code === "number" && code >= 0 ? code : 1,
         stdout: Buffer.concat(stdout),

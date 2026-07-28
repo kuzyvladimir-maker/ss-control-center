@@ -140,6 +140,33 @@ test("worker canonicalizes its temporary artifact root before invoking the stric
   );
 });
 
+test("worker drains an in-flight heartbeat before completing a runner result", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const closeAt = script.indexOf('child.on("close", async (code)');
+  const awaitAt = script.indexOf(
+    "if (pendingHeartbeat !== null) await pendingHeartbeat",
+    closeAt,
+  );
+  const resolveAt = script.indexOf("resolvePromise({", closeAt);
+  assert.ok(closeAt >= 0);
+  assert.ok(awaitAt > closeAt);
+  assert.ok(resolveAt > awaitAt);
+  assert.match(script, /if \(heartbeatInFlight !== null\) return/u);
+  assert.match(script, /heartbeatError = error[\s\S]*child\.kill\("SIGTERM"\)/u);
+});
+
+test("worker reports the structured control API error code without response details", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(script, /returned HTTP \$\{response\.status\}\$\{code\}/u);
+  assert.doesNotMatch(script, /JSON\.stringify\(value\)/u);
+});
+
 test("worker verifies runner artifacts with the canonical Product Truth renderer", async () => {
   const contract = await readFile(
     new URL("../product-truth-web-control-worker-contract.ts", import.meta.url),
