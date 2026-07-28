@@ -398,13 +398,13 @@ Bundle Factory Walmart demand fallback реализован только для 
 `doctor → plan` участка:
 
 - release:
-  `product-truth-web-control-2026-07-28-r5`;
+  `product-truth-web-control-2026-07-28-r6`;
 - release commit:
-  `80348398a1124c6bc74573a886f20ee0987916de`;
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`;
 - Git tree:
-  `0580fa702a593c9dfee8ccfc0dfe1e748f41d212`;
+  `47a992982ace124611bfab4b40b1cdac0b86dbb8`;
 - executable tree SHA-256:
-  `e9b76f36f6d67c266041d9cb6f301f468a996d0166180cff317b8e8c2d5d9b9b`;
+  `a4e54535024f4e85a3b6176a775a13ea8c728582cd5253bd1cd8ec3b90dc2b96`;
 - Stage A migration SHA-256:
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
 - authoritative Phase 1 manifest v3 SHA-256:
@@ -412,13 +412,13 @@ Bundle Factory Walmart demand fallback реализован только для 
 - production Product Truth target fingerprint:
   `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`.
 
-Clean-checkout evidence: Product Truth `512/512`, TypeScript, focused ESLint и
-production build = `PASS`. Worker до
+Clean-checkout evidence: Product Truth `512/512`, Bundle Factory UI `3/3`,
+TypeScript, focused ESLint и production build = `PASS`. Worker до
 первого HTTP request доказывает clean checkout, exact commit/tree и производный
 SHA-256 executable tree; activation confirmation связывает stage, release,
 commit, tree, executable digest, target и manifest.
 
-Production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` имеет статус
+Production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` имеет статус
 `Ready` и назначен на `salutemsolutions.info`. Runtime активен только как
 `PRODUCTION_READ_ONLY`; отдельный launchd worker читает только allowlisted
 `DOCTOR` и `RUN_PLAN`. Production postcheck доказал:
@@ -429,6 +429,8 @@ Production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` имеет статус
 - Campbell's batch `ptbfw-cdc58a911597fd5e37e6afac`:
   `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`,
   status `AWAITING_OWNER`;
+- финальный r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
 - provider calls, Product Truth business writes и Walmart actions = `0`.
 
 Эта активация не реализует и не разрешает `execute`, `resume`, provider calls,

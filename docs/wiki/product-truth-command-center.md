@@ -695,14 +695,17 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
 - [x] separately authenticated, allowlisted, `shell:false` no-spend worker;
 - [x] Bundle Factory launch/status UI и readiness recheck;
 - [x] final clean release
-  `product-truth-web-control-2026-07-28-r5`,
-  commit `80348398a1124c6bc74573a886f20ee0987916de`, Product Truth
-  `512/512`, TypeScript, focused ESLint и production build = `PASS`;
-- [x] production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` = `Ready`,
+  `product-truth-web-control-2026-07-28-r6`,
+  commit `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`, Product Truth
+  `512/512`, Bundle Factory UI `3/3`, TypeScript, focused ESLint и production
+  build = `PASS`;
+- [x] production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` = `Ready`,
   runtime `PRODUCTION_READ_ONLY`, pinned launchd worker active;
 - [x] Campbell's E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
   `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
   `AWAITING_OWNER`; provider calls, metered execution, Product Truth business
   writes и Walmart actions = `0`;
+- [x] r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
 - [x] heartbeat/completion race закрыта сериализацией in-flight heartbeat;
   r1–r4 calibration commands сохранены без replay как immutable evidence.

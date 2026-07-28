@@ -745,12 +745,14 @@ track и больше не обозначается blocker текущего Wal
 - [x] Добавить в Walmart Studio кнопку запуска, прогресс и повторную readiness
   проверку; Generate продолжается только если data gaps и capability gaps закрыты.
 - [x] Сертифицирован и активирован bounded production no-spend release
-  `product-truth-web-control-2026-07-28-r5`, commit
-  `80348398a1124c6bc74573a886f20ee0987916de`: Product Truth `512/512`,
-  TypeScript/ESLint/production build = `PASS`.
+  `product-truth-web-control-2026-07-28-r6`, commit
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`: Product Truth `512/512`,
+  Bundle Factory UI `3/3`, TypeScript/ESLint/production build = `PASS`.
 - [x] Production E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
   `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
   `AWAITING_OWNER`; worker active, postcheck `claim:null`.
+- [x] Финальный r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`.
 - [ ] Отдельный Stage F money/permit gate всё ещё требуется для `execute` и
   фактического сбора свежих цен. Provider spend, Product Truth business writes,
   UPC reservation, listing publication и Walmart effects = `0`.

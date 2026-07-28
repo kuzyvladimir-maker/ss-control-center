@@ -175,10 +175,10 @@ paid spend или marketplace actions.
 ### Consumed evidence 2026-07-28
 
 - финальный clean release
-  `product-truth-web-control-2026-07-28-r5`: commit
-  `80348398a1124c6bc74573a886f20ee0987916de`, tree
-  `0580fa702a593c9dfee8ccfc0dfe1e748f41d212`, executable SHA-256
-  `e9b76f36f6d67c266041d9cb6f301f468a996d0166180cff317b8e8c2d5d9b9b`;
+  `product-truth-web-control-2026-07-28-r6`: commit
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`, tree
+  `47a992982ace124611bfab4b40b1cdac0b86dbb8`, executable SHA-256
+  `a4e54535024f4e85a3b6176a775a13ea8c728582cd5253bd1cd8ec3b90dc2b96`;
 - migration SHA-256
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
 - Stage A применён к exact production target
@@ -187,15 +187,17 @@ paid spend или marketplace actions.
   business tables не менялись;
 - authoritative manifest
   `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`;
-- Product Truth `512/512`, TypeScript, focused ESLint и production build =
-  `PASS`;
-- production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` = `Ready` и
+- Product Truth `512/512`, Bundle Factory UI `3/3`, TypeScript, focused ESLint
+  и production build = `PASS`;
+- production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` = `Ready` и
   назначен на `salutemsolutions.info`;
 - отдельный launchd worker активен из clean pinned checkout; pre/post claim
   вернул HTTP `200` и `claim:null`;
 - финальный Bundle Factory Campbell's batch
   `ptbfw-cdc58a911597fd5e37e6afac`: `5/5 DOCTOR SUCCEEDED`,
   `5/5 RUN_PLAN SUCCEEDED`, общий статус `AWAITING_OWNER`;
+- r6 interface/release postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
 - provider calls, metered execution, Product Truth business writes и
   Walmart/marketplace actions = `0`.
 
