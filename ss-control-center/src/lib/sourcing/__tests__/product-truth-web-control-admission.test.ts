@@ -106,4 +106,8 @@ test("admission implementation has no provider, process, shell, or Walmart write
     source,
     /child_process|spawn\(|exec\(|fetch\(|oxylabs|unwrangle|WalmartClient|MP_ITEM|SKU_TEMPLATE_MAP/u,
   );
+  assert.match(
+    source,
+    /requestBytes:\s*Buffer\.from\(\s*renderProductTruthOperationalJson\(targetedRequest\)/u,
+  );
 });

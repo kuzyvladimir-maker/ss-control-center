@@ -16,6 +16,9 @@ import {
   type ProductTruthControlSealedEvent,
 } from "./product-truth-control-plane";
 import {
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
+import {
   parseProductTruthTargetedWalmartEvidenceRequest,
 } from "./product-truth-targeted-walmart-evidence-contract";
 import {
@@ -308,7 +311,10 @@ export function prepareProductTruthWalmartRunPlanAdmission(input: {
     requestedByUserId: input.requestedByUserId,
     requestedAt: input.requestedAt,
     runId: targetedRequest.runId,
-    requestBytes: canonicalBytes(targetedRequest),
+    requestBytes: Buffer.from(
+      renderProductTruthOperationalJson(targetedRequest),
+      "utf8",
+    ),
   });
 }
 
