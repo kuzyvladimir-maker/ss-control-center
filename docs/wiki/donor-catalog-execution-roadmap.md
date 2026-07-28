@@ -739,8 +739,9 @@ G7 закончен как диагностический production canary, н�
   calls и без изменения уже сохранённых evidence;
 - ✅ доказать offline positive/negative fixtures для
   flavor/form/productLine/size/multi-word brand;
-- 🔄 выпустить и повторно сертифицировать clean frozen release;
-- ⬜ провести новый single-SKU canary только на новом frozen release;
+- ✅ выпустить и повторно сертифицировать clean frozen release;
+- ✅ провести новый read-only production `doctor → plan` на frozen release;
+- ⛔ выполнить single-SKU provider canary после exact money gate;
 - ⬜ после успешного bridge postcheck вернуться к bounded Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
@@ -755,6 +756,10 @@ G7 закончен как диагностический production canary, н�
 - ✅ title proof теперь использует byte-bound raw listing identity, а canonical
   variant ID остаётся неизменным; regression добавлен;
 - ✅ TypeScript, unit `14/14`, integration `11/11`, полный suite `512/512`;
-- 🔄 готовится superseding clean frozen release и повторный read-only preflight;
-- ⬜ provider canary остаётся ровно один SKU / no retry; следующая wave закрыта до
-  fresh bridge postcheck.
+- ✅ clean release commit `a5debaf7540e…`, tree `a47aa03d5674…`, повторная
+  clean-checkout certification `512/512`;
+- ✅ production read-only plan `4e8524d7332c…` sealed для одного untouched
+  listing-bound candidate, provider calls/DB writes `0`;
+- ⛔ provider canary остаётся ровно один SKU / no retry и ожидает один exact
+  owner-money gate: combined maximum `6` units (`2.5` balance probe + `3.5`
+  working run); следующая wave закрыта до fresh bridge postcheck.

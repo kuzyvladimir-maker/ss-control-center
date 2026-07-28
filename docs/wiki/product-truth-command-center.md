@@ -819,7 +819,14 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   Product Truth suite `512/512`.
 - [x] ✅ Три ошибочно привязанных pilot donor aliases не менялись и остаются
   quarantined append-only history; их receipts не replay.
-- [ ] 🔄 Следующая граница: superseding clean frozen release + повторный read-only
-  preflight одного untouched listing-bound candidate.
-- [ ] ⬜ После успешного preflight — один no-retry provider canary и обязательный
+- [x] ✅ Superseding clean frozen release:
+  commit `a5debaf7540e…`, tree `a47aa03d5674…`, TypeScript PASS,
+  Product Truth `512/512`, clean checkout.
+- [x] ✅ Повторный production `doctor → plan` для untouched
+  `walmart:1:FaisalX-1177` прошёл read-only: `0` provider calls, `0` DB writes;
+  listing-bound plan SHA `4e8524d7332c…`.
+- [ ] ⛔ Один no-retry provider canary ожидает единственный exact owner-money
+  gate из `product-truth-owner-gates.md`: fresh Unwrangle balance probe `2.5`
+  units + рабочий ceiling `3.5`, combined maximum `6`.
+- [ ] ⬜ После успешного canary — обязательный
   fresh bridge postcheck до любой следующей wave.

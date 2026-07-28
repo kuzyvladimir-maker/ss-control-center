@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-27.
+> **Статус:** живой decision ledger, сверено 2026-07-28.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -35,7 +35,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `AWAITING_AMENDED_COMBINED_APPROVAL` | Replacement plan `bca2decb…6413c` is still current. First balance probe exposed live Target Search tariff `2.5`, not `1`; main run was stopped before execution. One amended cumulative ceiling is required |
+| G7. Provider canary / paid wave | `AWAITING_LISTING_BOUND_CANARY_APPROVAL` | Старый G7 закрыт closeout-артефактом. Новый listing-bound plan `4e8524d7…a05d` прошёл clean release и read-only production preflight; нужен один exact money gate на fresh balance probe + one-SKU no-retry run |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -786,3 +786,47 @@ plan. Следующий provider gate может потребляться то�
 plan, одним SKU, без retry, после fresh balance evidence; он не распространяется на
 controlled wave, consumer activation, repricing, inventory, delisting или
 procurement.
+
+### G7 listing-bound single-SKU canary gate 2026-07-28
+
+Superseding frozen implementation:
+
+- Git commit:
+  `a5debaf7540e94f19bd0cac3f95548e94c862dd0`;
+- Git tree:
+  `a47aa03d5674fa32d313d58d0701d3245ab2793c`;
+- clean-checkout TypeScript = `PASS`, Product Truth = `512/512`, worktree clean;
+- read-only production `doctor` и `plan` выполнили `0` provider calls и `0`
+  database writes.
+
+Sealed exact canary:
+
+- listing: `walmart:1:FaisalX-1177`, component `0`;
+- donor: `c8b542f1-ed9b-45c5-883c-dcf9e00944ea`;
+- Walmart item: `10452831`;
+- target: `Pepperidge Farm Jewish Rye Seeded Bread 16 oz`;
+- request SHA-256:
+  `29c3e7eda6f0f9a1794d6359f4c98ae7a8507680a19d325cae19df63a3b911c5`;
+- plan SHA-256:
+  `4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d`;
+- approval instructions SHA-256:
+  `185568fefc51293f46e9838a7e1a78b2d0b4aab738452afedd5ed0d6cd628e9f`;
+- run ID: `pt-listing-bound-canary-20260728t220718z`;
+- expiry: `2026-07-29T20:00:00.000Z`;
+- work ceiling: Oxylabs query `1 call / 1 unit`, Unwrangle detail
+  `1 call / 2.5 units`;
+- fresh balance evidence requires a separate Unwrangle Target Search probe
+  `1 call / 2.5 units`;
+- cumulative ceiling: `6` units, no retry, reserve floor `15000`.
+
+Immutable request/plan custody:
+`ss-control-center/data/audits/product-truth-listing-bound-canary/20260728T220718Z/`.
+
+Required exact owner decision:
+
+`APPROVE_PRODUCT_TRUTH_LISTING_BOUND_CANARY_V1:a5debaf7540e94f19bd0cac3f95548e94c862dd0:4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d:pt-listing-bound-canary-20260728t220718z:1_LISTING:OXYLABS_1_QUERY_CALL_1_UNIT:UNWRANGLE_BALANCE_PROBE_1_TARGET_SEARCH_CALL_2.5_UNITS:UNWRANGLE_1_DETAIL_CALL_2.5_UNITS:COMBINED_6_MAX_PROVIDER_UNITS:15000_UNWRANGLE_RESERVE_FLOOR:NO_RETRY:NO_CLUBS:NO_BJS:NO_MARKETPLACE_MUTATIONS:NO_PRICE_OR_INVENTORY_CHANGES:NO_DELISTING:NO_CONSUMER_ACTIVATION:NO_PROCUREMENT`
+
+До exact ответа владельца balance probe и provider run не выполняются. Это один
+money gate, а не серия технических разрешений. После его consumption следующий
+обязательный шаг — fresh canonical bridge postcheck; разрешение не переносится на
+другой SKU или paid wave.
