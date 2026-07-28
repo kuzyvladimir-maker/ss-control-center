@@ -466,7 +466,7 @@ detail-harvest lifecycle блокирует новый план.
 `--listing-key` и `--component-index` передаются парой для legacy bootstrap; для
 `EXISTING_EXACT` они не нужны. Existing exact команда переиспользует подтверждённый
 alias. Новый legacy bootstrap использует только
-`LISTING_BOUND_BOOTSTRAP` contract `1.5.0`: target identity выводится из exact
+`LISTING_BOUND_BOOTSTRAP` contract `1.6.0`: target identity выводится из exact
 authoritative listing component, а strict donor title является независимым
 доказательством. Binding `1.1.0` дополнительно seals все текущие authoritative
 Walmart scope/shipping/component rows, ссылающиеся на тот же donor. Разные derived
@@ -525,6 +525,14 @@ identity, byte-bound same-donor graph и обязательное свежее e
 разрешает только exact metered plan. Plan нельзя исполнять без отдельного metered
 approval, exact Oxylabs/Unwrangle permit, fresh Unwrangle balance evidence и exact
 confirmation.
+
+Unwrangle detail может не публиковать allergens/storage даже когда возвращает UPC,
+ingredients, nutrition, gallery и остальные exact facts. Contract `1.6.0` не
+откатывает уже оплаченное доказательство: он сохраняет
+`exact_field_snapshot_v2` с явным `_missingFields` и byte-hash provenance.
+Это завершает evidence acquisition, но не подделывает full readiness:
+Walmart new-SKU, Bundle Factory и другие consumers отдельно проверяют нужные им
+поля. `retailer_search_partial` никогда не читается как content truth.
 
 ### 4.3. `execute` — один утверждённый run
 

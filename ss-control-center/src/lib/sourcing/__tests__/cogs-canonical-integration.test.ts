@@ -313,6 +313,7 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       title: "Acme Crunch Chips Barbecue 8 oz",
     });
     const contentPayload = JSON.stringify({
+      _capture: "exact_complete_v1",
       title: "Acme Crunch Chips Barbecue 8 oz",
       description: "Target content description",
       ingredients: "Potatoes, oil, seasoning",

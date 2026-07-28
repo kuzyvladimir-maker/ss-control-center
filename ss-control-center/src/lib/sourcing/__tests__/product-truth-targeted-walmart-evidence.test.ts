@@ -820,6 +820,19 @@ test("old exact content skips detail only before any detail receipt", () => {
     action: "AMBIGUOUS",
     reason: "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
   });
+
+  assert.deepEqual(decideProductTruthTargetedResume({
+    receipts: [search, receipt("detail-1", "unwrangle", "detail")],
+    matchingSearchObservationReceiptIds: ["search-1"],
+    matchingContentObservationReceiptIds: ["detail-1"],
+    candidateReady: false,
+    contentEvidenceReady: true,
+    preexistingCandidateReady: false,
+  }), {
+    action: "RECOVER_CONTENT",
+    searchReceiptId: "search-1",
+    detailReceiptId: "detail-1",
+  });
 });
 
 test("exact-one Walmart filter rejects fanout and accepts one local 1P row", () => {

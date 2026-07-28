@@ -83,9 +83,13 @@ import {
   type RetailOffer,
   type ScoredOffer,
 } from "./retail-fetch";
+import {
+  exactProductContentCapture,
+  type ExactProductContentCapture,
+} from "./product-content-capture";
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REPORT_VERSION =
-  "product-truth-targeted-walmart-evidence-report/1.0.0" as const;
+  "product-truth-targeted-walmart-evidence-report/1.1.0" as const;
 
 // The run/job lease must outlive the complete sealed invocation. A four-minute
 // lease could expire while the six-minute targeted wall-clock budget was still
@@ -152,6 +156,12 @@ export interface ProductTruthTargetedWalmartEvidenceReport {
     priceObservationId: string;
     imageCount: number;
     observedPrice: number;
+  };
+  contentEvidence: null | {
+    contentObservationId: string;
+    capture: ExactProductContentCapture;
+    missingFields: string[];
+    imageCount: number;
   };
   job: ProductTruthTargetedEvidenceJobInspection | null;
   ledger: ProductTruthOperationalLedgerSnapshot;
@@ -1375,7 +1385,7 @@ async function matchingSearchObservations(input: {
   });
 }
 
-function exactCompleteContentRow(row: Record<string, unknown>): boolean {
+function exactContentEvidenceRow(row: Record<string, unknown>): boolean {
   if (typeof row.contentJson !== "string" || typeof row.fieldHashesJson !== "string") return false;
   if (typeof row.contentHash !== "string" || sha256(row.contentJson) !== row.contentHash) return false;
   let content: unknown;
@@ -1395,7 +1405,7 @@ function exactCompleteContentRow(row: Record<string, unknown>): boolean {
     || Array.isArray(fieldHashes)
     || stableJson(content) !== row.contentJson
     || stableJson(fieldHashes) !== row.fieldHashesJson
-    || (content as Record<string, unknown>)._capture !== "exact_complete_v1"
+    || exactProductContentCapture(content as Record<string, unknown>) === null
   ) return false;
   const factual = Object.entries(content as Record<string, unknown>)
     .filter(([key]) => !key.startsWith("_"))
@@ -1409,8 +1419,8 @@ function exactCompleteContentRow(row: Record<string, unknown>): boolean {
     ));
 }
 
-function exactCompleteContentImageCount(row: Record<string, unknown>): number {
-  if (!exactCompleteContentRow(row) || typeof row.contentJson !== "string") return 0;
+function exactContentEvidenceImageCount(row: Record<string, unknown>): number {
+  if (!exactContentEvidenceRow(row) || typeof row.contentJson !== "string") return 0;
   const content = JSON.parse(row.contentJson) as Record<string, unknown>;
   if (!Array.isArray(content.imageUrls)) return 0;
   return new Set(content.imageUrls.filter((value): value is string => (
@@ -1425,7 +1435,12 @@ async function matchingContentObservations(input: {
   variantDecisionId: string;
   receiptId: string;
   asOf: string;
-}): Promise<string[]> {
+}): Promise<Array<{
+  id: string;
+  capture: ExactProductContentCapture;
+  missingFields: string[];
+  imageCount: number;
+}>> {
   const target = input.plan.targets[0];
   const result = await input.db.execute({
     sql: `SELECT id,sourceUrl,sourceApi,contentHash,fieldHashesJson,contentJson,
@@ -1447,9 +1462,21 @@ async function matchingContentObservations(input: {
       if (
         normalizeExactWalmartProductUrl(row.sourceUrl, target.retailerProductId)
           !== target.normalizedProductUrl
-        || !exactCompleteContentRow(row as Record<string, unknown>)
+        || !exactContentEvidenceRow(row as Record<string, unknown>)
       ) return [];
-      return [String(row.id)];
+      const content = JSON.parse(String(row.contentJson)) as Record<string, unknown>;
+      const capture = exactProductContentCapture(content);
+      if (!capture) return [];
+      const missingFields = Array.isArray(content._missingFields)
+        ? content._missingFields.filter((field): field is string => typeof field === "string")
+        : [];
+      return [{
+        id: String(row.id),
+        capture,
+        missingFields: [...new Set(missingFields)].sort((left, right) =>
+          left.localeCompare(right, "en-US")),
+        imageCount: exactContentEvidenceImageCount(row as Record<string, unknown>),
+      }];
     } catch {
       return [];
     }
@@ -1489,7 +1516,7 @@ async function matchingPreexistingContentObservations(input: {
       if (
         normalizeExactWalmartProductUrl(row.sourceUrl, target.retailerProductId)
           !== target.normalizedProductUrl
-        || exactCompleteContentImageCount(row as Record<string, unknown>)
+        || exactContentEvidenceImageCount(row as Record<string, unknown>)
           < input.plan.verificationPolicy.minGalleryImages
       ) return [];
       return [String(row.id)];
@@ -1508,6 +1535,11 @@ export type ProductTruthTargetedResumeDecision =
       detailReceiptId: string | null;
       contentPath: "CURRENT_DETAIL" | "PREEXISTING_EXACT_COMPLETE";
     }
+  | {
+      action: "RECOVER_CONTENT";
+      searchReceiptId: string;
+      detailReceiptId: string;
+    }
   | { action: "AMBIGUOUS"; reason: string };
 
 /** Pure crash-boundary decision; no receipt can ever authorize replay. */
@@ -1516,6 +1548,7 @@ export function decideProductTruthTargetedResume(input: {
   matchingSearchObservationReceiptIds: readonly string[];
   matchingContentObservationReceiptIds: readonly string[];
   candidateReady: boolean;
+  contentEvidenceReady?: boolean;
   preexistingCandidateReady?: boolean;
 }): ProductTruthTargetedResumeDecision {
   const oxylabs = input.receipts.filter((row) => row.provider === "oxylabs" && row.operation === "query");
@@ -1561,6 +1594,13 @@ export function decideProductTruthTargetedResume(input: {
       searchReceiptId: search.receiptId,
       detailReceiptId: detail.receiptId,
       contentPath: "CURRENT_DETAIL",
+    };
+  }
+  if (contentMatches.length === 1 && input.contentEvidenceReady === true) {
+    return {
+      action: "RECOVER_CONTENT",
+      searchReceiptId: search.receiptId,
+      detailReceiptId: detail.receiptId,
     };
   }
   return { action: "AMBIGUOUS", reason: "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE" };
@@ -1616,6 +1656,12 @@ async function reconciliationState(input: {
   ledger: ProductTruthOperationalLedgerSnapshot;
   decision: ProductTruthTargetedResumeDecision;
   candidate: Awaited<ReturnType<typeof readWalmartPilotCandidate>> | null;
+  contentEvidence: null | {
+    id: string;
+    capture: ExactProductContentCapture;
+    missingFields: string[];
+    imageCount: number;
+  };
   variantDecisionId: string | null;
   priceObservationIds: readonly string[];
   contentObservationIds: readonly string[];
@@ -1642,14 +1688,21 @@ async function reconciliationState(input: {
   }
   const matchingContentReceiptIds: string[] = [];
   const matchingContentObservationIds: string[] = [];
+  const matchingContentEvidence: Array<{
+    id: string;
+    capture: ExactProductContentCapture;
+    missingFields: string[];
+    imageCount: number;
+  }> = [];
   for (const receipt of variantDecisionId ? detail : []) {
     const rows = await matchingContentObservations({
       db: input.db, plan: input.plan, approvalId: input.approvalId,
       variantDecisionId: variantDecisionId!, receiptId: receipt.receiptId, asOf: input.asOf,
     });
-    rows.forEach((id) => {
+    rows.forEach((row) => {
       matchingContentReceiptIds.push(receipt.receiptId);
-      matchingContentObservationIds.push(id);
+      matchingContentObservationIds.push(row.id);
+      matchingContentEvidence.push(row);
     });
   }
   const currentDetailCandidate = await candidateOrNull({
@@ -1679,6 +1732,7 @@ async function reconciliationState(input: {
     matchingSearchObservationReceiptIds: matchingSearchReceiptIds,
     matchingContentObservationReceiptIds: matchingContentReceiptIds,
     candidateReady: currentDetailCandidate !== null,
+    contentEvidenceReady: matchingContentEvidence.length === 1,
     preexistingCandidateReady: preexistingCandidate !== null,
   });
   return {
@@ -1687,6 +1741,12 @@ async function reconciliationState(input: {
       ? decision.contentPath === "CURRENT_DETAIL"
         ? currentDetailCandidate
         : preexistingCandidate
+      : null,
+    contentEvidence: (
+      decision.action === "RECOVER_COMPLETE"
+      && decision.contentPath === "CURRENT_DETAIL"
+    ) || decision.action === "RECOVER_CONTENT"
+      ? matchingContentEvidence[0] ?? null
       : null,
     decision,
     variantDecisionId,
@@ -1765,7 +1825,8 @@ async function reapExpiredTargetedRunFromEvidence(input: {
   } else {
     disposition = "interrupted";
     reason = reconciliation.decision.action === "RECOVER_COMPLETE"
-      ? "EXACT_COMPLETE_EVIDENCE_CAN_BE_RECONCILED_WITHOUT_NETWORK"
+      || reconciliation.decision.action === "RECOVER_CONTENT"
+      ? "EXACT_CONTENT_EVIDENCE_CAN_BE_RECONCILED_WITHOUT_NETWORK"
       : reconciliation.decision.action === "CALL_UNWRANGLE"
         ? "EXACT_SEARCH_EVIDENCE_ALLOWS_ONLY_DISTINCT_DETAIL_CALL"
         : "NO_PROVIDER_BOUNDARY_CROSSED";
@@ -2019,6 +2080,12 @@ export async function executeProductTruthTargetedWalmartEvidence(
     let finalOutcome: ProductTruthTargetedWalmartEvidenceReport["outcome"] = "FAILED";
     let finalReason = "TARGETED_EVIDENCE_FAILED";
     let candidate: Awaited<ReturnType<typeof readWalmartPilotCandidate>> | null = null;
+    let contentEvidence: {
+      id: string;
+      capture: ExactProductContentCapture;
+      missingFields: string[];
+      imageCount: number;
+    } | null = null;
     let job: ProductTruthTargetedEvidenceJobInspection | null = null;
     let jobLeaseToken: string | null = null;
     try {
@@ -2146,7 +2213,8 @@ export async function executeProductTruthTargetedWalmartEvidence(
       if (
         jobLeaseToken
         && (state.decision.action === "CALL_UNWRANGLE"
-          || state.decision.action === "RECOVER_COMPLETE")
+          || state.decision.action === "RECOVER_COMPLETE"
+          || state.decision.action === "RECOVER_CONTENT")
         && state.variantDecisionId
         && state.priceObservationIds.length === 1
       ) {
@@ -2159,14 +2227,20 @@ export async function executeProductTruthTargetedWalmartEvidence(
             schemaVersion: "product-truth-targeted-evidence-checkpoint/1.0.0",
             stage: state.decision.action === "RECOVER_COMPLETE"
               ? "EXACT_CANDIDATE_RECONCILED"
+              : state.decision.action === "RECOVER_CONTENT"
+                ? "EXACT_CONTENT_RECONCILED"
               : "SEARCH_PERSISTED",
             planSha256,
             identityMode: plan.targets[0].identityMode,
             variantDecisionId: state.variantDecisionId,
             priceObservationId: state.priceObservationIds[0],
-            contentObservationId: state.candidate?.candidate.content_observation_id ?? null,
+            contentObservationId:
+              state.candidate?.candidate.content_observation_id
+              ?? state.contentEvidence?.id
+              ?? null,
             searchReceiptId: state.decision.searchReceiptId,
             detailReceiptId: state.decision.action === "RECOVER_COMPLETE"
+              || state.decision.action === "RECOVER_CONTENT"
               ? state.decision.detailReceiptId
               : null,
           },
@@ -2178,11 +2252,19 @@ export async function executeProductTruthTargetedWalmartEvidence(
         finalReason = state.decision.reason;
       } else if (state.decision.action === "RECOVER_COMPLETE") {
         candidate = state.candidate;
+        contentEvidence = state.contentEvidence;
         finalStatus = "completed";
         finalOutcome = "COMPLETED";
         finalReason = state.decision.contentPath === "PREEXISTING_EXACT_COMPLETE"
           ? "FRESH_PRICE_REUSED_PREEXISTING_EXACT_COMPLETE_CONTENT"
           : "EXACT_CANDIDATE_RECOVERED_FROM_DURABLE_EVIDENCE";
+      } else if (state.decision.action === "RECOVER_CONTENT") {
+        contentEvidence = state.contentEvidence;
+        finalStatus = "completed";
+        finalOutcome = "COMPLETED";
+        finalReason = contentEvidence?.capture === "exact_field_snapshot_v2"
+          ? "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+          : "EXACT_CONTENT_CAPTURED_NOT_WALMART_PILOT_READY";
       } else if (state.decision.action === "CALL_UNWRANGLE") {
         // Recovered search observation is sufficient to skip Oxylabs; only the
         // distinct approved detail call may still occur.
@@ -2245,12 +2327,22 @@ export async function executeProductTruthTargetedWalmartEvidence(
           adapter: raw.adapter, asOf: canonicalNow(now),
         });
         if (
-          state.decision.action === "RECOVER_COMPLETE"
-          && state.candidate
-          && state.variantDecisionId
-          && state.priceObservationIds.length === 1
-          && jobLeaseToken
+          (state.decision.action === "RECOVER_COMPLETE" && state.candidate)
+          || (state.decision.action === "RECOVER_CONTENT" && state.contentEvidence)
         ) {
+          if (
+            !state.variantDecisionId
+            || state.priceObservationIds.length !== 1
+            || !jobLeaseToken
+          ) {
+            fail(
+              "TARGETED_EVIDENCE_CONTENT_CHECKPOINT_INCOMPLETE",
+              "exact content evidence is missing its sealed price/identity/job binding",
+            );
+          }
+          const contentObservationId = state.decision.action === "RECOVER_COMPLETE"
+            ? state.candidate!.candidate.content_observation_id
+            : state.contentEvidence!.id;
           await writeJobCheckpoint({
             db, jobId: job.id, runId: plan.runId,
             approvalId: raw.validatedApproval.approval.approvalId,
@@ -2258,12 +2350,14 @@ export async function executeProductTruthTargetedWalmartEvidence(
             at: canonicalNow(now),
             checkpoint: {
               schemaVersion: "product-truth-targeted-evidence-checkpoint/1.0.0",
-              stage: "EXACT_CANDIDATE_RECONCILED",
+              stage: state.decision.action === "RECOVER_COMPLETE"
+                ? "EXACT_CANDIDATE_RECONCILED"
+                : "EXACT_CONTENT_RECONCILED",
               planSha256,
               identityMode: plan.targets[0].identityMode,
               variantDecisionId: state.variantDecisionId,
               priceObservationId: state.priceObservationIds[0],
-              contentObservationId: state.candidate.candidate.content_observation_id,
+              contentObservationId,
               searchReceiptId: state.decision.searchReceiptId,
               detailReceiptId: state.decision.detailReceiptId,
             },
@@ -2271,9 +2365,17 @@ export async function executeProductTruthTargetedWalmartEvidence(
         }
         if (state.decision.action === "RECOVER_COMPLETE" && state.candidate) {
           candidate = state.candidate;
+          contentEvidence = state.contentEvidence;
           finalStatus = "completed";
           finalOutcome = "COMPLETED";
           finalReason = "EXACT_PRICE_CONTENT_AND_WALMART_CANDIDATE_VERIFIED";
+        } else if (state.decision.action === "RECOVER_CONTENT" && state.contentEvidence) {
+          contentEvidence = state.contentEvidence;
+          finalStatus = "completed";
+          finalOutcome = "COMPLETED";
+          finalReason = contentEvidence.capture === "exact_field_snapshot_v2"
+            ? "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+            : "EXACT_CONTENT_CAPTURED_NOT_WALMART_PILOT_READY";
         } else if (
           state.decision.action === "CALL_UNWRANGLE"
           && harvestResult.disposition === "blocked"
@@ -2319,9 +2421,18 @@ export async function executeProductTruthTargetedWalmartEvidence(
         }).catch(() => null);
         if (recovered?.decision.action === "RECOVER_COMPLETE" && recovered.candidate) {
           candidate = recovered.candidate;
+          contentEvidence = recovered.contentEvidence;
           finalStatus = "completed";
           finalOutcome = "COMPLETED";
           finalReason = "DEADLINE_REACHED_AFTER_EXACT_EVIDENCE_DURABLY_COMPLETED";
+        } else if (
+          recovered?.decision.action === "RECOVER_CONTENT"
+          && recovered.contentEvidence
+        ) {
+          contentEvidence = recovered.contentEvidence;
+          finalStatus = "completed";
+          finalOutcome = "COMPLETED";
+          finalReason = "DEADLINE_REACHED_AFTER_EXACT_FIELD_EVIDENCE_DURABLY_CAPTURED";
         } else if (recovered && recovered.decision.action !== "AMBIGUOUS") {
           finalStatus = "interrupted";
           finalOutcome = "INTERRUPTED";
@@ -2430,6 +2541,12 @@ export async function executeProductTruthTargetedWalmartEvidence(
         priceObservationId: candidate.candidate.price_observation_id,
         imageCount: candidate.candidate.image_count,
         observedPrice: candidate.candidate.observed_price,
+      } : null,
+      contentEvidence: contentEvidence ? {
+        contentObservationId: contentEvidence.id,
+        capture: contentEvidence.capture,
+        missingFields: contentEvidence.missingFields,
+        imageCount: contentEvidence.imageCount,
       } : null,
       job,
       ledger,

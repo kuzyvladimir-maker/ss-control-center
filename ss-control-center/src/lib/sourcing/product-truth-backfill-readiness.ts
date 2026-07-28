@@ -244,7 +244,10 @@ async function scalarCounts(tx: Transaction): Promise<ProductTruthBackfillReadin
       (SELECT COUNT(*) FROM CanonicalProductVariant) AS canonicalVariants,
       (SELECT COUNT(*) FROM DonorProductVariantDecision
         WHERE decisionStatus='exact_confirmed') AS exactVariantDecisions,
-      (SELECT COUNT(*) FROM ProductContentObservation) AS contentObservations,
+      (SELECT COUNT(*) FROM ProductContentObservation
+       WHERE json_extract(contentJson,'$._capture')
+         IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge'))
+        AS contentObservations,
       (SELECT COUNT(*) FROM DonorOfferObservation) AS offerObservations,
       (SELECT COUNT(*) FROM SkuCost) AS skuCosts,
       (SELECT COUNT(*) FROM SkuCost cost

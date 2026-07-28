@@ -743,8 +743,10 @@ G7 закончен как диагностический production canary, н�
 - ✅ провести новый read-only production `doctor → plan` на frozen release;
 - ✅ выполнить single-SKU provider canary после exact money gate;
 - ✅ выполнить fresh full-denominator bridge postcheck;
-- 🔄 выпустить contract `1.5.0` с same-donor graph guard и выбрать новый
+- ✅ выпустить contract `1.5.0` с same-donor graph guard и выбрать новый
   collision-free candidate read-only;
+- 🔄 заменить all-or-nothing detail rollback на exact field snapshot с
+  consumer-specific readiness и выпустить clean contract `1.6.0`;
 - ⬜ после успешного successor canary вернуться к bounded Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
@@ -772,5 +774,19 @@ G7 закончен как диагностический production canary, н�
 - ✅ request/plan `1.5.0` и listing binding `1.1.0` теперь byte-exact seals весь
   authoritative same-donor graph и блокирует mismatch до spend; TypeScript,
   unit `15/15`, integration `12/12`, полный suite `514/514`;
-- 🔄 готовится clean release и новый read-only collision-free preflight;
-  terminal canary не replay.
+- ✅ clean release commit `eaf68d8ce04da6b514ac2f876a60894e734665ac`,
+  tree `9ea153248d6dac701f952694aca2f84a412e69b9`, clean TypeScript и
+  `514/514`;
+- ✅ collision-free read-only successor preflight построил plan
+  `2cfea49acdd5b8d5150efda8e258baff75c4431a8bbb8e5e76ee88ac1fe00070`
+  для `walmart:1:FaisalX-1828`, provider calls/production writes `0`;
+- ✅ read-only production diagnosis доказал точную причину первого canary:
+  оплаченный Unwrangle detail был откатан только из-за
+  `ALLERGENS_MISSING; STORAGE_MISSING`;
+- ✅ local contract `1.6.0` сохраняет exact observed fields как
+  `exact_field_snapshot_v2`, перечисляет known gaps, не материализует partial
+  в mutable donor projection и не ослабляет Walmart publish requirements;
+  TypeScript PASS, focused production-like suite `43/43`, полный shared-worktree
+  suite `516/516`, Wiki-Brain `0/0`;
+- 🔄 выполняется full clean-checkout certification `1.6.0`; старый successor
+  plan `2cfea49a…0070` superseded и не исполняется, terminal canary не replay.

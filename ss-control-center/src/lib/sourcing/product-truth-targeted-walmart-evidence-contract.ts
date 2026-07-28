@@ -30,13 +30,13 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION =
-  "product-truth-targeted-walmart-evidence-request/1.5.0" as const;
+  "product-truth-targeted-walmart-evidence-request/1.6.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION =
-  "product-truth-targeted-walmart-evidence-plan/1.5.0" as const;
+  "product-truth-targeted-walmart-evidence-plan/1.6.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION =
   "product-truth-targeted-walmart-evidence-scope/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION =
-  "product-truth-targeted-walmart-evidence-result/1.0.0" as const;
+  "product-truth-targeted-walmart-evidence-result/1.1.0" as const;
 
 export const TARGETED_WALMART_PRICE_TTL_MS = 24 * 60 * 60 * 1_000;
 export const TARGETED_WALMART_MIN_IMAGES = 2 as const;

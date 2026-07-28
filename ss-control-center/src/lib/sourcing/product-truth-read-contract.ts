@@ -17,6 +17,7 @@ import { assertProductTruthEvidenceSchema } from "./product-truth-schema-gate";
 import { assertProductTruthListingScopeSchema } from "./product-truth-schema-gate";
 import { buildProductTruthListingScope } from "./product-truth-listing-scope";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
+import { exactProductContentCapture } from "./product-content-capture";
 
 export { PRODUCT_TRUTH_READ_CONTRACT_VERSION };
 
@@ -512,11 +513,15 @@ async function readCurrentContentRows(
       WHERE content.canonicalVariantId IN (${placeholders})
         AND julianday(content.observedAt)<=julianday(?)
         AND julianday(content.createdAt)<=julianday(?)
+        AND json_extract(content.contentJson,'$._capture')
+          IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
         AND content.id=(
           SELECT latest.id FROM ProductContentObservation latest
           WHERE latest.canonicalVariantId=content.canonicalVariantId
             AND julianday(latest.observedAt)<=julianday(?)
             AND julianday(latest.createdAt)<=julianday(?)
+            AND json_extract(latest.contentJson,'$._capture')
+              IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
           ORDER BY julianday(latest.observedAt) DESC, latest.observedAt DESC,
             julianday(latest.createdAt) DESC, latest.createdAt DESC, latest.id DESC
           LIMIT 1
@@ -811,6 +816,9 @@ function contentForComponent(
   const content = currentContent ? jsonObject(currentContent.contentJson) : null;
   const fieldHashes = currentContent ? jsonObject(currentContent.fieldHashesJson) : null;
   if (!content || !fieldHashes) blockers.push("CONTENT_PAYLOAD_INVALID");
+  if (content && exactProductContentCapture(content) === null) {
+    blockers.push("CONTENT_CAPTURE_NOT_EXACT");
+  }
   if (currentContent) {
     if (currentContent.canonicalVariantId !== row.targetCanonicalVariantId ||
         currentContent.decisionCanonicalVariantId !== row.targetCanonicalVariantId ||

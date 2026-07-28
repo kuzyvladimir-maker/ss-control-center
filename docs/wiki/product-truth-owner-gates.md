@@ -35,7 +35,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `CANARY_CONSUMED_GRAPH_FIX_LOCAL` | Listing-bound plan `4e8524d7…a05d` выполнен один раз без retry; outcome `AMBIGUOUS` выявил same-donor multi-listing identity conflict. Contract `1.5.0` исправлен и локально сертифицирован `514/514`; следующего paid gate пока нет |
+| G7. Provider canary / paid wave | `CANARY_CONSUMED_V1_6_CERTIFICATION_PENDING` | Plan `4e8524d7…a05d` consumed без retry. Graph guard `1.5.0` clean-certified `514/514`; successor `2cfea49a…0070` superseded до spend после доказательства all-or-nothing content loss. Field snapshot `1.6.0` focused `43/43`; следующего paid gate пока нет |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -859,6 +859,26 @@ component rows, ссылающиеся на donor. Если их independently d
 не совпадают, `doctor` останавливается с
 `TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_VARIANT_CONFLICT` до provider boundary.
 TypeScript = `PASS`; unit `15/15`; integration `12/12`; полный Product Truth
-suite `514/514`. Это исправление выполнило `0` дополнительных provider calls и
-`0` production writes. Следующие шаги: clean frozen release и выбор нового
-untouched collision-free donor graph только через read-only `doctor`.
+suite `514/514`. Clean release commit
+`eaf68d8ce04da6b514ac2f876a60894e734665ac`, tree
+`9ea153248d6dac701f952694aca2f84a412e69b9` повторил clean `514/514`.
+Read-only successor plan `2cfea49a…0070` для `walmart:1:FaisalX-1828`
+построен с `0` provider calls/production writes, но superseded до spend.
+
+### Exact field snapshot v1.6 — no-spend correction
+
+Read-only production diagnosis первого canary показал точный
+`DonorHarvestState.lastError`:
+`Exact content snapshot blocked: ALLERGENS_MISSING; STORAGE_MISSING`. Provider
+вернул остальные exact facts, однако прежний all-or-nothing writer откатил их.
+
+Contract `1.6.0` сохраняет exact source fields append-only как
+`exact_field_snapshot_v2`, записывает `_missingFields` и не превращает unknown в
+факт. Canonical readers принимают только exact-complete/field-snapshot/legacy
+materialized captures; retailer search partial запрещён как content. Walmart
+publish requirements не ослаблены. TypeScript PASS, focused production-like
+suite `43/43`, полный shared-worktree suite `516/516`, Wiki-Brain `0` orphan /
+`0` broken links; provider calls и production writes этого исправления = `0`.
+
+Следующий provider gate появится только после full clean-checkout certification
+и byte-new `1.6.0 doctor → plan`. Plan `2cfea49a…0070` не исполняется.

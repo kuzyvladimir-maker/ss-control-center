@@ -1305,6 +1305,67 @@ test("complete content writer fails closed on missing facts and cross-variant so
   });
 });
 
+test("exact field snapshot preserves paid facts without claiming missing allergens or storage", async () => {
+  await withScratchDb(async (db) => {
+    const source = await persistScoredDonorOffer(db, sourceOffer({
+      target: EIGHT_OZ,
+      retailer: "walmart",
+      retailerProductId: "wm-field-snapshot-8",
+      title: "Acme Potato Chips Original Bag, 8 oz",
+    }), EIGHT_OZ, NOW);
+    const beforeProjection = (await db.execute({
+      sql: `SELECT * FROM DonorProduct WHERE id=?`,
+      args: [source.donorProductId],
+    })).rows[0];
+    const result = await persistCompleteExactContentObservation(db, {
+      donorProductId: source.donorProductId,
+      retailer: "walmart",
+      retailerProductId: "wm-field-snapshot-8",
+      sourceUrl: "https://walmart.example.test/item/wm-field-snapshot-8",
+      sourceApi: "retailer-detail-fixture",
+      observedAt: DETAIL_OBSERVED_AT,
+      processingNow: DETAIL_PROCESSING_NOW,
+      detailIdentity: {
+        title: "Acme Potato Chips Original Bag, 8 oz",
+        retailerProductId: "wm-field-snapshot-8",
+        productUrl: null,
+      },
+      content: {
+        description: "Exact retailer description.",
+        bullets: ["One 8 oz bag"],
+        attributes: { specifications: [] },
+        nutritionFacts: { calories: 150 },
+        ingredients: "Potatoes, oil, salt.",
+        allergens: null,
+        mainImageUrl: "https://images.example.test/wm-field-snapshot-8.jpg",
+        imageUrls: ["https://images.example.test/wm-field-snapshot-8.jpg"],
+        upc: "012345678905",
+        category: "Snack Foods",
+        storage: null,
+      },
+      allowExactFieldSnapshot: true,
+      upcConflictPolicy: "block",
+    });
+    assert.equal(result.captureStatus, "exact_field_snapshot");
+    assert.deepEqual(result.missingContentFields, ["allergens", "storageTemp"]);
+    const row = (await db.execute({
+      sql: `SELECT contentJson FROM ProductContentObservation WHERE id=?`,
+      args: [result.contentObservationId],
+    })).rows[0];
+    const content = JSON.parse(String(row?.contentJson));
+    assert.equal(content._capture, "exact_field_snapshot_v2");
+    assert.deepEqual(content._missingFields, ["allergens", "storageTemp"]);
+    assert.equal(content.ingredients, "Potatoes, oil, salt.");
+    assert.deepEqual(content.nutritionFacts, { calories: 150 });
+    assert.equal(content._fieldSources.allergens, null);
+    assert.equal(content._fieldSources.storageTemp, null);
+    assert.deepEqual((await db.execute({
+      sql: `SELECT * FROM DonorProduct WHERE id=?`,
+      args: [source.donorProductId],
+    })).rows[0], beforeProjection);
+  });
+});
+
 test("detail harvest is exact-alias-only and seals run/approval/receipt provenance", async () => {
   const source = await readFile(new URL("../donor-catalog.ts", import.meta.url), "utf8");
   const start = source.indexOf("export async function harvestDonorDetail");

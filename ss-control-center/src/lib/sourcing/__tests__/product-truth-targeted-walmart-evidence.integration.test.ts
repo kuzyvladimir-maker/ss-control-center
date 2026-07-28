@@ -1398,6 +1398,66 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
     }
   });
 
+  test("production detail preserves an exact field snapshot when allergens and storage are absent", async () => {
+    const fixture = await createFixture({ runId: "targeted-production-field-snapshot" });
+    const previousFetch = globalThis.fetch;
+    const previousUnwrangleKey = process.env.UNWRANGLE_API_KEY;
+    try {
+      process.env.UNWRANGLE_API_KEY = "test-unwrangle-key";
+      globalThis.fetch = (async (request: string | URL | Request) => {
+        assert.match(String(request), /^https:\/\/data\.unwrangle\.com\/api\/getter\//);
+        fixture.counters.unwrangle += 1;
+        const payload = exactUnwrangleDetailPayload();
+        delete (payload.detail as { allergens?: unknown }).allergens;
+        payload.detail.specifications = [];
+        return new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }) as typeof fetch;
+      fixture.adapter.harvest = (innerDb, harvestInput) => executeDonorHarvestCandidate({
+        ...harvestInput,
+        db: innerDb,
+        allowOpenFoodFactsSupplement: false,
+        requireBaseUnit: true,
+        upcConflictPolicy: "block",
+        harvestDetail: harvestDonorDetail,
+      });
+
+      const result = await executeProductTruthTargetedWalmartEvidence(
+        fixture.db,
+        executionInput(fixture, "execute"),
+      );
+      assert.equal(result.status, "completed", result.reason);
+      assert.equal(result.reason, "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS");
+      assert.deepEqual(fixture.counters, { oxylabs: 1, unwrangle: 1 });
+      const report = fixture.reports.at(-1);
+      assert.equal(report?.outcome, "COMPLETED");
+      assert.equal(report?.candidate, null);
+      assert.equal(report?.contentEvidence?.capture, "exact_field_snapshot_v2");
+      assert.deepEqual(
+        report?.contentEvidence?.missingFields,
+        ["allergens", "storageTemp"],
+      );
+      const stored = (await fixture.db.execute({
+        sql: `SELECT contentJson FROM ProductContentObservation
+              WHERE donorProductId=?
+                AND json_extract(contentJson,'$._capture')='exact_field_snapshot_v2'`,
+        args: [fixture.plan.targets[0].donorProductId],
+      })).rows;
+      assert.equal(stored.length, 1);
+      const content = JSON.parse(String(stored[0]?.contentJson));
+      assert.equal(content.ingredients, "Potatoes, vegetable oil, salt.");
+      assert.deepEqual(content.nutritionFacts, { calories: 150 });
+      assert.deepEqual(content._missingFields, ["allergens", "storageTemp"]);
+    } finally {
+      globalThis.fetch = previousFetch;
+      if (previousUnwrangleKey === undefined) delete process.env.UNWRANGLE_API_KEY;
+      else process.env.UNWRANGLE_API_KEY = previousUnwrangleKey;
+      await fixture.db.close();
+    }
+  });
+
   test("production detail adapter uses the guarded timestamp and rollback blocks exact content", async () => {
     const fixture = await createFixture({ runId: "targeted-production-detail-clock" });
     const previousFetch = globalThis.fetch;

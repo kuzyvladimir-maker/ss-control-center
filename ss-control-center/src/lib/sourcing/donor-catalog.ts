@@ -42,6 +42,10 @@ import {
   assertProductTruthMeteredEvidenceSchema,
 } from "./product-truth-schema-gate";
 import { evaluatePriceEvidenceEligibility } from "./price-evidence-policy";
+import {
+  EXACT_COMPLETE_CONTENT_CAPTURE,
+  EXACT_FIELD_SNAPSHOT_CAPTURE,
+} from "./product-content-capture";
 
 type SqlExecutor = Pick<Client, "execute">;
 
@@ -289,6 +293,13 @@ export interface HarvestResult {
   imageFlagged?: boolean;
   reason?: string;
   blockers?: string[];
+  /** Immutable exact-variant content evidence written by this attempt. */
+  contentObservationId?: string;
+  /** A field snapshot may be useful without falsely claiming every field exists. */
+  captureStatus?: "exact_complete" | "exact_field_snapshot";
+  missingContentFields?: string[];
+  /** Lifecycle-facing source capabilities observed in this exact response. */
+  completedHarvestFields?: string[];
 }
 
 export interface DetailContent {
@@ -766,7 +777,18 @@ export async function harvestDonorDetail(
       supplementalSources,
       upcConflictPolicy: options.upcConflictPolicy,
       requireBaseUnit: options.requireBaseUnit,
+      allowExactFieldSnapshot: true,
     });
+    const completedHarvestFields = [
+      ...(c.title ? ["title"] : []),
+      ...(c.description ? ["description"] : []),
+      ...(c.bullets.length ? ["bullets"] : []),
+      ...(Array.isArray(c.specifications) && c.specifications.length ? ["attributes"] : []),
+      ...(ingredients ? ["ingredients"] : []),
+      ...(nutrition != null ? ["nutrition"] : []),
+      ...(c.images.length >= 5 ? ["gallery"] : []),
+      ...(upcForOff ? ["upc"] : []),
+    ];
     return {
       ok: true,
       productId,
@@ -776,6 +798,10 @@ export async function harvestDonorDetail(
       merged: 0,
       upcConflicts: persisted.upcConflicts,
       imageFlagged: false,
+      contentObservationId: persisted.contentObservationId,
+      captureStatus: persisted.captureStatus,
+      missingContentFields: persisted.missingContentFields,
+      completedHarvestFields,
     };
   } catch (error) {
     if (error instanceof ExactContentSnapshotBlockedError) {
@@ -1514,6 +1540,12 @@ export interface PersistCompleteExactContentObservationInput {
   requireBaseUnit?: boolean;
   /** Legacy default quarantines peers; sealed exact-one lanes must use block. */
   upcConflictPolicy?: "quarantine" | "block";
+  /**
+   * Preserve every source-observed exact field even when optional/consumer-
+   * specific facts are absent. The stored capture remains explicitly partial;
+   * readers must still enforce their own required-field readiness.
+   */
+  allowExactFieldSnapshot?: boolean;
 }
 
 export interface PersistCompleteExactContentObservationResult {
@@ -1522,9 +1554,11 @@ export interface PersistCompleteExactContentObservationResult {
   canonicalVariantId: string;
   variantDecisionId: string;
   title: string;
-  upc: string;
+  upc: string | null;
   imageCount: number;
   upcConflicts: number;
+  captureStatus: "exact_complete" | "exact_field_snapshot";
+  missingContentFields: string[];
 }
 
 export class ExactContentSnapshotBlockedError extends Error {
@@ -1711,6 +1745,8 @@ export async function persistCompleteExactContentObservation(
   const category = nonEmptyText(input.content?.category);
   const storage = nonEmptyText(input.content?.storage);
   const attributes = input.content?.attributes;
+  const hasNutrition = contentEvidencePresent(input.content?.nutritionFacts);
+  const hasAllergens = contentEvidencePresent(input.content?.allergens, true);
 
   if (!donorProductId) blockers.push("DONOR_PRODUCT_ID_REQUIRED");
   if (!retailer) blockers.push("RETAILER_REQUIRED");
@@ -1737,10 +1773,10 @@ export async function persistCompleteExactContentObservation(
   }
   if (!upc) blockers.push("MANUFACTURER_UPC_MISSING_OR_INVALID");
   if (!ingredients) blockers.push("INGREDIENTS_MISSING");
-  if (!contentEvidencePresent(input.content?.nutritionFacts)) {
+  if (!hasNutrition) {
     blockers.push("NUTRITION_MISSING");
   }
-  if (!contentEvidencePresent(input.content?.allergens, true)) {
+  if (!hasAllergens) {
     blockers.push("ALLERGENS_MISSING");
   }
   if (!category) blockers.push("CATEGORY_MISSING");
@@ -1818,7 +1854,32 @@ export async function persistCompleteExactContentObservation(
     }
   }
 
-  if (blockers.length) throw new ExactContentSnapshotBlockedError(blockers);
+  const fieldGapCodes = new Set([
+    "MANUFACTURER_UPC_MISSING_OR_INVALID",
+    "INGREDIENTS_MISSING",
+    "NUTRITION_MISSING",
+    "ALLERGENS_MISSING",
+    "CATEGORY_MISSING",
+    "STORAGE_MISSING",
+    "MAIN_IMAGE_MISSING",
+  ]);
+  const fatalBlockers = input.allowExactFieldSnapshot === true
+    ? blockers.filter((blocker) => !fieldGapCodes.has(blocker))
+    : blockers;
+  if (fatalBlockers.length) throw new ExactContentSnapshotBlockedError(fatalBlockers);
+  const missingContentFields = [...new Set(blockers
+    .filter((blocker) => fieldGapCodes.has(blocker))
+    .map((blocker) => ({
+      MANUFACTURER_UPC_MISSING_OR_INVALID: "upc",
+      INGREDIENTS_MISSING: "ingredients",
+      NUTRITION_MISSING: "nutritionFacts",
+      ALLERGENS_MISSING: "allergens",
+      CATEGORY_MISSING: "category",
+      STORAGE_MISSING: "storageTemp",
+      MAIN_IMAGE_MISSING: "imageUrls",
+    })[blocker]!))]
+    .sort((left, right) => left.localeCompare(right, "en-US"));
+  const exactComplete = missingContentFields.length === 0;
 
   const transaction = await db.transaction("write");
   try {
@@ -1921,7 +1982,7 @@ export async function persistCompleteExactContentObservation(
     if (detailIdentityBlockers.length) {
       throw new ExactContentSnapshotBlockedError(detailIdentityBlockers);
     }
-    if (input.upcConflictPolicy === "block") {
+    if (upc && input.upcConflictPolicy === "block") {
       const conflicts = await transaction.execute({
         sql: `SELECT "id" FROM "DonorProduct" WHERE "upc"=? AND "id"<>? ORDER BY "id"`,
         args: [upc!, donorProductId!],
@@ -2029,15 +2090,19 @@ export async function persistCompleteExactContentObservation(
       description: detailDescription ? detailFieldSource : searchFieldSource,
       bullets: detailBullets.length ? detailFieldSource : searchFieldSource,
       attributes: detailFieldSource,
-      nutritionFacts: supplementalFieldSource("nutritionFacts"),
-      ingredients: supplementalFieldSource("ingredients"),
-      allergens: supplementalFieldSource("allergens"),
-      mainImageUrl: detailFieldSource,
-      imageUrls: detailFieldSource,
-      upc: detailFieldSource,
-      gtin: detailFieldSource,
-      category: detailFieldSource,
-      storageTemp: detailFieldSource,
+      nutritionFacts: !hasNutrition
+        ? null
+        : supplementalFieldSource("nutritionFacts"),
+      ingredients: ingredients ? supplementalFieldSource("ingredients") : null,
+      allergens: !hasAllergens
+        ? null
+        : supplementalFieldSource("allergens"),
+      mainImageUrl: requestedMainImage ? detailFieldSource : null,
+      imageUrls: imageUrls.length ? detailFieldSource : null,
+      upc: upc ? detailFieldSource : null,
+      gtin: upc ? detailFieldSource : null,
+      category: category ? detailFieldSource : null,
+      storageTemp: storage ? detailFieldSource : null,
     };
     const materializedTitle = (directTargetIdentity ? detailTitle : searchEvidence!.title)!;
     const fullContent: Record<string, unknown> = {
@@ -2054,7 +2119,10 @@ export async function persistCompleteExactContentObservation(
       gtin: upc,
       category,
       storageTemp: storage,
-      _capture: "exact_complete_v1",
+      _capture: exactComplete
+        ? EXACT_COMPLETE_CONTENT_CAPTURE
+        : EXACT_FIELD_SNAPSHOT_CAPTURE,
+      ...(exactComplete ? {} : { _missingFields: missingContentFields }),
       _fieldSources: fieldSources,
     };
     const contentObservationId = await appendExactContentObservation(transaction, {
@@ -2068,22 +2136,25 @@ export async function persistCompleteExactContentObservation(
       provenance: { runId, approvalId, meteredReceiptId },
     });
 
-    // Transitional projection is written only after immutable exact evidence is
-    // sealed. Candidate/new-SKU readers above consume the observation, not this row.
-    await transaction.execute({
-      sql: `UPDATE "DonorProduct" SET
-              title=?, description=?, bullets=?, attributes=?,
-              nutritionFacts=?, ingredients=?, mainImageUrl=?, imageUrls=?,
-              upc=?, needsReview=1, updatedAt=?
-            WHERE id=? AND identityStatus='exact_confirmed'`,
-      args: [
-        materializedTitle, description, stableJson(bullets),
-        stableJson(attributes ?? {}), stableJson(input.content.nutritionFacts),
-        ingredients, requestedMainImage, stableJson(imageUrls), upc,
-        processingNow!, donorProductId!,
-      ],
-    });
-    const upcConflicts = input.upcConflictPolicy === "block"
+    // Transitional projection remains all-or-nothing. Partial exact field
+    // snapshots live only in the immutable canonical evidence table so they
+    // cannot erase richer legacy fields or masquerade as a complete donor row.
+    if (exactComplete) {
+      await transaction.execute({
+        sql: `UPDATE "DonorProduct" SET
+                title=?, description=?, bullets=?, attributes=?,
+                nutritionFacts=?, ingredients=?, mainImageUrl=?, imageUrls=?,
+                upc=?, needsReview=1, updatedAt=?
+              WHERE id=? AND identityStatus='exact_confirmed'`,
+        args: [
+          materializedTitle, description, stableJson(bullets),
+          stableJson(attributes ?? {}), stableJson(input.content.nutritionFacts),
+          ingredients, requestedMainImage, stableJson(imageUrls), upc,
+          processingNow!, donorProductId!,
+        ],
+      });
+    }
+    const upcConflicts = !upc || input.upcConflictPolicy === "block"
       ? 0
       : await quarantineUpcConflicts(
         transaction,
@@ -2098,9 +2169,11 @@ export async function persistCompleteExactContentObservation(
       canonicalVariantId: alias.canonicalVariantId,
       variantDecisionId: alias.variantDecisionId,
       title: materializedTitle,
-      upc: upc!,
+      upc,
       imageCount: imageUrls.length,
       upcConflicts,
+      captureStatus: exactComplete ? "exact_complete" : "exact_field_snapshot",
+      missingContentFields,
     };
   } catch (error) {
     if (!transaction.closed) await transaction.rollback();

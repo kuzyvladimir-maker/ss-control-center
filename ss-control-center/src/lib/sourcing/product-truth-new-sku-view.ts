@@ -13,6 +13,7 @@ import {
 } from "./price-evidence-policy";
 import { assertProductTruthEvidenceSchema } from "./product-truth-schema-gate";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
+import { exactProductContentCapture } from "./product-content-capture";
 
 export const DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS = 24 * 60 * 60 * 1_000;
 export const DEFAULT_WALMART_PILOT_ZIP = "33765";
@@ -513,7 +514,8 @@ async function readIdentityContent(
   // verified fail-closed by buildProductTruthRecipeComponentFromRows below.
   return result.rows.find((row) => {
     const facts = contentFacts(row);
-    return !!facts.title
+    return exactProductContentCapture(facts.content) !== null
+      && !!facts.title
       && !!facts.mainImage
       && !!facts.manufacturerUpc
       && (!requirements.requireIngredients || !!facts.ingredients)
@@ -1263,6 +1265,8 @@ export async function listWalmartPilotCandidates(
             AND decision.matcherReleaseSha256=?
             AND julianday(content.observedAt)<=julianday(?)
             AND julianday(content.createdAt)<=julianday(?)
+            AND json_extract(content.contentJson,'$._capture')
+              IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
             AND offer.id=(
               SELECT latest.id FROM DonorOfferObservation latest
               WHERE latest.donorOfferId=offer.donorOfferId
@@ -1488,6 +1492,8 @@ export async function diagnoseWalmartPilotRequest(
         AND julianday(variant.createdAt)<=julianday(?)
         AND julianday(content.observedAt)<=julianday(?)
         AND julianday(content.createdAt)<=julianday(?)
+        AND json_extract(content.contentJson,'$._capture')
+          IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
         AND content.id=(
           SELECT latest.id
           FROM ProductContentObservation latest
@@ -1496,6 +1502,8 @@ export async function diagnoseWalmartPilotRequest(
             AND latest.canonicalVariantId=variant.id
             AND julianday(latest.observedAt)<=julianday(?)
             AND julianday(latest.createdAt)<=julianday(?)
+            AND json_extract(latest.contentJson,'$._capture')
+              IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
           ORDER BY julianday(latest.observedAt) DESC, latest.observedAt DESC,
             julianday(latest.createdAt) DESC, latest.createdAt DESC, latest.id DESC
           LIMIT 1

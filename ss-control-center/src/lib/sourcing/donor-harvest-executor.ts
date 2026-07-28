@@ -482,16 +482,18 @@ export async function executeDonorHarvestCandidate(
       };
     }
 
-    const donor = await input.db.execute({
-      sql: `SELECT "title", "description", "bullets", "attributes", "nutritionFacts",
-                   "ingredients", "mainImageUrl", "imageUrls", "upc", "gtin"
-            FROM "DonorProduct" WHERE "id"=? LIMIT 1`,
-      args: [current.donorProductId],
-    });
-    const completedFields = completedHarvestFieldsFromDonorProduct(
-      (donor.rows[0] || {}) as Record<string, unknown>,
-      current.requestedFields,
-    );
+    const observedFields = harvest.completedHarvestFields;
+    const completedFields = Array.isArray(observedFields)
+      ? current.requestedFields.filter((field) => observedFields.includes(field))
+      : completedHarvestFieldsFromDonorProduct(
+        ((await input.db.execute({
+          sql: `SELECT "title", "description", "bullets", "attributes", "nutritionFacts",
+                       "ingredients", "mainImageUrl", "imageUrls", "upc", "gtin"
+                FROM "DonorProduct" WHERE "id"=? LIMIT 1`,
+          args: [current.donorProductId],
+        })).rows[0] || {}) as Record<string, unknown>,
+        current.requestedFields,
+      );
     const completed = new Set(completedFields);
     // This state is source-item-specific. A successful detail response resolves
     // absent fields as unavailable from this exact source item; repeating the

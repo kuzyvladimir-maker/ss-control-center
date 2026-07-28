@@ -176,6 +176,7 @@ async function insertContent(
   },
 ): Promise<void> {
   const content = {
+    _capture: "exact_complete_v1",
     title: input.title,
     description: `${input.title} exact description`,
     bullets: ["Crispy", "Source backed"],

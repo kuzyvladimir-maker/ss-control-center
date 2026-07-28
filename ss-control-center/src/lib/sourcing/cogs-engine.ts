@@ -57,6 +57,7 @@ import {
   SKU_COST_LISTING_SCOPE_LINK_VERSION,
   buildProductTruthListingScope,
 } from "@/lib/sourcing/product-truth-listing-scope";
+import { isExactProductContentCapture } from "@/lib/sourcing/product-content-capture";
 import {
   currentMeteredRunPermit,
 } from "@/lib/sourcing/metered-call-guard";
@@ -373,9 +374,10 @@ async function bestContentObservationForVariant(
       evaluationNow,
     ],
   })).rows;
-  const candidates = rows.map((row) => {
+  const candidates = rows.flatMap((row) => {
     const contentJson = parseJsonObject(row.contentJson);
-    return {
+    if (!isExactProductContentCapture(contentJson)) return [];
+    return [{
       id: String(row.id),
       donorProductId: String(row.donorProductId),
       canonicalVariantId: String(row.canonicalVariantId),
@@ -385,7 +387,7 @@ async function bestContentObservationForVariant(
       observedAt: String(row.observedAt),
       contentJson,
       completeness: contentCompleteness(contentJson),
-    } satisfies ContentObservationHit;
+    } satisfies ContentObservationHit];
   });
   candidates.sort((left, right) =>
     right.completeness - left.completeness

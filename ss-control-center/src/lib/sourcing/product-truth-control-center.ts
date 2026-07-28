@@ -390,8 +390,14 @@ async function readCatalogInventory(tx: Transaction) {
     sql: `SELECT
             (SELECT COUNT(*) FROM CanonicalProductVariant) AS canonicalVariants,
             (SELECT COUNT(DISTINCT canonicalVariantId)
-             FROM ProductContentObservation) AS variantsWithExactContent,
-            (SELECT COUNT(*) FROM ProductContentObservation) AS contentObservations,
+             FROM ProductContentObservation
+             WHERE json_extract(contentJson,'$._capture')
+               IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge'))
+              AS variantsWithExactContent,
+            (SELECT COUNT(*) FROM ProductContentObservation
+             WHERE json_extract(contentJson,'$._capture')
+               IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge'))
+              AS contentObservations,
             (SELECT COUNT(*) FROM DonorOfferObservation
              WHERE canonicalVariantId IS NOT NULL) AS offerObservations,
             (SELECT COUNT(*) FROM DonorOfferObservation
@@ -720,6 +726,8 @@ export async function readProductTruthControlCenterVariants(
               (SELECT COUNT(*)
                FROM ProductContentObservation observation
                WHERE observation.canonicalVariantId=variant.id
+                 AND json_extract(observation.contentJson,'$._capture')
+                   IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
                  AND observation.observedAt<=?) AS contentObservationCount,
               content.id AS contentId,
               content.donorProductId AS contentDonorProductId,
@@ -738,6 +746,8 @@ export async function readProductTruthControlCenterVariants(
                 FROM ProductContentObservation candidate
                 WHERE candidate.canonicalVariantId=variant.id
                   AND candidate.observedAt<=?
+                  AND json_extract(candidate.contentJson,'$._capture')
+                    IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
                 ORDER BY candidate.observedAt DESC,candidate.id DESC
                 LIMIT 1
               )

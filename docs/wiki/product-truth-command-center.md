@@ -836,7 +836,40 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [x] ✅ Contract `1.5.0` теперь seals весь authoritative same-donor listing
   graph и блокирует разные derived variant IDs до provider boundary.
   TypeScript PASS; unit `15/15`; integration `12/12`; полный suite `514/514`.
-- [ ] 🔄 Выпустить clean frozen release `1.5.0` и read-only выбрать новый
-  untouched collision-free donor graph.
+- [x] ✅ Clean frozen release `1.5.0` выпущен: commit
+  `eaf68d8ce04da6b514ac2f876a60894e734665ac`, tree
+  `9ea153248d6dac701f952694aca2f84a412e69b9`; sparse clean checkout:
+  TypeScript PASS, Product Truth `514/514`, worktree clean.
+- [x] ✅ Новый untouched collision-free donor graph выбран read-only:
+  `walmart:1:FaisalX-1828`, donor `a3ee205c-fab4-4e2f-bdce-cea91fe79555`,
+  Walmart item `16940511`; doctor request SHA `bb110908…fa3d`, plan
+  `2cfea49a…0070`, provider calls/production writes `0`.
+- [ ] 🔄 Plan `2cfea49a…0070` не исполняется: анализ первого canary доказал,
+  что Unwrangle вернул полезные exact facts, но all-or-nothing writer откатил
+  весь detail только из-за `ALLERGENS_MISSING; STORAGE_MISSING`.
 - [ ] ⬜ Новый paid canary возможен только для нового sealed plan; terminal
   `4e8524d7…a05d` никогда не replay.
+
+### Exact field snapshot v1.6 — local correction 2026-07-28
+
+- [x] ✅ Production `DonorHarvestState.lastError` первого canary прочитан
+  read-only: detail содержал сохраняемые факты, единственные blocking gaps —
+  `ALLERGENS_MISSING` и `STORAGE_MISSING`.
+- [x] ✅ Exact retailer detail больше не теряется целиком: writer сохраняет
+  append-only `exact_field_snapshot_v2`, byte-hashes всех полей и явный
+  `_missingFields`; отсутствующие facts и их field source остаются `null`.
+- [x] ✅ Полный `exact_complete_v1`, новый field snapshot и старый
+  `legacy_materialized_bridge` остаются exact-identity captures. Search
+  `retailer_search_partial` исключён из canonical content readers.
+- [x] ✅ Walmart new-SKU pilot по-прежнему fail-closed применяет собственные
+  requirements, включая allergens и shelf-stable classification. Field snapshot
+  не является разрешением publish.
+- [x] ✅ Targeted evidence workflow теперь может честно завершить paid attempt
+  как `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`, сохранив
+  price + exact content fields и не выдавая их за Walmart pilot candidate.
+- [x] ✅ TypeScript PASS; focused production-like suite `43/43`; полный
+  shared-worktree Product Truth suite `516/516`; Wiki-Brain `0` orphan /
+  `0` broken links.
+- [ ] 🔄 Clean-checkout certification и новый `1.6.0` doctor/plan.
+- [ ] ⬜ Старый `1.5.0` successor plan `2cfea49a…0070` superseded и не
+  исполняется; новый paid gate возможен только для byte-new `1.6.0` plan.
