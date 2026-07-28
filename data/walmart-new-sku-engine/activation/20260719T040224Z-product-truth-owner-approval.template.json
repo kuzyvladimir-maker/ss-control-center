@@ -1,0 +1,18 @@
+{
+  "contractVersion": "product-truth-migration-approval/2",
+  "decision": "APPROVE_PRODUCT_TRUTH_MIGRATIONS",
+  "approvedBy": "owner",
+  "runId": "walmart-pilot-product-truth-20260719T040224Z",
+  "approvalId": "owner-pending-walmart-pilot-product-truth-20260719T040224Z",
+  "planSha256": "8c1a1157246b63195e5d39899f31e2cd3d7b4d6a62f02e0789b674de8bc05f2a",
+  "migrationSetSha256": "80821a9c8abc0dcc36f6d6853548e2bb6a798debb41f2ba2f425c52ed779aefe",
+  "activationContractSha256": "6bcf7d669c1b22997119050cda8cfb20491fa33edd8b0082e82d91463ca643e1",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "schemaBeforeSha256": "591d6ec4da09102dbb994398eb45f931592b07ac73b19ef0ebf1f3c5cf079aea",
+  "queueImpactSha256": "2d1f06edafc5042f38e0cecd9707f25c2ebfc45a33eb3eeeaa43512ac10b1707",
+  "writerActivitySha256": "2af0ea916ca2b98bb488faa64723122748e209ab6a39b25444d0ae31d903240c",
+  "writersQuiesced": "REPLACE_WITH_BOOLEAN_TRUE_ONLY_AFTER_OWNER_CONFIRMS_EXTERNAL_QUIESCENCE",
+  "backupReference": "local-sqlite-backup://walmart-pilot/20260719T040908Z/production-pre-product-truth.portable.db#sha256=fa70e8a7cae96a615f024ce6541b2526ab92fdce74dddfe1896e506ab6491af8",
+  "issuedAt": "REPLACE_WITH_CURRENT_ISO_UTC_TIMESTAMP",
+  "expiresAt": "REPLACE_WITH_ISO_UTC_TIMESTAMP_NOT_MORE_THAN_30_MINUTES_AFTER_ISSUED_AT"
+}

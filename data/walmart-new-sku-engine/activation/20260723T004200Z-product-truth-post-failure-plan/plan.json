@@ -1,0 +1,3886 @@
+{
+  "activationContractSha256": "7d2b8dc583a301c9bddecea5f86e91d849688166d3bacc3a9f4153fa84109d41",
+  "approvalId": "owner-pending-post-failure-20260723T004200Z",
+  "blockers": [],
+  "canApply": true,
+  "contractVersion": "product-truth-migration-plan/2",
+  "database": {
+    "displayUrl": "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "kind": "remote",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "generatedAt": "2026-07-23T00:43:09.727Z",
+  "migrations": [
+    {
+      "blockers": [],
+      "id": "20260718230000_product_truth_queue_v2",
+      "missingArtifacts": [
+        "column:EnrichmentJob.actualSpendUnits",
+        "column:EnrichmentJob.approvalId",
+        "column:EnrichmentJob.checkpoint",
+        "column:EnrichmentJob.completedFields",
+        "column:EnrichmentJob.estimatedSpendUnits",
+        "column:EnrichmentJob.heartbeatAt",
+        "column:EnrichmentJob.idempotencyKey",
+        "column:EnrichmentJob.leaseExpiresAt",
+        "column:EnrichmentJob.leaseOwner",
+        "column:EnrichmentJob.leaseToken",
+        "column:EnrichmentJob.nextEligibleAt",
+        "column:EnrichmentJob.normalizedTarget",
+        "column:EnrichmentJob.providerAttempts",
+        "column:EnrichmentJob.requestedFields",
+        "column:EnrichmentJob.runId",
+        "column:EnrichmentJob.terminalReason",
+        "column:EnrichmentJob.unavailableFields",
+        "index:EnrichmentJob_idempotencyKey_idx",
+        "index:EnrichmentJob_leaseExpiresAt_idx",
+        "index:EnrichmentJob_one_active_idempotencyKey",
+        "index:EnrichmentJob_status_nextEligibleAt_idx"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260718230000_product_truth_queue_v2/migration.sql",
+      "sha256": "f6c675df5eb0cf76ee39c83e6d34ae6fb8af19ac648d58171d6814d817ecf46f",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260718233000_donor_harvest_lifecycle",
+      "missingArtifacts": [
+        "column:DonorHarvestState.approvalId",
+        "column:DonorHarvestState.attempts",
+        "column:DonorHarvestState.claimedAt",
+        "column:DonorHarvestState.completedFields",
+        "column:DonorHarvestState.createdAt",
+        "column:DonorHarvestState.donorProductId",
+        "column:DonorHarvestState.finishedAt",
+        "column:DonorHarvestState.id",
+        "column:DonorHarvestState.lastBlockReason",
+        "column:DonorHarvestState.lastError",
+        "column:DonorHarvestState.leaseExpiresAt",
+        "column:DonorHarvestState.leaseOwner",
+        "column:DonorHarvestState.leaseToken",
+        "column:DonorHarvestState.maxAttempts",
+        "column:DonorHarvestState.nextEligibleAt",
+        "column:DonorHarvestState.requestedFields",
+        "column:DonorHarvestState.retailerProductId",
+        "column:DonorHarvestState.runId",
+        "column:DonorHarvestState.source",
+        "column:DonorHarvestState.sourceAttemptStartedAt",
+        "column:DonorHarvestState.status",
+        "column:DonorHarvestState.terminalReason",
+        "column:DonorHarvestState.unavailableFields",
+        "column:DonorHarvestState.updatedAt",
+        "column:DonorHarvestState.version",
+        "index:DonorHarvestState_claimable_idx",
+        "index:DonorHarvestState_expired_lease_idx",
+        "index:DonorHarvestState_identity_key",
+        "index:DonorHarvestState_runId_idx",
+        "table:DonorHarvestState",
+        "trigger:DonorHarvestState_complete_insert_guard",
+        "trigger:DonorHarvestState_complete_update_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260718233000_donor_harvest_lifecycle/migration.sql",
+      "sha256": "76eca447b6419f2a0f666a4d177df21d9bcea86caf1e6a801ae19d99de6f56f7",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260718234500_product_truth_evidence_provenance",
+      "missingArtifacts": [
+        "column:CanonicalProductVariant.createdAt",
+        "column:CanonicalProductVariant.id",
+        "column:CanonicalProductVariant.identityHash",
+        "column:CanonicalProductVariant.identityJson",
+        "column:CanonicalProductVariant.keyVersion",
+        "column:CanonicalProductVariant.normalizedBrand",
+        "column:CanonicalProductVariant.normalizedFlavor",
+        "column:CanonicalProductVariant.normalizedForm",
+        "column:CanonicalProductVariant.normalizedModifiersJson",
+        "column:CanonicalProductVariant.normalizedProductLine",
+        "column:CanonicalProductVariant.outerPackCount",
+        "column:CanonicalProductVariant.sizeBaseAmount",
+        "column:CanonicalProductVariant.sizeBaseUnit",
+        "column:CanonicalProductVariant.sizeDimension",
+        "column:CanonicalProductVariant.variantKey",
+        "column:DonorOffer.localityEvidence",
+        "column:DonorOfferObservation.approvalId",
+        "column:DonorOfferObservation.canonicalVariantId",
+        "column:DonorOfferObservation.createdAt",
+        "column:DonorOfferObservation.currency",
+        "column:DonorOfferObservation.donorOfferId",
+        "column:DonorOfferObservation.donorProductId",
+        "column:DonorOfferObservation.id",
+        "column:DonorOfferObservation.inStock",
+        "column:DonorOfferObservation.isFirstParty",
+        "column:DonorOfferObservation.localityEvidence",
+        "column:DonorOfferObservation.meteredReceiptId",
+        "column:DonorOfferObservation.observationKey",
+        "column:DonorOfferObservation.observedAt",
+        "column:DonorOfferObservation.packSizeSeen",
+        "column:DonorOfferObservation.price",
+        "column:DonorOfferObservation.pricePerUnit",
+        "column:DonorOfferObservation.productUrl",
+        "column:DonorOfferObservation.retailer",
+        "column:DonorOfferObservation.retailerProductId",
+        "column:DonorOfferObservation.runId",
+        "column:DonorOfferObservation.sellerName",
+        "column:DonorOfferObservation.sourceApi",
+        "column:DonorOfferObservation.title",
+        "column:DonorOfferObservation.variantDecisionId",
+        "column:DonorOfferObservation.via",
+        "column:DonorOfferObservation.zip",
+        "column:DonorProduct.identityConfirmedAt",
+        "column:DonorProduct.identityEvidenceJson",
+        "column:DonorProduct.identityMatcherImplementationSha256",
+        "column:DonorProduct.identityMatcherReleaseSha256",
+        "column:DonorProduct.identityMatcherVersion",
+        "column:DonorProduct.identityStatus",
+        "column:DonorProductVariantDecision.approvalId",
+        "column:DonorProductVariantDecision.canonicalVariantId",
+        "column:DonorProductVariantDecision.createdAt",
+        "column:DonorProductVariantDecision.decidedAt",
+        "column:DonorProductVariantDecision.decisionKey",
+        "column:DonorProductVariantDecision.decisionStatus",
+        "column:DonorProductVariantDecision.donorProductId",
+        "column:DonorProductVariantDecision.evidenceHash",
+        "column:DonorProductVariantDecision.evidenceJson",
+        "column:DonorProductVariantDecision.id",
+        "column:DonorProductVariantDecision.matcherImplementationSha256",
+        "column:DonorProductVariantDecision.matcherReleaseSha256",
+        "column:DonorProductVariantDecision.matcherVersion",
+        "column:DonorProductVariantDecision.runId",
+        "column:ProductContentObservation.approvalId",
+        "column:ProductContentObservation.canonicalVariantId",
+        "column:ProductContentObservation.contentHash",
+        "column:ProductContentObservation.contentJson",
+        "column:ProductContentObservation.createdAt",
+        "column:ProductContentObservation.donorProductId",
+        "column:ProductContentObservation.fieldHashesJson",
+        "column:ProductContentObservation.id",
+        "column:ProductContentObservation.meteredReceiptId",
+        "column:ProductContentObservation.observationKey",
+        "column:ProductContentObservation.observedAt",
+        "column:ProductContentObservation.runId",
+        "column:ProductContentObservation.sourceApi",
+        "column:ProductContentObservation.sourceUrl",
+        "column:ProductContentObservation.variantDecisionId",
+        "column:SkuComponent.contentDonorProductId",
+        "column:SkuComponent.matchTier",
+        "column:SkuComponent.matcherVersion",
+        "column:SkuComponent.priceEvidenceDonorProductId",
+        "column:SkuComponent.priceEvidenceJson",
+        "column:SkuComponent.priceEvidenceObservationId",
+        "column:SkuComponent.priceEvidenceOfferId",
+        "column:SkuComponent.priceEvidenceStatus",
+        "column:SkuComponent.pricePolicyVersion",
+        "column:SkuComponentEvidence.componentIndex",
+        "column:SkuComponentEvidence.contentCanonicalVariantId",
+        "column:SkuComponentEvidence.contentObservationId",
+        "column:SkuComponentEvidence.createdAt",
+        "column:SkuComponentEvidence.evidenceHash",
+        "column:SkuComponentEvidence.evidenceJson",
+        "column:SkuComponentEvidence.evidenceKey",
+        "column:SkuComponentEvidence.evidenceStatus",
+        "column:SkuComponentEvidence.id",
+        "column:SkuComponentEvidence.matchTier",
+        "column:SkuComponentEvidence.matcherImplementationSha256",
+        "column:SkuComponentEvidence.matcherReleaseSha256",
+        "column:SkuComponentEvidence.matcherVersion",
+        "column:SkuComponentEvidence.priceCanonicalVariantId",
+        "column:SkuComponentEvidence.priceObservationId",
+        "column:SkuComponentEvidence.pricePolicyVersion",
+        "column:SkuComponentEvidence.skuCostId",
+        "column:SkuComponentEvidence.targetCanonicalVariantId",
+        "column:SkuCost.approvalId",
+        "column:SkuCost.evidenceJson",
+        "column:SkuCost.evidenceOutcome",
+        "column:SkuCost.matcherImplementationSha256",
+        "column:SkuCost.matcherReleaseSha256",
+        "column:SkuCost.matcherVersion",
+        "column:SkuCost.observationKey",
+        "column:SkuCost.pricePolicyVersion",
+        "column:SkuCost.recipeHash",
+        "column:SkuCost.runId",
+        "index:CanonicalProductVariant_brand_line_idx",
+        "index:DonorOfferObservation_offer_observed_idx",
+        "index:DonorOfferObservation_product_observed_idx",
+        "index:DonorOfferObservation_retailer_item_observed_idx",
+        "index:DonorOfferObservation_variant_observed_idx",
+        "index:DonorProductVariantDecision_donor_decided_idx",
+        "index:DonorProductVariantDecision_one_exact_per_donor",
+        "index:DonorProductVariantDecision_variant_status_idx",
+        "index:DonorProduct_identityStatus_idx",
+        "index:ProductContentObservation_product_observed_idx",
+        "index:ProductContentObservation_variant_observed_idx",
+        "index:SkuComponentEvidence_content_observation_idx",
+        "index:SkuComponentEvidence_cost_component_key",
+        "index:SkuComponentEvidence_price_observation_idx",
+        "index:SkuComponentEvidence_target_variant_idx",
+        "index:SkuComponent_contentDonorProductId_idx",
+        "index:SkuComponent_priceEvidenceDonorProductId_idx",
+        "index:SkuComponent_priceEvidenceObservationId_idx",
+        "index:SkuComponent_priceEvidenceOfferId_idx",
+        "index:SkuCost_observationKey_key",
+        "index:SkuCost_period_lookup_idx",
+        "table:CanonicalProductVariant",
+        "table:DonorOfferObservation",
+        "table:DonorProductVariantDecision",
+        "table:ProductContentObservation",
+        "table:SkuComponentEvidence",
+        "trigger:CanonicalProductVariant_delete_guard",
+        "trigger:CanonicalProductVariant_duplicate_insert_guard",
+        "trigger:CanonicalProductVariant_insert_collision_guard",
+        "trigger:CanonicalProductVariant_update_guard",
+        "trigger:DonorOfferObservation_delete_guard",
+        "trigger:DonorOfferObservation_duplicate_insert_guard",
+        "trigger:DonorOfferObservation_exact_alias_guard",
+        "trigger:DonorOfferObservation_source_identity_guard",
+        "trigger:DonorOfferObservation_update_guard",
+        "trigger:DonorOffer_delete_guard",
+        "trigger:DonorOffer_duplicate_insert_guard",
+        "trigger:DonorOffer_source_identity_update_guard",
+        "trigger:DonorProductVariantDecision_delete_guard",
+        "trigger:DonorProductVariantDecision_duplicate_insert_guard",
+        "trigger:DonorProductVariantDecision_update_guard",
+        "trigger:DonorProduct_delete_guard",
+        "trigger:DonorProduct_duplicate_insert_guard",
+        "trigger:DonorProduct_identity_contract_update",
+        "trigger:DonorProduct_identity_status_insert",
+        "trigger:ProductContentObservation_delete_guard",
+        "trigger:ProductContentObservation_duplicate_insert_guard",
+        "trigger:ProductContentObservation_exact_alias_guard",
+        "trigger:ProductContentObservation_hash_contract_insert",
+        "trigger:ProductContentObservation_update_guard",
+        "trigger:SkuComponentEvidence_contract_insert",
+        "trigger:SkuComponentEvidence_delete_guard",
+        "trigger:SkuComponentEvidence_duplicate_insert_guard",
+        "trigger:SkuComponentEvidence_sealed_cost_guard",
+        "trigger:SkuComponentEvidence_update_guard",
+        "trigger:SkuComponent_evidence_contract_insert",
+        "trigger:SkuComponent_evidence_contract_update",
+        "trigger:SkuCost_component_evidence_guard",
+        "trigger:SkuCost_delete_guard",
+        "trigger:SkuCost_duplicate_insert_guard",
+        "trigger:SkuCost_evidence_contract_insert",
+        "trigger:SkuCost_update_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260718234500_product_truth_evidence_provenance/migration.sql",
+      "sha256": "cbc3748a46d101d609d8767d3b15302d3c306d6f8b0af2a8236095eb98b6ee5e",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": [
+        "index:SkuCost_sku_source_effectiveDate_key"
+      ]
+    },
+    {
+      "blockers": [],
+      "id": "20260719000000_metered_budget_ledger",
+      "missingArtifacts": [
+        "column:MeteredProviderBudget.approvalId",
+        "column:MeteredProviderBudget.approvedBy",
+        "column:MeteredProviderBudget.createdAt",
+        "column:MeteredProviderBudget.expiresAt",
+        "column:MeteredProviderBudget.id",
+        "column:MeteredProviderBudget.issuedAt",
+        "column:MeteredProviderBudget.maxCalls",
+        "column:MeteredProviderBudget.maxUnitsMicros",
+        "column:MeteredProviderBudget.operations",
+        "column:MeteredProviderBudget.permitVersion",
+        "column:MeteredProviderBudget.provider",
+        "column:MeteredProviderBudget.reservedCalls",
+        "column:MeteredProviderBudget.reservedUnitsMicros",
+        "column:MeteredProviderBudget.runId",
+        "column:MeteredProviderBudget.updatedAt",
+        "column:MeteredReservationReceipt.budgetId",
+        "column:MeteredReservationReceipt.createdAt",
+        "column:MeteredReservationReceipt.failureCode",
+        "column:MeteredReservationReceipt.id",
+        "column:MeteredReservationReceipt.operation",
+        "column:MeteredReservationReceipt.reservationKey",
+        "column:MeteredReservationReceipt.reservedAt",
+        "column:MeteredReservationReceipt.settledAt",
+        "column:MeteredReservationReceipt.status",
+        "column:MeteredReservationReceipt.unitsMicros",
+        "column:MeteredReservationReceipt.updatedAt",
+        "column:MeteredReservationSettlement.detail",
+        "column:MeteredReservationSettlement.id",
+        "column:MeteredReservationSettlement.outcome",
+        "column:MeteredReservationSettlement.reservationId",
+        "column:MeteredReservationSettlement.settledAt",
+        "index:MeteredProviderBudget_approval_idx",
+        "index:MeteredProviderBudget_run_provider_key",
+        "index:MeteredReservationReceipt_budget_key",
+        "index:MeteredReservationReceipt_budget_status_idx",
+        "index:MeteredReservationSettlement_reservation_key",
+        "table:MeteredProviderBudget",
+        "table:MeteredReservationReceipt",
+        "table:MeteredReservationSettlement",
+        "trigger:MeteredProviderBudget_contract_immutable",
+        "trigger:MeteredProviderBudget_counter_monotonic",
+        "trigger:MeteredProviderBudget_delete_guard",
+        "trigger:MeteredProviderBudget_duplicate_insert_guard",
+        "trigger:MeteredProviderBudget_initial_counters_guard",
+        "trigger:MeteredReservationReceipt_delete_guard",
+        "trigger:MeteredReservationReceipt_duplicate_insert_guard",
+        "trigger:MeteredReservationReceipt_identity_immutable",
+        "trigger:MeteredReservationReceipt_initial_state_guard",
+        "trigger:MeteredReservationReceipt_lifecycle_metadata_guard",
+        "trigger:MeteredReservationReceipt_operation_guard",
+        "trigger:MeteredReservationReceipt_reservation_coverage_guard",
+        "trigger:MeteredReservationReceipt_status_transition",
+        "trigger:MeteredReservationReceipt_terminal_settlement_guard",
+        "trigger:MeteredReservationSettlement_apply",
+        "trigger:MeteredReservationSettlement_delete_guard",
+        "trigger:MeteredReservationSettlement_duplicate_insert_guard",
+        "trigger:MeteredReservationSettlement_immutable"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260719000000_metered_budget_ledger/migration.sql",
+      "sha256": "91e2ca1346e3d3ef4c37c62153b846cc7be5b537822252ec4edef1b010e80b68",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260719001000_product_truth_metered_evidence_link",
+      "missingArtifacts": [
+        "trigger:DonorOfferObservation_metered_receipt_guard",
+        "trigger:ProductContentObservation_metered_receipt_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260719001000_product_truth_metered_evidence_link/migration.sql",
+      "sha256": "d8bb681c2d18158ddc9108f352419f4b6655e8650a5602e1ac35b8b441353007",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260719002000_product_truth_listing_scope",
+      "missingArtifacts": [
+        "column:ProductTruthListingScope.channel",
+        "column:ProductTruthListingScope.createdAt",
+        "column:ProductTruthListingScope.keyVersion",
+        "column:ProductTruthListingScope.listingKey",
+        "column:ProductTruthListingScope.manifestAsOf",
+        "column:ProductTruthListingScope.manifestSchemaVersion",
+        "column:ProductTruthListingScope.manifestSha256",
+        "column:ProductTruthListingScope.ownerDecisionId",
+        "column:ProductTruthListingScope.registrationKind",
+        "column:ProductTruthListingScope.sku",
+        "column:ProductTruthListingScope.sourceCapturedAt",
+        "column:ProductTruthListingScope.sourceContentSha256",
+        "column:ProductTruthListingScope.sourceReportId",
+        "column:ProductTruthListingScope.storeIndex",
+        "column:SkuCostListingScopeLink.createdAt",
+        "column:SkuCostListingScopeLink.linkVersion",
+        "column:SkuCostListingScopeLink.listingKey",
+        "column:SkuCostListingScopeLink.skuCostId",
+        "index:ProductTruthListingScope_channel_store_sku_key",
+        "index:ProductTruthListingScope_manifest_idx",
+        "index:SkuCostListingScopeLink_listing_cost_idx",
+        "table:ProductTruthListingScope",
+        "table:SkuCostListingScopeLink",
+        "trigger:ProductTruthListingScope_delete_guard",
+        "trigger:ProductTruthListingScope_duplicate_insert_guard",
+        "trigger:ProductTruthListingScope_update_guard",
+        "trigger:SkuCostListingScopeLink_contract_insert",
+        "trigger:SkuCostListingScopeLink_delete_guard",
+        "trigger:SkuCostListingScopeLink_duplicate_insert_guard",
+        "trigger:SkuCostListingScopeLink_update_guard",
+        "trigger:SkuCost_listing_scope_contract_insert",
+        "trigger:SkuCost_listing_scope_link_guard",
+        "trigger:SkuCost_nonretail_listing_scope_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260719002000_product_truth_listing_scope/migration.sql",
+      "sha256": "5a98474712f8c48c9958cbe17855871aaef610b05b658e739418b61b40b9f775",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260719003000_product_truth_queue_listing_scope",
+      "missingArtifacts": [
+        "column:EnrichmentJob.listingKey",
+        "index:EnrichmentJob_listing_scope_status_idx",
+        "index:EnrichmentJob_one_active_listing_intent",
+        "trigger:EnrichmentJob_listing_scope_contract_insert",
+        "trigger:EnrichmentJob_listing_scope_contract_update",
+        "trigger:EnrichmentJob_listing_scope_identity_immutable",
+        "trigger:EnrichmentJob_queue_v3_quiescence_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260719003000_product_truth_queue_listing_scope/migration.sql",
+      "sha256": "edbeeaac5e8900fbe403c3970eeea85946d39828210977d0e4a4d1f8f3aa4bc7",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    },
+    {
+      "blockers": [],
+      "id": "20260719004000_product_truth_operational_run",
+      "missingArtifacts": [
+        "column:ProductTruthOperationalEvent.createdAt",
+        "column:ProductTruthOperationalEvent.eventHash",
+        "column:ProductTruthOperationalEvent.eventIndex",
+        "column:ProductTruthOperationalEvent.eventType",
+        "column:ProductTruthOperationalEvent.id",
+        "column:ProductTruthOperationalEvent.itemId",
+        "column:ProductTruthOperationalEvent.payloadJson",
+        "column:ProductTruthOperationalEvent.payloadSha256",
+        "column:ProductTruthOperationalEvent.previousHash",
+        "column:ProductTruthOperationalEvent.runId",
+        "column:ProductTruthOperationalRun.approvalId",
+        "column:ProductTruthOperationalRun.artifactIndexSha256",
+        "column:ProductTruthOperationalRun.createdAt",
+        "column:ProductTruthOperationalRun.environment",
+        "column:ProductTruthOperationalRun.eventChainHead",
+        "column:ProductTruthOperationalRun.finishedAt",
+        "column:ProductTruthOperationalRun.heartbeatAt",
+        "column:ProductTruthOperationalRun.leaseExpiresAt",
+        "column:ProductTruthOperationalRun.leaseOwner",
+        "column:ProductTruthOperationalRun.leaseToken",
+        "column:ProductTruthOperationalRun.manifestSha256",
+        "column:ProductTruthOperationalRun.mode",
+        "column:ProductTruthOperationalRun.planJson",
+        "column:ProductTruthOperationalRun.planSchemaVersion",
+        "column:ProductTruthOperationalRun.planSha256",
+        "column:ProductTruthOperationalRun.providerCeilingsJson",
+        "column:ProductTruthOperationalRun.reportSha256",
+        "column:ProductTruthOperationalRun.runId",
+        "column:ProductTruthOperationalRun.sourcePolicyJson",
+        "column:ProductTruthOperationalRun.startedAt",
+        "column:ProductTruthOperationalRun.status",
+        "column:ProductTruthOperationalRun.targetCount",
+        "column:ProductTruthOperationalRun.targetFingerprint",
+        "column:ProductTruthOperationalRun.targetSetSha256",
+        "column:ProductTruthOperationalRun.updatedAt",
+        "column:ProductTruthOperationalRunItem.attempts",
+        "column:ProductTruthOperationalRunItem.checkpointJson",
+        "column:ProductTruthOperationalRunItem.checkpointSha256",
+        "column:ProductTruthOperationalRunItem.createdAt",
+        "column:ProductTruthOperationalRunItem.finishedAt",
+        "column:ProductTruthOperationalRunItem.id",
+        "column:ProductTruthOperationalRunItem.lastError",
+        "column:ProductTruthOperationalRunItem.leaseExpiresAt",
+        "column:ProductTruthOperationalRunItem.leaseToken",
+        "column:ProductTruthOperationalRunItem.listingKey",
+        "column:ProductTruthOperationalRunItem.ordinal",
+        "column:ProductTruthOperationalRunItem.queueJobId",
+        "column:ProductTruthOperationalRunItem.requestedFields",
+        "column:ProductTruthOperationalRunItem.resultJson",
+        "column:ProductTruthOperationalRunItem.resultSha256",
+        "column:ProductTruthOperationalRunItem.runId",
+        "column:ProductTruthOperationalRunItem.stage",
+        "column:ProductTruthOperationalRunItem.startedAt",
+        "column:ProductTruthOperationalRunItem.status",
+        "column:ProductTruthOperationalRunItem.updatedAt",
+        "index:ProductTruthOperationalEvent_run_idx",
+        "index:ProductTruthOperationalRunItem_claim_idx",
+        "index:ProductTruthOperationalRunItem_one_active_per_run",
+        "index:ProductTruthOperationalRun_one_running_environment",
+        "index:ProductTruthOperationalRun_status_updated_idx",
+        "table:ProductTruthOperationalEvent",
+        "table:ProductTruthOperationalRun",
+        "table:ProductTruthOperationalRunItem",
+        "trigger:MeteredProviderBudget_operational_counter_guard",
+        "trigger:MeteredProviderBudget_operational_run_guard",
+        "trigger:MeteredReservationReceipt_operational_authorization_guard",
+        "trigger:MeteredReservationReceipt_operational_run_guard",
+        "trigger:ProductTruthOperationalEvent_advance_chain",
+        "trigger:ProductTruthOperationalEvent_chain_guard",
+        "trigger:ProductTruthOperationalEvent_delete_guard",
+        "trigger:ProductTruthOperationalEvent_update_guard",
+        "trigger:ProductTruthOperationalRunItem_attempt_guard",
+        "trigger:ProductTruthOperationalRunItem_attempt_queue_guard",
+        "trigger:ProductTruthOperationalRunItem_delete_guard",
+        "trigger:ProductTruthOperationalRunItem_identity_immutable",
+        "trigger:ProductTruthOperationalRunItem_initial_state_guard",
+        "trigger:ProductTruthOperationalRunItem_queue_scope_guard",
+        "trigger:ProductTruthOperationalRunItem_status_transition_guard",
+        "trigger:ProductTruthOperationalRunItem_terminal_guard",
+        "trigger:ProductTruthOperationalRunItem_time_guard",
+        "trigger:ProductTruthOperationalRun_delete_guard",
+        "trigger:ProductTruthOperationalRun_event_chain_head_guard",
+        "trigger:ProductTruthOperationalRun_identity_immutable",
+        "trigger:ProductTruthOperationalRun_initial_state_guard",
+        "trigger:ProductTruthOperationalRun_lease_contract_guard",
+        "trigger:ProductTruthOperationalRun_status_transition_guard",
+        "trigger:ProductTruthOperationalRun_time_guard"
+      ],
+      "missingPrerequisites": [],
+      "presentArtifacts": [],
+      "relativePath": "prisma/migrations/20260719004000_product_truth_operational_run/migration.sql",
+      "sha256": "d1c75164517d52db85d579ef738223c5ec5d25463540fd1fef859f2131452e45",
+      "state": "pending",
+      "tracking": "not_checked",
+      "unsafePresentArtifacts": []
+    }
+  ],
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "mode": "dry-run",
+  "orderValid": true,
+  "prismaLedger": "ready",
+  "queueImpact": {
+    "contractVersion": "product-truth-migration-queue-impact/1",
+    "queueV2CompatibilityBackfill": {
+      "count": 128,
+      "rowIds": [
+        "119b7a35-173d-4f55-920e-25662fb004f2",
+        "11b7dc83-4fe3-4bdb-9456-55262c3d8edb",
+        "13dd607a-8016-43c2-befe-5c5570f37616",
+        "14ea240c-c205-4273-a5ca-535d212dea29",
+        "18d5dd13-7682-43b6-b8ac-c5efb2b1941c",
+        "1a3e5c3e-6914-4423-b668-76cb0a8af00f",
+        "1c640366-25f1-45cb-a824-e5825d69ce7b",
+        "20955df5-a7c8-41b4-b780-e7f2ec4fcee7",
+        "20a55e3f-c525-40d9-a6fe-9f3a2dcaf51b",
+        "21a93c64-49e6-45f7-883f-83e54399a91b",
+        "228570ec-2a08-44a5-a25b-c0a263fa3f3c",
+        "239f766b-04fb-4e51-88c0-d0d1e1d00d5b",
+        "24feca17-d51e-4f26-b12a-23be6c1ae401",
+        "2525f07d-1019-466c-a574-ae2a2aa60bbd",
+        "29e09bee-c48d-4868-bb3b-db441d16cfee",
+        "2b4dd46b-3204-4280-b449-a2e9ba1aed90",
+        "2f2a19e0-3391-4626-a26a-c32f20937452",
+        "2fbad063-618a-4934-8991-29b655e87f27",
+        "32355af7-0ee7-41a5-b781-6d0f096eba20",
+        "326ab8e8-536a-4419-a27e-15a20465dcfc",
+        "34bf0251-33aa-403f-a418-23120f7a9cb4",
+        "37d8a3fb-66d9-4e34-88d7-f5652cfc28fc",
+        "389d618f-3b7a-4211-bded-e63d77e7445d",
+        "3a8dcccd-b6e3-4c84-9ceb-137467f913a3",
+        "40359c2b-1c50-44db-8e89-1759605a96db",
+        "4447b5f1-95b9-4af4-9bf9-8369508f3920",
+        "45cb9cb8-cd90-4305-a0fe-b1e2a96ee03f",
+        "4a629e28-87c5-4c68-a759-7cdfc30ce181",
+        "4ac6a79a-eda5-4105-b9c5-31af544cddf0",
+        "4da93da3-3c99-4de8-a6c9-c28ec4a92072",
+        "4f4d8f55-b347-487c-9fce-75ed691f5099",
+        "4f500b6f-fa4f-428b-a139-219ecbc3bdfe",
+        "512cf682-ce4d-4dcd-8320-99d083a20272",
+        "519ef57f-92bf-4670-85b7-a738b69d1096",
+        "53f943a4-4e00-42af-8aa7-aceda3d0c95e",
+        "54022598-de8a-4796-9526-8aa0c3fa2e06",
+        "5453fb15-cc1a-4040-93f1-9512d5b76d66",
+        "549e496f-dae9-44de-a61a-a62eb1aeeb86",
+        "571bd4d2-fc2b-4a59-9816-7556c6343709",
+        "58033c38-6d96-48b4-b575-3ce68cc335de",
+        "5a89115a-66cf-4a10-bde4-2dce5e36ae34",
+        "5be582e9-9841-4759-b11d-1654c1dd2e5b",
+        "5f3f4a4d-5a1b-4874-9618-03338d1b0636",
+        "68ff4bed-4373-4912-9eff-0cb027429f11",
+        "6acc7169-034c-44c3-86c3-04dd1cbcadfb",
+        "6b3eb35a-4797-41f8-b9a1-7071770ef465",
+        "6da384b8-64d4-4afa-91ab-f04c5a5f06a0",
+        "70a484e3-75e4-4259-ba0e-43436879c14f",
+        "71c46204-957b-40a7-ae73-95b73e37bad7",
+        "731c785d-fc57-45b4-8ba6-4d1b42f1a7e7",
+        "732aad21-60a2-4187-86b8-d0684a6f8c72",
+        "73db06ac-0de1-4769-acc8-e4794bab6f30",
+        "74e46202-af10-4eb8-b8eb-01375d369b01",
+        "778fccba-f4c7-42db-a603-ae9573c8636c",
+        "78673e78-92a0-4677-9178-347f058a8155",
+        "786d9b8c-b16d-4bac-9ecd-858823db04fb",
+        "789093d3-3c63-4c63-adc1-c01612226189",
+        "7a03a6b0-73a3-4efa-9d70-2fb7fd403860",
+        "7b46aad3-1bf4-49f4-8d33-eb0bd941ad55",
+        "7d9319a5-7554-468a-b545-1d5b8a2209fe",
+        "7e04a199-c226-48dd-80e9-3f6c222ed54f",
+        "7edef950-4646-473d-a92f-ec6570e5562c",
+        "7fdce02f-1990-43e1-b61c-622a91db9706",
+        "8093894d-98e2-4284-a584-a31a5bc9ac31",
+        "8193941c-b169-4cfc-a359-99a51cc5b5f1",
+        "81a175ac-4ca1-4142-b1c4-0a8d7db355be",
+        "834c7cb2-dd65-40c8-96a0-59a6a5a6947c",
+        "83606836-a93d-4698-8410-8e031e6a40f5",
+        "89645b26-d7a0-45c7-bcd2-0f513c246ae9",
+        "8ce45643-543f-4f78-9380-0907420ed7e4",
+        "8d378a70-eab0-4825-8cbf-487881e7c049",
+        "8d91989f-1d0e-481d-94eb-7c5c85ab8725",
+        "8e07b1c6-03d4-43e7-81ad-b2e2ab8fc2d7",
+        "8e65391b-31a8-40c1-8ae4-686bff0418c1",
+        "8ecfcfeb-bf0e-4e22-af8f-8a93f968cea5",
+        "97ae118e-f59c-428d-acae-f6725b6a4f41",
+        "98b1b387-2482-43e6-be95-12f346eb69f7",
+        "9c3b0027-3853-45dd-a845-7f106266e3a0",
+        "9e153f37-8864-46d3-bfb1-d6506afef5ef",
+        "a22a9145-0431-4a9d-b1ce-a4c1bdf466bc",
+        "a2c5d058-a548-4e6b-a79e-0537d55f6830",
+        "a5331714-20d9-4500-b554-9bcf99118350",
+        "a64c836c-1362-481b-8cb8-71ff31b858b7",
+        "a924cf0b-ee86-48af-8c46-11baae721453",
+        "ac42d620-7b4e-4374-8856-b3d71e939915",
+        "b0b10bf7-3dcd-426c-b09a-0b6a8304cad9",
+        "b0ee1b44-8b34-4e7d-ad3c-3a1f82b1e16e",
+        "b1dbe867-4f3d-42e7-93e8-f46908c945e0",
+        "b2613eb8-bfa8-420c-b994-c1cd9a1496ae",
+        "b326519c-f09c-4b7e-ab16-664fd8f9eab9",
+        "b5370ab4-89fb-4fd7-acb4-ae47eaeb6113",
+        "b6b03255-42a2-4dae-a8c7-148e78582279",
+        "b8423b61-c5a9-4703-9159-433b855f3b80",
+        "badf72f6-a3cd-4992-ba7a-c97b00e32710",
+        "bae8dd3a-7ba1-4eef-b4ee-9b2db685fcb1",
+        "bd06ba8c-4376-458b-842c-7bcf90fce0a1",
+        "c47fcd7b-ff2f-4f9f-8320-ac6dfed335f7",
+        "c52dd11d-e198-4ad9-a0bb-11804e5da93b",
+        "c67f2bfd-b364-4a4c-a83c-47e226f038c6",
+        "c8751e82-4767-494b-af07-9d567e8ded07",
+        "cae64563-4a2f-4b23-8f7f-c1a9e47069bc",
+        "cdf55b06-dff3-47f4-a967-97b66f1f6ccf",
+        "cf3f9ad9-1959-4fe4-af55-9e1f4b3778a2",
+        "d24897d8-80cb-4cfd-bc1e-f93fae9e1c01",
+        "d2cafde8-f63a-4737-b15a-343c5cb4e1b9",
+        "d2eccb90-3e1b-43f2-a29c-a6e69d6a9b7a",
+        "d4274c9b-30c4-47c6-b88e-4364baf7ae83",
+        "d576ef54-ce85-47d6-acaf-9b033a7b3962",
+        "d57e7286-b4fd-470d-9be3-840b002e99a1",
+        "d61960dc-a46a-4427-87ba-307b820d6309",
+        "d8a1d8e3-8e00-48ab-b080-382eaf0fbb81",
+        "de25dfb4-9a59-4437-a571-51a712699bb2",
+        "e2c63d1b-8edf-4b28-9b22-0189ebbaa3e0",
+        "e3fbe954-c5c3-4284-8714-660fadf7d72b",
+        "e4312268-0403-4539-8fe8-c458a84adc4d",
+        "e664bb1f-74f3-4554-aad2-778bc5c5e781",
+        "e77ff871-c7d0-4cc3-96c4-9861d6cd6fe5",
+        "e91725fb-5d96-43b2-b71b-f407bd82e827",
+        "ef0cb66a-0036-4cae-8814-5d072a568d3b",
+        "efb80d40-5363-470f-95c7-f53539bd679a",
+        "f081ee46-dec8-45ae-9029-35a1468c0f5e",
+        "f18c32cd-f0f0-417d-a12d-b011e6cf2d84",
+        "f247080f-7b1b-49a4-b62f-7d4be453fc81",
+        "f4f3e34a-c0b9-43b0-8291-34a6d6d832be",
+        "f5c8b435-8b66-445f-9654-85c4feadf5d7",
+        "f8cfa053-ccc1-4579-b33e-5e747c7105a0",
+        "fcfd74a5-787f-4230-a682-9e8d858f10d3",
+        "fd6323a8-fa67-4385-be81-f80fa1ac6424"
+      ],
+      "rowsSha256": "36151c2945382bd19f45055641cfe2090191417eb186d34fb906b3fbfee5df5d"
+    },
+    "queueV3Cancellation": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "runningQueueJobs": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "sha256": "2d1f06edafc5042f38e0cecd9707f25c2ebfc45a33eb3eeeaa43512ac10b1707"
+  },
+  "receiptLedger": "absent",
+  "runId": "walmart-pilot-product-truth-post-failure-20260723T004200Z",
+  "schema": {
+    "indexCount": 403,
+    "objectCount": 525,
+    "objects": [
+      {
+        "name": "_prisma_migrations",
+        "sqlSha256": "8c33cfe7da5139b4c0ea11c88df197428f5e998a23856aa6ac7fb0242ed57a16",
+        "tableName": "_prisma_migrations",
+        "type": "table"
+      },
+      {
+        "name": "AccountAlert",
+        "sqlSha256": "42a6336acb1668873718fd30680c3750b6dfc5fc1f61a59444763d9762622d62",
+        "tableName": "AccountAlert",
+        "type": "table"
+      },
+      {
+        "name": "AccountHealthSnapshot_storeId_createdAt_idx",
+        "sqlSha256": "0a9b08999b5435ce75b5dc4bbbb2cdb070e94b8e70d48684cce1c38c6a6a9ada",
+        "tableName": "AccountHealthSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "AccountHealthSnapshot",
+        "sqlSha256": "56bf7b2e0253544470256e186a1ac270ddb7664cc1215a900ad96811e49f0955",
+        "tableName": "AccountHealthSnapshot",
+        "type": "table"
+      },
+      {
+        "name": "AmazonAdvisorQueue_status_queuedAt_idx",
+        "sqlSha256": "03d230b8734975c3c730afc44f7cf9e92c5cf5326be50934284724e143908b30",
+        "tableName": "AmazonAdvisorQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAdvisorQueue_storeIndex_sku_key",
+        "sqlSha256": "e07226edf66c1e06fe73510e6285efd9c505098fe4f1a04db8b8f425a0f4444b",
+        "tableName": "AmazonAdvisorQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAdvisorQueue_storeIndex_status_idx",
+        "sqlSha256": "9e76fcb3aad684886f852126780a60467674d9a6978f2ea0dae42420c020f068",
+        "tableName": "AmazonAdvisorQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAdvisorQueue",
+        "sqlSha256": "575ea9f62a5969739c5d96ed6af36d1f91de6fc312e2663add5e73a1f171f26a",
+        "tableName": "AmazonAdvisorQueue",
+        "type": "table"
+      },
+      {
+        "name": "AmazonAplusJob_storeIndex_asin_idx",
+        "sqlSha256": "21546ffa5c43bbe536ec0d581b4b3505e2b8e34901da096501721a13a54cd1c7",
+        "tableName": "AmazonAplusJob",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAplusJob_storeIndex_sku_variant_key",
+        "sqlSha256": "bd2819cb40ccfb95be8218bda2e4791512c85b42659a23b6aabe748a04699e4b",
+        "tableName": "AmazonAplusJob",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAplusJob_storeIndex_status_idx",
+        "sqlSha256": "cf79b2674faf925a1cc674c26b36023cac0f597afa8d65bc128545138991e487",
+        "tableName": "AmazonAplusJob",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAplusJob",
+        "sqlSha256": "64d09fde67cc2803c8709c1e915e0260d22201cc7d7b273122473360a4d3fa27",
+        "tableName": "AmazonAplusJob",
+        "type": "table"
+      },
+      {
+        "name": "AmazonAsinDaily_storeIndex_asin_date_key",
+        "sqlSha256": "7e36bd6d48e5a60b1fa1756edcf884df4f417741fe265023d74c4364a4b7cce4",
+        "tableName": "AmazonAsinDaily",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAsinDaily_storeIndex_asin_idx",
+        "sqlSha256": "9952b481b1c8646ea33407596b3cc4d9baf02ce39acffedb1191b93af24d4d25",
+        "tableName": "AmazonAsinDaily",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAsinDaily_storeIndex_date_idx",
+        "sqlSha256": "5cde19d37f87cf715efe6dcda58c312139021e4c0b1926e01f6dae1610e75007",
+        "tableName": "AmazonAsinDaily",
+        "type": "index"
+      },
+      {
+        "name": "AmazonAsinDaily",
+        "sqlSha256": "1a3fc3848d5a0a65537f9752a47423c250b65c11fc519d181b611d5d3180ae4e",
+        "tableName": "AmazonAsinDaily",
+        "type": "table"
+      },
+      {
+        "name": "AmazonChangeLog_afterMeasuredAt_idx",
+        "sqlSha256": "ecd9505df395f1b0dd57cf6556812024df12b8eeb986b63debc16d328b892474",
+        "tableName": "AmazonChangeLog",
+        "type": "index"
+      },
+      {
+        "name": "AmazonChangeLog_outcome_idx",
+        "sqlSha256": "4a720f2066c4163727d96f6f474a544ab8bc3830fee93aa093860c71ba854b45",
+        "tableName": "AmazonChangeLog",
+        "type": "index"
+      },
+      {
+        "name": "AmazonChangeLog_storeIndex_createdAt_idx",
+        "sqlSha256": "35e6ac47225f821743575fdb8e00ab1802e5b2beb3c013e702c9fe868aacf4fb",
+        "tableName": "AmazonChangeLog",
+        "type": "index"
+      },
+      {
+        "name": "AmazonChangeLog_storeIndex_sku_idx",
+        "sqlSha256": "0e047a0239d023f1a4c98bc10946f9752362189cddfb729141a5f765997fb954",
+        "tableName": "AmazonChangeLog",
+        "type": "index"
+      },
+      {
+        "name": "AmazonChangeLog",
+        "sqlSha256": "52eca32de9ed3d3b20535a7217314866e46dba2a7809405dfd4b3507a3fda4b1",
+        "tableName": "AmazonChangeLog",
+        "type": "table"
+      },
+      {
+        "name": "AmazonGrowthReport_reportId_key",
+        "sqlSha256": "47b5ac6b3c514f4f2597ca11a0b10fdd64ef4af9b58851a997dbce8d2a14dffe",
+        "tableName": "AmazonGrowthReport",
+        "type": "index"
+      },
+      {
+        "name": "AmazonGrowthReport_status_idx",
+        "sqlSha256": "989bf0e0b8d0b06576f1a9782e1c1720f52c7da88fa2709daa73604cb307b65a",
+        "tableName": "AmazonGrowthReport",
+        "type": "index"
+      },
+      {
+        "name": "AmazonGrowthReport_storeIndex_reportType_requestedAt_idx",
+        "sqlSha256": "7a16a73f4898622abf45f28cbb33ab29d005a3d2f2d914062aac6959e1db5958",
+        "tableName": "AmazonGrowthReport",
+        "type": "index"
+      },
+      {
+        "name": "AmazonGrowthReport",
+        "sqlSha256": "3e00ab03c6a841c978f9842f2157e1d0e92b2b5e6b53cceeb92d4544acea21b8",
+        "tableName": "AmazonGrowthReport",
+        "type": "table"
+      },
+      {
+        "name": "AmazonHealthSyncState",
+        "sqlSha256": "929faf7ba9c4d92e7ec45cd1f31ffde350526e88b7fc82ca873ca8d3dc249c84",
+        "tableName": "AmazonHealthSyncState",
+        "type": "table"
+      },
+      {
+        "name": "AmazonListingHealthItem_storeIndex_healthScore_idx",
+        "sqlSha256": "8205d5e9388de51dd37b827a5668e016a1477b956d97f9a311d54e5aa55e3c02",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthItem_storeIndex_isSuppressed_idx",
+        "sqlSha256": "f7fc2ed04342df9912824072047d15963b9ccb6897c2ddeffebdd2762e51d830",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthItem_storeIndex_opportunityScore_idx",
+        "sqlSha256": "c654fe38a49a88ca53b83ccacb65890336ae364dc8eee95587823a83c22e8a86",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthItem_storeIndex_sku_key",
+        "sqlSha256": "d5f61eb77c47cc901ad55d476ce45d0ffe1ba0b7e112735082b57d1dbfa17373",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthItem_storeIndex_syncedAt_idx",
+        "sqlSha256": "f5307a8c874b196311bcbce2a2e8e935184652f218b23e1c5feb8e75ca428586",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthItem",
+        "sqlSha256": "bde5fb9c99ba8336f2e9f172a2b78e75461cb7b3dcd8dedc39ef41bb686c267f",
+        "tableName": "AmazonListingHealthItem",
+        "type": "table"
+      },
+      {
+        "name": "AmazonListingHealthSnapshot_storeIndex_capturedAt_idx",
+        "sqlSha256": "721bf1d2a759d69a2fda549ceb72ca090d2a3c7b2c3fd09837fad1a8d16039c5",
+        "tableName": "AmazonListingHealthSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingHealthSnapshot",
+        "sqlSha256": "ac6e962d5d84817b89cd9ed91f9b08375a9b82382e5135c62ae613a8d75603b1",
+        "tableName": "AmazonListingHealthSnapshot",
+        "type": "table"
+      },
+      {
+        "name": "AmazonListingRemediation_storeIndex_afterMeasuredAt_idx",
+        "sqlSha256": "d9b73ea61e3cb7dc32502f48d69510e7b34ffa18cdfb6dcd5917704b59f8932e",
+        "tableName": "AmazonListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingRemediation_storeIndex_runAt_idx",
+        "sqlSha256": "220d898832d7692f80e5101eaf135720c66a716019b443b06444a3aaece7485f",
+        "tableName": "AmazonListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingRemediation",
+        "sqlSha256": "1f21f899279f3ae53ab4c9e966aa14578803334e1d797a81609a5682ef494f16",
+        "tableName": "AmazonListingRemediation",
+        "type": "table"
+      },
+      {
+        "name": "AmazonListingSnapshot_storeIndex_asin_idx",
+        "sqlSha256": "781f95c93e5fffc70df3ec3476349055f67d22e394efcd655e149b7e458ddccb",
+        "tableName": "AmazonListingSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingSnapshot_storeIndex_sku_capturedAt_idx",
+        "sqlSha256": "54713b34e922d17ad4f732b22e74a2146c5aaffd1d413a53ef5cf723cbe59650",
+        "tableName": "AmazonListingSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "AmazonListingSnapshot",
+        "sqlSha256": "5f1304366913eaf77a10f433f2c088b66611515549b706ec5c32e8f918c2b48f",
+        "tableName": "AmazonListingSnapshot",
+        "type": "table"
+      },
+      {
+        "name": "AmazonOrder_amazonOrderId_key",
+        "sqlSha256": "da0a6d6e5b7c3ed7aa84dc011dda1c27ed4cded27644107e545d6ec7b830090b",
+        "tableName": "AmazonOrder",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrder_purchaseDate_idx",
+        "sqlSha256": "255abfe2c31229e312120efb08f02e33eed0c6f16818fc5b283a286ea054fca2",
+        "tableName": "AmazonOrder",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrder_storeIndex_status_idx",
+        "sqlSha256": "3a8aa75fe2a29a14ab6dd06fa2a16fdcd4c9fb3ab78eee7b502736d50e3b548f",
+        "tableName": "AmazonOrder",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrder",
+        "sqlSha256": "e40623234b8145f9d6440dbe65d2d39978577c89aa85dd1029ed4bf990d5d113",
+        "tableName": "AmazonOrder",
+        "type": "table"
+      },
+      {
+        "name": "AmazonOrderShipment_amazonOrderId_idx",
+        "sqlSha256": "2c0fe6a53052999d1f1d6023f0c7c4e7568a71191d9f5c7472e2f6127e0b0bd6",
+        "tableName": "AmazonOrderShipment",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrderShipment_amazonOrderId_sku_key",
+        "sqlSha256": "444d2b1f04b6fa0d0e90dcf62d51394f9c90980317eb880f6dbb66512834fc8d",
+        "tableName": "AmazonOrderShipment",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrderShipment_trackingNumber_idx",
+        "sqlSha256": "e70df71071a1e8fb2135f879d47f890997c11799970372aa73566c1c6389bf5e",
+        "tableName": "AmazonOrderShipment",
+        "type": "index"
+      },
+      {
+        "name": "AmazonOrderShipment",
+        "sqlSha256": "ff54e793ee376764c4048a1761dc999dac6f0aa6cdafb2f3b581aefa5037a204",
+        "tableName": "AmazonOrderShipment",
+        "type": "table"
+      },
+      {
+        "name": "AmazonRemediationQueue_status_queuedAt_idx",
+        "sqlSha256": "9f0fb93ed1d8926257d06b1351f2d9859db9ae0986472c7d2285234db94376ff",
+        "tableName": "AmazonRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonRemediationQueue_storeIndex_sku_key",
+        "sqlSha256": "b07c65c4a365ad8657427f8754e22d0853efae6e8d1ec27155fe4a5846e0b1f8",
+        "tableName": "AmazonRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonRemediationQueue_storeIndex_status_idx",
+        "sqlSha256": "e79db2d47654899d14d484c7c9768950bef964e44664963850894a3553684b59",
+        "tableName": "AmazonRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "AmazonRemediationQueue",
+        "sqlSha256": "109ff012019387ef26e27572f66dac2d4ce3eaddd1dd6b2beb96ff2ad1bee583",
+        "tableName": "AmazonRemediationQueue",
+        "type": "table"
+      },
+      {
+        "name": "AtozzClaim",
+        "sqlSha256": "8bbefd53bfcf0bdc30f65c2c8a05bc4af4294b7fe3a7e9bf262eb01ad2541913",
+        "tableName": "AtozzClaim",
+        "type": "table"
+      },
+      {
+        "name": "BoxSizePreset_label_key",
+        "sqlSha256": "7d30ed9563bef673cf59976b4f58ed598e1f552b1d7514ea8431c037486540e0",
+        "tableName": "BoxSizePreset",
+        "type": "index"
+      },
+      {
+        "name": "BoxSizePreset",
+        "sqlSha256": "d883d66756b88ddbc9029f05360de9363f3f52a48132337013e5acfb94f11663",
+        "tableName": "BoxSizePreset",
+        "type": "table"
+      },
+      {
+        "name": "BrandAccount_brand_channel_key",
+        "sqlSha256": "884727dc7beb05e9b94bcdcd0b732d7a4608bd432fc4fee86df13e3ddb2361ab",
+        "tableName": "BrandAccount",
+        "type": "index"
+      },
+      {
+        "name": "BrandAccount_brand_idx",
+        "sqlSha256": "3e3b8e6da14a9fb0e558a7d82563afe1e49be19de5917f2467e5177c18194b1e",
+        "tableName": "BrandAccount",
+        "type": "index"
+      },
+      {
+        "name": "BrandAccount_channel_idx",
+        "sqlSha256": "d3d649d62c9fe7966b746bd789dbb36b6e3737f508ce75f0947f854317f5a686",
+        "tableName": "BrandAccount",
+        "type": "index"
+      },
+      {
+        "name": "BrandAccount",
+        "sqlSha256": "2272f73082f6672184660bff5b5e86d8207cf547b845352425aaa8f5a48a1ac4",
+        "tableName": "BrandAccount",
+        "type": "table"
+      },
+      {
+        "name": "BrandConflict_asin_idx",
+        "sqlSha256": "a34ca223286e4124c69da32cf162b890e41a671b713ae286aae1d33b5badfaf8",
+        "tableName": "BrandConflict",
+        "type": "index"
+      },
+      {
+        "name": "BrandConflict_foreign_brand_idx",
+        "sqlSha256": "814fd602653f88bddd37911ab673fc64351d65421f5d2d07657eb6f766356a11",
+        "tableName": "BrandConflict",
+        "type": "index"
+      },
+      {
+        "name": "BrandConflict_status_idx",
+        "sqlSha256": "48ddfcd79fbc05cee1259aa19ebcc5eceb1bb92274adcb13df27b4d3709df654",
+        "tableName": "BrandConflict",
+        "type": "index"
+      },
+      {
+        "name": "BrandConflict",
+        "sqlSha256": "12139d1ff97b0a43d9332af5bf998369c4ec58bf5461e69931f5c8f86d911d02",
+        "tableName": "BrandConflict",
+        "type": "table"
+      },
+      {
+        "name": "BundleComponent_manufacturer_brand_idx",
+        "sqlSha256": "7fa685e62c75897e8b5c52621de7034d2dcf2235ab07979436200f14ffa76a85",
+        "tableName": "BundleComponent",
+        "type": "index"
+      },
+      {
+        "name": "BundleComponent_master_bundle_id_idx",
+        "sqlSha256": "081c8b81d3c1ffb4139d4458dcbaab46cb7651f28d98a95bdcb908b4f33dce23",
+        "tableName": "BundleComponent",
+        "type": "index"
+      },
+      {
+        "name": "BundleComponent",
+        "sqlSha256": "08236c2d3a9015ef6b0f3b00c6d4e88daccfad539a591bc064d18f96fa481a57",
+        "tableName": "BundleComponent",
+        "type": "table"
+      },
+      {
+        "name": "BundleDraft_approved_at_idx",
+        "sqlSha256": "05912f80c6b6c3f3897fd05bf9b7607cf4f909180142821eaa52304ee68b7e1d",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft_compliance_status_idx",
+        "sqlSha256": "5acb2812959bb5559254618b80f4262cac649d448cfec6064520c7933b88a18e",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft_generation_job_id_idx",
+        "sqlSha256": "bedb8acb9ea007ca980275fd470b4c221b8672f3814d88d69b3a1e34e9266eef",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft_master_bundle_id_key",
+        "sqlSha256": "81c6866fe0e8982ce25456041003a5e30a80e6e43bb97bc98adcdc7f04199201",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft_recipe_fingerprint_key",
+        "sqlSha256": "69747a0c8b51a015b412b59bba90fa23928017556fcc8261664a2044804afe70",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft_status_idx",
+        "sqlSha256": "09486f3d5f3ae4019dbd023c5b7593ad16d20acc14c1107262f37f4ab17293fb",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "BundleDraft",
+        "sqlSha256": "2f5474feaf7e525e265608afcb85c32e67cb022fe35965b98c8eb6674c3231c3",
+        "tableName": "BundleDraft",
+        "type": "table"
+      },
+      {
+        "name": "BuyerMessage_amazonOrderId_idx",
+        "sqlSha256": "5a15d2ffc5985acd53f4c68df6521532afa3a09b1eeca4d1bbaa4dedbaa1bbba",
+        "tableName": "BuyerMessage",
+        "type": "index"
+      },
+      {
+        "name": "BuyerMessage_gmailMessageId_key",
+        "sqlSha256": "317b39364bb0279985231c1d97146fc6a3cd345482fe922b30d9c7891776508a",
+        "tableName": "BuyerMessage",
+        "type": "index"
+      },
+      {
+        "name": "BuyerMessage_storeIndex_status_idx",
+        "sqlSha256": "2cca71f1871aed666a93479cb58e62546a807619712873ecf22abedbca7b6607",
+        "tableName": "BuyerMessage",
+        "type": "index"
+      },
+      {
+        "name": "BuyerMessage",
+        "sqlSha256": "82e178943aeba5ec2ff40a0b6a2df6d6415c786aa442289dc5f3076135ed27c1",
+        "tableName": "BuyerMessage",
+        "type": "table"
+      },
+      {
+        "name": "CardEntry_cardId_idx",
+        "sqlSha256": "5913191fcffc4364c1c9b97f9d199e2ff3e1a3bc4d9168f78a9979632e61cefe",
+        "tableName": "CardEntry",
+        "type": "index"
+      },
+      {
+        "name": "CardEntry",
+        "sqlSha256": "567d9ecd641bb70db029c1410a1e83b690c654bfcd868aabc436245cfa621779",
+        "tableName": "CardEntry",
+        "type": "table"
+      },
+      {
+        "name": "CatalogSnapshot_capturedAt_idx",
+        "sqlSha256": "5ed81e5317483ac2a7a82ca1c2e28371fd3bff002e4e05717974d64633bbdf75",
+        "tableName": "CatalogSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "CatalogSnapshot",
+        "sqlSha256": "fc76f57e5d92e5890476dbc5ff0fdee48a3fa796e216b8a5f01dc4269c678314",
+        "tableName": "CatalogSnapshot",
+        "type": "table"
+      },
+      {
+        "name": "ChannelMaxAgentEvent_append_only_delete",
+        "sqlSha256": "4bc06f907a4831be140edd3c54cdae0bf60571b2b66a5b0554b4b54c6b9f824b",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "trigger"
+      },
+      {
+        "name": "ChannelMaxAgentEvent_append_only_update",
+        "sqlSha256": "7f587d6281202d50115b2c387a90bd8ba5dc239c084de48cb3400239ca2820cc",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "trigger"
+      },
+      {
+        "name": "ChannelMaxAgentEvent_jobId_eventKey_key",
+        "sqlSha256": "6e69ddfbec31d4d50528e0df6124a3cf14a89e7491fff22ff18385277407b29e",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvent_jobId_occurredAt_idx",
+        "sqlSha256": "6693d8e404dff5e1dc7ba9529406dee91101e870fdd03c7df1a99b8760fa9a35",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvent_jobId_sequence_key",
+        "sqlSha256": "8986fa58cddc8aeb6531b321fec2b4f597d51cc2c1d0f4134014e7015a6e2cf9",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvent",
+        "sqlSha256": "91e85b5c462a750ec4ce9e8e066b76be635c6ef8f8b637d6d7d66525c2454251",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "table"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence_append_only_delete",
+        "sqlSha256": "cd1e4ad88f3628e701f9bf367b4bfa5220066d745619a140788782e02680dd4f",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "trigger"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence_append_only_update",
+        "sqlSha256": "8b6efe53c017773fe6a1d1ffbd31ac60c075e0608dec847bb3ae529edeafe552",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "trigger"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence_jobId_createdAt_idx",
+        "sqlSha256": "2dc47911357d0c79d71acca5c7a56f61371dee13c70c017131f92b8fb8ad33c2",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence_jobId_kind_sha256_key",
+        "sqlSha256": "b84194d64505c1c918730e7660f835f79ca71f937b32110bff88aa90d5149d98",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence_uri_key",
+        "sqlSha256": "9a2a21c1265e6e6523bc3b1f2fa750b6c39a002f3d751e3fa227fc571394606f",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentEvidence",
+        "sqlSha256": "11a6daf485634ad4ef2c93c1b63ee67410e271f369403a6bae470f3d500fbb8c",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "table"
+      },
+      {
+        "name": "ChannelMaxAgentJob_accountLeaseKey_key",
+        "sqlSha256": "65a34ea5688af8867d7bf656e6a70b92d13264cfaf0a04587086f2bbc4f5b122",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_approvalNonce_key",
+        "sqlSha256": "8d90f7e7b8498dbd2af3e9451196c6702d56d4e9e3a2aa404bccc6ef5b8c0437",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_approvalStepUpAssertionId_key",
+        "sqlSha256": "14bd2cfd44a41a57625d6ea7c0a566cf09b7a78298fbcabdcb56177cbd0d702e",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_browserLeaseKey_key",
+        "sqlSha256": "53efa03aa6629940dc98a717c19f4411457f1f0e054a8291dc494be345046077",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_idempotencyKey_key",
+        "sqlSha256": "6f44acf1ae413143d0576916e1c2725e1b573edf210413ca5e622f594dda9652",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_leaseExpiresAt_idx",
+        "sqlSha256": "cfdbd02506a0608225ae2e2514767092d1cad64e383b369847796e43081d8583",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_mutationPlanLock_key",
+        "sqlSha256": "f035e89abff4c7a983667d345b319273aecd392c841730750259a8774caabc86",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_mutationPlanSha256_idx",
+        "sqlSha256": "5be97a970f30f5ccc865cf3d438c6f866029bd6d48eabb06f2420babe2b9eb61",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_operation_status_idx",
+        "sqlSha256": "d53d254921166525ab9da38eab1bf964214c94bf1475dba17f9ffbc7b558ca61",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_reconcilesJobId_idx",
+        "sqlSha256": "092c39b26a74e572f34c78023eb3be4e0a92dd8a14989d149739d124287116a9",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_reconciliationTargetLock_key",
+        "sqlSha256": "215a9ac59516f547a1c40a6dfb009bbdbedc01979a1f69a2750183004ed2a745",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob_status_priority_queuedAt_idx",
+        "sqlSha256": "cf2aa005e94ac32036f931b8aafe6679fa7bd9d37e3c029a763690587fea6ce7",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxAgentJob",
+        "sqlSha256": "7fcb518357b617dce32ac415c5d6e0d025a04e4d84b8dc35ca019ee3de100069",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "table"
+      },
+      {
+        "name": "ChannelMaxStepUpAssertion_ceremonyId_key",
+        "sqlSha256": "815b092f08f1bada287afaac2ddb2046241656855bb22d3c2034593a85e4aba4",
+        "tableName": "ChannelMaxStepUpAssertion",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxStepUpAssertion_jobId_expiresAt_idx",
+        "sqlSha256": "bf3e20542cef5ded6252e7be79482fd94e7941c6897ea3a35a761db5161d586b",
+        "tableName": "ChannelMaxStepUpAssertion",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxStepUpAssertion_userId_expiresAt_idx",
+        "sqlSha256": "815139b6cc75f8253fb0af2d575250554f476d487aa382fd173f88fe600ae4e4",
+        "tableName": "ChannelMaxStepUpAssertion",
+        "type": "index"
+      },
+      {
+        "name": "ChannelMaxStepUpAssertion",
+        "sqlSha256": "2bed3556c3e55b69f1ab8e40f94f4b1256a435513e954bb17c4ee5bd6478f250",
+        "tableName": "ChannelMaxStepUpAssertion",
+        "type": "table"
+      },
+      {
+        "name": "ChannelSKU_asin_idx",
+        "sqlSha256": "6811bc98b320f52cf5f9916d89c75c5bd27db27a3a1606537b4167f6402887ea",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_channel_idx",
+        "sqlSha256": "e60b9178681fef31da6238360a42544820d300c59aab3f3f2d62ac25dc559001",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_compliance_status_idx",
+        "sqlSha256": "0acf341dece33eb7bf62462c7ac63b4f4a40959766c44bbb1a6427618d1587a2",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_lifecycle_status_idx",
+        "sqlSha256": "43b6716366d1e8f99c38d28508710ab7a37d16de88165246b2b8517178c3260e",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_listing_status_idx",
+        "sqlSha256": "8c4b8b999ea087405ac736686adfcd073746fc70e28cbd758cfd1f4f0932f8e6",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_master_bundle_id_idx",
+        "sqlSha256": "a75da626af0c522a84c3667e82c891b518632ab9ff606a6c57d2624169bdc9b8",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_sku_key",
+        "sqlSha256": "acde298f57a575ee3d3dab91176da31e04fdf9663d1c19a253afea4cbbb08905",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_upc_key",
+        "sqlSha256": "ec50c1eb58e1270c0dd16234bbe9b56cf70c7df810df16db61287a2d8eb7de55",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_upc_pool_id_key",
+        "sqlSha256": "76283f5fbfe0b9ead45365c3433b2ce925369df565e2844ea4a0e0b75a2d0279",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_validation_status_idx",
+        "sqlSha256": "40f57f2669968e255078c41032c83fa7dd9734c378d9354fbe6f282895ec6f84",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU_walmart_item_id_idx",
+        "sqlSha256": "f6f2cf4562712a574ea333c997ec5784498d971cffc7a48a6ab81a2456af90e0",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "ChannelSKU",
+        "sqlSha256": "98b1af63e027b19ffed0d3673b3bf1a9f134d986e888c395382a88877e6e3984",
+        "tableName": "ChannelSKU",
+        "type": "table"
+      },
+      {
+        "name": "ComplianceAuditLog_bundle_draft_id_created_at_idx",
+        "sqlSha256": "d2ed9d2fbfb250e9d98e341ad8c44805334070f3275b253ad43eb0af16091611",
+        "tableName": "ComplianceAuditLog",
+        "type": "index"
+      },
+      {
+        "name": "ComplianceAuditLog_event_type_idx",
+        "sqlSha256": "444679e590d667db8216243a62e28898240af67c7afd22f801e124b7320bcd07",
+        "tableName": "ComplianceAuditLog",
+        "type": "index"
+      },
+      {
+        "name": "ComplianceAuditLog",
+        "sqlSha256": "701f1efdce06e964f27c032613fb089347bc92196446245c311d3306a5869419",
+        "tableName": "ComplianceAuditLog",
+        "type": "table"
+      },
+      {
+        "name": "ComplianceCheck_bundle_draft_id_created_at_idx",
+        "sqlSha256": "a773182868145fd5b11d23467b63049d9776a89940003c8319d1fcb3c79cc6c8",
+        "tableName": "ComplianceCheck",
+        "type": "index"
+      },
+      {
+        "name": "ComplianceCheck_decision_idx",
+        "sqlSha256": "49e62e6d6806b7bd8676dffbdeb7ae18f5f76e8d247be97a653a672ba10a5781",
+        "tableName": "ComplianceCheck",
+        "type": "index"
+      },
+      {
+        "name": "ComplianceCheck",
+        "sqlSha256": "66d18d875ef6108dfb9cfead1ba86c9117317c5c21f70d391fcd0633292ed0bd",
+        "tableName": "ComplianceCheck",
+        "type": "table"
+      },
+      {
+        "name": "CreditCard_active_idx",
+        "sqlSha256": "40bf41f6eda2530c75c56c0f33c128fb01838c217d308312765698b3108bda4a",
+        "tableName": "CreditCard",
+        "type": "index"
+      },
+      {
+        "name": "CreditCard_owner_idx",
+        "sqlSha256": "580f8e7200195ac9bae161dd07cf6f9d3df361b99abd1975c6fa95f5e4c1b20f",
+        "tableName": "CreditCard",
+        "type": "index"
+      },
+      {
+        "name": "CreditCard_scope_idx",
+        "sqlSha256": "27be8cb8932427cea905d6c5bbd65ba66a0c18d6da48543878f7c44abad5e9da",
+        "tableName": "CreditCard",
+        "type": "index"
+      },
+      {
+        "name": "CreditCard",
+        "sqlSha256": "ccbee41bfeeaf54695046ff4f1e875fb0d51e0c318bc05bc86d6e95af3fe9b4c",
+        "tableName": "CreditCard",
+        "type": "table"
+      },
+      {
+        "name": "CriticalAlert_acknowledged_idx",
+        "sqlSha256": "3922a709fe87806787932dff0b9112a9db45883b01bc9bdfd9357e3465206cf6",
+        "tableName": "CriticalAlert",
+        "type": "index"
+      },
+      {
+        "name": "CriticalAlert_detectedAt_idx",
+        "sqlSha256": "36be09e87ce9ea709c229e5005fe0f164af84e7ed32dab4375e0666c6be9b121",
+        "tableName": "CriticalAlert",
+        "type": "index"
+      },
+      {
+        "name": "CriticalAlert_severity_idx",
+        "sqlSha256": "4375b02df27f5839f1aa2ea07bdee24327d5101d3978d6cd46294ef5474c8fcc",
+        "tableName": "CriticalAlert",
+        "type": "index"
+      },
+      {
+        "name": "CriticalAlert_storeId_idx",
+        "sqlSha256": "70e348bb23312830d2b5c7619590221a2c780cd5c73bf58820c07e1ac3ab5488",
+        "tableName": "CriticalAlert",
+        "type": "index"
+      },
+      {
+        "name": "CriticalAlert",
+        "sqlSha256": "8671e70140545a89efeb79aa528710f9b822c6a78ef91ccb946b7444c79bf3a0",
+        "tableName": "CriticalAlert",
+        "type": "table"
+      },
+      {
+        "name": "CsCase",
+        "sqlSha256": "f98e61c3324dcb8bb79fa4594850f4c2eba1d066ecce54afe2cf8831a849dd89",
+        "tableName": "CsCase",
+        "type": "table"
+      },
+      {
+        "name": "Debt_fundId_idx",
+        "sqlSha256": "473d58062c6b2279bea980daf05f3939959796a63946de42d25e0d71788e2729",
+        "tableName": "Debt",
+        "type": "index"
+      },
+      {
+        "name": "Debt_scope_idx",
+        "sqlSha256": "4659b45cdeae5501cf0804021db65ff73d9541da7c0c95546e62f3bd6b2f42ef",
+        "tableName": "Debt",
+        "type": "index"
+      },
+      {
+        "name": "Debt",
+        "sqlSha256": "8c19d5673d9afc1c90fd50698015b8e36e5f0cc627c173769f3e6bcf7f115aa7",
+        "tableName": "Debt",
+        "type": "table"
+      },
+      {
+        "name": "DonorOffer_donorProductId_idx",
+        "sqlSha256": "3b670535cfc2fd6dd1770d5529d6b4037f829cec4f5f54a92583305a8f3aadc0",
+        "tableName": "DonorOffer",
+        "type": "index"
+      },
+      {
+        "name": "DonorOffer_retailer_idx",
+        "sqlSha256": "5c9ff473a5949c3ce451560055e3dfd3557ffcf3420bcfab9ca8f2c3c93b416d",
+        "tableName": "DonorOffer",
+        "type": "index"
+      },
+      {
+        "name": "DonorOffer_retailer_retailerProductId_key",
+        "sqlSha256": "e17c2c185779645d8db15fc6c2f48b898dedcb13230281311658667c620d6aac",
+        "tableName": "DonorOffer",
+        "type": "index"
+      },
+      {
+        "name": "DonorOffer",
+        "sqlSha256": "c4bc840e052de844828aad247cdf3f82ed67e172e18e7cb76a60bbb3ad2826ca",
+        "tableName": "DonorOffer",
+        "type": "table"
+      },
+      {
+        "name": "DonorProduct_bestPrice_idx",
+        "sqlSha256": "17b85d556f538fe056de15dcd5d7acaeca1592c62d7bd1ae36982792c19d62c2",
+        "tableName": "DonorProduct",
+        "type": "index"
+      },
+      {
+        "name": "DonorProduct_brand_idx",
+        "sqlSha256": "61872ddde2ce3fe839acad93c59521441741ee3be3466a766d846673482ad12d",
+        "tableName": "DonorProduct",
+        "type": "index"
+      },
+      {
+        "name": "DonorProduct_category_idx",
+        "sqlSha256": "e5ed405d81a7727d258078e293c6f57c8c50fe7d1cf27ddcade7b716eed0cae8",
+        "tableName": "DonorProduct",
+        "type": "index"
+      },
+      {
+        "name": "DonorProduct_identityKey_key",
+        "sqlSha256": "006e12de72dd98479902e6901c7f10d5753f4428d3376bc95cfd8c02a7a0cfcc",
+        "tableName": "DonorProduct",
+        "type": "index"
+      },
+      {
+        "name": "DonorProduct",
+        "sqlSha256": "3fc9368b393a7b93635956fdf53b53ca60d2f1d8be977c6570d06e4f2fc473ab",
+        "tableName": "DonorProduct",
+        "type": "table"
+      },
+      {
+        "name": "EnrichedReadySku",
+        "sqlSha256": "d525a7335f9b8130ebdc956dcce60f2bc2a323ee75b687c5eea6eba95a3f666f",
+        "tableName": "EnrichedReadySku",
+        "type": "view"
+      },
+      {
+        "name": "EnrichmentJob_status_queuedAt_idx",
+        "sqlSha256": "88187c7486bf1df6eb99cd4427e96699bafdbebbc17b3d1d918e873b9dcbad2c",
+        "tableName": "EnrichmentJob",
+        "type": "index"
+      },
+      {
+        "name": "EnrichmentJob_targetType_target_idx",
+        "sqlSha256": "b7a77f0a7a5f648e65360c4e9ac82bb563bd23c1ddbb525ac79128a2c505c3ea",
+        "tableName": "EnrichmentJob",
+        "type": "index"
+      },
+      {
+        "name": "EnrichmentJob",
+        "sqlSha256": "421a92679ffb1087a7c1b4a5dd2dfba8b1f2451e4d03acdaaaac465fbd2ef11f",
+        "tableName": "EnrichmentJob",
+        "type": "table"
+      },
+      {
+        "name": "ErrorPattern_channel_idx",
+        "sqlSha256": "aa5047474e55c1fab5aecdb9ce32f9670639291b4d461ff2d333dba710e60e97",
+        "tableName": "ErrorPattern",
+        "type": "index"
+      },
+      {
+        "name": "ErrorPattern_error_category_idx",
+        "sqlSha256": "6c10b5a453da4b34cfa128842c111f4870d14ed84577ec01f09c7adfc5cdb312",
+        "tableName": "ErrorPattern",
+        "type": "index"
+      },
+      {
+        "name": "ErrorPattern_error_code_idx",
+        "sqlSha256": "20b9a47688922528668c92b9453e3ced75ca4af1d310602bafa29c6af2836a82",
+        "tableName": "ErrorPattern",
+        "type": "index"
+      },
+      {
+        "name": "ErrorPattern",
+        "sqlSha256": "e250dc15b81d2c2b12fc67dd04d4e6362cd7aa2e2120211728d39528220beace",
+        "tableName": "ErrorPattern",
+        "type": "table"
+      },
+      {
+        "name": "FinancePlanRun_runDate_idx",
+        "sqlSha256": "1c3808b3c6d4f5228c29d9c0663d439d6d4a1ecde72c88770af0b8d920bb451a",
+        "tableName": "FinancePlanRun",
+        "type": "index"
+      },
+      {
+        "name": "FinancePlanRun_scope_idx",
+        "sqlSha256": "b12b0ebe1ab7220e726a7558f8a478c7401460d00fa53be2f1de95623c9dc114",
+        "tableName": "FinancePlanRun",
+        "type": "index"
+      },
+      {
+        "name": "FinancePlanRun",
+        "sqlSha256": "34287d24089cdb8d4e0bfc0ede1d7418c3b539b6b6ca88963d2017a5def89022",
+        "tableName": "FinancePlanRun",
+        "type": "table"
+      },
+      {
+        "name": "FrozenIncident_linkedAlertId_idx",
+        "sqlSha256": "44cd9b666bed0256cf5dcf341e977d63fea9bb38fe73f861ec9844ff63746a25",
+        "tableName": "FrozenIncident",
+        "type": "index"
+      },
+      {
+        "name": "FrozenIncident",
+        "sqlSha256": "f22ee467cf339658c7e3ced56c4b66c50f7e08b3ad611185ee5bc085617a30af",
+        "tableName": "FrozenIncident",
+        "type": "table"
+      },
+      {
+        "name": "FrozenRiskAlert_orderId_shipDate_key",
+        "sqlSha256": "f087ca474d1a03fc7dbc2552e7a4093526decc541dbe20d71c9fa1afa627a244",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRiskAlert_riskLevel_status_idx",
+        "sqlSha256": "38315646e43969cc095af297af8876eadd1a8cb62a5feb21115297751bf67a6c",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRiskAlert_shipDate_idx",
+        "sqlSha256": "62aba71d0ec69a8dd2e50a528f9158da3f32cf30744113f6d62c9fb374b12893",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRiskAlert_sku_idx",
+        "sqlSha256": "d63c11ced63f83c09034051897076705e664b9c8edca8c713dc98bafb5420b7c",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRiskAlert_storeIndex_idx",
+        "sqlSha256": "0f2f8d30a59574786a66afcf59874a5e380ad1d5b2d7e50a00f2752747445f67",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRiskAlert",
+        "sqlSha256": "99cbd618a1e146798ad2a870e66afdc6361fec05868b9af84280ac568c04acc1",
+        "tableName": "FrozenRiskAlert",
+        "type": "table"
+      },
+      {
+        "name": "FrozenRule_ruleCode_key",
+        "sqlSha256": "b43d99787130275446d65182bb183a47e806abd0f9c64e5e80ec648f7e59bde1",
+        "tableName": "FrozenRule",
+        "type": "index"
+      },
+      {
+        "name": "FrozenRule",
+        "sqlSha256": "96485fc4fe1c8375994c657a65a85eb04213d28c81dfbbe2748d808cf9468d98",
+        "tableName": "FrozenRule",
+        "type": "table"
+      },
+      {
+        "name": "Fund_active_idx",
+        "sqlSha256": "b44548d0ec853a0c8c7c2b8f3d263c468b819c66de38ccbb9892d70c5a00bc65",
+        "tableName": "Fund",
+        "type": "index"
+      },
+      {
+        "name": "Fund_group_idx",
+        "sqlSha256": "5afc5d0084ea0f8ec6f4b4cd07f67ce1a8258e822764751b6c794f41a549e2cd",
+        "tableName": "Fund",
+        "type": "index"
+      },
+      {
+        "name": "Fund_scope_idx",
+        "sqlSha256": "b042f865d786a1caea9da8398c43f692f26b8390fbd6ab6347360ad25f3c2722",
+        "tableName": "Fund",
+        "type": "index"
+      },
+      {
+        "name": "Fund",
+        "sqlSha256": "f8d8c73f7bd7f75312ed553bb5c270edd608ca27ae5a65de159ef916efaccf34",
+        "tableName": "Fund",
+        "type": "table"
+      },
+      {
+        "name": "FundAllocation_fundId_idx",
+        "sqlSha256": "8925eb81025c0612efbf11b310a8c3793093d494acef75eb903863ede9089eb1",
+        "tableName": "FundAllocation",
+        "type": "index"
+      },
+      {
+        "name": "FundAllocation_runId_idx",
+        "sqlSha256": "df2c322e418684028b0d0e5c3e0d224a283e04ed155a093782d71a6275769322",
+        "tableName": "FundAllocation",
+        "type": "index"
+      },
+      {
+        "name": "FundAllocation",
+        "sqlSha256": "182d4d9801cd20fcbf75740975306dcc5f34622b2f0ac6f42fa7fbcd9274de69",
+        "tableName": "FundAllocation",
+        "type": "table"
+      },
+      {
+        "name": "FundEntry_fundId_idx",
+        "sqlSha256": "d84380220b71efb9d0ec540c9cbd4717338634dd5ee204f60864a51a83bab53e",
+        "tableName": "FundEntry",
+        "type": "index"
+      },
+      {
+        "name": "FundEntry_status_idx",
+        "sqlSha256": "121324257478bb4c0590397352d79ecac76b1f91dbfd2a42492dff0688af1a3f",
+        "tableName": "FundEntry",
+        "type": "index"
+      },
+      {
+        "name": "FundEntry",
+        "sqlSha256": "3ffd92845698bdf844c845f56dfb33577a5c9ef4adad8468fed7aac086a6ec27",
+        "tableName": "FundEntry",
+        "type": "table"
+      },
+      {
+        "name": "GeneratedContent_bundle_draft_id_channel_key",
+        "sqlSha256": "4a640da9f6d9f0cb6ef84c1b566ee2a92a01832ac63a4a8ffe24c5e83c59e441",
+        "tableName": "GeneratedContent",
+        "type": "index"
+      },
+      {
+        "name": "GeneratedContent_bundle_draft_id_idx",
+        "sqlSha256": "a9a93d66dda2f226e553ced41e0f8947fbcabeec542f761dcc3ae8e672013292",
+        "tableName": "GeneratedContent",
+        "type": "index"
+      },
+      {
+        "name": "GeneratedContent_compliance_status_idx",
+        "sqlSha256": "1b84daf6135fd158fc09e44d16aba9cebc8414ad8d8291a087c72c4690a4c005",
+        "tableName": "GeneratedContent",
+        "type": "index"
+      },
+      {
+        "name": "GeneratedContent_manual_review_required_idx",
+        "sqlSha256": "fe140e577a57164f2cc5be0c95225116c9e72b7334a0befbdc61a0b355e087c5",
+        "tableName": "GeneratedContent",
+        "type": "index"
+      },
+      {
+        "name": "GeneratedContent",
+        "sqlSha256": "f8382432d379775ed9e63f72ebe017c1fb9b23942f7a55ecf500301a5fcd7d42",
+        "tableName": "GeneratedContent",
+        "type": "table"
+      },
+      {
+        "name": "GenerationJob_current_stage_idx",
+        "sqlSha256": "b9a48924f452a58455966eaa6ec94a1e20e0f53de315a30bd6939c2f001db5b5",
+        "tableName": "GenerationJob",
+        "type": "index"
+      },
+      {
+        "name": "GenerationJob_status_idx",
+        "sqlSha256": "d0c39aa2c173067c7d55d17f34c51ca0cceae2878a60fadb55a3edd903a47297",
+        "tableName": "GenerationJob",
+        "type": "index"
+      },
+      {
+        "name": "GenerationJob",
+        "sqlSha256": "d6c04e3b0b8f5f0b69ef16b3322a6368c3e1883cfe858de57ed5f4f29c6de00f",
+        "tableName": "GenerationJob",
+        "type": "table"
+      },
+      {
+        "name": "GenerationStage_generation_job_id_idx",
+        "sqlSha256": "a6a49936cebbe35567fc78d96f229b78c1d6dea2070afd163ea709f4a4692755",
+        "tableName": "GenerationStage",
+        "type": "index"
+      },
+      {
+        "name": "GenerationStage_stage_idx",
+        "sqlSha256": "d93fdcf4389bc688a4538f6c2ae5d1550d780cc4a3ec10ac085106053c2286dc",
+        "tableName": "GenerationStage",
+        "type": "index"
+      },
+      {
+        "name": "GenerationStage",
+        "sqlSha256": "63d0cd452d0a9bc6f01a26bd64b71ec6c7a02dce3e497a873bb835dd7be43b0c",
+        "tableName": "GenerationStage",
+        "type": "table"
+      },
+      {
+        "name": "GenerationWorkItem_bundle_draft_id_idx",
+        "sqlSha256": "90accbb48a8104e8ad164cdde5f1ccb3ae931ea8bfcb57100f9169d16ababed2",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "GenerationWorkItem_generation_job_id_fingerprint_key",
+        "sqlSha256": "45c679b8fc16bc04ea2087c0070110744ebb009ec131d9e220fd58b3dd5cea78",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "GenerationWorkItem_generation_job_id_spec_index_key",
+        "sqlSha256": "2ce0c7a16ac9489e7b749eb103ff07453d1dd8dff37b51bc3fa95a5f41381430",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "GenerationWorkItem_generation_job_id_status_idx",
+        "sqlSha256": "55ec7e766fa91d8a394106f56d89a3cd9ca6749941170f34fe6a012ad7928e7e",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "GenerationWorkItem_locked_at_idx",
+        "sqlSha256": "e2e44be034a96aa3a5b5e3d467170e589223ec0d604589b2bef364cbc20417a1",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "GenerationWorkItem",
+        "sqlSha256": "61f2bf5af9cefd49c846d0272b9a95a94c80d61a18e024aa2a38a3a72c67d13b",
+        "tableName": "GenerationWorkItem",
+        "type": "table"
+      },
+      {
+        "name": "GTINExemption_brand_channel_category_key",
+        "sqlSha256": "2b4e2de0238b2fa74f6e8def0727be6e59970d41b6f9b98d8349b25ce37ffe27",
+        "tableName": "GTINExemption",
+        "type": "index"
+      },
+      {
+        "name": "GTINExemption_status_idx",
+        "sqlSha256": "87e6e6e488b055f1ae054ca0b39bfe47da58a1a4895d30c6a33d70a05bb2bf50",
+        "tableName": "GTINExemption",
+        "type": "index"
+      },
+      {
+        "name": "GTINExemption",
+        "sqlSha256": "b10ae185b603996c92582a0811219f6c5d711b97563faa1c67c53b3b7b83777f",
+        "tableName": "GTINExemption",
+        "type": "table"
+      },
+      {
+        "name": "ImageClassification",
+        "sqlSha256": "cc4863fd195afa0b288b06f14be266bb352e08c1b75bbefe344bf205f0e81fec",
+        "tableName": "ImageClassification",
+        "type": "table"
+      },
+      {
+        "name": "Invite_email_idx",
+        "sqlSha256": "0c727d775d3442bef0347fb6000a95cb109523d0d107297eaae60d0d82f4398f",
+        "tableName": "Invite",
+        "type": "index"
+      },
+      {
+        "name": "Invite_token_key",
+        "sqlSha256": "a6891ea94cdcdf2c661c0c1b9f7c4b7e65065c39babcd4162604b7b769164741",
+        "tableName": "Invite",
+        "type": "index"
+      },
+      {
+        "name": "Invite",
+        "sqlSha256": "3fa89e74c348b4d8dcf35f3edb6c71ab7d51cdc1e16a00431a9be7913511a470",
+        "tableName": "Invite",
+        "type": "table"
+      },
+      {
+        "name": "KnowledgeBaseEntry_problemType_idx",
+        "sqlSha256": "d0c2903b8400d3f621c628453118d477102071e3bd7714f9e835ac6d164a107e",
+        "tableName": "KnowledgeBaseEntry",
+        "type": "index"
+      },
+      {
+        "name": "KnowledgeBaseEntry",
+        "sqlSha256": "9bd4d97f5335a6545652646ab257fde221f1b5e83495c065f872b5489a34b2e1",
+        "tableName": "KnowledgeBaseEntry",
+        "type": "table"
+      },
+      {
+        "name": "ListingAuditResult_account_risk_category_idx",
+        "sqlSha256": "38c783b0180fe047d82ababaa665d717eef59a6c91eaeffad82a3789a023df2e",
+        "tableName": "ListingAuditResult",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditResult_asin_idx",
+        "sqlSha256": "85f150e9ae7b050df042412ce94b0376716fc23a96c85fd530ebf1dbe17dcb5f",
+        "tableName": "ListingAuditResult",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditResult_remediation_status_idx",
+        "sqlSha256": "a56f1f531c86991ec1b4af6fd87684777546131ae21c4a17be56c32d59f3c617",
+        "tableName": "ListingAuditResult",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditResult_scan_id_risk_category_idx",
+        "sqlSha256": "1cdce35cba520a86070b2d4b469f1f155543f0ad7d019fbb68a7204f9d9ee212",
+        "tableName": "ListingAuditResult",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditResult",
+        "sqlSha256": "39651a92176213fbbe518437eb984365a67aee669a4e8fe8643d1c81d3fd04d8",
+        "tableName": "ListingAuditResult",
+        "type": "table"
+      },
+      {
+        "name": "ListingAuditScan_initiated_by_started_at_idx",
+        "sqlSha256": "00738bb26441948234f0cefcd29fbb319b702d99e06b82d233bcd0a1d1394c4c",
+        "tableName": "ListingAuditScan",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditScan_status_idx",
+        "sqlSha256": "9213b91cbf49b140a997479aee166c774d3e990c47de45ea129200f5485a1f22",
+        "tableName": "ListingAuditScan",
+        "type": "index"
+      },
+      {
+        "name": "ListingAuditScan",
+        "sqlSha256": "0059cb12ee8ade4bd252648116908e024ae2f540eb01bb00cbe587018c8de1cf",
+        "tableName": "ListingAuditScan",
+        "type": "table"
+      },
+      {
+        "name": "ListingLifecycleLog_channel_sku_id_idx",
+        "sqlSha256": "95e7f02a1d922adb22700c81c6b560ba7e8d054f6fa9311435da4fa8f9e4169e",
+        "tableName": "ListingLifecycleLog",
+        "type": "index"
+      },
+      {
+        "name": "ListingLifecycleLog_created_at_idx",
+        "sqlSha256": "8cd4f11b91ce4c4b6ca0a4b7ed4271929fac369ddf425e0370811c214b73531f",
+        "tableName": "ListingLifecycleLog",
+        "type": "index"
+      },
+      {
+        "name": "ListingLifecycleLog_entity_type_entity_id_idx",
+        "sqlSha256": "8cb8afb58ecca8999cc90d6a7f5c2be73f37286d1111c0c5b12e020e360a672b",
+        "tableName": "ListingLifecycleLog",
+        "type": "index"
+      },
+      {
+        "name": "ListingLifecycleLog_master_bundle_id_idx",
+        "sqlSha256": "bbd4814cd2f5be22145cbce83682984aa87c53ec8e40454e4ec4fa95e9eeaaeb",
+        "tableName": "ListingLifecycleLog",
+        "type": "index"
+      },
+      {
+        "name": "ListingLifecycleLog",
+        "sqlSha256": "522367b92692f6bd241139840a9af488b65e0a80467cf5225fb3efa6daeaa9b8",
+        "tableName": "ListingLifecycleLog",
+        "type": "table"
+      },
+      {
+        "name": "ListingRemediation_audit_result_id_key",
+        "sqlSha256": "6506a63834a1bc5c258c43de0961f57e14d6d59d357ae441b37e8d4d2b411589",
+        "tableName": "ListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "ListingRemediation_status_idx",
+        "sqlSha256": "a889cf077f242607243279bd55f975a554965d6f3a621d04cac18f82da918d96",
+        "tableName": "ListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "ListingRemediation",
+        "sqlSha256": "9b3666a8cc75b1637593ebbdc54b872eb48649e3ea5cf61e0ec9d73f24b73961",
+        "tableName": "ListingRemediation",
+        "type": "table"
+      },
+      {
+        "name": "MarketplaceRule_channel_category_rule_key_key",
+        "sqlSha256": "327618f25d8adc93ed7254df28809a152b9951682f5fbf1de40a8ad75c5054e7",
+        "tableName": "MarketplaceRule",
+        "type": "index"
+      },
+      {
+        "name": "MarketplaceRule_channel_idx",
+        "sqlSha256": "469678e6805114918da2118d6d86633aa3484d00b9250909b91ad4ca348d0518",
+        "tableName": "MarketplaceRule",
+        "type": "index"
+      },
+      {
+        "name": "MarketplaceRule_is_current_idx",
+        "sqlSha256": "37e5bd6c84d933e3dbed3642eb0a96b98da5ccddf35358002bb25f611f79900e",
+        "tableName": "MarketplaceRule",
+        "type": "index"
+      },
+      {
+        "name": "MarketplaceRule_rule_key_idx",
+        "sqlSha256": "33f3618f2f7ac0e08150b5f7ba64f230f26f3b154ac68e1b246b7a2d65f8f294",
+        "tableName": "MarketplaceRule",
+        "type": "index"
+      },
+      {
+        "name": "MarketplaceRule",
+        "sqlSha256": "6a705e875ddaad66e1f370aec8cefe3426ba126b0acac176f062aa8ca22aca08",
+        "tableName": "MarketplaceRule",
+        "type": "table"
+      },
+      {
+        "name": "MasterBundle_brand_idx",
+        "sqlSha256": "6761bc5931b647fe3b830a5353948902f9fe14a947055dac4823d0da3a6fb2f8",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle_category_idx",
+        "sqlSha256": "8dbeadbf1cf07cb7da15e498cb3ab5a974edf2eb9f0bdf4b63b7fa8136c081ca",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle_created_at_idx",
+        "sqlSha256": "2c9c8aa6e66cc98241aa2a17d16205354a108d4a7af15a81d50834eafe5af009",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle_generation_job_id_idx",
+        "sqlSha256": "f31ce9d100422553f9ca06576d4052fa49758f03b9c5d30ba891a11b578d1d0e",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle_internal_slug_key",
+        "sqlSha256": "f0c550caf3dbfd3e11c8d24dd7a312e8530ddd8f5e5d31ac25a8dc2a67041567",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle_lifecycle_status_idx",
+        "sqlSha256": "e1117b6e3d1ca1f578198f9f455aa2092f17d2e7a5489f1f1166beff4740ff07",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "MasterBundle",
+        "sqlSha256": "cf1a7beb7b89035de1c8b710387cb1d23572fb6934e5b41243d37ac1c833b74a",
+        "tableName": "MasterBundle",
+        "type": "table"
+      },
+      {
+        "name": "PackingProfile_signature_idx",
+        "sqlSha256": "bf40ae29d4e3c3c6e1ea8e9a458cb8b0e842752649fd2535c85cfd186cb1944f",
+        "tableName": "PackingProfile",
+        "type": "index"
+      },
+      {
+        "name": "PackingProfile_signature_key",
+        "sqlSha256": "05d2dc5b8de906d6a02ad8f8a2d10436b4443423cbdd68229afca080e5486c1f",
+        "tableName": "PackingProfile",
+        "type": "index"
+      },
+      {
+        "name": "PackingProfile",
+        "sqlSha256": "ffae76f6cf9c76b2a101bc021c91c69db1cf583002e42b37cb8fa013b89f94fb",
+        "tableName": "PackingProfile",
+        "type": "table"
+      },
+      {
+        "name": "Payout_depositDate_idx",
+        "sqlSha256": "976285fbc7b395eb4f3f8d644606376ddaa5df730edf2ba27a0a873a01d9c2d4",
+        "tableName": "Payout",
+        "type": "index"
+      },
+      {
+        "name": "Payout_distributed_idx",
+        "sqlSha256": "401fda6cef5cdeb328a656809a020e90c8398722a5dab9ff01656925c6b76030",
+        "tableName": "Payout",
+        "type": "index"
+      },
+      {
+        "name": "Payout_marketplace_externalId_key",
+        "sqlSha256": "5716ddce7f989d3e3942795364a0ddee4c421888411d5bb0c634ba36eac53805",
+        "tableName": "Payout",
+        "type": "index"
+      },
+      {
+        "name": "Payout_scope_idx",
+        "sqlSha256": "25dc4e00835328f99c08580e56021b6ec259d0cb7d3f47c76358932e3be9284e",
+        "tableName": "Payout",
+        "type": "index"
+      },
+      {
+        "name": "Payout",
+        "sqlSha256": "298844161b0a0958b99f1bd46db72ef8887ac029ff7fe622d657af2cce7295c0",
+        "tableName": "Payout",
+        "type": "table"
+      },
+      {
+        "name": "PayoutLine_bucket_idx",
+        "sqlSha256": "b6e174a15bb6ef9a74d11a7bc7fa5cdd58058bbe7bb1c4f4bf80338d8e1a2c68",
+        "tableName": "PayoutLine",
+        "type": "index"
+      },
+      {
+        "name": "PayoutLine_payoutId_idx",
+        "sqlSha256": "c2efb64284a8cf9251b8b86b75d5b3372fab69f19b364035ddec30373b345473",
+        "tableName": "PayoutLine",
+        "type": "index"
+      },
+      {
+        "name": "PayoutLine",
+        "sqlSha256": "39662efab3c52f6fcfbb976861ec581e1fb428dc1a4f1d29e7a27d02a4020f1a",
+        "tableName": "PayoutLine",
+        "type": "table"
+      },
+      {
+        "name": "PolicyViolationCategory_category_idx",
+        "sqlSha256": "e073fb71c6e6da51dadb4d6ebac60b000825de49b6f21a6a2fd1765d9a862909",
+        "tableName": "PolicyViolationCategory",
+        "type": "index"
+      },
+      {
+        "name": "PolicyViolationCategory_snapshotId_idx",
+        "sqlSha256": "bc6e292de171e60f7d02042b56ff27dc84cb25611d0a9be84085023070e560a6",
+        "tableName": "PolicyViolationCategory",
+        "type": "index"
+      },
+      {
+        "name": "PolicyViolationCategory",
+        "sqlSha256": "8d752a03f613148e31e9dc7dece3ffb9b050de52d56570c4c7bc158cfc92adb7",
+        "tableName": "PolicyViolationCategory",
+        "type": "table"
+      },
+      {
+        "name": "PolicyViolationDetail_asin_idx",
+        "sqlSha256": "159354224fe8c31eb856ec213bb638ff0719eaf8dfb628086ae71d2c4a0b6ccc",
+        "tableName": "PolicyViolationDetail",
+        "type": "index"
+      },
+      {
+        "name": "PolicyViolationDetail_categoryId_idx",
+        "sqlSha256": "834356865a72dee857570219f5413062f3ca44952c0448727dbd36b49e5f73cf",
+        "tableName": "PolicyViolationDetail",
+        "type": "index"
+      },
+      {
+        "name": "PolicyViolationDetail_status_idx",
+        "sqlSha256": "885887033cddbeda13453ecde631e9dfd9da3f766cdc57d09adb4ddb7efed530",
+        "tableName": "PolicyViolationDetail",
+        "type": "index"
+      },
+      {
+        "name": "PolicyViolationDetail",
+        "sqlSha256": "7fa0647f13aedabee8b61a715a07a4b8ef82b7233b384dddf4f9f17772e612c6",
+        "tableName": "PolicyViolationDetail",
+        "type": "table"
+      },
+      {
+        "name": "ProcurementNotificationLog_notifiedAt_idx",
+        "sqlSha256": "79b3e038c666d5ee2c814c2832d156b747bdafeb22af6ea074c9ded6370d2d3c",
+        "tableName": "ProcurementNotificationLog",
+        "type": "index"
+      },
+      {
+        "name": "ProcurementNotificationLog_orderId_key",
+        "sqlSha256": "a4934e18b06c554e130227019fc055d06b8b5249c1dd520194eac72ba5b41d4b",
+        "tableName": "ProcurementNotificationLog",
+        "type": "index"
+      },
+      {
+        "name": "ProcurementNotificationLog",
+        "sqlSha256": "77cc589f28f28be37b63a65cc4731d250f0ab8ecad67a121f07d54da186abea4",
+        "tableName": "ProcurementNotificationLog",
+        "type": "table"
+      },
+      {
+        "name": "ProcurementSyncQueue_status_idx",
+        "sqlSha256": "63de46ad137a430bdea4cfb57b79d178450a57e6c43565f7d7bb04da18cf1dc9",
+        "tableName": "ProcurementSyncQueue",
+        "type": "index"
+      },
+      {
+        "name": "ProcurementSyncQueue",
+        "sqlSha256": "b9388fbbf2b968b19275533972db961cc081f0a7f320f84e5289d37041b22017",
+        "tableName": "ProcurementSyncQueue",
+        "type": "table"
+      },
+      {
+        "name": "ProductPackSizeCache_rawTitle_key",
+        "sqlSha256": "ebf0d8fbb4a74c5c62af8c1affa8dc1fcf825aa47ef74f3a07892dd0b4a5adbf",
+        "tableName": "ProductPackSizeCache",
+        "type": "index"
+      },
+      {
+        "name": "ProductPackSizeCache",
+        "sqlSha256": "f89b5faa441ad3c459c0832071c56442601fba4e442b7333d22beb6b0adb44fd",
+        "tableName": "ProductPackSizeCache",
+        "type": "table"
+      },
+      {
+        "name": "ProductReview_reviewId_key",
+        "sqlSha256": "d0f0f0a9efb7deaf4e2b37c4802332dbc396d05bb785510502a25334c9d09c06",
+        "tableName": "ProductReview",
+        "type": "index"
+      },
+      {
+        "name": "ProductReview",
+        "sqlSha256": "af4da765249c2fbcb1242f30157b2e1a800771020a84ac9eec6aecc02a9ef079",
+        "tableName": "ProductReview",
+        "type": "table"
+      },
+      {
+        "name": "ProductSourceFallback_manufacturer_upc_idx",
+        "sqlSha256": "07c8d8a2de6abc0030267764c9fd030acd5ae9881260cc2b68dbaefe7a25911a",
+        "tableName": "ProductSourceFallback",
+        "type": "index"
+      },
+      {
+        "name": "ProductSourceFallback_manufacturer_upc_primary_store_id_fallback_store_id_key",
+        "sqlSha256": "7849eb3e7190e0cd86789f8ab4e8b029bf0e2a13cc5bbe9b773a0805dbef562a",
+        "tableName": "ProductSourceFallback",
+        "type": "index"
+      },
+      {
+        "name": "ProductSourceFallback",
+        "sqlSha256": "e133e0045c11fc0abf4b56e41ec1d87f2ec120b0306591fd98f9913edf432140",
+        "tableName": "ProductSourceFallback",
+        "type": "table"
+      },
+      {
+        "name": "ProductTitleCache_rawTitle_key",
+        "sqlSha256": "13ce42c783bc4352f69b012ab7eb355e3b619eac4fafd327c2122e131b7b0f29",
+        "tableName": "ProductTitleCache",
+        "type": "index"
+      },
+      {
+        "name": "ProductTitleCache",
+        "sqlSha256": "ae5dc4b0da7578c7f38de1dc7b4152b2aa92fdc55f03cb57b840e8a79fc46d6b",
+        "tableName": "ProductTitleCache",
+        "type": "table"
+      },
+      {
+        "name": "ProductTypeOverride_productId_key",
+        "sqlSha256": "09aec891e250ef51409f76fd1cc54ca81289b7f16aa4ff06a99b42f1b95e74f4",
+        "tableName": "ProductTypeOverride",
+        "type": "index"
+      },
+      {
+        "name": "ProductTypeOverride",
+        "sqlSha256": "7505ae2fe39a9992fddf90a8ec461d601e9e160f64747eea4e4f461de81139cc",
+        "tableName": "ProductTypeOverride",
+        "type": "table"
+      },
+      {
+        "name": "Receipt_fundId_idx",
+        "sqlSha256": "e14ea934b1179d880c736604614eb0453b72aaaf6186d45ea183fa13b08a16cd",
+        "tableName": "Receipt",
+        "type": "index"
+      },
+      {
+        "name": "Receipt_status_idx",
+        "sqlSha256": "c606a43a9f87a3ce6259aff2ebd4c4e2c4d2568c6ff8bc2ec398f402b2eb2bf2",
+        "tableName": "Receipt",
+        "type": "index"
+      },
+      {
+        "name": "Receipt",
+        "sqlSha256": "fb0315c5543e069b8a945ca6c24acd96793bfb27467e3e1273b8cc97d4aecb8c",
+        "tableName": "Receipt",
+        "type": "table"
+      },
+      {
+        "name": "RecurringExpense_active_idx",
+        "sqlSha256": "8cbc751dcee5c8ac4fee59b7a71f35f599a68fb5f1fadfffdade4b5a6028b7ff",
+        "tableName": "RecurringExpense",
+        "type": "index"
+      },
+      {
+        "name": "RecurringExpense_category_idx",
+        "sqlSha256": "5ac9adb9608b33cb297e0dc4dcedfeed3c2e2cd8c01c7e263b67e1e7201fc13a",
+        "tableName": "RecurringExpense",
+        "type": "index"
+      },
+      {
+        "name": "RecurringExpense_scope_idx",
+        "sqlSha256": "9843d542fe533341bb08cafc2ea69ee48f5e01749150794ad07a10342d4d3991",
+        "tableName": "RecurringExpense",
+        "type": "index"
+      },
+      {
+        "name": "RecurringExpense",
+        "sqlSha256": "96f3bc431da00d0ace8a4bbcaca5a51c5022975b8997e9ed7b7ac29fe737fa6b",
+        "tableName": "RecurringExpense",
+        "type": "table"
+      },
+      {
+        "name": "ReportSyncJob",
+        "sqlSha256": "f311272dc08cc9c25495047325640fc2596c0ff73b230bf25e8d7df0562a2427",
+        "tableName": "ReportSyncJob",
+        "type": "table"
+      },
+      {
+        "name": "RepriceLog_sku_idx",
+        "sqlSha256": "1c7acff6cacfb0ff4e19675d0c74f70aa869a231b7fcdfa841c4205af3975a28",
+        "tableName": "RepriceLog",
+        "type": "index"
+      },
+      {
+        "name": "RepriceLog_storeIndex_createdAt_idx",
+        "sqlSha256": "094b718f457bb9cafa5ccdc0d8918913d41221c37969d73e74d85516e44c24ef",
+        "tableName": "RepriceLog",
+        "type": "index"
+      },
+      {
+        "name": "RepriceLog",
+        "sqlSha256": "01210a6b44db73e63c95fbe7595739935c97d8892c56ac4c26750a395e4fa651",
+        "tableName": "RepriceLog",
+        "type": "table"
+      },
+      {
+        "name": "ResearchPool_brand_idx",
+        "sqlSha256": "995dd1789c2d8360163a45b19b1a34ace6d0d213a21e6354b2a842fbf6800ac0",
+        "tableName": "ResearchPool",
+        "type": "index"
+      },
+      {
+        "name": "ResearchPool_generation_job_id_idx",
+        "sqlSha256": "9f47376c114d96562880a9561aa6b0c0c1961a35391ff7c893532a046508bbcc",
+        "tableName": "ResearchPool",
+        "type": "index"
+      },
+      {
+        "name": "ResearchPool_last_seen_in_stock_idx",
+        "sqlSha256": "61c5029896576d9be3193ae40e8e569c77ba4df26faaf5b89d1dc0076b77e0c7",
+        "tableName": "ResearchPool",
+        "type": "index"
+      },
+      {
+        "name": "ResearchPool",
+        "sqlSha256": "adc4d04e15f2da13d06f2df66392123f5f569afe5691553706d99cc130218602",
+        "tableName": "ResearchPool",
+        "type": "table"
+      },
+      {
+        "name": "RetailPrice_retailer_retailerProductId_key",
+        "sqlSha256": "1f3648d7352553cf853799eabd28e87335ebf3bffbbd4bfde5f9e1d85ada64bd",
+        "tableName": "RetailPrice",
+        "type": "index"
+      },
+      {
+        "name": "RetailPrice_sku_idx",
+        "sqlSha256": "34b7a669a74a0b8d702815009aa50af2a8e636cdbbdb0d29364290d9c9cc8617",
+        "tableName": "RetailPrice",
+        "type": "index"
+      },
+      {
+        "name": "RetailPrice_upc_idx",
+        "sqlSha256": "044d1233695648900b680a24545a06124fb39a343e834068ce21e3ed6a224ae3",
+        "tableName": "RetailPrice",
+        "type": "index"
+      },
+      {
+        "name": "RetailPrice",
+        "sqlSha256": "c85e8c13465d0fb9c4c5ef6524baa8769a7137d77ea97fa58906b322b27566d9",
+        "tableName": "RetailPrice",
+        "type": "table"
+      },
+      {
+        "name": "Role_key_key",
+        "sqlSha256": "2a3fca10edba5aad706f9a0a5454679e0b1cf7ce7539b02d8542fad98add09a2",
+        "tableName": "Role",
+        "type": "index"
+      },
+      {
+        "name": "Role",
+        "sqlSha256": "ec55713877160fe116f60c4cd6c7665d930aa3d16460fec057e1f8493db5f88a",
+        "tableName": "Role",
+        "type": "table"
+      },
+      {
+        "name": "SellerFeedback_amazonFeedbackId_key",
+        "sqlSha256": "f93f33881c5aea5656ef7cb3e04be6c7aebae1f5e8e294f510a7099784f4a685",
+        "tableName": "SellerFeedback",
+        "type": "index"
+      },
+      {
+        "name": "SellerFeedback",
+        "sqlSha256": "555460f2839d6ee5c22db9d18a952642e9db452f63c82ed1ca7da76f4b8eb81c",
+        "tableName": "SellerFeedback",
+        "type": "table"
+      },
+      {
+        "name": "Setting_key_key",
+        "sqlSha256": "30549582d62fce91b206de57084dfc61bf2bf3ffa1e6bba51dc38b7c90a47ff7",
+        "tableName": "Setting",
+        "type": "index"
+      },
+      {
+        "name": "Setting",
+        "sqlSha256": "59e1483c77baec4aef3946161b2e86e123458f81c690ce770f2ca19742ec980a",
+        "tableName": "Setting",
+        "type": "table"
+      },
+      {
+        "name": "ShippingAdjustment_adjustmentDate_idx",
+        "sqlSha256": "06248491fdbf672e74b12ad264e58e1c5187a1dccc567c0ae083c9ee4dcd364d",
+        "tableName": "ShippingAdjustment",
+        "type": "index"
+      },
+      {
+        "name": "ShippingAdjustment_channel_createdAt_idx",
+        "sqlSha256": "335a40704159944611bc0464a06723035e5d5dbaa4549c52f8cfcb695d7e3f83",
+        "tableName": "ShippingAdjustment",
+        "type": "index"
+      },
+      {
+        "name": "ShippingAdjustment_externalId_key",
+        "sqlSha256": "cc5df7b81db3dce8a453059b3a33c35c8a04dd54d6f858be8794940e630827bb",
+        "tableName": "ShippingAdjustment",
+        "type": "index"
+      },
+      {
+        "name": "ShippingAdjustment_sku_idx",
+        "sqlSha256": "eabd8b0d02e6db42f1867a0494bdb6665ca2b53ea62fa5946378c2f11a10787a",
+        "tableName": "ShippingAdjustment",
+        "type": "index"
+      },
+      {
+        "name": "ShippingAdjustment",
+        "sqlSha256": "494ce433b7d44a2e9f4bfd62565c07b4a3703a7336759918e3569cf1f2e9197d",
+        "tableName": "ShippingAdjustment",
+        "type": "table"
+      },
+      {
+        "name": "ShippingPlan",
+        "sqlSha256": "dd5fe918efbd5e108458e7fedf1823443465ac23a3987b7a4e94194a8adb090b",
+        "tableName": "ShippingPlan",
+        "type": "table"
+      },
+      {
+        "name": "ShippingPlanItem_orderId_idx",
+        "sqlSha256": "37e63af07a6185f3b5e7827f0fdad21c8d26709deb60d2c25c6d3e8ad8d7982f",
+        "tableName": "ShippingPlanItem",
+        "type": "index"
+      },
+      {
+        "name": "ShippingPlanItem_planId_idx",
+        "sqlSha256": "6cbc9ccf9cd3f2594fb4e4cbac994c72b4e4cfab4871f904ee73c1273d16a23b",
+        "tableName": "ShippingPlanItem",
+        "type": "index"
+      },
+      {
+        "name": "ShippingPlanItem",
+        "sqlSha256": "9847f90951585945d4eef3444d11f0705f46fbee25b928c65872c7cb42a106c6",
+        "tableName": "ShippingPlanItem",
+        "type": "table"
+      },
+      {
+        "name": "SkuAdjustmentProfile_sku_key",
+        "sqlSha256": "928c59d5d4c2e494fbdfa6b76f3b25ab2e5b130edc5e30b0daddc074785252fb",
+        "tableName": "SkuAdjustmentProfile",
+        "type": "index"
+      },
+      {
+        "name": "SkuAdjustmentProfile",
+        "sqlSha256": "9c0cc1a80efc7055d8fe851660bce54647640e82be69629e8c76647296135ad1",
+        "tableName": "SkuAdjustmentProfile",
+        "type": "table"
+      },
+      {
+        "name": "SkuComponent_donorProductId_idx",
+        "sqlSha256": "7c194ddd62d9b15fcde76692988ce89351a5bf8f751622e02ea47bc81618da78",
+        "tableName": "SkuComponent",
+        "type": "index"
+      },
+      {
+        "name": "SkuComponent_sku_idx_key",
+        "sqlSha256": "73214e2d1b084ee2b2a0db4a56451a94de7ca712cb7074fced74f05c85d20297",
+        "tableName": "SkuComponent",
+        "type": "index"
+      },
+      {
+        "name": "SkuComponent_sku_idx",
+        "sqlSha256": "ec7e159b1b546ea1f792481efa891ff71d43d8e38cbef83796cb1812a5006f74",
+        "tableName": "SkuComponent",
+        "type": "index"
+      },
+      {
+        "name": "SkuComponent",
+        "sqlSha256": "c965fba931e77a3a6efb9570de600cc5480a7e4c98e88ed7b2ae2f76cb2c1f03",
+        "tableName": "SkuComponent",
+        "type": "table"
+      },
+      {
+        "name": "SkuCost_asin_idx",
+        "sqlSha256": "e6e8b6099d468a5a54a3a3c29ea108c1071199637c89ec2796aabf652aa56811",
+        "tableName": "SkuCost",
+        "type": "index"
+      },
+      {
+        "name": "SkuCost_sku_idx",
+        "sqlSha256": "6393323340a9b114b7fa377b48ffdc08563adcbf4b8fb1803a95488ec01212b5",
+        "tableName": "SkuCost",
+        "type": "index"
+      },
+      {
+        "name": "SkuCost_sku_source_effectiveDate_key",
+        "sqlSha256": "95cd8be0bb8e36d6a8f18b865d90b177460ee29a4211a2414b7ed30658751919",
+        "tableName": "SkuCost",
+        "type": "index"
+      },
+      {
+        "name": "SkuCost_source_idx",
+        "sqlSha256": "f897b550a22219a2059037ab1d18572e36c6c4bd249a2ddd98cc36f30b929b58",
+        "tableName": "SkuCost",
+        "type": "index"
+      },
+      {
+        "name": "SkuCost",
+        "sqlSha256": "e4a69488f636f2408d308c2312bd18a2a4dc937cfbc1b21a4852e45bdcf7eaeb",
+        "tableName": "SkuCost",
+        "type": "table"
+      },
+      {
+        "name": "SkuRiskProfile_sku_key",
+        "sqlSha256": "8eb1e5819be56ca1025b21268b1fd78dfe014faf697a50dc4265f154551c79cf",
+        "tableName": "SkuRiskProfile",
+        "type": "index"
+      },
+      {
+        "name": "SkuRiskProfile",
+        "sqlSha256": "d5098163b43d6ffa7f163efb812eb1ffed119b843f3e2d9e905770f46eba594d",
+        "tableName": "SkuRiskProfile",
+        "type": "table"
+      },
+      {
+        "name": "SkuShippingData_sku_key",
+        "sqlSha256": "a522b880518b75e59d810b11134ca83e576d4c60035e73c3de60845b9e4298af",
+        "tableName": "SkuShippingData",
+        "type": "index"
+      },
+      {
+        "name": "SkuShippingData",
+        "sqlSha256": "babf2e0db7c5cab9623491b22a35024a8a305b5a46e8f8df2176d17406015ae9",
+        "tableName": "SkuShippingData",
+        "type": "table"
+      },
+      {
+        "name": "SKUStorePriority_sku_idx",
+        "sqlSha256": "d787ee2fb8c9c570e30bc4c6d2133d500d91a51cc693e35eaf2023bd85065e06",
+        "tableName": "SKUStorePriority",
+        "type": "index"
+      },
+      {
+        "name": "SKUStorePriority_sku_storeName_key",
+        "sqlSha256": "84bc504e2fc680cb51e408ca493d541b1fcd694e0fa510ef3c2dc61b23d440bf",
+        "tableName": "SKUStorePriority",
+        "type": "index"
+      },
+      {
+        "name": "SKUStorePriority",
+        "sqlSha256": "1873a87973aa9b1a053701f7cb7caa74b33d28e5617d2868501b0bd903bd6b38",
+        "tableName": "SKUStorePriority",
+        "type": "table"
+      },
+      {
+        "name": "sqlite_autoindex__prisma_migrations_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "_prisma_migrations",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AccountAlert_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AccountAlert",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AccountHealthSnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AccountHealthSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonAdvisorQueue_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonAdvisorQueue",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonAplusJob_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonAplusJob",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonAsinDaily_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonAsinDaily",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonChangeLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonChangeLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonGrowthReport_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonGrowthReport",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonListingHealthItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonListingHealthItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonListingHealthSnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonListingHealthSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonListingRemediation_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonListingSnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonListingSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonOrder_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonOrder",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonOrderShipment_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonOrderShipment",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AmazonRemediationQueue_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AmazonRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_AtozzClaim_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "AtozzClaim",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BoxSizePreset_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BoxSizePreset",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BrandAccount_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BrandAccount",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BrandConflict_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BrandConflict",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BundleComponent_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BundleComponent",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BundleDraft_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BundleDraft",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_BuyerMessage_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "BuyerMessage",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_CardEntry_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "CardEntry",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_CatalogSnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "CatalogSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ChannelMaxAgentEvent_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ChannelMaxAgentEvent",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ChannelMaxAgentEvidence_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ChannelMaxAgentEvidence",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ChannelMaxAgentJob_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ChannelMaxAgentJob",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ChannelMaxStepUpAssertion_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ChannelMaxStepUpAssertion",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ChannelSKU_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ChannelSKU",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ComplianceAuditLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ComplianceAuditLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ComplianceCheck_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ComplianceCheck",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_CreditCard_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "CreditCard",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_CriticalAlert_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "CriticalAlert",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_CsCase_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "CsCase",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Debt_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Debt",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_DonorOffer_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "DonorOffer",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_DonorProduct_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "DonorProduct",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_EnrichmentJob_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "EnrichmentJob",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ErrorPattern_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ErrorPattern",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FinancePlanRun_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FinancePlanRun",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FrozenIncident_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FrozenIncident",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FrozenRiskAlert_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FrozenRiskAlert",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FrozenRule_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FrozenRule",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Fund_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Fund",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FundAllocation_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FundAllocation",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_FundEntry_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "FundEntry",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_GeneratedContent_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "GeneratedContent",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_GenerationJob_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "GenerationJob",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_GenerationStage_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "GenerationStage",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_GenerationWorkItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "GenerationWorkItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_GTINExemption_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "GTINExemption",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ImageClassification_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ImageClassification",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Invite_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Invite",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_KnowledgeBaseEntry_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "KnowledgeBaseEntry",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ListingAuditResult_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ListingAuditResult",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ListingAuditScan_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ListingAuditScan",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ListingLifecycleLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ListingLifecycleLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ListingRemediation_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_MarketplaceRule_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "MarketplaceRule",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_MasterBundle_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "MasterBundle",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_PackingProfile_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "PackingProfile",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Payout_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Payout",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_PayoutLine_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "PayoutLine",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_PolicyViolationCategory_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "PolicyViolationCategory",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_PolicyViolationDetail_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "PolicyViolationDetail",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProcurementNotificationLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProcurementNotificationLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProcurementSyncQueue_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProcurementSyncQueue",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProductPackSizeCache_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProductPackSizeCache",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProductReview_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProductReview",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProductSourceFallback_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProductSourceFallback",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProductTitleCache_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProductTitleCache",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ProductTypeOverride_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ProductTypeOverride",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Receipt_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Receipt",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_RecurringExpense_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "RecurringExpense",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ReportSyncJob_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ReportSyncJob",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_RepriceLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "RepriceLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ResearchPool_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ResearchPool",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_RetailPrice_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "RetailPrice",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Role_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Role",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SellerFeedback_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SellerFeedback",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Setting_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Setting",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ShippingAdjustment_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ShippingAdjustment",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ShippingPlan_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ShippingPlan",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_ShippingPlanItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "ShippingPlanItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SkuAdjustmentProfile_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SkuAdjustmentProfile",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SkuComponent_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SkuComponent",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SkuCost_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SkuCost",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SkuRiskProfile_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SkuRiskProfile",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SkuShippingData_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SkuShippingData",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SKUStorePriority_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SKUStorePriority",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_StockCheckLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "StockCheckLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_Store_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "Store",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_StoreRegistry_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "StoreRegistry",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_SyncLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "SyncLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_TimeLog_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "TimeLog",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_UPCPool_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_User_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "User",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_VariationMatrix_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "VariationMatrix",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartBuyBoxItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartBuyBoxItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartCancellationRequest_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartCancellationRequest",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartCatalogItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartCatalogItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartCustomerInquiry_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartItemCompliance_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartItemCompliance",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartLabelPurchase_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartLabelPurchase",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartListingQualityItem_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartListingQualityItem",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartListingQualitySnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartListingQualitySnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartListingRemediation_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartListingRetirement_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartListingRetirement",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartOrder_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartOrder",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartPerformanceSnapshot_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartPerformanceSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartReconTransaction_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartReconTransaction",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartRemediationQueue_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartReport_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartReport",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartSkuFulfillment_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartSkuFulfillment",
+        "type": "index"
+      },
+      {
+        "name": "sqlite_autoindex_WalmartSkuPerf_1",
+        "sqlSha256": "6a699266c344aa19cad935784dd7e4c904db86c3ecdcdeaad1779c542a2591ea",
+        "tableName": "WalmartSkuPerf",
+        "type": "index"
+      },
+      {
+        "name": "StockCheckLog_checked_at_idx",
+        "sqlSha256": "a31834ae507ec3c4357c9c0671c5a6e93a870455ed291ba648ca9a327d5f6832",
+        "tableName": "StockCheckLog",
+        "type": "index"
+      },
+      {
+        "name": "StockCheckLog_manufacturer_upc_idx",
+        "sqlSha256": "c7d03eb403f4ff658868823c3914ae24d2805ce0cad3f41d99f47a20c39e28e9",
+        "tableName": "StockCheckLog",
+        "type": "index"
+      },
+      {
+        "name": "StockCheckLog_store_id_idx",
+        "sqlSha256": "575da9b0caed8b1ce584d031fc7d319c9a8fca656c661cfca237e8c8fd6fdcab",
+        "tableName": "StockCheckLog",
+        "type": "index"
+      },
+      {
+        "name": "StockCheckLog",
+        "sqlSha256": "5f4e67a8a825b8461f79b0657925e986cfeef216341c5c0ef200426598c72e1d",
+        "tableName": "StockCheckLog",
+        "type": "table"
+      },
+      {
+        "name": "Store",
+        "sqlSha256": "19de1d84002b78d5b3cb58df9f60140e163f8a07dad52e3d6aa2f3edb5a5d446",
+        "tableName": "Store",
+        "type": "table"
+      },
+      {
+        "name": "StoreRegistry_chain_idx",
+        "sqlSha256": "0af4d0af1d63346c216961f651ea17879509bb1ab3f34294cb3226db7acd4133",
+        "tableName": "StoreRegistry",
+        "type": "index"
+      },
+      {
+        "name": "StoreRegistry_distance_mi_idx",
+        "sqlSha256": "7c558e72f80bc00abe70dfeacea648c44163d7ed2aabdfc722b4b9ad66f62b37",
+        "tableName": "StoreRegistry",
+        "type": "index"
+      },
+      {
+        "name": "StoreRegistry_is_active_idx",
+        "sqlSha256": "14581aef3805682428969f206117f7fcc808f5602e1a5467154b884d56c824d6",
+        "tableName": "StoreRegistry",
+        "type": "index"
+      },
+      {
+        "name": "StoreRegistry_tier_idx",
+        "sqlSha256": "f647a65a40f26838dcf9934f730c86fcd86aeb8d0c8aabe1f00ac6265a24b652",
+        "tableName": "StoreRegistry",
+        "type": "index"
+      },
+      {
+        "name": "StoreRegistry",
+        "sqlSha256": "90a0a3e84d42de816c791f295a002a75f1e19653c60ffffd6e7cbb8916dde297",
+        "tableName": "StoreRegistry",
+        "type": "table"
+      },
+      {
+        "name": "SyncLog",
+        "sqlSha256": "43dcae6e50a0c15fc629820c4975b50e2fad7e1985e6f3cb80e836dd7db966ac",
+        "tableName": "SyncLog",
+        "type": "table"
+      },
+      {
+        "name": "TimeLog_date_idx",
+        "sqlSha256": "d9908cd67eed256fb0f75b607582635961443a7ba573e52e9ac00205dc08fa99",
+        "tableName": "TimeLog",
+        "type": "index"
+      },
+      {
+        "name": "TimeLog_expenseId_date_key",
+        "sqlSha256": "a4a55b91e468c49736e86d5624404b6e78301651c11cff838e98a17822a3c3c7",
+        "tableName": "TimeLog",
+        "type": "index"
+      },
+      {
+        "name": "TimeLog_expenseId_idx",
+        "sqlSha256": "d8b39705a969d783186b2d6a577bf0fd4611946eadf3914cfc837e54d2d00153",
+        "tableName": "TimeLog",
+        "type": "index"
+      },
+      {
+        "name": "TimeLog",
+        "sqlSha256": "94d072e5e9433b23858f10016dadd697e410359656653c34f641dd7644e115ea",
+        "tableName": "TimeLog",
+        "type": "table"
+      },
+      {
+        "name": "UPCPool_assigned_to_id_key",
+        "sqlSha256": "6204602e66cdd1e653edd2480a0c493b5e184a9b68a87b192e23aba6d391744c",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "UPCPool_gs1_validated_idx",
+        "sqlSha256": "2b3d8136b0a9882bd14b5b26f2f09edd300c6e5af2927b35edd60354dab8d6b2",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "UPCPool_status_idx",
+        "sqlSha256": "b698d6da6a4014fea5a7bf145b6f2d3d050967774166020b33172fe019c86714",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "UPCPool_upc_key",
+        "sqlSha256": "fd644f078a355842da64f3838c03cec31d929d2adeb73958b27cd26af8157ed6",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "UPCPool_upc_prefix_idx",
+        "sqlSha256": "33e2c1b12564021a695b9089c625cc3683fcbde6b8ae545d4c59d69b03d7e522",
+        "tableName": "UPCPool",
+        "type": "index"
+      },
+      {
+        "name": "UPCPool",
+        "sqlSha256": "77ca6a277dff5c3b4a06719a8bc0d9678288b2106e9803da049a7deade3aa6da",
+        "tableName": "UPCPool",
+        "type": "table"
+      },
+      {
+        "name": "User_username_key",
+        "sqlSha256": "d46af42cfc041d5f46521825bf149953e9242bd62e048f109a2b786667709cbb",
+        "tableName": "User",
+        "type": "index"
+      },
+      {
+        "name": "User",
+        "sqlSha256": "860dfae5b3320576c49906949b627b0cf5be2d50c349310b209952d6c6e9cd27",
+        "tableName": "User",
+        "type": "table"
+      },
+      {
+        "name": "VariationMatrix_bundle_draft_id_idx",
+        "sqlSha256": "e28949cfaba0cdf3706ea94e02f3e5e708b77e51aece80882b7a5134c25f98bd",
+        "tableName": "VariationMatrix",
+        "type": "index"
+      },
+      {
+        "name": "VariationMatrix_bundle_draft_id_key",
+        "sqlSha256": "d7006212f3ea34047f5ec1e778cb800654bc74c205da913541b31eeaf25275b5",
+        "tableName": "VariationMatrix",
+        "type": "index"
+      },
+      {
+        "name": "VariationMatrix",
+        "sqlSha256": "fac9b6f4dab1ed2c7372a5f71f8cc559e53d6a690c1a888ac65db39dd139e130",
+        "tableName": "VariationMatrix",
+        "type": "table"
+      },
+      {
+        "name": "WalmartBuyBoxItem_storeIndex_isWinner_idx",
+        "sqlSha256": "b1d4466dfcb4508b2b6ef9bc76c83acab74be1d9a31d1dc4eb5b732db977ebc0",
+        "tableName": "WalmartBuyBoxItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartBuyBoxItem_storeIndex_priceGap_idx",
+        "sqlSha256": "027acfb3f4c68bbf87bf3612e2c7798e09ede3db8b130a5abf67fe9cc28b7b09",
+        "tableName": "WalmartBuyBoxItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartBuyBoxItem_storeIndex_sku_key",
+        "sqlSha256": "dddbd91562ccda968877daed92abaf6af5eda2d8dd306a79b4216017a1774f3a",
+        "tableName": "WalmartBuyBoxItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartBuyBoxItem",
+        "sqlSha256": "f05993d2835cd7568d6c4885f75ec322792560f7a7329d268c3bd97a28a9053a",
+        "tableName": "WalmartBuyBoxItem",
+        "type": "table"
+      },
+      {
+        "name": "WalmartCancellationRequest_action_idx",
+        "sqlSha256": "16b3db862d24df16e72be68388ed08d4a89c3a243ba0fd3c7667698703f741c9",
+        "tableName": "WalmartCancellationRequest",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCancellationRequest_detectedAt_idx",
+        "sqlSha256": "263810ba1e571ffca18a6e922414e48b401d0ecc0d180cdeb264034fcd87eba0",
+        "tableName": "WalmartCancellationRequest",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCancellationRequest_purchaseOrderId_key",
+        "sqlSha256": "82c7019762635b6e3da62df1e92a5bc7f901c0884286522f3ee08bb9f78019e9",
+        "tableName": "WalmartCancellationRequest",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCancellationRequest",
+        "sqlSha256": "f64b64a3b8ebd0a218103f04ef3d3b2871ad3800d35063e61af46a8027abd422",
+        "tableName": "WalmartCancellationRequest",
+        "type": "table"
+      },
+      {
+        "name": "WalmartCatalogItem_storeIndex_publishedStatus_idx",
+        "sqlSha256": "2feab292dc6229957f1b39b686e0aa36263be5f9443c9dfd128b1c8d84cafba9",
+        "tableName": "WalmartCatalogItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCatalogItem_storeIndex_sku_key",
+        "sqlSha256": "6bbef34d2ec9b639df4b554de612df6857310c18ad5eaafb88e067fa55197ca9",
+        "tableName": "WalmartCatalogItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCatalogItem",
+        "sqlSha256": "469fbfc92e2d1b4d2b90abd0ad5afbe5f795fc3f93fe4e9ac24d299b560699bf",
+        "tableName": "WalmartCatalogItem",
+        "type": "table"
+      },
+      {
+        "name": "WalmartCustomerInquiry_customerOrderId_idx",
+        "sqlSha256": "ac3925ebbddd7c5a0b62cbdf6d1be5c96f09f2dca9683549d1a084e6d0d6e0a3",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCustomerInquiry_purchaseOrderId_key",
+        "sqlSha256": "211eae4075997df1dbb6d0b909d0ea8ad5a69f0aaf2064074e2d38a5a4d5f1fb",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCustomerInquiry_sentAt_idx",
+        "sqlSha256": "9ea3f4cb2220bce498c62ffe8391eecaf50b76e7c3e2ccf250c4d0d1fa2d0dec",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCustomerInquiry_status_idx",
+        "sqlSha256": "7c45a69d522764de740c9d9f387baaab040ae01b4c512ea3946b6484feb8dfe9",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "index"
+      },
+      {
+        "name": "WalmartCustomerInquiry",
+        "sqlSha256": "91d70ec77672d8257ae5e490b9b6626d325c04d063cd81c91e6430ad4ae94628",
+        "tableName": "WalmartCustomerInquiry",
+        "type": "table"
+      },
+      {
+        "name": "WalmartItemCompliance_itemId_issueType_key",
+        "sqlSha256": "70a5dee13d2b309745c73b750ae3fa4f9b6e1b0bdadc26a97a6478172502d743",
+        "tableName": "WalmartItemCompliance",
+        "type": "index"
+      },
+      {
+        "name": "WalmartItemCompliance_status_idx",
+        "sqlSha256": "6fd6fb915632207866d888f3a5c8d2e691c6108027f855d65ca8c62749499711",
+        "tableName": "WalmartItemCompliance",
+        "type": "index"
+      },
+      {
+        "name": "WalmartItemCompliance_storeIndex_idx",
+        "sqlSha256": "c61e4edf4c37a250a78d94793aaf26c4af71bdc693cc72b64e2a6b372ac0291b",
+        "tableName": "WalmartItemCompliance",
+        "type": "index"
+      },
+      {
+        "name": "WalmartItemCompliance",
+        "sqlSha256": "a1ebd96cc0e635b7d2490b3d0783188990d63838c8cdb9dd57c9e5650fa3a287",
+        "tableName": "WalmartItemCompliance",
+        "type": "table"
+      },
+      {
+        "name": "WalmartLabelPurchase_customerOrderId_idx",
+        "sqlSha256": "92f02f5fed82f894ab5d6ef6f7a9706f2ae6de2eb1d6d82cca1aac89a70aad61",
+        "tableName": "WalmartLabelPurchase",
+        "type": "index"
+      },
+      {
+        "name": "WalmartLabelPurchase_purchaseOrderId_key",
+        "sqlSha256": "1eea2f245c908b45d75be8110e67979796926a0f48010b010bf495eff90607f5",
+        "tableName": "WalmartLabelPurchase",
+        "type": "index"
+      },
+      {
+        "name": "WalmartLabelPurchase",
+        "sqlSha256": "faf4bdd762ac811aa766529cdedd1835fd3abe1a28c3dae59fe7e43ad6fa300b",
+        "tableName": "WalmartLabelPurchase",
+        "type": "table"
+      },
+      {
+        "name": "WalmartListingQualityItem_storeIndex_lqScore_idx",
+        "sqlSha256": "aefedaa1695f664fdacf92ae5b12d504f7fa585b22af9e9217777ecbd4b33ab5",
+        "tableName": "WalmartListingQualityItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingQualityItem_storeIndex_priority_idx",
+        "sqlSha256": "cadbaf5af74351e459458b43c5853d98b82a3f88b4bcb8e7ce65c93606da5ae8",
+        "tableName": "WalmartListingQualityItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingQualityItem_storeIndex_sku_key",
+        "sqlSha256": "604ed6a7d8d4f3ec249769224cee1a21195d9fd94a206aa13ab2139d487f9d7d",
+        "tableName": "WalmartListingQualityItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingQualityItem_storeIndex_syncedAt_idx",
+        "sqlSha256": "0b0ec2377ace75a2a6e8a8e9aab9b44dc6b681c6499ec49fbf31cfd157804f1a",
+        "tableName": "WalmartListingQualityItem",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingQualityItem",
+        "sqlSha256": "18b030b48977d8616d14f7cecd1907ee92623e05d056abe49429dbeae8c0460d",
+        "tableName": "WalmartListingQualityItem",
+        "type": "table"
+      },
+      {
+        "name": "WalmartListingQualitySnapshot_storeIndex_capturedAt_idx",
+        "sqlSha256": "92f1a9e575b2ef579b87c37a25817a4ea892fdc126356310474c6b869335ea0c",
+        "tableName": "WalmartListingQualitySnapshot",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingQualitySnapshot",
+        "sqlSha256": "830413218f1ca93e047d45984f11666ea94f53810ae71e5c56df89cc1a165715",
+        "tableName": "WalmartListingQualitySnapshot",
+        "type": "table"
+      },
+      {
+        "name": "WalmartListingRemediation_after_idx",
+        "sqlSha256": "c5e905ebcc44c93c5018bd25bdc2df241af4351ced207c7b43cdfb8fca0ee66b",
+        "tableName": "WalmartListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingRemediation_runAt_idx",
+        "sqlSha256": "ca88738a9d3dda5bba7fe620980e6969a6a1f9c79d24b80dcbde5621dd73b584",
+        "tableName": "WalmartListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingRemediation_sku_runAt_idx",
+        "sqlSha256": "103a5007d1892b3108747874620c1718bb0c248126c0e2097a59fcbf0cc3b298",
+        "tableName": "WalmartListingRemediation",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingRemediation",
+        "sqlSha256": "e3ad4133a3d055afd2e54ca5fc30abdaa5242715b3d9ef446d993be98477cd4c",
+        "tableName": "WalmartListingRemediation",
+        "type": "table"
+      },
+      {
+        "name": "WalmartListingRetirement_sku_idx",
+        "sqlSha256": "b64072f2c656409cd201ce126e9bb912b41c1d36a6c38a0da97563dca8dcb06e",
+        "tableName": "WalmartListingRetirement",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingRetirement_storeIndex_retiredAt_idx",
+        "sqlSha256": "7edba66a303ec5a65b45fcb7b5bef3a219393e321257c05e4ec3553099c2ad4d",
+        "tableName": "WalmartListingRetirement",
+        "type": "index"
+      },
+      {
+        "name": "WalmartListingRetirement",
+        "sqlSha256": "6e24438183030e68ce4bcd834c66244a8431be922aa1097286f42f2f39b2cf2b",
+        "tableName": "WalmartListingRetirement",
+        "type": "table"
+      },
+      {
+        "name": "WalmartLqSyncState",
+        "sqlSha256": "48bf4d51cc7b2c3c2e528eebd75765bd0c0c8a95d4a539a17f8dfa32e7749b85",
+        "tableName": "WalmartLqSyncState",
+        "type": "table"
+      },
+      {
+        "name": "WalmartOrder_customerOrderId_idx",
+        "sqlSha256": "afce7b7a7ba1a85baef49b79d4da40bb6d50f4cee47d555be1ac7ebbd0db85c2",
+        "tableName": "WalmartOrder",
+        "type": "index"
+      },
+      {
+        "name": "WalmartOrder_orderDate_idx",
+        "sqlSha256": "e88469b91214bfbd691497c940ed44075ce9afd577bfe7db73157148acc5afb4",
+        "tableName": "WalmartOrder",
+        "type": "index"
+      },
+      {
+        "name": "WalmartOrder_purchaseOrderId_key",
+        "sqlSha256": "d0cfc614b5e07259961941100864e9cc3f0d0dbcfa7a439198a5cf16cf30947b",
+        "tableName": "WalmartOrder",
+        "type": "index"
+      },
+      {
+        "name": "WalmartOrder_storeIndex_status_idx",
+        "sqlSha256": "49f7acfd795d139d49c65ce2f29320f6a0220f4586197cdb624db2f63b160ad0",
+        "tableName": "WalmartOrder",
+        "type": "index"
+      },
+      {
+        "name": "WalmartOrder",
+        "sqlSha256": "5f9321f76b654b381c1d9524f7c829b99571780741f10589abae77af03045891",
+        "tableName": "WalmartOrder",
+        "type": "table"
+      },
+      {
+        "name": "WalmartPerformanceSnapshot_storeIndex_metric_capturedAt_idx",
+        "sqlSha256": "ba30c1f03efd30518f0a3833d3f87a86bc05ac087a2b039bc9bb373348e19b29",
+        "tableName": "WalmartPerformanceSnapshot",
+        "type": "index"
+      },
+      {
+        "name": "WalmartPerformanceSnapshot",
+        "sqlSha256": "39700895a7d9df9dd3f539feef5abe6c9c4dc596de63728ab1396d4aa80acc62",
+        "tableName": "WalmartPerformanceSnapshot",
+        "type": "table"
+      },
+      {
+        "name": "WalmartReconTransaction_reportDate_idx",
+        "sqlSha256": "5584494174c3e9821323fecc5302bd472d75df698c52b87716ddb452b8013ed7",
+        "tableName": "WalmartReconTransaction",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReconTransaction_storeIndex_reportDate_idx",
+        "sqlSha256": "bf5af4e186ddb2af981c6c7017335c317f19b629852a5f556efe05738f0e3c7b",
+        "tableName": "WalmartReconTransaction",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReconTransaction_transactionType_idx",
+        "sqlSha256": "a9831e399e25015c943259332d5de3f9b30ba43de40e363c05dc780bd9ef820e",
+        "tableName": "WalmartReconTransaction",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReconTransaction_walmart_recon_dedup_key",
+        "sqlSha256": "c2a83e8fab28c40b65ca08639e909185fe56382ca4fa8f3880d74d231dab36d6",
+        "tableName": "WalmartReconTransaction",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReconTransaction",
+        "sqlSha256": "6762d7c862683b1108690a34d4a82fe60722ad5d252dfa7faf4e6ae42d3a06a9",
+        "tableName": "WalmartReconTransaction",
+        "type": "table"
+      },
+      {
+        "name": "WalmartRemediationQueue_sku_active_key",
+        "sqlSha256": "e42328a9fc40b348c04c63474ced956682488cb550cccea408753aaea10e2e47",
+        "tableName": "WalmartRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "WalmartRemediationQueue_status_idx",
+        "sqlSha256": "d4ef91490bbbe882564875df4b70ef670bbecc0304ab76880bf9a054c5dd7cb9",
+        "tableName": "WalmartRemediationQueue",
+        "type": "index"
+      },
+      {
+        "name": "WalmartRemediationQueue",
+        "sqlSha256": "e61d7d901d2e3bbb8ea0792583b5e43499ff2ad17ab61326c75c7c10c88d4833",
+        "tableName": "WalmartRemediationQueue",
+        "type": "table"
+      },
+      {
+        "name": "WalmartReport_requestId_key",
+        "sqlSha256": "c95f432d8556b7422fbe8a23b4ab5aca1972a7ab76c222a80affd948c12d5869",
+        "tableName": "WalmartReport",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReport_status_idx",
+        "sqlSha256": "eba4d70d3136f1cf3f6ed68ecfcd26ae4ae457195d75f4bfdc79195d23beb8cf",
+        "tableName": "WalmartReport",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReport_storeIndex_reportType_requestedAt_idx",
+        "sqlSha256": "9513b7e325a9e879b189346ade0d60fe74cd1cd28518f73b454ecd22bcd9a76b",
+        "tableName": "WalmartReport",
+        "type": "index"
+      },
+      {
+        "name": "WalmartReport",
+        "sqlSha256": "8d2afc99e7796e3a77f07fcc4cb956a5a3abd9018b5e0bc0af892d3baacfdd80",
+        "tableName": "WalmartReport",
+        "type": "table"
+      },
+      {
+        "name": "WalmartSkuFulfillment_storeIndex_avgHandlingDays_idx",
+        "sqlSha256": "e4276bfe305b5043e5ca7689bc63baa48642f111212351e76bc5a207b30db9e1",
+        "tableName": "WalmartSkuFulfillment",
+        "type": "index"
+      },
+      {
+        "name": "WalmartSkuFulfillment_storeIndex_classification_idx",
+        "sqlSha256": "f8445a19540a2b89cf12f7c06744c83f29aad8a92f5712e170b17635ce78909c",
+        "tableName": "WalmartSkuFulfillment",
+        "type": "index"
+      },
+      {
+        "name": "WalmartSkuFulfillment_storeIndex_sku_key",
+        "sqlSha256": "5d4f5112a2d2f7d94ff1c201456dd5781adaa7fbde53b82ffa7acf3e2b60a326",
+        "tableName": "WalmartSkuFulfillment",
+        "type": "index"
+      },
+      {
+        "name": "WalmartSkuFulfillment",
+        "sqlSha256": "431443df48c0e615fb94a74f31b57087be6324dddff21a6df743126db1cff6fd",
+        "tableName": "WalmartSkuFulfillment",
+        "type": "table"
+      },
+      {
+        "name": "WalmartSkuPerf_sales30_idx",
+        "sqlSha256": "06e78ebf4dd3ce20f60af4b1debde9e15233e7db52de9c518b53f675f4b0313a",
+        "tableName": "WalmartSkuPerf",
+        "type": "index"
+      },
+      {
+        "name": "WalmartSkuPerf",
+        "sqlSha256": "9be35c65fa90856c7ae441fd252f70027c24c348f4649168c1008eae5d6b8d1a",
+        "tableName": "WalmartSkuPerf",
+        "type": "table"
+      }
+    ],
+    "sha256": "591d6ec4da09102dbb994398eb45f931592b07ac73b19ef0ebf1f3c5cf079aea",
+    "tableCount": 117,
+    "triggerCount": 4
+  },
+  "writerActivity": {
+    "blockerSets": {
+      "enrichmentRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "harvestRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "operationalRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unfinishedPrismaMigrations": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unsettledMeteredReceipts": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    },
+    "contractVersion": "product-truth-migration-writer-activity/1",
+    "enrichmentRunning": 0,
+    "externalWriterQuiescenceRequired": true,
+    "harvestRunning": 0,
+    "operationalRunning": 0,
+    "sha256": "2af0ea916ca2b98bb488faa64723122748e209ab6a39b25444d0ae31d903240c",
+    "unfinishedPrismaMigrations": 0,
+    "unsettledMeteredReceipts": 0
+  }
+}
