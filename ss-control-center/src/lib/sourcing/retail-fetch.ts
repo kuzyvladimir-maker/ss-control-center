@@ -338,11 +338,20 @@ const UNWRANGLE_PLATFORM: Record<string, string> = {
 // calls are deliberately charged at the known 10-credit tier so a maxUnits cap
 // cannot authorize 10× more spend than the owner approved.
 const UNWRANGLE_CREDIT_UNITS: Record<"target" | "samsclub" | "costco" | "walmart", number> = {
-  target: 1,
+  // Live 2026-07-28 Target Search receipt charged 2.5 credits despite the
+  // provider documentation previously showing 1. Reserve the observed tier
+  // fail-closed so a future owner ceiling cannot be exceeded silently.
+  target: 2.5,
   samsclub: 10,
   costco: 10,
   walmart: 2.5,
 };
+export function unwrangleSearchCreditUnits(
+  retailer: "target" | "samsclub" | "costco" | "walmart",
+): number {
+  return UNWRANGLE_CREDIT_UNITS[retailer];
+}
+
 export async function unwrangleSearch(
   retailer: "target" | "samsclub" | "costco" | "walmart",
   query: string
@@ -362,7 +371,7 @@ export async function unwrangleSearch(
       {
         provider: "unwrangle",
         operation: "search",
-        units: UNWRANGLE_CREDIT_UNITS[retailer],
+        units: unwrangleSearchCreditUnits(retailer),
         requestFingerprint: { platform, query, retailer },
         onAuthorized: (value) => { authorization = value; },
       },

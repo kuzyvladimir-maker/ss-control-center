@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "owner-pt-g7-turnkey-motts-20260728t193712z",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99672.5,
+      "evidenceSha256": "b9729ef415a89596a7a7430bdd390b859f11558335a1f054e8e88a8ea102e819",
+      "observedAt": "2026-07-28T19:36:58.967Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-28T20:30:00.000Z",
+  "issuedAt": "2026-07-28T19:37:12.000Z",
+  "meteredPermit": {
+    "approvalId": "owner-pt-g7-turnkey-motts-20260728t193712z",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-28T20:30:00.000Z",
+    "issuedAt": "2026-07-28T19:37:12.000Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-g7-targeted-leasefix-20260728T193700Z-motts",
+    "version": 1
+  },
+  "planSha256": "7d82cd9b069d298b6880a771364a9ef83fc033cfd06a2de88937bf9bd7f296c9",
+  "runId": "pt-g7-targeted-leasefix-20260728T193700Z-motts",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

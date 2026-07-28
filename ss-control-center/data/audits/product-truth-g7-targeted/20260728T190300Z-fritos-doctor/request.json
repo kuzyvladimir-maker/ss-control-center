@@ -1,0 +1,70 @@
+{
+  "createdAt": "2026-07-28T19:03:22.081Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "025000578d3ed72943b3c9cb1ff1bb5fef961e427e65e3e83c8057973dad030e",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"fritos\",\"productLine\":\"bag chips corn flamin hot\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":262.23308890625,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:025000578d3ed72943b3c9cb1ff1bb5fef961e427e65e3e83c8057973dad030e",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": null,
+    "decisionEvidenceJson": null,
+    "decisionStatus": null,
+    "donorIdentityStatus": "legacy_unverified",
+    "donorOfferId": "do:walmart:49909665",
+    "donorProductId": "2bcb325a-17e4-4ebc-94d7-1228effbf6e8",
+    "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "isFirstParty": true,
+    "legacySnapshot": {
+      "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-08T13:48:30.247Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"2bcb325a-17e4-4ebc-94d7-1228effbf6e8\",\n  \"fetchedAt\": \"2026-07-10T11:55:29.765Z\",\n  \"id\": \"do:walmart:49909665\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 3.97,\n  \"pricePerUnit\": 3.97,\n  \"productUrl\": \"https://www.walmart.com/ip/Fritos-Flamin-Hot-Flavored-Corn-Chips-9-25-oz-Bag-Packaging-May-Vary/49909665?classType=REGULAR\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"49909665\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-10T11:55:29.765Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+      "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"name\\\":\\\"Flavor\\\",\\\"value\\\":\\\"Spicy\\\"},{\\\"name\\\":\\\"Net content statement\\\",\\\"value\\\":\\\"Net Wt 9 1/4 Oz (262.2 g)\\\"},{\\\"name\\\":\\\"Size\\\",\\\"value\\\":\\\"9.25 oz\\\"},{\\\"name\\\":\\\"Snack chip type\\\",\\\"value\\\":\\\"Corn Chips\\\"},{\\\"name\\\":\\\"Food preparation method\\\",\\\"value\\\":\\\"Fried\\\"},{\\\"name\\\":\\\"Product line\\\",\\\"value\\\":\\\"Flamin Hot\\\"},{\\\"name\\\":\\\"Brand\\\",\\\"value\\\":\\\"Fritos\\\"},{\\\"name\\\":\\\"Nutrition facts label image\\\",\\\"value\\\":\\\"http://productspace.pepsico.com/ps_mdm_service/download?assetId=4430462&fileName=00028400589314_L2.tif\\\"},{\\\"name\\\":\\\"Ingredient list image\\\",\\\"value\\\":\\\"https://digitalassets.pepsico.com/m/771f0c4a253c4ca/Hi_Res-00028400589314_L4.jpg?download\\\"},{\\\"name\\\":\\\"Container type\\\",\\\"value\\\":\\\"Bag\\\"}]\",\n  \"bestPrice\": 3.97,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Fritos\",\n  \"bullets\": \"[\\\"Includes 9.25 oz. bag of Fritos Flamin Hot Flavored Corn Chips\\\",\\\"Get ready for an extra kick of spicy flavor with these FRITOS chips\\\",\\\"Delicious spiciness, packs a flavor punch into your snack time\\\",\\\"Pair these FRITOS with a FRITO LAY dip for even more flavor\\\",\\\"Packaging may vary\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-08T13:48:30.247Z\",\n  \"currency\": \"USD\",\n  \"description\": \"The popularity of FRITOS® corn chips puts this iconic snack in a class of its own. From small towns and family barbecues to parties in the big city, this classic snack is still satisfying fans after more than 80 years. Fritos Flamin' Hot Flavored Corn Chips (9.25 oz bag) deliver an intense crunch with a fiery kick. Infused with bold Flamin' Hot seasoning, these chips are perfect for those who love a spicy snack.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"2bcb325a-17e4-4ebc-94d7-1228effbf6e8\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"fritos|flamin|hot|flavored|corn|chips|bag|9 25 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://i5.walmartimages.com/seo/Fritos-Flamin-Hot-Flavored-Corn-Chips-9-25-oz-Bag-Packaging-May-Vary_ce91b6b0-ee49-46a3-8bd4-078e64e08109.85443c3812b7216334fc9a06ddf078d4.jpeg\\\",\\\"https://i5.walmartimages.com/asr/8824eab7-09d0-4592-a2f0-53f56f215c86.d46ae43430db60e3cb680108a6e0dd1c.jpeg\\\",\\\"https://i5.walmartimages.com/asr/584d34e3-f77a-47c8-9f56-4e9653d6e962.9e8d206527ada443bf9aff5b5a4cd314.jpeg\\\",\\\"https://i5.walmartimages.com/asr/7858208f-0480-4234-8f6a-e21aec1f75d2.b724e8a549bb3c55014b2a5848e3def0.jpeg\\\",\\\"https://i5.walmartimages.com/asr/1db8a577-2ac2-4241-9f94-24dbcaf0faf3.c3a6f919c487c73dce5425e6d046f37b.jpeg\\\"]\",\n  \"ingredients\": \"Corn, Vegetable Oil (Corn and/or Canola Oil), and Less than 2% of Cheddar Cheese (Milk, Cheese Cultures, Salt, Enzymes), Salt, Buttermilk, Whey, Monosodium Glutamate, Tomato Powder, Romano Cheese (Cow's Milk, Cheese Cultures, Salt, Enzymes), Maltodextrin (Made from Corn), Whey Protein Concentrate, Onion Powder, Artificial Color (Red 40 Lake, Yellow 6 Lake, Yellow 6), Natural Flavors, Garlic Powder, Sugar, Citric Acid, Disodium Inosinate, and Disodium Guanylate.\",\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/Fritos-Flamin-Hot-Flavored-Corn-Chips-9-25-oz-Bag-Packaging-May-Vary_ce91b6b0-ee49-46a3-8bd4-078e64e08109.85443c3812b7216334fc9a06ddf078d4.jpeg\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": \"{\\\"nova-group\\\":4,\\\"nova-group_100g\\\":4,\\\"nova-group_serving\\\":4,\\\"nova-group_unit\\\":\\\"\\\",\\\"nova-group_value\\\":4,\\\"allergens\\\":[\\\"milk\\\"]}\",\n  \"pricePerMeasure\": 0.429,\n  \"productLine\": null,\n  \"size\": \"9.25 oz\",\n  \"title\": \"Fritos Flamin' Hot Flavored Corn Chips, 9.25 oz Bag (Packaging May Vary)\",\n  \"unitAmount\": 9.25,\n  \"unitMeasure\": \"oz\",\n  \"upc\": \"028400589314\",\n  \"updatedAt\": \"2026-07-10T11:55:29.765Z\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+      "sha256": "7cac5e51543d357fcfeed796b152d3a458b905f291402c29772103d378a10fd5"
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/49909665",
+    "retailer": "walmart",
+    "retailerProductId": "49909665",
+    "variantDecisionId": null,
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "9f491f7c5fca149d77245ffd86f92e4280de38a394b9348267cf6c1542cc4668",
+  "engineReleaseSha256": "843a494e6d9ad46b7b514b5ac342769c0742e19b6a7ec426d6cfaa5f96b74af3",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-28T20:30:00.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Fritos Flamin Hot Flavored Corn Chips 9.25 oz Bag",
+  "runId": "pt-g7-targeted-20260728T190300Z-fritos",
+  "schemaFingerprintSha256": "359de1c5f9732093730877f9d6ef5dde091fdb3630c59f6becadb5e2c026c6d7",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.3.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

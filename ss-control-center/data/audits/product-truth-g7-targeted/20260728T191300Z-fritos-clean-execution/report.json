@@ -1,0 +1,111 @@
+{
+  "approvalId": "owner-pt-g7-turnkey-fritos-20260728t191222z",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:025000578d3ed72943b3c9cb1ff1bb5fef961e427e65e3e83c8057973dad030e",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "donorOfferId": "do:walmart:49909665",
+  "donorProductId": "2bcb325a-17e4-4ebc-94d7-1228effbf6e8",
+  "generatedAt": "2026-07-28T19:16:53.008Z",
+  "job": {
+    "approvalId": "owner-pt-g7-turnkey-fritos-20260728t191222z",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": null,
+      "detailReceiptId": null,
+      "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+      "planSha256": "47f97b7c67eafb43fc8ac0fe78584731cee281a610d92442217a34f79e7c651d",
+      "priceObservationId": "doo:55fc350dbfd105ebf3a5e7b1be213d3fabb0c308859a8540a3030c795f3b8d68",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_46550c6dd83f9eaf7d5334b25e1f505352044548d5b4d173d45c6a6cca8a87c1",
+      "stage": "SEARCH_PERSISTED",
+      "variantDecisionId": "dpvd-exact:941917971e7726bfbf219ad34c9e1db264060de40dd0d55c536032d5045bbcb0"
+    },
+    "error": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+    "id": "ptej_3976a595978621b3ba0497e9f5b088e395a920b3576ba410243bb42fe7ec5d3a",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+    },
+    "runId": "pt-g7-targeted-clean-20260728T190900Z-fritos",
+    "status": "error",
+    "terminalReason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_929760808b83cfb26f8e6ae7a815d66bf921fe29993ba4fa7bde344d649ccfe2",
+        "createdAt": "2026-07-28T19:13:39.817Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_46550c6dd83f9eaf7d5334b25e1f505352044548d5b4d173d45c6a6cca8a87c1",
+        "reservationKey": "mpr_v1_e3c10e1fd360f005de05a090a272a0ec57fc4086509d5918212f939ae065c503",
+        "reservedAt": "2026-07-28T19:13:39.817Z",
+        "settledAt": "2026-07-28T19:13:48.135Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_fc263fec1f845994126a44ba39074577e9fc1de6251baa8b3881b341f6d222a7",
+        "createdAt": "2026-07-28T19:15:59.512Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_b0fea48ddbe45aead246fbd023de32587413b9e15cde3667ccd0d0a213347f62",
+        "reservationKey": "mpr_v1_6a76aed59e46c0c7c1b6a2d51836e1fd5256bf3c1107bb6bb434b56747507597",
+        "reservedAt": "2026-07-28T19:15:59.512Z",
+        "settledAt": "2026-07-28T19:16:10.757Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-g7-targeted-clean-20260728T190900Z-fritos",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "47f97b7c67eafb43fc8ac0fe78584731cee281a610d92442217a34f79e7c651d",
+  "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.0.0",
+  "retailerProductId": "49909665",
+  "runId": "pt-g7-targeted-clean-20260728T190900Z-fritos",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -328,6 +328,70 @@ function attributeCompilationRequest() {
   };
 }
 
+function imageSetCompilationRequest() {
+  const main = mainCompilationRequest();
+  const body = structuredClone(main) as Record<string, unknown>
+    & Omit<typeof main, "body_sha256">;
+  delete body.body_sha256;
+  const ref = (role: string, hex: string) => ({
+    absolute_path: path.join(tmpdir(), `reviewed-image-set-${role}`),
+    file_sha256: hex.repeat(64),
+  });
+  const sourceAssets = ["1", "2", "3"].map((hex, index) =>
+    ref(`source-${index}`, hex));
+  const targetAssets = ["4", "5"].map((hex, index) =>
+    ref(`target-${index}`, hex));
+  const requestRefs = [ref("request-0", "6")];
+  const responseRefs = [ref("response-0", "7")];
+  const baselineImages = structuredClone(body.repair.baseline_images);
+  const imageSetRepair = {
+    ...body.repair,
+    target_images: [{
+      slot: "main",
+      source_url: `https://assets.example.invalid/${"a".repeat(64)}.png`,
+      sha256: "a".repeat(64),
+    }, {
+      slot: "gallery-1",
+      source_url: `https://assets.example.invalid/${"b".repeat(64)}.jpg`,
+      sha256: "b".repeat(64),
+    }],
+    changed_fields: ["description", "bullets", "main", "gallery"],
+    unchanged_image_bytes: false,
+    changed_image_set_evidence: {
+      product_truth: ref("product-truth", "8"),
+      main_candidate_manifest: ref("main-manifest", "9"),
+      single_unit_source: ref("single-unit", "a"),
+      source_candidate_manifest: ref("source-manifest", "b"),
+      source_candidate_assets: sourceAssets,
+      source_qualification: ref("qualification", "c"),
+      observer_plan: ref("observer-plan", "d"),
+      observer_requests: requestRefs,
+      observer_responses: responseRefs,
+      curated_manifest: ref("curated-manifest", "e"),
+      curated_target_assets: targetAssets,
+      r2_staging: ref("r2-staging", "f"),
+    },
+  };
+  delete (imageSetRepair as Record<string, unknown>).changed_main_evidence;
+  const imageSetBody = {
+    ...body,
+    schema_version: "walmart-listing-single-repair-compilation-request/v4",
+    product_truth_candidate: {
+      ...body.product_truth_candidate,
+      single_unit_upc: null,
+    },
+    repair: imageSetRepair,
+  };
+  assert.notDeepEqual(
+    baselineImages.slice(1),
+    imageSetBody.repair.target_images.slice(1),
+  );
+  return {
+    ...imageSetBody,
+    body_sha256: walmartListingIntegritySha256(imageSetBody),
+  };
+}
+
 test("owner compiler accepts only an exact reviewed description/bullets/MAIN diff", () => {
   const request = mainCompilationRequest();
   const verified = verifyWalmartListingRepairCompilationRequest(request);
@@ -398,6 +462,49 @@ test("owner compiler accepts only the exact v3 attributes diff and preserves opa
   assert.throws(
     () => verifyWalmartListingRepairCompilationRequest(changedDescription),
     /attributes-only diff/u,
+  );
+});
+
+test("owner compiler accepts exact v4 MAIN+gallery diff and rejects incomplete evidence", () => {
+  const request = imageSetCompilationRequest();
+  const verified = verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(verified.repair.changed_fields, [
+    "description",
+    "bullets",
+    "main",
+    "gallery",
+  ]);
+  assert.equal(verified.product_truth_candidate.single_unit_upc, null);
+  assert.equal(
+    verified.repair.changed_image_set_evidence?.source_candidate_assets.length,
+    3,
+  );
+  assert.equal(
+    verified.repair.changed_image_set_evidence?.curated_target_assets.length,
+    2,
+  );
+
+  const removedResponse = structuredClone(request);
+  removedResponse.repair.changed_image_set_evidence.observer_responses = [];
+  const removedBody = structuredClone(removedResponse) as Record<string, unknown>;
+  delete removedBody.body_sha256;
+  removedResponse.body_sha256 = walmartListingIntegritySha256(removedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(removedResponse),
+    /observer_responses must be a bounded artifact-reference array/u,
+  );
+
+  const unchangedGallery = structuredClone(request);
+  unchangedGallery.repair.target_images = [
+    unchangedGallery.repair.target_images[0]!,
+    ...structuredClone(unchangedGallery.repair.baseline_images.slice(1)),
+  ];
+  const unchangedBody = structuredClone(unchangedGallery) as Record<string, unknown>;
+  delete unchangedBody.body_sha256;
+  unchangedGallery.body_sha256 = walmartListingIntegritySha256(unchangedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(unchangedGallery),
+    /MAIN\/gallery diff/u,
   );
 });
 

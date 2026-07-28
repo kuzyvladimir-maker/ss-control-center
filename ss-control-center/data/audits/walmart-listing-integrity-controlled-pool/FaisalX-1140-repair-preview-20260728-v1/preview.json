@@ -1,0 +1,148 @@
+{
+  "schema_version": "walmart-listing-integrity-image-set-repair-preview/v1",
+  "created_at": "2026-07-28T18:42:48.988Z",
+  "status": "READY_FOR_OWNER_VISUAL_REVIEW",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "store_index": 1,
+  "sku": "FaisalX-1140",
+  "item_id": "8401770647",
+  "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+  "outer_units": 4,
+  "exact_product_truth": {
+    "component_evidence_id": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+    "canonical_variant_id": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+    "content_observation_id": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+    "content_hash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+    "product_truth_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd"
+  },
+  "changed_fields": [
+    "description",
+    "bullets",
+    "main",
+    "gallery"
+  ],
+  "before": {
+    "text": {
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+      "bullets": [
+        "Soft white sandwich bread made with enriched flour for everyday meals and snacks.",
+        "16 oz loaf size provides multiple servings for families and individuals.",
+        "Classic white bread texture suitable for sandwiches, toast, and general use.",
+        "Sliced loaf format ready to use straight from the package.",
+        "Store in a cool, dry place or refrigerate to maintain freshness.",
+        "Pepperidge Farm brand with established quality standards for bread products.",
+        "Contains wheat and may contain other common allergens; check label for full allergen information."
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "MAIN",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95.png",
+          "sha256": "db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95",
+          "caption": "Hamburger Buns вместо White Sandwich Bread"
+        },
+        {
+          "slot": "GALLERY 1",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02.jpg",
+          "sha256": "6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        },
+        {
+          "slot": "GALLERY 2",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f.jpg",
+          "sha256": "bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        },
+        {
+          "slot": "GALLERY 3",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc.jpg",
+          "sha256": "975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        },
+        {
+          "slot": "GALLERY 4",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4.jpg",
+          "sha256": "f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        },
+        {
+          "slot": "GALLERY 5",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee.jpg",
+          "sha256": "2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        },
+        {
+          "slot": "GALLERY 6",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7.jpg",
+          "sha256": "24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7",
+          "caption": "Текущая live gallery; содержит изображения другого продукта"
+        }
+      ]
+    }
+  },
+  "after": {
+    "text": {
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "description": "PACK OF 4: This listing includes four 16 oz loaves of Pepperidge Farm White Sandwich Bread, for 64 oz total. We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+      "bullets": [
+        "PACK OF 4: Includes 4 loaves of Pepperidge Farm White Sandwich Bread; each loaf is 16 oz, for 64 oz total",
+        "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+        "QUALITY INGREDIENTS: No high-fructose corn syrup",
+        "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+        "WRAPPED WITH CARE: Double-wrapped for freshness",
+        "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness"
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "MAIN",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-main.png",
+          "public_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-listing-integrity/FaisalX-1140/main/5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955.png",
+          "sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955",
+          "caption": "Ровно 4 упаковки White Sandwich Bread"
+        },
+        {
+          "slot": "GALLERY 1",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-gallery-01.jpg",
+          "public_url": "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+          "sha256": "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+          "caption": "Exact Product Truth image; deterministic visual PASS"
+        },
+        {
+          "slot": "GALLERY 2",
+          "local_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-gallery-02.jpg",
+          "public_url": "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg",
+          "sha256": "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4",
+          "caption": "Exact Product Truth image; deterministic visual PASS"
+        }
+      ]
+    }
+  },
+  "unchanged_fields": [
+    "title",
+    "attributes",
+    "price",
+    "inventory",
+    "identifiers",
+    "published_status",
+    "lifecycle_status"
+  ],
+  "source_files": {
+    "diagnosis_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+    "buyer_snapshot_sha256": "f86dbf09d30fd889ed82e31ce5cc859d334d1a232d878fadbaaa8fcb39efdd48",
+    "buyer_pdp_sha256": "f6f351299e2919c5c4eb661ec45031cb302246cb5c9bc07140ea6cc3072eb392",
+    "curated_candidate_manifest_sha256": "6931f8cbf56282cc6e3032094ce5c98e096e41028de2b34b6f4900516edef43a",
+    "r2_staging_sha256": "cfdc801f39559f2ce121fc2508c2927fd743ab4da4d87648a3d5639db8cd5a37",
+    "live_buyer_product_sha256": "9df3838949a017254d26eacee4745b2b769b4141ebba259658af31e0c16dd406"
+  },
+  "safety": {
+    "marketplace_write_authorized": false,
+    "walmart_writes": 0,
+    "database_writes": 0,
+    "model_calls": 0
+  },
+  "body_sha256": "d9024dbfcd35739bd6048b989a6562baf18fe29d34c3accd831f3802d192e691"
+}

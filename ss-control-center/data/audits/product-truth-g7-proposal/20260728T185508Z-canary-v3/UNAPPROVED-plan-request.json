@@ -1,0 +1,50 @@
+{
+  "createdAt": "2026-07-28T18:55:08.000Z",
+  "expiresAt": "2026-07-29T18:25:08.000Z",
+  "listingKeys": [
+    "walmart:1:FaisalX-1315",
+    "walmart:1:RizwanX-3481",
+    "walmart:1:RizwanX-3499",
+    "walmart:1:FaisalX-2195",
+    "walmart:1:RizwanX-3237"
+  ],
+  "maxWallClockMs": 1200000,
+  "mode": "CANARY",
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 5,
+      "maxUnits": 12.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-g7-canary-20260728T185508Z",
+  "schemaVersion": "product-truth-operational-plan-request/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 5
+  }
+}

@@ -191,7 +191,10 @@ test("controlled pool seal and strict sequence fail closed", () => {
   assert.throws(
     () => verifyWalmartListingIntegrityControlledPool({
       ...pool,
-      policy: { ...pool.policy, walmartWritesAllowed: true },
+      policy: {
+        ...pool.policy,
+        walmartWritesAllowed: true,
+      } as unknown as typeof pool.policy,
     }),
     /seal mismatch/,
   );

@@ -25,6 +25,10 @@ import {
   type WalmartListingSurgicalGetSpecReceipt,
   type WalmartListingSurgicalLiveItemReceipt,
 } from "./listing-integrity-remediation-payload.ts";
+import {
+  WALMART_LISTING_VARIANT_GROUP_ALL_ITEMS_RECEIPT_SCHEMA,
+  type WalmartListingVariantGroupAllItemsReceipt,
+} from "./listing-integrity-variant-group-evidence.ts";
 
 const WALMART_ORIGIN = "https://marketplace.walmartapis.com";
 const MAX_TOKEN_BYTES = 1024 * 1024;
@@ -46,8 +50,9 @@ export interface WalmartListingRepairMaterialCaptureResult {
   call_counts: {
     oauth_token_calls: 1;
     exact_item_get_calls: 1;
+    variant_group_all_items_get_calls: 0 | 1;
     get_spec_post_calls: 1;
-    total_http_calls: 3;
+    total_http_calls: 3 | 4;
     retries: 0;
     redirects: 0;
     walmart_content_writes: 0;
@@ -204,6 +209,7 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
   now?: () => Date;
   random_uuid?: () => string;
   timeout_ms?: number;
+  capture_variant_group?: boolean;
 }): Promise<WalmartListingRepairMaterialCaptureResult> {
   const storeIndex = positiveInteger(input.store_index, "store_index");
   const sku = text(input.sku, "sku", 512);
@@ -226,6 +232,10 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1
     || timeoutMs > DEFAULT_TIMEOUT_MS) {
     fail("INVALID_INPUT", "timeout_ms must be 1..30000");
+  }
+  if (input.capture_variant_group !== undefined
+    && typeof input.capture_variant_group !== "boolean") {
+    fail("INVALID_INPUT", "capture_variant_group must be boolean");
   }
   const sellerFingerprint = computeWalmartSellerAccountFingerprint({
     store_index: storeIndex,
@@ -288,6 +298,89 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
   }
   const productType = text(row.productType, "live item productType", 512);
   const itemCapturedAt = now().toISOString();
+
+  let variantGroupAllItemsResponse: Buffer | undefined;
+  let variantGroupAllItemsReceipt:
+    WalmartListingVariantGroupAllItemsReceipt | undefined;
+  if (input.capture_variant_group === true) {
+    const variantGroupId = text(
+      row.variantGroupId,
+      "live item variantGroupId",
+      512,
+    );
+    const groupCorrelation = text(uuid(), "All Items correlation id", 256);
+    const groupQuery = {
+      variantGroupId,
+      limit: 200 as const,
+      offset: 0 as const,
+    };
+    const groupUrl = new URL(`${WALMART_ORIGIN}/v3/items`);
+    groupUrl.searchParams.set("variantGroupId", groupQuery.variantGroupId);
+    groupUrl.searchParams.set("limit", String(groupQuery.limit));
+    groupUrl.searchParams.set("offset", String(groupQuery.offset));
+    const groupExchange = await oneAttempt({
+      fetch_impl: fetchImpl,
+      url: groupUrl.toString(),
+      init: {
+        method: "GET",
+        headers: walmartHeaders(token, groupCorrelation),
+      },
+      timeout_ms: timeoutMs,
+      maximum_response_bytes: MAX_JSON_BYTES,
+      label: "variant-group All Items response",
+    });
+    if (groupExchange.response.status !== 200) {
+      fail(
+        "ALL_ITEMS_HTTP_ERROR",
+        `variant-group All Items GET returned HTTP ${groupExchange.response.status}`,
+      );
+    }
+    const groupPayload = parseJson(
+      groupExchange.bytes,
+      "variant-group All Items response",
+    );
+    if (!Array.isArray(groupPayload.ItemResponse)
+      || groupPayload.ItemResponse.length !== 1
+      || groupPayload.totalItems !== 1) {
+      fail(
+        "VARIANT_GROUP_NOT_SINGLE_MEMBER",
+        "fresh All Items response must prove exactly one complete variant-group member",
+      );
+    }
+    const groupRow = record(
+      groupPayload.ItemResponse[0],
+      "variant-group All Items ItemResponse[0]",
+    );
+    if (groupRow.sku !== sku
+      || groupRow.variantGroupId !== variantGroupId
+      || groupRow.productType !== productType
+      || groupRow.publishedStatus !== "PUBLISHED"
+      || groupRow.lifecycleStatus !== "ACTIVE") {
+      fail(
+        "VARIANT_GROUP_IDENTITY_MISMATCH",
+        "fresh All Items response differs from the exact active seller item",
+      );
+    }
+    const groupCapturedAt = now().toISOString();
+    const receiptBody = {
+      schema_version:
+        WALMART_LISTING_VARIANT_GROUP_ALL_ITEMS_RECEIPT_SCHEMA,
+      method: "GET" as const,
+      path: "/v3/items" as const,
+      query: groupQuery,
+      response_content_type: "application/json" as const,
+      http_status: 200 as const,
+      correlation_id_sha256: sha256(groupCorrelation),
+      seller_account_fingerprint_sha256: sellerFingerprint,
+      response_payload_sha256: sha256(groupExchange.bytes),
+      captured_at: groupCapturedAt,
+    };
+    variantGroupAllItemsReceipt = {
+      ...receiptBody,
+      body_sha256: walmartListingSurgicalSha256(receiptBody),
+    };
+    variantGroupAllItemsResponse = groupExchange.bytes;
+  }
 
   const getSpecRequest = {
     feedType: "MP_MAINTENANCE",
@@ -362,6 +455,11 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
       get_spec_request_bytes: getSpecRequestBytes,
       get_spec_response_bytes: specExchange.bytes,
       live_item_response_bytes: itemExchange.bytes,
+      ...(variantGroupAllItemsReceipt && variantGroupAllItemsResponse ? {
+        variant_group_all_items_receipt: variantGroupAllItemsReceipt,
+        variant_group_all_items_response_bytes:
+          variantGroupAllItemsResponse,
+      } : {}),
       consumption_ledger: structuredClone(input.consumption_ledger),
       ledger_state_directory: text(
         input.ledger_state_directory,
@@ -376,8 +474,10 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
     call_counts: {
       oauth_token_calls: 1,
       exact_item_get_calls: 1,
+      variant_group_all_items_get_calls:
+        input.capture_variant_group === true ? 1 : 0,
       get_spec_post_calls: 1,
-      total_http_calls: 3,
+      total_http_calls: input.capture_variant_group === true ? 4 : 3,
       retries: 0,
       redirects: 0,
       walmart_content_writes: 0,

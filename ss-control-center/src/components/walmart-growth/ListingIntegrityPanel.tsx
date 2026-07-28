@@ -191,6 +191,9 @@ function ListingIntegrityOperations({
             <StatusPill tone="success">{operations.completed.length} qualified</StatusPill>
             <StatusPill tone="neutral">{operations.pool.length} repair-ready</StatusPill>
             <StatusPill tone="neutral">{operations.sourceRequiredCount} source-required</StatusPill>
+            {operations.quarantinedCount > 0 && (
+              <StatusPill tone="danger">{operations.quarantinedCount} unresolved</StatusPill>
+            )}
           </div>
         }
         right={
@@ -268,6 +271,49 @@ function ListingIntegrityOperations({
             ))}
           </div>
         </section>
+
+        {operations.quarantined.length > 0 && (
+          <section>
+            <div className="mb-2 text-[12px] font-semibold text-ink">
+              Нерешённые Walmart catalog/content-control случаи
+            </div>
+            <div className="grid gap-2 lg:grid-cols-2">
+              {operations.quarantined.map((entry) => (
+                <div
+                  key={entry.listingKey}
+                  className="rounded-lg border border-[var(--danger)]/35 bg-[var(--danger-tint)]/25 p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-mono text-[12px] font-semibold text-ink">
+                        {entry.sku}
+                      </div>
+                      <div className="mt-0.5 text-[10px] text-ink-3">
+                        Item {entry.itemId}
+                      </div>
+                    </div>
+                    <StatusPill tone="danger">QUARANTINED · не исправлен</StatusPill>
+                  </div>
+                  <p className="mt-2 text-[10px] text-ink-2">
+                    Feed принят, но точный target не появился после полного окна
+                    публикации. Тот же payload автоматически не повторяется; остальные
+                    SKU могут обрабатываться дальше.
+                  </p>
+                  <div className="mt-2 text-[10px] font-semibold text-ink">
+                    Следующий шаг: Content Ownership / Walmart Support → новый replan
+                  </div>
+                  <details className="mt-2 break-all text-[9px] text-ink-3">
+                    <summary className="cursor-pointer">Failure disposition evidence</summary>
+                    <div className="mt-1 font-mono">
+                      <div>body {entry.dispositionBodySha256}</div>
+                      <div>file {entry.dispositionFileSha256}</div>
+                    </div>
+                  </details>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

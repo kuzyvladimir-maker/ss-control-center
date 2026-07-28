@@ -1146,6 +1146,7 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           contentDonorProductId: lookup.content?.donorProductId ?? null,
           contentCanonicalVariantId: lookup.content?.canonicalVariantId ?? null,
           contentObservationId: lookup.content?.id ?? null,
+          matchTier: "REJECT",
           matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
           matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
           matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,

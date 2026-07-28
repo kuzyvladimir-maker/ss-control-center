@@ -279,11 +279,16 @@ async function main() {
   const qualificationResult = qualification.value?.qualification;
   const textOnly = exactArray(plan.changed_fields, ["description", "bullets"]);
   const reviewedMain = exactArray(plan.changed_fields, ["description", "bullets", "main"]);
+  const reviewedImageSet = exactArray(
+    plan.changed_fields,
+    ["description", "bullets", "main", "gallery"],
+  );
   const attributeOnly = exactArray(plan.changed_fields, ["attributes"]);
-  if (!textOnly && !reviewedMain && !attributeOnly) {
+  if (!textOnly && !reviewedMain && !reviewedImageSet && !attributeOnly) {
     fail(`unsupported approved diff for live gallery: ${JSON.stringify(plan.changed_fields)}`);
   }
-  const mainUrlChangedAsApproved = reviewedMain
+  const mainChanged = reviewedMain || reviewedImageSet;
+  const mainUrlChangedAsApproved = mainChanged
     ? before.main_image !== after.main_image
     : before.main_image === after.main_image;
   const galleryUrlsUnchanged = exactArray(before.images.slice(1), after.images.slice(1));
@@ -292,11 +297,22 @@ async function main() {
     && beforeImages.slice(1).every(
       (row, index) => row.file_sha256 === afterImages[index + 1].file_sha256,
     );
-  const mainBytesChangedAsApproved = reviewedMain
+  const mainBytesChangedAsApproved = mainChanged
     ? beforeImages[0]?.file_sha256 !== afterImages[0]?.file_sha256
     : beforeImages[0]?.file_sha256 === afterImages[0]?.file_sha256;
   const targetGalleryUrls = targetImages.slice(1).map((row) => row.source_url);
   const targetGalleryBytes = targetImages.slice(1).map((row) => row.sha256);
+  const galleryUrlsChangedAsApproved = reviewedImageSet
+    ? !galleryUrlsUnchanged
+      && exactArray(after.images.slice(1), targetGalleryUrls)
+    : galleryUrlsUnchanged;
+  const galleryBytesChangedAsApproved = reviewedImageSet
+    ? !galleryBytesUnchanged
+      && exactArray(
+        afterImages.slice(1).map((row) => row.file_sha256),
+        targetGalleryBytes,
+      )
+    : galleryBytesUnchanged;
   const afterSpecs = specificationMap(after);
   const targetFlavor = target.attribute_claims?.find(
     (claim) => claim.kind === "variant" && claim.field_path.endsWith(".Flavor"),
@@ -349,8 +365,8 @@ async function main() {
     main_url_changed_only_if_approved: mainUrlChangedAsApproved,
     main_bytes_changed_only_if_approved: mainBytesChangedAsApproved,
     main_semantic_qualification_pass: qualificationResult?.facets?.main === "PASS",
-    gallery_urls_unchanged: galleryUrlsUnchanged,
-    gallery_bytes_unchanged: galleryBytesUnchanged,
+    gallery_urls_changed_only_if_approved: galleryUrlsChangedAsApproved,
+    gallery_bytes_changed_only_if_approved: galleryBytesChangedAsApproved,
     gallery_urls_exact_target:
       exactArray(after.images.slice(1), targetGalleryUrls),
     gallery_bytes_exact_target:
@@ -364,13 +380,13 @@ async function main() {
         : true,
     text_changed_only_if_approved: textChangedAsApproved,
     only_approved_fields_changed:
-      (textOnly || reviewedMain || attributeOnly)
+      (textOnly || reviewedMain || reviewedImageSet || attributeOnly)
       && before.title === after.title
       && (!attributeOnly
         || (before.description === after.description
           && exactArray(before.feature_bullets, after.feature_bullets)))
-      && galleryUrlsUnchanged
-      && galleryBytesUnchanged
+      && galleryUrlsChangedAsApproved
+      && galleryBytesChangedAsApproved
       && mainUrlChangedAsApproved
       && mainBytesChangedAsApproved,
     quantity_explicit_in_description:

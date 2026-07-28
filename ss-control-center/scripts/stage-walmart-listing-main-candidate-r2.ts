@@ -164,7 +164,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const manifestBody = { ...manifest };
   delete manifestBody.body_sha256;
   const manifestBodySha = digest(manifest.body_sha256, "candidate manifest body_sha256");
-  if (manifest.schema_version !== "walmart-listing-main-candidate/v1"
+  const curatedImageSet =
+    manifest.schema_version === "walmart-listing-image-set-curated/v1";
+  if ((manifest.schema_version !== "walmart-listing-main-candidate/v1"
+      && !curatedImageSet)
     || bodySha256(manifestBody) !== manifestBodySha) {
     fail("candidate manifest seal is invalid");
   }
@@ -175,20 +178,45 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     qualification.body_sha256,
     "candidate qualification body_sha256",
   );
-  if (qualification.schema_version !== "walmart-listing-main-candidate-qualification/v1"
-    || qualification.status !== "PASS"
+  const standardQualification =
+    qualification.schema_version === "walmart-listing-main-candidate-qualification/v1"
+    && qualification.status === "PASS";
+  const curatedQualification =
+    curatedImageSet
+    && qualification.schema_version === "walmart-listing-image-set-candidate-qualification/v1"
+    && manifest.status === "PASS"
+    && manifest.source_qualification_file_sha256 === sha256(qualificationArtifact.bytes)
+    && manifest.source_qualification_body_sha256 === qualificationBodySha;
+  if ((!standardQualification && !curatedQualification)
     || bodySha256(qualificationBody) !== qualificationBodySha) {
     fail("candidate qualification is not a sealed PASS");
   }
-  const candidate = record(manifest.candidate, "candidate manifest.candidate");
+  const candidate = curatedImageSet
+    ? record(
+      (manifest.targets as unknown[] | undefined)?.[0],
+      "curated candidate manifest.targets[0]",
+    )
+    : record(manifest.candidate, "candidate manifest.candidate");
   const candidateSha = digest(candidate.sha256, "candidate SHA");
-  if (qualification.candidate_sha256 !== candidateSha
+  if (curatedImageSet) {
+    const selections = manifest.selections;
+    const mainSelection = Array.isArray(selections)
+      ? record(selections[0], "curated candidate manifest.selections[0]")
+      : fail("curated candidate selections are missing");
+    const decision = record(mainSelection.decision, "curated MAIN decision");
+    if (candidate.slot !== "main" || mainSelection.target_slot !== "main"
+      || mainSelection.asset_sha256 !== candidateSha || decision.verdict !== "PASS") {
+      fail("curated candidate MAIN is not a deterministic PASS");
+    }
+  } else if (qualification.candidate_sha256 !== candidateSha
     || qualification.candidate_manifest_file_sha256 !== sha256(manifestArtifact.bytes)
     || qualification.candidate_manifest_body_sha256 !== manifestBodySha) {
     fail("candidate qualification differs from the exact candidate manifest");
   }
   const candidateName = text(candidate.file, "candidate file", 200);
-  if (candidateName !== "proposed-main-pack.png") fail("candidate file is unsupported");
+  if (candidateName !== (curatedImageSet ? "target-main.png" : "proposed-main-pack.png")) {
+    fail("candidate file is unsupported");
+  }
   const candidateBytes = await readFile(path.join(args.candidateDir, candidateName));
   if (!candidateBytes.length || candidateBytes.length > MAX_IMAGE_BYTES
     || sha256(candidateBytes) !== candidateSha) {
@@ -257,7 +285,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
   await mkdir(args.outputDir, { recursive: false, mode: 0o700 });
   const body = {
-    schema_version: "walmart-listing-main-r2-staging/v1",
+    schema_version: curatedImageSet
+      ? "walmart-listing-main-r2-staging/v2"
+      : "walmart-listing-main-r2-staging/v1",
     created_at: new Date().toISOString(),
     status: "R2_VERIFIED_NOT_WALMART_PUBLISHED",
     listing_key: listingKey,

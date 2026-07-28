@@ -1,0 +1,37 @@
+{
+  "actualCreditsUsed": 2.5,
+  "balanceUnits": 99680,
+  "budgetViolation": false,
+  "httpStatus": 200,
+  "observedAt": "2026-07-28T19:23:49.725Z",
+  "planSha256": "da44d4e2d397636f66620b141bec1307325e8888441b06b3409ac8a88a3e86d5",
+  "probeId": "ptbal-20260728t192342z-goya",
+  "provider": "unwrangle",
+  "providerCalls": 1,
+  "probes": [
+    {
+      "balanceParsed": true,
+      "creditsUsed": 2.5,
+      "httpStatus": 200,
+      "observedAt": "2026-07-28T19:23:49.725Z",
+      "rawResponseBytes": 35483,
+      "rawResponseSha256": "19e3b7230c089c6da32f07a369d7c21a6b9183a642af85fc30ff0ff4f0c7f3b4",
+      "requestedAt": "2026-07-28T19:23:42.580Z",
+      "resultCount": 25,
+      "success": true
+    }
+  ],
+  "reserveFloor": 15000,
+  "retryCount": 0,
+  "schemaVersion": "product-truth-unwrangle-balance-evidence/1.1.0",
+  "success": true,
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "terminalDisposition": "BALANCE_CONFIRMED"
+}

@@ -9,9 +9,11 @@ export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ sku: string }> };
 
-export async function GET(_request: Request, context: RouteContext) {
-  const { sku } = await context.params;
-  const gallery = await readListingIntegrityGallery(sku);
+export async function buildListingIntegrityGalleryResponse(
+  sku: string,
+  readGallery = readListingIntegrityGallery,
+) {
+  const gallery = await readGallery(sku);
   if (!gallery) {
     return NextResponse.json(
       { ok: false, error: "QUALIFIED_GALLERY_NOT_FOUND" },
@@ -31,6 +33,11 @@ export async function GET(_request: Request, context: RouteContext) {
       digest: `sha-256=${Buffer.from(gallery.sha256, "hex").toString("base64")}`,
     },
   });
+}
+
+export async function GET(_request: Request, context: RouteContext) {
+  const { sku } = await context.params;
+  return buildListingIntegrityGalleryResponse(sku);
 }
 
 async function rejectMutation() {

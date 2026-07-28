@@ -1,0 +1,42 @@
+{
+  "schema_version": "walmart-listing-single-observer-execution/v1",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "observer_plan_file_sha256": "95b9b3de0ea1546e3eb0a20c6f479948ff0c8b7100274c4c1248dce5269ee298",
+  "observer_plan_body_sha256": "fc85b680c89ccd5f703acb06c5a0be17d57517cb4dac9ece94a82877fb49a2c6",
+  "worker_health_file_sha256": "0811aad13b01004088c95bdbbaa6aa22635cf5944e4d6a027f2db33bab272486",
+  "observations_file_sha256": "60f9edc8aa3adc63bbc9a4e6bb81879e3af6103f1ccd03d85c508b542d4346c1",
+  "calls": [
+    {
+      "call_index": 0,
+      "call_key": "19288b5da323449486188eb36fd40a8147b7345e1022f51f6fcbe9985bfd2afc",
+      "request_file_sha256": "8706b0beabbc16f793045f59c12835377f829ae0a46228f10718236239b26660",
+      "response_file_sha256": "4df86cc21291a968d38af74f64b394092f1b6653dee17b2e41bf27b922df6cd6",
+      "observations": 6,
+      "subscription_calls_consumed": 1,
+      "transport_attempts": 1,
+      "retries": 0
+    },
+    {
+      "call_index": 1,
+      "call_key": "641dbb6a6633d87b35ee87483d0fe2c28f91bcef48b193f2c1a7f3f8b135872d",
+      "request_file_sha256": "19574f2ec7821684988897be72b210ff79d03d5b06c9f64352a42d15b9465183",
+      "response_file_sha256": "4267f77f7c0ae6c8df9e50f2af417855bee05ff9a7df3b2997b3192b863f06f5",
+      "observations": 1,
+      "subscription_calls_consumed": 1,
+      "transport_attempts": 1,
+      "retries": 0
+    }
+  ],
+  "execution": {
+    "subscription_calls_consumed": 2,
+    "transport_attempts": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "3ab6de1aa6410dfb3173737a22830f785b08e5d3900966a1089569163fc5d81c"
+}

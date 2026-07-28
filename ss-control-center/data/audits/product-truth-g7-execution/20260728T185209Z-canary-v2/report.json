@@ -1,0 +1,112 @@
+{
+  "approvalId": "owner-pt-g7-turnkey-20260728t185209z",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "counts": {
+    "failed": 1,
+    "pending": 4
+  },
+  "environment": "production",
+  "generatedAt": "2026-07-28T18:53:12.018Z",
+  "items": [
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T18:53:12.018Z",
+      "lastError": "COMPONENT_EVIDENCE_INCOMPLETE index=0",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "ordinal": 0,
+      "queueJobId": "dedd80b1-8f1b-4a6c-9c8e-27efc5021470",
+      "resultSha256": "c7602841b986439aacff5c3810d420858bd9ffc72b852a0873feb1ab37229036",
+      "stage": "EXECUTION_FAILED",
+      "status": "failed"
+    },
+    {
+      "attempts": 0,
+      "finishedAt": null,
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-1315",
+      "ordinal": 1,
+      "queueJobId": null,
+      "resultSha256": null,
+      "stage": "QUEUED",
+      "status": "pending"
+    },
+    {
+      "attempts": 0,
+      "finishedAt": null,
+      "lastError": null,
+      "listingKey": "walmart:1:RizwanX-3481",
+      "ordinal": 2,
+      "queueJobId": null,
+      "resultSha256": null,
+      "stage": "QUEUED",
+      "status": "pending"
+    },
+    {
+      "attempts": 0,
+      "finishedAt": null,
+      "lastError": null,
+      "listingKey": "walmart:1:RizwanX-3499",
+      "ordinal": 3,
+      "queueJobId": null,
+      "resultSha256": null,
+      "stage": "QUEUED",
+      "status": "pending"
+    },
+    {
+      "attempts": 0,
+      "finishedAt": null,
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-2195",
+      "ordinal": 4,
+      "queueJobId": null,
+      "resultSha256": null,
+      "stage": "QUEUED",
+      "status": "pending"
+    }
+  ],
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_1e989f0638ed4c519e1c8051ced9e5db96ee81eb79975cd878857a3332043b4a",
+        "createdAt": "2026-07-28T18:53:01.171Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_a610662c186b78f13c9faf168bfa315e73a6fa60e3d899a78f8a1b1ed3defc54",
+        "reservationKey": "mpr_v1_c9cf71ee67fe11ae08dc48b601f9ddd65e469bdb8bb784dfdf6459e352bc3685",
+        "reservedAt": "2026-07-28T18:53:01.171Z",
+        "settledAt": "2026-07-28T18:53:11.307Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "pt-g7-canary-20260728T175740Z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "mode": "CANARY",
+  "outcome": "FAILED",
+  "planSha256": "bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c",
+  "resultContractVersion": "product-truth-operational-result/1.0.0",
+  "runId": "pt-g7-canary-20260728T175740Z",
+  "runnerVersion": "product-truth-operational-runner/1.0.0",
+  "schemaVersion": "product-truth-operational-report/1.0.0",
+  "targetSetSha256": "f72840147c5fd436f8c4741af902abafebad36ddc920e2d292dc3f5f0f58c2ab"
+}

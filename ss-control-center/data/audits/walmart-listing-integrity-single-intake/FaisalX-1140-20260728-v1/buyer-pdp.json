@@ -1,0 +1,105 @@
+{
+  "product": {
+    "item_id": "8401770647",
+    "product_url": "https://www.walmart.com/ip/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4/8401770647",
+    "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+    "main_image": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+    "images": [
+      "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+      "https://i5.walmartimages.com/asr/78882cad-1923-4432-8524-e47fe3ecce43.61a0642195f915c475999a9a3b9a4234.jpeg",
+      "https://i5.walmartimages.com/asr/06cb3b1f-3fbc-4942-be19-1a9507facf84.89ccf1bebcb66bc6e72e105bbe595900.jpeg",
+      "https://i5.walmartimages.com/asr/2d08f46d-6576-4d3c-a761-b3f6239cbd4d.60e778f0799d8737ce9b370d7a8aca20.jpeg",
+      "https://i5.walmartimages.com/asr/2f9a3af9-762a-4e46-9975-63e255b3edad.d426fb2bca0341f558ecbd8ed0014f39.jpeg",
+      "https://i5.walmartimages.com/asr/ca60206a-96b5-4d05-8599-ed00aebc2176.41ad308712dcb9045969ddac948b4353.jpeg",
+      "https://i5.walmartimages.com/asr/11713495-f56b-41fa-aa6e-105a1cd6fba2.1bc87352f71ba018e0e02c77a4b6fc65.jpeg"
+    ],
+    "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+    "feature_bullets": [
+      "Soft white sandwich bread made with enriched flour for everyday meals and snacks.",
+      "16 oz loaf size provides multiple servings for families and individuals.",
+      "Classic white bread texture suitable for sandwiches, toast, and general use.",
+      "Sliced loaf format ready to use straight from the package.",
+      "Store in a cool, dry place or refrigerate to maintain freshness.",
+      "Pepperidge Farm brand with established quality standards for bread products.",
+      "Contains wheat and may contain other common allergens; check label for full allergen information."
+    ],
+    "specifications": [
+      {
+        "name": "Brand",
+        "value": "Pepperidge Farm"
+      },
+      {
+        "name": "Bread & bun type",
+        "value": "Sandwich Bread Loaf"
+      },
+      {
+        "name": "Grain type",
+        "value": "Wheat"
+      },
+      {
+        "name": "Flavor",
+        "value": "Bread"
+      },
+      {
+        "name": "Piece count",
+        "value": "20"
+      },
+      {
+        "name": "Total count",
+        "value": "4"
+      },
+      {
+        "name": "Multipack quantity",
+        "value": "4"
+      },
+      {
+        "name": "Food form",
+        "value": "Squares"
+      },
+      {
+        "name": "Size",
+        "value": "One Size"
+      },
+      {
+        "name": "Food condition",
+        "value": "Shelf-Stable"
+      },
+      {
+        "name": "Texture",
+        "value": "light"
+      },
+      {
+        "name": "Product net content uom",
+        "value": "Ounce"
+      },
+      {
+        "name": "Product net content parent",
+        "value": "16 Ounces"
+      },
+      {
+        "name": "Manufacturer",
+        "value": "Pepperidge"
+      },
+      {
+        "name": "Container type",
+        "value": "Bag"
+      },
+      {
+        "name": "Material",
+        "value": "Bag"
+      },
+      {
+        "name": "Size descriptor",
+        "value": "Regular"
+      },
+      {
+        "name": "Food preparation method",
+        "value": "Baked"
+      },
+      {
+        "name": "Food & drug fact label type",
+        "value": "Nutrition Fact Panel"
+      }
+    ]
+  }
+}

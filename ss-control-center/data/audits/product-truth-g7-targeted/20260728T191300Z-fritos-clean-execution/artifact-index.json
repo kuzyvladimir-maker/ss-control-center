@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4416,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "8d72d9db8f86b9633113eb901a3195566e14b5092385586f261ea0d78f25cfeb"
+    }
+  ],
+  "manifestSha256": "9f491f7c5fca149d77245ffd86f92e4280de38a394b9348267cf6c1542cc4668",
+  "planSha256": "47f97b7c67eafb43fc8ac0fe78584731cee281a610d92442217a34f79e7c651d",
+  "runId": "pt-g7-targeted-clean-20260728T190900Z-fritos",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

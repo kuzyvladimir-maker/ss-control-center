@@ -680,6 +680,11 @@ test("COGS operational path has no Promise.all paid-component fanout or ambient 
   assert.doesNotMatch(source, /Promise\.all\s*\(\s*targets\.map/);
   assert.match(source, /runCostComponentsSequentially\(targets,/);
   assert.match(source, /COGS_COMPONENT_CONCURRENCY\s*=\s*1/);
+  assert.match(
+    source,
+    /method:\s*"unsourceable"[\s\S]*?matchTier:\s*"REJECT"[\s\S]*?priceEvidenceStatus:\s*"REJECT"/,
+    "an honest no-match must still carry complete canonical REJECT provenance",
+  );
   assert.doesNotMatch(source, /SS_SKIP_CLUBS/);
   assert.doesNotMatch(source, /bluecartWalmartSearch|fetchBluecartDetail|provider:\s*["']bluecart["']/);
 });

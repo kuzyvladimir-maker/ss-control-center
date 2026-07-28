@@ -19,7 +19,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a";
+  "e5e8bfbb1ba10da3e6a346bd9dbb3f8075ce877f3053d3d3b3d8b361f250ae91";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -39,6 +39,7 @@ const TITLE = "Pepperidge Farm Butter Hot Dog Buns, Top Sliced (Pack of 6)";
 
 function plan(input: {
   changed_fields?: ["description", "bullets"] | ["description", "bullets", "main"]
+    | ["description", "bullets", "main", "gallery"]
     | ["attributes"];
   main_url?: string;
   main_sha256?: string;
@@ -136,6 +137,8 @@ async function fixture(input: {
   description?: string;
   main_image_bytes?: Uint8Array;
   main_image_url?: string;
+  gallery_image_bytes?: [Uint8Array, Uint8Array];
+  gallery_image_urls?: [string, string];
   multipack_quantity?: number;
   seller_grouping_quantity?: number;
   flavor?: string;
@@ -155,7 +158,10 @@ async function fixture(input: {
       description: input.description ?? DESCRIPTION,
       feature_bullets: BULLETS,
       main_image: input.main_image_url ?? URLS[0],
-      images: [input.main_image_url ?? URLS[0], ...URLS.slice(1)],
+      images: [
+        input.main_image_url ?? URLS[0],
+        ...(input.gallery_image_urls ?? [URLS[1]!, URLS[2]!]),
+      ],
       specifications: [
         { name: "Brand", value: "Pepperidge Farm" },
         { name: "Flavor", value: input.flavor ?? "Butter" },
@@ -189,8 +195,16 @@ async function fixture(input: {
     ["seller_item_payload", "seller-item.json", Buffer.from(`${JSON.stringify(seller)}\n`)],
     ["catalog_search_payload", "catalog-search.json", Buffer.from(`${JSON.stringify(catalog)}\n`)],
     ["buyer_image_main", "assets/main.png", mainImageBytes],
-    ["buyer_image_gallery_1", "assets/gallery-1.jpg", IMAGE_BYTES[1]],
-    ["buyer_image_gallery_2", "assets/gallery-2.jpg", IMAGE_BYTES[2]],
+    [
+      "buyer_image_gallery_1",
+      "assets/gallery-1.jpg",
+      Buffer.from(input.gallery_image_bytes?.[0] ?? IMAGE_BYTES[1]),
+    ],
+    [
+      "buyer_image_gallery_2",
+      "assets/gallery-2.jpg",
+      Buffer.from(input.gallery_image_bytes?.[1] ?? IMAGE_BYTES[2]),
+    ],
   ] as const;
   const files = [];
   for (const [role, relative, bytes] of fileValues) {
@@ -391,6 +405,68 @@ test("reviewed MAIN accepts only a SHA-bound perceptually identical Walmart reho
   assert.equal(result.quantity_evidence.seller_grouping_number_of_pieces, 4);
   assert.equal(result.quantity_evidence.seller_grouping_used_as_offer_quantity, false);
   assert.equal(result.external_effects.target_main_gets, 1);
+});
+
+test("reviewed image-set Qualification accepts exact target MAIN and gallery", async () => {
+  const main = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const fx = await fixture({ main_image_bytes: main });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      changed_fields: ["description", "bullets", "main", "gallery"],
+      main_sha256: H(main),
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+    target_main_bytes: main,
+  });
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.facets.main, "PASS");
+  assert.equal(result.facets.gallery, "PASS");
+  assert.equal(result.facets.unchanged_fields_preserved, "PASS");
+  assert.equal(result.next_sku_unblocked, true);
+});
+
+test("reviewed image-set Qualification rejects gallery drift", async () => {
+  const main = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  }).png().toBuffer();
+  const fx = await fixture({
+    main_image_bytes: main,
+    gallery_image_bytes: [Buffer.from("wrong-gallery"), IMAGE_BYTES[2]],
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      changed_fields: ["description", "bullets", "main", "gallery"],
+      main_sha256: H(main),
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+    target_main_bytes: main,
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.main, "PASS");
+  assert.equal(result.facets.gallery, "FAIL");
+  assert.equal(result.next_sku_unblocked, false);
 });
 
 test("reviewed MAIN does not accept a different image under a Walmart URL", async () => {

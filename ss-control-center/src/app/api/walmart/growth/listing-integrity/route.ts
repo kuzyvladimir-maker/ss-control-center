@@ -5,12 +5,14 @@ import { loadListingIntegrityOperationsState } from "@/lib/walmart/listing-integ
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function buildListingIntegrityOperationsResponse(
+  loadState = loadListingIntegrityOperationsState,
+) {
   try {
     return NextResponse.json(
       {
         ok: true,
-        operations: await loadListingIntegrityOperationsState(),
+        operations: await loadState(),
       },
       { headers: { "cache-control": "private, no-store, max-age=0" } },
     );
@@ -27,6 +29,10 @@ export async function GET() {
       },
     );
   }
+}
+
+export async function GET() {
+  return buildListingIntegrityOperationsResponse();
 }
 
 async function rejectMutation() {

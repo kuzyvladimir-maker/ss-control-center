@@ -922,7 +922,16 @@ function sizesEquivalent(left: ExpectedSize, right: ExpectedSize): boolean {
 function packageSourceStatus(expected: ExpectedPackageFact, values: readonly ExpectedSize[]): PackageSourceStatus {
   if (values.length === 0) return "ABSENT";
   if (values.some((value) => !sizesEquivalent(values[0], value))) return "CONFLICT";
-  return values.every((value) => sizeEquals(expected, value)) ? "MATCH" : "MISMATCH";
+  /*
+   * Retail labels commonly print the same net content in several units, with
+   * the metric literal rounded for display: `16 OZ (1 LB) (454g)`. Product
+   * Truth may store the exact conversion as 453.59237 g. Same-unit comparisons
+   * remain exact when they are the only evidence, but a mutually equivalent
+   * multi-unit label is a MATCH when any literal binds to the expected fact.
+   * Requiring every literal to match directly created a false BAD for the
+   * rounded metric spelling even though the exact oz/lb literals agreed.
+   */
+  return values.some((value) => sizesEquivalent(expected, value)) ? "MATCH" : "MISMATCH";
 }
 
 function ocrPackageSourceStatus(expected: ExpectedPackageFact, values: readonly ExpectedSize[]): PackageSourceStatus {

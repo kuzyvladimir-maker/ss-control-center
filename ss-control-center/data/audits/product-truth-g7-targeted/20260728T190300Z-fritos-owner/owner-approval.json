@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "owner-pt-g7-targeted-fritos-20260728t190500z",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99687.5,
+      "evidenceSha256": "1ab1de67129e07c274fefc87ad14d2a07f0162347903f1479dfd07129ec195c3",
+      "observedAt": "2026-07-28T18:56:30.610Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-28T19:50:00.000Z",
+  "issuedAt": "2026-07-28T19:05:00.000Z",
+  "meteredPermit": {
+    "approvalId": "owner-pt-g7-targeted-fritos-20260728t190500z",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-28T19:50:00.000Z",
+    "issuedAt": "2026-07-28T19:05:00.000Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-g7-targeted-20260728T190300Z-fritos",
+    "version": 1
+  },
+  "planSha256": "148ce9364424c4ff5b47eaaec33d51a7e8a5da6d8370d344adaa791de3a414b8",
+  "runId": "pt-g7-targeted-20260728T190300Z-fritos",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

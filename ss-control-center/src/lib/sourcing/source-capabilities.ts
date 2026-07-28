@@ -14,8 +14,8 @@
 //  • Oxylabs walmart_product gives price + gallery + desc, but nutrition/ingredients
 //    are only LABEL-IMAGE URLs and there is NO UPC → Unwrangle walmart_detail is the
 //    only structured Walmart nutrition/ingredients/UPC source.
-//  • Target/Sam's/Costco: no Oxylabs parser → Unwrangle only (Sam's/Costco detail = 10
-//    credits each → use sparingly).
+//  • Target/Sam's/Costco: no Oxylabs parser → Unwrangle only (live Target search =
+//    2.5 credits; Sam's/Costco detail = 10 credits each → use sparingly).
 //  • Publix / Aldi / BJ's: NO paid API reaches them (Unwrangle has no Instacart) →
 //    the logged-in OpenClaw browser is the ONLY path, or they're unsourceable.
 //  • Google Shopping = last-resort estimate, MIX of 1P + 3P resellers → take the
@@ -69,7 +69,7 @@ export const SOURCE_CAPS: Record<SourceKey, SourceCapability> = {
   "oxylabs:amazon":    { key: "oxylabs:amazon",    service: "oxylabs",   structured: true,  provides: ["price", "images", "video", "title", "description", "bullets", "category", "attributes", "variations", "ingredients", "upc", "brand", "model", "reviews"], creditCost: null, firstParty: "clean", note: "amazon_product = RICHEST: 8-img gallery + videos(flag) + bullets + desc + category + product_details(brand/model/dimensions/UPC) + variations + TEXT ingredients + reviews + 1P/3P buybox. Missing only: structured nutrition + A+ enhanced imagery (A+ = we GENERATE)." },
   "oxylabs:google":    { key: "oxylabs:google",    service: "oxylabs",   structured: true,  provides: ["price"], creditCost: null, firstParty: "mixed", note: "google_shopping_search: cross-retailer price, MIX of 1P + 3P resellers in one feed. Last resort; take first-party merchant only." },
   "unwrangle:walmart": { key: "unwrangle:walmart", service: "unwrangle", structured: true,  provides: ["price", "images", "nutrition", "ingredients", "upc", "description"], creditCost: 2.5, firstParty: "clean", note: "walmart_detail = richest grocery content: structured nutrition_facts + ingredients + UPC + all photos + desc + 1P seller. THE Walmart content source." },
-  "unwrangle:target":  { key: "unwrangle:target",  service: "unwrangle", structured: true,  provides: ["price", "images", "upc", "description"], creditCost: 1, firstParty: "clean", note: "target_detail: price + full gallery + desc + highlights + UPC + brand. No nutrition/ingredients. Only structured Target path." },
+  "unwrangle:target":  { key: "unwrangle:target",  service: "unwrangle", structured: true,  provides: ["price", "images", "upc", "description"], creditCost: 2.5, firstParty: "clean", note: "Target search/detail observed at 2.5 credits on 2026-07-28: price + full gallery + desc + highlights + UPC + brand. No nutrition/ingredients. Only structured Target path." },
   "unwrangle:samsclub":{ key: "unwrangle:samsclub",service: "unwrangle", structured: true,  provides: ["price", "images", "ingredients", "upc", "description"], creditCost: 10, firstParty: "clean", note: "samsclub_detail: 10 CREDITS (expensive) — price+images+desc+UPC+gtin+ingredients(in specs). Use sparingly." },
   "unwrangle:costco":  { key: "unwrangle:costco",  service: "unwrangle", structured: true,  provides: ["images", "upc", "description"], creditCost: 10, firstParty: "clean", note: "costco_detail: 10 CREDITS — images+desc+UPC. Price OFTEN MISSING (member-only). Use sparingly." },
   "unwrangle:amazon":  { key: "unwrangle:amazon",  service: "unwrangle", structured: true,  provides: ["price", "images", "description"], creditCost: 1, firstParty: "mixed", note: "NOT wired (Oxylabs amazon is better+already-paid). amazon_detail=1cr. Only if Oxylabs Amazon unavailable." },
@@ -92,7 +92,7 @@ export interface RetailerRouting {
 export const RETAILER_ROUTING: RetailerRouting[] = [
   { retailer: "walmart", price: ["oxylabs:walmart"], content: ["unwrangle:walmart", "oxylabs:walmart"], note: "Price+photos from Oxylabs (free-ish). Unwrangle detail ONLY when we need UPC/structured nutrition — once per product." },
   { retailer: "amazon",  price: ["oxylabs:amazon"],  content: ["oxylabs:amazon"], note: "FULLY covered by Oxylabs (price+photos+UPC+ingredients). No Unwrangle." },
-  { retailer: "target",  price: ["unwrangle:target"], content: ["unwrangle:target"], note: "Unwrangle only (no Oxylabs parser). 1 credit." },
+  { retailer: "target",  price: ["unwrangle:target"], content: ["unwrangle:target"], note: "Unwrangle only (no Oxylabs parser). Live-observed search tier: 2.5 credits." },
   { retailer: "samsclub",price: ["unwrangle:samsclub"], content: ["unwrangle:samsclub"], note: "Unwrangle, 10cr — expensive, use only when the item is Sam's-specific." },
   { retailer: "costco",  price: ["unwrangle:costco"], content: ["unwrangle:costco"], note: "Unwrangle, 10cr, price often missing. Use last." },
   { retailer: "publix",  price: ["openclaw:publix"], content: ["openclaw:publix"], note: "Browser ONLY — no paid API. Big FL grocer, worth it for buy-zone truth." },

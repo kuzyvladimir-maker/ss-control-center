@@ -1823,6 +1823,10 @@ export async function loadListingIntegrityShadowData(
   ownerReviewRoot: string | null = path.resolve(root) === path.resolve(DEFAULT_ROOT)
     ? DEFAULT_OWNER_REVIEW_ROOT
     : null,
+  operationsRoots?: {
+    operationsRoot: string;
+    completedRoot: string;
+  },
 ): Promise<ListingIntegrityShadowData> {
   let entries: Dirent[];
   let rootExists = true;
@@ -1891,7 +1895,10 @@ export async function loadListingIntegrityShadowData(
   }
   const catalog = await loadCatalogOverview(catalogRoot, captureRoot);
   const operations = path.resolve(root) === path.resolve(DEFAULT_ROOT)
-    ? await loadListingIntegrityOperationsState()
+    ? await loadListingIntegrityOperationsState(
+      operationsRoots?.operationsRoot,
+      operationsRoots?.completedRoot,
+    )
     : {
         status: "NOT_READY" as const,
         poolId: null,
@@ -1906,7 +1913,9 @@ export async function loadListingIntegrityShadowData(
         sourceCandidateCount: 0,
         repairReadyCount: 0,
         sourceRequiredCount: 0,
+        quarantinedCount: 0,
         completed: [],
+        quarantined: [],
         pool: [],
         sourceRequired: [],
       };

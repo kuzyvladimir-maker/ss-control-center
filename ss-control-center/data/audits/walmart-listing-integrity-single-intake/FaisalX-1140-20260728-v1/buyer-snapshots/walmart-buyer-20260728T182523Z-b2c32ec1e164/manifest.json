@@ -1,0 +1,162 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-28T18:25:23.596Z",
+  "target": {
+    "sku": "FaisalX-1140",
+    "item_id": "8401770647"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-1140",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "upc": "684611898500",
+      "gtin14": "00684611898500",
+      "wpid": "57DE5FHWA6BT",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "8401770647",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "8401770647",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "identity_evidence": [
+        "product.item_id=8401770647",
+        "product.product_url=8401770647"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-1140",
+        "seller.ItemResponse[0].sku=FaisalX-1140",
+        "seller.ItemResponse[0].upc=684611898500",
+        "seller.normalized_gtin14=00684611898500",
+        "seller.wpid_not_itemId=57DE5FHWA6BT",
+        "catalog.items[0].standardUpc~=00684611898500;itemId=8401770647",
+        "catalog.unique_numeric_public_itemId=8401770647"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=8401770647",
+        "product.product_url=8401770647"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "c6cd75b0492c30967759963c7235b6579c7f4b45646c6cad52e8a364ed627743",
+    "catalog_search_payload_canonical_sha256": "b21bd9f50aa9564e9d59ff9abf1d9968e5f8c295999abf1e59ba0beb2f6c939a",
+    "resolution_canonical_sha256": "5f6ee1a9e82c243429b8e722ebc97e1a389f0f2df4c1413bb7836d341d1bbfae",
+    "buyer_payload_canonical_sha256": "32ba475586801ddc7c3d482671dd00d974145aa246f7637d88c975f2ccaea168"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+      "final_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+      "sha256": "db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95",
+      "bytes": 458544,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/78882cad-1923-4432-8524-e47fe3ecce43.61a0642195f915c475999a9a3b9a4234.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/78882cad-1923-4432-8524-e47fe3ecce43.61a0642195f915c475999a9a3b9a4234.jpeg",
+      "sha256": "6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02",
+      "bytes": 24492,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/06cb3b1f-3fbc-4942-be19-1a9507facf84.89ccf1bebcb66bc6e72e105bbe595900.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/06cb3b1f-3fbc-4942-be19-1a9507facf84.89ccf1bebcb66bc6e72e105bbe595900.jpeg",
+      "sha256": "bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f",
+      "bytes": 36641,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f.jpg"
+    },
+    {
+      "slot": "GALLERY_3",
+      "source_url": "https://i5.walmartimages.com/asr/2d08f46d-6576-4d3c-a761-b3f6239cbd4d.60e778f0799d8737ce9b370d7a8aca20.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/2d08f46d-6576-4d3c-a761-b3f6239cbd4d.60e778f0799d8737ce9b370d7a8aca20.jpeg",
+      "sha256": "975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc",
+      "bytes": 54259,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc.jpg"
+    },
+    {
+      "slot": "GALLERY_4",
+      "source_url": "https://i5.walmartimages.com/asr/2f9a3af9-762a-4e46-9975-63e255b3edad.d426fb2bca0341f558ecbd8ed0014f39.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/2f9a3af9-762a-4e46-9975-63e255b3edad.d426fb2bca0341f558ecbd8ed0014f39.jpeg",
+      "sha256": "f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4",
+      "bytes": 42966,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4.jpg"
+    },
+    {
+      "slot": "GALLERY_5",
+      "source_url": "https://i5.walmartimages.com/asr/ca60206a-96b5-4d05-8599-ed00aebc2176.41ad308712dcb9045969ddac948b4353.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/ca60206a-96b5-4d05-8599-ed00aebc2176.41ad308712dcb9045969ddac948b4353.jpeg",
+      "sha256": "2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee",
+      "bytes": 23418,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee.jpg"
+    },
+    {
+      "slot": "GALLERY_6",
+      "source_url": "https://i5.walmartimages.com/asr/11713495-f56b-41fa-aa6e-105a1cd6fba2.1bc87352f71ba018e0e02c77a4b6fc65.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/11713495-f56b-41fa-aa6e-105a1cd6fba2.1bc87352f71ba018e0e02c77a4b6fc65.jpeg",
+      "sha256": "24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7",
+      "bytes": 16646,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 400,
+      "decoded_height": 400,
+      "local_path": "assets/24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260728T182523Z-b2c32ec1e164",
+  "body_sha256": "b2c32ec1e164d2fde6816191aea54bfe17c4ef9305bc0c99d3e8bb3cf25de03c"
+}

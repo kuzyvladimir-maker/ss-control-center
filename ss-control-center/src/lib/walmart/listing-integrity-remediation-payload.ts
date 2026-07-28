@@ -29,6 +29,10 @@ import {
   type SealedWalmartListingRepairPlan,
   type WalmartListingRepairTargetImage,
 } from "./listing-integrity-remediation-qualification.ts";
+import {
+  verifyWalmartListingVariantGroupRepairEvidence,
+  type WalmartListingVariantGroupRepairEvidence,
+} from "./listing-integrity-variant-group-evidence.ts";
 
 export const WALMART_LISTING_SURGICAL_GET_SPEC_RECEIPT_SCHEMA =
   "walmart-listing-integrity-surgical-get-spec-receipt/v1" as const;
@@ -36,6 +40,8 @@ export const WALMART_LISTING_SURGICAL_LIVE_ITEM_RECEIPT_SCHEMA =
   "walmart-listing-integrity-surgical-live-item-receipt/v1" as const;
 export const WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA =
   "walmart-listing-integrity-surgical-schema-contract/v1" as const;
+export const WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA =
+  "walmart-listing-integrity-variant-group-surgical-schema-contract/v1" as const;
 export const WALMART_LISTING_SURGICAL_REQUEST_MANIFEST_SCHEMA =
   "walmart-listing-repair-surgical-request-manifest/v1" as const;
 export const WALMART_LISTING_SURGICAL_VALIDATION_SCHEMA =
@@ -150,7 +156,9 @@ export interface WalmartListingSurgicalAttributeMapping {
 }
 
 export interface WalmartListingSurgicalSchemaContract {
-  schema_version: typeof WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA;
+  schema_version:
+    | typeof WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA
+    | typeof WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA;
   contract_id: string;
   plan_id: string;
   plan_body_sha256: string;
@@ -181,6 +189,7 @@ export interface WalmartListingSurgicalSchemaContract {
   };
   schema_mapping_approval_sha256: string;
   attribute_mappings: WalmartListingSurgicalAttributeMapping[];
+  variant_group_evidence?: WalmartListingVariantGroupRepairEvidence;
   claims: {
     exact_one_sku: true;
     changed_fields_only: true;
@@ -701,12 +710,16 @@ function parseLiveItemReceipt(
 
 function parseSchemaContract(value: unknown): WalmartListingSurgicalSchemaContract {
   const raw = record(value, "schema contract");
+  const variantGroupContract = raw.schema_version
+    === WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA;
   exactKeys(raw, [
     "schema_version", "contract_id", "plan_id", "plan_body_sha256", "target_sha256",
     "listing", "spec", "schema_mapping_approval_sha256", "attribute_mappings",
+    ...(variantGroupContract ? ["variant_group_evidence"] : []),
     "claims", "body_sha256",
   ], "schema contract");
-  if (raw.schema_version !== WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA) {
+  if (raw.schema_version !== WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA
+    && !variantGroupContract) {
     fail("schema contract version is invalid");
   }
   verifySeal(raw, "schema contract");
@@ -801,8 +814,15 @@ function parseSchemaContract(value: unknown): WalmartListingSurgicalSchemaContra
   if (orderedFields.some((field, index) => index > 0 && field <= orderedFields[index - 1]!)) {
     fail("schema contract attribute mappings must be ordered by Walmart Visible field");
   }
+  const variantGroupEvidence = variantGroupContract
+    ? verifyWalmartListingVariantGroupRepairEvidence(
+      raw.variant_group_evidence,
+    )
+    : undefined;
   return {
-    schema_version: WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA,
+    schema_version: variantGroupContract
+      ? WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA
+      : WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA,
     contract_id: safeId(raw.contract_id, "schema contract_id"),
     plan_id: safeId(raw.plan_id, "schema contract plan_id"),
     plan_body_sha256: digest(raw.plan_body_sha256, "schema contract plan SHA"),
@@ -854,6 +874,9 @@ function parseSchemaContract(value: unknown): WalmartListingSurgicalSchemaContra
       "schema mapping approval SHA",
     ),
     attribute_mappings: mappings,
+    ...(variantGroupEvidence
+      ? { variant_group_evidence: variantGroupEvidence }
+      : {}),
     claims: {
       exact_one_sku: true,
       changed_fields_only: true,
@@ -1016,9 +1039,11 @@ function normalizedWalmartAttributeName(value: string): string {
   return value.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]/gu, "");
 }
 
-function rejectOrdinaryAttributeRepairForVariantGroupKey(input: {
+function verifyVariantGroupAttributeRepair(input: {
   row: JsonRecord;
   contract: WalmartListingSurgicalSchemaContract;
+  liveItemResponseSha256: string;
+  getSpecResponseSha256: string;
 }): void {
   if (input.contract.attribute_mappings.length === 0) return;
   const rawGroupId = input.row.variantGroupId;
@@ -1062,11 +1087,47 @@ function rejectOrdinaryAttributeRepairForVariantGroupKey(input: {
     .filter((field) => groupingFields.has(normalizedWalmartAttributeName(field)))
     .sort();
   if (overlappingFields.length > 0) {
-    fail(
-      `VARIANT_GROUP_REPAIR_REQUIRED: ordinary one-SKU attribute repair cannot `
-      + `change active variant-group field(s) ${overlappingFields.join(", ")} `
-      + `for ${groupId}`,
+    const evidence = input.contract.variant_group_evidence;
+    if (!evidence) {
+      fail(
+        `VARIANT_GROUP_REPAIR_REQUIRED: ordinary one-SKU attribute repair cannot `
+        + `change active variant-group field(s) ${overlappingFields.join(", ")} `
+        + `for ${groupId}`,
+      );
+    }
+    if (evidence.listing.store_index !== input.contract.listing.store_index
+      || evidence.listing.sku !== input.contract.listing.sku
+      || evidence.listing.item_id !== input.contract.listing.item_id
+      || evidence.listing.product_type !== input.contract.listing.product_type
+      || evidence.current_group.variant_group_id !== groupId
+      || evidence.current_group.grouping_attributes.length !== 1
+      || normalizedWalmartAttributeName(
+        evidence.current_group.grouping_attributes[0].name,
+      ) !== "flavor"
+      || evidence.current_group.grouping_attributes[0].value
+        !== groupInfo.groupingAttributes[0]?.value
+      || evidence.live_authority.seller_item_file_sha256
+        !== input.liveItemResponseSha256
+      || evidence.live_authority.get_spec_response_file_sha256
+        !== input.getSpecResponseSha256) {
+      fail("VARIANT_GROUP_REPAIR_REQUIRED: sealed group evidence differs from fresh live/spec bytes");
+    }
+    const mappingValues = new Map(
+      input.contract.attribute_mappings.map((mapping) => [
+        mapping.walmart_visible_field,
+        mapping.walmart_value,
+      ]),
     );
+    const requested = evidence.requested_group_update;
+    if (overlappingFields.length !== 1 || overlappingFields[0] !== "flavor"
+      || mappingValues.size !== 4
+      || mappingValues.get("flavor") !== requested.flavor
+      || mappingValues.get("count") !== requested.count
+      || mappingValues.get("countPerPack") !== requested.count_per_pack
+      || mappingValues.get("multipackQuantity")
+        !== requested.multipack_quantity) {
+      fail("VARIANT_GROUP_REPAIR_REQUIRED: attribute mappings differ from sealed group target");
+    }
   }
 }
 
@@ -1074,6 +1135,7 @@ function verifyLiveItem(input: {
   contract: WalmartListingSurgicalSchemaContract;
   receipt: WalmartListingSurgicalLiveItemReceipt;
   responseBytes: Uint8Array;
+  getSpecResponseSha256: string;
   preparedAt: string;
   sellerAccountFingerprintSha256: string;
 }): void {
@@ -1152,9 +1214,11 @@ function verifyLiveItem(input: {
     || !identifiers.has(input.contract.listing.product_identifier.productId)) {
     fail("live item response does not prove one exact matching product identifier");
   }
-  rejectOrdinaryAttributeRepairForVariantGroupKey({
+  verifyVariantGroupAttributeRepair({
     row,
     contract: input.contract,
+    liveItemResponseSha256: responseSha,
+    getSpecResponseSha256: input.getSpecResponseSha256,
   });
 }
 
@@ -1196,6 +1260,10 @@ function validateContractBindings(input: {
   if (Date.parse(prepared) < Date.parse(planCreated)
     || Date.parse(prepared) >= Date.parse(planExpires)) {
     fail("request preparation is outside the exact repair plan validity window");
+  }
+  if (contract.variant_group_evidence
+    && contract.variant_group_evidence.created_at !== prepared) {
+    fail("variant-group evidence must be compiled at the exact request preparation instant");
   }
   const liveCaptured = Date.parse(contract.listing.live_item_captured_at);
   if (liveCaptured > Date.parse(prepared)
@@ -1287,6 +1355,16 @@ function buildVisible(input: {
     || [...changedClaims.keys()].some((key) => !coveredClaims.has(key))) {
     fail("every changed target attribute claim needs an explicit approved mapping");
   }
+  if (contract.variant_group_evidence) {
+    visible.variantGroupId =
+      contract.variant_group_evidence.requested_group_update.variant_group_id;
+    visible.variantAttributeNames = [
+      ...contract.variant_group_evidence.requested_group_update
+        .variant_attribute_names,
+    ];
+    visible.isPrimaryVariant =
+      contract.variant_group_evidence.requested_group_update.is_primary_variant;
+  }
   if (Object.keys(visible).length === 0) fail("surgical payload cannot be empty");
   return visible;
 }
@@ -1360,6 +1438,7 @@ export function buildWalmartListingSurgicalRequest(input: {
     contract,
     receipt: liveReceipt,
     responseBytes: input.live_item_response_bytes,
+    getSpecResponseSha256: receipt.response_payload_sha256,
     preparedAt,
     sellerAccountFingerprintSha256: sellerFingerprint,
   });

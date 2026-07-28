@@ -1,0 +1,43 @@
+{
+  "schema_version": "walmart-listing-main-candidate/v1",
+  "created_at": "2026-07-28T18:33:36.047Z",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "sku": "FaisalX-1140",
+  "component_index": 0,
+  "canonical_variant_id": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+  "represented_outer_units": 4,
+  "source": {
+    "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+    "content_type": "image/jpeg",
+    "file": "exact-single-unit-source.bin",
+    "sha256": "da7b04bbd2c39746be98c2371d410e87a7c7c1761bd797b3a8ab09374e95bddc",
+    "bytes": 140612,
+    "product_truth_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd",
+    "content_observation_id": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+    "content_hash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4"
+  },
+  "candidate": {
+    "file": "proposed-main-pack.png",
+    "sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955",
+    "bytes": 848751,
+    "width": 2200,
+    "height": 2200,
+    "format": "png",
+    "derivation": "DETERMINISTIC_EXACT_SINGLE_UNIT_TILE"
+  },
+  "diagnosis": {
+    "file_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+    "required_defect": "MAIN_OUTER_QUANTITY_MISMATCH"
+  },
+  "safety": {
+    "image_gets": 1,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "953f1056889af9f6dd1067ae7cff61b3cc41d78c6a6c8f6de0fd3ebef0117775"
+}

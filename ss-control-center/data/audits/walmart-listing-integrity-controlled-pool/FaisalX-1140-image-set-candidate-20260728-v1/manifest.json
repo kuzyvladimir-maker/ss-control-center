@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-listing-image-set-candidate/v1",
+  "created_at": "2026-07-28T18:34:48.440Z",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "sku": "FaisalX-1140",
+  "canonical_variant_id": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+  "content_observation_id": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+  "content_hash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+  "represented_outer_units": 4,
+  "product_truth_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd",
+  "diagnosis_file_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+  "main_candidate_manifest_file_sha256": "056f91a50c9dc481ce9a387e74bf29796834a3ebe73f7ad3f1b75754bbe259a1",
+  "targets": [
+    {
+      "slot": "main",
+      "file": "target-main.png",
+      "source_url": null,
+      "source_role": "DETERMINISTIC_MULTIPACK_MAIN",
+      "sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955",
+      "bytes": 848751,
+      "content_type": "image/png",
+      "width": 2200,
+      "height": 2200,
+      "derivation": "DETERMINISTIC_EXACT_SINGLE_UNIT_TILE"
+    },
+    {
+      "slot": "gallery-1",
+      "file": "target-gallery-01.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/2ec44d86-d2fe-4ac4-a2ce-24caa12d6d6f.85da5152ca1a40020408d0e0ccc4d659.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "6ca8cf7ad85df66c8901bb5c6ff0764ff9ff3615133ceeb1b2877c887d739fb4",
+      "bytes": 241214,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    },
+    {
+      "slot": "gallery-2",
+      "file": "target-gallery-02.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/812d98dc-ff47-49e0-8a7e-c242fd79b5ba.aaa79cb90454652b35630b951c8ea233.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "d8576fb4d9a659b4467749ff993719bd92739488e25ed56057e6c0116469e79e",
+      "bytes": 416954,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    },
+    {
+      "slot": "gallery-3",
+      "file": "target-gallery-03.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+      "bytes": 133323,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    },
+    {
+      "slot": "gallery-4",
+      "file": "target-gallery-04.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/df43d28a-8bcd-4653-be3a-64e300d1ef3a.cdf66a2f024e3d39aa79dc9dc63d7065.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "926a3fcf7b83fedecb9ed1c06571e9126fe229fe9e52d6fe019e0cdbd78f1df9",
+      "bytes": 86296,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    },
+    {
+      "slot": "gallery-5",
+      "file": "target-gallery-05.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/302f716d-23a0-4357-8562-88ca1271f7d3.1d5462829146a511c4c2c179105ccd6b.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "63401ac038b616aa9e0302dc540f7de5585fb82504fbd1a8593e44365bb007e4",
+      "bytes": 128388,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    },
+    {
+      "slot": "gallery-6",
+      "file": "target-gallery-06.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4",
+      "bytes": 237798,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET"
+    }
+  ],
+  "safety": {
+    "image_gets": 6,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "74b5af67e0fd834f362ed0ce1b64eb11653dd68fd0b35503999f36c1bfa0062f"
+}

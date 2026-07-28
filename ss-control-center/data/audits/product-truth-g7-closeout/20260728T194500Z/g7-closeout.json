@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "product-truth-g7-closeout/1.0.0",
+  "generatedAt": "2026-07-28T19:45:00.000Z",
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "disposition": "CANARY_COMPLETED_WITH_ARCHITECTURAL_GAPS",
+  "spend": {
+    "providerCalls": 19,
+    "providerUnits": 32.5,
+    "byProvider": {
+      "oxylabs": {
+        "calls": 10,
+        "units": 10
+      },
+      "unwrangle": {
+        "balanceProbeCalls": 6,
+        "detailCalls": 3,
+        "calls": 9,
+        "units": 22.5,
+        "lastObservedBalance": 99672.5
+      }
+    }
+  },
+  "listingScopeRuns": [
+    {
+      "runId": "pt-g7-canary-20260728T175740Z",
+      "outcome": "FAILED",
+      "reportSha256": "39e47c665976f2ee515c6ed95ddd4324e019e05db3793e07c29dcdd45798f45e",
+      "spendUnits": 1,
+      "reason": "COMPONENT_EVIDENCE_INCOMPLETE before the UNSOURCEABLE matchTier fix"
+    },
+    {
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "outcome": "COMPLETED_WITH_GAPS",
+      "reportSha256": "356dfbecb38d5c5a58a4b45380bc1dad7fcb78f9ac41c307b67a0c203cf55cbd",
+      "spendUnits": 5,
+      "reason": "five honest UNSOURCEABLE outcomes; generic discovery did not use the already known exact Walmart item IDs"
+    }
+  ],
+  "targets": [
+    {
+      "listingKey": "walmart:1:FaisalX-1315",
+      "retailerProductId": "49909665",
+      "providerOutcome": "EXACT_IDENTITY_AND_LOCAL_PRICE_CAPTURED",
+      "contentOutcome": "AMBIGUOUS",
+      "contentBlockers": [
+        "ALLERGENS_MISSING",
+        "STORAGE_MISSING"
+      ],
+      "listingMaterializationOutcome": "QUARANTINE_CANONICAL_DONOR_VARIANT_CONFLICT",
+      "reportSha256": "8d72d9db8f86b9633113eb901a3195566e14b5092385586f261ea0d78f25cfeb"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3499",
+      "retailerProductId": "30856904",
+      "providerOutcome": "EXACT_IDENTITY_AND_LOCAL_PRICE_CAPTURED",
+      "contentOutcome": "AMBIGUOUS",
+      "contentBlockers": [
+        "ALLERGENS_MISSING",
+        "STORAGE_MISSING"
+      ],
+      "listingMaterializationOutcome": "QUARANTINE_CANONICAL_DONOR_VARIANT_CONFLICT",
+      "reportSha256": "70d9c57034bbbad6332ce17078c5081eeb6f0906113fcef941b46ec5932494fa"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3481",
+      "retailerProductId": "10312200",
+      "providerOutcome": "EXACT_IDENTITY_AND_LOCAL_PRICE_CAPTURED",
+      "contentOutcome": "AMBIGUOUS",
+      "contentBlockers": [
+        "ALLERGENS_MISSING",
+        "STORAGE_MISSING"
+      ],
+      "listingMaterializationOutcome": "QUARANTINE_CANONICAL_DONOR_VARIANT_CONFLICT",
+      "reportSha256": "33536df89895778b95b3385b04659925a5efbf711443787870fa43de3d7b0b31"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2195",
+      "retailerProductId": "2918451132",
+      "providerOutcome": "REJECTED_OUT_OF_STOCK",
+      "contentOutcome": "NOT_CALLED",
+      "listingMaterializationOutcome": "QUARANTINE_NO_CURRENT_FIRST_PARTY_OFFER",
+      "reportSha256": "de4345c49c98c34c45922c4c82fc69d40d822ca74408bdf2c12c762d05feeaba"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3237",
+      "retailerProductId": "10532985",
+      "providerOutcome": "NOT_CALLED",
+      "contentOutcome": "NOT_CALLED",
+      "listingMaterializationOutcome": "QUARANTINE_MACHINE_IDENTITY_TITLE_NOT_EXACT",
+      "reason": "TITLE_BRAND_NOT_FOUND"
+    }
+  ],
+  "defectsFound": [
+    {
+      "code": "UNSOURCEABLE_MATCH_TIER_MISSING",
+      "status": "FIXED_AND_CERTIFIED",
+      "description": "honest UNSOURCEABLE component evidence omitted the required REJECT matchTier"
+    },
+    {
+      "code": "TARGETED_RUN_LEASE_SHORTER_THAN_WALL_CLOCK",
+      "status": "FIXED_AND_CERTIFIED",
+      "description": "the four-minute run lease could expire inside the six-minute sealed wall-clock; it now includes a bounded two-minute reconciliation margin"
+    },
+    {
+      "code": "TARGETED_BOOTSTRAP_IDENTITY_NOT_LISTING_BOUND",
+      "status": "OPEN",
+      "description": "conservative donor-title bootstrap creates a different canonical variant from the structured listing component, so exact retailer evidence cannot be materialized to the listing without an explicit listing-bound proof contract"
+    }
+  ],
+  "postCanaryAudit": {
+    "bridgePlanSha256": "d644d6baf3798360a055e8ed8ecbd6ddb3b9b6749c684c9167f89d2d8fc7ae55",
+    "sourceSnapshotSha256": "b51a654a95f8242065ecd0746a840ce5b900bb32372803c395daca3a16441c53",
+    "listingsTotal": 5935,
+    "alreadyCanonicalListings": 20,
+    "identityOnlyCanonicalizationCandidates": 71,
+    "quarantinedListings": 5844
+  },
+  "certification": {
+    "command": "npm run test:product-truth-certification",
+    "passed": 508,
+    "failed": 0
+  },
+  "safety": {
+    "marketplaceWrites": 0,
+    "listingWrites": 0,
+    "priceOrInventoryChanges": 0,
+    "delisting": 0,
+    "consumerActivation": 0,
+    "procurementActions": 0,
+    "clubCalls": 0,
+    "bjsCalls": 0,
+    "automaticRetries": 0
+  },
+  "nextRequiredEngineBoundary": "LISTING_BOUND_TARGETED_BOOTSTRAP"
+}

@@ -1,0 +1,8 @@
+{
+  "expected_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+  "product_truth_snapshot_id": "reviewed-one-sku-truth-ebd7694ca09705570b78bb59",
+  "product_truth_snapshot_body_sha256": "ebd7694ca09705570b78bb59224793e1e7a5c2de91ebab0dede563881ec75058",
+  "truth_revision_id": "reviewed-truth-revision-fb928188e5f7c9ba937f47e8",
+  "truth_revision_body_sha256": "fb928188e5f7c9ba937f47e8258e2747f9cc81207e6f87f8bfd866ada179ddba",
+  "truth_approval_sha256": "6c98876fa7604911f5620d197f41438faf23c02efafab6880b47170385eb1970"
+}

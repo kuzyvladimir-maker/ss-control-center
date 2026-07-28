@@ -1,0 +1,14 @@
+{
+  "schema_version": "walmart-listing-integrity-surgical-get-spec-receipt/v1",
+  "method": "POST",
+  "path": "/v3/items/spec",
+  "request_content_type": "application/json",
+  "response_content_type": "application/json",
+  "http_status": 200,
+  "correlation_id_sha256": "3c979de2493036b2775c4e96c380e373734a9473709eeaadab75fb4516b9d35d",
+  "seller_account_fingerprint_sha256": "a135315771d89961b51864ae27a80fc5e1f72c27ce9cbe1a4bf4ba7f93505127",
+  "request_payload_sha256": "4ef57a1d53424aaed515f946f95b7263931bbd6f2252aff83c2006577aba4b28",
+  "response_payload_sha256": "d1e24d8c7cc638e1b8d601fb399a945f6628b7ac014d3a5fe5ec4444465d00c9",
+  "fetched_at": "2026-07-28T19:09:16.367Z",
+  "body_sha256": "f0c1883f89b78039de1638aec8aed44c3c811580772687f9bd82f194fe9d3d9c"
+}
