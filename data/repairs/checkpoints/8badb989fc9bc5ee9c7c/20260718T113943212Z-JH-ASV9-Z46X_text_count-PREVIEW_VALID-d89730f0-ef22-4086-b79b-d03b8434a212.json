@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d89730f0-ef22-4086-b79b-d03b8434a212",
+  "created_at": "2026-07-18T11:39:43.212Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JH-ASV9-Z46X:text_count",
+  "sku": "JH-ASV9-Z46X",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "d2057c5380626a449b6033a6219b761646c9bdce8205308fcf98c06641fdc218",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "83e7e0fe083c4afcbce889934cec20c0",
+    "issues": []
+  },
+  "sha256": "9b73394eae65eee80f95060dece6b2d202b1031c838c11635af82dc0b734291d"
+}

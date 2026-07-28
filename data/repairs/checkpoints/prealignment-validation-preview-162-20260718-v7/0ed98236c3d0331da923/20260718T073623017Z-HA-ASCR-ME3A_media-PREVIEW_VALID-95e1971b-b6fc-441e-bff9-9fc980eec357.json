@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "95e1971b-b6fc-441e-bff9-9fc980eec357",
+  "created_at": "2026-07-18T07:36:23.017Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "HA-ASCR-ME3A:media",
+  "sku": "HA-ASCR-ME3A",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "2ffec47b4b21043eb08ac6867c7b75f2ea2479d81c8c7f45e5fd5f67ebd96617",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "260aaeac21a442d092d22078714c2891",
+    "issues": []
+  },
+  "sha256": "b170ee82829c8678f03c6e3076304dbdfc6c957534420eff8ba188039baadba5"
+}

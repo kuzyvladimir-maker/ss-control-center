@@ -1,0 +1,69 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T12:50:00.000Z",
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+  },
+  "requested_skus": [
+    "BD-AS8P-XAW5",
+    "BD-ASGH-LREJ",
+    "BH-AS7H-D4FV",
+    "BH-ASTN-S4XJ",
+    "BH-ASVY-CR8H",
+    "BK-AS5Z-8UY5",
+    "BM-AS5J-3MQY",
+    "BQ-ASUE-NT37",
+    "BY-ASY2-8UJJ",
+    "CE-ASGK-ZRHM"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "BD-AS8P-XAW5",
+    "BD-ASGH-LREJ",
+    "BH-AS7H-D4FV",
+    "BH-ASTN-S4XJ",
+    "BH-ASVY-CR8H",
+    "BK-AS5Z-8UY5",
+    "BM-AS5J-3MQY",
+    "BQ-ASUE-NT37",
+    "BY-ASY2-8UJJ",
+    "CE-ASGK-ZRHM"
+  ],
+  "selected_action_ids": [
+    "BD-AS8P-XAW5:media",
+    "BD-ASGH-LREJ:media",
+    "BH-AS7H-D4FV:media",
+    "BH-ASTN-S4XJ:media",
+    "BH-ASVY-CR8H:media",
+    "BK-AS5Z-8UY5:media",
+    "BM-AS5J-3MQY:media",
+    "BQ-ASUE-NT37:media",
+    "BY-ASY2-8UJJ:media",
+    "CE-ASGK-ZRHM:media"
+  ],
+  "selected_actions": 10,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "sha256": "9bd658dd8499a7e008dd34b60d392c558dd2815fb9a7511df6045fd7eefbc057",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-9BD658DD8499A7E0"
+}

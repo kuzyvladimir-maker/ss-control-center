@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1a051f03-d107-473c-b5e4-b00ce161f3f0",
+  "created_at": "2026-07-19T04:50:29.046Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "SH-ASO0-PW37:media",
+  "sku": "SH-ASO0-PW37",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "fc34468b-e221-4833-85b2-e1a606d2406a",
+    "submitted_at": "2026-07-19T04:49:14.667Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "c7fa74f08f44dc27dc7ba3cc8d6aa0b4c2e7272ebd942b0156c5bf1275e4583d",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "b496d3e1fc306a945349986900f2d196ce3075882cbdbb3281dbfebf8e8b1f2c"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "032e5ac02a4a2405055d47ffba7dd3df41b1f6d7c0fda2de2f026e78857518e0"
+}

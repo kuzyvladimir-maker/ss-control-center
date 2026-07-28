@@ -1,0 +1,40 @@
+{
+  "schema_version": "channelmax-bd-default-inline-canary-postwrite/v1",
+  "confirmed_at": "2026-07-19T02:16:54Z",
+  "row": {
+    "item_id": 171141050,
+    "sku": "BD-AS8P-XAW5",
+    "asin": "B0H85MXFH8",
+    "site_id": 300
+  },
+  "before": {
+    "minimum_price": null,
+    "maximum_price": 78.25,
+    "repricing_model_name": "Default"
+  },
+  "after": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "price": 76.99,
+    "repricing_model_name": "Default"
+  },
+  "write_response": {
+    "is_valid": true,
+    "item_is_valid": true,
+    "message": "SUCCESS",
+    "updated_rows": 1
+  },
+  "independent_readback": {
+    "action": "inventoryitemsite",
+    "is_valid": true,
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "last_updated_by": "salutem-MB"
+  },
+  "rollback": {
+    "minimum_price": null,
+    "maximum_price": 78.25,
+    "required": false
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FaisalX-1140 — До / После</title>
+<style>
+body{font-family:Inter,Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+main{max-width:1560px;margin:28px auto;padding:0 24px}
+h1{margin:0 0 8px}.sub{color:#526078;margin-bottom:20px}.ok{background:#e8f8ee;border:1px solid #8ed1a4;padding:15px 18px;border-radius:12px}
+.compare,.text-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.panel{background:#fff;border:1px solid #d8e1ed;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px #20305010}
+.head{padding:14px 18px;font-weight:900}.before .head{background:#fff0ef;color:#9f251e}.after .head{background:#e9f8ef;color:#176b36}
+.images{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px}
+figure{margin:0;border:1px solid #e1e7f0;border-radius:12px;overflow:hidden;background:white}
+figure:first-child{grid-column:1/-1}figure img{width:100%;height:320px;object-fit:contain;display:block}figure:first-child img{height:560px}
+figcaption{padding:9px 11px;background:#f8fafc;font-size:13px}
+.body{padding:18px}.text{white-space:pre-wrap;line-height:1.46;font-size:14px}li{margin:7px 0;line-height:1.4}
+.bad{color:#a12620}.good{color:#176b36}.unchanged{margin:20px 0;background:#eef4ff;border:1px solid #b8cdf4;border-radius:12px;padding:16px}
+code{background:#edf1f7;padding:2px 5px;border-radius:5px}
+@media(max-width:900px){.compare,.text-grid{grid-template-columns:1fr}.images{grid-template-columns:1fr}figure:first-child{grid-column:auto}figure img,figure:first-child img{height:390px}}
+</style></head><body><main>
+<h1>FaisalX-1140 — Walmart Listing Integrity</h1>
+<div class="sub">Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4) · item 8401770647</div>
+<div class="ok"><b>Целевой image-set: Qualification PASS.</b> Новый MAIN показывает ровно
+ 4 упаковки точного White Sandwich Bread. В gallery оставлены только
+ два изображения с самостоятельным визуальным PASS.</div>
+<section class="compare">
+<article class="panel before"><div class="head">ДО — LIVE WALMART</div><div class="images">
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95.png" alt="MAIN">
+      <figcaption><b>MAIN</b><br>Hamburger Buns вместо White Sandwich Bread</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02.jpg" alt="GALLERY 1">
+      <figcaption><b>GALLERY 1</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f.jpg" alt="GALLERY 2">
+      <figcaption><b>GALLERY 2</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc.jpg" alt="GALLERY 3">
+      <figcaption><b>GALLERY 3</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4.jpg" alt="GALLERY 4">
+      <figcaption><b>GALLERY 4</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee.jpg" alt="GALLERY 5">
+      <figcaption><b>GALLERY 5</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-single-intake/FaisalX-1140-20260728-v1/buyer-snapshots/walmart-buyer-20260728T182523Z-b2c32ec1e164/assets/24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7.jpg" alt="GALLERY 6">
+      <figcaption><b>GALLERY 6</b><br>Текущая live gallery; содержит изображения другого продукта</figcaption>
+    </figure></div></article>
+<article class="panel after"><div class="head">ПОСЛЕ — QUALIFIED PREVIEW</div><div class="images">
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-main.png" alt="MAIN">
+      <figcaption><b>MAIN</b><br>Ровно 4 упаковки White Sandwich Bread</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-gallery-01.jpg" alt="GALLERY 1">
+      <figcaption><b>GALLERY 1</b><br>Exact Product Truth image; deterministic visual PASS</figcaption>
+    </figure>
+    <figure>
+      <img src="/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-image-set-curated-20260728-v1/target-gallery-02.jpg" alt="GALLERY 2">
+      <figcaption><b>GALLERY 2</b><br>Exact Product Truth image; deterministic visual PASS</figcaption>
+    </figure></div></article>
+</section>
+<section class="text-grid">
+<article class="panel before"><div class="head">ТЕКСТ ДО</div><div class="body">
+<h3 class="bad">Description</h3><div class="text">We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.</div>
+<h3 class="bad">Bullets</h3><ul><li>Soft white sandwich bread made with enriched flour for everyday meals and snacks.</li><li>16 oz loaf size provides multiple servings for families and individuals.</li><li>Classic white bread texture suitable for sandwiches, toast, and general use.</li><li>Sliced loaf format ready to use straight from the package.</li><li>Store in a cool, dry place or refrigerate to maintain freshness.</li><li>Pepperidge Farm brand with established quality standards for bread products.</li><li>Contains wheat and may contain other common allergens; check label for full allergen information.</li></ul>
+</div></article>
+<article class="panel after"><div class="head">ТЕКСТ ПОСЛЕ</div><div class="body">
+<h3 class="good">Description</h3><div class="text">PACK OF 4: This listing includes four 16 oz loaves of Pepperidge Farm White Sandwich Bread, for 64 oz total. We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.</div>
+<h3 class="good">Bullets</h3><ul><li>PACK OF 4: Includes 4 loaves of Pepperidge Farm White Sandwich Bread; each loaf is 16 oz, for 64 oz total</li><li>CLASSIC SANDWICH BREAD: A classic recipe that you know and love</li><li>QUALITY INGREDIENTS: No high-fructose corn syrup</li><li>SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches</li><li>WRAPPED WITH CARE: Double-wrapped for freshness</li><li>BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness</li></ul>
+</div></article>
+</section>
+<div class="unchanged"><b>Не меняется:</b> product-first title, attributes, price, inventory,
+ identifiers, publication/lifecycle. Изменяются только description, bullets, MAIN и gallery.
+ Walmart write ещё не выполнялся.</div>
+</main></body></html>

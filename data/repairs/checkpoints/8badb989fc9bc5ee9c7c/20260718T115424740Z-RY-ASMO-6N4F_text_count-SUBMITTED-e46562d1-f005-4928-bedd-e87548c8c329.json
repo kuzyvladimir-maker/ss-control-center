@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e46562d1-f005-4928-bedd-e87548c8c329",
+  "created_at": "2026-07-18T11:54:24.740Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RY-ASMO-6N4F:text_count",
+  "sku": "RY-ASMO-6N4F",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "a26fca4f-5775-45d8-ae3b-3fc5bf66db60",
+    "patch_sha256": "95d559044106dc088848413acc87fc4cea0253817a35289e195f54f818cbd459",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "95d559044106dc088848413acc87fc4cea0253817a35289e195f54f818cbd459",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "53923a80a44f95e6d3530b33adaeddf7e846c01a1989cc7268022d7e7a733883"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "e8ccb15423064e07a815af4ef1ddda91",
+    "issues": []
+  },
+  "sha256": "16815a7855a9662143e738f48e5d77318ced6973ebf1e24439061127dd36cef4"
+}

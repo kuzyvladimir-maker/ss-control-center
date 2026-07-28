@@ -1,0 +1,43 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "07f757e0-476f-4b63-ba06-3256b09f1ec7",
+  "created_at": "2026-07-18T21:43:58.973Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "OFFER_SETTLE_ONLY",
+    "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+    "submitted_at": "2026-07-18T15:13:30.520Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ],
+      "before_path_state_sha256": "e995c412b1ec4b1aa9629c226537cd75208fed3092df5062b6d47d540e134468"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 5000,
+    "request_delay_ms": 1000,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3,
+    "failed_check_names": [],
+    "desired_price_values": {
+      "attribute_consumer_price": 76.99,
+      "top_level_consumer_price": 76.99,
+      "business_price": 76.99,
+      "minimum_seller_allowed_price": 66.95,
+      "maximum_seller_allowed_price": 76.99,
+      "discounted_price": null,
+      "list_price": null
+    },
+    "actual_price_values": null
+  },
+  "sha256": "ffeb4e6dc9bab58fdaefd24ee8915e173d55fe2db33403e66ee99b81bfe832a6"
+}

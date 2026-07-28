@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d0707070-21df-454f-9d2a-33d057ba59c0",
+  "created_at": "2026-07-18T11:31:57.796Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "DY-AS8W-6MJG:text_count",
+  "sku": "DY-AS8W-6MJG",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "64ec2eea-0aca-4b63-8e8d-90aeeca4cdcc",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "d2cb017eba89b6ca692b361e3d2a382c4c6f538eb101f4c9a5e5dc520350b162",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "570eb98bb01535cf20f1ba6b5d26991c3e62608e7c05af2da195737237d3335e"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "c0f453b9c123f0472e96d56641382e59dbd92cdda5d5578de4f5906719bd8d2c"
+}

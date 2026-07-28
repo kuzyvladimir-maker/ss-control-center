@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "unwrangle-balance-evidence/1.0.0",
+  "requestedAt": "2026-07-27T13:16:44.185Z",
+  "observedAt": "2026-07-27T13:16:48.681Z",
+  "request": {
+    "platform": "target_detail",
+    "productUrl": "https://www.target.com/p/ritz-bits-cracker-sandwiches-with-cheese-8-8oz/-/A-14920182",
+    "retailerProductId": "14920182",
+    "purpose": "fresh balance observation for the owner-authorized sealed RITZ Product Truth v29 plan"
+  },
+  "response": {
+    "httpStatus": 200,
+    "success": true,
+    "creditsUsed": 2.5,
+    "remainingCredits": 99697.5,
+    "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+    "upc": "044000035457",
+    "imageCount": 0
+  },
+  "rawResponseSha256": "e76e9d73320b2cf93572bfaba87747d50e6f2c7e3f225cee8df831602c50bab5"
+}

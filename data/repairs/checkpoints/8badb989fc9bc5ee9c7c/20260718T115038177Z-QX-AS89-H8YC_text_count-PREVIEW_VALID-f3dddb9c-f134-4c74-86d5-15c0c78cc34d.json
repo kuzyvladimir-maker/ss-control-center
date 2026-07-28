@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f3dddb9c-f134-4c74-86d5-15c0c78cc34d",
+  "created_at": "2026-07-18T11:50:38.177Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:text_count",
+  "sku": "QX-AS89-H8YC",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "72d22a64a4bac69190fdee27c584c47d4607ffd3c3c366d15d4715343d1ad513",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "e43e82d0016e4879aceb5260ffc066c9",
+    "issues": []
+  },
+  "sha256": "9cab255f9d95e756e4081e746b21170393c07be44b854eb39e40db19cbb527fb"
+}

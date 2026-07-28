@@ -1,0 +1,28 @@
+{
+  "activatedAt": "2026-07-27T13:31:22.149Z",
+  "approvalId": "owner-direct-target-content:cde04dc563ff761324e64cd1",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "evidenceSha256": "cde04dc563ff761324e64cd199787f6f45447983931fbad5ec743eb37ec84b7f",
+  "htmlSha256": "f66cb435fdabb76f47eb7885395a8af31c96f7104a0c1d97c55f6018c964eb40",
+  "result": {
+    "canonicalVariantId": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+    "contentObservationId": "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+    "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    "imageCount": 20,
+    "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+    "upc": "00044000035457",
+    "upcConflicts": 0,
+    "variantDecisionId": "dpvd-exact:cb62bc21836a8385431d768079a6bb58edd0378cf158e4f43a9e0e00f4aada38"
+  },
+  "runId": "direct-target-content:cde04dc563ff761324e64cd1",
+  "safety": {
+    "databaseWritesMaximum": 1,
+    "marketplaceWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "retailerReads": 0,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-direct-target-content-activation-receipt/1.0.0"
+}

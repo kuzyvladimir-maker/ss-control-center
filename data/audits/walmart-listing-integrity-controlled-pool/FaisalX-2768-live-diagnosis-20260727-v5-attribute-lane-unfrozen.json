@@ -1,0 +1,763 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-27T16:22:59.574Z",
+  "listing_key": "walmart:1:FaisalX-2768",
+  "inputs": {
+    "product_truth_file_sha256": "89d8d4b1a2e1759908756d33c3dc3d31b4f524eb5f777976cebd6667619c671a",
+    "buyer_snapshot_file_sha256": "b13d8fd6c3e33ec703ef5fd23db2095c7efb51fa0ce2e054af6533e57de479ac",
+    "buyer_pdp_file_sha256": "845e1047d52caa788e699574ab46f6af3ea88cdf3c3c486834f9f38377299968",
+    "observations_file_sha256": "3a98245f0a14b997980c3b12d1aa610f29adf73beafbf8c80b05d8ddd26ada68",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7",
+        "bytes": 250586
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc",
+        "bytes": 270541
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68",
+        "bytes": 112250
+      },
+      {
+        "slot": "GALLERY_3",
+        "sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088",
+        "bytes": 49507
+      },
+      {
+        "slot": "GALLERY_4",
+        "sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef",
+        "bytes": 78681
+      },
+      {
+        "slot": "GALLERY_5",
+        "sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf",
+        "bytes": 64453
+      }
+    ]
+  },
+  "outcome": {
+    "status": "REVIEW",
+    "blockers": [
+      "description/bullets contain unclassified size or count claims",
+      "typed identity attributes are incomplete or non-matching",
+      "typed outer_units attribute is missing",
+      "required typed package attributes are missing",
+      "10 source attributes are not covered by the deterministic mapper",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-1: conflicting blind net_content values",
+      "gallery-1: visible package count differs from offer quantity",
+      "gallery-2: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-3: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-4: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-5: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none"
+    ],
+    "next_step": "MANUAL_OR_ADDITIONAL_EVIDENCE_REVIEW"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-2768",
+    "captured_at": "2026-07-27T16:00:11.443Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 4,
+      "phrases": [
+        "Quantity of 4"
+      ]
+    },
+    "verdict": "NO_CONTRADICTION_FOUND",
+    "findings": [],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "3884af42b1ab25433283c0f565f797fa217a35968bfdbb657a37aabe31b0d326"
+  },
+  "detector_input": {
+    "schema_version": "walmart-listing-integrity-input/v1",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-2768",
+      "listing_key": "walmart:1:FaisalX-2768",
+      "item_id": "1838619805",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-27T16:00:11.443Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-2768",
+      "product_truth_snapshot_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-2768",
+      "catalog_truth_export_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-2768",
+      "catalog_truth_preflight_sha256": "6ae4de58aee2e2c08af444f6cb70b4d83b0b7bb4bba11d3cd0c126197e39eb0d",
+      "truth_revision_id": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+      "truth_revision_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "truth_approval_sha256": "f3b906199b30cfcec04ce39328b38b31f6a6e96b60799d561aaa09d0f16139d2",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-2768",
+      "buyer_index_body_sha256": "f721421728db721575340404dee6385b03141f3c61339e20b52c993381c194fd",
+      "buyer_snapshot_id": "walmart-buyer-20260727T160011Z-f721421728db",
+      "buyer_snapshot_body_sha256": "f721421728db721575340404dee6385b03141f3c61339e20b52c993381c194fd",
+      "buyer_payload_sha256": "1a9ba83bdaee87e87da9d37b2dea4c7510373f3923b0bf7694835dba5a4ad75d",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-2768",
+      "surface_snapshot_body_sha256": "8ba55cc456769ab64b3d1370c396e2ecd2a93e6109d4ed4a65ab3731eab85357",
+      "surface_payload_sha256": "1a9ba83bdaee87e87da9d37b2dea4c7510373f3923b0bf7694835dba5a4ad75d"
+    },
+    "expected": {
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "outer_units": 4,
+      "identity": {
+        "brand_aliases": [
+          "campbells"
+        ],
+        "product_marker_groups": [
+          [
+            "condensed soup"
+          ]
+        ],
+        "variant_marker_groups": [
+          [
+            "golden mushroom"
+          ]
+        ],
+        "forbidden_markers": []
+      },
+      "package_facts": [
+        {
+          "kind": "net_content",
+          "requirement": "required",
+          "value": 297.6699928125,
+          "unit": "g"
+        }
+      ],
+      "truth_source": "recipe"
+    },
+    "surface": {
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "description": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "bullets": [
+        "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+        "Campbell's Condensed Soup",
+        "he perfect pantry staple to pull out as part of an easy weeknight dinner"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Flavor",
+          "kind": "variant",
+          "text": "qty 4"
+        },
+        {
+          "field_path": "product.specifications[1].Brand",
+          "kind": "brand",
+          "text": "Campbell's"
+        },
+        {
+          "field_path": "product.specifications[8].Count",
+          "kind": "inner_item_count",
+          "value": 1,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Container type",
+          "value_sha256": "86e14544ce080b59cd9ad2ce72d656c3922d36badfd4f839e96262fac6cdf4c0"
+        },
+        {
+          "field_path": "product.specifications[3].Size",
+          "value_sha256": "0246bf847edf9a0e01fb24ee3329d0670c767fe9b5e629ac3055f3a3b067c7da"
+        },
+        {
+          "field_path": "product.specifications[4].Instructions",
+          "value_sha256": "ae89cd94017ce4e3b4e97f8083065465b051c387fc0cb351152d651d75c9de5f"
+        },
+        {
+          "field_path": "product.specifications[5].Vegetable type",
+          "value_sha256": "9df095722e38536e7aaf43c209abd2d3cb9e8a2b31567fe3aa3caad8f7fa7994"
+        },
+        {
+          "field_path": "product.specifications[6].Material",
+          "value_sha256": "8e464a8f52254f27215b6b031003e649f2ffa9fd53a97af00444d1e2de514670"
+        },
+        {
+          "field_path": "product.specifications[7].Cuisine",
+          "value_sha256": "b0bb5f2623b8d35a26e5442953061f6c47c736b36a2089d770159726f9ce8807"
+        },
+        {
+          "field_path": "product.specifications[9].Food form",
+          "value_sha256": "7841369d813282073d46bd5764cabcf4761034cc9b82343d1d926acf18420b2c"
+        },
+        {
+          "field_path": "product.specifications[10].Product net content parent",
+          "value_sha256": "3b4a7644be782aa17bc80fd59fa7a29505ef3667b8961e0bc2ce30ddc818fef0"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "06c32f5ad83aa879f9dcdd9e25577e4e56cfc5ab4fb2ba40d39825be71d0a656"
+        },
+        {
+          "field_path": "product.specifications[12].Food & drug fact label type",
+          "value_sha256": "1a3ef87e3f7c7d6dd217b27babc2cf7ae24c65defdcba66b50b8929dfe897922"
+        }
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "main",
+          "source_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+          "sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7",
+          "byte_length": 250586,
+          "decoded_width": 2822,
+          "decoded_height": 1230,
+          "dhash64": "00cdadcdabcdcdab",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-1",
+          "source_url": "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+          "sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc",
+          "byte_length": 270541,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "104c6e56684e7474",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-2",
+          "source_url": "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+          "sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68",
+          "byte_length": 112250,
+          "decoded_width": 1500,
+          "decoded_height": 1500,
+          "dhash64": "0028001070324309",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-3",
+          "source_url": "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+          "sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088",
+          "byte_length": 49507,
+          "decoded_width": 1500,
+          "decoded_height": 1500,
+          "dhash64": "0000004929aa0000",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-4",
+          "source_url": "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+          "sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef",
+          "byte_length": 78681,
+          "decoded_width": 1500,
+          "decoded_height": 1500,
+          "dhash64": "0004101a28040a0c",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-5",
+          "source_url": "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg",
+          "sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf",
+          "byte_length": 64453,
+          "decoded_width": 1500,
+          "decoded_height": 1500,
+          "dhash64": "0000002824102a0c",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        }
+      ],
+      "evidence": [
+        {
+          "slot": "main",
+          "asset_sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_99b438e2ccfbc4c60bfa",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Campbell's",
+            "visible_product_text": "Golden Mushroom Soup",
+            "visible_variant_text": "Condensed",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Campbell's",
+              "CONDENSED",
+              "Golden Mushroom",
+              "SOUP",
+              "4 identical cans arranged side by side"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-1",
+          "asset_sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_fc330ebe81a7ddb0dd51",
+            "visual_role": "single_product_front",
+            "visible_brand_text": "Campbell's",
+            "visible_product_text": "Golden Mushroom Soup",
+            "visible_variant_text": "Condensed",
+            "visible_size_texts": [
+              "10.5 oz",
+              "298g"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 1,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Campbell's",
+              "CONDENSED",
+              "Golden Mushroom",
+              "SOUP",
+              "NET WT. 10.5 OZ. (298g)"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-2",
+          "asset_sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_27de7c52579f5dd08348",
+            "visual_role": "infographic",
+            "visible_brand_text": null,
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "none",
+            "evidence": [
+              "Great with crackers"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-3",
+          "asset_sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_b9a4e97d7950bf46c988",
+            "visual_role": "infographic",
+            "visible_brand_text": null,
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "none",
+            "evidence": [
+              "Soup",
+              "Milk",
+              "Yum"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-4",
+          "asset_sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_f92b4a04cc57dfd3a24a",
+            "visual_role": "infographic",
+            "visible_brand_text": null,
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "none",
+            "evidence": [
+              "Infinitely recyclable"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-5",
+          "asset_sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_8859f12204415c7b3dfb",
+            "visual_role": "infographic",
+            "visible_brand_text": null,
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "none",
+            "evidence": [
+              "Easy open pop top"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        }
+      ],
+      "duplicate_summary": null
+    }
+  },
+  "detector_report": {
+    "schema_version": "walmart-listing-integrity-report/v1",
+    "input_body_sha256": "a253ed4db3abcbbac680c10c8d03ba3f990916f58de78fc0c1a6d9e6829b74c8",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-2768",
+      "listing_key": "walmart:1:FaisalX-2768",
+      "item_id": "1838619805",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-27T16:00:11.443Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-2768",
+      "product_truth_snapshot_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-2768",
+      "catalog_truth_export_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-2768",
+      "catalog_truth_preflight_sha256": "6ae4de58aee2e2c08af444f6cb70b4d83b0b7bb4bba11d3cd0c126197e39eb0d",
+      "truth_revision_id": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+      "truth_revision_body_sha256": "dea409eb155d3036a2d2e7b3b4e9a0c4ca7b27a8028f3a9544373ba2e8b93307",
+      "truth_approval_sha256": "f3b906199b30cfcec04ce39328b38b31f6a6e96b60799d561aaa09d0f16139d2",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-2768",
+      "buyer_index_body_sha256": "f721421728db721575340404dee6385b03141f3c61339e20b52c993381c194fd",
+      "buyer_snapshot_id": "walmart-buyer-20260727T160011Z-f721421728db",
+      "buyer_snapshot_body_sha256": "f721421728db721575340404dee6385b03141f3c61339e20b52c993381c194fd",
+      "buyer_payload_sha256": "1a9ba83bdaee87e87da9d37b2dea4c7510373f3923b0bf7694835dba5a4ad75d",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-2768",
+      "surface_snapshot_body_sha256": "8ba55cc456769ab64b3d1370c396e2ecd2a93e6109d4ed4a65ab3731eab85357",
+      "surface_payload_sha256": "1a9ba83bdaee87e87da9d37b2dea4c7510373f3923b0bf7694835dba5a4ad75d"
+    },
+    "text_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "title_identity": "MATCH",
+        "title_outer_units": "MATCH",
+        "title_package_facts": "MATCH",
+        "body_identity": "MATCH",
+        "body_outer_units": "MATCH",
+        "body_package_facts": "UNKNOWN",
+        "attributes_identity": "UNKNOWN",
+        "attributes_outer_units": "UNKNOWN",
+        "attributes_package_facts": "UNKNOWN"
+      },
+      "hard_failures": [],
+      "review_reasons": [
+        "description/bullets contain unclassified size or count claims",
+        "typed identity attributes are incomplete or non-matching",
+        "typed outer_units attribute is missing",
+        "required typed package attributes are missing",
+        "10 source attributes are not covered by the deterministic mapper"
+      ]
+    },
+    "main_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "identity": "MATCH",
+        "package_facts": {
+          "net_content": "UNKNOWN",
+          "inner_item_count": "NOT_APPLICABLE"
+        },
+        "external_quantity": "MATCH",
+        "single_package_per_cell": "MATCH",
+        "front": "MATCH",
+        "background": "MATCH",
+        "no_mixed_product": "MATCH"
+      },
+      "hard_failures": [],
+      "unknowns": [
+        "required package fact net_content is not visible"
+      ]
+    },
+    "gallery_decisions": [
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-1",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MATCH",
+          "package_facts": {
+            "net_content": "UNKNOWN",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "conflicting blind net_content values"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-2",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required brand evidence missing: campbells",
+          "required product evidence missing: condensed soup",
+          "required variant evidence missing: golden mushroom",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is none"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-3",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required brand evidence missing: campbells",
+          "required product evidence missing: condensed soup",
+          "required variant evidence missing: golden mushroom",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is none"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-4",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required brand evidence missing: campbells",
+          "required product evidence missing: condensed soup",
+          "required variant evidence missing: golden mushroom",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is none"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-5",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required brand evidence missing: campbells",
+          "required product evidence missing: condensed soup",
+          "required variant evidence missing: golden mushroom",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is none"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    ],
+    "duplicate_summary": {
+      "source_binding_sha256": "263330b5a9daae29574fb7c6c2f7f0093b54b16b9d3a0bc62eb2e6de553a5484",
+      "dhash_distance_threshold": 5,
+      "exact_duplicate_groups": 0,
+      "near_duplicate_pairs": 0,
+      "missing_assets": 0,
+      "technical_errors": 0
+    },
+    "engine_versions": {
+      "listing_engine": "walmart-listing-integrity-engine/v1",
+      "blind_prompt": "walmart-visual-blind/v4",
+      "main_comparator": "walmart-visual-comparator/v5",
+      "gallery_comparator": "walmart-gallery-audit/v1"
+    },
+    "overall_verdict": "REVIEW",
+    "blocking_reasons": [],
+    "review_reasons": [
+      "description/bullets contain unclassified size or count claims",
+      "typed identity attributes are incomplete or non-matching",
+      "typed outer_units attribute is missing",
+      "required typed package attributes are missing",
+      "10 source attributes are not covered by the deterministic mapper",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-1: conflicting blind net_content values",
+      "gallery-1: visible package count differs from offer quantity",
+      "gallery-2: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-3: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-4: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none",
+      "gallery-5: required brand evidence missing: campbells; required product evidence missing: condensed soup; required variant evidence missing: golden mushroom; OCR cannot be the sole source of gallery identity; identity readability is none"
+    ],
+    "provenance": null,
+    "assurance": {
+      "compilation_mode": "input_only",
+      "source_artifacts_verified": false,
+      "surface_snapshot_verified": false,
+      "asset_bytes_verified": false,
+      "observation_artifacts_verified": false,
+      "caller_verdicts_accepted": false,
+      "image_decisions_recomputed": true,
+      "unknown_promoted_to_pass": false,
+      "network_calls": 0,
+      "model_calls": 0,
+      "marketplace_writes": 0,
+      "database_writes": 0
+    },
+    "report_id": "walmart-integrity-1-d990f337c97ee84c",
+    "body_sha256": "d990f337c97ee84c29cc02ab533dbc6a92cd138755281c7abc9442692309816e"
+  },
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "5bf3421412de3b68c37f7fceafe35361e02295ba9b30992c1867ca0ededa3517"
+}

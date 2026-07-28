@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9ee5cead-a69c-4875-bad2-ff21130b5aa3",
+  "created_at": "2026-07-18T06:33:33.713Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "RB-ASVO-GYCY:media",
+  "sku": "RB-ASVO-GYCY",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f6ae3cf571dc460a1f063506404f6c82bcf8eb5aa846aab9369c14f6ce2035b1",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "473d52a179fe4370a387cf5a8db65d95",
+    "issues": []
+  },
+  "sha256": "a0af7110c426e147fb551dd6355607272da1a0824c1be9601a9b79a638043af8"
+}

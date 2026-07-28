@@ -1,0 +1,3774 @@
+{
+  "schema_version": "uncrustables-ledger/v1.1",
+  "audit_id": "UL-20260717T224255798Z",
+  "mode": "live",
+  "started_at": "2026-07-17T22:42:55.798Z",
+  "completed_at": "2026-07-17T22:42:59.366Z",
+  "complete": true,
+  "immutable": true,
+  "external_mutations": false,
+  "source_of_truth": {
+    "marketplace_status": "Amazon Listings Items GET; DB listing_status is informational only",
+    "recipe_count": "MasterBundle.pack_count",
+    "recipe_composition": "selected VariationMatrix composition, then draft_components fallback",
+    "pricing": "src/lib/pricing/cost-model.ts with explicit MasterBundle.pack_count"
+  },
+  "scope": {
+    "db_matches_before_channel_filter": 167,
+    "amazon_candidates": 167,
+    "selected": 5,
+    "scanned": 5,
+    "store_filter": null,
+    "limit": 5,
+    "request_delay_ms": 250
+  },
+  "expectations": {
+    "live_statuses": [
+      "BUYABLE",
+      "DISCOVERABLE"
+    ],
+    "brand": "Uncrustables",
+    "product_types": [
+      "GROCERY",
+      "FOOD",
+      "SNACK_FOOD"
+    ],
+    "main_image_required": true,
+    "first_secondary_image": "fixed cold-chain price rationale / thank-you infographic",
+    "minimum_secondary_images": 5,
+    "price": "cost-model suggested .99",
+    "minimum_seller_allowed_price": "cost-model floor",
+    "maximum_seller_allowed_price": "cost-model suggested .99"
+  },
+  "summary": {
+    "rows": 5,
+    "live_fetch_succeeded": 5,
+    "live_fetch_failed": 0,
+    "buyable": 5,
+    "discoverable": 5,
+    "perfect": 0,
+    "with_critical": 1,
+    "with_error": 5,
+    "with_warning": 5,
+    "with_info_only": 0,
+    "anomaly_counts": {
+      "AMAZON_ISSUE_ERROR": 2,
+      "BUSINESS_PRICE_MISSING": 5,
+      "DB_LISTING_STATUS_STALE": 1,
+      "DB_PRICE_OFF_CANONICAL": 1,
+      "FULFILLMENT_QUANTITY_HARDCODED_100": 5,
+      "GENERATED_IMAGE_NOT_PROMOTED_TO_CHANNELSKU": 1,
+      "MASTER_COMPONENTS_MISSING": 5,
+      "MAX_PRICE_MISMATCH": 1,
+      "MIN_PRICE_MISMATCH": 1,
+      "OUR_PRICE_MISMATCH": 1,
+      "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED": 5
+    },
+    "severity_counts": {
+      "CRITICAL": 3,
+      "ERROR": 8,
+      "WARNING": 16,
+      "INFO": 1
+    },
+    "canonical_count_distribution": {
+      "24": 5
+    }
+  },
+  "rows": [
+    {
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "channel": "AMAZON_SALUTEM",
+      "store_index": 1,
+      "canonical": {
+        "total_units": 24,
+        "composition_source": "SELECTED_VARIANT",
+        "components": [
+          {
+            "product_id": "858a6915-7970-4bd5-83a3-9ba5913bf5b5",
+            "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 24,
+            "unit_price_cents": 98,
+            "source_url": null
+          }
+        ],
+        "component_qty_sum": 24,
+        "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):24",
+        "pricing": {
+          "total": 24,
+          "cooler": "S",
+          "landed": 51.5,
+          "target": 77.25,
+          "ceiling": 78.8,
+          "floor": 66.95,
+          "suggested": 76.99
+        }
+      },
+      "db": {
+        "channel_sku": {
+          "id": "cmrbt9dt00001mafzuzc8jlzw",
+          "channel": "AMAZON_SALUTEM",
+          "store_index": 1,
+          "sku": "AC-AS4J-B64F",
+          "upc": "756441903201",
+          "asin": "B0H82ZZS2P",
+          "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+          "bullets": [
+            "Pack of 24 individually wrapped frozen sandwiches, each 2 oz, filled with creamy peanut butter and a smooth chocolate flavored spread — no prep required, thaw and eat.",
+            "Crustless soft bread baked fresh in the USA, with no artificial preservatives, no high fructose corn syrup, and no artificial colors or dyes.",
+            "Flexible storage: keep sandwiches in the freezer for longer shelf life, or move them to the refrigerator to thaw — bread stays soft in the fridge for up to five days.",
+            "Each sandwich is individually wrapped, making them convenient to pack for lunches, snacks, or on-the-go eating.",
+            "Contains wheat and peanuts. See product packaging for complete ingredient and allergen information."
+          ],
+          "description": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches bring together creamy peanut butter and a smooth chocolate flavored spread in a crustless, soft sandwich that requires no prep. This listing includes 24 individually wrapped frozen sandwiches, each weighing 2 oz.\n\nThe bread is baked fresh in the USA and contains no artificial preservatives. Each sandwich is made without high fructose corn syrup and without artificial colors or dyes.\n\nStorage is straightforward: sandwiches can be kept in the freezer for extended storage, or transferred to the refrigerator to thaw. Once refrigerated, the bread stays soft for up to five days, so sandwiches are ready to eat when needed.\n\nIndividual wrapping keeps each sandwich separate and portable, suitable for packed lunches, after-school snacks, or quick meals on the go.\n\nContains wheat and peanuts. See product packaging for complete ingredient and allergen details.",
+          "attributes": {
+            "ingredients": [
+              {
+                "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "allergen_information": [
+              {
+                "value": "peanuts",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "wheat",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "soy",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "number_of_items": [
+              {
+                "value": 24,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_expiration_dated_product": [
+              {
+                "value": true,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "temperature_rating": [
+              {
+                "value": "Frozen: 0 degree",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "condition_type": [
+              {
+                "value": "new_new",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "product_expiration_type": [
+              {
+                "value": "Expiration Date Required",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_heat_sensitive": [
+              {
+                "value": "Yes",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "contains_liquid_contents": [
+              {
+                "value": "No",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_1": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/1.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_2": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/2.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_3": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/3.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_4": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/4.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_5": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/5.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_6": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbdte9a000i04l7f4rrwn4j-gallery/6.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "merchant_shipping_group": [
+              {
+                "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "purchasable_offer": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 61.57
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 71.35
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "channel_category": null,
+          "channel_browse_node": "12011207011",
+          "price_cents": 7699,
+          "business_price_cents": null,
+          "lifecycle_status": "DRAFT",
+          "compliance_status": "CAN_PUBLISH",
+          "validation_status": "NEEDS_REVIEW",
+          "listing_status": "LIVE",
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdte9a000i04l7f4rrwn4j-amazon_salutem/main.png",
+          "submitted_at": "2026-07-10T12:32:46.685Z",
+          "live_at": null,
+          "published_at": "2026-07-10T12:40:19.587Z",
+          "errors": [],
+          "distribution_errors": []
+        },
+        "master": {
+          "id": "cmrbt9azi0000mafz0tvoxapv",
+          "generation_job_id": null,
+          "name": "Peanut Butter & Chocolate Flavored Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "SINGLE_FLAVOR",
+          "pack_count": 24,
+          "lifecycle_status": "DRAFT",
+          "estimated_cost_cents": 2352,
+          "suggested_price_cents": 7135,
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdte9a000i04l7f4rrwn4j-amazon_salutem/main.png",
+          "secondary_image_urls": [],
+          "components": []
+        },
+        "draft": {
+          "id": "cmrbdte9a000i04l7f4rrwn4j",
+          "generation_job_id": "cmrbdh4dm0000zhfzhtijm97m",
+          "name": "Peanut Butter & Chocolate Flavored Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "SINGLE_FLAVOR",
+          "pack_count": 24,
+          "status": "PUBLISHING",
+          "compliance_status": "CAN_PUBLISH",
+          "components": [
+            {
+              "product_id": "858a6915-7970-4bd5-83a3-9ba5913bf5b5",
+              "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 24,
+              "unit_price_cents": 98,
+              "source_url": null
+            }
+          ],
+          "selected_variant_idx": 0,
+          "selected_variant": {
+            "name": "Peanut Butter & Chocolate Flavored Spread — 24 ct",
+            "composition": [
+              {
+                "product_id": "858a6915-7970-4bd5-83a3-9ba5913bf5b5",
+                "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 24,
+                "unit_price_cents": 98,
+                "source_url": null
+              }
+            ]
+          },
+          "title": null,
+          "bullets": [],
+          "description": null,
+          "main_image_url": "https://i5.walmartimages.com/seo/Smucker-s-Uncrustables-2-0-Ounce-Peanut-Butter-and-Chocolate-Sandwich-10-Pack_ad43d17d-9df5-4dd3-b403-a9fa338a69a1.14157c4004353f369e129c429aa42277.jpeg",
+          "secondary_image_urls": [
+            "https://i5.walmartimages.com/asr/06cb7a9d-7226-4381-a015-5484c48186a3.2cf3660860c73a135ca5eb24d713f1cc.jpeg",
+            "https://i5.walmartimages.com/asr/d1376ff3-bbc0-49aa-a797-189b39f13305.144b4b43a55cb310681fda1475628171.jpeg",
+            "https://i5.walmartimages.com/asr/0d4c259f-6b03-4416-b2f4-faaa10b6b6f9.ef198f9dc982febb91cb5e9b59935bb6.jpeg",
+            "https://i5.walmartimages.com/asr/19c100b9-d856-48f8-9069-2aab103cc89e.437bb1cdf1c370693466a7f46364ae0a.jpeg",
+            "https://i5.walmartimages.com/asr/73603fc7-d747-47ae-8beb-04bd63f68e7f.222b923f32edc645fe22355dff1a338d.jpeg",
+            "https://i5.walmartimages.com/asr/ac533045-6754-448c-a16c-c7be6e919665.520bef46b34f8865a40d96e77b3b0607.jpeg"
+          ],
+          "generated_content": [
+            {
+              "channel": "AMAZON_SALUTEM",
+              "compliance_status": "CAN_PUBLISH",
+              "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+              "bullets": [
+                "Pack of 24 individually wrapped frozen sandwiches, each 2 oz, filled with creamy peanut butter and a smooth chocolate flavored spread — no prep required, thaw and eat.",
+                "Crustless soft bread baked fresh in the USA, with no artificial preservatives, no high fructose corn syrup, and no artificial colors or dyes.",
+                "Flexible storage: keep sandwiches in the freezer for longer shelf life, or move them to the refrigerator to thaw — bread stays soft in the fridge for up to five days.",
+                "Each sandwich is individually wrapped, making them convenient to pack for lunches, snacks, or on-the-go eating.",
+                "Contains wheat and peanuts. See product packaging for complete ingredient and allergen information."
+              ],
+              "description": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches bring together creamy peanut butter and a smooth chocolate flavored spread in a crustless, soft sandwich that requires no prep. This listing includes 24 individually wrapped frozen sandwiches, each weighing 2 oz.\n\nThe bread is baked fresh in the USA and contains no artificial preservatives. Each sandwich is made without high fructose corn syrup and without artificial colors or dyes.\n\nStorage is straightforward: sandwiches can be kept in the freezer for extended storage, or transferred to the refrigerator to thaw. Once refrigerated, the bread stays soft for up to five days, so sandwiches are ready to eat when needed.\n\nIndividual wrapping keeps each sandwich separate and portable, suitable for packed lunches, after-school snacks, or quick meals on the go.\n\nContains wheat and peanuts. See product packaging for complete ingredient and allergen details.",
+              "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdte9a000i04l7f4rrwn4j-amazon_salutem/main.png"
+            }
+          ]
+        }
+      },
+      "live": {
+        "fetched": true,
+        "error": null,
+        "asin": "B0H82ZZS2P",
+        "amazon_statuses": [
+          "DISCOVERABLE",
+          "BUYABLE"
+        ],
+        "buyable": true,
+        "discoverable": true,
+        "product_type": "GROCERY",
+        "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+        "title_total_units": 24,
+        "bullets": [
+          "Pack of 24 individually wrapped frozen sandwiches, each 2 oz, filled with creamy peanut butter and a smooth chocolate flavored spread — no prep required, thaw and eat.",
+          "Crustless soft bread baked fresh in the USA, with no artificial preservatives, no high fructose corn syrup, and no artificial colors or dyes.",
+          "Flexible storage: keep sandwiches in the freezer for longer shelf life, or move them to the refrigerator to thaw — bread stays soft in the fridge for up to five days.",
+          "Each sandwich is individually wrapped, making them convenient to pack for lunches, snacks, or on-the-go eating.",
+          "Contains wheat and peanuts. See product packaging for complete ingredient and allergen information."
+        ],
+        "description": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches bring together creamy peanut butter and a smooth chocolate flavored spread in a crustless, soft sandwich that requires no prep. This listing includes 24 individually wrapped frozen sandwiches, each weighing 2 oz.\n\nThe bread is baked fresh in the USA and contains no artificial preservatives. Each sandwich is made without high fructose corn syrup and without artificial colors or dyes.\n\nStorage is straightforward: sandwiches can be kept in the freezer for extended storage, or transferred to the refrigerator to thaw. Once refrigerated, the bread stays soft for up to five days, so sandwiches are ready to eat when needed.\n\nIndividual wrapping keeps each sandwich separate and portable, suitable for packed lunches, after-school snacks, or quick meals on the go.\n\nContains wheat and peanuts. See product packaging for complete ingredient and allergen details.",
+        "brand": "Uncrustables",
+        "category": "food-gifts",
+        "browse_nodes": [],
+        "item_type_keywords": [
+          "food-gifts"
+        ],
+        "main_image_url": "https://m.media-amazon.com/images/I/81YSca2KlzL.jpg",
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg",
+          "https://m.media-amazon.com/images/I/81gfkYwVPdL.jpg",
+          "https://m.media-amazon.com/images/I/71TcY-NAxtL.jpg",
+          "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg"
+        ],
+        "unit_count": 24,
+        "number_of_items": 24,
+        "consumer_offer": {
+          "audience": "ALL",
+          "our_price": 76.99,
+          "discounted_price": 66.98,
+          "minimum_seller_allowed_price": 66.95,
+          "maximum_seller_allowed_price": 76.99,
+          "quantity_discounts": []
+        },
+        "business_offers": [],
+        "separate_business_price": null,
+        "fulfillment_availability": [
+          {
+            "source": "attributes",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          },
+          {
+            "source": "top_level",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          }
+        ],
+        "issues": [],
+        "raw_attributes": {
+          "melting_temperature": [
+            {
+              "unit": "degrees_fahrenheit",
+              "value": 32,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "contains_liquid_contents": [
+            {
+              "value": false,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_weight": [
+            {
+              "unit": "ounces",
+              "value": 160,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fulfillment_availability": [
+            {
+              "fulfillment_channel_code": "DEFAULT",
+              "quantity": 100
+            }
+          ],
+          "manufacturer": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "bullet_point": [
+            {
+              "value": "Pack of 24 individually wrapped frozen sandwiches, each 2 oz, filled with creamy peanut butter and a smooth chocolate flavored spread — no prep required, thaw and eat.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Crustless soft bread baked fresh in the USA, with no artificial preservatives, no high fructose corn syrup, and no artificial colors or dyes.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Flexible storage: keep sandwiches in the freezer for longer shelf life, or move them to the refrigerator to thaw — bread stays soft in the fridge for up to five days.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each sandwich is individually wrapped, making them convenient to pack for lunches, snacks, or on-the-go eating.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Contains wheat and peanuts. See product packaging for complete ingredient and allergen information.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "ingredients": [
+            {
+              "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_description": [
+            {
+              "value": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches bring together creamy peanut butter and a smooth chocolate flavored spread in a crustless, soft sandwich that requires no prep. This listing includes 24 individually wrapped frozen sandwiches, each weighing 2 oz.\n\nThe bread is baked fresh in the USA and contains no artificial preservatives. Each sandwich is made without high fructose corn syrup and without artificial colors or dyes.\n\nStorage is straightforward: sandwiches can be kept in the freezer for extended storage, or transferred to the refrigerator to thaw. Once refrigerated, the bread stays soft for up to five days, so sandwiches are ready to eat when needed.\n\nIndividual wrapping keeps each sandwich separate and portable, suitable for packed lunches, after-school snacks, or quick meals on the go.\n\nContains wheat and peanuts. See product packaging for complete ingredient and allergen details.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "brand": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_expiration_type": [
+            {
+              "value": "Expiration Date Required",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "supplier_declared_dg_hz_regulation": [
+            {
+              "value": "not_applicable",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_expiration_dated_product": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "generic_keyword": [
+            {
+              "value": "peanut butter chocolate flavored spread sandwiches frozen freezer freezer meals thaw and eat no prep quick meal individually wrapped grab and go ready to eat snack lunch box bulk variety pack family pack",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "temperature_rating": [
+            {
+              "value": "Frozen: 0 degree",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_heat_sensitive": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "country_of_origin": [
+            {
+              "value": "US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "externally_assigned_product_identifier": [
+            {
+              "value": "756441903201",
+              "type": "upc",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_name": [
+            {
+              "value": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "merchant_shipping_group": [
+            {
+              "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "list_price": [
+            {
+              "value": 71.35,
+              "currency": "USD",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_type_keyword": [
+            {
+              "value": "food-gifts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "number_of_items": [
+            {
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "condition_type": [
+            {
+              "value": "new_new",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_dimensions": [
+            {
+              "length": {
+                "unit": "inches",
+                "value": 12
+              },
+              "width": {
+                "unit": "inches",
+                "value": 12
+              },
+              "height": {
+                "unit": "inches",
+                "value": 10
+              },
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fc_shelf_life": [
+            {
+              "unit": "days",
+              "value": 365,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "unit_count": [
+            {
+              "type": {
+                "value": "Count",
+                "language_tag": "en_US"
+              },
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "allergen_information": [
+            {
+              "value": "peanuts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "wheat",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "soy",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_7": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_6": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71TcY-NAxtL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_5": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81gfkYwVPdL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_4": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_3": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_2": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_1": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "main_product_image_locator": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81YSca2KlzL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "purchasable_offer": [
+            {
+              "currency": "USD",
+              "audience": "ALL",
+              "discounted_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.98,
+                      "end_at": "2026-08-13T23:59:59Z",
+                      "start_at": "2026-07-14T00:00:00Z"
+                    }
+                  ]
+                }
+              ],
+              "our_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "maximum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "minimum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.95
+                    }
+                  ]
+                }
+              ],
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ]
+        },
+        "raw_offers": [
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2C",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.99"
+            },
+            "audience": {
+              "value": "ALL",
+              "displayName": "Sell on Amazon"
+            }
+          },
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2B",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.22"
+            },
+            "audience": {
+              "value": "B2B",
+              "displayName": "Amazon Business (B2B)"
+            }
+          }
+        ]
+      },
+      "anomalies": [
+        {
+          "code": "MASTER_COMPONENTS_MISSING",
+          "severity": "ERROR",
+          "message": "MasterBundle has no persisted BundleComponent recipe rows.",
+          "expected": ">=1",
+          "actual": 0
+        },
+        {
+          "code": "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED",
+          "severity": "WARNING",
+          "message": "Amazon re-hosted gallery slot 1; URL-only audit cannot prove that it is the fixed pricing/thank-you infographic.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+          "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+        },
+        {
+          "code": "BUSINESS_PRICE_MISSING",
+          "severity": "WARNING",
+          "message": "No live business price offer was found."
+        },
+        {
+          "code": "FULFILLMENT_QUANTITY_HARDCODED_100",
+          "severity": "WARNING",
+          "message": "Live quantity is the Bundle Factory hard-coded value rather than verified inventory.",
+          "expected": "verified inventory",
+          "actual": [
+            100,
+            100
+          ]
+        }
+      ],
+      "highest_severity": "ERROR",
+      "perfect": false
+    },
+    {
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "channel": "AMAZON_SALUTEM",
+      "store_index": 1,
+      "canonical": {
+        "total_units": 24,
+        "composition_source": "SELECTED_VARIANT",
+        "components": [
+          {
+            "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 24,
+            "unit_price_cents": 98,
+            "source_url": null
+          }
+        ],
+        "component_qty_sum": 24,
+        "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:24",
+        "pricing": {
+          "total": 24,
+          "cooler": "S",
+          "landed": 51.5,
+          "target": 77.25,
+          "ceiling": 78.8,
+          "floor": 66.95,
+          "suggested": 76.99
+        }
+      },
+      "db": {
+        "channel_sku": {
+          "id": "cmrbg840i000zw6fzd5s65qvu",
+          "channel": "AMAZON_SALUTEM",
+          "store_index": 1,
+          "sku": "AD-AS4H-QXZD",
+          "upc": "756441901573",
+          "asin": "B0H82J6V9T",
+          "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+          "bullets": [
+            "Pack of 24 individually wrapped frozen peanut butter and honey spread sandwiches, each 2 oz — thaw and eat with no preparation required.",
+            "Soft wheat bread filled with creamy peanut butter and smooth honey spread, with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+            "Bread baked fresh in the USA with no artificial preservatives — sealed edge-to-edge to remove crust while keeping the filling contained.",
+            "Store in the freezer for extended storage, or refrigerate for up to five days — the bread stays soft when chilled.",
+            "Individually wrapped format suits school lunches, work breaks, travel, or any situation where a portable, no-preparation sandwich is needed."
+          ],
+          "description": "This pack contains 24 individually wrapped Uncrustables Peanut Butter & Honey Spread frozen sandwiches, each weighing 2 oz.\n\nEach sandwich is made with soft wheat bread baked fresh in the USA, filled with creamy peanut butter and smooth honey spread. The bread contains no artificial preservatives. The filling contains no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStorage is flexible. Keep sandwiches in the freezer for longer-term storage, or transfer to the refrigerator — the bread remains soft for up to five days when refrigerated. No preparation is required; thaw and eat.\n\nThe individually wrapped format makes these sandwiches straightforward to pack for school lunches, work, travel, or any situation where a portable, no-preparation sandwich is useful.",
+          "attributes": {
+            "number_of_items": [
+              {
+                "value": 24,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_expiration_dated_product": [
+              {
+                "value": true,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "temperature_rating": [
+              {
+                "value": "Frozen: 0 degree",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "condition_type": [
+              {
+                "value": "new_new",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "product_expiration_type": [
+              {
+                "value": "Expiration Date Required",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_heat_sensitive": [
+              {
+                "value": "Yes",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "contains_liquid_contents": [
+              {
+                "value": "No",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_1": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/1.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_2": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/2.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_3": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/3.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_4": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/4.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_5": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/5.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_6": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmra931ii000204lbc3zava4h-gallery/6.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "merchant_shipping_group": [
+              {
+                "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "purchasable_offer": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 61.57
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 71.35
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "channel_category": null,
+          "channel_browse_node": "12011207011",
+          "price_cents": 7699,
+          "business_price_cents": null,
+          "lifecycle_status": "DRAFT",
+          "compliance_status": "CAN_PUBLISH",
+          "validation_status": "NEEDS_REVIEW",
+          "listing_status": "LIVE",
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra931ii000204lbc3zava4h-amazon_salutem/main.png",
+          "submitted_at": "2026-07-10T12:29:38.789Z",
+          "live_at": null,
+          "published_at": "2026-07-10T12:35:42.704Z",
+          "errors": [],
+          "distribution_errors": []
+        },
+        "master": {
+          "id": "cmrbg7ytk000yw6fz43415l05",
+          "generation_job_id": null,
+          "name": "Peanut Butter & Honey Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "SINGLE_FLAVOR",
+          "pack_count": 24,
+          "lifecycle_status": "DRAFT",
+          "estimated_cost_cents": 2352,
+          "suggested_price_cents": 7135,
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra931ii000204lbc3zava4h-amazon_salutem/main.png",
+          "secondary_image_urls": [],
+          "components": []
+        },
+        "draft": {
+          "id": "cmra931ii000204lbc3zava4h",
+          "generation_job_id": "cmra8yv2k000010fzbuhf8wl9",
+          "name": "Peanut Butter & Honey Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "SINGLE_FLAVOR",
+          "pack_count": 24,
+          "status": "PUBLISHING",
+          "compliance_status": "CAN_PUBLISH",
+          "components": [
+            {
+              "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+              "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 24,
+              "unit_price_cents": 98,
+              "source_url": null
+            }
+          ],
+          "selected_variant_idx": 0,
+          "selected_variant": {
+            "name": "Peanut Butter & Honey Spread — 24 ct",
+            "composition": [
+              {
+                "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+                "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 24,
+                "unit_price_cents": 98,
+                "source_url": null
+              }
+            ]
+          },
+          "title": null,
+          "bullets": [],
+          "description": null,
+          "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_94feaaa2-a28a-42c8-a402-f3cfb065b6be",
+          "secondary_image_urls": [
+            "https://target.scene7.com/is/image/Target/GUEST_8db5e199-4c4c-4d52-8249-4bab92c86d75",
+            "https://target.scene7.com/is/image/Target/GUEST_c15402e8-aca2-4f6d-b02c-be47519790d8",
+            "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+            "https://target.scene7.com/is/image/Target/GUEST_05714ed8-775d-4a20-99c7-75d6753768f4",
+            "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+            "https://target.scene7.com/is/image/Target/GUEST_3bd2ff20-28fe-49ff-be83-488602b7cf47",
+            "https://target.scene7.com/is/image/Target/GUEST_6be892da-d5f7-4d43-93cd-c404fbb28eb8",
+            "https://target.scene7.com/is/image/Target/GUEST_bfb56aec-4175-466c-bd1c-765b7410977f"
+          ],
+          "generated_content": [
+            {
+              "channel": "AMAZON_SALUTEM",
+              "compliance_status": "CAN_PUBLISH",
+              "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+              "bullets": [
+                "Pack of 24 individually wrapped frozen peanut butter and honey spread sandwiches, each 2 oz — thaw and eat with no preparation required.",
+                "Soft wheat bread filled with creamy peanut butter and smooth honey spread, with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+                "Bread baked fresh in the USA with no artificial preservatives — sealed edge-to-edge to remove crust while keeping the filling contained.",
+                "Store in the freezer for extended storage, or refrigerate for up to five days — the bread stays soft when chilled.",
+                "Individually wrapped format suits school lunches, work breaks, travel, or any situation where a portable, no-preparation sandwich is needed."
+              ],
+              "description": "This pack contains 24 individually wrapped Uncrustables Peanut Butter & Honey Spread frozen sandwiches, each weighing 2 oz.\n\nEach sandwich is made with soft wheat bread baked fresh in the USA, filled with creamy peanut butter and smooth honey spread. The bread contains no artificial preservatives. The filling contains no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStorage is flexible. Keep sandwiches in the freezer for longer-term storage, or transfer to the refrigerator — the bread remains soft for up to five days when refrigerated. No preparation is required; thaw and eat.\n\nThe individually wrapped format makes these sandwiches straightforward to pack for school lunches, work, travel, or any situation where a portable, no-preparation sandwich is useful.",
+              "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra931ii000204lbc3zava4h-amazon_salutem/main.png"
+            }
+          ]
+        }
+      },
+      "live": {
+        "fetched": true,
+        "error": null,
+        "asin": "B0H82J6V9T",
+        "amazon_statuses": [
+          "BUYABLE",
+          "DISCOVERABLE"
+        ],
+        "buyable": true,
+        "discoverable": true,
+        "product_type": "GROCERY",
+        "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+        "title_total_units": 24,
+        "bullets": [
+          "Pack of 24 individually wrapped frozen peanut butter and honey spread sandwiches, each 2 oz — thaw and eat with no preparation required.",
+          "Soft wheat bread filled with creamy peanut butter and smooth honey spread, with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+          "Bread baked fresh in the USA with no artificial preservatives — sealed edge-to-edge to remove crust while keeping the filling contained.",
+          "Store in the freezer for extended storage, or refrigerate for up to five days — the bread stays soft when chilled.",
+          "Individually wrapped format suits school lunches, work breaks, travel, or any situation where a portable, no-preparation sandwich is needed."
+        ],
+        "description": "This pack contains 24 individually wrapped Uncrustables Peanut Butter & Honey Spread frozen sandwiches, each weighing 2 oz.\n\nEach sandwich is made with soft wheat bread baked fresh in the USA, filled with creamy peanut butter and smooth honey spread. The bread contains no artificial preservatives. The filling contains no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStorage is flexible. Keep sandwiches in the freezer for longer-term storage, or transfer to the refrigerator — the bread remains soft for up to five days when refrigerated. No preparation is required; thaw and eat.\n\nThe individually wrapped format makes these sandwiches straightforward to pack for school lunches, work, travel, or any situation where a portable, no-preparation sandwich is useful.",
+        "brand": "Uncrustables",
+        "category": "food-gifts",
+        "browse_nodes": [],
+        "item_type_keywords": [
+          "food-gifts"
+        ],
+        "main_image_url": "https://m.media-amazon.com/images/I/81kTpbtuTDL.jpg",
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "unit_count": 24,
+        "number_of_items": 24,
+        "consumer_offer": {
+          "audience": "ALL",
+          "our_price": 76.99,
+          "discounted_price": 66.98,
+          "minimum_seller_allowed_price": 66.95,
+          "maximum_seller_allowed_price": 76.99,
+          "quantity_discounts": []
+        },
+        "business_offers": [],
+        "separate_business_price": null,
+        "fulfillment_availability": [
+          {
+            "source": "attributes",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          },
+          {
+            "source": "top_level",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          }
+        ],
+        "issues": [],
+        "raw_attributes": {
+          "melting_temperature": [
+            {
+              "unit": "degrees_fahrenheit",
+              "value": 32,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "contains_liquid_contents": [
+            {
+              "value": false,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_weight": [
+            {
+              "unit": "ounces",
+              "value": 160,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fulfillment_availability": [
+            {
+              "fulfillment_channel_code": "DEFAULT",
+              "quantity": 100
+            }
+          ],
+          "manufacturer": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "bullet_point": [
+            {
+              "value": "Pack of 24 individually wrapped frozen peanut butter and honey spread sandwiches, each 2 oz — thaw and eat with no preparation required.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Soft wheat bread filled with creamy peanut butter and smooth honey spread, with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Bread baked fresh in the USA with no artificial preservatives — sealed edge-to-edge to remove crust while keeping the filling contained.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Store in the freezer for extended storage, or refrigerate for up to five days — the bread stays soft when chilled.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Individually wrapped format suits school lunches, work breaks, travel, or any situation where a portable, no-preparation sandwich is needed.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_description": [
+            {
+              "value": "This pack contains 24 individually wrapped Uncrustables Peanut Butter & Honey Spread frozen sandwiches, each weighing 2 oz.\n\nEach sandwich is made with soft wheat bread baked fresh in the USA, filled with creamy peanut butter and smooth honey spread. The bread contains no artificial preservatives. The filling contains no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStorage is flexible. Keep sandwiches in the freezer for longer-term storage, or transfer to the refrigerator — the bread remains soft for up to five days when refrigerated. No preparation is required; thaw and eat.\n\nThe individually wrapped format makes these sandwiches straightforward to pack for school lunches, work, travel, or any situation where a portable, no-preparation sandwich is useful.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "brand": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_expiration_type": [
+            {
+              "value": "Expiration Date Required",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "supplier_declared_dg_hz_regulation": [
+            {
+              "value": "not_applicable",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_expiration_dated_product": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "generic_keyword": [
+            {
+              "value": "peanut butter honey spread frozen sandwiches freezer freezer meals thaw and eat no prep quick meal individually wrapped grab and go ready to eat snack lunch box bulk variety pack family pack",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "temperature_rating": [
+            {
+              "value": "Frozen: 0 degree",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_heat_sensitive": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "country_of_origin": [
+            {
+              "value": "US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "externally_assigned_product_identifier": [
+            {
+              "value": "756441901573",
+              "type": "upc",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_name": [
+            {
+              "value": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "merchant_shipping_group": [
+            {
+              "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "list_price": [
+            {
+              "value": 71.35,
+              "currency": "USD",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_type_keyword": [
+            {
+              "value": "food-gifts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "number_of_items": [
+            {
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "condition_type": [
+            {
+              "value": "new_new",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_dimensions": [
+            {
+              "length": {
+                "unit": "inches",
+                "value": 12
+              },
+              "width": {
+                "unit": "inches",
+                "value": 12
+              },
+              "height": {
+                "unit": "inches",
+                "value": 10
+              },
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fc_shelf_life": [
+            {
+              "unit": "days",
+              "value": 365,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "unit_count": [
+            {
+              "type": {
+                "value": "Count",
+                "language_tag": "en_US"
+              },
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_7": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_6": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_5": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_4": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_3": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_2": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_1": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "main_product_image_locator": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81kTpbtuTDL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "purchasable_offer": [
+            {
+              "currency": "USD",
+              "audience": "ALL",
+              "discounted_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.98,
+                      "end_at": "2026-08-13T23:59:59Z",
+                      "start_at": "2026-07-14T00:00:00Z"
+                    }
+                  ]
+                }
+              ],
+              "our_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "maximum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "minimum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.95
+                    }
+                  ]
+                }
+              ],
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ]
+        },
+        "raw_offers": [
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2C",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.99"
+            },
+            "audience": {
+              "value": "ALL",
+              "displayName": "Sell on Amazon"
+            }
+          },
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2B",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.22"
+            },
+            "audience": {
+              "value": "B2B",
+              "displayName": "Amazon Business (B2B)"
+            }
+          }
+        ]
+      },
+      "anomalies": [
+        {
+          "code": "MASTER_COMPONENTS_MISSING",
+          "severity": "ERROR",
+          "message": "MasterBundle has no persisted BundleComponent recipe rows.",
+          "expected": ">=1",
+          "actual": 0
+        },
+        {
+          "code": "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED",
+          "severity": "WARNING",
+          "message": "Amazon re-hosted gallery slot 1; URL-only audit cannot prove that it is the fixed pricing/thank-you infographic.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+          "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+        },
+        {
+          "code": "BUSINESS_PRICE_MISSING",
+          "severity": "WARNING",
+          "message": "No live business price offer was found."
+        },
+        {
+          "code": "FULFILLMENT_QUANTITY_HARDCODED_100",
+          "severity": "WARNING",
+          "message": "Live quantity is the Bundle Factory hard-coded value rather than verified inventory.",
+          "expected": "verified inventory",
+          "actual": [
+            100,
+            100
+          ]
+        }
+      ],
+      "highest_severity": "ERROR",
+      "perfect": false
+    },
+    {
+      "sku": "AG-ASKV-W9EN",
+      "asin": "B0H85B64V2",
+      "channel": "AMAZON_SALUTEM",
+      "store_index": 1,
+      "canonical": {
+        "total_units": 24,
+        "composition_source": "SELECTED_VARIANT",
+        "components": [
+          {
+            "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 98,
+            "source_url": null
+          },
+          {
+            "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+            "brand": "Smucker'S",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 97,
+            "source_url": null
+          }
+        ],
+        "component_qty_sum": 24,
+        "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+        "pricing": {
+          "total": 24,
+          "cooler": "S",
+          "landed": 51.5,
+          "target": 77.25,
+          "ceiling": 78.8,
+          "floor": 66.95,
+          "suggested": 76.99
+        }
+      },
+      "db": {
+        "channel_sku": {
+          "id": "cmrcd9y3b0014opfzpop7c2e6",
+          "channel": "AMAZON_SALUTEM",
+          "store_index": 1,
+          "sku": "AG-ASKV-W9EN",
+          "upc": "756441905083",
+          "asin": "B0H85B64V2",
+          "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack, 24 Count - Honey Spread & Strawberry Jam",
+          "bullets": [
+            "24 individually wrapped frozen sandwiches in one pack: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam, offering two flavors in a single order.",
+            "Each sandwich uses soft wheat bread filled with creamy peanut butter and either smooth honey spread or strawberry jam - no crust, no artificial preservatives.",
+            "Store in the freezer for extended shelf life or refrigerate; bread stays soft in the fridge for up to five days after thawing.",
+            "Individually wrapped for easy portioning and packing - no preparation required, just thaw and eat.",
+            "Made with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes. Bread baked fresh in the USA."
+          ],
+          "description": "Uncrustables Frozen Peanut Butter Sandwiches come in this 24-count variety pack with two flavors: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam. Each sandwich is individually wrapped and frozen, ready to thaw and eat with no preparation needed.\n\nThe bread is soft wheat with no crust - baked fresh in the USA and free of artificial preservatives. Fillings include creamy peanut butter paired with either smooth honey spread or strawberry jam. No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes.\n\nKeep sandwiches in the freezer for extended storage. To enjoy, thaw at room temperature for 30 to 60 minutes, or refrigerate overnight. Once thawed, bread stays soft in the fridge for up to five days. Each sandwich is individually wrapped, making it straightforward to pack for school, work, or any outing.",
+          "attributes": {
+            "number_of_items": [
+              {
+                "value": 24,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_expiration_dated_product": [
+              {
+                "value": true,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "temperature_rating": [
+              {
+                "value": "Frozen: 0 degree",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "condition_type": [
+              {
+                "value": "new_new",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "product_expiration_type": [
+              {
+                "value": "Expiration Date Required",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_heat_sensitive": [
+              {
+                "value": "Yes",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "contains_liquid_contents": [
+              {
+                "value": "No",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_1": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/1.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_2": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/2.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_3": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/3.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_4": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/4.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_5": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/5.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_6": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhmneu002a04juewfad4kv-gallery/6.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "merchant_shipping_group": [
+              {
+                "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "purchasable_offer": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 61.33
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 71.07
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "channel_category": null,
+          "channel_browse_node": "12011207011",
+          "price_cents": 7699,
+          "business_price_cents": null,
+          "lifecycle_status": "DRAFT",
+          "compliance_status": "CAN_PUBLISH",
+          "validation_status": "NEEDS_REVIEW",
+          "listing_status": "LIVE",
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhmneu002a04juewfad4kv-amazon_salutem/main-retry3.png",
+          "submitted_at": "2026-07-10T12:36:41.845Z",
+          "live_at": null,
+          "published_at": "2026-07-10T12:50:03.730Z",
+          "errors": [],
+          "distribution_errors": []
+        },
+        "master": {
+          "id": "cmrcd9uh10013opfzzijcrs95",
+          "generation_job_id": null,
+          "name": "Peanut Butter & Honey Spread + Peanut Butter & Strawberry Jam — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "lifecycle_status": "DRAFT",
+          "estimated_cost_cents": 2340,
+          "suggested_price_cents": 7107,
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhmneu002a04juewfad4kv-amazon_salutem/main.png",
+          "secondary_image_urls": [],
+          "components": []
+        },
+        "draft": {
+          "id": "cmrbhmneu002a04juewfad4kv",
+          "generation_job_id": "cmrbdh4dm0000zhfzhtijm97m",
+          "name": "Peanut Butter & Honey Spread + Peanut Butter & Strawberry Jam — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "status": "IMAGE_GENERATED",
+          "compliance_status": "BLOCKED",
+          "components": [
+            {
+              "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+              "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 98,
+              "source_url": null
+            },
+            {
+              "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+              "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+              "brand": "Smucker'S",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 97,
+              "source_url": null
+            }
+          ],
+          "selected_variant_idx": 0,
+          "selected_variant": {
+            "name": "Peanut Butter & Honey Spread + Peanut Butter & Strawberry Jam — 24 ct",
+            "composition": [
+              {
+                "product_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+                "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 98,
+                "source_url": null
+              },
+              {
+                "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+                "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+                "brand": "Smucker'S",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 97,
+                "source_url": null
+              }
+            ]
+          },
+          "title": null,
+          "bullets": [],
+          "description": null,
+          "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_94feaaa2-a28a-42c8-a402-f3cfb065b6be",
+          "secondary_image_urls": [
+            "https://target.scene7.com/is/image/Target/GUEST_8db5e199-4c4c-4d52-8249-4bab92c86d75",
+            "https://target.scene7.com/is/image/Target/GUEST_c15402e8-aca2-4f6d-b02c-be47519790d8",
+            "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+            "https://target.scene7.com/is/image/Target/GUEST_05714ed8-775d-4a20-99c7-75d6753768f4",
+            "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+            "https://target.scene7.com/is/image/Target/GUEST_3bd2ff20-28fe-49ff-be83-488602b7cf47",
+            "https://target.scene7.com/is/image/Target/GUEST_6be892da-d5f7-4d43-93cd-c404fbb28eb8",
+            "https://target.scene7.com/is/image/Target/GUEST_bfb56aec-4175-466c-bd1c-765b7410977f"
+          ],
+          "generated_content": [
+            {
+              "channel": "AMAZON_SALUTEM",
+              "compliance_status": "CAN_PUBLISH",
+              "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack, 24 Count - Honey Spread & Strawberry Jam",
+              "bullets": [
+                "24 individually wrapped frozen sandwiches in one pack: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam, offering two flavors in a single order.",
+                "Each sandwich uses soft wheat bread filled with creamy peanut butter and either smooth honey spread or strawberry jam - no crust, no artificial preservatives.",
+                "Store in the freezer for extended shelf life or refrigerate; bread stays soft in the fridge for up to five days after thawing.",
+                "Individually wrapped for easy portioning and packing - no preparation required, just thaw and eat.",
+                "Made with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes. Bread baked fresh in the USA."
+              ],
+              "description": "Uncrustables Frozen Peanut Butter Sandwiches come in this 24-count variety pack with two flavors: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam. Each sandwich is individually wrapped and frozen, ready to thaw and eat with no preparation needed.\n\nThe bread is soft wheat with no crust - baked fresh in the USA and free of artificial preservatives. Fillings include creamy peanut butter paired with either smooth honey spread or strawberry jam. No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes.\n\nKeep sandwiches in the freezer for extended storage. To enjoy, thaw at room temperature for 30 to 60 minutes, or refrigerate overnight. Once thawed, bread stays soft in the fridge for up to five days. Each sandwich is individually wrapped, making it straightforward to pack for school, work, or any outing.",
+              "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhmneu002a04juewfad4kv-amazon_salutem/main-retry3.png"
+            }
+          ]
+        }
+      },
+      "live": {
+        "fetched": true,
+        "error": null,
+        "asin": "B0H85B64V2",
+        "amazon_statuses": [
+          "DISCOVERABLE",
+          "BUYABLE"
+        ],
+        "buyable": true,
+        "discoverable": true,
+        "product_type": "GROCERY",
+        "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack, 24 Count - Honey Spread & Strawberry Jam",
+        "title_total_units": 24,
+        "bullets": [
+          "24 individually wrapped frozen sandwiches in one pack: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam, offering two flavors in a single order.",
+          "Each sandwich uses soft wheat bread filled with creamy peanut butter and either smooth honey spread or strawberry jam - no crust, no artificial preservatives.",
+          "Store in the freezer for extended shelf life or refrigerate; bread stays soft in the fridge for up to five days after thawing.",
+          "Individually wrapped for easy portioning and packing - no preparation required, just thaw and eat.",
+          "Made with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes. Bread baked fresh in the USA."
+        ],
+        "description": "Uncrustables Frozen Peanut Butter Sandwiches come in this 24-count variety pack with two flavors: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam. Each sandwich is individually wrapped and frozen, ready to thaw and eat with no preparation needed.\n\nThe bread is soft wheat with no crust - baked fresh in the USA and free of artificial preservatives. Fillings include creamy peanut butter paired with either smooth honey spread or strawberry jam. No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes.\n\nKeep sandwiches in the freezer for extended storage. To enjoy, thaw at room temperature for 30 to 60 minutes, or refrigerate overnight. Once thawed, bread stays soft in the fridge for up to five days. Each sandwich is individually wrapped, making it straightforward to pack for school, work, or any outing.",
+        "brand": "Uncrustables",
+        "category": "food-gifts",
+        "browse_nodes": [],
+        "item_type_keywords": [
+          "food-gifts"
+        ],
+        "main_image_url": "https://m.media-amazon.com/images/I/81H6+56f6hL.jpg",
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "unit_count": 24,
+        "number_of_items": 24,
+        "consumer_offer": {
+          "audience": "ALL",
+          "our_price": 76.99,
+          "discounted_price": 66.98,
+          "minimum_seller_allowed_price": 66.95,
+          "maximum_seller_allowed_price": 76.99,
+          "quantity_discounts": []
+        },
+        "business_offers": [],
+        "separate_business_price": null,
+        "fulfillment_availability": [
+          {
+            "source": "attributes",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          },
+          {
+            "source": "top_level",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          }
+        ],
+        "issues": [],
+        "raw_attributes": {
+          "melting_temperature": [
+            {
+              "unit": "degrees_fahrenheit",
+              "value": 32,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "contains_liquid_contents": [
+            {
+              "value": false,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_weight": [
+            {
+              "unit": "ounces",
+              "value": 160,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fulfillment_availability": [
+            {
+              "fulfillment_channel_code": "DEFAULT",
+              "quantity": 100
+            }
+          ],
+          "manufacturer": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "bullet_point": [
+            {
+              "value": "24 individually wrapped frozen sandwiches in one pack: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam, offering two flavors in a single order.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each sandwich uses soft wheat bread filled with creamy peanut butter and either smooth honey spread or strawberry jam - no crust, no artificial preservatives.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Store in the freezer for extended shelf life or refrigerate; bread stays soft in the fridge for up to five days after thawing.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Individually wrapped for easy portioning and packing - no preparation required, just thaw and eat.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Made with no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes. Bread baked fresh in the USA.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_description": [
+            {
+              "value": "Uncrustables Frozen Peanut Butter Sandwiches come in this 24-count variety pack with two flavors: 12 Peanut Butter & Honey Spread and 12 Peanut Butter & Strawberry Jam. Each sandwich is individually wrapped and frozen, ready to thaw and eat with no preparation needed.\n\nThe bread is soft wheat with no crust - baked fresh in the USA and free of artificial preservatives. Fillings include creamy peanut butter paired with either smooth honey spread or strawberry jam. No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes.\n\nKeep sandwiches in the freezer for extended storage. To enjoy, thaw at room temperature for 30 to 60 minutes, or refrigerate overnight. Once thawed, bread stays soft in the fridge for up to five days. Each sandwich is individually wrapped, making it straightforward to pack for school, work, or any outing.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "brand": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_expiration_type": [
+            {
+              "value": "Expiration Date Required",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "supplier_declared_dg_hz_regulation": [
+            {
+              "value": "not_applicable",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_expiration_dated_product": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "generic_keyword": [
+            {
+              "value": "frozen peanut butter sandwiches variety honey spread strawberry jam freezer freezer meals thaw and eat no prep quick meal individually wrapped grab and go ready to eat snack lunch box bulk variety pack family pack",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "temperature_rating": [
+            {
+              "value": "Frozen: 0 degree",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_heat_sensitive": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "country_of_origin": [
+            {
+              "value": "US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "externally_assigned_product_identifier": [
+            {
+              "value": "756441905083",
+              "type": "upc",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_name": [
+            {
+              "value": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack, 24 Count - Honey Spread & Strawberry Jam",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "merchant_shipping_group": [
+            {
+              "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "list_price": [
+            {
+              "value": 71.07,
+              "currency": "USD",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_type_keyword": [
+            {
+              "value": "food-gifts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "number_of_items": [
+            {
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "condition_type": [
+            {
+              "value": "new_new",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_dimensions": [
+            {
+              "length": {
+                "unit": "inches",
+                "value": 12
+              },
+              "width": {
+                "unit": "inches",
+                "value": 12
+              },
+              "height": {
+                "unit": "inches",
+                "value": 10
+              },
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fc_shelf_life": [
+            {
+              "unit": "days",
+              "value": 365,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "unit_count": [
+            {
+              "type": {
+                "value": "Count",
+                "language_tag": "en_US"
+              },
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_7": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_6": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_5": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_4": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_3": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_2": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_1": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "main_product_image_locator": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81H6+56f6hL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "purchasable_offer": [
+            {
+              "currency": "USD",
+              "audience": "ALL",
+              "discounted_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.98,
+                      "end_at": "2026-08-13T23:59:59Z",
+                      "start_at": "2026-07-14T00:00:00Z"
+                    }
+                  ]
+                }
+              ],
+              "our_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "maximum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "minimum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.95
+                    }
+                  ]
+                }
+              ],
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ]
+        },
+        "raw_offers": [
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2C",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.99"
+            },
+            "audience": {
+              "value": "ALL",
+              "displayName": "Sell on Amazon"
+            }
+          },
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2B",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.22"
+            },
+            "audience": {
+              "value": "B2B",
+              "displayName": "Amazon Business (B2B)"
+            }
+          }
+        ]
+      },
+      "anomalies": [
+        {
+          "code": "MASTER_COMPONENTS_MISSING",
+          "severity": "ERROR",
+          "message": "MasterBundle has no persisted BundleComponent recipe rows.",
+          "expected": ">=1",
+          "actual": 0
+        },
+        {
+          "code": "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED",
+          "severity": "WARNING",
+          "message": "Amazon re-hosted gallery slot 1; URL-only audit cannot prove that it is the fixed pricing/thank-you infographic.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+          "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+        },
+        {
+          "code": "BUSINESS_PRICE_MISSING",
+          "severity": "WARNING",
+          "message": "No live business price offer was found."
+        },
+        {
+          "code": "FULFILLMENT_QUANTITY_HARDCODED_100",
+          "severity": "WARNING",
+          "message": "Live quantity is the Bundle Factory hard-coded value rather than verified inventory.",
+          "expected": "verified inventory",
+          "actual": [
+            100,
+            100
+          ]
+        }
+      ],
+      "highest_severity": "ERROR",
+      "perfect": false
+    },
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "channel": "AMAZON_SALUTEM",
+      "store_index": 1,
+      "canonical": {
+        "total_units": 24,
+        "composition_source": "SELECTED_VARIANT",
+        "components": [
+          {
+            "product_id": "ffa55546-d03c-4a11-b2e6-8c2a4d2e1465",
+            "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 98,
+            "source_url": null
+          },
+          {
+            "product_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+            "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 124,
+            "source_url": null
+          }
+        ],
+        "component_qty_sum": 24,
+        "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+        "pricing": {
+          "total": 24,
+          "cooler": "S",
+          "landed": 51.5,
+          "target": 77.25,
+          "ceiling": 78.8,
+          "floor": 66.95,
+          "suggested": 76.99
+        }
+      },
+      "db": {
+        "channel_sku": {
+          "id": "cmrc8gelu00a5mafz9vl761zx",
+          "channel": "AMAZON_SALUTEM",
+          "store_index": 1,
+          "sku": "AJ-ASRB-HKC3",
+          "upc": "756441904819",
+          "asin": "B0H84G7DHC",
+          "title": "Uncrustables Peanut Butter Sandwiches Variety Pack, Raspberry Spread and Morning Protein Mixed Berry Spread, 2 oz Each, 24 Count, Frozen",
+          "bullets": [
+            "Pack contains 24 individually wrapped frozen sandwiches: 12 Peanut Butter & Raspberry Spread (2 oz each) and 12 Morning Protein Peanut Butter & Mixed Berry Spread (2 oz each)",
+            "Each Peanut Butter & Raspberry Spread sandwich is made with soft crustless bread, creamy peanut butter, and sweet seedless raspberry spread — seedless filling, no crust",
+            "Each Morning Protein Peanut Butter & Mixed Berry Spread sandwich pairs creamy peanut butter with mixed berry spread on soft, crustless bread baked with no artificial preservatives",
+            "Store in the freezer for longer-term storage; move to the refrigerator to thaw — bread stays soft for up to five days when refrigerated",
+            "Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes; bread baked fresh in the USA"
+          ],
+          "description": "This 24-count variety pack includes two Uncrustables flavors: 12 Peanut Butter & Raspberry Spread sandwiches and 12 Morning Protein Peanut Butter & Mixed Berry Spread sandwiches, 2 oz each.\n\nBoth varieties feature soft, crustless bread sealed around creamy peanut butter. The Raspberry Spread variety adds sweet, seedless raspberry spread. The Morning Protein variety pairs the same peanut butter with mixed berry spread.\n\nEach sandwich is individually wrapped. Store in the freezer for longer shelf life or transfer to the refrigerator to thaw — bread stays soft for up to five days when refrigerated. No preparation required beyond thawing.\n\nBread is baked fresh in the USA with no artificial preservatives. Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+          "attributes": {
+            "ingredients": [
+              {
+                "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% or Less of: Salt, Dough Conditioners (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% or Less of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed and Soybean), Mono and Diglycerides, Salt, Raspberry Spread: Sugar, Raspberries, Water, Contains 2% or Less of: Fruit Pectin, Natural Flavors, Potassium Sorbate (Preservative), Citric Acid. | Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Raspberry Spread: Sugar, Raspberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavors, Potassium Sorbate (Preservative).",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "allergen_information": [
+              {
+                "value": "peanuts",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "wheat",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "soy",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "number_of_items": [
+              {
+                "value": 24,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_expiration_dated_product": [
+              {
+                "value": true,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "temperature_rating": [
+              {
+                "value": "Frozen: 0 degree",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "condition_type": [
+              {
+                "value": "new_new",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "product_expiration_type": [
+              {
+                "value": "Expiration Date Required",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_heat_sensitive": [
+              {
+                "value": "Yes",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "contains_liquid_contents": [
+              {
+                "value": "No",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_1": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/1.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_2": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/2.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_3": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/3.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_4": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/4.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_5": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/5.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_6": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhk9wy000u04ju1qepcrrb-gallery/6.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "merchant_shipping_group": [
+              {
+                "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "purchasable_offer": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 67.81
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 78.53
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "channel_category": null,
+          "channel_browse_node": "12011207011",
+          "price_cents": 7853,
+          "business_price_cents": null,
+          "lifecycle_status": "DRAFT",
+          "compliance_status": "CAN_PUBLISH",
+          "validation_status": "NEEDS_REVIEW",
+          "listing_status": "FAILED",
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhk9wy000u04ju1qepcrrb-amazon_salutem/main.png",
+          "submitted_at": "2026-07-17T22:16:58.978Z",
+          "live_at": null,
+          "published_at": "2026-07-10T12:45:22.580Z",
+          "errors": [],
+          "distribution_errors": [
+            {
+              "code": "18155",
+              "message": "Your selling price is below your minimum price threshold. Check if you entered the correct price and review your minimum and maximum price thresholds. You'll need to adjust your product price.",
+              "severity": "ERROR",
+              "categories": [
+                "INVALID_PRICE",
+                "INVALID_ATTRIBUTE"
+              ],
+              "enforcements": {
+                "actions": [
+                  {
+                    "action": "LISTING_SUPPRESSED"
+                  }
+                ],
+                "exemption": {
+                  "status": "NOT_EXEMPT"
+                }
+              }
+            },
+            {
+              "code": "18639",
+              "message": "The selling price was identified as a potential low pricing error. Please review, and confirm or update your price.",
+              "severity": "ERROR",
+              "categories": [
+                "INVALID_PRICE",
+                "INVALID_ATTRIBUTE"
+              ],
+              "enforcements": {
+                "actions": [
+                  {
+                    "action": "LISTING_SUPPRESSED"
+                  }
+                ],
+                "exemption": {
+                  "status": "NOT_EXEMPT"
+                }
+              }
+            }
+          ]
+        },
+        "master": {
+          "id": "cmrc8gbbl00a4mafz3ys3kang",
+          "generation_job_id": null,
+          "name": "Peanut Butter & Raspberry Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "lifecycle_status": "DRAFT",
+          "estimated_cost_cents": 2664,
+          "suggested_price_cents": 7853,
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhk9wy000u04ju1qepcrrb-amazon_salutem/main.png",
+          "secondary_image_urls": [],
+          "components": []
+        },
+        "draft": {
+          "id": "cmrbhk9wy000u04ju1qepcrrb",
+          "generation_job_id": "cmrbdh4dm0000zhfzhtijm97m",
+          "name": "Peanut Butter & Raspberry Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "status": "PUBLISHING",
+          "compliance_status": "CAN_PUBLISH",
+          "components": [
+            {
+              "product_id": "ffa55546-d03c-4a11-b2e6-8c2a4d2e1465",
+              "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 98,
+              "source_url": null
+            },
+            {
+              "product_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+              "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 124,
+              "source_url": null
+            }
+          ],
+          "selected_variant_idx": 0,
+          "selected_variant": {
+            "name": "Peanut Butter & Raspberry Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+            "composition": [
+              {
+                "product_id": "ffa55546-d03c-4a11-b2e6-8c2a4d2e1465",
+                "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 98,
+                "source_url": null
+              },
+              {
+                "product_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+                "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 124,
+                "source_url": null
+              }
+            ]
+          },
+          "title": null,
+          "bullets": [],
+          "description": null,
+          "main_image_url": "https://i5.walmartimages.com/seo/Smucker-s-Uncrustables-Peanut-Butter-Raspberry-Spread-Sandwiches-10-Count-2-Oz-Each-Frozen_66d26271-6e9b-4ea8-bf96-fa20f9fb348f.3940548dfccc3dafe2549feae35f948b.jpeg",
+          "secondary_image_urls": [
+            "https://images.salsify.com/video/upload/s--d5V3atSf--/vc_auto/c_limit,h_1024,w_1280/nrwqqlc9bdzxf3gvnnhc.jpg",
+            "https://i5.walmartimages.com/asr/92bf5f5f-6e28-44ec-810b-9e128850723e.675530f6c947ac0c8b90463a73f2b7e2.jpeg",
+            "https://i5.walmartimages.com/asr/22805b59-01eb-482e-bebc-20c59b6cc8bf.635fe961399eec1cb7244283ce60a819.jpeg",
+            "https://i5.walmartimages.com/asr/5ec39aa7-1e9d-4369-9b03-c1d8af419840.92fb78a1ab6228233b9f648e4940b915.jpeg",
+            "https://i5.walmartimages.com/asr/73603fc7-d747-47ae-8beb-04bd63f68e7f.222b923f32edc645fe22355dff1a338d.jpeg",
+            "https://i5.walmartimages.com/asr/19c100b9-d856-48f8-9069-2aab103cc89e.437bb1cdf1c370693466a7f46364ae0a.jpeg"
+          ],
+          "generated_content": [
+            {
+              "channel": "AMAZON_SALUTEM",
+              "compliance_status": "CAN_PUBLISH",
+              "title": "Uncrustables Peanut Butter Sandwiches Variety Pack, Raspberry Spread and Morning Protein Mixed Berry Spread, 2 oz Each, 24 Count, Frozen",
+              "bullets": [
+                "Pack contains 24 individually wrapped frozen sandwiches: 12 Peanut Butter & Raspberry Spread (2 oz each) and 12 Morning Protein Peanut Butter & Mixed Berry Spread (2 oz each)",
+                "Each Peanut Butter & Raspberry Spread sandwich is made with soft crustless bread, creamy peanut butter, and sweet seedless raspberry spread — seedless filling, no crust",
+                "Each Morning Protein Peanut Butter & Mixed Berry Spread sandwich pairs creamy peanut butter with mixed berry spread on soft, crustless bread baked with no artificial preservatives",
+                "Store in the freezer for longer-term storage; move to the refrigerator to thaw — bread stays soft for up to five days when refrigerated",
+                "Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes; bread baked fresh in the USA"
+              ],
+              "description": "This 24-count variety pack includes two Uncrustables flavors: 12 Peanut Butter & Raspberry Spread sandwiches and 12 Morning Protein Peanut Butter & Mixed Berry Spread sandwiches, 2 oz each.\n\nBoth varieties feature soft, crustless bread sealed around creamy peanut butter. The Raspberry Spread variety adds sweet, seedless raspberry spread. The Morning Protein variety pairs the same peanut butter with mixed berry spread.\n\nEach sandwich is individually wrapped. Store in the freezer for longer shelf life or transfer to the refrigerator to thaw — bread stays soft for up to five days when refrigerated. No preparation required beyond thawing.\n\nBread is baked fresh in the USA with no artificial preservatives. Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+              "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhk9wy000u04ju1qepcrrb-amazon_salutem/main.png"
+            }
+          ]
+        }
+      },
+      "live": {
+        "fetched": true,
+        "error": null,
+        "asin": "B0H84G7DHC",
+        "amazon_statuses": [
+          "BUYABLE",
+          "DISCOVERABLE"
+        ],
+        "buyable": true,
+        "discoverable": true,
+        "product_type": "GROCERY",
+        "title": "Uncrustables Peanut Butter Sandwiches Variety Pack, Raspberry Spread and Morning Protein Mixed Berry Spread, 2 oz Each, 24 Count, Frozen",
+        "title_total_units": 24,
+        "bullets": [
+          "Pack contains 24 individually wrapped frozen sandwiches: 12 Peanut Butter & Raspberry Spread (2 oz each) and 12 Morning Protein Peanut Butter & Mixed Berry Spread (2 oz each)",
+          "Each Peanut Butter & Raspberry Spread sandwich is made with soft crustless bread, creamy peanut butter, and sweet seedless raspberry spread — seedless filling, no crust",
+          "Each Morning Protein Peanut Butter & Mixed Berry Spread sandwich pairs creamy peanut butter with mixed berry spread on soft, crustless bread baked with no artificial preservatives",
+          "Store in the freezer for longer-term storage; move to the refrigerator to thaw — bread stays soft for up to five days when refrigerated",
+          "Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes; bread baked fresh in the USA"
+        ],
+        "description": "This 24-count variety pack includes two Uncrustables flavors: 12 Peanut Butter & Raspberry Spread sandwiches and 12 Morning Protein Peanut Butter & Mixed Berry Spread sandwiches, 2 oz each.\n\nBoth varieties feature soft, crustless bread sealed around creamy peanut butter. The Raspberry Spread variety adds sweet, seedless raspberry spread. The Morning Protein variety pairs the same peanut butter with mixed berry spread.\n\nEach sandwich is individually wrapped. Store in the freezer for longer shelf life or transfer to the refrigerator to thaw — bread stays soft for up to five days when refrigerated. No preparation required beyond thawing.\n\nBread is baked fresh in the USA with no artificial preservatives. Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+        "brand": "Uncrustables",
+        "category": "food-gifts",
+        "browse_nodes": [],
+        "item_type_keywords": [
+          "food-gifts"
+        ],
+        "main_image_url": "https://m.media-amazon.com/images/I/81sBi9RN1BL.jpg",
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg",
+          "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg"
+        ],
+        "unit_count": 24,
+        "number_of_items": 24,
+        "consumer_offer": {
+          "audience": "ALL",
+          "our_price": 71.14,
+          "discounted_price": 66.98,
+          "minimum_seller_allowed_price": 67.81,
+          "maximum_seller_allowed_price": 78.53,
+          "quantity_discounts": []
+        },
+        "business_offers": [],
+        "separate_business_price": null,
+        "fulfillment_availability": [
+          {
+            "source": "attributes",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          },
+          {
+            "source": "top_level",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          }
+        ],
+        "issues": [
+          {
+            "code": "18639",
+            "severity": "ERROR",
+            "message": "The selling price was identified as a potential low pricing error. Please review, and confirm or update your price.",
+            "attribute_names": [],
+            "categories": [
+              "INVALID_ATTRIBUTE",
+              "INVALID_PRICE"
+            ]
+          },
+          {
+            "code": "18155",
+            "severity": "ERROR",
+            "message": "Your selling price is below your minimum price threshold. Check if you entered the correct price and review your minimum and maximum price thresholds. You'll need to adjust your product price.",
+            "attribute_names": [],
+            "categories": [
+              "INVALID_ATTRIBUTE",
+              "INVALID_PRICE"
+            ]
+          }
+        ],
+        "raw_attributes": {
+          "melting_temperature": [
+            {
+              "unit": "degrees_fahrenheit",
+              "value": 32,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "contains_liquid_contents": [
+            {
+              "value": false,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_weight": [
+            {
+              "unit": "ounces",
+              "value": 160,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fulfillment_availability": [
+            {
+              "fulfillment_channel_code": "DEFAULT",
+              "quantity": 100
+            }
+          ],
+          "manufacturer": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "bullet_point": [
+            {
+              "value": "Pack contains 24 individually wrapped frozen sandwiches: 12 Peanut Butter & Raspberry Spread (2 oz each) and 12 Morning Protein Peanut Butter & Mixed Berry Spread (2 oz each)",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each Peanut Butter & Raspberry Spread sandwich is made with soft crustless bread, creamy peanut butter, and sweet seedless raspberry spread — seedless filling, no crust",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each Morning Protein Peanut Butter & Mixed Berry Spread sandwich pairs creamy peanut butter with mixed berry spread on soft, crustless bread baked with no artificial preservatives",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Store in the freezer for longer-term storage; move to the refrigerator to thaw — bread stays soft for up to five days when refrigerated",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes; bread baked fresh in the USA",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "ingredients": [
+            {
+              "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% or Less of: Salt, Dough Conditioners (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% or Less of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed and Soybean), Mono and Diglycerides, Salt, Raspberry Spread: Sugar, Raspberries, Water, Contains 2% or Less of: Fruit Pectin, Natural Flavors, Potassium Sorbate (Preservative), Citric Acid. | Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Raspberry Spread: Sugar, Raspberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavors, Potassium Sorbate (Preservative).",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_description": [
+            {
+              "value": "This 24-count variety pack includes two Uncrustables flavors: 12 Peanut Butter & Raspberry Spread sandwiches and 12 Morning Protein Peanut Butter & Mixed Berry Spread sandwiches, 2 oz each.\n\nBoth varieties feature soft, crustless bread sealed around creamy peanut butter. The Raspberry Spread variety adds sweet, seedless raspberry spread. The Morning Protein variety pairs the same peanut butter with mixed berry spread.\n\nEach sandwich is individually wrapped. Store in the freezer for longer shelf life or transfer to the refrigerator to thaw — bread stays soft for up to five days when refrigerated. No preparation required beyond thawing.\n\nBread is baked fresh in the USA with no artificial preservatives. Fillings contain no high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "brand": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_expiration_type": [
+            {
+              "value": "Expiration Date Required",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "supplier_declared_dg_hz_regulation": [
+            {
+              "value": "not_applicable",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_expiration_dated_product": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "generic_keyword": [
+            {
+              "value": "peanut butter sandwiches variety raspberry spread morning protein mixed berry frozen freezer freezer meals thaw and eat no prep quick meal individually wrapped grab and go ready to eat snack lunch box bulk variety pack family pack",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "temperature_rating": [
+            {
+              "value": "Frozen: 0 degree",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_heat_sensitive": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "country_of_origin": [
+            {
+              "value": "US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "externally_assigned_product_identifier": [
+            {
+              "value": "756441904819",
+              "type": "upc",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_name": [
+            {
+              "value": "Uncrustables Peanut Butter Sandwiches Variety Pack, Raspberry Spread and Morning Protein Mixed Berry Spread, 2 oz Each, 24 Count, Frozen",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "merchant_shipping_group": [
+            {
+              "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "list_price": [
+            {
+              "value": 78.53,
+              "currency": "USD",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_type_keyword": [
+            {
+              "value": "food-gifts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "number_of_items": [
+            {
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "condition_type": [
+            {
+              "value": "new_new",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_dimensions": [
+            {
+              "length": {
+                "unit": "inches",
+                "value": 12
+              },
+              "width": {
+                "unit": "inches",
+                "value": 12
+              },
+              "height": {
+                "unit": "inches",
+                "value": 10
+              },
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fc_shelf_life": [
+            {
+              "unit": "days",
+              "value": 365,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "unit_count": [
+            {
+              "type": {
+                "value": "Count",
+                "language_tag": "en_US"
+              },
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "allergen_information": [
+            {
+              "value": "peanuts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "wheat",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "soy",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_7": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_6": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_5": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_4": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_3": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_2": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_1": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "main_product_image_locator": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81sBi9RN1BL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "purchasable_offer": [
+            {
+              "currency": "USD",
+              "audience": "ALL",
+              "discounted_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.98,
+                      "end_at": "2026-08-13T23:59:59Z",
+                      "start_at": "2026-07-14T00:00:00Z"
+                    }
+                  ]
+                }
+              ],
+              "our_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 71.14
+                    }
+                  ]
+                }
+              ],
+              "maximum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 78.53
+                    }
+                  ]
+                }
+              ],
+              "minimum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 67.81
+                    }
+                  ]
+                }
+              ],
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ]
+        },
+        "raw_offers": [
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2C",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "71.14"
+            },
+            "audience": {
+              "value": "ALL",
+              "displayName": "Sell on Amazon"
+            }
+          },
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2B",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "70.43"
+            },
+            "audience": {
+              "value": "B2B",
+              "displayName": "Amazon Business (B2B)"
+            }
+          }
+        ]
+      },
+      "anomalies": [
+        {
+          "code": "MASTER_COMPONENTS_MISSING",
+          "severity": "ERROR",
+          "message": "MasterBundle has no persisted BundleComponent recipe rows.",
+          "expected": ">=1",
+          "actual": 0
+        },
+        {
+          "code": "DB_PRICE_OFF_CANONICAL",
+          "severity": "WARNING",
+          "message": "ChannelSKU cached price differs from the explicit-count cost model.",
+          "expected": 76.99,
+          "actual": 78.53
+        },
+        {
+          "code": "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED",
+          "severity": "WARNING",
+          "message": "Amazon re-hosted gallery slot 1; URL-only audit cannot prove that it is the fixed pricing/thank-you infographic.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+          "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+        },
+        {
+          "code": "OUR_PRICE_MISMATCH",
+          "severity": "CRITICAL",
+          "message": "Live base price differs from the canonical .99 price.",
+          "expected": 76.99,
+          "actual": 71.14
+        },
+        {
+          "code": "MIN_PRICE_MISMATCH",
+          "severity": "ERROR",
+          "message": "Live minimum seller allowed price differs from the canonical floor.",
+          "expected": 66.95,
+          "actual": 67.81
+        },
+        {
+          "code": "MAX_PRICE_MISMATCH",
+          "severity": "ERROR",
+          "message": "Live maximum seller allowed price differs from the canonical .99 ceiling.",
+          "expected": 76.99,
+          "actual": 78.53
+        },
+        {
+          "code": "BUSINESS_PRICE_MISSING",
+          "severity": "WARNING",
+          "message": "No live business price offer was found."
+        },
+        {
+          "code": "FULFILLMENT_QUANTITY_HARDCODED_100",
+          "severity": "WARNING",
+          "message": "Live quantity is the Bundle Factory hard-coded value rather than verified inventory.",
+          "expected": "verified inventory",
+          "actual": [
+            100,
+            100
+          ]
+        },
+        {
+          "code": "AMAZON_ISSUE_ERROR",
+          "severity": "CRITICAL",
+          "message": "The selling price was identified as a potential low pricing error. Please review, and confirm or update your price.",
+          "actual": {
+            "code": "18639",
+            "severity": "ERROR",
+            "message": "The selling price was identified as a potential low pricing error. Please review, and confirm or update your price.",
+            "attribute_names": [],
+            "categories": [
+              "INVALID_ATTRIBUTE",
+              "INVALID_PRICE"
+            ]
+          }
+        },
+        {
+          "code": "AMAZON_ISSUE_ERROR",
+          "severity": "CRITICAL",
+          "message": "Your selling price is below your minimum price threshold. Check if you entered the correct price and review your minimum and maximum price thresholds. You'll need to adjust your product price.",
+          "actual": {
+            "code": "18155",
+            "severity": "ERROR",
+            "message": "Your selling price is below your minimum price threshold. Check if you entered the correct price and review your minimum and maximum price thresholds. You'll need to adjust your product price.",
+            "attribute_names": [],
+            "categories": [
+              "INVALID_ATTRIBUTE",
+              "INVALID_PRICE"
+            ]
+          }
+        },
+        {
+          "code": "DB_LISTING_STATUS_STALE",
+          "severity": "INFO",
+          "message": "DB listing_status disagrees with the live BUYABLE result; live Amazon status is authoritative.",
+          "expected": "LIVE/BUYABLE",
+          "actual": "FAILED"
+        }
+      ],
+      "highest_severity": "CRITICAL",
+      "perfect": false
+    },
+    {
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "channel": "AMAZON_SALUTEM",
+      "store_index": 1,
+      "canonical": {
+        "total_units": 24,
+        "composition_source": "SELECTED_VARIANT",
+        "components": [
+          {
+            "product_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+            "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+            "brand": "Uncrustables",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 98,
+            "source_url": null
+          },
+          {
+            "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+            "brand": "Smucker'S",
+            "flavor": null,
+            "qty": 12,
+            "unit_price_cents": 97,
+            "source_url": null
+          }
+        ],
+        "component_qty_sum": 24,
+        "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+        "pricing": {
+          "total": 24,
+          "cooler": "S",
+          "landed": 51.5,
+          "target": 77.25,
+          "ceiling": 78.8,
+          "floor": 66.95,
+          "suggested": 76.99
+        }
+      },
+      "db": {
+        "channel_sku": {
+          "id": "cmrcr0n9p0081opfz1adsx1ui",
+          "channel": "AMAZON_SALUTEM",
+          "store_index": 1,
+          "sku": "AN-ASUW-49Y5",
+          "upc": "756441905717",
+          "asin": "B0H8628LW3",
+          "title": "Uncrustables Frozen Sandwiches, Chocolate Hazelnut Spread & Peanut Butter Strawberry Jam Variety Pack, 24 Count",
+          "bullets": [
+            "Pack contains 24 individually wrapped frozen sandwiches - 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam",
+            "Each Chocolate Flavored Hazelnut Spread sandwich is filled with smooth, sweet, creamy chocolate flavored hazelnut spread on soft, crustless bread baked with no artificial preservatives",
+            "Each Peanut Butter & Strawberry Jam sandwich features peanut butter paired with strawberry jam on soft, crustless bread baked with no artificial preservatives",
+            "Store in the freezer for longer shelf life or refrigerate - bread stays soft for up to five days in the fridge so sandwiches are thawed and ready to eat",
+            "No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes - bread baked fresh in the USA"
+          ],
+          "description": "This pack contains 24 individually wrapped Uncrustables frozen sandwiches in two flavors: 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam.\n\nEach Chocolate Flavored Hazelnut Spread sandwich is made with smooth, sweet, creamy chocolate flavored hazelnut spread sealed in soft, crustless bread baked with no artificial preservatives. Each Peanut Butter & Strawberry Jam sandwich features peanut butter and strawberry jam in the same soft, crustless format.\n\nBread is baked fresh in the USA. No high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStore in the freezer for longer shelf life. To thaw, move to the refrigerator - bread stays soft for up to five days in the fridge. No preparation needed; open and eat.",
+          "attributes": {
+            "number_of_items": [
+              {
+                "value": 24,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_expiration_dated_product": [
+              {
+                "value": true,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "temperature_rating": [
+              {
+                "value": "Frozen: 0 degree",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "condition_type": [
+              {
+                "value": "new_new",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "product_expiration_type": [
+              {
+                "value": "Expiration Date Required",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "is_heat_sensitive": [
+              {
+                "value": "Yes",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "contains_liquid_contents": [
+              {
+                "value": "No",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_1": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/1.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_2": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/2.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_3": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/3.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_4": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/4.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_5": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/5.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "other_product_image_locator_6": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/draft-cmrbhytx0006k04juywpc1quw-gallery/6.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "merchant_shipping_group": [
+              {
+                "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "purchasable_offer": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 61.33
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 71.07
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "channel_category": null,
+          "channel_browse_node": "12011207011",
+          "price_cents": 7699,
+          "business_price_cents": null,
+          "lifecycle_status": "DRAFT",
+          "compliance_status": "CAN_PUBLISH",
+          "validation_status": "NEEDS_REVIEW",
+          "listing_status": "LIVE",
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhytx0006k04juywpc1quw/main-mrd5v0aa-a1.png",
+          "submitted_at": "2026-07-11T20:19:46.904Z",
+          "live_at": null,
+          "published_at": "2026-07-11T20:25:29.269Z",
+          "errors": [],
+          "distribution_errors": []
+        },
+        "master": {
+          "id": "cmrcr0kab0080opfzwqrkp09r",
+          "generation_job_id": null,
+          "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Strawberry Jam — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "lifecycle_status": "DRAFT",
+          "estimated_cost_cents": 2340,
+          "suggested_price_cents": 7107,
+          "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhytx0006k04juywpc1quw-amazon_salutem/main.png",
+          "secondary_image_urls": [],
+          "components": []
+        },
+        "draft": {
+          "id": "cmrbhytx0006k04juywpc1quw",
+          "generation_job_id": "cmrbdh4dm0000zhfzhtijm97m",
+          "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Strawberry Jam — 24 ct",
+          "brand": "Uncrustables",
+          "category": "FROZEN_GROCERY",
+          "composition_type": "MIXED_FLAVOR",
+          "pack_count": 24,
+          "status": "IMAGE_GENERATED",
+          "compliance_status": "BLOCKED",
+          "components": [
+            {
+              "product_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+              "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+              "brand": "Uncrustables",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 98,
+              "source_url": null
+            },
+            {
+              "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+              "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+              "brand": "Smucker'S",
+              "flavor": null,
+              "qty": 12,
+              "unit_price_cents": 97,
+              "source_url": null
+            }
+          ],
+          "selected_variant_idx": 0,
+          "selected_variant": {
+            "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Strawberry Jam — 24 ct",
+            "composition": [
+              {
+                "product_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+                "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+                "brand": "Uncrustables",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 98,
+                "source_url": null
+              },
+              {
+                "product_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+                "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+                "brand": "Smucker'S",
+                "flavor": null,
+                "qty": 12,
+                "unit_price_cents": 97,
+                "source_url": null
+              }
+            ]
+          },
+          "title": null,
+          "bullets": [],
+          "description": null,
+          "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_436234db-9acb-447f-97b2-192d3a6f02da",
+          "secondary_image_urls": [
+            "https://target.scene7.com/is/image/Target/GUEST_39912483-a8a0-4c7b-80ef-66cd72d8cd27",
+            "https://target.scene7.com/is/image/Target/GUEST_d2066202-bf78-495a-8413-f405e57efc2a",
+            "https://target.scene7.com/is/image/Target/GUEST_5dee0194-56e7-448e-a88d-e410c5d24c47",
+            "https://target.scene7.com/is/image/Target/GUEST_7552d325-b6be-4433-915e-34048b8b557e",
+            "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+            "https://target.scene7.com/is/image/Target/GUEST_d528a0e3-9154-41c5-8a4c-fc0620dd4b66",
+            "https://target.scene7.com/is/image/Target/GUEST_83e184ac-62ad-4d4c-becb-170485095a81",
+            "https://target.scene7.com/is/image/Target/GUEST_5af4dc8c-88e4-4e2e-9dd2-9c90095d3bd0",
+            "https://target.scene7.com/is/image/Target/GUEST_76d36ddc-aef0-4f7e-8e4f-37b509c4fd40",
+            "https://target.scene7.com/is/image/Target/GUEST_812dfdd7-2cf3-40b5-a1a6-fdd4eb93a7d3"
+          ],
+          "generated_content": [
+            {
+              "channel": "AMAZON_SALUTEM",
+              "compliance_status": "BLOCKED",
+              "title": "Uncrustables Frozen Sandwiches, Chocolate Hazelnut Spread & Peanut Butter Strawberry Jam Variety Pack, 24 Count",
+              "bullets": [
+                "Pack contains 24 individually wrapped frozen sandwiches - 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam",
+                "Each Chocolate Flavored Hazelnut Spread sandwich is filled with smooth, sweet, creamy chocolate flavored hazelnut spread on soft, crustless bread baked with no artificial preservatives",
+                "Each Peanut Butter & Strawberry Jam sandwich features peanut butter paired with strawberry jam on soft, crustless bread baked with no artificial preservatives",
+                "Store in the freezer for longer shelf life or refrigerate - bread stays soft for up to five days in the fridge so sandwiches are thawed and ready to eat",
+                "No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes - bread baked fresh in the USA"
+              ],
+              "description": "This pack contains 24 individually wrapped Uncrustables frozen sandwiches in two flavors: 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam.\n\nEach Chocolate Flavored Hazelnut Spread sandwich is made with smooth, sweet, creamy chocolate flavored hazelnut spread sealed in soft, crustless bread baked with no artificial preservatives. Each Peanut Butter & Strawberry Jam sandwich features peanut butter and strawberry jam in the same soft, crustless format.\n\nBread is baked fresh in the USA. No high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStore in the freezer for longer shelf life. To thaw, move to the refrigerator - bread stays soft for up to five days in the fridge. No preparation needed; open and eat.",
+              "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhytx0006k04juywpc1quw-amazon_salutem/main-retry3.png"
+            }
+          ]
+        }
+      },
+      "live": {
+        "fetched": true,
+        "error": null,
+        "asin": "B0H8628LW3",
+        "amazon_statuses": [
+          "BUYABLE",
+          "DISCOVERABLE"
+        ],
+        "buyable": true,
+        "discoverable": true,
+        "product_type": "GROCERY",
+        "title": "Uncrustables Frozen Sandwiches, Chocolate Hazelnut Spread & Peanut Butter Strawberry Jam Variety Pack, 24 Count",
+        "title_total_units": 24,
+        "bullets": [
+          "Pack contains 24 individually wrapped frozen sandwiches - 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam",
+          "Each Chocolate Flavored Hazelnut Spread sandwich is filled with smooth, sweet, creamy chocolate flavored hazelnut spread on soft, crustless bread baked with no artificial preservatives",
+          "Each Peanut Butter & Strawberry Jam sandwich features peanut butter paired with strawberry jam on soft, crustless bread baked with no artificial preservatives",
+          "Store in the freezer for longer shelf life or refrigerate - bread stays soft for up to five days in the fridge so sandwiches are thawed and ready to eat",
+          "No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes - bread baked fresh in the USA"
+        ],
+        "description": "This pack contains 24 individually wrapped Uncrustables frozen sandwiches in two flavors: 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam.\n\nEach Chocolate Flavored Hazelnut Spread sandwich is made with smooth, sweet, creamy chocolate flavored hazelnut spread sealed in soft, crustless bread baked with no artificial preservatives. Each Peanut Butter & Strawberry Jam sandwich features peanut butter and strawberry jam in the same soft, crustless format.\n\nBread is baked fresh in the USA. No high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStore in the freezer for longer shelf life. To thaw, move to the refrigerator - bread stays soft for up to five days in the fridge. No preparation needed; open and eat.",
+        "brand": "Uncrustables",
+        "category": "food-gifts",
+        "browse_nodes": [],
+        "item_type_keywords": [
+          "food-gifts"
+        ],
+        "main_image_url": "https://m.media-amazon.com/images/I/81GR0-ofL7L.jpg",
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "unit_count": 24,
+        "number_of_items": 24,
+        "consumer_offer": {
+          "audience": "ALL",
+          "our_price": 76.99,
+          "discounted_price": 66.98,
+          "minimum_seller_allowed_price": 66.95,
+          "maximum_seller_allowed_price": 76.99,
+          "quantity_discounts": []
+        },
+        "business_offers": [],
+        "separate_business_price": null,
+        "fulfillment_availability": [
+          {
+            "source": "attributes",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          },
+          {
+            "source": "top_level",
+            "fulfillment_channel_code": "DEFAULT",
+            "quantity": 100
+          }
+        ],
+        "issues": [],
+        "raw_attributes": {
+          "melting_temperature": [
+            {
+              "unit": "degrees_fahrenheit",
+              "value": 32,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "contains_liquid_contents": [
+            {
+              "value": false,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_weight": [
+            {
+              "unit": "ounces",
+              "value": 160,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fulfillment_availability": [
+            {
+              "fulfillment_channel_code": "DEFAULT",
+              "quantity": 100
+            }
+          ],
+          "manufacturer": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "bullet_point": [
+            {
+              "value": "Pack contains 24 individually wrapped frozen sandwiches - 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each Chocolate Flavored Hazelnut Spread sandwich is filled with smooth, sweet, creamy chocolate flavored hazelnut spread on soft, crustless bread baked with no artificial preservatives",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Each Peanut Butter & Strawberry Jam sandwich features peanut butter paired with strawberry jam on soft, crustless bread baked with no artificial preservatives",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "Store in the freezer for longer shelf life or refrigerate - bread stays soft for up to five days in the fridge so sandwiches are thawed and ready to eat",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            },
+            {
+              "value": "No high fructose corn syrup, no artificial sweeteners, no artificial colors or dyes - bread baked fresh in the USA",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_description": [
+            {
+              "value": "This pack contains 24 individually wrapped Uncrustables frozen sandwiches in two flavors: 12 Chocolate Flavored Hazelnut Spread and 12 Peanut Butter & Strawberry Jam.\n\nEach Chocolate Flavored Hazelnut Spread sandwich is made with smooth, sweet, creamy chocolate flavored hazelnut spread sealed in soft, crustless bread baked with no artificial preservatives. Each Peanut Butter & Strawberry Jam sandwich features peanut butter and strawberry jam in the same soft, crustless format.\n\nBread is baked fresh in the USA. No high fructose corn syrup, no artificial sweeteners, and no artificial colors or dyes.\n\nStore in the freezer for longer shelf life. To thaw, move to the refrigerator - bread stays soft for up to five days in the fridge. No preparation needed; open and eat.",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "brand": [
+            {
+              "value": "Uncrustables",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "product_expiration_type": [
+            {
+              "value": "Expiration Date Required",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "supplier_declared_dg_hz_regulation": [
+            {
+              "value": "not_applicable",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_expiration_dated_product": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "generic_keyword": [
+            {
+              "value": "frozen sandwiches chocolate hazelnut spread peanut butter strawberry jam variety freezer freezer meals thaw and eat no prep quick meal individually wrapped grab and go ready to eat snack lunch box bulk variety pack family pack",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "temperature_rating": [
+            {
+              "value": "Frozen: 0 degree",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "is_heat_sensitive": [
+            {
+              "value": true,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "country_of_origin": [
+            {
+              "value": "US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "externally_assigned_product_identifier": [
+            {
+              "value": "756441905717",
+              "type": "upc",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_name": [
+            {
+              "value": "Uncrustables Frozen Sandwiches, Chocolate Hazelnut Spread & Peanut Butter Strawberry Jam Variety Pack, 24 Count",
+              "language_tag": "en_US",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "merchant_shipping_group": [
+            {
+              "value": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "list_price": [
+            {
+              "value": 71.07,
+              "currency": "USD",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_type_keyword": [
+            {
+              "value": "food-gifts",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "number_of_items": [
+            {
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "condition_type": [
+            {
+              "value": "new_new",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "item_package_dimensions": [
+            {
+              "length": {
+                "unit": "inches",
+                "value": 12
+              },
+              "width": {
+                "unit": "inches",
+                "value": 12
+              },
+              "height": {
+                "unit": "inches",
+                "value": 10
+              },
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "fc_shelf_life": [
+            {
+              "unit": "days",
+              "value": 365,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "unit_count": [
+            {
+              "type": {
+                "value": "Count",
+                "language_tag": "en_US"
+              },
+              "value": 24,
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_7": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_6": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81lRW+hnBGL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_5": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_4": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_3": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_2": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "other_product_image_locator_1": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "main_product_image_locator": [
+            {
+              "media_location": "https://m.media-amazon.com/images/I/81GR0-ofL7L.jpg",
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ],
+          "purchasable_offer": [
+            {
+              "currency": "USD",
+              "audience": "ALL",
+              "discounted_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.98,
+                      "end_at": "2026-08-13T23:59:59Z",
+                      "start_at": "2026-07-14T00:00:00Z"
+                    }
+                  ]
+                }
+              ],
+              "our_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "maximum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 76.99
+                    }
+                  ]
+                }
+              ],
+              "minimum_seller_allowed_price": [
+                {
+                  "schedule": [
+                    {
+                      "value_with_tax": 66.95
+                    }
+                  ]
+                }
+              ],
+              "marketplace_id": "ATVPDKIKX0DER"
+            }
+          ]
+        },
+        "raw_offers": [
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2C",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.99"
+            },
+            "audience": {
+              "value": "ALL",
+              "displayName": "Sell on Amazon"
+            }
+          },
+          {
+            "marketplaceId": "ATVPDKIKX0DER",
+            "offerType": "B2B",
+            "price": {
+              "currency": "USD",
+              "currencyCode": "USD",
+              "amount": "76.22"
+            },
+            "audience": {
+              "value": "B2B",
+              "displayName": "Amazon Business (B2B)"
+            }
+          }
+        ]
+      },
+      "anomalies": [
+        {
+          "code": "MASTER_COMPONENTS_MISSING",
+          "severity": "ERROR",
+          "message": "MasterBundle has no persisted BundleComponent recipe rows.",
+          "expected": ">=1",
+          "actual": 0
+        },
+        {
+          "code": "GENERATED_IMAGE_NOT_PROMOTED_TO_CHANNELSKU",
+          "severity": "ERROR",
+          "message": "GeneratedContent has a different main image URL than ChannelSKU; republish may resend the stale image.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhytx0006k04juywpc1quw-amazon_salutem/main-retry3.png",
+          "actual": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhytx0006k04juywpc1quw/main-mrd5v0aa-a1.png"
+        },
+        {
+          "code": "PRICE_INFOGRAPHIC_IDENTITY_UNVERIFIED",
+          "severity": "WARNING",
+          "message": "Amazon re-hosted gallery slot 1; URL-only audit cannot prove that it is the fixed pricing/thank-you infographic.",
+          "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+          "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+        },
+        {
+          "code": "BUSINESS_PRICE_MISSING",
+          "severity": "WARNING",
+          "message": "No live business price offer was found."
+        },
+        {
+          "code": "FULFILLMENT_QUANTITY_HARDCODED_100",
+          "severity": "WARNING",
+          "message": "Live quantity is the Bundle Factory hard-coded value rather than verified inventory.",
+          "expected": "verified inventory",
+          "actual": [
+            100,
+            100
+          ]
+        }
+      ],
+      "highest_severity": "ERROR",
+      "perfect": false
+    }
+  ]
+}

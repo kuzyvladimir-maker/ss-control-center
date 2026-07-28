@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "469251f7-cbe4-407a-8cc7-9fbbace89c26",
+  "created_at": "2026-07-18T10:34:29.833Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZE-AS5W-FKH3:text_count",
+  "sku": "ZE-AS5W-FKH3",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "1d40d5dd6dda8929bc543b60bcebd83d37f8d4f493ac4a67bcb57faf4ad8ef42",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "42f7b6bc57574b35bf88310b364195e6",
+    "issues": []
+  },
+  "sha256": "3332889b65400f7ee71e15c17e4593df3a867307b16ac94b4b1ffd3ab490971b"
+}

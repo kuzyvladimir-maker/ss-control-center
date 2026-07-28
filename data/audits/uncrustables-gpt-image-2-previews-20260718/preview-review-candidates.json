@@ -1,0 +1,73 @@
+{
+  "schema_version": "uncrustables-main-preview-review/v1",
+  "status": "OWNER_APPROVED",
+  "approval_recorded_at": "2026-07-17T22:51:58-04:00",
+  "approval_source": "Owner approved all three candidates in the Codex VS Code session on 2026-07-18 America/New_York.",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "1536x1536",
+  "approved_style_anchor": {
+    "path": "public/bundle-factory/frozen-refs/ref-uncrustables.png",
+    "sha256": "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33"
+  },
+  "external_writes": {
+    "amazon": false,
+    "database": false,
+    "r2": false
+  },
+  "candidates": [
+    {
+      "id": "01c-retail-boxes-single-pb-24-four-gel-packs",
+      "path": "data/audits/uncrustables-gpt-image-2-previews-20260718/01c-retail-boxes-single-pb-24-four-gel-packs.png",
+      "sha256": "4cdd7bec9ab5c1d5f97b5746d7569a4ffc891a36b8d1fb159168176f06e19076",
+      "recipe": "24 Peanut Butter Sandwich units as six genuine 4-count retail cartons",
+      "manual_qa": {
+        "product_count_and_mode": "PASS",
+        "genuine_product_art": "PASS",
+        "gel_packs_two_inside_two_outside": "PASS",
+        "cooler_and_salutem_branding": "PASS",
+        "physical_seating_and_occlusion": "PASS"
+      }
+    },
+    {
+      "id": "02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+      "path": "data/audits/uncrustables-gpt-image-2-previews-20260718/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs.png",
+      "sha256": "9d0294242508529022a0e2b1cdd2df0adce469ef9dbb8bd2dd7d448031ea839d",
+      "recipe": "24 units as three genuine 4-count Peanut Butter cartons plus three genuine 4-count Blackberry Boom cartons",
+      "manual_qa": {
+        "product_count_and_mode": "PASS",
+        "genuine_product_art": "PASS",
+        "gel_packs_two_inside_two_outside": "PASS",
+        "cooler_and_salutem_branding": "PASS",
+        "physical_seating_and_occlusion": "PASS"
+      }
+    },
+    {
+      "id": "03-individual-wraps-mix-hazelnut-berry-24",
+      "path": "data/audits/uncrustables-gpt-image-2-previews-20260718/03-individual-wraps-mix-hazelnut-berry-24.png",
+      "sha256": "d2f7ffdd0a3e411725a3dc1dac013f9f5f50c1e6dd9d34164c12cbe5cacc722f",
+      "recipe": "24 individually wrapped units: 12 Chocolate Flavored Hazelnut Spread plus 12 Morning Protein Peanut Butter and Mixed Berry Spread",
+      "manual_qa": {
+        "product_count_and_mode": "PASS",
+        "genuine_product_art": "PASS",
+        "gel_packs_two_inside_two_outside": "PASS",
+        "cooler_and_salutem_branding": "PASS",
+        "physical_seating_and_occlusion": "PASS"
+      }
+    }
+  ],
+  "blocked_previews": [
+    {
+      "id": "01-retail-boxes-single-pb-24",
+      "reason": "Generated four retail cartons instead of the required six."
+    },
+    {
+      "id": "01b-retail-boxes-single-pb-24-six-carton-retry",
+      "reason": "Only three gel packs were visible."
+    },
+    {
+      "id": "02-retail-boxes-mix-pb-blackberry-24",
+      "reason": "Only three gel packs were visible."
+    }
+  ]
+}

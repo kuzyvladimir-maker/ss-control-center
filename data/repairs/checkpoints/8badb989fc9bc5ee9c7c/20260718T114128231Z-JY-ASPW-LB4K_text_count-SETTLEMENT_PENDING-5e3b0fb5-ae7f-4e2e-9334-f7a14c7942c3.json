@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "5e3b0fb5-ae7f-4e2e-9334-f7a14c7942c3",
+  "created_at": "2026-07-18T11:41:28.231Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JY-ASPW-LB4K:text_count",
+  "sku": "JY-ASPW-LB4K",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "354ec529-12d4-4019-8b26-f994846cbfc8",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "397c881eba829410a294df382cdd13b5cf14c0f2fdbc5391195d169d61dedba5",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "0809f4dd2bd9cb9e5f778a55d909b9522f7446e727cedab72a8aab0f31f8d678"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "93a4ae30afc8c31ddb86acb9ed85aab6b8188d1996c56a160c2cb75585785bc6"
+}

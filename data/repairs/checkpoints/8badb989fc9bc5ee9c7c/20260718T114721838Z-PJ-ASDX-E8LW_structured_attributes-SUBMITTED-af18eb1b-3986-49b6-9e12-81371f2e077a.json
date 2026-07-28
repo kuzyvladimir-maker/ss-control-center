@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "af18eb1b-3986-49b6-9e12-81371f2e077a",
+  "created_at": "2026-07-18T11:47:21.838Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PJ-ASDX-E8LW:structured_attributes",
+  "sku": "PJ-ASDX-E8LW",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "623b3ce3-0f2e-48af-8263-1858bbfd80ec",
+    "patch_sha256": "2c6f5512e0d1c152439bd98712f061d8f6faa5b60c178c1a076f65382ffd3a3d",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "2c6f5512e0d1c152439bd98712f061d8f6faa5b60c178c1a076f65382ffd3a3d",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "75b6d7741f8f46f58537b42c2d596978",
+    "issues": []
+  },
+  "sha256": "49d9658e4dbae59956b21c632ba798d02ec7e6e289f2ca8a62bc8f4c97713bd4"
+}

@@ -1,0 +1,27 @@
+{
+  "artifacts": [
+    {
+      "file": "evidence.json",
+      "role": "evidence",
+      "sha256": "cde04dc563ff761324e64cd199787f6f45447983931fbad5ec743eb37ec84b7f"
+    },
+    {
+      "file": "retailer-content.html",
+      "role": "retailer_content_html",
+      "sha256": "f66cb435fdabb76f47eb7885395a8af31c96f7104a0c1d97c55f6018c964eb40"
+    }
+  ],
+  "createdAt": "2026-07-27T13:29:57.000Z",
+  "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+  "offerId": "do:target:14920182",
+  "retailerProductId": "14920182",
+  "safety": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "retailerReads": 1,
+    "walmartWrites": 0
+  },
+  "schemaVersion": "product-truth-direct-target-content-artifact-index/1.0.0"
+}

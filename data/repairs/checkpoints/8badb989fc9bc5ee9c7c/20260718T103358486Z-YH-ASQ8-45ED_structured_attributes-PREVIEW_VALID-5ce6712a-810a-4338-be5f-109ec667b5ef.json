@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "5ce6712a-810a-4338-be5f-109ec667b5ef",
+  "created_at": "2026-07-18T10:33:58.486Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YH-ASQ8-45ED:structured_attributes",
+  "sku": "YH-ASQ8-45ED",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "a43c0329fd287c018990eb0f366b79cb6744f29475e9904bec3d4b32d7e1cd6f",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "5edd79b4907c4bab90c5c5ed7f05f3a3",
+    "issues": []
+  },
+  "sha256": "e44b9d137d92b136f847c3fc39960c9c87a7e6ad81a4e8ff48bef47b7ff29945"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7add80ea-35bf-44bb-a38f-6fd24db79710",
+  "created_at": "2026-07-18T06:41:18.064Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "VN-AS1A-D572:text_count",
+  "sku": "VN-AS1A-D572",
+  "kind": "TEXT_COUNT",
+  "status": "FAILED",
+  "detail": {
+    "error": "VALIDATION_PREVIEW rejected VN-AS1A-D572:text_count: {\"status\":\"INVALID\",\"submission_id\":\"0c6b0ea1d2f44b43a8c59c33dfba098e\",\"issues\":[{\"code\":\"8541\",\"message\":\"The Listing data provided is different from what's already in the Amazon catalog. The standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided matches ASIN B0H82PKK18, but some of the listing data contradicts what is already in the Amazon catalog. The following listing attribute value(s) conflict with Amazon catalog value(s): 'unit_count_type' (Merchant [en_US: \\\"Count \\\"] / Amazon [en_US: \\\"Count \\\"]), '{unit_count.type,unit_count.value}' (Merchant [type \\\"{value:\\\"Count\\\",language_tag:en_US}\\\", value \\\"45\\\"] / Amazon [en_US: type \\\"{language_tag:en_US,value:\\\"Count\\\"}\\\", value \\\"180\\\"]). To fix the issue, please follow these steps 1) If the product you are listing is the same as B0H82PKK18, then update your listing's 'unit_count_type, unit_count' attribute(s) to match Amazon's catalog value, 2) If it's not the right ASIN, make sure the standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided is correct, or 3) If you disagree with the data in Amazon catalog contact Selling Partner Support to start the appeal process.\",\"severity\":\"ERROR\",\"attributeNames\":[\"unit_count\"],\"categories\":[\"INVALID_ATTRIBUTE\"]}]}"
+  },
+  "sha256": "afb4da20d7b99d1bc0a30cbd149d3d20ea7a837f3c021292d75a44264e0eaa76"
+}

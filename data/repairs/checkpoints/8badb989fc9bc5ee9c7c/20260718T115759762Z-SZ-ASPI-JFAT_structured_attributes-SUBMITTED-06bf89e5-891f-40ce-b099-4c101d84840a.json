@@ -1,0 +1,37 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "06bf89e5-891f-40ce-b099-4c101d84840a",
+  "created_at": "2026-07-18T11:57:59.762Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SZ-ASPI-JFAT:structured_attributes",
+  "sku": "SZ-ASPI-JFAT",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "7b12af26-3553-456e-9550-0bfc5a7d9863",
+    "patch_sha256": "267f7bcfc67a17c438694b21576a9a3f71278bfd65bc7674b8601d46e1d4c469",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information",
+      "/attributes/is_expiration_dated_product",
+      "/attributes/merchant_shipping_group"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "267f7bcfc67a17c438694b21576a9a3f71278bfd65bc7674b8601d46e1d4c469",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients",
+        "/attributes/is_expiration_dated_product",
+        "/attributes/merchant_shipping_group"
+      ],
+      "before_path_state_sha256": "7c96344c5aa1fd1dcc8c7865fe345191faa9a0a2d87150eb845a523fc685aa71"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "f4e9887e6cf74e8dadfd73b727ce3c83",
+    "issues": []
+  },
+  "sha256": "dca5f126ad1895cc5af53969280777570f7a9e3ea17aca00f127d2918f00979e"
+}

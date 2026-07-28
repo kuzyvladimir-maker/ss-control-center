@@ -1,0 +1,307 @@
+{
+  "schema_version": "walmart-listing-single-repair-compilation-request/v3",
+  "created_at": "2026-07-27T16:27:17.398Z",
+  "status": "READY_FOR_CONNECTED_MATERIALS",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-2768",
+    "listing_key": "walmart:1:FaisalX-2768",
+    "item_id": "1838619805",
+    "seller_upc": "660251345376",
+    "captured_at": "2026-07-27T16:00:11.443Z",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE",
+    "composition": "same_product"
+  },
+  "frozen_review": {
+    "proposal_file_sha256": "1a83d67aaf9fac1f8321b0b3a542d606ebf7dcbb322d674dc82929c05d9032b6",
+    "proposal_body_sha256": "9b37fb32330ee3d1dbe5e3cc230373b681435105b9e6587af8e107c853f598f3",
+    "certification_file_sha256": "0002cbd12daeb9f6fd87e76631cf7c16048d6186e56a205506f6468b8cbe7fa6",
+    "certification_body_sha256": "d38d02e369e37d7b80a2959ddc8190ff871bfb096a1b2ffbbfa105af1779182c",
+    "diagnosis_file_sha256": "db0238a9be4a8c467e74859d7e9d68c86f490eae8950e4e0aad54889f3fb3279",
+    "buyer_snapshot_file_sha256": "b13d8fd6c3e33ec703ef5fd23db2095c7efb51fa0ce2e054af6533e57de479ac",
+    "buyer_pdp_file_sha256": "845e1047d52caa788e699574ab46f6af3ea88cdf3c3c486834f9f38377299968",
+    "donor_audit_file_sha256": "89d8d4b1a2e1759908756d33c3dc3d31b4f524eb5f777976cebd6667619c671a"
+  },
+  "product_truth_candidate": {
+    "candidate_sha256": "1507712de83d637b4864e097853c9aaf11995497d5a42cb0e3ba3c8211a0c8e2",
+    "expected_sha256": "6ae4de58aee2e2c08af444f6cb70b4d83b0b7bb4bba11d3cd0c126197e39eb0d",
+    "donor_product_id": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+    "single_unit_upc": "051000021410",
+    "outer_units": 4,
+    "expected": {
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "outer_units": 4,
+      "identity": {
+        "brand_aliases": [
+          "campbells"
+        ],
+        "product_marker_groups": [
+          [
+            "condensed soup"
+          ]
+        ],
+        "variant_marker_groups": [
+          [
+            "golden mushroom"
+          ]
+        ],
+        "forbidden_markers": []
+      },
+      "package_facts": [
+        {
+          "kind": "net_content",
+          "requirement": "required",
+          "value": 297.6699928125,
+          "unit": "g"
+        }
+      ],
+      "truth_source": "recipe"
+    }
+  },
+  "repair": {
+    "baseline_surface": {
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "description": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "bullets": [
+        "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+        "Campbell's Condensed Soup",
+        "he perfect pantry staple to pull out as part of an easy weeknight dinner"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Flavor",
+          "kind": "variant",
+          "text": "qty 4"
+        },
+        {
+          "field_path": "product.specifications[1].Brand",
+          "kind": "brand",
+          "text": "Campbell's"
+        },
+        {
+          "field_path": "product.specifications[8].Count",
+          "kind": "inner_item_count",
+          "value": 1,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Container type",
+          "value_sha256": "86e14544ce080b59cd9ad2ce72d656c3922d36badfd4f839e96262fac6cdf4c0"
+        },
+        {
+          "field_path": "product.specifications[3].Size",
+          "value_sha256": "0246bf847edf9a0e01fb24ee3329d0670c767fe9b5e629ac3055f3a3b067c7da"
+        },
+        {
+          "field_path": "product.specifications[4].Instructions",
+          "value_sha256": "ae89cd94017ce4e3b4e97f8083065465b051c387fc0cb351152d651d75c9de5f"
+        },
+        {
+          "field_path": "product.specifications[5].Vegetable type",
+          "value_sha256": "9df095722e38536e7aaf43c209abd2d3cb9e8a2b31567fe3aa3caad8f7fa7994"
+        },
+        {
+          "field_path": "product.specifications[6].Material",
+          "value_sha256": "8e464a8f52254f27215b6b031003e649f2ffa9fd53a97af00444d1e2de514670"
+        },
+        {
+          "field_path": "product.specifications[7].Cuisine",
+          "value_sha256": "b0bb5f2623b8d35a26e5442953061f6c47c736b36a2089d770159726f9ce8807"
+        },
+        {
+          "field_path": "product.specifications[9].Food form",
+          "value_sha256": "7841369d813282073d46bd5764cabcf4761034cc9b82343d1d926acf18420b2c"
+        },
+        {
+          "field_path": "product.specifications[10].Product net content parent",
+          "value_sha256": "3b4a7644be782aa17bc80fd59fa7a29505ef3667b8961e0bc2ce30ddc818fef0"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "06c32f5ad83aa879f9dcdd9e25577e4e56cfc5ab4fb2ba40d39825be71d0a656"
+        },
+        {
+          "field_path": "product.specifications[12].Food & drug fact label type",
+          "value_sha256": "1a3ef87e3f7c7d6dd217b27babc2cf7ae24c65defdcba66b50b8929dfe897922"
+        }
+      ]
+    },
+    "target_surface": {
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "description": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+      "bullets": [
+        "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+        "Campbell's Condensed Soup",
+        "he perfect pantry staple to pull out as part of an easy weeknight dinner"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Flavor",
+          "kind": "variant",
+          "text": "Golden Mushroom"
+        },
+        {
+          "field_path": "product.specifications[1].Brand",
+          "kind": "brand",
+          "text": "Campbell's"
+        },
+        {
+          "field_path": "product.specifications[8].Count",
+          "kind": "inner_item_count",
+          "value": 4,
+          "unit": "count"
+        },
+        {
+          "field_path": "walmart.Visible.countPerPack",
+          "kind": "inner_item_count",
+          "value": 1,
+          "unit": "count"
+        },
+        {
+          "field_path": "walmart.Visible.multipackQuantity",
+          "kind": "outer_units",
+          "value": 4,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Container type",
+          "value_sha256": "86e14544ce080b59cd9ad2ce72d656c3922d36badfd4f839e96262fac6cdf4c0"
+        },
+        {
+          "field_path": "product.specifications[3].Size",
+          "value_sha256": "0246bf847edf9a0e01fb24ee3329d0670c767fe9b5e629ac3055f3a3b067c7da"
+        },
+        {
+          "field_path": "product.specifications[4].Instructions",
+          "value_sha256": "ae89cd94017ce4e3b4e97f8083065465b051c387fc0cb351152d651d75c9de5f"
+        },
+        {
+          "field_path": "product.specifications[5].Vegetable type",
+          "value_sha256": "9df095722e38536e7aaf43c209abd2d3cb9e8a2b31567fe3aa3caad8f7fa7994"
+        },
+        {
+          "field_path": "product.specifications[6].Material",
+          "value_sha256": "8e464a8f52254f27215b6b031003e649f2ffa9fd53a97af00444d1e2de514670"
+        },
+        {
+          "field_path": "product.specifications[7].Cuisine",
+          "value_sha256": "b0bb5f2623b8d35a26e5442953061f6c47c736b36a2089d770159726f9ce8807"
+        },
+        {
+          "field_path": "product.specifications[9].Food form",
+          "value_sha256": "7841369d813282073d46bd5764cabcf4761034cc9b82343d1d926acf18420b2c"
+        },
+        {
+          "field_path": "product.specifications[10].Product net content parent",
+          "value_sha256": "3b4a7644be782aa17bc80fd59fa7a29505ef3667b8961e0bc2ce30ddc818fef0"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "06c32f5ad83aa879f9dcdd9e25577e4e56cfc5ab4fb2ba40d39825be71d0a656"
+        },
+        {
+          "field_path": "product.specifications[12].Food & drug fact label type",
+          "value_sha256": "1a3ef87e3f7c7d6dd217b27babc2cf7ae24c65defdcba66b50b8929dfe897922"
+        }
+      ]
+    },
+    "baseline_images": [
+      {
+        "slot": "main",
+        "source_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+        "sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7"
+      },
+      {
+        "slot": "gallery-1",
+        "source_url": "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+        "sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc"
+      },
+      {
+        "slot": "gallery-2",
+        "source_url": "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+        "sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68"
+      },
+      {
+        "slot": "gallery-3",
+        "source_url": "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+        "sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088"
+      },
+      {
+        "slot": "gallery-4",
+        "source_url": "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+        "sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef"
+      },
+      {
+        "slot": "gallery-5",
+        "source_url": "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg",
+        "sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf"
+      }
+    ],
+    "target_images": [
+      {
+        "slot": "main",
+        "source_url": "https://i5.walmartimages.com/seo/Campbell-s-Condensed-Golden-Mushroom-Soup-10-5-Ounce-Can-Quantity-of-4_7acdf0a8-89bb-4ef7-a5cc-995410e3f9d7.f8ba993c09d323398cf32228a95e017f.jpeg",
+        "sha256": "138ae9ed38b4406528a6b670f0a6cee85e69aad1aa36d6af90c173c35fbf52a7"
+      },
+      {
+        "slot": "gallery-1",
+        "source_url": "https://i5.walmartimages.com/asr/0f6cf666-4f6c-454e-9e97-6fe49dd122a7.8185b8701f67521022b0af17c77bbde1.jpeg",
+        "sha256": "acc83da27769326d6fb02bdbd1f362ad8b54aa37746ba03ee0c662244bc0acbc"
+      },
+      {
+        "slot": "gallery-2",
+        "source_url": "https://i5.walmartimages.com/asr/50e1c8da-0397-449e-9d83-4e211f823aa0.344b943af10cf140bcec2ae7a18c6289.jpeg",
+        "sha256": "a261efc52345231b14f91dd78bc5749d84af1bffe738dc0bb8994a5981e44a68"
+      },
+      {
+        "slot": "gallery-3",
+        "source_url": "https://i5.walmartimages.com/asr/1925f78c-648e-4635-a30a-a8256691242b.b856a1eb6005242076f164434f4c6af1.jpeg",
+        "sha256": "f8398b1efcf2451abafc55e8e7dd5b33181abedc613af61f87ade68532537088"
+      },
+      {
+        "slot": "gallery-4",
+        "source_url": "https://i5.walmartimages.com/asr/97e57013-fa6a-48ec-95c4-6d638dd8ff0f.0c465b1f8f8c07c2b1632fa1be4413a3.jpeg",
+        "sha256": "c0386c6e046af0356ca8dbbf3d9c680c5fcfaddd04646ca8aa41c7aed98189ef"
+      },
+      {
+        "slot": "gallery-5",
+        "source_url": "https://i5.walmartimages.com/asr/5f54b419-3543-4f65-aede-62b5379c87d7.6d9bfc10dce82510aebbb8968ddb0ba5.jpeg",
+        "sha256": "c6372b15cee8be0150e4569ce8c29759dab410466746ab4f6d227d61630798bf"
+      }
+    ],
+    "changed_fields": [
+      "attributes"
+    ],
+    "unchanged_image_bytes": true
+  },
+  "owner_gate": {
+    "exact_confirmation": "В продолжании останавливайся. Я все подтверждаю и разрешаю полностью продолжить. Без дополнительных моих разрешений.",
+    "confirms_only_reviewed_diff": true,
+    "confirmation_would_authorize_product_truth_activation": true,
+    "confirmation_would_authorize_one_sku_package_compilation": true,
+    "current_walmart_write_authorized": false,
+    "current_mass_run_authorized": false
+  },
+  "assurance": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "next_required_inputs": [
+    "fresh owner-package doctor",
+    "one OAuth token call",
+    "one exact Walmart item GET",
+    "one Get Spec POST",
+    "one Ed25519 one-SKU execution permit"
+  ],
+  "body_sha256": "a49dc759936719fec123f835af4dfff097b869169ef1f5e106617ff8c8599e42"
+}

@@ -1,0 +1,82 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-27T00:03:55.852Z",
+  "listing_key": "walmart:1:FaisalX-1181",
+  "inputs": {
+    "product_truth_file_sha256": "58beb0969d317b81d18be78a77ccf7ffc8759e31124b4ce1266e84422cd88280",
+    "buyer_snapshot_file_sha256": "9b49e2c2cbead49dca4a50cd268deb837fb8125b1ea4939f98a5f0ab05ce298c",
+    "buyer_pdp_file_sha256": "4c333a9b6ccb70dbfe1c461030318e04bc505c76e2e8d1357e24ef5487619398",
+    "observations_file_sha256": "d2b50e3d6b4fc5be73d268e3db97049eacfc335d203b3bb85f9a86f1c93fd969",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "42dedfb747b25145e1708aba4ac6cda34a308826c7eee6a0c6db8214c1a5dd41",
+        "bytes": 536691
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+        "bytes": 415231
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+        "bytes": 238255
+      }
+    ]
+  },
+  "outcome": {
+    "status": "SOURCE_REQUIRED_WITH_CONTRADICTIONS",
+    "blockers": [
+      "LISTING_IMPROVEMENT_NOT_READY",
+      "PRODUCT_TRUTH:CURRENT_SCOPED_SKU_COST_MISSING",
+      "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0",
+      "DECLARED_CONTRADICTION:LIVE_BULLET_PRODUCT_CLASS_CONTRADICTS_TITLE_OR_ATTRIBUTE"
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1181",
+    "captured_at": "2026-07-27T00:01:04.706Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 2,
+      "phrases": [
+        "Pack of 2"
+      ]
+    },
+    "verdict": "CONTRADICTION",
+    "findings": [
+      {
+        "severity": "CONTRADICTION",
+        "code": "LIVE_BULLET_PRODUCT_CLASS_CONTRADICTS_TITLE_OR_ATTRIBUTE",
+        "slot": null,
+        "evidence": [
+          "declared=hot dog buns",
+          "bullet[2]=PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm hamburger buns are carefully crafted with quality ingredients"
+        ]
+      }
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "39f82257dc653b1c300f04c8b4d16620918cb5a6a297ec4774f1176c7f2f96bc"
+  },
+  "detector_input": null,
+  "detector_report": null,
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "28d033eae356f3b8f7658fc0991c47e36604604c37003ca481c282d294f5c008"
+}

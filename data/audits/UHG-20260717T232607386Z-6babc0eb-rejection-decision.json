@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "decision": "REJECTED_DO_NOT_PUBLISH",
+  "target_manifest": "data/audits/UHG-20260717T232607386Z-6babc0eb-manifest.json",
+  "target_manifest_sha256": "8236c3102cfc3ee247f5eecc41f1b4ab8042ac1ab3a33d6fd345c4828e58dce5",
+  "supersedes_visual_review": "data/audits/UHG-20260717T232607386Z-6babc0eb-manual-visual-review.json",
+  "decision_source": "owner_visual_feedback",
+  "reason_codes": [
+    "UNAPPROVED_COOLER_TEMPLATE",
+    "INCORRECT_SALUTEM_LOGO",
+    "INCORRECT_GEL_PACK_DESIGN",
+    "FLOATING_OR_PASTED_CARTONS",
+    "UNACCEPTABLE_MAIN_IMAGE_COMPOSITION"
+  ],
+  "replacement_requirements": {
+    "model": "gpt-image-2",
+    "approved_style_anchor": "public/bundle-factory/frozen-refs/ref-uncrustables.png",
+    "approved_style_anchor_sha256": "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33",
+    "product_references": "reviewed real retailer/manufacturer pack-shots only",
+    "preview_count_before_batch": 3,
+    "owner_approval_required": true,
+    "mass_generation_allowed_before_approval": false,
+    "amazon_or_database_write_allowed_before_approval": false
+  }
+}

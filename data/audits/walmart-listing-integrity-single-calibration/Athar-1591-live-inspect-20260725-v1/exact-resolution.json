@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "Athar-1591",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "Athar-1591",
+    "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+    "upc": "723326854620",
+    "gtin14": "00723326854620",
+    "wpid": "24Q31J65EP09",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "7014571238",
+    "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+    "main_image_url": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "baa7fd0a233a60e41ef06d2c7d766ce10a166037978a5f49f1f6119d1734a8ba",
+    "catalog_search_payload_canonical_sha256": "817338bd00e4e1ca1daa3d485e4f9826eff59603167b727bc9b8a50e910889f7"
+  },
+  "identity_evidence": [
+    "request.sku=Athar-1591",
+    "seller.ItemResponse[0].sku=Athar-1591",
+    "seller.ItemResponse[0].upc=723326854620",
+    "seller.normalized_gtin14=00723326854620",
+    "seller.wpid_not_itemId=24Q31J65EP09",
+    "catalog.items[0].standardUpc~=00723326854620;itemId=7014571238",
+    "catalog.unique_numeric_public_itemId=7014571238"
+  ]
+}

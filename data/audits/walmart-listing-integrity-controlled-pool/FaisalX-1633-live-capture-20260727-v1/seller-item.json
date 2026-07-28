@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1633",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "1OYN8ZYPZ7FB",
+      "upc": "742259721021",
+      "gtin": "00742259721021",
+      "productName": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "shelf": "Home Page/Subscriptions/Subscription Grocery/browse pantry staples/browse subscription pantry",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 53.34
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Toobaxbread003",
+      "variantGroupInfo": {
+        "isPrimary": false,
+        "groupingAttributes": [
+          {
+            "name": "size",
+            "value": "One Size"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

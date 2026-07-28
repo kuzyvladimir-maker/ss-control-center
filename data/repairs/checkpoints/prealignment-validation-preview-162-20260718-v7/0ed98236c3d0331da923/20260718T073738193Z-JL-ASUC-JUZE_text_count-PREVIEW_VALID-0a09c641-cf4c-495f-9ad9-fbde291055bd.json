@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0a09c641-cf4c-495f-9ad9-fbde291055bd",
+  "created_at": "2026-07-18T07:37:38.193Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "JL-ASUC-JUZE:text_count",
+  "sku": "JL-ASUC-JUZE",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "1e58b88d664c6f1ccc7f3b553a7d9ab709b6561714b94d3b9dde9f577c415036",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "7d55b9347a594b54abb67ca5b879610b",
+    "issues": []
+  },
+  "sha256": "86b75f751eb814c7105f0c02c198af2db536700b4df5f11372ce6b4b58930843"
+}

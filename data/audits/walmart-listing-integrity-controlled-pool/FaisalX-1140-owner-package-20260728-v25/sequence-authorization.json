@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-listing-repair-sequence-authorization/v1",
+  "algorithm": "Ed25519",
+  "key_id": "walmart-listing-repair-owner-6aba8f02755a87f1",
+  "owner_public_key_spki_sha256": "6aba8f02755a87f1c41b778aef7e0ed7a184c3f5efbcd7ba443339ddbf68a9d2",
+  "signed_body": {
+    "action": "WALMART_LISTING_REPAIR_SEQUENCE_SCOPE",
+    "environment": "PRODUCTION",
+    "sequence_id": "sequence-edaf6fccf232f943e2a6b439",
+    "sequence_epoch": "epoch-20260728T190914197Z-edaf6fccf232f943",
+    "issued_at": "2026-07-28T19:08:16.368Z",
+    "expires_at": "2026-07-28T20:09:16.368Z",
+    "approved_by": "Vladimir Kuznetsov",
+    "decision_ref": "owner-review:ac75965d0c7f1e60294dfe47d7545f58095d8e8dfc17fc9738d3cf5261f7b804",
+    "seller_account_fingerprint_sha256": "a135315771d89961b51864ae27a80fc5e1f72c27ce9cbe1a4bf4ba7f93505127",
+    "population_artifact_sha256": "edaf6fccf232f943e2a6b439d29dd22698065ba9f168b38389aac02911309e97",
+    "frozen_verifier_engine_release_sha256": "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81",
+    "capture_authority_public_key_spki_sha256": "6aba8f02755a87f1c41b778aef7e0ed7a184c3f5efbcd7ba443339ddbf68a9d2",
+    "ordered_listings": [
+      {
+        "channel": "WALMART_US",
+        "store_index": 1,
+        "sku": "FaisalX-1140",
+        "listing_key": "walmart:1:FaisalX-1140",
+        "item_id": "8401770647"
+      }
+    ],
+    "claims": {
+      "exact_ordered_population": true,
+      "source_aware_rebuild_required": true,
+      "next_sku_requires_rebuilt_pass": true,
+      "marketplace_writes_authorized": false,
+      "sequence_is_not_a_write_permit": true,
+      "mass_apply_allowed": false
+    }
+  },
+  "signature_base64": "Qf+x+hW5LplKO0YUUOkpEw4ZAqOaD+6DmsERCPRZFhf6UQK8vYmN4RECAKNxMxe7sV1ar4jWC7bO/iY7zTZFBw==",
+  "signature_sha256": "fbec279bf97efefbaf4e92063374126bc9c86af053bdff72578537c42ea13b81",
+  "authorization_sha256": "46b669ab1fb2db827bfd0bd9452a4b2101b02cbedad2c3fbfa95e4b45a4aed80"
+}

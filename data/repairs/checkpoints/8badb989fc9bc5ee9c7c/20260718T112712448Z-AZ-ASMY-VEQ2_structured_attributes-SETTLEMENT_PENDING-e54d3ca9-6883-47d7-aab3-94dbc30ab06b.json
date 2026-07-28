@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e54d3ca9-6883-47d7-aab3-94dbc30ab06b",
+  "created_at": "2026-07-18T11:27:12.448Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AZ-ASMY-VEQ2:structured_attributes",
+  "sku": "AZ-ASMY-VEQ2",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "cb7dbcfb-f531-42bf-b795-a25ea45dc46d",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "debc183f43eeac64a8aaa95902be7df68482cf67e3d7ce2fe6c18a0df9380f1b",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients",
+        "/attributes/merchant_shipping_group"
+      ],
+      "before_path_state_sha256": "c1c5a5ccc2f50555451b8b588ba9ece6bd40c46870ed52eaf623779d545c6f90"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "ba834860f0dca35a7231f2f964e6053f20405103c6ef1d259c56a7b38330c745"
+}

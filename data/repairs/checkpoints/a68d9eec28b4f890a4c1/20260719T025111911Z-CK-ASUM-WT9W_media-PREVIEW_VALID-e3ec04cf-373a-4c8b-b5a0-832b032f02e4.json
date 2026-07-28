@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e3ec04cf-373a-4c8b-b5a0-832b032f02e4",
+  "created_at": "2026-07-19T02:51:11.911Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "CK-ASUM-WT9W:media",
+  "sku": "CK-ASUM-WT9W",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "527402c5dd0e04cf7d7c87a4a6528d91fa4761f1adb22b93e97a7ef4b85f9e54",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "status": "VALID",
+    "submission_id": "da582e5d10d5452fbb352ab9f91ba043",
+    "issues": []
+  },
+  "sha256": "ed7a1aade9e8aa957762899e83161b4910a8b7a3ddfe23c5197d51f0a75caf62"
+}

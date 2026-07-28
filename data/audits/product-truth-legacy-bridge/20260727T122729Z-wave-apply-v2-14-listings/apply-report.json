@@ -1,0 +1,54 @@
+{
+  "approvalId": "owner-ptlb-wave-cb890414ab73b579d117599a",
+  "approvalSha256": "3a7c6f36283716e1211186f69b7e9efbc8af10a5324b80b208a28fca9f7a1033",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-27T12:27:41.066Z",
+  "counts": {
+    "donorIdentityTransitions": 7,
+    "exactExistingRows": 0,
+    "insertedRows": 70,
+    "targets": 14
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-cb890414ab73b579d117599a",
+  "planSha256": "367ffc2fead16f897235387a17cad8583d184fc23f605fedaf4218b687d60354",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/2.0.0",
+  "startedAt": "2026-07-27T12:27:29.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 14,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 14,
+    "listingKeys": [
+      "walmart:1:FaisalX-2751",
+      "walmart:1:FaisalX-2768",
+      "walmart:1:FaisalX-2769",
+      "walmart:1:FaisalX-2770",
+      "walmart:1:FaisalX-2811",
+      "walmart:1:FaisalX-3484",
+      "walmart:1:FaisalX-3485",
+      "walmart:1:FaisalX-3486",
+      "walmart:1:FaisalX-3637",
+      "walmart:1:FaisalX-3638",
+      "walmart:1:FaisalX-3639",
+      "walmart:1:FaisalX-3814",
+      "walmart:1:FaisalX-3815",
+      "walmart:1:RizwanX-3008"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 14
+  }
+}

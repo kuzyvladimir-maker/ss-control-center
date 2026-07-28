@@ -1,0 +1,73 @@
+{
+  "schema_version": "channelmax-uncrustables-effective-price-wave1-prewrite/v1",
+  "captured_at": "2026-07-19T02:36:45.082Z",
+  "mutation_status": "CONFIRMED_POSTWRITE",
+  "account": {
+    "host": "selling.channelmax.net",
+    "selected_site_id": 300,
+    "selected_site_name": "AmznUS [Salutem Solutions]",
+    "seller_id": "A3A7A0RDFUSGBS"
+  },
+  "forward": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "preserve_repricing_model": true
+  },
+  "rows": [
+    {
+      "item_id": 171135453,
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 78.25, "price": 78.25, "last_updated_by": "salutem-MB" }
+    },
+    {
+      "item_id": 171136202,
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 51.48, "price": 51.48, "last_updated_by": "salutem-MB" }
+    },
+    {
+      "item_id": 171136204,
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 78.53, "price": 78.53, "last_updated_by": "salutem-MB" }
+    },
+    {
+      "item_id": 171137194,
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 78.53, "price": 78.53, "last_updated_by": "salutem-MB" }
+    },
+    {
+      "item_id": 171140449,
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 85.70, "price": 85.70, "last_updated_by": "salutem-MB" }
+    },
+    {
+      "item_id": 171138026,
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "before": { "minimum_price": null, "maximum_price": 78.25, "price": 78.25, "last_updated_by": "salutem-MB" }
+    }
+  ],
+  "guardrails": {
+    "exact_row_count": 6,
+    "single_marketplace_only": true,
+    "preserve_default_repricing_model": true,
+    "independent_readback_required": true,
+    "amazon_patch_not_part_of_this_step": true
+  }
+}

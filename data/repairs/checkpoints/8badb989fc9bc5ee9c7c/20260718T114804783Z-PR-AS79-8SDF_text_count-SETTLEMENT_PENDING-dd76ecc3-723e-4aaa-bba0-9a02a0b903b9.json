@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "dd76ecc3-723e-4aaa-bba0-9a02a0b903b9",
+  "created_at": "2026-07-18T11:48:04.783Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PR-AS79-8SDF:text_count",
+  "sku": "PR-AS79-8SDF",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "86b8bf9e-c8ae-4219-a288-b20345933ab9",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f104563cf668d068c6467afd18e9c68efc00021e161417837cdb99d9ae64e82b",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "ee094ac2a20bb8f957f1c8927d0b17ddfc0cf655b047378cef0262d7934da79c"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "2530e53914818d348fc563167d7204e8601d156d275e0b545c1adf3e54b281c8"
+}

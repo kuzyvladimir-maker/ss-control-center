@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "08864406-dc27-4bec-98fe-284fa2eac3ca",
+  "created_at": "2026-07-19T04:01:51.917Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "BK-AS5Z-8UY5:media",
+  "sku": "BK-AS5Z-8UY5",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "e29ebe98-dd4a-476b-a185-cdb7f66ca873",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "324726dd300ea187f41047860010009a4b49b56c1aa944ec0ac72abcdd2fbde4",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "07d04f165ed994c95f7a31da057aa8b4fe48066e2e80f0cef71c234584011c1e"
+    },
+    "fast_verify_attempts": 6,
+    "extended_polling_attempts": 6,
+    "consecutive_stable_reads": 2,
+    "last_classification": "DESIRED",
+    "last_path_state_sha256": "f1afd9e00cf834166a80b4c5b4ce5dd4b9e03d1b70535eeea8abe089a4e13c1e",
+    "checks": [
+      {
+        "field": "main_product_image_locator",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4.png",
+        "actual": "https://m.media-amazon.com/images/I/71bg6p9gQ7L.jpg"
+      }
+    ],
+    "recovered_late_submission": true
+  },
+  "sha256": "bbb6069919393f8fa4a9de24f82b6ad9c8a9c2554b0cc7d7b983307b49b69521"
+}

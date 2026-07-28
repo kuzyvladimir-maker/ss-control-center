@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0f1d5b38-7002-47b4-9399-b20fe50cf205",
+  "created_at": "2026-07-18T10:15:20.889Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "GR-AS0R-YPCF:text_count",
+  "sku": "GR-AS0R-YPCF",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "2a64fad6a10a17ee832b5542ab5d60ab3498991b6db7817d6c03a82e8dfab9c2",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "12d8a6e889b64adea3578f7daa2733fb",
+    "issues": []
+  },
+  "sha256": "0d14598a80d8b7ebc3066ac9827debbf2ced3752035714e0758e9357830bb59a"
+}

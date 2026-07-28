@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3eb17d95-96cd-46a3-8ccc-286599d91c61",
+  "created_at": "2026-07-18T10:35:11.636Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZY-ASZ4-QM5U:text_count",
+  "sku": "ZY-ASZ4-QM5U",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "e88cf1f8221dcc37b5fe744001eb2de756e0f652c1474d0e00bb2575755d7cfd",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "0c0138faa4a8492e85a0a8879e125cd9",
+    "issues": []
+  },
+  "sha256": "ae9b9ec789989de635bb10a1fdd34a48f0984df387e0667e48b2cfc1c87182bd"
+}

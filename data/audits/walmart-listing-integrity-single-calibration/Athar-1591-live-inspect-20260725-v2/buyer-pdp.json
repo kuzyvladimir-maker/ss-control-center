@@ -1,0 +1,95 @@
+{
+  "product": {
+    "item_id": "7014571238",
+    "product_url": "https://www.walmart.com/ip/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack/7014571238",
+    "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+    "main_image": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+    "images": [
+      "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+      "https://i5.walmartimages.com/asr/a5af2f27-c04d-43a2-9e89-2d1b6d761bc4_1.9acfeceef435447c860ea2cbe169f13f.jpeg",
+      "https://i5.walmartimages.com/asr/76634d1c-d660-4389-a772-a7aafe7115cf_1.7b59e9dd50bcea0d314cd955cf8739da.jpeg",
+      "https://i5.walmartimages.com/asr/cc31b5a2-edcb-4747-abf0-fa41e5340a95_1.1abaa7eb681380cb68dfcbce1413135b.jpeg",
+      "https://i5.walmartimages.com/asr/6f6ac871-da0a-405b-b66a-055bf4af86d9_1.26f71875bedcc9cd252c8c11975b938a.jpeg"
+    ],
+    "description": "Wherever celebrations and good times happen, the LAY'S brand will be there just as it has been for more than 75 years. With flavors almost as rich as our history, we have a chip or crisp flavor guaranteed to bring a smile on your face.",
+    "feature_bullets": [
+      "15.25 oz. bag of LAY'S Barbecue Flavored Potato Chips",
+      "Tasty snack for the whole family to enjoy",
+      "Barbecue seasoning adds even more flavor to the LAYS chips you love"
+    ],
+    "specifications": [
+      {
+        "name": "Brand",
+        "value": "Frito-Lay"
+      },
+      {
+        "name": "Flavor",
+        "value": "Barbecue"
+      },
+      {
+        "name": "Snack chip type",
+        "value": "Potato Chips"
+      },
+      {
+        "name": "Texture",
+        "value": "Crunchy"
+      },
+      {
+        "name": "Size",
+        "value": "2 lbs"
+      },
+      {
+        "name": "Product net content parent",
+        "value": "15.25 Ounces"
+      },
+      {
+        "name": "Product net content uom",
+        "value": "Ounce"
+      },
+      {
+        "name": "Container type",
+        "value": "Bag"
+      },
+      {
+        "name": "Retail packaging",
+        "value": "Value Pack"
+      },
+      {
+        "name": "Pack quantity",
+        "value": "2"
+      },
+      {
+        "name": "Count",
+        "value": "2"
+      },
+      {
+        "name": "Product line",
+        "value": "LAY'S"
+      },
+      {
+        "name": "Vegetable type",
+        "value": "Potato"
+      },
+      {
+        "name": "Material",
+        "value": "Plastic"
+      },
+      {
+        "name": "Weight",
+        "value": "15.25 oz"
+      },
+      {
+        "name": "Food form",
+        "value": "Pieces"
+      },
+      {
+        "name": "Manufacturer",
+        "value": "Frito Lay"
+      },
+      {
+        "name": "Food & drug fact label type",
+        "value": "No Fact Panel"
+      }
+    ]
+  }
+}

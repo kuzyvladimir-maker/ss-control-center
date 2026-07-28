@@ -1,0 +1,37 @@
+{
+  "authenticated": false,
+  "authorityRequired": "owner",
+  "canonicalIdentity": {
+    "brand": "OWNER_REPLACE",
+    "flavor": null,
+    "form": "OWNER_REPLACE",
+    "modifiers": [],
+    "outerPackCount": 1,
+    "productLine": null,
+    "schemaVersion": "canonical-product-variant-identity/1.0.0",
+    "size": {
+      "baseAmount": "OWNER_REPLACE",
+      "baseUnit": "OWNER_REPLACE",
+      "dimension": "OWNER_REPLACE"
+    }
+  },
+  "donorOfferId": "do:walmart:34312392",
+  "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+  "instructions": [
+    "Owner must independently verify the exact sellable variant.",
+    "Replace every placeholder and save only canonicalIdentity as canonical JSON.",
+    "The later external Product Truth approval attests the exact plan SHA that binds these row bytes and identity."
+  ],
+  "legacyEvidence": {
+    "brand": "Ritz",
+    "containerType": null,
+    "flavor": null,
+    "productLine": null,
+    "size": "8.8 oz",
+    "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz"
+  },
+  "legacySnapshotSha256": "f8c276b2709f5ffd4cc915a4578936a5a116d9c7f5991d3b3c8010efcae0da17",
+  "normalizedProductUrl": "https://www.walmart.com/ip/34312392",
+  "retailerProductId": "34312392",
+  "schemaVersion": "product-truth-targeted-owner-identity-template/1.0.0"
+}

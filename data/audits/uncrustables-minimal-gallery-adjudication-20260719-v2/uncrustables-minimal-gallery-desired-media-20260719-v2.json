@@ -1,0 +1,590 @@
+{
+  "schema_version": "uncrustables-minimal-gallery-desired-media/v1",
+  "manifest_id": "UMGDM-20260719T041946004Z-7a5353f42bb0",
+  "created_at": "2026-07-19T04:19:46.004Z",
+  "immutable": true,
+  "offline_only": true,
+  "execution_authorized": false,
+  "external_mutations": 0,
+  "adjudication_body_sha256": "7a5353f42bb052d0fa1aeaf6bf079b7de95e096af48269c9945f1084715c2228",
+  "source_files": [
+    {
+      "path": "data/audits/uncrustables-owner-relaxed-gallery-audit-20260719-v1/uncrustables-owner-relaxed-gallery-audit-20260719-v1.json",
+      "file_sha256": "bb5e002755a7338b67b4e7f12e6629b4ae6b94f84001eb6a78e48f27ab2d6f10"
+    },
+    {
+      "path": "data/audits/uncrustables-live-gallery-surgical-plan-20260718-v4.json",
+      "file_sha256": "ae345407a4b95232941cdcaa3836fc85ba87ca6d9cf94988f797253d90025469"
+    }
+  ],
+  "scope": {
+    "total_adjudicated": 164,
+    "fix_actions": 3
+  },
+  "safety": {
+    "required_before_any_apply": [
+      "fresh exact Amazon listing capture for store 1, SKU, ASIN, marketplace, and merchant",
+      "compare fresh slot URLs and field/listing hashes to expected_before; any drift blocks the action",
+      "capture immutable rollback for every changed slot",
+      "Amazon VALIDATION_PREVIEW for the exact sparse media diff",
+      "separate owner/network execution gate"
+    ],
+    "required_after_any_apply": [
+      "immediate exact Amazon attribute readback",
+      "buyer-facing image/order verification",
+      "delayed repeat readback to detect overwrite or propagation drift"
+    ],
+    "no_offer_price_promo_or_channelmax_changes": true
+  },
+  "actions": [
+    {
+      "action_id": "SZ-ASPI-JFAT:minimal_gallery_repair",
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "store_index": 1,
+      "expected_listing_sha256": "f894164f3f9cf73c959499a042016d1022613db7e4ea688e2366d0f547a9bc33",
+      "source_adjudication_row_sha256": "82b6e45e6f8369f04d1c1b9393e638aeaa64ec317766f08084ee70868f2a76b3",
+      "strategy": "ADD_MINIMUM_FOUR_EXACT_PB_BLACKBERRY_ASSETS",
+      "hard_violation_codes": [
+        "ADDITIONAL_IMAGE_COUNT_OUTSIDE_4_TO_6"
+      ],
+      "before_slots": [
+        {
+          "slot_index": 1,
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+        }
+      ],
+      "desired_slots": [
+        {
+          "slot_index": 1,
+          "attribute": "/attributes/other_product_image_locator_1",
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "source_role": "FIXED_PRICE_THANK_YOU_CARD",
+          "represented_recipe_keys": [],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+            "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+            "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          }
+        },
+        {
+          "slot_index": 2,
+          "attribute": "/attributes/other_product_image_locator_2",
+          "url": "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "asset_sha256": "bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 3,
+          "attribute": "/attributes/other_product_image_locator_3",
+          "url": "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "asset_sha256": "891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 4,
+          "attribute": "/attributes/other_product_image_locator_4",
+          "url": "https://m.media-amazon.com/images/I/710y92xndwL.jpg",
+          "asset_sha256": "7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 5,
+          "attribute": "/attributes/other_product_image_locator_5",
+          "url": "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg",
+          "asset_sha256": "0642ec9e501feef33164e1d55c2ddb4740a31f9ca319ce775fad0278f8f9b78f",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        }
+      ],
+      "slot_diff": [
+        {
+          "slot_index": 2,
+          "attribute": "/attributes/other_product_image_locator_2",
+          "url": "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "asset_sha256": "bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 3,
+          "attribute": "/attributes/other_product_image_locator_3",
+          "url": "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "asset_sha256": "891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 4,
+          "attribute": "/attributes/other_product_image_locator_4",
+          "url": "https://m.media-amazon.com/images/I/710y92xndwL.jpg",
+          "asset_sha256": "7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        },
+        {
+          "slot_index": 5,
+          "attribute": "/attributes/other_product_image_locator_5",
+          "url": "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg",
+          "asset_sha256": "0642ec9e501feef33164e1d55c2ddb4740a31f9ca319ce775fad0278f8f9b78f",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_BLACKBERRY"
+          ],
+          "change_kind": "ADD",
+          "expected_before": null
+        }
+      ],
+      "delete_slot_indices": [],
+      "desired_validation": {
+        "approved_card_exact_slot_1": true,
+        "approved_card_occurrences": 1,
+        "additional_image_count": 4,
+        "exact_urls_unique": true,
+        "exact_asset_sha256_unique": true,
+        "exact_recipe_assets": 4
+      },
+      "action_sha256": "5fe3eff7e6612d28b2ac8f7f23bf963dbe6a210089155c2284a8986851bfd63b"
+    },
+    {
+      "action_id": "UA-ASAO-RE7Q:minimal_gallery_repair",
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "store_index": 1,
+      "expected_listing_sha256": "f8bd7f377551f7059d6226d5ce9cbe4508dbdbd9a77842b8348d49ffccb0282c",
+      "source_adjudication_row_sha256": "d872e9bf4db65e65bc25cb5e0855152250a8b69a2a339e9647366b1c21a758dc",
+      "strategy": "SWAP_SLOT_1_AND_SLOT_7_ONLY",
+      "hard_violation_codes": [
+        "APPROVED_CARD_NOT_EXACT_SLOT_1"
+      ],
+      "before_slots": [
+        {
+          "slot_index": 1,
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+        },
+        {
+          "slot_index": 2,
+          "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+          "field_sha256": "b03835d3956c01e23d04bd53340b62d445e748442ce4fcfccde40981aae5cb5c"
+        },
+        {
+          "slot_index": 3,
+          "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+          "field_sha256": "3d59c016d0a02fabffdd9a6d6552e3c1c465590095b44fc79c5c70809d0219d3"
+        },
+        {
+          "slot_index": 4,
+          "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+          "field_sha256": "2422a5407e18b8efc0abb8d75811fd3832d9cbbbebe253f93b20fe84ec2b4d35"
+        },
+        {
+          "slot_index": 5,
+          "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+          "field_sha256": "fb241d43a05ab2a7f92f2f76c0f756e7dd1bc8e9ee9fa653328d1e913c13ec6e"
+        },
+        {
+          "slot_index": 6,
+          "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+          "field_sha256": "f9003f3200b84307182277e241a5b5ff08e0f3ef3fff503178a0324d5811e5e6"
+        },
+        {
+          "slot_index": 7,
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+        }
+      ],
+      "desired_slots": [
+        {
+          "slot_index": 1,
+          "attribute": "/attributes/other_product_image_locator_1",
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "source_role": "FIXED_PRICE_THANK_YOU_CARD",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+            "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+            "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          }
+        },
+        {
+          "slot_index": 2,
+          "attribute": "/attributes/other_product_image_locator_2",
+          "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+          "source_role": "PRESERVE_CURRENT",
+          "represented_recipe_keys": [],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+            "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+            "field_sha256": "b03835d3956c01e23d04bd53340b62d445e748442ce4fcfccde40981aae5cb5c"
+          }
+        },
+        {
+          "slot_index": 3,
+          "attribute": "/attributes/other_product_image_locator_3",
+          "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+            "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+            "field_sha256": "3d59c016d0a02fabffdd9a6d6552e3c1c465590095b44fc79c5c70809d0219d3"
+          }
+        },
+        {
+          "slot_index": 4,
+          "attribute": "/attributes/other_product_image_locator_4",
+          "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+            "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+            "field_sha256": "2422a5407e18b8efc0abb8d75811fd3832d9cbbbebe253f93b20fe84ec2b4d35"
+          }
+        },
+        {
+          "slot_index": 5,
+          "attribute": "/attributes/other_product_image_locator_5",
+          "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+            "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+            "field_sha256": "fb241d43a05ab2a7f92f2f76c0f756e7dd1bc8e9ee9fa653328d1e913c13ec6e"
+          }
+        },
+        {
+          "slot_index": 6,
+          "attribute": "/attributes/other_product_image_locator_6",
+          "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+          "source_role": "PRESERVE_CURRENT",
+          "represented_recipe_keys": [],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+            "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+            "field_sha256": "f9003f3200b84307182277e241a5b5ff08e0f3ef3fff503178a0324d5811e5e6"
+          }
+        },
+        {
+          "slot_index": 7,
+          "attribute": "/attributes/other_product_image_locator_7",
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "source_role": "PRESERVE_NUTRITION_PANEL_AFTER_CARD_REORDER",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+            "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+            "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          }
+        }
+      ],
+      "slot_diff": [
+        {
+          "slot_index": 1,
+          "attribute": "/attributes/other_product_image_locator_1",
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "source_role": "FIXED_PRICE_THANK_YOU_CARD",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+            "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+            "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          }
+        },
+        {
+          "slot_index": 7,
+          "attribute": "/attributes/other_product_image_locator_7",
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "source_role": "PRESERVE_NUTRITION_PANEL_AFTER_CARD_REORDER",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+            "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+            "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          }
+        }
+      ],
+      "delete_slot_indices": [],
+      "desired_validation": {
+        "approved_card_exact_slot_1": true,
+        "approved_card_occurrences": 1,
+        "additional_image_count": 6,
+        "exact_urls_unique": true,
+        "exact_asset_sha256_unique": true,
+        "exact_recipe_assets": 3
+      },
+      "action_sha256": "dca7dc373afeee3f555b43695d55340504ed9c2ec72662f8bd1239c8a1025000"
+    },
+    {
+      "action_id": "VC-ASV1-378P:minimal_gallery_repair",
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "store_index": 1,
+      "expected_listing_sha256": "a1a9f9a83ae746381126eab750badead47f820e80a08334657decc4e47360d66",
+      "source_adjudication_row_sha256": "8f522a54ac5ee694f37eb470755a4eb92c6b5e94edb7519b147ebecbdce26c6a",
+      "strategy": "SWAP_SLOT_1_AND_SLOT_7_ONLY",
+      "hard_violation_codes": [
+        "APPROVED_CARD_NOT_EXACT_SLOT_1"
+      ],
+      "before_slots": [
+        {
+          "slot_index": 1,
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+        },
+        {
+          "slot_index": 2,
+          "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+          "field_sha256": "b03835d3956c01e23d04bd53340b62d445e748442ce4fcfccde40981aae5cb5c"
+        },
+        {
+          "slot_index": 3,
+          "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+          "field_sha256": "3d59c016d0a02fabffdd9a6d6552e3c1c465590095b44fc79c5c70809d0219d3"
+        },
+        {
+          "slot_index": 4,
+          "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+          "field_sha256": "2422a5407e18b8efc0abb8d75811fd3832d9cbbbebe253f93b20fe84ec2b4d35"
+        },
+        {
+          "slot_index": 5,
+          "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+          "field_sha256": "fb241d43a05ab2a7f92f2f76c0f756e7dd1bc8e9ee9fa653328d1e913c13ec6e"
+        },
+        {
+          "slot_index": 6,
+          "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+          "field_sha256": "f9003f3200b84307182277e241a5b5ff08e0f3ef3fff503178a0324d5811e5e6"
+        },
+        {
+          "slot_index": 7,
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+        }
+      ],
+      "desired_slots": [
+        {
+          "slot_index": 1,
+          "attribute": "/attributes/other_product_image_locator_1",
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "source_role": "FIXED_PRICE_THANK_YOU_CARD",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+            "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+            "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          }
+        },
+        {
+          "slot_index": 2,
+          "attribute": "/attributes/other_product_image_locator_2",
+          "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+          "source_role": "PRESERVE_CURRENT",
+          "represented_recipe_keys": [],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+            "asset_sha256": "85c750f847bb5e9dd45031bb1707c995a9817da7b60b2b50386589583f4c27ec",
+            "field_sha256": "b03835d3956c01e23d04bd53340b62d445e748442ce4fcfccde40981aae5cb5c"
+          }
+        },
+        {
+          "slot_index": 3,
+          "attribute": "/attributes/other_product_image_locator_3",
+          "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+            "asset_sha256": "e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce",
+            "field_sha256": "3d59c016d0a02fabffdd9a6d6552e3c1c465590095b44fc79c5c70809d0219d3"
+          }
+        },
+        {
+          "slot_index": 4,
+          "attribute": "/attributes/other_product_image_locator_4",
+          "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+            "asset_sha256": "1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066",
+            "field_sha256": "2422a5407e18b8efc0abb8d75811fd3832d9cbbbebe253f93b20fe84ec2b4d35"
+          }
+        },
+        {
+          "slot_index": 5,
+          "attribute": "/attributes/other_product_image_locator_5",
+          "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+          "source_role": "EXACT_RECIPE_COMPONENT",
+          "represented_recipe_keys": [
+            "PB_STRAWBERRY"
+          ],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+            "asset_sha256": "bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649",
+            "field_sha256": "fb241d43a05ab2a7f92f2f76c0f756e7dd1bc8e9ee9fa653328d1e913c13ec6e"
+          }
+        },
+        {
+          "slot_index": 6,
+          "attribute": "/attributes/other_product_image_locator_6",
+          "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+          "source_role": "PRESERVE_CURRENT",
+          "represented_recipe_keys": [],
+          "change_kind": "KEEP",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+            "asset_sha256": "43e494be94fc441ea3f6467c15bb2f4731304b54abed318d6dadefe49318167f",
+            "field_sha256": "f9003f3200b84307182277e241a5b5ff08e0f3ef3fff503178a0324d5811e5e6"
+          }
+        },
+        {
+          "slot_index": 7,
+          "attribute": "/attributes/other_product_image_locator_7",
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "source_role": "PRESERVE_NUTRITION_PANEL_AFTER_CARD_REORDER",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+            "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+            "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          }
+        }
+      ],
+      "slot_diff": [
+        {
+          "slot_index": 1,
+          "attribute": "/attributes/other_product_image_locator_1",
+          "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+          "source_role": "FIXED_PRICE_THANK_YOU_CARD",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+            "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+            "field_sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          }
+        },
+        {
+          "slot_index": 7,
+          "attribute": "/attributes/other_product_image_locator_7",
+          "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+          "asset_sha256": "f63f70d84b9aed42c3ced1ad85d7f1e54c3bb804e54d4aadd702a14b3d3dcbf4",
+          "source_role": "PRESERVE_NUTRITION_PANEL_AFTER_CARD_REORDER",
+          "represented_recipe_keys": [],
+          "change_kind": "REPLACE",
+          "expected_before": {
+            "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+            "asset_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+            "field_sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          }
+        }
+      ],
+      "delete_slot_indices": [],
+      "desired_validation": {
+        "approved_card_exact_slot_1": true,
+        "approved_card_occurrences": 1,
+        "additional_image_count": 6,
+        "exact_urls_unique": true,
+        "exact_asset_sha256_unique": true,
+        "exact_recipe_assets": 3
+      },
+      "action_sha256": "266a5b907338f2accbaf3aadc86f91a01d4fee351438e6f176e5a94182aa41a4"
+    }
+  ],
+  "body_sha256": "08e2ae5d45d8583bb1a042263d460fd44ecc757319d66d4de24b32cd79482fc4"
+}

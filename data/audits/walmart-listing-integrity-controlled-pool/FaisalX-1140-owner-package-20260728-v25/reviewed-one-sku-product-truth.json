@@ -1,0 +1,102 @@
+{
+  "schema_version": "walmart-listing-repair-reviewed-one-sku-truth/v1",
+  "created_at": "2026-07-28T19:09:14.196Z",
+  "status": "ACTIVE_FOR_EXACT_ONE_SKU_PACKAGE_ONLY",
+  "snapshot": {
+    "snapshot_id": "reviewed-one-sku-truth-ebd7694ca09705570b78bb59",
+    "body_sha256": "ebd7694ca09705570b78bb59224793e1e7a5c2de91ebab0dede563881ec75058",
+    "compilation_request_file_sha256": "edaf6fccf232f943e2a6b439d29dd22698065ba9f168b38389aac02911309e97",
+    "compilation_request_body_sha256": "ac75965d0c7f1e60294dfe47d7545f58095d8e8dfc17fc9738d3cf5261f7b804",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1140",
+      "listing_key": "walmart:1:FaisalX-1140",
+      "item_id": "8401770647"
+    },
+    "frozen_review": {
+      "proposal_file_sha256": "de900df85c70e279762d47dfd66736d9de6c38f6a4ff6db2ca59330bc2b085b5",
+      "proposal_body_sha256": "d9024dbfcd35739bd6048b989a6562baf18fe29d34c3accd831f3802d192e691",
+      "certification_file_sha256": "6931f8cbf56282cc6e3032094ce5c98e096e41028de2b34b6f4900516edef43a",
+      "certification_body_sha256": "a7f25aebd380b31cee201cba603c8d4a081a7ee490f5bfab7bf4377ce513c7fa",
+      "diagnosis_file_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+      "buyer_snapshot_file_sha256": "f86dbf09d30fd889ed82e31ce5cc859d334d1a232d878fadbaaa8fcb39efdd48",
+      "buyer_pdp_file_sha256": "f6f351299e2919c5c4eb661ec45031cb302246cb5c9bc07140ea6cc3072eb392",
+      "donor_audit_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd"
+    },
+    "product_truth_candidate": {
+      "candidate_sha256": "479c14777fb88d60c4b9b096d0868168dde2af79ea3b5f6856dc05307fdc9034",
+      "expected_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+      "donor_product_id": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+      "single_unit_upc": null,
+      "outer_units": 4,
+      "expected": {
+        "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+        "outer_units": 4,
+        "identity": {
+          "brand_aliases": [
+            "Pepperidge Farm",
+            "farm pepperidge"
+          ],
+          "product_marker_groups": [
+            [
+              "bread sandwich white",
+              "White Sandwich Bread"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "white"
+            ]
+          ],
+          "forbidden_markers": []
+        },
+        "package_facts": [
+          {
+            "kind": "net_content",
+            "requirement": "required",
+            "value": 453.59237,
+            "unit": "g"
+          }
+        ],
+        "truth_source": "recipe"
+      }
+    }
+  },
+  "revision": {
+    "revision_id": "reviewed-truth-revision-fb928188e5f7c9ba937f47e8",
+    "body_sha256": "fb928188e5f7c9ba937f47e8258e2747f9cc81207e6f87f8bfd866ada179ddba",
+    "expected_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+    "candidate_sha256": "479c14777fb88d60c4b9b096d0868168dde2af79ea3b5f6856dc05307fdc9034",
+    "target_surface_sha256": "0ae8ec64b3b60a1eda37d6e75332576095226980e5bb73fab550e42fe3327224",
+    "target_images_sha256": "eb6519200a743cc981246d347d1e6b02dde683fb2f7cd0515f5cd9a95bf9e9a9"
+  },
+  "approval": {
+    "schema_version": "walmart-listing-repair-reviewed-truth-approval/v1",
+    "decision": "APPROVED_FOR_EXACT_ONE_SKU_PACKAGE_ONLY",
+    "approved_by": "Vladimir Kuznetsov",
+    "exact_confirmation_sha256": "5a483c493ca9e6c9bd4d834e91904c5054a70eab3d0dc46abf5974d6e98bdc30",
+    "compilation_request_file_sha256": "edaf6fccf232f943e2a6b439d29dd22698065ba9f168b38389aac02911309e97",
+    "compilation_request_body_sha256": "ac75965d0c7f1e60294dfe47d7545f58095d8e8dfc17fc9738d3cf5261f7b804",
+    "truth_revision_body_sha256": "fb928188e5f7c9ba937f47e8258e2747f9cc81207e6f87f8bfd866ada179ddba",
+    "authentication": "BOUND_INTO_OWNER_ED25519_SEQUENCE_AND_ONE_SKU_PERMIT",
+    "approval_sha256": "6c98876fa7604911f5620d197f41438faf23c02efafab6880b47170385eb1970"
+  },
+  "binding": {
+    "expected_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+    "product_truth_snapshot_id": "reviewed-one-sku-truth-ebd7694ca09705570b78bb59",
+    "product_truth_snapshot_body_sha256": "ebd7694ca09705570b78bb59224793e1e7a5c2de91ebab0dede563881ec75058",
+    "truth_revision_id": "reviewed-truth-revision-fb928188e5f7c9ba937f47e8",
+    "truth_revision_body_sha256": "fb928188e5f7c9ba937f47e8258e2747f9cc81207e6f87f8bfd866ada179ddba",
+    "truth_approval_sha256": "6c98876fa7604911f5620d197f41438faf23c02efafab6880b47170385eb1970"
+  },
+  "constraints": {
+    "exact_listing_count": 1,
+    "walmart_content_write_authorized": false,
+    "mass_apply_allowed": false,
+    "price_required_for_content_truth": false,
+    "database_activation_required_for_this_canary_package": false,
+    "reusable_as_shared_catalog_activation": false
+  },
+  "body_sha256": "c7014eb9dbcabf58cd4ba1d4e71f52c0951b4cfbb7193d1ef80449f678344cfc"
+}

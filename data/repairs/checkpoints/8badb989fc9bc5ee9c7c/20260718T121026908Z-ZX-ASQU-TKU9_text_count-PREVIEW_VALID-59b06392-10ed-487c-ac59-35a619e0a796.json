@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "59b06392-10ed-487c-ac59-35a619e0a796",
+  "created_at": "2026-07-18T12:10:26.908Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZX-ASQU-TKU9:text_count",
+  "sku": "ZX-ASQU-TKU9",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "e0c1fe95307077446c7794c7647ec0b7448590ac444f5d6b9bf14b8c0bec2187",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "ce7d8e4f34424fc289c791cd0cbdead7",
+    "issues": []
+  },
+  "sha256": "fbb9cc92176f2d2cf7ffebb166c9fc15f4407a5dafa4d31c46dedb3b6dce6e2c"
+}

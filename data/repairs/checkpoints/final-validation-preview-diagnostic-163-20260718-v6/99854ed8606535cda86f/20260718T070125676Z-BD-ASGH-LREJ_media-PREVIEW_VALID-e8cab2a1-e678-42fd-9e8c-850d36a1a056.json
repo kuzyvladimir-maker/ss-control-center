@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e8cab2a1-e678-42fd-9e8c-850d36a1a056",
+  "created_at": "2026-07-18T07:01:25.676Z",
+  "plan_sha256": "99854ed8606535cda86f917cb6ce49320862daf3d7ebe24c8adbb5da0e719656",
+  "action_id": "BD-ASGH-LREJ:media",
+  "sku": "BD-ASGH-LREJ",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "ed71c70b1f237c3d71ab866eceb58541cd5fd8b86ddc1a7d77019b1f1ffc5800",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "97efaffeefb7421088a43df902348676",
+    "issues": []
+  },
+  "sha256": "28f63d176687d33f8be4363186d8bc11ac85cdc750b45824d604cd6f51de9239"
+}

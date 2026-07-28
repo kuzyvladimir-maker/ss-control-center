@@ -1,0 +1,474 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.025762803819444402,
+            "width" : 0.12109762403700086,
+            "x" : 0.2119802581525994,
+            "y" : 0.8519441796710601
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02352851443820536,
+            "width" : 0.12069179958767356,
+            "x" : 0.44183433316444926,
+            "y" : 0.8530613243691404
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023684885236952113,
+            "width" : 0.11926902770996095,
+            "x" : 0.6729236260667997,
+            "y" : 0.8529831389720658
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.19186047024197048,
+            "x" : 0.18023255631461402,
+            "y" : 0.7805232554410033
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.18604651557074658,
+            "x" : 0.41133720799535756,
+            "y" : 0.7805232555052922
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.19040696885850694,
+            "x" : 0.6409883769013491,
+            "y" : 0.7805232554359212
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017404636806911844,
+            "width" : 0.07876457214355467,
+            "x" : 0.23387352831900007,
+            "y" : 0.7623732630566729
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016132522159152618,
+            "width" : 0.07851760864257812,
+            "x" : 0.46364817193219526,
+            "y" : 0.7630093202349151
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.07994185553656685,
+            "x" : 0.693313956618829,
+            "y" : 0.7630813953724351
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.02325581444634328,
+            "x" : 0.575581394977825,
+            "y" : 0.5726744190742343
+          },
+          "confidence" : 1,
+          "text" : "OD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03785137176513664,
+            "width" : 0.08205994500054253,
+            "x" : 0.28455142258352806,
+            "y" : 0.5326731510621853
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.036666666666666625,
+            "width" : 0.1875,
+            "x" : 0.40843023306686044,
+            "y" : 0.5333333336914559
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES 7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03511627833048503,
+            "width" : 0.08284883287217881,
+            "x" : 0.7441860481623843,
+            "y" : 0.534883721547555
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02499999999999991,
+            "width" : 0.09447674221462674,
+            "x" : 0.17732558185618794,
+            "y" : 0.5333333334824437
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025338029861450284,
+            "width" : 0.09899250454372832,
+            "x" : 0.6380037485512228,
+            "y" : 0.5331158694100528
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.028525019751654668,
+            "width" : 0.12229534573025175,
+            "x" : 0.21210813986649169,
+            "y" : 0.35565028070013194
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024318917592366485,
+            "width" : 0.12083994547526039,
+            "x" : 0.44176026029809073,
+            "y" : 0.35993356469641025
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.022678190867106096,
+            "width" : 0.12529101901584205,
+            "x" : 0.6669241965806147,
+            "y" : 0.36033789617286305
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.047845429314507304,
+            "width" : 0.19249584621853297,
+            "x" : 0.17991486827377792,
+            "y" : 0.28639705277900707
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.1904069688585069,
+            "x" : 0.4113372139774996,
+            "y" : 0.28779069731264906
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04922218746609164,
+            "width" : 0.1910508897569445,
+            "x" : 0.640666414887488,
+            "y" : 0.2864354180787081
+          },
+          "confidence" : 1,
+          "text" : "Chessmen."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017698361078898106,
+            "width" : 0.07854497273763023,
+            "x" : 0.23398332831084329,
+            "y" : 0.26876709835352486
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.07848837110731338,
+            "x" : 0.4636627919172735,
+            "y" : 0.2688953490077892
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017631572087605796,
+            "width" : 0.07998303731282552,
+            "x" : 0.6932933657305252,
+            "y" : 0.26880049310022014
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.023255814446343392,
+            "x" : 0.5755813951024096,
+            "y" : 0.07994186029491579
+          },
+          "confidence" : 1,
+          "text" : "OD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018895348442925286,
+            "width" : 0.026162789662679042,
+            "x" : 0.8052325588750558,
+            "y" : 0.0784883723749521
+          },
+          "confidence" : 1,
+          "text" : "OD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03524709277682836,
+            "width" : 0.08300117492675779,
+            "x" : 0.28480755266336766,
+            "y" : 0.04196947688556574
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03574122111002609,
+            "width" : 0.08320621914333759,
+            "x" : 0.5143561922368891,
+            "y" : 0.04172241262275922
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03669331868489589,
+            "width" : 0.08155370076497392,
+            "x" : 0.7455603586846435,
+            "y" : 0.0419731083275523
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02517629411485467,
+            "width" : 0.0945978037516276,
+            "x" : 0.1772650510224004,
+            "y" : 0.04046417845745809
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025000000000000022,
+            "width" : 0.09447674221462671,
+            "x" : 0.4069767444969225,
+            "y" : 0.040555555285739064
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02572543462117516,
+            "width" : 0.09618692186143674,
+            "x" : 0.637953051495663,
+            "y" : 0.04018960836406915
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-d5b866add869df4478af99002d91273e073aa6973bf0750d9bd8ae1b20370457.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.04541015625,
+            "width" : 0.524539876721569,
+            "x" : 0.24233128959515526,
+            "y" : 0.7294921866651938
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09323711693286896,
+            "width" : 0.8358349986912049,
+            "x" : 0.10662238015163608,
+            "y" : 0.5740209763643089
+          },
+          "confidence" : 1,
+          "text" : "Chessmen"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03268662467598915,
+            "width" : 0.3469148301586662,
+            "x" : 0.3342112985152639,
+            "y" : 0.5345287804893757
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030523255467414856,
+            "width" : 0.09815950688627573,
+            "x" : 0.8343558286778086,
+            "y" : 0.1308139535682029
+          },
+          "confidence" : 0.5,
+          "text" : "OD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0835077092051506,
+            "width" : 0.3640611156974871,
+            "x" : 0.5603007292019171,
+            "y" : 0.03818800586535598
+          },
+          "confidence" : 1,
+          "text" : "7.250Z"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.051598526537418365,
+            "width" : 0.4183062051989368,
+            "x" : 0.08532542674433506,
+            "y" : 0.04687515541770759
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-3db8044fa7123b5236daff9281675502455a3e243c6d623f2488522cad9a496d.png",
+      "width" : 970
+    },
+    {
+      "height" : 1236,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.06196213385819627,
+            "width" : 0.08575581201438698,
+            "x" : 0.841569768375074,
+            "y" : 0.333907056773877
+          },
+          "confidence" : 1,
+          "text" : "UD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.18405247043251605,
+            "width" : 0.38787770922718146,
+            "x" : 0.530625098588251,
+            "y" : 0.12312006790877628
+          },
+          "confidence" : 1,
+          "text" : "7.25 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.12386333132253113,
+            "width" : 0.42330499034110314,
+            "x" : 0.08267890149975823,
+            "y" : 0.12309415200205664
+          },
+          "confidence" : 1,
+          "text" : "24 COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-9f48b0278295bfd37aa2c72381e223fa6714ccd9581e9501eb282c4d50132813.png",
+      "width" : 1464
+    },
+    {
+      "height" : 1482,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.08575581539015054,
+            "width" : 0.6050632611443014,
+            "x" : 0.39240507596144225,
+            "y" : 0.4374999991419105
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.19166665842980346,
+            "width" : 0.8260869284237133,
+            "x" : 0.16666667916978595,
+            "y" : 0.11250000347954292
+          },
+          "confidence" : 1,
+          "text" : "Chess"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0685093373904827,
+            "width" : 0.4065558579388787,
+            "x" : 0.5688739711167455,
+            "y" : 0.030425563934894595
+          },
+          "confidence" : 1,
+          "text" : "BUTT"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-2f3935b32463a4225de45f93599249c25073c019ec7f90220d06a3217bf72601.png",
+      "width" : 849
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

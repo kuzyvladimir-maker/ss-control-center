@@ -1,0 +1,8 @@
+{
+  "schema_version": "uncrustables-amazon-mutation-lease/v1",
+  "immutable_plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "lease_id": "1fb904d0-9c91-4c72-9e07-a3fcc24349fb",
+  "acquired_at": "2026-07-18T10:46:06.557Z",
+  "process_id": 21990,
+  "purpose": "FORWARD_APPLY:URP-20260718T083203612Z"
+}

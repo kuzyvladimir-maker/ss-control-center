@@ -1,0 +1,24 @@
+{
+  "schema_version": "walmart-preview-multipack-images/1.0.0",
+  "product_slug": "ritz-bits-peanut-butter-current",
+  "source_file": "ritz-pb-main.jpg",
+  "source_asset_sha256": "ed531a622efc9f155d09274ff0bab889e832084c10e8d6da185a49e8ac1f055f",
+  "outputs": [
+    {
+      "file": "ritz-bits-peanut-butter-current-pack-of-2.png",
+      "output_sha256": "fd07f07d27f31045fd3aea04984d78608723d4caa2327535f68cdeeb7495dba1",
+      "represented_unit_count": 2
+    },
+    {
+      "file": "ritz-bits-peanut-butter-current-pack-of-3.png",
+      "output_sha256": "cb2cb3b8c2819164c35fdd9d04f7fb232fc15c786123a2e6f0298b33eb6a09c5",
+      "represented_unit_count": 3
+    }
+  ],
+  "construction_method": "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+  "canvas": {
+    "width": 2200,
+    "height": 2200,
+    "background": "WHITE"
+  }
+}

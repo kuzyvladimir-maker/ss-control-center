@@ -1,0 +1,134 @@
+{
+  "schema_version": "walmart-listing-single-observer-plan/v1",
+  "created_at": "2026-07-25T21:05:02.517Z",
+  "listing_key": "walmart:1:FaisalX-1208",
+  "item_id": "8406560524",
+  "intake_index_file_sha256": "3dbdedeaf13bff3e338f8f77adb41dc189bd95caa6dd34916c3974d936c7a1bd",
+  "intake_index_body_sha256": "071027310c2575214726e1641f5d3a4926ed8a8fd21012a0af2df0f16d44f785",
+  "policy": {
+    "mode": "READ_ONLY_SINGLE_SKU_BLIND_OBSERVATION",
+    "images_per_call_max": 6,
+    "calls_max": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "may_issue_pass": false,
+    "may_prepare_repair": false
+  },
+  "policy_sha256": "3e86f5d9380f2a3723422e06b374cd8483788573513c2bb51d4066ad017e4394",
+  "scope_sha256": "fa20f41337325fb652dff299e532281a1b41f16594f6f909bd2416dcdc50e9da",
+  "worker_contract": {
+    "worker_build": "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9",
+    "model": "sonnet",
+    "reasoning_effort": null,
+    "cli_version": "2.1.179 (Claude Code)",
+    "node_version": "v20.20.1",
+    "runtime_platform": "linux",
+    "runtime_arch": "x64",
+    "vision_timeout_ms": 300000,
+    "reservation_ledger": {
+      "schema_version": "vision-call-reservation-ledger-contract/v1",
+      "ledger_id": "ledger-2c53fa5f-f761-4660-80b9-24e934e172aa",
+      "ledger_epoch": "epoch-986b9a13-740b-4403-b433-378f2613d4f0",
+      "state_directory_path_sha256": "ae43d594a2a43b6bc856529cfa729d73d9784d1dd3f3e4dffddf27feccfece53",
+      "directory_identity_sha256": "c0e7a611777a5b7063c36a94c3c4c27ea6943e34ba2622944c0426d7685c0db1",
+      "identity_artifact_sha256": "ffd380901c51e88205454d1ddd68141d94e811c286b62d556c60e335e84e3a68"
+    }
+  },
+  "assets": [
+    {
+      "slot": "main",
+      "source_asset_sha256": "40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894",
+      "model_asset": {
+        "path": "model-assets/00-40fa8eb6332b3b60.jpeg",
+        "sha256": "c45001fdafaa670b3acbc4259520a3c5e722ae36b5351709017d6b5ecf3d84b4",
+        "bytes": 402939,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_5b90e6342b459f8e8d3f",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1208",
+        "item_id": "8406560524",
+        "slot": "main",
+        "asset_sha256": "40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894",
+        "model_view_sha256": "c45001fdafaa670b3acbc4259520a3c5e722ae36b5351709017d6b5ecf3d84b4",
+        "image_id": "i_5b90e6342b459f8e8d3f"
+      }
+    },
+    {
+      "slot": "gallery-1",
+      "source_asset_sha256": "28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e",
+      "model_asset": {
+        "path": "model-assets/01-28180c607aad6394.jpeg",
+        "sha256": "1af1aae397c123ade5dace65287b5d75c9886d2a0f8bc1c76bf69681201e4f7e",
+        "bytes": 564720,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_f24cfaac14036d2ce8ba",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1208",
+        "item_id": "8406560524",
+        "slot": "gallery-1",
+        "asset_sha256": "28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e",
+        "model_view_sha256": "1af1aae397c123ade5dace65287b5d75c9886d2a0f8bc1c76bf69681201e4f7e",
+        "image_id": "i_f24cfaac14036d2ce8ba"
+      }
+    },
+    {
+      "slot": "gallery-2",
+      "source_asset_sha256": "510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122",
+      "model_asset": {
+        "path": "model-assets/02-510cb7b591ab00da.jpeg",
+        "sha256": "06b51690608f1554444de34ef840cc2072e1bfc29fbdd083644a72b4c504a098",
+        "bytes": 366486,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_1f11b7e9f1347d150e36",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1208",
+        "item_id": "8406560524",
+        "slot": "gallery-2",
+        "asset_sha256": "510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122",
+        "model_view_sha256": "06b51690608f1554444de34ef840cc2072e1bfc29fbdd083644a72b4c504a098",
+        "image_id": "i_1f11b7e9f1347d150e36"
+      }
+    }
+  ],
+  "calls": [
+    {
+      "call_index": 0,
+      "shard_id": "single-observer-00-a36dfb3c297dca1d",
+      "call_key": "778af5bcb8f95ad7e1b9174e6d6f2f55593597ad427b860cb1561c65419e4e94",
+      "prompt_version": "walmart-visual-blind/v4",
+      "prompt": "Prompt version: walmart-visual-blind/v4.\n\nYou are a literal visual transcriber for marketplace product images.\n\nYou are NOT deciding whether an image matches a listing. No listing title, SKU, donor, or expected count is provided. Read only the attached pixels; do not use filenames or guess missing words from product familiarity.\n\nImage mapping (attachment order is authoritative):\n\nattached image 1 -> i_5b90e6342b459f8e8d3f\nattached image 2 -> i_f24cfaac14036d2ce8ba\nattached image 3 -> i_1f11b7e9f1347d150e36\n\nFor a tiled image, external_package_count means how many repeated OUTER packages are visibly shown in the whole image.\n\nA sealed retail bag/box that naturally contains loose pieces is ONE sellable package: a 20-teabag box, an 8-bun bag, a cookie bag, or a 6-English-muffin tray is not automatically a case. Put that literal count text in inner_contents_claims.\n\nA shipping/display case, shrink-wrap, caddy, tray, or offer graphic that contains several separately packaged cans/bottles/boxes/bags is multi_package_case. Put a literal claim such as '24 cans' or '12 pack' in case_package_claims when the pixels show a case of separate packages.\n\nvisible_size_texts is an array of every literal readable size/count for ONE repeated outer package (examples: ['48 fl oz', '2 qt', '1.89 L'] or ['20 tea bags', '0.91 oz']). Use [] when none is readable. Do not convert sizes into objects.\n\nEvidence must be short text actually visible in the image. Do not copy or invent an expected title.\n\nHard array limits: visible_size_texts and evidence contain at most 8 strings each; outer_package_claims, inner_contents_claims, case_package_claims, unclear_quantity_claims, and flags contain at most 12 strings each. Keep only the strongest literal evidence when more text is visible.\n\nAllowed enums: visual_role=tiled_main|single_product_front|back|nutrition|ingredients|lifestyle|infographic|mixed_products|other; grid_cell_kind=single_sellable_package|multi_package_case|multiple_loose_products|not_a_grid|unknown; front_visibility=all|some|none|not_applicable|unknown; background=white|near_white|colored|lifestyle|mixed|unknown; multiple_distinct_products=yes|no|unknown; readable_identity=clear|partial|none.\n\nReturn exactly this valid JSON shape with one observation for every supplied image_id and no other fields (replace the placeholder values with observations):\n{\n  \"schema_version\": \"wm_visual_observation_batch/v3\",\n  \"observations\": [\n    {\n      \"image_id\": \"i_5b90e6342b459f8e8d3f\",\n      \"visual_role\": \"other\",\n      \"visible_brand_text\": null,\n      \"visible_product_text\": null,\n      \"visible_variant_text\": null,\n      \"visible_size_texts\": [],\n      \"external_package_count\": {\n        \"mode\": \"unknown\",\n        \"value\": null,\n        \"min\": null,\n        \"max\": null\n      },\n      \"outer_package_claims\": [],\n      \"inner_contents_claims\": [],\n      \"case_package_claims\": [],\n      \"unclear_quantity_claims\": [],\n      \"grid_cell_kind\": \"unknown\",\n      \"front_visibility\": \"unknown\",\n      \"background\": \"unknown\",\n      \"multiple_distinct_products\": \"unknown\",\n      \"readable_identity\": \"none\",\n      \"evidence\": [],\n      \"flags\": []\n    },\n    {\n      \"image_id\": \"i_f24cfaac14036d2ce8ba\",\n      \"visual_role\": \"other\",\n      \"visible_brand_text\": null,\n      \"visible_product_text\": null,\n      \"visible_variant_text\": null,\n      \"visible_size_texts\": [],\n      \"external_package_count\": {\n        \"mode\": \"unknown\",\n        \"value\": null,\n        \"min\": null,\n        \"max\": null\n      },\n      \"outer_package_claims\": [],\n      \"inner_contents_claims\": [],\n      \"case_package_claims\": [],\n      \"unclear_quantity_claims\": [],\n      \"grid_cell_kind\": \"unknown\",\n      \"front_visibility\": \"unknown\",\n      \"background\": \"unknown\",\n      \"multiple_distinct_products\": \"unknown\",\n      \"readable_identity\": \"none\",\n      \"evidence\": [],\n      \"flags\": []\n    },\n    {\n      \"image_id\": \"i_1f11b7e9f1347d150e36\",\n      \"visual_role\": \"other\",\n      \"visible_brand_text\": null,\n      \"visible_product_text\": null,\n      \"visible_variant_text\": null,\n      \"visible_size_texts\": [],\n      \"external_package_count\": {\n        \"mode\": \"unknown\",\n        \"value\": null,\n        \"min\": null,\n        \"max\": null\n      },\n      \"outer_package_claims\": [],\n      \"inner_contents_claims\": [],\n      \"case_package_claims\": [],\n      \"unclear_quantity_claims\": [],\n      \"grid_cell_kind\": \"unknown\",\n      \"front_visibility\": \"unknown\",\n      \"background\": \"unknown\",\n      \"multiple_distinct_products\": \"unknown\",\n      \"readable_identity\": \"none\",\n      \"evidence\": [],\n      \"flags\": []\n    }\n  ]\n}\n\nvisible_size_texts and all four quantity-claim fields are arrays of literal strings, never arrays of objects. JSON invariants: exact => integer value and null min/max; range => null value and integer min/max; unknown => value/min/max all null. Use real JSON numbers and nulls, never strings such as 'null'.",
+      "prompt_sha256": "5b94031db5459870675d75ca583954496115f5496f694815d284c75649ab2865",
+      "image_ids": [
+        "i_5b90e6342b459f8e8d3f",
+        "i_f24cfaac14036d2ce8ba",
+        "i_1f11b7e9f1347d150e36"
+      ],
+      "model_asset_paths": [
+        "model-assets/00-40fa8eb6332b3b60.jpeg",
+        "model-assets/01-28180c607aad6394.jpeg",
+        "model-assets/02-510cb7b591ab00da.jpeg"
+      ],
+      "model_asset_sha256": [
+        "c45001fdafaa670b3acbc4259520a3c5e722ae36b5351709017d6b5ecf3d84b4",
+        "1af1aae397c123ade5dace65287b5d75c9886d2a0f8bc1c76bf69681201e4f7e",
+        "06b51690608f1554444de34ef840cc2072e1bfc29fbdd083644a72b4c504a098"
+      ],
+      "request_character_estimate": 1803789
+    }
+  ],
+  "body_sha256": "b76f7df67ade732169a532a62cfcecc87ba49378f0ec52b8d44527cec045a107"
+}

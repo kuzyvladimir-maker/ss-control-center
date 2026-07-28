@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1619bb84-d751-40e2-88f0-64da9d954f05",
+  "created_at": "2026-07-18T08:41:23.641Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HU-ASMI-DN3X:offer",
+  "sku": "HU-ASMI-DN3X",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "998914417a418e077cebacbc04bf277e780a5a75c9aecee023ad3b16f5a6cc72",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "2d1e6c3532fbf12f3deb8bed0c50aa1b87f1c42d95c8bec5e6172b21acd6900e",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "1c79029edf64367d9c35da6307aad55540345569af2af30fd164dab07215f5a9",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "60ab9a570d8424063271d7cfaf7b4a13be94dcb361f55b09d04c669557731798",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "1a67e49b33a4427fb0d0e305fe8f5440",
+    "issues": []
+  },
+  "sha256": "4023aba8c7b1e0b3fba5dd421f461d143400ed3fa5a43670ffefe229e362ecaa"
+}

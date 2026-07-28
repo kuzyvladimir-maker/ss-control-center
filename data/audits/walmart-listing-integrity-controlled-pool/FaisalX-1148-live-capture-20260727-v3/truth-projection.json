@@ -1,0 +1,50 @@
+{
+  "status": "READY",
+  "adapter_version": "walmart-listing-single-pipeline-truth-adapter/v2",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "expected": {
+    "title": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+    "outer_units": 2,
+    "identity": {
+      "brand_aliases": [
+        "farm pepperidge"
+      ],
+      "product_marker_groups": [
+        [
+          "bakery buns classics dog hot",
+          "Hot Dog Buns"
+        ]
+      ],
+      "variant_marker_groups": [
+        [
+          "white"
+        ],
+        [
+          "White"
+        ],
+        [
+          "bag"
+        ],
+        [
+          "token:sliced"
+        ],
+        [
+          "token:top"
+        ]
+      ],
+      "forbidden_markers": []
+    },
+    "package_facts": [
+      {
+        "kind": "inner_item_count",
+        "requirement": "required",
+        "value": 8,
+        "unit": "count"
+      }
+    ],
+    "truth_source": "recipe"
+  },
+  "component_evidence_id": "sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5",
+  "canonical_variant_id": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+  "blockers": []
+}

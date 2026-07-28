@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9b0673f7-fa90-49d3-9561-94d61df1b020",
+  "created_at": "2026-07-18T06:28:29.599Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "LK-AS7X-K43B:structured_attributes",
+  "sku": "LK-AS7X-K43B",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d297cd96e9c928ad32763cfefb8686a3fb7610696a651fbbc71cb447da740be1",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "9ab2fb07da1946af90795adafdaccf89",
+    "issues": []
+  },
+  "sha256": "daf162b969b1e258ddfabcae0d25ceb34b4bfe0f6b6351b96830010344e86038"
+}

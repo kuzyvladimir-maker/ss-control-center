@@ -1,0 +1,71 @@
+{
+  "scope": "GPT Image 2 MAIN repair candidates; local generation only",
+  "amazon_published": false,
+  "original_codex_assets_preserved": true,
+  "qa_policy": "Owner-relaxed visual QA: exact real variants and honest visible package form factors are mandatory; minor visible-count and occlusion variance is accepted.",
+  "results": [
+    {
+      "ordinal": 84,
+      "sku": "PT-AS5B-Z2XH",
+      "file": "ordinal-084-PT-AS5B-Z2XH.png",
+      "recipe": "reduced-sugar-strawberry-on-wheat::12||peanut-butter-grape::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Fictional SOFT BREAD cartons removed; both exact variants shown as genuine 4-count cartons; cooler, gel packs, logo, and camera remain coherent. Four cartons are fully visible rather than six; accepted as owner-approved composition variance.",
+      "sha256": "f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc"
+    },
+    {
+      "ordinal": 94,
+      "sku": "RB-ASVO-GYCY",
+      "file": "ordinal-094-RB-ASVO-GYCY.png",
+      "recipe": "peanut-butter-strawberry::12||up-and-apple-protein::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Anonymous wrappers replaced by a clear balanced Up & Apple plus classic strawberry mix; scene and shipping-kit identity remain coherent.",
+      "sha256": "1f39fe57fc291f4ad8e18d8eb21a966f501d49dd0eb4c361e13f2b420711b0d0"
+    },
+    {
+      "ordinal": 110,
+      "sku": "SC-ASH8-4RQG",
+      "file": "ordinal-110-SC-ASH8-4RQG.png",
+      "recipe": "burstin-blueberry-protein::12||up-and-apple-protein::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Anonymous orange/blue wrappers replaced by the exact Burstin' Blueberry and Up & Apple protein variants in a balanced mix.",
+      "sha256": "be2b3f0a2f2de897199c5156096fddcfe08d0accdfb957751541a0d7668880c8"
+    },
+    {
+      "ordinal": 113,
+      "sku": "SH-ASO0-PW37",
+      "file": "ordinal-113-SH-ASO0-PW37.png",
+      "recipe": "bright-eyed-berry-protein::12||peanut-butter-grape::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Correct Bright-Eyed Berry component retained and exact classic grape component added; both variants are repeated and visually distinct.",
+      "sha256": "d0d2009b340f1dff5579ad82c7a01aa71d236a0562d04f6f084e2e0276124143"
+    },
+    {
+      "ordinal": 115,
+      "sku": "SU-ASS4-RV6R",
+      "file": "ordinal-115-SU-ASS4-RV6R.png",
+      "recipe": "reduced-sugar-grape-on-wheat::12||up-and-apple-protein::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Correct Up & Apple component retained and the purple/green reduced-sugar grape-on-wheat variant added; no ordinary-grape substitution.",
+      "sha256": "45b7c2a18b680b8aa85cb040782e12249df87c05875d6f30551114e4eab00434"
+    },
+    {
+      "ordinal": 116,
+      "sku": "SV-AS87-D6SV",
+      "file": "ordinal-116-SV-AS87-D6SV.png",
+      "recipe": "bright-eyed-berry-protein::12||peanut-butter-strawberry::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Anonymous red wrappers removed; exact Bright-Eyed Berry protein and classic strawberry variants shown in a balanced mix.",
+      "sha256": "c1c4b1d3a456e6a4923a42ec3a38010e593872802d73bbd9b67295ae3d555a01"
+    },
+    {
+      "ordinal": 127,
+      "sku": "UF-ASA1-GN5P",
+      "file": "ordinal-127-UF-ASA1-GN5P.png",
+      "recipe": "peanut-butter-strawberry::12||peanut-butter::12",
+      "qa": "PASS_OWNER_RELAXED",
+      "note": "Incorrect strawberry 10-count and fictional 2-count cartons removed; only genuine 4-count peanut-butter and strawberry cartons remain. Four cartons are fully visible rather than six; accepted as owner-approved composition variance.",
+      "sha256": "6f75d4eb67a8ea5704851d0eeb4fa115cee9be0621d5d2818f074eeb09074aa9"
+    }
+  ]
+}

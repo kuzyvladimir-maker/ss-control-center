@@ -1,0 +1,1153 @@
+{
+  "schema_version": "walmart-visual-audit/v2",
+  "manifest_id": "walmart-main-artifact-pairs-12x2-20260718-v1",
+  "purpose": "golden-pilot",
+  "cases": [
+    {
+      "case_id": "bad-pair-faisalx-1130",
+      "sku": "FaisalX-1130",
+      "expected": {
+        "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 22,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "15 grain"
+          ],
+          [
+            "thin sliced"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "oatmeal"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_size"
+        ],
+        "basis": "Product shown is Pepperidge Farm Whole Grain OATMEAL bread, but the listing title specifies 15 Grain Historical BAD artifact donor: Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-1160",
+      "sku": "FaisalX-1160",
+      "expected": {
+        "title": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 24,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "farmhouse"
+          ],
+          [
+            "multigrain"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "homestyle oat"
+          ],
+          [
+            "oat"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1160/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant"
+        ],
+        "basis": "Identity fails: listing title specifies 'Multigrain' but the image shows 'Homestyle Oat' — different Historical BAD artifact donor: Pepperidge Farm Farmhouse Homestyle Oat Bread, 24 oz Loaf."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-1181",
+      "sku": "FaisalX-1181",
+      "expected": {
+        "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 8,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "butter"
+          ],
+          [
+            "hot dog buns",
+            "hot dog bun",
+            "hot dog"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "hamburger buns",
+            "hamburger bun"
+          ],
+          [
+            "sesame"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1181/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_product_form",
+          "wrong_variant"
+        ],
+        "basis": "Product shown is Pepperidge Farm Sesame Hamburger Buns, but listing title specifies Butter Hot Dog B Historical BAD artifact donor: Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-1183",
+      "sku": "FaisalX-1183",
+      "expected": {
+        "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 8,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "butter"
+          ],
+          [
+            "hot dog buns",
+            "hot dog bun",
+            "hot dog"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "chessmen"
+          ],
+          [
+            "cookies",
+            "cookie"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_product_identity",
+          "wrong_product_category"
+        ],
+        "basis": "Image shows Pepperidge Farm Chessmen Butter cookies, not Butter Hot Dog Buns; 6 single front-facing Historical BAD artifact donor: Pepperidge Farm Chessmen Butter Cookies - 7.25oz (Packaging May Vary)."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-1208",
+      "sku": "FaisalX-1208",
+      "expected": {
+        "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 19,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "sara lee"
+          ],
+          [
+            "artesano"
+          ],
+          [
+            "bakery buns",
+            "hamburger buns",
+            "buns"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "classic bread",
+            "classic white"
+          ],
+          [
+            "sliced bread"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1208/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_product_form",
+          "wrong_variant",
+          "wrong_size"
+        ],
+        "basis": "Image shows Sara Lee Classic White sliced bread loaves, not Artesano White hamburger buns. Historical BAD artifact donor: Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-1755",
+      "sku": "FaisalX-1755",
+      "expected": {
+        "title": "Dr Pepper Soda Pop, 2 L, Bottle (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 2,
+          "unit": "l"
+        },
+        "required_identity_markers": [
+          [
+            "dr pepper"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "diet"
+          ],
+          [
+            "zero sugar",
+            "zero"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1755/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_formulation"
+        ],
+        "basis": "Listing title is 'Dr Pepper Soda Pop' (regular), but every bottle shown is 'Diet Dr Pepper' — wrong Historical BAD artifact donor: Diet Dr Pepper Soda Pop, 2 L, Bottle."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-2223",
+      "sku": "FaisalX-2223",
+      "expected": {
+        "title": "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 28,
+          "unit": "fl_oz"
+        },
+        "required_identity_markers": [
+          [
+            "gatorade"
+          ],
+          [
+            "cool blue"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "g zero",
+            "zero sugar",
+            "zero"
+          ],
+          [
+            "glacier cherry"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2223/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_formulation"
+        ],
+        "basis": "Image shows Gatorade Zero Glacier Cherry bottles, not Gatorade Cool Blue Sports Drink; 6 single fron Historical BAD artifact donor: Gatorade G Zero Sugar Thirst Quencher, Glacier Cherry, Bottle Gluten-Free 28 fl oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-3545",
+      "sku": "FaisalX-3545",
+      "expected": {
+        "title": "Hamburger Helper Four Cheese Lasagna, 8.8 oz Value Size Box (Pack of 8)",
+        "outer_units": 8,
+        "unit_size": {
+          "value": 8.8,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "hamburger helper"
+          ],
+          [
+            "four cheese"
+          ],
+          [
+            "lasagna"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "5.5 oz",
+            "5.5oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3545/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_size",
+          "wrong_package_tier"
+        ],
+        "basis": "Shows 8 single front-facing Hamburger Helper Four Cheese Lasagna boxes on white, but the pictured bo Historical BAD artifact donor: Hamburger Helper Four Cheese Lasagna - 5.5oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-3865",
+      "sku": "FaisalX-3865",
+      "expected": {
+        "title": "Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 2.85,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "jack link's",
+            "jack link’s",
+            "jack links"
+          ],
+          [
+            "beef jerky",
+            "jerky"
+          ],
+          [
+            "teriyaki"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "duos"
+          ],
+          [
+            "original and teriyaki",
+            "original + teriyaki"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3865/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_product_configuration"
+        ],
+        "basis": "Image shows Jack Link's Duos Original + Teriyaki bag, not the Teriyaki-only listing. Historical BAD artifact donor: Jack Link's DUOS Original and Teriyaki Beef Jerky, 2.85oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-4007",
+      "sku": "FaisalX-4007",
+      "expected": {
+        "title": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 6)",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 4.48,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "hershey's",
+            "hersheys"
+          ],
+          [
+            "kisses"
+          ],
+          [
+            "with almonds",
+            "almonds"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "4.84 oz",
+            "4.84oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4007/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_size"
+        ],
+        "basis": "Image shows regular Hershey's Kisses milk chocolate 4.84 oz, not with almonds 4.48 oz; grid shows si Historical BAD artifact donor: Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-4215",
+      "sku": "FaisalX-4215",
+      "expected": {
+        "title": "Old El Paso Stand 'N Stuff Taco Shells, Gluten Free, Family Size, 20-count (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 20,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "old el paso"
+          ],
+          [
+            "stand 'n stuff",
+            "stand n stuff"
+          ],
+          [
+            "family size"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "zesty ranch"
+          ],
+          [
+            "10 count",
+            "10-count"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4215/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_inner_count",
+          "wrong_package_tier"
+        ],
+        "basis": "Wrong variant — image shows Old El Paso Zesty Ranch Flavored Taco Shells (10 shells), but listing is Historical BAD artifact donor: Old El Paso Stand 'N Stuff Crunchy Taco Shells, Zesty Ranch, Gluten Free, 10 Count, 5.4 oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-4779",
+      "sku": "FaisalX-4779",
+      "expected": {
+        "title": "OREO Golden Sandwich Cookies, Family Size, 18.12 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 18.12,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "oreo"
+          ],
+          [
+            "golden"
+          ],
+          [
+            "family size"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "double stuf",
+            "double stuff"
+          ],
+          [
+            "18.71 oz",
+            "18.71oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4779/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_size"
+        ],
+        "basis": "Image shows 4 single front-facing Oreo Golden Double Stuf packages on white, but title says Oreo Gol Historical BAD artifact donor: OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1130",
+      "sku": "FaisalX-1130",
+      "expected": {
+        "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 22,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "15 grain"
+          ],
+          [
+            "thin sliced"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "oatmeal"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz Loaf; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1160",
+      "sku": "FaisalX-1160",
+      "expected": {
+        "title": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 24,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "farmhouse"
+          ],
+          [
+            "multigrain"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "homestyle oat"
+          ],
+          [
+            "oat"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1160/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Pepperidge Farm Farmhouse Multigrain Bread, 24 oz Loaf; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1181",
+      "sku": "FaisalX-1181",
+      "expected": {
+        "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 8,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "butter"
+          ],
+          [
+            "hot dog buns",
+            "hot dog bun",
+            "hot dog"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "hamburger buns",
+            "hamburger bun"
+          ],
+          [
+            "sesame"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1181/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns - 14oz/8ct; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1183",
+      "sku": "FaisalX-1183",
+      "expected": {
+        "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 8,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "pepperidge farm"
+          ],
+          [
+            "butter"
+          ],
+          [
+            "hot dog buns",
+            "hot dog bun",
+            "hot dog"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "chessmen"
+          ],
+          [
+            "cookies",
+            "cookie"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns - 14oz/8ct; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1208",
+      "sku": "FaisalX-1208",
+      "expected": {
+        "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": {
+          "value": 19,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "sara lee"
+          ],
+          [
+            "artesano"
+          ],
+          [
+            "bakery buns",
+            "hamburger buns",
+            "buns"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "classic bread",
+            "classic white"
+          ],
+          [
+            "sliced bread"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1208/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Sara Lee Artesano White Bakery Buns, 8 count, Hamburger Buns, 19 oz Bag; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1755",
+      "sku": "FaisalX-1755",
+      "expected": {
+        "title": "Dr Pepper Soda Pop, 2 L, Bottle (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 2,
+          "unit": "l"
+        },
+        "required_identity_markers": [
+          [
+            "dr pepper"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "diet"
+          ],
+          [
+            "zero sugar",
+            "zero"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1755/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Dr Pepper Soda Pop, 2 L, Bottle; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-2223",
+      "sku": "FaisalX-2223",
+      "expected": {
+        "title": "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 28,
+          "unit": "fl_oz"
+        },
+        "required_identity_markers": [
+          [
+            "gatorade"
+          ],
+          [
+            "cool blue"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "g zero",
+            "zero sugar",
+            "zero"
+          ],
+          [
+            "glacier cherry"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2223/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Gatorade Cool Blue Sports Drink - 28 fl oz Bottle; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-3545",
+      "sku": "FaisalX-3545",
+      "expected": {
+        "title": "Hamburger Helper Four Cheese Lasagna, 8.8 oz Value Size Box (Pack of 8)",
+        "outer_units": 8,
+        "unit_size": {
+          "value": 8.8,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "hamburger helper"
+          ],
+          [
+            "four cheese"
+          ],
+          [
+            "lasagna"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "5.5 oz",
+            "5.5oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3545/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Hamburger Helper Pasta Four Cheese Lasagna Value Size, 8.8 Ounces Box.; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-3865",
+      "sku": "FaisalX-3865",
+      "expected": {
+        "title": "Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 2.85,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "jack link's",
+            "jack link’s",
+            "jack links"
+          ],
+          [
+            "beef jerky",
+            "jerky"
+          ],
+          [
+            "teriyaki"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "duos"
+          ],
+          [
+            "original and teriyaki",
+            "original + teriyaki"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3865/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Jack Link’s Beef Jerky, Teriyaki, Made with 100% Beef, 11g of Protein per Serving, 2.85 oz Bag; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-4007",
+      "sku": "FaisalX-4007",
+      "expected": {
+        "title": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 6)",
+        "outer_units": 6,
+        "unit_size": {
+          "value": 4.48,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "hershey's",
+            "hersheys"
+          ],
+          [
+            "kisses"
+          ],
+          [
+            "with almonds",
+            "almonds"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "4.84 oz",
+            "4.84oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4007/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-4215",
+      "sku": "FaisalX-4215",
+      "expected": {
+        "title": "Old El Paso Stand 'N Stuff Taco Shells, Gluten Free, Family Size, 20-count (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 20,
+          "unit": "count"
+        },
+        "required_identity_markers": [
+          [
+            "old el paso"
+          ],
+          [
+            "stand 'n stuff",
+            "stand n stuff"
+          ],
+          [
+            "family size"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "zesty ranch"
+          ],
+          [
+            "10 count",
+            "10-count"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4215/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Old El Paso Gluten Free Stand 'N Stuff Taco Shells, Family Size (20 Taco Shells); local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-4779",
+      "sku": "FaisalX-4779",
+      "expected": {
+        "title": "OREO Golden Sandwich Cookies, Family Size, 18.12 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": {
+          "value": 18.12,
+          "unit": "oz"
+        },
+        "required_identity_markers": [
+          [
+            "oreo"
+          ],
+          [
+            "golden"
+          ],
+          [
+            "family size"
+          ]
+        ],
+        "forbidden_identity_markers": [
+          [
+            "double stuf",
+            "double stuff"
+          ],
+          [
+            "18.71 oz",
+            "18.71oz"
+          ]
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4779/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from OREO Golden Sandwich Cookies, Family Size, 18.12 oz; local generation and publish records are GEN_OK/applied."
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "name": "batch-4",
+      "batch_size": 4,
+      "shuffle_seed": null
+    },
+    {
+      "name": "batch-4-shuffled",
+      "batch_size": 4,
+      "shuffle_seed": 20260718
+    },
+    {
+      "name": "singleton",
+      "batch_size": 1,
+      "shuffle_seed": null
+    }
+  ]
+}

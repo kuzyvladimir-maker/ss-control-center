@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9615d12a-7728-4379-8b60-39551d26867c",
+  "created_at": "2026-07-18T09:00:55.542Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZX-AS2C-GT8Q:text_count",
+  "sku": "ZX-AS2C-GT8Q",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "1d426bc2dcf42f4dc899a845734b369ef48608c05a244090d9d7a1cb2acb863a",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "85ace47bb1fe432f93682eda5f944e76",
+    "issues": []
+  },
+  "sha256": "700ebf10c139b574454b9b9435b00378dd7ec1ad3a1a7ee4f779de2629eba926"
+}

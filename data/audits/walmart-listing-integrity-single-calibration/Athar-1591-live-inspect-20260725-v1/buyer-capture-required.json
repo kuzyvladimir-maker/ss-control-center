@@ -1,0 +1,5 @@
+{
+  "requested_url": "https://www.walmart.com/ip/7014571238",
+  "failure_stage": "STRICT_PROJECTION",
+  "failure_message": "Walmart PDP primary item ID must be a string"
+}

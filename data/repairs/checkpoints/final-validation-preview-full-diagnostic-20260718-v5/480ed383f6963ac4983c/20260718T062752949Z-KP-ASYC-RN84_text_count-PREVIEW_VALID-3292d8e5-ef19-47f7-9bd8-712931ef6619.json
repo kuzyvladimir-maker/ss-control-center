@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3292d8e5-ef19-47f7-9bd8-712931ef6619",
+  "created_at": "2026-07-18T06:27:52.949Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "KP-ASYC-RN84:text_count",
+  "sku": "KP-ASYC-RN84",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "06f7cdf20c0decf838ad18ba6f88d73311c8cefaf2a8f77842e0c0e21b4d658a",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "323026242f9d42df88c286071e41f5dd",
+    "issues": []
+  },
+  "sha256": "65e335c2076a4ea508946137d0c1ebe0323898c239bd4f11f77bbc32b2eee945"
+}

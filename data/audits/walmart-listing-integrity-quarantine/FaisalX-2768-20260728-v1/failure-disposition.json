@@ -1,0 +1,63 @@
+{
+  "schema_version": "walmart-listing-integrity-terminal-failure-disposition/v1",
+  "created_at": "2026-07-28T18:00:53.641Z",
+  "status": "QUARANTINED_UNRESOLVED",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-2768",
+    "listing_key": "walmart:1:FaisalX-2768",
+    "item_id": "1838619805"
+  },
+  "accepted_feed": {
+    "feed_id": "18C646C459EA512FA3901FDEDE289A71@AX8BBgA",
+    "terminal_at": "2026-07-27T22:42:52.181Z",
+    "request_payload_sha256": "e29c394700442b783b237de6fd7b689a46e1af9302615510250f96cf18dc353a",
+    "feed_status_payload_sha256": "9c1c2409aa86f71f2789ae4ab6e6525c531c312e40e65df06bd01cf99693f0f6",
+    "walmart_item_result": "SUCCESS"
+  },
+  "failed_qualification": {
+    "qualification_id": "live-qualification-92b4b8dcc0764476a230fbc9",
+    "qualified_at": "2026-07-28T04:45:10.528Z",
+    "qualification_body_sha256": "0dacf93bbd59e0fe05f8edff8d7fd337bd48645302b8575c2a66f0dc2794ba1c",
+    "operator_receipt_body_sha256": "890d5f5122db9160750a3f16e60cf06659a474e4e09f9e048b243160807725f8",
+    "operator_receipt_file_sha256": "c8a6110a68eb78debf01dc9e6204d2b58499fbd6f178e0fc6439d4d9c6add53f",
+    "propagation_window_complete": true,
+    "published_and_indexed_preserved": true,
+    "automatic_reapply_allowed": false
+  },
+  "listing_quality_evidence": {
+    "receipt_body_sha256": "c2b7d407a8871abe68654730bc73f0acdcece14ccf8d6eff2c28dc8cc808e606",
+    "response_body_sha256": "59f4849b0e8986181dd175f341537e3559588686b35b9a40911987f71a779ecc",
+    "updated_timestamp": "2026-07-28 14:09:49.247",
+    "content_score": 90.99999999999999,
+    "target_fields_reported_not_editable": [
+      "count_per_pack",
+      "flavor",
+      "multipack_quantity",
+      "number_of_pieces"
+    ],
+    "current_values": {
+      "count_per_pack": "1",
+      "flavor": "qty 4",
+      "multipack_quantity": "4",
+      "number_of_pieces": "1"
+    }
+  },
+  "classification": {
+    "outcome": "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET",
+    "likely_platform_cause": "CATALOG_CONTENT_PRIORITY_OR_OWNERSHIP",
+    "cause_proof_level": "LIKELY_NOT_PROVEN",
+    "same_payload_reapply_allowed": false,
+    "listing_repair_complete": false
+  },
+  "sequence": {
+    "next_listing_unblocked": true,
+    "quarantined_listing_excluded_from_active_pool": true,
+    "max_apply_in_flight": 1
+  },
+  "next_action": "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN",
+  "marketplace_write_authorized": false,
+  "disposition_id": "failure-disposition-829cd4d5ffe9a977ae297eba",
+  "body_sha256": "5b007cfa7d04558e95d45d2412032d223b41281d76e69ee4d6a774b6a7915539"
+}

@@ -1,0 +1,106 @@
+{
+  "schema_version": "walmart-packaging-artwork-review/1.0.0",
+  "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+  "approved_package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+  "reviewed_at": "2026-07-26T18:20:00.000Z",
+  "images": [
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-1-current-red-brown"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_9024bf68-2565-43e4-850c-f52952358485",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-2-exact-product-closeup"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_7816b395-eb83-4295-b2c2-0f389fefbbe1",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-3-old-purple-front"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_09c0c1f6-ec26-45d2-aace-b30e09c981fe",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-4-exact-product-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_f33a4497-976c-44f8-badc-99c7a56e2fcd",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "REJECTED_OTHER_PRODUCT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-5-mixed-cookie-snack-bowl"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_adb8943c-eb63-4c21-91d3-f5590e301352",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "REJECTED_OTHER_PRODUCT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-6-mixed-party-tray"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_3601e990-afa9-45f5-ae78-0aaffe126c26",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-7-old-purple-front"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ddf139ba-0661-4c5d-baf9-fb4443a48eda",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-8-exact-product-closeup"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_441e9121-ef29-4ac7-8b73-6565a2dc4eec",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-9-old-purple-nutrition-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_6173a127-8cf6-4d12-9e6f-20494d28b6ab",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-10-old-purple-side-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ef7790b7-2542-4c3e-a016-0f06899d838d",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-11-old-purple-front"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_97809998-a0fd-4d43-9915-cdfca2e890f1",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:7b22f0858b3d88e82691459689b052342e1a02a93360262a9558274184426e7e",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-12-old-purple-top-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_045dd194-4cee-4bcf-b02e-d20e43a006d4",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-13-current-product-promo"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_35606943-5b2c-42f2-8ef4-2e530a26959b",
+      "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+      "package_artwork_revision_id": "par1:73cd8a9e5ca3d02b7632ccc3ccfca7476022d582eb1708934832885c2a378487",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:ritz-pb-image-14-current-red-brown-front"
+    }
+  ]
+}

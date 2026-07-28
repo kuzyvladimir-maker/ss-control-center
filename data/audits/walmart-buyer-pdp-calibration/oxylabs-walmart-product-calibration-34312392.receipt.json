@@ -1,0 +1,45 @@
+{
+  "schema_version": "oxylabs-walmart-product-calibration-receipt/v2",
+  "purpose": "buyer_pdp_schema_calibration",
+  "plan_id": "oxylabs-walmart-product-calibration-9b37ed5032654aec",
+  "plan_body_sha256": "9b37ed5032654aec3ff7f4ac9b0df24111a3dcf4cbae810054b7ddf90336a267",
+  "item_id": "34312392",
+  "started_at": "2026-07-27T13:08:34.865Z",
+  "completed_at": "2026-07-27T13:08:40.445Z",
+  "sanitized_request": {
+    "endpoint": "https://realtime.oxylabs.io/v1/queries",
+    "method": "POST",
+    "content_type": "application/json",
+    "authorization": "basic_auth_present_redacted",
+    "body": {
+      "source": "walmart_product",
+      "product_id": "34312392",
+      "parse": true
+    }
+  },
+  "response": {
+    "http_status": 200,
+    "content_type": "application/json",
+    "provider_request_ids": [
+      "x-oxylabs-job-id:7487494150061860865"
+    ],
+    "raw_body_sha256": "9cbafde5339396bc6373cd03a67eccb0a9b3e12bf4547f45f94ca14612c7efe7",
+    "raw_body_bytes": 17386,
+    "raw_response_filename": "oxylabs-walmart-product-calibration-34312392.raw-response.bin"
+  },
+  "execution": {
+    "primary_calls": 1,
+    "attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "health_probes": 0,
+    "response_parsing_performed": false,
+    "image_downloads": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0,
+    "model_calls": 0
+  },
+  "receipt_id": "oxylabs-walmart-product-calibration-receipt-737dc7e6a03dfc4b",
+  "body_sha256": "737dc7e6a03dfc4b8c6df2284a54f91f2cb82cde86ec7961c992c5303d227d3f"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b622bfef-8002-4cbf-8121-1142c75d88ba",
+  "created_at": "2026-07-18T10:29:13.584Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SV-AS87-D6SV:text_count",
+  "sku": "SV-AS87-D6SV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "ba7f2cd91d9298e773cc08bd63be98ebd6c3063d71eee83f5f4324899f2b8d03",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "22704c0bb8544e03a90adede25f80f71",
+    "issues": []
+  },
+  "sha256": "3fc02fc1bff62b77ae3db877c207491c510ec4f839f6a977eab9b370de23cff5"
+}

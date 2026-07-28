@@ -1,0 +1,252 @@
+{
+  "schema_version": "uncrustables-amazon-rollback-plan/v3",
+  "immutable": true,
+  "rollback_plan_id": "UARP-20260719T050557227Z-f8f6e736cb20",
+  "created_at": "2026-07-19T05:05:57.227Z",
+  "apply_eligible": true,
+  "source_snapshot": {
+    "path": "data/repairs/rollback/uncrustables-gallery-ua-vc-live-20260719-v1/UAPS-20260719T050556956Z-46a80e727880-5d4988aa0b40.json",
+    "sha256": "5d4988aa0b40fcc0b3b5ca376bc61d0832aec9dbecec1ffdad53a07dbaec3155",
+    "snapshot_id": "UAPS-20260719T050556956Z-46a80e727880",
+    "capture_mode": "LIVE_SP_API",
+    "completed_at": "2026-07-19T05:05:56.956Z",
+    "exact_scope": 164
+  },
+  "source_repair_plan": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json",
+    "sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+    "plan_id": "URP-20260719T043835682Z",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "source_execution_selection": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/canary-ua-vc/URES-20260719T043835682Z-cee16b5bc15e.json",
+    "sha256": "cee16b5bc15e5d12c251ecd882430f18be24ded70a76aacbe62c62a27a2610cd",
+    "profile": "GALLERY_MEDIA_ONLY_V1",
+    "selected_actions": 2,
+    "selected_action_ids_sha256": "8c620fa5672618080ad5da6b7e8a52fbdc1284212bfa78d273b8b90f64db1ab1"
+  },
+  "policy": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "patch_only": true,
+    "path_level_compare_and_swap": true,
+    "validation_preview_required": true,
+    "fresh_get_guard_required": true,
+    "post_write_readback_required": true,
+    "cli_confirmation_required": true,
+    "environment_confirmation_required": true,
+    "default_scope": "CANARY",
+    "maximum_errors_default": 1
+  },
+  "canary": {
+    "method": "ACTION_KIND_COVERAGE_THEN_SHA256",
+    "size": 2,
+    "skus": [
+      "UA-ASAO-RE7Q",
+      "VC-ASV1-378P"
+    ],
+    "covered_action_kinds": [
+      "MEDIA"
+    ]
+  },
+  "scope": {
+    "snapshot_entries": 164,
+    "repair_entries": 2,
+    "repair_actions": 2,
+    "rollback_entries": 2,
+    "inverse_operations": 4,
+    "missing_media_binary_evidence": 0
+  },
+  "entries": [
+    {
+      "rollback_entry_id": "RB-90c7d02df208c80b98d2",
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "store_index": 1,
+      "before_product_type": "FOOD",
+      "forward_action_ids": [
+        "UA-ASAO-RE7Q:media"
+      ],
+      "forward_action_kinds": [
+        "MEDIA"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-14312c307d50d8cbeaa3",
+          "path": "/attributes/other_product_image_locator_1",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "cf6b3f0db167f31a7a5c5e6b22d7e85396d0afc3e38baed4140eab82f2b4ed02"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/other_product_image_locator_1",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+          ]
+        },
+        {
+          "operation_id": "INV-8f49a80530088c0f9657",
+          "path": "/attributes/other_product_image_locator_7",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "04d8dbbfb4b7befe57408d4adaf3bf766431bcd0f6c8d2b912458092208e2a22"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/other_product_image_locator_7",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "rollback_entry_id": "RB-2b2a29dc814b130c139d",
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "store_index": 1,
+      "before_product_type": "FOOD",
+      "forward_action_ids": [
+        "VC-ASV1-378P:media"
+      ],
+      "forward_action_kinds": [
+        "MEDIA"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-9737a933c28d09e10e33",
+          "path": "/attributes/other_product_image_locator_1",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "cf6b3f0db167f31a7a5c5e6b22d7e85396d0afc3e38baed4140eab82f2b4ed02"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/other_product_image_locator_1",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+          ]
+        },
+        {
+          "operation_id": "INV-59bc42e36a01dfda8d73",
+          "path": "/attributes/other_product_image_locator_7",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "04d8dbbfb4b7befe57408d4adaf3bf766431bcd0f6c8d2b912458092208e2a22"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/other_product_image_locator_7",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+          ]
+        }
+      ]
+    }
+  ],
+  "sha256": "05b3ced683f73f6900ed05791bb6609f6dafdfa51085d959fc33dac41675d0f0"
+}

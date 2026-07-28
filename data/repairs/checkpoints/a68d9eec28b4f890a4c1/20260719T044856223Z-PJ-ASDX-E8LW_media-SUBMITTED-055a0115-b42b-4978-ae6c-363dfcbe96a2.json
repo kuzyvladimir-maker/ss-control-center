@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "055a0115-b42b-4978-ae6c-363dfcbe96a2",
+  "created_at": "2026-07-19T04:48:56.223Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "PJ-ASDX-E8LW:media",
+  "sku": "PJ-ASDX-E8LW",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "cc09425e-1e27-4ebc-ba59-26abde87da2e",
+    "patch_sha256": "e2b8abf69488f5779fa0b8f83b1cbf8646aa13e1d22eda5cc2310a4670ea8b0a",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e2b8abf69488f5779fa0b8f83b1cbf8646aa13e1d22eda5cc2310a4670ea8b0a",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "10567861b1fd06109e17c432d79b68ea9b177ec66d966c8454eab20fe7716635"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "cc734ed4bd404a8495da437e29093c89",
+    "issues": []
+  },
+  "sha256": "378b9709e895a9ceb258b24411252155778bf2216e995903e6b408d9f63c37c6"
+}

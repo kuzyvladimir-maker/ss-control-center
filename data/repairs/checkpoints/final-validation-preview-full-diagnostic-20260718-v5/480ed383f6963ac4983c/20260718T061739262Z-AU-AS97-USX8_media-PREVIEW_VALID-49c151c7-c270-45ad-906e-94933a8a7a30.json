@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "49c151c7-c270-45ad-906e-94933a8a7a30",
+  "created_at": "2026-07-18T06:17:39.262Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "AU-AS97-USX8:media",
+  "sku": "AU-AS97-USX8",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "8becc69d2d7a12e8d4e5b91b2ef9e882bc7e21aac3ea6ec6542dbbd4515570c2",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "60cfc028dc1443b7afdce076645cb515",
+    "issues": []
+  },
+  "sha256": "c4e498e8b88e6cc352d1dd6ea130da5af1ed5992251b6183f2f269abe614e872"
+}

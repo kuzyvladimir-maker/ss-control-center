@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-main-image-candidate-qa/v1",
+  "candidate_id": "FR-AS6X-5KJY-B0H827V9DJ-candidate-03-ice-removal",
+  "sku": "FR-AS6X-5KJY",
+  "asin": "B0H827V9DJ",
+  "model": "GPT Image 2",
+  "operation": "surgical_loose_ice_removal_attempt",
+  "source": {
+    "path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/038-FR-AS6X-5KJY-B0H827V9DJ-025e677a6b5c.jpg",
+    "sha256": "025e677a6b5c69874bf43f640611b6201bfe019152a93cba5ac19f59fae7e895",
+    "width": 2048,
+    "height": 2048
+  },
+  "candidate": {
+    "path": "data/audits/uncrustables-main-image-candidates-20260718/FR-AS6X-5KJY-B0H827V9DJ-candidate-03-ice-removal.png",
+    "sha256": "cb7e364ba7f2e0d4e681964d160073b41f7885f25f1d7b7df5ec0867bff1e063",
+    "width": 1254,
+    "height": 1254
+  },
+  "decision": "REJECTED_TEXT_INTEGRITY_UNPROVEN",
+  "production_eligible": false,
+  "owner_approved": false,
+  "amazon_write_authorized": false,
+  "external_mutations": 0,
+  "checks": {
+    "loose_ice_absent": "PASS_VISUAL",
+    "exact_flavor_visible": "PASS_VISUAL",
+    "exact_carton_decomposition_10_10_4": "PASS_VISUAL",
+    "exactly_four_gel_packs": "PASS_VISUAL",
+    "retailer_badge_absent": "PASS_VISUAL",
+    "canonical_primary_product_name": "PASS_VISUAL",
+    "all_package_and_kit_text_character_exact": "FAIL_CLOSED_UNPROVEN",
+    "pixel_faithful_single_region_edit": "FAIL_MODEL_REINTERPRETED_NON_TARGET_PIXELS"
+  },
+  "evidence": {
+    "scaled_source_candidate_ssim": 0.946141,
+    "ocr_engine": "apple-vision-accurate-literal",
+    "ocr_comparison": "Both source and candidate contain high-confidence OCR deviations in small package/kit copy. Magnified visual review cannot prove the candidate's blue count-badge microcopy, small gel-pack slogan, and lower carton microcopy character-exact.",
+    "human_visual_finding": "The requested loose ice is gone and the 10+10+4 composition remains visually correct, but Image 2.0 re-rendered the frame and retained or introduced unresolved small-text distortions. The result cannot satisfy a 100% text-integrity production gate."
+  },
+  "next_action": "Do not publish. Preserve as rejected evidence. Rebuild from exact reviewed package art or use an edit workflow that can prove protected text/logo regions unchanged."
+}

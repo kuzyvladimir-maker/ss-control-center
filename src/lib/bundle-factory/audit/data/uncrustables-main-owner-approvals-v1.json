@@ -1,0 +1,309 @@
+{
+  "schema_version": "uncrustables-main-owner-approvals/v1",
+  "immutable": true,
+  "manifest_id": "uncrustables-owner-approved-gpt-image-2-previews-2026-07-18-v1",
+  "captured_at": "2026-07-18T02:54:24.000Z",
+  "approved_by": "owner",
+  "registry_sha256": "9723d515a110859e54efa8f8bff1b5f7e56f49c28b411834a2d267b68e827157",
+  "entries": [
+    {
+      "proof_id": "01c-retail-boxes-single-pb-24-four-gel-packs",
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/01c-retail-boxes-single-pb-24-four-gel-packs.png",
+        "sha256": "4cdd7bec9ab5c1d5f97b5746d7569a4ffc891a36b8d1fb159168176f06e19076"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-manifest.json#/results/01c-retail-boxes-single-pb-24-four-gel-packs",
+        "sha256": "f81db762d738edd420941a8bcd2b3c57863de33bf843d117da74158699de26b2"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:01c-retail-boxes-single-pb-24",
+        "components": [
+          {
+            "flavor": "peanut-butter",
+            "quantity": 24,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "six-peanut-butter-4ct-cartons",
+            "flavor": "peanut-butter",
+            "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 6,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+                "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash 4cdd7bec; six genuine 4-count Peanut Butter cartons represent 24 units."
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v1",
+        "immutable": true,
+        "approval_id": "owner-approval-01c-4cdd7bec",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v1/01c-retail-boxes-single-pb-24-four-gel-packs",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "9bf77086aa52dc331fdb6330428c2f20e1fbd603afd910e3782c7026102f5c43",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true
+        },
+        "notes": "Owner explicitly approved preview 01c by exact SHA-256.",
+        "sha256": "62d02c92a3c3fdbabc7288092d100b1450f0ac523ee390a01deb5129df8e445e"
+      }
+    },
+    {
+      "proof_id": "02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs.png",
+        "sha256": "9d0294242508529022a0e2b1cdd2df0adce469ef9dbb8bd2dd7d448031ea839d"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-manifest.json#/results/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+        "sha256": "f81db762d738edd420941a8bcd2b3c57863de33bf843d117da74158699de26b2"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:02b-retail-boxes-mix-pb-blackberry-24",
+        "components": [
+          {
+            "flavor": "peanut-butter",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          },
+          {
+            "flavor": "peanut-butter-blackberry",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "three-peanut-butter-4ct-cartons",
+            "flavor": "peanut-butter",
+            "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+                "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+              }
+            ]
+          },
+          {
+            "observation_id": "three-blackberry-4ct-cartons",
+            "flavor": "peanut-butter-blackberry",
+            "art_id": "peanut-butter-blackberry-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-blackberry-target.jpg",
+                "sha256": "305a6ffab3b3a330f6cfdd9f82c7a457bf35abc4f6da3cb1fa996bfd8465cfe5"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash 9d029424; three genuine 4-count cartons per flavor represent 12+12 units."
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v1",
+        "immutable": true,
+        "approval_id": "owner-approval-02b-9d029424",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v1/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "f91b406d975b589fa94482e6c899dfa08d5a262baf63a45d9bf6862a04ef2557",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true
+        },
+        "notes": "Owner explicitly approved preview 02b by exact SHA-256.",
+        "sha256": "b117d048e10680ac90efe6b7c6627f98981c15b08c3ad3aac362d1fae1fc1685"
+      }
+    },
+    {
+      "proof_id": "03-individual-wraps-mix-hazelnut-berry-24",
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/03-individual-wraps-mix-hazelnut-berry-24.png",
+        "sha256": "d2f7ffdd0a3e411725a3dc1dac013f9f5f50c1e6dd9d34164c12cbe5cacc722f"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-review-candidates.json#/candidates/03-individual-wraps-mix-hazelnut-berry-24",
+        "sha256": "1b731b0211b3bc3258618bd8ea0075628cb236fbe79890227e0974e92b618679"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:03-individual-wraps-mix-hazelnut-berry-24",
+        "components": [
+          {
+            "flavor": "chocolate-hazelnut",
+            "quantity": 12,
+            "expected_pack_mode": "individual-wrapper",
+            "expected_retail_pack_size": 1
+          },
+          {
+            "flavor": "morning-protein-mixed-berry",
+            "quantity": 12,
+            "expected_pack_mode": "individual-wrapper",
+            "expected_retail_pack_size": 1
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "twelve-chocolate-hazelnut-wrappers",
+            "flavor": "chocolate-hazelnut",
+            "art_id": "chocolate-hazelnut-wrapper-us-2026-v1",
+            "pack_mode": "individual-wrapper",
+            "retail_pack_size": 1,
+            "visible_package_count": 12,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+                "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+              }
+            ]
+          },
+          {
+            "observation_id": "twelve-morning-protein-mixed-berry-wrappers",
+            "flavor": "morning-protein-mixed-berry",
+            "art_id": "morning-protein-mixed-berry-wrapper-us-2026-v1",
+            "pack_mode": "individual-wrapper",
+            "retail_pack_size": 1,
+            "visible_package_count": 12,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+                "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash d2f7ffdd; 12 genuine wrappers of each flavor represent 24 units."
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v1",
+        "immutable": true,
+        "approval_id": "owner-approval-03-d2f7ffdd",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v1/03-individual-wraps-mix-hazelnut-berry-24",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "c99ccccb3a9c819be1cbc965a707afdbaaee28caae2411b9a056956b9becb57f",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true
+        },
+        "notes": "Owner explicitly approved preview 03 by exact SHA-256.",
+        "sha256": "d2abb19f9f6b1f18d7dcb9defe2f371441edaefa69b5aec96440046df40b1165"
+      }
+    }
+  ],
+  "sha256": "13a7b9ba51de0eea5e97efa8c8f20c88585048358f7fefddbd52d3286b34fed0"
+}

@@ -1,0 +1,83 @@
+{
+  "createdAt": "2026-07-28T22:08:17.139Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "7069f19ce150f115b4bf4badfba0600826af3e1da8f0e4aa901f79b220125bce",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"farm pepperidge\",\"productLine\":\"bread jewish rye seeded\",\"flavor\":\"rye seeded\",\"modifiers\":[],\"form\":\"bag\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":453.59237,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:7069f19ce150f115b4bf4badfba0600826af3e1da8f0e4aa901f79b220125bce",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": null,
+    "decisionEvidenceJson": null,
+    "decisionStatus": null,
+    "donorIdentityStatus": "legacy_unverified",
+    "donorOfferId": "do:walmart:10452831",
+    "donorProductId": "c8b542f1-ed9b-45c5-883c-dcf9e00944ea",
+    "identityDerivationVersion": "product-truth-targeted-walmart-listing-identity-derivation/1.0.0",
+    "identityMode": "LISTING_BOUND_BOOTSTRAP",
+    "isFirstParty": true,
+    "legacySnapshot": {
+      "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-03T17:27:19.921Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"c8b542f1-ed9b-45c5-883c-dcf9e00944ea\",\n  \"fetchedAt\": \"2026-07-08T13:26:16.171Z\",\n  \"id\": \"do:walmart:10452831\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 4.77,\n  \"pricePerUnit\": 4.77,\n  \"productUrl\": \"https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag/10452831?classType=REGULAR\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"10452831\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-08T13:26:16.171Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+      "donorProductRowJson": "{\n  \"attributes\": null,\n  \"bestPrice\": 4.77,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Pepperidge Farm\",\n  \"bullets\": null,\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-03T17:27:19.921Z\",\n  \"currency\": \"USD\",\n  \"description\": null,\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"c8b542f1-ed9b-45c5-883c-dcf9e00944ea\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"pepperidge farm|jewish|rye|seeded|bread|bag|16 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://i5.walmartimages.com/seo/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag_61b6ee1c-6d08-4376-81f8-7783cfa4d869.c46a48541d40fec6ddaae1edaef25c3a.jpeg\\\"]\",\n  \"ingredients\": null,\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag_61b6ee1c-6d08-4376-81f8-7783cfa4d869.c46a48541d40fec6ddaae1edaef25c3a.jpeg\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": null,\n  \"pricePerMeasure\": 0.298,\n  \"productLine\": null,\n  \"size\": \"16 oz\",\n  \"title\": \"Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag\",\n  \"unitAmount\": 16,\n  \"unitMeasure\": \"oz\",\n  \"upc\": null,\n  \"updatedAt\": \"2026-07-08T13:26:16.171Z\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+      "sha256": "66127134a812fe5b0b55b5b927faf514131f926ded62ad4d2eac344b9f2bbc48"
+    },
+    "listingBinding": {
+      "channel": "walmart",
+      "componentIndex": 0,
+      "componentRowJson": "{\n  \"channel\": \"walmart\",\n  \"contentDonorProductId\": null,\n  \"costMethod\": \"exact\",\n  \"createdAt\": \"2026-07-08T02:33:03.844Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"c8b542f1-ed9b-45c5-883c-dcf9e00944ea\",\n  \"flavor\": \"Seeded Rye\",\n  \"id\": \"comp:FaisalX-1177:0\",\n  \"idx\": 0,\n  \"isBundleComponent\": 0,\n  \"lineCost\": 26.28,\n  \"matchTier\": null,\n  \"matchedTitle\": \"Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag\",\n  \"matcherVersion\": null,\n  \"perUnitCost\": 4.38,\n  \"priceEvidenceDonorProductId\": null,\n  \"priceEvidenceJson\": null,\n  \"priceEvidenceObservationId\": null,\n  \"priceEvidenceOfferId\": null,\n  \"priceEvidenceStatus\": null,\n  \"pricePolicyVersion\": null,\n  \"product\": \"Jewish Rye Seeded Bread\",\n  \"qty\": 6,\n  \"retailer\": \"walmart\",\n  \"size\": \"16 oz\",\n  \"sku\": \"FaisalX-1177\",\n  \"updatedAt\": \"2026-07-08T02:33:03.844Z\"\n}\n",
+      "legacyComponentId": "comp:FaisalX-1177:0",
+      "listingKey": "walmart:1:FaisalX-1177",
+      "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:FaisalX-1177\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"FaisalX-1177\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-listing-binding/1.0.0",
+      "sha256": "dd09e5b25d28dc036cfc45c6478e3559a53857f91f5ebb19cb63b42e5ce7aac2",
+      "shippingRowJson": "{\n  \"baseUnitDesc\": \"Pepperidge Farm Jewish Rye Seeded Bread 16 oz bag\",\n  \"category\": \"Dry\",\n  \"createdAt\": \"2026-05-13T02:37:48.180+00:00\",\n  \"height\": 6,\n  \"id\": \"cmp3g95p000ahsmfzgdfrgo7k\",\n  \"marketplace\": \"Walmart\",\n  \"notes\": null,\n  \"productIdentity\": \"{\\\"brand\\\":\\\"Pepperidge Farm\\\",\\\"product_line\\\":\\\"Jewish Rye Seeded Bread\\\",\\\"flavor\\\":\\\"Seeded Rye\\\",\\\"size\\\":\\\"16 oz\\\",\\\"container_type\\\":\\\"bag\\\",\\\"base_unit\\\":\\\"Pepperidge Farm Jewish Rye Seeded Bread 16 oz bag\\\",\\\"units_in_listing\\\":6,\\\"unit_basis\\\":\\\"bag\\\",\\\"is_bundle\\\":false,\\\"components\\\":[],\\\"retail_search_query\\\":\\\"Pepperidge Farm Jewish Rye Seeded Bread 16 oz\\\",\\\"confidence\\\":0.92,\\\"notes\\\":\\\"Pack of 6 identical 16 oz bags of seeded rye bread. Not a bundle—single product multipack. Title clearly specifies pack quantity and size.\\\",\\\"imagesUsed\\\":0}\",\n  \"productTitle\": \"Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag (Pack of 6)\",\n  \"sampleCount\": 0,\n  \"sku\": \"FaisalX-1177\",\n  \"source\": \"google_sheets_migration\",\n  \"unitsInListing\": 6,\n  \"upc\": \"684611898876\",\n  \"upcSource\": \"walmart_item\",\n  \"updatedAt\": \"2026-07-03T17:27:19.865Z\",\n  \"weight\": 6,\n  \"weightFedex\": 7.5,\n  \"width\": 12\n}\n",
+      "sku": "FaisalX-1177",
+      "storeIndex": 1
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/10452831",
+    "retailer": "walmart",
+    "retailerProductId": "10452831",
+    "variantDecisionId": null,
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "fb3727e6cb097c9764442533c7fb082d3f4bd3c8c2e06b1a8577d295a511c2ed",
+  "engineReleaseSha256": "3db4b1efac69770ea9e9be57dd603632d590bb5ec32d37dc63fef9a37a1ae153",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-29T20:00:00.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Pepperidge Farm Jewish Rye Seeded Bread 16 oz",
+  "runId": "pt-listing-bound-canary-20260728t220718z",
+  "schemaFingerprintSha256": "6743242a37e6c854b9f9f380527c1284d53e13997247741fc3064fe0ae76c711",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.4.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

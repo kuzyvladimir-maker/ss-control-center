@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "51a55d72-7a87-405b-847a-1b197f0a060c",
+  "created_at": "2026-07-18T06:42:34.550Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "WN-AS33-UFEA:text_count",
+  "sku": "WN-AS33-UFEA",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "5572ba6aca38ca1962da785d3af564b4ed97beaea124c46ddec622e802c91cec",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "de53b87e4bda4237b391a70314eb899a",
+    "issues": []
+  },
+  "sha256": "4d57f5ddef220b1adb63060233fd80163374f3163aa566f6a5ac178f3c91dfa5"
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "98753e87-7ddf-43ce-af96-b4d6cf0a6f58",
+  "created_at": "2026-07-18T11:43:38.408Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LU-ASK0-LSDF:structured_attributes",
+  "sku": "LU-ASK0-LSDF",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "59204dfe-b7fc-49dc-8bb1-87f195784806",
+    "patch_sha256": "34065ce48e3db14cbe2d0ba851d406a3442c5ecb17c63c16ba826dab360e1a37",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "34065ce48e3db14cbe2d0ba851d406a3442c5ecb17c63c16ba826dab360e1a37",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "2d8164bceffe49bcbdd964a2f344c905",
+    "issues": []
+  },
+  "sha256": "33901d3a64da954454b3d0f725ad578cd73be7468591f91fdc75041421ef256b"
+}

@@ -1,0 +1,54 @@
+{
+  "contractVersion": "product-truth-read-contract/3.2.0",
+  "snapshot": {
+    "sku": "FaisalX-1633",
+    "channel": "walmart",
+    "storeIndex": 1,
+    "listingKey": "walmart:1:FaisalX-1633",
+    "asOf": "2026-07-27T15:48:55.148Z",
+    "maxPriceAgeMs": 2592000000,
+    "skuCostId": null
+  },
+  "recipe": {
+    "components": [],
+    "blockers": [
+      "CURRENT_SCOPED_SKU_COST_MISSING"
+    ]
+  },
+  "views": {
+    "bundleFactory": {
+      "consumer": "BUNDLE_FACTORY",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "listingImprovement": {
+      "consumer": "LISTING_IMPROVEMENT",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "unitEconomics": {
+      "consumer": "UNIT_ECONOMICS",
+      "status": "MISSING",
+      "current": null,
+      "factualCost": null,
+      "estimatedCost": null,
+      "blockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "procurement": {
+      "consumer": "PROCUREMENT",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    }
+  }
+}

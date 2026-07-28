@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8d2cd0a4-3453-4529-947d-2b94bb9540ba",
+  "created_at": "2026-07-18T07:50:13.929Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "UF-ASA1-GN5P:media",
+  "sku": "UF-ASA1-GN5P",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "9420b2adb956f2a02e2a24abbee2e89270897e5b6a175a6eaa3a749e31ba5709",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "dab36555e75a4c4383e75b16f3eb020e",
+    "issues": []
+  },
+  "sha256": "ef5ae9caa8c293294af33c630887e08497cd45bbd1ec61808a2c8bcab69c7c30"
+}

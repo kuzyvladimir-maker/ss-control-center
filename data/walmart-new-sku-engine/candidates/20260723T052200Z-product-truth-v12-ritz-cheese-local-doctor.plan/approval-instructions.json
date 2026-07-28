@@ -1,0 +1,56 @@
+{
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:5970067627b633beac37b36c720c333898ebec682db864666cace687bc74803a:<OWNER_APPROVAL_ID>",
+  "machineIdentityVerification": {
+    "canonicalIdentityHash": "ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+    "canonicalVariantId": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+    "donorOfferId": "do:walmart:34312392",
+    "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+    "legacySnapshotSha256": "f8c276b2709f5ffd4cc915a4578936a5a116d9c7f5991d3b3c8010efcae0da17",
+    "normalizedProductUrl": "https://www.walmart.com/ip/34312392",
+    "planExpiresAt": "2026-07-24T01:00:00.000Z",
+    "retailerProductId": "34312392",
+    "statement": "The engine derived a conservative title-signature identity from sealed legacy bytes. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, complete identity token set, size and base-unit pack."
+  },
+  "mode": "WAVE",
+  "planExpiresAt": "2026-07-24T01:00:00.000Z",
+  "planSha256": "5970067627b633beac37b36c720c333898ebec682db864666cace687bc74803a",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 100
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "wm-ritz-cheese-localproof-20260723T0522Z",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "0ca0e14ed91b7eae080e327b8ce75b938dd819ee2bab9c83b7007784abe99d34",
+  "warning": "Owner approval, exact two-provider permit, fresh Unwrangle balance evidence, and exact confirmation are required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
+}

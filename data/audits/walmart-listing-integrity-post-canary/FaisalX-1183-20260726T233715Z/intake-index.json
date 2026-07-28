@@ -1,0 +1,86 @@
+{
+  "schema_version": "walmart-listing-single-intake-index/v1",
+  "created_at": "2026-07-26T23:37:31.780Z",
+  "listing_key": "walmart:1:FaisalX-1183",
+  "status": "CAPTURED_SOURCE_REQUIRED",
+  "files": [
+    {
+      "role": "buyer_pdp_html",
+      "path": "buyer-pdp.html",
+      "file_sha256": "405431cb7754cfa1555fb2479b69450241c76ccc944492a0feb83549505da7af",
+      "bytes": 946273
+    },
+    {
+      "role": "buyer_pdp_payload",
+      "path": "buyer-pdp.json",
+      "file_sha256": "afc57e930e8d69c87730cb39c46060ab7c969b6d0f77390e08062f195b4584e4",
+      "bytes": 3999
+    },
+    {
+      "role": "buyer_image_gallery_1",
+      "path": "buyer-snapshots/walmart-buyer-20260726T233723Z-c5f058ebf242/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg",
+      "file_sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+      "bytes": 415231
+    },
+    {
+      "role": "buyer_image_gallery_2",
+      "path": "buyer-snapshots/walmart-buyer-20260726T233723Z-c5f058ebf242/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg",
+      "file_sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+      "bytes": 238255
+    },
+    {
+      "role": "buyer_image_main",
+      "path": "buyer-snapshots/walmart-buyer-20260726T233723Z-c5f058ebf242/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png",
+      "file_sha256": "c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b",
+      "bytes": 527068
+    },
+    {
+      "role": "buyer_snapshot_manifest",
+      "path": "buyer-snapshots/walmart-buyer-20260726T233723Z-c5f058ebf242/manifest.json",
+      "file_sha256": "e58b59e7b2341d421b6cb0a414743e14825afd9cc1d1e92b3267b0ddab31dea9",
+      "bytes": 4855
+    },
+    {
+      "role": "catalog_search_payload",
+      "path": "catalog-search.json",
+      "file_sha256": "4d1b2822043fa995abe172fc073a811f41bd725ba6af6932773b0f22d5455674",
+      "bytes": 1094
+    },
+    {
+      "role": "exact_resolution",
+      "path": "exact-resolution.json",
+      "file_sha256": "4073f2fe312697b340b52636e92f04d6fd5811f863dba75515a9fb72893e0f97",
+      "bytes": 1645
+    },
+    {
+      "role": "product_truth",
+      "path": "product-truth.json",
+      "file_sha256": "243fe89012aa1ef2085743592a494ab8edc0899df5b57ed558b0e0ee087f9e4e",
+      "bytes": 1210
+    },
+    {
+      "role": "seller_item_payload",
+      "path": "seller-item.json",
+      "file_sha256": "229d30b4ff6443aa120f35a27d0d6261f7e769f971a7190815ae45acb661c538",
+      "bytes": 853
+    },
+    {
+      "role": "truth_projection",
+      "path": "truth-projection.json",
+      "file_sha256": "210c6c27235a1a2fd8c3a2a8a08b084a15bf0bc630cccf0e8218ae036c483d92",
+      "bytes": 405
+    }
+  ],
+  "buyer_snapshot_id": "walmart-buyer-20260726T233723Z-c5f058ebf242",
+  "buyer_snapshot_body_sha256": "c5f058ebf242525102065a145eef7976868caca938ac4370165528d16f2788bb",
+  "execution": {
+    "product_truth_reads": 1,
+    "walmart_logical_gets": 2,
+    "buyer_pdp_gets": 1,
+    "image_gets": 3,
+    "model_calls": 0,
+    "database_writes": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "3c5007b239e5c70de53b756b7343fd0be25fcb48e77f064fbbbd3ddae08cf26e"
+}

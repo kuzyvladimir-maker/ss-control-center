@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b2a2199e-8ee9-45f9-955c-8f933713150d",
+  "created_at": "2026-07-18T08:50:59.114Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RU-ASC3-4TUS:text_count",
+  "sku": "RU-ASC3-4TUS",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "b4670d6aacfb1b5ed9423c16ef2a1ca1205869ad0cfb575d00ba9615f1e20444",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "425e59f1690d4b27b2ac693dd8c668bb",
+    "issues": []
+  },
+  "sha256": "ac579c4526e0350325f2f08a048f3d6c8e7752e6b1e4dcec1d277d9cdcd6d4a3"
+}

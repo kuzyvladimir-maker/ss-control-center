@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "073db270-f114-48c0-bbae-25ad322b56ab",
+  "created_at": "2026-07-18T11:37:59.993Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HD-ASEQ-MFAY:text_count",
+  "sku": "HD-ASEQ-MFAY",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "0c52b9ea-bb68-4c9d-b07b-08f3e2fe4a39",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f15c72c105dbe0ad459e058d7cc67d5580c07ae6f50901db47334aff0da70a32",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "50e26b7380e7d71749412231e171c425d3f06ba05b04afd313f529553a182d74"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "8eaba6f0e0a8604c02f344ad51972eca35ab3aa82e5782da8df231933299b56f"
+}

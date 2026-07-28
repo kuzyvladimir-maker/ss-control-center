@@ -1,0 +1,73 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3c8d931e-564e-40ba-b2e2-a3277fac035d",
+  "created_at": "2026-07-18T15:00:50.701Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AZ-ASMY-VEQ2:media",
+  "sku": "AZ-ASMY-VEQ2",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "9da5ddee4b991dcc550a68d5fcbd13c08e60388ae4c3eb268d28f9e9b974d19b",
+    "submitted_event_id": "5bb1992e-17aa-4bfd-86c7-5e0d15a376b6",
+    "stable_post_write_reads": 3,
+    "polling_reads": 3,
+    "polling_sweep": 3,
+    "elapsed_ms": 10263.06225,
+    "path_state_sha256": "a0358bd4bda47f3e2d92d02ead5c6242352a511497d349d89d8d42b159f32a3a",
+    "checks": [
+      {
+        "field": "other_product_image_locator_1",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+      },
+      {
+        "field": "other_product_image_locator_2",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_3",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_4",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_5",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/71nCABtrKCL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/71nCABtrKCL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_6",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_7",
+        "ok": true,
+        "expected": null,
+        "actual": null
+      },
+      {
+        "field": "other_product_image_locator_8",
+        "ok": true,
+        "expected": null,
+        "actual": null
+      }
+    ]
+  },
+  "sha256": "1a15d7a9537cf6dc876b4f62bc17271f9155cece7cfb998e5d333fbb1fd75ce6"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ffb7509b-2d61-46ff-ac43-65c46fcd5f88",
+  "created_at": "2026-07-18T06:35:48.255Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "RY-ASO3-24Q2:text_count",
+  "sku": "RY-ASO3-24Q2",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "cb303ee46002cd2c0ae18b34c8a2149fbccf91f91b189859b619166fa078d1a1",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "cc82eeb0dbf547f68dc7b3d634a7bb96",
+    "issues": []
+  },
+  "sha256": "a69d8cb3365af7657088f278d222a323ba68816fa5d35fece09a41d031067cfb"
+}

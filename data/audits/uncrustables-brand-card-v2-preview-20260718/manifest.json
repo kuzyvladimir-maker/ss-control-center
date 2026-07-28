@@ -1,0 +1,53 @@
+{
+  "schema_version": "uncrustables-brand-card-preview/v1",
+  "created_at": "2026-07-18T22:14:13Z",
+  "status": "PREVIEW_OWNER_APPROVAL_REQUIRED",
+  "production_eligible": false,
+  "amazon_write_authorized": false,
+  "purpose": "Preserve the existing price-explanation infographic while adding the owner's required literal thank-you message.",
+  "generation": {
+    "execution_path": "built-in image_gen edit",
+    "requested_model": "gpt-image-2",
+    "input_role": "sole edit target and visual source of truth",
+    "prompt": "Use case: text-localization\nAsset type: Amazon product gallery infographic, version 2\nInput image: Image 1 is the edit target and sole source of truth.\nPrimary request: Edit ONLY the dark-green footer band at the very bottom. Preserve every pixel, logo, photograph, illustration, heading, body copy, color, spacing, and layout above that footer unchanged.\nFooter layout: render exactly two centered white lines, balanced and fully legible:\nLine 1, larger clean bold sans-serif: \"Thank you for your purchase.\"\nLine 2, smaller elegant script or refined serif: \"Warmly, the Salutem Solutions Team.\"\nText must be verbatim with exact spelling, punctuation, capitalization, and no extra characters.\nCanvas: preserve the original square 2000x2000 composition and white/green palette.\nConstraints: no changes outside the footer; do not alter or invent the Salutem Solutions logo; no watermark; no extra text; no cropping; no new objects."
+  },
+  "source": {
+    "path": "data/audits/uncrustables-live-gallery-fetch-20260718/assets/sha256-0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb.jpg",
+    "sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb",
+    "width": 2000,
+    "height": 2000
+  },
+  "generated_candidate": {
+    "path": "data/audits/uncrustables-brand-card-v2-preview-20260718/salutem-brand-card-v2-candidate-01.png",
+    "sha256": "98c731f9f6892609b5c8a97180bf6e1fb884d9af350aa2aa6fe97988eb5cc590",
+    "width": 1254,
+    "height": 1254
+  },
+  "review_candidate": {
+    "path": "data/audits/uncrustables-brand-card-v2-preview-20260718/salutem-brand-card-v2-candidate-01-2000.png",
+    "sha256": "44ec952df3ba5641dd292c9777cb564a4810a5daedfa6d0ae262d958f33213fb",
+    "width": 2000,
+    "height": 2000,
+    "resampling": "ffmpeg lanczos upscale from the generated candidate; no semantic edit"
+  },
+  "verification": {
+    "ocr_engine": "apple-vision-accurate-literal",
+    "required_footer_lines": [
+      {
+        "text": "Thank you for your purchase.",
+        "confidence": 1
+      },
+      {
+        "text": "Warmly, the Salutem Solutions Team.",
+        "confidence": 1
+      }
+    ],
+    "new_high_confidence_text_above_footer": [],
+    "above_footer_ssim_vs_source": 0.975332,
+    "verification_note": "The generative edit is highly similar but not byte-identical above the footer; owner visual approval remains mandatory."
+  },
+  "rollback": {
+    "strategy": "Keep the current v1 source and Amazon rehost immutable; publish v2 under a new key and restore the prior locator if rollback is required.",
+    "v1_sha256": "0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb"
+  }
+}

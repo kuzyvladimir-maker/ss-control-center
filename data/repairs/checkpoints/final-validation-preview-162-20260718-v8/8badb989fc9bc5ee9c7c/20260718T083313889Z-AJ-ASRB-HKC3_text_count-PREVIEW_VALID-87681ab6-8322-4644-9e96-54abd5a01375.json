@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "87681ab6-8322-4644-9e96-54abd5a01375",
+  "created_at": "2026-07-18T08:33:13.889Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AJ-ASRB-HKC3:text_count",
+  "sku": "AJ-ASRB-HKC3",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "75558f47508dc3dfe8a3b3d304ab7747a2245cf65e725f502be1015ef822aadc",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "969b986188224be9894aeecb537c9152",
+    "issues": []
+  },
+  "sha256": "52e6631e566645d61c273d74f34d4283e23e4a45b260d0fdf7dcd3cee9acd621"
+}

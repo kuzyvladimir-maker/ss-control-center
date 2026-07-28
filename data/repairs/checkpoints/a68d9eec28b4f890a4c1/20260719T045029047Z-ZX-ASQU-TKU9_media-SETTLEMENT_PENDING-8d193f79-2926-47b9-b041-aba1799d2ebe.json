@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8d193f79-2926-47b9-b041-aba1799d2ebe",
+  "created_at": "2026-07-19T04:50:29.047Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "ZX-ASQU-TKU9:media",
+  "sku": "ZX-ASQU-TKU9",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "645491e2-1906-4f12-9fea-84f6ee806889",
+    "submitted_at": "2026-07-19T04:49:56.704Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "97fcd3749d096c872cf68d5989632b99ec3b5121742bd666a9c1364e3917c874",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "59079a97d328fe5dbc74eb697578dcb984d4e63d0ed4d2b725537da624a92afe"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "b8fb8208507f96c5dd51fcdb3e00e8ea89af6ebe27dbb72a6f56fc6ff39c8b8f"
+}

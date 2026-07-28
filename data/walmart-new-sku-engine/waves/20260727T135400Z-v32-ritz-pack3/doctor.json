@@ -1,0 +1,74 @@
+{
+  "schema_version": "walmart-new-sku-doctor-receipt/1.7.0",
+  "checked_at": "2026-07-27T13:53:56.721Z",
+  "expires_at": "2026-07-27T14:23:56.721Z",
+  "store_index": 1,
+  "seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+  "seller_catalog_authority": {
+    "schema_version": "walmart-exact-identifier-duplicate-guard-binding/v1",
+    "account_scope": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "business_seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873"
+    },
+    "policy": {
+      "mode": "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+      "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+      "full_seller_catalog_required": false,
+      "seller_recipe_catalog_scan_required": false,
+      "exact_seller_sku_absence_required_before_certification": true,
+      "exact_upc_catalog_search_required_before_certification": true,
+      "checks_must_bind_staged_sku_and_upc": true
+    },
+    "owner_decision_ref": "owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight",
+    "binding_id": "walmart-exact-identifier-guard-065d91563e2f0a42",
+    "body_sha256": "065d91563e2f0a42d60ffeea231333063f93cd286f97fb8b289ab7801486e53c"
+  },
+  "database_target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "database_schema_sha256": "e16bdce3e2878b1b3aa57b92b6ad554c2c7edaa6b8cb20d5849b5daf8e5ffa7b",
+  "engine_release_sha256": "cc086942b98bd7609de43be10ac22de64a986c02af43d0b0a91f3ad049948898",
+  "expected_engine_release_sha256": "cc086942b98bd7609de43be10ac22de64a986c02af43d0b0a91f3ad049948898",
+  "release_manifest_sha256": "efa8e8cd5f1c47cc47885428cded5c382a397f6398fe9db628d8e9bd6a89135b",
+  "frozen_release_verified": true,
+  "frozen_release_source_modes_verified": true,
+  "planning_scope": {
+    "as_of": "2026-07-27T13:53:00.000Z",
+    "zip": "33765",
+    "max_price_age_ms": 86400000,
+    "limit": 1,
+    "pack_count": 3
+  },
+  "owner_permit_key_id": "walmart-owner-control-2026-01",
+  "owner_permit_public_key_spki_sha256": "ca74a2134808ab46eb162b14dfe481730fc69df00b57283cffd7a7bb1d37883a",
+  "item_spec_version": "5.0.20260501-19_21_29-api",
+  "walmart_api_probe": {
+    "method": "GET",
+    "path": "/v3/items/walmart/search",
+    "response_format": "SPEC",
+    "upc_sha256": "b073b493a0858b17e641234a50dfcf91d7371a13b3c107a17fab8b436a2fcc93",
+    "http_status": 200,
+    "correlation_id": "b255f9c3-c597-427e-acf0-3738ba29e2f1",
+    "response_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "authenticated_catalog_read": true
+  },
+  "product_truth_schema_ready": true,
+  "publish_lifecycle_schema_ready": true,
+  "upc_pool": {
+    "available": 13041,
+    "available_with_legacy_checksum_flag_and_provenance": 13041,
+    "duplicate_draft_reservations": 0
+  },
+  "ready_for_plan": true,
+  "infrastructure_ready_for_pilot": true,
+  "ready_for_live_apply": false,
+  "blockers": [],
+  "claims": {
+    "read_only": true,
+    "provider_calls": 0,
+    "marketplace_mutated": false,
+    "listing_published": false,
+    "migration_applied": false,
+    "backfill_performed": false
+  },
+  "receipt_sha256": "25dfb55d95d0e0f85e3d31f62f221e7fb30f360c452d32404994c7a95aaaf863"
+}

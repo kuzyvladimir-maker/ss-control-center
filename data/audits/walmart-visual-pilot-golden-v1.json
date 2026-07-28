@@ -1,0 +1,204 @@
+{
+  "schema_version": "walmart-visual-audit/v2",
+  "manifest_id": "walmart-main-artifact-golden-8-20260718-v2",
+  "purpose": "golden-pilot",
+  "cases": [
+    {
+      "case_id": "bad-wrong-brand-01",
+      "sku": "FaisalX-1122",
+      "expected": {
+        "title": "Nature's Own Life Honey Wheat, 40 Calories per Slice Keto Friendly Sandwich Bread, 16 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": { "value": 16, "unit": "oz" },
+        "required_identity_markers": [["nature's own"], ["life"], ["honey wheat"], ["40 calories"]],
+        "truth_source": "historical_title"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1122/main-20260701-f50.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": ["wrong_brand", "wrong_size"],
+        "basis": "The package is Sara Lee Honey Wheat 20 oz, while the listing requires Nature's Own Life Honey Wheat 16 oz."
+      }
+    },
+    {
+      "case_id": "bad-wrong-size-01",
+      "sku": "FaisalX-2195",
+      "expected": {
+        "title": "Mott's 100% Juice Original Apple Juice, 48 fl oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": { "value": 48, "unit": "fl_oz" },
+        "required_identity_markers": [["mott's"], ["apple juice"], ["100"]],
+        "truth_source": "historical_title"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2195/main-20260618-30437-1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": ["wrong_size"],
+        "basis": "The image shows Mott's 64 fl oz bottles, while the listing requires 48 fl oz bottles."
+      }
+    },
+    {
+      "case_id": "bad-paired-variant-size-01",
+      "sku": "FaisalX-1130",
+      "expected": {
+        "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": { "value": 22, "unit": "oz" },
+        "required_identity_markers": [["pepperidge farm"], ["15 grain"], ["thin sliced"]],
+        "truth_source": "historical_title"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": ["wrong_variant", "wrong_size"],
+        "basis": "The old artifact shows Whole Grain Oatmeal Bread 24 oz instead of Thin Sliced 15 Grain Bread 22 oz."
+      }
+    },
+    {
+      "case_id": "bad-wrong-count-01",
+      "sku": "FaisalX-3976",
+      "expected": {
+        "title": "Reese's Pieces Peanut Butter in a Crunchy Shell Candy, 5.3 oz (Pack of 4)",
+        "outer_units": 4,
+        "unit_size": { "value": 5.3, "unit": "oz" },
+        "required_identity_markers": [["reese's"], ["pieces"], ["peanut butter"]],
+        "truth_source": "historical_title"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3976/main-20260618-92213-1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": ["wrong_count", "wrong_variant"],
+        "basis": "The artifact contains about 24 seasonal Reese's Pieces Eggs packages, not four regular 5.3 oz bags."
+      }
+    },
+    {
+      "case_id": "bad-case-inside-cell-01",
+      "sku": "FaisalX-3087",
+      "expected": {
+        "title": "Purina Fancy Feast Chicken Feast Classic Grain Free Wet Cat Food Pate, 3 oz Can (Pack of 8)",
+        "outer_units": 8,
+        "unit_size": { "value": 3, "unit": "oz" },
+        "required_identity_markers": [["fancy feast"], ["chicken feast"], ["classic"], ["pate"]],
+        "truth_source": "historical_title"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3087/main-20260618-49596-0.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": ["multipack_of_multipacks"],
+        "basis": "Each repeated cell is a 24-can case; the listing requires eight individual 3 oz cans."
+      }
+    },
+    {
+      "case_id": "pass-inner-count-is-not-outer-01",
+      "sku": "FaisalX-5010",
+      "expected": {
+        "title": "Bigelow Peppermint Caffeine Free Herbal Tea Bags, 20 Count (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": { "value": 20, "unit": "count" },
+        "required_identity_markers": [["bigelow"], ["peppermint"], ["tea"]],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5010/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Two matching Bigelow Peppermint 20-count retail tea boxes are shown; 20 tea bags is inner contents, not 20 outer packages."
+      }
+    },
+    {
+      "case_id": "pass-exact-box-grid-01",
+      "sku": "FaisalX-3490",
+      "expected": {
+        "title": "Hamburger Helper Cheesy Ranch Burger, 5.5 oz Box (Pack of 6)",
+        "outer_units": 6,
+        "unit_size": { "value": 5.5, "unit": "oz" },
+        "required_identity_markers": [["hamburger helper"], ["cheesy ranch"], ["burger"]],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3490/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Six matching Hamburger Helper Cheesy Ranch Burger 5.5 oz retail boxes are shown on white."
+      }
+    },
+    {
+      "case_id": "pass-paired-variant-size-01",
+      "sku": "FaisalX-1130",
+      "expected": {
+        "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+        "outer_units": 2,
+        "unit_size": { "value": 22, "unit": "oz" },
+        "required_identity_markers": [["pepperidge farm"], ["15 grain"], ["thin sliced"]],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "The corrective artifact shows two matching Thin Sliced 15 Grain Bread 22 oz retail loaves and was manually checked before its applied feed."
+      }
+    }
+  ],
+  "layouts": [
+    { "name": "singleton", "batch_size": 1, "shuffle_seed": null },
+    { "name": "batch-3", "batch_size": 3, "shuffle_seed": null },
+    { "name": "batch-3-shuffled", "batch_size": 3, "shuffle_seed": 20260718 }
+  ]
+}

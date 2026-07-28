@@ -1,0 +1,48 @@
+{
+  "schema_version": "product-truth-amazon-report-capture-index/v1",
+  "captured_at": "2026-07-23T01:51:17.748Z",
+  "mode": "READ_ONLY_EXISTING_REPORT_DOWNLOAD",
+  "report_type": "GET_MERCHANT_LISTINGS_ALL_DATA",
+  "reports": [
+    {
+      "scope_key": "store1",
+      "report_id": "1076999020657",
+      "report_document_id": "amzn1.spdoc.1.4.na.7728728e-b01f-4576-9af8-d78523f7f6e7.T33L1X3BVOZSDH.47700",
+      "report_created_at": "2026-07-23T00:01:55.000Z",
+      "downloaded_at": "2026-07-23T01:51:17.169Z",
+      "filename": "amazon-store1-1076999020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+      "bytes": 1662849,
+      "data_rows": 1563,
+      "content_sha256": "6655a6a093d65f1915195650c90bc3525ee118182e643b13046afdbb874942c5"
+    },
+    {
+      "scope_key": "store3",
+      "report_id": "424270020657",
+      "report_document_id": "amzn1.spdoc.1.4.na.b8b0e280-b604-4955-8cc8-333f877164cb.T1CFUWJR4HIS8N.47700",
+      "report_created_at": "2026-07-23T00:08:15.000Z",
+      "downloaded_at": "2026-07-23T01:51:17.464Z",
+      "filename": "amazon-store3-424270020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+      "bytes": 149802,
+      "data_rows": 514,
+      "content_sha256": "5c49ec8dcc996f7dd958ac966a56c017aaad8e2273ac3e393412467023787d08"
+    },
+    {
+      "scope_key": "store5",
+      "report_id": "223657020657",
+      "report_document_id": "amzn1.spdoc.1.4.na.ec62f0f9-b6c8-441a-9147-fccd99848bd9.T9DETC9BY14QR.47700",
+      "report_created_at": "2026-07-23T00:14:07.000Z",
+      "downloaded_at": "2026-07-23T01:51:17.748Z",
+      "filename": "amazon-store5-223657020657-GET_MERCHANT_LISTINGS_ALL_DATA.tsv",
+      "bytes": 421,
+      "data_rows": 0,
+      "content_sha256": "05632ea2119651b27f8f09c5e9f595f805a746489e67899d4a59df0ff98cb100"
+    }
+  ],
+  "effects": {
+    "report_create_calls": 0,
+    "report_document_metadata_get_calls": 3,
+    "report_download_get_calls": 3,
+    "database_writes": 0,
+    "marketplace_mutations": 0
+  }
+}

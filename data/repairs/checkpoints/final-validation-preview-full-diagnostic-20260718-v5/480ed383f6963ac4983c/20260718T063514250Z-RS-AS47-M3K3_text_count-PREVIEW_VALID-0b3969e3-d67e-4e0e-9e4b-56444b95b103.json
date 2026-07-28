@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0b3969e3-d67e-4e0e-9e4b-56444b95b103",
+  "created_at": "2026-07-18T06:35:14.250Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "RS-AS47-M3K3:text_count",
+  "sku": "RS-AS47-M3K3",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "89a0d4fcf03f0024e3cbb9b20067e38e29961ef4350b5be71b08bfe1e84720c9",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f7c3512fb5d24dcfb223d3d60c2d4996",
+    "issues": []
+  },
+  "sha256": "eb3c0e81149d5c5eb54c40cb022865dc2a58c4d0612273bf6ed61a805ca57a91"
+}

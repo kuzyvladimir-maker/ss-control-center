@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-25T21:06:22.701Z",
+  "target": {
+    "sku": "Comm-05",
+    "item_id": "5410523365"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "Comm-05",
+      "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "upc": "364760754666",
+      "gtin14": "00364760754666",
+      "wpid": "431H05RNU37O",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "5410523365",
+      "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "5410523365",
+      "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "identity_evidence": [
+        "product.item_id=5410523365",
+        "product.product_url=5410523365"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=Comm-05",
+        "seller.ItemResponse[0].sku=Comm-05",
+        "seller.ItemResponse[0].upc=364760754666",
+        "seller.normalized_gtin14=00364760754666",
+        "seller.wpid_not_itemId=431H05RNU37O",
+        "catalog.items[0].standardUpc~=00364760754666;itemId=5410523365",
+        "catalog.unique_numeric_public_itemId=5410523365"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=5410523365",
+        "product.product_url=5410523365"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "0265f963e2b9ecc8bf2584bdf79a5f80c3f56f2d458a559450efdb29fc01bf67",
+    "catalog_search_payload_canonical_sha256": "b88ed0150c68a37275ae431db62cd483f02ec3cb5a4872265b9c8dc2b5fa2789",
+    "resolution_canonical_sha256": "6f12a9b74c3dba1955aa986df930c4ecc7b0b8c787363b825dab25b97a3e8e88",
+    "buyer_payload_canonical_sha256": "52fa57c134ecd1ff7e4bbca49ac1a65e981710a34541f1d8f1fde58917f57212"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+      "final_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+      "sha256": "76eb2b2da9b251f84347618bb8055ae1c3aecfe09b07af6693c74888ccf5c1e4",
+      "bytes": 295971,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/76eb2b2da9b251f84347618bb8055ae1c3aecfe09b07af6693c74888ccf5c1e4.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/9b72a87a-35a6-4fc6-8cc1-260814aaeb1d.f6cd657819173b5326cbe7ac74bc79e8.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/9b72a87a-35a6-4fc6-8cc1-260814aaeb1d.f6cd657819173b5326cbe7ac74bc79e8.jpeg",
+      "sha256": "aae520057170d3cd734168ecbc7f59fca99657f5b918479e785a3e8aedc3d6f4",
+      "bytes": 166637,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 1280,
+      "decoded_height": 1280,
+      "local_path": "assets/aae520057170d3cd734168ecbc7f59fca99657f5b918479e785a3e8aedc3d6f4.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/37119ea1-3029-4b2c-90ab-b4abab378b77.a067a938062a32bac1340cb1d9b26fe6.png",
+      "final_url": "https://i5.walmartimages.com/asr/37119ea1-3029-4b2c-90ab-b4abab378b77.a067a938062a32bac1340cb1d9b26fe6.png",
+      "sha256": "d83832d57aacfbc395b8d3fcfba0dd7fa92d43235d8e6f1a976b2b2a926921ba",
+      "bytes": 257740,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 1050,
+      "decoded_height": 1050,
+      "local_path": "assets/d83832d57aacfbc395b8d3fcfba0dd7fa92d43235d8e6f1a976b2b2a926921ba.png"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260725T210622Z-e4e249df5171",
+  "body_sha256": "e4e249df5171382d977098c2acfdacace65555420fc7002f9a4ed2ae7a98ae66"
+}

@@ -1,0 +1,385 @@
+{
+  "schema_version": "walmart-visual-audit/v3",
+  "manifest_id": "walmart-main-control-6-20260718-v3",
+  "purpose": "golden-pilot",
+  "cases": [
+    {
+      "case_id": "bad-pair-faisalx-1183",
+      "sku": "FaisalX-1183",
+      "expected": {
+        "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+        "outer_units": 6,
+        "identity": {
+          "brand_aliases": [
+            "pepperidge farm"
+          ],
+          "product_marker_groups": [
+            [
+              "hot dog buns",
+              "hot dog bun"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "butter"
+            ],
+            [
+              "top sliced"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "product",
+              "aliases": [
+                "chessmen",
+                "cookies",
+                "cookie"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "inner_item_count",
+            "value": 8,
+            "unit": "count",
+            "requirement": "required"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_product_identity",
+          "wrong_product_category"
+        ],
+        "basis": "Image shows Pepperidge Farm Chessmen Butter cookies, not Butter Hot Dog Buns; 6 single front-facing Historical BAD artifact donor: Pepperidge Farm Chessmen Butter Cookies - 7.25oz (Packaging May Vary)."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-2223",
+      "sku": "FaisalX-2223",
+      "expected": {
+        "title": "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
+        "outer_units": 6,
+        "identity": {
+          "brand_aliases": [
+            "gatorade"
+          ],
+          "product_marker_groups": [
+            [
+              "sports drink",
+              "advanced rehydration"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "cool blue"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "product",
+              "aliases": [
+                "g zero",
+                "zero sugar",
+                "zero"
+              ]
+            },
+            {
+              "role": "variant",
+              "aliases": [
+                "glacier cherry"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "net_content",
+            "value": 28,
+            "unit": "fl_oz",
+            "requirement": "required"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2223/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_formulation"
+        ],
+        "basis": "Image shows Gatorade Zero Glacier Cherry bottles, not Gatorade Cool Blue Sports Drink; 6 single fron Historical BAD artifact donor: Gatorade G Zero Sugar Thirst Quencher, Glacier Cherry, Bottle Gluten-Free 28 fl oz."
+      }
+    },
+    {
+      "case_id": "bad-pair-faisalx-4779",
+      "sku": "FaisalX-4779",
+      "expected": {
+        "title": "OREO Golden Sandwich Cookies, Family Size, 18.12 oz (Pack of 4)",
+        "outer_units": 4,
+        "identity": {
+          "brand_aliases": [
+            "oreo"
+          ],
+          "product_marker_groups": [
+            [
+              "sandwich cookies",
+              "cookies"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "golden"
+            ],
+            [
+              "family size"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "product",
+              "aliases": [
+                "double stuf",
+                "double stuff"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "net_content",
+            "value": 18.12,
+            "unit": "oz",
+            "requirement": "if_visible"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4779/main-enriched.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "BAD",
+        "defect_types": [
+          "wrong_variant",
+          "wrong_size"
+        ],
+        "basis": "Image shows 4 single front-facing Oreo Golden Double Stuf packages on white, but title says Oreo Gol Historical BAD artifact donor: OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1130",
+      "sku": "FaisalX-1130",
+      "expected": {
+        "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+        "outer_units": 2,
+        "identity": {
+          "brand_aliases": [
+            "pepperidge farm"
+          ],
+          "product_marker_groups": [
+            [
+              "whole grain",
+              "bread"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "15 grain"
+            ],
+            [
+              "thin sliced"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "variant",
+              "aliases": [
+                "oatmeal"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "net_content",
+            "value": 22,
+            "unit": "oz",
+            "requirement": "required"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz Loaf; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-1208",
+      "sku": "FaisalX-1208",
+      "expected": {
+        "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+        "outer_units": 2,
+        "identity": {
+          "brand_aliases": [
+            "sara lee"
+          ],
+          "product_marker_groups": [
+            [
+              "bakery buns",
+              "hamburger buns",
+              "buns"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "artesano"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "product",
+              "aliases": [
+                "classic bread",
+                "classic white"
+              ]
+            },
+            {
+              "role": "variant",
+              "aliases": [
+                "sliced bread"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "inner_item_count",
+            "value": 8,
+            "unit": "count",
+            "requirement": "required"
+          },
+          {
+            "kind": "net_content",
+            "value": 19,
+            "unit": "oz",
+            "requirement": "if_visible"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1208/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Sara Lee Artesano White Bakery Buns, 8 count, Hamburger Buns, 19 oz Bag; local generation and publish records are GEN_OK/applied."
+      }
+    },
+    {
+      "case_id": "pass-pair-faisalx-4215",
+      "sku": "FaisalX-4215",
+      "expected": {
+        "title": "Old El Paso Stand 'N Stuff Taco Shells, Gluten Free, Family Size, 20-count (Pack of 4)",
+        "outer_units": 4,
+        "identity": {
+          "brand_aliases": [
+            "old el paso"
+          ],
+          "product_marker_groups": [
+            [
+              "stand n stuff"
+            ]
+          ],
+          "variant_marker_groups": [
+            [
+              "family size"
+            ]
+          ],
+          "forbidden_markers": [
+            {
+              "role": "variant",
+              "aliases": [
+                "zesty ranch"
+              ]
+            }
+          ]
+        },
+        "package_facts": [
+          {
+            "kind": "inner_item_count",
+            "value": 20,
+            "unit": "count",
+            "requirement": "required"
+          }
+        ],
+        "truth_source": "manual_verified"
+      },
+      "images": [
+        {
+          "slot": "main",
+          "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4215/main-fix1.png",
+          "buyer_facing_verified": false,
+          "surface": "last_applied_artifact"
+        }
+      ],
+      "ground_truth": {
+        "verdict": "PASS",
+        "defect_types": [],
+        "basis": "Manually checked corrected artifact built from Old El Paso Gluten Free Stand 'N Stuff Taco Shells, Family Size (20 Taco Shells); local generation and publish records are GEN_OK/applied."
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "name": "batch-6-shuffled",
+      "batch_size": 6,
+      "shuffle_seed": 7182026
+    },
+    {
+      "name": "singleton",
+      "batch_size": 1,
+      "shuffle_seed": null
+    }
+  ]
+}

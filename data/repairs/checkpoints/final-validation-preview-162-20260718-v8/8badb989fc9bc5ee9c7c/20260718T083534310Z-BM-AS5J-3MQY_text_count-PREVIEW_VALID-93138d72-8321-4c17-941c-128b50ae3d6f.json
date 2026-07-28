@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "93138d72-8321-4c17-941c-128b50ae3d6f",
+  "created_at": "2026-07-18T08:35:34.310Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BM-AS5J-3MQY:text_count",
+  "sku": "BM-AS5J-3MQY",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "a39ecea030eef1bdbb9677dcc6e0c98cd351df58de71cfc149210bad92221329",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f86df0c9c1514b2e9f255d8bcc06a4eb",
+    "issues": []
+  },
+  "sha256": "2f50d7f3a92da34029bddc275d4ff3e34ad557f73a6d4c3c6f5754f6434b5994"
+}

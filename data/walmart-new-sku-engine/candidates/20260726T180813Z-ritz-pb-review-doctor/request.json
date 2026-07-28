@@ -1,0 +1,70 @@
+{
+  "createdAt": "2026-07-26T18:08:19.182Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"ritz\",\"productLine\":\"bits butter crackers lunch peanut sandwich snacks\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":249.4758035,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": null,
+    "decisionEvidenceJson": null,
+    "decisionStatus": null,
+    "donorIdentityStatus": "legacy_unverified",
+    "donorOfferId": "do:walmart:34345451",
+    "donorProductId": "4bc40420-74eb-442c-acd9-e59bc91bb2f5",
+    "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "isFirstParty": true,
+    "legacySnapshot": {
+      "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-08T19:16:04.601Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"4bc40420-74eb-442c-acd9-e59bc91bb2f5\",\n  \"fetchedAt\": \"2026-07-10T13:29:50.043Z\",\n  \"id\": \"do:walmart:34345451\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 3.97,\n  \"pricePerUnit\": 3.97,\n  \"productUrl\": \"https://www.walmart.com/ip/RITZ-Bits-Peanut-Butter-Sandwich-Crackers-8-8-oz/34345451?classType=REGULAR\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"34345451\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-10T13:29:50.043Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+      "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"label\\\":\\\"Features\\\",\\\"value\\\":\\\"No High Fructose Corn Syrup\\\"},{\\\"label\\\":\\\"Dietary Needs\\\",\\\"value\\\":\\\"0 Grams Trans Fat\\\"},{\\\"label\\\":\\\"State of Readiness\\\",\\\"value\\\":\\\"Ready to Eat\\\"},{\\\"label\\\":\\\"Form\\\",\\\"value\\\":\\\"Pieces\\\"},{\\\"label\\\":\\\"Package Quantity\\\",\\\"value\\\":\\\"1\\\"},{\\\"label\\\":\\\"Origin\\\",\\\"value\\\":\\\"Made in the USA or Imported\\\"}]\",\n  \"bestPrice\": 3.97,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Ritz\",\n  \"bullets\": \"[\\\"One 8.8 oz package of RITZ Bits Peanut Butter Sandwich Crackers (packaging may vary)\\\",\\\"Smooth and creamy peanut butter spread between two tiny RITZ snack crackers\\\",\\\"Bite-sized, mini crackers featuring filling made with real peanut butter and containing no high-fructose corn syrup for a deliciously crunchy snack\\\",\\\"RITZ snack crackers with peanut butter that make great office snacks and after-school snacks for kids and adults; wonderful on the go snacks and travel snacks\\\",\\\"Box of peanut butter crackers for anytime, anywhere snacking\\\",\\\"Packaging may vary. Please refer to the actual packaging for current information for this product\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-08T19:08:28.677Z\",\n  \"currency\": \"USD\",\n  \"description\": \"Enjoy a tiny take on the classic RITZ peanut butter cracker sandwiches you know and love with RITZ Bits Peanut Butter Sandwich Crackers. The bite-sized snacks layer a delicious, peanut butter spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real peanut butter and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers with peanut butter hit the spot when you're looking for lightly salty snacks with creamy peanut butter filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these peanut butter crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"4bc40420-74eb-442c-acd9-e59bc91bb2f5\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"ritz|bits|peanut|butter|sandwich|crackers|lunch|8 8 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_9024bf68-2565-43e4-850c-f52952358485\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_7816b395-eb83-4295-b2c2-0f389fefbbe1\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_09c0c1f6-ec26-45d2-aace-b30e09c981fe\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_f33a4497-976c-44f8-badc-99c7a56e2fcd\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_adb8943c-eb63-4c21-91d3-f5590e301352\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_3601e990-afa9-45f5-ae78-0aaffe126c26\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_ddf139ba-0661-4c5d-baf9-fb4443a48eda\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_441e9121-ef29-4ac7-8b73-6565a2dc4eec\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_6173a127-8cf6-4d12-9e6f-20494d28b6ab\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_ef7790b7-2542-4c3e-a016-0f06899d838d\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_97809998-a0fd-4d43-9915-cdfca2e890f1\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_045dd194-4cee-4bcf-b02e-d20e43a006d4\\\",\\\"https://target.scene7.com/is/image/Target/GUEST_35606943-5b2c-42f2-8ef4-2e530a26959b\\\"]\",\n  \"ingredients\": \"Unbleached enriched flour (wheat flour, niacin, reduced iron, thiamine mononitrate {vitamin b1}, riboflavin {vitamin b2}, folic acid), peanut butter (roasted peanuts, hydrogenated vegetable oil {rapeseed and/or cottonseed and/or soybean oils}, salt, peanut oil), vegetable oil (soybean and/or canola and/or palm and/or partially hydrogenated cottonseed oil), sugar, dextrose, leavening (baking soda and/or calcium phosphate), salt, soy lecithin, malted barley flour. milk.\",\n  \"mainImageUrl\": \"https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": \"{\\\"added-sugars\\\":10.3448275862069,\\\"added-sugars_100g\\\":10.3448275862069,\\\"added-sugars_serving\\\":3.1,\\\"added-sugars_unit\\\":\\\"g\\\",\\\"added-sugars_value\\\":10.3448275862069,\\\"caffeine\\\":0,\\\"caffeine_100g\\\":0,\\\"caffeine_serving\\\":0,\\\"caffeine_unit\\\":\\\"g\\\",\\\"caffeine_value\\\":0,\\\"calcium\\\":0.134,\\\"calcium_100g\\\":0.134,\\\"calcium_serving\\\":0.0402,\\\"calcium_unit\\\":\\\"g\\\",\\\"calcium_value\\\":0.134,\\\"carbohydrates\\\":60,\\\"carbohydrates_100g\\\":60,\\\"carbohydrates_serving\\\":18,\\\"carbohydrates_unit\\\":\\\"g\\\",\\\"carbohydrates_value\\\":60,\\\"cholesterol\\\":0,\\\"cholesterol_100g\\\":0,\\\"cholesterol_serving\\\":0,\\\"cholesterol_unit\\\":\\\"g\\\",\\\"cholesterol_value\\\":0,\\\"choline\\\":0,\\\"choline_100g\\\":0,\\\"choline_serving\\\":0,\\\"choline_unit\\\":\\\"g\\\",\\\"choline_value\\\":0,\\\"copper\\\":0,\\\"copper_100g\\\":0,\\\"copper_serving\\\":0,\\\"copper_unit\\\":\\\"g\\\",\\\"copper_value\\\":0,\\\"energy\\\":2203.19,\\\"energy-kcal\\\":517.241379310345,\\\"energy-kcal_100g\\\":517.241379310345,\\\"energy-kcal_serving\\\":155,\\\"energy-kcal_unit\\\":\\\"kcal\\\",\\\"energy-kcal_value\\\":517.241379310345,\\\"energy-kj\\\":2203.19,\\\"energy-kj_100g\\\":2203.19,\\\"energy-kj_modifier\\\":\\\"~\\\",\\\"energy-kj_serving\\\":661,\\\"energy-kj_unit\\\":\\\"kJ\\\",\\\"energy-kj_value\\\":2203.19,\\\"energy_100g\\\":2203.19,\\\"energy_modifier\\\":\\\"~\\\",\\\"energy_serving\\\":661,\\\"energy_unit\\\":\\\"kJ\\\",\\\"energy_value\\\":2203.19,\\\"fat\\\":26.67,\\\"fat_100g\\\":26.67,\\\"fat_serving\\\":8,\\\"fat_unit\\\":\\\"g\\\",\\\"fat_value\\\":26.67,\\\"fiber\\\":3.3,\\\"fiber_100g\\\":3.3,\\\"fiber_serving\\\":0.99,\\\"fiber_unit\\\":\\\"g\\\",\\\"fiber_value\\\":3.3,\\\"fruits-vegetables-legumes-estimate-from-ingredients_100g\\\":5.625,\\\"fruits-vegetables-nuts-estimate-from-ingredients_100g\\\":30.9375,\\\"iron\\\":0.00310344827586207,\\\"iron_100g\\\":0.00310344827586207,\\\"iron_serving\\\":0.000931,\\\"iron_unit\\\":\\\"g\\\",\\\"iron_value\\\":0.00310344827586207,\\\"magnesium\\\":0,\\\"magnesium_100g\\\":0,\\\"magnesium_serving\\\":0,\\\"magnesium_unit\\\":\\\"g\\\",\\\"magnesium_value\\\":0,\\\"manganese\\\":0,\\\"manganese_100g\\\":0,\\\"manganese_serving\\\":0,\\\"manganese_unit\\\":\\\"g\\\",\\\"manganese_value\\\":0,\\\"monounsaturated-fat\\\":8.33,\\\"monounsaturated-fat_100g\\\":8.33,\\\"monounsaturated-fat_serving\\\":2.5,\\\"monounsaturated-fat_unit\\\":\\\"g\\\",\\\"monounsaturated-fat_value\\\":8.33,\\\"nova-group\\\":4,\\\"nova-group_100g\\\":4,\\\"nova-group_serving\\\":4,\\\"nova-group_unit\\\":\\\"\\\",\\\"nova-group_value\\\":4,\\\"phosphorus\\\":0,\\\"phosphorus_100g\\\":0,\\\"phosphorus_serving\\\":0,\\\"phosphorus_unit\\\":\\\"g\\\",\\\"phosphorus_value\\\":0,\\\"polyunsaturated-fat\\\":10,\\\"polyunsaturated-fat_100g\\\":10,\\\"polyunsaturated-fat_serving\\\":3,\\\"polyunsaturated-fat_unit\\\":\\\"g\\\",\\\"polyunsaturated-fat_value\\\":10,\\\"potassium\\\":0.183,\\\"potassium_100g\\\":0.183,\\\"potassium_serving\\\":0.0549,\\\"potassium_unit\\\":\\\"g\\\",\\\"potassium_value\\\":0.183,\\\"proteins\\\":10,\\\"proteins_100g\\\":10,\\\"proteins_serving\\\":3,\\\"proteins_unit\\\":\\\"g\\\",\\\"proteins_value\\\":10,\\\"salt\\\":1.4175,\\\"salt_100g\\\":1.4175,\\\"salt_serving\\\":0.425,\\\"salt_unit\\\":\\\"g\\\",\\\"salt_value\\\":1.4175,\\\"saturated-fat\\\":6.67,\\\"saturated-fat_100g\\\":6.67,\\\"saturated-fat_serving\\\":2,\\\"saturated-fat_unit\\\":\\\"g\\\",\\\"saturated-fat_value\\\":6.67,\\\"selenium\\\":0,\\\"selenium_100g\\\":0,\\\"selenium_serving\\\":0,\\\"selenium_unit\\\":\\\"g\\\",\\\"selenium_value\\\":0,\\\"sodium\\\":0.567,\\\"sodium_100g\\\":0.567,\\\"sodium_serving\\\":0.17,\\\"sodium_unit\\\":\\\"g\\\",\\\"sodium_value\\\":0.567,\\\"starch\\\":0,\\\"starch_100g\\\":0,\\\"starch_serving\\\":0,\\\"starch_unit\\\":\\\"g\\\",\\\"starch_value\\\":0,\\\"sugars\\\":13.33,\\\"sugars_100g\\\":13.33,\\\"sugars_serving\\\":4,\\\"sugars_unit\\\":\\\"g\\\",\\\"sugars_value\\\":13.33,\\\"trans-fat\\\":0,\\\"trans-fat_100g\\\":0,\\\"trans-fat_serving\\\":0,\\\"trans-fat_unit\\\":\\\"g\\\",\\\"trans-fat_value\\\":0,\\\"vitamin-a\\\":0,\\\"vitamin-a_100g\\\":0,\\\"vitamin-a_serving\\\":0,\\\"vitamin-a_unit\\\":\\\"g\\\",\\\"vitamin-a_value\\\":0,\\\"vitamin-c\\\":0,\\\"vitamin-c_100g\\\":0,\\\"vitamin-c_serving\\\":0,\\\"vitamin-c_unit\\\":\\\"g\\\",\\\"vitamin-c_value\\\":0,\\\"vitamin-e\\\":0,\\\"vitamin-e_100g\\\":0,\\\"vitamin-e_serving\\\":0,\\\"vitamin-e_unit\\\":\\\"g\\\",\\\"vitamin-e_value\\\":0,\\\"vitamin-k\\\":0,\\\"vitamin-k_100g\\\":0,\\\"vitamin-k_serving\\\":0,\\\"vitamin-k_unit\\\":\\\"g\\\",\\\"vitamin-k_value\\\":0,\\\"zinc\\\":0,\\\"zinc_100g\\\":0,\\\"zinc_serving\\\":0,\\\"zinc_unit\\\":\\\"g\\\",\\\"zinc_value\\\":0,\\\"allergens\\\":[\\\"gluten\\\",\\\"milk\\\",\\\"peanuts\\\",\\\"soybeans\\\"]}\",\n  \"pricePerMeasure\": 0.451,\n  \"productLine\": null,\n  \"size\": \"8.8 oz\",\n  \"title\": \"RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz\",\n  \"unitAmount\": 8.8,\n  \"unitMeasure\": \"oz\",\n  \"upc\": \"044000035440\",\n  \"updatedAt\": \"2026-07-11T14:07:21.572Z\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+      "sha256": "5514792843c41467460644af1969f3c62fbb2a68ef97de02b922aed1c37f940f"
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/34345451",
+    "retailer": "walmart",
+    "retailerProductId": "34345451",
+    "variantDecisionId": null,
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "225041e0725434c56acec52ef126ed7347cb8e4674fd6a11c2531dd3d2a66966",
+  "engineReleaseSha256": "7ae097a3b0d75aab405f54140a84a548bd52bd32dc1ccf398f3658a2dff806c7",
+  "expectedTargetFingerprint": "0ca0e14ed91b7eae080e327b8ce75b938dd819ee2bab9c83b7007784abe99d34",
+  "expiresAt": "2026-07-27T17:08:13.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 180000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 0
+    }
+  ],
+  "query": "RITZ Bits Peanut Butter Sandwich Crackers 8.8 oz UPC 044000035440",
+  "runId": "wm-review-ritz-pb-20260726T180813Z",
+  "schemaFingerprintSha256": "8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.3.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

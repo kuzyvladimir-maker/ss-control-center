@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9d2098fa-164f-48d4-8281-4eead784279f",
+  "created_at": "2026-07-18T07:01:41.418Z",
+  "plan_sha256": "99854ed8606535cda86f917cb6ce49320862daf3d7ebe24c8adbb5da0e719656",
+  "action_id": "BH-AS7H-D4FV:offer",
+  "sku": "BH-AS7H-D4FV",
+  "kind": "OFFER",
+  "status": "FAILED",
+  "detail": {
+    "error": "SP-API 400 on PATCH /listings/2021-08-01/items/A3A7A0RDFUSGBS/BH-AS7H-D4FV: {\"errors\":[{\"code\":\"InvalidInput\",\"message\":\"Invalid operation found in patch at index of 0. Merge operation is not allowed for VALIDATION_PREVIEW requests.\",\"details\":\"\"}]}"
+  },
+  "sha256": "dce9bb5213e3100c4d88fbb6b6d720a8d07b1e3b993bbab4f53baedc9e5e85a3"
+}

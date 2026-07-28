@@ -1,0 +1,50 @@
+[
+ {
+  "sku": "FaisalX-1196·контроль",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1196/main-enriched.png",
+  "title": "Sara Lee Honey Whole Wheat Bread - 20oz",
+  "qty": 2,
+  "expect": "PASS",
+  "note": "верный заголовок"
+ },
+ {
+  "sku": "FaisalX-1196·подмена",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1196/main-enriched.png",
+  "title": "Sara Lee Honey Wheat Bread - 20oz",
+  "qty": 2,
+  "expect": "FAIL",
+  "note": "заголовок соседнего варианта"
+ },
+ {
+  "sku": "FaisalX-2664·контроль",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2664/main-enriched.png",
+  "title": "Knorr Pasta Sides Buffalo Chicken Flavor Spiral Pasta Made with No Artificial Flavors, 4.2 Oz Pouch",
+  "qty": 6,
+  "expect": "PASS",
+  "note": "верный заголовок"
+ },
+ {
+  "sku": "FaisalX-2664·подмена",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2664/main-enriched.png",
+  "title": "Knorr Rice Sides Buffalo Chicken Flavor, 4.2 Oz Pouch",
+  "qty": 6,
+  "expect": "FAIL",
+  "note": "заголовок соседнего варианта"
+ },
+ {
+  "sku": "FaisalX-2565·контроль",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2565/main-enriched.png",
+  "title": "Campbell's Chunky Jazzy Jambalaya with Chicken, Sausage & Ham Soup - 18.6oz",
+  "qty": 4,
+  "expect": "PASS",
+  "note": "верный заголовок"
+ },
+ {
+  "sku": "FaisalX-2565·подмена",
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2565/main-enriched.png",
+  "title": "Campbell's Chunky Classic Chicken Noodle Soup - 18.6oz",
+  "qty": 4,
+  "expect": "FAIL",
+  "note": "заголовок соседнего варианта"
+ }
+]

@@ -1,0 +1,39 @@
+{
+  "schema_version": "walmart-listing-attribute-repair-preview/v1",
+  "created_at": "2026-07-27T16:22:38.042Z",
+  "status": "READY_FOR_CONNECTED_MATERIALS",
+  "listing_key": "walmart:1:FaisalX-2768",
+  "changed_fields": [
+    "attributes"
+  ],
+  "exact_diff": {
+    "flavor": {
+      "before": "qty 4",
+      "after": "Golden Mushroom"
+    },
+    "count": {
+      "before": 1,
+      "after": 4
+    },
+    "countPerPack": {
+      "before": null,
+      "after": 1
+    },
+    "multipackQuantity": {
+      "before": null,
+      "after": 4
+    }
+  },
+  "unchanged": {
+    "title": true,
+    "description": true,
+    "bullets": true,
+    "main": true,
+    "gallery": true,
+    "opaque_attributes_preserved_by_omission": true,
+    "price": true,
+    "inventory": true,
+    "published_status": true
+  },
+  "body_sha256": "a07faec3e6f19d84e6b0961597bbfdd4e9cead132755bac2f2aff75063b92325"
+}

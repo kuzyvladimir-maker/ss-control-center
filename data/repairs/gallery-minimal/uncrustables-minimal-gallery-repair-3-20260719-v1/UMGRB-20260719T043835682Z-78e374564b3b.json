@@ -1,0 +1,254 @@
+{
+  "schema_version": "uncrustables-minimal-gallery-release-bundle/v1",
+  "immutable": true,
+  "created_at": "2026-07-19T04:38:35.682Z",
+  "offline_only": true,
+  "external_mutations": {
+    "amazon_gets": 0,
+    "amazon_patches": 0,
+    "database_writes": 0,
+    "uploads": 0,
+    "channelmax_writes": 0
+  },
+  "source_artifacts": {
+    "adjudication": {
+      "path": "data/audits/uncrustables-minimal-gallery-adjudication-20260719-v2/uncrustables-minimal-gallery-adjudication-20260719-v2.json",
+      "file_sha256": "737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145",
+      "canonical_sha256": "7a5353f42bb052d0fa1aeaf6bf079b7de95e096af48269c9945f1084715c2228"
+    },
+    "desired_media": {
+      "path": "data/audits/uncrustables-minimal-gallery-adjudication-20260719-v2/uncrustables-minimal-gallery-desired-media-20260719-v2.json",
+      "file_sha256": "19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42",
+      "canonical_sha256": "08e2ae5d45d8583bb1a042263d460fd44ecc757319d66d4de24b32cd79482fc4"
+    },
+    "current_snapshot": {
+      "path": "data/repairs/rollback/uncrustables-owner-relaxed-main-24-live-20260719-v2/UAPS-20260719T030109596Z-46a80e727880-b91e0e79732b.json",
+      "file_sha256": "14760f657729ab320d6cb1637bda1ffdc427b91615d67f2fb616b418e7c18679",
+      "canonical_sha256": "b91e0e79732b53fb0bf463423baee08cebe29285bbfa8ee0e00849c79c9f6a98"
+    },
+    "identity_matrix": {
+      "path": "data/audits/uncrustables-fresh-amazon-price-matrix-20260719-v2/uncrustables-fresh-amazon-price-matrix-20260719-v2.json",
+      "file_sha256": "572abc5428750408da6f776db6c73821372e789da1ee32d8aa05b267082b189a",
+      "canonical_sha256": "4b6240a5821e3c6750f1a6a2b2978fdb4b9ca60e3de58f1c352346df0dfdfd5a"
+    },
+    "source_ledger": {
+      "path": "data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+      "file_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+    },
+    "reviewed_manifest": {
+      "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/uncrustables-minimal-gallery-desired-manifest-3-20260719-v1.json",
+      "file_sha256": "a349da04faf428885f264f396e311d1f0f44f7e085868bd4df79528fc36aaa9d"
+    }
+  },
+  "repair_plan": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json",
+    "file_sha256": "92f48b510b309cd9ca30bed81d93f47c11acc2f89278b20a24e20bca7095ceac",
+    "canonical_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+    "entries": 3,
+    "actions": 3,
+    "action_kinds": [
+      "MEDIA"
+    ]
+  },
+  "safety_boundary": {
+    "profile": "GALLERY_MEDIA_ONLY_V1",
+    "allowed_patch_path_pattern": "^/attributes/other_product_image_locator_[1-8]$",
+    "allowed_patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "forbidden_patch_paths": [
+      "/attributes/allergen_information",
+      "/attributes/bullet_point",
+      "/attributes/each_unit_count",
+      "/attributes/ingredients",
+      "/attributes/is_expiration_dated_product",
+      "/attributes/item_name",
+      "/attributes/item_package_quantity",
+      "/attributes/list_price",
+      "/attributes/main_product_image_locator",
+      "/attributes/merchant_shipping_group",
+      "/attributes/number_of_items",
+      "/attributes/product_description",
+      "/attributes/purchasable_offer",
+      "/attributes/unit_count"
+    ],
+    "main_actions": 0,
+    "text_actions": 0,
+    "structured_actions": 0,
+    "offer_actions": 0
+  },
+  "current_cas": {
+    "source_snapshot_path": "data/repairs/rollback/uncrustables-owner-relaxed-main-24-live-20260719-v2/UAPS-20260719T030109596Z-46a80e727880-b91e0e79732b.json",
+    "source_snapshot_file_sha256": "14760f657729ab320d6cb1637bda1ffdc427b91615d67f2fb616b418e7c18679",
+    "source_snapshot_canonical_sha256": "b91e0e79732b53fb0bf463423baee08cebe29285bbfa8ee0e00849c79c9f6a98",
+    "apply_eligible_for_this_plan": false,
+    "reason": "This point-in-time snapshot is exact CAS evidence only: it predates this plan and is bound to a different reviewed manifest. Live apply requires a newly captured exact 164-row snapshot/rollback.",
+    "rows": [
+      {
+        "sku": "SZ-ASPI-JFAT",
+        "asin": "B0H776M5B5",
+        "store_index": 1,
+        "listing_sha256": "f894164f3f9cf73c959499a042016d1022613db7e4ea688e2366d0f547a9bc33",
+        "touched_paths": [
+          {
+            "path": "/attributes/other_product_image_locator_2",
+            "before": {
+              "present": false,
+              "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg"
+          },
+          {
+            "path": "/attributes/other_product_image_locator_3",
+            "before": {
+              "present": false,
+              "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg"
+          },
+          {
+            "path": "/attributes/other_product_image_locator_4",
+            "before": {
+              "present": false,
+              "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+          },
+          {
+            "path": "/attributes/other_product_image_locator_5",
+            "before": {
+              "present": false,
+              "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg"
+          }
+        ],
+        "cas_sha256": "b5b9961e45d419e896aaab5343f7ce4199bc7b0be9ace62d686a6d1e2071792a"
+      },
+      {
+        "sku": "UA-ASAO-RE7Q",
+        "asin": "B0H784LMG6",
+        "store_index": 1,
+        "listing_sha256": "f8bd7f377551f7059d6226d5ce9cbe4508dbdbd9a77842b8348d49ffccb0282c",
+        "touched_paths": [
+          {
+            "path": "/attributes/other_product_image_locator_1",
+            "before": {
+              "present": true,
+              "value": [
+                {
+                  "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                  "marketplace_id": "ATVPDKIKX0DER"
+                }
+              ],
+              "sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+          },
+          {
+            "path": "/attributes/other_product_image_locator_7",
+            "before": {
+              "present": true,
+              "value": [
+                {
+                  "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                  "marketplace_id": "ATVPDKIKX0DER"
+                }
+              ],
+              "sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+          }
+        ],
+        "cas_sha256": "f9728d51f6850087e9f948a124bfc0c8b4b865a8e13abd804341677f71ef5e45"
+      },
+      {
+        "sku": "VC-ASV1-378P",
+        "asin": "B0H786L5MW",
+        "store_index": 1,
+        "listing_sha256": "a1a9f9a83ae746381126eab750badead47f820e80a08334657decc4e47360d66",
+        "touched_paths": [
+          {
+            "path": "/attributes/other_product_image_locator_1",
+            "before": {
+              "present": true,
+              "value": [
+                {
+                  "media_location": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+                  "marketplace_id": "ATVPDKIKX0DER"
+                }
+              ],
+              "sha256": "038a3400f1383e1b8c87b16709aa2d3e8a1b4a81f938bd91f5ea38dff99f377e"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+          },
+          {
+            "path": "/attributes/other_product_image_locator_7",
+            "before": {
+              "present": true,
+              "value": [
+                {
+                  "media_location": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+                  "marketplace_id": "ATVPDKIKX0DER"
+                }
+              ],
+              "sha256": "82538cc2caed394abe99b896ef308149d52f1c023ccf2a3b427f6ce558a83e82"
+            },
+            "desired_url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+          }
+        ],
+        "cas_sha256": "3ce4001fabc71b9caf31b6fa8d3cfc9471f0a326b16a688ec4491d872c0490a7"
+      }
+    ],
+    "rows_sha256": "635d56a489a2ba53e64e193d0b26560ad3da96ab45f95680caac235b12808e84"
+  },
+  "fresh_rollback_prerequisite": {
+    "status": "REQUIRED_NOT_PRESENT",
+    "exact_scope": 164,
+    "capture_mode": "LIVE_SP_API",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "reviewed_manifest_sha256": "a349da04faf428885f264f396e311d1f0f44f7e085868bd4df79528fc36aaa9d",
+    "selected_canary_selection_sha256": "cee16b5bc15e5d12c251ecd882430f18be24ded70a76aacbe62c62a27a2610cd",
+    "maximum_age_minutes_before_first_write": 60,
+    "full_image_binary_evidence_required": true,
+    "selection_scoped_rollback_required": true,
+    "exact_capture_command": "node --import tsx scripts/prepare-uncrustables-amazon-rollback.ts --capture-live --ledger=data/audits/uncrustables-ledger-20260717T232140568Z-offline.json --overrides=data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/uncrustables-minimal-gallery-desired-manifest-3-20260719-v1.json --repair-plan=data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json --execution-selection=data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/canary-ua-vc/URES-20260719T043835682Z-cee16b5bc15e.json --output-dir=data/repairs/rollback/uncrustables-minimal-gallery-canary-ua-vc-live-20260719-v1 --canary-size=2"
+  },
+  "canary": {
+    "execution_authorized_now": false,
+    "authorization_blocker": "FRESH_164_SELECTION_SCOPED_ROLLBACK_NOT_PRESENT",
+    "skus": [
+      "UA-ASAO-RE7Q",
+      "VC-ASV1-378P"
+    ],
+    "action_ids": [
+      "UA-ASAO-RE7Q:media",
+      "VC-ASV1-378P:media"
+    ],
+    "selection_path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/canary-ua-vc/URES-20260719T043835682Z-cee16b5bc15e.json",
+    "selection_file_sha256": "c1292f0eeb1357b7c09a0d7d30add037fe0a2eecd854ca6c87eaa82fbcd9b522",
+    "selection_sha256": "cee16b5bc15e5d12c251ecd882430f18be24ded70a76aacbe62c62a27a2610cd",
+    "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-CEE16B5BC15E5D12",
+    "required_sequence": [
+      "Capture fresh exact 164-row LIVE_SP_API snapshot and selection-scoped rollback using exact_capture_command.",
+      "Verify rollback apply_eligible=true, exact source plan/selection/manifest hashes, complete current-image binary evidence, and <=60 minute age.",
+      "Run exact canary Amazon VALIDATION_PREVIEW; require VALID with zero issues and gallery-only paths.",
+      "Apply only the exact two swap actions under a separate owner/network gate and immutable rollback fence.",
+      "Perform immediate readback for slots 1 and 7 on both SKUs and verify MAIN/text/structured/offer unchanged.",
+      "Perform delayed readback and buyer-facing order verification; stop before any SZ action."
+    ]
+  },
+  "held_sz": {
+    "execution_authorized": false,
+    "selection_path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/held-sz/UGHES-20260719T043835682Z-fe42242880d5.json",
+    "selection_file_sha256": "3206a946a6b456d511ef860c712d54781ae7e9c1ff6028c56657068b350354b6",
+    "selection_sha256": "fe42242880d5b009d682dbcae72907843f65d1f5043c7d5636e13363efca6bf8",
+    "release_requires_new_standard_selection": true
+  },
+  "sha256": "78e374564b3b5abf06830000dfc6b6a9648a48c2dcbf79b13bbfa4bac6a4b9ab"
+}

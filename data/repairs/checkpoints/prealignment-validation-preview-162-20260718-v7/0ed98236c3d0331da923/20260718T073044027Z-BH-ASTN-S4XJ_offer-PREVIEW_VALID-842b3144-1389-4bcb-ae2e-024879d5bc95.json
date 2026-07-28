@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "842b3144-1389-4bcb-ae2e-024879d5bc95",
+  "created_at": "2026-07-18T07:30:44.027Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "BH-ASTN-S4XJ:offer",
+  "sku": "BH-ASTN-S4XJ",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "a986c5057e300ae2248d21778bc17a06594ada89b0a4361f98020999912fe9c8",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "2cd1fa46a8ace147c5b8ec2c2e74bf13a28dcde9fd38d953119d1c3bba925837",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "f75891eb14200ae59f2af0104d4d53e7dbe9d8953dbdc9e73ce3c3dd4da5f170",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "b3bcb1d1becf4fdf8e7f8fdd7a51a1ea",
+    "issues": []
+  },
+  "sha256": "e0180d0c267617f358e8ffcf8a9b1f3a2eb29692649edbfcd58a2add61a3ccaa"
+}

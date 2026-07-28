@@ -1,0 +1,147 @@
+{
+  "schema_version": "wm_visual_preprocess/v1",
+  "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+  "source": {
+    "sha256": "fa060ed3bf0212bf9fddafb13eea4c272611412c3badeccb2b89cd6ec7c43d45",
+    "byte_length": 1493828,
+    "format": "png",
+    "width": 2200,
+    "height": 2200,
+    "orientation": null,
+    "oriented_width": 2200,
+    "oriented_height": 2200
+  },
+  "analysis": {
+    "status": "confirmed_repetition",
+    "reason": "confirmed 2 repeated foreground regions",
+    "analysis_width": 512,
+    "analysis_height": 512,
+    "background_rgb": [
+      255,
+      255,
+      255
+    ],
+    "border_outlier_fraction": 0,
+    "regions": [
+      {
+        "left": 296,
+        "top": 51,
+        "width": 757,
+        "height": 2102
+      },
+      {
+        "left": 1151,
+        "top": 51,
+        "width": 753,
+        "height": 2102
+      }
+    ],
+    "representative_region_index": 0,
+    "dimension_cv": 0.002849,
+    "mean_histogram_distance": 0.002157,
+    "region_count": 2,
+    "analysis_sha256": "0bfc604a4be91802ebc3702ae61e35e50320c20cad257e51cf622a5fa5935089"
+  },
+  "views": [
+    {
+      "view_id": "full-df9b5f14e96dabe6",
+      "role": "full",
+      "media_type": "image/jpeg",
+      "width": 1800,
+      "height": 1800,
+      "byte_length": 379465,
+      "sha256": "df9b5f14e96dabe65b03c1d86d06a9e1e26596660ef44bbf575c2f1b7c7115c3",
+      "provenance_sha256": "3a03a36dfec81d87a617a07f5272abcc23abc8f5fe7555d30b4e28426e88f373",
+      "transform": {
+        "coordinate_space": "auto_oriented_source_pixels",
+        "source_region": null,
+        "flatten_background": "#ffffff",
+        "colourspace": "srgb",
+        "resize": {
+          "kernel": "lanczos3",
+          "width": 1800,
+          "height": 1800,
+          "without_enlargement": true,
+          "maximum_upscale": 1
+        },
+        "encoding": {
+          "format": "jpeg",
+          "quality": 92,
+          "chroma_subsampling": "4:4:4",
+          "compression_level": null
+        }
+      },
+      "file": "derived/full-df9b5f14e96dabe65b03c1d86d06a9e1e26596660ef44bbf575c2f1b7c7115c3.jpg"
+    },
+    {
+      "view_id": "tile_front-a95bfe810c61d2cb",
+      "role": "tile_front",
+      "media_type": "image/png",
+      "width": 769,
+      "height": 2048,
+      "byte_length": 1092477,
+      "sha256": "a95bfe810c61d2cb7a2c124756166dede354d48ca052a0b31e597c093d0e589e",
+      "provenance_sha256": "f020b4ed7cce6be9530284c1f6920397f18ab0c843627e91bef5590449f01528",
+      "transform": {
+        "coordinate_space": "auto_oriented_source_pixels",
+        "source_region": {
+          "left": 270,
+          "top": 25,
+          "width": 809,
+          "height": 2154
+        },
+        "flatten_background": "#ffffff",
+        "colourspace": "srgb",
+        "resize": {
+          "kernel": "lanczos3",
+          "width": 769,
+          "height": 2048,
+          "without_enlargement": false,
+          "maximum_upscale": 3
+        },
+        "encoding": {
+          "format": "png",
+          "quality": null,
+          "chroma_subsampling": null,
+          "compression_level": 9
+        }
+      },
+      "file": "derived/tile_front-a95bfe810c61d2cb7a2c124756166dede354d48ca052a0b31e597c093d0e589e.png"
+    },
+    {
+      "view_id": "bottom_label-b105c41f2fe04cca",
+      "role": "bottom_label",
+      "media_type": "image/png",
+      "width": 1922,
+      "height": 2048,
+      "byte_length": 1464220,
+      "sha256": "b105c41f2fe04ccaaf88a19c6d826a86333e8497e2d3ab50f7fc380fb1d8b102",
+      "provenance_sha256": "728768e47319fc7a50d439b4647d4006d85769e61fd8d4f7e098391f6325114c",
+      "transform": {
+        "coordinate_space": "auto_oriented_source_pixels",
+        "source_region": {
+          "left": 270,
+          "top": 1317,
+          "width": 809,
+          "height": 862
+        },
+        "flatten_background": "#ffffff",
+        "colourspace": "srgb",
+        "resize": {
+          "kernel": "lanczos3",
+          "width": 1922,
+          "height": 2048,
+          "without_enlargement": false,
+          "maximum_upscale": 3
+        },
+        "encoding": {
+          "format": "png",
+          "quality": null,
+          "chroma_subsampling": null,
+          "compression_level": 9
+        }
+      },
+      "file": "derived/bottom_label-b105c41f2fe04ccaaf88a19c6d826a86333e8497e2d3ab50f7fc380fb1d8b102.png"
+    }
+  ]
+}

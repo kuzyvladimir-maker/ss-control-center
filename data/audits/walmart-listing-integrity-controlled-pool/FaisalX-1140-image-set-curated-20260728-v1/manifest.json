@@ -1,0 +1,278 @@
+{
+  "schema_version": "walmart-listing-image-set-curated/v1",
+  "created_at": "2026-07-28T18:40:57.307Z",
+  "status": "PASS",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "sku": "FaisalX-1140",
+  "canonical_variant_id": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+  "content_observation_id": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+  "content_hash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+  "represented_outer_units": 4,
+  "product_truth_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd",
+  "diagnosis_file_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+  "source_candidate_manifest_file_sha256": "02e8dfcd6997fe92d78e77e44278019f22e1202722a2cd257a2fe2d217e690dc",
+  "source_candidate_manifest_body_sha256": "74b5af67e0fd834f362ed0ce1b64eb11653dd68fd0b35503999f36c1bfa0062f",
+  "source_qualification_file_sha256": "5d3671a8a5049c2d861237169c2c21782cc1a6ec93bb66ec3a8f80969220888b",
+  "source_qualification_body_sha256": "1d77d2afc4e65f2907d393d3a65aabf571504404d3239ab1b38dbd9fec6204b7",
+  "selected_target_count": 3,
+  "targets": [
+    {
+      "slot": "main",
+      "file": "target-main.png",
+      "source_url": null,
+      "source_role": "DETERMINISTIC_MULTIPACK_MAIN",
+      "sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955",
+      "bytes": 848751,
+      "content_type": "image/png",
+      "width": 2200,
+      "height": 2200,
+      "derivation": "DETERMINISTIC_EXACT_SINGLE_UNIT_TILE",
+      "source_slot": "main"
+    },
+    {
+      "slot": "gallery-1",
+      "file": "target-gallery-01.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+      "bytes": 133323,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET",
+      "source_slot": "gallery-3"
+    },
+    {
+      "slot": "gallery-2",
+      "file": "target-gallery-02.jpg",
+      "source_url": "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg",
+      "source_role": "EXACT_PRODUCT_TRUTH_GALLERY",
+      "sha256": "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4",
+      "bytes": 237798,
+      "content_type": "image/jpeg",
+      "width": 2000,
+      "height": 2000,
+      "derivation": "DIRECT_EXACT_PRODUCT_TRUTH_ASSET",
+      "source_slot": "gallery-6"
+    }
+  ],
+  "selections": [
+    {
+      "target_slot": "main",
+      "source_slot": "main",
+      "asset_sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955",
+      "observation": {
+        "image_id": "i_a0d8b3df01ac42fc6a4e",
+        "visual_role": "tiled_main",
+        "visible_brand_text": "PEPPERIDGE FARM",
+        "visible_product_text": "White SLICED BREAD",
+        "visible_variant_text": "SANDWICH",
+        "visible_size_texts": [
+          "NET WT 16 OZ (1 LB) (454g)"
+        ],
+        "external_package_count": {
+          "mode": "exact",
+          "value": 4,
+          "min": null,
+          "max": null
+        },
+        "outer_package_claims": [],
+        "inner_contents_claims": [
+          "NO HIGH FRUCTOSE CORN SYRUP"
+        ],
+        "case_package_claims": [],
+        "unclear_quantity_claims": [],
+        "grid_cell_kind": "single_sellable_package",
+        "front_visibility": "all",
+        "background": "white",
+        "multiple_distinct_products": "no",
+        "readable_identity": "clear",
+        "evidence": [
+          "PEPPERIDGE FARM",
+          "White",
+          "SANDWICH",
+          "NO HIGH FRUCTOSE CORN SYRUP",
+          "NET WT 16 OZ (1 LB) (454g)",
+          "4 identical bread bags arranged in 2x2 grid"
+        ],
+        "flags": []
+      },
+      "decision": {
+        "verdict": "PASS",
+        "checks": {
+          "identity": "MATCH",
+          "package_facts": {
+            "net_content": "MATCH",
+            "inner_item_count": "NOT_APPLICABLE"
+          },
+          "external_quantity": "MATCH",
+          "single_package_per_cell": "MATCH",
+          "front": "MATCH",
+          "background": "MATCH",
+          "no_mixed_product": "MATCH"
+        },
+        "hard_failures": [],
+        "unknowns": []
+      }
+    },
+    {
+      "target_slot": "gallery-1",
+      "source_slot": "gallery-3",
+      "asset_sha256": "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+      "observation": {
+        "image_id": "i_d44406c276d76ef8e22d",
+        "visual_role": "back",
+        "visible_brand_text": "PEPPERIDGE FARM",
+        "visible_product_text": "White SLICED BREAD",
+        "visible_variant_text": "SANDWICH",
+        "visible_size_texts": [],
+        "external_package_count": {
+          "mode": "exact",
+          "value": 1,
+          "min": null,
+          "max": null
+        },
+        "outer_package_claims": [],
+        "inner_contents_claims": [],
+        "case_package_claims": [],
+        "unclear_quantity_claims": [],
+        "grid_cell_kind": "single_sellable_package",
+        "front_visibility": "none",
+        "background": "white",
+        "multiple_distinct_products": "no",
+        "readable_identity": "clear",
+        "evidence": [
+          "PEPPERIDGE FARM",
+          "White",
+          "SANDWICH",
+          "DOUBLE WRAPPED for FRESHNESS",
+          "single bag back view with nutrition panel on side"
+        ],
+        "flags": []
+      },
+      "decision": {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-3",
+        "verdict": "PASS",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MATCH",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    },
+    {
+      "target_slot": "gallery-2",
+      "source_slot": "gallery-6",
+      "asset_sha256": "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4",
+      "observation": {
+        "image_id": "i_b0cb5e88a84c0d060771",
+        "visual_role": "single_product_front",
+        "visible_brand_text": "PEPPERIDGE FARM",
+        "visible_product_text": "White SLICED BREAD SANDWICH",
+        "visible_variant_text": "NO HIGH FRUCTOSE CORN SYRUP",
+        "visible_size_texts": [],
+        "external_package_count": {
+          "mode": "exact",
+          "value": 1,
+          "min": null,
+          "max": null
+        },
+        "outer_package_claims": [],
+        "inner_contents_claims": [],
+        "case_package_claims": [],
+        "unclear_quantity_claims": [],
+        "grid_cell_kind": "single_sellable_package",
+        "front_visibility": "all",
+        "background": "white",
+        "multiple_distinct_products": "no",
+        "readable_identity": "clear",
+        "evidence": [
+          "PEPPERIDGE FARM",
+          "White",
+          "SLICED BREAD",
+          "SANDWICH",
+          "NO HIGH FRUCTOSE CORN SYRUP"
+        ],
+        "flags": []
+      },
+      "decision": {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-6",
+        "verdict": "PASS",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MATCH",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    }
+  ],
+  "excluded_gallery": [
+    {
+      "source_slot": "gallery-1",
+      "verdict": "REVIEW",
+      "hard_failures": [],
+      "review_reasons": [
+        "required brand evidence missing: Pepperidge Farm|farm pepperidge",
+        "required product evidence missing: bread sandwich white|White Sandwich Bread",
+        "required variant evidence missing: white",
+        "OCR cannot be the sole source of gallery identity",
+        "identity readability is none"
+      ]
+    },
+    {
+      "source_slot": "gallery-2",
+      "verdict": "REVIEW",
+      "hard_failures": [],
+      "review_reasons": [
+        "required brand evidence missing: Pepperidge Farm|farm pepperidge",
+        "required product evidence missing: bread sandwich white|White Sandwich Bread",
+        "required variant evidence missing: white",
+        "OCR cannot be the sole source of gallery identity",
+        "identity readability is none"
+      ]
+    },
+    {
+      "source_slot": "gallery-4",
+      "verdict": "REVIEW",
+      "hard_failures": [],
+      "review_reasons": [
+        "required product evidence missing: bread sandwich white|White Sandwich Bread",
+        "identity readability is partial"
+      ]
+    },
+    {
+      "source_slot": "gallery-5",
+      "verdict": "REVIEW",
+      "hard_failures": [],
+      "review_reasons": [
+        "identity readability is partial"
+      ]
+    }
+  ],
+  "safety": {
+    "model_calls": 0,
+    "reused_signed_observations": true,
+    "database_reads": 0,
+    "database_writes": 0,
+    "r2_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "a7f25aebd380b31cee201cba603c8d4a081a7ee490f5bfab7bf4377ce513c7fa"
+}

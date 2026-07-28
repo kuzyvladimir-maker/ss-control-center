@@ -1,0 +1,205 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.08866278754340284,
+            "width" : 0.13808139377170142,
+            "x" : 0.3284883727771216,
+            "y" : 0.7063953506914162
+          },
+          "confidence" : 1,
+          "text" : "Pepper)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09011628044976128,
+            "width" : 0.13808139377170137,
+            "x" : 0.5232558146929519,
+            "y" : 0.7049418598968982
+          },
+          "confidence" : 1,
+          "text" : "Pepper"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03582421620686849,
+            "width" : 0.05490766313340928,
+            "x" : 0.35420656508976706,
+            "y" : 0.657130640478572
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03312950981987839,
+            "width" : 0.05352846781412757,
+            "x" : 0.5488271853819159,
+            "y" : 0.6584603047697438
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017651755015055226,
+            "width" : 0.07417701721191411,
+            "x" : 0.36625451396721415,
+            "y" : 0.6161741226688253
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017777777777777892,
+            "width" : 0.07558139377170137,
+            "x" : 0.5595930239959322,
+            "y" : 0.6161111111353359
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08720930311414932,
+            "width" : 0.13808139377170137,
+            "x" : 0.3284883728324869,
+            "y" : 0.2136627904212408
+          },
+          "confidence" : 0.5,
+          "text" : "Repper)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09011628044976128,
+            "width" : 0.13808139377170137,
+            "x" : 0.5232558146928942,
+            "y" : 0.21220930176810837
+          },
+          "confidence" : 1,
+          "text" : "Pepper"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03291723675198022,
+            "width" : 0.05446306864420575,
+            "x" : 0.35420656419450713,
+            "y" : 0.16583447306528265
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03272058910793729,
+            "width" : 0.05334302690294057,
+            "x" : 0.5489740071473775,
+            "y" : 0.16594562176772143
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01620155069563123,
+            "width" : 0.0741279093424479,
+            "x" : 0.36627906851046205,
+            "y" : 0.12333333307825145
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01660273816850444,
+            "width" : 0.07570896572536889,
+            "x" : 0.5595292379950062,
+            "y" : 0.12323932887165501
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-eb85311985a7994ef0cb0a89bcbd788b7b2405ce494adc4401c3983486eff2a4.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.1744185984134674,
+            "width" : 0.7293232978144778,
+            "x" : 0.11278195983336259,
+            "y" : 0.4244186081333826
+          },
+          "confidence" : 1,
+          "text" : "Pepper"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08671171218156815,
+            "width" : 0.3361695108534415,
+            "x" : 0.21218261061429614,
+            "y" : 0.30585585604106036
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03385131433606148,
+            "width" : 0.40249050478392007,
+            "x" : 0.30063444854658233,
+            "y" : 0.22508015697295192
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-307de3cd77569e3742cc238a870ae326c1b47e335c4892f17ac0749ed8e843b3.png",
+      "width" : 789
+    },
+    {
+      "height" : 1233,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.1523500810372771,
+            "width" : 0.25757575757575757,
+            "x" : 0.25589225632199186,
+            "y" : 0.8038897897040007
+          },
+          "confidence" : 1,
+          "text" : "Diet"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08427876823338742,
+            "width" : 0.4107744107744108,
+            "x" : 0.2946127932435466,
+            "y" : 0.5623987033603457
+          },
+          "confidence" : 1,
+          "text" : "2 LITERS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-5ae84a9b3dce325c05236f97e2ec6ac5d8e79b162b1fba6d93807fb80c6123d6.png",
+      "width" : 1188
+    },
+    {
+      "height" : 1479,
+      "observations" : [
+
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-7d1335c36b409b22fb0357176965f1b508e5a1c51335f78297bf2e2e24f7bd75.png",
+      "width" : 690
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

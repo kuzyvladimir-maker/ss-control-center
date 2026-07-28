@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d7f7f09e-3a8e-4f67-8e13-5b225018892a",
+  "created_at": "2026-07-18T07:34:43.008Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "FN-ASVM-UWAG:text_count",
+  "sku": "FN-ASVM-UWAG",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "256dd76fa3a05681c58e3dfc2c08b2c1bc0b3bfc9120f300aa08d761804c2cc8",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "262404a4875a439c930f98907675e0e7",
+    "issues": []
+  },
+  "sha256": "c429645749b072532f068658a6dc65164dd75ca43f5c750aa1c54024d8ed42be"
+}

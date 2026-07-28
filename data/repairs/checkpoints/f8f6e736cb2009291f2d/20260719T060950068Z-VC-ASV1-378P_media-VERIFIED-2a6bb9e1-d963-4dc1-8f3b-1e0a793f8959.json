@@ -1,0 +1,37 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2a6bb9e1-d963-4dc1-8f3b-1e0a793f8959",
+  "created_at": "2026-07-19T06:09:50.068Z",
+  "plan_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+  "action_id": "VC-ASV1-378P:media",
+  "sku": "VC-ASV1-378P",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "def6fa6560a1936c6898913b4d20923bba21f06effb650fb76729001d360f83d",
+    "submitted_event_id": "10d830ab-4129-47b5-aed5-8bb6730d3923",
+    "stable_post_write_reads": 3,
+    "polling_reads": 98,
+    "polling_sweep": 98,
+    "elapsed_ms": 2910466.215125,
+    "path_state_sha256": "0c211fa41279b1b3d2b17fd47c6cb4016938f9afab18d53d10bb722576ca8132",
+    "checks": [
+      {
+        "field": "other_product_image_locator_1",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+      },
+      {
+        "field": "other_product_image_locator_7",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+      }
+    ]
+  },
+  "sha256": "ba661191fb347a803351bd0cf5c0421f3f739ce0753cfe735433219a23866886"
+}

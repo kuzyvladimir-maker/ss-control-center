@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "86735721-8853-4cb9-b964-8cdcbe82030e",
+  "created_at": "2026-07-19T05:00:29.746Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "WZ-ASXK-ZFAS:media",
+  "sku": "WZ-ASXK-ZFAS",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "62bb6bd1-0190-430b-8300-7dac87423c40",
+    "stable_post_write_reads": 3,
+    "polling_reads": 21,
+    "polling_sweep": 21,
+    "elapsed_ms": 600694.549333,
+    "path_state_sha256": "10c0608233ca4afaa7277354bdc296c671da1d5e232032523d0582938a527667",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8149339c30f0c4580964d6a1bf1a91836687d1302adf0b256a648e14df2fe29a.png",
+        "actual": "https://m.media-amazon.com/images/I/51VoDhZyo9L.jpg"
+      }
+    ]
+  },
+  "sha256": "da8550b94b47f52763b0829dcf5d7d40877ca9a0a701a1bc7902a993d71cf9b8"
+}

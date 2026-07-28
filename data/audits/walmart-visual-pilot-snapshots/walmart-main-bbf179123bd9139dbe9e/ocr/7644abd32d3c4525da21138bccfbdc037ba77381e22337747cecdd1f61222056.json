@@ -1,0 +1,794 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.011899224917093942,
+            "width" : 0.11482558356391057,
+            "x" : 0.13517441847725012,
+            "y" : 0.9447674418099258
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014534883499145557,
+            "width" : 0.11773255242241754,
+            "x" : 0.31395349146684354,
+            "y" : 0.9433139534175784
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED MSG\"| 80 CALORIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011899224387274865,
+            "width" : 0.11482557508680546,
+            "x" : 0.5683139568061613,
+            "y" : 0.9447674424124193
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011787174542744916,
+            "width" : 0.05817117902967661,
+            "x" : 0.7485306901003835,
+            "y" : 0.944687808486229
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED MSG"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.012935849295722113,
+            "width" : 0.058386934068467844,
+            "x" : 0.8080158345656072,
+            "y" : 0.9441134706482619
+          },
+          "confidence" : 1,
+          "text" : "1 80 CALORIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572723,
+            "width" : 0.04069767422146264,
+            "x" : 0.8473837203505089,
+            "y" : 0.9200581395176555
+          },
+          "confidence" : 1,
+          "text" : "restLock»"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008921188248528389,
+            "width" : 0.08866278754340279,
+            "x" : 0.23982558408076948,
+            "y" : 0.9055232560591271
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008921188248528389,
+            "width" : 0.08866278754340284,
+            "x" : 0.6729651189644904,
+            "y" : 0.9055232560591271
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04166666666666663,
+            "width" : 0.21666666666666665,
+            "x" : 0.17083333166666667,
+            "y" : 0.8583333329166667
+          },
+          "confidence" : 1,
+          "text" : "JACK LINKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04207685682508677,
+            "width" : 0.21682469685872396,
+            "x" : 0.6074306738346957,
+            "y" : 0.8597755248434062
+          },
+          "confidence" : 1,
+          "text" : "JACK LINK'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.027616278330485078,
+            "width" : 0.17151162041558157,
+            "x" : 0.19622093312069758,
+            "y" : 0.7659883723681877
+          },
+          "confidence" : 1,
+          "text" : "BEEF JERKY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03826882680257171,
+            "width" : 0.17932598537868927,
+            "x" : 0.6249203428846692,
+            "y" : 0.7579489201828471
+          },
+          "confidence" : 1,
+          "text" : "BEEF JERKY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023715290493435348,
+            "width" : 0.11346544901529945,
+            "x" : 0.22669750918467288,
+            "y" : 0.7323284013765916
+          },
+          "confidence" : 1,
+          "text" : "TERIYAKI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02408751169840495,
+            "width" : 0.11208846198187938,
+            "x" : 0.6597987914662499,
+            "y" : 0.7321422905526624
+          },
+          "confidence" : 1,
+          "text" : "TERIYAKI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010555555555555651,
+            "width" : 0.20494186401367184,
+            "x" : 0.18023255646388667,
+            "y" : 0.722222222049514
+          },
+          "confidence" : 1,
+          "text" : "SLOW COOKED WITH AUTHENTIC TERIYAKI MARINADE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01055555555555554,
+            "width" : 0.20639534844292529,
+            "x" : 0.6133720933150436,
+            "y" : 0.7222222220492324
+          },
+          "confidence" : 1,
+          "text" : "SLOW COOKED WITH AUTHENTIC TERIYAKI MARINADE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.11046511332194009,
+            "x" : 0.17296511913844853,
+            "y" : 0.6860465120455799
+          },
+          "confidence" : 1,
+          "text" : "MADEWITH 100% BEEF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.022589753468831297,
+            "width" : 0.1033611551920573,
+            "x" : 0.29061593317238527,
+            "y" : 0.6841993092449685
+          },
+          "confidence" : 1,
+          "text" : "11g PROTEIN SERING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.1119185977511935,
+            "x" : 0.6061046560117579,
+            "y" : 0.6860465120455799
+          },
+          "confidence" : 1,
+          "text" : "MADE WITH 100% BEEF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.022474869622124527,
+            "width" : 0.06997467464870877,
+            "x" : 0.7295475462497303,
+            "y" : 0.6842567510811289
+          },
+          "confidence" : 1,
+          "text" : "11g PROTEIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01204643991258414,
+            "width" : 0.030680228339301174,
+            "x" : 0.7949796529653711,
+            "y" : 0.6872907336816614
+          },
+          "confidence" : 1,
+          "text" : "SERVING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018208622402615005,
+            "width" : 0.09026154412163631,
+            "x" : 0.23829946085944262,
+            "y" : 0.5359538281851384
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85 OZ (81g)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017777777247958704,
+            "width" : 0.09011628044976128,
+            "x" : 0.6715116263158171,
+            "y" : 0.5361111114226128
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85 OZ (81g)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01185400538974346,
+            "width" : 0.11627906799316406,
+            "x" : 0.13517442065458074,
+            "y" : 0.4520348836849257
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.11773255242241754,
+            "x" : 0.31395349146684354,
+            "y" : 0.4505555556384656
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED MSG 80 CALORIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01185400538974346,
+            "width" : 0.11627906799316401,
+            "x" : 0.5683139532127204,
+            "y" : 0.45203488351050714
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01185400538974335,
+            "width" : 0.11773255242241754,
+            "x" : 0.7485465154675701,
+            "y" : 0.452034883670391
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED MSG* 80 CALORIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888888888835,
+            "width" : 0.09011628044976128,
+            "x" : 0.23837209345971233,
+            "y" : 0.4127777777518812
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888888888835,
+            "width" : 0.08866278754340284,
+            "x" : 0.6729651189644904,
+            "y" : 0.4127777777518812
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03924418555365661,
+            "width" : 0.21656977335611977,
+            "x" : 0.17296511211877474,
+            "y" : 0.369186046685381
+          },
+          "confidence" : 1,
+          "text" : "JACK LINK'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04043368233574762,
+            "width" : 0.21678215874565976,
+            "x" : 0.6074519430047152,
+            "y" : 0.370044787597691
+          },
+          "confidence" : 1,
+          "text" : "JACK LINK'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.039619823031955215,
+            "width" : 0.1795983378092448,
+            "x" : 0.19145083258544907,
+            "y" : 0.26560675541141465
+          },
+          "confidence" : 1,
+          "text" : "BEEF JERKY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03823959774441188,
+            "width" : 0.17932000054253472,
+            "x" : 0.6249233345561125,
+            "y" : 0.2662968680313482
+          },
+          "confidence" : 1,
+          "text" : "BEEF JERKY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02392110188802088,
+            "width" : 0.11350669013129341,
+            "x" : 0.22667688830288915,
+            "y" : 0.2394929375271465
+          },
+          "confidence" : 1,
+          "text" : "TERIYAKI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02325581444634328,
+            "width" : 0.11191860622829863,
+            "x" : 0.6598837193422461,
+            "y" : 0.23982558106586493
+          },
+          "confidence" : 1,
+          "text" : "TERIYAKI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01055555555555554,
+            "width" : 0.20639534844292534,
+            "x" : 0.18023255575673508,
+            "y" : 0.22944444427967303
+          },
+          "confidence" : 1,
+          "text" : "SLOW COOKED WITH AUTHENTIC TERIYAKI MARINADE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01055555555555554,
+            "width" : 0.2063953484429254,
+            "x" : 0.6133720906404561,
+            "y" : 0.22944444427967303
+          },
+          "confidence" : 1,
+          "text" : "SLOW COOKED WITH AUTHENTIC TERIYAKI MARINADE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02055555555555555,
+            "width" : 0.21947674221462676,
+            "x" : 0.17296511507001222,
+            "y" : 0.19166666683031175
+          },
+          "confidence" : 1,
+          "text" : "MADE WITH 100% BEEF | 11g PROTEIN SERING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.019415357377794096,
+            "width" : 0.11200522528754342,
+            "x" : 0.6060613414815926,
+            "y" : 0.19160046061275327
+          },
+          "confidence" : 1,
+          "text" : "MADEWITH 100% BEEF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.022222222222222143,
+            "width" : 0.09738371955023872,
+            "x" : 0.7296511625068575,
+            "y" : 0.19166666669699028
+          },
+          "confidence" : 1,
+          "text" : "11g PROTEIN SERING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018355178833007746,
+            "width" : 0.09028858608669701,
+            "x" : 0.23828593876435214,
+            "y" : 0.043147991922779405
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85OZ (81g)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016259689860873672,
+            "width" : 0.08866278754340273,
+            "x" : 0.6729651183921794,
+            "y" : 0.043333333331976975
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85 OZ (81g)"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-df859229ae95e471356e469d28ef59ac6bea80d72efaac4eb2640ffbe558b4f1.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.02490234375,
+            "width" : 0.27377048778113816,
+            "x" : 0.15573770872067205,
+            "y" : 0.9125976557983937
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES*"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02783203125,
+            "width" : 0.272131142637278,
+            "x" : 0.5754098387984571,
+            "y" : 0.9111328126059621
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED MSG* | 80 CALORIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.009112222120165825,
+            "width" : 0.05269341321768739,
+            "x" : 0.7654891355917296,
+            "y" : 0.9032001406220089
+          },
+          "confidence" : 1,
+          "text" : "PER SERVING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020348837599158287,
+            "width" : 0.10491803039013026,
+            "x" : 0.7983606579852628,
+            "y" : 0.8575581393690255
+          },
+          "confidence" : 1,
+          "text" : "FreshLock®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.015988372266292572,
+            "width" : 0.2065573704925403,
+            "x" : 0.39672131217176265,
+            "y" : 0.8313953486597316
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACKS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08020728081464767,
+            "width" : 0.5070505352272336,
+            "x" : 0.2455848527839721,
+            "y" : 0.7439892365662579
+          },
+          "confidence" : 1,
+          "text" : "JACK LINK'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06329131871461868,
+            "width" : 0.40697848954389804,
+            "x" : 0.2965107567927242,
+            "y" : 0.5381217826398633
+          },
+          "confidence" : 1,
+          "text" : "BEEF JERKY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.047196634113788605,
+            "width" : 0.268955566809566,
+            "x" : 0.35989099344637165,
+            "y" : 0.472144608023802
+          },
+          "confidence" : 1,
+          "text" : "TERIYAKI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.021802324801683426,
+            "width" : 0.4770491679859582,
+            "x" : 0.26065574685743076,
+            "y" : 0.45058139585678914
+          },
+          "confidence" : 1,
+          "text" : "SLOW COOKED WITH AUTHENTIC TERIYAKI MARINADE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05831638723611832,
+            "width" : 0.23338096047287993,
+            "x" : 0.5239445026394014,
+            "y" : 0.3657716262383607
+          },
+          "confidence" : 1,
+          "text" : "11g PROTEIN SERVINGE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03759765625,
+            "width" : 0.2535211168196758,
+            "x" : 0.23943662215354244,
+            "y" : 0.3750000009092538
+          },
+          "confidence" : 1,
+          "text" : "MADE WITH 100% BEEF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011627906933426857,
+            "width" : 0.021311474266556385,
+            "x" : 0.1245901647191808,
+            "y" : 0.10174418612630975
+          },
+          "confidence" : 1,
+          "text" : "U.S."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441600561142,
+            "width" : 0.06557376794352932,
+            "x" : 0.10327868870583101,
+            "y" : 0.08720930238285907
+          },
+          "confidence" : 1,
+          "text" : "AND PASSED BY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441600561142,
+            "width" : 0.050819670051204996,
+            "x" : 0.11147541172303135,
+            "y" : 0.09447674438867293
+          },
+          "confidence" : 1,
+          "text" : "INSPECTED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03258213400840759,
+            "width" : 0.20503710440076928,
+            "x" : 0.39830111822321324,
+            "y" : 0.0651042818037344
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85 OZ (81g)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01308139506727457,
+            "width" : 0.1426229434916626,
+            "x" : 0.7606557425574473,
+            "y" : 0.08720930252692471
+          },
+          "confidence" : 1,
+          "text" : "\"Except for those naturally occurring is"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.006006994750350714,
+            "width" : 0.06721311308738943,
+            "x" : 0.10327869047816317,
+            "y" : 0.08139534889648825
+          },
+          "confidence" : 1,
+          "text" : "DEPARTMENT OF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441600561142,
+            "width" : 0.05901639156929721,
+            "x" : 0.10655737896944971,
+            "y" : 0.07267441880727754
+          },
+          "confidence" : 1,
+          "text" : "AGRICULTURE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013285791967064142,
+            "width" : 0.12786884559933842,
+            "x" : 0.7770491853560685,
+            "y" : 0.07558139554412435
+          },
+          "confidence" : 1,
+          "text" : "sea salt and cultured celery eltract"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0146484375,
+            "width" : 0.18032786499561193,
+            "x" : 0.7245901681169481,
+            "y" : 0.06249999986691712
+          },
+          "confidence" : 1,
+          "text" : "**Except for that caturally occurnng in soy sause"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-1fbeed3b5f4a76566f8fa56db0e466ee3a31d2c74644c4633739a08a65e58fc2.png",
+      "width" : 1816
+    },
+    {
+      "height" : 924,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.07359307359307354,
+            "width" : 0.23749999701976776,
+            "x" : 0.5208333346189742,
+            "y" : 0.9264069260961265
+          },
+          "confidence" : 0.3,
+          "text" : "Hy FC SERVING"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.028938906533377495,
+            "width" : 0.021802324801683426,
+            "x" : 0.12500000060787922,
+            "y" : 0.25723472682977433
+          },
+          "confidence" : 1,
+          "text" : "U.S."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.019916008045147038,
+            "width" : 0.04801554977893829,
+            "x" : 0.11189338795509263,
+            "y" : 0.23763042065658768
+          },
+          "confidence" : 1,
+          "text" : "INSPECTED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0870935596944965,
+            "width" : 0.20377559959888458,
+            "x" : 0.39956568821757577,
+            "y" : 0.16545643499576357
+          },
+          "confidence" : 1,
+          "text" : "NET WT. 2.85 OZ (81g)"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.032467532467532534,
+            "width" : 0.14244185388088226,
+            "x" : 0.7616279116932798,
+            "y" : 0.21861471886406247
+          },
+          "confidence" : 1,
+          "text" : "*Except for those naturally occurring in"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.019480519480519543,
+            "width" : 0.06540697813034058,
+            "x" : 0.10319767282920958,
+            "y" : 0.2186147186449573
+          },
+          "confidence" : 1,
+          "text" : "AND PASSED BY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016268565025164494,
+            "width" : 0.06831394881010056,
+            "x" : 0.10174418753172301,
+            "y" : 0.202380952134263
+          },
+          "confidence" : 1,
+          "text" : "DEPARTMENT OF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.029224259512765083,
+            "width" : 0.12790697813034058,
+            "x" : 0.7761627912836668,
+            "y" : 0.19264069230697833
+          },
+          "confidence" : 1,
+          "text" : "sea salt and cultured celery cutract"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016077170640359184,
+            "width" : 0.056686047464609146,
+            "x" : 0.10755813899402433,
+            "y" : 0.18649517676066563
+          },
+          "confidence" : 1,
+          "text" : "AGRICULTURE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03215433921648825,
+            "width" : 0.17877906560897827,
+            "x" : 0.7252907015414412,
+            "y" : 0.16077170511844396
+          },
+          "confidence" : 1,
+          "text" : "**Except for that gaturally occurning in soy sauce"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-f137696db5e99f5359ac7fb1d00a9835f929419e52779b97d07657097fedd97c.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1527,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.0537817865142024,
+            "width" : 0.4624999776154684,
+            "x" : 0.2666666748380992,
+            "y" : 0.8167539262551421
+          },
+          "confidence" : 1,
+          "text" : "NO ADDED NITRATES OR NITRITES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03110419767689332,
+            "width" : 0.3125,
+            "x" : 0.6860465102074524,
+            "y" : 0.6516329710611716
+          },
+          "confidence" : 1,
+          "text" : "MEAT SNACK"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2706065352674554,
+            "width" : 0.5915697466190404,
+            "x" : 0.40697675341554107,
+            "y" : 0.3716951778684414
+          },
+          "confidence" : 1,
+          "text" : "JACKLI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11212880698798222,
+            "width" : 0.4811046572361132,
+            "x" : 0.5174418579654383,
+            "y" : 0.04821150874735436
+          },
+          "confidence" : 1,
+          "text" : "BEEF JER"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-aa543d849812894d15452122ea6fd048dc4e155d5231edd3e62456114d0ff52a.png",
+      "width" : 1635
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

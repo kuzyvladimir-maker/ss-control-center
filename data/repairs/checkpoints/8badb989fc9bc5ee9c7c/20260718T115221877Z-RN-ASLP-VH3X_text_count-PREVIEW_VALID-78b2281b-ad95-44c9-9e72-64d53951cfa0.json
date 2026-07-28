@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "78b2281b-ad95-44c9-9e72-64d53951cfa0",
+  "created_at": "2026-07-18T11:52:21.877Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RN-ASLP-VH3X:text_count",
+  "sku": "RN-ASLP-VH3X",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "c705e2533356cd598ce97af1fd688962b88d75bd5ddfaf98464ff72b3c7b12c1",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "c3ea9a7b603546cfa995baed628cc41c",
+    "issues": []
+  },
+  "sha256": "e461a61bbdd8680f8dd9fd7bd34b36326970f52f85e226d7f6004384f3d9cfe1"
+}

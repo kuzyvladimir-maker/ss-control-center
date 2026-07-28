@@ -1,0 +1,29 @@
+{
+  "schema_version": "channelmax-uncrustables-effective-price-wave1-postwrite/v1",
+  "confirmed_at": "2026-07-19T02:37:56.867Z",
+  "account": {
+    "site_id": 300,
+    "seller_id": "A3A7A0RDFUSGBS"
+  },
+  "target": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99
+  },
+  "updated_rows": 6,
+  "rows": [
+    { "item_id": 171135453, "sku": "BH-ASTN-S4XJ", "asin": "B0H83ZRNCS", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" },
+    { "item_id": 171136202, "sku": "KD-AS12-8HZ3", "asin": "B0H845JBM6", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" },
+    { "item_id": 171136204, "sku": "NT-ASIL-V5LK", "asin": "B0H84547PM", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" },
+    { "item_id": 171137194, "sku": "RQ-AS0L-9B45", "asin": "B0H85MQLHG", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" },
+    { "item_id": 171140449, "sku": "WR-ASTH-TPXV", "asin": "B0H85DRT93", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" },
+    { "item_id": 171138026, "sku": "ZP-ASJD-X7ZD", "asin": "B0H85N7X8W", "write": "SUCCESS", "minimum_price": 66.95, "maximum_price": 76.99, "price": 76.99, "last_updated_by": "salutem-MB" }
+  ],
+  "verification": {
+    "write_responses_valid": 6,
+    "independent_inventoryitemsite_readbacks": 6,
+    "readback_mismatches": 0,
+    "repricing_model_payload_writes": 0
+  },
+  "amazon_mutations": 0,
+  "result": "PASS"
+}

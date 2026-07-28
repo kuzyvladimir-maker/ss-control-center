@@ -1,0 +1,443 @@
+{
+  "af8718aa5d6594897a948afcd97bd50998c4a0b494d47cace265cf45178aa683": {
+    "raw_sha256": "f45e78ee361aacf9c0acc2e8c5c697b589b15badc989aac83f6f487aaa0d579e",
+    "raw_file": "ocr/f45e78ee361aacf9c0acc2e8c5c697b589b15badc989aac83f6f487aaa0d579e.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "5352ea4f0aee68d79b8a9e1ec69538aa3872e53a88de17167d16bf318f3f1116",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "662497a256ea8eebdeb7c64b00cd19b7367f948564e8de5a4bcd2471945945df",
+      "7396af8f901aadc9d369041ca1dd20d0f28e51d2e158f8f42e4b134713011c76",
+      "4d86182a91718b796f6b5b535c1aada63cc887708f99b51fff146a88a1b80584",
+      "7f8c7a488de6c0c9d4c5addf9e4b3d2bced63e411d2f60c19dc5a75521e67aee"
+    ]
+  },
+  "8ecd0cd605e941785c1049aa9eb5e5b693e7cb9046ca59f02426a37df2dc447a": {
+    "raw_sha256": "e85033e82e38a29a0148ebf8123eb84710653d361c8a8cdb9f25cfb2f498196a",
+    "raw_file": "ocr/e85033e82e38a29a0148ebf8123eb84710653d361c8a8cdb9f25cfb2f498196a.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "5352ea4f0aee68d79b8a9e1ec69538aa3872e53a88de17167d16bf318f3f1116",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "21af8041b2b2be30422ea19c333aeb4ed3bad85568dc707a81bb5326196650bd",
+      "df63a4db72931d01430a4291dc2b03a9cb49af2e23c73e50530ed0bf327cf3b0",
+      "96189d8dafcb7f764fd3ada00bbfa96fecac835f62cc3aa9ab8afdf8ad9cdddc",
+      "c9500b063e081249e66aee30d65d0007c1c8295594b86464dfe3c8982335ee39"
+    ]
+  },
+  "651084b5e129947e43d4ae692636607260a5b3703002ca17d677f0cd93787165": {
+    "raw_sha256": "f45e78ee361aacf9c0acc2e8c5c697b589b15badc989aac83f6f487aaa0d579e",
+    "raw_file": "ocr/f45e78ee361aacf9c0acc2e8c5c697b589b15badc989aac83f6f487aaa0d579e.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "662497a256ea8eebdeb7c64b00cd19b7367f948564e8de5a4bcd2471945945df",
+      "7396af8f901aadc9d369041ca1dd20d0f28e51d2e158f8f42e4b134713011c76",
+      "4d86182a91718b796f6b5b535c1aada63cc887708f99b51fff146a88a1b80584",
+      "7f8c7a488de6c0c9d4c5addf9e4b3d2bced63e411d2f60c19dc5a75521e67aee"
+    ]
+  },
+  "f917fe1d48901c327805e2ab91f3351d77f663ae1881660507525ea15581fa4c": {
+    "raw_sha256": "e85033e82e38a29a0148ebf8123eb84710653d361c8a8cdb9f25cfb2f498196a",
+    "raw_file": "ocr/e85033e82e38a29a0148ebf8123eb84710653d361c8a8cdb9f25cfb2f498196a.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "21af8041b2b2be30422ea19c333aeb4ed3bad85568dc707a81bb5326196650bd",
+      "df63a4db72931d01430a4291dc2b03a9cb49af2e23c73e50530ed0bf327cf3b0",
+      "96189d8dafcb7f764fd3ada00bbfa96fecac835f62cc3aa9ab8afdf8ad9cdddc",
+      "c9500b063e081249e66aee30d65d0007c1c8295594b86464dfe3c8982335ee39"
+    ]
+  },
+  "333ee34f65b195b2456e1152c7613052355cf9da55b4303dfd5928d9c6a3b015": {
+    "raw_sha256": "a10eebad35b1744ea7740988a814e08f2f1c5cf6cf010bf740783b728ee152d9",
+    "raw_file": "ocr/a10eebad35b1744ea7740988a814e08f2f1c5cf6cf010bf740783b728ee152d9.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "65a5ac65b37ccae96c860245d8da57f2b9fedd30a0af6268a503011879eb07ab",
+      "65cbab9635eb24766fcc68a9714f868a13ffdba154509e7cc36658ea7fdf2f4c",
+      "e53592c67564f6c7988ba79e3bfd3dc7be1096ae53911817bb312dbb5535dce6",
+      "6079585118d2fc5e59c78fcea690b6e21c5578349604b1d09574c2726e34134d"
+    ]
+  },
+  "3239b21a48b2b42f60091b833f7821af6cdb20eb1b0eb0c7041d540cff5aa62c": {
+    "raw_sha256": "2903b451a5e5bf430faf98674f899816a6d5463d845432f1b38618c50f02ae8e",
+    "raw_file": "ocr/2903b451a5e5bf430faf98674f899816a6d5463d845432f1b38618c50f02ae8e.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "d5b866add869df4478af99002d91273e073aa6973bf0750d9bd8ae1b20370457",
+      "3db8044fa7123b5236daff9281675502455a3e243c6d623f2488522cad9a496d",
+      "9f48b0278295bfd37aa2c72381e223fa6714ccd9581e9501eb282c4d50132813",
+      "2f3935b32463a4225de45f93599249c25073c019ec7f90220d06a3217bf72601"
+    ]
+  },
+  "286d4951b359390a82340a1d4f545e6aac97b68e7f225a7e681da07d22ebba4e": {
+    "raw_sha256": "003e71a3becb80316e1d0f1e88db23134915f772122533d9972d9605d55014c3",
+    "raw_file": "ocr/003e71a3becb80316e1d0f1e88db23134915f772122533d9972d9605d55014c3.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "df9b5f14e96dabe65b03c1d86d06a9e1e26596660ef44bbf575c2f1b7c7115c3",
+      "a95bfe810c61d2cb7a2c124756166dede354d48ca052a0b31e597c093d0e589e",
+      "b105c41f2fe04ccaaf88a19c6d826a86333e8497e2d3ab50f7fc380fb1d8b102"
+    ]
+  },
+  "e964981132b0d800375053b1712261a579b328c7c85948fbb6a642d1fa652e4d": {
+    "raw_sha256": "9d8e75fd10e20e1894dca1bc02c97586ced06e1c4b44bee096ea664309080576",
+    "raw_file": "ocr/9d8e75fd10e20e1894dca1bc02c97586ced06e1c4b44bee096ea664309080576.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "eb85311985a7994ef0cb0a89bcbd788b7b2405ce494adc4401c3983486eff2a4",
+      "307de3cd77569e3742cc238a870ae326c1b47e335c4892f17ac0749ed8e843b3",
+      "5ae84a9b3dce325c05236f97e2ec6ac5d8e79b162b1fba6d93807fb80c6123d6",
+      "7d1335c36b409b22fb0357176965f1b508e5a1c51335f78297bf2e2e24f7bd75"
+    ]
+  },
+  "e4ee1fffcb9d41522b060af44d6d07e190fde21b064ccdf86d264e28dc4cc1b9": {
+    "raw_sha256": "d9d770ae4106b438c71f4828552d09230f0e82a6100de8a8031b3396d34f2205",
+    "raw_file": "ocr/d9d770ae4106b438c71f4828552d09230f0e82a6100de8a8031b3396d34f2205.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "a2d103b782cec3f703d550928e02764e85db5f1a84f85af6a0ef9498bab88400",
+      "60dd7fa48bd99730b43827527ad8f3356870881dc69524c99646335b72784873",
+      "ab01ee15183f63836039547a78e172c28de2cbc33480b7fc62813c232c3d9499",
+      "a5abb54581d29e7beb09749e59c4321b598f69a098364089185a6fd5152e2417"
+    ]
+  },
+  "1aa7b7196b5a0ff48e5ba45aee0372cb5a031dcee81fcf3ddbe267bd4ed9e9a3": {
+    "raw_sha256": "76ed7c20d1706b0e02a320ad6a4c8bfca26f6c800cbe934a065816581f50a2ad",
+    "raw_file": "ocr/76ed7c20d1706b0e02a320ad6a4c8bfca26f6c800cbe934a065816581f50a2ad.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "68f4bfd1c167fe6e0fc93bcf321dbb1a857542332fb90c1b97966f0e10f455f6",
+      "5571e30a67766359e8202eee88561c52358bcf4115030501bf1491ddb2c4655e",
+      "559f1f283f5a8e3ff29ae57a0b9e056cef5ea7a85e349dc6467a1a2bf01da0da",
+      "730cac2ff5251ac4df4f724ed3a61555c4d4582a2d3fc03791aae92cd927b248"
+    ]
+  },
+  "b29c94307b2321ffc5b6f787dadc14ff48b5320765700576ccbb6cb78fbcf8cf": {
+    "raw_sha256": "1db956501f7e4e17c64d6786b61dc20a86549dd48bd6a389ff1820f4d9c34ed6",
+    "raw_file": "ocr/1db956501f7e4e17c64d6786b61dc20a86549dd48bd6a389ff1820f4d9c34ed6.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "d557ef1b817914b39a9b8834290b4e6cad1dfe2db949a67415f37be5647b4d0e",
+      "b8d25e7cae81a60a04a43033f75b7715cea4a74b682ed5af3c3843c396e47495",
+      "f5c155a9d5fba34b040b4552ba5e87bd85689dedf100c8f096755d195ffc0b89",
+      "c746141a841c5c58486d42368f79e12453ee831c15886b11e50135b7b42222f8"
+    ]
+  },
+  "7d3e9c3565ed81b2ad73dd9158d8eb7dd05403fd0cbc00cd968b44e0588daa50": {
+    "raw_sha256": "1669cc1bb5443cb213c7e8a0a75890cddbf6848101fce79d35f0cebbe74c9831",
+    "raw_file": "ocr/1669cc1bb5443cb213c7e8a0a75890cddbf6848101fce79d35f0cebbe74c9831.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "8a9315f6160caa49d7265c3d7838ecbf8cec5bbd8787c1e04d40eb409798d215",
+      "ba6a0201f1a9d12ffabbaf25aa35ad4ff72f40f63feedf50d62d002513c465a2",
+      "89cc03dd4a3754654569697050cbf5359f916332f4c3fe8b5bd7ecac279f5a3f",
+      "92d351b7d1d9205e151cc2dfe2c42d9e0ad5bf9eed72aaf0af92d4bc85d32f62"
+    ]
+  },
+  "e462ecbd5299fd0eabac8526335441ef8a82201e55fab34e4233ab616b4f02f1": {
+    "raw_sha256": "8161c904cb3a7177fead6cd4e2689e5b54165922a5a532288c015f4bf9032d5d",
+    "raw_file": "ocr/8161c904cb3a7177fead6cd4e2689e5b54165922a5a532288c015f4bf9032d5d.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "814da3699ca6c55c4a7e75b877c61fd2c980e607061047d8de727323c9b0cd8b",
+      "7021428414f368e313f01a604d454c5ae5790f4232f33c7f969ad8a7157ef447",
+      "f65a1a84d5a5ab1c0f689f02a1a926c6dd3ffa787007f63694078ba7c410c762",
+      "273dcfdb5067cebe6cabeef881a27e97de704aaa5763c008975a97d72bd52a20"
+    ]
+  },
+  "ebc6b0add96bab3213f18f9ef777e725fab5af049586396b05c182a5d35dc782": {
+    "raw_sha256": "494c8a3e0d65e5f6d66f882e219aa8988c7050110919af678a1b1312153957b5",
+    "raw_file": "ocr/494c8a3e0d65e5f6d66f882e219aa8988c7050110919af678a1b1312153957b5.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "8ab75df61fab13bb458d6cc13f2c3dd26b21435a064b9de70f50e0ff2fd217c1",
+      "707644011baafcb3a13128b7d3d24309244ba849f003bb22d8787846a16010bf",
+      "caf1742423a46eff7df6d002ddec1b0d2c320f025930f865288e23ee37cd68eb",
+      "f0829bcf3c435496567478f9810c292a64294bd3cdfcc6bfb5019096ea4cb2e1"
+    ]
+  },
+  "7f36fb952170a90063a5e5fd05971d7156e8cceedc840099942de0696fe51d6e": {
+    "raw_sha256": "ef2e7acc1ac817e3ec7f6400b602947e1da42020a6fc6c3417536dd5af4f7e05",
+    "raw_file": "ocr/ef2e7acc1ac817e3ec7f6400b602947e1da42020a6fc6c3417536dd5af4f7e05.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "c5e35b26d500984979224ca3adf1f9e4db4b0d1364dab90a067237987d57355d",
+      "61b1a728da71266cb397f85d9276467e8bc31cc9c705e44fb49d881922d4cf61",
+      "c488fbe18bdae8c7837290e1a2455e823775bcaf78e920efa1309b107e6bcfcc",
+      "37acadf9c68a9259ae071e9df205e439099fadf776b413ea64abbb39745345ef"
+    ]
+  },
+  "f9185feb0b4f87fa452edf2abdc15f3eaad0f334e89a0f4536423f7ea2684b7f": {
+    "raw_sha256": "0de38017f3f40d1923d863d79a2427c3c215d4d13507f84c31c55685b9a02253",
+    "raw_file": "ocr/0de38017f3f40d1923d863d79a2427c3c215d4d13507f84c31c55685b9a02253.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "3be5bf8a414806e81fb675b8de6068a877e3a5a074b21cbe2913962c2760f8a7",
+      "f965810b5825fdea42300a8a88789699e25d28ba5a0eeedfa46a3cba02063d4c",
+      "100e1888b0c381d6e2eda11e308857c29e39267a7ec56865a3b0ad1814aad90d",
+      "59fe7f0600a45359f302b0afba847729d1221226f9199438204dd8ba75c30de1"
+    ]
+  },
+  "4f446b1800cad4601907c72a1fd4e0c7d31956b9732080ebf271f7e4b2cdc27c": {
+    "raw_sha256": "f16945e9db620f1b3fb92c719800e4efdb70fcdc805c501e7b9b5214501cd243",
+    "raw_file": "ocr/f16945e9db620f1b3fb92c719800e4efdb70fcdc805c501e7b9b5214501cd243.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "f73426a5c7b460fc487f4cc50bda690e6d5e1f539eb5ffd2400cbfa2c33a301e",
+      "b565c87cc0876f8b9094fd285f32d3fdfa28a11a675446fb315ca1467633bc9c",
+      "7336fd6d37bef789feb779f36d97ead2eeee6ce31bbe38e209935d27f34c6b7f",
+      "3d5ea4f240ec30da4a64f3e4a470be72917209e2ce783cb2693a642fbcf61421"
+    ]
+  },
+  "45419eee615c260c37db43d6fa01e8c2123aff0f81effe662b63be9e55c439ba": {
+    "raw_sha256": "3df05edddcaca8c7da619f2e48c76ba03820387a67208c862c31da3aa7e3819f",
+    "raw_file": "ocr/3df05edddcaca8c7da619f2e48c76ba03820387a67208c862c31da3aa7e3819f.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "d33f58b819db518b6c7e2936b8551c1d842dbcb1aacdacf822c758aadd2a7140",
+      "f5343321446cbde8672bb423cacbe491ea8210353037cbd5b3cc9b3db48b4a8f",
+      "8b8ec1a506e4e3bc30d017798f72a3b7e93c8f916304be747e83ccab14ac96f6",
+      "f61a412d53f22fff6578efcf6f9a1e3ca7cbf498baef3d02321becd52749f8c8"
+    ]
+  },
+  "f3acbca7e72ceaa4cac450b58931c6964ceae02667d1cb1010210bd26f5cb351": {
+    "raw_sha256": "f7f5daf8b2c1c128cd5ba800a03f7552d209012b56d2a7aefe056a5499210dac",
+    "raw_file": "ocr/f7f5daf8b2c1c128cd5ba800a03f7552d209012b56d2a7aefe056a5499210dac.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "c6751da2bb33991feaef4e343de85a963e609df4f8b5ba75e2819c4f89987fdc",
+      "e536eb8108e9b8baa7ab40d836d959ec1fbdca4ad74eaa2adf1fff5e21c2a5b6",
+      "df02ff3aa7bc3fccd2adcc9f0793794a3a2e49fe5651a0978d6b1a1a61af8437",
+      "468ee823646fba51ba945b44bcf35fb72ffd08180b77e0dc4b38cf3229627fe4"
+    ]
+  },
+  "f366e7cc93b946b2c6425ab2b721d2aeaafc3d3e7fdf47225011155e2e28dd1f": {
+    "raw_sha256": "ea54d035160519b1986f607ca136dd878f3897833a65f151c6134e0054bb70c2",
+    "raw_file": "ocr/ea54d035160519b1986f607ca136dd878f3897833a65f151c6134e0054bb70c2.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "9e7f78980e0301886570a607793839cc44b3c8c1e2833d0d781fd875376f5618",
+      "c41412837fbfddb646978ee527026113f1570fc6fb3bf80abc3b9ab3d6008753",
+      "4a6fc2ef2bbd0ed55105a19a228b14982d1feaf2ab73eeb17c423bd979335cfe",
+      "55be475dfec47e00cb647a9d024e42af4451a05ac510aa7c6fa70116415f4650"
+    ]
+  },
+  "64e506cbb1c2f11db4b2155aa244bb59674d61f69bc1298b25d1bf32b3376ce6": {
+    "raw_sha256": "17deb8716bebc1931d7a63170d5ba746ad79c30a45b487dd302606ee0b1283d3",
+    "raw_file": "ocr/17deb8716bebc1931d7a63170d5ba746ad79c30a45b487dd302606ee0b1283d3.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "d60d059b9fcac720b1d429e7a8d4ba2f258cb4d2ed3f6bf547b13599f1a49918",
+      "0eba5723b3e2665f39ec0ef606e4b7ef3c1367e901fdb8e5681b5404ce799b69",
+      "cf2bdfef7e7aa76fb056c49c43841427c336bd149ddf30471ecf89b73192ad89",
+      "eafc2196401733aac9fadf8cf98657333d5de192ab6be6956684dfc8e8682997"
+    ]
+  },
+  "f4246b89a5166da8ec188c6a170809361b98bffc4b4fbf48113235cad5e54ca4": {
+    "raw_sha256": "a7f80bba8f40a4105c63a2cc4acf99cf6f451f3965afd85a5008850fc256d90c",
+    "raw_file": "ocr/a7f80bba8f40a4105c63a2cc4acf99cf6f451f3965afd85a5008850fc256d90c.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "573deaa9b1c027efcc06affe07253e88bd98df66fd347c277a50c35212794484",
+      "0206f72fbb97b01d87ef3260faa9ee119048c12bfc74ba812ed5034dd839d14f",
+      "1a23c3599a1ab786db93dd6984914762cd6ae51418a290bf483867621d7413ef",
+      "b2095ce25f94a6e3761013e55f99b0758be8f7c1f7bbfe4bc5aa8b966920321d"
+    ]
+  },
+  "bae60d102f083376901a0a55c77ac1acad3cbe65c39a4644ee480e0446abf310": {
+    "raw_sha256": "7644abd32d3c4525da21138bccfbdc037ba77381e22337747cecdd1f61222056",
+    "raw_file": "ocr/7644abd32d3c4525da21138bccfbdc037ba77381e22337747cecdd1f61222056.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "df859229ae95e471356e469d28ef59ac6bea80d72efaac4eb2640ffbe558b4f1",
+      "1fbeed3b5f4a76566f8fa56db0e466ee3a31d2c74644c4633739a08a65e58fc2",
+      "f137696db5e99f5359ac7fb1d00a9835f929419e52779b97d07657097fedd97c",
+      "aa543d849812894d15452122ea6fd048dc4e155d5231edd3e62456114d0ff52a"
+    ]
+  },
+  "0f8d7ea10fc21023f2d9d9c0d653c58a4decdd3725e42629b07c7fb41d232b96": {
+    "raw_sha256": "6a9256c01893e15ccfe1eb364c8206787b7b2d6759b1bdc70c80d81c9c7c723f",
+    "raw_file": "ocr/6a9256c01893e15ccfe1eb364c8206787b7b2d6759b1bdc70c80d81c9c7c723f.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "0ec4b7befc65050dcdc722ccf43db9be51ffef14c8d89645fc40400a7cab60df",
+      "a15d24f3a548255014af33fc4dfe2c35ef59ee4e60e26cbc6c2e370977de8aad",
+      "bb1020e4f25a8b29ba7fe273d3c3514e03a2b671e9910a602746591d0aa01fa3",
+      "e68c5156cf61a7f9864cf7d24cab09385a22c0b115d5d7ffa71fd84ed78c0c90"
+    ]
+  },
+  "5fc0e20b374c7e7f9a1617d0c785784f3ca005ed77d9fb4a4b321a3cc6e53b01": {
+    "raw_sha256": "738780b23765a0ca7e6e72107e8225a51d582783e2e5f3c077e9f628d902a361",
+    "raw_file": "ocr/738780b23765a0ca7e6e72107e8225a51d582783e2e5f3c077e9f628d902a361.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "e7d55226232c1f77d9859f1851131d06529b9831d5323298f78b0d6628aacf74",
+      "0e3d0662c8b33015d11319cc66b89acde664be6ccec615283a73fa7d031d34de",
+      "87fa21a415869aa3a543c228d4b045b51c18e3c64e8d1da6e7036707cb136343",
+      "655af270022caa579b4c7a29c916d89b6b9e20140af3caf1d5f19d13b909632f"
+    ]
+  },
+  "6343109a783d97e16ed4682b2e29c07cb5eae2c635ba33eaeeb9360024cd1e4d": {
+    "raw_sha256": "a1ca5c84d658f429077b1ec889a2c5da4cf2c35c6207c85627e4b778ccfb7493",
+    "raw_file": "ocr/a1ca5c84d658f429077b1ec889a2c5da4cf2c35c6207c85627e4b778ccfb7493.json",
+    "schema_version": "walmart-local-ocr/v1",
+    "engine": "apple-vision-accurate-literal",
+    "script_sha256": "3f90fd4601f261f942cd88c88ca75340cc7cfb626624e44f37286b0352e72b5a",
+    "runtime": {
+      "executable": "/usr/bin/swift",
+      "sdk": "MacOSX15.4.sdk"
+    },
+    "view_sha256": [
+      "b7fae358a7788c9c764b70cb96e601a15d47f862e80238438f0a787296d17b17",
+      "033602d21f900048de4705a28f4906339c77cbe1d0b381ec42ca3f884731fe34",
+      "fb7e0b441464e8951ae201175e130ad6b6e3df53be33045b4eb48cea2c4a4d93",
+      "0932daf3c086453e4f88c3be2540c4c0f5aeb899da97b929b472105bd019561e"
+    ]
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "schema_version": "walmart-listing-integrity-repair-plan/v2",
+  "plan_id": "plan-edaf6fccf232f943e2a6b439",
+  "created_at": "2026-07-28T19:08:26.368Z",
+  "expires_at": "2026-07-28T19:39:16.368Z",
+  "verifier_engine_release_sha256": "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81",
+  "apply_engine_release_sha256": "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81",
+  "sequence": {
+    "authorization_sha256": "46b669ab1fb2db827bfd0bd9452a4b2101b02cbedad2c3fbfa95e4b45a4aed80",
+    "sequence_id": "sequence-edaf6fccf232f943e2a6b439",
+    "sequence_epoch": "epoch-20260728T190914197Z-edaf6fccf232f943",
+    "position": 0,
+    "population_artifact_sha256": "edaf6fccf232f943e2a6b439d29dd22698065ba9f168b38389aac02911309e97"
+  },
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1140",
+    "listing_key": "walmart:1:FaisalX-1140",
+    "item_id": "8401770647",
+    "captured_at": "2026-07-28T18:25:23.596Z",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE",
+    "composition": "same_product"
+  },
+  "baseline": {
+    "report_id": "owner-review-87850e63bcbaa429",
+    "report_body_sha256": "87850e63bcbaa42946c8a9a1e8024bf0db97cfb90ec0e694c2e06e98113ea703",
+    "input_body_sha256": "d9024dbfcd35739bd6048b989a6562baf18fe29d34c3accd831f3802d192e691",
+    "captured_at": "2026-07-28T18:25:23.596Z",
+    "overall_verdict": "BAD",
+    "surface_sha256": "a939d0e097975ceb3be39b8288a374b420a0ad44d61c6d28a483aed0704e4499",
+    "images_sha256": "e07355cf43f7495d1ec57209ab1e7b6b93aaa64f3eaf5f979d7af85216b4552a",
+    "buyer_payload_sha256": "f6f351299e2919c5c4eb661ec45031cb302246cb5c9bc07140ea6cc3072eb392",
+    "surface_payload_sha256": "a939d0e097975ceb3be39b8288a374b420a0ad44d61c6d28a483aed0704e4499",
+    "source_evidence_inventory_sha256": "986d86c015252b0d4dadfa10d7f3b8124c61a387e98a123e2d812fd2f2a04fe7",
+    "live_capture_exchange_sha256": "cff0e912c07728343323503b850dbd5970fe5cd4f1c43454785022f27c405a77",
+    "authenticated_capture_nonce_sha256": "66ed5371b6d4ce2005c222aa5179e4ea51b6ff1435c77f5c77968c2edcc14cac"
+  },
+  "product_truth": {
+    "expected_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+    "product_truth_snapshot_id": "reviewed-one-sku-truth-ebd7694ca09705570b78bb59",
+    "product_truth_snapshot_body_sha256": "ebd7694ca09705570b78bb59224793e1e7a5c2de91ebab0dede563881ec75058",
+    "truth_revision_id": "reviewed-truth-revision-fb928188e5f7c9ba937f47e8",
+    "truth_revision_body_sha256": "fb928188e5f7c9ba937f47e8258e2747f9cc81207e6f87f8bfd866ada179ddba",
+    "truth_approval_sha256": "6c98876fa7604911f5620d197f41438faf23c02efafab6880b47170385eb1970",
+    "product_truth_snapshot_file_sha256": "ebd7694ca09705570b78bb59224793e1e7a5c2de91ebab0dede563881ec75058"
+  },
+  "target": {
+    "surface": {
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "description": "PACK OF 4: This listing includes four 16 oz loaves of Pepperidge Farm White Sandwich Bread, for 64 oz total. We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+      "bullets": [
+        "PACK OF 4: Includes 4 loaves of Pepperidge Farm White Sandwich Bread; each loaf is 16 oz, for 64 oz total",
+        "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+        "QUALITY INGREDIENTS: No high-fructose corn syrup",
+        "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+        "WRAPPED WITH CARE: Double-wrapped for freshness",
+        "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Brand",
+          "kind": "brand",
+          "text": "Pepperidge Farm"
+        },
+        {
+          "field_path": "product.specifications[1].Bread & bun type",
+          "kind": "product",
+          "text": "Sandwich Bread Loaf"
+        },
+        {
+          "field_path": "product.specifications[3].Flavor",
+          "kind": "variant",
+          "text": "Bread"
+        },
+        {
+          "field_path": "product.specifications[4].Piece count",
+          "kind": "inner_item_count",
+          "value": 20,
+          "unit": "count"
+        },
+        {
+          "field_path": "product.specifications[6].Multipack quantity",
+          "kind": "outer_units",
+          "value": 4,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Grain type",
+          "value_sha256": "ddd7314bf74d7edde40a2cf2381aeb152ba1ce315e6a21111313528406243079"
+        },
+        {
+          "field_path": "product.specifications[5].Total count",
+          "value_sha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460"
+        },
+        {
+          "field_path": "product.specifications[7].Food form",
+          "value_sha256": "aa45916885768893a4d8f05d4f6d0d78f7df65621b6fadb2d5674f3961d7f005"
+        },
+        {
+          "field_path": "product.specifications[8].Size",
+          "value_sha256": "002e0a5591a36a45843d67b787a52447514bbb319f9b19f293ef323fc0f6833b"
+        },
+        {
+          "field_path": "product.specifications[9].Food condition",
+          "value_sha256": "b65dff99b92126fd18da6c81549b731415dc24aa5acdf2144c50fbe073ef63a0"
+        },
+        {
+          "field_path": "product.specifications[10].Texture",
+          "value_sha256": "f5d816091d37cb3b591fd66de91a4a659ca8a61ef43a5fb16c2d5a97a14699d3"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "17b1293bcc3fef323c5406dec70c0195ae6a8295fefe87b595e3b86bf3cb7b16"
+        },
+        {
+          "field_path": "product.specifications[12].Product net content parent",
+          "value_sha256": "35cef1b6d9a5f69cc581b532142ceed1f5b5967b1cbd2ff6be7d6420ac4e1608"
+        },
+        {
+          "field_path": "product.specifications[13].Manufacturer",
+          "value_sha256": "91f6d574293e4b64e127bc5920dddb13e4aa112bff7199dc19a7fc151eeff995"
+        },
+        {
+          "field_path": "product.specifications[14].Container type",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[15].Material",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[16].Size descriptor",
+          "value_sha256": "cf73746490803a9f136376b95338ad86c3831e081d99da1523e9e2d02e906634"
+        },
+        {
+          "field_path": "product.specifications[17].Food preparation method",
+          "value_sha256": "4f61b1db70c3ce957b7201c18bb20955cd1e1325a8c545d573e696d1e4d05234"
+        },
+        {
+          "field_path": "product.specifications[18].Food & drug fact label type",
+          "value_sha256": "8e430f6676bd105e00c2a0859a45e5a3540815f9dc8037537758f7fd9ee10230"
+        }
+      ]
+    },
+    "images": [
+      {
+        "slot": "main",
+        "source_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-listing-integrity/FaisalX-1140/main/5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955.png",
+        "sha256": "5dac2ba86175871147dcdd99d8a529b153b50d8ed5b68307134ffd171023d955"
+      },
+      {
+        "slot": "gallery-1",
+        "source_url": "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+        "sha256": "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab"
+      },
+      {
+        "slot": "gallery-2",
+        "source_url": "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg",
+        "sha256": "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4"
+      }
+    ],
+    "target_sha256": "f0ffbe8e90840747873eaa9336dfdcc893e8df91ff228544b82a8a8550e660b5"
+  },
+  "changed_fields": [
+    "description",
+    "bullets",
+    "main",
+    "gallery"
+  ],
+  "execution_policy": {
+    "signed_one_sku_permit_required": true,
+    "durable_permit_consumption_required": true,
+    "exact_raw_walmart_exchange_required": true,
+    "exact_listing_count": 1,
+    "max_marketplace_write_calls": 1,
+    "fresh_live_reread_required": true,
+    "async_source_aware_rebuild_required": true,
+    "cached_qualification_is_authority": false,
+    "next_sku_requires_rebuilt_pass": true,
+    "mass_apply_allowed": false,
+    "automatic_reapply_allowed": false,
+    "propagation_failure_not_before_ms": 21600000
+  },
+  "body_sha256": "80f9e72c67a8e9e05d2fa48e9b1df9b0dfa6b96c008ee2e9332400e2bc35a52b"
+}

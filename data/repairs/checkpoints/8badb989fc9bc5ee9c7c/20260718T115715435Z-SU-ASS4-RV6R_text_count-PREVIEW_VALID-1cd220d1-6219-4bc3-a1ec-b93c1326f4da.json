@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1cd220d1-6219-4bc3-a1ec-b93c1326f4da",
+  "created_at": "2026-07-18T11:57:15.435Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SU-ASS4-RV6R:text_count",
+  "sku": "SU-ASS4-RV6R",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "c39b0928508b21c7645da69e3c1fb5d2cc0dd7d949663e593106e37b295bb446",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "844eb70fae2842a9ad9731bde352a077",
+    "issues": []
+  },
+  "sha256": "e6eb602568069b2b7df2212fad3b984acdc49c1c52bf4135cb3fbd0a2d77ce6e"
+}

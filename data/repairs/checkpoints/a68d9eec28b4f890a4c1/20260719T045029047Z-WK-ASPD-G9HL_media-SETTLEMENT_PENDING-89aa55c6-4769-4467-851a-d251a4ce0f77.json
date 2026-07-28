@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "89aa55c6-4769-4467-851a-d251a4ce0f77",
+  "created_at": "2026-07-19T04:50:29.047Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "WK-ASPD-G9HL:media",
+  "sku": "WK-ASPD-G9HL",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "8b71ad7b-9f5e-4541-9636-9a1a39e6b216",
+    "submitted_at": "2026-07-19T04:49:47.632Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "0297e90f27fb02045f142fa6e4ac3d4cf37875e5418107dfa11e6f9c6bf6db4f",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "cd79fcff53ca4fafbc7ac679543e9391d18c56885f2e7a63ce3f3d4f53ac6c46"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "06cd1dba18eeabd7f9e651105300d367c22a865f984eb3e78450e544f94ca18c"
+}

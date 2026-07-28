@@ -1,0 +1,37 @@
+{
+  "status": "READY",
+  "adapter_version": "walmart-listing-single-pipeline-truth-adapter/v5",
+  "listing_key": "walmart:1:FaisalX-2768",
+  "expected": {
+    "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can",
+    "outer_units": 4,
+    "identity": {
+      "brand_aliases": [
+        "campbells"
+      ],
+      "product_marker_groups": [
+        [
+          "condensed soup"
+        ]
+      ],
+      "variant_marker_groups": [
+        [
+          "golden mushroom"
+        ]
+      ],
+      "forbidden_markers": []
+    },
+    "package_facts": [
+      {
+        "kind": "net_content",
+        "requirement": "required",
+        "value": 297.6699928125,
+        "unit": "g"
+      }
+    ],
+    "truth_source": "recipe"
+  },
+  "component_evidence_id": "sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac",
+  "canonical_variant_id": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+  "blockers": []
+}

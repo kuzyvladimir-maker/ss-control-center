@@ -1,0 +1,2 @@
+SKU	ASIN	SellingVenue
+SZ-ASPI-JFAT	B0H776M5B5	AmazonUS

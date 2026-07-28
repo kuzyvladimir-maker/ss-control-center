@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3417,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "de4345c49c98c34c45922c4c82fc69d40d822ca74408bdf2c12c762d05feeaba"
+    }
+  ],
+  "manifestSha256": "84841040109b1657a32bca29cde1ca7febc797d58dea737f64e9a90e6443e454",
+  "planSha256": "7d82cd9b069d298b6880a771364a9ef83fc033cfd06a2de88937bf9bd7f296c9",
+  "runId": "pt-g7-targeted-leasefix-20260728T193700Z-motts",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "uncrustables-hero-generation-manifest/v1.0",
+  "immutable": true,
+  "external_mutations": {
+    "r2_asset_uploads": 1,
+    "amazon_calls": 0,
+    "database_writes": 0
+  },
+  "run_id": "UHG-20260717T231809035Z-a625d352",
+  "created_at": "2026-07-17T23:18:09.035Z",
+  "completed_at": "2026-07-17T23:18:47.802Z",
+  "source_snapshot": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T230418933Z-offline.json",
+    "sha256": "ba512ed927f9881c287d15899f21a99725e8432a4a2f4a736a15db18e7f16279"
+  },
+  "checkpoint_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/UHG-20260717T231809035Z-a625d352-checkpoint.json",
+  "summary": {
+    "target": 1,
+    "succeeded": 1,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "draft_id": "cmrbhyood006g04ju4cqerjhn",
+      "status": "SUCCEEDED",
+      "started_at": "2026-07-17T23:18:09.788Z",
+      "result": {
+        "ok": true,
+        "image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhyood006g04ju4cqerjhn-TL-ASHN-ZRKG/main-20260717t231809790z-a1-5ff5ab0fef0d.png",
+        "image_sha256": "5ff5ab0fef0d1602f23647737d298b9f4b39c6a63cdca33069dbc38e24776d96",
+        "plan": [
+          {
+            "flavor": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+            "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+            "donor_title": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 7.2oz/4ct",
+            "source_url": "https://target.scene7.com/is/image/Target/GUEST_235a618b-f3a3-46b6-9e9c-4aaf79640f5b",
+            "source_reviewed": true,
+            "retail_pack": 4,
+            "recipe_qty": 12,
+            "logical_boxes": 3,
+            "candidate_count": 7,
+            "visible_boxes": 3
+          },
+          {
+            "flavor": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+            "donor_title": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "source_url": "https://target.scene7.com/is/image/Target/GUEST_3650dac1-255f-43e1-a995-6d76fa29f46b",
+            "source_reviewed": true,
+            "retail_pack": 8,
+            "recipe_qty": 12,
+            "logical_boxes": 2,
+            "candidate_count": 1,
+            "visible_boxes": 2
+          }
+        ],
+        "expected_flavors": [
+          "Chocolate Flavored Hazelnut Spread",
+          "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)"
+        ],
+        "visible_boxes": 5,
+        "total_units": 24,
+        "attempts": 1,
+        "qa": {
+          "pass": true,
+          "verified": true,
+          "hard_fails": [],
+          "warnings": [
+            "vision counted 4 boxes; compositor placed 5",
+            "genuine retailer-exclusive mark is printed on a source carton"
+          ],
+          "cost_cents": 0,
+          "observed": {
+            "is_real_uncrustables_retail_boxes": true,
+            "background_is_pure_white": true,
+            "salutem_cooler_visible_and_branded": true,
+            "frozen_gel_packs_visible_and_branded": true,
+            "salutem_branding_only_on_kit": true,
+            "all_expected_flavors_visible": true,
+            "only_expected_flavors_visible": true,
+            "fabricated_or_garbled_product_text": false,
+            "retailer_ui_overlay_or_watermark": false,
+            "genuine_retailer_exclusive_mark_on_carton": true,
+            "unrelated_product_or_lifestyle_panel": false,
+            "loose_ice_or_loose_sandwich": false,
+            "visible_box_count": 4,
+            "flavors_seen": [
+              "Chocolate Flavored Hazelnut Spread",
+              "Beamin' Berry Blend Peanut Butter & Mixed Berry Spread"
+            ],
+            "notes": "An 'Only at Target' mark is physically printed on the Beamin' Berry Blend carton; two branded Salutem Solutions gel packs sit in front of the open cooler on a pure white background."
+          }
+        },
+        "cost_cents": 0
+      },
+      "completed_at": "2026-07-17T23:18:47.788Z"
+    }
+  ]
+}

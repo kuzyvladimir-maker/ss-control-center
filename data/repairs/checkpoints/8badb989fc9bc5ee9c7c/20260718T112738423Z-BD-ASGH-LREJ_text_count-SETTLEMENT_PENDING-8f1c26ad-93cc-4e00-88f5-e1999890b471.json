@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8f1c26ad-93cc-4e00-88f5-e1999890b471",
+  "created_at": "2026-07-18T11:27:38.423Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BD-ASGH-LREJ:text_count",
+  "sku": "BD-ASGH-LREJ",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "519ee55a-fafe-459e-9104-ddaf79df9712",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b46e72e22fb034c2a87cde9e03957fdfe16ac74d45e80069fc56a791e6e28802",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "2d814138fc820010ef0a3f4c3f67c1b1e1ca76cfaa96743e42f13aeed8d95d6c"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "d6f2b6ff78d417e7069fcef2449408beb6c10f1e39640ef15a74bba5265bb9cf"
+}

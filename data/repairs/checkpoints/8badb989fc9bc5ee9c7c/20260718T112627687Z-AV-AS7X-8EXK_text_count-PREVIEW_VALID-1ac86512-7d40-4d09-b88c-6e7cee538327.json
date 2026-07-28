@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1ac86512-7d40-4d09-b88c-6e7cee538327",
+  "created_at": "2026-07-18T11:26:27.687Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AV-AS7X-8EXK:text_count",
+  "sku": "AV-AS7X-8EXK",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "ee82fcf27725a81c4b3bc7fdaab69277bdffb17c2244a39a1a2f8634db9438a2",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "a3facaa7cacf4add9939b4520370d14a",
+    "issues": []
+  },
+  "sha256": "49ca1ea20d78353876b08fab61b17c0a7cbc03a88c2259e0e4cfa0b967a58386"
+}

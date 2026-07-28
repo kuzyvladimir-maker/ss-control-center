@@ -1,0 +1,177 @@
+{
+  "authority": "PROVISIONAL_LEGACY_SCREEN_ONLY_NOT_PRODUCT_TRUTH_NOT_CATALOG_AUTHORITY",
+  "candidates": [
+    {
+      "allowedPilotPackCountsPendingEconomics": [
+        2,
+        3
+      ],
+      "brand": "Ritz",
+      "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+      "imageCountLegacy": 20,
+      "legacyContentCompleteness": {
+        "descriptionPresent": true,
+        "ingredientsPresent": true,
+        "nutritionPresent": true
+      },
+      "legacyIdentityStatus": "legacy_unverified",
+      "manufacturerUpcLegacy": "044000035457",
+      "rank": 1,
+      "retailerItemId": "34312392",
+      "retailerOffer": {
+        "fetchedAt": "2026-07-11T14:07:42.021Z",
+        "firstParty": true,
+        "inStock": true,
+        "localityEvidence": null,
+        "observedPrice": 3.97,
+        "zip": "33765"
+      },
+      "size": "8.8 oz",
+      "staleMirrorObservation": {
+        "exactVariantPackCountsSeen": [
+          4,
+          8
+        ],
+        "pack2Or3Seen": false,
+        "rows": [
+          "FaisalX-4287/PUBLISHED/Pack of 4",
+          "FaisalX-4289/PUBLISHED/Pack of 8"
+        ]
+      },
+      "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz"
+    },
+    {
+      "allowedPilotPackCountsPendingEconomics": [
+        2,
+        3
+      ],
+      "brand": "Ritz",
+      "donorProductId": "4bc40420-74eb-442c-acd9-e59bc91bb2f5",
+      "imageCountLegacy": 14,
+      "legacyContentCompleteness": {
+        "descriptionPresent": true,
+        "ingredientsPresent": true,
+        "nutritionPresent": true
+      },
+      "legacyIdentityStatus": "legacy_unverified",
+      "manufacturerUpcLegacy": "044000035440",
+      "rank": 2,
+      "retailerItemId": "34345451",
+      "retailerOffer": {
+        "fetchedAt": "2026-07-10T13:29:50.043Z",
+        "firstParty": true,
+        "inStock": true,
+        "localityEvidence": null,
+        "observedPrice": 3.97,
+        "zip": "33765"
+      },
+      "size": "8.8 oz",
+      "staleMirrorObservation": {
+        "exactVariantPackCountsSeen": [
+          6,
+          8
+        ],
+        "pack2Or3Seen": false,
+        "rows": [
+          "FaisalX-4297/PUBLISHED/Pack of 6",
+          "FaisalX-4298/PUBLISHED/Pack of 8"
+        ]
+      },
+      "title": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz"
+    },
+    {
+      "allowedPilotPackCountsPendingEconomics": [
+        2,
+        3
+      ],
+      "brand": "Oreo",
+      "donorProductId": "3f95a432-eb1d-4735-96de-e68e20a765b3",
+      "imageCountLegacy": 15,
+      "legacyContentCompleteness": {
+        "descriptionPresent": true,
+        "ingredientsPresent": true,
+        "nutritionPresent": true
+      },
+      "legacyIdentityStatus": "legacy_unverified",
+      "manufacturerUpcLegacy": "044000060176",
+      "rank": 3,
+      "retailerItemId": "5033343267",
+      "retailerOffer": {
+        "fetchedAt": "2026-07-10T13:35:14.251Z",
+        "firstParty": true,
+        "inStock": true,
+        "localityEvidence": null,
+        "observedPrice": 4.97,
+        "zip": "33765"
+      },
+      "size": "11.78 oz",
+      "staleMirrorObservation": {
+        "exactVariantPackCountsSeen": [],
+        "pack2Or3Seen": false,
+        "similarFamilyRowsSeen": [
+          "OREO Thins Chocolate 11.78 oz Pack of 4",
+          "OREO Thins Golden 11.78 oz Pack of 4/6/8"
+        ]
+      },
+      "title": "Oreo Thins Mint Creme Chocolate Sandwich Cookies Family Size - 11.78oz"
+    }
+  ],
+  "createdAt": "2026-07-23T02:12:00.000Z",
+  "excludedExamples": [
+    {
+      "donorProductId": "150c557b-a899-416b-b21a-7436fa323e27",
+      "reason": "STALE_MIRROR_ALREADY_CONTAINS_EXACT_8_OZ_PACK_OF_2",
+      "sellerSku": "FaisalX-5466",
+      "title": "SOUR PATCH KIDS Soft & Chewy Candy, 8 oz (Pack of 2)"
+    }
+  ],
+  "externalEffects": {
+    "databaseWrites": 0,
+    "modelCalls": 0,
+    "networkCalls": 0,
+    "paidProviderCalls": 0,
+    "walmartCalls": 0,
+    "walmartListingWrites": 0
+  },
+  "globalBlockersBeforeAnyCandidateCanAdvance": [
+    "FRESH_ALL_STATUS_WALMART_ITEM_V6_CATALOG_REQUIRED",
+    "EXACT_PRODUCT_TRUTH_IDENTITY_CONTENT_CLASSIFICATION_REQUIRED",
+    "FRESH_ZIP_SCOPED_FIRST_PARTY_PRICE_REQUIRED",
+    "EXACT_DIMENSIONS_WEIGHT_AND_ECONOMICS_REQUIRED",
+    "EXACT_UPC_REGISTRY_OWNER_BRAND_SELLER_BINDING_REQUIRED",
+    "IMAGE_RIGHTS_AND_QUANTITY_REPRESENTATION_REVIEW_REQUIRED",
+    "CURRENT_POLICY_RECALL_BRAND_CATEGORY_REVIEW_REQUIRED"
+  ],
+  "purpose": "Reduce later candidate search time without selecting or authorizing a Walmart SKU",
+  "schemaVersion": "walmart-new-sku-provisional-shortlist/1.0.0",
+  "source": {
+    "databaseKind": "LOCAL_COPY_OF_PRODUCTION_BACKUP",
+    "portableBackupSha256": "6e69911d1ab83f77545c9fa5789d35e29f11cd434a25b24d2f03e3fdef952526",
+    "sellerMirrorAuthority": "STALE_NON_AUTHORITATIVE_WalmartCatalogItem",
+    "sellerMirrorRows": 3936
+  },
+  "selectionPolicy": {
+    "excludedRiskTerms": [
+      "frozen",
+      "refrigerated",
+      "supplement",
+      "vitamin",
+      "baby",
+      "pet",
+      "gift",
+      "variety"
+    ],
+    "homogeneousSingleVariantOnly": true,
+    "legacyContentFieldsRequired": [
+      "description",
+      "ingredients",
+      "nutritionFacts",
+      "mainImageUrl",
+      "imageUrls"
+    ],
+    "legacyImageMinimum": 2,
+    "retailer": "Walmart direct first-party",
+    "storageHint": "Dry only; must be replaced by exact Product Truth storage evidence",
+    "zip": "33765"
+  }
+}

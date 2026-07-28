@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "Comm-05",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "Comm-05",
+    "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+    "upc": "364760754666",
+    "gtin14": "00364760754666",
+    "wpid": "431H05RNU37O",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "5410523365",
+    "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+    "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "0265f963e2b9ecc8bf2584bdf79a5f80c3f56f2d458a559450efdb29fc01bf67",
+    "catalog_search_payload_canonical_sha256": "b88ed0150c68a37275ae431db62cd483f02ec3cb5a4872265b9c8dc2b5fa2789"
+  },
+  "identity_evidence": [
+    "request.sku=Comm-05",
+    "seller.ItemResponse[0].sku=Comm-05",
+    "seller.ItemResponse[0].upc=364760754666",
+    "seller.normalized_gtin14=00364760754666",
+    "seller.wpid_not_itemId=431H05RNU37O",
+    "catalog.items[0].standardUpc~=00364760754666;itemId=5410523365",
+    "catalog.unique_numeric_public_itemId=5410523365"
+  ]
+}

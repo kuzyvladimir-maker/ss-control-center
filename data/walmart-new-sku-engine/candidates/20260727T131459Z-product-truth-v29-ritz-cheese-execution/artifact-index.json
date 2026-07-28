@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4386,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "a21fd6603438f1afbc1c4f02ffba5a60a45dd23f9e0aeb81df10b1187f36a61a"
+    }
+  ],
+  "manifestSha256": "4a912aca80b69eafaff365f453df89d7e5f11241654f028b1cdae0c7bac37f15",
+  "planSha256": "30e6d35e2fbaf8f9fef07e59923d85f76dc5476f32433b12c1596035ba171bca",
+  "runId": "20260727T131459Z-v29-ritz-cheese-pack2",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

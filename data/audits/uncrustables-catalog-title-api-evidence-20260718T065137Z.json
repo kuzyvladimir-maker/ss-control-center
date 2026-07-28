@@ -1,0 +1,1632 @@
+{
+  "schema_version": "uncrustables-catalog-title-api-evidence/v1",
+  "immutable": true,
+  "read_only": true,
+  "captured_at": "2026-07-18T06:52:57.698Z",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-final-164-20260718-v5/URP-20260718T060953141Z-480ed383f696.json",
+    "internal_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+    "file_sha256": "15d85932f70871a41b39f33d9290f840e6bbdb50c498964b01fed355a23f4957"
+  },
+  "source_checkpoint_set": {
+    "path": "data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c",
+    "files": 612,
+    "sha256": "c5ae519542f879694fcf32e0250bcaa0d6ac0bb22de81fd299075c9b4bba1639"
+  },
+  "scope": {
+    "catalog_title_conflict_skus": 35,
+    "exact_preview_api_matches": 35,
+    "mismatches": 0
+  },
+  "evidence": [
+    {
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "preview_catalog_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, Frozen, 2 oz Each, 45 Count",
+      "preview_submission_ids": [
+        "f4959e0ff1f24ee5b8a0a178f26d27d7",
+        "b5eae03a62bf471e9c237a35488dd4f6"
+      ],
+      "checkpoint_event_sha256s": [
+        "7a05b1e73d9d338ca269c1e7e396593e85e8c7c0c4b310ef2ab8dc0a2841627c",
+        "15b280072cae474a6cd0361a4727081dad9674d169741dbf9d79bb96c0b464db"
+      ],
+      "checkpoint_file_sha256s": [
+        "1b1d2e03b6e74052e226619ec727cb0a2f77808fa4dfde0408ad6d1c60178c95",
+        "a7860c253aa4a12c971caf5f295f843aaf9f746a851ed5643082dce5fd8fad6a"
+      ],
+      "catalog_api_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, Frozen, 2 oz Each, 45 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441902211",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441902211",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 30 Count, 2 oz Each, Frozen Multipack",
+      "preview_submission_ids": [
+        "03b455d52a904bbd8a48a1e921faa56d"
+      ],
+      "checkpoint_event_sha256s": [
+        "21d5bfee44214af73cf408e813834dfa93d9f6775bd07acb9df68d34a84129f5"
+      ],
+      "checkpoint_file_sha256s": [
+        "e138bdcaf0e8957e61b6b29c618f4abbd55d3ce89c87637deca54a8dc9fa978c"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 30 Count, 2 oz Each, Frozen Multipack",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "FOOD",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901405",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901405",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz Each, 90 Count",
+      "preview_submission_ids": [
+        "fbef5a95b1b14bc091c735ca548ae651"
+      ],
+      "checkpoint_event_sha256s": [
+        "5780a61c398909b8b60c2f633fa7aea2c00b37e5b5d93538210eb0ef4c3291fe"
+      ],
+      "checkpoint_file_sha256s": [
+        "64a1ac06f6b391f89bfd4c43830f48229a2059f3258779c9df2fe130fa27193e"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz Each, 90 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903621",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903621",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, Frozen, 120 Count",
+      "preview_submission_ids": [
+        "44cb6cadfc46483394c01de7b76dbe3d"
+      ],
+      "checkpoint_event_sha256s": [
+        "c9b6587996fb0f7504b6b3ee295911d5aeafb95c6c391754f76da09f7c36a2f4"
+      ],
+      "checkpoint_file_sha256s": [
+        "b1e823898f7e84d3b7bcb3b02a7cf115e7d4de8417ba0b326c082e19d8bd2c32"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, Frozen, 120 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 120,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 120,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903980",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903980",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "EZ-ASLA-Y7MZ",
+      "asin": "B0H83GBJLW",
+      "preview_catalog_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwich, 2 oz, Reduced Sugar, 90 Count",
+      "preview_submission_ids": [
+        "4a1a75107b0042038c2ae875e14f4dad"
+      ],
+      "checkpoint_event_sha256s": [
+        "1bb763c7e8f22fe3bd18384fae555df29d27f9a33350b9304411a9b38ba9c3bb"
+      ],
+      "checkpoint_file_sha256s": [
+        "77a98a26bc5608e15f9f7989b12cd123f7f3f00b0df4b40af730452fbe712eb7"
+      ],
+      "catalog_api_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwich, 2 oz, Reduced Sugar, 90 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903577",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903577",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 12g Protein, 2.8 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "0b374fdfdc7149d4baa793aa5d8497fb"
+      ],
+      "checkpoint_event_sha256s": [
+        "0419d99fbd43f985e1c194c5447251add058adb8dd3961d9d968b5d7f0e6613b"
+      ],
+      "checkpoint_file_sha256s": [
+        "5a75fe83d6b174b0e0a1a43a579cebec504c7f8d2b4b4d3acac1a6361b318c4e"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 12g Protein, 2.8 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901528",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901528",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "GG-ASNC-C9WA",
+      "asin": "B0H8219Z7T",
+      "preview_catalog_title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 30 Count",
+      "preview_submission_ids": [
+        "44ebc22073f443dd88f5ded32c5429f2"
+      ],
+      "checkpoint_event_sha256s": [
+        "a932b2dfea5f63c521d48097047b52ea06a904f1e2c750d0c967f06741d83614"
+      ],
+      "checkpoint_file_sha256s": [
+        "12b4d580875599fb5fa119396e20e778a8100a9bafc14a2625679f75acdd4503"
+      ],
+      "catalog_api_title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901498",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901498",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "GR-AS0R-YPCF",
+      "asin": "B0H82GJ292",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter Sandwich, 1.8 oz Each, 30 Count",
+      "preview_submission_ids": [
+        "421db540798c4adfb81d9a71cbaa8a08"
+      ],
+      "checkpoint_event_sha256s": [
+        "8268929be712fc8a3490d1ca7ce75a289718162dd1a4d1f4a836112a1e797d22"
+      ],
+      "checkpoint_file_sha256s": [
+        "0be7df265a5ccfd0a26c06c455345d8cfee03f806fac2d3a71c2d5e4bb845236"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter Sandwich, 1.8 oz Each, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901931",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901931",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "HD-ASEQ-MFAY",
+      "asin": "B0H83QW85C",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 90 Count",
+      "preview_submission_ids": [
+        "b0b4caaeba944e97843617281bc8b9b8"
+      ],
+      "checkpoint_event_sha256s": [
+        "e6fb9a2aa220d101d3e6b64c32139b19e39220bb724ba84248f6f6d01b300f6a"
+      ],
+      "checkpoint_file_sha256s": [
+        "23ec6788b88f10309dc75694d1bdf495527fca222e988ba36018cafad0590c72"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 90 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903591",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903591",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "JH-ASV9-Z46X",
+      "asin": "B0H8369PMK",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, Crustless, 2.8 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "99364bdeb8c64b608e2dbde51c29d17d"
+      ],
+      "checkpoint_event_sha256s": [
+        "48950a6372d75ba13196572cd3f1c041c9fa6bb0895f03beb3557feff950f005"
+      ],
+      "checkpoint_file_sha256s": [
+        "ec2f30484ff698e8dace2d76162c8bf92762c4011361d4090a2a7c61234429b4"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, Crustless, 2.8 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903119",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903119",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "preview_catalog_title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+      "preview_submission_ids": [
+        "ff7c5d210482457c98cf7e4f70d59a71"
+      ],
+      "checkpoint_event_sha256s": [
+        "ff1a3d53a004f872274247d2228676e54b456a8994c0ceb3583fa8e33de5f737"
+      ],
+      "checkpoint_file_sha256s": [
+        "78502e075d6ff852afcd05f644785acdba7cd808a30ecd820be79e3f40f2db74"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904598",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904598",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "MF-AS0J-YRT4",
+      "asin": "B0H82NHQCL",
+      "preview_catalog_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, 2 oz, Frozen, 24 Count",
+      "preview_submission_ids": [
+        "ebe399b673a843efb4bef52503c0e384"
+      ],
+      "checkpoint_event_sha256s": [
+        "f6da879ebf9ef518411f875201ebcdd8b0c3fc4e55cd527e0117e2868536b71c"
+      ],
+      "checkpoint_file_sha256s": [
+        "08481d2e670cfb2dd9a06281444cc3211ee1cf0406bbb70869917f36f1e6abc7"
+      ],
+      "catalog_api_title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, 2 oz, Frozen, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901610",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901610",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Frozen, 30 Count",
+      "preview_submission_ids": [
+        "82845d824a774ea49d24dd37191c6be1"
+      ],
+      "checkpoint_event_sha256s": [
+        "c01578d71a246e3ef43dc506fad6dbf59ceab418c7f33bb66fb6b621b0a012c2"
+      ],
+      "checkpoint_file_sha256s": [
+        "15bd9585c6fcd27177f76b5835280aac4398fa21bb6bda6a79531513c5ebbc21"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Frozen, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903294",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903294",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, 24 Count",
+      "preview_submission_ids": [
+        "7c072724cfa540308b4cdcab0c808619"
+      ],
+      "checkpoint_event_sha256s": [
+        "387623899a8bdcf194e1f6301d8f319c00533cd8fd0d59a33d39a3a88151a4af"
+      ],
+      "checkpoint_file_sha256s": [
+        "38b5b5bfdc0fec777936f30dc6a8dd5221f4391e04ddd1503135418aa5d6d3a9"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903157",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903157",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 12g Protein, 2.8 oz Each, 90 Count",
+      "preview_submission_ids": [
+        "89368d08481e4f2a847c78c3c8ef8d6b"
+      ],
+      "checkpoint_event_sha256s": [
+        "36b9ebb316d621cf9a3096acb9103e322b019d03e2e37f86c940dc2c099b9900"
+      ],
+      "checkpoint_file_sha256s": [
+        "f935d8f391254374424e41db062294fd16674c5e0dcfb41af6d89ab3c60aceac"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 12g Protein, 2.8 oz Each, 90 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441902853",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441902853",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, 45 Count, Frozen",
+      "preview_submission_ids": [
+        "4890ec152e5f40b6b3e6df4e7ea1cd33"
+      ],
+      "checkpoint_event_sha256s": [
+        "7c41e9361ba346c4120b776cbe1af688832c761f6f4db03ee0a4ee86aca672d9"
+      ],
+      "checkpoint_file_sha256s": [
+        "7d86c362a1e1ffc3ed11e3c6e5f688681d137429f8935c966237df7162501297"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, 45 Count, Frozen",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903379",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903379",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "PR-AS79-8SDF",
+      "asin": "B0H82L74PL",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "preview_submission_ids": [
+        "b6cbd18f5f564df9bb5b4f4718f28752"
+      ],
+      "checkpoint_event_sha256s": [
+        "7085756d25eaf6f35c62f8f3f4429eb507317bec6066921935e9e2fd7d7f498a"
+      ],
+      "checkpoint_file_sha256s": [
+        "c28d7fcadab400878890a35d9b5459f21e123999c080813de73a74d26fc6bf55"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901900",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901900",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz Each, 45 Count",
+      "preview_submission_ids": [
+        "d677e2ce85e44ebfa09a2f96164c1614"
+      ],
+      "checkpoint_event_sha256s": [
+        "87be6d571db6f7b07dd08d8783efc70e7f713541ddb2deb89aaf35a7a5015945"
+      ],
+      "checkpoint_file_sha256s": [
+        "df57888dc2dc1e5a07c98f7d47c9178350856b42253b7ff4114a541e95d55c44"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz Each, 45 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903362",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903362",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "preview_catalog_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+      "preview_submission_ids": [
+        "eb5f347407394bd88079b7c893a5e4e2"
+      ],
+      "checkpoint_event_sha256s": [
+        "68c067092efd7f4cbd2e2e5708e54c7fe7300f7e97ee55de009896f5bf7ac9b7"
+      ],
+      "checkpoint_file_sha256s": [
+        "1f960896530936110a3770685973441a1d415d184836f7b452d24984a1883dce"
+      ],
+      "catalog_api_title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901962",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901962",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "69da2790f99b4a4ab8033d9d63f33666"
+      ],
+      "checkpoint_event_sha256s": [
+        "3990d561129d33b868cc92cdbff07f89a24e2871709d3e61c7d8bc8ec1a15f7e"
+      ],
+      "checkpoint_file_sha256s": [
+        "3a159c61e27dd7d895b64e691f0b631bec6284d8ef4c9d16f213b5cc04432bb4"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904628",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904628",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Chocolate Flavored Spread Sandwiches, 24 Count, 2 oz Each, Frozen",
+      "preview_submission_ids": [
+        "0e9ab3d6bffd476aa293ce00dc66ce37"
+      ],
+      "checkpoint_event_sha256s": [
+        "62ed3bb80901c8fb22c6f3e1be16727172431d60905d5716c46a7600bcb4b52b"
+      ],
+      "checkpoint_file_sha256s": [
+        "eb35c7beb9c2c5486bd6032b7517a1246790b9ddb2e789b36b6fee56182dfe3c"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Chocolate Flavored Spread Sandwiches, 24 Count, 2 oz Each, Frozen",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "FOOD",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904871",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904871",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+      "preview_submission_ids": [
+        "b9e3eb63742b40ec8d0ae51b968f2b1c"
+      ],
+      "checkpoint_event_sha256s": [
+        "0b84d1dc04f126a9e9740593840ae0d24e042c6254d5c6907f5040fdc35a8004"
+      ],
+      "checkpoint_file_sha256s": [
+        "1afa10e8be68aa2ee9a2eed387fd674d746e982a3609c4cc9b0894a3371b7139"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904406",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904406",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+      "preview_submission_ids": [
+        "b6f15a36afb94d36a2663e5ed179ad28"
+      ],
+      "checkpoint_event_sha256s": [
+        "432cd646979040bb91302ca25c563374aea8779a547d09d98bbf43f7b344435e"
+      ],
+      "checkpoint_file_sha256s": [
+        "1f456b6bae7139d1b0d115b3d10ec29b0953cb714631b5982b9f127a0985d7f2"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": null,
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0664554043946",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "664554043946",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Raspberry Spread and Chocolate Hazelnut Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "11dced74c8784030a146f4fdaccd5948"
+      ],
+      "checkpoint_event_sha256s": [
+        "2da00e61fdabd812295182c13b31f13e2938b66fc574e27357c7a51cbdb7b0c8"
+      ],
+      "checkpoint_file_sha256s": [
+        "49f909e5b828c9b8be246996e6a0d7b690e436bdfc5ea6a7f92170c2b3cadfa4"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Raspberry Spread and Chocolate Hazelnut Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904772",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904772",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "0a42259f10824f6dad4a4a323f76e8ed"
+      ],
+      "checkpoint_event_sha256s": [
+        "096c47a5a3f179c29d10b1942d32ba83def431c3f475f30f04a0fd7e32d1d4f0"
+      ],
+      "checkpoint_file_sha256s": [
+        "bef30a7481384fb1ed13cbfaef121d0f463f1dcd24db15410213b765c56f75a8"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "FOOD",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904864",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904864",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack",
+      "preview_submission_ids": [
+        "c3071782a2ad43a5b150241075d3ad5c"
+      ],
+      "checkpoint_event_sha256s": [
+        "fcfd9fc85c4f33e1a45fc84bd43cc0a9853b2ef51e45f41197555af1015b7e92"
+      ],
+      "checkpoint_file_sha256s": [
+        "db0f1a99e199da324c46971041941eb9b3bf3dd13d1e8f424139f6e4a2ab39d0"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "FOOD",
+      "catalog_api_number_of_items": [
+        {
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901412",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901412",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "32e5a70811c14131b4f3b8469067953d"
+      ],
+      "checkpoint_event_sha256s": [
+        "0d394ce7d13d1ac7b66a916494f9228147616fe71f69e0458203cf6d96ced231"
+      ],
+      "checkpoint_file_sha256s": [
+        "2a9d4ccc29ac81fec05ab2d9c909c1ca6d3f4e509751b7d54cb61d9bce7bc72c"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904789",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904789",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 120 Count",
+      "preview_submission_ids": [
+        "5720ad55a7be4ca88435cbd44c75b898"
+      ],
+      "checkpoint_event_sha256s": [
+        "0f2eb1a447a99fcc07b25c3334fda825f927efd3c1492d582bf3672f3843e6a9"
+      ],
+      "checkpoint_file_sha256s": [
+        "87454d5ba9f2bc371a731c964712e5bc498f9e2b84b50d03b7e281eb76aad828"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 120 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 120,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 120,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903836",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903836",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "preview_catalog_title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+      "preview_submission_ids": [
+        "69515dac85de41e296f6c58d3369027b"
+      ],
+      "checkpoint_event_sha256s": [
+        "5d1f67a65d5be9b546702034e2a1c1e76892e72c3a575b16ad58a055e302445d"
+      ],
+      "checkpoint_file_sha256s": [
+        "f7fd96ac2a9b75ce739a43b05239f8bb472fe00517a877aff617aadd7fbcb2ed"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441905670",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441905670",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "preview_catalog_title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 45 Count",
+      "preview_submission_ids": [
+        "c7b6be0e005c4cd4a8c650f1de97b503"
+      ],
+      "checkpoint_event_sha256s": [
+        "6f2b8705fc02b3911fa16ae1d16e4cbcb398a326a3b8548aa0fe196099d0c292"
+      ],
+      "checkpoint_file_sha256s": [
+        "432a9aa7a9884f45ad5d8a81bca9be664bd65a9766355b7a3d5db1f15a042293"
+      ],
+      "catalog_api_title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 45 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 45,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441902327",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441902327",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "preview_catalog_title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 90 Count Multipack",
+      "preview_submission_ids": [
+        "05f5fcb59e01412490500605f924e100"
+      ],
+      "checkpoint_event_sha256s": [
+        "1921e57b8379ad6ed335e378b8f8d8e375c2edf1e7338e8dbd33d6aa00a5db89"
+      ],
+      "checkpoint_file_sha256s": [
+        "55ca2373ff4d1ec202dc467bebc66f69bbc871f21cc3f451998fa2c3f187bafd"
+      ],
+      "catalog_api_title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 90 Count Multipack",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "FOOD",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441901429",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441901429",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "preview_submission_ids": [
+        "c71921d0afb74783a60bed3740a9fbc9"
+      ],
+      "checkpoint_event_sha256s": [
+        "63e2cf2ded4d02c55015b7472ccd1ed069c81948f0f1dbe1a09df03b396a138c"
+      ],
+      "checkpoint_file_sha256s": [
+        "4f3dadb81bb2ff7c8cada5aec901a77756253ae6fe40ed59e309297511e6416b"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 30,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441903249",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441903249",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, No Crust, 1.8 oz, Pack of 90",
+      "preview_submission_ids": [
+        "616db10a11024d8bae02ee0a432a2791"
+      ],
+      "checkpoint_event_sha256s": [
+        "d47219d485e30ba71d4801470a504c581bde7468abe3445f9b5ae51da7274565"
+      ],
+      "checkpoint_file_sha256s": [
+        "d0cbeae90eb4362046fd441f0dc955a6f4ed02e9668237f548a7866e33d4ba0e"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, No Crust, 1.8 oz, Pack of 90",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 90,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441902969",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441902969",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter Sandwiches, Individually Wrapped, 24 Count",
+      "preview_submission_ids": [
+        "7c32509e18844f46a40cee7751161a51"
+      ],
+      "checkpoint_event_sha256s": [
+        "11fff4c5ba30d874f5dff13aba10f3325b29499b15634c73cc27029a22c38d32"
+      ],
+      "checkpoint_file_sha256s": [
+        "06472e39330ee306082307d7067a5d0ada27aab930ec6cdd9a85eb37eef3b0fa"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter Sandwiches, Individually Wrapped, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441904895",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441904895",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "preview_catalog_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Whole Wheat and Classic Variety, Individually Wrapped, 24 Count",
+      "preview_submission_ids": [
+        "09f4e8fb66e94c5db82f08733f97c014"
+      ],
+      "checkpoint_event_sha256s": [
+        "612bfd0c6b910a8f90874dc3f02a3541b4647cc1d88584f576e2b86accbfed1d"
+      ],
+      "checkpoint_file_sha256s": [
+        "f7c8541d96bce6c21d0431c149db4bbb0235977e85d756b93e47625b47544235"
+      ],
+      "catalog_api_title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Whole Wheat and Classic Variety, Individually Wrapped, 24 Count",
+      "catalog_api_brand": "Uncrustables",
+      "catalog_api_product_type": "GROCERY",
+      "catalog_api_number_of_items": [
+        {
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_unit_count": [
+        {
+          "type": {
+            "language_tag": "en_US",
+            "value": "Count"
+          },
+          "value": 24,
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "catalog_api_product_identifiers": [
+        {
+          "value": "0756441905434",
+          "type": "ean",
+          "marketplace_id": "ATVPDKIKX0DER"
+        },
+        {
+          "value": "756441905434",
+          "type": "upc",
+          "marketplace_id": "ATVPDKIKX0DER"
+        }
+      ],
+      "exact_preview_match": true
+    }
+  ],
+  "body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e"
+}

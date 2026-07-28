@@ -1,0 +1,926 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-28T18:31:55.223Z",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "inputs": {
+    "product_truth_file_sha256": "905b277963acfa443a61942eb17d1662ae69373256b338a3d314ff7b8ffe6dfd",
+    "buyer_snapshot_file_sha256": "f86dbf09d30fd889ed82e31ce5cc859d334d1a232d878fadbaaa8fcb39efdd48",
+    "buyer_pdp_file_sha256": "f6f351299e2919c5c4eb661ec45031cb302246cb5c9bc07140ea6cc3072eb392",
+    "observations_file_sha256": "60f9edc8aa3adc63bbc9a4e6bb81879e3af6103f1ccd03d85c508b542d4346c1",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95",
+        "bytes": 458544
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02",
+        "bytes": 24492
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f",
+        "bytes": 36641
+      },
+      {
+        "slot": "GALLERY_3",
+        "sha256": "975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc",
+        "bytes": 54259
+      },
+      {
+        "slot": "GALLERY_4",
+        "sha256": "f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4",
+        "bytes": 42966
+      },
+      {
+        "slot": "GALLERY_5",
+        "sha256": "2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee",
+        "bytes": 23418
+      },
+      {
+        "slot": "GALLERY_6",
+        "sha256": "24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7",
+        "bytes": 16646
+      }
+    ]
+  },
+  "outcome": {
+    "status": "BAD",
+    "blockers": [
+      "gallery-1: visible product is not allowed: HAMBURGER BUNS SOFT WHITE; blind package fact contradicts net_content: 14.5 oz != 453.59237 g",
+      "gallery-4: multiple distinct products are visible in a same-product gallery",
+      "gallery-5: visible product is not allowed: Hamburger Buns SOFT WHITE"
+    ],
+    "next_step": "BUILD_REPAIR_PREVIEW"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1140",
+    "captured_at": "2026-07-28T18:25:23.596Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 4,
+      "phrases": [
+        "Pack of 4"
+      ]
+    },
+    "verdict": "CONTRADICTION",
+    "findings": [
+      {
+        "severity": "CONTRADICTION",
+        "code": "IMAGE_SHOWS_MULTIPLE_DISTINCT_PRODUCTS",
+        "slot": "gallery-4",
+        "evidence": [
+          "PEPPERIDGE FARM",
+          "8 SESAME",
+          "8 TOP SLICED SOFT WHITE"
+        ]
+      },
+      {
+        "severity": "CONTRADICTION",
+        "code": "BUYER_IMAGES_SHOW_DIFFERENT_BRANDS",
+        "slot": "gallery-6",
+        "evidence": [
+          "main=PEPPERIDGE FARM",
+          "gallery-6=WHIT EZ"
+        ]
+      },
+      {
+        "severity": "REVIEW",
+        "code": "IMAGE_PRODUCT_NOT_CORROBORATED_BY_LIVE_LISTING_TEXT",
+        "slot": "gallery-4",
+        "evidence": [
+          "SESAME",
+          "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)"
+        ]
+      },
+      {
+        "severity": "REVIEW",
+        "code": "IMAGE_PRODUCT_NOT_CORROBORATED_BY_LIVE_LISTING_TEXT",
+        "slot": "gallery-6",
+        "evidence": [
+          "Bun",
+          "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)"
+        ]
+      }
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "7e5df23c862a06a91f07bb9a95fd78003d5eb5f332c5aedb3a6b7d94b6962125"
+  },
+  "detector_input": {
+    "schema_version": "walmart-listing-integrity-input/v1",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1140",
+      "listing_key": "walmart:1:FaisalX-1140",
+      "item_id": "8401770647",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-28T18:25:23.596Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1140",
+      "product_truth_snapshot_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1140",
+      "catalog_truth_export_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1140",
+      "catalog_truth_preflight_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+      "truth_revision_id": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+      "truth_revision_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "truth_approval_sha256": "44a6257cb16cb9c1f0e5181fe95ed76853fb130fe4ad7f80d120cbf1b30507c1",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1140",
+      "buyer_index_body_sha256": "b2c32ec1e164d2fde6816191aea54bfe17c4ef9305bc0c99d3e8bb3cf25de03c",
+      "buyer_snapshot_id": "walmart-buyer-20260728T182523Z-b2c32ec1e164",
+      "buyer_snapshot_body_sha256": "b2c32ec1e164d2fde6816191aea54bfe17c4ef9305bc0c99d3e8bb3cf25de03c",
+      "buyer_payload_sha256": "32ba475586801ddc7c3d482671dd00d974145aa246f7637d88c975f2ccaea168",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1140",
+      "surface_snapshot_body_sha256": "a939d0e097975ceb3be39b8288a374b420a0ad44d61c6d28a483aed0704e4499",
+      "surface_payload_sha256": "32ba475586801ddc7c3d482671dd00d974145aa246f7637d88c975f2ccaea168"
+    },
+    "expected": {
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "outer_units": 4,
+      "identity": {
+        "brand_aliases": [
+          "Pepperidge Farm",
+          "farm pepperidge"
+        ],
+        "product_marker_groups": [
+          [
+            "bread sandwich white",
+            "White Sandwich Bread"
+          ]
+        ],
+        "variant_marker_groups": [
+          [
+            "white"
+          ]
+        ],
+        "forbidden_markers": []
+      },
+      "package_facts": [
+        {
+          "kind": "net_content",
+          "requirement": "required",
+          "value": 453.59237,
+          "unit": "g"
+        }
+      ],
+      "truth_source": "recipe"
+    },
+    "surface": {
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+      "bullets": [
+        "Soft white sandwich bread made with enriched flour for everyday meals and snacks.",
+        "16 oz loaf size provides multiple servings for families and individuals.",
+        "Classic white bread texture suitable for sandwiches, toast, and general use.",
+        "Sliced loaf format ready to use straight from the package.",
+        "Store in a cool, dry place or refrigerate to maintain freshness.",
+        "Pepperidge Farm brand with established quality standards for bread products.",
+        "Contains wheat and may contain other common allergens; check label for full allergen information."
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Brand",
+          "kind": "brand",
+          "text": "Pepperidge Farm"
+        },
+        {
+          "field_path": "product.specifications[1].Bread & bun type",
+          "kind": "product",
+          "text": "Sandwich Bread Loaf"
+        },
+        {
+          "field_path": "product.specifications[3].Flavor",
+          "kind": "variant",
+          "text": "Bread"
+        },
+        {
+          "field_path": "product.specifications[4].Piece count",
+          "kind": "inner_item_count",
+          "value": 20,
+          "unit": "count"
+        },
+        {
+          "field_path": "product.specifications[6].Multipack quantity",
+          "kind": "outer_units",
+          "value": 4,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Grain type",
+          "value_sha256": "ddd7314bf74d7edde40a2cf2381aeb152ba1ce315e6a21111313528406243079"
+        },
+        {
+          "field_path": "product.specifications[5].Total count",
+          "value_sha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460"
+        },
+        {
+          "field_path": "product.specifications[7].Food form",
+          "value_sha256": "aa45916885768893a4d8f05d4f6d0d78f7df65621b6fadb2d5674f3961d7f005"
+        },
+        {
+          "field_path": "product.specifications[8].Size",
+          "value_sha256": "002e0a5591a36a45843d67b787a52447514bbb319f9b19f293ef323fc0f6833b"
+        },
+        {
+          "field_path": "product.specifications[9].Food condition",
+          "value_sha256": "b65dff99b92126fd18da6c81549b731415dc24aa5acdf2144c50fbe073ef63a0"
+        },
+        {
+          "field_path": "product.specifications[10].Texture",
+          "value_sha256": "f5d816091d37cb3b591fd66de91a4a659ca8a61ef43a5fb16c2d5a97a14699d3"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content uom",
+          "value_sha256": "17b1293bcc3fef323c5406dec70c0195ae6a8295fefe87b595e3b86bf3cb7b16"
+        },
+        {
+          "field_path": "product.specifications[12].Product net content parent",
+          "value_sha256": "35cef1b6d9a5f69cc581b532142ceed1f5b5967b1cbd2ff6be7d6420ac4e1608"
+        },
+        {
+          "field_path": "product.specifications[13].Manufacturer",
+          "value_sha256": "91f6d574293e4b64e127bc5920dddb13e4aa112bff7199dc19a7fc151eeff995"
+        },
+        {
+          "field_path": "product.specifications[14].Container type",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[15].Material",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[16].Size descriptor",
+          "value_sha256": "cf73746490803a9f136376b95338ad86c3831e081d99da1523e9e2d02e906634"
+        },
+        {
+          "field_path": "product.specifications[17].Food preparation method",
+          "value_sha256": "4f61b1db70c3ce957b7201c18bb20955cd1e1325a8c545d573e696d1e4d05234"
+        },
+        {
+          "field_path": "product.specifications[18].Food & drug fact label type",
+          "value_sha256": "8e430f6676bd105e00c2a0859a45e5a3540815f9dc8037537758f7fd9ee10230"
+        }
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "main",
+          "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+          "sha256": "db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95",
+          "byte_length": 458544,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "2c2048482c284c68",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-1",
+          "source_url": "https://i5.walmartimages.com/asr/78882cad-1923-4432-8524-e47fe3ecce43.61a0642195f915c475999a9a3b9a4234.jpeg",
+          "sha256": "6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02",
+          "byte_length": 24492,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "28281030e854544c",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-2",
+          "source_url": "https://i5.walmartimages.com/asr/06cb3b1f-3fbc-4942-be19-1a9507facf84.89ccf1bebcb66bc6e72e105bbe595900.jpeg",
+          "sha256": "bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f",
+          "byte_length": 36641,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "00b37858f870f371",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-3",
+          "source_url": "https://i5.walmartimages.com/asr/2d08f46d-6576-4d3c-a761-b3f6239cbd4d.60e778f0799d8737ce9b370d7a8aca20.jpeg",
+          "sha256": "975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc",
+          "byte_length": 54259,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "00a3ab6aa6a7d671",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-4",
+          "source_url": "https://i5.walmartimages.com/asr/2f9a3af9-762a-4e46-9975-63e255b3edad.d426fb2bca0341f558ecbd8ed0014f39.jpeg",
+          "sha256": "f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4",
+          "byte_length": 42966,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "1f0d95d3d5695a71",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-5",
+          "source_url": "https://i5.walmartimages.com/asr/ca60206a-96b5-4d05-8599-ed00aebc2176.41ad308712dcb9045969ddac948b4353.jpeg",
+          "sha256": "2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee",
+          "byte_length": 23418,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "28281028dc48445c",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-6",
+          "source_url": "https://i5.walmartimages.com/asr/11713495-f56b-41fa-aa6e-105a1cd6fba2.1bc87352f71ba018e0e02c77a4b6fc65.jpeg",
+          "sha256": "24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7",
+          "byte_length": 16646,
+          "decoded_width": 400,
+          "decoded_height": 400,
+          "dhash64": "3038101028382828",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        }
+      ],
+      "evidence": [
+        {
+          "slot": "main",
+          "asset_sha256": "db0cf3d40fd69a15ed2161b65c65cbf66b48f07c3890214db26988e67d53bf95",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_77be5ea00fad4e6e8c17",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "HAMBURGER BUNS",
+            "visible_variant_text": "SOFT WHITE",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 SOFT WHITE",
+              "HAMBURGER BUNS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "BAKERY CLASSICS",
+              "8 SOFT WHITE",
+              "HAMBURGER BUNS"
+            ],
+            "flags": [
+              "4 identical bags shown in 2x2 tiled layout; may indicate multi-pack quantity but no explicit pack-count text visible"
+            ]
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-1",
+          "asset_sha256": "6744ec4b143cd1173d1012d4ac9c47e67ff85342c55a9efd5daffea1d8e75b02",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_349418a52da69cfc1eae",
+            "visual_role": "single_product_front",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "HAMBURGER BUNS",
+            "visible_variant_text": "SOFT WHITE",
+            "visible_size_texts": [
+              "14.5 OZ"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 1,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 SOFT WHITE",
+              "HAMBURGER BUNS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "BAKERY CLASSICS",
+              "8 SOFT WHITE",
+              "HAMBURGER BUNS",
+              "14.5 OZ"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-2",
+          "asset_sha256": "bca8e3b7d8ae18178d6f9a1c805fb63a5066988c4ecd8d066a2e279263555e3f",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_708d9b1d33d45f3b8d6c",
+            "visual_role": "lifestyle",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "lifestyle",
+            "multiple_distinct_products": "no",
+            "readable_identity": "partial",
+            "evidence": [
+              "PEPPERIDGE FARM"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-3",
+          "asset_sha256": "975f504dc2bfd5db9d3b006acc21a961521aff5fcbd30fd02428673d133496bc",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_e6ec6d9b888fe8de0fe9",
+            "visual_role": "lifestyle",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "lifestyle",
+            "multiple_distinct_products": "unknown",
+            "readable_identity": "partial",
+            "evidence": [
+              "PEPPERIDGE FARM"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-4",
+          "asset_sha256": "f0c49a5cbd9265493a9ad405d0319081ab3c1f45ddea3c861955dc2f41adaeb4",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_587c549c08efdd840d31",
+            "visual_role": "mixed_products",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "SESAME",
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 SESAME",
+              "8 TOP SLICED SOFT WHITE"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "some",
+            "background": "lifestyle",
+            "multiple_distinct_products": "yes",
+            "readable_identity": "partial",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "8 SESAME",
+              "8 TOP SLICED SOFT WHITE"
+            ],
+            "flags": [
+              "two distinct Pepperidge Farm product varieties shown: Sesame and Top Sliced Soft White"
+            ]
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-5",
+          "asset_sha256": "2ce37514601069c4d3244a31f8ff60572c8dcb55c0f5675bddab49c59c312aee",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_c3b621ad2386e9ba1873",
+            "visual_role": "back",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "Hamburger Buns",
+            "visible_variant_text": "SOFT WHITE",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 1,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "none",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "SOFT WHITE",
+              "Hamburger Buns"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-6",
+          "asset_sha256": "24a329c091b40d4f952c8c4f6516ab01f2fd62734057ee56e97af15af1fabbf7",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_5d694c9be47c20e4ddbf",
+            "visual_role": "back",
+            "visible_brand_text": "WHIT EZ",
+            "visible_product_text": "Bun",
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 1,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "clear plastic bag of buns"
+            ],
+            "inner_contents_claims": [
+              "1 Bun 31g (serving size on Nutrition Facts)"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [
+              "approximately 8 round buns visible through bag"
+            ],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "none",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "partial",
+            "evidence": [
+              "Nutrition Facts panel visible on back of bag",
+              "Serving Size 1 Bun 31g",
+              "Calories 140",
+              "Purple twist ties at top with partial text 'WHIT EZ'",
+              "Round buns visible through clear plastic bag"
+            ],
+            "flags": [
+              "brand_text_partially_obscured_on_twist_ties"
+            ]
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        }
+      ],
+      "duplicate_summary": null
+    }
+  },
+  "detector_report": {
+    "schema_version": "walmart-listing-integrity-report/v1",
+    "input_body_sha256": "17d5a22a2c95c2b60b376ab7c478fff58274b30f6fcd71e70af61c225b04b7bf",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1140",
+      "listing_key": "walmart:1:FaisalX-1140",
+      "item_id": "8401770647",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-28T18:25:23.596Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1140",
+      "product_truth_snapshot_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1140",
+      "catalog_truth_export_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1140",
+      "catalog_truth_preflight_sha256": "51fe63aaa0e67358613be5b75bd78db1b41d8402e4ea9bbef63116bdf05fb098",
+      "truth_revision_id": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+      "truth_revision_body_sha256": "89a187db49f9d1058943b9c4060fb90a125fe21e1633d434f4db624a5fb75da2",
+      "truth_approval_sha256": "44a6257cb16cb9c1f0e5181fe95ed76853fb130fe4ad7f80d120cbf1b30507c1",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1140",
+      "buyer_index_body_sha256": "b2c32ec1e164d2fde6816191aea54bfe17c4ef9305bc0c99d3e8bb3cf25de03c",
+      "buyer_snapshot_id": "walmart-buyer-20260728T182523Z-b2c32ec1e164",
+      "buyer_snapshot_body_sha256": "b2c32ec1e164d2fde6816191aea54bfe17c4ef9305bc0c99d3e8bb3cf25de03c",
+      "buyer_payload_sha256": "32ba475586801ddc7c3d482671dd00d974145aa246f7637d88c975f2ccaea168",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1140",
+      "surface_snapshot_body_sha256": "a939d0e097975ceb3be39b8288a374b420a0ad44d61c6d28a483aed0704e4499",
+      "surface_payload_sha256": "32ba475586801ddc7c3d482671dd00d974145aa246f7637d88c975f2ccaea168"
+    },
+    "text_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "title_identity": "MATCH",
+        "title_outer_units": "MATCH",
+        "title_package_facts": "MATCH",
+        "body_identity": "MATCH",
+        "body_outer_units": "NOT_APPLICABLE",
+        "body_package_facts": "UNKNOWN",
+        "attributes_identity": "UNKNOWN",
+        "attributes_outer_units": "MATCH",
+        "attributes_package_facts": "UNKNOWN"
+      },
+      "hard_failures": [],
+      "review_reasons": [
+        "description/bullets contain unclassified size or count claims",
+        "typed identity attributes are incomplete or non-matching",
+        "required typed package attributes are missing",
+        "14 source attributes are not covered by the deterministic mapper"
+      ]
+    },
+    "main_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "identity": "UNKNOWN",
+        "package_facts": {
+          "net_content": "UNKNOWN",
+          "inner_item_count": "NOT_APPLICABLE"
+        },
+        "external_quantity": "MATCH",
+        "single_package_per_cell": "MATCH",
+        "front": "MATCH",
+        "background": "MATCH",
+        "no_mixed_product": "MATCH"
+      },
+      "hard_failures": [],
+      "unknowns": [
+        "required product markers missing: bread sandwich white|White Sandwich Bread",
+        "required package fact net_content is not visible"
+      ]
+    },
+    "gallery_decisions": [
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-1",
+        "verdict": "BAD",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MISMATCH",
+          "package_facts": {
+            "net_content": "MISMATCH",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [
+          "visible product is not allowed: HAMBURGER BUNS SOFT WHITE",
+          "blind package fact contradicts net_content: 14.5 oz != 453.59237 g"
+        ],
+        "review_reasons": [],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-2",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required product evidence missing: bread sandwich white|White Sandwich Bread",
+          "required variant evidence missing: white",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-3",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required product evidence missing: bread sandwich white|White Sandwich Bread",
+          "required variant evidence missing: white",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-4",
+        "verdict": "BAD",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [
+          "multiple distinct products are visible in a same-product gallery"
+        ],
+        "review_reasons": [
+          "required product evidence missing: bread sandwich white|White Sandwich Bread",
+          "required variant evidence missing: white",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-5",
+        "verdict": "BAD",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "MISMATCH",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [
+          "visible product is not allowed: Hamburger Buns SOFT WHITE"
+        ],
+        "review_reasons": [],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-6",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required brand evidence missing: Pepperidge Farm|farm pepperidge",
+          "required product evidence missing: bread sandwich white|White Sandwich Bread",
+          "required variant evidence missing: white",
+          "OCR cannot be the sole source of gallery identity",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    ],
+    "duplicate_summary": {
+      "source_binding_sha256": "a9d46291aa78ff4bad9c9f3bdcb797caf3af395886548c358d695c81d813e51f",
+      "dhash_distance_threshold": 5,
+      "exact_duplicate_groups": 0,
+      "near_duplicate_pairs": 0,
+      "missing_assets": 0,
+      "technical_errors": 0
+    },
+    "engine_versions": {
+      "listing_engine": "walmart-listing-integrity-engine/v1",
+      "blind_prompt": "walmart-visual-blind/v4",
+      "main_comparator": "walmart-visual-comparator/v5",
+      "gallery_comparator": "walmart-gallery-audit/v1"
+    },
+    "overall_verdict": "BAD",
+    "blocking_reasons": [
+      "gallery-1: visible product is not allowed: HAMBURGER BUNS SOFT WHITE; blind package fact contradicts net_content: 14.5 oz != 453.59237 g",
+      "gallery-4: multiple distinct products are visible in a same-product gallery",
+      "gallery-5: visible product is not allowed: Hamburger Buns SOFT WHITE"
+    ],
+    "review_reasons": [
+      "description/bullets contain unclassified size or count claims",
+      "typed identity attributes are incomplete or non-matching",
+      "required typed package attributes are missing",
+      "14 source attributes are not covered by the deterministic mapper",
+      "MAIN observer flags require review: 4 identical bags shown in 2x2 tiled layout; may indicate multi-pack quantity but no explicit pack-count text visible",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-1: visible package count differs from offer quantity",
+      "gallery-2: required product evidence missing: bread sandwich white|White Sandwich Bread; required variant evidence missing: white; identity readability is partial",
+      "gallery-3: required product evidence missing: bread sandwich white|White Sandwich Bread; required variant evidence missing: white; identity readability is partial",
+      "gallery-4: visible package count differs from offer quantity",
+      "gallery-4: observer flags require review: two distinct Pepperidge Farm product varieties shown: Sesame and Top Sliced Soft White",
+      "gallery-5: visible package count differs from offer quantity",
+      "gallery-6: required brand evidence missing: Pepperidge Farm|farm pepperidge; required product evidence missing: bread sandwich white|White Sandwich Bread; required variant evidence missing: white; OCR cannot be the sole source of gallery identity; identity readability is partial",
+      "gallery-6 contains an unparsed outer-package claim",
+      "gallery-6 contains unresolved quantity claims",
+      "gallery-6: visible package count differs from offer quantity",
+      "gallery-6: observer flags require review: brand_text_partially_obscured_on_twist_ties"
+    ],
+    "provenance": null,
+    "assurance": {
+      "compilation_mode": "input_only",
+      "source_artifacts_verified": false,
+      "surface_snapshot_verified": false,
+      "asset_bytes_verified": false,
+      "observation_artifacts_verified": false,
+      "caller_verdicts_accepted": false,
+      "image_decisions_recomputed": true,
+      "unknown_promoted_to_pass": false,
+      "network_calls": 0,
+      "model_calls": 0,
+      "marketplace_writes": 0,
+      "database_writes": 0
+    },
+    "report_id": "walmart-integrity-1-abf31da5f3497b79",
+    "body_sha256": "abf31da5f3497b792b20c7b9e4ce9be4752f8178e91a7f523732ba35c309f6a5"
+  },
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "9f37f743f6b47d65012daeabe5cb92017ff5ac4caa46f84e1157a9618b522752"
+}

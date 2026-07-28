@@ -1,0 +1,23 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "Athar-1591",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "24Q31J65EP09",
+      "upc": "723326854620",
+      "gtin": "00723326854620",
+      "productName": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "shelf": "Home Page/Food/Snacks, Cookies & Chips/Chips/Lay's Barbecue Chips",
+      "productType": "Snack Chips",
+      "price": {
+        "currency": "USD",
+        "amount": 34.89
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE"
+    }
+  ],
+  "totalItems": 1
+}

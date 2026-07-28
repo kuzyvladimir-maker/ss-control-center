@@ -1,0 +1,84 @@
+{
+  "schema_version": "walmart-listing-integrity-catalog-triage-report/v1",
+  "triage_version": "walmart-listing-integrity-catalog-triage/v1",
+  "plan_body_sha256": "9b3f19cee76d56e51babc0346d07a999bdc4a55241df47c4e53006ff008d3d15",
+  "partition_id": "partition-000000-bc7ef33d43bae256",
+  "policy": {
+    "buyer_surface_verified": false,
+    "pass_allowed": false,
+    "repair_allowed": false,
+    "walmart_writes": 0
+  },
+  "summary": {
+    "listings": 4,
+    "suspected_bad": 0,
+    "review_required": 0,
+    "no_defect_observed_not_pass": 4
+  },
+  "listings": [
+    {
+      "listing_key": "walmart:1:FBM-05",
+      "sku": "FBM-05",
+      "item_id": "22NW8U5MPN2J",
+      "title": "Pepperidge Farm Cinnamon Raisin Swirl Bread, 3-Pack 16 oz. Loaves 7111",
+      "status": "NO_DEFECT_OBSERVED_NOT_PASS",
+      "findings": [],
+      "image_ids": [
+        "i_69f8f5c3e11164c4735f"
+      ],
+      "limitations": [
+        "Historical sent/applied image evidence is not a fresh buyer-facing Walmart reread.",
+        "NO_DEFECT_OBSERVED_NOT_PASS is a triage outcome and can never qualify a listing as PASS.",
+        "No repair or Walmart mutation is authorized by this report."
+      ]
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1110",
+      "sku": "FaisalX-1110",
+      "item_id": "3ITWZ1ZLPLME",
+      "title": "Dave's Killer Bread Killer Classic English Muffins, Organic English Muffins, 6 Ct (Pack of 4)",
+      "status": "NO_DEFECT_OBSERVED_NOT_PASS",
+      "findings": [],
+      "image_ids": [
+        "i_d3f5ea75c3857cf488dd"
+      ],
+      "limitations": [
+        "Historical sent/applied image evidence is not a fresh buyer-facing Walmart reread.",
+        "NO_DEFECT_OBSERVED_NOT_PASS is a triage outcome and can never qualify a listing as PASS.",
+        "No repair or Walmart mutation is authorized by this report."
+      ]
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1112",
+      "sku": "FaisalX-1112",
+      "item_id": "355MS9HNCKXT",
+      "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz (Pack of 2)",
+      "status": "NO_DEFECT_OBSERVED_NOT_PASS",
+      "findings": [],
+      "image_ids": [
+        "i_baca21e7358789c14d80"
+      ],
+      "limitations": [
+        "Historical sent/applied image evidence is not a fresh buyer-facing Walmart reread.",
+        "NO_DEFECT_OBSERVED_NOT_PASS is a triage outcome and can never qualify a listing as PASS.",
+        "No repair or Walmart mutation is authorized by this report."
+      ]
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1113",
+      "sku": "FaisalX-1113",
+      "item_id": "7GVFQZ0YPR48",
+      "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz (Pack of 4)",
+      "status": "NO_DEFECT_OBSERVED_NOT_PASS",
+      "findings": [],
+      "image_ids": [
+        "i_2a30450f5fcecae62559"
+      ],
+      "limitations": [
+        "Historical sent/applied image evidence is not a fresh buyer-facing Walmart reread.",
+        "NO_DEFECT_OBSERVED_NOT_PASS is a triage outcome and can never qualify a listing as PASS.",
+        "No repair or Walmart mutation is authorized by this report."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "275c2752-fa45-4c83-8d29-018076b0a0a7",
+  "created_at": "2026-07-18T06:16:47.523Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "AC-AS4J-B64F:text_count",
+  "sku": "AC-AS4J-B64F",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "15899b0fec8537ad79bf0dc3b90a62bd07cd537e90767022168a47d2a7be3b53",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "6d5b1fefe41c40359538e73f8522b9fa",
+    "issues": []
+  },
+  "sha256": "c1853d244fbf564994584e4755e54c7991ef2727470a3c3d65e6f4448e59d74d"
+}

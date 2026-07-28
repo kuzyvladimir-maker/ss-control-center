@@ -1,0 +1,574 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.040697674221462754,
+            "width" : 0.14680231730143228,
+            "x" : 0.10755814381213914,
+            "y" : 0.6947674421851343
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaSo"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.040697674221462754,
+            "width" : 0.1482558186848959,
+            "x" : 0.5988372071234989,
+            "y" : 0.6947674422497337
+          },
+          "confidence" : 1,
+          "text" : "OLDELPasO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008450280825296974,
+            "width" : 0.04979952070448135,
+            "x" : 0.15829991811668728,
+            "y" : 0.684733359856649
+          },
+          "confidence" : 1,
+          "text" : "STABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888623979407,
+            "width" : 0.052325579325358085,
+            "x" : 0.6482558149469555,
+            "y" : 0.6844444446474044
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.03052325566609701,
+            "x" : 0.07267441880939335,
+            "y" : 0.6395348841104931
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.03197674433390307,
+            "x" : 0.5639534884435136,
+            "y" : 0.6395348841104931
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08430232577853736,
+            "width" : 0.031976752811008036,
+            "x" : 0.07267441421465103,
+            "y" : 0.5523255815777857
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023255814446343392,
+            "width" : 0.07267441643608942,
+            "x" : 0.12354651232459095,
+            "y" : 0.6061046507225647
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08430232577853736,
+            "width" : 0.03197675281100809,
+            "x" : 0.5654069723499465,
+            "y" : 0.5523255815602226
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024709300994873118,
+            "width" : 0.07412790934244784,
+            "x" : 0.6148255798006753,
+            "y" : 0.6046511633672276
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.029232218000623922,
+            "width" : 0.09561388651529948,
+            "x" : 0.13556771356698874,
+            "y" : 0.5877051980158251
+          },
+          "confidence" : 1,
+          "text" : "'nSTUFF™"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024709300994873007,
+            "width" : 0.09302325778537335,
+            "x" : 0.6279069762775791,
+            "y" : 0.5901162799116166
+          },
+          "confidence" : 1,
+          "text" : "nSTUFF™"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02034883711073132,
+            "width" : 0.030523255666096982,
+            "x" : 0.42296511636208234,
+            "y" : 0.577034883897396
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02034883711073132,
+            "width" : 0.030523255666097038,
+            "x" : 0.9142441861810019,
+            "y" : 0.5770348839397894
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014425757726033606,
+            "width" : 0.0489942847357856,
+            "x" : 0.41227611183631035,
+            "y" : 0.5618278193684245
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017635966406928105,
+            "width" : 0.0496843465169271,
+            "x" : 0.9046035595817277,
+            "y" : 0.5602469776465797
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.052325579325358085,
+            "x" : 0.12790697782070967,
+            "y" : 0.5377777778121756
+          },
+          "confidence" : 1,
+          "text" : "GLUTEN FREE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01579880502488873,
+            "width" : 0.06857166714138452,
+            "x" : 0.6074292822220443,
+            "y" : 0.5357052485582583
+          },
+          "confidence" : 1,
+          "text" : "M GLUTEN FREE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04069767422146264,
+            "width" : 0.14680231730143228,
+            "x" : 0.10755814305309526,
+            "y" : 0.3575581394073566
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaSo"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.040697674221462754,
+            "width" : 0.14680231730143234,
+            "x" : 0.6002907019355241,
+            "y" : 0.35755813985955287
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaso"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.004360465208689379,
+            "width" : 0.05232557932535806,
+            "x" : 0.1555232568671175,
+            "y" : 0.35029069764183984
+          },
+          "confidence" : 1,
+          "text" : "CCTABLISHED 1930"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08752984788682727,
+            "width" : 0.010578253004286026,
+            "x" : 0.03150377109329757,
+            "y" : 0.2411462924952379
+          },
+          "confidence" : 0.3,
+          "text" : "4лкg aRи"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.03197674433390299,
+            "x" : 0.07122093001328106,
+            "y" : 0.3023255815232838
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0915697648790148,
+            "width" : 0.008720939689212392,
+            "x" : 0.5247092968259688,
+            "y" : 0.22529070010046348
+          },
+          "confidence" : 0.3,
+          "text" : "gierron Sor"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.030523255666097038,
+            "x" : 0.5654069770724747,
+            "y" : 0.3023255817388846
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08430232577853725,
+            "width" : 0.031976752811008036,
+            "x" : 0.07267441421041168,
+            "y" : 0.2165697676067343
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025880694919162228,
+            "width" : 0.07517725626627605,
+            "x" : 0.12231910062388379,
+            "y" : 0.26873229411021693
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0857558186848959,
+            "width" : 0.03197675281100798,
+            "x" : 0.5654069723392107,
+            "y" : 0.21511627709386272
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.027206590440538192,
+            "width" : 0.07647758483886713,
+            "x" : 0.6136778557454434,
+            "y" : 0.2672264734895251
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024709300994873007,
+            "width" : 0.09302325778537326,
+            "x" : 0.13662790692126686,
+            "y" : 0.25436046599965645
+          },
+          "confidence" : 1,
+          "text" : "nSTUFF\""
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024709300994873007,
+            "width" : 0.09302325778537335,
+            "x" : 0.6279069763883212,
+            "y" : 0.25436046598754414
+          },
+          "confidence" : 1,
+          "text" : "'nSTUFF\""
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02034883711073132,
+            "width" : 0.030523255666097038,
+            "x" : 0.42296511652257157,
+            "y" : 0.23982558150923383
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.021802325778537246,
+            "width" : 0.033430233001709,
+            "x" : 0.9127906977312192,
+            "y" : 0.2383720930094717
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014173056284586538,
+            "width" : 0.04880040910508898,
+            "x" : 0.41234727111672076,
+            "y" : 0.22509287205148265
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.04796511332194009,
+            "x" : 0.9055232569872858,
+            "y" : 0.22383720910547789
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01622739050123423,
+            "width" : 0.06540697309705946,
+            "x" : 0.11482558403649933,
+            "y" : 0.19888888873267752
+          },
+          "confidence" : 1,
+          "text" : "GLUTEN FREE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014898087713453467,
+            "width" : 0.06839030795627177,
+            "x" : 0.6075199616640753,
+            "y" : 0.19894630506709143
+          },
+          "confidence" : 1,
+          "text" : "M GLUTEN FREE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-e7d55226232c1f77d9859f1851131d06529b9831d5323298f78b0d6628aacf74.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 1400,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.13305688040597097,
+            "width" : 0.30421528220176697,
+            "x" : 0.1992056559672445,
+            "y" : 0.5752918165034941
+          },
+          "confidence" : 1,
+          "text" : "OLDELPASO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024853036063058,
+            "width" : 0.10439293831586838,
+            "x" : 0.3017427080995609,
+            "y" : 0.5477812692597409
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.12403380257742747,
+            "width" : 0.018452230840921402,
+            "x" : 0.04320081671688468,
+            "y" : 0.3711075594563332
+          },
+          "confidence" : 0.3,
+          "text" : "Cineh."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03397027424403598,
+            "width" : 0.06104651093482971,
+            "x" : 0.1293604652344124,
+            "y" : 0.4161358817436175
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2541383579799107,
+            "width" : 0.06491333246231079,
+            "x" : 0.12903078697454778,
+            "y" : 0.1499802001458449
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0600403431483677,
+            "width" : 0.15016688406467438,
+            "x" : 0.23303566562873412,
+            "y" : 0.3165219315912279
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08716854912894101,
+            "width" : 0.19573979079723358,
+            "x" : 0.25942260291691555,
+            "y" : 0.2572503424112389
+          },
+          "confidence" : 1,
+          "text" : "'n STUFF™"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.059447980608258955,
+            "width" : 0.059593021869659424,
+            "x" : 0.8473837216778157,
+            "y" : 0.22292993775673398
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04793434143066411,
+            "width" : 0.09765732288360596,
+            "x" : 0.828291720161561,
+            "y" : 0.17886785022570162
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.044601870945521704,
+            "width" : 0.115547314286232,
+            "x" : 0.23740978350202158,
+            "y" : 0.1050143873337025
+          },
+          "confidence" : 1,
+          "text" : "GLUTEN FREE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-0e3d0662c8b33015d11319cc66b89acde664be6ccec615283a73fa7d031d34de.png",
+      "width" : 2048
+    },
+    {
+      "height" : 560,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.18181818553379603,
+            "width" : 0.14999999105930328,
+            "x" : 0.23333333697034842,
+            "y" : 0.7727272700277148
+          },
+          "confidence" : 1,
+          "text" : "STAND"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.18439914158412385,
+            "width" : 0.18253320455551147,
+            "x" : 0.2680719175809399,
+            "y" : 0.6575360195325903
+          },
+          "confidence" : 1,
+          "text" : "n STUFF™"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.14583332879202704,
+            "width" : 0.06036446616053581,
+            "x" : 0.8473804092424827,
+            "y" : 0.5541666684815907
+          },
+          "confidence" : 1,
+          "text" : "20"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11642852510724755,
+            "width" : 0.09825050085783005,
+            "x" : 0.8277379691268862,
+            "y" : 0.44607240037032925
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.12336206436157227,
+            "width" : 0.1321282833814621,
+            "x" : 0.21636850199070795,
+            "y" : 0.2566954034091993
+          },
+          "confidence" : 1,
+          "text" : "M GLUTEN FREE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-87fa21a415869aa3a543c228d4b045b51c18e3c64e8d1da6e7036707cb136343.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1053,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.2855293230494693,
+            "width" : 0.5222670919393777,
+            "x" : 0.3446240713463485,
+            "y" : 0.11038580219059069
+          },
+          "confidence" : 1,
+          "text" : "OLDELPASO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.048000487702168804,
+            "width" : 0.17900815644489332,
+            "x" : 0.5194232636130813,
+            "y" : 0.05656743807160347
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-655af270022caa579b4c7a29c916d89b6b9e20140af3caf1d5f19d13b909632f.png",
+      "width" : 1863
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

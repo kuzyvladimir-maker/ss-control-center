@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "81205f90-337d-4c75-8dd6-c9a48870f08e",
+  "created_at": "2026-07-18T11:57:51.206Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SZ-ASPI-JFAT:text_count",
+  "sku": "SZ-ASPI-JFAT",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "e917fdfa-3d15-4fce-8b96-d7312c87371b",
+    "patch_sha256": "d3220183a3a70146679ff28096b9c666397003f58063ad14e6028ced07df1fe7",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "d3220183a3a70146679ff28096b9c666397003f58063ad14e6028ced07df1fe7",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "0f5a8b7cc1c014af9269445270e944f454cbfba685fec198bd3b0e9e4f29b56d"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "061f15093f9c46539de3407904f98548",
+    "issues": []
+  },
+  "sha256": "b10a914eac565f59387f803d7d86a775590eb8f5ebb4cd5a475d0e7328741c11"
+}

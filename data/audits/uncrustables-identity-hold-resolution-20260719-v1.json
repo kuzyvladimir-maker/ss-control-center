@@ -1,0 +1,273 @@
+{
+  "schema_version": "uncrustables-identity-hold-resolution/v1",
+  "immutable": true,
+  "read_only": true,
+  "created_at": "2026-07-19T04:13:51Z",
+  "scope": {
+    "cohort": "Amazon Uncrustables 164",
+    "skus": [
+      "SZ-ASPI-JFAT",
+      "TY-AST2-JE9P",
+      "VN-AS1A-D572"
+    ],
+    "network_reads": 0,
+    "external_mutations": 0
+  },
+  "decision_policy": {
+    "identity_truth": "The selected Bundle Factory recipe is the sellable-product truth. An Amazon catalog title or count may be accepted only when it describes that exact recipe.",
+    "patch_rule": "PATCH is safe only when the intended recipe and the ASIN catalog identity are the same product and the conflicting attribute can be aligned without creating a false flavor, size, packaging, or quantity claim.",
+    "recreate_rule": "Deleting and recreating with the same product identifier is not a remedy when that identifier already resolves to the wrong ASIN. A fallback recreation requires a valid unused GTIN or an approved GTIN-exemption path, preferably with a new seller SKU to prevent stale integrator mappings.",
+    "rollback_rule": "A rollback may restore an offer or ChannelMAX row only into quarantine. It must never automatically resume selling or repricing against a known false catalog identity."
+  },
+  "resolutions": [
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "intended_asin": "B0H776M5B5",
+      "current_amazon_product_type": "GROCERY",
+      "current_amazon_catalog": {
+        "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+        "unit_count": 24,
+        "unit_count_type": "Count",
+        "number_of_items_at_identity_decision": null,
+        "upc": "664554043946",
+        "ean": "0664554043946"
+      },
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+            "individual_units": 24
+          }
+        ]
+      },
+      "recipe_catalog_mismatch": null,
+      "historical_identity_residue": {
+        "stale_local_db_upc": "742259000034",
+        "authoritative_live_upc": "664554043946",
+        "stale_channelmax_asin": "B0H75VN18Z",
+        "authoritative_amazon_asin": "B0H776M5B5",
+        "interpretation": "The generated UPC pool collision was already healed on Amazon, but the older ChannelMAX row retained the collided ASIN."
+      },
+      "amazon_8541": {
+        "original_status": "FAILED",
+        "conflicting_attribute": "item_name",
+        "merchant_value": "Smucker's Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, 24 Count",
+        "amazon_value": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+        "resolution": "Aligned the title to the exact catalog wording because both descriptions represent the same six 4-count retail packs / 24 individual sandwiches.",
+        "current_status": "CLOSED",
+        "validated_submission_id": "55f32a08a7134df8bdfe907cea1c43ed",
+        "verification": {
+          "status": "VERIFIED",
+          "stable_post_write_reads": 3,
+          "verified_title": true,
+          "verified_unit_count": 24,
+          "verified_number_of_items": 24,
+          "verification_event_sha256": "90210bcf330f2a1a03af32056f45abe3c496c88cb8dde371483241c60111a805"
+        }
+      },
+      "current_hold_normalized": {
+        "status": "AMAZON_IDENTITY_RESOLVED_CHANNELMAX_STALE_ASIN_MAPPING",
+        "channelmax_item_id": "171030888",
+        "channelmax_observed_asin": "B0H75VN18Z",
+        "channelmax_expected_asin": "B0H776M5B5",
+        "channelmax_snapshot": {
+          "base_price": 132.12,
+          "floor": 119.68,
+          "ceiling": 145.33,
+          "quantity_ss": 444,
+          "repricing_model": "Default",
+          "repricing_status": "LIVE"
+        },
+        "note": "The latest ChannelMAX 164 artifact labels this row AMAZON_8541_PRODUCT_IDENTITY_BLOCKER. That label is stale/misclassified: Amazon 8541 is closed; the remaining defect is ChannelMAX retaining the historical collided ASIN."
+      },
+      "safe_resolution": {
+        "amazon_action": "NONE",
+        "amazon_patch": "ALREADY_APPLIED_AND_VERIFIED",
+        "amazon_delete_recreate": "PROHIBITED",
+        "amazon_support_case": "NOT_REQUIRED",
+        "channelmax_action": "Correct the existing ChannelMAX row from ASIN B0H75VN18Z to B0H776M5B5 through the supported row-edit/import path. If ChannelMAX treats ASIN as immutable, remove and reimport only the ChannelMAX inventory row; do not delete or recreate the Amazon listing.",
+        "release_gate": "Keep the SKU excluded from ChannelMAX price automation until a fresh exact readback proves SKU SZ-ASPI-JFAT, item_id or replacement item_id, and ASIN B0H776M5B5 are mapped together."
+      },
+      "rollback_prerequisites": [
+        "Preserve the complete ChannelMAX row snapshot for item_id 171030888, including ASIN, base/floor/ceiling prices, model, inventory, and status.",
+        "Preserve a fresh Amazon listing and Catalog Items snapshot for B0H776M5B5 before any ChannelMAX row edit.",
+        "Pause or exclude this SKU from ChannelMAX repricing while the mapping is changed and verified.",
+        "If a ChannelMAX reimport fails, restore the row snapshot only in quarantine; never resume repricing while it points to B0H75VN18Z."
+      ]
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "intended_asin": "B0H84WQRXB",
+      "current_amazon_product_type": "FOOD",
+      "current_amazon_catalog": {
+        "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+        "unit_count": 24,
+        "unit_count_type": "Count",
+        "number_of_items": 24,
+        "upc": "756441904864",
+        "ean": "0756441904864"
+      },
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+            "individual_units": 12,
+            "each_ounces": 2
+          },
+          {
+            "product": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "individual_units": 12,
+            "each_ounces": 2.8
+          }
+        ]
+      },
+      "recipe_catalog_mismatch": "Amazon describes all 24 sandwiches as standard 2 oz Raspberry + Mixed Berry and omits Morning Protein. The intended second half is the distinct Morning Protein Mixed Berry 2.8 oz variant. Aligning to Amazon's title would falsely describe the bundle.",
+      "amazon_8541": {
+        "status": "OPEN_IDENTITY_BLOCKER",
+        "conflicting_attribute": "item_name",
+        "submission_id": "0a42259f10824f6dad4a4a323f76e8ed",
+        "merchant_value": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Raspberry Spread and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count",
+        "amazon_value": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count"
+      },
+      "current_hold_normalized": {
+        "status": "AMAZON_CATALOG_VARIANT_IDENTITY_MISMATCH",
+        "channelmax_item_id": "171137196",
+        "channelmax_asin": "B0H84WQRXB",
+        "note": "ChannelMAX already points to the same ASIN. The hold is caused by the Amazon catalog variant identity, not a ChannelMAX ASIN mismatch."
+      },
+      "safe_resolution": {
+        "direct_patch": "UNSAFE_AND_REJECTED",
+        "align_to_amazon_catalog": "PROHIBITED_FALSE_VARIANT_AND_SIZE_CLAIM",
+        "first_choice": "Open a Selling Partner Support catalog correction/appeal for B0H84WQRXB with exact recipe, packaging, and reference-image evidence. Request a title correction that explicitly identifies 12 Raspberry 2 oz plus 12 Morning Protein Mixed Berry 2.8 oz sandwiches.",
+        "fallback_if_catalog_correction_is_denied": "Delete the seller contribution only after the destructive owner gate, then create a correctly identified ASIN using a valid unused GTIN or an approved GTIN exemption, preferably under a new seller SKU. Reusing UPC 756441904864 will rematch B0H84WQRXB and will not solve the defect.",
+        "release_gate": "Fresh Catalog Items evidence and a clean validation preview must prove the exact Morning Protein variant, both per-unit sizes, total count 24, and the final ASIN/SKU mapping before offer, media, or price automation is enabled."
+      },
+      "rollback_prerequisites": [
+        "Capture the complete Amazon listing contribution, catalog attributes, issue set, offer, media URLs, UPC/EAN, price/min/max/business price, and inventory before any support or recreation step.",
+        "Capture the complete ChannelMAX row for item_id 171137196 and pause/exclude the SKU from repricing and inventory synchronization.",
+        "Reserve and validate the unused GTIN or document the approved GTIN-exemption path before deleting the existing contribution.",
+        "Prepare a new SKU/ASIN mapping and verify that ChannelMAX and every downstream integrator cannot restore B0H84WQRXB automatically.",
+        "If recreation fails, any restored old offer must remain quarantined because the old catalog identity is known to be false for the intended recipe."
+      ]
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "intended_asin": "B0H82PKK18",
+      "current_amazon_product_type": "GROCERY",
+      "current_amazon_catalog": {
+        "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 8 oz, 4 ct - Pack of 45",
+        "unit_count": 180,
+        "unit_count_type": "Count",
+        "number_of_items": 45,
+        "upc": "756441902563"
+      },
+      "intended_recipe": {
+        "individual_sandwich_count": 45,
+        "components": [
+          {
+            "product": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+            "individual_units": 45
+          }
+        ]
+      },
+      "recipe_catalog_mismatch": "The intended sellable bundle contains 45 individual sandwiches. Amazon's title means 45 retail cartons of four and its unit_count is 180. Aligning to 180 would create a material false-quantity claim.",
+      "amazon_8541": {
+        "status": "OPEN_IDENTITY_BLOCKER",
+        "conflicting_attribute": "unit_count",
+        "submission_id": "0c6b0ea1d2f44b43a8c59c33dfba098e",
+        "merchant_value": 45,
+        "amazon_value": 180,
+        "checkpoint_event_sha256": "afb4da20d7b99d1bc0a30cbd149d3d20ea7a837f3c021292d75a44264e0eaa76"
+      },
+      "current_hold_normalized": {
+        "status": "AMAZON_CATALOG_QUANTITY_IDENTITY_MISMATCH",
+        "channelmax_item_id": "171130315",
+        "channelmax_asin": "B0H82PKK18",
+        "note": "The latest ChannelMAX 164 artifact labels this row CHANNELMAX_ASIN_IDENTITY_MISMATCH, but its captured ASIN equals the intended ASIN. The proven blocker is Amazon's 180-versus-45 catalog quantity conflict."
+      },
+      "safe_resolution": {
+        "direct_patch": "UNSAFE_AND_REJECTED",
+        "align_to_amazon_catalog": "PROHIBITED_FALSE_QUANTITY_CLAIM",
+        "first_choice": "Open a Selling Partner Support catalog correction/appeal for B0H82PKK18. Request unit_count 45 and title/count wording that describes 45 individual sandwiches rather than 45 four-count cartons.",
+        "fallback_if_catalog_correction_is_denied": "Delete the seller contribution only after the destructive owner gate, then create a correctly identified ASIN using a valid unused GTIN or an approved GTIN exemption, preferably under a new seller SKU. Reusing UPC 756441902563 will rematch B0H82PKK18 and will not solve the defect.",
+        "release_gate": "Fresh Catalog Items evidence plus a clean staged text/count preview must prove title quantity 45, unit_count 45 Count, number_of_items consistent with the sellable bundle, and the final ASIN/SKU mapping before offer, media, or repricing is enabled."
+      },
+      "rollback_prerequisites": [
+        "Capture the complete Amazon listing contribution, catalog attributes, issue set, offer, media URLs, UPC, price/min/max/business price, and inventory before any support or recreation step.",
+        "Capture the complete ChannelMAX row for item_id 171130315 and pause/exclude the SKU from repricing and inventory synchronization.",
+        "Reserve and validate the unused GTIN or document the approved GTIN-exemption path before deleting the existing contribution.",
+        "Prepare a new SKU/ASIN mapping and verify that ChannelMAX and every downstream integrator cannot restore B0H82PKK18 automatically.",
+        "If recreation fails, any restored old offer must remain quarantined because unit_count 180 is known to be false for the intended 45-sandwich recipe."
+      ]
+    }
+  ],
+  "execution_order": [
+    "Release SZ from the Amazon 8541 hold classification, but keep it held from ChannelMAX price writes until the stale ASIN mapping is corrected and read back.",
+    "Prepare evidence-backed Amazon support cases for TY and VN; do not attempt catalog-alignment PATCHes.",
+    "Use delete/recreate only as the owner-gated fallback after Amazon rejects the catalog corrections and only after a valid unused identifier path and rollback bundle exist."
+  ],
+  "evidence_manifest": [
+    {
+      "path": "data/audits/uncrustables-catalog-identity-decision-20260718T072304000Z-00afce6e6bf8.json",
+      "file_sha256": "205e195cfc148a3d8871b56c5471f5657e245d9840b5cf6430b7fd3d20d6731a"
+    },
+    {
+      "path": "data/audits/uncrustables-ledger-20260717T230418933Z-offline.json",
+      "file_sha256": "ba512ed927f9881c287d15899f21a99725e8432a4a2f4a736a15db18e7f16279"
+    },
+    {
+      "path": "data/audits/uncrustables-completion-matrix-20260718-v5/UCM-20260719T003537000Z-39f1ab5b5d36.json",
+      "file_sha256": "86715b3b2c314736592f1deda43f014a03f80defc6c5bf038ece2a7e5fc2eb58"
+    },
+    {
+      "path": "data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+      "file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49"
+    },
+    {
+      "path": "data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c/20260718T063757765Z-SZ-ASPI-JFAT_text_count-FAILED-67d45848-2127-465b-832f-c6978f793038.json",
+      "file_sha256": "1f456b6bae7139d1b0d115b3d10ec29b0953cb714631b5982b9f127a0985d7f2"
+    },
+    {
+      "path": "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260718T115750035Z-SZ-ASPI-JFAT_text_count-PREVIEW_VALID-be0aea07-8b51-4ab0-b53f-c560b4b4003b.json",
+      "file_sha256": "023a0978d3ab518d98e5a39084508fbb87eaca261a42ef7954a8be2ee090c0a5"
+    },
+    {
+      "path": "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260718T115755989Z-SZ-ASPI-JFAT_text_count-VERIFIED-3f9e696f-5779-4475-8bc8-a6546c90dd96.json",
+      "file_sha256": "9fff6c3c9b7800e489bf0242f72bdc2dd1b693373e0a1d0a4b85bc9a2c8c4903"
+    },
+    {
+      "path": "data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c/20260718T063859237Z-TY-AST2-JE9P_text_count-FAILED-4f8fa9bd-156d-481e-926d-4316ee2ee72f.json",
+      "file_sha256": "bef30a7481384fb1ed13cbfaef121d0f463f1dcd24db15410213b765c56f75a8"
+    },
+    {
+      "path": "data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c/20260718T064118064Z-VN-AS1A-D572_text_count-FAILED-7add80ea-35bf-44bb-a38f-6fd24db79710.json",
+      "file_sha256": "c7b352ae4cda67f2a2fe4281f13dbe3dc2e705c29857621d81a0a428ca1131ad"
+    },
+    {
+      "path": "data/audits/channelmax-live-snapshot-20260718T215936Z.json",
+      "file_sha256": "1f5f43122d35b2c422c6d1c92b6b0fc12cec8b1b4518536059250d89c1860427"
+    },
+    {
+      "path": "data/repairs/rollback/channelmax-canonical-164-20260719T024515583Z-6a2e9b3211b4/prewrite.json",
+      "file_sha256": "ad5481a12b1543f5508e37723844f0c78077d8991d3cb24d49818fc6a4f31da7"
+    },
+    {
+      "path": "data/repairs/rollback/channelmax-canonical-164-20260719T024515583Z-6a2e9b3211b4/postwrite.json",
+      "file_sha256": "94a4da2aad82caba9d127bd19fdf61490ff992b6e934ec8b38fd26dc94de6bc2"
+    },
+    {
+      "path": "data/repairs/generated/uncrustables-amazon-launch-aware-162-20260718-v10/URP-20260718T162541078Z-2af6e0a671b7.json",
+      "file_sha256": "5ca0ff37abed701253a5a735b7d4ba90dc980569d1503deadb73bd1a91514bf6"
+    },
+    {
+      "path": "scripts/seed-upc-pool-available.ts",
+      "file_sha256": "442e7c7963b49027c6b606fee0a1bb4438fe7ef8c4548cd6d589a61febee3212"
+    },
+    {
+      "path": "src/lib/bundle-factory/distribution/upc-burn.ts",
+      "file_sha256": "6244aca173907832e450ecf0210b4a12ec139c5582836dbc64da148f9df8743a"
+    }
+  ]
+}

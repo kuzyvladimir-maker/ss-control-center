@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a76e1d89-1c53-44d0-9a27-64600623a926",
+  "created_at": "2026-07-18T12:04:44.078Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WN-AS33-UFEA:text_count",
+  "sku": "WN-AS33-UFEA",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "27c566ed-ea2d-4889-a482-c2f5439de187",
+    "patch_sha256": "5572ba6aca38ca1962da785d3af564b4ed97beaea124c46ddec622e802c91cec",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "5572ba6aca38ca1962da785d3af564b4ed97beaea124c46ddec622e802c91cec",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "f6af9214b384e5492970b72eea0c9b57e7dccca570056d2894d925b635ee4321"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "7222bbe29fb9484c94640019c2b364c0",
+    "issues": []
+  },
+  "sha256": "34127e765711815f7e9540d28a52cd950335b240d37142f12f037d7216cc1312"
+}

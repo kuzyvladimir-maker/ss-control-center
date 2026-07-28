@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ae114e80-bb45-42f5-b1af-4416778f0b2a",
+  "created_at": "2026-07-18T08:46:21.012Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NV-AS86-HD44:text_count",
+  "sku": "NV-AS86-HD44",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "098bf42edaf3f86d9a3727b632ffda9790cf1924ea14c3acabcb12846322e13b",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "1c816af209ac40408079df4cee78f6ac",
+    "issues": []
+  },
+  "sha256": "12673c3064591155ab474c83ab4f3e46280959908886c55b4dfd92ea3f0dc8cd"
+}

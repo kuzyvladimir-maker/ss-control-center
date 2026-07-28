@@ -1,0 +1,117 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_588da23c761a734f248c",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "Pepperidge Farm",
+      "visible_product_text": "Whole Grain Thin Sliced 15 Grain",
+      "visible_variant_text": "Thin Sliced",
+      "visible_size_texts": [
+        "24 oz (1.37 lbs) (624g)"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 2,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "2 packages shown"
+      ],
+      "inner_contents_claims": [
+        "15 Grain",
+        "70 Calories Per Slice",
+        "6g Protein",
+        "4g Fiber",
+        "27g Whole Grains Per 2 Slices"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Pepperidge Farm visible on both packages",
+        "Whole Grain Thin Sliced 15 Grain on label",
+        "70 Calories Per Slice badge",
+        "NET WT 24 oz (1.37 lbs) (624g) on bottom of bag",
+        "Now Better Taste callout",
+        "6g Protein 4g Fiber 27g Whole Grains Per 2 Slices"
+      ],
+      "flags": [
+        "tiled_image_two_identical_packages"
+      ]
+    },
+    {
+      "image_id": "i_cb877836cd50e237bb45",
+      "visual_role": "ingredients",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "MADE FROM: WHOLE WHEAT FLOUR, WATER, WHEAT GLUTEN, SUGAR, SUNFLOWER SEEDS...",
+        "CONTAINS: WHEAT, MILK, SOY.",
+        "Contains bioengineered food ingredients."
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_510c11513f3ff48363dd",
+      "visual_role": "nutrition",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "2 Slices (52g)"
+      ],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "12 Servings Per Container",
+        "Serving Size 2 Slices (52g)"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Nutrition Facts panel",
+        "12 Servings Per Container",
+        "Serving Size 2 Slices (52g)",
+        "Calories 140",
+        "Total Fat 3g",
+        "Sodium 140mg",
+        "Total Carbohydrate 24g",
+        "Protein 7g"
+      ],
+      "flags": []
+    }
+  ]
+}

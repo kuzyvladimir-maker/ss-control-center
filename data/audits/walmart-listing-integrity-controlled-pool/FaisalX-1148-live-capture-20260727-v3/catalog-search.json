@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "itemId": "15144369671",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png"
+        }
+      ],
+      "price": {
+        "amount": "30.0",
+        "currency": "USD"
+      },
+      "description": "<li>QUALITY INGREDIENTS: No colors or flavors from artificial sources, and no high-fructose corn syrup</li><li>PERFECT BUNS: Perfect for your favorite hot dogs, sausages, or even lobster rolls</li>",
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "brand": "Pepperidge Farm",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00742132418239"
+      ],
+      "properties": {
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Buns",
+          "Hot Dog Buns"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

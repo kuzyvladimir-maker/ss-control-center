@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "932b7c50-6f68-4925-be1b-3c19087cc204",
+  "created_at": "2026-07-18T09:25:49.033Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AC-AS4J-B64F:offer",
+  "sku": "AC-AS4J-B64F",
+  "kind": "OFFER",
+  "status": "FAILED",
+  "detail": {
+    "error": "Amazon submission AC-AS4J-B64F:offer is stable but non-desired. It remains open because a later apply cannot be excluded; no fallback or automatic resubmission was attempted."
+  },
+  "sha256": "10b043b5408c062c348b17cd6e307ed0d29719507e620b42e2e690cca9a33868"
+}

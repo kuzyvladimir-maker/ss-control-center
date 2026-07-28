@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1183",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "157F37H8RG4R",
+      "upc": "684611898937",
+      "gtin": "00684611898937",
+      "productName": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+      "shelf": "Home Page/Food/Bakery & Bread/Buns/Hot Dog Buns",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 44.29
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Faisalxbread049",
+      "variantGroupInfo": {
+        "isPrimary": false,
+        "groupingAttributes": [
+          {
+            "name": "number_of_pieces",
+            "value": "6"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

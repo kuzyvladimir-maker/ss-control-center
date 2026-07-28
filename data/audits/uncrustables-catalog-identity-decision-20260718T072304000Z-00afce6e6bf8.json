@@ -1,0 +1,431 @@
+{
+  "schema_version": "uncrustables-catalog-identity-decision/v1",
+  "immutable": true,
+  "read_only": true,
+  "created_at": "2026-07-18T07:23:04.000Z",
+  "source_artifacts": {
+    "catalog_api_evidence": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+      "file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+      "body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+      "captured_at": "2026-07-18T06:52:57.698Z"
+    },
+    "validation_preview_source_plan": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/generated/uncrustables-final-164-20260718-v5/URP-20260718T060953141Z-480ed383f696.json",
+      "internal_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+      "file_sha256": "15d85932f70871a41b39f33d9290f840e6bbdb50c498964b01fed355a23f4957"
+    },
+    "validation_preview_checkpoint_set": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c",
+      "files": 612,
+      "sha256": "c5ae519542f879694fcf32e0250bcaa0d6ac0bb22de81fd299075c9b4bba1639"
+    },
+    "desired_manifest": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/uncrustables-gallery-nonmedia-merged-desired-20260718-v4.json",
+      "file_sha256": "f7e02809067844330baf60f8cc1b886d15ab6154d72eff77b7b3a56715629dea",
+      "body_sha256": "82d59b1d3795f7b058204c4ca7848a4372e61fc1559799aac933cb67bf120e61"
+    },
+    "source_ledger": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+      "file_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+    },
+    "donor_enrichment": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/uncrustables-donor-enrichment-20260717.json",
+      "file_sha256": "999348227982c169477ad13fb806ddba42fb15cb68397308e4289a9cbbcee9f9"
+    },
+    "vn_unit_count_checkpoint": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c/20260718T064118064Z-VN-AS1A-D572_text_count-FAILED-7add80ea-35bf-44bb-a38f-6fd24db79710.json",
+      "file_sha256": "c7b352ae4cda67f2a2fe4281f13dbe3dc2e705c29857621d81a0a428ca1131ad",
+      "event_sha256": "afb4da20d7b99d1bc0a30cbd149d3d20ea7a837f3c021292d75a44264e0eaa76"
+    }
+  },
+  "scope": {
+    "cohort_skus": 164,
+    "align_safe": 5,
+    "blocked": 2,
+    "intended_final_apply_scope": 162,
+    "final_apply_exclusions": [
+      "TY-AST2-JE9P",
+      "VN-AS1A-D572"
+    ]
+  },
+  "decisions": [
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "decision": "ALIGN_SAFE",
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+            "qty": 12
+          },
+          {
+            "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "qty": 12
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+        "unit_count": {
+          "value": 24,
+          "type": "Count"
+        },
+        "number_of_items": 24,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441904598"
+          },
+          {
+            "type": "upc",
+            "value": "756441904598"
+          }
+        ]
+      },
+      "same_identity": true,
+      "rationale": "Both intended components are 2.8 oz; exact flavors, total 24, ASIN, UPC/EAN and Catalog API unit/count match. The shortened catalog wording omits Morning only, while the 2.8-oz format distinguishes the reviewed Morning Protein mixed-berry donor from the separate 2-oz standard donor.",
+      "required_remediation": "Align only text_count.title to the exact catalog title; preserve all other reviewed customer fields.",
+      "evidence": {
+        "policy": "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1",
+        "catalog_evidence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+        "catalog_evidence_file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+        "catalog_evidence_body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+        "catalog_evidence_row_sha256": "b1307d78e5ce923de418edaa4824709dbc07e0f1b73d13800623b1b9704f91c9",
+        "catalog_api_identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441904598"
+          },
+          {
+            "type": "upc",
+            "value": "756441904598"
+          }
+        ],
+        "exact_unit_count": 24,
+        "exact_number_of_items": 24,
+        "recipe_components_sha256": "1db6189643e0cdf0f4047487b8be5d5da79d59c870fdc2c13c585ed71ff97567",
+        "generic_rejection": "Generic strict parser intentionally rejected this exact exceptional wording."
+      }
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "decision": "ALIGN_SAFE",
+      "intended_recipe": {
+        "individual_sandwich_count": 30,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "qty": 30
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+        "unit_count": {
+          "value": 30,
+          "type": "Count"
+        },
+        "number_of_items": 30,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441901962"
+          },
+          {
+            "type": "upc",
+            "value": "756441901962"
+          }
+        ]
+      },
+      "same_identity": true,
+      "rationale": "Catalog title states Morning Protein Mixed Berry, 2.8 oz and 30 Count exactly; generic validation rejected only the absence of the literal word sandwich.",
+      "required_remediation": "Align only text_count.title to the exact catalog title; preserve all other reviewed customer fields.",
+      "evidence": {
+        "policy": "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1",
+        "catalog_evidence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+        "catalog_evidence_file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+        "catalog_evidence_body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+        "catalog_evidence_row_sha256": "6ef266fb1c1abaa573b2eeae36f811f3db56be96171aec242c0267b40240da88",
+        "catalog_api_identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441901962"
+          },
+          {
+            "type": "upc",
+            "value": "756441901962"
+          }
+        ],
+        "exact_unit_count": 30,
+        "exact_number_of_items": 30,
+        "recipe_components_sha256": "d6bead2c6692ca6f39e8d58f604760b8247491f0c6a08dead7ed3ffb56bddec7",
+        "generic_rejection": "Generic strict parser intentionally rejected this exact exceptional wording."
+      }
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "decision": "ALIGN_SAFE",
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+            "qty": 24
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+        "unit_count": {
+          "value": 24,
+          "type": "Count"
+        },
+        "number_of_items": null,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0664554043946"
+          },
+          {
+            "type": "upc",
+            "value": "664554043946"
+          }
+        ]
+      },
+      "same_identity": true,
+      "rationale": "The selected recipe is 24 blackberry sandwiches sourced as six 4-count retail packs; catalog title explicitly states Pack of 6 and 24 Sandwiches Total, and Catalog API unit_count is 24 Count. Live UPC 664554043946 is authoritative over the stale collided local UPC.",
+      "required_remediation": "Align only text_count.title to the exact catalog title; preserve all other reviewed customer fields.",
+      "evidence": {
+        "policy": "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1",
+        "catalog_evidence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+        "catalog_evidence_file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+        "catalog_evidence_body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+        "catalog_evidence_row_sha256": "133f947f3d38ccfe81c92b585cf85eea29d2e8094e163275502b37e52688809e",
+        "catalog_api_identifiers": [
+          {
+            "type": "ean",
+            "value": "0664554043946"
+          },
+          {
+            "type": "upc",
+            "value": "664554043946"
+          }
+        ],
+        "exact_unit_count": 24,
+        "exact_number_of_items": null,
+        "recipe_components_sha256": "07279ea01794a3c090cc46e81bd042554554a9f21171184f5d2af502e686f93b",
+        "generic_rejection": "Generic strict parser intentionally rejected this exact exceptional wording."
+      }
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "decision": "BLOCK",
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+            "qty": 12
+          },
+          {
+            "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "qty": 12
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+        "unit_count": {
+          "value": 24,
+          "type": "Count"
+        },
+        "number_of_items": 24,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441904864"
+          },
+          {
+            "type": "upc",
+            "value": "756441904864"
+          }
+        ]
+      },
+      "same_identity": false,
+      "block_reason": "Catalog title claims 2 oz Each and omits Morning Protein, but 12 of 24 intended sandwiches are the distinct 22.4oz/8ct (2.8 oz each) Morning Protein mixed-berry variant; a separate reviewed 8oz/4ct (2 oz each) standard mixed-berry donor exists.",
+      "required_remediation": [
+        "Do not align to the current catalog title.",
+        "Correct/appeal the Amazon catalog title so the mixed-berry component is Morning Protein 2.8 oz, or create a correctly identified ASIN with a valid unused GTIN.",
+        "Capture fresh Catalog Items evidence and obtain a clean validation preview before adding TY to an apply plan."
+      ],
+      "evidence": {
+        "catalog_evidence_row_sha256": "2bce538949959de861919826427cd38d51eb20190a2d732ed645fed95363d8f3",
+        "donor_enrichment_file_sha256": "999348227982c169477ad13fb806ddba42fb15cb68397308e4289a9cbbcee9f9"
+      }
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "decision": "ALIGN_SAFE",
+      "intended_recipe": {
+        "individual_sandwich_count": 24,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+            "qty": 12
+          },
+          {
+            "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+            "qty": 12
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+        "unit_count": {
+          "value": 24,
+          "type": "Count"
+        },
+        "number_of_items": 24,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441905670"
+          },
+          {
+            "type": "upc",
+            "value": "756441905670"
+          }
+        ]
+      },
+      "same_identity": true,
+      "rationale": "Both intended protein components are 2.8 oz; exact apple-cinnamon and mixed-berry flavors, total 24, ASIN, UPC/EAN and unit/count match. Protein marketing words are omitted but no incompatible variant or weight is introduced.",
+      "required_remediation": "Align only text_count.title to the exact catalog title; preserve all other reviewed customer fields.",
+      "evidence": {
+        "policy": "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1",
+        "catalog_evidence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+        "catalog_evidence_file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+        "catalog_evidence_body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+        "catalog_evidence_row_sha256": "12043fc040be14818e06dd8fdd4ac21212efd84d4d3bac5dd332692e20578750",
+        "catalog_api_identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441905670"
+          },
+          {
+            "type": "upc",
+            "value": "756441905670"
+          }
+        ],
+        "exact_unit_count": 24,
+        "exact_number_of_items": 24,
+        "recipe_components_sha256": "b99c9a4d3ef436dbf35d393afa416c0c056c09393aaff1b15aea495160f03110",
+        "generic_rejection": "Generic strict parser intentionally rejected this exact exceptional wording."
+      }
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "decision": "BLOCK",
+      "intended_recipe": {
+        "individual_sandwich_count": 45,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+            "qty": 45
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 8 oz, 4 ct - Pack of 45",
+        "unit_count": {
+          "value": 180,
+          "type": "Count"
+        },
+        "number_of_items": 45,
+        "identifiers": [
+          {
+            "type": "upc",
+            "value": "756441902563"
+          }
+        ]
+      },
+      "same_identity": false,
+      "block_reason": "The intended recipe is 45 individual sandwiches, while the catalog title multiplies a 4-count retail carton by 45 and the catalog unit_count is 180. Aligning to 180 would preserve a false sellable quantity.",
+      "required_remediation": [
+        "Never align or submit unit_count 180 for the intended 45-sandwich bundle.",
+        "Correct/appeal Amazon catalog unit_count to 45, or create a correctly identified ASIN with a valid unused GTIN.",
+        "Run a separately staged text/count validation preview and capture fresh Catalog Items evidence before adding VN to an apply plan."
+      ],
+      "evidence": {
+        "checkpoint_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/final-validation-preview-full-diagnostic-20260718-v5/480ed383f6963ac4983c/20260718T064118064Z-VN-AS1A-D572_text_count-FAILED-7add80ea-35bf-44bb-a38f-6fd24db79710.json",
+        "checkpoint_file_sha256": "c7b352ae4cda67f2a2fe4281f13dbe3dc2e705c29857621d81a0a428ca1131ad",
+        "checkpoint_event_sha256": "afb4da20d7b99d1bc0a30cbd149d3d20ea7a837f3c021292d75a44264e0eaa76",
+        "submission_id": "0c6b0ea1d2f44b43a8c59c33dfba098e"
+      }
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "decision": "ALIGN_SAFE",
+      "intended_recipe": {
+        "individual_sandwich_count": 90,
+        "components": [
+          {
+            "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+            "qty": 90
+          }
+        ]
+      },
+      "amazon_catalog": {
+        "title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, No Crust, 1.8 oz, Pack of 90",
+        "unit_count": {
+          "value": 90,
+          "type": "Count"
+        },
+        "number_of_items": 90,
+        "identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441902969"
+          },
+          {
+            "type": "upc",
+            "value": "756441902969"
+          }
+        ]
+      },
+      "same_identity": true,
+      "rationale": "Catalog title identifies individually wrapped plain peanut-butter sandwiches at 1.8 oz and Pack of 90; Catalog API unit_count and number_of_items are both 90, so Pack of 90 denotes individual sandwiches rather than 90 four-count cartons.",
+      "required_remediation": "Align only text_count.title to the exact catalog title; preserve all other reviewed customer fields.",
+      "evidence": {
+        "policy": "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1",
+        "catalog_evidence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+        "catalog_evidence_file_sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+        "catalog_evidence_body_sha256": "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+        "catalog_evidence_row_sha256": "a4b1286f6f9db7149e297f74470262ca4319a307bde9b47b7d679e61b8871e75",
+        "catalog_api_identifiers": [
+          {
+            "type": "ean",
+            "value": "0756441902969"
+          },
+          {
+            "type": "upc",
+            "value": "756441902969"
+          }
+        ],
+        "exact_unit_count": 90,
+        "exact_number_of_items": 90,
+        "recipe_components_sha256": "1733e201c26c3d1c2fc58c57f1249d2975d272cf806345ed419b0f72aae44c6e",
+        "generic_rejection": "Generic strict parser intentionally rejected this exact exceptional wording."
+      }
+    }
+  ],
+  "body_sha256": "00afce6e6bf815bd92f96f3c5a3f96a0bb9e7804dd6476255df8292d9d06c7f4"
+}

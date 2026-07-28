@@ -1,0 +1,106 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_eb3007f5edb024f7ff01",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "Sara Lee",
+      "visible_product_text": "Artesano bakery bread",
+      "visible_variant_text": "BRIOCHE",
+      "visible_size_texts": [
+        "NET 1 LB 4 OZ (567g)"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 7,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "NET 1 LB 4 OZ (567g)"
+      ],
+      "inner_contents_claims": [
+        "Made with Real Butter, Sea Salt and a Touch of Milk",
+        "No High Fructose Corn Syrup"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Sara Lee",
+        "Artesano bakery bread",
+        "BRIOCHE",
+        "NET 1 LB 4 OZ (567g)",
+        "No High Fructose Corn Syrup",
+        "Made with Real Butter, Sea Salt and a Touch of Milk",
+        "7 repeated identical bread bags visible in tiled layout"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_c7e5e3b808289288b0d1",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "Sara Lee",
+      "visible_product_text": "Artesano bakery bread",
+      "visible_variant_text": "the Original",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "some",
+      "background": "lifestyle",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Sara Lee",
+        "Artesano bakery bread",
+        "the Original",
+        "ALWAYS BAKED WITHOUT ARTIFICIAL COLORS, FLAVORS & PRESERVATIVES",
+        "MAKE THE ROUTINE, Remarkable.",
+        "single bag shown on dark wood table background"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_101913451c4cc1d7a404",
+      "visual_role": "lifestyle",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "lifestyle",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "FARM-TO-TABLE GRILLED CHEESE",
+        "food/serving suggestion image showing a grilled cheese sandwich",
+        "no retail package visible"
+      ],
+      "flags": []
+    }
+  ]
+}

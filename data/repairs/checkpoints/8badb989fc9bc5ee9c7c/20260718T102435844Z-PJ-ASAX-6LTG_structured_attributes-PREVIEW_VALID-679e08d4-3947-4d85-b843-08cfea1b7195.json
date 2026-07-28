@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "679e08d4-3947-4d85-b843-08cfea1b7195",
+  "created_at": "2026-07-18T10:24:35.844Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PJ-ASAX-6LTG:structured_attributes",
+  "sku": "PJ-ASAX-6LTG",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "0f9f5a669f807d0a5833e57fe6edb3ca58504c281b6b3cf8e5ec9a7f0a79717c",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "ae0b30e56b5d4cbebe6d90bb71459e20",
+    "issues": []
+  },
+  "sha256": "21a30e3e1f917ba99a544de09645960a5838d50b8f26ca315cebc334e3a81b0c"
+}

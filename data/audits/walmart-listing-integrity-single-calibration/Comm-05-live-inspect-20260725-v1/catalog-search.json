@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "itemId": "5410523365",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png"
+        }
+      ],
+      "price": {
+        "amount": "21.98",
+        "currency": "USD"
+      },
+      "description": "<li>Soft White Hoagie Rolls topped with sesame seeds</li><li>No color from artificial sources, no high fructose corn syrup</li><li>Fill these delicious white bread rolls with your favorite warm or</li>",
+      "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "brand": "Pepperidge Farm",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00364760754666"
+      ],
+      "properties": {
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "Pepperidge Farm Bread"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

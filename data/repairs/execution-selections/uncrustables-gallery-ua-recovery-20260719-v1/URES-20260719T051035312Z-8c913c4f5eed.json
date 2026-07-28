@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-19T05:10:35.312Z",
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json",
+    "sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e"
+  },
+  "requested_skus": [
+    "UA-ASAO-RE7Q"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "UA-ASAO-RE7Q"
+  ],
+  "selected_action_ids": [
+    "UA-ASAO-RE7Q:media"
+  ],
+  "selected_actions": 1,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "sha256": "8c913c4f5eedef32eaa132a84e2c3cde5e056fdd93b82f97c874c774eac8be40",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-8C913C4F5EEDEF32"
+}

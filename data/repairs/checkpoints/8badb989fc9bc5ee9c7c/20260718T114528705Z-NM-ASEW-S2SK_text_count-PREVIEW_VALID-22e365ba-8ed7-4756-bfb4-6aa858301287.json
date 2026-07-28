@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "22e365ba-8ed7-4756-bfb4-6aa858301287",
+  "created_at": "2026-07-18T11:45:28.705Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NM-ASEW-S2SK:text_count",
+  "sku": "NM-ASEW-S2SK",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "830747c8e9bd0d4309b6ffaccd9b238c42c780afb8954b91b0d8ceaec8f93200",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "d88b6d54df364265bef17cd42e285458",
+    "issues": []
+  },
+  "sha256": "e7cce1bb8664860ea0a399084536d476c61b054a26c47abec849e7f1ad7eac8f"
+}

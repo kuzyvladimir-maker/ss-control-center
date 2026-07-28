@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4cccc607-8fc6-4b65-a30d-504a18f861b6",
+  "created_at": "2026-07-19T03:11:33.447Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "FENCE_RELEASE_ARMED",
+  "detail": {
+    "disposition_proposal_sha256": "83be0aee88e7b0465a6a2c44f32eaf64c259e999fd94a4db40cbb8daabdf279a",
+    "disposition_terminal_event_id": "61625eb3-8ab4-41e9-8708-d6e7f13bf6fe",
+    "fence_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/runtime-locks/uncrustables-amazon-us/pending-mutation-fence.json",
+    "fence_file_sha256": "d44213f9d6f8dd288db62e73c606c6c1fac3956daada5cc75cb4488f2f498c13",
+    "explicit_confirmation": "RELEASE-EXTERNAL-OVERWRITE-FENCE-83BE0AEE88E7B0465A6A",
+    "global_pending_submissions": 0,
+    "amazon_calls_performed": 0,
+    "channelmax_calls_performed": 0
+  },
+  "sha256": "0da894ecce15d8dc6b0a6f41576b319b48229da9c46341428b48132f9c263cd7"
+}

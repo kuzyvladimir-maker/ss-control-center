@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "440f7e79-a096-4fd4-b2cd-1f531b2139dc",
+  "created_at": "2026-07-18T12:07:36.305Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YG-ASH6-BCXX:text_count",
+  "sku": "YG-ASH6-BCXX",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "e1e692a1-2acb-476c-8792-20901d2b145d",
+    "patch_sha256": "f2e2a739f37916201addb36586c302192876fb78312a3d6885027dbbcbaf80fc",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f2e2a739f37916201addb36586c302192876fb78312a3d6885027dbbcbaf80fc",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "aefa47adbcff4d8d4f02c5d3e53d46a143678bf1d5d044fde8db9fe5ef768fb6"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "8a48bd52b052459ea34e4326d108c64e",
+    "issues": []
+  },
+  "sha256": "1cc3b9affdddd5c630ef09e1def00726626ac9844db2f53b41d973f6b45af92f"
+}

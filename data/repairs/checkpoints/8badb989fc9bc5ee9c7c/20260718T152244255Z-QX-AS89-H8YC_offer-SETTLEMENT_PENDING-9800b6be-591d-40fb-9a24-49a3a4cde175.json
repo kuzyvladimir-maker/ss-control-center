@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9800b6be-591d-40fb-9a24-49a3a4cde175",
+  "created_at": "2026-07-18T15:22:44.255Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "OFFER_SETTLE_ONLY",
+    "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+    "submitted_at": "2026-07-18T15:13:30.520Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ],
+      "before_path_state_sha256": "e995c412b1ec4b1aa9629c226537cd75208fed3092df5062b6d47d540e134468"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 120000,
+    "request_delay_ms": 200,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "f4aae0b0be74baffa69a35a9c88107afa29f55ff287de155852eae56ea2ae39a"
+}

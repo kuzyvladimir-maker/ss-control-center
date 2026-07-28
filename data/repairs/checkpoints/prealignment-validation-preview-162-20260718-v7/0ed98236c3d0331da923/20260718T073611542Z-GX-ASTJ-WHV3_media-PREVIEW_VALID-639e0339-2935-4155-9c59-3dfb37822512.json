@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "639e0339-2935-4155-9c59-3dfb37822512",
+  "created_at": "2026-07-18T07:36:11.542Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "GX-ASTJ-WHV3:media",
+  "sku": "GX-ASTJ-WHV3",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "aa097f7e8fbb77e02beecce86223c9b6b5b4eaee2156ef5ef6e03e068d6191d0",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "eb4af3e697e8419c9a9c89464d0e2048",
+    "issues": []
+  },
+  "sha256": "62d0d5299d8ed07e18d9e0eb6c00d74769b0d6d97027ab55f05e648787fbc962"
+}

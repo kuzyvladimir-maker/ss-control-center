@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-27T13:08:04.127Z",
+  "target": {
+    "sku": "FaisalX-1148",
+    "item_id": "15144369671"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-1148",
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "upc": "742132418239",
+      "gtin14": "00742132418239",
+      "wpid": "478W7UD0DCQ9",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "15144369671",
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "main_image_url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "15144369671",
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "identity_evidence": [
+        "product.item_id=15144369671",
+        "product.product_url=15144369671"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-1148",
+        "seller.ItemResponse[0].sku=FaisalX-1148",
+        "seller.ItemResponse[0].upc=742132418239",
+        "seller.normalized_gtin14=00742132418239",
+        "seller.wpid_not_itemId=478W7UD0DCQ9",
+        "catalog.items[0].standardUpc~=00742132418239;itemId=15144369671",
+        "catalog.unique_numeric_public_itemId=15144369671"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=15144369671",
+        "product.product_url=15144369671"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "c31d509f956652f9addf6db26ee45f5e1b657157f40b6798939def1719850d5d",
+    "catalog_search_payload_canonical_sha256": "a4ebd3e9cb12850b5fa0259165c275b4d56d018f84035d3c9884d82bb370d7c7",
+    "resolution_canonical_sha256": "b68b8012f5e2fa2b26b3a1865f5accc0936070690c27f8abc8c0a5e2049a7058",
+    "buyer_payload_canonical_sha256": "24e27eced1d601cc358c645dccd3c32be73796e2f5f2f81eb21359d5603000d9"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png",
+      "final_url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png",
+      "sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+      "bytes": 438179,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/36d06a94-ca37-49c9-a800-58f094fbedb3.e84cb21e914b1066caa0619dd212be36.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/36d06a94-ca37-49c9-a800-58f094fbedb3.e84cb21e914b1066caa0619dd212be36.jpeg",
+      "sha256": "74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a",
+      "bytes": 245582,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/eb4f7403-9575-4d86-950c-36aa63b4429f.73ebbdf1b8b371e86efa07f5c7c9aeb1.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/eb4f7403-9575-4d86-950c-36aa63b4429f.73ebbdf1b8b371e86efa07f5c7c9aeb1.jpeg",
+      "sha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4",
+      "bytes": 346437,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260727T130804Z-97df58bab5e7",
+  "body_sha256": "97df58bab5e753bf2857c4b712f3b9a0abb30638aeb7df288bebfe09d7a5592f"
+}

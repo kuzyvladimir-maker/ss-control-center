@@ -1,0 +1,51 @@
+{
+  "schema": "walmart-source-intake-request-manifest/v1",
+  "artifact": "exact-v6",
+  "created_at_utc": "2026-07-19T23:13:20.842Z",
+  "purpose": "Disposition evidence: exact v6-filtered read-only listing of Walmart report requests for the quarantined ambiguous create window 2026-07-19T03:55:00Z..04:00:00Z (attempt at 03:57:17Z).",
+  "operator": "Claude BF-Images (read-only evidence operator)",
+  "store_account": {
+    "store_index": 1,
+    "seller_id": "10001624309",
+    "account_name": "SIRIUS TRADING INTERNATIONAL LLC",
+    "marketplace": "WALMART_US"
+  },
+  "planned_request": {
+    "method": "GET",
+    "base_url": "https://marketplace.walmartapis.com",
+    "endpoint": "/v3/reports/reportRequests",
+    "query_ordered": [
+      {
+        "reportType": "ITEM"
+      },
+      {
+        "reportVersion": "v6"
+      },
+      {
+        "src": "API"
+      },
+      {
+        "requestSubmissionStartDate": "2026-07-19T03:55:00Z"
+      },
+      {
+        "requestSubmissionEndDate": "2026-07-19T04:00:00Z"
+      }
+    ],
+    "full_url": "https://marketplace.walmartapis.com/v3/reports/reportRequests?reportType=ITEM&reportVersion=v6&src=API&requestSubmissionStartDate=2026-07-19T03%3A55%3A00Z&requestSubmissionEndDate=2026-07-19T04%3A00%3A00Z",
+    "wm_qos_correlation_id": "e79ba0dc-bd37-4323-9448-1e9a4b2a3df3"
+  },
+  "network_budget": {
+    "oauth_token_post_max": 1,
+    "report_requests_get": 1,
+    "report_create_post": 0,
+    "retries": 0,
+    "cursor_calls": 0,
+    "on_non_200": "save exact response + metadata, stop without retry"
+  },
+  "external_effects_pledge": {
+    "model_calls": 0,
+    "db_writes": 0,
+    "walmart_content_writes": 0,
+    "quarantined_session_touched": false
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "01562c50-278d-452e-9c9c-7653512c5e01",
+  "created_at": "2026-07-18T11:56:24.737Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SG-ASLB-M2DG:text_count",
+  "sku": "SG-ASLB-M2DG",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "c35011de-02e5-468e-b2f1-c718e9c59e51",
+    "patch_sha256": "2b5e7256216185020984fcd5d8fca98b757d0974c127b37ef46839e665bedbe4",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "2b5e7256216185020984fcd5d8fca98b757d0974c127b37ef46839e665bedbe4",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "17a7d1b6506f1b281b16e9baefd8cc38804b81744529f7791a6703a9df3e744a"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "14264d4b1b0747b39034729181e5bbd1",
+    "issues": []
+  },
+  "sha256": "6327d02e8eaadbb52ddb8ccd7e978c38e21010b569daa3b4159b99c4b2b481a1"
+}

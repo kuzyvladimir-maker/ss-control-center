@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9f0f40a6-2c35-4b7a-8c46-aa31497e93c7",
+  "created_at": "2026-07-19T04:48:51.606Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "LU-ASK0-LSDF:media",
+  "sku": "LU-ASK0-LSDF",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "932f96dd-43ab-4be7-995b-c4876d97cc5f",
+    "patch_sha256": "42a995fb97873f86a3ae3fd6afbfa136153d0e756a5590148c36ecc1120fe950",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "42a995fb97873f86a3ae3fd6afbfa136153d0e756a5590148c36ecc1120fe950",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "914104f2884f33d52d185df3c82889f9b2a4bc272c318207de4032f64f78f335"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "077fc43b033f449d9b47581e68086fa9",
+    "issues": []
+  },
+  "sha256": "aaee274d46cd0cfbb505816ab049aaaa48f0219bd0c68f3fb2eb552a7ed7d542"
+}

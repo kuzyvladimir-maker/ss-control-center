@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9c1d83b5-56f6-45e9-85a9-0d99c39ad4f6",
+  "created_at": "2026-07-19T04:59:00.746Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VK-ASSB-3YFK:media",
+  "sku": "VK-ASSB-3YFK",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "a143c6a6-8642-4e58-9dc7-e690fe3412f3",
+    "stable_post_write_reads": 3,
+    "polling_reads": 18,
+    "polling_sweep": 18,
+    "elapsed_ms": 511695.270083,
+    "path_state_sha256": "0dd94f7f1da72281d9acf1b179db4711e56b7cdbd69230cc1c8123d260707925",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/2df2117f82786ad366bc4ca6f3cea92c01534f9fac98591adb10d077531c46b0.png",
+        "actual": "https://m.media-amazon.com/images/I/51aj-guD66L.jpg"
+      }
+    ]
+  },
+  "sha256": "b4209291afa82d7fe06e00a9b9beaec17be8fa1057b636d42fd5cdd8bed67d61"
+}

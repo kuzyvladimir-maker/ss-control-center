@@ -1,0 +1,72 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-25T21:05:42.906Z",
+  "listing_key": "walmart:1:FaisalX-1208",
+  "inputs": {
+    "product_truth_file_sha256": "1fb1dd48edc87f2275970157fc745da7300f20c2534405f70236920954419b8d",
+    "buyer_snapshot_file_sha256": "ba91dfb060a1df61abb53037f0259a10a893d76daa4d70fa40de03a2fb62c900",
+    "buyer_pdp_file_sha256": "972f21c6d72f14243043310b1e84d56f4eb9d7f310ec78e8d121766a5ea7d78f",
+    "observations_file_sha256": "d81e72576b512c669a9f59699cdc8e6753da8b851c24de6d0a43ccd7212b193f",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "40fa8eb6332b3b60df9434cb28d179561432c38c84384cb86ceaf7397b8d6894",
+        "bytes": 415240
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "28180c607aad6394bfb8c3e0ac6c2983ba5c500eb4ef02db80a0f9a8af73ef6e",
+        "bytes": 440007
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "510cb7b591ab00daa6a2d3424c2ba7cecc760707b0392c5bb3951bf00fa00122",
+        "bytes": 275025
+      }
+    ]
+  },
+  "outcome": {
+    "status": "SOURCE_REQUIRED",
+    "blockers": [
+      "LISTING_IMPROVEMENT_NOT_READY",
+      "PRODUCT_TRUTH:CURRENT_SCOPED_SKU_COST_MISSING",
+      "PRODUCT_TRUTH:LISTING_SCOPE_NOT_REGISTERED",
+      "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1208",
+    "captured_at": "2026-07-25T21:04:43.817Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 2,
+      "phrases": [
+        "Pack of 2"
+      ]
+    },
+    "verdict": "NO_CONTRADICTION_FOUND",
+    "findings": [],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "1a2140fd2199423628aafce504916ee211a542de1c651a813f018673e8e43ed1"
+  },
+  "detector_input": null,
+  "detector_report": null,
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "94f18060901e849413e2623e24506feb5eb680ab2fa05e4f2388e2b9607c07c1"
+}

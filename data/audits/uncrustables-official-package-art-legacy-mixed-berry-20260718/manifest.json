@@ -1,0 +1,60 @@
+{
+  "schema_version": "uncrustables-official-package-art-supplement/v1",
+  "immutable": true,
+  "captured_at": "2026-07-18T12:59:40.000Z",
+  "source_authority": "The J.M. Smucker Company / Uncrustables official US site",
+  "safety": {
+    "network_scope": "one public manufacturer GET asset plus read-only provenance checks",
+    "marketplace_writes": 0,
+    "r2_writes": 0,
+    "database_writes": 0,
+    "image_model_calls": 0
+  },
+  "capture_note": "The historical product page now redirects to the all-products page. The official Pimcore asset remains retrievable under asset id 93042. The discovered responsive_1_JPEG URL is an intentional 1 x 1 lazy-load placeholder; the sealed bytes below come from the same official asset id, exact product filename, GTIN-like identifier and C1C1 position through the 1000 x 1000 schema_image derivative.",
+  "records": [
+    {
+      "flavor_id": "peanut-butter-mixed-berry-legacy",
+      "required": true,
+      "status": "CAPTURED",
+      "historical_source_page": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-mixed-berry",
+      "source_page_current_final_url": "https://www.smuckersuncrustables.com/sandwiches",
+      "source_page_current_status": 200,
+      "official_asset_id": 93042,
+      "official_product_path": "peanut-butter-and-mixed-berry",
+      "gtin_like_filename_identifier": "00051500319543",
+      "package_position_code": "C1C1",
+      "discovery_placeholder_url": "https://www.smuckersuncrustables.com/smuckersuncrustables/products/peanut-butter-and-mixed-berry/93042/image-thumb__93042__responsive_1_JPEG/peanut-butter-and-mixed-berry_00051500319543_C1C1.a8e03cba.jpg",
+      "discovery_placeholder_dimensions": {
+        "width": 1,
+        "height": 1
+      },
+      "package_art_url": "https://www.smuckersuncrustables.com/smuckersuncrustables/products/peanut-butter-and-mixed-berry/93042/image-thumb__93042__schema_image/peanut-butter-and-mixed-berry_00051500319543_C1C1.a8e03cba.jpg",
+      "package_art_final_url": "https://www.smuckersuncrustables.com/smuckersuncrustables/products/peanut-butter-and-mixed-berry/93042/image-thumb__93042__schema_image/peanut-butter-and-mixed-berry_00051500319543_C1C1.a8e03cba.jpg",
+      "package_art_sha256": "c3b232fa682c02a98c3640437dd5dd2f6254eb7cb9f583c053aad77098fe3b4f",
+      "package_art_bytes": 174711,
+      "package_art_content_type": "image/jpeg",
+      "local_path": "data/audits/uncrustables-official-package-art-legacy-mixed-berry-20260718/peanut-butter-mixed-berry-legacy-front-center.jpg",
+      "width": 1000,
+      "height": 1000,
+      "format": "jpeg",
+      "visual_identity_verification": {
+        "status": "PASS",
+        "method": "local original-resolution visual inspection",
+        "observed_brand": "Smucker's Uncrustables",
+        "observed_variant": "Berry Burst Peanut Butter & Mixed Berry Spread Sandwich",
+        "observed_pack_count": 4,
+        "observed_unit_weight_oz": 2,
+        "observed_net_weight_oz": 8,
+        "observed_markers": [
+          "Limited Edition Flavor",
+          "4 sandwiches",
+          "2 OZ (58g) each",
+          "NET WT 8 OZ (232g)"
+        ]
+      },
+      "evidence_scope": "OFFICIAL_RETAIL_CARTON_IDENTITY_ONLY",
+      "wrapper_art_authorized": false,
+      "production_registry_mapping_authorized": false
+    }
+  ]
+}

@@ -1,0 +1,424 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.03997093200683599,
+            "width" : 0.03997092776828341,
+            "x" : 0.09956395401515951,
+            "y" : 0.6911337193891323
+          },
+          "confidence" : 1,
+          "text" : "FAMIL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07032541275024407,
+            "width" : 0.07198832194010418,
+            "x" : 0.10310907156451257,
+            "y" : 0.6636605923582756
+          },
+          "confidence" : 1,
+          "text" : "36% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0806267123752169,
+            "width" : 0.08238021002875429,
+            "x" : 0.5913866556405489,
+            "y" : 0.6584933352683151
+          },
+          "confidence" : 0.3,
+          "text" : "36% MOREOOKES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.032703488667805924,
+            "width" : 0.032703488667805994,
+            "x" : 0.1126453485781121,
+            "y" : 0.6911337207952233
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04847583982679571,
+            "width" : 0.049964425828721765,
+            "x" : 0.11648601403189068,
+            "y" : 0.6780541378349101
+          },
+          "confidence" : 1,
+          "text" : "% MORE COOKII"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05087209913465707,
+            "width" : 0.05087209913465711,
+            "x" : 0.11991278924643202,
+            "y" : 0.6700581377740511
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO 1.29 OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05087209065755216,
+            "width" : 0.05087208641899954,
+            "x" : 0.6111918656777151,
+            "y" : 0.6700581420449414
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO 1B3.2S OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026162789662679042,
+            "width" : 0.09593023512098525,
+            "x" : 0.20930232393660042,
+            "y" : 0.668604651516771
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026162789662679042,
+            "width" : 0.09593022664388018,
+            "x" : 0.7020348857187575,
+            "y" : 0.6686046515640093
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07558139377170137,
+            "width" : 0.2005813937717014,
+            "x" : 0.1569767453218366,
+            "y" : 0.6031976754171209
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07848837110731344,
+            "width" : 0.2107558186848959,
+            "x" : 0.6409883703471895,
+            "y" : 0.6002906983126224
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365605,
+            "width" : 0.05232557932535806,
+            "x" : 0.09593023352046051,
+            "y" : 0.5348837209690065
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365716,
+            "width" : 0.05087209489610456,
+            "x" : 0.5886627896885757,
+            "y" : 0.5348837209694102
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.049418601989746125,
+            "width" : 0.04941860198974611,
+            "x" : 0.09811046558604168,
+            "y" : 0.40261628035040975
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07921512179904511,
+            "width" : 0.07921512179904512,
+            "x" : 0.10174418121987398,
+            "y" : 0.37136627529222677
+          },
+          "confidence" : 0.3,
+          "text" : "36% MORENGOTRLES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04869185977511936,
+            "width" : 0.04869185977511936,
+            "x" : 0.5908430221638248,
+            "y" : 0.40406976716075105
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08125980801052513,
+            "width" : 0.08312356736924909,
+            "x" : 0.5913446589291852,
+            "y" : 0.3714951662803757
+          },
+          "confidence" : 0.3,
+          "text" : "36% MORECOOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.032703490787082234,
+            "width" : 0.032703490787082234,
+            "x" : 0.11264534802986431,
+            "y" : 0.40334302232438113
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0457848824395074,
+            "width" : 0.04578488243950739,
+            "x" : 0.12354651301331286,
+            "y" : 0.38735465263182367
+          },
+          "confidence" : 1,
+          "text" : "MPARED TO GOLDEN OREO 13.29 OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023255814446343392,
+            "width" : 0.09447674221462679,
+            "x" : 0.21075581434871862,
+            "y" : 0.38372092987711903
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06976744333902996,
+            "width" : 0.19767442491319445,
+            "x" : 0.15843022986067853,
+            "y" : 0.31976744137035207
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.12790697733561207,
+            "width" : 0.2107558186848959,
+            "x" : 0.6395348809434047,
+            "y" : 0.2616279062546746
+          },
+          "confidence" : 0.3,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011841085222032421,
+            "width" : 0.05232557932535807,
+            "x" : 0.09593023297540239,
+            "y" : 0.2483333331213623
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.012493445078531895,
+            "width" : 0.05106292300754123,
+            "x" : 0.5885673761306432,
+            "y" : 0.24811374264245012
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-b7fae358a7788c9c764b70cb96e601a15d47f862e80238438f0a787296d17b17.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 1206,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.15185186281726126,
+            "width" : 0.08940266072750092,
+            "x" : 0.1809527390065893,
+            "y" : 0.6753086350796901
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2428478791346005,
+            "width" : 0.1447581723332405,
+            "x" : 0.18954879733468294,
+            "y" : 0.57684358690234
+          },
+          "confidence" : 1,
+          "text" : "36% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10740741331185877,
+            "width" : 0.06323935836553574,
+            "x" : 0.20929601809062875,
+            "y" : 0.6728395026535481
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.17369357309926603,
+            "width" : 0.10400711372494698,
+            "x" : 0.2195670506464557,
+            "y" : 0.5962982987565525
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO 13.29 OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10297639255302271,
+            "width" : 0.20390529930591583,
+            "x" : 0.4045307908485326,
+            "y" : 0.5891367312226439
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.224691362523321,
+            "width" : 0.39098837971687317,
+            "x" : 0.3124999973380409,
+            "y" : 0.3827160476344905
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.033027865598055484,
+            "width" : 0.1047486662864685,
+            "x" : 0.1743698530185669,
+            "y" : 0.12299224115326923
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-033602d21f900048de4705a28f4906339c77cbe1d0b381ec42ca3f884731fe34.png",
+      "width" : 2048
+    },
+    {
+      "height" : 481,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.08815607490381261,
+            "width" : 0.1041666641831398,
+            "x" : 0.17500000254384673,
+            "y" : 0.31535269657312626
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-fb7e0b441464e8951ae201175e130ad6b6e3df53be33045b4eb48cea2c4a4d93.png",
+      "width" : 2048
+    },
+    {
+      "height" : 894,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.053731342290071815,
+            "width" : 0.13808139476900783,
+            "x" : 0.7863372098950503,
+            "y" : 0.7970149254221283
+          },
+          "confidence" : 1,
+          "text" : "SES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.1597014902955467,
+            "width" : 0.07776242092024527,
+            "x" : 0.3154065802647566,
+            "y" : 0.471641792007352
+          },
+          "confidence" : 1,
+          "text" : "(NABISCO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.29999997951840407,
+            "width" : 0.14607669273492813,
+            "x" : 0.3168599065144732,
+            "y" : 0.3328358277390897
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.521517998953527,
+            "width" : 0.25416666334231186,
+            "x" : 0.3229166698363706,
+            "y" : 0.11103587447142993
+          },
+          "confidence" : 1,
+          "text" : "36% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2119150353758128,
+            "width" : 0.10182037852168863,
+            "x" : 0.3647874849140305,
+            "y" : 0.32389322955174993
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.35842444912699245,
+            "width" : 0.1764166007114652,
+            "x" : 0.3799631577267479,
+            "y" : 0.15928531075555918
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO 13.29 OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.18507462059891455,
+            "width" : 0.29796512246391615,
+            "x" : 0.7005813917585942,
+            "y" : 0.14626865938710976
+          },
+          "confidence" : 1,
+          "text" : "GOLDEI"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-0932daf3c086453e4f88c3be2540c4c0f5aeb899da97b929b472105bd019561e.png",
+      "width" : 1836
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

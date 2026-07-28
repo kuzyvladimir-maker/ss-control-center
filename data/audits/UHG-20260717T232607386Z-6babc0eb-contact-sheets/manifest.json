@@ -1,0 +1,2248 @@
+{
+  "schema_version": "uncrustables-hero-contact-sheets/v1.0",
+  "immutable": true,
+  "created_at": "2026-07-18T01:40:55.415Z",
+  "source_manifest": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/UHG-20260717T232607386Z-6babc0eb-manifest.json",
+    "sha256": "8236c3102cfc3ee247f5eecc41f1b4ab8042ac1ab3a33d6fd345c4828e58dce5",
+    "run_id": "UHG-20260717T232607386Z-6babc0eb"
+  },
+  "summary": {
+    "manifest_rows": 164,
+    "unique_assets": 103,
+    "contact_sheets": 12,
+    "amazon_calls": 0,
+    "database_calls": 0
+  },
+  "sheets": [
+    "hero-contact-sheet-01.png",
+    "hero-contact-sheet-02.png",
+    "hero-contact-sheet-03.png",
+    "hero-contact-sheet-04.png",
+    "hero-contact-sheet-05.png",
+    "hero-contact-sheet-06.png",
+    "hero-contact-sheet-07.png",
+    "hero-contact-sheet-08.png",
+    "hero-contact-sheet-09.png",
+    "hero-contact-sheet-10.png",
+    "hero-contact-sheet-11.png",
+    "hero-contact-sheet-12.png"
+  ],
+  "assets": [
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0a6ae5d3f25fefbd57b97adb551f7b279c115b3d182b8441875bd23647e40135.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0a6ae5d3f25fefbd57b97adb551f7b279c115b3d182b8441875bd23647e40135.png"
+      ],
+      "sha256": "0a6ae5d3f25fefbd57b97adb551f7b279c115b3d182b8441875bd23647e40135",
+      "skus": [
+        "MP-ASZ9-TKE7",
+        "RL-AS64-Q8QX"
+      ],
+      "asins": [
+        "B0H837HLKC",
+        "B0H82LZLM2"
+      ],
+      "totals": [
+        30,
+        30
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f439a6c3c8e664a0823084f775a6b9d27f18b7183370377097ff7c6b3e30e9c7.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f439a6c3c8e664a0823084f775a6b9d27f18b7183370377097ff7c6b3e30e9c7.png"
+      ],
+      "sha256": "f439a6c3c8e664a0823084f775a6b9d27f18b7183370377097ff7c6b3e30e9c7",
+      "skus": [
+        "NM-ASEW-S2SK",
+        "UJ-ASQ1-9FNR"
+      ],
+      "asins": [
+        "B0H86TVN3C",
+        "B0H82P651P"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f7baa97c0c21c3634098297cf9ce6edffafb1376313a0c8c324894e8a4b41043.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f7baa97c0c21c3634098297cf9ce6edffafb1376313a0c8c324894e8a4b41043.png"
+      ],
+      "sha256": "f7baa97c0c21c3634098297cf9ce6edffafb1376313a0c8c324894e8a4b41043",
+      "skus": [
+        "BM-AS5J-3MQY",
+        "EX-ASC0-5CRL",
+        "PL-ASR9-U94A",
+        "XV-ASEU-GDUX"
+      ],
+      "asins": [
+        "B0H83LSCQQ",
+        "B0H83JJW1F",
+        "B0H83RR2XQ",
+        "B0H82YRTS3"
+      ],
+      "totals": [
+        90,
+        120,
+        45,
+        45
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cf8a05b537dac384281be8d547245406a52c06a5929236b78f5be2581e5a9aac.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cf8a05b537dac384281be8d547245406a52c06a5929236b78f5be2581e5a9aac.png"
+      ],
+      "sha256": "cf8a05b537dac384281be8d547245406a52c06a5929236b78f5be2581e5a9aac",
+      "skus": [
+        "KD-AS12-8HZ3",
+        "WK-AS7E-M3CE"
+      ],
+      "asins": [
+        "B0H845JBM6",
+        "B0H843R64X"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/5ff5ab0fef0d1602f23647737d298b9f4b39c6a63cdca33069dbc38e24776d96.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/5ff5ab0fef0d1602f23647737d298b9f4b39c6a63cdca33069dbc38e24776d96.png"
+      ],
+      "sha256": "5ff5ab0fef0d1602f23647737d298b9f4b39c6a63cdca33069dbc38e24776d96",
+      "skus": [
+        "TL-ASHN-ZRKG"
+      ],
+      "asins": [
+        "B0H85P9F3R"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e9e9f3bc7c08d2c5c94a5177c252568455cc662ac5cef10c41debf1914ac7593.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e9e9f3bc7c08d2c5c94a5177c252568455cc662ac5cef10c41debf1914ac7593.png"
+      ],
+      "sha256": "e9e9f3bc7c08d2c5c94a5177c252568455cc662ac5cef10c41debf1914ac7593",
+      "skus": [
+        "RQ-AS78-STLZ",
+        "ZE-AS5W-FKH3"
+      ],
+      "asins": [
+        "B0H85GR968",
+        "B0H8531B8B"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Peanut Butter"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/26565247612c50ac00cf124b7b63c1fbbb21fa920cf9a9d4ca87db1b62851857.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/26565247612c50ac00cf124b7b63c1fbbb21fa920cf9a9d4ca87db1b62851857.png"
+      ],
+      "sha256": "26565247612c50ac00cf124b7b63c1fbbb21fa920cf9a9d4ca87db1b62851857",
+      "skus": [
+        "PJ-ASDX-E8LW",
+        "RY-ASO3-24Q2"
+      ],
+      "asins": [
+        "B0H85MGP35",
+        "B0H84XMG42"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhk9wy000u04ju1qepcrrb-AJ-ASRB-HKC3/main-20260717t232944508z-a1-19b8ad6815e3.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhk9wy000u04ju1qepcrrb-AJ-ASRB-HKC3/main-20260717t232944508z-a1-19b8ad6815e3.png",
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/19b8ad6815e3702abd912f9e5313915a5f930274dddb7f9752f46c907cc987a1.png"
+      ],
+      "sha256": "19b8ad6815e3702abd912f9e5313915a5f930274dddb7f9752f46c907cc987a1",
+      "skus": [
+        "AJ-ASRB-HKC3",
+        "TY-AST2-JE9P"
+      ],
+      "asins": [
+        "B0H84G7DHC",
+        "B0H84WQRXB"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a588ddb132560fc1ef5e2c1409a13f458bce108c20181c003dbd75b0c365a1b0.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a588ddb132560fc1ef5e2c1409a13f458bce108c20181c003dbd75b0c365a1b0.png"
+      ],
+      "sha256": "a588ddb132560fc1ef5e2c1409a13f458bce108c20181c003dbd75b0c365a1b0",
+      "skus": [
+        "VH-ASHZ-TJEE",
+        "ZP-ASJD-X7ZD"
+      ],
+      "asins": [
+        "B0H856VWD6",
+        "B0H85N7X8W"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2fc090316a566087c9c924456a219032c436c3e561bcc9a56dcc33b7c38f1aee.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2fc090316a566087c9c924456a219032c436c3e561bcc9a56dcc33b7c38f1aee.png"
+      ],
+      "sha256": "2fc090316a566087c9c924456a219032c436c3e561bcc9a56dcc33b7c38f1aee",
+      "skus": [
+        "VA-ASOK-QJCA",
+        "WR-ASTH-TPXV"
+      ],
+      "asins": [
+        "B0H85RZDX5",
+        "B0H85DRT93"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Beamin' Berry Blend (Morning Protein Peanut Butter & Mixed Berry Spread)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/3f562b0f20effc7a53d9630f6f976f1ffe6442d78108f0a7aacf82193898894c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/3f562b0f20effc7a53d9630f6f976f1ffe6442d78108f0a7aacf82193898894c.png"
+      ],
+      "sha256": "3f562b0f20effc7a53d9630f6f976f1ffe6442d78108f0a7aacf82193898894c",
+      "skus": [
+        "NS-ASSD-B3JJ",
+        "SA-ASDW-SNEW",
+        "TP-AS91-8PAZ"
+      ],
+      "asins": [
+        "B0H82L945T",
+        "B0H82SMZ2M",
+        "B0H835T5HN"
+      ],
+      "totals": [
+        24,
+        45,
+        30
+      ],
+      "flavors": [
+        "Berry Burst (Peanut Butter & Mixed Berry Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0da6f7c9d3af0d8bccc53c045972812df78bb736d73a7705fdebd458cbe45e28.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0da6f7c9d3af0d8bccc53c045972812df78bb736d73a7705fdebd458cbe45e28.png"
+      ],
+      "sha256": "0da6f7c9d3af0d8bccc53c045972812df78bb736d73a7705fdebd458cbe45e28",
+      "skus": [
+        "FK-AS6B-6G25",
+        "SZ-ASPI-JFAT",
+        "TQ-ASC4-P2NP",
+        "YA-ASX6-PZE7",
+        "YM-AS7P-ZX44",
+        "ZB-ASKL-9W8G"
+      ],
+      "asins": [
+        "B0H8259J9G",
+        "B0H776M5B5",
+        "B0H839G6RQ",
+        "B0H82YB4PD",
+        "B0H83S1LDG",
+        "B0H82LKBYH"
+      ],
+      "totals": [
+        24,
+        24,
+        90,
+        30,
+        120,
+        45
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/14cfe023898346457acf6fe3a6f93f33c0412bd83e5987a43626de52f0500ea9.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/14cfe023898346457acf6fe3a6f93f33c0412bd83e5987a43626de52f0500ea9.png"
+      ],
+      "sha256": "14cfe023898346457acf6fe3a6f93f33c0412bd83e5987a43626de52f0500ea9",
+      "skus": [
+        "BH-ASTN-S4XJ"
+      ],
+      "asins": [
+        "B0H83ZRNCS"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/062aac7e6aa54e4b2aab6d2c0ec9984c5e2eda84affe8dc8aa064871b5a50dca.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/062aac7e6aa54e4b2aab6d2c0ec9984c5e2eda84affe8dc8aa064871b5a50dca.png"
+      ],
+      "sha256": "062aac7e6aa54e4b2aab6d2c0ec9984c5e2eda84affe8dc8aa064871b5a50dca",
+      "skus": [
+        "RZ-AS26-WLRM"
+      ],
+      "asins": [
+        "B0H85PJ516"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0295ed9a1de926ac972b9bd167f1acb8e1705a23f06f22b847cf494f6e1eac5c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0295ed9a1de926ac972b9bd167f1acb8e1705a23f06f22b847cf494f6e1eac5c.png"
+      ],
+      "sha256": "0295ed9a1de926ac972b9bd167f1acb8e1705a23f06f22b847cf494f6e1eac5c",
+      "skus": [
+        "YG-ASH6-BCXX"
+      ],
+      "asins": [
+        "B0H8511Y5G"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Peanut Butter"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/58436329f8796abe9899babc2cae48a69cb3c886480b0d2c4c8b5ba94fd45737.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/58436329f8796abe9899babc2cae48a69cb3c886480b0d2c4c8b5ba94fd45737.png"
+      ],
+      "sha256": "58436329f8796abe9899babc2cae48a69cb3c886480b0d2c4c8b5ba94fd45737",
+      "skus": [
+        "BH-AS7H-D4FV"
+      ],
+      "asins": [
+        "B0H853MCYZ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4d66279ecec84846fad83a24c085f978855706a36cf7b66bfd9e77ab4da738c5.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4d66279ecec84846fad83a24c085f978855706a36cf7b66bfd9e77ab4da738c5.png"
+      ],
+      "sha256": "4d66279ecec84846fad83a24c085f978855706a36cf7b66bfd9e77ab4da738c5",
+      "skus": [
+        "UE-ASA6-CLLY"
+      ],
+      "asins": [
+        "B0H83ZHZ4S"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/aa56147404c0f7a38ae4c5eb202f780dd4403bee070ad4fb3d189aadb6e40178.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/aa56147404c0f7a38ae4c5eb202f780dd4403bee070ad4fb3d189aadb6e40178.png"
+      ],
+      "sha256": "aa56147404c0f7a38ae4c5eb202f780dd4403bee070ad4fb3d189aadb6e40178",
+      "skus": [
+        "BK-AS5Z-8UY5"
+      ],
+      "asins": [
+        "B0H85JF1V1"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/7e2f718c7fe05a7b41e51e6a82c59448aca20696915a4a6a32053708e01db51a.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/7e2f718c7fe05a7b41e51e6a82c59448aca20696915a4a6a32053708e01db51a.png"
+      ],
+      "sha256": "7e2f718c7fe05a7b41e51e6a82c59448aca20696915a4a6a32053708e01db51a",
+      "skus": [
+        "JC-ASM4-XXW7"
+      ],
+      "asins": [
+        "B0H84ZL156"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Blackberry Boom (Peanut Butter & Blackberry Spread)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/be68182ab03bc4d4bf1d14b1b753184bd139961e97cc1076fe7d405359f7d7dc.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/be68182ab03bc4d4bf1d14b1b753184bd139961e97cc1076fe7d405359f7d7dc.png"
+      ],
+      "sha256": "be68182ab03bc4d4bf1d14b1b753184bd139961e97cc1076fe7d405359f7d7dc",
+      "skus": [
+        "FX-AS2W-KHZT"
+      ],
+      "asins": [
+        "B0H827J2XZ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c4152300496fa7640f7055af7c5073552b6b26a182f51b15a7733d6e9b9a0f2c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c4152300496fa7640f7055af7c5073552b6b26a182f51b15a7733d6e9b9a0f2c.png"
+      ],
+      "sha256": "c4152300496fa7640f7055af7c5073552b6b26a182f51b15a7733d6e9b9a0f2c",
+      "skus": [
+        "PJ-ASAX-6LTG",
+        "UY-AS5N-A2E4",
+        "XJ-ASVD-CDMW"
+      ],
+      "asins": [
+        "B0H82T12L7",
+        "B0H83R4M3R",
+        "B0H82MSTD9"
+      ],
+      "totals": [
+        90,
+        120,
+        45
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fe98a69c8dcbbe9876c906c7adcb4fd3e4d3a26ab68121fbf0f71ab0cf31e7f8.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fe98a69c8dcbbe9876c906c7adcb4fd3e4d3a26ab68121fbf0f71ab0cf31e7f8.png"
+      ],
+      "sha256": "fe98a69c8dcbbe9876c906c7adcb4fd3e4d3a26ab68121fbf0f71ab0cf31e7f8",
+      "skus": [
+        "PR-AS79-8SDF"
+      ],
+      "asins": [
+        "B0H82L74PL"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/97fcc1c14e68f3a2649f53bf60398f569c840fbe8eb5309722d75b444ed28cf5.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/97fcc1c14e68f3a2649f53bf60398f569c840fbe8eb5309722d75b444ed28cf5.png"
+      ],
+      "sha256": "97fcc1c14e68f3a2649f53bf60398f569c840fbe8eb5309722d75b444ed28cf5",
+      "skus": [
+        "CE-ASGK-ZRHM"
+      ],
+      "asins": [
+        "B0H84651LM"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/5722d709a24cb5765ee0c0cb2679a0ab9f7e525119220b80484bb18c4e67810d.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/5722d709a24cb5765ee0c0cb2679a0ab9f7e525119220b80484bb18c4e67810d.png"
+      ],
+      "sha256": "5722d709a24cb5765ee0c0cb2679a0ab9f7e525119220b80484bb18c4e67810d",
+      "skus": [
+        "EF-AS4A-JCLU"
+      ],
+      "asins": [
+        "B0H83XB855"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c0d0595f48ae099996b233b5a8a835935b2cd195e87aa214d4cc570fa65dfc86.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c0d0595f48ae099996b233b5a8a835935b2cd195e87aa214d4cc570fa65dfc86.png"
+      ],
+      "sha256": "c0d0595f48ae099996b233b5a8a835935b2cd195e87aa214d4cc570fa65dfc86",
+      "skus": [
+        "NT-ASIL-V5LK"
+      ],
+      "asins": [
+        "B0H84547PM"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6d1dcbd4624c99d35299500359274d3e6cc7269804da129dc88e3cbcacf8317c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6d1dcbd4624c99d35299500359274d3e6cc7269804da129dc88e3cbcacf8317c.png"
+      ],
+      "sha256": "6d1dcbd4624c99d35299500359274d3e6cc7269804da129dc88e3cbcacf8317c",
+      "skus": [
+        "DP-ASQ6-ZPZU"
+      ],
+      "asins": [
+        "B0H83Y8JH7"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Peanut Butter"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2f4405b54abbe1ac4068c18101beaa307522bc0aa7eae9f1ed00c7b39fe3d9f5.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2f4405b54abbe1ac4068c18101beaa307522bc0aa7eae9f1ed00c7b39fe3d9f5.png"
+      ],
+      "sha256": "2f4405b54abbe1ac4068c18101beaa307522bc0aa7eae9f1ed00c7b39fe3d9f5",
+      "skus": [
+        "SH-ASO0-PW37"
+      ],
+      "asins": [
+        "B0H83ZH3TB"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a87f955c0e992fca592d806e0b00b9c52a28585ba2fadc109cc2b6517463b24b.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a87f955c0e992fca592d806e0b00b9c52a28585ba2fadc109cc2b6517463b24b.png"
+      ],
+      "sha256": "a87f955c0e992fca592d806e0b00b9c52a28585ba2fadc109cc2b6517463b24b",
+      "skus": [
+        "RU-ASC3-4TUS"
+      ],
+      "asins": [
+        "B0H83SJFR7"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f87d8fe64bcb4e9786e6afe7688129bb53952e8622ce531f0432b4aca4141e85.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f87d8fe64bcb4e9786e6afe7688129bb53952e8622ce531f0432b4aca4141e85.png"
+      ],
+      "sha256": "f87d8fe64bcb4e9786e6afe7688129bb53952e8622ce531f0432b4aca4141e85",
+      "skus": [
+        "KN-ASYZ-ST4M"
+      ],
+      "asins": [
+        "B0H83XBXHX"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/9eec90554f96311a391ad37e890ac109d25a72c050e63aac9205cd825f5d5fd6.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/9eec90554f96311a391ad37e890ac109d25a72c050e63aac9205cd825f5d5fd6.png"
+      ],
+      "sha256": "9eec90554f96311a391ad37e890ac109d25a72c050e63aac9205cd825f5d5fd6",
+      "skus": [
+        "SV-AS87-D6SV"
+      ],
+      "asins": [
+        "B0H83ZGN22"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/09d8b2230622aca8c9e8ce223f192fa52aa2a17ba6359c699e705fab58ed12f5.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/09d8b2230622aca8c9e8ce223f192fa52aa2a17ba6359c699e705fab58ed12f5.png"
+      ],
+      "sha256": "09d8b2230622aca8c9e8ce223f192fa52aa2a17ba6359c699e705fab58ed12f5",
+      "skus": [
+        "BQ-ASUE-NT37"
+      ],
+      "asins": [
+        "B0H842HL49"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/9abf980e232d8f3a9bf3ae586edec2c95ede1e00331a1581f3870cb9ed651182.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/9abf980e232d8f3a9bf3ae586edec2c95ede1e00331a1581f3870cb9ed651182.png"
+      ],
+      "sha256": "9abf980e232d8f3a9bf3ae586edec2c95ede1e00331a1581f3870cb9ed651182",
+      "skus": [
+        "NC-ASPL-EXE8"
+      ],
+      "asins": [
+        "B0H83QRV43"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a01548f9c81fdf93162bc6aebe7c40e0e01063dab0a73e8be9f29fa8339111da.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a01548f9c81fdf93162bc6aebe7c40e0e01063dab0a73e8be9f29fa8339111da.png"
+      ],
+      "sha256": "a01548f9c81fdf93162bc6aebe7c40e0e01063dab0a73e8be9f29fa8339111da",
+      "skus": [
+        "GX-ASTJ-WHV3"
+      ],
+      "asins": [
+        "B0H83XV9WX"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Bright-Eyed Berry (Morning Protein Peanut Butter & Strawberry Jam)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/78124871121d70811f53c6b9d792b0e612a552afa14501cd82d3edba42e997dc.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/78124871121d70811f53c6b9d792b0e612a552afa14501cd82d3edba42e997dc.png"
+      ],
+      "sha256": "78124871121d70811f53c6b9d792b0e612a552afa14501cd82d3edba42e997dc",
+      "skus": [
+        "TQ-ASBR-96TC"
+      ],
+      "asins": [
+        "B0H82BCZ44"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/be7146d3eb678fac464cb0d97856605742f9c9f865c710646ef00d44851db870.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/be7146d3eb678fac464cb0d97856605742f9c9f865c710646ef00d44851db870.png"
+      ],
+      "sha256": "be7146d3eb678fac464cb0d97856605742f9c9f865c710646ef00d44851db870",
+      "skus": [
+        "BX-AS5P-6WQV",
+        "DY-AS8W-6MJG",
+        "KP-ASYC-RN84"
+      ],
+      "asins": [
+        "B0H83NM5PX",
+        "B0H82MKPRJ",
+        "B0H83FYZR3"
+      ],
+      "totals": [
+        120,
+        45,
+        90
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/deda8009f4549bf59943397adf52b93c995e77c66acbc98f8bdb906bb64bd4ac.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/deda8009f4549bf59943397adf52b93c995e77c66acbc98f8bdb906bb64bd4ac.png"
+      ],
+      "sha256": "deda8009f4549bf59943397adf52b93c995e77c66acbc98f8bdb906bb64bd4ac",
+      "skus": [
+        "HU-ASMI-DN3X"
+      ],
+      "asins": [
+        "B0H82YMT6K"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/565408e115f1f4b83727c2bf013066d41039ed2514626f136dcd7145794abef1.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/565408e115f1f4b83727c2bf013066d41039ed2514626f136dcd7145794abef1.png"
+      ],
+      "sha256": "565408e115f1f4b83727c2bf013066d41039ed2514626f136dcd7145794abef1",
+      "skus": [
+        "CK-ASUM-WT9W"
+      ],
+      "asins": [
+        "B0H86PRTWS"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)",
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4081b74bdd5926064bcaee76ca22ac4712733844441f655b12fd94e8bb0da047.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4081b74bdd5926064bcaee76ca22ac4712733844441f655b12fd94e8bb0da047.png"
+      ],
+      "sha256": "4081b74bdd5926064bcaee76ca22ac4712733844441f655b12fd94e8bb0da047",
+      "skus": [
+        "WZ-ASXK-ZFAS"
+      ],
+      "asins": [
+        "B0H85DF1R7"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0bea07e7c3c2f279337969ea6ed40d3dc56d4aaa0c9915270f56c4c2c97e24ec.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0bea07e7c3c2f279337969ea6ed40d3dc56d4aaa0c9915270f56c4c2c97e24ec.png"
+      ],
+      "sha256": "0bea07e7c3c2f279337969ea6ed40d3dc56d4aaa0c9915270f56c4c2c97e24ec",
+      "skus": [
+        "ER-ASRK-TPYQ"
+      ],
+      "asins": [
+        "B0H84JH1WN"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a492390626beebcf15a362cc954d89e60c04851f156705cc83e377b82cf04e87.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a492390626beebcf15a362cc954d89e60c04851f156705cc83e377b82cf04e87.png"
+      ],
+      "sha256": "a492390626beebcf15a362cc954d89e60c04851f156705cc83e377b82cf04e87",
+      "skus": [
+        "HZ-ASPS-4L22"
+      ],
+      "asins": [
+        "B0H857K38C"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8375e965623ccf834e6bc30bd2276648fab3e5f5cf2385aaf887bb9af465abb1.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8375e965623ccf834e6bc30bd2276648fab3e5f5cf2385aaf887bb9af465abb1.png"
+      ],
+      "sha256": "8375e965623ccf834e6bc30bd2276648fab3e5f5cf2385aaf887bb9af465abb1",
+      "skus": [
+        "SC-ASH8-4RQG"
+      ],
+      "asins": [
+        "B0H856DWVS"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Burstin' Blueberry (Peanut Butter & Blueberry Spread, 12g Protein)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/13e6e8fce7ad76409d2c4728b84db6044b1b682bfb37d7f901242c2b83edc585.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/13e6e8fce7ad76409d2c4728b84db6044b1b682bfb37d7f901242c2b83edc585.png"
+      ],
+      "sha256": "13e6e8fce7ad76409d2c4728b84db6044b1b682bfb37d7f901242c2b83edc585",
+      "skus": [
+        "PU-AS3D-SA5Z",
+        "QX-ASS6-4T4F"
+      ],
+      "asins": [
+        "B0H83H71F8",
+        "B0H83B6TYP"
+      ],
+      "totals": [
+        120,
+        90
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/58c63d799383276dee2a464c828fc9ecc4606f6715422524caba479cccc68ff7.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/58c63d799383276dee2a464c828fc9ecc4606f6715422524caba479cccc68ff7.png"
+      ],
+      "sha256": "58c63d799383276dee2a464c828fc9ecc4606f6715422524caba479cccc68ff7",
+      "skus": [
+        "GG-ASNC-C9WA"
+      ],
+      "asins": [
+        "B0H8219Z7T"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/85fc226e2341b61b36dc673f1fdf3cd60174fd9190c156c2939d5b23557c9363.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/85fc226e2341b61b36dc673f1fdf3cd60174fd9190c156c2939d5b23557c9363.png"
+      ],
+      "sha256": "85fc226e2341b61b36dc673f1fdf3cd60174fd9190c156c2939d5b23557c9363",
+      "skus": [
+        "ES-AS8A-3W3M",
+        "EW-ASJ9-E79N"
+      ],
+      "asins": [
+        "B0H83D8TFQ",
+        "B0H82MT74H"
+      ],
+      "totals": [
+        30,
+        30
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1f76ddbbfd7b4edbdc825031bfcf433315a6e3cf794be378da039a034eb47f90.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1f76ddbbfd7b4edbdc825031bfcf433315a6e3cf794be378da039a034eb47f90.png"
+      ],
+      "sha256": "1f76ddbbfd7b4edbdc825031bfcf433315a6e3cf794be378da039a034eb47f90",
+      "skus": [
+        "DF-ASQT-BLUQ",
+        "SS-AS9K-U9TV",
+        "VC-ASQE-L5Z5"
+      ],
+      "asins": [
+        "B0H83FKSN6",
+        "B0H831889Q",
+        "B0H82QYM85"
+      ],
+      "totals": [
+        45,
+        45,
+        45
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Peanut Butter & Chocolate Flavored Spread / Chocolate Flavored Hazelnut Spread (reviewed names for the same product)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b72cdcfac7d210af0c577d363d330d29edb74def6f41392afc4e75cbc903484b.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b72cdcfac7d210af0c577d363d330d29edb74def6f41392afc4e75cbc903484b.png"
+      ],
+      "sha256": "b72cdcfac7d210af0c577d363d330d29edb74def6f41392afc4e75cbc903484b",
+      "skus": [
+        "HA-ASCR-ME3A",
+        "WR-ASR5-AVWE"
+      ],
+      "asins": [
+        "B0H85V287S",
+        "B0H859VYXH"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Peanut Butter & Chocolate Flavored Spread / Chocolate Flavored Hazelnut Spread (reviewed names for the same product)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1c9606ad27c2995095e3396d649bfdb021d5928cdb7decca55fab233c754cf3a.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1c9606ad27c2995095e3396d649bfdb021d5928cdb7decca55fab233c754cf3a.png"
+      ],
+      "sha256": "1c9606ad27c2995095e3396d649bfdb021d5928cdb7decca55fab233c754cf3a",
+      "skus": [
+        "CN-ASG6-892G",
+        "ME-AS1I-SEX2"
+      ],
+      "asins": [
+        "B0H8422DQ1",
+        "B0H83RVHNF"
+      ],
+      "totals": [
+        120,
+        90
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Peanut Butter & Chocolate Flavored Spread Eac"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a5fa4525f64663b90d7aef8f318e24022fd26f88a6ffdc86e18e097d2a7e62cd.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a5fa4525f64663b90d7aef8f318e24022fd26f88a6ffdc86e18e097d2a7e62cd.png"
+      ],
+      "sha256": "a5fa4525f64663b90d7aef8f318e24022fd26f88a6ffdc86e18e097d2a7e62cd",
+      "skus": [
+        "HR-AS7Q-7ZDF",
+        "VN-AS6Q-5AE9"
+      ],
+      "asins": [
+        "B0H856RRRK",
+        "B0H8538L32"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Peanut Butter",
+        "Peanut Butter & Chocolate Flavored Spread / Chocolate Flavored Hazelnut Spread (reviewed names for the same product)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a867b2013a81507ed302ea1f106770209d70e033802632ff1d1ddf58255e99cd.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a867b2013a81507ed302ea1f106770209d70e033802632ff1d1ddf58255e99cd.png"
+      ],
+      "sha256": "a867b2013a81507ed302ea1f106770209d70e033802632ff1d1ddf58255e99cd",
+      "skus": [
+        "FR-AS6X-5KJY",
+        "RM-ASCV-DVA5"
+      ],
+      "asins": [
+        "B0H827V9DJ",
+        "B0H822CVVL"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fc5bffde8bc2d6c0e9d43de1cc89e5518b505b13f1e2a1c83822a267388244d3.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fc5bffde8bc2d6c0e9d43de1cc89e5518b505b13f1e2a1c83822a267388244d3.png"
+      ],
+      "sha256": "fc5bffde8bc2d6c0e9d43de1cc89e5518b505b13f1e2a1c83822a267388244d3",
+      "skus": [
+        "SG-AS32-LZ9Y",
+        "TH-AS6D-CCES"
+      ],
+      "asins": [
+        "B0H8564C6D",
+        "B0H845HSDZ"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/24810e6c438d5fa0490529652819c27594c698d7cf86aab94932ee8e23e2cea4.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/24810e6c438d5fa0490529652819c27594c698d7cf86aab94932ee8e23e2cea4.png"
+      ],
+      "sha256": "24810e6c438d5fa0490529652819c27594c698d7cf86aab94932ee8e23e2cea4",
+      "skus": [
+        "FM-AS51-S4MT",
+        "LJ-ASYO-FWJK"
+      ],
+      "asins": [
+        "B0H853VHRF",
+        "B0H853SHVC"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Chocolate Flavored Hazelnut Spread (same product as Peanut Butter & Chocolate Flavored Spread)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ed9ef17f8dda018dadb4fcb9d95fc96ca735a5a7745b5e97391801c50bf6b25c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ed9ef17f8dda018dadb4fcb9d95fc96ca735a5a7745b5e97391801c50bf6b25c.png"
+      ],
+      "sha256": "ed9ef17f8dda018dadb4fcb9d95fc96ca735a5a7745b5e97391801c50bf6b25c",
+      "skus": [
+        "RS-AS47-M3K3"
+      ],
+      "asins": [
+        "B0H87748WJ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhytx0006k04juywpc1quw-AN-ASUW-49Y5/main-20260717t232944508z-a1-e55664a28f5d.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhytx0006k04juywpc1quw-AN-ASUW-49Y5/main-20260717t232944508z-a1-e55664a28f5d.png"
+      ],
+      "sha256": "e55664a28f5d4459287c2b9fa93564c96455c5795711cb05211b275be9abec42",
+      "skus": [
+        "AN-ASUW-49Y5"
+      ],
+      "asins": [
+        "B0H8628LW3"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fc46fb96060ceda709aedcc94160eff4ee2d9b747e8de1f8691cab32ecc223e8.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/fc46fb96060ceda709aedcc94160eff4ee2d9b747e8de1f8691cab32ecc223e8.png"
+      ],
+      "sha256": "fc46fb96060ceda709aedcc94160eff4ee2d9b747e8de1f8691cab32ecc223e8",
+      "skus": [
+        "NV-AS86-HD44"
+      ],
+      "asins": [
+        "B0H85KQJKS"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/13407afb6c91b12daf2889cf6c472bf3300fa292a6525be3acde4a07ef2e509b.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/13407afb6c91b12daf2889cf6c472bf3300fa292a6525be3acde4a07ef2e509b.png"
+      ],
+      "sha256": "13407afb6c91b12daf2889cf6c472bf3300fa292a6525be3acde4a07ef2e509b",
+      "skus": [
+        "GR-AS0R-YPCF",
+        "PB-ASAF-G2T6",
+        "QW-ASRZ-SYKC",
+        "WK-AS2R-FJUW",
+        "YH-ASQ8-45ED"
+      ],
+      "asins": [
+        "B0H82GJ292",
+        "B0H82K7Y7S",
+        "B0H83MDDBL",
+        "B0H82XBNVN",
+        "B0H82QPCJL"
+      ],
+      "totals": [
+        30,
+        24,
+        120,
+        90,
+        45
+      ],
+      "flavors": [
+        "Peanut Butter"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c5fb74ea775af7078be734d37b4b50694032339a3f6a138f7f62ec788576cd9b.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/c5fb74ea775af7078be734d37b4b50694032339a3f6a138f7f62ec788576cd9b.png"
+      ],
+      "sha256": "c5fb74ea775af7078be734d37b4b50694032339a3f6a138f7f62ec788576cd9b",
+      "skus": [
+        "RH-ASWA-ER34",
+        "YV-AST8-LMKN"
+      ],
+      "asins": [
+        "B0H85JR6WN",
+        "B0H859JMGJ"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Chocolate Flavored Spread / Chocolate Flavored Hazelnut Spread (reviewed names for the same product)",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f77d01f246e9fb14dac8e6db3c9806d662d9c85f4aa746a898911b808d0f9ce6.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f77d01f246e9fb14dac8e6db3c9806d662d9c85f4aa746a898911b808d0f9ce6.png"
+      ],
+      "sha256": "f77d01f246e9fb14dac8e6db3c9806d662d9c85f4aa746a898911b808d0f9ce6",
+      "skus": [
+        "AC-AS4J-B64F"
+      ],
+      "asins": [
+        "B0H82ZZS2P"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Chocolate Flavored Spread Eac"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/00eb380ea4016b643016ab3824ef9cf27cbf8a668be6532c8cef5a52bdd04776.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/00eb380ea4016b643016ab3824ef9cf27cbf8a668be6532c8cef5a52bdd04776.png"
+      ],
+      "sha256": "00eb380ea4016b643016ab3824ef9cf27cbf8a668be6532c8cef5a52bdd04776",
+      "skus": [
+        "DA-ASF0-D7RG"
+      ],
+      "asins": [
+        "B0H83VBTLT"
+      ],
+      "totals": [
+        90
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0495d843cd5a3afe9d46e48191bb3ca5d868ecfb5009995864c2ba40b28dbf72.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0495d843cd5a3afe9d46e48191bb3ca5d868ecfb5009995864c2ba40b28dbf72.png"
+      ],
+      "sha256": "0495d843cd5a3afe9d46e48191bb3ca5d868ecfb5009995864c2ba40b28dbf72",
+      "skus": [
+        "HX-ASO8-XCL2"
+      ],
+      "asins": [
+        "B0H832SD15"
+      ],
+      "totals": [
+        45
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2a962bcf4a6ddd64f4e34612c56ba2a8b8b2a21dd347916c19f11f5ae3bd628e.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2a962bcf4a6ddd64f4e34612c56ba2a8b8b2a21dd347916c19f11f5ae3bd628e.png"
+      ],
+      "sha256": "2a962bcf4a6ddd64f4e34612c56ba2a8b8b2a21dd347916c19f11f5ae3bd628e",
+      "skus": [
+        "GR-AS1P-DBB2",
+        "JT-ASKD-KS8T"
+      ],
+      "asins": [
+        "B0H82S7TFG",
+        "B0H83Z6S3Q"
+      ],
+      "totals": [
+        24,
+        120
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8daa3973977ccd1ff993b4332fa9c7f349100dd7faa8dac4cb6a0f675b6205b4.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8daa3973977ccd1ff993b4332fa9c7f349100dd7faa8dac4cb6a0f675b6205b4.png"
+      ],
+      "sha256": "8daa3973977ccd1ff993b4332fa9c7f349100dd7faa8dac4cb6a0f675b6205b4",
+      "skus": [
+        "ZH-AS8W-G5MN"
+      ],
+      "asins": [
+        "B0H82LMD9Z"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/72ae61c4fb4ee79afcff91e379928d2e001692000aec7b1fe065f83f992c1f36.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/72ae61c4fb4ee79afcff91e379928d2e001692000aec7b1fe065f83f992c1f36.png"
+      ],
+      "sha256": "72ae61c4fb4ee79afcff91e379928d2e001692000aec7b1fe065f83f992c1f36",
+      "skus": [
+        "MP-ASYO-QNU2"
+      ],
+      "asins": [
+        "B0H84Z9KWL"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a37417290a361c3596ad2c17e715a924e0ad44ffb259b909d6cbb6ee5c95aab8.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/a37417290a361c3596ad2c17e715a924e0ad44ffb259b909d6cbb6ee5c95aab8.png"
+      ],
+      "sha256": "a37417290a361c3596ad2c17e715a924e0ad44ffb259b909d6cbb6ee5c95aab8",
+      "skus": [
+        "SG-ASLB-M2DG"
+      ],
+      "asins": [
+        "B0H84PFKYC"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ac8cfb06b6bed83cc10f582b08e1e54ee8eaa19e3e3dea486a8f218ec822bcd6.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ac8cfb06b6bed83cc10f582b08e1e54ee8eaa19e3e3dea486a8f218ec822bcd6.png"
+      ],
+      "sha256": "ac8cfb06b6bed83cc10f582b08e1e54ee8eaa19e3e3dea486a8f218ec822bcd6",
+      "skus": [
+        "PT-AS5B-Z2XH"
+      ],
+      "asins": [
+        "B0H84Z6QWY"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/92e8af4e0b8017ded11884b09be31a9dcd68de00282889df6b48e2f6520c4b10.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/92e8af4e0b8017ded11884b09be31a9dcd68de00282889df6b48e2f6520c4b10.png"
+      ],
+      "sha256": "92e8af4e0b8017ded11884b09be31a9dcd68de00282889df6b48e2f6520c4b10",
+      "skus": [
+        "BD-AS8P-XAW5"
+      ],
+      "asins": [
+        "B0H85MXFH8"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Grape Jelly",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8ef32bf7eb88d3ea8495bfa0cae43ba513a31da624c0bd6cc1bf96f85290bd74.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/8ef32bf7eb88d3ea8495bfa0cae43ba513a31da624c0bd6cc1bf96f85290bd74.png"
+      ],
+      "sha256": "8ef32bf7eb88d3ea8495bfa0cae43ba513a31da624c0bd6cc1bf96f85290bd74",
+      "skus": [
+        "YF-ASZJ-8BBH"
+      ],
+      "asins": [
+        "B0H822MPKC"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/98537be8df853b8dfce0c2a4a3203000a62dc5ea1c09055930041266305e6551.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/98537be8df853b8dfce0c2a4a3203000a62dc5ea1c09055930041266305e6551.png"
+      ],
+      "sha256": "98537be8df853b8dfce0c2a4a3203000a62dc5ea1c09055930041266305e6551",
+      "skus": [
+        "JL-ASUC-JUZE"
+      ],
+      "asins": [
+        "B0H831MXGD"
+      ],
+      "totals": [
+        45
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b84f92b358f0893c7bea0673bdf08182b5c3a2aed8f2a8096d5de986580d4c62.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b84f92b358f0893c7bea0673bdf08182b5c3a2aed8f2a8096d5de986580d4c62.png"
+      ],
+      "sha256": "b84f92b358f0893c7bea0673bdf08182b5c3a2aed8f2a8096d5de986580d4c62",
+      "skus": [
+        "UD-AS9J-QNY6",
+        "WN-AS33-UFEA"
+      ],
+      "asins": [
+        "B0H834L7P6",
+        "B0H83RCTVV"
+      ],
+      "totals": [
+        90,
+        120
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmra931ii000204lbc3zava4h-AD-AS4H-QXZD/main-20260717t232608411z-a1-df47fad6398e.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmra931ii000204lbc3zava4h-AD-AS4H-QXZD/main-20260717t232608411z-a1-df47fad6398e.png"
+      ],
+      "sha256": "df47fad6398e8c241a89ecd1f74a6469e2ac5374798e16d86cfa9e4f5c519fd7",
+      "skus": [
+        "AD-AS4H-QXZD"
+      ],
+      "asins": [
+        "B0H82J6V9T"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/084bbee8a99dc7a8320219f966acb5408b8ca58ecf951918b54ff1e7704f5f7b.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/084bbee8a99dc7a8320219f966acb5408b8ca58ecf951918b54ff1e7704f5f7b.png"
+      ],
+      "sha256": "084bbee8a99dc7a8320219f966acb5408b8ca58ecf951918b54ff1e7704f5f7b",
+      "skus": [
+        "RY-ASMO-6N4F"
+      ],
+      "asins": [
+        "B0H8493HNR"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/890ad93bbb41cf5d037386c548c23695b687b4a616623f568276c2fd316db8c7.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/890ad93bbb41cf5d037386c548c23695b687b4a616623f568276c2fd316db8c7.png"
+      ],
+      "sha256": "890ad93bbb41cf5d037386c548c23695b687b4a616623f568276c2fd316db8c7",
+      "skus": [
+        "AG-ASKV-W9EN"
+      ],
+      "asins": [
+        "B0H85B64V2"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread",
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6d07f049f5cfa590a3d60d0093762088a10b8ef574cb9262046ad95bfefb284a.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6d07f049f5cfa590a3d60d0093762088a10b8ef574cb9262046ad95bfefb284a.png"
+      ],
+      "sha256": "6d07f049f5cfa590a3d60d0093762088a10b8ef574cb9262046ad95bfefb284a",
+      "skus": [
+        "VK-ASSB-3YFK"
+      ],
+      "asins": [
+        "B0H85FY28F"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread",
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b191eb24851ac32fbc7c58971e34e9a47b6b8ebbcb141ac5a53e2ee48c742b97.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b191eb24851ac32fbc7c58971e34e9a47b6b8ebbcb141ac5a53e2ee48c742b97.png"
+      ],
+      "sha256": "b191eb24851ac32fbc7c58971e34e9a47b6b8ebbcb141ac5a53e2ee48c742b97",
+      "skus": [
+        "BD-ASGH-LREJ"
+      ],
+      "asins": [
+        "B0H86Z59DW"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4ebeb483251e81e68cac59cacc77bc53d668d686a39a0895ab948d7827b24d82.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4ebeb483251e81e68cac59cacc77bc53d668d686a39a0895ab948d7827b24d82.png"
+      ],
+      "sha256": "4ebeb483251e81e68cac59cacc77bc53d668d686a39a0895ab948d7827b24d82",
+      "skus": [
+        "RQ-AS0L-9B45"
+      ],
+      "asins": [
+        "B0H85MQLHG"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Honey Spread",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0b5e0fcc3510039295f58a893804b32995986eb7fe1910274962c998c6fb9fdb.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0b5e0fcc3510039295f58a893804b32995986eb7fe1910274962c998c6fb9fdb.png"
+      ],
+      "sha256": "0b5e0fcc3510039295f58a893804b32995986eb7fe1910274962c998c6fb9fdb",
+      "skus": [
+        "LP-AS9J-HSVB"
+      ],
+      "asins": [
+        "B0H82B7KK1"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6836d3ea0e915fe2e624bc767dbc837274867aa50e5ecd3b59bfaba810a4901c.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/6836d3ea0e915fe2e624bc767dbc837274867aa50e5ecd3b59bfaba810a4901c.png"
+      ],
+      "sha256": "6836d3ea0e915fe2e624bc767dbc837274867aa50e5ecd3b59bfaba810a4901c",
+      "skus": [
+        "BH-ASVY-CR8H",
+        "EJ-ASCD-8K87"
+      ],
+      "asins": [
+        "B0H83S368B",
+        "B0H82PXWKS"
+      ],
+      "totals": [
+        120,
+        90
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/baa38b3895c283a81f249bba560951133a662119091581a38e5c1eeed92c8d41.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/baa38b3895c283a81f249bba560951133a662119091581a38e5c1eeed92c8d41.png"
+      ],
+      "sha256": "baa38b3895c283a81f249bba560951133a662119091581a38e5c1eeed92c8d41",
+      "skus": [
+        "XE-ASK1-BNRB"
+      ],
+      "asins": [
+        "B0H81WMJBP"
+      ],
+      "totals": [
+        45
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ecdaf52e8eb547db48328b5bddcd249a33b519854fa004860db4ae988ccc0e7d.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ecdaf52e8eb547db48328b5bddcd249a33b519854fa004860db4ae988ccc0e7d.png"
+      ],
+      "sha256": "ecdaf52e8eb547db48328b5bddcd249a33b519854fa004860db4ae988ccc0e7d",
+      "skus": [
+        "GU-ASQ1-S7M6"
+      ],
+      "asins": [
+        "B0H828GQLP"
+      ],
+      "totals": [
+        30
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/de6214265d2db66bb0473b2a04ba583b526b8f1d5351ecdf3e338fb71f341d12.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/de6214265d2db66bb0473b2a04ba583b526b8f1d5351ecdf3e338fb71f341d12.png"
+      ],
+      "sha256": "de6214265d2db66bb0473b2a04ba583b526b8f1d5351ecdf3e338fb71f341d12",
+      "skus": [
+        "LK-AS7X-K43B"
+      ],
+      "asins": [
+        "B0H84CGGXL"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each",
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b684810a5a372275f7055d90fe332c448eff4311d94b41cb70604fcdc78cf9c4.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b684810a5a372275f7055d90fe332c448eff4311d94b41cb70604fcdc78cf9c4.png"
+      ],
+      "sha256": "b684810a5a372275f7055d90fe332c448eff4311d94b41cb70604fcdc78cf9c4",
+      "skus": [
+        "JU-ASM0-KV4Z"
+      ],
+      "asins": [
+        "B0H8462L4S"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each",
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/266af8718f04467d78baefe3cd6bebfe70c2cfc13e66ded452226c489a2bd9ee.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/266af8718f04467d78baefe3cd6bebfe70c2cfc13e66ded452226c489a2bd9ee.png"
+      ],
+      "sha256": "266af8718f04467d78baefe3cd6bebfe70c2cfc13e66ded452226c489a2bd9ee",
+      "skus": [
+        "PP-AS23-SPLQ"
+      ],
+      "asins": [
+        "B0H84CDNQG"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2008f00ec75ee0f9288679d9d86895871e60bf8311bc0d2822167efe8af6bf5d.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/2008f00ec75ee0f9288679d9d86895871e60bf8311bc0d2822167efe8af6bf5d.png"
+      ],
+      "sha256": "2008f00ec75ee0f9288679d9d86895871e60bf8311bc0d2822167efe8af6bf5d",
+      "skus": [
+        "JY-ASPW-LB4K"
+      ],
+      "asins": [
+        "B0H84621N6"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Raspberry Spread Each",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0b91ed54bd02c11822ec59ac5f792ebccf0f0025cbc6f3c86487e06dbd8ecf95.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/0b91ed54bd02c11822ec59ac5f792ebccf0f0025cbc6f3c86487e06dbd8ecf95.png"
+      ],
+      "sha256": "0b91ed54bd02c11822ec59ac5f792ebccf0f0025cbc6f3c86487e06dbd8ecf95",
+      "skus": [
+        "QE-ASEQ-4YV5",
+        "ZC-ASDC-3QMV"
+      ],
+      "asins": [
+        "B0H82CBLRM",
+        "B0H83TSB5J"
+      ],
+      "totals": [
+        24,
+        120
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/39356ff7e58a345dcb83227a010f662df30494f021110d9bf46294b21f3e1b10.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/39356ff7e58a345dcb83227a010f662df30494f021110d9bf46294b21f3e1b10.png"
+      ],
+      "sha256": "39356ff7e58a345dcb83227a010f662df30494f021110d9bf46294b21f3e1b10",
+      "skus": [
+        "UA-ASAO-RE7Q",
+        "VN-AS1A-D572"
+      ],
+      "asins": [
+        "B0H784LMG6",
+        "B0H82PKK18"
+      ],
+      "totals": [
+        45,
+        45
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam",
+        "Peanut Butter & Strawberry Jam ( individually"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/bfa0bedd215afbc38b9c8ff8088ff92b403a18ae95689e879cdf87081b2e41fc.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/bfa0bedd215afbc38b9c8ff8088ff92b403a18ae95689e879cdf87081b2e41fc.png"
+      ],
+      "sha256": "bfa0bedd215afbc38b9c8ff8088ff92b403a18ae95689e879cdf87081b2e41fc",
+      "skus": [
+        "AZ-ASMY-VEQ2",
+        "EW-ASWP-PMZX"
+      ],
+      "asins": [
+        "B0H788M8WM",
+        "B0H891WSZ9"
+      ],
+      "totals": [
+        30,
+        30
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam",
+        "Peanut Butter & Strawberry Jam ( individually"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cd42512f329fcb2cccf71a5da5853b37eb8d6e87972c6671020b3ca2fd0a64a8.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cd42512f329fcb2cccf71a5da5853b37eb8d6e87972c6671020b3ca2fd0a64a8.png"
+      ],
+      "sha256": "cd42512f329fcb2cccf71a5da5853b37eb8d6e87972c6671020b3ca2fd0a64a8",
+      "skus": [
+        "UG-ASUO-L4D9",
+        "VC-ASV1-378P"
+      ],
+      "asins": [
+        "B0H83FP8WW",
+        "B0H786L5MW"
+      ],
+      "totals": [
+        90,
+        90
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam",
+        "Peanut Butter & Strawberry Jam ( individually"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/42cf4fb6f9570861713126d2d652badbf67d04d20373b99703fe6c6db6c035e7.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/42cf4fb6f9570861713126d2d652badbf67d04d20373b99703fe6c6db6c035e7.png"
+      ],
+      "sha256": "42cf4fb6f9570861713126d2d652badbf67d04d20373b99703fe6c6db6c035e7",
+      "skus": [
+        "ZX-ASQU-TKU9"
+      ],
+      "asins": [
+        "B0H84PVG1G"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/3439ea633815abd96c8b73ebad7eb84874a94e32ed5dc8035a72fb95c09c7120.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/3439ea633815abd96c8b73ebad7eb84874a94e32ed5dc8035a72fb95c09c7120.png"
+      ],
+      "sha256": "3439ea633815abd96c8b73ebad7eb84874a94e32ed5dc8035a72fb95c09c7120",
+      "skus": [
+        "RB-ASVO-GYCY"
+      ],
+      "asins": [
+        "B0H859N8VM"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter & Strawberry Jam",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4f211e052434a7f77a7221459edc2253950a03e334ed9097a3f6ac922263f59d.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/4f211e052434a7f77a7221459edc2253950a03e334ed9097a3f6ac922263f59d.png"
+      ],
+      "sha256": "4f211e052434a7f77a7221459edc2253950a03e334ed9097a3f6ac922263f59d",
+      "skus": [
+        "LU-ASK0-LSDF"
+      ],
+      "asins": [
+        "B0H84YZDB7"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Peanut Butter & Grape Jelly"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ccc53b0c12eed30df6666f375cb112b1b4a6d4ceb19b18d7d8bdda15c70059be.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/ccc53b0c12eed30df6666f375cb112b1b4a6d4ceb19b18d7d8bdda15c70059be.png"
+      ],
+      "sha256": "ccc53b0c12eed30df6666f375cb112b1b4a6d4ceb19b18d7d8bdda15c70059be",
+      "skus": [
+        "XW-ASSI-SZZT"
+      ],
+      "asins": [
+        "B0H858GF4N"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Peanut Butter & Honey Spread"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhjn7b000e04jubobzfk97-AU-AS97-USX8/main-20260717t233232559z-a1-2eaafc221005.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/repair-cmrbhjn7b000e04jubobzfk97-AU-AS97-USX8/main-20260717t233232559z-a1-2eaafc221005.png"
+      ],
+      "sha256": "2eaafc221005d01b06ae0d1ffad2139731cbf1da28d3aa1f551867fa4c6020a3",
+      "skus": [
+        "AU-AS97-USX8"
+      ],
+      "asins": [
+        "B0H843Q9B5"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Peanut Butter & Raspberry Spread Each"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f363078c740874ee4f8d84618efe57cb6be62258a0e06e271bb31961c0ae47e9.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/f363078c740874ee4f8d84618efe57cb6be62258a0e06e271bb31961c0ae47e9.png"
+      ],
+      "sha256": "f363078c740874ee4f8d84618efe57cb6be62258a0e06e271bb31961c0ae47e9",
+      "skus": [
+        "UF-ASA1-GN5P"
+      ],
+      "asins": [
+        "B0H854DM3X"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Peanut Butter & Strawberry Jam"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/d24c56958da1aaef9c6e849e748478af41d6f72d1f2dde502405ff14e0a55fd7.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/d24c56958da1aaef9c6e849e748478af41d6f72d1f2dde502405ff14e0a55fd7.png"
+      ],
+      "sha256": "d24c56958da1aaef9c6e849e748478af41d6f72d1f2dde502405ff14e0a55fd7",
+      "skus": [
+        "FN-ASVM-UWAG"
+      ],
+      "asins": [
+        "B0H85J88LJ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/40390c94d636582c75441914f1e66852628e30ee9d9ca430d4a2ec900d48e0ec.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/40390c94d636582c75441914f1e66852628e30ee9d9ca430d4a2ec900d48e0ec.png"
+      ],
+      "sha256": "40390c94d636582c75441914f1e66852628e30ee9d9ca430d4a2ec900d48e0ec",
+      "skus": [
+        "WK-ASPD-G9HL"
+      ],
+      "asins": [
+        "B0H85CF81Y"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b1f771c281fc1922f10703bb4cbe2de41c1d323eef3a8db4f3034d14de7ca1df.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/b1f771c281fc1922f10703bb4cbe2de41c1d323eef3a8db4f3034d14de7ca1df.png"
+      ],
+      "sha256": "b1f771c281fc1922f10703bb4cbe2de41c1d323eef3a8db4f3034d14de7ca1df",
+      "skus": [
+        "VT-ASTH-B6LM"
+      ],
+      "asins": [
+        "B0H85CL8JD"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Peanut Butter",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e79dc071cf582606691530947ab11afb4824acf547df2fa2b0eca1708460d0c0.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e79dc071cf582606691530947ab11afb4824acf547df2fa2b0eca1708460d0c0.png"
+      ],
+      "sha256": "e79dc071cf582606691530947ab11afb4824acf547df2fa2b0eca1708460d0c0",
+      "skus": [
+        "FV-AS47-EJZW",
+        "PY-ASBM-WX6W",
+        "QC-ASX2-RHPA",
+        "RN-ASLP-VH3X",
+        "RQ-ASM7-T9NN"
+      ],
+      "asins": [
+        "B0H82SZSYJ",
+        "B0H82B7GV5",
+        "B0H83TQPJB",
+        "B0H82JYZQH",
+        "B0H83HNB3B"
+      ],
+      "totals": [
+        45,
+        24,
+        120,
+        30,
+        90
+      ],
+      "flavors": [
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1b1e086f7af2b997a09f3fa79654b52929057bc88ea5d8b8fe0145df3b4636f3.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/1b1e086f7af2b997a09f3fa79654b52929057bc88ea5d8b8fe0145df3b4636f3.png"
+      ],
+      "sha256": "1b1e086f7af2b997a09f3fa79654b52929057bc88ea5d8b8fe0145df3b4636f3",
+      "skus": [
+        "JU-ASYC-SSJD"
+      ],
+      "asins": [
+        "B0H854C7SZ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)",
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e11f0d3398f26ad238ac2ed325e9098b2ff917a68ec73c31858c44c856eb75b1.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/e11f0d3398f26ad238ac2ed325e9098b2ff917a68ec73c31858c44c856eb75b1.png"
+      ],
+      "sha256": "e11f0d3398f26ad238ac2ed325e9098b2ff917a68ec73c31858c44c856eb75b1",
+      "skus": [
+        "SU-ASS4-RV6R"
+      ],
+      "asins": [
+        "B0H853HGHC"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Reduced Sugar Peanut Butter & Grape Spread (same product as Whole Wheat Peanut Butter & Grape Jelly)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/418ae0d4b9bb9dbe8e3b463d91978918c1497ebf25fd09c278e35aa70d3b35b4.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/418ae0d4b9bb9dbe8e3b463d91978918c1497ebf25fd09c278e35aa70d3b35b4.png"
+      ],
+      "sha256": "418ae0d4b9bb9dbe8e3b463d91978918c1497ebf25fd09c278e35aa70d3b35b4",
+      "skus": [
+        "AV-AS7X-8EXK",
+        "AY-AS5F-JEY9",
+        "BY-ASY2-8UJJ",
+        "EZ-ASLA-Y7MZ",
+        "LH-ASP7-KZR4",
+        "MF-AS0J-YRT4",
+        "NJ-ASAC-PTK2",
+        "RR-ASG1-JVKV",
+        "ZX-AS2C-GT8Q"
+      ],
+      "asins": [
+        "B0H82JTY19",
+        "B0H83MWTM7",
+        "B0H83789KC",
+        "B0H83GBJLW",
+        "B0H82XNFRW",
+        "B0H82NHQCL",
+        "B0H82X48CD",
+        "B0H8361PYX",
+        "B0H82L3LRT"
+      ],
+      "totals": [
+        45,
+        120,
+        30,
+        90,
+        90,
+        24,
+        24,
+        45,
+        30
+      ],
+      "flavors": [
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/35b5ec693d235a61991a67511251c22096223237d2d5f60eee76e07ed3951e44.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/35b5ec693d235a61991a67511251c22096223237d2d5f60eee76e07ed3951e44.png"
+      ],
+      "sha256": "35b5ec693d235a61991a67511251c22096223237d2d5f60eee76e07ed3951e44",
+      "skus": [
+        "QP-ASAD-PTLX"
+      ],
+      "asins": [
+        "B0H85DG2JQ"
+      ],
+      "totals": [
+        24
+      ],
+      "flavors": [
+        "Reduced Sugar Peanut Butter & Strawberry Spread (same product as Whole Wheat Peanut Butter & Strawberry Jam)",
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/63c0b4b320bdf6e216d630fe66e47546b4348c35517df73159126d3385194872.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/63c0b4b320bdf6e216d630fe66e47546b4348c35517df73159126d3385194872.png"
+      ],
+      "sha256": "63c0b4b320bdf6e216d630fe66e47546b4348c35517df73159126d3385194872",
+      "skus": [
+        "JS-AS5F-QB8T",
+        "WC-ASH5-EFN6"
+      ],
+      "asins": [
+        "B0H822TJ7C",
+        "B0H833W54L"
+      ],
+      "totals": [
+        30,
+        30
+      ],
+      "flavors": [
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/7213c021fc8a3f07e9ab86cc17212435eff1e5f3081990bcb0e750daba4e36ab.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/7213c021fc8a3f07e9ab86cc17212435eff1e5f3081990bcb0e750daba4e36ab.png"
+      ],
+      "sha256": "7213c021fc8a3f07e9ab86cc17212435eff1e5f3081990bcb0e750daba4e36ab",
+      "skus": [
+        "HD-ASEQ-MFAY",
+        "PW-ASDZ-CSR8",
+        "SA-ASCK-J2B2",
+        "ZY-ASZ4-QM5U"
+      ],
+      "asins": [
+        "B0H83QW85C",
+        "B0H839TPC5",
+        "B0H82XP1MM",
+        "B0H83T9QZV"
+      ],
+      "totals": [
+        90,
+        45,
+        45,
+        120
+      ],
+      "flavors": [
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    },
+    {
+      "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cd70e782548e6dbced28137b53232474b8efd6d0df7c256e3c6e681d9f820db0.png",
+      "urls": [
+        "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-cooler-real/sha256/cd70e782548e6dbced28137b53232474b8efd6d0df7c256e3c6e681d9f820db0.png"
+      ],
+      "sha256": "cd70e782548e6dbced28137b53232474b8efd6d0df7c256e3c6e681d9f820db0",
+      "skus": [
+        "JH-ASV9-Z46X",
+        "QX-AS89-H8YC"
+      ],
+      "asins": [
+        "B0H8369PMK",
+        "B0H82RQ226"
+      ],
+      "totals": [
+        24,
+        24
+      ],
+      "flavors": [
+        "Up & Apple (Morning Protein Peanut Butter & Apple Cinnamon Jelly)"
+      ]
+    }
+  ],
+  "sha256": "66b90c60d4d4a23a81b8f6c857cff04fa819facab111622104ac66447baa734f"
+}

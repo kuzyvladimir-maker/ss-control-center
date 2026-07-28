@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "18661390-9122-4ef9-bb4b-f67101ce69d9",
+  "created_at": "2026-07-19T04:50:29.046Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VK-ASSB-3YFK:media",
+  "sku": "VK-ASSB-3YFK",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "a143c6a6-8642-4e58-9dc7-e690fe3412f3",
+    "submitted_at": "2026-07-19T04:49:38.316Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "8939d8195805461a1c84e1da73720c77302c9db63246c8229ca8941eb07f8d56",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "9d8f412df9013ee86fefea51ebe4dd32a8d48d883e9e1eb38a673ce3000aa41f"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "c184788f4cc82829af54993b038e9070e637cebeec852d752119054381e6d1f2"
+}

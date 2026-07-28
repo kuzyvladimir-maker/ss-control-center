@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b2952d11-4e81-46d3-8ac4-e3463e0f405f",
+  "created_at": "2026-07-19T04:21:24.823Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "LK-AS7X-K43B:media",
+  "sku": "LK-AS7X-K43B",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "bbac0e75e32b7c8d3d75a913d39904e247cd0a7b41f34220a2926be86b4fa69a",
+    "submitted_event_id": "e95d6ad2-6f85-4635-9660-6732f1369ff6",
+    "stable_post_write_reads": 3,
+    "polling_reads": 3,
+    "polling_sweep": 3,
+    "elapsed_ms": 10417.505374999999,
+    "path_state_sha256": "efa08fb6549513519c1bb6ba29655eec2d6da0a6c6b1bd9969b880935b1eb12f",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe.png",
+        "actual": "https://m.media-amazon.com/images/I/51AW14UqDgL.jpg"
+      }
+    ]
+  },
+  "sha256": "d12129961cc3d2f8d3431146fda450b6544f9af7c8bfc517b76d2eface774132"
+}

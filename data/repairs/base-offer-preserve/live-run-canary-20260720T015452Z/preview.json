@@ -1,0 +1,16 @@
+◇ injected env (15) from .env.local // tip: ◈ encrypted .env [www.dotenvx.com]
+◇ injected env (61) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+{
+  "mode": "VALIDATION_PREVIEW",
+  "execution_binding_sha256": "bf1f8ada30d407d7e565cc462f1e1051d53c5d5d22725537824eabd0540ef873",
+  "selected_actions": 1,
+  "offline_validated_actions": 0,
+  "preview_valid_actions": 1,
+  "submitted_actions": 0,
+  "verified_actions": 0,
+  "already_applied_actions": 0,
+  "pre_request_aborted_actions": 0,
+  "ambiguous_actions": 0,
+  "external_mutations_attempted": 0,
+  "stopped_early": false
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1f9cafa1-e8e3-48dc-bcd6-850cc368a7ad",
+  "created_at": "2026-07-19T03:13:33.578Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "BK-AS5Z-8UY5:media",
+  "sku": "BK-AS5Z-8UY5",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "76cd668203a7d2124aeb9026b2f0fe7776bbbbd3048e506d9232aa3cf7c3611d",
+    "submitted_event_id": "c3c85f31-6e06-4ef0-8b0b-e243acd79596",
+    "submitted_at": "2026-07-19T03:12:28.645Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "324726dd300ea187f41047860010009a4b49b56c1aa944ec0ac72abcdd2fbde4",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "07d04f165ed994c95f7a31da057aa8b4fe48066e2e80f0cef71c234584011c1e"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 5000,
+    "request_delay_ms": 250,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "f3867d8f0202b46de846a9ac07bf494548776fb60306abf21e8271d440bfe49b"
+}

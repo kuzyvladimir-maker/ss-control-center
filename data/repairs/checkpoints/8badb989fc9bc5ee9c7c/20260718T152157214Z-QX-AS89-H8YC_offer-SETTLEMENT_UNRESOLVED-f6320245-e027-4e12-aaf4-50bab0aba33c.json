@@ -1,0 +1,25 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f6320245-e027-4e12-aaf4-50bab0aba33c",
+  "created_at": "2026-07-18T15:21:57.214Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "SETTLEMENT_UNRESOLVED",
+  "detail": {
+    "recovery": true,
+    "trigger": "OFFER_SETTLE_ONLY",
+    "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+    "disposition": "PENDING_READ_LIMIT",
+    "polling_reads": 12,
+    "read_errors": 0,
+    "consecutive_stable_reads": 12,
+    "last_classification": "NON_DESIRED",
+    "last_path_state_sha256": "181af91f7da3dad70c4d8b58d07454041512054f7870eb512f9cba0b20c0abb6",
+    "remains_pending": true,
+    "automatic_resubmission_authorized": false
+  },
+  "sha256": "3aed620b4b0242c541aca9aa748046f90ec03881850410598ca40bf82608ed22"
+}

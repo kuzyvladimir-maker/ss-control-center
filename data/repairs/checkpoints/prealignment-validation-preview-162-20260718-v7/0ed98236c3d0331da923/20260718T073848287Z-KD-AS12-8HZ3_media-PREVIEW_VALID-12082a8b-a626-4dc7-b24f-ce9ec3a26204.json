@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "12082a8b-a626-4dc7-b24f-ce9ec3a26204",
+  "created_at": "2026-07-18T07:38:48.287Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "KD-AS12-8HZ3:media",
+  "sku": "KD-AS12-8HZ3",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "01422e1f78a23d8a1ca7a7b16566cddadd19deac34b653e82a718d2981cfd0fb",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "db0564a8de184c7cbb4f79235fb3e95f",
+    "issues": []
+  },
+  "sha256": "ba42b75be96a02d25bebc40376dbd0eaddb1324bcc6534eac40d1e68f61655c4"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "392fd368-7c7a-47db-b550-38352f03fd2b",
+  "created_at": "2026-07-18T06:37:46.388Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "SV-AS87-D6SV:text_count",
+  "sku": "SV-AS87-D6SV",
+  "kind": "TEXT_COUNT",
+  "status": "FAILED",
+  "detail": {
+    "error": "VALIDATION_PREVIEW rejected SV-AS87-D6SV:text_count: {\"status\":\"INVALID\",\"submission_id\":\"b9e3eb63742b40ec8d0ae51b968f2b1c\",\"issues\":[{\"code\":\"8541\",\"message\":\"The Listing data provided is different from what's already in the Amazon catalog. The standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided matches ASIN B0H83ZGN22, but some of the listing data contradicts what is already in the Amazon catalog. The following listing attribute value(s) conflict with Amazon catalog value(s): 'item_name' (Merchant [en_US: \\\"Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam – 12g Protein and Peanut Butter & Strawberry Jam, 24 Count\\\"] / Amazon [en_US: \\\"Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped\\\"]). To fix the issue, please follow these steps 1) If the product you are listing is the same as B0H83ZGN22, then update your listing's 'item_name' attribute(s) to match Amazon's catalog value, 2) If it's not the right ASIN, make sure the standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided is correct, or 3) If you disagree with the data in Amazon catalog contact Selling Partner Support to start the appeal process.\",\"severity\":\"ERROR\",\"attributeNames\":[\"item_name\"],\"categories\":[\"INVALID_ATTRIBUTE\"]}]}"
+  },
+  "sha256": "0b84d1dc04f126a9e9740593840ae0d24e042c6254d5c6907f5040fdc35a8004"
+}

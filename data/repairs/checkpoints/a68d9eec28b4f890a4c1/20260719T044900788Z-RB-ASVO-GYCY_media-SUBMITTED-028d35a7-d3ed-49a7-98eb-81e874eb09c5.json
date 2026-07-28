@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "028d35a7-d3ed-49a7-98eb-81e874eb09c5",
+  "created_at": "2026-07-19T04:49:00.788Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "RB-ASVO-GYCY:media",
+  "sku": "RB-ASVO-GYCY",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "bda0eee0-d526-4355-b186-58787a1c30b1",
+    "patch_sha256": "2a11181c0ed89bb7135419432baf86d0a2dcb322aaa99570bb17976523e60a24",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "2a11181c0ed89bb7135419432baf86d0a2dcb322aaa99570bb17976523e60a24",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "6733791d10b828522dffc3adfa378ef61f4610e63c40ee82172bf929e00acad3"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "3c8a83a758064c9a92eb4ad677b25923",
+    "issues": []
+  },
+  "sha256": "2849fdc862b4359fdbb44a90be770367bbfc53419eaa8208c07d495cbb7db240"
+}

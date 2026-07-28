@@ -1,0 +1,25 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ccb27d61-5235-483c-af65-7b1663a4d764",
+  "created_at": "2026-07-18T11:52:14.131Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RM-ASCV-DVA5:structured_attributes",
+  "sku": "RM-ASCV-DVA5",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b363b779c5f44723c38bfbf10585457c2e2fc4697d7f098c46711db8d3380101",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "7edb11cb9fd9e5e5fac58d3abd473fe01b7baabfa87905fbbfc03a885e71275f"
+    }
+  },
+  "sha256": "7d5058660bac28571f92ad0c8a66fa0d8431492915c8a665c7bb8a8542f10b13"
+}

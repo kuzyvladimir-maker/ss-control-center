@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "53b011b3-de7f-4936-b324-c9cffda1fc53",
+  "created_at": "2026-07-18T06:14:14.082Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "AC-AS4J-B64F:offer",
+  "sku": "AC-AS4J-B64F",
+  "kind": "OFFER",
+  "status": "FAILED",
+  "detail": {
+    "error": "fetch failed"
+  },
+  "sha256": "84f23316ebfc460747dee4b213f0aae957e761076cae21e19daa9d8bb115ac62"
+}

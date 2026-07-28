@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3806f159-575c-4507-a79f-55aad93ac67a",
+  "created_at": "2026-07-18T08:42:28.232Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JT-ASKD-KS8T:text_count",
+  "sku": "JT-ASKD-KS8T",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "5805a59eb22e1d9feda6f7a3109f40aca5b85434eb8100debcee58e2c3a2a6c4",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "809c998c666b4a2991be6eb5cbeb53d7",
+    "issues": []
+  },
+  "sha256": "872dddd0c3234fbbeaa5ea3de30d28bdecf58b3a6ca0cf1efb9addd8927368e1"
+}

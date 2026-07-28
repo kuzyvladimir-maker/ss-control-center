@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "44e1634c-347e-4178-aaca-2b6b84d6c57b",
+  "created_at": "2026-07-19T04:50:29.045Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "ER-ASRK-TPYQ:media",
+  "sku": "ER-ASRK-TPYQ",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "737ccea5-5533-4e72-a01f-7090c34f75bc",
+    "submitted_at": "2026-07-19T04:48:37.053Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "1df67ba6a309cde4613d5215c8bfe4f5476ff36d262572d0d4eaea7c5d053e72",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "d11621b19e0370a28e66e78a1a738428b1cd0116bd29d219cd7d1e8f29fbae62"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "cd1f03324db5aeac69a568660e4a6912464027599ec28a7acc1d06b20c999e91"
+}

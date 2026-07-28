@@ -1,0 +1,41 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1130",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1130",
+    "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+    "upc": "684611898401",
+    "gtin14": "00684611898401",
+    "wpid": "2IAXRO7DM5YP",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "8412702942",
+    "title": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Whole-Grain-Thin-Sliced-15-Grain-Bread-22-oz-Pack-of-2_eb1686e7-0a89-41d9-9bb2-dd29b52a9a5c.900e6cc43fd167f73654dc95e9ec558e.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 2
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "bafa1f9df76e8b92b300fd2302e85873f1b9cca0d92ce467354b302d6d5e0355",
+    "catalog_search_payload_canonical_sha256": "30c83eecd2aee8453b2e2d5d23d8cafbd6e1acf0ba8f61ac51317c6266334643"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1130",
+    "seller.ItemResponse[0].sku=FaisalX-1130",
+    "seller.ItemResponse[0].upc=684611898401",
+    "seller.normalized_gtin14=00684611898401",
+    "seller.wpid_not_itemId=2IAXRO7DM5YP",
+    "catalog.items[0].standardUpc~=00684611898401;itemId=8412702942",
+    "catalog.items[1].standardUpc~=00684611898401;itemId=8412702942",
+    "catalog.unique_numeric_public_itemId=8412702942"
+  ]
+}

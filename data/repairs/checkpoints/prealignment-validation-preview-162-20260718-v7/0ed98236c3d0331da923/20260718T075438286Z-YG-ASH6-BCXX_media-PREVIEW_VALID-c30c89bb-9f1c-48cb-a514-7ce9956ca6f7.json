@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c30c89bb-9f1c-48cb-a514-7ce9956ca6f7",
+  "created_at": "2026-07-18T07:54:38.286Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "YG-ASH6-BCXX:media",
+  "sku": "YG-ASH6-BCXX",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "6d3400b9a0e5a8230eb045d68f8c66c0dd6ff4b582e4c7f387b36dc5a090a930",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "e72f930d37344e1db1e95fefb5ded4b1",
+    "issues": []
+  },
+  "sha256": "1faba702dae540db5a79999be06ff5195941bc7b5e7329cf2c938a73a730727f"
+}

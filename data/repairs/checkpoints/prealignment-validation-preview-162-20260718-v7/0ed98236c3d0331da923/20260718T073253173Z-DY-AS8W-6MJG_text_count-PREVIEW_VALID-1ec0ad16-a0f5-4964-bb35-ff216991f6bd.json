@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1ec0ad16-a0f5-4964-bb35-ff216991f6bd",
+  "created_at": "2026-07-18T07:32:53.173Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "DY-AS8W-6MJG:text_count",
+  "sku": "DY-AS8W-6MJG",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d2cb017eba89b6ca692b361e3d2a382c4c6f538eb101f4c9a5e5dc520350b162",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "9dc75de28f1a4ccdb946b71bad68f28b",
+    "issues": []
+  },
+  "sha256": "d9ac2fb209b349c8d19173473a79839c35179a5ad31dd837ed70b0a0d593e224"
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "11a4e259-e0a3-4197-b477-5d333d8603fe",
+  "created_at": "2026-07-18T11:49:22.360Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PY-ASBM-WX6W:structured_attributes",
+  "sku": "PY-ASBM-WX6W",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "a87794fc-d510-48cb-85de-31e6bf895d43",
+    "patch_sha256": "692fbf9af44142d7a1f6948311f5f855a8a2fd0ed9d704ea7eb3293e1225f47b",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "692fbf9af44142d7a1f6948311f5f855a8a2fd0ed9d704ea7eb3293e1225f47b",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "2067702ac09d4eeebf1a4188b544edb9",
+    "issues": []
+  },
+  "sha256": "7e5e10ce57537e403920829f7b7d1c5d8c92a489a4c0c1470d03173f2d0f3024"
+}

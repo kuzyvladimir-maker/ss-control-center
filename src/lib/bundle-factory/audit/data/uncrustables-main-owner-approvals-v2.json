@@ -1,0 +1,386 @@
+{
+  "schema_version": "uncrustables-main-owner-approvals/v2",
+  "immutable": true,
+  "manifest_id": "uncrustables-owner-approved-gpt-image-2-previews-2026-07-18-v2-scene-complete",
+  "captured_at": "2026-07-18T02:54:24.000Z",
+  "approved_by": "owner",
+  "registry_sha256": "9723d515a110859e54efa8f8bff1b5f7e56f49c28b411834a2d267b68e827157",
+  "entries": [
+    {
+      "proof_id": "01c-retail-boxes-single-pb-24-four-gel-packs",
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/01c-retail-boxes-single-pb-24-four-gel-packs.png",
+        "sha256": "4cdd7bec9ab5c1d5f97b5746d7569a4ffc891a36b8d1fb159168176f06e19076"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-manifest.json#/results/01c-retail-boxes-single-pb-24-four-gel-packs",
+        "sha256": "f81db762d738edd420941a8bcd2b3c57863de33bf843d117da74158699de26b2"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:01c-retail-boxes-single-pb-24",
+        "components": [
+          {
+            "flavor": "peanut-butter",
+            "quantity": 24,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "six-peanut-butter-4ct-cartons",
+            "flavor": "peanut-butter",
+            "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 6,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+                "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash 4cdd7bec; six genuine 4-count Peanut Butter cartons represent 24 units. The v2 record explicitly binds the approved pixels to exact kit geometry, 2+2 gel-pack arithmetic, physical seating, pure-white square background, and an affirmative no-loose-ice/no-overlay review.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-01c-4cdd7bec-scene-v2",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v2/01c-retail-boxes-single-pb-24-four-gel-packs",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "e8d9708237b14480594a468528a6e56ccf537132d165eafe239f2098bfc985e0",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner explicitly approved preview 01c by exact SHA-256. Re-sealed under scene-complete approval schema v2; style-reference-only status is unchanged.",
+        "sha256": "cc6dbcc4a5a43d3f6e093b11d85135c09b454ec62ec48c29adef127a60521716"
+      }
+    },
+    {
+      "proof_id": "02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs.png",
+        "sha256": "9d0294242508529022a0e2b1cdd2df0adce469ef9dbb8bd2dd7d448031ea839d"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-manifest.json#/results/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+        "sha256": "f81db762d738edd420941a8bcd2b3c57863de33bf843d117da74158699de26b2"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:02b-retail-boxes-mix-pb-blackberry-24",
+        "components": [
+          {
+            "flavor": "peanut-butter",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          },
+          {
+            "flavor": "peanut-butter-blackberry",
+            "quantity": 12,
+            "expected_pack_mode": "retail-carton",
+            "expected_retail_pack_size": 4
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "three-peanut-butter-4ct-cartons",
+            "flavor": "peanut-butter",
+            "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+                "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+              }
+            ]
+          },
+          {
+            "observation_id": "three-blackberry-4ct-cartons",
+            "flavor": "peanut-butter-blackberry",
+            "art_id": "peanut-butter-blackberry-carton-us-4ct-2026-v1",
+            "pack_mode": "retail-carton",
+            "retail_pack_size": 4,
+            "visible_package_count": 3,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-blackberry-target.jpg",
+                "sha256": "305a6ffab3b3a330f6cfdd9f82c7a457bf35abc4f6da3cb1fa996bfd8465cfe5"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash 9d029424; three genuine 4-count cartons per flavor represent 12+12 units. The v2 record explicitly binds the approved pixels to exact kit geometry, 2+2 gel-pack arithmetic, physical seating, pure-white square background, and an affirmative no-loose-ice/no-overlay review.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-02b-9d029424-scene-v2",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v2/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "95070fe3700bd590165436ab9a8dfb0921ef35d3cf4811bc558c13849d992260",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner explicitly approved preview 02b by exact SHA-256. Re-sealed under scene-complete approval schema v2; style-reference-only status is unchanged.",
+        "sha256": "83e3e5e14b0192b83946204a51fefa31eabe7aa3356929fb5f24e3a2f7511d2d"
+      }
+    },
+    {
+      "proof_id": "03-individual-wraps-mix-hazelnut-berry-24",
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "approval_scope": "style-reference-only",
+      "production_eligible": false,
+      "pixel_dimensions": {
+        "width": 1536,
+        "height": 1536
+      },
+      "image": {
+        "kind": "generated-main",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/03-individual-wraps-mix-hazelnut-berry-24.png",
+        "sha256": "d2f7ffdd0a3e411725a3dc1dac013f9f5f50c1e6dd9d34164c12cbe5cacc722f"
+      },
+      "generation_manifest": {
+        "kind": "generation-manifest",
+        "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/preview-review-candidates.json#/candidates/03-individual-wraps-mix-hazelnut-berry-24",
+        "sha256": "1b731b0211b3bc3258618bd8ea0075628cb236fbe79890227e0974e92b618679"
+      },
+      "recipe": {
+        "recipe_id": "owner-approved-preview:03-individual-wraps-mix-hazelnut-berry-24",
+        "components": [
+          {
+            "flavor": "chocolate-hazelnut",
+            "quantity": 12,
+            "expected_pack_mode": "individual-wrapper",
+            "expected_retail_pack_size": 1
+          },
+          {
+            "flavor": "morning-protein-mixed-berry",
+            "quantity": 12,
+            "expected_pack_mode": "individual-wrapper",
+            "expected_retail_pack_size": 1
+          }
+        ]
+      },
+      "visual_observation": {
+        "observer": "owner",
+        "observed_at": "2026-07-18T02:52:09.000Z",
+        "method": "human-visual",
+        "items": [
+          {
+            "observation_id": "twelve-chocolate-hazelnut-wrappers",
+            "flavor": "chocolate-hazelnut",
+            "art_id": "chocolate-hazelnut-wrapper-us-2026-v1",
+            "pack_mode": "individual-wrapper",
+            "retail_pack_size": 1,
+            "visible_package_count": 12,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+                "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+              }
+            ]
+          },
+          {
+            "observation_id": "twelve-morning-protein-mixed-berry-wrappers",
+            "flavor": "morning-protein-mixed-berry",
+            "art_id": "morning-protein-mixed-berry-wrapper-us-2026-v1",
+            "pack_mode": "individual-wrapper",
+            "retail_pack_size": 1,
+            "visible_package_count": 12,
+            "brand_marks": [
+              "Smucker's",
+              "Uncrustables"
+            ],
+            "classification": "reviewed-real-uncrustables",
+            "reference_evidence": [
+              {
+                "kind": "reviewed-artifact",
+                "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+                "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+              }
+            ]
+          }
+        ],
+        "foreign_items": [],
+        "fictional_or_unknown_items": [],
+        "notes": "Owner approved exact preview hash d2f7ffdd; 12 genuine wrappers of each flavor represent 24 units. The v2 record explicitly binds the approved pixels to exact kit geometry, 2+2 gel-pack arithmetic, physical seating, pure-white square background, and an affirmative no-loose-ice/no-overlay review.",
+        "scene": {
+          "background_is_pure_white": true,
+          "square_one_to_one": true,
+          "cooler_is_white_textured_eps": true,
+          "cooler_lid_leans_behind": true,
+          "salutem_cooler_branding_matches_anchor": true,
+          "gel_packs_total": 4,
+          "gel_packs_inside": 2,
+          "gel_packs_outside": 2,
+          "gel_packs_all_match_anchor": true,
+          "products_all_seated_inside_behind_front_rim": true,
+          "product_perspective_contact_and_shadows_believable": true,
+          "floating_pasted_halo_or_wall_intersection_items": [],
+          "loose_ice_snow_or_water_items": [],
+          "forbidden_overlay_or_extra_prop_items": []
+        }
+      },
+      "human_approval": {
+        "schema_version": "uncrustables-main-visual-approval/v2",
+        "immutable": true,
+        "approval_id": "owner-approval-03-d2f7ffdd-scene-v2",
+        "approval_locator": "artifact://uncrustables-main-owner-approvals-v2/03-individual-wraps-mix-hazelnut-berry-24",
+        "reviewer": "owner",
+        "reviewed_at": "2026-07-18T02:54:24.000Z",
+        "review_method": "human-visual",
+        "decision": "APPROVED",
+        "subject_sha256": "e0955a16d769cec8465f77381d5001eda31cb3ccf00f4f8ddbc3d87540353d54",
+        "checklist": {
+          "image_opened_and_compared_to_registry_evidence": true,
+          "all_required_flavors_present": true,
+          "only_reviewed_brand_art_present": true,
+          "pack_modes_and_sizes_match_recipe": true,
+          "no_foreign_or_fictional_items": true,
+          "exact_per_variant_package_counts_match_recipe": true,
+          "frozen_kit_geometry_and_branding_match_anchor": true,
+          "exactly_two_inside_and_two_outside_gel_packs": true,
+          "products_physically_seated_without_floating_or_paste": true,
+          "pure_white_square_amazon_main_background": true,
+          "no_loose_ice_water_overlays_or_extra_props": true
+        },
+        "notes": "Owner explicitly approved preview 03 by exact SHA-256. Re-sealed under scene-complete approval schema v2; style-reference-only status is unchanged.",
+        "sha256": "30250b5783add460512ebc136b6658ca34ce82cbcdcba256c67b8f286e491fbb"
+      }
+    }
+  ],
+  "supersedes": {
+    "path": "src/lib/bundle-factory/audit/data/uncrustables-main-owner-approvals-v1.json",
+    "file_sha256": "d8cdd824c769ce01f923791bc83c1afebaecf45dff20c6561582332294d036e6",
+    "reason": "v1 proved exact product identity/count but omitted the frozen-kit geometry, gel-pack layout, physical-seating, loose-ice, and overlay observations required by the frozen MAIN v2.0 contract."
+  },
+  "safety": {
+    "production_eligible_entries": 0,
+    "amazon_writes": 0,
+    "image_generations": 0,
+    "network_requests": 0
+  },
+  "sha256": "c16d355df28752d5a4fa1076cb9ac75b4d954cb684429e456ab737e594d65b94"
+}

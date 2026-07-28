@@ -1,0 +1,11 @@
+Create a 2048 by 2048 production-resolution version of the already owner-approved Uncrustables frozen MAIN scene.
+
+Reference order is authoritative:
+1. Reference 1 is the immutable approved Salutem frozen-kit anchor. It controls the exact white textured EPS cooler, lid, camera angle, pure-white studio background, ornate green Salutem emblem, black SALUTEM SOLUTIONS wordmark, black OUR BEST SOLUTIONS FOR YOU slogan, and exactly four branded white gel packs in the 2-inside plus 2-outside layout.
+2. Reference 2 is the owner-approved retail-boxes-mix composition. Preserve its exact balanced six-carton geometry and appearance.
+3. Reference 3 is genuine current manufacturer package art for the orange Smucker's Uncrustables Peanut Butter Sandwich 4-count retail carton.
+4. Reference 4 is genuine reviewed package art for the purple Smucker's Uncrustables Blackberry Boom / Peanut Butter & Blackberry Spread 4-count retail carton.
+
+Reproduce the approved composition at production resolution with exactly SIX genuine cartons: THREE orange Peanut Butter 4-count cartons and THREE purple Blackberry Boom 4-count cartons, representing 12 sandwiches of each flavor and 24 total. Keep both product designs separate and verbatim, including their real colors, names, brand art, food images, and genuine printed 4-count badges. Both flavors must be immediately visible in a balanced display. Every carton must be physically seated inside the cooler, lower edges behind the front inner rim, with believable contact, depth, overlap, perspective, lighting, and contact shadows. Preserve exactly two gel packs inside, one at each side, and exactly two gel packs standing outside along the front/right area.
+
+Do not add, remove, merge, hide, rename, recolor, hybridize, or redesign any product, carton, badge, gel pack, logo, wordmark, slogan, or cooler part. No floating cartons, gaps beneath products, pasted edges, alpha halos, wall intersections, retailer marks, price labels, overlays, watermarks, loose ice, snow, extra objects, fictional packaging, generic packaging, wrappers, or third flavor. Pure white square Amazon MAIN background. Premium photorealistic commercial product photography. The final result must remain visually the same approved scene, only rendered cleanly at 2048 by 2048.

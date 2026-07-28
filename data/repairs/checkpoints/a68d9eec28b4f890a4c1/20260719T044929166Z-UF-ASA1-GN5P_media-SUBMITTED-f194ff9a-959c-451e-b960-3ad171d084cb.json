@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f194ff9a-959c-451e-b960-3ad171d084cb",
+  "created_at": "2026-07-19T04:49:29.166Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "UF-ASA1-GN5P:media",
+  "sku": "UF-ASA1-GN5P",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "205b908b-115b-408b-94b3-4e58b0e90b6b",
+    "patch_sha256": "a6c423b988087804dd52c9f342718e5fbeebe27494865537809b31ea8526a962",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "a6c423b988087804dd52c9f342718e5fbeebe27494865537809b31ea8526a962",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "e47fd79d5060e944dd74a05c67815d432945dadbabd35ac8d9c190cbc3be1af5"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "5196acd2682c4900bd5aecec3f067ce4",
+    "issues": []
+  },
+  "sha256": "d8ff377897591e0aa19bdfde6fc642282db964f08e0df7b3f39029452f36d5ef"
+}

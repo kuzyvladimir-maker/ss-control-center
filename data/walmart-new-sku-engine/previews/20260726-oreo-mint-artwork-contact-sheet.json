@@ -1,0 +1,93 @@
+{
+  "schema_version": "walmart-packaging-artwork-contact-sheet/1.0.0",
+  "source_plan_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/candidates/20260726T180813Z-oreo-mint-review-doctor.plan/plan.json",
+  "source_plan_sha256": "c71857dbdfe8019c3eb691882ad0791c38262c406be63bc1905acea4f94225e6",
+  "donor_product_id": "3f95a432-eb1d-4735-96de-e68e20a765b3",
+  "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+  "product_title": "Oreo Thins Mint Creme Chocolate Sandwich Cookies Family Size - 11.78oz",
+  "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_b2a01588-f60d-4207-be6c-48f7b58295ec",
+  "images": [
+    {
+      "index": 1,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_b2a01588-f60d-4207-be6c-48f7b58295ec",
+      "downloaded_asset_sha256": "40352333831fb595444e8f5b418e1706ae07020df9a287b528e22d3cc2fe97b9"
+    },
+    {
+      "index": 2,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_2e165dab-10fa-485b-a4dd-f864a09f05b8",
+      "downloaded_asset_sha256": "6a29fd318c28b94ed623c8fdea1063bce131b89fb21b2191eeb12ab5223b5688"
+    },
+    {
+      "index": 3,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_869203a1-5afd-489d-95cc-516b79d5072d",
+      "downloaded_asset_sha256": "9df847819e2eb7c790d6d3c5fe413698ce5907d60ac3c98d46bb26bc9716651f"
+    },
+    {
+      "index": 4,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_902ab974-dbba-4cfb-9711-6bc02d03c026",
+      "downloaded_asset_sha256": "e896ed6a3e4155cc8c7c7969f1593e73d5d1e90039e35d193acb980e8cd8b7e0"
+    },
+    {
+      "index": 5,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ccbbdfe6-8fd9-41f5-a95d-004bdc8311b8",
+      "downloaded_asset_sha256": "d061152fd92454a495dd3544b82c2ec13c6e9424a6bc8402f11890e047f5c65e"
+    },
+    {
+      "index": 6,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_135435e0-9c87-4bf1-97e5-28dbefe5e015",
+      "downloaded_asset_sha256": "ab1f79779025a8cb3161fd545d92488db60de326ea2435f8aff7289311d4bc04"
+    },
+    {
+      "index": 7,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ba1df74c-a08a-4499-b146-d8d067d961d9",
+      "downloaded_asset_sha256": "c92bf319af56bd80c1deed79910c84dfbbac01faf8becc4ec9942ac526edab9e"
+    },
+    {
+      "index": 8,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_3995a970-e340-4e14-bc2e-e0cd118eddde",
+      "downloaded_asset_sha256": "18d1cd107022b0fe80092cce1602c98edf3829ffdf883f554bad6a6cb87505c9"
+    },
+    {
+      "index": 9,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_0c11c8ad-1d28-4e01-92ee-be549e44354f",
+      "downloaded_asset_sha256": "9366606f58ac2b814ffd90cc2b7061e5dec52744dac7abf5a030a268ebcd7883"
+    },
+    {
+      "index": 10,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_32a8746d-9b47-45f9-9d9a-bf434e8ba7fc",
+      "downloaded_asset_sha256": "454e3976ac39784ef721ee36fd41cf5b63200837ac4a7ece69aa5ab0fc4b795c"
+    },
+    {
+      "index": 11,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_c1a02aaa-fc8c-4d97-b492-571e1a8b6390",
+      "downloaded_asset_sha256": "dc81466fbc182609d907bec278b336bdea49b5bb4c24c268875ecc5e35442bf2"
+    },
+    {
+      "index": 12,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_f6d7a8f9-2db6-4ad6-9d93-1bab5ce9e4ba",
+      "downloaded_asset_sha256": "b28b9f7ee566a00ab3ae34ceca074f0df192b943f36024df607abf055c6e5e2b"
+    },
+    {
+      "index": 13,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_d8b5392b-4b6b-41de-b2de-d9b1820aa007",
+      "downloaded_asset_sha256": "549596dfb8062db00c27e0fd41d5a89adeb971d2b3e86ff8701fde75c6010e9d"
+    },
+    {
+      "index": 14,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_fba665c3-5d3d-4afe-acce-9c496586af49",
+      "downloaded_asset_sha256": "8859e0365b22b40fc98be576300e7dccf07cf6b750f205988c007b5ac892f1e2"
+    },
+    {
+      "index": 15,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_137bd4e9-91ea-4c31-ba1e-a38c41ddc0cb",
+      "downloaded_asset_sha256": "b068e0cd6fe9b7ac081f74b71adf09e762b55e186e3364688227295d87555007"
+    }
+  ],
+  "contact_sheet_sha256": "87c6603287aa3f9904ca19eae16ff26f8f4c49888d82bff80209fa545451d5af",
+  "external_effects": {
+    "database_writes": 0,
+    "marketplace_writes": 0,
+    "provider_calls": 0,
+    "upc_reserved": false
+  }
+}

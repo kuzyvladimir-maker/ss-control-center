@@ -1,0 +1,92 @@
+{
+  "schema_version": "walmart-listing-integrity-product-truth-donor-audit/v1",
+  "captured_at": "2026-07-27T00:01:04.706Z",
+  "mode": "READ_ONLY",
+  "listing": {
+    "listing_key": "walmart:1:FaisalX-1181",
+    "sku": "FaisalX-1181",
+    "seller_title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+    "seller_upc": "684611898913",
+    "seller_gtin14": "00684611898913",
+    "buyer_item_id": "8389917875",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "current_legacy_component": {
+    "component_id": "comp:FaisalX-1181:0",
+    "product": "Bakery Classics",
+    "flavor": "Butter",
+    "size": "14 oz",
+    "quantity": 2,
+    "donor_product_id": "847a227b-7c08-4042-b221-33bfe58fe0b2",
+    "donor_title": "Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct",
+    "donor_size": "15 oz",
+    "matched_retailer": "target",
+    "matched_price": 3.39,
+    "cost_method": "line-price",
+    "line_cost": 6.78,
+    "finding": "WRONG_PRODUCT_DONOR",
+    "canonical_use_allowed": false
+  },
+  "exact_content_candidate": {
+    "donor_product_id": "e8f7a13f-d6ae-4b04-badb-d62dd3d22ba6",
+    "title": "Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns - 14oz/8ct",
+    "brand": "Pepperidge Farm",
+    "size": "14 oz",
+    "inner_count": 8,
+    "upc": "014100050162",
+    "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_50842c30-b7f4-4e34-b603-f4827710788a",
+    "gallery_image_count": 8,
+    "identity_status": "legacy_unverified",
+    "canonical_variant_decision_count": 0,
+    "offers": [
+      {
+        "offer_id": "do:target:54569726",
+        "retailer": "target",
+        "retailer_product_id": "54569726",
+        "via": "direct",
+        "seller_name": "target",
+        "is_first_party": true,
+        "pack_size_seen": 1,
+        "price": 3.39,
+        "zip": "33765",
+        "source_api": "unwrangle",
+        "fetched_at": "2026-07-10T06:02:37.804Z"
+      }
+    ],
+    "fresh_price_ready": false,
+    "content_identity_evidence_ready_for_owner_review": true,
+    "canonical_use_allowed": false
+  },
+  "evidence": {
+    "fresh_walmart_intake_index_body_sha256": "efdc6cbd443e98a15ab27e15751a6aee3b64d627cd5d5e3c16c5bacc6bf6e8a8",
+    "fresh_buyer_snapshot_body_sha256": "fd8371e3af88d49caac298f1fe9a9e4619989c3237c9b71a3ea8409f0524c054",
+    "legacy_source_snapshot_file_sha256": "eeea8c6f279ed2b242f0f3c90433e210f17a93014cbdeb38a35630b444008db6",
+    "legacy_source_snapshot_path": "../../product-truth-legacy-bridge/20260726T231610Z-readonly-v1/source-snapshot.json",
+    "owner_calibration_pool_path": "../../walmart-listing-integrity-single-calibration/owner-calibration-pool-20260726-v1.json"
+  },
+  "product_truth_point_read": {
+    "contract_version": "3.2.0",
+    "ready": false,
+    "blockers": [
+      "CURRENT_SCOPED_SKU_COST_MISSING",
+      "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+    ],
+    "content_price_axes_are_independent": true
+  },
+  "conclusions": [
+    "The legacy component donor is Sesame Topped Hamburger Buns, a different product and variant, and must never be promoted into canonical content truth.",
+    "The exact Butter Top Sliced Hot Dog Buns candidate matches the live brand, product form, variant, 14 oz size, 8-count inner package and every current image.",
+    "The seller listing is a two-pack recipe of the exact single 14 oz/8-count sellable package; current MAIN visibly shows two correct packages.",
+    "Missing COGS is a separate price-readiness issue and does not invalidate exact content evidence.",
+    "This audit authorizes neither shared Product Truth activation nor a Walmart write."
+  ],
+  "external_effects": {
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_api_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "walmart_listing_writes": 0
+  }
+}

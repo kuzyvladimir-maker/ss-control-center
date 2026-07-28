@@ -1,0 +1,57 @@
+{
+  "schema_version": "walmart-listing-integrity-product-truth-readiness/v2",
+  "captured_at": "2026-07-23T01:30:07.000Z",
+  "status": "BLOCKED_SKU_TRUTH_NOT_READY",
+  "source_contract": "product-truth-read-contract/3.2.0",
+  "database_target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "schema_current_sha256": "8c9fc783e53fe4a94b7433eb1b06ac8b36ce03226100bfe4500d3e896367d511",
+  "migration_set_sha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "activation_contract_sha256": "7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e",
+  "post_activation_plan": {
+    "path": "data/walmart-new-sku-engine/activation/20260723T012855Z-product-truth-postapply-v3/plan.json",
+    "sha256": "37c6d141e3d97c3d8fef1f54f57cff6725b6b657126c48b23194a9db487913fa",
+    "can_apply": true,
+    "blockers": [],
+    "receipt_ledger": "ready",
+    "prisma_ledger": "ready",
+    "applied_tracked_migrations": 8
+  },
+  "migration_certification": {
+    "path": "data/walmart-new-sku-engine/activation/20260723T012021Z-product-truth-activation-v3/migration-certification.json",
+    "sha256": "d26f57023230f6c2145a7bd09c2d9c4c2028dd80521082dda4da5f3d310b8093",
+    "report_path": "data/walmart-new-sku-engine/activation/20260723T012021Z-product-truth-activation-v3/report.json",
+    "report_sha256": "9039f22612ed76a7efeaf473c5b94f1e151109b962c91b361558dfc8dd22a1db",
+    "all_migrations_applied": true,
+    "all_receipts_tracked": true,
+    "receipt_ledger_ready": true
+  },
+  "listing_truth_probe": {
+    "listing_key": "walmart:1:FaisalX-1183",
+    "sku": "FaisalX-1183",
+    "channel": "walmart",
+    "store_index": 1,
+    "as_of": "2026-07-23T01:30:07.000Z",
+    "recipe_component_count": 0,
+    "listing_improvement_ready": false,
+    "blockers": [
+      "LISTING_SCOPE_NOT_REGISTERED",
+      "CURRENT_SCOPED_SKU_COST_MISSING"
+    ]
+  },
+  "pending_migrations": 0,
+  "claims": {
+    "shared_product_truth_required": true,
+    "schema_ready": true,
+    "competing_local_truth_allowed": false,
+    "execution_package_ready": false,
+    "walmart_write_authorized": false,
+    "mass_run_authorized": false
+  },
+  "external_effects": {
+    "schema_migration_transactions": 1,
+    "database_read_only_sessions_after_activation": 2,
+    "product_truth_business_data_writes": 0,
+    "model_calls": 0,
+    "walmart_writes": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "aa075b7d-9546-4878-9187-57f57dc882d0",
+  "created_at": "2026-07-18T08:45:33.244Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NC-ASPL-EXE8:media",
+  "sku": "NC-ASPL-EXE8",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "94b2bb94067fb85f2cdd33068aff3db983ba94a7c764fcdb2992ad40006253d0",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "8a5d9aed49a843ca97147a266f7bf2df",
+    "issues": []
+  },
+  "sha256": "011a2930ec01bda13fba8bddc4f9767367687b43cdf448b0e243c6dafc087f1d"
+}

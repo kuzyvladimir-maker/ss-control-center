@@ -1,0 +1,79 @@
+{
+  "product": {
+    "item_id": "5410523365",
+    "product_url": "https://www.walmart.com/ip/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags/5410523365",
+    "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+    "main_image": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+    "images": [
+      "https://i5.walmartimages.com/seo/Pepperidge-Farm-Soft-White-Hoagie-Rolls-with-Sesame-Seeds-3-Pack-6-Count-Bags_474ec26f-6f1f-49b1-bb3f-f079144fa8a5.ec47dc0991d4291e48ff917cff54679f.png",
+      "https://i5.walmartimages.com/asr/9b72a87a-35a6-4fc6-8cc1-260814aaeb1d.f6cd657819173b5326cbe7ac74bc79e8.jpeg",
+      "https://i5.walmartimages.com/asr/37119ea1-3029-4b2c-90ab-b4abab378b77.a067a938062a32bac1340cb1d9b26fe6.png"
+    ],
+    "description": "Timeless and without pretense, Pepperidge Farm \"Bakery Classics\" stand for quality, with premium ingredients, perfectly orchestrated with a baker's touch. Make your sandwiches a little more special with our delicious hoagie rolls. These classic buns will transform your homemade sandwich into a rival for your favorite deli order.",
+    "feature_bullets": [
+      "Soft White Hoagie Rolls topped with sesame seeds",
+      "No color from artificial sources, no high fructose corn syrup",
+      "Fill these delicious white bread rolls with your favorite warm or cold sandwich fillings",
+      "Enjoy with deli cold cuts and cheese, savory meatballs, Italian sausage, or anything else you can imagine.",
+      "6 count bag of Pepperidge Farm hoagie rolls, 14.5 ounces"
+    ],
+    "specifications": [
+      {
+        "name": "Brand",
+        "value": "Pepperidge Farm"
+      },
+      {
+        "name": "Bread & bun type",
+        "value": "White Bread"
+      },
+      {
+        "name": "Grain type",
+        "value": "White Wheat"
+      },
+      {
+        "name": "Flavor",
+        "value": "Sesame"
+      },
+      {
+        "name": "Count",
+        "value": "6"
+      },
+      {
+        "name": "Piece count",
+        "value": "6"
+      },
+      {
+        "name": "Food form",
+        "value": "Roll"
+      },
+      {
+        "name": "Texture",
+        "value": "Soft"
+      },
+      {
+        "name": "Manufacturer",
+        "value": "Pepperidge Farm"
+      },
+      {
+        "name": "Product line",
+        "value": "Bakery Classics"
+      },
+      {
+        "name": "Container type",
+        "value": "Bag"
+      },
+      {
+        "name": "Material",
+        "value": "Bags"
+      },
+      {
+        "name": "Theme",
+        "value": "Bakery Classics"
+      },
+      {
+        "name": "Food & drug fact label type",
+        "value": "Nutrition Fact Panel"
+      }
+    ]
+  }
+}

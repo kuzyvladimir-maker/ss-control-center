@@ -1,0 +1,37 @@
+{
+  "schema_version": "channelmax-qx-fence-recovery-postwrite/v1",
+  "confirmed_at": "2026-07-19T02:26:03Z",
+  "row": {
+    "item_id": 171129419,
+    "sku": "QX-AS89-H8YC",
+    "asin": "B0H82RQ226",
+    "site_id": 300
+  },
+  "before": {
+    "minimum_price": null,
+    "maximum_price": 85.70,
+    "price": 85.70,
+    "repricing_model_name": "Default"
+  },
+  "after": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "price": 76.99,
+    "repricing_model_name": "Default"
+  },
+  "write_response": {
+    "is_valid": true,
+    "message": "SUCCESS",
+    "updated_rows": 1
+  },
+  "independent_readback": {
+    "action": "inventoryitemsite",
+    "is_valid": true,
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "last_updated_by": "salutem-MB"
+  },
+  "amazon_next_action": "GET_ONLY_PENDING_SETTLEMENT",
+  "amazon_resubmission_performed": false,
+  "result": "PASS"
+}

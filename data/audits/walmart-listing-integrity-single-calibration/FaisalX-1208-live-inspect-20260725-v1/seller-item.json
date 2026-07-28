@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1208",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "2EUJLXJH639L",
+      "upc": "684611899187",
+      "gtin": "00684611899187",
+      "productName": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+      "shelf": "Home Page/Subscriptions/Subscription Grocery/browse pantry staples/browse subscription pantry",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 18.9
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Faisalxbread058",
+      "variantGroupInfo": {
+        "isPrimary": true,
+        "groupingAttributes": [
+          {
+            "name": "number_of_pieces",
+            "value": "2"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

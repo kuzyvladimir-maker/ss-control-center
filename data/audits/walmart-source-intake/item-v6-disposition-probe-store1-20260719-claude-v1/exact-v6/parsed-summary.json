@@ -1,0 +1,10 @@
+{
+  "schema": "walmart-source-intake-parsed-summary/v1",
+  "source_raw_file": "response-raw.bytes",
+  "http_status": 200,
+  "page": 1,
+  "limit": 0,
+  "totalCount": 0,
+  "request_count": 0,
+  "nextCursor_present": false
+}

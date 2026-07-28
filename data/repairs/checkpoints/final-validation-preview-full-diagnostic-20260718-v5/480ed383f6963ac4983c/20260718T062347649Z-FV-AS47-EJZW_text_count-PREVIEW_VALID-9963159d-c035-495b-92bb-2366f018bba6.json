@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9963159d-c035-495b-92bb-2366f018bba6",
+  "created_at": "2026-07-18T06:23:47.649Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "FV-AS47-EJZW:text_count",
+  "sku": "FV-AS47-EJZW",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "0ebf1f32135b4437aa80178d54b2cc01a5f72244c2e66d7c3cfd518e7c32c6dc",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "60f9bf440c054b8d84f228adc13a98a8",
+    "issues": []
+  },
+  "sha256": "6ac66447fbd95c3d6b084ab17e2f859bdce68bd21292ee24bf6cf40aa996bcac"
+}

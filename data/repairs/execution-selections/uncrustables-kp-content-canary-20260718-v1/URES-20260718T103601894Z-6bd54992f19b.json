@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T10:36:01.894Z",
+  "profile": "CONTENT_STRUCTURED_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+  },
+  "requested_skus": [
+    "KP-ASYC-RN84"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "TEXT_COUNT",
+    "STRUCTURED_ATTRIBUTES",
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "KP-ASYC-RN84"
+  ],
+  "selected_action_ids": [
+    "KP-ASYC-RN84:text_count",
+    "KP-ASYC-RN84:structured_attributes"
+  ],
+  "selected_actions": 2,
+  "forbidden_patch_paths": [
+    "/attributes/list_price",
+    "/attributes/purchasable_offer"
+  ],
+  "sha256": "6bd54992f19be7ff87ba87516a0394ae027c5a7e1b2d652247eda56a01282d84",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-6BD54992F19BE7FF"
+}

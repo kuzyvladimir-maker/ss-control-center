@@ -1,0 +1,611 @@
+{
+  "schema_version": "uncrustables-surgical-desired/v1",
+  "immutable": true,
+  "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+  "reviewed_at": "2026-07-19T02:07:26.995Z",
+  "scope": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "requested_rows": 24,
+    "action": "REPLACE_MAIN_ONLY"
+  },
+  "source_artifacts": {
+    "publication_manifest": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-owner-relaxed-main-publication-manifest-20260719-v1/uncrustables-owner-relaxed-main-publication-manifest-20260719-v1.json",
+      "sha256": "667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0",
+      "schema_version": "uncrustables-owner-relaxed-main-publication-manifest/v1"
+    },
+    "r2_staging": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-owner-relaxed-main-r2-staging-20260719-v1/uncrustables-owner-relaxed-main-r2-staging-20260719-v1.json",
+      "sha256": "8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+      "schema_version": "uncrustables-owner-relaxed-main-r2-staging/v1"
+    },
+    "source_ledger": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+      "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+      "audit_id": "ULR-20260717T232140568Z",
+      "schema_version": "uncrustables-ledger/v1.2",
+      "rows": 167
+    }
+  },
+  "main_image_patch_rows": [
+    {
+      "ordinal": 4,
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14.png",
+      "desired_main_sha256": "8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14",
+      "rollback_main_sha256": "97369434e19236edbe55e1b5c987c48b0771f5aac07b2bdb85efdcac94dd17d9"
+    },
+    {
+      "ordinal": 15,
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4.png",
+      "desired_main_sha256": "57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4",
+      "rollback_main_sha256": "d61f1d41c5d5f719df8a4e82f44d5dababd670b27e484ca05c306dcbfb4deed1"
+    },
+    {
+      "ordinal": 21,
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/329018568efd51975ed844878a1f2bc997bc523206a1e2cf98bc153f49309cb5.png",
+      "desired_main_sha256": "329018568efd51975ed844878a1f2bc997bc523206a1e2cf98bc153f49309cb5",
+      "rollback_main_sha256": "24b03ca34785d46db380b5f8d289751eb84b86791e065f8a5de160c99aa9f1d8"
+    },
+    {
+      "ordinal": 29,
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/38100c77a7995f81d3948533b2ba7f6c464739fcae838d4eb743133956c9367c.png",
+      "desired_main_sha256": "38100c77a7995f81d3948533b2ba7f6c464739fcae838d4eb743133956c9367c",
+      "rollback_main_sha256": "2f56be3d1c10f53cc42daff033122f78bb94a762a93b69e6a7702c788917e749"
+    },
+    {
+      "ordinal": 40,
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/4889abf3b83ca3fc5c9a261297722145c80751a6da6c4796033fd5bed4ebbff7.png",
+      "desired_main_sha256": "4889abf3b83ca3fc5c9a261297722145c80751a6da6c4796033fd5bed4ebbff7",
+      "rollback_main_sha256": "9783df8a5ce066aeb4e163c1cce37bf59eb4f397c1eda664acf69d5e26ba5297"
+    },
+    {
+      "ordinal": 59,
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/c1c2452b7864da95dd8ae9d8cbd7422f173f7966cec0bdf3815132ce509d254f.png",
+      "desired_main_sha256": "c1c2452b7864da95dd8ae9d8cbd7422f173f7966cec0bdf3815132ce509d254f",
+      "rollback_main_sha256": "9d3f5b2767778d4f2e5382aaf410509f8d62fc3c6039450c957322cf4f7fc4ed"
+    },
+    {
+      "ordinal": 65,
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe.png",
+      "desired_main_sha256": "f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe",
+      "rollback_main_sha256": "7561ca68cb626ac5d464b3fd13f5c20faa74191192111cc588ad9b26bd03a536"
+    },
+    {
+      "ordinal": 67,
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/32e11571a2a93a7ed565eacb1e3f4b0a912d0aac57ca93cab5e467cf2125cfd8.png",
+      "desired_main_sha256": "32e11571a2a93a7ed565eacb1e3f4b0a912d0aac57ca93cab5e467cf2125cfd8",
+      "rollback_main_sha256": "cef974d62abaed6194ce5d98c3a720f6ee34b84c1c7f9a670985eb0721393738"
+    },
+    {
+      "ordinal": 80,
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/d596dece64ba6e143531819ad38cefd532f38b67fd7cf5c1f74f446af0cbe9d6.jpg",
+      "desired_main_sha256": "d596dece64ba6e143531819ad38cefd532f38b67fd7cf5c1f74f446af0cbe9d6",
+      "rollback_main_sha256": "a2bb4733ed0c6c8211d4522f46ac8deca3b3760ea35c88694b80bca78bc858a8"
+    },
+    {
+      "ordinal": 84,
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc.png",
+      "desired_main_sha256": "f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc",
+      "rollback_main_sha256": "c68598f94e3880d0c0a5e3b2e3437d06a1d082ba2d2ef92fd9c70f0a4dc56300"
+    },
+    {
+      "ordinal": 94,
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/1f39fe57fc291f4ad8e18d8eb21a966f501d49dd0eb4c361e13f2b420711b0d0.png",
+      "desired_main_sha256": "1f39fe57fc291f4ad8e18d8eb21a966f501d49dd0eb4c361e13f2b420711b0d0",
+      "rollback_main_sha256": "7bb8529b296b574da1ea71c84d1b935875e3d707e0959a30dd1cac7435c06240"
+    },
+    {
+      "ordinal": 96,
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/3398bb472d684a29a8a7f98f976497a32be31eac8dcb908712eceba1ec69f93b.jpg",
+      "desired_main_sha256": "3398bb472d684a29a8a7f98f976497a32be31eac8dcb908712eceba1ec69f93b",
+      "rollback_main_sha256": "016d2b0daf4efad42eb3af55230da484414cabc9cab39a8d55561438b94d4b5a"
+    },
+    {
+      "ordinal": 110,
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/be2b3f0a2f2de897199c5156096fddcfe08d0accdfb957751541a0d7668880c8.png",
+      "desired_main_sha256": "be2b3f0a2f2de897199c5156096fddcfe08d0accdfb957751541a0d7668880c8",
+      "rollback_main_sha256": "922a0ab21a15a4bc319729d422158edacd2407f458159e2eaaa00d1e48c1945b"
+    },
+    {
+      "ordinal": 113,
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/d0d2009b340f1dff5579ad82c7a01aa71d236a0562d04f6f084e2e0276124143.png",
+      "desired_main_sha256": "d0d2009b340f1dff5579ad82c7a01aa71d236a0562d04f6f084e2e0276124143",
+      "rollback_main_sha256": "0c42babddbb923ddf7829ba429a749d50311b483429eaae0e1ec33df80417b82"
+    },
+    {
+      "ordinal": 115,
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/45b7c2a18b680b8aa85cb040782e12249df87c05875d6f30551114e4eab00434.png",
+      "desired_main_sha256": "45b7c2a18b680b8aa85cb040782e12249df87c05875d6f30551114e4eab00434",
+      "rollback_main_sha256": "4b496dc05906b11d852353bac3deb9dddbeb937c7be52c3e3d50a4f67ee172ec"
+    },
+    {
+      "ordinal": 116,
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/c1c4b1d3a456e6a4923a42ec3a38010e593872802d73bbd9b67295ae3d555a01.png",
+      "desired_main_sha256": "c1c4b1d3a456e6a4923a42ec3a38010e593872802d73bbd9b67295ae3d555a01",
+      "rollback_main_sha256": "d0cf5a806b640e59a8260698c24cdf633072446fef824a7bd0b84989ab82fea8"
+    },
+    {
+      "ordinal": 123,
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14.png",
+      "desired_main_sha256": "8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14",
+      "rollback_main_sha256": "ee5bf3bb4907bbbaf088657009993d185464fa893374f6508a06aff8d97da896"
+    },
+    {
+      "ordinal": 127,
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/6f75d4eb67a8ea5704851d0eeb4fa115cee9be0621d5d2818f074eeb09074aa9.png",
+      "desired_main_sha256": "6f75d4eb67a8ea5704851d0eeb4fa115cee9be0621d5d2818f074eeb09074aa9",
+      "rollback_main_sha256": "bfd0bb2e2bb51aa0ec11b1195dbb2feb591bf740097ae0ba8a37eb5089a2f868"
+    },
+    {
+      "ordinal": 134,
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/5518355a28eb1f5cf2dafae5129e62e56bd068d0c647a6027a03d2e94ce58eb7.jpg",
+      "desired_main_sha256": "5518355a28eb1f5cf2dafae5129e62e56bd068d0c647a6027a03d2e94ce58eb7",
+      "rollback_main_sha256": "386f5dd32dc8af0dc4b883625c8b5994a1ca890dcc8dad66a13661c3417919a9"
+    },
+    {
+      "ordinal": 135,
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/2df2117f82786ad366bc4ca6f3cea92c01534f9fac98591adb10d077531c46b0.png",
+      "desired_main_sha256": "2df2117f82786ad366bc4ca6f3cea92c01534f9fac98591adb10d077531c46b0",
+      "rollback_main_sha256": "8b88d9217ead9eb6990bb98c0f8a80a1c1e271cd3eae19eb0f5169c031880e17"
+    },
+    {
+      "ordinal": 138,
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/af47fe682e36d3c3fe4887fad8e169ce75968076761ae4fe52f99c7ffd0b5fa4.png",
+      "desired_main_sha256": "af47fe682e36d3c3fe4887fad8e169ce75968076761ae4fe52f99c7ffd0b5fa4",
+      "rollback_main_sha256": "cae11d29b3d243c93e90f29bf1828bfdedb05be0f050f1ee683b779e1f8c0a85"
+    },
+    {
+      "ordinal": 142,
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/a18348936e27b91f2fab9035609b83b96f4b21c3d05a3e56171f15ad2c0606b3.png",
+      "desired_main_sha256": "a18348936e27b91f2fab9035609b83b96f4b21c3d05a3e56171f15ad2c0606b3",
+      "rollback_main_sha256": "8851c4b5d386da86939a1557154453053d38142bedea50555ed179f4b3172ec5"
+    },
+    {
+      "ordinal": 146,
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8149339c30f0c4580964d6a1bf1a91836687d1302adf0b256a648e14df2fe29a.png",
+      "desired_main_sha256": "8149339c30f0c4580964d6a1bf1a91836687d1302adf0b256a648e14df2fe29a",
+      "rollback_main_sha256": "6aaeefd9b8e5e79d8bee763841cad34e933cea1f7e0a025e2a7db119165a6d76"
+    },
+    {
+      "ordinal": 163,
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "desired_main_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/3d78cb784f1cffc3a8f944cfc14d42b76b85ab21bc3ff290201dbf694da1e03b.png",
+      "desired_main_sha256": "3d78cb784f1cffc3a8f944cfc14d42b76b85ab21bc3ff290201dbf694da1e03b",
+      "rollback_main_sha256": "b448c2ef5e5d110dc12fca50815cd8d17bef8447bd6cccdb320ea3055e1ac2c5"
+    }
+  ],
+  "repairs": [
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84G7DHC; ordinal 4; exact recipe morning-protein-mixed-berry::12||peanut-butter-raspberry::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 97369434e19236edbe55e1b5c987c48b0771f5aac07b2bdb85efdcac94dd17d9; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14.png"
+      }
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85JF1V1; ordinal 15; exact recipe peanut-butter-blackberry::12||reduced-sugar-strawberry-on-wheat::12",
+          "Owner decision WRONG_PRODUCT_VARIANT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 d61f1d41c5d5f719df8a4e82f44d5dababd670b27e484ca05c306dcbfb4deed1; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4.png"
+      }
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H86PRTWS; ordinal 21; exact recipe burstin-blueberry-protein::12||chocolate-hazelnut::12",
+          "Owner decision FICTIONAL_OR_NONCURRENT_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 329018568efd51975ed844878a1f2bc997bc523206a1e2cf98bc153f49309cb5; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 24b03ca34785d46db380b5f8d289751eb84b86791e065f8a5de160c99aa9f1d8; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/329018568efd51975ed844878a1f2bc997bc523206a1e2cf98bc153f49309cb5.png"
+      }
+    },
+    {
+      "sku": "ER-ASRK-TPYQ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84JH1WN; ordinal 29; exact recipe burstin-blueberry-protein::12||peanut-butter-raspberry::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 38100c77a7995f81d3948533b2ba7f6c464739fcae838d4eb743133956c9367c; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 2f56be3d1c10f53cc42daff033122f78bb94a762a93b69e6a7702c788917e749; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/38100c77a7995f81d3948533b2ba7f6c464739fcae838d4eb743133956c9367c.png"
+      }
+    },
+    {
+      "sku": "FX-AS2W-KHZT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H827J2XZ; ordinal 40; exact recipe bright-eyed-berry-protein::24",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 4889abf3b83ca3fc5c9a261297722145c80751a6da6c4796033fd5bed4ebbff7; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 9783df8a5ce066aeb4e163c1cce37bf59eb4f397c1eda664acf69d5e26ba5297; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/4889abf3b83ca3fc5c9a261297722145c80751a6da6c4796033fd5bed4ebbff7.png"
+      }
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84621N6; ordinal 59; exact recipe peanut-butter-raspberry::12||up-and-apple-protein::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 c1c2452b7864da95dd8ae9d8cbd7422f173f7966cec0bdf3815132ce509d254f; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 9d3f5b2767778d4f2e5382aaf410509f8d62fc3c6039450c957322cf4f7fc4ed; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/c1c2452b7864da95dd8ae9d8cbd7422f173f7966cec0bdf3815132ce509d254f.png"
+      }
+    },
+    {
+      "sku": "LK-AS7X-K43B",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84CGGXL; ordinal 65; exact recipe peanut-butter-raspberry::12||peanut-butter-strawberry::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 7561ca68cb626ac5d464b3fd13f5c20faa74191192111cc588ad9b26bd03a536; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe.png"
+      }
+    },
+    {
+      "sku": "LU-ASK0-LSDF",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84YZDB7; ordinal 67; exact recipe peanut-butter-grape::12||peanut-butter::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 32e11571a2a93a7ed565eacb1e3f4b0a912d0aac57ca93cab5e467cf2125cfd8; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 cef974d62abaed6194ce5d98c3a720f6ee34b84c1c7f9a670985eb0721393738; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/32e11571a2a93a7ed565eacb1e3f4b0a912d0aac57ca93cab5e467cf2125cfd8.png"
+      }
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85MGP35; ordinal 80; exact recipe morning-protein-mixed-berry::12||peanut-butter-honey::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 d596dece64ba6e143531819ad38cefd532f38b67fd7cf5c1f74f446af0cbe9d6; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 a2bb4733ed0c6c8211d4522f46ac8deca3b3760ea35c88694b80bca78bc858a8; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/d596dece64ba6e143531819ad38cefd532f38b67fd7cf5c1f74f446af0cbe9d6.jpg"
+      }
+    },
+    {
+      "sku": "PT-AS5B-Z2XH",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84Z6QWY; ordinal 84; exact recipe peanut-butter-grape::12||reduced-sugar-strawberry-on-wheat::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 c68598f94e3880d0c0a5e3b2e3437d06a1d082ba2d2ef92fd9c70f0a4dc56300; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc.png"
+      }
+    },
+    {
+      "sku": "RB-ASVO-GYCY",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H859N8VM; ordinal 94; exact recipe peanut-butter-strawberry::12||up-and-apple-protein::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 1f39fe57fc291f4ad8e18d8eb21a966f501d49dd0eb4c361e13f2b420711b0d0; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 7bb8529b296b574da1ea71c84d1b935875e3d707e0959a30dd1cac7435c06240; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/1f39fe57fc291f4ad8e18d8eb21a966f501d49dd0eb4c361e13f2b420711b0d0.png"
+      }
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H82LZLM2; ordinal 96; exact recipe morning-protein-mixed-berry::30",
+          "Owner decision FICTIONAL_PACK_SIZE; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 3398bb472d684a29a8a7f98f976497a32be31eac8dcb908712eceba1ec69f93b; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 016d2b0daf4efad42eb3af55230da484414cabc9cab39a8d55561438b94d4b5a; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/3398bb472d684a29a8a7f98f976497a32be31eac8dcb908712eceba1ec69f93b.jpg"
+      }
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H856DWVS; ordinal 110; exact recipe burstin-blueberry-protein::12||up-and-apple-protein::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 be2b3f0a2f2de897199c5156096fddcfe08d0accdfb957751541a0d7668880c8; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 922a0ab21a15a4bc319729d422158edacd2407f458159e2eaaa00d1e48c1945b; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/be2b3f0a2f2de897199c5156096fddcfe08d0accdfb957751541a0d7668880c8.png"
+      }
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H83ZH3TB; ordinal 113; exact recipe bright-eyed-berry-protein::12||peanut-butter-grape::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 d0d2009b340f1dff5579ad82c7a01aa71d236a0562d04f6f084e2e0276124143; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 0c42babddbb923ddf7829ba429a749d50311b483429eaae0e1ec33df80417b82; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/d0d2009b340f1dff5579ad82c7a01aa71d236a0562d04f6f084e2e0276124143.png"
+      }
+    },
+    {
+      "sku": "SU-ASS4-RV6R",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H853HGHC; ordinal 115; exact recipe reduced-sugar-grape-on-wheat::12||up-and-apple-protein::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 45b7c2a18b680b8aa85cb040782e12249df87c05875d6f30551114e4eab00434; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 4b496dc05906b11d852353bac3deb9dddbeb937c7be52c3e3d50a4f67ee172ec; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/45b7c2a18b680b8aa85cb040782e12249df87c05875d6f30551114e4eab00434.png"
+      }
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H83ZGN22; ordinal 116; exact recipe bright-eyed-berry-protein::12||peanut-butter-strawberry::12",
+          "Owner decision FICTIONAL_OR_AMBIGUOUS_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 c1c4b1d3a456e6a4923a42ec3a38010e593872802d73bbd9b67295ae3d555a01; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 d0cf5a806b640e59a8260698c24cdf633072446fef824a7bd0b84989ab82fea8; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/c1c4b1d3a456e6a4923a42ec3a38010e593872802d73bbd9b67295ae3d555a01.png"
+      }
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84WQRXB; ordinal 123; exact recipe morning-protein-mixed-berry::12||peanut-butter-raspberry::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 ee5bf3bb4907bbbaf088657009993d185464fa893374f6508a06aff8d97da896; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8000e6ba3bfef47f916b5bedb6dd389c5d3a6493951f522da12859361c7ddf14.png"
+      }
+    },
+    {
+      "sku": "UF-ASA1-GN5P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H854DM3X; ordinal 127; exact recipe peanut-butter-strawberry::12||peanut-butter::12",
+          "Owner decision FICTIONAL_PACK_SIZE; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 6f75d4eb67a8ea5704851d0eeb4fa115cee9be0621d5d2818f074eeb09074aa9; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 bfd0bb2e2bb51aa0ec11b1195dbb2feb591bf740097ae0ba8a37eb5089a2f868; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/6f75d4eb67a8ea5704851d0eeb4fa115cee9be0621d5d2818f074eeb09074aa9.png"
+      }
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H856VWD6; ordinal 134; exact recipe morning-protein-mixed-berry::12||reduced-sugar-strawberry-on-wheat::12",
+          "Owner decision MISSING_REQUIRED_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 5518355a28eb1f5cf2dafae5129e62e56bd068d0c647a6027a03d2e94ce58eb7; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 386f5dd32dc8af0dc4b883625c8b5994a1ca890dcc8dad66a13661c3417919a9; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/5518355a28eb1f5cf2dafae5129e62e56bd068d0c647a6027a03d2e94ce58eb7.jpg"
+      }
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85FY28F; ordinal 135; exact recipe peanut-butter-honey::12||reduced-sugar-grape-on-wheat::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 2df2117f82786ad366bc4ca6f3cea92c01534f9fac98591adb10d077531c46b0; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 8b88d9217ead9eb6990bb98c0f8a80a1c1e271cd3eae19eb0f5169c031880e17; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/2df2117f82786ad366bc4ca6f3cea92c01534f9fac98591adb10d077531c46b0.png"
+      }
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85CL8JD; ordinal 138; exact recipe peanut-butter::12||up-and-apple-protein::12",
+          "Owner decision WRONG_PRODUCT_VARIANT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 af47fe682e36d3c3fe4887fad8e169ce75968076761ae4fe52f99c7ffd0b5fa4; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 cae11d29b3d243c93e90f29bf1828bfdedb05be0f050f1ee683b779e1f8c0a85; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/af47fe682e36d3c3fe4887fad8e169ce75968076761ae4fe52f99c7ffd0b5fa4.png"
+      }
+    },
+    {
+      "sku": "WK-ASPD-G9HL",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85CF81Y; ordinal 142; exact recipe peanut-butter::12||reduced-sugar-strawberry-on-wheat::12",
+          "Owner decision FICTIONAL_OR_WRONG_PRODUCT; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 a18348936e27b91f2fab9035609b83b96f4b21c3d05a3e56171f15ad2c0606b3; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 8851c4b5d386da86939a1557154453053d38142bedea50555ed179f4b3172ec5; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/a18348936e27b91f2fab9035609b83b96f4b21c3d05a3e56171f15ad2c0606b3.png"
+      }
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H85DF1R7; ordinal 146; exact recipe burstin-blueberry-protein::12||peanut-butter-honey::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 8149339c30f0c4580964d6a1bf1a91836687d1302adf0b256a648e14df2fe29a; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 6aaeefd9b8e5e79d8bee763841cad34e933cea1f7e0a025e2a7db119165a6d76; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/8149339c30f0c4580964d6a1bf1a91836687d1302adf0b256a648e14df2fe29a.png"
+      }
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-approved exception: replace only the incorrect/missing product-identity MAIN; preserve all other listing attributes.",
+        "evidence": [
+          "ASIN B0H84PVG1G; ordinal 163; exact recipe peanut-butter-strawberry::12||reduced-sugar-strawberry-on-wheat::12",
+          "Owner decision FICTIONAL_PACKAGING; QA PASS_OWNER_RELAXED",
+          "Desired MAIN sha256 3d78cb784f1cffc3a8f944cfc14d42b76b85ab21bc3ff290201dbf694da1e03b; R2 staging sha256 8112acbe7b71da38aa3e9e25d7240a8938d09a6f2c0f64443ff41c5e62829ae6",
+          "Rollback MAIN sha256 b448c2ef5e5d110dc12fca50815cd8d17bef8447bd6cccdb320ea3055e1ac2c5; publication manifest sha256 667767b3a4780e06926aa2e537ae58b5602f709616d0d85b01ad020d6547adb0"
+        ]
+      },
+      "media": {
+        "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/3d78cb784f1cffc3a8f944cfc14d42b76b85ab21bc3ff290201dbf694da1e03b.png"
+      }
+    }
+  ],
+  "body_sha256": "8a4e2c175b9a9b6da4dbf2ca9b93062d181412d60a2b8b8988b294ae8aef1599"
+}

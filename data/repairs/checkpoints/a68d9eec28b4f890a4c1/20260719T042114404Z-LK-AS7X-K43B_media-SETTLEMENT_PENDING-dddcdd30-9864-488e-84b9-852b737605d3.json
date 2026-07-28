@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "dddcdd30-9864-488e-84b9-852b737605d3",
+  "created_at": "2026-07-19T04:21:14.404Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "LK-AS7X-K43B:media",
+  "sku": "LK-AS7X-K43B",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "bbac0e75e32b7c8d3d75a913d39904e247cd0a7b41f34220a2926be86b4fa69a",
+    "submitted_event_id": "e95d6ad2-6f85-4635-9660-6732f1369ff6",
+    "submitted_at": "2026-07-19T04:01:56.712Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "bb5dc7e44a62aa2b9597aa295137e986307282c3d6be292a927430f0a1c4cbe2",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "efa08fb6549513519c1bb6ba29655eec2d6da0a6c6b1bd9969b880935b1eb12f"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 5000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "3c38096803f7be44c42dd970c958b9914dfc255df615c06e0d5a8452f360aaac"
+}

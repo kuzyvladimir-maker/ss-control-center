@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a4dce287-a5a8-453e-851d-fc4f40c0223c",
+  "created_at": "2026-07-18T07:47:42.404Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "SG-ASLB-M2DG:text_count",
+  "sku": "SG-ASLB-M2DG",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "2b5e7256216185020984fcd5d8fca98b757d0974c127b37ef46839e665bedbe4",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "1eae120513774258b62000003ba46aee",
+    "issues": []
+  },
+  "sha256": "80c2e41e13679b35762625c0242356aa8efee5d44dc4a82ab5c08ad640cb2ddd"
+}

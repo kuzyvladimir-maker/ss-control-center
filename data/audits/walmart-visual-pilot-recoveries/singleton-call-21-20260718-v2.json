@@ -1,0 +1,95 @@
+{
+  "schema_version": "walmart-visual-pilot-recovered-call/v2",
+  "recovery_id": "singleton-call-21-codex-session-019f770f-b1bf-7841-acfe-ee3b627a70bf",
+  "recovered_at": "2026-07-18T21:14:56.000Z",
+  "source": {
+    "kind": "codex_session_log",
+    "host": "openclaw",
+    "remote_path": "/root/.codex/sessions/2026/07/18/rollout-2026-07-18T17-09-05-019f770f-b1bf-7841-acfe-ee3b627a70bf.jsonl",
+    "local_file": "data/audits/walmart-visual-pilot-recoveries/rollout-2026-07-18T17-09-05-019f770f-b1bf-7841-acfe-ee3b627a70bf.jsonl",
+    "session_id": "019f770f-b1bf-7841-acfe-ee3b627a70bf",
+    "session_log_sha256": "d0d0f0a4f138ca3d4862fc87fbfeae3d026c7f203421aa8afcdce9032e6b386c",
+    "session_log_bytes": 649509,
+    "embedded_input_image_sha256": "d8723e1c81a675c05bce469ff6bbb641a79f80589909b07dbe58bdec0a42ea4f",
+    "embedded_input_image_bytes": 455754,
+    "embedded_input_image_width": 1600,
+    "embedded_input_image_height": 1600,
+    "started_at": "2026-07-18T21:09:05.346Z",
+    "completed_at": "2026-07-18T21:09:16.056Z",
+    "duration_ms": 10710,
+    "input_image_count": 1,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "medium",
+    "cli_version": "0.144.5",
+    "result_canonical_sha256": "8f4a797e0bf8b6d3af20663d803de65e6651f7279718cc1e23807643769f41aa"
+  },
+  "checkpoint": {
+    "pre_recovery_sha256": "5ffea0500baf70ebd5d3a3f8cebfb8db2549b4190f4228f1b4b94c828f3e1005",
+    "subscription_calls_consumed": 21,
+    "recorded_attempts": 20,
+    "completed_prefix_length": 20
+  },
+  "binding": {
+    "manifest_sha256": "8997a46fe8ef9ecccb165cc9548e0097d07561c2daa9079c09a17d3e25f2d403",
+    "provider": "codex",
+    "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+    "worker_contract": {
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64"
+    },
+    "selected_layout_plan_sha256": "4ae2043186a55cf46614bc165de53da4b34079ff387cf93c376d35948925e652",
+    "layout_name": "singleton",
+    "batch_index": 20,
+    "prompt_version": "walmart-visual-blind/v3",
+    "prompt_sha256": "8d3136011679f70ac051d5b67df11b6537ad237e28366ec040fb5b7a9a25cdd5",
+    "call_key": "0cf76a04d8d890574ad33eb4a835d49a7344b71a7be9fc0c4ab31482f35c5138",
+    "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+    "image_ids": [
+      "i_0d86a7a177dbc17d"
+    ],
+    "full_view_sha256": [
+      "df859229ae95e471356e469d28ef59ac6bea80d72efaac4eb2640ffbe558b4f1"
+    ]
+  },
+  "result": {
+    "schema_version": "wm_visual_observation_batch/v3",
+    "observations": [
+      {
+        "image_id": "i_0d86a7a177dbc17d",
+        "visual_role": "tiled_main",
+        "visible_brand_text": "JACK LINK'S",
+        "visible_product_text": "BEEF JERKY",
+        "visible_variant_text": "TERIYAKI",
+        "visible_size_texts": [
+          "NET WT. 2.85 OZ (81g)"
+        ],
+        "external_package_count": {
+          "mode": "exact",
+          "value": 4,
+          "min": null,
+          "max": null
+        },
+        "outer_package_claims": [],
+        "inner_contents_claims": [],
+        "case_package_claims": [],
+        "unclear_quantity_claims": [],
+        "grid_cell_kind": "single_sellable_package",
+        "front_visibility": "all",
+        "background": "white",
+        "multiple_distinct_products": "no",
+        "readable_identity": "clear",
+        "evidence": [
+          "JACK LINK'S",
+          "BEEF JERKY",
+          "TERIYAKI",
+          "NET WT. 2.85 OZ (81g)"
+        ],
+        "flags": []
+      }
+    ]
+  }
+}

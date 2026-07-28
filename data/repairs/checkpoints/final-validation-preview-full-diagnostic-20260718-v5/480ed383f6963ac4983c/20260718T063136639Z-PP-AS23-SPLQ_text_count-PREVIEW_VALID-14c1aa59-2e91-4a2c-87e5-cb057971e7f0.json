@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "14c1aa59-2e91-4a2c-87e5-cb057971e7f0",
+  "created_at": "2026-07-18T06:31:36.639Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "PP-AS23-SPLQ:text_count",
+  "sku": "PP-AS23-SPLQ",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "044d7d33087780f3ef5bd0a34454eec078d62f5ccf36aac13849a270e671c03f",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "12561a1567a8439d9dcd47107d61094b",
+    "issues": []
+  },
+  "sha256": "f99bfe3a002ff95d0e7d5e142a7777e3126a96e3c7a1a9a6f479d872be2e3bce"
+}

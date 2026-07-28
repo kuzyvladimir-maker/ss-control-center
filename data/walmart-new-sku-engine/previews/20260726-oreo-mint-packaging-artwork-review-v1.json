@@ -1,0 +1,113 @@
+{
+  "schema_version": "walmart-packaging-artwork-review/1.0.0",
+  "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+  "approved_package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+  "reviewed_at": "2026-07-26T18:30:00.000Z",
+  "images": [
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_b2a01588-f60d-4207-be6c-48f7b58295ec",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:7a19a9655f8c158ca79a304b2d8d3be74c4945a46914cd1c6583c894e748b228",
+      "disposition": "REJECTED_OLDER_PACKAGING",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-1-older-front-without-current-label-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_2e165dab-10fa-485b-a4dd-f864a09f05b8",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "manufacturer-corroboration:oreo.com:thins-mint-current-full-front"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_869203a1-5afd-489d-95cc-516b79d5072d",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-3-exact-cookie-closeup"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_902ab974-dbba-4cfb-9711-6bc02d03c026",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-4-exact-cookie-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ccbbdfe6-8fd9-41f5-a95d-004bdc8311b8",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-5-exact-cookie-closeup"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_135435e0-9c87-4bf1-97e5-28dbefe5e015",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-6-current-package-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ba1df74c-a08a-4499-b146-d8d067d961d9",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-7-current-full-front"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_3995a970-e340-4e14-bc2e-e0cd118eddde",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-8-exact-dessert-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_0c11c8ad-1d28-4e01-92ee-be549e44354f",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-9-exact-cookie-lifestyle"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_32a8746d-9b47-45f9-9d9a-bf434e8ba7fc",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-10-current-back-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_c1a02aaa-fc8c-4d97-b492-571e1a8b6390",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-11-current-side-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_f6d7a8f9-2db6-4ad6-9d93-1bab5ce9e4ba",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-12-current-side-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_d8b5392b-4b6b-41de-b2de-d9b1820aa007",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-13-current-top-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_fba665c3-5d3d-4afe-acce-9c496586af49",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-14-current-bottom-panel"
+    },
+    {
+      "url": "https://target.scene7.com/is/image/Target/GUEST_137bd4e9-91ea-4c31-ba1e-a38c41ddc0cb",
+      "canonical_variant_id": "cpv1:d98ab635538a7242025801938ace1da5d2d4d59a116ce06254f99c8e2cf3f773",
+      "package_artwork_revision_id": "par1:a3af4f90bf8f0a99f26ec154e05fa47ebf45976639bf5aac4db4dc22169c192c",
+      "disposition": "APPROVED_CURRENT",
+      "review_evidence_ref": "codex-review:20260726:oreo-mint-image-15-current-product-promo"
+    }
+  ]
+}

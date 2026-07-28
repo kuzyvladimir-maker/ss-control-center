@@ -1,0 +1,44 @@
+{
+  "schema_version": "walmart-listing-integrity-shadow-vision-authorization/v1",
+  "action": "READ_ONLY_VISUAL_ATTESTATION",
+  "authority": "EVIDENCE_ONLY_NOT_MARKETPLACE_WRITE_AUTHORITY",
+  "issued_at": "2026-07-22T22:45:45.000Z",
+  "expires_at": "2026-07-22T23:45:45.000Z",
+  "goal": {
+    "thread_id": "019f75d3-cc9e-7393-8b77-a1880028997a",
+    "objective": "Исправить каталог Walmart так, чтобы фактический товар, вариант и количество, title, description, bullet points, атрибуты, главная и дополнительные изображения полностью соответствовали друг другу; сначала достоверно выявить все ошибки, затем безопасно исправить листинги, минимизируя возвраты и не теряя индексацию.",
+    "status_at_authorization": "OWNER_RESUMED"
+  },
+  "explicit_owner_instruction": "Конечно перекидывай; такого типа разрешения можно у меня не спрашивать. Если это внутренние серверные файлы и ни на что критически не влияет, действуй.",
+  "standing_owner_rule": {
+    "allowed": "Передача служебных файлов и товарных изображений внутри owner-controlled project/server boundary для read-only проверки",
+    "separate_approval_still_required": "Любые Walmart writes, database writes, price/inventory changes, публикация карточки или массовый прогон"
+  },
+  "scope": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1183",
+    "item_id": "8419413379",
+    "canary_preview_sha256": "46d3d8fe33fa21e92f72ef58e90b36cdcfd81e1e07e87a7b32c0261d955ef0a1",
+    "partition_id": "shadow-faisalx-1183-current-target-v2",
+    "shard_ids": [
+      "shadow-faisalx-1183-current-000003",
+      "shadow-faisalx-1183-target-000004"
+    ],
+    "maximum_subscription_calls": 2,
+    "maximum_images": 4
+  },
+  "claims": {
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_writes": 0,
+    "paid_api_calls": 0,
+    "openai_model_calls": 0,
+    "claude_subscription_calls_maximum": 2,
+    "transport_attempts_maximum": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "mass_run": false,
+    "live_canary_authorized": false
+  }
+}

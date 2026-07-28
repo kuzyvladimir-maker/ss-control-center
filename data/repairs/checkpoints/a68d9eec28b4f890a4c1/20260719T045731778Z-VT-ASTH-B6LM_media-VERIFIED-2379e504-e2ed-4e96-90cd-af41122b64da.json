@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2379e504-e2ed-4e96-90cd-af41122b64da",
+  "created_at": "2026-07-19T04:57:31.778Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VT-ASTH-B6LM:media",
+  "sku": "VT-ASTH-B6LM",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "fcf9d301-9e14-4645-a8a2-e9ce3c683dee",
+    "stable_post_write_reads": 3,
+    "polling_reads": 15,
+    "polling_sweep": 15,
+    "elapsed_ms": 422727.747875,
+    "path_state_sha256": "f35377468bc060eabc027af6d6880af50d0c10716e3810512c05430312781daa",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/af47fe682e36d3c3fe4887fad8e169ce75968076761ae4fe52f99c7ffd0b5fa4.png",
+        "actual": "https://m.media-amazon.com/images/I/51RvJ-eGe7L.jpg"
+      }
+    ]
+  },
+  "sha256": "d471553d69e6f7cb5c1cd0f8ac803e87af0f694382aab4db7826e231d5fcca23"
+}

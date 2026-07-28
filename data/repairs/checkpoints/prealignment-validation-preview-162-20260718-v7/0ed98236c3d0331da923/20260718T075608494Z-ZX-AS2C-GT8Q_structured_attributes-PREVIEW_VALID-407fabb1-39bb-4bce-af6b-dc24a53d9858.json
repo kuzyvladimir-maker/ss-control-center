@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "407fabb1-39bb-4bce-af6b-dc24a53d9858",
+  "created_at": "2026-07-18T07:56:08.494Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "ZX-AS2C-GT8Q:structured_attributes",
+  "sku": "ZX-AS2C-GT8Q",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "47e7006c473e865c292f6321d6c090b98e35fbd0788dd242993da59e051e1739",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "c5b6e8b07a784ec68ef684368549b811",
+    "issues": []
+  },
+  "sha256": "41933833ac7ab11e6fd66e6d95e4869c3495bc0e0d1532d1558b2ad9b4d7bea1"
+}

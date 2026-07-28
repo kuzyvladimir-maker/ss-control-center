@@ -1,0 +1,136 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-25T21:09:07.280Z",
+  "target": {
+    "sku": "Athar-1591",
+    "item_id": "7014571238"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "Athar-1591",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "upc": "723326854620",
+      "gtin14": "00723326854620",
+      "wpid": "24Q31J65EP09",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "7014571238",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "main_image_url": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "7014571238",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "identity_evidence": [
+        "product.item_id=7014571238",
+        "product.product_url=7014571238"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=Athar-1591",
+        "seller.ItemResponse[0].sku=Athar-1591",
+        "seller.ItemResponse[0].upc=723326854620",
+        "seller.normalized_gtin14=00723326854620",
+        "seller.wpid_not_itemId=24Q31J65EP09",
+        "catalog.items[0].standardUpc~=00723326854620;itemId=7014571238",
+        "catalog.unique_numeric_public_itemId=7014571238"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=7014571238",
+        "product.product_url=7014571238"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "baa7fd0a233a60e41ef06d2c7d766ce10a166037978a5f49f1f6119d1734a8ba",
+    "catalog_search_payload_canonical_sha256": "817338bd00e4e1ca1daa3d485e4f9826eff59603167b727bc9b8a50e910889f7",
+    "resolution_canonical_sha256": "019f9bd3956eb0cd7623b914284f6f3bba21fa04757fd3dceafcb9b52acab127",
+    "buyer_payload_canonical_sha256": "e5c5ca266f8343985a15a48cb57a176aae02f2202a1b246d108923d42361733e"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+      "final_url": "https://i5.walmartimages.com/seo/Lay-s-Party-Size-Barbecue-Potato-Chips-15-25-oz-2-Pack_2e3bd892-76b0-40d3-9759-261d7dc778e7.9e803ea24e182a71e6d1d35b774dd572.png",
+      "sha256": "ddf18e2a359c5f1a4927ef652c5f8a1a5ca3a33e63d12774fa211f62c433fcbd",
+      "bytes": 617782,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/ddf18e2a359c5f1a4927ef652c5f8a1a5ca3a33e63d12774fa211f62c433fcbd.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/a5af2f27-c04d-43a2-9e89-2d1b6d761bc4_1.9acfeceef435447c860ea2cbe169f13f.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/a5af2f27-c04d-43a2-9e89-2d1b6d761bc4_1.9acfeceef435447c860ea2cbe169f13f.jpeg",
+      "sha256": "8afa75345bfbaaa1866232f08895a9e76ab601336a84f12d3c22cdcf911b17dc",
+      "bytes": 426688,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2400,
+      "decoded_height": 2400,
+      "local_path": "assets/8afa75345bfbaaa1866232f08895a9e76ab601336a84f12d3c22cdcf911b17dc.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/76634d1c-d660-4389-a772-a7aafe7115cf_1.7b59e9dd50bcea0d314cd955cf8739da.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/76634d1c-d660-4389-a772-a7aafe7115cf_1.7b59e9dd50bcea0d314cd955cf8739da.jpeg",
+      "sha256": "5239cbb891c9e14c106c673d8c9ff86d8dfeb09fc3d8e57e05864da9e3d8cc90",
+      "bytes": 310802,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2400,
+      "decoded_height": 2400,
+      "local_path": "assets/5239cbb891c9e14c106c673d8c9ff86d8dfeb09fc3d8e57e05864da9e3d8cc90.jpg"
+    },
+    {
+      "slot": "GALLERY_3",
+      "source_url": "https://i5.walmartimages.com/asr/cc31b5a2-edcb-4747-abf0-fa41e5340a95_1.1abaa7eb681380cb68dfcbce1413135b.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/cc31b5a2-edcb-4747-abf0-fa41e5340a95_1.1abaa7eb681380cb68dfcbce1413135b.jpeg",
+      "sha256": "b269e6d4c1a03d0218b0788e7cb5078a7a5eb7142c390543ed0a90e52d5b17bb",
+      "bytes": 242015,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2400,
+      "decoded_height": 2400,
+      "local_path": "assets/b269e6d4c1a03d0218b0788e7cb5078a7a5eb7142c390543ed0a90e52d5b17bb.jpg"
+    },
+    {
+      "slot": "GALLERY_4",
+      "source_url": "https://i5.walmartimages.com/asr/6f6ac871-da0a-405b-b66a-055bf4af86d9_1.26f71875bedcc9cd252c8c11975b938a.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/6f6ac871-da0a-405b-b66a-055bf4af86d9_1.26f71875bedcc9cd252c8c11975b938a.jpeg",
+      "sha256": "8c70385ffcff005deb0fd3a58e581a918e913f57ef714f8efdcdba92b4056ada",
+      "bytes": 295197,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2400,
+      "decoded_height": 2400,
+      "local_path": "assets/8c70385ffcff005deb0fd3a58e581a918e913f57ef714f8efdcdba92b4056ada.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260725T210907Z-a4fcaab80700",
+  "body_sha256": "a4fcaab80700ddb2768c90e27b196e01e37dde8a47f1ef35ba50122aa152261b"
+}

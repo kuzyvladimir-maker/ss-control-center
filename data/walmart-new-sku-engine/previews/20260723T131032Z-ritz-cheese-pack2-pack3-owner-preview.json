@@ -1,0 +1,157 @@
+{
+  "schema_version": "walmart-new-sku-owner-preview-gallery/1.0.0",
+  "generated_at": "2026-07-23T13:10:32.000Z",
+  "channel": "WALMART_US",
+  "source": {
+    "source_plan_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/candidates/20260723T052200Z-product-truth-v12-ritz-cheese-local-doctor.plan/plan.json",
+    "source_plan_sha256": "5970067627b633beac37b36c720c333898ebec682db864666cace687bc74803a",
+    "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+    "manufacturer_upc": "044000035457",
+    "authority": "SEALED_PRODUCT_TRUTH_PREVIEW_ONLY_NOT_PUBLICATION_EVIDENCE"
+  },
+  "rules": {
+    "target_margin_bps": 3000,
+    "referral_fee_bps": 1500,
+    "comparable_is_informational_not_hard_reject": true,
+    "walmart_pricing_rule_can_still_unpublish": true,
+    "marketplace_mutated": false,
+    "database_mutated": false,
+    "upc_reserved": false
+  },
+  "listing_previews": [
+    {
+      "preview_id": "wm-preview-2-e241c5c8317d",
+      "pack_count": 2,
+      "product_name": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+      "brand": "Ritz",
+      "flavor": null,
+      "size_each": "8.8 oz",
+      "total_net_weight_oz": 17.6,
+      "category": "Dry",
+      "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz (Pack of 2)",
+      "bullets": [
+        "Includes 2 identical retail packages",
+        "Same Ritz product, size and variant in every package",
+        "Homogeneous multipack; not a mixed assortment",
+        "Original package labels provide ingredients, allergens and nutrition facts",
+        "Main image represents all 2 packages included"
+      ],
+      "description": "Stock up with 2 identical retail packages of RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz. This homogeneous multipack contains the same Ritz product, size and variant in every package; it is not a mixed assortment. You receive 2 complete packages together as one sellable unit. Products arrive new in their original retail packaging. Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. The main image represents the full 2-package quantity included in the order.",
+      "source_description_preview": "Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.",
+      "ingredients": "UNBLEACHED ENRICHED FLOUR (WHEAT FLOUR, NIACIN, REDUCED IRON, THIAMINE MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID), CANOLA OIL, PALM OIL, SUGAR, WHEY, LEAVENING (CALCIUM PHOSPHATE, BAKING SODA), CHEDDAR CHEESE POWDER (PASTEURIZED MILK, CHEESE CULTURES, SALT, ENZYMES), SALT, SODIUM PHOSPHATE, NATURAL FLAVOR, SOY LECITHIN, YEAST EXTRACT, CORNSTARCH, TURMERIC, ANNATTO EXTRACTS.",
+      "price_cents": 3313,
+      "economics": {
+        "goods_cost_cents": 794,
+        "packaging_cost_cents": 150,
+        "shipping_label_cents": 878,
+        "referral_fee_bps": 1500,
+        "referral_fee_cents": 497,
+        "target_margin_bps": 3000,
+        "item_price_cents": 3313,
+        "contribution_profit_cents": 994,
+        "contribution_margin_bps": 3000
+      },
+      "comparable": {
+        "exact_component_unit_price_cents": 397,
+        "linearized_comparable_cents": 794,
+        "proposed_to_comparable_ratio_bps": 41726,
+        "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+        "disposition": "WARNING_ONLY_NOT_CANDIDATE_REJECTION"
+      },
+      "gallery": {
+        "unit_image_urls": [
+          "https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6",
+          "https://target.scene7.com/is/image/Target/GUEST_73635a4b-03d1-4941-a786-d15b73bbf82f",
+          "https://target.scene7.com/is/image/Target/GUEST_2833a548-2bdf-480f-bf3a-1c47eabe9385",
+          "https://target.scene7.com/is/image/Target/GUEST_51d34b86-3fcc-496f-b2c1-9e8e6e030ddf",
+          "https://target.scene7.com/is/image/Target/GUEST_92bee758-0712-4f26-ae53-8ffd4c5f4743",
+          "https://target.scene7.com/is/image/Target/GUEST_3df06436-9647-4533-bfaa-77d4eaab9293",
+          "https://target.scene7.com/is/image/Target/GUEST_97a8da23-6499-40a9-b870-a5da12c010eb",
+          "https://target.scene7.com/is/image/Target/GUEST_2d456492-54b3-4409-8ae9-9287a2668e1a"
+        ],
+        "main_visualization": "DUPLICATED_EXACT_DONOR_UNIT_IMAGE_PREVIEW_ONLY",
+        "represented_unit_count": 2,
+        "publication_rights_status": "NOT_CLEARED_PREVIEW_ONLY"
+      },
+      "publication_readiness": {
+        "status": "BLOCKED_PREVIEW_ONLY",
+        "blockers": [
+          "FRESH_EXACT_PRODUCT_TRUTH_EVIDENCE_REQUIRED",
+          "COUNT_ACCURATE_RIGHTS_CLEARED_IMAGES_REQUIRED",
+          "CURRENT_POLICY_RECALL_ACCOUNT_AND_ITEM_SPEC_CHECKS_REQUIRED",
+          "UPC_NOT_RESERVED",
+          "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
+        ]
+      },
+      "preview_sha256": "9da230fbe15113464b96c182113ba0a35675fc84bc524783e978d197e2266445"
+    },
+    {
+      "preview_id": "wm-preview-3-753c7be4172d",
+      "pack_count": 3,
+      "product_name": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+      "brand": "Ritz",
+      "flavor": null,
+      "size_each": "8.8 oz",
+      "total_net_weight_oz": 26.4,
+      "category": "Dry",
+      "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz (Pack of 3)",
+      "bullets": [
+        "Includes 3 identical retail packages",
+        "Same Ritz product, size and variant in every package",
+        "Homogeneous multipack; not a mixed assortment",
+        "Original package labels provide ingredients, allergens and nutrition facts",
+        "Main image represents all 3 packages included"
+      ],
+      "description": "Stock up with 3 identical retail packages of RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz. This homogeneous multipack contains the same Ritz product, size and variant in every package; it is not a mixed assortment. You receive 3 complete packages together as one sellable unit. Products arrive new in their original retail packaging. Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. The main image represents the full 3-package quantity included in the order.",
+      "source_description_preview": "Enjoy a tiny take on the classic RITZ cheese cracker sandwiches you know and love with RITZ Bits Cheese Sandwich Crackers. The bite-sized snacks layer a delicious, cheese spread between two tiny, crispy and flaky RITZ Bits crackers. Made with real cheese and containing no high-fructose corn syrup, these RITZ crackers are convenient lunch snacks, travel snacks, school snacks, and afternoon snacks for kids and adults. Just the right size for snacking, these tiny round crackers and cheese hit the spot when you're looking for lightly salty snacks with creamy cheese filling. Tuck these mini crackers into lunchboxes and backpacks for midday treats, or grab some of these cheese crackers to enjoy as you head out the door. RITZ is a rich, buttery cracker that invites sharing because it welcomes every person, flavor, and pairing. With RITZ Bits Cheese Sandwich Crackers, you'll be ready for any snacking occasion.",
+      "ingredients": "UNBLEACHED ENRICHED FLOUR (WHEAT FLOUR, NIACIN, REDUCED IRON, THIAMINE MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID), CANOLA OIL, PALM OIL, SUGAR, WHEY, LEAVENING (CALCIUM PHOSPHATE, BAKING SODA), CHEDDAR CHEESE POWDER (PASTEURIZED MILK, CHEESE CULTURES, SALT, ENZYMES), SALT, SODIUM PHOSPHATE, NATURAL FLAVOR, SOY LECITHIN, YEAST EXTRACT, CORNSTARCH, TURMERIC, ANNATTO EXTRACTS.",
+      "price_cents": 4036,
+      "economics": {
+        "goods_cost_cents": 1191,
+        "packaging_cost_cents": 150,
+        "shipping_label_cents": 878,
+        "referral_fee_bps": 1500,
+        "referral_fee_cents": 606,
+        "target_margin_bps": 3000,
+        "item_price_cents": 4036,
+        "contribution_profit_cents": 1211,
+        "contribution_margin_bps": 3000
+      },
+      "comparable": {
+        "exact_component_unit_price_cents": 397,
+        "linearized_comparable_cents": 1191,
+        "proposed_to_comparable_ratio_bps": 33888,
+        "price_competitiveness_signal": "ABOVE_EXACT_COMPARABLE_WARNING",
+        "disposition": "WARNING_ONLY_NOT_CANDIDATE_REJECTION"
+      },
+      "gallery": {
+        "unit_image_urls": [
+          "https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6",
+          "https://target.scene7.com/is/image/Target/GUEST_73635a4b-03d1-4941-a786-d15b73bbf82f",
+          "https://target.scene7.com/is/image/Target/GUEST_2833a548-2bdf-480f-bf3a-1c47eabe9385",
+          "https://target.scene7.com/is/image/Target/GUEST_51d34b86-3fcc-496f-b2c1-9e8e6e030ddf",
+          "https://target.scene7.com/is/image/Target/GUEST_92bee758-0712-4f26-ae53-8ffd4c5f4743",
+          "https://target.scene7.com/is/image/Target/GUEST_3df06436-9647-4533-bfaa-77d4eaab9293",
+          "https://target.scene7.com/is/image/Target/GUEST_97a8da23-6499-40a9-b870-a5da12c010eb",
+          "https://target.scene7.com/is/image/Target/GUEST_2d456492-54b3-4409-8ae9-9287a2668e1a"
+        ],
+        "main_visualization": "DUPLICATED_EXACT_DONOR_UNIT_IMAGE_PREVIEW_ONLY",
+        "represented_unit_count": 3,
+        "publication_rights_status": "NOT_CLEARED_PREVIEW_ONLY"
+      },
+      "publication_readiness": {
+        "status": "BLOCKED_PREVIEW_ONLY",
+        "blockers": [
+          "FRESH_EXACT_PRODUCT_TRUTH_EVIDENCE_REQUIRED",
+          "COUNT_ACCURATE_RIGHTS_CLEARED_IMAGES_REQUIRED",
+          "CURRENT_POLICY_RECALL_ACCOUNT_AND_ITEM_SPEC_CHECKS_REQUIRED",
+          "UPC_NOT_RESERVED",
+          "OWNER_LIVE_PUBLICATION_PERMIT_NOT_GRANTED"
+        ]
+      },
+      "preview_sha256": "d0f2f0f92b35178bf422df42c9412f98afcd7db7c2e204894aa5504a15662c34"
+    }
+  ],
+  "artifact_sha256": "fd4f2113b5226f0e38240d158c976ace54a1621ec28dd2eb1c046516eb976094"
+}

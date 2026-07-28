@@ -1,0 +1,36 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "884e96f1-cd48-4175-b63c-9e5a89c6d9cc",
+  "created_at": "2026-07-18T06:32:04.530Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "PU-AS3D-SA5Z:offer",
+  "sku": "PU-AS3D-SA5Z",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "58bb6a407c06ee9df254a22f5a3e9d8a0fd758d24acd21c376fb16f44e450eba",
+    "patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/business_price",
+      "/attributes/list_price"
+    ],
+    "status": "VALID",
+    "submission_id": "92bca709cbc3437b9443c13b596ab982",
+    "issues": [
+      {
+        "code": "90000900",
+        "message": "You submitted an attribute business_price that does not belong or is no longer applicable to the product type you were trying to list. We are ignoring the value and processing your submission to ensure a smoother listing experience.",
+        "severity": "WARNING",
+        "attributeNames": [
+          "business_price"
+        ],
+        "categories": [
+          "INVALID_ATTRIBUTE"
+        ]
+      }
+    ]
+  },
+  "sha256": "9baa7ae0d22afba35055b0fea44d65f25a2b4050cb08a0ab0beaa013c3c5c87a"
+}

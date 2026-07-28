@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d9d1db4f-b4a8-43c1-b144-a2a9214a43ef",
+  "created_at": "2026-07-18T11:30:14.579Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "CE-ASGK-ZRHM:text_count",
+  "sku": "CE-ASGK-ZRHM",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "1b65e102-e846-422f-8992-31dd8c285789",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "013d55d4fcaa689819e5ae16f4aa1beb7047b145cf3415d672d82ff90c411b9a",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "90152dc661f7e31163393a262b1f8ab8e321ae64ad12f60892b28550acf2f1ed"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "7e98f2ffa9345c2b688567ad63f0bf55c606f5e84625e7d281f27f3221a52581"
+}

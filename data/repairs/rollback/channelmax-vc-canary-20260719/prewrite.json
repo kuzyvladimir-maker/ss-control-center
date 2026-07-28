@@ -1,0 +1,64 @@
+{
+  "schema_version": "channelmax-vc-inline-canary-prewrite/v1",
+  "captured_at": "2026-07-19T02:01:14Z",
+  "mutation_status": "CONFIRMED_POSTWRITE",
+  "account": {
+    "host": "selling.channelmax.net",
+    "selected_site_id": 300,
+    "selected_site_name": "AmznUS [Salutem Solutions]",
+    "seller_id": "A3A7A0RDFUSGBS"
+  },
+  "browser_target": {
+    "tab_id": "00530F7E77F996D7C982F5385192E0B0",
+    "url": "https://selling.channelmax.net/#/inventory?viewType=repricing&viewVer=25&s=1"
+  },
+  "row": {
+    "item_id": 171037335,
+    "sku": "VC-ASV1-378P",
+    "asin": "B0H786L5MW",
+    "repricing_model_id": 59021,
+    "repricing_model_name": "Manual min/max"
+  },
+  "before": {
+    "minimum_price": 251.32,
+    "maximum_price": 289.28
+  },
+  "forward": {
+    "minimum_price": 219.57,
+    "maximum_price": 252.99
+  },
+  "rollback": {
+    "minimum_price": 251.32,
+    "maximum_price": 289.28
+  },
+  "guardrails": {
+    "single_row_only": true,
+    "preserve_repricing_model": true,
+    "no_retry_after_ambiguous_response": true,
+    "postwrite_readback_required": true
+  },
+  "evidence": {
+    "visible_account_marker": true,
+    "visible_sku_marker": true,
+    "visible_asin_marker": true,
+    "dom_before_minimum": 251.32,
+    "dom_before_maximum": 289.28,
+    "inline_save_action": "setitmsitevalues",
+    "inline_save_site_id": 300,
+    "write_completed_at": "2026-07-19T02:03:42Z",
+    "write_response_is_valid": true,
+    "write_response_item_id": 171037335,
+    "write_response_message": "SUCCESS",
+    "write_response_updated_rows": 1,
+    "independent_readback_completed_at": "2026-07-19T02:10:55Z",
+    "independent_readback_action": "inventoryitemsite",
+    "independent_readback_site_id": 300,
+    "independent_readback_minimum": 219.57,
+    "independent_readback_maximum": 252.99,
+    "grid_repricing_model_id_after": 59021,
+    "grid_repricing_model_name_after": "Manual min/max",
+    "cached_repricing_snapshot_minimum": 251.32,
+    "cached_repricing_snapshot_maximum": 289.28,
+    "cached_repricing_snapshot_note": "The repricing grid and _priceLogInfo retain last-cycle values; inventoryitemsite is the independent persisted site-value readback."
+  }
+}

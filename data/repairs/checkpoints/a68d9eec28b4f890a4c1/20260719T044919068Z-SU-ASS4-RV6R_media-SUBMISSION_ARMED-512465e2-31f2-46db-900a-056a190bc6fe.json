@@ -1,0 +1,24 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "512465e2-31f2-46db-900a-056a190bc6fe",
+  "created_at": "2026-07-19T04:49:19.068Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "SU-ASS4-RV6R:media",
+  "sku": "SU-ASS4-RV6R",
+  "kind": "MEDIA",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "6e71471cceef83eea4faceb93d8b2f228cd1ce73505899d203743155b1c89c6a",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "9f2a9a7f16ab639b8d303aea4aefaa5e5b437b979e100c807b0dba034e8c557a"
+    }
+  },
+  "sha256": "8b6d2d99d904d5361f21121d45d1f2a893704757a696e2f067d7a4a16aed70e5"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d6d43e00-1baf-43b1-8f55-5d060e997c9c",
+  "created_at": "2026-07-18T06:27:50.378Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "KP-ASYC-RN84:offer",
+  "sku": "KP-ASYC-RN84",
+  "kind": "OFFER",
+  "status": "FAILED",
+  "detail": {
+    "error": "VALIDATION_PREVIEW rejected KP-ASYC-RN84:offer: {\"status\":\"INVALID\",\"submission_id\":\"5dffd04c10cc486796c7d3062aa75888\",\"issues\":[{\"code\":\"90244\",\"message\":\"We can't accept the Count you entered for Unit Count. To fix this, select an approved value from the list for your product category and resubmit.\",\"severity\":\"ERROR\",\"attributeNames\":[\"unit_count\"],\"categories\":[\"INVALID_ATTRIBUTE\"]},{\"code\":\"90000900\",\"message\":\"You submitted an attribute business_price that does not belong or is no longer applicable to the product type you were trying to list. We are ignoring the value and processing your submission to ensure a smoother listing experience.\",\"severity\":\"WARNING\",\"attributeNames\":[\"business_price\"],\"categories\":[\"INVALID_ATTRIBUTE\"]}]}"
+  },
+  "sha256": "aa759a6dc013480525b3c4e34de828a6e255b9ad2683545b0c229f9e03439455"
+}

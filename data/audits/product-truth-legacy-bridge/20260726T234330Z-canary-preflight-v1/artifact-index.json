@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    {
+      "file": "preflight-report.json",
+      "role": "preflight_report",
+      "sha256": "4ce96f8d4c4c0534cac5ff113a78e9d5a87f232bb1dc861e7fc9264e8c3a9ff1"
+    }
+  ],
+  "checkedAt": "2026-07-26T23:43:30.000Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "c6996af9a92c2556fbd544dc1923b8d4b5a09cb86d7016d4f1e805b24bed9bbd",
+  "schemaVersion": "product-truth-legacy-bridge-canary-preflight-index/1.0.0",
+  "status": "READY_TO_APPLY"
+}

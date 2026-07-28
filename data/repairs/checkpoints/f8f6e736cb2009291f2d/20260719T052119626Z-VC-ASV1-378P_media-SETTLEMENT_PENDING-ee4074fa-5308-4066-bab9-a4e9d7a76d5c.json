@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ee4074fa-5308-4066-bab9-a4e9d7a76d5c",
+  "created_at": "2026-07-19T05:21:19.626Z",
+  "plan_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+  "action_id": "VC-ASV1-378P:media",
+  "sku": "VC-ASV1-378P",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "def6fa6560a1936c6898913b4d20923bba21f06effb650fb76729001d360f83d",
+    "submitted_event_id": "10d830ab-4129-47b5-aed5-8bb6730d3923",
+    "submitted_at": "2026-07-19T05:18:21.660Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "29647c82f8c00d0b01ce73f126d65e2ed3f75cb1260810e25c856b4fbd47c5c9",
+      "exact_action_paths": [
+        "/attributes/other_product_image_locator_1",
+        "/attributes/other_product_image_locator_7"
+      ],
+      "before_path_state_sha256": "99b8866d4ba437f509e51a0ea0740fa3e0bfa82ecf2afe07925e267d4ad7cbcf"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "c2abdc1692c23a93d6307f640bd305bf8ee9c67a55d465d82812f738acafa14d"
+}

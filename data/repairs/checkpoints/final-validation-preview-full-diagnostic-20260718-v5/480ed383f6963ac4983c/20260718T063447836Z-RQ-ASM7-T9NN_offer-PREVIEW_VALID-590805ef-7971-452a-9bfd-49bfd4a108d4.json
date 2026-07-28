@@ -1,0 +1,36 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "590805ef-7971-452a-9bfd-49bfd4a108d4",
+  "created_at": "2026-07-18T06:34:47.836Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "RQ-ASM7-T9NN:offer",
+  "sku": "RQ-ASM7-T9NN",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c733fe5943bcfba0c0e15be4e84648bc6c49cba97fcc401c194885ab0049ddae",
+    "patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/business_price",
+      "/attributes/list_price"
+    ],
+    "status": "VALID",
+    "submission_id": "e5985064f7d547c9a1f67fb6741dbdc8",
+    "issues": [
+      {
+        "code": "90000900",
+        "message": "You submitted an attribute business_price that does not belong or is no longer applicable to the product type you were trying to list. We are ignoring the value and processing your submission to ensure a smoother listing experience.",
+        "severity": "WARNING",
+        "attributeNames": [
+          "business_price"
+        ],
+        "categories": [
+          "INVALID_ATTRIBUTE"
+        ]
+      }
+    ]
+  },
+  "sha256": "cb37d9b17abf9e22a43ea50e22bd1e6501339134bcdf9dc30329df43caeaca46"
+}

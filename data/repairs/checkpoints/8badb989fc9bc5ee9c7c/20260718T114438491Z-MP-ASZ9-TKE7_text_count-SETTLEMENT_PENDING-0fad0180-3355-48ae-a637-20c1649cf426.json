@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0fad0180-3355-48ae-a637-20c1649cf426",
+  "created_at": "2026-07-18T11:44:38.491Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "MP-ASZ9-TKE7:text_count",
+  "sku": "MP-ASZ9-TKE7",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "8828fef4-240f-438e-8581-ef4e8b9884c6",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "c4253607c6222e8cb28b06cd38b0a0a9c1c364931ce18e81518b9ca13f5b186d",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "68428292bcdc370179b786a080aaad73cdd4cdc3162b2790ccef686d663be807"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "159e7b5f7cd9d88b9f2d81ab53d2aeb9a155396af4f4c0f1892207d505d19030"
+}

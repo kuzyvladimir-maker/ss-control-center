@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T12:50:00.000Z",
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+  },
+  "requested_skus": [
+    "ZX-ASQU-TKU9"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "ZX-ASQU-TKU9"
+  ],
+  "selected_action_ids": [
+    "ZX-ASQU-TKU9:media"
+  ],
+  "selected_actions": 1,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "sha256": "f2834dc1cebd77949d0f9157c880980939aceab99fe23276bddb0f54bd4ff88a",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-F2834DC1CEBD7794"
+}

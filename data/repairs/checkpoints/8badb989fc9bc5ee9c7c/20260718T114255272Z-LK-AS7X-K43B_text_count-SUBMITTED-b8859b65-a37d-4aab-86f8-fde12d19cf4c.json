@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b8859b65-a37d-4aab-86f8-fde12d19cf4c",
+  "created_at": "2026-07-18T11:42:55.272Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LK-AS7X-K43B:text_count",
+  "sku": "LK-AS7X-K43B",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "16e87397-3029-446c-acc4-73c03e19cf3d",
+    "patch_sha256": "eca0e877437818d7cf1882381324c9906c62b96bf80f30993306ad8024ffee2d",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "eca0e877437818d7cf1882381324c9906c62b96bf80f30993306ad8024ffee2d",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "ed0bd8c21dbc4bfe70c86e6aca518a0303d836b35004e1cc94f3b2272c0e057f"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "2534b3358d1542da90696a556ee82ff3",
+    "issues": []
+  },
+  "sha256": "a4104257c4a683182b07c7aa32dce831242eef05897281400eec2d725c3212b8"
+}

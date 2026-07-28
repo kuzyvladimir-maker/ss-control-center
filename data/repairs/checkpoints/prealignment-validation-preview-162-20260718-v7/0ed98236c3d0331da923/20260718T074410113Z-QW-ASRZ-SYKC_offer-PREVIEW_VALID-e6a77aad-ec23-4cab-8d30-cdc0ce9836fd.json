@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e6a77aad-ec23-4cab-8d30-cdc0ce9836fd",
+  "created_at": "2026-07-18T07:44:10.113Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "QW-ASRZ-SYKC:offer",
+  "sku": "QW-ASRZ-SYKC",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "e3f30fee59a91c8be299234ef795b2c89cc7d340b8fd69ac01b4a5c6ab0a2b38",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "63ed97d3e42ae630aa9623da77967fb68d248979042c39b0ce00bae985683776",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "49bd670ccf772993e19fd182062a82b4f2cfc81644738e298868123c4e4f2c40",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "342bdb0091dc947412abce3d4dea039a37e42699a146f2e4446ea044c22b7b8f",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "e36602d8319a4dfa92bc5ce9b02a7044",
+    "issues": []
+  },
+  "sha256": "6038fa9667ed9c5746e06dfbfd75216fb7d0c4c2fc7096084df9b9f2c9015c93"
+}

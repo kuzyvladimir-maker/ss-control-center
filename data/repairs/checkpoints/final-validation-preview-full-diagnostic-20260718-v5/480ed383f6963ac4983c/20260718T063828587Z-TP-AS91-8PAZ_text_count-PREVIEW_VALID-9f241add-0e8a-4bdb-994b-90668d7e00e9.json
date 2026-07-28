@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9f241add-0e8a-4bdb-994b-90668d7e00e9",
+  "created_at": "2026-07-18T06:38:28.587Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "TP-AS91-8PAZ:text_count",
+  "sku": "TP-AS91-8PAZ",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d918b1e296d403cc5e92939d550976b6807829e1dc20e444b90a64d41097d959",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "4d422cd1a9f94020a1a8459485545b85",
+    "issues": []
+  },
+  "sha256": "a0d90151442e026062f35d9dc0592462ae65fd99f904a03d35295926562fea13"
+}

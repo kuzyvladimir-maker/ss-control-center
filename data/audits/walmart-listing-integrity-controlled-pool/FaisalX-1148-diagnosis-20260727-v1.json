@@ -1,0 +1,82 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-27T12:42:32.615Z",
+  "listing_key": "walmart:1:FaisalX-1148",
+  "inputs": {
+    "product_truth_file_sha256": "0f401037b400416508d894c7499a16bb4085c1fc4438170b79eeda2eb1c47451",
+    "buyer_snapshot_file_sha256": "35cd0042a5d29630a5da0ee042f56054f5c0e51ae1bb368d1c48dea0eb2d0030",
+    "buyer_pdp_file_sha256": "7867773c68bfc4d64b0e593bdeec257269efe61c4b2fa161c527ae23e61e40c8",
+    "observations_file_sha256": "0c71a7dfc94d310840a903c7d68bff4df90e6066500303611bec90e4d19fda69",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "a92d9260dca67f5b0d1ecd8657e2277c1f63f00b1d55d3aeff37546c3c5d885a",
+        "bytes": 438179
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "74202d56192bb2de417f49a81376f17c6c49dfb583d93d1642e3f2ab4affb58a",
+        "bytes": 245582
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "be2b95c84cb7872d7c80fe623e4c1ca03e7782405d66668dc35cf0aff603f9d4",
+        "bytes": 346437
+      }
+    ]
+  },
+  "outcome": {
+    "status": "SOURCE_REQUIRED_WITH_CONTRADICTIONS",
+    "blockers": [
+      "LISTING_IMPROVEMENT_NOT_READY",
+      "PRODUCT_TRUTH:CURRENT_SCOPED_SKU_COST_MISSING",
+      "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0",
+      "DECLARED_CONTRADICTION:MAIN_VISIBLE_OUTER_QUANTITY_CONTRADICTS_LIVE_TITLE:main"
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1148",
+    "captured_at": "2026-07-27T12:40:43.903Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 2,
+      "phrases": [
+        "Pack of 2"
+      ]
+    },
+    "verdict": "CONTRADICTION",
+    "findings": [
+      {
+        "severity": "CONTRADICTION",
+        "code": "MAIN_VISIBLE_OUTER_QUANTITY_CONTRADICTS_LIVE_TITLE",
+        "slot": "main",
+        "evidence": [
+          "title=2",
+          "visible=8"
+        ]
+      }
+    ],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "bc7f745c6380c01117f2fa7a4f177542f5246f6e9ff23157c946f2a594ae7c3f"
+  },
+  "detector_input": null,
+  "detector_report": null,
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "0a48ea0c1d47cba40e142bb4bb867f9da0bd687c38c8f03fecd7351b91483e0c"
+}

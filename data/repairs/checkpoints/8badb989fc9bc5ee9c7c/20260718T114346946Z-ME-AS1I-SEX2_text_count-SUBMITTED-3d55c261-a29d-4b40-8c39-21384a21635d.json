@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3d55c261-a29d-4b40-8c39-21384a21635d",
+  "created_at": "2026-07-18T11:43:46.946Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ME-AS1I-SEX2:text_count",
+  "sku": "ME-AS1I-SEX2",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "a05cc8f2-0731-49e7-9b51-a35d962e5f12",
+    "patch_sha256": "69f77d9a5ae25e4a36de019a4dcfdcdc35aa6229b34c258a27244f2dfba24bfe",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "69f77d9a5ae25e4a36de019a4dcfdcdc35aa6229b34c258a27244f2dfba24bfe",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "39004d4af9f76c043784789f6226b0c5e9cfc4acda5abd8209215c311eb3b0c6"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "a3d26361686b42778443c8ef93dfab52",
+    "issues": []
+  },
+  "sha256": "e93bc6c15aa0da2b64dada8915bba6447caee2d3654e3408c15824079e62e847"
+}

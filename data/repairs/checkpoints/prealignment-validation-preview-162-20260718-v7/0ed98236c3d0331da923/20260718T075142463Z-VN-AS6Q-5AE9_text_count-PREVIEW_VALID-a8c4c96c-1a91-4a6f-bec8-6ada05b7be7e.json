@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a8c4c96c-1a91-4a6f-bec8-6ada05b7be7e",
+  "created_at": "2026-07-18T07:51:42.463Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "VN-AS6Q-5AE9:text_count",
+  "sku": "VN-AS6Q-5AE9",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "eb484bea19836b87c79ac24c5a2987731ba01a2c31c5c567b0c2a2af9b4b314a",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "e7ac7739968d42da9e3859e7269edb68",
+    "issues": []
+  },
+  "sha256": "da5098269dcc10b4509b991e3aba92ecc19b0347eff61cadc55a3e361ac7728f"
+}

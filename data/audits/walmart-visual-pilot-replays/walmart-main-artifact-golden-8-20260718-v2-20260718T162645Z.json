@@ -1,0 +1,1537 @@
+{
+  "schema_version": "walmart-visual-pilot-report/v1",
+  "report_id": "walmart-main-artifact-golden-8-20260718-v2-replay-20260718T162645Z",
+  "created_at": "2026-07-18T16:26:45.506Z",
+  "manifest": {
+    "path": "data/audits/walmart-visual-pilot-golden-v1.json",
+    "id": "walmart-main-artifact-golden-8-20260718-v2",
+    "sha256": "491d14e584f3205e71d03c9c0171fd36060e8e5660c6745b15e5d9409fcdf947",
+    "cases": 8,
+    "buyer_facing_verified": 0,
+    "artifact_only": 8
+  },
+  "execution": {
+    "provider": "codex",
+    "provider_mode": "forced-subscription-worker-no-fallback",
+    "prompt_version": "walmart-visual-blind/v3",
+    "base_prompt_sha256": "eb9f8b5ab9324ff9b24e6ef0d1830da350c266309e76a4bcb33a9a4f8c2526c3",
+    "observation_schema": "wm_visual_observation_batch/v3",
+    "remote_writes": 0,
+    "database_access": 0,
+    "paid_api_fallback": false,
+    "image_normalization": "jpeg-max1800-q92-444-white"
+  },
+  "source_index_file": "data/audits/walmart-visual-pilot-snapshots/walmart-main-artifact-golden-8-20260718-v1-1826b23987cb/source-index.json",
+  "checkpoint_file": "data/audits/walmart-visual-pilot-runs/walmart-main-artifact-golden-8-20260718-v1-1826b23987cb-eb9f8b5ab932-codex/checkpoint.json",
+  "layouts": [
+    {
+      "name": "singleton",
+      "batch_size": 1,
+      "shuffle_seed": null,
+      "calls": [
+        {
+          "primary": {
+            "call_key": "afd3415b49405242f3eb7051ca9af282b37b012a2623d74815e2cf693f9656ea",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "7dcd35ddc93a6c8261216cfbcae2a3ca6fb4caa3ed0349aac9db234bbc3867f6",
+            "image_ids": [
+              "i_563c0204248eb14c"
+            ],
+            "normalized_image_sha256": [
+              "0d00b381297099a3a8e5137fb7e944f65d30fefb5aca2314ffec8409c064f34a"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 14001,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_563c0204248eb14c",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "Sara Lee",
+                "visible_product_text": "HONEY WHEAT",
+                "visible_variant_text": null,
+                "visible_size_texts": [
+                  "20 oz"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 4,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "near_white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "Sara Lee",
+                  "HONEY WHEAT",
+                  "20 oz",
+                  "four identical packages shown"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:21:45.110Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_563c0204248eb14c",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "Sara Lee",
+              "visible_product_text": "HONEY WHEAT",
+              "visible_variant_text": null,
+              "visible_size_texts": [
+                "20 oz"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 4,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "near_white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "Sara Lee",
+                "HONEY WHEAT",
+                "20 oz",
+                "four identical packages shown"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "f1f10ad150f81f22e761b673384b2b8f0fe5f0e24bd47872af4c30d83ee0bcb5",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "da13a5c69eeb8bf28394b5a681a1f89480aa3e65bb2b181d9bfd4186637d040c",
+            "image_ids": [
+              "i_70d06b0ff2eb9b6f"
+            ],
+            "normalized_image_sha256": [
+              "55a72737b05c375cad876fecb7b025a4a13e4867b8080f255b7fe8370b8b061e"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 24401,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_70d06b0ff2eb9b6f",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "MOTT'S",
+                "visible_product_text": "100% JUICE",
+                "visible_variant_text": "APPLE",
+                "visible_size_texts": [
+                  "64 FL OZ",
+                  "2 QT",
+                  "1.89 L"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 4,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [
+                  "100% JUICE",
+                  "NO SUGAR ADDED*",
+                  "120% DV VITAMIN C"
+                ],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "MOTT'S",
+                  "100% JUICE",
+                  "APPLE",
+                  "NO SUGAR ADDED*",
+                  "64 FL OZ (2 QT) 1.89 L"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:22:09.515Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_70d06b0ff2eb9b6f",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "MOTT'S",
+              "visible_product_text": "100% JUICE",
+              "visible_variant_text": "APPLE",
+              "visible_size_texts": [
+                "64 FL OZ",
+                "2 QT",
+                "1.89 L"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 4,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [
+                "100% JUICE",
+                "NO SUGAR ADDED*",
+                "120% DV VITAMIN C"
+              ],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "MOTT'S",
+                "100% JUICE",
+                "APPLE",
+                "NO SUGAR ADDED*",
+                "64 FL OZ (2 QT) 1.89 L"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "fa202a67239e2bd22c6c59edbd7c34051c8d9ce785efe72922193f2855307238",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "0352b6429543a3fd47c02dd41c080ae70050c84e0e630c26e0cd1ad12839dd9a",
+            "image_ids": [
+              "i_b5d6488661d295ee"
+            ],
+            "normalized_image_sha256": [
+              "662497a256ea8eebdeb7c64b00cd19b7367f948564e8de5a4bcd2471945945df"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 17672,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_b5d6488661d295ee",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "Pepperidge Farm",
+                "visible_product_text": "Whole Grain",
+                "visible_variant_text": "OATMEAL",
+                "visible_size_texts": [
+                  "10g Protein",
+                  "6g Fiber",
+                  "48g Whole Grains",
+                  "PER 2 SLICES",
+                  "NET WT 24 OZ (1.5 LBS) (680g)"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 2,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "Pepperidge Farm",
+                  "Whole Grain",
+                  "OATMEAL",
+                  "10g Protein",
+                  "6g Fiber",
+                  "48g Whole Grains",
+                  "NET WT 24 OZ (1.5 LBS) (680g)"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:22:27.193Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_b5d6488661d295ee",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "Pepperidge Farm",
+              "visible_product_text": "Whole Grain",
+              "visible_variant_text": "OATMEAL",
+              "visible_size_texts": [
+                "10g Protein",
+                "6g Fiber",
+                "48g Whole Grains",
+                "PER 2 SLICES",
+                "NET WT 24 OZ (1.5 LBS) (680g)"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 2,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "Pepperidge Farm",
+                "Whole Grain",
+                "OATMEAL",
+                "10g Protein",
+                "6g Fiber",
+                "48g Whole Grains",
+                "NET WT 24 OZ (1.5 LBS) (680g)"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "6660f801eb5395c571df75b3df8f26387eef2dcad321ddff5c2366850301fed1",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "e2d5d6e72ac2023085d68a2eb6fe942933ca33635fea363295b5a2086bbac0d8",
+            "image_ids": [
+              "i_adee460a3410e504"
+            ],
+            "normalized_image_sha256": [
+              "7ace5714e39e36381fb3486a0d25c3f942102c8f0a6202f4d5858561eb3d8997"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 28511,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_adee460a3410e504",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "Reese's",
+                "visible_product_text": "Pieces",
+                "visible_variant_text": "Eggs",
+                "visible_size_texts": [
+                  "10.8 oz"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 24,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "Reese's",
+                  "Pieces",
+                  "Eggs",
+                  "10.8 oz"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:22:55.712Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_adee460a3410e504",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "Reese's",
+              "visible_product_text": "Pieces",
+              "visible_variant_text": "Eggs",
+              "visible_size_texts": [
+                "10.8 oz"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 24,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "Reese's",
+                "Pieces",
+                "Eggs",
+                "10.8 oz"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "a59ab6015dfd9a354cdbc2ac50bd42b2243fa13ad30945784a67320874c0c63d",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "8d60056b7456743a5b078e2fe96d952fc99a7316cdd28fa7d081e04e4df681d5",
+            "image_ids": [
+              "i_ae0fffe0c8dabac1"
+            ],
+            "normalized_image_sha256": [
+              "fb856d7efb6d260c84f02b046fb418789fbc7f9c0a7c813f163123554b71969d"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 34550,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_ae0fffe0c8dabac1",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "PURINA",
+                "visible_product_text": "Fancy Feast",
+                "visible_variant_text": "Chicken Feast Classic Pate",
+                "visible_size_texts": [
+                  "24 CANS"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 8,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [],
+                "case_package_claims": [
+                  "24 CANS"
+                ],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "multi_package_case",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "PURINA",
+                  "Fancy Feast",
+                  "Chicken Feast",
+                  "CLASSIC PATE",
+                  "24 CANS"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:23:30.263Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_ae0fffe0c8dabac1",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "PURINA",
+              "visible_product_text": "Fancy Feast",
+              "visible_variant_text": "Chicken Feast Classic Pate",
+              "visible_size_texts": [
+                "24 CANS"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 8,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [],
+              "case_package_claims": [
+                "24 CANS"
+              ],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "multi_package_case",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "PURINA",
+                "Fancy Feast",
+                "Chicken Feast",
+                "CLASSIC PATE",
+                "24 CANS"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "33367c0c1a6b6f3a7012bb179b6bc79c33de59d4d9fb9cada3338c3baca95dfa",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "8d69f77f422a6092e98ff162220836e2a8a3dbd2680aee978956dc8dac6f7380",
+            "image_ids": [
+              "i_6cd0cc09c4881be2"
+            ],
+            "normalized_image_sha256": [
+              "1858c6a6006c5ac1e7fd09ee5b39f75b66bacd0cae8a4a1b9344f0c11f81712c"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 18153,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_6cd0cc09c4881be2",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "BIGELOW",
+                "visible_product_text": "Peppermint",
+                "visible_variant_text": "HERBAL TEA",
+                "visible_size_texts": [
+                  "20 tea bags",
+                  "0.91 oz (25 g)"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 2,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [
+                  "20 tea bags individually wrapped in foil pouches",
+                  "caffeine free"
+                ],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "BIGELOW",
+                  "Peppermint",
+                  "HERBAL TEA",
+                  "20",
+                  "NET WT. .91 OZ (25 g)",
+                  "TEA BAGS INDIVIDUALLY WRAPPED IN FOIL POUCHES",
+                  "CAFFEINE FREE"
+                ],
+                "flags": [
+                  "tiled_image"
+                ]
+              }
+            ],
+            "completed_at": "2026-07-18T16:23:48.421Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_6cd0cc09c4881be2",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "BIGELOW",
+              "visible_product_text": "Peppermint",
+              "visible_variant_text": "HERBAL TEA",
+              "visible_size_texts": [
+                "20 tea bags",
+                "0.91 oz (25 g)"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 2,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [
+                "20 tea bags individually wrapped in foil pouches",
+                "caffeine free"
+              ],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "BIGELOW",
+                "Peppermint",
+                "HERBAL TEA",
+                "20",
+                "NET WT. .91 OZ (25 g)",
+                "TEA BAGS INDIVIDUALLY WRAPPED IN FOIL POUCHES",
+                "CAFFEINE FREE"
+              ],
+              "flags": [
+                "tiled_image"
+              ]
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "7db0317cb6763c1c64033d89622be62750e714ee9284840a55a2df9ccd72c76a",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "a91511a8f445520363127a24eb9dbc049c375cdd550730b15bc3513a8a618300",
+            "image_ids": [
+              "i_fd8210f0db625dac"
+            ],
+            "normalized_image_sha256": [
+              "7934abf2859045a1fc6f18a92e0db6f30de5fd0df7e16a37844bc6e5615f2e3b"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 25311,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_fd8210f0db625dac",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "HAMBURGER HELPER",
+                "visible_product_text": "Cheesy Ranch Burger",
+                "visible_variant_text": null,
+                "visible_size_texts": [
+                  "4.5 SERVINGS"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 6,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "HAMBURGER HELPER",
+                  "Cheesy Ranch Burger",
+                  "4.5 SERVINGS"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:24:13.738Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_fd8210f0db625dac",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "HAMBURGER HELPER",
+              "visible_product_text": "Cheesy Ranch Burger",
+              "visible_variant_text": null,
+              "visible_size_texts": [
+                "4.5 SERVINGS"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 6,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "HAMBURGER HELPER",
+                "Cheesy Ranch Burger",
+                "4.5 SERVINGS"
+              ],
+              "flags": []
+            }
+          ]
+        },
+        {
+          "primary": {
+            "call_key": "39c35a9b11a40b2923c0dcdb788bc1e5c236c8f3f1c640a9112d44eeb1ecb3b7",
+            "provider": "codex",
+            "prompt_version": "walmart-visual-blind/v3",
+            "prompt_sha256": "08c480f359edb882da068c7951180c7c22f1692860a3a087dba3d9145dac5350",
+            "image_ids": [
+              "i_b6cedc3b739fa363"
+            ],
+            "normalized_image_sha256": [
+              "c5e35b26d500984979224ca3adf1f9e4db4b0d1364dab90a067237987d57355d"
+            ],
+            "transport_attempts": [
+              {
+                "attempt": 1,
+                "status": 200,
+                "duration_ms": 32189,
+                "ok": true,
+                "error": "missing result",
+                "attested_image_count": null,
+                "worker_provider": null,
+                "worker_build": null
+              }
+            ],
+            "transport_ok": true,
+            "schema_valid": true,
+            "schema_error": null,
+            "image_count_attested": false,
+            "observations": [
+              {
+                "image_id": "i_b6cedc3b739fa363",
+                "visual_role": "tiled_main",
+                "visible_brand_text": "PEPPERIDGE FARM",
+                "visible_product_text": "Whole Grain",
+                "visible_variant_text": "15 GRAIN",
+                "visible_size_texts": [
+                  "NET WT 22 OZ (1.37 LBS) (624g)"
+                ],
+                "external_package_count": {
+                  "mode": "exact",
+                  "value": 2,
+                  "min": null,
+                  "max": null
+                },
+                "outer_package_claims": [
+                  "THIN SLICED",
+                  "Now BETTER Taste",
+                  "70 Calories PER SLICE",
+                  "6g Protein",
+                  "4g Fiber",
+                  "27g Whole Grains"
+                ],
+                "inner_contents_claims": [],
+                "case_package_claims": [],
+                "unclear_quantity_claims": [],
+                "grid_cell_kind": "single_sellable_package",
+                "front_visibility": "all",
+                "background": "white",
+                "multiple_distinct_products": "no",
+                "readable_identity": "clear",
+                "evidence": [
+                  "PEPPERIDGE FARM",
+                  "Whole Grain",
+                  "THIN SLICED",
+                  "15 GRAIN",
+                  "NET WT 22 OZ (1.37 LBS) (624g)",
+                  "70 Calories PER SLICE"
+                ],
+                "flags": []
+              }
+            ],
+            "completed_at": "2026-07-18T16:24:45.933Z",
+            "resumed": false
+          },
+          "fallback": [],
+          "observations": [
+            {
+              "image_id": "i_b6cedc3b739fa363",
+              "visual_role": "tiled_main",
+              "visible_brand_text": "PEPPERIDGE FARM",
+              "visible_product_text": "Whole Grain",
+              "visible_variant_text": "15 GRAIN",
+              "visible_size_texts": [
+                "NET WT 22 OZ (1.37 LBS) (624g)"
+              ],
+              "external_package_count": {
+                "mode": "exact",
+                "value": 2,
+                "min": null,
+                "max": null
+              },
+              "outer_package_claims": [
+                "THIN SLICED",
+                "Now BETTER Taste",
+                "70 Calories PER SLICE",
+                "6g Protein",
+                "4g Fiber",
+                "27g Whole Grains"
+              ],
+              "inner_contents_claims": [],
+              "case_package_claims": [],
+              "unclear_quantity_claims": [],
+              "grid_cell_kind": "single_sellable_package",
+              "front_visibility": "all",
+              "background": "white",
+              "multiple_distinct_products": "no",
+              "readable_identity": "clear",
+              "evidence": [
+                "PEPPERIDGE FARM",
+                "Whole Grain",
+                "THIN SLICED",
+                "15 GRAIN",
+                "NET WT 22 OZ (1.37 LBS) (624g)",
+                "70 Calories PER SLICE"
+              ],
+              "flags": []
+            }
+          ]
+        }
+      ],
+      "case_results": [
+        {
+          "case_id": "bad-wrong-brand-01",
+          "sku": "FaisalX-1122",
+          "verdict": "BAD",
+          "decision": {
+            "verdict": "BAD",
+            "checks": {
+              "identity": "MISMATCH",
+              "size": "MISMATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [
+              "identity markers missing: nature's own, life, 40 calories",
+              "visible sizes 20 oz do not include 16 oz"
+            ],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_563c0204248eb14c",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Sara Lee",
+            "visible_product_text": "HONEY WHEAT",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "20 oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "near_white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Sara Lee",
+              "HONEY WHEAT",
+              "20 oz",
+              "four identical packages shown"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "211c3d198d7a3483f521c5f59268a13833a57a13bdd64b7d053a46fc48c87fb8",
+          "normalized_sha256": "0d00b381297099a3a8e5137fb7e944f65d30fefb5aca2314ffec8409c064f34a"
+        },
+        {
+          "case_id": "bad-wrong-size-01",
+          "sku": "FaisalX-2195",
+          "verdict": "BAD",
+          "decision": {
+            "verdict": "BAD",
+            "checks": {
+              "identity": "MISMATCH",
+              "size": "MISMATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [
+              "identity markers missing: apple juice",
+              "visible sizes 64 fl_oz, 1.89 l do not include 48 fl_oz"
+            ],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_70d06b0ff2eb9b6f",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "MOTT'S",
+            "visible_product_text": "100% JUICE",
+            "visible_variant_text": "APPLE",
+            "visible_size_texts": [
+              "64 FL OZ",
+              "2 QT",
+              "1.89 L"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "100% JUICE",
+              "NO SUGAR ADDED*",
+              "120% DV VITAMIN C"
+            ],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "MOTT'S",
+              "100% JUICE",
+              "APPLE",
+              "NO SUGAR ADDED*",
+              "64 FL OZ (2 QT) 1.89 L"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "d4f568e30de481fcee3afc17080814eca2922e4b7a6026ad9c2a2dbaaf2c6161",
+          "normalized_sha256": "55a72737b05c375cad876fecb7b025a4a13e4867b8080f255b7fe8370b8b061e"
+        },
+        {
+          "case_id": "bad-paired-variant-size-01",
+          "sku": "FaisalX-1130",
+          "verdict": "BAD",
+          "decision": {
+            "verdict": "BAD",
+            "checks": {
+              "identity": "MISMATCH",
+              "size": "MISMATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [
+              "identity markers missing: 15 grain, thin sliced",
+              "visible sizes 10 g, 6 g, 48 g, 24 oz do not include 22 oz"
+            ],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_b5d6488661d295ee",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Whole Grain",
+            "visible_variant_text": "OATMEAL",
+            "visible_size_texts": [
+              "10g Protein",
+              "6g Fiber",
+              "48g Whole Grains",
+              "PER 2 SLICES",
+              "NET WT 24 OZ (1.5 LBS) (680g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Pepperidge Farm",
+              "Whole Grain",
+              "OATMEAL",
+              "10g Protein",
+              "6g Fiber",
+              "48g Whole Grains",
+              "NET WT 24 OZ (1.5 LBS) (680g)"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "6580c05f60d4cadfd15d37dcfda122d6d3f31aa9022f07d3074b5522c5111994",
+          "normalized_sha256": "662497a256ea8eebdeb7c64b00cd19b7367f948564e8de5a4bcd2471945945df"
+        },
+        {
+          "case_id": "bad-wrong-count-01",
+          "sku": "FaisalX-3976",
+          "verdict": "BAD",
+          "decision": {
+            "verdict": "BAD",
+            "checks": {
+              "identity": "MISMATCH",
+              "size": "MISMATCH",
+              "external_quantity": "MISMATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [
+              "identity markers missing: peanut butter",
+              "visible sizes 10.8 oz do not include 5.3 oz",
+              "outer count 24 != 4"
+            ],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_adee460a3410e504",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Reese's",
+            "visible_product_text": "Pieces",
+            "visible_variant_text": "Eggs",
+            "visible_size_texts": [
+              "10.8 oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 24,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Reese's",
+              "Pieces",
+              "Eggs",
+              "10.8 oz"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "a361352b4fb5b8d58fb4320e42a17411628a69811a7aade66e432fb0dfff6ea7",
+          "normalized_sha256": "7ace5714e39e36381fb3486a0d25c3f942102c8f0a6202f4d5858561eb3d8997"
+        },
+        {
+          "case_id": "bad-case-inside-cell-01",
+          "sku": "FaisalX-3087",
+          "verdict": "BAD",
+          "decision": {
+            "verdict": "BAD",
+            "checks": {
+              "identity": "MATCH",
+              "size": "MISMATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MISMATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [
+              "visible sizes 24 count do not include 3 oz",
+              "grid cell kind is multi_package_case"
+            ],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_ae0fffe0c8dabac1",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PURINA",
+            "visible_product_text": "Fancy Feast",
+            "visible_variant_text": "Chicken Feast Classic Pate",
+            "visible_size_texts": [
+              "24 CANS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 8,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [
+              "24 CANS"
+            ],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "multi_package_case",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PURINA",
+              "Fancy Feast",
+              "Chicken Feast",
+              "CLASSIC PATE",
+              "24 CANS"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "e0e46d62e202303915dd2c45ae16d0147ff8d4ae2c4cfd2e9f4fbeadb697cea0",
+          "normalized_sha256": "fb856d7efb6d260c84f02b046fb418789fbc7f9c0a7c813f163123554b71969d"
+        },
+        {
+          "case_id": "pass-inner-count-is-not-outer-01",
+          "sku": "FaisalX-5010",
+          "verdict": "PASS",
+          "decision": {
+            "verdict": "PASS",
+            "checks": {
+              "identity": "MATCH",
+              "size": "MATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_6cd0cc09c4881be2",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "BIGELOW",
+            "visible_product_text": "Peppermint",
+            "visible_variant_text": "HERBAL TEA",
+            "visible_size_texts": [
+              "20 tea bags",
+              "0.91 oz (25 g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "20 tea bags individually wrapped in foil pouches",
+              "caffeine free"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "BIGELOW",
+              "Peppermint",
+              "HERBAL TEA",
+              "20",
+              "NET WT. .91 OZ (25 g)",
+              "TEA BAGS INDIVIDUALLY WRAPPED IN FOIL POUCHES",
+              "CAFFEINE FREE"
+            ],
+            "flags": [
+              "tiled_image"
+            ]
+          },
+          "raw_sha256": "5cf4ea761d8ff038766385d06df8c5340e92678cc47d1e49fd1b66bc6eba533b",
+          "normalized_sha256": "1858c6a6006c5ac1e7fd09ee5b39f75b66bacd0cae8a4a1b9344f0c11f81712c"
+        },
+        {
+          "case_id": "pass-exact-box-grid-01",
+          "sku": "FaisalX-3490",
+          "verdict": "REVIEW",
+          "decision": {
+            "verdict": "REVIEW",
+            "checks": {
+              "identity": "MATCH",
+              "size": "UNKNOWN",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [],
+            "unknowns": [
+              "per-package size unreadable"
+            ]
+          },
+          "observation": {
+            "image_id": "i_fd8210f0db625dac",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "HAMBURGER HELPER",
+            "visible_product_text": "Cheesy Ranch Burger",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "4.5 SERVINGS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "HAMBURGER HELPER",
+              "Cheesy Ranch Burger",
+              "4.5 SERVINGS"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "c6982785d29093eea5a3da2322733c36be6d5e0f14d6cf72f2aa607ea2ad2ca4",
+          "normalized_sha256": "7934abf2859045a1fc6f18a92e0db6f30de5fd0df7e16a37844bc6e5615f2e3b"
+        },
+        {
+          "case_id": "pass-paired-variant-size-01",
+          "sku": "FaisalX-1130",
+          "verdict": "PASS",
+          "decision": {
+            "verdict": "PASS",
+            "checks": {
+              "identity": "MATCH",
+              "size": "MATCH",
+              "external_quantity": "MATCH",
+              "single_package_per_cell": "MATCH",
+              "front": "MATCH",
+              "background": "MATCH",
+              "no_mixed_product": "MATCH"
+            },
+            "hard_failures": [],
+            "unknowns": []
+          },
+          "observation": {
+            "image_id": "i_b6cedc3b739fa363",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "Whole Grain",
+            "visible_variant_text": "15 GRAIN",
+            "visible_size_texts": [
+              "NET WT 22 OZ (1.37 LBS) (624g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "THIN SLICED",
+              "Now BETTER Taste",
+              "70 Calories PER SLICE",
+              "6g Protein",
+              "4g Fiber",
+              "27g Whole Grains"
+            ],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "Whole Grain",
+              "THIN SLICED",
+              "15 GRAIN",
+              "NET WT 22 OZ (1.37 LBS) (624g)",
+              "70 Calories PER SLICE"
+            ],
+            "flags": []
+          },
+          "raw_sha256": "fbc00888141c0e35edab443c9e307f904de3eeee04a585a902a29416960c657c",
+          "normalized_sha256": "c5e35b26d500984979224ca3adf1f9e4db4b0d1364dab90a067237987d57355d"
+        }
+      ]
+    }
+  ],
+  "evaluation": {
+    "cases": [
+      {
+        "case_id": "bad-wrong-brand-01",
+        "sku": "FaisalX-1122",
+        "truth": "BAD",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "BAD"
+          }
+        ],
+        "aggregate": "BAD",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "bad-wrong-size-01",
+        "sku": "FaisalX-2195",
+        "truth": "BAD",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "BAD"
+          }
+        ],
+        "aggregate": "BAD",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "bad-paired-variant-size-01",
+        "sku": "FaisalX-1130",
+        "truth": "BAD",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "BAD"
+          }
+        ],
+        "aggregate": "BAD",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "bad-wrong-count-01",
+        "sku": "FaisalX-3976",
+        "truth": "BAD",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "BAD"
+          }
+        ],
+        "aggregate": "BAD",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "bad-case-inside-cell-01",
+        "sku": "FaisalX-3087",
+        "truth": "BAD",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "BAD"
+          }
+        ],
+        "aggregate": "BAD",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "pass-inner-count-is-not-outer-01",
+        "sku": "FaisalX-5010",
+        "truth": "PASS",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "PASS"
+          }
+        ],
+        "aggregate": "PASS",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "pass-exact-box-grid-01",
+        "sku": "FaisalX-3490",
+        "truth": "PASS",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "REVIEW"
+          }
+        ],
+        "aggregate": "REVIEW",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      },
+      {
+        "case_id": "pass-paired-variant-size-01",
+        "sku": "FaisalX-1130",
+        "truth": "PASS",
+        "runs": [
+          {
+            "layout": "singleton",
+            "verdict": "PASS"
+          }
+        ],
+        "aggregate": "PASS",
+        "stable": true,
+        "false_pass_any_run": false,
+        "false_bad_any_run": false
+      }
+    ],
+    "known_pass_auto_pass_rate": 0.6666666666666666,
+    "correctness_gates": {
+      "all_planned_layouts_completed": false,
+      "zero_false_pass": true,
+      "zero_false_bad": true,
+      "all_known_bad_detected_every_layout": true,
+      "all_known_pass_avoid_bad": true,
+      "known_pass_auto_pass_rate_at_least_60pct": true,
+      "verdict_stability_100pct": true,
+      "schema_valid_first_attempt_100pct": true,
+      "schema_valid_after_fallback_100pct": true,
+      "no_paid_fallback": true,
+      "no_remote_writes": true
+    },
+    "algorithm_go": false,
+    "mass_run_readiness_gates": {
+      "algorithm_golden_passed": false,
+      "worker_image_count_attested_100pct": false,
+      "buyer_facing_snapshot_validated": false,
+      "shadow_main_50_completed": false,
+      "gallery_golden_and_pilot_completed": false
+    },
+    "mass_run_go": false
+  },
+  "replayed_from": "data/audits/walmart-visual-pilot-runs/walmart-main-artifact-golden-8-20260718-v1-1826b23987cb-eb9f8b5ab932-codex/report-20260718T162445Z.json"
+}

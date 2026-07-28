@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "09814723-460d-4fd7-86eb-6a3cd1e285d3",
+  "created_at": "2026-07-18T11:45:12.834Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NJ-ASAC-PTK2:text_count",
+  "sku": "NJ-ASAC-PTK2",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "f8d369c6-0d9d-4c1d-8c0a-58fee28ae5e2",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b6d46c4f532395eef463184994851a94a4cbaf199d5d6db81489fb141ca228e0",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "494f44a698842e866c1ebf7795ae5097562b33cf30b47192014bcaa71e5e87a7"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "7e82ad887d47af36ba3ffec8666415a6e0ada8212495bcf076c706f2d3a4cde3"
+}

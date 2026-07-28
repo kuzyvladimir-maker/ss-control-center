@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-27T15:48:55.148Z",
+  "target": {
+    "sku": "FaisalX-1633",
+    "item_id": "7437908121"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-1633",
+      "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "upc": "742259721021",
+      "gtin14": "00742259721021",
+      "wpid": "1OYN8ZYPZ7FB",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "7437908121",
+      "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "main_image_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-Original-Bread-20-oz-Soft-White-Pre-sliced-White-Bread-Bag-Pack-of-7_9ed6d8bb-fdef-48a0-943d-6e30061540a1.1b8e593577f07d68f3705443accc3303.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "7437908121",
+      "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "identity_evidence": [
+        "product.item_id=7437908121",
+        "product.product_url=7437908121"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-1633",
+        "seller.ItemResponse[0].sku=FaisalX-1633",
+        "seller.ItemResponse[0].upc=742259721021",
+        "seller.normalized_gtin14=00742259721021",
+        "seller.wpid_not_itemId=1OYN8ZYPZ7FB",
+        "catalog.items[0].standardUpc~=00742259721021;itemId=7437908121",
+        "catalog.unique_numeric_public_itemId=7437908121"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=7437908121",
+        "product.product_url=7437908121"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "00836dc594c86f601571ad7edd107c733ae5114fe20b7b564781d18e1c6e882e",
+    "catalog_search_payload_canonical_sha256": "8cc398418b3aee21067962471bdc3e132f178f04b2e8c490b46afda3c0e05d8a",
+    "resolution_canonical_sha256": "49683c2eb53239651022f7b79b9f18e3e7b752bd68f40c740663f6d46f2b28f7",
+    "buyer_payload_canonical_sha256": "b1565ddf8e688954e913b049effaf66a55b50cc0c031aec2cd6b354a13a1f2ab"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-Original-Bread-20-oz-Soft-White-Pre-sliced-White-Bread-Bag-Pack-of-7_9ed6d8bb-fdef-48a0-943d-6e30061540a1.1b8e593577f07d68f3705443accc3303.png",
+      "final_url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-Original-Bread-20-oz-Soft-White-Pre-sliced-White-Bread-Bag-Pack-of-7_9ed6d8bb-fdef-48a0-943d-6e30061540a1.1b8e593577f07d68f3705443accc3303.png",
+      "sha256": "7a7e4935c95e3621ca2502a647702124dd15fbc2454a0a7d282067358b7f7e0c",
+      "bytes": 258807,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/7a7e4935c95e3621ca2502a647702124dd15fbc2454a0a7d282067358b7f7e0c.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/926abc6e-e10c-45d2-9831-8c6046ac1306.5a14e4b43d3332078ef2c6e7e722f34e.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/926abc6e-e10c-45d2-9831-8c6046ac1306.5a14e4b43d3332078ef2c6e7e722f34e.jpeg",
+      "sha256": "647e87fcb7e89b95be090cfe15cfdb1a5001c2519a746bfe47b98ae64d040d3e",
+      "bytes": 685602,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/647e87fcb7e89b95be090cfe15cfdb1a5001c2519a746bfe47b98ae64d040d3e.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/cd6a2105-d8fa-490f-ae13-b7ab7b5c4d89.b9b6e21fc6bffd5d2909931d6a4ad7db.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/cd6a2105-d8fa-490f-ae13-b7ab7b5c4d89.b9b6e21fc6bffd5d2909931d6a4ad7db.jpeg",
+      "sha256": "81f306833d7e466d6bc26eeaab9822787136b14d143f260ac5ef6b0273debf48",
+      "bytes": 5888,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 160,
+      "decoded_height": 160,
+      "local_path": "assets/81f306833d7e466d6bc26eeaab9822787136b14d143f260ac5ef6b0273debf48.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260727T154855Z-490e660cafb4",
+  "body_sha256": "490e660cafb444768201fda577055404940dabee6735c9c0d3e707815d5576e3"
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b01821a4-eb62-417c-a9b0-f6c0ec1c446c",
+  "created_at": "2026-07-19T05:20:54.470Z",
+  "plan_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+  "action_id": "VC-ASV1-378P:media",
+  "sku": "VC-ASV1-378P",
+  "kind": "MEDIA",
+  "status": "SETTLED_BEFORE",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "10d830ab-4129-47b5-aed5-8bb6730d3923",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "29647c82f8c00d0b01ce73f126d65e2ed3f75cb1260810e25c856b4fbd47c5c9",
+      "exact_action_paths": [
+        "/attributes/other_product_image_locator_1",
+        "/attributes/other_product_image_locator_7"
+      ],
+      "before_path_state_sha256": "99b8866d4ba437f509e51a0ea0740fa3e0bfa82ecf2afe07925e267d4ad7cbcf"
+    },
+    "fast_verify_attempts": 10,
+    "extended_polling_attempts": 20,
+    "consecutive_stable_reads": 20,
+    "last_classification": "BEFORE",
+    "last_path_state_sha256": "99b8866d4ba437f509e51a0ea0740fa3e0bfa82ecf2afe07925e267d4ad7cbcf",
+    "checks": [
+      {
+        "field": "other_product_image_locator_1",
+        "ok": false,
+        "expected": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+      },
+      {
+        "field": "other_product_image_locator_7",
+        "ok": false,
+        "expected": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+      }
+    ]
+  },
+  "sha256": "a864e47d3085feb037f2f1e4e0970020a88c95bc8b67a3c7b06c546e558ee863"
+}

@@ -1,0 +1,3164 @@
+{
+  "schema_version": "uncrustables-surgical-desired/v1",
+  "immutable": true,
+  "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+  "reviewed_at": "2026-07-18T07:25:00.000Z",
+  "source_artifacts": {
+    "gallery_surgical_plan_v3": {
+      "path": "data/audits/uncrustables-live-gallery-surgical-plan-20260718-v3.json",
+      "sha256": "7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646",
+      "body_sha256": "15ef547bded86f2f6fe97ed14e2e6152ae913c00d7fb550f791b27b0bdbd51d8",
+      "plan_id": "ULGSP3-bf4089ebbb4476532c9a"
+    }
+  },
+  "supersedes": [
+    {
+      "path": "data/repairs/uncrustables-gallery-media-desired-20260718-v3.json",
+      "sha256": "dffafb52b56c690edab63c51378dcd19d6c2f9c863f0e69429d99b62f87eb85b",
+      "body_sha256": "e733975f98672c6a7e546c502f9c33c0a471c882f232821bea4b67f1312ad1a2",
+      "status": "SUPERSEDED_DO_NOT_APPLY",
+      "reason": "STALE_GALLERY_VERSION_LABEL"
+    }
+  ],
+  "carrier_policy": {
+    "media_only": true,
+    "main_image_excluded": true,
+    "exact_ordered_gallery": true,
+    "exact_tail_complement": true,
+    "perceptual_duplicate_review_required": true
+  },
+  "summary": {
+    "exact_live_scope": 164,
+    "keep_no_write": 44,
+    "media_repairs": 120,
+    "corrected_duplicate_rows": 4,
+    "explicit_tail_slot_deletions": 199
+  },
+  "repairs": [
+    {
+      "sku": "AD-AS4H-QXZD",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 2, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,13c1ef2f54215dd1eafca9b1b57fec09c72924a94a19d9a3fa1bc5b79ca6996b.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AG-ASKV-W9EN",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 3, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 4, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AN-ASUW-49Y5",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 5, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AU-AS97-USX8",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 6, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AV-AS7X-8EXK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 7, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AY-AS5F-JEY9",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 8, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 9, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce,1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066,a4f02b0bc039d9ce849e09a7d55ec7af6b15cce62ecfb84ee381e4ccc80682c5,bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649.",
+          "Explicit stale-tail deletion: 7,8.",
+          "Perceptual duplicate correction dropped: 15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "https://m.media-amazon.com/images/I/71nCABtrKCL.jpg",
+          "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BD-AS8P-XAW5",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 10, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BD-ASGH-LREJ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 11, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BH-AS7H-D4FV",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 12, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BH-ASTN-S4XJ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 13, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BH-ASVY-CR8H",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 14, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,496a017dcb2000de9345812519dda029f65db7946fd6dbab732b3806f37451b3.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 15, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BM-AS5J-3MQY",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 16, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BQ-ASUE-NT37",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 17, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "BY-ASY2-8UJJ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 19, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "CE-ASGK-ZRHM",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 20, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 21, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "DA-ASF0-D7RG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 23, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8,7ca1dc1d5b2bd38d06f7c76df708d7c80b18a7caf1516683274e8187295a2648,3f6160595a2e0986b916871e1f7cee3ce481269b7377abd8634dc67586537676.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg",
+          "https://m.media-amazon.com/images/I/813VekAfHhL.jpg",
+          "https://m.media-amazon.com/images/I/71YAcjje8wL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "DP-ASQ6-ZPZU",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 25, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "EF-AS4A-JCLU",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 27, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "EJ-ASCD-8K87",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 28, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,496a017dcb2000de9345812519dda029f65db7946fd6dbab732b3806f37451b3.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ER-ASRK-TPYQ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 29, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "EX-ASC0-5CRL",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 33, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "EZ-ASLA-Y7MZ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 34, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "FM-AS51-S4MT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 36, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "FN-ASVM-UWAG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 37, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "FR-AS6X-5KJY",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 38, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e079afb7c7c4c9517bbd546cb7d69894cc130028137cbdb4d41841e17a5fe9c6,91d2c19cc618cec3c4593216e7c15a9306ec5c29f6344895f46efba0c95bdba0.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "GG-ASNC-C9WA",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 41, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e079afb7c7c4c9517bbd546cb7d69894cc130028137cbdb4d41841e17a5fe9c6,91d2c19cc618cec3c4593216e7c15a9306ec5c29f6344895f46efba0c95bdba0.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "GR-AS0R-YPCF",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 42, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,4e47c221991ef798d7a5c89dce72bd60220eeffb58b3afe65fbed8bb6f0f93fb.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71CT5NHIm9L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "GR-AS1P-DBB2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 43, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8,7ca1dc1d5b2bd38d06f7c76df708d7c80b18a7caf1516683274e8187295a2648,3f6160595a2e0986b916871e1f7cee3ce481269b7377abd8634dc67586537676.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg",
+          "https://m.media-amazon.com/images/I/813VekAfHhL.jpg",
+          "https://m.media-amazon.com/images/I/71YAcjje8wL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "GU-ASQ1-S7M6",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 44, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,496a017dcb2000de9345812519dda029f65db7946fd6dbab732b3806f37451b3.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "GX-ASTJ-WHV3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 45, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "HA-ASCR-ME3A",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 46, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "HR-AS7Q-7ZDF",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 48, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "HX-ASO8-XCL2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 50, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8,7ca1dc1d5b2bd38d06f7c76df708d7c80b18a7caf1516683274e8187295a2648,3f6160595a2e0986b916871e1f7cee3ce481269b7377abd8634dc67586537676.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg",
+          "https://m.media-amazon.com/images/I/813VekAfHhL.jpg",
+          "https://m.media-amazon.com/images/I/71YAcjje8wL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "HZ-ASPS-4L22",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 51, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JC-ASM4-XXW7",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 52, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JL-ASUC-JUZE",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 54, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,13c1ef2f54215dd1eafca9b1b57fec09c72924a94a19d9a3fa1bc5b79ca6996b.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JT-ASKD-KS8T",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 56, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8,7ca1dc1d5b2bd38d06f7c76df708d7c80b18a7caf1516683274e8187295a2648,3f6160595a2e0986b916871e1f7cee3ce481269b7377abd8634dc67586537676.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg",
+          "https://m.media-amazon.com/images/I/813VekAfHhL.jpg",
+          "https://m.media-amazon.com/images/I/71YAcjje8wL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JU-ASM0-KV4Z",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 57, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JU-ASYC-SSJD",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 58, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 59, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 60, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "KN-ASYZ-ST4M",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 61, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "LH-ASP7-KZR4",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 63, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "LJ-ASYO-FWJK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 64, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "LK-AS7X-K43B",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 65, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "LP-AS9J-HSVB",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 66, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,496a017dcb2000de9345812519dda029f65db7946fd6dbab732b3806f37451b3.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "LU-ASK0-LSDF",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 67, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "MF-AS0J-YRT4",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 69, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "MP-ASYO-QNU2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 70, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 71, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "NC-ASPL-EXE8",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 72, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "NJ-ASAC-PTK2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 73, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "NM-ASEW-S2SK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 74, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "NT-ASIL-V5LK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 76, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "NV-AS86-HD44",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 77, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PB-ASAF-G2T6",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 78, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,4e47c221991ef798d7a5c89dce72bd60220eeffb58b3afe65fbed8bb6f0f93fb.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71CT5NHIm9L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 80, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PL-ASR9-U94A",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 81, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PP-AS23-SPLQ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 82, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PT-AS5B-Z2XH",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 84, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "PU-AS3D-SA5Z",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 85, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e079afb7c7c4c9517bbd546cb7d69894cc130028137cbdb4d41841e17a5fe9c6,91d2c19cc618cec3c4593216e7c15a9306ec5c29f6344895f46efba0c95bdba0.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "QP-ASAD-PTLX",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 90, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "QW-ASRZ-SYKC",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 91, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,4e47c221991ef798d7a5c89dce72bd60220eeffb58b3afe65fbed8bb6f0f93fb.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71CT5NHIm9L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "QX-ASS6-4T4F",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 93, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e079afb7c7c4c9517bbd546cb7d69894cc130028137cbdb4d41841e17a5fe9c6,91d2c19cc618cec3c4593216e7c15a9306ec5c29f6344895f46efba0c95bdba0.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RB-ASVO-GYCY",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 94, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RH-ASWA-ER34",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 95, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 96, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RQ-AS0L-9B45",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 99, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RQ-AS78-STLZ",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 100, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RR-ASG1-JVKV",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 102, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RS-AS47-M3K3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 103, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RU-ASC3-4TUS",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 104, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RY-ASMO-6N4F",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 105, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RY-ASO3-24Q2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 106, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "RZ-AS26-WLRM",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 107, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 110, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SG-AS32-LZ9Y",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 111, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SG-ASLB-M2DG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 112, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 113, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SU-ASS4-RV6R",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 115, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 116, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 117, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6,0642ec9e501feef33164e1d55c2ddb4740a31f9ca319ce775fad0278f8f9b78f,a53728f9e9a02525875cccf8fb616c90b89d836c4c3d975339d38256d82aa15a,78bd6afb387ec9c1a7c14477131b847a08a43d2ea47939b97c755e1320bd2278.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg",
+          "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg",
+          "https://m.media-amazon.com/images/I/61MFQPVWiLL.jpg",
+          "https://m.media-amazon.com/images/I/719fg40fWgL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 118, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "TL-ASHN-ZRKG",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 119, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 123, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 124, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce,1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066,a4f02b0bc039d9ce849e09a7d55ec7af6b15cce62ecfb84ee381e4ccc80682c5,bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649.",
+          "Explicit stale-tail deletion: 7,8.",
+          "Perceptual duplicate correction dropped: 15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "https://m.media-amazon.com/images/I/71nCABtrKCL.jpg",
+          "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "UD-AS9J-QNY6",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 125, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,13c1ef2f54215dd1eafca9b1b57fec09c72924a94a19d9a3fa1bc5b79ca6996b.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "UE-ASA6-CLLY",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 126, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "UF-ASA1-GN5P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 127, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/815wnDxKplL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "UJ-ASQ1-9FNR",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 129, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 131, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VC-ASQE-L5Z5",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 132, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b,e079afb7c7c4c9517bbd546cb7d69894cc130028137cbdb4d41841e17a5fe9c6,91d2c19cc618cec3c4593216e7c15a9306ec5c29f6344895f46efba0c95bdba0.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg",
+          "https://m.media-amazon.com/images/I/71Co7j+BZeL.jpg",
+          "https://m.media-amazon.com/images/I/81GdWB3PT0L.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 133, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce,1cb5bd08bb80362c4c1e48811c300e337bd9cb93918485cfd4bfa99caef9c066,a4f02b0bc039d9ce849e09a7d55ec7af6b15cce62ecfb84ee381e4ccc80682c5,bf6d2ec3c8bdc6658b1e702c918d810cd18893c2550eff0f678195dac1058649.",
+          "Explicit stale-tail deletion: 7,8.",
+          "Perceptual duplicate correction dropped: 15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "https://m.media-amazon.com/images/I/71nCABtrKCL.jpg",
+          "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 134, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 135, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,a055d59ce5903fb461de1997d136952ccd65d7dbc8f70f770833c1bef259c9e1,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,1cd6a9f1a73eeb940b5de55d5e3cc25aff9f9f3fac319795d503a8a4222884b4,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,0a48bbb0278b04cf0e6a359647df836b5c93d95699484a773b854fcdbd695d57.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71MBEkv0YJL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/81xmZA59SrL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71nBaQX205L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VN-AS6Q-5AE9",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 137, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 138, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 140, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,4e47c221991ef798d7a5c89dce72bd60220eeffb58b3afe65fbed8bb6f0f93fb.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71CT5NHIm9L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WK-AS7E-M3CE",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 141, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,1040e179b2a01cd60172251ebbb8da4a20e6d80315652266e0c9704fd61168d8,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,1e0050234c72c1a35a45addd983a33445106e20ac3b59e662e3965808932535b,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,837acfc0f617671a91958acb7e2c4d18547458d8a84d53eedd024307b6b20888,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71YtDdfyshL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71zE6GaaBqL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71PZHZVjwtL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WK-ASPD-G9HL",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 142, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WN-AS33-UFEA",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 143, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,13c1ef2f54215dd1eafca9b1b57fec09c72924a94a19d9a3fa1bc5b79ca6996b.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WR-ASR5-AVWE",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 144, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,cf93a9e400d5a73ad2d972f263590f5f38882f4da0f6af1c63394de44b029c9b,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,54911f275a0907b16d56d15b0b44839e2134135d546f45d16f76cbdfab255873,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,2fd13b13b8f15487932e6a7293ecb9a74ee732bdcd41c79da1273bc4e706f10b.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/71aWgmGrimL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71x1cn1o6fL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/71TmsfQKUmL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WR-ASTH-TPXV",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 145, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e3f42b6cdf3c50824604db50c1b07f2a48079779b750656d4ebb44df37041cc8,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,996e1e6099ce4f3bd9f5b1d2334e7c0c2c62cf643dfe6f6f4efe5a9b09cc6157,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,a300d0c80b727a02d4e27aee055c1aed81dbc3979060b5eba2827d368f644d46,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712qi5M8shL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71o6rbrY8cL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71ynD-CPptL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 146, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,1195a51b2788aa9ae38fb2c563f173a9f6e1917b4938e257da4c2f800a4fac6f,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,a9ae7f56d5aa2ea507e4761f1f16162a1dc4d0225bdc9505a1958572cd268466,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,919f2f428b0c7823bf433d029abcb0bf6deb40536b0f5acf0a594e020844eb6d.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71x17rcumUL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/81z7hShUZFL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71Qa-BMVaEL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "XE-ASK1-BNRB",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 147, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,e5f6ea2135ebd8aa356c679796d8d6dde074a10ae14ec49de4b6a27d3fe27148,ab88aaebe9cdf119fded4a17430996106871e6a930138cfdee85ef53b761fa46,b5ccf930e8d364b8e02a624afa5ca5fb51edda93294f0533a8b61a4f7d9e8af4,496a017dcb2000de9345812519dda029f65db7946fd6dbab732b3806f37451b3.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/712yag8b0rL.jpg",
+          "https://m.media-amazon.com/images/I/81VJerOdHXL.jpg",
+          "https://m.media-amazon.com/images/I/814pjy8xc2L.jpg",
+          "https://m.media-amazon.com/images/I/81u2SMWq-WL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "XV-ASEU-GDUX",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 149, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0,09e96cd0c9e270c588d480e2232a5d69115f0b75748edfc5278873044831ef3e.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg",
+          "https://m.media-amazon.com/images/I/61v+iEMR7+L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "XW-ASSI-SZZT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 150, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "YF-ASZJ-8BBH",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 152, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,13c1ef2f54215dd1eafca9b1b57fec09c72924a94a19d9a3fa1bc5b79ca6996b.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/71jlQpdOmBL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "YG-ASH6-BCXX",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 153, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,bad49d2864660507f460589f36f906988ee92a069e4b36008c2cfc00e66d80be,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,891909959ac17438c86a33e972dbc425cd91f71e453dcbd62fd13dea615b3e89,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,7adb41093d4ff82e38b05815ddbcf2d318b60a059ab32f2f800941ed7fffd5c6.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "YH-ASQ8-45ED",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 154, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,4e47c221991ef798d7a5c89dce72bd60220eeffb58b3afe65fbed8bb6f0f93fb.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/71CT5NHIm9L.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "YV-AST8-LMKN",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 156, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,7e2aa54266224e1d60e128ee700eaf9caab5d43a0db8fd19848a62d1b1fc8695,b1ae628a98acdaa00928e54f9572fbf64af641b6cfa7be571e17b6767e77f521,2a317b0c01470311deb7fb95df4aba08bf2aa7f8288b09cf678257e680cb8ce0,2eefaa76c78b8fb906ed7609cd065ad437befc7eefb002df0797b3eec2c2e73d,6a22a74279decafb8936ddf1ebdcce11ef1306ef619bef9b16801e2a175e4c99,b86499489e737c0d90b094b63506399836a0eae16f22c33010e51566a05ea027.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/816+z+QiZ9L.jpg",
+          "https://m.media-amazon.com/images/I/71x7b7H6CiL.jpg",
+          "https://m.media-amazon.com/images/I/71liSK63QUL.jpg",
+          "https://m.media-amazon.com/images/I/81oq-NhFAEL.jpg",
+          "https://m.media-amazon.com/images/I/71UBCMlqb1L.jpg",
+          "https://m.media-amazon.com/images/I/81zl3g2ayQL.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ZE-AS5W-FKH3",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 159, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,c8e752ff249ed693b13d431ee574e942595f4f8e674081adc830ae4e22ddb186,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,ec7da0821ba9b6332bfc0dd39fab90c2f2d7f139e7a4a38e1e53cda4d7a6f8c8,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,558c3a5184c704ed1bfd1c5b3b54c4b646a4ccd4a0d67651f98c609ed55c00a2,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71L8sRlEBhL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/719hbYW9sTL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/71Uy97zuGyL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ZH-AS8W-G5MN",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 160, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,acd2ad49f2a5e19db1ad1234b5ffd354cb2452ec70047d6b6cfc711f789b1673,3176f1fab0d6e48e982966b5bd5c7f95c4b4646a0d49d4be1fdd783985063fe7,858b097e3fc18109434f2e983bd43f669a00302cbb72b9d6efe9d97c2cbdb4d8,7ca1dc1d5b2bd38d06f7c76df708d7c80b18a7caf1516683274e8187295a2648,3f6160595a2e0986b916871e1f7cee3ce481269b7377abd8634dc67586537676.",
+          "Explicit stale-tail deletion: 7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/71WZxZ3vi0L.jpg",
+          "https://m.media-amazon.com/images/I/813Kel2kSnL.jpg",
+          "https://m.media-amazon.com/images/I/71+m-2-KSqL.jpg",
+          "https://m.media-amazon.com/images/I/813VekAfHhL.jpg",
+          "https://m.media-amazon.com/images/I/71YAcjje8wL.jpg"
+        ],
+        "delete_gallery_slots": [
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ZP-ASJD-X7ZD",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 161, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,fa480f2b9e7b614c15dcabc770ec23db204a1e56216c14ea68aa49d6bf5a5d83,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,eb648445f7c00ab689fac12048000e9059aeaf99180dd0a65bf8ec35777fc099,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,7c1fb8162b76d5824dce602845aba06621b803dcde7f795b299dc543e04304c0.",
+          "Explicit stale-tail deletion: 8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81C7RzdCNiL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/71lt5+thAOL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/81LWnMS3V4L.jpg"
+        ],
+        "delete_gallery_slots": [
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ZX-AS2C-GT8Q",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 162, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,23b1a408e84b5016f0b3d2b85f1dc9b5937b0522d736ab2dbe136a4d4031ccc1.",
+          "Explicit stale-tail deletion: 6,7,8."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818D-mdJtcL.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/71T4LmpKkUL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The sealed gallery v3 plan binds this exact ordered secondary gallery to the listing recipe, removes true visual duplicates, retains semantically distinct flavor panels, and specifies the exact stale-tail complement.",
+        "evidence": [
+          "Gallery plan ULGSP3-bf4089ebbb4476532c9a (7c3e3cc496f3d9dc9add6ea0cf80d3d7b9d7482a02b4ad96d50b73601d761646), row 163, after.validation.pass=true.",
+          "Ordered asset SHA-256: 0becbfd6f8d54afcb84a183f6829fe78f234360df0a76149845263d5eafbb7eb,347b9d07ccf4b882d31743cd19b8fbdd4751e08ce0725ea63843489ed81d433c,6a7e5214e78a35ca41d59ba26833debcfe8d77090ba65e8e9e3332521e93d66e,7510ed9214b0fb71c55ff3ad38ee2f5803f2f2b529bee2ca63029eec389f9e06,e1a4e725253be83051ee6eabfa922abb5e2b9d0fa154a5db105fd80de092b9ce.",
+          "Explicit stale-tail deletion: 6,7,8.",
+          "Perceptual duplicate correction dropped: a615a066e994aa99af535cb2b0365e496030db2bc54d7a1dc532ebc3f87c8aa1,15dde9a56f62cf026daed4d9a611f0d8564a1d3706be039c9827b01b21eaac7c."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/81xVX0-EKWL.jpg",
+          "https://m.media-amazon.com/images/I/81wkh7GbhQL.jpg",
+          "https://m.media-amazon.com/images/I/814QzPWtCjL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg"
+        ],
+        "delete_gallery_slots": [
+          6,
+          7,
+          8
+        ]
+      }
+    }
+  ],
+  "body_sha256": "78cc3feec6ca3541a7de86c9d041c9f941cb30af191c5739942bdc2dd2ba9120"
+}

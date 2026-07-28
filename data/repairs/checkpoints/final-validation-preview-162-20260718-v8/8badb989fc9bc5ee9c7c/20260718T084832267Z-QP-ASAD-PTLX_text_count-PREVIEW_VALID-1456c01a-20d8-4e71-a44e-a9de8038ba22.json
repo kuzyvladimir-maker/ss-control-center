@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1456c01a-20d8-4e71-a44e-a9de8038ba22",
+  "created_at": "2026-07-18T08:48:32.267Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QP-ASAD-PTLX:text_count",
+  "sku": "QP-ASAD-PTLX",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "706f60a5d5d9d30994ad8737097536cd11f0ac842f52b4513fcf1b172df7b225",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "8757ccafc245442aa9e946ba434c3ca4",
+    "issues": []
+  },
+  "sha256": "9462d07c13f77b8a22af3873b176fb38afe5cff09d12d18e9e3253ba9e9eaf4f"
+}

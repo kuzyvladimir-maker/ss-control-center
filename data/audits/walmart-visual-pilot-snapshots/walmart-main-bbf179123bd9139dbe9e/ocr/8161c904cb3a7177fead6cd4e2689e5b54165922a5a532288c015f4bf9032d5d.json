@@ -1,0 +1,624 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.014534883499145446,
+            "width" : 0.04069767422146264,
+            "x" : 0.40406976703171055,
+            "y" : 0.8473837209321133
+          },
+          "confidence" : 1,
+          "text" : "Shells"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014534883499145557,
+            "width" : 0.03633720821804476,
+            "x" : 0.8997093026787684,
+            "y" : 0.8473837208957761
+          },
+          "confidence" : 1,
+          "text" : "Shells"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.034614626566568996,
+            "width" : 0.13436430189344617,
+            "x" : 0.11281498264750389,
+            "y" : 0.8077775148286808
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaSO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.012785536448160828,
+            "width" : 0.057394633822970886,
+            "x" : 0.3949852347733672,
+            "y" : 0.8353305927167797
+          },
+          "confidence" : 1,
+          "text" : "STAND UP!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04166666666666663,
+            "width" : 0.13750000000000007,
+            "x" : 0.6041666678124998,
+            "y" : 0.8000000002083333
+          },
+          "confidence" : 1,
+          "text" : "OLDELPASO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013204090330335871,
+            "width" : 0.05739325629340275,
+            "x" : 0.8877051681240227,
+            "y" : 0.8353296806886015
+          },
+          "confidence" : 1,
+          "text" : "STAND UP!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.004547803534401762,
+            "width" : 0.04651162889268662,
+            "x" : 0.15843023203174256,
+            "y" : 0.7977777778903812
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1339"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007377261055840356,
+            "width" : 0.046511628892686674,
+            "x" : 0.6511627901951296,
+            "y" : 0.7965116279381982
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISNED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04215116288926857,
+            "width" : 0.11627906799316406,
+            "x" : 0.12790697710278373,
+            "y" : 0.7296511626423108
+          },
+          "confidence" : 1,
+          "text" : "Zestu"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04215116288926868,
+            "width" : 0.1148255835639106,
+            "x" : 0.6206395339513956,
+            "y" : 0.7296511629330084
+          },
+          "confidence" : 1,
+          "text" : "Zestu"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.060986590915256045,
+            "width" : 0.17054311116536458,
+            "x" : 0.09783784137442625,
+            "y" : 0.6756223878586458
+          },
+          "confidence" : 1,
+          "text" : "RANCH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06239567226833764,
+            "width" : 0.17087858412000867,
+            "x" : 0.5904521196227942,
+            "y" : 0.6749386298371244
+          },
+          "confidence" : 1,
+          "text" : "RANCH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.034906327989366326,
+            "width" : 0.14959228515625,
+            "x" : 0.10766318963214183,
+            "y" : 0.6503835193824857
+          },
+          "confidence" : 1,
+          "text" : "FLAVORED TACO SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03512042999267573,
+            "width" : 0.15096065945095483,
+            "x" : 0.6002946888237521,
+            "y" : 0.6504659667709201
+          },
+          "confidence" : 1,
+          "text" : "FLAVORED TACO SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03197674433390296,
+            "width" : 0.04215116288926868,
+            "x" : 0.40406976732898486,
+            "y" : 0.5901162787959846
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03197674433390296,
+            "width" : 0.04069767422146264,
+            "x" : 0.898255813969003,
+            "y" : 0.5901162787674339
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025128027598063096,
+            "width" : 0.0774129401312934,
+            "x" : 0.3856729719596697,
+            "y" : 0.567258103711121
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02598121643066409,
+            "width" : 0.07765458001030812,
+            "x" : 0.8782385068407338,
+            "y" : 0.5673627270677871
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.052325579325358085,
+            "x" : 0.5610465131861582,
+            "y" : 0.43750000036049297
+          },
+          "confidence" : 1,
+          "text" : "OLOE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016480964024861655,
+            "width" : 0.03944227854410809,
+            "x" : 0.4054242091861598,
+            "y" : 0.38783509958755824
+          },
+          "confidence" : 1,
+          "text" : "Shells"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013239919874403205,
+            "width" : 0.03929674360487201,
+            "x" : 0.898229535566453,
+            "y" : 0.3894556215324074
+          },
+          "confidence" : 1,
+          "text" : "Shells"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03633720821804465,
+            "width" : 0.13372093200683594,
+            "x" : 0.11337209140937271,
+            "y" : 0.34593023284072844
+          },
+          "confidence" : 1,
+          "text" : "OLDELPASO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.05813953399658206,
+            "x" : 0.39534883823426714,
+            "y" : 0.376453488732586
+          },
+          "confidence" : 1,
+          "text" : "STAND UP!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03779069688585068,
+            "width" : 0.13226743910047745,
+            "x" : 0.6075581401777513,
+            "y" : 0.34593023268249
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaso"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.058139533996582005,
+            "x" : 0.886627908001709,
+            "y" : 0.376453488732586
+          },
+          "confidence" : 1,
+          "text" : "STAND UP!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01016547520955402,
+            "width" : 0.048635957505967886,
+            "x" : 0.15812611840418928,
+            "y" : 0.3366502676182431
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008901808526780908,
+            "width" : 0.04796511332194009,
+            "x" : 0.6511627913768206,
+            "y" : 0.3372093024011815
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.12063952975802952,
+            "x" : 0.1264534911020899,
+            "y" : 0.27034883708959456
+          },
+          "confidence" : 1,
+          "text" : "Zestu"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04215116288926857,
+            "width" : 0.1148255835639106,
+            "x" : 0.6220930223572566,
+            "y" : 0.27180232576628294
+          },
+          "confidence" : 1,
+          "text" : "Zestu"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06146044837103948,
+            "width" : 0.17071319580078123,
+            "x" : 0.09788391186251652,
+            "y" : 0.21642277984040903
+          },
+          "confidence" : 1,
+          "text" : "RANCH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06215063730875647,
+            "width" : 0.17090977986653644,
+            "x" : 0.5905266852178422,
+            "y" : 0.21602600106422698
+          },
+          "confidence" : 1,
+          "text" : "RANCH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03658363342285165,
+            "width" : 0.15107908460828992,
+            "x" : 0.10643634303421493,
+            "y" : 0.1904898961930852
+          },
+          "confidence" : 1,
+          "text" : "FLAVORED TACO SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.037636803521050366,
+            "width" : 0.15172710842556425,
+            "x" : 0.5986405449411693,
+            "y" : 0.19009917728031267
+          },
+          "confidence" : 1,
+          "text" : "FLAVORED TACO SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030523255666097038,
+            "width" : 0.04215116288926868,
+            "x" : 0.40406976715840187,
+            "y" : 0.13226744184556916
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03197674433390296,
+            "width" : 0.04215116288926857,
+            "x" : 0.8982558139314559,
+            "y" : 0.1322674419863915
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023255814446343392,
+            "width" : 0.0741279093424479,
+            "x" : 0.3866279053699582,
+            "y" : 0.10901162746675075
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02609774907430007,
+            "width" : 0.0777711062961155,
+            "x" : 0.8782303795959464,
+            "y" : 0.10806040120833083
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-814da3699ca6c55c4a7e75b877c61fd2c980e607061047d8de727323c9b0cd8b.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 1881,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.022151898374973,
+            "width" : 0.09738372266292572,
+            "x" : 0.1249999999451844,
+            "y" : 0.870253164894792
+          },
+          "confidence" : 1,
+          "text" : "OLDE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030063290651749064,
+            "width" : 0.075581394135952,
+            "x" : 0.8095930243346403,
+            "y" : 0.7610759496998375
+          },
+          "confidence" : 1,
+          "text" : "Shells"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030193501147149582,
+            "width" : 0.11506281048059464,
+            "x" : 0.7883480857114531,
+            "y" : 0.7328435247319638
+          },
+          "confidence" : 1,
+          "text" : "STAND UP!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0883737091810366,
+            "width" : 0.27174559235572815,
+            "x" : 0.21699598223726146,
+            "y" : 0.6645800744162318
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaSO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01634640749405336,
+            "width" : 0.09396383166313171,
+            "x" : 0.30775378379428453,
+            "y" : 0.6470306232541299
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014240506098196937,
+            "width" : 0.014534883201122284,
+            "x" : 0.4854651166843226,
+            "y" : 0.6376582280426737
+          },
+          "confidence" : 1,
+          "text" : "™M"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09345938574114965,
+            "width" : 0.2321658581495285,
+            "x" : 0.24656241934961898,
+            "y" : 0.4983652435818826
+          },
+          "confidence" : 1,
+          "text" : "Zestu"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11708860975016189,
+            "width" : 0.32994186878204346,
+            "x" : 0.19186046046805305,
+            "y" : 0.38924050499696083
+          },
+          "confidence" : 1,
+          "text" : "RANCH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07739683874861969,
+            "width" : 0.30238480865955353,
+            "x" : 0.20643238652217866,
+            "y" : 0.3259343648925195
+          },
+          "confidence" : 1,
+          "text" : "FLAVORED TACO SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06803797560721214,
+            "width" : 0.08430232852697372,
+            "x" : 0.805232556562925,
+            "y" : 0.19462025245973025
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05337601843093076,
+            "width" : 0.15128548443317413,
+            "x" : 0.7679532805371765,
+            "y" : 0.14460332795321984
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-7021428414f368e313f01a604d454c5ae5790f4232f33c7f969ad8a7157ef447.png",
+      "width" : 2048
+    },
+    {
+      "height" : 752,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.173913042596046,
+            "width" : 0.08430232852697372,
+            "x" : 0.8052325565335092,
+            "y" : 0.4861660076216081
+          },
+          "confidence" : 1,
+          "text" : "10"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.13271844133417654,
+            "width" : 0.15116772055625916,
+            "x" : 0.7680249356642581,
+            "y" : 0.3630401776564933
+          },
+          "confidence" : 1,
+          "text" : "SHELLS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11067193619748383,
+            "width" : 0.039244186133146286,
+            "x" : 0.5130813954404867,
+            "y" : 0.36363636312655445
+          },
+          "confidence" : 1,
+          "text" : "4"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-f65a1a84d5a5ab1c0f689f02a1a926c6dd3ffa787007f63694078ba7c410c762.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1440,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.05346019532945423,
+            "width" : 0.19040890786215225,
+            "x" : 0.43820184636354476,
+            "y" : 0.7419113113906564
+          },
+          "confidence" : 1,
+          "text" : "Paso"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03958259423573807,
+            "width" : 0.17325134921174512,
+            "x" : 0.7998792430498938,
+            "y" : 0.7594115276098347
+          },
+          "confidence" : 1,
+          "text" : "LAVOREDTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0491803275214302,
+            "width" : 0.19166666344751287,
+            "x" : 0.2750000040054102,
+            "y" : 0.7322404378103231
+          },
+          "confidence" : 1,
+          "text" : "DELE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.186938370598687,
+            "width" : 0.46241808541213414,
+            "x" : 0.37778652946374947,
+            "y" : 0.30272574126498886
+          },
+          "confidence" : 1,
+          "text" : "OLDELPaSO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09063628514607747,
+            "width" : 0.014705572450211285,
+            "x" : 0.08514241286153244,
+            "y" : 0.2443357597657556
+          },
+          "confidence" : 0.5,
+          "text" : "vORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03172349664900043,
+            "width" : 0.15987356000811737,
+            "x" : 0.5312550830170167,
+            "y" : 0.2661650208400832
+          },
+          "confidence" : 1,
+          "text" : "ESTABLISHED 1938"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017208413283030244,
+            "width" : 0.020348836601031928,
+            "x" : 0.8357558141905395,
+            "y" : 0.2523900572870038
+          },
+          "confidence" : 1,
+          "text" : "TM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15869980918036564,
+            "width" : 0.015988382106088883,
+            "x" : 0.1264534833049982,
+            "y" : 0.009560230575527684
+          },
+          "confidence" : 0.3,
+          "text" : "PlEN"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-273dcfdb5067cebe6cabeef881a27e97de704aaa5763c008975a97d72bd52a20.png",
+      "width" : 1896
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

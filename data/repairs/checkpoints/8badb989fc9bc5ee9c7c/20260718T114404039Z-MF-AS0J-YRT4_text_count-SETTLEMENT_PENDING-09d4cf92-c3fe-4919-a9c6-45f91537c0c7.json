@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "09d4cf92-c3fe-4919-a9c6-45f91537c0c7",
+  "created_at": "2026-07-18T11:44:04.039Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "MF-AS0J-YRT4:text_count",
+  "sku": "MF-AS0J-YRT4",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "572cfdf4-b247-4559-be4a-d1df84d90846",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "0ba0e60c00e56b26105dd41bc524b046eb3505aaf319350a9c325fb8251de06e",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "c0e81665548a6d7287e47545ea4f67e87dc32e121f95f9a252fec8736ea927b3"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "9ffe22ef4a866bf804a8f4fc873f4f65995f3058fc029a1ff5aa040c31414bf7"
+}

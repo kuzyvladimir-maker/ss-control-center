@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9bdd525c-5801-43cd-bc4e-a830f3940fd1",
+  "created_at": "2026-07-19T04:50:29.045Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "FX-AS2W-KHZT:media",
+  "sku": "FX-AS2W-KHZT",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "b4f12ef7-8586-4014-b0ff-11d6126d7b25",
+    "submitted_at": "2026-07-19T04:48:41.839Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f21ebaae03b0c8e88389662b05aae0b5c6949d5e24db0be47ed9aa3aa9167538",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "f8d37cd6892b1b68a10dfa47c5e6f1bf47a7df388ed647c89493527cbac883df"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "505d82214324ddc4d7ca4a0db4c4c456f4f7e5f0001bb75d9ef7ad6a43b57c2b"
+}

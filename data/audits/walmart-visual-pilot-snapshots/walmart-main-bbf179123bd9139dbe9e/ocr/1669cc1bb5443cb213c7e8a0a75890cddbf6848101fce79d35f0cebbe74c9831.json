@@ -1,0 +1,405 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.05923616621229377,
+            "width" : 0.0782898966471354,
+            "x" : 0.19270048060365766,
+            "y" : 0.7509282276495304
+          },
+          "confidence" : 1,
+          "text" : "KiSSeS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.058965907626681746,
+            "width" : 0.07762281629774304,
+            "x" : 0.517272014855855,
+            "y" : 0.7510451988034157
+          },
+          "confidence" : 1,
+          "text" : "KisSes"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05781386057535809,
+            "width" : 0.0778852674696181,
+            "x" : 0.8416722942192446,
+            "y" : 0.7512725541537216
+          },
+          "confidence" : 1,
+          "text" : "Kisses"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.04941860198974609,
+            "x" : 0.05668604819532629,
+            "y" : 0.6845930232915243
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.04941860198974607,
+            "x" : 0.3808139552309021,
+            "y" : 0.6845930233036367
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016953672832912936,
+            "width" : 0.04827818552652996,
+            "x" : 0.7047853255764353,
+            "y" : 0.6841103728078286
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05317259046766487,
+            "width" : 0.2446549309624566,
+            "x" : 0.053544628355624964,
+            "y" : 0.6325706815519427
+          },
+          "confidence" : 1,
+          "text" : "KISSES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05216901143391928,
+            "width" : 0.24445293850368915,
+            "x" : 0.37777353003035746,
+            "y" : 0.6330724709507365
+          },
+          "confidence" : 1,
+          "text" : "KISSES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05617443508572051,
+            "width" : 0.24378819783528638,
+            "x" : 0.701507064478388,
+            "y" : 0.6310697592763705
+          },
+          "confidence" : 1,
+          "text" : "KISSES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02325581444634328,
+            "width" : 0.19040696885850694,
+            "x" : 0.08139535436677363,
+            "y" : 0.6075581393126811
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02325581444634328,
+            "width" : 0.18895348442925347,
+            "x" : 0.40552325643570547,
+            "y" : 0.6075581391846356
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02325581444634328,
+            "width" : 0.19040696885850694,
+            "x" : 0.729651168320262,
+            "y" : 0.6075581393126811
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04511628044976135,
+            "width" : 0.11773256089952255,
+            "x" : 0.050872092133814294,
+            "y" : 0.5449999990073979
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.046666666666666634,
+            "width" : 0.11773256089952255,
+            "x" : 0.37499999810401785,
+            "y" : 0.5449999990497063
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.046666666666666634,
+            "width" : 0.11773256089952255,
+            "x" : 0.6991279056371251,
+            "y" : 0.5449999990755461
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05878078460693359,
+            "width" : 0.0783601294623481,
+            "x" : 0.19301470349731586,
+            "y" : 0.2929206531962718
+          },
+          "confidence" : 1,
+          "text" : "KiSSes"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06071988847520615,
+            "width" : 0.07855370415581597,
+            "x" : 0.5170335747339876,
+            "y" : 0.292004178090813
+          },
+          "confidence" : 1,
+          "text" : "Kisses"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.058396034240722594,
+            "width" : 0.07771887885199646,
+            "x" : 0.8419117652601338,
+            "y" : 0.292920654876885
+          },
+          "confidence" : 1,
+          "text" : "KiSSeS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017758949067857577,
+            "width" : 0.04996269649929471,
+            "x" : 0.05641400093770362,
+            "y" : 0.22585889764444278
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.04941860198974607,
+            "x" : 0.38081395517207045,
+            "y" : 0.2267441860822219
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016380402247111014,
+            "width" : 0.04954404195149742,
+            "x" : 0.7048791421673506,
+            "y" : 0.22654817104494362
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05172144995795347,
+            "width" : 0.23765043470594616,
+            "x" : 0.057773619117278185,
+            "y" : 0.17544741446694267
+          },
+          "confidence" : 1,
+          "text" : "KISSeS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05208658430311408,
+            "width" : 0.23891087849934894,
+            "x" : 0.3805445618140742,
+            "y" : 0.17453810296209216
+          },
+          "confidence" : 1,
+          "text" : "KISSES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.054672940572102924,
+            "width" : 0.24205174763997395,
+            "x" : 0.7031020337907179,
+            "y" : 0.17397166931621866
+          },
+          "confidence" : 1,
+          "text" : "KISSES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023520672056410064,
+            "width" : 0.19040696885850694,
+            "x" : 0.0813953525499132,
+            "y" : 0.14944444466288564
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023520672056409953,
+            "width" : 0.1904069688585069,
+            "x" : 0.4055232594806302,
+            "y" : 0.14944444470164542
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023520672056410064,
+            "width" : 0.19040696885850694,
+            "x" : 0.7296511680935871,
+            "y" : 0.14944444451061545
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.11773256089952255,
+            "x" : 0.050872092133814294,
+            "y" : 0.0872093020229765
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04671188778347435,
+            "width" : 0.11773256089952255,
+            "x" : 0.37499999915515414,
+            "y" : 0.08555555460948627
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04833333333333334,
+            "width" : 0.11773256089952255,
+            "x" : 0.6991279056165705,
+            "y" : 0.08555555464001241
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-8a9315f6160caa49d7265c3d7838ecbf8cec5bbd8787c1e04d40eb409798d215.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.12520304322242737,
+            "width" : 0.23536876025120856,
+            "x" : 0.5583142133809076,
+            "y" : 0.54936505576938
+          },
+          "confidence" : 1,
+          "text" : "KISSeS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03244437277317047,
+            "width" : 0.14804539759514743,
+            "x" : 0.1313161107081179,
+            "y" : 0.40238246454928794
+          },
+          "confidence" : 1,
+          "text" : "HERSHEY'S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10319767147302628,
+            "width" : 0.7371663467660134,
+            "x" : 0.13347021509601936,
+            "y" : 0.2921511638949237
+          },
+          "confidence" : 1,
+          "text" : "KISSeS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0498046875,
+            "width" : 0.5893223799394639,
+            "x" : 0.2073921995477219,
+            "y" : 0.2309570305874291
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10159531235694885,
+            "width" : 0.3628908020356742,
+            "x" : 0.11424248361180679,
+            "y" : 0.0930976923870821
+          },
+          "confidence" : 1,
+          "text" : "4.84 oz"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-ba6a0201f1a9d12ffabbaf25aa35ad4ff72f40f63feedf50d62d002513c465a2.png",
+      "width" : 1448
+    },
+    {
+      "height" : 1158,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.12882773575593354,
+            "width" : 0.5915697813034058,
+            "x" : 0.20784882908978386,
+            "y" : 0.5758354770028575
+          },
+          "confidence" : 1,
+          "text" : "milk chocolate"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.23368740575918878,
+            "width" : 0.3411595821380615,
+            "x" : 0.12447834816937597,
+            "y" : 0.24948020529469084
+          },
+          "confidence" : 1,
+          "text" : "4.84oz"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-89cc03dd4a3754654569697050cbf5359f916332f4c3fe8b5bd7ecac279f5a3f.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1434,
+      "observations" : [
+
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-92d351b7d1d9205e151cc2dfe2c42d9e0ad5bf9eed72aaf0af92d4bc85d32f62.png",
+      "width" : 1224
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9a4cabf1-1a9a-4297-9a15-5e84465c824a",
+  "created_at": "2026-07-19T04:50:29.046Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "SV-AS87-D6SV:media",
+  "sku": "SV-AS87-D6SV",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "31b151e6-4ef9-4877-89dd-3309468e01b0",
+    "submitted_at": "2026-07-19T04:49:24.623Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "3a126fbc5a7c019eda7e7d8df951f27c4e2f5fe9352525a2e3499753cadf6518",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "70aac410bc263c0b13a8d470f295bee0396b318be9943993b4aad0211fc1b0f6"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "9a27a17463845886967ad1702296cc4f145bd93d990e0413cf7996dd9545fee0"
+}

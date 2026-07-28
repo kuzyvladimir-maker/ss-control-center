@@ -1,0 +1,59 @@
+{
+  "contractVersion": "product-truth-read-contract/3.2.0",
+  "snapshot": {
+    "sku": "FaisalX-1208",
+    "channel": "walmart",
+    "storeIndex": 1,
+    "listingKey": "walmart:1:FaisalX-1208",
+    "asOf": "2026-07-25T21:04:43.817Z",
+    "maxPriceAgeMs": 2592000000,
+    "skuCostId": null
+  },
+  "recipe": {
+    "components": [],
+    "blockers": [
+      "LISTING_SCOPE_NOT_REGISTERED",
+      "CURRENT_SCOPED_SKU_COST_MISSING"
+    ]
+  },
+  "views": {
+    "bundleFactory": {
+      "consumer": "BUNDLE_FACTORY",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "LISTING_SCOPE_NOT_REGISTERED",
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "listingImprovement": {
+      "consumer": "LISTING_IMPROVEMENT",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "LISTING_SCOPE_NOT_REGISTERED",
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "unitEconomics": {
+      "consumer": "UNIT_ECONOMICS",
+      "status": "MISSING",
+      "current": null,
+      "factualCost": null,
+      "estimatedCost": null,
+      "blockers": [
+        "LISTING_SCOPE_NOT_REGISTERED",
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    },
+    "procurement": {
+      "consumer": "PROCUREMENT",
+      "ready": false,
+      "components": [],
+      "blockers": [
+        "LISTING_SCOPE_NOT_REGISTERED",
+        "CURRENT_SCOPED_SKU_COST_MISSING"
+      ]
+    }
+  }
+}

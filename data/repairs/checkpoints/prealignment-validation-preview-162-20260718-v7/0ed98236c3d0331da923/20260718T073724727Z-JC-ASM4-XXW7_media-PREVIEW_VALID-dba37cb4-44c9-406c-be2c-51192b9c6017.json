@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "dba37cb4-44c9-406c-be2c-51192b9c6017",
+  "created_at": "2026-07-18T07:37:24.727Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "JC-ASM4-XXW7:media",
+  "sku": "JC-ASM4-XXW7",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "abd327e8db425ddad8408bcb8fea73e616dcd76591648bb0abf990841edda025",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "7063836ac09b4835a72c295facc02d02",
+    "issues": []
+  },
+  "sha256": "5e036894f12f8991c88e84a5700db813f94b364380b16aae32f1328ffc74b42c"
+}

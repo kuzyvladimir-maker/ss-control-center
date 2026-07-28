@@ -1,0 +1,83 @@
+{
+  "approvalId": "owner-ritz-pack2-20260727t121750z",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "donorOfferId": "do:walmart:34312392",
+  "donorProductId": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+  "generatedAt": "2026-07-27T12:27:21.306Z",
+  "job": {
+    "approvalId": "owner-ritz-pack2-20260727t121750z",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0",
+    "id": "ptej_9c8db0e0cbc2a7ef5f8265d57eb38b802fd3322b4517bb1163fbb5b1bdc248d6",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0"
+    },
+    "runId": "20260727T120934Z-v26-ritz-cheese-pack2",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_e3e3c872b82809f97d83514674c86d105aa433316e6df7579b5f022b450a30e6",
+        "createdAt": "2026-07-27T12:26:58.566Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_600e023221b507036ecf3608f9340426b5f1f71afb124ff08d35940c5972a569",
+        "reservationKey": "mpr_v1_58e54f1ade13beb4fe9969a99ae9e92c5b8971fa8c8726a8ae9a07c88afa1ca2",
+        "reservedAt": "2026-07-27T12:26:58.566Z",
+        "settledAt": "2026-07-27T12:27:21.023Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "20260727T120934Z-v26-ritz-cheese-pack2",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "989f91cce0bd307c0285e93ddc88470cbcbce87589e52c77d9e95455f1b4dd70",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.0.0",
+  "retailerProductId": "34312392",
+  "runId": "20260727T120934Z-v26-ritz-cheese-pack2",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

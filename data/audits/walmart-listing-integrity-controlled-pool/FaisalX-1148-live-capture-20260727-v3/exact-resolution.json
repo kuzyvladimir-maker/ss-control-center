@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1148",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1148",
+    "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+    "upc": "742132418239",
+    "gtin14": "00742132418239",
+    "wpid": "478W7UD0DCQ9",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "15144369671",
+    "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+    "main_image_url": "https://i5.walmartimages.com/seo/2x-Pepperidge-Farm-White-Hot-Dog-Buns-Top-Sliced-8-Count-Bag_5ee2bfff-7cd3-4e3f-873a-f30501afabe1.2b3a321951be87fd9298a5647906a3a2.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "c31d509f956652f9addf6db26ee45f5e1b657157f40b6798939def1719850d5d",
+    "catalog_search_payload_canonical_sha256": "a4ebd3e9cb12850b5fa0259165c275b4d56d018f84035d3c9884d82bb370d7c7"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1148",
+    "seller.ItemResponse[0].sku=FaisalX-1148",
+    "seller.ItemResponse[0].upc=742132418239",
+    "seller.normalized_gtin14=00742132418239",
+    "seller.wpid_not_itemId=478W7UD0DCQ9",
+    "catalog.items[0].standardUpc~=00742132418239;itemId=15144369671",
+    "catalog.unique_numeric_public_itemId=15144369671"
+  ]
+}

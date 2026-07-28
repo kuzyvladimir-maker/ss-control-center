@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4406,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "70d9c57034bbbad6332ce17078c5081eeb6f0906113fcef941b46ec5932494fa"
+    }
+  ],
+  "manifestSha256": "3d3663a8b4680283bd14a6cab4546fc1f6d38d6bc7e95162182f41534d11d93e",
+  "planSha256": "da44d4e2d397636f66620b141bec1307325e8888441b06b3409ac8a88a3e86d5",
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-goya",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

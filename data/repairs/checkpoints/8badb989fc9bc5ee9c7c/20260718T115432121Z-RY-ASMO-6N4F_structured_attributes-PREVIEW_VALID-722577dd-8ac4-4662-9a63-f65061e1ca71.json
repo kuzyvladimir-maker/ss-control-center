@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "722577dd-8ac4-4662-9a63-f65061e1ca71",
+  "created_at": "2026-07-18T11:54:32.121Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RY-ASMO-6N4F:structured_attributes",
+  "sku": "RY-ASMO-6N4F",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "ccc616943b0797cf61a10f3403efc2eba7c898aa112d36930c549a99812bf7ed",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "6839f6c289d14c3da8c674779c5c703e",
+    "issues": []
+  },
+  "sha256": "b8737a641a646af460a3eefed035e7b9262d82b5b660603442808bed121a5538"
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_216caaa9b16cedb2dbca",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "TOP SLICED BUTTER HOT DOG BUNS",
+      "visible_variant_text": "BAKERY CLASSICS",
+      "visible_size_texts": [
+        "8"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 2,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "8 TOP SLICED BUTTER HOT DOG BUNS"
+      ],
+      "inner_contents_claims": [
+        "8"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "8 TOP SLICED BUTTER",
+        "HOT DOG BUNS",
+        "BAKERY CLASSICS",
+        "MADE WITH REAL BUTTER",
+        "Baked with Care"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_40bf147bdfea34628260",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "lifestyle",
+      "multiple_distinct_products": "no",
+      "readable_identity": "partial",
+      "evidence": [
+        "PEPPERIDGE FARM"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_0cc52b83785bffdbc85d",
+      "visual_role": "nutrition",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "1 Bun (50g)"
+      ],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 Servings Per Container"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Nutrition Facts",
+        "8 Servings Per Container",
+        "Serving Size 1 Bun (50g)",
+        "Calories 140"
+      ],
+      "flags": []
+    }
+  ]
+}

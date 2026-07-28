@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d6d9d2ae-20b0-4ff6-abbf-9dd374f9a704",
+  "created_at": "2026-07-18T07:45:35.104Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "RQ-AS78-STLZ:text_count",
+  "sku": "RQ-AS78-STLZ",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "1d40d5dd6dda8929bc543b60bcebd83d37f8d4f493ac4a67bcb57faf4ad8ef42",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "953ab71117694d2aaaaae368f1dbb73c",
+    "issues": []
+  },
+  "sha256": "16d2cd810132a05ec094391906cec44043be8d7ad060952bbd079e3b5c4bbe21"
+}

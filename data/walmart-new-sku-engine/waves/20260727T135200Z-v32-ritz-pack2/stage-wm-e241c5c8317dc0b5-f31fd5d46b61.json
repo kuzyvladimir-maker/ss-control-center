@@ -1,0 +1,21 @@
+{
+  "bundle_draft_id": "wmdraft-5861af0e1ff123b5d5919118",
+  "candidate_key": "wm-e241c5c8317dc0b5",
+  "generation_job_id": "wmjob-830b98e1abce670bbb962f03",
+  "marketplace_mutation_allowed": false,
+  "plan_sha256": "afb04afa75e203e49fea81f0668caccecdc8795f951765f94be8f13e1d48aaae",
+  "proposed_sku": "WM-5861-AF0E",
+  "schema_version": "walmart-new-sku-stage/1.1.0",
+  "stage_sha256": "f31fd5d46b6133ca398035913e32f0aa02d7e50360b73f32ce07e0ba6e70c97c",
+  "staged_at": "2026-07-27T13:52:56.990Z",
+  "staged_by": "codex-owner-authorized",
+  "state": "UPC_RESERVED",
+  "store_index": 1,
+  "upc": "756441906004",
+  "upc_checksum_valid": true,
+  "upc_pool_acquired_from": "SpeedyBarcode",
+  "upc_pool_id": "cmr2j8a93005cvjsbu9n40nqd",
+  "upc_pool_recorded_owner": "Salutem Solutions LLC (SpeedyBarcode)",
+  "upc_reserved_until": "2026-07-28T13:52:56.990Z",
+  "wave_id": "WM-PILOT-20260727-b305eb4f"
+}

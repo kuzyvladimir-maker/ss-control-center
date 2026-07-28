@@ -1,0 +1,17 @@
+{
+  "approvalId": "g5-scope-backfill-owner-approval-20260726t214511z",
+  "approvalSha256": "9a68a95481edcc759b514c0c631c2ae09a3859c57e1b581988c883e118fa6759",
+  "artifacts": [
+    {
+      "byteLength": 3416143,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "d0974ce9840f68773649437171743478ed678f30705400d10d13cd76660fab9d"
+    }
+  ],
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planId": "g5-authoritative-scope-backfill-20260726t1840z",
+  "planSha256": "162b2dbd35eba6b239b1e643543ee585deb6fbd7d9045081a4ea10b9ee53cf78",
+  "schemaVersion": "product-truth-owner-backfill-artifact-index/1.0.0"
+}

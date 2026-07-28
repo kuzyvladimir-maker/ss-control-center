@@ -1,0 +1,344 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.028318377600775824,
+            "width" : 0.14717112223307294,
+            "x" : 0.05504816044247522,
+            "y" : 0.5090966254055107
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04200174967447923,
+            "width" : 0.17507948133680556,
+            "x" : 0.26662692745699346,
+            "y" : 0.49566579203496697
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE,"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02812360127766933,
+            "width" : 0.14713906182183167,
+            "x" : 0.547796748780297,
+            "y" : 0.5091940135846162
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03406228595309779,
+            "width" : 0.16437166002061632,
+            "x" : 0.7659246355887588,
+            "y" : 0.5011374617491475
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.055232556660970045,
+            "width" : 0.2238372124565972,
+            "x" : 0.036337208484233656,
+            "y" : 0.438953489418223
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.033430233001709,
+            "width" : 0.06104651133219402,
+            "x" : 0.3212209301623914,
+            "y" : 0.4578488369200342
+          },
+          "confidence" : 1,
+          "text" : "OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.058139533996582005,
+            "width" : 0.2223837110731337,
+            "x" : 0.5305232613569322,
+            "y" : 0.43750000070784
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.033430233001709,
+            "width" : 0.055232556660970045,
+            "x" : 0.8197674423486905,
+            "y" : 0.4578488369148431
+          },
+          "confidence" : 1,
+          "text" : "OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365716,
+            "width" : 0.026162789662679042,
+            "x" : 0.6802325585116837,
+            "y" : 0.4215116278044392
+          },
+          "confidence" : 0.3,
+          "text" : "• #="
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888888888946,
+            "width" : 0.11482557508680555,
+            "x" : 0.03924418917655847,
+            "y" : 0.4083333334467333
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04166666666666663,
+            "width" : 0.08333333333333331,
+            "x" : 0.3124999990625001,
+            "y" : 0.36666666718749996
+          },
+          "confidence" : 1,
+          "text" : "24oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888889153798374,
+            "width" : 0.11482557508680558,
+            "x" : 0.5319767492540778,
+            "y" : 0.4083333331591623
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03488371955023872,
+            "width" : 0.08284883287217881,
+            "x" : 0.806686048507588,
+            "y" : 0.37209302416383405
+          },
+          "confidence" : 1,
+          "text" : "24oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03222222222222226,
+            "width" : 0.21075581868489585,
+            "x" : 0.046511624838753644,
+            "y" : 0.35166666700807403
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03222222222222215,
+            "width" : 0.2107558186848959,
+            "x" : 0.5392441844335072,
+            "y" : 0.3516666671582678
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023625992668999563,
+            "width" : 0.05393810696072049,
+            "x" : 0.19759489976411387,
+            "y" : 0.30359398032872176
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024709300994873007,
+            "width" : 0.058139533996582005,
+            "x" : 0.6889534885491897,
+            "y" : 0.3023255818547922
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-21af8041b2b2be30422ea19c333aeb4ed3bad85568dc707a81bb5326196650bd.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2040,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.056268901450961195,
+            "width" : 0.2959997057914734,
+            "x" : 0.09099713392498762,
+            "y" : 0.5047111287610544
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0676596323649088,
+            "width" : 0.3358752727508545,
+            "x" : 0.5319170149877177,
+            "y" : 0.49240925059390195
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11078717100854008,
+            "width" : 0.4491279125213623,
+            "x" : 0.05523255609779498,
+            "y" : 0.3644314876735726
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06705539179783238,
+            "width" : 0.11337209492921829,
+            "x" : 0.6424418593667862,
+            "y" : 0.4023323621307242
+          },
+          "confidence" : 1,
+          "text" : "OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014577259736902604,
+            "width" : 0.22819767892360687,
+            "x" : 0.058139531204984385,
+            "y" : 0.30320699688081976
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06705539179783249,
+            "width" : 0.16860465705394745,
+            "x" : 0.6162790663943669,
+            "y" : 0.22886297485224127
+          },
+          "confidence" : 1,
+          "text" : "24oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.061450294419830964,
+            "width" : 0.42877906560897827,
+            "x" : 0.07122093062210971,
+            "y" : 0.1865889221103345
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.048104955635818736,
+            "width" : 0.10465116053819656,
+            "x" : 0.38517442003869923,
+            "y" : 0.08746355724897459
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-df63a4db72931d01430a4291dc2b03a9cb49af2e23c73e50530ed0bf327cf3b0.png",
+      "width" : 2048
+    },
+    {
+      "height" : 815,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.04071847831501685,
+            "width" : 0.22819767892360684,
+            "x" : 0.05813953389898466,
+            "y" : 0.7549019602331473
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08029197244083175,
+            "width" : 0.030523255467414856,
+            "x" : 0.47819767464378427,
+            "y" : 0.6861313854688438
+          },
+          "confidence" : 1,
+          "text" : "®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.16788321850346577,
+            "width" : 0.16860465705394745,
+            "x" : 0.6162790670738014,
+            "y" : 0.5693430617215032
+          },
+          "confidence" : 1,
+          "text" : "24oz"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15355302773269963,
+            "width" : 0.43023255467414856,
+            "x" : 0.07122093298961452,
+            "y" : 0.46323529345510395
+          },
+          "confidence" : 1,
+          "text" : "HOMESTYLE OAT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.12140870561786732,
+            "width" : 0.1048281192779541,
+            "x" : 0.3850859406229312,
+            "y" : 0.21484309263571644
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-96189d8dafcb7f764fd3ada00bbfa96fecac835f62cc3aa9ab8afdf8ad9cdddc.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1548,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.07963167974191121,
+            "width" : 0.5072674411046493,
+            "x" : 0.15843023442801052,
+            "y" : 0.001763669450142058
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-c9500b063e081249e66aee30d65d0007c1c8295594b86464dfe3c8982335ee39.png",
+      "width" : 1878
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

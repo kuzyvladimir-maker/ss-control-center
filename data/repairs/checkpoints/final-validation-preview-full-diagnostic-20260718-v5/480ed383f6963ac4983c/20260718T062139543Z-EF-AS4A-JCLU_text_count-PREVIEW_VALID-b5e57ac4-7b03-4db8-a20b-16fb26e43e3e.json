@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b5e57ac4-7b03-4db8-a20b-16fb26e43e3e",
+  "created_at": "2026-07-18T06:21:39.543Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "EF-AS4A-JCLU:text_count",
+  "sku": "EF-AS4A-JCLU",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "a8e5e05a3e2bb675950137950ca66e65b8afaa47c441943f0b2ac7ca065e9a15",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "4c8eaafafdd74a68bd8d4ee8c1b95c35",
+    "issues": []
+  },
+  "sha256": "4e3282737baa5c4b64331ceb0047a091fa10d5d9db515c6c7afb42d61ebae94a"
+}

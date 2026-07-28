@@ -1,0 +1,1244 @@
+{
+  "schema_version": "walmart-listing-integrity-catalog-triage-plan/v1",
+  "triage_version": "walmart-listing-integrity-catalog-triage/v1",
+  "created_at": "2026-07-23T02:38:29.024Z",
+  "source_binding": {
+    "census_file_sha256": "c3b0ceb33ee136e47f4db575aaa18777bf7e1b2056b93e51e885cce8f883c50d",
+    "census_body_sha256": "153b60dda3592e2e1763350c4b67c55c15c9dff9aebeca08835472fdbdd9e709",
+    "scan_plan_file_sha256": "eb08dbbf4a23cbfcbf509f291bf675676749914ba97e0d4500658ab9e354385a",
+    "scan_plan_body_sha256": "aad6a14ca1c2eb56530a2722dc2f7e4942db381886fd54c7d3376a72b35366a4",
+    "capture_index_file_sha256": "64d4920e611f4ce792d915e80ebb966305d3490de06dfaee81871f214abca0e4",
+    "capture_index_body_sha256": "bf83ae4ac8fecef7766f8ac9c7d7030d26acc5a3742d52bedd45eb8401519a11",
+    "partition_id": "partition-000000-bc7ef33d43bae256"
+  },
+  "policy": {
+    "mode": "READ_ONLY_VISUAL_TRIAGE",
+    "images_per_call_max": 6,
+    "calls_max": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_writes": 0,
+    "may_issue_pass": false,
+    "may_prepare_repair": false
+  },
+  "policy_sha256": "11e5eb4070593c21e8dcbdb9e70e3f7a28d2b3ef9e81f09e2330f0b7cc4d93d7",
+  "scope_sha256": "165b4887f3b077bd40d404769682e4409d53734066005ebf69eb752d27c4382f",
+  "worker_contract": {
+    "worker_build": "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9",
+    "model": "sonnet",
+    "reasoning_effort": null,
+    "cli_version": "2.1.179 (Claude Code)",
+    "node_version": "v20.20.1",
+    "runtime_platform": "linux",
+    "runtime_arch": "x64",
+    "vision_timeout_ms": 180000,
+    "reservation_ledger": {
+      "schema_version": "vision-call-reservation-ledger-contract/v1",
+      "ledger_id": "ledger-2c53fa5f-f761-4660-80b9-24e934e172aa",
+      "ledger_epoch": "epoch-986b9a13-740b-4403-b433-378f2613d4f0",
+      "state_directory_path_sha256": "ae43d594a2a43b6bc856529cfa729d73d9784d1dd3f3e4dffddf27feccfece53",
+      "directory_identity_sha256": "c0e7a611777a5b7063c36a94c3c4c27ea6943e34ba2622944c0426d7685c0db1",
+      "identity_artifact_sha256": "ffd380901c51e88205454d1ddd68141d94e811c286b62d556c60e335e84e3a68"
+    }
+  },
+  "listings": [
+    {
+      "listing_key": "walmart:1:15369958986",
+      "sku": "15369958986",
+      "item_id": "64YKJ7BNCXIE",
+      "title": "(5 pack) STARFIT Weighted Jump Rope - 9.8FT Adjustable Skipping Rope for Cardio & Agility, Tangle-Free Design - Black",
+      "title_outer_count": 5,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Athar-1591",
+      "sku": "Athar-1591",
+      "item_id": "24Q31J65EP09",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.2 Pack",
+      "title_outer_count": 2,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Athar-1592",
+      "sku": "Athar-1592",
+      "item_id": "2ADWRWBKUBFF",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz. 3 Pack",
+      "title_outer_count": 3,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Athar-1594",
+      "sku": "Athar-1594",
+      "item_id": "4MFQVPKT5KH5",
+      "title": "Lay's Party Size Barbecue Potato Chips 15.25 oz.5 Pack",
+      "title_outer_count": 5,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Comm-03",
+      "sku": "Comm-03",
+      "item_id": "13YOVZGZXUQ1",
+      "title": "Pepperidge Farm Farmhouse Homestyle Oat Bread, 3-Pack 24 oz. Loaves 7033",
+      "title_outer_count": 3,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Comm-04",
+      "sku": "Comm-04",
+      "item_id": "4EWP40OWPY0N",
+      "title": "Pepperidge Farm Farmhouse Homestyle Oat Bread, 4-Pack 24 oz. Loaves 7033",
+      "title_outer_count": 4,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Comm-05",
+      "sku": "Comm-05",
+      "item_id": "431H05RNU37O",
+      "title": "Pepperidge Farm Soft White Hoagie Rolls with Sesame Seeds, 3-Pack 6 Count Bags",
+      "title_outer_count": 3,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Comm-07",
+      "sku": "Comm-07",
+      "item_id": "53YP2IR8SVHL",
+      "title": "Dave's Killer Bread Epic Everything Organic Bagels, 16.75 oz., 5 Ct - Pack Of 2",
+      "title_outer_count": 2,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:Extra-01",
+      "sku": "Extra-01",
+      "item_id": "21EXR3RYISDK",
+      "title": "MadeGood Chocolate Drizzle Birthday Cake Flavor Granola Bars, 5 Count (0.78oz Each) pack of 4",
+      "title_outer_count": 4,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:FBM-05",
+      "sku": "FBM-05",
+      "item_id": "22NW8U5MPN2J",
+      "title": "Pepperidge Farm Cinnamon Raisin Swirl Bread, 3-Pack 16 oz. Loaves 7111",
+      "title_outer_count": 3,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1110",
+      "sku": "FaisalX-1110",
+      "item_id": "3ITWZ1ZLPLME",
+      "title": "Dave's Killer Bread Killer Classic English Muffins, Organic English Muffins, 6 Ct (Pack of 4)",
+      "title_outer_count": 4,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1112",
+      "sku": "FaisalX-1112",
+      "item_id": "355MS9HNCKXT",
+      "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz (Pack of 2)",
+      "title_outer_count": 2,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1113",
+      "sku": "FaisalX-1113",
+      "item_id": "7GVFQZ0YPR48",
+      "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz (Pack of 4)",
+      "title_outer_count": 4,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    },
+    {
+      "listing_key": "walmart:1:FaisalX-1114",
+      "sku": "FaisalX-1114",
+      "item_id": "6JXVVADMKC3P",
+      "title": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread Loaf, 20.5 oz (Pack of 6)",
+      "title_outer_count": 6,
+      "deterministic_findings": [],
+      "evidence_authority": "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+    }
+  ],
+  "assets": [
+    {
+      "task": {
+        "task_id": "image-71ff3fdd9c8f53e27012",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-1",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/fd12df7c-f0ba-4370-957d-1b4748918cde.e001b571711f93ff73af68aed94da9fc.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "164f4eec2197d1d125af5b3cc881a27f8066b53954d3371bccce6ca43dfc88e3",
+      "model_asset": {
+        "path": "model-assets/image-71ff3fdd9c8f53e27012.jpeg",
+        "sha256": "fe68e1b937a2b0afbecde208a71cba6876b1399605f6525cdd88cf7630284f65",
+        "bytes": 366201,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_5791fca75ef96333581a",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-1",
+        "asset_sha256": "164f4eec2197d1d125af5b3cc881a27f8066b53954d3371bccce6ca43dfc88e3",
+        "model_view_sha256": "fe68e1b937a2b0afbecde208a71cba6876b1399605f6525cdd88cf7630284f65",
+        "image_id": "i_5791fca75ef96333581a"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-266e4445b3c7f052f552",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-2",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/3880eec6-55f3-4517-befb-c84fc695db27.261724eaf6cd8f7be5862ea44cd1cd48.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "5271ffca2a709ab4e3d959d0749603b787c5c0eb14cd75b90015ba968889722d",
+      "model_asset": {
+        "path": "model-assets/image-266e4445b3c7f052f552.jpeg",
+        "sha256": "27e76ea43e87210eed36295665c314d3f2548883640468c8e413beb4f6e3037a",
+        "bytes": 464753,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_1551a58c4f8a478fb06a",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-2",
+        "asset_sha256": "5271ffca2a709ab4e3d959d0749603b787c5c0eb14cd75b90015ba968889722d",
+        "model_view_sha256": "27e76ea43e87210eed36295665c314d3f2548883640468c8e413beb4f6e3037a",
+        "image_id": "i_1551a58c4f8a478fb06a"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-edd850232483156f0cd8",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-3",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/09508009-5d37-42ea-8413-5cbf1dfe94e8.d550ba3b6ab9f4bd9baf1f1c72bda4ee.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "85e5a3f03831debc683e6126b4fc2be8ae87ee6c1abed795c2d9d415d1eab016",
+      "model_asset": {
+        "path": "model-assets/image-edd850232483156f0cd8.jpeg",
+        "sha256": "ea348382129eacf1e2faf2efc9449aaf5b4e8f06f9e37b63897af2ec64b3bca9",
+        "bytes": 415394,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_d5963f86535eac712318",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-3",
+        "asset_sha256": "85e5a3f03831debc683e6126b4fc2be8ae87ee6c1abed795c2d9d415d1eab016",
+        "model_view_sha256": "ea348382129eacf1e2faf2efc9449aaf5b4e8f06f9e37b63897af2ec64b3bca9",
+        "image_id": "i_d5963f86535eac712318"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-98ab25af7150ec748a84",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-4",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/0e05ca26-393d-44af-8008-826a3b58ce69.add43d4198873f5ab26a6106962a6e6f.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "53a74ea9837cbdbe98c29f6ba86a740eeb9d8113502ae19e4467a8f3fc8a280d",
+      "model_asset": {
+        "path": "model-assets/image-98ab25af7150ec748a84.jpeg",
+        "sha256": "613d69ded212003cdb1dce7cda11ded3a3dc926fbe76f3098d501cc14f6cf6dc",
+        "bytes": 387165,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_f0e3c6f20d80c4dd37f1",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-4",
+        "asset_sha256": "53a74ea9837cbdbe98c29f6ba86a740eeb9d8113502ae19e4467a8f3fc8a280d",
+        "model_view_sha256": "613d69ded212003cdb1dce7cda11ded3a3dc926fbe76f3098d501cc14f6cf6dc",
+        "image_id": "i_f0e3c6f20d80c4dd37f1"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-c106f3a5a8a5263090be",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-5",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/c655bda5-8e57-4fb6-b15e-bad6c43a4c2e.a42f5b63eb9bd629194ef4db2ff87ddc.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "f75199432fd5201e69593af64b90c327ce45b6d64a2a3c6d5dd9bf4eba6e0e26",
+      "model_asset": {
+        "path": "model-assets/image-c106f3a5a8a5263090be.jpeg",
+        "sha256": "78aff601892be72c10234ec529151aeb46a758c39892d64b5f2b92e4b1e19820",
+        "bytes": 416524,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_e899b2d1f0a83b5a147d",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-5",
+        "asset_sha256": "f75199432fd5201e69593af64b90c327ce45b6d64a2a3c6d5dd9bf4eba6e0e26",
+        "model_view_sha256": "78aff601892be72c10234ec529151aeb46a758c39892d64b5f2b92e4b1e19820",
+        "image_id": "i_e899b2d1f0a83b5a147d"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-bf4acd027898b253132b",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "gallery-6",
+        "source_role": "last_sent_gallery",
+        "url": "https://i5.walmartimages.com/asr/bd0984ba-9a00-499d-9e39-67b16f2b8ec9.c586cb418c3a674a972540ae46083d66.jpeg",
+        "priority": 0
+      },
+      "source_asset_sha256": "773eea5d2d7e5dca1378c6a3c3a9c5a82710efb2f87cae5efd025dd87e6ed35a",
+      "model_asset": {
+        "path": "model-assets/image-bf4acd027898b253132b.jpeg",
+        "sha256": "d24e57a93001090c6d5568bcea15d95d305fdbe770cb9ad60eca1a9c45975ad2",
+        "bytes": 467967,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_f32b4313bbe724a2487f",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "gallery-6",
+        "asset_sha256": "773eea5d2d7e5dca1378c6a3c3a9c5a82710efb2f87cae5efd025dd87e6ed35a",
+        "model_view_sha256": "d24e57a93001090c6d5568bcea15d95d305fdbe770cb9ad60eca1a9c45975ad2",
+        "image_id": "i_f32b4313bbe724a2487f"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-f96b6cf154fb7ced403b",
+        "listing_key": "walmart:1:15369958986",
+        "sku": "15369958986",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/15369958986/main-20260617-44327.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "d00c06d8150be52266030514c5209d8e58c079af0688958f34f53e972e8c3ec2",
+      "model_asset": {
+        "path": "model-assets/image-f96b6cf154fb7ced403b.jpeg",
+        "sha256": "660b3d7323867b2cb0ee3f57d7a2fd6a7aac652ee5da36e45e8d0f13da72f447",
+        "bytes": 324350,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_4e29a0e647252666a88f",
+      "binding": {
+        "listing_key": "walmart:1:15369958986",
+        "item_id": "64YKJ7BNCXIE",
+        "slot": "main",
+        "asset_sha256": "d00c06d8150be52266030514c5209d8e58c079af0688958f34f53e972e8c3ec2",
+        "model_view_sha256": "660b3d7323867b2cb0ee3f57d7a2fd6a7aac652ee5da36e45e8d0f13da72f447",
+        "image_id": "i_4e29a0e647252666a88f"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-054a31833be0704c9c6b",
+        "listing_key": "walmart:1:Athar-1591",
+        "sku": "Athar-1591",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Athar-1591/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "d93c1b224807248e61909ec67d9d9776a905ddf4b42c7634cfd85c3e30cec993",
+      "model_asset": {
+        "path": "model-assets/image-054a31833be0704c9c6b.jpeg",
+        "sha256": "62c3fe86418f46f22b7988f3777e9f49117988aa60b965db82c15927e13763a3",
+        "bytes": 449544,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_af855be2f3f3ae13fe56",
+      "binding": {
+        "listing_key": "walmart:1:Athar-1591",
+        "item_id": "24Q31J65EP09",
+        "slot": "main",
+        "asset_sha256": "d93c1b224807248e61909ec67d9d9776a905ddf4b42c7634cfd85c3e30cec993",
+        "model_view_sha256": "62c3fe86418f46f22b7988f3777e9f49117988aa60b965db82c15927e13763a3",
+        "image_id": "i_af855be2f3f3ae13fe56"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-d745d74fc8ed3074689a",
+        "listing_key": "walmart:1:Athar-1592",
+        "sku": "Athar-1592",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Athar-1592/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "5f2e3e3475580d5591103d56a6d579a316d42908b7993664d31b8b387cef8738",
+      "model_asset": {
+        "path": "model-assets/image-d745d74fc8ed3074689a.jpeg",
+        "sha256": "a7a8931c3fe4362215e96e65a6184a7c3048eadac347fbc2acfdc641da70f37b",
+        "bytes": 393711,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_e605bd405efd66039da5",
+      "binding": {
+        "listing_key": "walmart:1:Athar-1592",
+        "item_id": "2ADWRWBKUBFF",
+        "slot": "main",
+        "asset_sha256": "5f2e3e3475580d5591103d56a6d579a316d42908b7993664d31b8b387cef8738",
+        "model_view_sha256": "a7a8931c3fe4362215e96e65a6184a7c3048eadac347fbc2acfdc641da70f37b",
+        "image_id": "i_e605bd405efd66039da5"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-0e47d2f94ace439ef813",
+        "listing_key": "walmart:1:Athar-1594",
+        "sku": "Athar-1594",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Athar-1594/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "f288714537d14d18005c5be6b4d57e66bd29f0d6dbf232906e34888ae718b6aa",
+      "model_asset": {
+        "path": "model-assets/image-0e47d2f94ace439ef813.jpeg",
+        "sha256": "3463942a2ec26861863c8797df84229aa043978f51b7cbaf61f2e661ad8631ac",
+        "bytes": 623860,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_00d49c8226adb9b7919b",
+      "binding": {
+        "listing_key": "walmart:1:Athar-1594",
+        "item_id": "4MFQVPKT5KH5",
+        "slot": "main",
+        "asset_sha256": "f288714537d14d18005c5be6b4d57e66bd29f0d6dbf232906e34888ae718b6aa",
+        "model_view_sha256": "3463942a2ec26861863c8797df84229aa043978f51b7cbaf61f2e661ad8631ac",
+        "image_id": "i_00d49c8226adb9b7919b"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-e5a6b110efbea314864f",
+        "listing_key": "walmart:1:Comm-03",
+        "sku": "Comm-03",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Comm-03/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "351a368b197505f89d012c7de1734a400871b7c01f2379ae6d20e11c43eff18b",
+      "model_asset": {
+        "path": "model-assets/image-e5a6b110efbea314864f.jpeg",
+        "sha256": "b047d7423fcd831940bc8679b9123203211f4b14bdaab1c08ebbe9f62da08e24",
+        "bytes": 295004,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_deadab0cc6003b39d95c",
+      "binding": {
+        "listing_key": "walmart:1:Comm-03",
+        "item_id": "13YOVZGZXUQ1",
+        "slot": "main",
+        "asset_sha256": "351a368b197505f89d012c7de1734a400871b7c01f2379ae6d20e11c43eff18b",
+        "model_view_sha256": "b047d7423fcd831940bc8679b9123203211f4b14bdaab1c08ebbe9f62da08e24",
+        "image_id": "i_deadab0cc6003b39d95c"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-f9308878bb1037e2bbb5",
+        "listing_key": "walmart:1:Comm-04",
+        "sku": "Comm-04",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Comm-04/main-20260617-65812.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "6f4172a42f3a9b54f0a0284ade0988bea4526db13eb9236ce1712f50e10889d3",
+      "model_asset": {
+        "path": "model-assets/image-f9308878bb1037e2bbb5.jpeg",
+        "sha256": "97a28be878990929187dea713e1ecfb4209fca08d7b8094e41382b9d0885c874",
+        "bytes": 742284,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_b6985727d5f93910b25e",
+      "binding": {
+        "listing_key": "walmart:1:Comm-04",
+        "item_id": "4EWP40OWPY0N",
+        "slot": "main",
+        "asset_sha256": "6f4172a42f3a9b54f0a0284ade0988bea4526db13eb9236ce1712f50e10889d3",
+        "model_view_sha256": "97a28be878990929187dea713e1ecfb4209fca08d7b8094e41382b9d0885c874",
+        "image_id": "i_b6985727d5f93910b25e"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-13cab6209f832ce8fcce",
+        "listing_key": "walmart:1:Comm-05",
+        "sku": "Comm-05",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Comm-05/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "203fbad385f97c94e48f949e5a53cc1a59bc476a05942c95f6bfa2f0153795fd",
+      "model_asset": {
+        "path": "model-assets/image-13cab6209f832ce8fcce.jpeg",
+        "sha256": "423b865d24b91456029154493c708a12f4714c2edf5b10f0f42625cc98d9884a",
+        "bytes": 313583,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_33d8ed9f62a31f7bd3c1",
+      "binding": {
+        "listing_key": "walmart:1:Comm-05",
+        "item_id": "431H05RNU37O",
+        "slot": "main",
+        "asset_sha256": "203fbad385f97c94e48f949e5a53cc1a59bc476a05942c95f6bfa2f0153795fd",
+        "model_view_sha256": "423b865d24b91456029154493c708a12f4714c2edf5b10f0f42625cc98d9884a",
+        "image_id": "i_33d8ed9f62a31f7bd3c1"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-42a6c2195bba17bf5944",
+        "listing_key": "walmart:1:Comm-07",
+        "sku": "Comm-07",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Comm-07/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "278039756a0b803f4f978986369066df37cf50d66da25061dbd53d089edb7874",
+      "model_asset": {
+        "path": "model-assets/image-42a6c2195bba17bf5944.jpeg",
+        "sha256": "a22f601675e497139c497a98a16fc91d8a5f7fe7db96fb62f8572a95d98a4ee0",
+        "bytes": 428323,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_2aca6c56eebbddbc4cbb",
+      "binding": {
+        "listing_key": "walmart:1:Comm-07",
+        "item_id": "53YP2IR8SVHL",
+        "slot": "main",
+        "asset_sha256": "278039756a0b803f4f978986369066df37cf50d66da25061dbd53d089edb7874",
+        "model_view_sha256": "a22f601675e497139c497a98a16fc91d8a5f7fe7db96fb62f8572a95d98a4ee0",
+        "image_id": "i_2aca6c56eebbddbc4cbb"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-a70bad164fd2b3a9a8e2",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-1",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_d13eefe2-c331-490b-9771-329a11fd807d",
+        "priority": 0
+      },
+      "source_asset_sha256": "fc410b8e4c8d45c26aa601a1eccb7e6abf76bb7fbb518c696efd1bfdb5550cb2",
+      "model_asset": {
+        "path": "model-assets/image-a70bad164fd2b3a9a8e2.jpeg",
+        "sha256": "df8f53bb85b9ea4bf7d00c88b4e87c9f4e85ece79d8b311ccab59b2a129d1b2e",
+        "bytes": 47092,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_d445835711d46b6f975c",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-1",
+        "asset_sha256": "fc410b8e4c8d45c26aa601a1eccb7e6abf76bb7fbb518c696efd1bfdb5550cb2",
+        "model_view_sha256": "df8f53bb85b9ea4bf7d00c88b4e87c9f4e85ece79d8b311ccab59b2a129d1b2e",
+        "image_id": "i_d445835711d46b6f975c"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-006defa7c2f91ffd8d08",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-2",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_d8a75bf8-9338-41c7-8fb0-d704a503ada2",
+        "priority": 0
+      },
+      "source_asset_sha256": "0647e81b93d801b05423d17c164efba5f7b62e86106e8148a33671a5e7618330",
+      "model_asset": {
+        "path": "model-assets/image-006defa7c2f91ffd8d08.jpeg",
+        "sha256": "d9f33c253aaf6289d33c8c6ce4aade4ac5dbf5840c91b29c7b83820c46e735fd",
+        "bytes": 50659,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_1d45a865615591f02fd7",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-2",
+        "asset_sha256": "0647e81b93d801b05423d17c164efba5f7b62e86106e8148a33671a5e7618330",
+        "model_view_sha256": "d9f33c253aaf6289d33c8c6ce4aade4ac5dbf5840c91b29c7b83820c46e735fd",
+        "image_id": "i_1d45a865615591f02fd7"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-383187c8c17f6d54f286",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-3",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_396f9c72-8871-4948-8968-8ab886d38edf",
+        "priority": 0
+      },
+      "source_asset_sha256": "460e7115f2e81bcdd3bfa7150dac0795095eb0bb12ec30adfcdbbb4d71cc1033",
+      "model_asset": {
+        "path": "model-assets/image-383187c8c17f6d54f286.jpeg",
+        "sha256": "151e2dbfabe460f6c8b0a4fe5f8b0a9176ebbae97b28fb0bfcbf67a27792dcde",
+        "bytes": 75071,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_05cf3445736ca84a2f6a",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-3",
+        "asset_sha256": "460e7115f2e81bcdd3bfa7150dac0795095eb0bb12ec30adfcdbbb4d71cc1033",
+        "model_view_sha256": "151e2dbfabe460f6c8b0a4fe5f8b0a9176ebbae97b28fb0bfcbf67a27792dcde",
+        "image_id": "i_05cf3445736ca84a2f6a"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-9969ce97bca5cff51271",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-4",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_2fd1a424-b975-45c6-a127-1774ff5371ad",
+        "priority": 0
+      },
+      "source_asset_sha256": "fb5727f454db30b303121f1e9b7ddf3fc51d2c0e9dd999b84b49396ca344b221",
+      "model_asset": {
+        "path": "model-assets/image-9969ce97bca5cff51271.jpeg",
+        "sha256": "1daad59e7df4337ca2ea92531878fc53978cfa2f5d5e4b19208f5474a08095ea",
+        "bytes": 44875,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_b4b73643c1b67730274b",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-4",
+        "asset_sha256": "fb5727f454db30b303121f1e9b7ddf3fc51d2c0e9dd999b84b49396ca344b221",
+        "model_view_sha256": "1daad59e7df4337ca2ea92531878fc53978cfa2f5d5e4b19208f5474a08095ea",
+        "image_id": "i_b4b73643c1b67730274b"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-d101422de6a1f8880c9f",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-5",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_e855dca4-0a8a-4d53-bea2-1f50c47641f7",
+        "priority": 0
+      },
+      "source_asset_sha256": "2d2dbc23bcff010b311e6c7470fffdedb673b19543e5c041a626c6d911baf800",
+      "model_asset": {
+        "path": "model-assets/image-d101422de6a1f8880c9f.jpeg",
+        "sha256": "0ff2466940af63753652d56e9ebea17d696e1b3b95d461997c7b049f9b613c99",
+        "bytes": 38131,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_0d43fef9fdf193692873",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-5",
+        "asset_sha256": "2d2dbc23bcff010b311e6c7470fffdedb673b19543e5c041a626c6d911baf800",
+        "model_view_sha256": "0ff2466940af63753652d56e9ebea17d696e1b3b95d461997c7b049f9b613c99",
+        "image_id": "i_0d43fef9fdf193692873"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-651168c6cbb99198969c",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "gallery-6",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_9d2b515d-ea41-451e-81d6-4303d8629b81",
+        "priority": 0
+      },
+      "source_asset_sha256": "1fc8b0b9a22d29c6b048d7ec2c7bb572d800c247416ffd5217bc3f8bd34c60ba",
+      "model_asset": {
+        "path": "model-assets/image-651168c6cbb99198969c.jpeg",
+        "sha256": "975fefd9dfba0f3dc7b75e3d547dd8bbb4d03312d4340df8a8fcd60fa31906e0",
+        "bytes": 47490,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_76dd3b45c03679a8eb56",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "gallery-6",
+        "asset_sha256": "1fc8b0b9a22d29c6b048d7ec2c7bb572d800c247416ffd5217bc3f8bd34c60ba",
+        "model_view_sha256": "975fefd9dfba0f3dc7b75e3d547dd8bbb4d03312d4340df8a8fcd60fa31906e0",
+        "image_id": "i_76dd3b45c03679a8eb56"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-95c5ec41d6f00913a749",
+        "listing_key": "walmart:1:Extra-01",
+        "sku": "Extra-01",
+        "slot": "main",
+        "source_role": "last_sent_main",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Extra-01/main-20260701-f50.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "556ffde656f21de5e18e8d55d55a29dac02eb7cc2b4a4d0ed934a661c6b9476c",
+      "model_asset": {
+        "path": "model-assets/image-95c5ec41d6f00913a749.jpeg",
+        "sha256": "7b8da54837f6f1ce3411438f2472f78a55694dd88473f36388e9ff145a666e6c",
+        "bytes": 511262,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_5e90fe1d0208f6706c9b",
+      "binding": {
+        "listing_key": "walmart:1:Extra-01",
+        "item_id": "21EXR3RYISDK",
+        "slot": "main",
+        "asset_sha256": "556ffde656f21de5e18e8d55d55a29dac02eb7cc2b4a4d0ed934a661c6b9476c",
+        "model_view_sha256": "7b8da54837f6f1ce3411438f2472f78a55694dd88473f36388e9ff145a666e6c",
+        "image_id": "i_5e90fe1d0208f6706c9b"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-3923b39e869628d178ce",
+        "listing_key": "walmart:1:FBM-05",
+        "sku": "FBM-05",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FBM-05/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "9e3155f6f145ce097f92887641d35690f568af25680047e8a2318efeb985f2f7",
+      "model_asset": {
+        "path": "model-assets/image-3923b39e869628d178ce.jpeg",
+        "sha256": "0162574a19eb7ec83144eb32f67cc12c6a386de0cf8755852f95f4bd1fc468b6",
+        "bytes": 522801,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_69f8f5c3e11164c4735f",
+      "binding": {
+        "listing_key": "walmart:1:FBM-05",
+        "item_id": "22NW8U5MPN2J",
+        "slot": "main",
+        "asset_sha256": "9e3155f6f145ce097f92887641d35690f568af25680047e8a2318efeb985f2f7",
+        "model_view_sha256": "0162574a19eb7ec83144eb32f67cc12c6a386de0cf8755852f95f4bd1fc468b6",
+        "image_id": "i_69f8f5c3e11164c4735f"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-b739766a34e9215060cd",
+        "listing_key": "walmart:1:FaisalX-1110",
+        "sku": "FaisalX-1110",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1110/main-20260617-65548.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "e74311c47e2852f95f8dd16919c5bdddc64fa13fcf27d973d44b93b1de83f8bc",
+      "model_asset": {
+        "path": "model-assets/image-b739766a34e9215060cd.jpeg",
+        "sha256": "7337d3dfd1bb89a6bc0825ed95789ddd017548addb720424329788b67d4d23e1",
+        "bytes": 272219,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_d3f5ea75c3857cf488dd",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1110",
+        "item_id": "3ITWZ1ZLPLME",
+        "slot": "main",
+        "asset_sha256": "e74311c47e2852f95f8dd16919c5bdddc64fa13fcf27d973d44b93b1de83f8bc",
+        "model_view_sha256": "7337d3dfd1bb89a6bc0825ed95789ddd017548addb720424329788b67d4d23e1",
+        "image_id": "i_d3f5ea75c3857cf488dd"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-98494fc915afbea0ef7a",
+        "listing_key": "walmart:1:FaisalX-1112",
+        "sku": "FaisalX-1112",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1112/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "b82f0a2cfa8f557e62c747f7e3050d616fb9e67895f88e804583bc9d9ab310ee",
+      "model_asset": {
+        "path": "model-assets/image-98494fc915afbea0ef7a.jpeg",
+        "sha256": "e643cbac198e710de26ef2dae73abaa0dddf6c1779b90e66d29e4e2ddc0b42eb",
+        "bytes": 455842,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_baca21e7358789c14d80",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1112",
+        "item_id": "355MS9HNCKXT",
+        "slot": "main",
+        "asset_sha256": "b82f0a2cfa8f557e62c747f7e3050d616fb9e67895f88e804583bc9d9ab310ee",
+        "model_view_sha256": "e643cbac198e710de26ef2dae73abaa0dddf6c1779b90e66d29e4e2ddc0b42eb",
+        "image_id": "i_baca21e7358789c14d80"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-c9ee72a476183357aa2c",
+        "listing_key": "walmart:1:FaisalX-1113",
+        "sku": "FaisalX-1113",
+        "slot": "main",
+        "source_role": "last_applied_artifact",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1113/main-enriched.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "28f97a5b6baee723882978dc831d287a265b3329885ee52b7889396baedd17e7",
+      "model_asset": {
+        "path": "model-assets/image-c9ee72a476183357aa2c.jpeg",
+        "sha256": "0a890bc65fe57e64102dff03ea914a14c571f3907a2a4260f6c1c51fdb9f73e0",
+        "bytes": 364260,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_2a30450f5fcecae62559",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1113",
+        "item_id": "7GVFQZ0YPR48",
+        "slot": "main",
+        "asset_sha256": "28f97a5b6baee723882978dc831d287a265b3329885ee52b7889396baedd17e7",
+        "model_view_sha256": "0a890bc65fe57e64102dff03ea914a14c571f3907a2a4260f6c1c51fdb9f73e0",
+        "image_id": "i_2a30450f5fcecae62559"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-3cf32bab969709ec4d0e",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-1",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_aaaf1e4c-7a10-405b-b39d-6608987d87b6",
+        "priority": 0
+      },
+      "source_asset_sha256": "025c93d59ab1a66e64d5ac16607eb880baf9f59e21efbe0cb847d4330c17126a",
+      "model_asset": {
+        "path": "model-assets/image-3cf32bab969709ec4d0e.jpeg",
+        "sha256": "5fe4af6a93b6efa5fa7d614b1ef5e3e0b0986362fecc7ccf16e24e5d4b5a79b9",
+        "bytes": 37813,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_ebf85f1295326aaf0b01",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-1",
+        "asset_sha256": "025c93d59ab1a66e64d5ac16607eb880baf9f59e21efbe0cb847d4330c17126a",
+        "model_view_sha256": "5fe4af6a93b6efa5fa7d614b1ef5e3e0b0986362fecc7ccf16e24e5d4b5a79b9",
+        "image_id": "i_ebf85f1295326aaf0b01"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-69f9b6b5416f8c717f67",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-2",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_8c79d843-3c3b-4878-b661-ade771bd1d1c",
+        "priority": 0
+      },
+      "source_asset_sha256": "f09d45fb4b989250b5f3d36f35799fe36989c99d143db6e98c0d667c72035c2e",
+      "model_asset": {
+        "path": "model-assets/image-69f9b6b5416f8c717f67.jpeg",
+        "sha256": "b512264338b77644e34075e9035a41fcaf7a52dba2ee1b6676d7d969e2616ce2",
+        "bytes": 45852,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_7c190d100bead685ff8c",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-2",
+        "asset_sha256": "f09d45fb4b989250b5f3d36f35799fe36989c99d143db6e98c0d667c72035c2e",
+        "model_view_sha256": "b512264338b77644e34075e9035a41fcaf7a52dba2ee1b6676d7d969e2616ce2",
+        "image_id": "i_7c190d100bead685ff8c"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-a0fb5c3eecef5caf03fa",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-3",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_af986e06-a0e2-4f98-ae5c-3fb4ba784a98",
+        "priority": 0
+      },
+      "source_asset_sha256": "ca45252c3e3e4124c09e0564bd1b3a3723bc99f8bf0b0eb4f9bc5b9cd82fcfa0",
+      "model_asset": {
+        "path": "model-assets/image-a0fb5c3eecef5caf03fa.jpeg",
+        "sha256": "4b3b6ae50162665cc2adb2d31a590bc2bede4e3728b1cafcd51aee3617d3a847",
+        "bytes": 75376,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_804d3016d7e62583970f",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-3",
+        "asset_sha256": "ca45252c3e3e4124c09e0564bd1b3a3723bc99f8bf0b0eb4f9bc5b9cd82fcfa0",
+        "model_view_sha256": "4b3b6ae50162665cc2adb2d31a590bc2bede4e3728b1cafcd51aee3617d3a847",
+        "image_id": "i_804d3016d7e62583970f"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-012a0e1d376656c6bf89",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-4",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_7e6ce713-619e-41b5-a572-fd8d43f2ac80",
+        "priority": 0
+      },
+      "source_asset_sha256": "03b5177ee79383916f5a4c345ac741fb23cc2aa0cb7051df293c73cf82b40a19",
+      "model_asset": {
+        "path": "model-assets/image-012a0e1d376656c6bf89.jpeg",
+        "sha256": "cfc731c941dce79d95d7cd2e0fbb39f478e1eaf233551f599c9599aeb8c1ca3c",
+        "bytes": 62595,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_5826fc6a308c23bc2045",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-4",
+        "asset_sha256": "03b5177ee79383916f5a4c345ac741fb23cc2aa0cb7051df293c73cf82b40a19",
+        "model_view_sha256": "cfc731c941dce79d95d7cd2e0fbb39f478e1eaf233551f599c9599aeb8c1ca3c",
+        "image_id": "i_5826fc6a308c23bc2045"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-9251f50a8c09b0c7b694",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-5",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_ab008aa7-ef32-4ff7-9769-9f0f3518f429",
+        "priority": 0
+      },
+      "source_asset_sha256": "925795f91eaa4d517b6007207141192889914a61790c45879668f65de877f9d6",
+      "model_asset": {
+        "path": "model-assets/image-9251f50a8c09b0c7b694.jpeg",
+        "sha256": "167d27b0535af589c0e9ef61963111fcdc5afa63b6c8d06bb92a561c6d7b37a9",
+        "bytes": 58776,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_7522a29414e190013fd1",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-5",
+        "asset_sha256": "925795f91eaa4d517b6007207141192889914a61790c45879668f65de877f9d6",
+        "model_view_sha256": "167d27b0535af589c0e9ef61963111fcdc5afa63b6c8d06bb92a561c6d7b37a9",
+        "image_id": "i_7522a29414e190013fd1"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-923148bd786ac2bd5a20",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "gallery-6",
+        "source_role": "last_sent_gallery",
+        "url": "https://target.scene7.com/is/image/Target/GUEST_b918ab51-056f-41fe-b5e1-33e7395cf14b",
+        "priority": 0
+      },
+      "source_asset_sha256": "e20f61aa43da529c4f827d8a14e4d02989fe202fe859d070d364eaf45b9bf2b1",
+      "model_asset": {
+        "path": "model-assets/image-923148bd786ac2bd5a20.jpeg",
+        "sha256": "6cd83329de8d0ab10518109c8b658de3ddd702da6eb66b75b1a2de21787b0b62",
+        "bytes": 56228,
+        "media_type": "image/jpeg",
+        "width": 400,
+        "height": 400
+      },
+      "image_id": "i_7b1ad16c7be13091f9e8",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "gallery-6",
+        "asset_sha256": "e20f61aa43da529c4f827d8a14e4d02989fe202fe859d070d364eaf45b9bf2b1",
+        "model_view_sha256": "6cd83329de8d0ab10518109c8b658de3ddd702da6eb66b75b1a2de21787b0b62",
+        "image_id": "i_7b1ad16c7be13091f9e8"
+      }
+    },
+    {
+      "task": {
+        "task_id": "image-c2ac4598f44611669289",
+        "listing_key": "walmart:1:FaisalX-1114",
+        "sku": "FaisalX-1114",
+        "slot": "main",
+        "source_role": "last_sent_main",
+        "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1114/main-20260701-f50.png",
+        "priority": 0
+      },
+      "source_asset_sha256": "10450ced2bcd94695357ade28c35b2ed00db73b5660a3f2d9f420eaff6587fe8",
+      "model_asset": {
+        "path": "model-assets/image-c2ac4598f44611669289.jpeg",
+        "sha256": "d51f6e8a6ea72fc8da974396983e6931013ce77866e605ef266bcd8dececcfa0",
+        "bytes": 512643,
+        "media_type": "image/jpeg",
+        "width": 1600,
+        "height": 1600
+      },
+      "image_id": "i_bcc8a0a3ed350b85d247",
+      "binding": {
+        "listing_key": "walmart:1:FaisalX-1114",
+        "item_id": "6JXVVADMKC3P",
+        "slot": "main",
+        "asset_sha256": "10450ced2bcd94695357ade28c35b2ed00db73b5660a3f2d9f420eaff6587fe8",
+        "model_view_sha256": "d51f6e8a6ea72fc8da974396983e6931013ce77866e605ef266bcd8dececcfa0",
+        "image_id": "i_bcc8a0a3ed350b85d247"
+      }
+    }
+  ],
+  "calls": [
+    {
+      "call_index": 0,
+      "shard_id": "catalog-triage-00-ca34a9fcdfb51507",
+      "call_key": "9943390cd714934f120bee78a82ab5ee4848db88f2d1a5375fed1ee29b15519e",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "cc1882cc0529800e5c0cb1c4928fde93d9538a7ab9a2bfd261f576494b87aecc",
+      "image_ids": [
+        "i_5791fca75ef96333581a",
+        "i_1551a58c4f8a478fb06a",
+        "i_d5963f86535eac712318",
+        "i_f0e3c6f20d80c4dd37f1",
+        "i_e899b2d1f0a83b5a147d",
+        "i_f32b4313bbe724a2487f"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-71ff3fdd9c8f53e27012.jpeg",
+        "model-assets/image-266e4445b3c7f052f552.jpeg",
+        "model-assets/image-edd850232483156f0cd8.jpeg",
+        "model-assets/image-98ab25af7150ec748a84.jpeg",
+        "model-assets/image-c106f3a5a8a5263090be.jpeg",
+        "model-assets/image-bf4acd027898b253132b.jpeg"
+      ],
+      "request_character_estimate": 3384285
+    },
+    {
+      "call_index": 1,
+      "shard_id": "catalog-triage-01-71273b6e32c1e228",
+      "call_key": "35506c4b00988326a275e227f82625955e54e704ee93c1b67444f2d1800b2bda",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "98a8d83d59f280b76eb471792e07924e4196f101b5c52be529f5c65036322a68",
+      "image_ids": [
+        "i_4e29a0e647252666a88f",
+        "i_af855be2f3f3ae13fe56",
+        "i_e605bd405efd66039da5",
+        "i_00d49c8226adb9b7919b",
+        "i_deadab0cc6003b39d95c",
+        "i_b6985727d5f93910b25e"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-f96b6cf154fb7ced403b.jpeg",
+        "model-assets/image-054a31833be0704c9c6b.jpeg",
+        "model-assets/image-d745d74fc8ed3074689a.jpeg",
+        "model-assets/image-0e47d2f94ace439ef813.jpeg",
+        "model-assets/image-e5a6b110efbea314864f.jpeg",
+        "model-assets/image-f9308878bb1037e2bbb5.jpeg"
+      ],
+      "request_character_estimate": 3798617
+    },
+    {
+      "call_index": 2,
+      "shard_id": "catalog-triage-02-f6ec65600a9736e2",
+      "call_key": "85ae55c379987a09dd2ecb984d3868adbfcdfca5145da5ac8c15fba18138894f",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "c68915c2a2699a8cd4d012e609ae99890b595b5260a5e98190dec5e1f97a4aef",
+      "image_ids": [
+        "i_33d8ed9f62a31f7bd3c1",
+        "i_2aca6c56eebbddbc4cbb",
+        "i_d445835711d46b6f975c",
+        "i_1d45a865615591f02fd7",
+        "i_05cf3445736ca84a2f6a",
+        "i_b4b73643c1b67730274b"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-13cab6209f832ce8fcce.jpeg",
+        "model-assets/image-42a6c2195bba17bf5944.jpeg",
+        "model-assets/image-a70bad164fd2b3a9a8e2.jpeg",
+        "model-assets/image-006defa7c2f91ffd8d08.jpeg",
+        "model-assets/image-383187c8c17f6d54f286.jpeg",
+        "model-assets/image-9969ce97bca5cff51271.jpeg"
+      ],
+      "request_character_estimate": 1306425
+    },
+    {
+      "call_index": 3,
+      "shard_id": "catalog-triage-03-0696556d3d918a8f",
+      "call_key": "c4534b23288e36af642332e165046704359cff8c9401dfca2d3eff1b8a9bffba",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "bae500b67b59a3f619bc39ab80d10af734b53e0cebaff269d9b1830f47ee9f89",
+      "image_ids": [
+        "i_0d43fef9fdf193692873",
+        "i_76dd3b45c03679a8eb56",
+        "i_5e90fe1d0208f6706c9b",
+        "i_69f8f5c3e11164c4735f",
+        "i_d3f5ea75c3857cf488dd",
+        "i_baca21e7358789c14d80"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-d101422de6a1f8880c9f.jpeg",
+        "model-assets/image-651168c6cbb99198969c.jpeg",
+        "model-assets/image-95c5ec41d6f00913a749.jpeg",
+        "model-assets/image-3923b39e869628d178ce.jpeg",
+        "model-assets/image-b739766a34e9215060cd.jpeg",
+        "model-assets/image-98494fc915afbea0ef7a.jpeg"
+      ],
+      "request_character_estimate": 2490609
+    },
+    {
+      "call_index": 4,
+      "shard_id": "catalog-triage-04-d588b12d7547ee22",
+      "call_key": "c767f50a0ca1a8cb13852d5f99387648e8c7cf55f45812520ebb10ca1245b4d1",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "43db43d1a571a448ea428685271ff076885308b94a27d5d2fb7058e3e0eecb8e",
+      "image_ids": [
+        "i_2a30450f5fcecae62559",
+        "i_ebf85f1295326aaf0b01",
+        "i_7c190d100bead685ff8c",
+        "i_804d3016d7e62583970f",
+        "i_5826fc6a308c23bc2045",
+        "i_7522a29414e190013fd1"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-c9ee72a476183357aa2c.jpeg",
+        "model-assets/image-3cf32bab969709ec4d0e.jpeg",
+        "model-assets/image-69f9b6b5416f8c717f67.jpeg",
+        "model-assets/image-a0fb5c3eecef5caf03fa.jpeg",
+        "model-assets/image-012a0e1d376656c6bf89.jpeg",
+        "model-assets/image-9251f50a8c09b0c7b694.jpeg"
+      ],
+      "request_character_estimate": 886509
+    },
+    {
+      "call_index": 5,
+      "shard_id": "catalog-triage-05-8e04361cf5686bc2",
+      "call_key": "655e80ba1415a4e6f663e066c0a16531de6aeee63b2eba1e332058568327faf8",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "e03171168d5a18b10f2d2acf12a1c279c1c942e43314ad4a5255e5b5ae031cf0",
+      "image_ids": [
+        "i_7b1ad16c7be13091f9e8",
+        "i_bcc8a0a3ed350b85d247"
+      ],
+      "model_asset_paths": [
+        "model-assets/image-923148bd786ac2bd5a20.jpeg",
+        "model-assets/image-c2ac4598f44611669289.jpeg"
+      ],
+      "request_character_estimate": 782373
+    }
+  ],
+  "body_sha256": "25d03d0020af76f1420566f001143b7a5b4b545e3b3aa84f322d4e806638fa78"
+}

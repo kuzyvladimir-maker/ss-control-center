@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "phase1-scope-disposition/v3",
+  "scopes": [
+    {
+      "channel": "amazon",
+      "scopeKey": "store1",
+      "storeIndex": 1,
+      "accountId": "A3A7A0RDFUSGBS",
+      "storeId": "store1",
+      "marketplaceId": "ATVPDKIKX0DER",
+      "disposition": "IN_SCOPE",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "ACTIVE_CURRENT_SELLING_ACCOUNT"
+      },
+      "report": {
+        "reportType": "GET_MERCHANT_LISTINGS_ALL_DATA",
+        "reportId": "1078925020660",
+        "capturedAt": "2026-07-26T18:05:28.035Z",
+        "expectedRowCount": 1571,
+        "expectedContentSha256": "b3839047385c010f57dfd08c5bd535f1845ebc1accf9085d2a8fe6a8bb2d5e14"
+      }
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store2",
+      "storeIndex": 2,
+      "accountId": null,
+      "storeId": "store2",
+      "marketplaceId": "ATVPDKIKX0DER",
+      "disposition": "EXCLUDED_OWNER_CONFIRMED",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "OWNER_CONFIRMED_CURRENTLY_BLOCKED"
+      },
+      "report": null
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store3",
+      "storeIndex": 3,
+      "accountId": "A2ON382ZMCWPCT",
+      "storeId": "store3",
+      "marketplaceId": "ATVPDKIKX0DER",
+      "disposition": "IN_SCOPE",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "ACTIVE_CURRENT_SELLING_ACCOUNT"
+      },
+      "report": {
+        "reportType": "GET_MERCHANT_LISTINGS_ALL_DATA",
+        "reportId": "425493020660",
+        "capturedAt": "2026-07-26T18:05:39.579Z",
+        "expectedRowCount": 502,
+        "expectedContentSha256": "51e331edfe22752177d17537202853d52c1e38ce243b152191667ddef33a5842"
+      }
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store4",
+      "storeIndex": 4,
+      "accountId": null,
+      "storeId": "store4",
+      "marketplaceId": "ATVPDKIKX0DER",
+      "disposition": "EXCLUDED_OWNER_CONFIRMED",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "OWNER_CONFIRMED_CURRENTLY_BLOCKED"
+      },
+      "report": null
+    },
+    {
+      "channel": "amazon",
+      "scopeKey": "store5",
+      "storeIndex": 5,
+      "accountId": "A1LCOF57VUVMI4",
+      "storeId": "store5",
+      "marketplaceId": "ATVPDKIKX0DER",
+      "disposition": "EXCLUDED_OWNER_CONFIRMED",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "OWNER_CONFIRMED_CURRENTLY_BLOCKED"
+      },
+      "report": null
+    },
+    {
+      "channel": "walmart",
+      "scopeKey": "store1",
+      "storeIndex": 1,
+      "accountId": "10001624309",
+      "storeId": "store1",
+      "marketplaceId": null,
+      "disposition": "IN_SCOPE",
+      "decision": {
+        "authority": "OWNER",
+        "decisionId": "owner-phase1-store-disposition-20260726T142613Z-g3-v1",
+        "decidedBy": "Vladimir",
+        "decidedAt": "2026-07-26T14:26:13.000Z",
+        "reason": "ACTIVE_CURRENT_SELLING_ACCOUNT"
+      },
+      "report": {
+        "reportType": "ITEM_CATALOG",
+        "reportId": "019f9f34-9bad-7390-b236-341290db319a",
+        "capturedAt": "2026-07-26T17:56:42.033Z",
+        "expectedRowCount": 5236,
+        "expectedContentSha256": "07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1"
+      }
+    }
+  ]
+}

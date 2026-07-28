@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FaisalX-1183 — точное исправление текста</title>
+  <style>
+    :root { color-scheme: light; --ink:#17212b; --muted:#5b6877; --line:#dce4ec; --blue:#0958d9; --bad:#b42318; --badbg:#fff0ee; --good:#157f4a; --goodbg:#e9f7ef; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f3f6f9; color:var(--ink); font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(1200px,calc(100% - 40px)); margin:32px auto 70px; }
+    h1 { font-size:clamp(28px,4vw,44px); line-height:1.08; margin:5px 0 12px; }
+    h2 { margin:0 0 14px; }
+    .muted { color:var(--muted); }
+    .sku { color:var(--blue); font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .notice, section { background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; margin:18px 0; }
+    .notice { border-color:#a9c7f8; background:#edf5ff; }
+    .images { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    figure { margin:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    img { display:block; width:100%; aspect-ratio:1/1; object-fit:contain; background:#fff; }
+    figcaption { padding:10px 12px; border-top:1px solid var(--line); }
+    .diff { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .before,.after { padding:18px; border-radius:12px; }
+    .before { background:var(--badbg); border:1px solid #f4b8b2; }
+    .after { background:var(--goodbg); border:1px solid #a9d9bf; }
+    .before strong { color:var(--bad); }
+    .after strong { color:var(--good); }
+    ul { padding-left:22px; }
+    code { font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    a { color:var(--blue); }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--muted); }
+    tr:last-child td { border-bottom:0; }
+    @media(max-width:800px){ .images,.diff { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="sku">WALMART / STORE 1 / FaisalX-1183 / OWNER REVIEW</div>
+  <h1>Предлагаемое исправление description и bullet</h1>
+  <p class="muted">Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)</p>
+
+  <div class="notice">
+    <strong>Сейчас ничего не опубликовано.</strong> Walmart writes = 0.
+    Предлагается изменить только description и массив bullet points. MAIN уже
+    показывает шесть правильных упаковок и повторно не загружается. Локальный
+    Qualification precheck этого полного текстового target: <strong>PASS</strong>.
+  </div>
+
+  <section>
+    <h2>Свежая live-карточка</h2>
+    <div class="images">
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/c641809540fc8d53ec71cc4eb4290dd09d85e194b461dfbd878d0d8e3b93f48b.png" alt="MAIN с шестью упаковками">
+        <figcaption><strong>MAIN</strong><br>Ровно 6 правильных упаковок</figcaption>
+      </figure>
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpg" alt="Lifestyle">
+        <figcaption><strong>Gallery 1</strong><br>Lifestyle, тот же товар</figcaption>
+      </figure>
+      <figure>
+        <img src="FaisalX-1183-live-inspect-20260725-v3/buyer-snapshots/walmart-buyer-20260725T205356Z-15f897213d62/assets/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpg" alt="Nutrition Facts">
+        <figcaption><strong>Gallery 2</strong><br>Nutrition Facts, 8 servings / 1 bun</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Точный diff: bullet 3</h2>
+    <p>Bullet 1 и bullet 2 остаются без изменений. Меняется только bullet 3.</p>
+    <div class="diff">
+      <div class="before">
+        <strong>ДО — неверно</strong>
+        <p>PEPPERIDGE FARM BAKES IT BETTER: Pepperidge Farm <b>hamburger buns</b>
+          are carefully crafted with quality ingredients</p>
+      </div>
+      <div class="after">
+        <strong>ПРЕДЛАГАЕТСЯ</strong>
+        <p>PACK OF 6: Includes 6 bags of Pepperidge Farm Bakery Classics Top
+          Sliced Butter <b>Hot Dog Buns</b>; each 14 oz bag contains 8 buns</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Точный diff: description</h2>
+    <p>Существующий description сохраняется дословно. В самое начало добавляется
+      только это однозначное предложение:</p>
+    <div class="after">
+      <strong>ДОБАВИТЬ В НАЧАЛО</strong>
+      <p>PACK OF 6: This listing includes six 14 oz bags of Pepperidge Farm
+        Bakery Classics Top Sliced Butter Hot Dog Buns. Each bag contains
+        8 buns, for 48 buns total.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Почему это точный товар</h2>
+    <table>
+      <tr><th>Поле</th><th>Подтверждённое значение</th></tr>
+      <tr><td>Бренд / товар</td><td>Pepperidge Farm Bakery Classics Top Sliced Butter Hot Dog Buns</td></tr>
+      <tr><td>Одна упаковка</td><td>14 oz, 8 hot dog buns, UPC 014100050162</td></tr>
+      <tr><td>Этот SKU</td><td>6 одинаковых упаковок, всего 48 buns</td></tr>
+      <tr><td>Неправильный legacy donor</td><td>Chessmen Butter Cookies — запрещён</td></tr>
+    </table>
+    <p>
+      Источники:
+      <a href="https://www.pepperidgefarm.com/product/butter-hot-dog-buns-top-sliced/">Pepperidge Farm</a>,
+      <a href="https://www.target.com/p/-/A-54569726">Target exact single unit</a>,
+      <a href="https://www.walmart.com/ip/575031533">Walmart base product</a>,
+      <a href="https://www.walmart.com/ip/8419413379">Walmart live Pack of 6</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Что точно не меняется</h2>
+    <p>Title, attributes, MAIN, gallery, price, inventory,
+      identifiers, published status и lifecycle status.</p>
+    <p><strong>После отдельного подтверждения</strong> сначала будет активирована
+      эта exact Product Truth в общем каталоге, затем frozen engine соберёт fresh
+      Walmart spec и one-SKU permit. Только после этого возможна одна публикация,
+      propagation reread и Qualification.</p>
+  </section>
+</main>
+</body>
+</html>

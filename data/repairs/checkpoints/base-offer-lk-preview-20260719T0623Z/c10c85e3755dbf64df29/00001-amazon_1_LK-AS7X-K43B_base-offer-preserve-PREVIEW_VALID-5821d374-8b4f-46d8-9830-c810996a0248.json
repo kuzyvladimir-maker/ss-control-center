@@ -1,0 +1,21 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-live-checkpoint/v1",
+  "immutable": true,
+  "event_id": "5821d374-8b4f-46d8-9830-c810996a0248",
+  "execution_binding_sha256": "c10c85e3755dbf64df29e9818007fed069094a4ab09db1ed6c21e43d2ff61da2",
+  "sequence": 1,
+  "previous_event_sha256": null,
+  "created_at": "2026-07-19T06:22:48.937Z",
+  "action_id": "amazon:1:LK-AS7X-K43B:base-offer-preserve",
+  "sku": "LK-AS7X-K43B",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "actual_patch_sha256": "c00d9b42ee1510961c41691faf090cab4957e28231d4c8cb4e16faa4ceb6e419",
+    "preview_patch_sha256": "392d9d2d7f91d0e3d9523fccc3696b688bfed48fe11f8b2e6d0ff56b74a1dec2",
+    "status": "VALID",
+    "submission_id": "71383d801af844789ca29de6937bc6b5",
+    "issues": [],
+    "response_sha256": "9ca96b2644539b870da540cf8d91dcfa7f494134cf90187f807599c17c42c97d"
+  },
+  "body_sha256": "693dd351d8d30476afcb456dd46695fe0d7ccbcab1cfd1bcdb7a9e81e5a512f0"
+}

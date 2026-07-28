@@ -1,0 +1,88 @@
+{
+  "schema_version": "walmart-packaging-artwork-contact-sheet/1.0.0",
+  "source_plan_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/candidates/20260726T180813Z-ritz-pb-review-doctor.plan/plan.json",
+  "source_plan_sha256": "d24f00aacf998e3ddd04a0a9869b92874b6e0edf613e91bc6136d1c488791727",
+  "donor_product_id": "4bc40420-74eb-442c-acd9-e59bc91bb2f5",
+  "canonical_variant_id": "cpv1:4a2c115ceb590a71959b8e13ee8bbd021a038126c8897ff2d49af60d8e78f73f",
+  "product_title": "RITZ Bits Peanut Butter Sandwich Crackers Lunch Snacks - 8.8oz",
+  "main_image_url": "https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e",
+  "images": [
+    {
+      "index": 1,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_970327d5-bed0-448c-8b65-983236d5094e",
+      "downloaded_asset_sha256": "540c0d956156575f3edf2968635737e8ed821c1f9e341ac1551e6cd8adff700a"
+    },
+    {
+      "index": 2,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_9024bf68-2565-43e4-850c-f52952358485",
+      "downloaded_asset_sha256": "22b237917607ce14f51e8a51e30793e27b89cfce53036dca2190ab2b220e37c1"
+    },
+    {
+      "index": 3,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_7816b395-eb83-4295-b2c2-0f389fefbbe1",
+      "downloaded_asset_sha256": "d22c0b3495cd5e69fdb4706e3537a468ceb83c0734b11478745b3328d5c47e91"
+    },
+    {
+      "index": 4,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_09c0c1f6-ec26-45d2-aace-b30e09c981fe",
+      "downloaded_asset_sha256": "401479ef1542fd1b6fd310760dc54370cb03e62e94119dbe3926ad1c8e2cf61d"
+    },
+    {
+      "index": 5,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_f33a4497-976c-44f8-badc-99c7a56e2fcd",
+      "downloaded_asset_sha256": "6f5dbde5bdf58f6fc06fb10627248258f9f90ae8e7f80df278c58a7fb52be7d8"
+    },
+    {
+      "index": 6,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_adb8943c-eb63-4c21-91d3-f5590e301352",
+      "downloaded_asset_sha256": "bd4d2d9494e3d4961488e434a0a27663fcee6ca688c05feb05d5e464f00d8b84"
+    },
+    {
+      "index": 7,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_3601e990-afa9-45f5-ae78-0aaffe126c26",
+      "downloaded_asset_sha256": "529399686b7f77243cd9b2279fc41ce0d9541fbd69011fc67cff4894272516c6"
+    },
+    {
+      "index": 8,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ddf139ba-0661-4c5d-baf9-fb4443a48eda",
+      "downloaded_asset_sha256": "28b6599695932df62b132e772ab400767ba7d9688349e7c23e7107c39e0237f6"
+    },
+    {
+      "index": 9,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_441e9121-ef29-4ac7-8b73-6565a2dc4eec",
+      "downloaded_asset_sha256": "d4f14a49f8e794e89076ad95178ab2a391ce812d7cf9c5b921685b57cb882274"
+    },
+    {
+      "index": 10,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_6173a127-8cf6-4d12-9e6f-20494d28b6ab",
+      "downloaded_asset_sha256": "3f328d4beef8938d32f2f8dc10ae4de41860751843dd0514aaf216999aa24db7"
+    },
+    {
+      "index": 11,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_ef7790b7-2542-4c3e-a016-0f06899d838d",
+      "downloaded_asset_sha256": "211a513c8bc033458172f495b3e6e8319053fc3ba7d82c5647994f974e2671e0"
+    },
+    {
+      "index": 12,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_97809998-a0fd-4d43-9915-cdfca2e890f1",
+      "downloaded_asset_sha256": "d84cbebc9db95a1c733fbe7aa341784b2979a35697ce1a78d5946376719a273f"
+    },
+    {
+      "index": 13,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_045dd194-4cee-4bcf-b02e-d20e43a006d4",
+      "downloaded_asset_sha256": "aefd11cefa0309e8fba21081d0d7672eec03eb23591390ac1b2662f849396d35"
+    },
+    {
+      "index": 14,
+      "url": "https://target.scene7.com/is/image/Target/GUEST_35606943-5b2c-42f2-8ef4-2e530a26959b",
+      "downloaded_asset_sha256": "bb81f795a59fedfc6a38a466836b16de86bb291ac002801687cc8f42b6bd6c1b"
+    }
+  ],
+  "contact_sheet_sha256": "13fd409aaa189b6a50edbf7057807a32db0cde888658de49549622e166d2509f",
+  "external_effects": {
+    "database_writes": 0,
+    "marketplace_writes": 0,
+    "provider_calls": 0,
+    "upc_reserved": false
+  }
+}

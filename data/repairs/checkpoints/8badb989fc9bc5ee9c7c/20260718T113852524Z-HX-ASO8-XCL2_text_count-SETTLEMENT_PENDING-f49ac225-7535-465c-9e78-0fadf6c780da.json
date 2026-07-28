@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f49ac225-7535-465c-9e78-0fadf6c780da",
+  "created_at": "2026-07-18T11:38:52.524Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HX-ASO8-XCL2:text_count",
+  "sku": "HX-ASO8-XCL2",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "a7819f5a-2857-41b3-91fe-34f6b8db1eff",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "cdb9d56435a8d8078f78fa331a2edf420804b9ea4ca511af07ed8ef041c7aaf8",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "6c7d9904a63545a8159ce1628d2dd39dd08fcfba226ed8ab9eb575b994aa4a14"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "d712ec0fd7bc2b0a84e7bdfd864e822a314a1e051d4dbe680606e3890a50f3bd"
+}

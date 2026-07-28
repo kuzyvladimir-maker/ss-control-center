@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "fa7c7c2b-6203-4c08-ad5a-84fa6f3e7f7d",
+  "created_at": "2026-07-19T03:12:28.799Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "BK-AS5Z-8UY5:media",
+  "sku": "BK-AS5Z-8UY5",
+  "kind": "MEDIA",
+  "status": "FAILED",
+  "detail": {
+    "error": "Physical Amazon account does not match launch authorization for BK-AS5Z-8UY5:media. No Amazon call was made."
+  },
+  "sha256": "ef93881b038496b7075968b377d1cddaadaba3efbee35427cdb78026ed155d66"
+}

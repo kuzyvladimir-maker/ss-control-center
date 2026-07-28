@@ -1,0 +1,43 @@
+{
+  "schema_version": "walmart-listing-integrity-catalog-triage-execution/v1",
+  "triage_plan_file_sha256": "36d039508cdc23fc975eef3226c006a92f2a6620437c7893cdcddd5171d51056",
+  "triage_plan_body_sha256": "9b3f19cee76d56e51babc0346d07a999bdc4a55241df47c4e53006ff008d3d15",
+  "partition_id": "partition-000000-bc7ef33d43bae256",
+  "started_at": "2026-07-23T02:58:54.480Z",
+  "completed_at": "2026-07-23T03:01:45.024Z",
+  "worker_health_file_sha256": "0811aad13b01004088c95bdbbaa6aa22635cf5944e4d6a027f2db33bab272486",
+  "calls": [
+    {
+      "call_index": 0,
+      "shard_id": "catalog-triage-00-102e9bf587f29f1c",
+      "call_key": "8ccf218b3564afbb8e68f865b33f5d7b9f0846769bd493a2846a906e548c7de5",
+      "request_file_sha256": "98ad1368a7194e8376a641a7ef14e5fef17d3f54446fdb7f1e0388f3a26dcfc1",
+      "response_file_sha256": "1985bc5d4365474d75c1a40c26d5fb63848d9a24c49cc566a8e892ccc2999345",
+      "worker_receipt_key_id": "walmart-listing-vision-aaf60dc3afc25bba",
+      "worker_receipt_result_sha256": "bd8063a61d91616f2261921a49ab5051fcd64f70470aed2067623eb64031ea5f",
+      "observations": 4,
+      "subscription_calls_consumed": 1,
+      "transport_attempts": 1,
+      "retries": 0
+    }
+  ],
+  "report_file_sha256": "971aaaee67fcfe5440dc34f635c287210e681464d40b59bf94a79bf6d621d77c",
+  "outcome": {
+    "listings": 4,
+    "suspected_bad": 0,
+    "review_required": 0,
+    "no_defect_observed_not_pass": 4
+  },
+  "execution": {
+    "subscription_calls_consumed": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "paid_api_calls": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_reads": 0,
+    "walmart_writes": 0
+  },
+  "body_sha256": "a83cb076590525c1a55e6b467a1d9e0cc223cde5cfc3537327251de0c12232ef"
+}

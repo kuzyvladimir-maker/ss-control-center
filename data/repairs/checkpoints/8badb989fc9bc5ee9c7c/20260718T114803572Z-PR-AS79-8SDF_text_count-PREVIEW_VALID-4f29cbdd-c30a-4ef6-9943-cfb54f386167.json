@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4f29cbdd-c30a-4ef6-9943-cfb54f386167",
+  "created_at": "2026-07-18T11:48:03.572Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PR-AS79-8SDF:text_count",
+  "sku": "PR-AS79-8SDF",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "f104563cf668d068c6467afd18e9c68efc00021e161417837cdb99d9ae64e82b",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "cbc9a50b09f04b77a479ad6bfb781b46",
+    "issues": []
+  },
+  "sha256": "a711e13be1a2b7ae17692f6fd7b1f42fbc8721f75fed6fd0c7c791e58e6564f6"
+}

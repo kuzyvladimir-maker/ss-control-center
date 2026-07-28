@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d303b428-155f-4187-b4cf-526af31b1aa6",
+  "created_at": "2026-07-18T10:24:32.910Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PJ-ASAX-6LTG:text_count",
+  "sku": "PJ-ASAX-6LTG",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "dbd406b20e75f0231a4947e61063038f686d0ef7949df001e7872ebca3cbe997",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "d0d6bec376be41c4bb5b43bb201f60d4",
+    "issues": []
+  },
+  "sha256": "6896a57dc30bb97487de3dcfa3bad632c2e35e1ed9651a6627c79ac56b878dc9"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "bfb6eb66-b2a1-4a88-abff-0fa9e4770fc3",
+  "created_at": "2026-07-18T10:17:33.528Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JY-ASPW-LB4K:text_count",
+  "sku": "JY-ASPW-LB4K",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "397c881eba829410a294df382cdd13b5cf14c0f2fdbc5391195d169d61dedba5",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "8448ea25a19244c19f729cbba697cbcd",
+    "issues": []
+  },
+  "sha256": "1c1e892c8cee17faed65f71405d074a67e3099d619fd40781114f6e174a732c9"
+}

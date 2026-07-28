@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4bdb650b-09ab-4d9a-bc7b-3b4dc1014f67",
+  "created_at": "2026-07-18T10:11:49.944Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BH-ASTN-S4XJ:media",
+  "sku": "BH-ASTN-S4XJ",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f25db9a7caf8fe42f983ff0ae30fb38eaafd2c193e37ef5fb4b452bd46aa86a2",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "1c89af6af66a42f4ad123afc0ff7b5a5",
+    "issues": []
+  },
+  "sha256": "9f873be3b53d85230f49dc912c206724431cca8457223dcc7b9f15f6a9d148bf"
+}

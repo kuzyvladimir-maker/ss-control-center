@@ -1,0 +1,232 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_77be5ea00fad4e6e8c17",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "HAMBURGER BUNS",
+      "visible_variant_text": "SOFT WHITE",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 4,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 SOFT WHITE",
+        "HAMBURGER BUNS"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "BAKERY CLASSICS",
+        "8 SOFT WHITE",
+        "HAMBURGER BUNS"
+      ],
+      "flags": [
+        "4 identical bags shown in 2x2 tiled layout; may indicate multi-pack quantity but no explicit pack-count text visible"
+      ]
+    },
+    {
+      "image_id": "i_349418a52da69cfc1eae",
+      "visual_role": "single_product_front",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "HAMBURGER BUNS",
+      "visible_variant_text": "SOFT WHITE",
+      "visible_size_texts": [
+        "14.5 OZ"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 SOFT WHITE",
+        "HAMBURGER BUNS"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "BAKERY CLASSICS",
+        "8 SOFT WHITE",
+        "HAMBURGER BUNS",
+        "14.5 OZ"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_708d9b1d33d45f3b8d6c",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "lifestyle",
+      "multiple_distinct_products": "no",
+      "readable_identity": "partial",
+      "evidence": [
+        "PEPPERIDGE FARM"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_e6ec6d9b888fe8de0fe9",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "lifestyle",
+      "multiple_distinct_products": "unknown",
+      "readable_identity": "partial",
+      "evidence": [
+        "PEPPERIDGE FARM"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_587c549c08efdd840d31",
+      "visual_role": "mixed_products",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "SESAME",
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 2,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 SESAME",
+        "8 TOP SLICED SOFT WHITE"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "some",
+      "background": "lifestyle",
+      "multiple_distinct_products": "yes",
+      "readable_identity": "partial",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "8 SESAME",
+        "8 TOP SLICED SOFT WHITE"
+      ],
+      "flags": [
+        "two distinct Pepperidge Farm product varieties shown: Sesame and Top Sliced Soft White"
+      ]
+    },
+    {
+      "image_id": "i_c3b621ad2386e9ba1873",
+      "visual_role": "back",
+      "visible_brand_text": "PEPPERIDGE FARM",
+      "visible_product_text": "Hamburger Buns",
+      "visible_variant_text": "SOFT WHITE",
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "none",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "PEPPERIDGE FARM",
+        "SOFT WHITE",
+        "Hamburger Buns"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_5d694c9be47c20e4ddbf",
+      "visual_role": "back",
+      "visible_brand_text": "WHIT EZ",
+      "visible_product_text": "Bun",
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 1,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "clear plastic bag of buns"
+      ],
+      "inner_contents_claims": [
+        "1 Bun 31g (serving size on Nutrition Facts)"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [
+        "approximately 8 round buns visible through bag"
+      ],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "none",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "partial",
+      "evidence": [
+        "Nutrition Facts panel visible on back of bag",
+        "Serving Size 1 Bun 31g",
+        "Calories 140",
+        "Purple twist ties at top with partial text 'WHIT EZ'",
+        "Round buns visible through clear plastic bag"
+      ],
+      "flags": [
+        "brand_text_partially_obscured_on_twist_ties"
+      ]
+    }
+  ]
+}

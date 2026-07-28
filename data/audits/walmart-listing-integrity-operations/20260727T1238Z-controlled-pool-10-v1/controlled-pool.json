@@ -1,0 +1,384 @@
+{
+  "schemaVersion": "walmart-listing-integrity-controlled-pool/v1",
+  "createdAt": "2026-07-27T12:33:24.615Z",
+  "storeIndex": 1,
+  "source": {
+    "censusId": "census-6dba7e38665562337cff",
+    "censusBodySha256": "6dba7e38665562337cff8f76a424f8f5beb61d00ee0a4ed5f8fab1693b1398de",
+    "censusFileSha256": "aa8ca8c06253579b5db7c0c5796517e49d446442f7d33d3e044eac3954260d9a",
+    "scanPlanId": "scan-plan-91ae7bd76b4c8b74a2b1",
+    "scanPlanBodySha256": "91ae7bd76b4c8b74a2b12f6e36ca7bf2d6b036cc3f621f2d55ba68070ddf8b7b",
+    "scanPlanFileSha256": "8d1b7c1da72888e74d779c91877dd6af4eb99cdc6c55708d5c95a1bb253a3700"
+  },
+  "policy": {
+    "mode": "READ_ONLY_CONTROLLED_POOL",
+    "requestedSize": 10,
+    "strictSequence": true,
+    "maxApplyInFlight": 1,
+    "automaticRetryAllowed": false,
+    "unknownPostReplayAllowed": false,
+    "walmartWritesAllowed": false,
+    "modelCallsAllowed": false,
+    "paidProviderCallsAllowed": false
+  },
+  "completedListingKeys": [
+    "walmart:1:FaisalX-1181",
+    "walmart:1:FaisalX-1183"
+  ],
+  "items": [
+    {
+      "listingKey": "walmart:1:FaisalX-1148",
+      "storeIndex": 1,
+      "sku": "FaisalX-1148",
+      "itemId": "478W7UD0DCQ9",
+      "title": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 2)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [
+        "CATALOG_TITLE_VS_SENT_TITLE_OUTER_COUNT_CONFLICT",
+        "TITLE_VS_SENT_CONTENT_OUTER_COUNT_CONFLICT"
+      ],
+      "reasonCodes": [
+        "DETERMINISTIC_CONFLICT_PRESENT",
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 0
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1633",
+      "storeIndex": 1,
+      "sku": "FaisalX-1633",
+      "itemId": "1OYN8ZYPZ7FB",
+      "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 7,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:36.000Z",
+        "units30": 7,
+        "sales30": 373.38,
+        "orders30": 6,
+        "returns30": 0,
+        "units90": 18,
+        "sales90": 960.12,
+        "orders90": 15,
+        "returns90": 1,
+        "returnRate90": 0.05555555555555555
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 1
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1220",
+      "storeIndex": 1,
+      "sku": "FaisalX-1220",
+      "itemId": "5TWJL0OXMVQG",
+      "title": "Sara Lee Artesano Bakery Bread Plain Sausage Rolls, 6 count, Soft Hot Dog Buns, 15 oz Bag (Pack of 2)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:51.000Z",
+        "units30": 20,
+        "sales30": 245.8,
+        "orders30": 18,
+        "returns30": 1,
+        "units90": 22,
+        "sales90": 270.38,
+        "orders90": 19,
+        "returns90": 1,
+        "returnRate90": 0.045454545454545456
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 2
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-2695",
+      "storeIndex": 1,
+      "sku": "RizwanX-2695",
+      "itemId": "4KVS0KJBV3U8",
+      "title": "Del Monte Canned Peach Chunks, 2 Pack, 15.25 oz",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:34.000Z",
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 29,
+        "sales90": 359.89,
+        "orders90": 24,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 3
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1143",
+      "storeIndex": 1,
+      "sku": "FaisalX-1143",
+      "itemId": "5UJ5P5WP5ASG",
+      "title": "Pepperidge Farm Very Thin 100% Whole Wheat Bread, 16 oz (Pack of 4)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 4,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:43.000Z",
+        "units30": 12,
+        "sales30": 421.08,
+        "orders30": 12,
+        "returns30": 0,
+        "units90": 23,
+        "sales90": 807.07,
+        "orders90": 21,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 4
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1241",
+      "storeIndex": 1,
+      "sku": "FaisalX-1241",
+      "itemId": "6BZ1JU8QBY1Y",
+      "title": "Arnold Keto Bread Loaf, Low Carb Sandwich Bread, 20 oz (Pack of 2)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:35.000Z",
+        "units30": 10,
+        "sales30": 202.4,
+        "orders30": 10,
+        "returns30": 0,
+        "units90": 22,
+        "sales90": 445.28,
+        "orders90": 19,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 5
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2554",
+      "storeIndex": 1,
+      "sku": "FaisalX-2554",
+      "itemId": "5RBDL4W1W73B",
+      "title": "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can, (Pack of 6)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:36.000Z",
+        "units30": 1,
+        "sales30": 38.53,
+        "orders30": 1,
+        "returns30": 0,
+        "units90": 18,
+        "sales90": 693.54,
+        "orders90": 12,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 6
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3330",
+      "storeIndex": 1,
+      "sku": "FaisalX-3330",
+      "itemId": "4PS6ZW2X8KYF",
+      "title": "Maruchan Instant Lunch Hot & Spicy Chicken Flavor Instant Lunch, 2.25 oz (Pack of 10)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 10,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:39.000Z",
+        "units30": 4,
+        "sales30": 48.96,
+        "orders30": 4,
+        "returns30": 0,
+        "units90": 18,
+        "sales90": 220.32,
+        "orders90": 18,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 7
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1139",
+      "storeIndex": 1,
+      "sku": "FaisalX-1139",
+      "itemId": "4Q48YJPIVZDZ",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 2)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:35.000Z",
+        "units30": 10,
+        "sales30": 168.6,
+        "orders30": 9,
+        "returns30": 0,
+        "units90": 17,
+        "sales90": 286.62,
+        "orders90": 16,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 8
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1121",
+      "storeIndex": 1,
+      "sku": "FaisalX-1121",
+      "itemId": "5GG3AFGCQEYA",
+      "title": "Nature’s Own Life Honey Wheat, 40 Calories per Slice Keto Friendly Sandwich Bread, 16 oz (Pack of 2)",
+      "stage": "INGESTED",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:39.000Z",
+        "units30": 7,
+        "sales30": 86.03,
+        "orders30": 7,
+        "returns30": 0,
+        "units90": 17,
+        "sales90": 208.93,
+        "orders90": 15,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 9
+    }
+  ],
+  "externalEffects": {
+    "databaseReads": 1,
+    "databaseWrites": 0,
+    "walmartReads": 0,
+    "walmartWrites": 0,
+    "modelCalls": 0,
+    "paidProviderCalls": 0
+  },
+  "poolId": "controlled-pool-e52405490b8ea6604dfd",
+  "bodySha256": "e52405490b8ea6604dfd8679d6e030c15ab2414b590610228ccdba16125d5e4c"
+}

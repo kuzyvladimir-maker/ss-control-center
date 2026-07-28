@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "17da0702-036f-41e0-9cb1-e81fba978152",
+  "created_at": "2026-07-18T10:28:57.318Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SS-AS9K-U9TV:text_count",
+  "sku": "SS-AS9K-U9TV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "46c750c8235c25e0a8375729763716d08b291e1ac820b8c8262dce3dce32e283",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "a5d5f746af784c1d97614ed4bbdb6465",
+    "issues": []
+  },
+  "sha256": "9b4085d7f6b326931f0b4c2ee895a84f93223cabfa885e66a2c9c148ed6f62b1"
+}

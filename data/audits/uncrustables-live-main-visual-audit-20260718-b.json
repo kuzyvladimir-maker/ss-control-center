@@ -1,0 +1,2993 @@
+{
+  "schema_version": "uncrustables-live-main-visual-audit/v1.0",
+  "audit_id": "ULMVA-20260718-B",
+  "status": "COMPLETE",
+  "reviewed_at": "2026-07-18T03:52:03Z",
+  "reviewer": {
+    "id": "main_visual_audit_b",
+    "method": "Independent human visual review of every scoped contact sheet at original resolution, with original 2048×2048 assets opened for doubtful or information-dense cells."
+  },
+  "source_manifest": {
+    "path": "data/audits/uncrustables-live-main-fetch-20260718-v1/manifest.json",
+    "sha256": "47c2bbbc0c0f7c1cdfcbc52363012b527d3611755d90536a2f80a06ffe2d9f05",
+    "body_sha256_declared": "496edff7b110ce9341a5325bb2e51678e90cad582a1d132d6c50a8dd753027db",
+    "run_id": "ULMC-20260718T034106547Z-46a80e727880",
+    "immutable": true
+  },
+  "source_ledger": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "schema_version": "uncrustables-ledger/v1.2",
+    "audit_id": "ULR-20260717T232140568Z",
+    "marketplace_observed_at": "2026-07-17T22:43:12.080Z",
+    "reviewed_overrides": {
+      "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/uncrustables-reviewed-overrides-20260717.json",
+      "sha256": "170250cb1761a8dbf9a10d18a83a4c38ca9758ec3294bb1341c2a23106e02238",
+      "applied_total_overrides": [
+        {
+          "sku": "KP-ASYC-RN84",
+          "ledger_canonical_total_units": 90,
+          "reviewed_total_units": 90,
+          "confidence": "HIGH",
+          "rationale": "The listing is a 90-count frozen sandwich SKU, but Amazon auto-classified it as PASTRY, whose current unit_count schema rejects Count. A non-mutating GROCERY preview accepted 90 Count and number_of_items=90 with no issues. The ounce fallback is retained only for a failed post-GET product-type or issue verification."
+        },
+        {
+          "sku": "SZ-ASPI-JFAT",
+          "ledger_canonical_total_units": 6,
+          "reviewed_total_units": 24,
+          "confidence": "HIGH",
+          "rationale": "The intended sellable quantity is 24 individual sandwiches. The MasterBundle pack_count=6 and legacy draft_components qty=6 describe stale retail-carton arithmetic and conflict with the selected recipe and live customer-facing unit identity."
+        },
+        {
+          "sku": "VN-AS1A-D572",
+          "ledger_canonical_total_units": 45,
+          "reviewed_total_units": 45,
+          "confidence": "HIGH",
+          "rationale": "This SKU contains 45 individual sandwiches. The legacy title incorrectly treated a 4-count retail carton as the sellable unit and multiplied it by 45, producing a false 180-sandwich unit_count."
+        }
+      ]
+    }
+  },
+  "scope": {
+    "contact_sheet_numbers": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "ordinal_from": 85,
+    "ordinal_to": 164,
+    "rows": 80,
+    "marketplace_main_images": "Exact immutable files fetched from each scoped listing MAIN URL."
+  },
+  "classification_contract": {
+    "KEEP": "No concrete visual defect found against the audited recipe and approved MAIN-image family. KEEP is not cryptographic proof of donor provenance.",
+    "REGENERATE": "At least one concrete, image-visible defect requires replacement before the listing can be considered conformant.",
+    "NEEDS_EVIDENCE": "Pixels are insufficient for a defensible keep/regenerate decision. No scoped row remained in this class after original-asset review."
+  },
+  "acceptance_criteria": [
+    "White EPS cooler photographed at a clean three-quarter angle on a pure white background.",
+    "Ornate green Salutem emblem plus black SALUTEM SOLUTIONS wordmark/slogan on the cooler.",
+    "Blue-header frozen gel packs in the established design; four are preferred, but count variance alone is not a rejection.",
+    "Every ledger recipe component is visibly represented by genuine, exact Smucker's Uncrustables product identity.",
+    "No invented/lookalike product, wrong variant, missing component, extra flavor, or unsupported package configuration.",
+    "No retailer-exclusive badge or retailer mark in the reusable Amazon MAIN scene.",
+    "Products and gel packs appear physically seated/packed, without implausible floating geometry."
+  ],
+  "interpretation_notes": [
+    "Current “Reduced Sugar ... on Wheat” packaging is treated as the genuine current identity for ledger donors named “Whole Wheat”; that wording change alone is not a defect.",
+    "Red, White & Berry, Bright-Eyed Berry, Up & Apple, Burstin' Blueberry, and Beamin' Berry Blend are genuine named products when their manufacturer identity and exact flavor match.",
+    "Generic wrapper/carton backs without readable genuine Smucker's/Uncrustables and exact flavor identity are rejected when they cannot prove the specified recipe component.",
+    "Exactly four gel packs remains the preferred regeneration target; otherwise-conforming legacy images were not rejected solely for a different visible gel-pack count.",
+    "Textual quantity is checked against effective_total_units and visible package arithmetic where legible; product-specific package formats must themselves be genuine."
+  ],
+  "manufacturer_references": [
+    {
+      "purpose": "Whole Wheat strawberry/current Reduced Sugar on Wheat identity",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-strawberry-jam-on-wheat"
+    },
+    {
+      "purpose": "Whole Wheat grape/current Reduced Sugar on Wheat identity",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-grape-jelly-on-wheat"
+    },
+    {
+      "purpose": "Red, White & Berry genuine mixed-berry identity",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-mixed-berry-rwb"
+    },
+    {
+      "purpose": "Beamin' Berry Blend genuine product and 8-count package evidence",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-mixed-berry-protein"
+    },
+    {
+      "purpose": "Raspberry genuine product and current package sizes",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-raspberry"
+    },
+    {
+      "purpose": "Peanut butter & chocolate genuine retailer-exclusive product identity",
+      "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-chocolate"
+    },
+    {
+      "purpose": "Current manufacturer product-name cross-check",
+      "url": "https://www.smuckersuncrustables.com/sandwiches"
+    }
+  ],
+  "summary": {
+    "reviewed": 80,
+    "KEEP": 62,
+    "REGENERATE": 18,
+    "NEEDS_EVIDENCE": 0
+  },
+  "rows": [
+    {
+      "ordinal": 85,
+      "ledger_row_index": 85,
+      "sku": "PU-AS3D-SA5Z",
+      "asin": "B0H83H71F8",
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, Individually Wrapped, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/817phI3h+lL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/085-PU-AS3D-SA5Z-B0H83H71F8-3332a98d8963.jpg",
+        "asset_sha256": "3332a98d8963d6662a8e38946193c233f9bf232b15f3954fc08024091ee4b703",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 86,
+      "ledger_row_index": 87,
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz Each, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81VQ7HwlXbL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/086-PW-ASDZ-CSR8-B0H839TPC5-45458bffece4.jpg",
+        "asset_sha256": "45458bffece45980c5e290511a0d3993cf7d934699d74a63e0bd84d14635a1e1",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 87,
+      "ledger_row_index": 88,
+      "sku": "PY-ASBM-WX6W",
+      "asin": "B0H82B7GV5",
+      "title": "Smucker's Uncrustables Whole Wheat Peanut Butter and Grape Jelly Frozen Sandwiches, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81rJ8hY94rL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/087-PY-ASBM-WX6W-B0H82B7GV5-622776a2516d.jpg",
+        "asset_sha256": "622776a2516db99ed95a918fa5bbe3b53f6351d57d529e763de7212eef8dbdd7",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The pictured Reduced Sugar Peanut Butter & Grape Spread “on wheat” packaging is the current genuine identity corresponding to the ledger's Whole Wheat grape donor. Recipe, shipping scene, and brand treatment visually conform."
+    },
+    {
+      "ordinal": 88,
+      "ledger_row_index": 89,
+      "sku": "QC-ASX2-RHPA",
+      "asin": "B0H83TQPJB",
+      "title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81q7CWTu60L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/088-QC-ASX2-RHPA-B0H83TQPJB-d306716faf10.jpg",
+        "asset_sha256": "d306716faf104a288f354987f88355504e1b2cf85e82246b18dd439716242802",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The pictured Reduced Sugar Peanut Butter & Grape Spread “on wheat” packaging is the current genuine identity corresponding to the ledger's Whole Wheat grape donor. Recipe, shipping scene, and brand treatment visually conform."
+    },
+    {
+      "ordinal": 89,
+      "ledger_row_index": 90,
+      "sku": "QE-ASEQ-4YV5",
+      "asin": "B0H82CBLRM",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81duEBhEhEL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/089-QE-ASEQ-4YV5-B0H82CBLRM-21b8446d8788.jpg",
+        "asset_sha256": "21b8446d87886aab32356a816061014cdfd3ecd72d264f0126b772cbfaa85d0d",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 90,
+      "ledger_row_index": 91,
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81kpS7mnUJL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/090-QP-ASAD-PTLX-B0H85DG2JQ-c7197b56b2bf.jpg",
+        "asset_sha256": "c7197b56b2bfba023856875c4661041eca8f53136edb0b5be4be800e951debac",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Reduced Sugar/On Wheat peanut butter & strawberry plus Up & Apple. The image instead shows classic red strawberry packaging plus Up & Apple, so the required wheat/reduced-sugar strawberry donor is replaced by the wrong variant."
+    },
+    {
+      "ordinal": 91,
+      "ledger_row_index": 92,
+      "sku": "QW-ASRZ-SYKC",
+      "asin": "B0H83MDDBL",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81k+rrTstML.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/091-QW-ASRZ-SYKC-B0H83MDDBL-eea2b2355a2a.jpg",
+        "asset_sha256": "eea2b2355a2a11fa55a35051742bea4e37d644072beb728117eb28b5e0208b97",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 92,
+      "ledger_row_index": 93,
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 2.8 oz Each, 12g Protein, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81LTM8WYDfL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/092-QX-AS89-H8YC-B0H82RQ226-efe39efc6ba5.jpg",
+        "asset_sha256": "efe39efc6ba505b24bfc2a142a59ada3be5cb54ee8caae5611cf4f607dab2425",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 93,
+      "ledger_row_index": 94,
+      "sku": "QX-ASS6-4T4F",
+      "asin": "B0H83B6TYP",
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, Individually Wrapped, 90 Count",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/814YTK++MfL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/093-QX-ASS6-4T4F-B0H83B6TYP-84507ce6a672.jpg",
+        "asset_sha256": "84507ce6a672937db639e49f632d24979b8e6d0142852cafad42e20952a88b7a",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 94,
+      "ledger_row_index": 95,
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Apple Cinnamon Jelly & Strawberry Jam, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81scF7FEXpL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/094-RB-ASVO-GYCY-B0H859N8VM-7bb8529b296b.jpg",
+        "asset_sha256": "7bb8529b296b574da1ea71c84d1b935875e3d707e0959a30dd1cac7435c06240",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 95,
+      "ledger_row_index": 96,
+      "sku": "RH-ASWA-ER34",
+      "asin": "B0H85JR6WN",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, 24 Count - Peanut Butter & Honey Spread and Chocolate Flavored Hazelnut Spread",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81a-PFkhhSL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/095-RH-ASWA-ER34-B0H85JR6WN-a5aea0c3ada4.jpg",
+        "asset_sha256": "a5aea0c3ada43ebd9ad4dadb8eac51bef22425cd8a7c8c3fc2cc99e70c3ffac5",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 96,
+      "ledger_row_index": 97,
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/817gc6XlEmL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/096-RL-AS64-Q8QX-B0H82LZLM2-016d2b0daf4e.jpg",
+        "asset_sha256": "016d2b0daf4efad42eb3af55230da484414cabc9cab39a8d55561438b94d4b5a",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 8,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-08.png",
+          "sha256": "a037763c0dd471687be65b6962456a558d7c5632555c7702681b04557096efa7",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PACKAGE_CONFIGURATION"
+      ],
+      "reviewer_notes": "The image depicts two Beamin' Berry Blend 15-count cartons to reach 30 units. The audited donor is the genuine 22.4 oz/8-count product, and current manufacturer evidence supports the 8-count carton—not this generated 15-count carton—so the package configuration is fabricated even though the flavor name is real."
+    },
+    {
+      "ordinal": 97,
+      "ledger_row_index": 98,
+      "sku": "RM-ASCV-DVA5",
+      "asin": "B0H822CVVL",
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81+qyFdswcL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/097-RM-ASCV-DVA5-B0H822CVVL-fc60c412c32a.jpg",
+        "asset_sha256": "fc60c412c32ab812203943b58240e1b5348f80f6e87b7cb741f8a95a0cb2eb1f",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "RETAILER_MARK_FREE"
+      ],
+      "reviewer_notes": "The product is genuine, but its carton visibly carries a retailer-exclusive “Only at Walmart” badge. Retailer marks are disallowed in the reusable Amazon MAIN scene."
+    },
+    {
+      "ordinal": 98,
+      "ledger_row_index": 99,
+      "sku": "RN-ASLP-VH3X",
+      "asin": "B0H82JYZQH",
+      "title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81FvRXkqKkL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/098-RN-ASLP-VH3X-B0H82JYZQH-e0bce1b55418.jpg",
+        "asset_sha256": "e0bce1b554185359178ab8125054819eaae727d25f62ab68c017ebc9f3643caf",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The pictured Reduced Sugar Peanut Butter & Grape Spread “on wheat” packaging is the current genuine identity corresponding to the ledger's Whole Wheat grape donor. Recipe, shipping scene, and brand treatment visually conform."
+    },
+    {
+      "ordinal": 99,
+      "ledger_row_index": 100,
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/816zUiawEjL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/099-RQ-AS0L-9B45-B0H85MQLHG-0a5998261f43.jpg",
+        "asset_sha256": "0a5998261f436a8b6bf83bdf5bacba8385b6eb1453183b947189f7bbcf9b6fc0",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Honey plus the 12g-protein Up & Apple product. The image uses Honey with legacy Apple Cinnamon 6g packaging, not the specified Up & Apple protein variant."
+    },
+    {
+      "ordinal": 100,
+      "ledger_row_index": 101,
+      "sku": "RQ-AS78-STLZ",
+      "asin": "B0H85GR968",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count - Peanut Butter and Morning Protein Peanut Butter & Mixed Berry Spread",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81A3GUQs2kL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/100-RQ-AS78-STLZ-B0H85GR968-963cd9952ff5.jpg",
+        "asset_sha256": "963cd9952ff50dbffdf5e7fd9b7e1059df18dd8a3e5ff8b1b9829a9b1d95b097",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review confirms both required genuine components: peanut-butter-only and Morning Protein/Beamin' Berry mixed berry. They are physically seated in the approved Salutem cooler scene."
+    },
+    {
+      "ordinal": 101,
+      "ledger_row_index": 102,
+      "sku": "RQ-ASM7-T9NN",
+      "asin": "B0H83HNB3B",
+      "title": "Smucker's Uncrustables Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz, Frozen, 90 Count",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/814e2HwPNNL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/101-RQ-ASM7-T9NN-B0H83HNB3B-82d6d62dbe74.jpg",
+        "asset_sha256": "82d6d62dbe748e202c9f45f8a2de3c3a874258175a5ee2bf2a79b9778b2e087f",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The pictured Reduced Sugar Peanut Butter & Grape Spread “on wheat” packaging is the current genuine identity corresponding to the ledger's Whole Wheat grape donor. Recipe, shipping scene, and brand treatment visually conform."
+    },
+    {
+      "ordinal": 102,
+      "ledger_row_index": 103,
+      "sku": "RR-ASG1-JVKV",
+      "asin": "B0H8361PYX",
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, 45 Count, Individually Wrapped, Frozen",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81zChJifR9L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/102-RR-ASG1-JVKV-B0H8361PYX-dbcb745c5b48.jpg",
+        "asset_sha256": "dbcb745c5b488cf05c3a32d44487ee1aa8538c2411935daf3c16a468ba747e60",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The pictured Reduced Sugar Peanut Butter & Strawberry Jam “on wheat” wrappers are the current genuine identity corresponding to the ledger's Whole Wheat strawberry donor. Recipe and scene visually conform."
+    },
+    {
+      "ordinal": 103,
+      "ledger_row_index": 104,
+      "sku": "RS-AS47-M3K3",
+      "asin": "B0H87748WJ",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Chocolate Flavored Hazelnut Spread & Peanut Butter Grape Jelly, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81wz3GUbp7L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/103-RS-AS47-M3K3-B0H87748WJ-403c79ba73d0.jpg",
+        "asset_sha256": "403c79ba73d02fe0d458284cb3bb22a6a4591e223c5094e089ec65636ef726aa",
+        "width": 2200,
+        "height": 2200,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "SALUTEM_SHIPPING_COMPOSITION"
+      ],
+      "reviewer_notes": "The image is an isolated six-carton grid on white. It omits the open white EPS cooler, Salutem branding, gel packs, and physically packed frozen-shipping scene required for this MAIN-image family."
+    },
+    {
+      "ordinal": 104,
+      "ledger_row_index": 105,
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety, Strawberry Jam Protein & Honey Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Op3DM5jvL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/104-RU-ASC3-4TUS-B0H83SJFR7-c407a3374a4d.jpg",
+        "asset_sha256": "c407a3374a4d56a41a1844c056b6c35e2a8561611d84f459256dd642668879db",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 105,
+      "ledger_row_index": 106,
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/819xHF0I0nL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/105-RY-ASMO-6N4F-B0H8493HNR-5ce519f944e6.jpg",
+        "asset_sha256": "5ce519f944e6e2f74331560b14c9e6753712079d4e763698c9b1c8cb50bbb56c",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 106,
+      "ledger_row_index": 107,
+      "sku": "RY-ASO3-24Q2",
+      "asin": "B0H84XMG42",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Honey and Morning Protein Peanut Butter & Mixed Berry, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Zck64uUEL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/106-RY-ASO3-24Q2-B0H84XMG42-d596dece64ba.jpg",
+        "asset_sha256": "d596dece64ba6e143531819ad38cefd532f38b67fd7cf5c1f74f446af0cbe9d6",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review confirms both required genuine components: Honey and Morning Protein/Beamin' Berry mixed berry. They are physically seated in the approved Salutem cooler scene."
+    },
+    {
+      "ordinal": 107,
+      "ledger_row_index": 108,
+      "sku": "RZ-AS26-WLRM",
+      "asin": "B0H85PJ516",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Chocolate Flavored Hazelnut Spread and Peanut Butter Blackberry, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81kXf3o9VBL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/107-RZ-AS26-WLRM-B0H85PJ516-d30551fb1c2e.jpg",
+        "asset_sha256": "d30551fb1c2e5738c2bf526fd59c7f37695f82e113724bc9bbd7199bb2e6f8e9",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 108,
+      "ledger_row_index": 109,
+      "sku": "SA-ASCK-J2B2",
+      "asin": "B0H82XP1MM",
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 12g Protein, 2.8 oz, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81bjPtyCMQL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/108-SA-ASCK-J2B2-B0H82XP1MM-568c9dbeabd4.jpg",
+        "asset_sha256": "568c9dbeabd4c66145254de843cf713c662fb701728e1ff5814266503e2cb4fc",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 9,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-09.png",
+          "sha256": "e7e0ef3c9caac8c61d3d08d0c4627bbca28aef1d3eb904735b18d6cfe2c37654",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 109,
+      "ledger_row_index": 110,
+      "sku": "SA-ASDW-SNEW",
+      "asin": "B0H82SMZ2M",
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81-PDbpDVvL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/109-SA-ASDW-SNEW-B0H82SMZ2M-1ec89af13f2e.jpg",
+        "asset_sha256": "1ec89af13f2ee2155f5728ced342993d5329774d003d500b7ff213ce82a9a764",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Red, White & Berry is a genuine Smucker's Uncrustables peanut-butter-and-mixed-berry product, not a hallucinated flavor. Its wrappers match the single-component mixed-berry recipe and the shipping scene conforms."
+    },
+    {
+      "ordinal": 110,
+      "ledger_row_index": 111,
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "title": "Uncrustables Frozen Sandwiches, Peanut Butter & Apple Cinnamon Jelly and Peanut Butter & Blueberry, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81znfkj+A9L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/110-SC-ASH8-4RQG-B0H856DWVS-922a0ab21a15.jpg",
+        "asset_sha256": "922a0ab21a15a4bc319729d422158edacd2407f458159e2eaaa00d1e48c1945b",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Up & Apple plus Burstin' Blueberry. Only generic orange/blue wrapper backs are visible; no readable Smucker's/Uncrustables or flavor identity proves either required component."
+    },
+    {
+      "ordinal": 111,
+      "ledger_row_index": 112,
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Chocolate Flavored Spread Sandwiches, 24 Count, 2 oz Each, Frozen",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81MrU477PDL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/111-SG-AS32-LZ9Y-B0H8564C6D-db99dbd19726.jpg",
+        "asset_sha256": "db99dbd1972691b5744c32838803844333f3fb7c975eb99deb76f2fc6c29a129",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 112,
+      "ledger_row_index": 113,
+      "sku": "SG-ASLB-M2DG",
+      "asin": "B0H84PFKYC",
+      "title": "Uncrustables - Peanut Butter Sandwich Variety Pack, Frozen, 2 oz Each, 24 Count, Raspberry Spread & Grape Jelly",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81toJw1b70L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/112-SG-ASLB-M2DG-B0H84PFKYC-9b04ed4a9c2a.jpg",
+        "asset_sha256": "9b04ed4a9c2a11a1110b9aa3ea33a1a6e1884195708309d044dd2c077cd8d6e0",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 113,
+      "ledger_row_index": 114,
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "title": "Uncrustables Frozen Crustless Sandwiches Variety Pack, Peanut Butter & Strawberry Jam and Peanut Butter & Grape Jelly, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Qs1uvIYoL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/113-SH-ASO0-PW37-B0H83ZH3TB-0c42babddbb9.jpg",
+        "asset_sha256": "0c42babddbb923ddf7829ba429a749d50311b483429eaae0e1ec33df80417b82",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Bright-Eyed Berry strawberry-protein plus classic grape. The image shows only Red, White & Berry mixed-berry wrappers; both recipe components are absent."
+    },
+    {
+      "ordinal": 114,
+      "ledger_row_index": 115,
+      "sku": "SS-AS9K-U9TV",
+      "asin": "B0H831889Q",
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81siHI10f5L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/114-SS-AS9K-U9TV-B0H831889Q-3dc42751657d.jpg",
+        "asset_sha256": "3dc42751657d5a691cebbbebcb4738a65998d7eccba49613158bc8d1c731453e",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 115,
+      "ledger_row_index": 116,
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter Apple Cinnamon Jelly Protein & Whole Wheat Grape Jelly",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81-d9skUPkL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/115-SU-ASS4-RV6R-B0H853HGHC-4b496dc05906.jpg",
+        "asset_sha256": "4b496dc05906b11d852353bac3deb9dddbeb937c7be52c3e3d50a4f67ee172ec",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 116,
+      "ledger_row_index": 117,
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81GcyMiOlHL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/116-SV-AS87-D6SV-B0H83ZGN22-d0cf5a806b64.jpg",
+        "asset_sha256": "d0cf5a806b640e59a8260698c24cdf633072446fef824a7bd0b84989ab82fea8",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Bright-Eyed Berry strawberry-protein plus classic strawberry. Only Bright-Eyed Berry is shown, so the classic strawberry half of the recipe is missing."
+    },
+    {
+      "ordinal": 117,
+      "ledger_row_index": 119,
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+      "effective_total_units": 24,
+      "total_units_source": "HIGH_REVIEWED_OVERRIDE",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81pRkK40HhL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/117-SZ-ASPI-JFAT-B0H776M5B5-a6788be1cb23.jpg",
+        "asset_sha256": "a6788be1cb2310fc1f49d5a71b270433cef5b973506a38107bd686835d53881e",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 118,
+      "ledger_row_index": 120,
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Chocolate Hazelnut Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81qvnCetBzL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/118-TH-AS6D-CCES-B0H845HSDZ-cdd5b1f216a8.jpg",
+        "asset_sha256": "cdd5b1f216a865e4eb26334f8e6f633bd97bbc0940cc7d649d06d0f7d1f6d817",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 119,
+      "ledger_row_index": 121,
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Chocolate Flavored Hazelnut Spread & Morning Protein Peanut Butter Mixed Berry, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81KOlezKZ+L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/119-TL-ASHN-ZRKG-B0H85P9F3R-846005feea2a.jpg",
+        "asset_sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Both genuine Chocolate Flavored Hazelnut Spread and Morning Protein/Beamin' Berry mixed-berry wrapper fronts are visible in the approved legacy cooler composition; no product substitution is present."
+    },
+    {
+      "ordinal": 120,
+      "ledger_row_index": 122,
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Frozen Crustless Sandwiches, 2 oz, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81l2do3KQDL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/120-TP-AS91-8PAZ-B0H835T5HN-ee8780cfa3d3.jpg",
+        "asset_sha256": "ee8780cfa3d3a9f436939107d615026ca2132b392fe98bd3af1148b175101eaa",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 10,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-10.png",
+          "sha256": "a6828201404c23acfbb451188dfe037e7543c7ab92f3be2ad6023f6b33e66ef9",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected peanut butter & mixed berry spread. The scene exposes only red gingham wrapper backs/side panels with no readable Smucker's/Uncrustables or mixed-berry identity; the exact required flavor cannot be verified and visually resembles strawberry packaging."
+    },
+    {
+      "ordinal": 121,
+      "ledger_row_index": 123,
+      "sku": "TQ-ASBR-96TC",
+      "asin": "B0H82BCZ44",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/810svfRw5HL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/121-TQ-ASBR-96TC-B0H82BCZ44-8810e48b121e.jpg",
+        "asset_sha256": "8810e48b121e29ea5aaaf342203da4acab9f1e0a523fe24efec9a3b08c48b8b1",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 122,
+      "ledger_row_index": 124,
+      "sku": "TQ-ASC4-P2NP",
+      "asin": "B0H839G6RQ",
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 90 Count",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/816VJD9RbeL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/122-TQ-ASC4-P2NP-B0H839G6RQ-b9cf0cdf21c8.jpg",
+        "asset_sha256": "b9cf0cdf21c87806e74f3411b0dac9f2d138cb12ab1309f1849d0343e480a362",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 123,
+      "ledger_row_index": 125,
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81zcWrHalDL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/123-TY-AST2-JE9P-B0H84WQRXB-ee5bf3bb4907.jpg",
+        "asset_sha256": "ee5bf3bb4907bbbaf088657009993d185464fa893374f6508a06aff8d97da896",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Raspberry plus Morning Protein/Beamin' Berry mixed berry. The image contains only raspberry cartons; the mixed-berry component is absent."
+    },
+    {
+      "ordinal": 124,
+      "ledger_row_index": 126,
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen)",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81eeHbJIDhL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/124-UA-ASAO-RE7Q-B0H784LMG6-1df01f9942ea.jpg",
+        "asset_sha256": "1df01f9942ea52ccfbc3913978690bddd28ca2529072045f8cb124fa69b93137",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 125,
+      "ledger_row_index": 127,
+      "sku": "UD-AS9J-QNY6",
+      "asin": "B0H834L7P6",
+      "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, Individually Wrapped, 90 Count",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/819ggTStPRL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/125-UD-AS9J-QNY6-B0H834L7P6-6c2f0b8ce339.jpg",
+        "asset_sha256": "6c2f0b8ce339a4b0858bcf6e2543ffee97c4d4b1a4c89866ab469d574471a7c5",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 126,
+      "ledger_row_index": 128,
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81L9lNnh5+L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/126-UE-ASA6-CLLY-B0H83ZHZ4S-2114b973cdb9.jpg",
+        "asset_sha256": "2114b973cdb9492e7f856a477b74bf61922b5ffa25c67fc31a6061ef4b06036a",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 127,
+      "ledger_row_index": 129,
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "title": "Uncrustables Frozen Peanut Butter and Peanut Butter & Strawberry Jam Sandwich Variety Pack, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/811FSvJo+0L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/127-UF-ASA1-GN5P-B0H854DM3X-bfd0bb2e2bb5.jpg",
+        "asset_sha256": "bfd0bb2e2bb51aa0ec11b1195dbb2feb591bf740097ae0ba8a37eb5089a2f868",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 128,
+      "ledger_row_index": 130,
+      "sku": "UG-ASUO-L4D9",
+      "asin": "B0H83FP8WW",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 90 Count",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81s4SxX8kEL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/128-UG-ASUO-L4D9-B0H83FP8WW-c1f59e6aea8f.jpg",
+        "asset_sha256": "c1f59e6aea8f5b73c1096f2f7ad7f6a1a8206c92d77e041089f8b5136512fc3f",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 129,
+      "ledger_row_index": 131,
+      "sku": "UJ-ASQ1-9FNR",
+      "asin": "B0H82P651P",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwiches, 2.8 oz, Frozen, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 24
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81EpVnDvDJL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/129-UJ-ASQ1-9FNR-B0H82P651P-8d6ab260fb5e.jpg",
+        "asset_sha256": "8d6ab260fb5e72107ea1648c8364b3fdb17fe1ecb5995b11a859c6170bd0b14d",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 130,
+      "ledger_row_index": 132,
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81CfRn4fDmL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/130-UY-AS5N-A2E4-B0H83R4M3R-3f161b7094f4.jpg",
+        "asset_sha256": "3f161b7094f4ae9d94cf90223e358d4dc07d0a5b0083ed648649b379008ff0a7",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 131,
+      "ledger_row_index": 133,
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81-Lv+Cp15L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/131-VA-ASOK-QJCA-B0H85RZDX5-c3c91ca19256.jpg",
+        "asset_sha256": "c3c91ca192562b66a53a3841127aa4d7ee554de850d02cb5e148e2985c0f8dc4",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Both genuine Up & Apple and Beamin' Berry Blend carton fronts are visible, with the correct two-flavor mix physically packed in the approved Salutem cooler composition."
+    },
+    {
+      "ordinal": 132,
+      "ledger_row_index": 134,
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81N9ulUYcaL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/132-VC-ASQE-L5Z5-B0H82QYM85-d7cb5cd4b2ca.jpg",
+        "asset_sha256": "d7cb5cd4b2cae78606c4923423bb88b0f5a57626657d8352ed438552c43665b8",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 11,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-11.png",
+          "sha256": "c6a3d2410ff7009621e8e57bb4024b930c48590c6d0c111a4bfde825d40cb29f",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 133,
+      "ledger_row_index": 135,
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 90 Count Multipack",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen)",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Ul1-feF+L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/133-VC-ASV1-378P-B0H786L5MW-8bee40e678a1.jpg",
+        "asset_sha256": "8bee40e678a12308d7408b8b60695fbfc5afe21a14774134682476ae418e080d",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 134,
+      "ledger_row_index": 136,
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "title": "Uncrustables Whole Wheat Peanut Butter Sandwich Variety, Strawberry Jam & Mixed Berry Spread, 24 Count, Frozen",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/814Qasvji8L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/134-VH-ASHZ-TJEE-B0H856VWD6-386f5dd32dc8.jpg",
+        "asset_sha256": "386f5dd32dc8af0dc4b883625c8b5994a1ca890dcc8dad66a13661c3417919a9",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Reduced Sugar/On Wheat strawberry plus Beamin' Berry mixed berry. The image contains only genuine reduced-sugar strawberry cartons; the mixed-berry component is absent."
+    },
+    {
+      "ordinal": 135,
+      "ledger_row_index": 137,
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Honey Spread and Whole Wheat Grape Jelly, 24 Individually Wrapped Sandwiches",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81LWWDidPAL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/135-VK-ASSB-3YFK-B0H85FY28F-8b88d9217ead.jpg",
+        "asset_sha256": "8b88d9217ead9eb6990bb98c0f8a80a1c1e271cd3eae19eb0f5169c031880e17",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "GEL_PACK_BRANDING"
+      ],
+      "reviewer_notes": "The supposed Honey and Reduced Sugar/On Wheat grape cartons are generic, with no readable Smucker's/Uncrustables identity. The gel packs also use nonstandard green-only labeling instead of the approved blue-header Salutem design."
+    },
+    {
+      "ordinal": 136,
+      "ledger_row_index": 138,
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 8 oz, 4 ct - Pack of 45",
+      "effective_total_units": 45,
+      "total_units_source": "HIGH_REVIEWED_OVERRIDE",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81McszSNgCL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/136-VN-AS1A-D572-B0H82PKK18-d9a15fc8b192.jpg",
+        "asset_sha256": "d9a15fc8b192ce3125c41cc68137cea65631b163331231e4dd8644e92ec7b807",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 137,
+      "ledger_row_index": 139,
+      "sku": "VN-AS6Q-5AE9",
+      "asin": "B0H8538L32",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter and Chocolate Flavored Hazelnut Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81qsHiL9ELL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/137-VN-AS6Q-5AE9-B0H8538L32-de53755bb4a2.jpg",
+        "asset_sha256": "de53755bb4a2944529510c3a2a9dee103cdcf67c5d6f459001f9acafd1bbb716",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 138,
+      "ledger_row_index": 140,
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Peanut Butter Apple Cinnamon Jelly Protein, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Q+LRL3JAL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/138-VT-ASTH-B6LM-B0H85CL8JD-cae11d29b3d2.jpg",
+        "asset_sha256": "cae11d29b3d243c93e90f29bf1828bfdedb05be0f050f1ee683b779e1f8c0a85",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY",
+        "NO_UNEXPECTED_PRODUCTS"
+      ],
+      "reviewer_notes": "Expected peanut-butter-only plus Up & Apple. The image instead includes peanut butter, grape, and strawberry wrappers; Up & Apple is missing and two unrequested flavors are present."
+    },
+    {
+      "ordinal": 139,
+      "ledger_row_index": 141,
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81yqYrcxn+L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/139-WC-ASH5-EFN6-B0H833W54L-1d8c5850edb4.jpg",
+        "asset_sha256": "1d8c5850edb4143206eb8b5de57a63dfe79f1fcb3ad349f85d3f1753ab46f494",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 140,
+      "ledger_row_index": 142,
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, No Crust, 1.8 oz, Pack of 90",
+      "effective_total_units": 90,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 90
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/91uB1uWiAiL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/140-WK-AS2R-FJUW-B0H82XBNVN-acc97fdac131.jpg",
+        "asset_sha256": "acc97fdac13143ad5de4a5dd7b4ace6a17b3b9325a056d25d834661c8974471c",
+        "width": 2200,
+        "height": 2200,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "SALUTEM_SHIPPING_COMPOSITION"
+      ],
+      "reviewer_notes": "The image is an isolated retail-box grid. It omits the open white EPS cooler, Salutem branding, gel packs, and packed frozen-shipping composition."
+    },
+    {
+      "ordinal": 141,
+      "ledger_row_index": 143,
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, 24 Count – Strawberry Jam 12g Protein and Mixed Berry Spread Flavors",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Nufcs95BL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/141-WK-AS7E-M3CE-B0H843R64X-0dd1bc07fa45.jpg",
+        "asset_sha256": "0dd1bc07fa451f0c758d4cf45ff8b76b5569019225e87f843b1b32ef17a2329a",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review confirms the two distinct genuine protein products required by the recipe: Bright-Eyed Berry strawberry and Beamin' Berry Blend mixed berry."
+    },
+    {
+      "ordinal": 142,
+      "ledger_row_index": 144,
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter Frozen Sandwiches, Variety Pack, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/814glUAA58L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/142-WK-ASPD-G9HL-B0H85CF81Y-8851c4b5d386.jpg",
+        "asset_sha256": "8851c4b5d386da86939a1557154453053d38142bedea50555ed179f4b3172ec5",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "The Reduced Sugar/On Wheat strawberry cartons are plausible, but the required peanut-butter-only component is rendered as purple “Peanut Butter Sandwich” cartons with grape-colored art/filling. Genuine peanut-butter-only packaging is orange, so this component is invented/wrong."
+    },
+    {
+      "ordinal": 143,
+      "ledger_row_index": 145,
+      "sku": "WN-AS33-UFEA",
+      "asin": "B0H83RCTVV",
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread Sandwiches, 2 oz Each, Individually Wrapped, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Wa+q2PvOL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/143-WN-AS33-UFEA-B0H83RCTVV-d6a0b09ac51c.jpg",
+        "asset_sha256": "d6a0b09ac51c871e4d46d1b37d12a283d046de1c475cbcac9001df9fea6f8ebc",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 144,
+      "ledger_row_index": 146,
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter Apple Cinnamon Jelly Protein & Chocolate Hazelnut Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81uGCQnU9OL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/144-WR-ASR5-AVWE-B0H859VYXH-9938a7a37201.jpg",
+        "asset_sha256": "9938a7a37201154ff673b4eba193de4d4b6834bb23378032f32f27c0fcb312a7",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 12,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-12.png",
+          "sha256": "62a57fbaa693b593c7cfc1c5e5c17d1a9b7c370c530bffb2caf23840b828996d",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 145,
+      "ledger_row_index": 147,
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter & Apple Cinnamon Jelly Protein and Morning Protein Peanut Butter & Mixed Berry Spread",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81bUVWzOWaL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/145-WR-ASTH-TPXV-B0H85DRT93-a0b1fa126147.jpg",
+        "asset_sha256": "a0b1fa12614752c4a37f6cd30f10b2925d76b194184ebf5ddb0466930c8b3a35",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 146,
+      "ledger_row_index": 148,
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey Spread and Peanut Butter & Blueberry, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81jK1+qB7VL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/146-WZ-ASXK-ZFAS-B0H85DF1R7-6aaeefd9b8e5.jpg",
+        "asset_sha256": "6aaeefd9b8e5e79d8bee763841cad34e933cea1f7e0a025e2a7db119165a6d76",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Honey plus Burstin' Blueberry. Only generic orange/blue package backs are visible; no readable Smucker's/Uncrustables or flavor identity proves either component."
+    },
+    {
+      "ordinal": 147,
+      "ledger_row_index": 149,
+      "sku": "XE-ASK1-BNRB",
+      "asin": "B0H81WMJBP",
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81JT+dMDfIL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/147-XE-ASK1-BNRB-B0H81WMJBP-a2adbeecbaf7.jpg",
+        "asset_sha256": "a2adbeecbaf75f1bd4279ea1f6dce35c78ec3d3cb5f79591496b16520fb67c29",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The raspberry 15-count carton is a genuine current package size. Three cartons correctly visualize the 45-sandwich effective total in the approved shipping composition."
+    },
+    {
+      "ordinal": 148,
+      "ledger_row_index": 150,
+      "sku": "XJ-ASVD-CDMW",
+      "asin": "B0H82MSTD9",
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, Individually Wrapped - 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/819T4IOur3L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/148-XJ-ASVD-CDMW-B0H82MSTD9-e29b6e04c44a.jpg",
+        "asset_sha256": "e29b6e04c44ac7b9a32890dd160ea0bbcec4051d32ac1a47dc71c08fca922a27",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 149,
+      "ledger_row_index": 151,
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwiches, 2.8 oz, Frozen, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Y87+k4kkL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/149-XV-ASEU-GDUX-B0H82YRTS3-8af3a69f4bd8.jpg",
+        "asset_sha256": "8af3a69f4bd8a01128bfff02f80adc90c6dbb35e72a82261a4a4f50b22663cf9",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 150,
+      "ledger_row_index": 152,
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter Sandwiches, Individually Wrapped, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/810Rp3ekgfL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/150-XW-ASSI-SZZT-B0H858GF4N-4838a834c731.jpg",
+        "asset_sha256": "4838a834c731fc90127b8e16b69eca21167e0c210dbbd6dc6314941cc5139dfc",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 151,
+      "ledger_row_index": 153,
+      "sku": "YA-ASX6-PZE7",
+      "asin": "B0H82YB4PD",
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/812L+cn66-L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/151-YA-ASX6-PZE7-B0H82YB4PD-faf4716573d1.jpg",
+        "asset_sha256": "faf4716573d10ec8b91c14ef702b7e40364ca4af5286848fffd92bfe8fec514f",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 152,
+      "ledger_row_index": 154,
+      "sku": "YF-ASZJ-8BBH",
+      "asin": "B0H822MPKC",
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread Sandwiches, Individually Wrapped, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/815Zvf0O67L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/152-YF-ASZJ-8BBH-B0H822MPKC-87e87809db61.jpg",
+        "asset_sha256": "87e87809db610ca6e2f315c6e34387d4bb75a4696c8d88b5c48c7dad34a8514e",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 153,
+      "ledger_row_index": 155,
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "title": "Uncrustables Frozen Peanut Butter & Peanut Butter Blackberry Spread Sandwiches, Variety Pack, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81kOmrVscuL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/153-YG-ASH6-BCXX-B0H8511Y5G-4a31fa2ae121.jpg",
+        "asset_sha256": "4a31fa2ae1219b9bb4df5a23a0d5c4b28a15e76b608a9b9fd517e1e04be09304",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 9,
+          "cell": "R3C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 154,
+      "ledger_row_index": 156,
+      "sku": "YH-ASQ8-45ED",
+      "asin": "B0H82QPCJL",
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches, Individually Wrapped, No Crust, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/816jilDNN1L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/154-YH-ASQ8-45ED-B0H82QPCJL-b3dcd63b87f0.jpg",
+        "asset_sha256": "b3dcd63b87f0bc104bcda7936246f9fb7204dde5fc8313a39af68a04acc59b9b",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 10,
+          "cell": "R3C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 155,
+      "ledger_row_index": 157,
+      "sku": "YM-AS7P-ZX44",
+      "asin": "B0H83S1LDG",
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81W-UowZ9-L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/155-YM-AS7P-ZX44-B0H83S1LDG-bc8bde72ddcb.jpg",
+        "asset_sha256": "bc8bde72ddcb9f5a49bb31c253624f20b80b74c6e529708b8e9fbbdf7620ec38",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 11,
+          "cell": "R3C3"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 156,
+      "ledger_row_index": 158,
+      "sku": "YV-AST8-LMKN",
+      "asin": "B0H859JMGJ",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81Nym157VVL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/156-YV-AST8-LMKN-B0H859JMGJ-8f6d88bdc0bb.jpg",
+        "asset_sha256": "8f6d88bdc0bbd0c6053e2bf75d5fc38e90ad55b20b38bf94b364823acf2133d6",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 13,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-13.png",
+          "sha256": "f1c68c32834d929f887307122548bbe964f25f1ae48818627530902467e67369",
+          "tile_number": 12,
+          "cell": "R3C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 2 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 157,
+      "ledger_row_index": 159,
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, No Crust, 45 Count",
+      "effective_total_units": 45,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 45
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81uvzlOCbNL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/157-ZB-ASKL-9W8G-B0H82LKBYH-b9a93cc94e83.jpg",
+        "asset_sha256": "b9a93cc94e83e3854d100495bf2c2233b50dda13d76f3299ead5201e07c56862",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 1,
+          "cell": "R1C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 158,
+      "ledger_row_index": 160,
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81rsHR7bV2L.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/158-ZC-ASDC-3QMV-B0H83TSB5J-505697e7af2b.jpg",
+        "asset_sha256": "505697e7af2b8c3f1bd3d63bc11bcd89116cb1666a80829e1ad671be6068ab36",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 2,
+          "cell": "R1C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 159,
+      "ledger_row_index": 161,
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter and Peanut Butter & Mixed Berry Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81t7QOGYwiL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/159-ZE-AS5W-FKH3-B0H8531B8B-46f5308506f2.jpg",
+        "asset_sha256": "46f5308506f2aaf8829a6bad1133e82ad987234720e4c5fff784514c021ccc07",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 3,
+          "cell": "R1C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected peanut-butter-only plus Morning Protein/Beamin' Berry mixed berry. The image contains only peanut-butter-only cartons; the mixed-berry component is absent."
+    },
+    {
+      "ordinal": 160,
+      "ledger_row_index": 162,
+      "sku": "ZH-AS8W-G5MN",
+      "asin": "B0H82LMD9Z",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter and Grape Jelly Sandwich, 2 oz Each, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81a7yI4oCFL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/160-ZH-AS8W-G5MN-B0H82LMD9Z-4eb9e3276e1b.jpg",
+        "asset_sha256": "4eb9e3276e1b14ec3bf8cd74e08835f821a098dac73af363cef8a4aba92ec4fc",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 4,
+          "cell": "R1C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 161,
+      "ledger_row_index": 163,
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81bJdi9IxfL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/161-ZP-ASJD-X7ZD-B0H85N7X8W-5518355a28eb.jpg",
+        "asset_sha256": "5518355a28eb1f5cf2dafae5129e62e56bd068d0c647a6027a03d2e94ce58eb7",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 5,
+          "cell": "R2C1"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "The image correctly combines genuine Reduced Sugar/On Wheat strawberry and Beamin' Berry mixed berry; both required fronts are visible and no extra flavor is introduced."
+    },
+    {
+      "ordinal": 162,
+      "ledger_row_index": 164,
+      "sku": "ZX-AS2C-GT8Q",
+      "asin": "B0H82L3LRT",
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 30 Count",
+      "effective_total_units": 30,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 30
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81zPJCbNwKL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/162-ZX-AS2C-GT8Q-B0H82L3LRT-ba3e26191669.jpg",
+        "asset_sha256": "ba3e2619166961c3a244654c33c7c62bbd65f6dee0050e3b3d765e4f31f5d2f8",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 6,
+          "cell": "R2C2"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    },
+    {
+      "ordinal": 163,
+      "ledger_row_index": 165,
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Whole Wheat and Classic Variety, Individually Wrapped, 24 Count",
+      "effective_total_units": 24,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        },
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+          "flavor": null,
+          "qty": 12
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/810jgpvUpRL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/163-ZX-ASQU-TKU9-B0H84PVG1G-b448c2ef5e5d.jpg",
+        "asset_sha256": "b448c2ef5e5d110dc12fca50815cd8d17bef8447bd6cccdb320ea3055e1ac2c5",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 7,
+          "cell": "R2C3"
+        }
+      },
+      "classification": "REGENERATE",
+      "failed_criteria": [
+        "GENUINE_PRODUCT_IDENTITY",
+        "EXACT_RECIPE_COMPONENT_IDENTITY"
+      ],
+      "reviewer_notes": "Expected Reduced Sugar/On Wheat strawberry plus classic strawberry. The cartons are generic lookalikes without readable Smucker's/Uncrustables identity and show inconsistent generated count markings, so neither exact component is trustworthy."
+    },
+    {
+      "ordinal": 164,
+      "ledger_row_index": 166,
+      "sku": "ZY-ASZ4-QM5U",
+      "asin": "B0H83T9QZV",
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, Individually Wrapped – 120 Count",
+      "effective_total_units": 120,
+      "total_units_source": "LEDGER_CANONICAL",
+      "recipe_components": [
+        {
+          "product_name": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+          "flavor": null,
+          "qty": 120
+        }
+      ],
+      "source_main_image_url": "https://m.media-amazon.com/images/I/81w76NDQgJL.jpg",
+      "evidence": {
+        "asset_local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/164-ZY-ASZ4-QM5U-B0H83T9QZV-3e57fee36a0f.jpg",
+        "asset_sha256": "3e57fee36a0f426224c5a9a3b508fe68f7780e7d015902dbc5a07995312975f9",
+        "width": 2048,
+        "height": 2048,
+        "contact_sheet": {
+          "sheet_number": 14,
+          "local_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-14.png",
+          "sha256": "dbbdbfb256734e6831934452ed8b658d51d3f7cb9ac303a5273670e0df8c15de",
+          "tile_number": 8,
+          "cell": "R2C4"
+        }
+      },
+      "classification": "KEEP",
+      "failed_criteria": [],
+      "reviewer_notes": "Original-resolution review found genuine Smucker's Uncrustables product identity matching all 1 ledger recipe component(s), with no unrequested flavor. The approved white-EPS Salutem cooler, frozen gel packs, white background, and physically packed composition are present; no concrete defect was found."
+    }
+  ]
+}

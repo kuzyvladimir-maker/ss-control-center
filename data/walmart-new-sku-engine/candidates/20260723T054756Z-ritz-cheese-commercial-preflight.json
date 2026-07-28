@@ -1,0 +1,91 @@
+{
+  "schema_version": "walmart-new-sku-commercial-preflight/1.0.0",
+  "created_at": "2026-07-23T05:47:56.000Z",
+  "channel": "WALMART_US",
+  "scope": "PILOT_CANDIDATE_ONLY",
+  "candidate": {
+    "name": "RITZ Bits Cheese Sandwich Crackers 8.8 oz",
+    "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+    "donor_offer_id": "do:walmart:34312392",
+    "component_walmart_item_id": "34312392",
+    "component_manufacturer_upc": "044000035457",
+    "recipe_pack_count": 2,
+    "sellable_net_weight_oz": 17.6
+  },
+  "product_truth": {
+    "role": "SOLE_PRODUCT_AND_CONTENT_SOURCE",
+    "local_plan_path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/candidates/20260723T052200Z-product-truth-v12-ritz-cheese-local-doctor.plan",
+    "local_plan_sha256": "59700671001590615281988b74520ea79b6a0f328103f0ae2bb1e79b8c25f03a",
+    "paid_provider_calls_executed": 0,
+    "production_catalog_writes": 0
+  },
+  "free_official_evidence": [
+    {
+      "kind": "CURRENT_COMPONENT_OFFER",
+      "url": "https://www.walmart.com/ip/34312392",
+      "observed_at": "2026-07-23T05:30:00.000Z",
+      "observed_item_price_cents": 397,
+      "pack_count": 1
+    },
+    {
+      "kind": "EXACT_MANUFACTURER_IDENTITY",
+      "url": "https://smartlabel.mondelez.info/044000035457-0001-en-US/index.html",
+      "manufacturer_upc": "044000035457",
+      "net_weight_oz": 8.8,
+      "page_updated": "2024-04-03"
+    },
+    {
+      "kind": "MANUFACTURER_IMAGE_AND_TRADEMARK_GUIDANCE",
+      "url": "https://www.mondelezawayfromhome.com/web-trademark-guidelines/",
+      "finding": "PUBLIC_PAGE_DOES_NOT_GRANT_IMAGE_REUSE_RIGHTS"
+    },
+    {
+      "kind": "HISTORICAL_FDA_RECALL_REVIEW",
+      "url": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/mondelez-global-llc-conducts-voluntary-recall-certain-ritz-cracker-sandwiches-and-ritz-bits-product",
+      "finding": "2018_NOTICE_DID_NOT_LIST_EXACT_UPC_044000035457",
+      "limitation": "NOT_A_CURRENT_RECALL_CLEARANCE"
+    },
+    {
+      "kind": "CURRENT_WALMART_PRICING_POLICY",
+      "url": "https://marketplacelearn.walmart.com/guides/Catalog%20management/Price%20management/Pricing-rules",
+      "source_updated_at": "2025-12-12"
+    }
+  ],
+  "economics": {
+    "currency": "USD",
+    "goods_cost_cents": 794,
+    "packaging_cost_cents": 150,
+    "shipping_label_evidence_cents": 878,
+    "pre_referral_cost_cents": 1822,
+    "minimum_20_percent_margin_price_cents": 2804,
+    "referral_fee_at_minimum_price_cents": 421,
+    "profit_at_minimum_price_cents": 561,
+    "exact_component_comparable": {
+      "pack_count": 1,
+      "customer_total_cents": 397,
+      "linearized_to_candidate_pack_count_cents": 794
+    },
+    "proposed_to_linearized_comparable_ratio_bps": 35315,
+    "internal_pilot_ceiling_bps": 12500,
+    "highest_price_that_can_pass_internal_ceiling_cents": 992,
+    "conclusion": "NO_PRICE_CAN_COVER_VERIFIED_COST_AND_PASS_COMPETITIVENESS_GATE"
+  },
+  "content_and_rights": {
+    "exact_identity_evidence_available": true,
+    "public_manufacturer_page_grants_image_reuse_rights": false,
+    "required_safe_image_path": "OWN_EXACT_TWO_PACK_PHOTOS_OR_DOCUMENTED_BRAND_PERMISSION",
+    "legacy_allergen_warning": "DO_NOT_TRANSFER_AN_UNQUALIFIED_PEANUT_CLAIM; USE_THE_EXACT_CURRENT_PACKAGE_LABEL"
+  },
+  "decision": {
+    "status": "REJECT_BEFORE_PAID_EVIDENCE",
+    "reason_codes": [
+      "COMMERCIAL_PRICE_NOT_COMPETITIVE",
+      "VERIFIED_COST_EXCEEDS_SAFE_MARKET_CEILING",
+      "RIGHTS_CLEARED_TWO_PACK_IMAGES_NOT_YET_AVAILABLE"
+    ],
+    "paid_oxylabs_calls_authorized": 0,
+    "paid_unwrangle_calls_authorized": 0,
+    "walmart_publish_authorized": false,
+    "next_action": "SELECT_A_DIFFERENT_NON_CLUB_DONOR_CANDIDATE_WITH_VIABLE_SOURCE_ECONOMICS"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "approvalId": "owner-pt-g7-turnkey-popeye-20260728t192859z",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:f8c5609042ed37df2bb5d75efd784fd0edfb9766d71c79d4a49dea4c12bef570",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "donorOfferId": "do:walmart:10312200",
+  "donorProductId": "cc0c7f6f-c607-456b-8b46-272d835b2133",
+  "generatedAt": "2026-07-28T19:33:27.846Z",
+  "job": {
+    "approvalId": "owner-pt-g7-turnkey-popeye-20260728t192859z",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": null,
+      "detailReceiptId": null,
+      "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+      "planSha256": "631707ab3014cbacdaf11eca991afa4275130a1e8f63dc27a81f627486db3c41",
+      "priceObservationId": "doo:8f23769e9ef88f03bd470c1fdac053321a28cdd0945c49bcbd3a5f2f79eab56a",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_8e7190bfe4fdfe5d2f56fdd7cc8a4a032bfebeec3b605431efd7c0bf9c17a01a",
+      "stage": "SEARCH_PERSISTED",
+      "variantDecisionId": "dpvd-exact:62f937d00328f69d29af3124108ad01b9e3992207aa611dd9370b189f59b5882"
+    },
+    "error": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+    "id": "ptej_aff7a0fe608cebc5e535e133eddf773fa74225b7529d92da2b17ca8d5328bda7",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+    },
+    "runId": "pt-g7-targeted-clean-20260728T191800Z-popeye",
+    "status": "error",
+    "terminalReason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_2cb9711aaad79134349503b886151b22543a62e4289cdae576d01c9e3dc36408",
+        "createdAt": "2026-07-28T19:29:59.465Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_8e7190bfe4fdfe5d2f56fdd7cc8a4a032bfebeec3b605431efd7c0bf9c17a01a",
+        "reservationKey": "mpr_v1_e370364ff1ad22da7bb9092483f9672c23e79b2a189ff8ea239cea66fafaa3ed",
+        "reservedAt": "2026-07-28T19:29:59.465Z",
+        "settledAt": "2026-07-28T19:30:18.040Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_05a189d76b0c2748d23bc3694a279cc2f94300f64b0dfac0d2ee6cea500a19e4",
+        "createdAt": "2026-07-28T19:32:34.614Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_752ad16996549f4d5a35e05b107d21658811c6ba6ff521ee9a68333d57bdde7d",
+        "reservationKey": "mpr_v1_91502bfb85dce1820d48a56a3382bed80b30a4315dbcb03c7638669a6bfe3238",
+        "reservedAt": "2026-07-28T19:32:34.614Z",
+        "settledAt": "2026-07-28T19:32:43.974Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-g7-targeted-clean-20260728T191800Z-popeye",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "631707ab3014cbacdaf11eca991afa4275130a1e8f63dc27a81f627486db3c41",
+  "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.0.0",
+  "retailerProductId": "10312200",
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-popeye",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

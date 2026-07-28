@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0fcef7c2-ef36-4e4b-9ff8-ac79eb67fe7e",
+  "created_at": "2026-07-18T10:25:31.835Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PY-ASBM-WX6W:text_count",
+  "sku": "PY-ASBM-WX6W",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "1fa6524b97c80954468815d5cd7a225703ac0efb571977fd90c5ecdbc256c5d4",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f51b4add96e946b1989b883f49c5feee",
+    "issues": []
+  },
+  "sha256": "e7d96a0a829737f44c99c5d427bf381f3f33de419e6a9461340f7dd53eab51b9"
+}

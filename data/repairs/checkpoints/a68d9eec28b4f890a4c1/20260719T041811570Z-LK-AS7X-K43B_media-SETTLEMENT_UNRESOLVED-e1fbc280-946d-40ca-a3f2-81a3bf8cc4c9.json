@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e1fbc280-946d-40ca-a3f2-81a3bf8cc4c9",
+  "created_at": "2026-07-19T04:18:11.570Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "LK-AS7X-K43B:media",
+  "sku": "LK-AS7X-K43B",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_UNRESOLVED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "bbac0e75e32b7c8d3d75a913d39904e247cd0a7b41f34220a2926be86b4fa69a",
+    "submitted_event_id": "e95d6ad2-6f85-4635-9660-6732f1369ff6",
+    "disposition": "PENDING_READ_LIMIT",
+    "polling_reads": 3,
+    "read_errors": 0,
+    "consecutive_stable_reads": 1,
+    "last_classification": "NON_DESIRED",
+    "last_path_state_sha256": "9025117a22fb1b9726e0bd5383b954dba3dbaff2b1958819c6d1601c8e75ea6e",
+    "remains_pending": true,
+    "automatic_resubmission_authorized": false
+  },
+  "sha256": "27763313befa5cd3c5157189812b1f5cffea792b8cd730042003d937fb3d9fcf"
+}

@@ -1,0 +1,514 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572834,
+            "width" : 0.05377906799316401,
+            "x" : 0.5930232558047747,
+            "y" : 0.7805232557967252
+          },
+          "confidence" : 0.3,
+          "text" : "2319E3"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0479651175604926,
+            "width" : 0.0479651133219401,
+            "x" : 0.09375000097068802,
+            "y" : 0.7122093012155346
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07122092352973086,
+            "width" : 0.0712209235297309,
+            "x" : 0.1068313965866516,
+            "y" : 0.6809593038244393
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO DOUBLE STUF 14.03 02"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05741279178195524,
+            "width" : 0.05741279178195528,
+            "x" : 0.11627906940168493,
+            "y" : 0.700581394957386
+          },
+          "confidence" : 1,
+          "text" : "MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0479651175604926,
+            "width" : 0.04796511756049271,
+            "x" : 0.5864825578189432,
+            "y" : 0.7122093020435312
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07867612202962238,
+            "width" : 0.07696431477864585,
+            "x" : 0.5902069205609948,
+            "y" : 0.681517070213288
+          },
+          "confidence" : 1,
+          "text" : "33% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07260142856174046,
+            "width" : 0.07402200910780166,
+            "x" : 0.5974887739000241,
+            "y" : 0.6802334015726985
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN CREO DOUBLE STUF 1403OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03415697733561196,
+            "width" : 0.03415697733561196,
+            "x" : 0.6017441859345068,
+            "y" : 0.7122093017946283
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.027436038123236806,
+            "width" : 0.09110761006673179,
+            "x" : 0.212354881302789,
+            "y" : 0.7068274669492878
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023255814446343392,
+            "width" : 0.08866278754340273,
+            "x" : 0.7063953500237201,
+            "y" : 0.707848836817526
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02771652009752068,
+            "width" : 0.02885926352606881,
+            "x" : 0.09829590968667924,
+            "y" : 0.6829991977958523
+          },
+          "confidence" : 1,
+          "text" : "33%"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03227304246690532,
+            "width" : 0.15052681816948782,
+            "x" : 0.1833165941471263,
+            "y" : 0.6819633747138123
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE STUF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03367405573527016,
+            "width" : 0.14944300333658844,
+            "x" : 0.675912224651374,
+            "y" : 0.6820333213570255
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE STUF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07703488667805991,
+            "width" : 0.21656977335611977,
+            "x" : 0.1468023233461649,
+            "y" : 0.6133720917530243
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07848837110731344,
+            "width" : 0.21511627197265626,
+            "x" : 0.6409883760776254,
+            "y" : 0.6133720937613869
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011724805831909157,
+            "width" : 0.053779067993164065,
+            "x" : 0.0901162806291447,
+            "y" : 0.5333333333690436
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01220083448621967,
+            "width" : 0.05244990878634981,
+            "x" : 0.5827866741330906,
+            "y" : 0.5331437686648337
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.052960022820366714,
+            "width" : 0.05153624216715494,
+            "x" : 0.09299354899101578,
+            "y" : 0.3983788829123911
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03997092776828337,
+            "width" : 0.03997092776828348,
+            "x" : 0.5864825587100876,
+            "y" : 0.40043604771807106
+          },
+          "confidence" : 1,
+          "text" : "FAMIL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07656780666775176,
+            "width" : 0.07482747395833333,
+            "x" : 0.5908908353910607,
+            "y" : 0.3704655062126486
+          },
+          "confidence" : 1,
+          "text" : "33% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07194768269856777,
+            "width" : 0.07194768269856766,
+            "x" : 0.5988372057944975,
+            "y" : 0.3684592986371381
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO DOUBLE STUF 1.030Z"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02325581444634328,
+            "width" : 0.08866278754340282,
+            "x" : 0.2136627918283817,
+            "y" : 0.3953488367967619
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023255814446343392,
+            "width" : 0.09011628044976128,
+            "x" : 0.7049418590241503,
+            "y" : 0.39534883686597566
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03212123446994364,
+            "width" : 0.15045754326714408,
+            "x" : 0.1833614270842129,
+            "y" : 0.3695558684204254
+          },
+          "confidence" : 1,
+          "text" : "DOUBLESTUF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030920352935790985,
+            "width" : 0.14906141493055547,
+            "x" : 0.6761954448468458,
+            "y" : 0.36972352083877125
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE STUF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07083333333333341,
+            "width" : 0.2125,
+            "x" : 0.15416666843749996,
+            "y" : 0.3083333337152776
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07412790934244795,
+            "width" : 0.21656977335611982,
+            "x" : 0.6409883697728636,
+            "y" : 0.3052325570977569
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01055555555555554,
+            "width" : 0.05232557932535806,
+            "x" : 0.09011627966871633,
+            "y" : 0.22222222197683972
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010555555555555651,
+            "width" : 0.052325579325358085,
+            "x" : 0.5828488387675536,
+            "y" : 0.22222222211007592
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-8ab75df61fab13bb458d6cc13f2c3dd26b21435a064b9de70f50e0ff2fd217c1.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 1309,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.027272726743275966,
+            "width" : 0.13517442345619202,
+            "x" : 0.48401162660765973,
+            "y" : 0.9022727277268469
+          },
+          "confidence" : 0.3,
+          "text" : "SEESY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08401027417364926,
+            "width" : 0.05234918370842934,
+            "x" : 0.16933964943797508,
+            "y" : 0.7601809808571635
+          },
+          "confidence" : 1,
+          "text" : "(NABISCO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15304143774600432,
+            "width" : 0.09507064521312714,
+            "x" : 0.170030146121061,
+            "y" : 0.6890437755486378
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2487998671204079,
+            "width" : 0.15438099205493927,
+            "x" : 0.1794239342403957,
+            "y" : 0.5890381503656457
+          },
+          "confidence" : 1,
+          "text" : "33% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2352272790806894,
+            "width" : 0.15044042468070984,
+            "x" : 0.19403850858350224,
+            "y" : 0.5795454522300729
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO DOUBLE STUF 14,03 OZ."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11136362789241416,
+            "width" : 0.07122840732336044,
+            "x" : 0.19985091234247798,
+            "y" : 0.6863636426420748
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07045454651344818,
+            "width" : 0.1875,
+            "x" : 0.41424418708817823,
+            "y" : 0.6704545451144881
+          },
+          "confidence" : 1,
+          "text" : "GOLDEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10253845680760976,
+            "width" : 0.30932772159576416,
+            "x" : 0.353927818196927,
+            "y" : 0.5877795869366295
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE STUF"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.2822418212890625,
+            "width" : 0.46337130665779114,
+            "x" : 0.2756089854099617,
+            "y" : 0.3503857619674451
+          },
+          "confidence" : 1,
+          "text" : "OREO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03273223847833295,
+            "width" : 0.10621528327465057,
+            "x" : 0.16273538233217483,
+            "y" : 0.11090660903286342
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-707644011baafcb3a13128b7d3d24309244ba849f003bb22d8787846a16010bf.png",
+      "width" : 2048
+    },
+    {
+      "height" : 524,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.07199869811079884,
+            "width" : 0.10666009038686752,
+            "x" : 0.16202176676311875,
+            "y" : 0.2785839840740846
+          },
+          "confidence" : 1,
+          "text" : "SANDWICH COOKIES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-caf1742423a46eff7df6d002ddec1b0d2c320f025930f865288e23ee37cd68eb.png",
+      "width" : 2048
+    },
+    {
+      "height" : 975,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.05511810740486511,
+            "width" : 0.19166666003961386,
+            "x" : 0.3166666712301931,
+            "y" : 0.8110236241518981
+          },
+          "confidence" : 0.3,
+          "text" : "£z:4з3"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.33858267987360713,
+            "width" : 0.17927559553347244,
+            "x" : 0.2874455359011711,
+            "y" : 0.3464566964318352
+          },
+          "confidence" : 1,
+          "text" : "FAMILY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15123900429147197,
+            "width" : 0.0783806716968648,
+            "x" : 0.2979433241173502,
+            "y" : 0.5121886001015561
+          },
+          "confidence" : 1,
+          "text" : "NABISCO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.49259392159884097,
+            "width" : 0.24995490290572409,
+            "x" : 0.31842338011312366,
+            "y" : 0.15902747979526832
+          },
+          "confidence" : 1,
+          "text" : "33% MORE COOKIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.4644488037609663,
+            "width" : 0.2463663041138623,
+            "x" : 0.33866277916670207,
+            "y" : 0.13832354432059268
+          },
+          "confidence" : 1,
+          "text" : "COMPARED TO GOLDEN OREO DOUBLESTUF 14.03 OZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.20751593542880697,
+            "width" : 0.108705220341553,
+            "x" : 0.3506312072785432,
+            "y" : 0.3588038159705327
+          },
+          "confidence" : 1,
+          "text" : "SIZE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15616438818759615,
+            "width" : 0.2892441806523989,
+            "x" : 0.7093023273143045,
+            "y" : 0.306849312472412
+          },
+          "confidence" : 1,
+          "text" : "GOLDE!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.17322834202500637,
+            "width" : 0.3874999801188417,
+            "x" : 0.6083333405060555,
+            "y" : 0.1417322848930087
+          },
+          "confidence" : 1,
+          "text" : "DOUBLES"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-f0829bcf3c435496567478f9810c292a64294bd3cdfcc6bfb5019096ea4cb2e1.png",
+      "width" : 1842
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

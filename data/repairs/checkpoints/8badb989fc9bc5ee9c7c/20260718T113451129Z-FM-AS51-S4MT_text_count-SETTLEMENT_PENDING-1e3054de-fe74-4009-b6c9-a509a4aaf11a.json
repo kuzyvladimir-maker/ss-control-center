@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1e3054de-fe74-4009-b6c9-a509a4aaf11a",
+  "created_at": "2026-07-18T11:34:51.129Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "FM-AS51-S4MT:text_count",
+  "sku": "FM-AS51-S4MT",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "b2cb3f67-4645-4b83-ba1b-a5c3dd00107b",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b19a2cbaccf06d5078cf8c9662f8c1cf93b7a33d2a9b587e229b57f6d82daf27",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "8d0cf9c9035b7ddc436c6d4749b6f1964442f848d8369acb08ab63b2aae0c807"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "b251d28e35685d891b5213421fb28b26bb55931a91e5ed9690222dbad6377c4b"
+}

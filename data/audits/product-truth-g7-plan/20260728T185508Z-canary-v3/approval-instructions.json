@@ -1,0 +1,43 @@
+{
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae:<OWNER_APPROVAL_ID>",
+  "mode": "CANARY",
+  "planExpiresAt": "2026-07-29T18:25:08.000Z",
+  "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 5,
+      "maxUnits": 12.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "requiredAction": "EXECUTE_CANARY",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "pt-g7-canary-20260728T185508Z",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "warning": "Owner approval, fresh balance evidence, and exact execution confirmation are required; this plan authorizes no automatic publish, delist, reprice, or purchase."
+}

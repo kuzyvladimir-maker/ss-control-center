@@ -1,0 +1,444 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.04505814022488064,
+            "width" : 0.07994185553656685,
+            "x" : 0.22674418872154217,
+            "y" : 0.7514534882523852
+          },
+          "confidence" : 1,
+          "text" : "SESAE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.043604651557074714,
+            "width" : 0.0813953484429254,
+            "x" : 0.7180232555023746,
+            "y" : 0.751453487993265
+          },
+          "confidence" : 1,
+          "text" : "SESAE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026162789662679042,
+            "width" : 0.0363372082180447,
+            "x" : 0.125000000769248,
+            "y" : 0.7500000005720036
+          },
+          "confidence" : 1,
+          "text" : "NE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03749999999999998,
+            "width" : 0.19583333333333333,
+            "x" : 0.15416666340277788,
+            "y" : 0.4499999997916667
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03662551879882803,
+            "width" : 0.1880432637532552,
+            "x" : 0.6479841834157741,
+            "y" : 0.45189072900591787
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.029069766998291002,
+            "x" : 0.17587209360841263,
+            "y" : 0.4331395351288946
+          },
+          "confidence" : 0.3,
+          "text" : "KSTл."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.026162789662679042,
+            "x" : 0.29651162809743964,
+            "y" : 0.43313953498354574
+          },
+          "confidence" : 1,
+          "text" : "1937"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.029069766998291002,
+            "x" : 0.6671511626491102,
+            "y" : 0.43313953498354574
+          },
+          "confidence" : 0.3,
+          "text" : "К518"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.027616278330485078,
+            "x" : 0.7877906978260365,
+            "y" : 0.4331395349108713
+          },
+          "confidence" : 1,
+          "text" : "1937"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.14098837110731335,
+            "x" : 0.18023255687003523,
+            "y" : 0.4083333330940069
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.14098837110731333,
+            "x" : 0.6729651173351514,
+            "y" : 0.40833333351481427
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026162789662679042,
+            "width" : 0.01744185977511936,
+            "x" : 0.15988372133752338,
+            "y" : 0.2427325584701555
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.032284401787651906,
+            "width" : 0.1178157467312283,
+            "x" : 0.19327235995101022,
+            "y" : 0.23967175236812288
+          },
+          "confidence" : 1,
+          "text" : "SESAME"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.029069766998291002,
+            "width" : 0.029069766998291113,
+            "x" : 0.6468023260108212,
+            "y" : 0.2412790700722831
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030523255666097038,
+            "width" : 0.11773256089952255,
+            "x" : 0.6860465109837416,
+            "y" : 0.24127906992312875
+          },
+          "confidence" : 1,
+          "text" : "SESAME"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.10465115865071611,
+            "x" : 0.19912791009324654,
+            "y" : 0.21500000001106756
+          },
+          "confidence" : 1,
+          "text" : "HAHBURGER DUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013333333333333308,
+            "width" : 0.10465115865071606,
+            "x" : 0.6918604684944093,
+            "y" : 0.21499999999289898
+          },
+          "confidence" : 1,
+          "text" : "HAHBURGER DUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010639431211683537,
+            "width" : 0.09184235466851129,
+            "x" : 0.137943292734291,
+            "y" : 0.19317739810825818
+          },
+          "confidence" : 0.3,
+          "text" : "НО НСАГОКТИЕСАНО"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011821704970465752,
+            "width" : 0.09302324930826822,
+            "x" : 0.6308139579040054,
+            "y" : 0.19166666678862665
+          },
+          "confidence" : 0.3,
+          "text" : "но нсапоасттог сеано"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01675760375128854,
+            "width" : 0.08299384223090278,
+            "x" : 0.12783447340371756,
+            "y" : 0.16967352358264187
+          },
+          "confidence" : 0.3,
+          "text" : "MEUTS00S"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.07994185553656685,
+            "x" : 0.6250000032055537,
+            "y" : 0.17005813970546357
+          },
+          "confidence" : 0.3,
+          "text" : "ETUTS60S"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-65a5ac65b37ccae96c860245d8da57f2b9fedd30a0af6268a503011879eb07ab.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.058139532804489136,
+            "width" : 0.1727272674327588,
+            "x" : 0.44318182178867105,
+            "y" : 0.8372093035751456
+          },
+          "confidence" : 1,
+          "text" : "SESAE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.037790697067976,
+            "width" : 0.07954545348655176,
+            "x" : 0.22954545506227972,
+            "y" : 0.8357558144666579
+          },
+          "confidence" : 1,
+          "text" : "NE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04360464960336685,
+            "width" : 0.3840909069731035,
+            "x" : 0.3068181810715291,
+            "y" : 0.4389534889095569
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010640386492013931,
+            "width" : 0.06381459126945671,
+            "x" : 0.33627452175005895,
+            "y" : 0.40965073690154696
+          },
+          "confidence" : 0.5,
+          "text" : "KSTP."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018895348533988,
+            "width" : 0.07499999999999996,
+            "x" : 0.4454545462045455,
+            "y" : 0.4084302327824245
+          },
+          "confidence" : 0.3,
+          "text" : "Grox"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008851535618305206,
+            "width" : 0.05005531019836895,
+            "x" : 0.595426890247004,
+            "y" : 0.4112719066299332
+          },
+          "confidence" : 1,
+          "text" : "193Y"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016135991550982,
+            "width" : 0.2909090930268965,
+            "x" : 0.35227272803200627,
+            "y" : 0.3779069767393102
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03488371893763542,
+            "width" : 0.034090909885086174,
+            "x" : 0.30454545403472966,
+            "y" : 0.15406976868732847
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05051424354314804,
+            "width" : 0.2859345880173545,
+            "x" : 0.3375521879402801,
+            "y" : 0.14557621176751967
+          },
+          "confidence" : 1,
+          "text" : "SESAME"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0146484375,
+            "width" : 0.21818181394620706,
+            "x" : 0.38863636711780547,
+            "y" : 0.11767578132267442
+          },
+          "confidence" : 1,
+          "text" : "HAHBURGER DUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01308139506727457,
+            "width" : 0.2022727209193106,
+            "x" : 0.25909091429034464,
+            "y" : 0.08720930250996728
+          },
+          "confidence" : 0.3,
+          "text" : "HO НЕАПОАСТАЕ СОНОЧ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02501344121992588,
+            "width" : 0.1773757701611701,
+            "x" : 0.23631211346383793,
+            "y" : 0.055080488447766696
+          },
+          "confidence" : 0.3,
+          "text" : "TUTSU0S"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-65cbab9635eb24766fcc68a9714f868a13ffdba154509e7cc36658ea7fdf2f4c.png",
+      "width" : 1309
+    },
+    {
+      "height" : 1283,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.037037035386510375,
+            "width" : 0.2906976640224457,
+            "x" : 0.3531976814335446,
+            "y" : 0.9490740750150781
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025462961642541693,
+            "width" : 0.040697675198316574,
+            "x" : 0.6700581395520044,
+            "y" : 0.5277777785537292
+          },
+          "confidence" : 0.3,
+          "text" : "BUS7"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10616141464851359,
+            "width" : 0.3208333253860473,
+            "x" : 0.3000000052076173,
+            "y" : 0.37748344464386874
+          },
+          "confidence" : 1,
+          "text" : "8 SESAME"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03971962616822433,
+            "width" : 0.2180232554674149,
+            "x" : 0.38808139431086625,
+            "y" : 0.29595015515234113
+          },
+          "confidence" : 1,
+          "text" : "HAMBURGER BUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03472222123190627,
+            "width" : 0.21075581014156342,
+            "x" : 0.255813957150633,
+            "y" : 0.2222222227752505
+          },
+          "confidence" : 0.3,
+          "text" : "НОНАТОКТАЕСЕАНОКО"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.023148147487937476,
+            "width" : 0.05668604373931885,
+            "x" : 0.5421511636099917,
+            "y" : 0.21527777801529058
+          },
+          "confidence" : 0.3,
+          "text" : "AnTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06087247307798205,
+            "width" : 0.1710069179534912,
+            "x" : 0.24157987514649104,
+            "y" : 0.1450604528046383
+          },
+          "confidence" : 0.3,
+          "text" : "ETOTSEOS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-e53592c67564f6c7988ba79e3bfd3dc7be1096ae53911817bb312dbb5535dce6.png",
+      "width" : 2048
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.08575581014156342,
+            "width" : 0.12593985085535536,
+            "x" : 0.40789473621303124,
+            "y" : 0.6526162811799104
+          },
+          "confidence" : 1,
+          "text" : "NE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-6079585118d2fc5e59c78fcea690b6e21c5578349604b1d09574c2726e34134d.png",
+      "width" : 1583
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

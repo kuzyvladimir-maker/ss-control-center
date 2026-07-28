@@ -1,0 +1,101 @@
+{
+  "schema_version": "channelmax-default-model-rollback-evidence-requirements/v1",
+  "immutable": true,
+  "offline_only": true,
+  "external_mutations": 0,
+  "account": {
+    "account_id": "channelmax:amznus:salutem-solutions",
+    "host": "selling.channelmax.net",
+    "seller_id": "A3A7A0RDFUSGBS",
+    "site_id": 300,
+    "site_name": "AmznUS [Salutem Solutions]"
+  },
+  "target": {
+    "item_id": 171141050,
+    "sku": "BD-AS8P-XAW5",
+    "asin": "B0H85MXFH8",
+    "minimum_price": 66.95,
+    "maximum_price": 76.99
+  },
+  "current_verdict": "DEFAULT_IMPORT_ENCODING_UNPROVEN",
+  "accepted_rollback_encoding": null,
+  "documented_candidate": {
+    "repricing_model_id": "35218",
+    "repricing_model_name": "Default",
+    "disposition": "DOCUMENTED_MODEL_ID_ONLY_NOT_PROVEN_IMPORT_ENCODING",
+    "may_be_emitted_in_rollback_tsv": false
+  },
+  "rejected_assumptions": [
+    {
+      "encoding": "OMIT_REPRICING_MODEL_ID_COLUMN",
+      "reason": "Existing bound-only writes preserve the current model; omission does not prove Manual-to-Default reassignment."
+    },
+    {
+      "encoding": "BLANK_REPRICING_MODEL_ID",
+      "reason": "No reviewed Analyze preview or round-trip evidence proves that a blank clears the model instead of preserving or rejecting it."
+    },
+    {
+      "encoding": "NULL_LITERAL",
+      "reason": "No ChannelMAX artifact or code contract accepts the literal NULL as a Default-model assignment."
+    },
+    {
+      "encoding": "35218",
+      "reason": "The wiki documents 35218 as a Default model ID, but current authenticated discovery did not capture it and no upload/readback proves its rollback semantics."
+    }
+  ],
+  "required_evidence": [
+    {
+      "ordinal": 1,
+      "code": "FRESH_EXACT_DEFAULT_PREWRITE",
+      "mutation": false,
+      "exact_requirement": "Within 15 minutes of any canary, read the exact account/site/item/SKU/ASIN and prove model_id=null, model_name=Default, Min=66.95, Max=76.99."
+    },
+    {
+      "ordinal": 2,
+      "code": "AUTHENTICATED_DEFAULT_MODEL_REGISTRY",
+      "mutation": false,
+      "exact_requirement": "Capture immutable authenticated raw DOM/API evidence from site 300 mapping the actual Default model name to its exact internal ID; the old wiki statement alone is insufficient."
+    },
+    {
+      "ordinal": 3,
+      "code": "ROLLBACK_ANALYZE_PREVIEW",
+      "mutation": false,
+      "exact_requirement": "Analyze one exact rollback TSV without submitting it and capture the six-column mapping, one BD row, candidate model value/name, zero errors, and existing-SKU update disposition."
+    },
+    {
+      "ordinal": 4,
+      "code": "PREARMED_EXACT_ROLLBACK",
+      "mutation": false,
+      "exact_requirement": "Only after steps 1-3, seal a one-row rollback TSV that preserves Min=66.95 and Max=76.99, bind its SHA/bytes, and obtain a separate current owner approval before forward is claimable."
+    },
+    {
+      "ordinal": 5,
+      "code": "FORWARD_RECEIPT_AND_READBACK",
+      "mutation": true,
+      "exact_requirement": "Submit the exact forward artifact once; require one processed/one succeeded/zero failed and independent readback of model 59021 Manual min/max with unchanged bounds."
+    },
+    {
+      "ordinal": 6,
+      "code": "ROLLBACK_RECEIPT_AND_READBACK",
+      "mutation": true,
+      "exact_requirement": "Submit the separately approved rollback artifact once; require one processed/one succeeded/zero failed and independent readback normalized to model_id=null, model_name=Default with unchanged bounds."
+    },
+    {
+      "ordinal": 7,
+      "code": "DELAYED_DEFAULT_HOLD",
+      "mutation": false,
+      "exact_requirement": "After at least 65 minutes, repeat the exact ChannelMAX readback and prove the row remains null/Default at 66.95/76.99; any ambiguity is terminal and forbids rollout."
+    }
+  ],
+  "terminal_success_state": {
+    "repricing_model_id": null,
+    "repricing_model_name": "Default",
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "sku": "BD-AS8P-XAW5",
+    "asin": "B0H85MXFH8",
+    "site_id": 300
+  },
+  "next_safe_action": "CAPTURE_READ_ONLY_DEFAULT_MODEL_AND_ANALYZE_EVIDENCE_THEN_REBUILD_V2",
+  "body_sha256": "a9513d7b609a0424a9058cd48b11d6a3c3423fc5ad75a214790f79530b71475d"
+}

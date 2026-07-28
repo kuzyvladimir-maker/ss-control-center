@@ -1,0 +1,254 @@
+{
+  "schema_version": "uncrustables-amazon-rollback-plan/v3",
+  "immutable": true,
+  "rollback_plan_id": "UARP-20260718T151233480Z-8badb989fc9b",
+  "created_at": "2026-07-18T15:12:33.480Z",
+  "apply_eligible": true,
+  "source_snapshot": {
+    "path": "data/repairs/rollback/offer-canary-qx-v1-preapply-20260718T1511Z/UAPS-20260718T151233207Z-46a80e727880-8096129d8101.json",
+    "sha256": "8096129d81012081d33b535389f02abd2717d0ae0923fe4910157eb2df7b5121",
+    "snapshot_id": "UAPS-20260718T151233207Z-46a80e727880",
+    "capture_mode": "LIVE_SP_API",
+    "completed_at": "2026-07-18T15:12:33.207Z",
+    "exact_scope": 164
+  },
+  "source_repair_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+    "plan_id": "URP-20260718T083203612Z",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "source_execution_selection": {
+    "path": "data/repairs/execution-selections/uncrustables-offer-canary-qx-20260718-v1/URES-20260718T150721047Z-b249fc715064.json",
+    "sha256": "b249fc715064a074365cb71513907cce8e27edbaf3d878f98fb717444b60eb3e",
+    "profile": "OFFER_ONLY_V1",
+    "selected_actions": 1,
+    "selected_action_ids_sha256": "436f0f6f405c3fc0e5466cece18233dfd2a2902d1ba15b35a0644782aaf10b5f"
+  },
+  "policy": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "patch_only": true,
+    "path_level_compare_and_swap": true,
+    "validation_preview_required": true,
+    "fresh_get_guard_required": true,
+    "post_write_readback_required": true,
+    "cli_confirmation_required": true,
+    "environment_confirmation_required": true,
+    "default_scope": "CANARY",
+    "maximum_errors_default": 1
+  },
+  "canary": {
+    "method": "ACTION_KIND_COVERAGE_THEN_SHA256",
+    "size": 1,
+    "skus": [
+      "QX-AS89-H8YC"
+    ],
+    "covered_action_kinds": [
+      "OFFER"
+    ]
+  },
+  "scope": {
+    "snapshot_entries": 164,
+    "repair_entries": 1,
+    "repair_actions": 1,
+    "rollback_entries": 1,
+    "inverse_operations": 2,
+    "missing_media_binary_evidence": 0
+  },
+  "entries": [
+    {
+      "rollback_entry_id": "RB-9a4de7ca08cbad15018c",
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "store_index": 1,
+      "before_product_type": "GROCERY",
+      "forward_action_ids": [
+        "QX-AS89-H8YC:offer"
+      ],
+      "forward_action_kinds": [
+        "OFFER"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-5e07e4d5323dff5df727",
+          "path": "/attributes/list_price",
+          "forward_patch_op": "delete",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "value": 85.7,
+                "currency": "USD",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "9887296f595d4d147f3808aa487f5058943427a39aa68a6551ad5f8bbd7f1569"
+          },
+          "expected_after": {
+            "present": false,
+            "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/list_price",
+            "value": [
+              {
+                "value": 85.7,
+                "currency": "USD",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-55dedad2946ddc260eb3",
+          "path": "/attributes/purchasable_offer",
+          "forward_patch_op": "merge",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "currency": "USD",
+                "audience": "ALL",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 77.64
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.99
+                      }
+                    ]
+                  }
+                ],
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 66.95
+                      }
+                    ]
+                  }
+                ],
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "audience": "B2B",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.86
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "sha256": "6b0d39ff7d86b838d9ef01d43cc180d48ef6131d90d1d1c6f4ed9e92ce75b12a"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "currency": "USD",
+                "audience": "ALL",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.99
+                      }
+                    ]
+                  }
+                ],
+                "maximum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.99
+                      }
+                    ]
+                  }
+                ],
+                "minimum_seller_allowed_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 66.95
+                      }
+                    ]
+                  }
+                ],
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "audience": "B2B",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.99
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "sha256": "f16940dc46e71868e80ab115eee47998fcb95fc63d296156f8f40683167884ac"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "merge",
+            "path": "/attributes/purchasable_offer",
+            "value": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "audience": "ALL",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 77.64
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "currency": "USD",
+                "audience": "B2B",
+                "our_price": [
+                  {
+                    "schedule": [
+                      {
+                        "value_with_tax": 76.86
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        }
+      ]
+    }
+  ],
+  "sha256": "26c25f572c89edcdf213f2e13c92fef13283144ec0b8b458eee61603225c492c"
+}

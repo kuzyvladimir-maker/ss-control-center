@@ -1,0 +1,123 @@
+{
+  "schema_version": "walmart-new-sku-doctor-diagnostic/1.0.0",
+  "artifact_role": "BLOCKED_DOCTOR_DIAGNOSTIC_ONLY",
+  "acceptable_as_doctor_receipt": false,
+  "requested_doctor_receipt": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/walmart-new-sku-engine/doctor/20260723T065231Z-v20-pack3-doctor.json",
+  "engine": "walmart-new-sku-engine",
+  "command": "doctor",
+  "checked_at": "2026-07-23T06:52:47.942Z",
+  "read_only": true,
+  "database": "ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+  "store": {
+    "store_index": 1,
+    "configured": true,
+    "store_name": "SIRIUS TRADING INTERNATIONAL LLC",
+    "seller_id_present": true
+  },
+  "item_spec": {
+    "configured_version": "5.0.20260501-19_21_29-api",
+    "live_get_spec_required_before_certification": true
+  },
+  "walmart_api_probe": {
+    "method": "GET",
+    "path": "/v3/items/walmart/search",
+    "response_format": "SPEC",
+    "upc_sha256": "415447a28c1550c9cb7f85bbdd57b4ae54e3fc516dcd6bcbfbfbeed4c4251f08",
+    "http_status": 200,
+    "correlation_id": "bdb9524d-3600-4a92-9dee-4c6883d87ae6",
+    "response_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "authenticated_catalog_read": true
+  },
+  "database_target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "database_schema_sha256": "e16bdce3e2878b1b3aa57b92b6ad554c2c7edaa6b8cb20d5849b5daf8e5ffa7b",
+  "engine_release_sha256": "3093012b50ed76caf2135d7b9e8023d5c334412567a1e347b096de39b99922c2",
+  "expected_engine_release_sha256": "3093012b50ed76caf2135d7b9e8023d5c334412567a1e347b096de39b99922c2",
+  "release_manifest_sha256": "33daa4e18c3a202590568bf97da50b6e5a64c80330b04e26f5ea2f7e92917aba",
+  "frozen_release_verified": true,
+  "frozen_release_source_modes_verified": true,
+  "planning_scope": {
+    "as_of": "2026-07-23T06:52:31.000Z",
+    "zip": "33765",
+    "max_price_age_ms": 86400000,
+    "limit": 1,
+    "pack_count": 3
+  },
+  "owner_permit_trust": {
+    "ready": true,
+    "active_key_ids": [
+      "walmart-owner-control-2026-01"
+    ],
+    "active_key_fingerprints": [
+      "ca74a2134808ab46eb162b14dfe481730fc69df00b57283cffd7a7bb1d37883a"
+    ]
+  },
+  "product_truth": {
+    "schema_ready": true,
+    "error": null,
+    "current_candidate_count_sample": 0,
+    "commercial_discovery": {
+      "schema_version": "walmart-new-sku-commercial-discovery/1.0.0",
+      "authority": "PROVISIONAL_PRODUCT_TRUTH_GAP_PRIORITY_ONLY_NOT_LISTING_TRUTH",
+      "as_of": "2026-07-23T06:52:31.000Z",
+      "pack_count": 3,
+      "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+      "full_seller_catalog_read": false,
+      "paid_provider_calls": 0,
+      "marketplace_calls": 0,
+      "candidates": [],
+      "claims": {
+        "candidates_are_not_canonical_listing_inputs": true,
+        "fresh_exact_product_truth_evidence_required": true,
+        "fresh_exact_walmart_comparable_required": true,
+        "exact_dimensions_and_shipping_quote_required": true,
+        "clubs_require_separate_owner_approved_plan": true
+      }
+    },
+    "commercial_discovery_error": null,
+    "commercial_discovery_can_enter_plan": false
+  },
+  "duplicate_guard": {
+    "binding_id": "walmart-exact-identifier-guard-065d91563e2f0a42",
+    "body_sha256": "065d91563e2f0a42d60ffeea231333063f93cd286f97fb8b289ab7801486e53c",
+    "mode": "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+    "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+    "full_seller_catalog_required": false,
+    "exact_seller_sku_absence_required_before_certification": true,
+    "exact_upc_catalog_search_required_before_certification": true,
+    "error": null
+  },
+  "upc_pool": {
+    "available": 13055,
+    "available_with_legacy_checksum_flag_and_provenance": 13055,
+    "duplicate_draft_reservations": 0,
+    "legacy_gs1_validated_field_is_not_registry_proof": true,
+    "certification_requires_fresh_registry_brand_and_seller_authority_evidence": true
+  },
+  "publish_lifecycle": {
+    "submission_ledger_schema_ready": true,
+    "buyer_evidence_schema_ready": true,
+    "canonical_schema_ready": true,
+    "missing": [],
+    "error": null,
+    "processed_feed_alone_can_mark_live": false
+  },
+  "ready_for_plan": false,
+  "infrastructure_ready_for_pilot": false,
+  "ready_for_live_apply": false,
+  "live_apply_requires": [
+    "SEALED_CANDIDATE_CERTIFICATION",
+    "FRESH_DRY_RUN_RECEIPT",
+    "FRESH_DOCTOR_RECEIPT",
+    "SEALED_INTERNAL_APPROVAL",
+    "APPLY_PREVIEW_REVIEW",
+    "EXTERNAL_OWNER_PERMIT"
+  ],
+  "blockers": [
+    "NO_CURRENT_CANONICAL_PILOT_CANDIDATES"
+  ],
+  "doctor_receipt": null,
+  "doctor_receipt_sha256": null,
+  "doctor_receipt_written": false,
+  "next_argv": null,
+  "next_command": null
+}

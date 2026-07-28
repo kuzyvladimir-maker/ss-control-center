@@ -1,0 +1,71 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-live-checkpoint/v1",
+  "immutable": true,
+  "event_id": "791db39a-b50d-4653-a189-4933b56a3164",
+  "execution_binding_sha256": "082d3f50af5b376c658b9ab7b21d10a3cb50a7f0d99e228c7619f7c438bac353",
+  "sequence": 5,
+  "previous_event_sha256": "9fbd4393a4b4be68e4ec7543907cab91d63e156447d96252f20e461054a2385c",
+  "created_at": "2026-07-20T01:56:25.317Z",
+  "action_id": "amazon:1:LK-AS7X-K43B:base-offer-preserve",
+  "sku": "LK-AS7X-K43B",
+  "status": "READBACK_OBSERVED",
+  "detail": {
+    "submitted_event_id": "2e8302c1-1e70-469e-af68-55ca1e9f5e98",
+    "attempt": 2,
+    "classification": "NON_DESIRED",
+    "state_sha256": "ed9cff7c9301abb7caceb0b0b02a220cc74a24f9ca630dba4c59a51e7b5f61db",
+    "stable_desired_reads": 0,
+    "issue_19038_absent": false,
+    "checks": [
+      {
+        "name": "discounted_price_preserved",
+        "ok": true,
+        "actual": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1",
+        "expected": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+      },
+      {
+        "name": "top_level_list_price_preserved",
+        "ok": true,
+        "actual": "125ffde88a910ab8616cfa8f8fd958560f4250772ad77a264cf35e61c7a446d1",
+        "expected": "125ffde88a910ab8616cfa8f8fd958560f4250772ad77a264cf35e61c7a446d1"
+      },
+      {
+        "name": "ALL.our_price_desired",
+        "ok": true,
+        "actual": [
+          {
+            "schedule": [
+              {
+                "value_with_tax": 76.99
+              }
+            ]
+          }
+        ],
+        "expected": [
+          {
+            "schedule": [
+              {
+                "value_with_tax": 76.99
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "B2B.our_price_desired",
+        "ok": false,
+        "actual": 76.22,
+        "expected": 76.99
+      },
+      {
+        "name": "issue_19038_absent",
+        "ok": false,
+        "actual": [
+          "19038"
+        ],
+        "expected": "19038 absent"
+      }
+    ]
+  },
+  "body_sha256": "e3ae159cbd6a71f93360d931ee75f915408e35e45fe79595d2fff61ae9ca67fe"
+}

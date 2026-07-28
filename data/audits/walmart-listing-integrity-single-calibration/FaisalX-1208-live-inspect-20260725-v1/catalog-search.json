@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "itemId": "8406560524",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-White-Bakery-Buns-8-count-Soft-Hamburger-Buns-19-oz-Bag-Pack-of-2_cd070b50-292c-48f0-9c54-767f94348ed3.4dfe95e288d9f04b4a3c4ac31bafb783.png"
+        }
+      ],
+      "price": {
+        "amount": "24.49",
+        "currency": "USD"
+      },
+      "description": "<li>Bakery-Style Bread: Our artisan-style bakery buns are made with a light flour-dusted crust and a mouthwateringly soft texture. Artesano transforms the routine into remarkable.</li><li>Baked With</li>",
+      "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+      "brand": "Sara Lee",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611899187"
+      ],
+      "properties": {
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "Sara Lee Bread"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

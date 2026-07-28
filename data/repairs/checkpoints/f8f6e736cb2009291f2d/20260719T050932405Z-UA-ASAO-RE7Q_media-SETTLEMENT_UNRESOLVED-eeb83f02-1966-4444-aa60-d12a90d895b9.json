@@ -1,0 +1,45 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "eeb83f02-1966-4444-aa60-d12a90d895b9",
+  "created_at": "2026-07-19T05:09:32.405Z",
+  "plan_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+  "action_id": "UA-ASAO-RE7Q:media",
+  "sku": "UA-ASAO-RE7Q",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_UNRESOLVED",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "425ce40b-bae4-4814-9682-b542fffe8ea6",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "29647c82f8c00d0b01ce73f126d65e2ed3f75cb1260810e25c856b4fbd47c5c9",
+      "exact_action_paths": [
+        "/attributes/other_product_image_locator_1",
+        "/attributes/other_product_image_locator_7"
+      ],
+      "before_path_state_sha256": "99b8866d4ba437f509e51a0ea0740fa3e0bfa82ecf2afe07925e267d4ad7cbcf"
+    },
+    "fast_verify_attempts": 10,
+    "extended_polling_attempts": 20,
+    "consecutive_stable_reads": 2,
+    "last_classification": "DESIRED",
+    "last_path_state_sha256": "0c211fa41279b1b3d2b17fd47c6cb4016938f9afab18d53d10bb722576ca8132",
+    "checks": [
+      {
+        "field": "other_product_image_locator_1",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+      },
+      {
+        "field": "other_product_image_locator_7",
+        "ok": true,
+        "expected": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg",
+        "actual": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+      }
+    ]
+  },
+  "sha256": "28cea9ce11469a6937fff8009c0f889aadaddc5e9efc091c289a5eeaf5a31ff6"
+}

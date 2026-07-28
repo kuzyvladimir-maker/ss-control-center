@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "796f368a-b8a4-4bd5-b8ba-60ef065d290a",
+  "created_at": "2026-07-18T12:09:00.370Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZC-ASDC-3QMV:text_count",
+  "sku": "ZC-ASDC-3QMV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "e5abe6293b118ad6444319a315908dc2730a91161be7a0e7c948973f873d9137",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "3ab6b333747b4bcba89db2115a1c2a51",
+    "issues": []
+  },
+  "sha256": "9a3e7f951958e2ca136a58c5073657c027a6cb6a1a4c44bf50f399e60760728a"
+}

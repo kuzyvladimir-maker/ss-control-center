@@ -1,0 +1,421 @@
+{
+  "as_of": "2026-07-27T13:46:00.000Z",
+  "candidates": [
+    {
+      "candidate_key": "wm-e241c5c8317dc0b5",
+      "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+      "content": {
+        "bullets": [
+          "Includes 2 identical retail packages",
+          "Same ritz product, size and variant in every package",
+          "Homogeneous multipack; not a mixed assortment",
+          "Original package labels provide ingredients, allergens and nutrition facts",
+          "Main image represents all 2 packages included"
+        ],
+        "description": "Stock up with 2 identical retail packages of RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz. This homogeneous multipack contains the same ritz product, size and variant in every package; it is not a mixed assortment. You receive 2 complete packages together as one sellable unit. Each package remains separate, so the contents can be stored and opened one package at a time. This format makes it straightforward to keep an unopened package available while another package is in use. The package count in the title and main image refers to the total number of individual retail packages included. Products arrive new in their original retail packaging. Check every package before use and follow the information printed by the manufacturer. Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. Package design and labeling may change when the manufacturer updates them. The main image represents the full 2-package quantity included in the order. Compare the delivered product name, size, variant and package count with the order details.",
+        "generator": "deterministic-product-truth-multipack/v4",
+        "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz (Pack of 2)"
+      },
+      "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+      "pack_count": 2,
+      "recipe_input": {
+        "as_of": "2026-07-27T13:46:00.000Z",
+        "components": [
+          {
+            "canonical_identity": {
+              "brand": "ritz",
+              "flavor": null,
+              "form": null,
+              "identity": {
+                "brand": "ritz",
+                "flavor": null,
+                "form": null,
+                "modifiers": [],
+                "outerPackCount": 1,
+                "productLine": "bits cheese crackers lunch sandwich snacks",
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "size": {
+                  "baseAmount": 249.4758035,
+                  "baseUnit": "g",
+                  "dimension": "MASS"
+                }
+              },
+              "identityHash": "ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "modifiers": [],
+              "outerPackCount": 1,
+              "productLine": "bits cheese crackers lunch sandwich snacks",
+              "sizeBaseAmount": 249.4758035,
+              "sizeBaseUnit": "g",
+              "sizeDimension": "MASS",
+              "variantKey": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9"
+            },
+            "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+            "component_key": "component-0-cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+            "content_captured_at": "2026-07-27T13:29:57.000Z",
+            "content_classification": {
+              "category": "Crackers",
+              "category_field": "category",
+              "storage": "Shelf Stable",
+              "storage_field": "storageTemp"
+            },
+            "content_observation_id": "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+            "content_provenance": {
+              "approval_id": "owner-direct-target-content:cde04dc563ff761324e64cd1",
+              "content_hash": "92b37ea9b37760f852a08899bb410105d33467bb9e74554a09a0108c07310351",
+              "decision_evidence": {
+                "certification": "EXACT_SOURCE_IDENTITY",
+                "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+                "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+                "matcherVersion": "canonical-product-match/1.2.1",
+                "reasonCodes": [
+                  "IDENTITY_EXACT",
+                  "SIZE_EQUIVALENT_CONVERSION",
+                  "TITLE_FALLBACK_IDENTITY_PROVEN"
+                ],
+                "schemaVersion": "donor-source-identity-evidence/1.2.0",
+                "source": {
+                  "identityEvidenceNormalization": "walmart-inclusive-audience-phrase/1.0.0",
+                  "identityEvidenceTitle": "RITZ Bits Cheese Sandwich Crackers, Snacks, Lunch Snacks, 8.8 oz",
+                  "observedAt": "2026-07-27T13:18:24.109Z",
+                  "productUrl": "https://www.walmart.com/ip/RITZ-Bits-Cheese-Sandwich-Crackers-8-8-oz/34312392",
+                  "retailer": "walmart",
+                  "retailerProductId": "34312392",
+                  "sourceApi": "oxylabs",
+                  "title": "RITZ Bits Cheese Sandwich Crackers, Snacks for Kids and Adults, Lunch Snacks, 8.8 oz"
+                },
+                "sourceCanonicalIdentity": {
+                  "brand": "ritz",
+                  "flavor": null,
+                  "form": null,
+                  "modifiers": [],
+                  "outerPackCount": 1,
+                  "productLine": "bits cheese crackers lunch sandwich snacks",
+                  "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                  "size": {
+                    "baseAmount": 249.4758035,
+                    "baseUnit": "g",
+                    "dimension": "MASS"
+                  }
+                },
+                "target": {
+                  "brand": "ritz",
+                  "modifiers": [],
+                  "outer_pack_count": 1,
+                  "product_line": "bits cheese crackers lunch sandwich snacks",
+                  "retail_search_query": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks 8.8 oz",
+                  "size": "249.4758035 g"
+                },
+                "targetComparisonVerdict": "EXACT_IDENTITY",
+                "titleEvidence": {
+                  "brandStartIndex": 0,
+                  "candidateOuterPackCount": 1,
+                  "missingTargetTokens": [],
+                  "prefixTokens": [],
+                  "requiredTargetTokens": [
+                    "bits",
+                    "cheese",
+                    "crackers",
+                    "lunch",
+                    "sandwich",
+                    "snacks"
+                  ],
+                  "targetOuterPackCount": 1,
+                  "unexplainedCandidateTokens": []
+                }
+              },
+              "decision_evidence_hash": "cb62bc21836a8385431d768079a6bb58edd0378cf158e4f43a9e0e00f4aada38",
+              "field_hashes": {
+                "allergens": "274c6023fa8f061a5975f9b90594f9ec2b75dfb92ffda70dd76f8409516850c4",
+                "attributes": "419d61db5054c8a166024faac4460125145847b39dfde29ccb26ecb1cf1cd5ce",
+                "bullets": "0a6d1c31ffb155d630a6a6174e1947cfb5ce8686fe1ffd730a9fe89aa39a090c",
+                "category": "bab492fbc4e8308e14eb9212c166b3b30bf8b56af63478c8881a2bccac051dfa",
+                "description": "84ae23cd01ebda6cc3507cd9534b59fca74278a15caf046d22ad2304a3c5ef01",
+                "gtin": "336eb3bdc1ccba268abb3af1e79b4c5847daf6913877d8758c3f3de1402b2eed",
+                "imageUrls": "050c1329588e01842cfb037c8f9b1476731cc3e97034450871ac0d7dc1f8b9b5",
+                "ingredients": "c47682f74c3a227625aeed8bc6a5706b3592eaa044241993abfe1d3595d68505",
+                "mainImageUrl": "781a63098a8901a39387ca9e5e68d619a800a80b58a833f0cbb83e2e362a113e",
+                "nutritionFacts": "10994796a9b2e35c550c7965ec04a5cddc3cc0daf194e92e90cc25259236e901",
+                "storageTemp": "b9eed184cc8a7ab71daf565bcab50d3193ccfa5f1201c3d3c9e5835554abde45",
+                "title": "70d1965cbe6aa95e2af8969d2340b4974e71df7991c21ea6a3ea9f11efe143c9",
+                "upc": "336eb3bdc1ccba268abb3af1e79b4c5847daf6913877d8758c3f3de1402b2eed"
+              },
+              "metered_receipt_id": null,
+              "observation_key": "68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+              "run_id": "direct-target-content:cde04dc563ff761324e64cd1",
+              "source_api": "target_direct_html"
+            },
+            "content_role": "EXACT",
+            "content_source_url": "https://www.target.com/p/ritz-bits-cracker-sandwiches-with-cheese-8-8oz/-/A-14920182",
+            "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+            "facts": {
+              "allergens": "CONTAINS: WHEAT, MILK, SOY.\nMAY CONTAIN: PEANUT.",
+              "attributes": {
+                "_exact_image_urls": [
+                  "https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6",
+                  "https://target.scene7.com/is/image/Target/GUEST_73635a4b-03d1-4941-a786-d15b73bbf82f",
+                  "https://target.scene7.com/is/image/Target/GUEST_2833a548-2bdf-480f-bf3a-1c47eabe9385",
+                  "https://target.scene7.com/is/image/Target/GUEST_51d34b86-3fcc-496f-b2c1-9e8e6e030ddf",
+                  "https://target.scene7.com/is/image/Target/GUEST_92bee758-0712-4f26-ae53-8ffd4c5f4743",
+                  "https://target.scene7.com/is/image/Target/GUEST_3df06436-9647-4533-bfaa-77d4eaab9293",
+                  "https://target.scene7.com/is/image/Target/GUEST_97a8da23-6499-40a9-b870-a5da12c010eb",
+                  "https://target.scene7.com/is/image/Target/GUEST_2d456492-54b3-4409-8ae9-9287a2668e1a",
+                  "https://target.scene7.com/is/image/Target/GUEST_aed1e4b7-c752-4f9f-a283-9aa0ba938d41",
+                  "https://target.scene7.com/is/image/Target/GUEST_1dd05e7e-f501-4fb4-87d6-d836425b25c9",
+                  "https://target.scene7.com/is/image/Target/GUEST_a20daa79-ee33-4423-9ee3-dc12932a49d1",
+                  "https://target.scene7.com/is/image/Target/GUEST_ea0def60-ab8f-4310-a7fd-74434f67bf34",
+                  "https://target.scene7.com/is/image/Target/GUEST_ee2d5a00-314a-4580-b10f-fa824774dee7",
+                  "https://target.scene7.com/is/image/Target/GUEST_895b22f8-360d-4014-a501-7dd7096fb0ec",
+                  "https://target.scene7.com/is/image/Target/GUEST_177a30fb-aa99-4f53-a508-3c5b1575c2e5",
+                  "https://target.scene7.com/is/image/Target/GUEST_d24c335b-ab1e-42b5-8925-18f3369c623e",
+                  "https://target.scene7.com/is/image/Target/GUEST_d7846b14-5496-47ad-93a9-f0b60fb1a6aa",
+                  "https://target.scene7.com/is/image/Target/GUEST_2f47d504-9430-4d85-acf8-e9c212907451",
+                  "https://target.scene7.com/is/image/Target/GUEST_ad778cf4-ae3c-4d6f-99b4-321216dfe50d",
+                  "https://target.scene7.com/is/image/Target/GUEST_d3ddad4e-02ec-4535-8b7c-715cea0760db"
+                ],
+                "_exact_main_image_url": "https://target.scene7.com/is/image/Target/GUEST_6139540b-c43f-4f02-b7ca-402374b469d6",
+                "directTargetContentEvidenceSha256": "cde04dc563ff761324e64cd199787f6f45447983931fbad5ec743eb37ec84b7f",
+                "directTargetHtmlSha256": "f66cb435fdabb76f47eb7885395a8af31c96f7104a0c1d97c55f6018c964eb40",
+                "targetClassification": {
+                  "departmentName": "SNACKS",
+                  "itemTypeName": "Crackers",
+                  "productTypeName": "GROCERY",
+                  "storageClass": "Shelf Stable",
+                  "storageRuleVersion": "target-grocery-crackers-shelf-stable/1.0.0"
+                },
+                "targetObservedAttributes": [
+                  "<B>Features:</B> No High Fructose Corn Syrup",
+                  "<B>Dietary Needs:</B> 0 Grams Trans Fat, Naturally Flavored",
+                  "<B>State of Readiness:</B> Ready to Eat",
+                  "<B>Form:</B> Pieces",
+                  "<B>Package Quantity:</B> 1"
+                ]
+              },
+              "ingredients": "Unbleached Enriched Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate [Vitamin B1], Riboflavin [Vitamin B2], Folic Acid), Palm Oil, Soybean and/or Canola Oil, Whey (From Milk), Sugar, Cheddar Cheese Powder (Pasteurized Milk, Cheese Cultures, Salt, Enzymes), Leavening (Calcium Phosphate, Baking Soda), Salt, Sodium Phosphate, Natural Flavor, Yeast Extract, Soy Lecithin, Cornstarch, Turmeric, Annatto Extracts (For Color)",
+              "nutrition_facts": {
+                "ingredients": "Unbleached Enriched Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate [Vitamin B1], Riboflavin [Vitamin B2], Folic Acid), Palm Oil, Soybean and/or Canola Oil, Whey (From Milk), Sugar, Cheddar Cheese Powder (Pasteurized Milk, Cheese Cultures, Salt, Enzymes), Leavening (Calcium Phosphate, Baking Soda), Salt, Sodium Phosphate, Natural Flavor, Yeast Extract, Soy Lecithin, Cornstarch, Turmeric, Annatto Extracts (For Color) ",
+                "nutrition_label_type_code": "LEGACY_FORMAT",
+                "value_prepared_list": [
+                  {
+                    "nutrients": [
+                      {
+                        "name": "Calories",
+                        "quantity": 150,
+                        "unit_of_measurement": "Cal"
+                      },
+                      {
+                        "name": "Total Fat",
+                        "percentage": 12,
+                        "quantity": 9,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Saturated Fat",
+                        "percentage": 15,
+                        "quantity": 3,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Trans Fat",
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Cholesterol",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Sodium",
+                        "percentage": 5,
+                        "quantity": 125,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Total Carbohydrate",
+                        "percentage": 6,
+                        "quantity": 17,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Dietary Fiber",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Sugars",
+                        "quantity": 4,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Added Sugars",
+                        "percentage": 4,
+                        "quantity": 2,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Protein",
+                        "quantity": 2,
+                        "unit_of_measurement": "g"
+                      },
+                      {
+                        "name": "Vitamin D",
+                        "percentage": 0,
+                        "quantity": 0,
+                        "unit_of_measurement": "mcg"
+                      },
+                      {
+                        "name": "Calcium",
+                        "percentage": 4,
+                        "quantity": 60,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Iron",
+                        "percentage": 4,
+                        "quantity": 0.8,
+                        "unit_of_measurement": "mg"
+                      },
+                      {
+                        "name": "Potassium",
+                        "percentage": 0,
+                        "quantity": 80,
+                        "unit_of_measurement": "mg"
+                      }
+                    ],
+                    "serving_size": "29.0",
+                    "serving_size_unit_of_measurement": "g",
+                    "servings_per_container": "9"
+                  }
+                ],
+                "warning": "CONTAINS: WHEAT, MILK, SOY.\nMAY CONTAIN: PEANUT."
+              }
+            },
+            "flavor": null,
+            "manufacturer_brand": "ritz",
+            "manufacturer_upc": "00044000035457",
+            "matcher_implementation_sha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+            "matcher_release_sha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+            "matcher_version": "canonical-product-match/1.2.1",
+            "price_evidence": {
+              "approval_id": "owner-ritz-pack2-v29-20260727t131702z",
+              "currency": "USD",
+              "donor_offer_id": "do:walmart:34312392",
+              "eligibility": "FACT",
+              "first_party": true,
+              "in_stock": true,
+              "locality_evidence": "zip_scoped",
+              "match_tier": "EXACT_IDENTITY",
+              "metered_receipt_id": "mbr_821657204ea8f36a43549bb57b4c0ca04de02cb2a4c5b4ff2462cced46e11cc1",
+              "observation_id": "doo:886974782e3be90755cd96a770943c7a70818f79a0fb0060fae34e4669ca57cd",
+              "observation_key": "886974782e3be90755cd96a770943c7a70818f79a0fb0060fae34e4669ca57cd",
+              "observed_at": "2026-07-27T13:18:24.109Z",
+              "pack_size_seen": 1,
+              "package_price": 3.97,
+              "policy_reason_codes": [
+                "EXACT_IDENTITY_DIRECT_FACT"
+              ],
+              "policy_version": "price-evidence-eligibility/1.0.0",
+              "price_per_unit": 3.97,
+              "retailer": "walmart",
+              "retailer_product_id": "34312392",
+              "role": "PRICE",
+              "run_id": "20260727T131459Z-v29-ritz-cheese-pack2",
+              "source_api": "oxylabs",
+              "source_url": "https://www.walmart.com/ip/RITZ-Bits-Cheese-Sandwich-Crackers-8-8-oz/34312392",
+              "via": "direct",
+              "zip": "33765"
+            },
+            "product_name": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz",
+            "qty": 2,
+            "variant_decision_id": "dpvd-exact:cb62bc21836a8385431d768079a6bb58edd0378cf158e4f43a9e0e00f4aada38"
+          }
+        ],
+        "contractVersion": "product-truth-read-contract/3.2.0",
+        "price_max_age_ms": 86400000,
+        "zip": "33765"
+      },
+      "required_before_certification": [
+        "COUNT_ACCURATE_RIGHTS_CLEARED_MAIN_IMAGE",
+        "RIGHTS_CLEARED_SECONDARY_IMAGE",
+        "OPERATOR_VERIFIED_PACKAGE_MEASUREMENTS",
+        "EXACT_UPC_CATALOG_SEARCH",
+        "CURRENT_WALMART_GET_SPEC",
+        "SELLER_ACCOUNT_HEALTH_AND_PUBLISH_ELIGIBILITY",
+        "SELLER_FULFILLMENT_POLICY_COMPLIANCE",
+        "BRAND_RIGHTS_EVIDENCE",
+        "PRODUCT_IDENTIFIER_REGISTRY_BRAND_AND_SELLER_AUTHORITY",
+        "CATEGORY_AND_SKU_POLICY_CLEARANCE",
+        "CURRENT_RECALL_CHECK",
+        "EXPIRATION_AND_LOT_PROCEDURE",
+        "POSITIVE_VERIFIED_COMPONENT_INVENTORY",
+        "EXPLICIT_DISTRIBUTION_APPROVAL"
+      ],
+      "source_candidate": {
+        "brand": "ritz",
+        "canonical_variant_id": "cpv1:ba797cefb49f7b2bba2d45357619561ccd50d436466d8f8d95a9c147070194a9",
+        "category": "Crackers",
+        "classification_evidence": {
+          "category_field": "category",
+          "content_observation_id": "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+          "source_api": "target_direct_html",
+          "storage_field": "storageTemp"
+        },
+        "content_observation_id": "pco:68af1a929a86d09772b7c10067c39e441e4d1358378980e0eae8ce4b8992d59e",
+        "content_observed_at": "2026-07-27T13:29:57.000Z",
+        "default_pack_counts": [
+          2,
+          3
+        ],
+        "donor_product_id": "75422f18-e3d2-4c62-ae62-7287aaa75119",
+        "flavor": null,
+        "image_count": 20,
+        "manufacturer_upc": "00044000035457",
+        "observed_price": 3.97,
+        "price_observation_id": "doo:886974782e3be90755cd96a770943c7a70818f79a0fb0060fae34e4669ca57cd",
+        "price_observed_at": "2026-07-27T13:18:24.109Z",
+        "score": 116,
+        "storage_classification": "SHELF_STABLE",
+        "title": "RITZ Bits Cheese Sandwich Crackers Lunch Snacks - 8.8oz"
+      }
+    }
+  ],
+  "created_at": "2026-07-27T13:47:25.066Z",
+  "database_schema_sha256": "e16bdce3e2878b1b3aa57b92b6ad554c2c7edaa6b8cb20d5849b5daf8e5ffa7b",
+  "database_target_fingerprint_sha256": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "doctor_receipt_sha256": "7b5a79b419b7a4efa3a3cddad1148a4fd5586c47774efbd6fbae43722dc93c3b",
+  "engine_release_sha256": "4f19dae09fc1f1b6d07e2e3e20663bb65ff14e352ccb531c8e1c9a837b3891d3",
+  "item_spec_version": "5.0.20260501-19_21_29-api",
+  "marketplace_mutation_allowed": false,
+  "max_live_submissions": 1,
+  "phase": "PILOT",
+  "plan_sha256": "8b250b6ae90ac30e0b3fc73a4a118ee5ff3131e823687420262a3e035ef1b23a",
+  "release_manifest_sha256": "9028254a80cd9b2ecb904719ede7881780612b06a583fbc626fcb400e68d3cd1",
+  "schema_version": "walmart-new-sku-plan/1.7.0",
+  "seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+  "seller_catalog_authority": {
+    "account_scope": {
+      "business_seller_account_fingerprint_sha256": "3635e02fdf91297158c2a67d69036905ac1a03bf14593a4ed74ba10540e37873",
+      "channel": "WALMART_US",
+      "store_index": 1
+    },
+    "binding_id": "walmart-exact-identifier-guard-065d91563e2f0a42",
+    "body_sha256": "065d91563e2f0a42d60ffeea231333063f93cd286f97fb8b289ab7801486e53c",
+    "owner_decision_ref": "owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight",
+    "policy": {
+      "checks_must_bind_staged_sku_and_upc": true,
+      "exact_seller_sku_absence_required_before_certification": true,
+      "exact_upc_catalog_search_required_before_certification": true,
+      "full_seller_catalog_required": false,
+      "mode": "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY",
+      "product_source": "PRODUCT_TRUTH_DONOR_CATALOG",
+      "seller_recipe_catalog_scan_required": false
+    },
+    "schema_version": "walmart-exact-identifier-duplicate-guard-binding/v1"
+  },
+  "store_index": 1,
+  "wave_id": "WM-PILOT-20260727-4385d534",
+  "zip": "33765"
+}

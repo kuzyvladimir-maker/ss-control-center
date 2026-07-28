@@ -1,0 +1,106 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_5b90e6342b459f8e8d3f",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "Sara Lee",
+      "visible_product_text": "Artesano bakery bread BAKERY BUNS",
+      "visible_variant_text": "the Original",
+      "visible_size_texts": [
+        "8 COUNT"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 2,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "8 COUNT"
+      ],
+      "inner_contents_claims": [
+        "8 COUNT"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "Sara Lee logo visible on both packages",
+        "Artesano bakery bread BAKERY BUNS on both packages",
+        "8 COUNT printed on both packages",
+        "Two identical sealed bags shown side by side"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_f24cfaac14036d2ce8ba",
+      "visual_role": "ingredients",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "INGREDIENTS: ENRICHED WHEAT FLOUR [FLOUR, MALTED BARLEY FLOUR, REDUCED IRON, NIACIN, THIAMIN MONONITRATE (VITAMIN B1), RIBOFLAVIN (VITAMIN B2), FOLIC ACID], WATER, SUGAR, WHEAT GLUTEN, VEGETABLE OIL (SOYBEAN), YEAST, SEA SALT",
+        "CONTAINS 0.5% OR LESS OF EACH OF THE FOLLOWING: CULTURED WHEAT FLOUR, SOY LECITHIN, CITRIC ACID, GRAIN VINEGAR",
+        "CONTAINS WHEAT, SOY",
+        "MADE IN A BAKERY THAT MAY ALSO USE MILK",
+        "R20-302-400138"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_1f11b7e9f1347d150e36",
+      "visual_role": "nutrition",
+      "visible_brand_text": null,
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "1 bun (67g)"
+      ],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [
+        "8 Servings Per Container"
+      ],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "none",
+      "evidence": [
+        "Nutrition Facts panel",
+        "8 Servings Per Container",
+        "Serving Size 1 bun (67g)",
+        "Calories 190 per serving"
+      ],
+      "flags": []
+    }
+  ]
+}

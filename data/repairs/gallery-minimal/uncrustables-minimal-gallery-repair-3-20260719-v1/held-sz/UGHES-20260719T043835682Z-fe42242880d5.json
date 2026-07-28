@@ -1,0 +1,103 @@
+{
+  "schema_version": "uncrustables-minimal-gallery-held-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-19T04:38:35.682Z",
+  "execution_authorized": false,
+  "confirmation_token": null,
+  "confirmation_token_emitted": false,
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json",
+    "sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e"
+  },
+  "selected_skus": [
+    "SZ-ASPI-JFAT"
+  ],
+  "selected_action_ids": [
+    "SZ-ASPI-JFAT:media"
+  ],
+  "selected_actions": 1,
+  "allowed_patch_paths": [
+    "/attributes/other_product_image_locator_2",
+    "/attributes/other_product_image_locator_3",
+    "/attributes/other_product_image_locator_4",
+    "/attributes/other_product_image_locator_5"
+  ],
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "current_cas": {
+    "sku": "SZ-ASPI-JFAT",
+    "asin": "B0H776M5B5",
+    "store_index": 1,
+    "listing_sha256": "f894164f3f9cf73c959499a042016d1022613db7e4ea688e2366d0f547a9bc33",
+    "touched_paths": [
+      {
+        "path": "/attributes/other_product_image_locator_2",
+        "before": {
+          "present": false,
+          "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+        },
+        "desired_url": "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg"
+      },
+      {
+        "path": "/attributes/other_product_image_locator_3",
+        "before": {
+          "present": false,
+          "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+        },
+        "desired_url": "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg"
+      },
+      {
+        "path": "/attributes/other_product_image_locator_4",
+        "before": {
+          "present": false,
+          "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+        },
+        "desired_url": "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+      },
+      {
+        "path": "/attributes/other_product_image_locator_5",
+        "before": {
+          "present": false,
+          "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+        },
+        "desired_url": "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg"
+      }
+    ],
+    "cas_sha256": "b5b9961e45d419e896aaab5343f7ce4199bc7b0be9ace62d686a6d1e2071792a"
+  },
+  "identity_hold": {
+    "evidence_path": "data/audits/uncrustables-fresh-amazon-price-matrix-20260719-v2/uncrustables-fresh-amazon-price-matrix-20260719-v2.json",
+    "evidence_file_sha256": "572abc5428750408da6f776db6c73821372e789da1ee32d8aa05b267082b189a",
+    "status": "HOLD_IDENTITY",
+    "amazon_asin": "B0H776M5B5",
+    "channelmax_asin": "B0H75VN18Z",
+    "reason_codes": [
+      "AMAZON_8541_PRODUCT_IDENTITY_BLOCKER",
+      "CHANNELMAX_IDENTITY_MISMATCH"
+    ]
+  },
+  "would_be_standard_selection_sha256": "6e05867919ea232c22ee9d8169a8fc871d756aeb396064e1c3fe43fcb8f1c543",
+  "release_requirements": [
+    "ChannelMAX SKU SZ-ASPI-JFAT must resolve to Amazon ASIN B0H776M5B5 with exact readback evidence.",
+    "Amazon 8541 product-identity blocker must be cleared or explicitly reconciled.",
+    "Generate a new standard GALLERY_MEDIA_ONLY_V1 execution selection only after the identity hold is cleared; this held artifact has no confirmation token.",
+    "Capture a fresh exact 164-row LIVE_SP_API snapshot and selection-scoped rollback bound to the same plan and desired manifest.",
+    "Run Amazon VALIDATION_PREVIEW, then immediate and delayed readbacks if a later owner/network gate authorizes apply."
+  ],
+  "sha256": "fe42242880d5b009d682dbcae72907843f65d1f5043c7d5636e13363efca6bf8"
+}

@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "itemId": "7437908121",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Sara-Lee-Artesano-Original-Bread-20-oz-Soft-White-Pre-sliced-White-Bread-Bag-Pack-of-7_9ed6d8bb-fdef-48a0-943d-6e30061540a1.1b8e593577f07d68f3705443accc3303.png"
+        }
+      ],
+      "customerRating": "4.0",
+      "price": {
+        "amount": "65.0",
+        "currency": "USD"
+      },
+      "description": "<li>One 20 oz loaf of Sara Lee Artesano Original Bakery Bread</li><li>Sara Lee Artesano artisan bakery bread is sliced thick and has a soft, creamy texture</li><li>This sliced bread is ready to eat</li>",
+      "title": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+      "brand": "Sara Lee",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00742259721021"
+      ],
+      "properties": {
+        "numReviews": "4",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "White Bread"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

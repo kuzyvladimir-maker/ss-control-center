@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "76f96ac6-a44a-4023-b4e6-b7811bc04d9e",
+  "created_at": "2026-07-19T04:50:29.046Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "UF-ASA1-GN5P:media",
+  "sku": "UF-ASA1-GN5P",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "f194ff9a-959c-451e-b960-3ad171d084cb",
+    "submitted_at": "2026-07-19T04:49:29.166Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "a6c423b988087804dd52c9f342718e5fbeebe27494865537809b31ea8526a962",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "e47fd79d5060e944dd74a05c67815d432945dadbabd35ac8d9c190cbc3be1af5"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "f6aea6c89beb0366658cd00977444cb6b1937b261cb9a130346b1d6c61dd36a3"
+}

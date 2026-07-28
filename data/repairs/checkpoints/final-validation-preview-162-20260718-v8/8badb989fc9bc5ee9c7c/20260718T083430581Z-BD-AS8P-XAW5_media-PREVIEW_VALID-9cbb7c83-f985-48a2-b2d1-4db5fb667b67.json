@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9cbb7c83-f985-48a2-b2d1-4db5fb667b67",
+  "created_at": "2026-07-18T08:34:30.581Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BD-AS8P-XAW5:media",
+  "sku": "BD-AS8P-XAW5",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "e5bf94a483802628f4a61016efd1ea0db69f9e43382d2680174cc9913116129e",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "aa1c8499a95947aa8983f638202e38b3",
+    "issues": []
+  },
+  "sha256": "a576b3df9d59d744cee3438dcafb1d48114a89be9bae1359817ead88d0ae2324"
+}

@@ -1,0 +1,197 @@
+{
+  "schema_version": "uncrustables-surgical-repair/v2",
+  "immutable": true,
+  "plan_id": "URP-20260719T043835682Z",
+  "created_at": "2026-07-19T04:38:35.682Z",
+  "source_ledger": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "audit_id": "ULR-20260717T232140568Z",
+    "schema_version": "uncrustables-ledger/v1.2",
+    "completed_at": "2026-07-17T23:21:40.568Z"
+  },
+  "desired_manifest_source": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/uncrustables-minimal-gallery-desired-manifest-3-20260719-v1.json",
+    "sha256": "a349da04faf428885f264f396e311d1f0f44f7e085868bd4df79528fc36aaa9d",
+    "schema_version": "uncrustables-surgical-desired/v1",
+    "reviewed_at": "2026-07-19T04:38:35.682Z",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "launch_pricing_source": null,
+  "media_asset_source": null,
+  "structured_attribute_source": null,
+  "policy": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "patch_only": true,
+    "validation_preview_required": true,
+    "post_get_verification_required": true,
+    "business_price_equals_consumer_price": true,
+    "discounted_price_absent": true,
+    "list_price_absent": true,
+    "structured_attributes_donor_reviewed": true,
+    "structured_attributes_ptd_proof_required": true,
+    "ingredient_keyword_allergen_inference": false,
+    "shelf_life_mutation": false,
+    "inventory_mutation": false,
+    "nutrition_mutation": false,
+    "brand_card_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+    "verified_brand_card_rehost_url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+  },
+  "scope": {
+    "requested_skus": [
+      "SZ-ASPI-JFAT",
+      "UA-ASAO-RE7Q",
+      "VC-ASV1-378P"
+    ],
+    "limit": null,
+    "ledger_rows_considered": 3,
+    "entries": 3,
+    "actions": 3,
+    "blocked": 0
+  },
+  "semantic_audit": {
+    "validator": "validateSemanticOutput",
+    "checked": 0,
+    "passed": 0,
+    "failed": 0,
+    "repaired_by_manifest": 0,
+    "repaired_deterministically": 0,
+    "blocked": 0,
+    "failures": []
+  },
+  "entries": [
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "store_index": 1,
+      "audited_product_type": "GROCERY",
+      "actions": [
+        {
+          "action_id": "SZ-ASPI-JFAT:media",
+          "kind": "MEDIA",
+          "reasons": [
+            "OWNER_RELAXED_MINIMAL_GALLERY_REPAIR",
+            "ADDITIONAL_IMAGE_COUNT_OUTSIDE_4_TO_6"
+          ],
+          "review": {
+            "confidence": "HIGH",
+            "rationale": "Sparse gallery-only diff is derived from the exact 164-row live snapshot and immutable owner-relaxed desired-media action; MAIN, text, structured attributes, and offer are absent.",
+            "evidence": [
+              "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+              "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+              "Action SHA-256 5fe3eff7e6612d28b2ac8f7f23bf963dbe6a210089155c2284a8986851bfd63b.",
+              "Current listing SHA-256 f894164f3f9cf73c959499a042016d1022613db7e4ea688e2366d0f547a9bc33."
+            ]
+          },
+          "desired": {
+            "kind": "MEDIA",
+            "value": {
+              "gallery_slots": [
+                {
+                  "slot": 2,
+                  "url": "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg"
+                },
+                {
+                  "slot": 3,
+                  "url": "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg"
+                },
+                {
+                  "slot": 4,
+                  "url": "https://m.media-amazon.com/images/I/710y92xndwL.jpg"
+                },
+                {
+                  "slot": 5,
+                  "url": "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "store_index": 1,
+      "audited_product_type": "FOOD",
+      "actions": [
+        {
+          "action_id": "UA-ASAO-RE7Q:media",
+          "kind": "MEDIA",
+          "reasons": [
+            "OWNER_RELAXED_MINIMAL_GALLERY_REPAIR",
+            "APPROVED_CARD_NOT_EXACT_SLOT_1"
+          ],
+          "review": {
+            "confidence": "HIGH",
+            "rationale": "Sparse gallery-only diff is derived from the exact 164-row live snapshot and immutable owner-relaxed desired-media action; MAIN, text, structured attributes, and offer are absent.",
+            "evidence": [
+              "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+              "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+              "Action SHA-256 dca7dc373afeee3f555b43695d55340504ed9c2ec72662f8bd1239c8a1025000.",
+              "Current listing SHA-256 f8bd7f377551f7059d6226d5ce9cbe4508dbdbd9a77842b8348d49ffccb0282c."
+            ]
+          },
+          "desired": {
+            "kind": "MEDIA",
+            "value": {
+              "gallery_slots": [
+                {
+                  "slot": 1,
+                  "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+                },
+                {
+                  "slot": 7,
+                  "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "store_index": 1,
+      "audited_product_type": "FOOD",
+      "actions": [
+        {
+          "action_id": "VC-ASV1-378P:media",
+          "kind": "MEDIA",
+          "reasons": [
+            "OWNER_RELAXED_MINIMAL_GALLERY_REPAIR",
+            "APPROVED_CARD_NOT_EXACT_SLOT_1"
+          ],
+          "review": {
+            "confidence": "HIGH",
+            "rationale": "Sparse gallery-only diff is derived from the exact 164-row live snapshot and immutable owner-relaxed desired-media action; MAIN, text, structured attributes, and offer are absent.",
+            "evidence": [
+              "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+              "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+              "Action SHA-256 266a5b907338f2accbaf3aadc86f91a01d4fee351438e6f176e5a94182aa41a4.",
+              "Current listing SHA-256 a1a9f9a83ae746381126eab750badead47f820e80a08334657decc4e47360d66."
+            ]
+          },
+          "desired": {
+            "kind": "MEDIA",
+            "value": {
+              "gallery_slots": [
+                {
+                  "slot": 1,
+                  "url": "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg"
+                },
+                {
+                  "slot": 7,
+                  "url": "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "blockers": [],
+  "sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a6125521-66c3-4722-bfa7-7e6541bdb23d",
+  "created_at": "2026-07-18T07:45:54.638Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "RR-ASG1-JVKV:text_count",
+  "sku": "RR-ASG1-JVKV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "3ed6b30d5358d326faf2e169c64d6b6967bbd514949239b8ab71829fef44da84",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "557717042b9849a2a6754275008e47fb",
+    "issues": []
+  },
+  "sha256": "e55377153964d23d3964141f34c6315da1860c874176a8374fecde39c880c82c"
+}
