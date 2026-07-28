@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 function fail(message) {
   throw new Error(message);
@@ -110,6 +111,45 @@ function renderBullets(values) {
 function specificationMap(product) {
   if (!Array.isArray(product.specifications)) fail("buyer specifications must be an array");
   return new Map(product.specifications.map((row) => [row.name, row.value]));
+}
+
+export function walmartListingIntegrityGalleryQuantityTarget(input) {
+  const claims = input.target_attribute_claims;
+  const specifications = input.after_specifications;
+  if (!Array.isArray(claims) || !Array.isArray(specifications)) {
+    fail("gallery quantity target requires claim/specification arrays");
+  }
+  const totalCountClaims = claims.filter((claim) => (
+    claim?.kind === "inner_item_count"
+      && (
+        claim.field_path === "walmart.Visible.count"
+        || /\.count$/iu.test(String(claim.field_path))
+      )
+      && !/countperpack$/iu.test(String(claim.field_path))
+  ));
+  const exactSynthetic = totalCountClaims.filter((claim) => (
+    claim.field_path === "walmart.Visible.count"
+  ));
+  const targetCount = exactSynthetic.length === 1
+    ? exactSynthetic[0].value
+    : totalCountClaims.length === 1 ? totalCountClaims[0].value : null;
+  const afterSpecs = new Map(specifications.map((row) => [row.name, row.value]));
+  const visibleTotalCount = Number(
+    afterSpecs.get("Total count")
+      ?? afterSpecs.get("Total Count")
+      ?? afterSpecs.get("Count"),
+  );
+  const visibleCountPerPack = Number(
+    afterSpecs.get("Count per pack") ?? afterSpecs.get("Count Per Pack"),
+  );
+  return {
+    target_count: targetCount,
+    visible_total_count: visibleTotalCount,
+    visible_count_per_pack: visibleCountPerPack,
+    total_count_match: Number.isSafeInteger(targetCount)
+      && Number.isSafeInteger(visibleTotalCount)
+      && visibleTotalCount === targetCount,
+  };
 }
 
 function renderSpecifications(product) {
@@ -322,9 +362,10 @@ async function main() {
   const targetBrand = target.attribute_claims?.find(
     (claim) => claim.kind === "brand" && claim.field_path.endsWith(".Brand"),
   )?.text;
-  const targetCount = target.attribute_claims?.find(
-    (claim) => claim.kind === "inner_item_count" && claim.field_path.endsWith(".Count"),
-  )?.value;
+  const galleryQuantity = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: target.attribute_claims,
+    after_specifications: after.specifications,
+  });
   const targetCountPerPack = target.attribute_claims?.find(
     (claim) => claim.field_path === "walmart.Visible.countPerPack",
   )?.value;
@@ -334,7 +375,7 @@ async function main() {
   const attributesExactTarget = !attributeOnly || (
     afterSpecs.get("Flavor") === targetFlavor
     && afterSpecs.get("Brand") === targetBrand
-    && Number(afterSpecs.get("Count")) === targetCount
+    && galleryQuantity.total_count_match
     && Number(afterSpecs.get("Multipack quantity")) === outerUnits
     && (Number.isSafeInteger(visibleCountPerPack)
       ? visibleCountPerPack === targetCountPerPack
@@ -466,4 +507,10 @@ async function main() {
   }, null, 2)}\n`);
 }
 
-await main();
+if (process.argv[1]
+  && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
+  void main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}

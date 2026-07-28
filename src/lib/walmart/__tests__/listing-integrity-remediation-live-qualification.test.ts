@@ -7,6 +7,9 @@ import test from "node:test";
 import sharp from "sharp";
 
 import {
+  walmartListingIntegrityGalleryQuantityTarget,
+} from "../../../../scripts/build-walmart-listing-integrity-live-gallery.mjs";
+import {
   walmartListingIntegritySha256,
 } from "../listing-integrity-audit.ts";
 import {
@@ -19,7 +22,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "501ba7516fcbe2c5bcdeb34e2988460686ca99cb4d94dc47f6aa02d1f67166aa";
+  "b413a185759136cc30ab8b1b24aa99d040e9b62fbfebc01ab62cc86f5b2aa9a0";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -565,6 +568,38 @@ test("unchanged gallery still rejects a re-encoded asset under a different URL",
   assert.equal(result.verdict, "PENDING_PROPAGATION");
   assert.equal(result.facets.gallery, "FAIL");
   assert.equal(result.next_sku_unblocked, false);
+});
+
+test("factual gallery accepts Walmart Total count for the exact synthetic count target", () => {
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: totalCountRecoveryPlan().target.surface.attribute_claims,
+    after_specifications: [
+      { name: "Count", value: "20" },
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total count", value: "4" },
+      { name: "Count per pack", value: "1" },
+    ],
+  });
+  assert.deepEqual(result, {
+    target_count: 4,
+    visible_total_count: 4,
+    visible_count_per_pack: 1,
+    total_count_match: true,
+  });
+});
+
+test("factual gallery rejects a wrong Walmart Total count", () => {
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: totalCountRecoveryPlan().target.surface.attribute_claims,
+    after_specifications: [
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total Count", value: "20" },
+      { name: "Count Per Pack", value: "1" },
+    ],
+  });
+  assert.equal(result.target_count, 4);
+  assert.equal(result.visible_total_count, 20);
+  assert.equal(result.total_count_match, false);
 });
 
 test("attribute-only live Qualification remains no-write PENDING on the stale buyer surface", async () => {
