@@ -196,7 +196,7 @@ export const GET = withErrorHandler(
               : "The Product Truth Web Operations worker is not activated; the Command Center must not pretend that a provider run started.",
           recommendation:
             collectionTargets.length > 0
-              ? "Include the verified compatibility fix in a new frozen Product Truth release, run targeted evidence for the shown exact donors, then repeat this readiness check."
+              ? "Prepare the exact one-product no-spend plans now. Review those plans and grant separate owner authority before any paid provider execution, then repeat this readiness check."
               : noExactMatches
                 ? "Run a bounded Product Truth demand-discovery campaign for this request, then repeat this readiness check."
                 : needsDataCollection

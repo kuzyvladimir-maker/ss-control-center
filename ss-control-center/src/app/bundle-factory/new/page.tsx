@@ -879,7 +879,7 @@ export default function StudioStartPage() {
                               disabled={walmartCollectionLoading}
                               loading={walmartCollectionLoading}
                             >
-                              Collect missing product data
+                              Prepare collection plans
                             </Btn>
                             <p className="mt-1.5 text-[11px] text-ink-3">
                               Prepares up to five independent exact-product
@@ -940,7 +940,8 @@ export default function StudioStartPage() {
                             <p className="border-t border-rule pt-2 text-[11px] text-ink-3">
                               Free preparation is complete. The exact
                               one-product plans are ready; provider execution
-                              has not started.
+                              has not started and still requires separate owner
+                              authority.
                             </p>
                           )}
                         </div>

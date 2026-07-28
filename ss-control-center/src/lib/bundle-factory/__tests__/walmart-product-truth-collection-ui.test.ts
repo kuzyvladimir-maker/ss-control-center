@@ -10,14 +10,28 @@ test("Walmart Studio exposes collection launch, progress, and readiness continua
     ),
     "utf8",
   );
-  assert.match(page, /Collect missing product data/u);
+  assert.match(page, /Prepare collection plans/u);
   assert.match(page, /\/api\/bundle-factory\/walmart\/data-collection/u);
   assert.match(page, /pollWalmartCollection/u);
   assert.match(page, /continueAfterCollection/u);
   assert.match(page, /checkWalmartReadiness/u);
   assert.match(page, /collection\.status === "SUCCEEDED"/u);
   assert.match(page, /readiness\.diagnosis\.capability_gaps\.length > 0/u);
+  assert.match(page, /still requires separate owner[\s\S]*authority/u);
   assert.doesNotMatch(page, /automatically approve|automatic paid execution/iu);
+});
+
+test("readiness recommendation describes the active no-spend release without promising collection", async () => {
+  const route = await readFile(
+    new URL(
+      "../../../app/api/bundle-factory/walmart/readiness/route.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(route, /Prepare the exact one-product no-spend plans now/u);
+  assert.match(route, /separate owner authority before any paid provider execution/u);
+  assert.doesNotMatch(route, /Include the verified compatibility fix in a new frozen/u);
 });
 
 test("collection route re-derives exact donors server-side and cannot call providers or Walmart", async () => {
