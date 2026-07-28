@@ -109,10 +109,21 @@ Human gates: **APPROVE** (шаг 3 — zoom 2048px, кропы по рядам, 
     инъекцией deps, fail-closed на каждом этапе; 6 тестов.
   - ✅ `audit/uncrustables-owner-approval-minting.ts` — proof+манифест с
     реальным reviewer/session/timestamps; 5 тестов на реальных байтах забега.
-  - ⛔ Следующее (A1-A5: API routes, планировщик, борд, review, prepare,
-    submit) блокировано **owner gate на миграцию схемы** (три модели:
-    UncrustablesStudioRun / UncrustablesStudioCandidate /
-    UncrustablesOwnerApprovalManifestRecord) + CHAT-SYNC окно с Codex-лейном.
+  - ✅ Owner gate «го» 2026-07-27: миграция трёх моделей накачена на Turso
+    prod (идемпотентный turso-migrate-uncrustables-studio.mjs, 3/3).
+  - ✅ A1-A3 (2026-07-27, в проде): API runs/board/tick(CAS)/rerender/reject/
+    approve (сервер пере-скачивает байты, sha+2000px, 409 при дрейфе) +
+    планировщик / борд / ревью-гейт с 11-пунктным чек-листом.
+  - ✅ A4-A5 (2026-07-28, коммит 8438ef8c, в проде): prepare = re-verify →
+    stage-либа → R2-архив studio-audit/* → минт пруфа (реальный ревьюер/
+    время) → append-only DB-манифест + cold-start загрузчик
+    ensureStudioManifestRecordsRegistered; submit = preflight-пермит →
+    dry-run превью (ноль вызовов Amazon) / live за typed «PUBLISH <sku>»
+    через проверенную submitToAmazon-цепочку; poll до LIVE/ASIN.
+    runDistribution отклонён по риску 1 (Stage-6 непроверен) — решение
+    задокументировано в submit-роуте.
+  - ⬜ Ship gate Phase A: первый полный прогон НОВОГО рецепта через студию
+    (планировщик → рендер → ревью → prepare → dry-run → live) с владельцем.
 - **Phase B:** обобщение до brand-agnostic StudioCandidate + реестр
   scene-контрактов + gift-set планировщик (Mode B, Salutem Vita); sealed
   authenticity manifest остаётся own-brand-only; Walmart исключён (pilot lane).
