@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   PRODUCT_TRUTH_CONTROL_COMMAND_SCHEMA,
   type ProductTruthControlEnvironment,
@@ -149,6 +151,9 @@ function configuredKeys(env: RuntimeEnvironment): string[] {
 export function expectedProductTruthWebControlConfirmation(input: {
   stage: ProductTruthWebControlActiveStage;
   releaseId: string;
+  commitSha: string;
+  treeSha: string;
+  executableTreeSha256: string;
   databaseTargetFingerprint: string;
   manifestSha256: string;
 }): string {
@@ -156,9 +161,18 @@ export function expectedProductTruthWebControlConfirmation(input: {
     "ENABLE_PRODUCT_TRUTH_WEB_CONTROL",
     input.stage,
     exactToken(input.releaseId, "releaseId"),
+    exactGitSha(input.commitSha, "commitSha"),
+    exactGitSha(input.treeSha, "treeSha"),
+    exactSha(input.executableTreeSha256, "executableTreeSha256"),
     exactSha(input.databaseTargetFingerprint, "databaseTargetFingerprint"),
     exactSha(input.manifestSha256, "manifestSha256"),
   ].join(":");
+}
+
+export function productTruthExecutableTreeSha256(treeSha: string): string {
+  return createHash("sha256")
+    .update(`${exactGitSha(treeSha, "treeSha")}\n`)
+    .digest("hex");
 }
 
 export function loadProductTruthWebControlRuntime(input: {
@@ -227,9 +241,30 @@ export function loadProductTruthWebControlRuntime(input: {
     exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.manifestSha256),
     PRODUCT_TRUTH_WEB_CONTROL_ENV.manifestSha256,
   );
+  const commitSha = exactGitSha(
+    exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha),
+    PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha,
+  );
+  const treeSha = exactGitSha(
+    exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha),
+    PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha,
+  );
+  const executableTreeSha256 = exactSha(
+    exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256),
+    PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256,
+  );
+  if (executableTreeSha256 !== productTruthExecutableTreeSha256(treeSha)) {
+    fail(
+      "WEB_CONTROL_CONFIG_INVALID",
+      "executable tree SHA-256 does not bind the exact Git tree",
+    );
+  }
   const expectedConfirmation = expectedProductTruthWebControlConfirmation({
     stage,
     releaseId,
+    commitSha,
+    treeSha,
+    executableTreeSha256,
     databaseTargetFingerprint,
     manifestSha256,
   });
@@ -268,18 +303,9 @@ export function loadProductTruthWebControlRuntime(input: {
     engine: {
       commandSchemaVersion: PRODUCT_TRUTH_CONTROL_COMMAND_SCHEMA,
       releaseId,
-      commitSha: exactGitSha(
-        exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha),
-        PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha,
-      ),
-      treeSha: exactGitSha(
-        exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha),
-        PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha,
-      ),
-      executableTreeSha256: exactSha(
-        exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256),
-        PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256,
-      ),
+      commitSha,
+      treeSha,
+      executableTreeSha256,
     },
     target: {
       environment: environment as ProductTruthControlEnvironment,

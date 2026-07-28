@@ -125,7 +125,7 @@ test("worker proves its clean pinned checkout before its first control API call"
   assert.match(script, /--untracked-files=all/u);
   assert.match(
     script,
-    /sha256\(`\$\{treeSha\}\\n`\)\s*!==\s*runtime\.release\.executableTreeSha256/u,
+    /productTruthExecutableTreeSha256\(treeSha\)[\s\S]*!==\s*runtime\.release\.executableTreeSha256/u,
   );
 });
 

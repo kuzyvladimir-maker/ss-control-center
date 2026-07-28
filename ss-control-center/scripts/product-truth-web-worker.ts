@@ -16,6 +16,9 @@ import {
   resolveProductTruthDatabaseTarget,
 } from "../src/lib/sourcing/product-truth-database-target";
 import {
+  productTruthExecutableTreeSha256,
+} from "../src/lib/sourcing/product-truth-web-control-runtime";
+import {
   PRODUCT_TRUTH_WORKER_RESULT_VERSION,
   parseProductTruthWorkerResult,
 } from "../src/lib/sourcing/product-truth-web-control-worker-contract";
@@ -139,7 +142,8 @@ async function verifyPinnedCheckout(runtime: WorkerRuntime): Promise<void> {
   if (
     commitSha !== runtime.release.commitSha
     || treeSha !== runtime.release.treeSha
-    || sha256(`${treeSha}\n`) !== runtime.release.executableTreeSha256
+    || productTruthExecutableTreeSha256(treeSha)
+      !== runtime.release.executableTreeSha256
   ) {
     fail("worker checkout differs from the pinned release");
   }

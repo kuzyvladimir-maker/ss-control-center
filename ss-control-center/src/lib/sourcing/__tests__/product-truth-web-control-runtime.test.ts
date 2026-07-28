@@ -6,12 +6,16 @@ import {
   ProductTruthWebControlRuntimeError,
   expectedProductTruthWebControlConfirmation,
   loadProductTruthWebControlRuntime,
+  productTruthExecutableTreeSha256,
   productTruthWebControlPublicStatus,
 } from "../product-truth-web-control-runtime";
 
 const RELEASE = "product-truth-web-control-test-r1";
 const TARGET = "a".repeat(64);
 const MANIFEST = "b".repeat(64);
+const COMMIT = "c".repeat(40);
+const TREE = "d".repeat(40);
+const EXECUTABLE = productTruthExecutableTreeSha256(TREE);
 
 function activeEnv(
   stage: "ADMISSION_ONLY" | "LOCAL_NO_SPEND" | "PRODUCTION_READ_ONLY",
@@ -23,13 +27,16 @@ function activeEnv(
       expectedProductTruthWebControlConfirmation({
         stage,
         releaseId: RELEASE,
+        commitSha: COMMIT,
+        treeSha: TREE,
+        executableTreeSha256: EXECUTABLE,
         databaseTargetFingerprint: TARGET,
         manifestSha256: MANIFEST,
       }),
     [PRODUCT_TRUTH_WEB_CONTROL_ENV.releaseId]: RELEASE,
-    [PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha]: "c".repeat(40),
-    [PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha]: "d".repeat(40),
-    [PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256]: "e".repeat(64),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha]: COMMIT,
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha]: TREE,
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.executableTreeSha256]: EXECUTABLE,
     [PRODUCT_TRUTH_WEB_CONTROL_ENV.environment]: environment,
     [PRODUCT_TRUTH_WEB_CONTROL_ENV.databaseTargetFingerprint]: TARGET,
     [PRODUCT_TRUTH_WEB_CONTROL_ENV.manifestSha256]: MANIFEST,
@@ -115,5 +122,25 @@ test("partial config and wrong activation confirmation fail closed", () => {
   assert.throws(
     () => loadProductTruthWebControlRuntime({ env }),
     isRuntimeError("WEB_CONTROL_CONFIRMATION_INVALID"),
+  );
+});
+
+test("activation confirmation and executable digest bind exact release bytes", () => {
+  const changedCommit = {
+    ...activeEnv("ADMISSION_ONLY", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.commitSha]: "e".repeat(40),
+  };
+  assert.throws(
+    () => loadProductTruthWebControlRuntime({ env: changedCommit }),
+    isRuntimeError("WEB_CONTROL_CONFIRMATION_INVALID"),
+  );
+
+  const changedTree = {
+    ...activeEnv("ADMISSION_ONLY", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.treeSha]: "e".repeat(40),
+  };
+  assert.throws(
+    () => loadProductTruthWebControlRuntime({ env: changedTree }),
+    isRuntimeError("WEB_CONTROL_CONFIG_INVALID"),
   );
 });
