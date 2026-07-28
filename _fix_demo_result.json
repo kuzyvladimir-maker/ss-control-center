@@ -1,0 +1,331 @@
+[
+  {
+    "sku": "FaisalX-1119",
+    "defect": "not-multipack",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1119/main-20260701-f50.png",
+    "wasTitle": "Thomas' Whole Wheat English Muffins, 6 count, Soft En",
+    "action": "REVERT",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1119/main-fixdemo.png",
+    "nowTitle": "Thomas' Whole Wheat English Muffins, 6 count, Soft En",
+    "status": "REVERTED"
+  },
+  {
+    "sku": "FaisalX-4972",
+    "defect": "not-multipack",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4972/main-20260615-73603.png",
+    "wasTitle": "Bigelow Salted Caramel, Black Tea Bags, 18 Count",
+    "action": "REVERT",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4972/main-fixdemo.png",
+    "nowTitle": "Bigelow Salted Caramel, Black Tea Bags, 18 Count",
+    "status": "REVERTED"
+  },
+  {
+    "sku": "FaisalX-4158",
+    "defect": "not-multipack",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4158/main-20260615-52037.png",
+    "wasTitle": "Mission Yellow Corn Rounds Tortilla Chips, 11 oz, 1 Count",
+    "action": "REVERT",
+    "donorSrc": "Google Images",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4158/main-fixdemo.png",
+    "nowTitle": "Mission Yellow Corn Rounds Tortilla Chips, 11 oz, 1 Count",
+    "status": "REVERTED"
+  },
+  {
+    "sku": "FaisalX-1140",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1140/main-20260701-f50.png",
+    "wasTitle": "Pepperidge Farm White Sandwich Bread, 16 oz",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1140/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "2×2 grid of 4 Pepperidge Farm White Sandwich Bread 16 oz loaf bags; each tile is a single retail uni"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1138",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1138/main-20260701-f50.png",
+    "wasTitle": "Arnold Small Slice Whole Grains 100% Whole Wheat Bread",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1138/main-fixdemo.png",
+    "verdict": {
+      "identity": false,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": false,
+      "reason": "Weight mismatch: listing title specifies 16 oz but every unit shown displays 18 oz — different produ"
+    },
+    "status": "REBUILT_FAIL"
+  },
+  {
+    "sku": "FaisalX-4397",
+    "defect": "not-multipack",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4397/main-20260701-az3.png",
+    "wasTitle": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually",
+    "action": "REVERT",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4397/main-fixdemo.png",
+    "nowTitle": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually",
+    "status": "REVERTED"
+  },
+  {
+    "sku": "FaisalX-1114",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1114/main-20260701-f50.png",
+    "wasTitle": "Dave's Killer Bread Good Seed Thin-Sliced Organic Bread",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1114/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "6 individual Dave's Killer Bread Good Seed Thin-Sliced loaves arranged in a 3x2 grid, each showing t"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1131",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1131/main-20260701-f50.png",
+    "wasTitle": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread",
+    "action": "REBUILD",
+    "donorSrc": "target",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1131/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "Four individual Pepperidge Farm Whole Grain 15 Grain bread loaves arranged in a 2x2 grid; each tile "
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1134",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1134/main-20260701-f50.png",
+    "wasTitle": "Pepperidge Farm Whole Grain Thin Sliced 100% Whole Whea",
+    "action": "REBUILD",
+    "donorSrc": "target",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1134/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "Four individual Pepperidge Farm Whole Grain 100% Whole Wheat bread loaves arranged in a 2x2 grid; ea"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1176",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1176/main-20260701-f50.png",
+    "wasTitle": "Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1176/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "All 4 tiles show a single Pepperidge Farm Jewish Rye Seeded Bread 16 oz bag facing front with the wi"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1162",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1162/main-20260701-f50e.png",
+    "wasTitle": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1162/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "Clean 2×3 grid of 6 single Pepperidge Farm Farmhouse Multigrain loaves; each tile shows one loaf fac"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-1122",
+    "defect": "wrong-product",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1122/main-20260701-f50.png",
+    "wasTitle": "Nature’s Own Life Honey Wheat, 40 Calories per Slice Ke",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1122/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "All 4 tiles show a single Nature's Own Life Honey Wheat 40-Calories bread bag with the wide printed "
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-3453",
+    "defect": "multipack-in-cell",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3453/main-20260618-30932-0.png",
+    "wasTitle": "Rice a Roni Spanish Rice, 6.8 oz box (Pack of 10)",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3453/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "10 individual Rice-A-Roni Spanish Rice 6.8 oz boxes arranged in a 4-3-3 grid, each showing the front"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-4089",
+    "defect": "multipack-in-cell",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4089/main-20260615-16287.png",
+    "wasTitle": "Orville Redenbacher's Smartpop! Butter Popcorn Mini",
+    "action": "REBUILD",
+    "donorSrc": "Google Images",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4089/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "8 Orville Redenbacher's SmartPop! Butter Mini Bags 6-ct boxes tiled 3+3+2, each tile shows one retai"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-4016",
+    "defect": "multipack-in-cell",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4016/main-20260615-59701.png",
+    "wasTitle": "Hershey's Kisses Milk Chocolate Candy, Share 10.8 oz",
+    "action": "REBUILD",
+    "donorSrc": "Google Images",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4016/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "6 tiles in a 3x2 grid, each showing one Hershey's Kisses Milk Chocolate 10.8 oz share bag face-on wi"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-2076",
+    "defect": "not-face-on",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2076/main-20260615-12417.png",
+    "wasTitle": "Chef Boyardee Mini Micro Beef Ravioli, 7.5 oz",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2076/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "8 individual Chef Boyardee Mini Micro Beef Ravioli 7.5oz cups arranged in a 3-3-2 grid, each showing"
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "RizwanX-138",
+    "defect": "not-face-on",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-138/main-20260617-31506.png",
+    "wasTitle": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 8)",
+    "action": "REBUILD",
+    "donorSrc": "Walmart 1P",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-138/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "8 individual Margaret Holmes Seasoned Cabbage 15 oz cans arranged in a 3-3-2 grid, each showing the "
+    },
+    "status": "REBUILT_PASS"
+  },
+  {
+    "sku": "FaisalX-4401",
+    "defect": "multipack-in-cell",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4401/main-20260615-96589.png",
+    "wasTitle": "Lance Sandwich Crackers, Toasty Cheddar, 10 Individua",
+    "action": "REBUILD",
+    "donorSrc": null,
+    "status": "NO_DONOR"
+  },
+  {
+    "sku": "RizwanX-2412",
+    "defect": "not-face-on",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2412/main-20260616-07360.png",
+    "wasTitle": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+    "action": "REBUILD",
+    "donorSrc": "Google Images",
+    "status": "ERR",
+    "err": "fetch failed"
+  },
+  {
+    "sku": "RizwanX-3009",
+    "defect": "colored-bg",
+    "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3009/main-20260701-nm.png",
+    "wasTitle": "Contadina Tomato Paste with Roasted Garlic 6 oz Can",
+    "action": "REBUILD",
+    "donorSrc": "Google Images",
+    "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3009/main-fixdemo.png",
+    "verdict": {
+      "identity": true,
+      "eachCellSingle": true,
+      "countOk": true,
+      "front": true,
+      "whiteBg": true,
+      "pass": true,
+      "reason": "All 8 tiles show a single Contadina Tomato Paste with Roasted Garlic 6 oz can, face-on with full lab"
+    },
+    "status": "REBUILT_PASS"
+  }
+]

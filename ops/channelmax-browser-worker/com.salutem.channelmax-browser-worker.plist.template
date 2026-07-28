@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.salutem.channelmax-browser-worker</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__RUNNER__</string>
+    <string>--app-root</string>
+    <string>__APP_ROOT__</string>
+    <string>--node</string>
+    <string>__NODE_BIN__</string>
+    <string>--node-version</string>
+    <string>__NODE_VERSION__</string>
+    <string>--tsx</string>
+    <string>__TSX_CLI__</string>
+    <string>--tsx-version</string>
+    <string>__TSX_VERSION__</string>
+    <string>--python</string>
+    <string>__PYTHON_BIN__</string>
+    <string>--cdp-script</string>
+    <string>__CDP_SCRIPT__</string>
+    <string>--log-dir</string>
+    <string>__LOG_DIR__</string>
+    <string>--keychain-service</string>
+    <string>com.salutem.sscc.jackie-api-token</string>
+    <string>--keychain-account</string>
+    <string>__KEYCHAIN_ACCOUNT__</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__APP_ROOT__</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>ExitTimeOut</key>
+  <integer>20</integer>
+  <key>LimitLoadToSessionType</key>
+  <array>
+    <string>Aqua</string>
+  </array>
+  <key>StandardOutPath</key>
+  <string>/dev/null</string>
+  <key>StandardErrorPath</key>
+  <string>/dev/null</string>
+</dict>
+</plist>

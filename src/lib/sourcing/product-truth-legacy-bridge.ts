@@ -1,0 +1,1882 @@
+import { createHash } from "node:crypto";
+
+import {
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+  matchCanonicalProductTitle,
+  normalizeIdentityTokens,
+  parseCanonicalSize,
+  type CanonicalMatchReasonCode,
+  type CanonicalMatchVerdict,
+  type CanonicalProductIdentity,
+} from "./canonical-product-match";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "./canonical-product-match-provenance";
+import {
+  buildCanonicalProductVariantKey,
+  type CanonicalProductVariantKey,
+} from "./canonical-product-variant";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
+import {
+  evaluatePriceEvidenceEligibility,
+  PRICE_EVIDENCE_POLICY_VERSION,
+} from "./price-evidence-policy";
+
+/**
+ * This is an immutable, read-only migration plan over the existing legacy
+ * catalog. It is deliberately not a third product catalog and it never treats
+ * a historical `costMethod=exact` flag as identity proof.
+ */
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
+  "product-truth-legacy-bridge-snapshot/1.3.0" as const;
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
+  "product-truth-legacy-bridge-plan/1.3.0" as const;
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
+  "product-truth-legacy-bridge-policy/1.0.0" as const;
+export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
+  "product-truth-live-image-barcode-evidence/1.0.0" as const;
+export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
+  "product-truth-direct-target-content-evidence/1.0.0" as const;
+export const PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS =
+  24 * 60 * 60 * 1_000;
+
+export type ProductTruthBridgeComponentDisposition =
+  | "ALREADY_CANONICAL"
+  | "EXACT_CONTENT_AND_PRICE_CANDIDATE"
+  | "EXACT_CONTENT_ONLY_CANDIDATE"
+  | "EXACT_IDENTITY_ONLY_CANDIDATE"
+  | "PRICE_ONLY_ESTIMATE"
+  | "QUARANTINE";
+
+export type ProductTruthBridgeScopeDisposition =
+  | "ALREADY_CANONICAL"
+  | "EXACT_CANONICALIZATION_CANDIDATE"
+  | "CONTENT_ONLY_CANONICALIZATION_CANDIDATE"
+  | "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE"
+  | "QUARANTINE";
+
+export type ProductTruthBridgeIdentityProof =
+  | "EXACT_GTIN"
+  | "EXACT_LIVE_IMAGE_BARCODE"
+  | "STRICT_TITLE_MATCH"
+  | "NONE";
+
+export type ProductTruthBridgeBlockerCode =
+  | "PRODUCT_IDENTITY_MISSING"
+  | "PRODUCT_IDENTITY_INVALID_JSON"
+  | "PRODUCT_IDENTITY_INVALID"
+  | "LEGACY_COMPONENT_MISSING"
+  | "LEGACY_COMPONENT_COUNT_MISMATCH"
+  | "LEGACY_DONOR_LINK_MISSING"
+  | "LEGACY_DONOR_LINK_CONFLICT"
+  | "LEGACY_DONOR_ORPHANED"
+  | "BUNDLE_COMPONENT_BRAND_UNPROVEN"
+  | "TARGET_VARIANT_INVALID"
+  | "DONOR_TITLE_MATCH_REJECTED"
+  | "DONOR_TITLE_MATCH_ESTIMATE_ONLY"
+  | "LIVE_BARCODE_EVIDENCE_INVALID"
+  | "LIVE_BARCODE_IDENTITY_CONTRADICTION"
+  | "DIRECT_TARGET_CONTENT_EVIDENCE_INVALID"
+  | "FIRST_PARTY_DIRECT_OFFER_MISSING"
+  | "CANONICAL_DONOR_VARIANT_CONFLICT"
+  | "CANONICAL_LISTING_STATE_INVALID";
+
+export interface ProductTruthLegacyBridgeManifestBinding {
+  schemaVersion: string;
+  sha256: string;
+  asOf: string;
+  listingCount: number;
+}
+
+export interface ProductTruthLegacyBridgeListingRow {
+  listingKey: string;
+  channel: "amazon" | "walmart";
+  storeIndex: number;
+  sku: string;
+  listingUpc: string | null;
+  listingUpcSource: string | null;
+  priorityGmv30d: number | null;
+  priorityOrders30d: number | null;
+  priorityUnits30d: number | null;
+  priorityObservedAt: string | null;
+  productIdentityJson: string | null;
+  productIdentityUpdatedAt: string | null;
+}
+
+export interface ProductTruthLegacyBridgeComponentRow {
+  id: string;
+  sku: string;
+  idx: number;
+  product: string | null;
+  flavor: string | null;
+  size: string | null;
+  qty: number;
+  costMethod: string | null;
+  retailer: string | null;
+  matchedTitle: string | null;
+  perUnitCost: number | null;
+  lineCost: number | null;
+  donorProductId: string | null;
+  contentDonorProductId: string | null;
+  priceEvidenceDonorProductId: string | null;
+  priceEvidenceOfferId: string | null;
+}
+
+export interface ProductTruthLegacyBridgeDonorRow {
+  id: string;
+  brand: string | null;
+  productLine: string | null;
+  flavor: string | null;
+  containerType: string | null;
+  size: string | null;
+  category: string | null;
+  upc: string | null;
+  gtin: string | null;
+  title: string | null;
+  description: string | null;
+  bullets: string | null;
+  attributes: string | null;
+  nutritionFacts: string | null;
+  ingredients: string | null;
+  mainImageUrl: string | null;
+  imageUrls: string | null;
+  identityKey: string;
+  identityStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductTruthLegacyBridgeOfferRow {
+  id: string;
+  donorProductId: string;
+  retailer: string;
+  retailerProductId: string;
+  via: string;
+  price: number | null;
+  packSizeSeen: number | null;
+  pricePerUnit: number | null;
+  currency: string;
+  zip: string | null;
+  localityEvidence: string | null;
+  inStock: boolean | null;
+  productUrl: string | null;
+  isFirstParty: boolean;
+  sourceApi: string | null;
+  fetchedAt: string | null;
+}
+
+export interface ProductTruthLegacyBridgeCanonicalDonorBindingRow {
+  donorProductId: string;
+  canonicalVariantId: string;
+  decisionId: string;
+  decisionStatus: string;
+  decidedAt: string;
+}
+
+export interface ProductTruthLegacyBridgeCanonicalListingComponentRow {
+  listingKey: string;
+  skuCostId: string;
+  componentIndex: number;
+  evidenceStatus: string;
+  targetCanonicalVariantId: string;
+  contentCanonicalVariantId: string | null;
+  contentObservationId: string | null;
+  observedContentCanonicalVariantId: string | null;
+  decisionStatus: string | null;
+  decisionCanonicalVariantId: string | null;
+}
+
+export interface ProductTruthLiveImageBarcodeEvidence {
+  schemaVersion: typeof PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION;
+  listingKey: string;
+  componentIndex: number;
+  capturedAt: string;
+  sourceImageFile: string;
+  image: {
+    imageId: string;
+    slot: string;
+    sourceAssetSha256: string;
+    modelAssetSha256: string;
+  };
+  barcode: {
+    decoder: "APPLE_VISION_VNDETECTBARCODESREQUEST";
+    symbology: string;
+    payload: string;
+    normalizedGtin14: string;
+    confidence: number;
+  };
+  visualObservation: {
+    brandText: string;
+    productText: string;
+    readableIdentity: "clear";
+    multipleDistinctProducts: "no";
+    gridCellKind: "single_sellable_package";
+    externalPackageCount: 1;
+    identityModifiers: string[];
+  };
+  buyerPdp: {
+    title: string;
+    brand: string | null;
+    productType: string | null;
+    productLine: string | null;
+    flavor: string | null;
+    count: number | null;
+    multipackQuantity: number | null;
+    containerType: string | null;
+    netContent: string | null;
+    foodCondition: string | null;
+  };
+  retailerContent: {
+    retailer: "target";
+    retailerProductId: string;
+    productUrl: string;
+    finalUrl: string;
+    httpStatus: 200;
+    fetchedAt: string;
+    htmlFile: string;
+    htmlSha256: string;
+    normalizedGtin14: string;
+    title: string;
+    description: string;
+    bullets: string[];
+    attributes: string[];
+    nutritionFacts: Record<string, unknown>;
+    ingredients: string;
+    allergens: string;
+    mainImageUrl?: string;
+    imageUrls?: string[];
+    category?: string;
+    classificationEvidence?: {
+      departmentName: string;
+      productTypeName: string;
+      itemTypeName: string;
+      storageClass: "Shelf Stable";
+      storageRuleVersion: "target-grocery-crackers-shelf-stable/1.0.0";
+    };
+  };
+  sourceHashes: {
+    intakeIndexFileSha256: string;
+    intakeIndexBodySha256: string;
+    buyerPdpFileSha256: string;
+    observerPlanFileSha256: string;
+    observerPlanBodySha256: string;
+    observationsFileSha256: string;
+    executionIndexFileSha256: string;
+    executionIndexBodySha256: string;
+  };
+  safety: {
+    modelCalls: 0;
+    providerCalls: 0;
+    paidCalls: 0;
+    retailerReads: 1;
+    databaseWrites: 0;
+    walmartWrites: 0;
+  };
+}
+
+export interface ProductTruthLegacyBridgeComponentBarcodeEvidenceRow
+  extends ProductTruthLiveImageBarcodeEvidence {
+  evidenceArtifactSha256: string;
+}
+
+export interface ProductTruthDirectTargetContentEvidence {
+  schemaVersion: typeof PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION;
+  donorProductId: string;
+  offerId: string;
+  capturedAt: string;
+  retailerContent: {
+    retailer: "target";
+    retailerProductId: string;
+    productUrl: string;
+    finalUrl: string;
+    httpStatus: 200;
+    fetchedAt: string;
+    htmlFile: string;
+    htmlSha256: string;
+    normalizedGtin14: string;
+    title: string;
+    description: string;
+    bullets: string[];
+    attributes: string[];
+    nutritionFacts: Record<string, unknown>;
+    ingredients: string;
+    allergens: string;
+  };
+  safety: {
+    modelCalls: 0;
+    providerCalls: 0;
+    paidCalls: 0;
+    retailerReads: 1;
+    databaseWrites: 0;
+    walmartWrites: 0;
+  };
+}
+
+export interface ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
+  extends ProductTruthDirectTargetContentEvidence {
+  evidenceArtifactSha256: string;
+}
+
+export interface ProductTruthLegacyBridgeSnapshot {
+  schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION;
+  capturedAt: string;
+  targetFingerprint: string;
+  manifest: ProductTruthLegacyBridgeManifestBinding;
+  listings: ProductTruthLegacyBridgeListingRow[];
+  components: ProductTruthLegacyBridgeComponentRow[];
+  donors: ProductTruthLegacyBridgeDonorRow[];
+  offers: ProductTruthLegacyBridgeOfferRow[];
+  canonicalDonorBindings: ProductTruthLegacyBridgeCanonicalDonorBindingRow[];
+  canonicalListingComponents: ProductTruthLegacyBridgeCanonicalListingComponentRow[];
+  componentBarcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[];
+  directTargetContentEvidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
+}
+
+export interface ProductTruthBridgeBlocker {
+  code: ProductTruthBridgeBlockerCode;
+  message: string;
+}
+
+export interface ProductTruthBridgeCanonicalVariantProjection {
+  canonicalVariantId: string;
+  variantKey: string;
+  identityHash: string;
+  keyVersion: string;
+  identityJson: string;
+}
+
+export interface ProductTruthLegacyBridgeComponentPlan {
+  componentIndex: number;
+  qty: number;
+  legacyComponentId: string | null;
+  donorProductId: string | null;
+  legacyDonorProductId: string | null;
+  donorOfferId: string | null;
+  contentSourceOfferId: string | null;
+  identityProof: ProductTruthBridgeIdentityProof;
+  contentAssessment: {
+    complete: boolean;
+    missing: string[];
+    storageEvidence: unknown;
+    allergensEvidence: unknown;
+    contentOverride: {
+      evidenceType: "LIVE_IMAGE_BARCODE" | "DIRECT_TARGET_CONTENT";
+      sourceUrl: string;
+      sourceApi: "target_direct_html";
+      observedAt: string;
+      evidenceArtifactSha256: string;
+      rawHtmlSha256: string;
+      title: string;
+      description: string;
+      bullets: string[];
+      attributes: string[];
+      nutritionFacts: Record<string, unknown>;
+      ingredients: string;
+    } | null;
+  } | null;
+  targetIdentity: CanonicalProductIdentity | null;
+  targetVariant: ProductTruthBridgeCanonicalVariantProjection | null;
+  matcherVerdict: CanonicalMatchVerdict | null;
+  matcherReasonCodes: CanonicalMatchReasonCode[];
+  disposition: ProductTruthBridgeComponentDisposition;
+  blockers: ProductTruthBridgeBlocker[];
+}
+
+export interface ProductTruthLegacyBridgeScopePlan {
+  listingKey: string;
+  channel: "amazon" | "walmart";
+  storeIndex: number;
+  sku: string;
+  disposition: ProductTruthBridgeScopeDisposition;
+  writeEligible: boolean;
+  blockers: ProductTruthBridgeBlocker[];
+  components: ProductTruthLegacyBridgeComponentPlan[];
+}
+
+export interface ProductTruthLegacyBridgePlan {
+  schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION;
+  policyVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION;
+  generatedAt: string;
+  source: {
+    snapshotSchemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION;
+    snapshotSha256: string;
+    targetFingerprint: string;
+    manifest: ProductTruthLegacyBridgeManifestBinding;
+  };
+  matcher: {
+    version: typeof CANONICAL_PRODUCT_MATCHER_VERSION;
+    implementationSha256: typeof CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256;
+    releaseSha256: typeof CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256;
+  };
+  pricePolicy: {
+    version: typeof PRICE_EVIDENCE_POLICY_VERSION;
+    evaluatedAt: string;
+    maxAgeMs: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS;
+  };
+  safety: {
+    readOnly: true;
+    databaseWrites: 0;
+    providerCalls: 0;
+    paidCalls: 0;
+    retailerFetches: 0;
+    mutatesLegacyCatalog: false;
+    createsAdditionalCatalog: false;
+    historicalExactFlagsAreIdentityProof: false;
+    priceProxyMayProvideContent: false;
+  };
+  counts: {
+    listingsTotal: number;
+    alreadyCanonicalListings: number;
+    exactCanonicalizationCandidates: number;
+    contentOnlyCanonicalizationCandidates: number;
+    identityOnlyCanonicalizationCandidates: number;
+    quarantinedListings: number;
+    componentsTotal: number;
+    alreadyCanonicalComponents: number;
+    exactContentAndPriceCandidates: number;
+    exactContentOnlyCandidates: number;
+    exactIdentityOnlyCandidates: number;
+    priceOnlyEstimates: number;
+    quarantinedComponents: number;
+  };
+  scopes: ProductTruthLegacyBridgeScopePlan[];
+}
+
+type ParsedProductIdentity = {
+  brand?: unknown;
+  product_line?: unknown;
+  flavor?: unknown;
+  size?: unknown;
+  container_type?: unknown;
+  base_unit?: unknown;
+  units_in_listing?: unknown;
+  is_bundle?: unknown;
+  components?: unknown;
+};
+
+type ParsedBundleComponent = {
+  product?: unknown;
+  flavor?: unknown;
+  size?: unknown;
+  qty?: unknown;
+  container_type?: unknown;
+};
+
+function bridgeError(code: ProductTruthBridgeBlockerCode, message: string): ProductTruthBridgeBlocker {
+  return { code, message };
+}
+
+function stringOrNull(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function positiveInteger(value: unknown): number | null {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isInteger(number) && number > 0 ? number : null;
+}
+
+function foldedTokens(value: string): string[] {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** Validate a GTIN-8/12/13/14 and normalize it to a 14-digit comparison key. */
+export function normalizeProductTruthBridgeGtin(value: string | null | undefined): string | null {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  if (![8, 12, 13, 14].includes(digits.length)) return null;
+  let sum = 0;
+  for (let index = 0; index < digits.length - 1; index += 1) {
+    const digit = Number(digits[index]);
+    const distanceFromCheck = digits.length - 1 - index;
+    sum += digit * (distanceFromCheck % 2 === 1 ? 3 : 1);
+  }
+  const expected = (10 - (sum % 10)) % 10;
+  if (expected !== Number(digits.at(-1))) return null;
+  return digits.padStart(14, "0");
+}
+
+function targetRetailerProductIdFromUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !/(^|\.)target\.com$/i.test(url.hostname)) return null;
+    return url.pathname.match(/\/A-(\d+)(?:\/|$)/)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function directTargetContentArtifact(
+  evidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow,
+): ProductTruthDirectTargetContentEvidence {
+  return {
+    schemaVersion: evidence.schemaVersion,
+    donorProductId: evidence.donorProductId,
+    offerId: evidence.offerId,
+    capturedAt: evidence.capturedAt,
+    retailerContent: evidence.retailerContent,
+    safety: evidence.safety,
+  };
+}
+
+function assertDirectTargetContentEvidence(input: {
+  evidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow;
+  donor: ProductTruthLegacyBridgeDonorRow | undefined;
+  offer: ProductTruthLegacyBridgeOfferRow | undefined;
+  evaluatedAt: string;
+}): void {
+  const { evidence, donor, offer } = input;
+  const invalid = (message: string): never => {
+    throw new Error(
+      `LEGACY_BRIDGE_DIRECT_TARGET_CONTENT_EVIDENCE_INVALID:${evidence.donorProductId}:${message}`,
+    );
+  };
+  const capturedAt = Date.parse(evidence.capturedAt);
+  const evaluatedAt = Date.parse(input.evaluatedAt);
+  const donorGtin = donor
+    ? normalizeProductTruthBridgeGtin(donor.upc)
+      ?? normalizeProductTruthBridgeGtin(donor.gtin)
+    : null;
+  const productUrlItemId = targetRetailerProductIdFromUrl(
+    evidence.retailerContent.productUrl,
+  );
+  const finalUrlItemId = targetRetailerProductIdFromUrl(
+    evidence.retailerContent.finalUrl,
+  );
+  const offerUrlItemId = targetRetailerProductIdFromUrl(offer?.productUrl);
+  const artifactJson = renderProductTruthOperationalJson(
+    directTargetContentArtifact(evidence),
+  );
+  if (
+    evidence.schemaVersion !== PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION
+    || !/^[a-f0-9]{64}$/.test(evidence.evidenceArtifactSha256)
+    || productTruthLegacyBridgeBytesSha256(artifactJson)
+      !== evidence.evidenceArtifactSha256
+    || !Number.isFinite(capturedAt)
+    || !Number.isFinite(evaluatedAt)
+    || capturedAt > evaluatedAt
+    || evaluatedAt - capturedAt > PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS
+    || !donor
+    || !offer
+    || offer.id !== evidence.offerId
+    || offer.donorProductId !== evidence.donorProductId
+    || offer.retailer.trim().toLowerCase() !== "target"
+    || offer.via.trim().toLowerCase() !== "direct"
+    || offer.isFirstParty !== true
+    || !offer.sourceApi
+    || offer.productUrl !== evidence.retailerContent.productUrl
+    || productUrlItemId !== evidence.retailerContent.retailerProductId
+    || finalUrlItemId !== evidence.retailerContent.retailerProductId
+    || offerUrlItemId !== evidence.retailerContent.retailerProductId
+    || evidence.retailerContent.retailer !== "target"
+    || evidence.retailerContent.httpStatus !== 200
+    || evidence.retailerContent.fetchedAt !== evidence.capturedAt
+    || !/^[a-f0-9]{64}$/.test(evidence.retailerContent.htmlSha256)
+    || !donorGtin
+    || donorGtin !== evidence.retailerContent.normalizedGtin14
+    || !evidence.retailerContent.title
+    || !evidence.retailerContent.description
+    || !evidence.retailerContent.bullets.length
+    || !evidence.retailerContent.attributes.length
+    || !Object.keys(evidence.retailerContent.nutritionFacts).length
+    || !evidence.retailerContent.ingredients
+    || !evidence.retailerContent.allergens
+    || evidence.safety.modelCalls !== 0
+    || evidence.safety.providerCalls !== 0
+    || evidence.safety.paidCalls !== 0
+    || evidence.safety.retailerReads !== 1
+    || evidence.safety.databaseWrites !== 0
+    || evidence.safety.walmartWrites !== 0
+  ) {
+    invalid("contract, source graph, GTIN, Target item, freshness, content, or safety gate failed");
+  }
+}
+
+function containsAllIdentityTokens(haystack: string, needles: string | null | undefined): boolean {
+  const available = new Set(normalizeIdentityTokens(haystack));
+  return normalizeIdentityTokens(needles).every((token) => available.has(token));
+}
+
+function equivalentCanonicalSize(left: string | null, right: string | null): boolean {
+  const a = parseCanonicalSize(left);
+  const b = parseCanonicalSize(right);
+  if (!a || !b || a.dimension !== b.dimension) return false;
+  const denominator = Math.max(Math.abs(a.baseAmount), Math.abs(b.baseAmount), Number.EPSILON);
+  return Math.abs(a.baseAmount - b.baseAmount) / denominator <= 0.01;
+}
+
+function existingModifiers(
+  value: CanonicalProductIdentity["modifiers"],
+): string[] {
+  if (Array.isArray(value)) return [...value];
+  return typeof value === "string" && value.trim() ? [value.trim()] : [];
+}
+
+function mergeProductLine(
+  sourceProductLine: string | null,
+  targetProductLine: string | null | undefined,
+): string | null {
+  const values = [sourceProductLine, targetProductLine]
+    .filter((value): value is string => Boolean(value?.trim()));
+  if (!values.length) return null;
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    for (const token of foldedTokens(value)) {
+      if (seen.has(token)) continue;
+      seen.add(token);
+      result.push(token);
+    }
+  }
+  return result.join(" ");
+}
+
+function assessLiveBarcodeEvidence(input: {
+  evidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow;
+  expectedListingKey: string;
+  expectedComponentIndex: number;
+  expectedQuantity: number;
+  evaluatedAt: string;
+  targetIdentity: CanonicalProductIdentity;
+  donor: ProductTruthLegacyBridgeDonorRow;
+}): {
+  valid: boolean;
+  targetIdentity: CanonicalProductIdentity;
+  blockers: ProductTruthBridgeBlocker[];
+} {
+  const { evidence, donor } = input;
+  const blockers: ProductTruthBridgeBlocker[] = [];
+  const invalid = (message: string) => blockers.push(
+    bridgeError("LIVE_BARCODE_EVIDENCE_INVALID", message),
+  );
+  const contradiction = (message: string) => blockers.push(
+    bridgeError("LIVE_BARCODE_IDENTITY_CONTRADICTION", message),
+  );
+  const hashes = [
+    evidence.evidenceArtifactSha256,
+    evidence.image.sourceAssetSha256,
+    evidence.image.modelAssetSha256,
+    evidence.retailerContent.htmlSha256,
+    ...Object.values(evidence.sourceHashes),
+  ];
+  const retailerContentUrlValid =
+    targetRetailerProductIdFromUrl(evidence.retailerContent.productUrl)
+      === evidence.retailerContent.retailerProductId
+    && targetRetailerProductIdFromUrl(evidence.retailerContent.finalUrl)
+      === evidence.retailerContent.retailerProductId;
+  if (
+    evidence.schemaVersion !== PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION
+    || evidence.listingKey !== input.expectedListingKey
+    || evidence.componentIndex !== input.expectedComponentIndex
+    || !Number.isFinite(Date.parse(evidence.capturedAt))
+    || Date.parse(evidence.capturedAt) > Date.parse(input.evaluatedAt)
+    || Date.parse(input.evaluatedAt) - Date.parse(evidence.capturedAt)
+      > PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS
+    || hashes.some((value) => !/^[a-f0-9]{64}$/.test(value))
+    || evidence.barcode.decoder !== "APPLE_VISION_VNDETECTBARCODESREQUEST"
+    || evidence.barcode.confidence < 0.98
+    || evidence.barcode.confidence > 1
+    || normalizeProductTruthBridgeGtin(evidence.barcode.payload)
+      !== evidence.barcode.normalizedGtin14
+    || evidence.retailerContent.retailer !== "target"
+    || evidence.retailerContent.httpStatus !== 200
+    || !retailerContentUrlValid
+    || evidence.retailerContent.fetchedAt !== evidence.capturedAt
+    || evidence.retailerContent.normalizedGtin14 !== evidence.barcode.normalizedGtin14
+    || !evidence.retailerContent.title
+    || !evidence.retailerContent.description
+    || !evidence.retailerContent.bullets.length
+    || !evidence.retailerContent.attributes.length
+    || !Object.keys(evidence.retailerContent.nutritionFacts).length
+    || !evidence.retailerContent.ingredients
+    || !evidence.retailerContent.allergens
+    || evidence.visualObservation.readableIdentity !== "clear"
+    || evidence.visualObservation.multipleDistinctProducts !== "no"
+    || evidence.visualObservation.gridCellKind !== "single_sellable_package"
+    || evidence.visualObservation.externalPackageCount !== 1
+    || evidence.safety.modelCalls !== 0
+    || evidence.safety.providerCalls !== 0
+    || evidence.safety.paidCalls !== 0
+    || evidence.safety.retailerReads !== 1
+    || evidence.safety.databaseWrites !== 0
+    || evidence.safety.walmartWrites !== 0
+  ) invalid("barcode artifact contract, freshness, hash, decoder, visual, or safety gate failed");
+
+  const donorGtin = normalizeProductTruthBridgeGtin(donor.upc)
+    ?? normalizeProductTruthBridgeGtin(donor.gtin);
+  if (!donorGtin || donorGtin !== evidence.barcode.normalizedGtin14) {
+    contradiction("decoded live package barcode does not equal the linked donor GTIN");
+  }
+  if (evidence.buyerPdp.multipackQuantity !== input.expectedQuantity) {
+    contradiction(
+      `buyer PDP multipack ${evidence.buyerPdp.multipackQuantity ?? "missing"}`
+      + ` does not equal recipe quantity ${input.expectedQuantity}`,
+    );
+  }
+
+  const identityText = [
+    evidence.visualObservation.brandText,
+    evidence.visualObservation.productText,
+    evidence.buyerPdp.title,
+    evidence.buyerPdp.brand,
+    evidence.buyerPdp.productType,
+    evidence.buyerPdp.productLine,
+    evidence.buyerPdp.flavor,
+  ].filter(Boolean).join(" ");
+  if (!containsAllIdentityTokens(identityText, input.targetIdentity.brand)) {
+    contradiction("live image/PDP does not prove every target brand token");
+  }
+  if (!containsAllIdentityTokens(identityText, input.targetIdentity.productLine)) {
+    contradiction("live image/PDP does not prove every target product-line token");
+  }
+  if (!containsAllIdentityTokens(identityText, input.targetIdentity.flavor)) {
+    contradiction("live image/PDP does not prove every target flavor token");
+  }
+  if (
+    input.targetIdentity.form
+    && !containsAllIdentityTokens(
+      evidence.buyerPdp.containerType ?? "",
+      input.targetIdentity.form,
+    )
+  ) contradiction("buyer PDP container type does not prove the target form");
+
+  const sizeCandidates = [
+    evidence.buyerPdp.count == null ? null : `${evidence.buyerPdp.count} count`,
+    evidence.buyerPdp.netContent,
+  ];
+  if (
+    input.targetIdentity.size
+    && !sizeCandidates.some((candidate) =>
+      equivalentCanonicalSize(String(input.targetIdentity.size), candidate))
+  ) contradiction("buyer PDP does not prove the target component size");
+
+  const identityModifiers = [...new Set(
+    evidence.visualObservation.identityModifiers.map((value) => value.trim()).filter(Boolean),
+  )].sort();
+  if (
+    !identityModifiers.length
+    || !identityModifiers.every((value) =>
+      containsAllIdentityTokens(identityText, value)
+      && containsAllIdentityTokens(donor.title ?? "", value))
+  ) contradiction("variant modifier is not independently present in live pixels/PDP and donor title");
+
+  const augmentedTarget: CanonicalProductIdentity = {
+    ...input.targetIdentity,
+    productLine: mergeProductLine(
+      evidence.buyerPdp.productLine,
+      input.targetIdentity.productLine,
+    ),
+    modifiers: [...new Set([
+      ...existingModifiers(input.targetIdentity.modifiers),
+      ...identityModifiers,
+    ])].sort(),
+  };
+  const donorTitleMatch = matchCanonicalProductTitle(
+    { ...augmentedTarget, form: null },
+    { title: donor.title, brand: null },
+  );
+  if (
+    donorTitleMatch.verdict === "REJECT"
+    || donorTitleMatch.titleEvidence?.missingTargetTokens.length
+    || donorTitleMatch.titleEvidence?.unexplainedCandidateTokens.length
+  ) contradiction(
+    `barcode donor title remains identity-incompatible: ${donorTitleMatch.reasonCodes.join(",")}`,
+  );
+
+  return {
+    valid: blockers.length === 0,
+    targetIdentity: augmentedTarget,
+    blockers,
+  };
+}
+
+function explicitBundleTarget(
+  component: ParsedBundleComponent,
+  donorBrand: string | null,
+): CanonicalProductIdentity | null {
+  const product = stringOrNull(component.product);
+  if (!product || !donorBrand) return null;
+  const productTokens = foldedTokens(product);
+  const brandTokens = foldedTokens(donorBrand);
+  if (
+    !brandTokens.length
+    || brandTokens.length >= productTokens.length
+    || brandTokens.some((token, index) => token !== productTokens[index])
+  ) return null;
+  const productLine = productTokens.slice(brandTokens.length).join(" ");
+  if (!productLine) return null;
+  return {
+    brand: donorBrand,
+    productLine,
+    flavor: stringOrNull(component.flavor),
+    form: stringOrNull(component.container_type),
+    size: stringOrNull(component.size),
+    outerPackCount: 1,
+  };
+}
+
+function projectVariant(value: CanonicalProductVariantKey): ProductTruthBridgeCanonicalVariantProjection {
+  return {
+    canonicalVariantId: value.canonicalVariantId,
+    variantKey: value.variantKey,
+    identityHash: value.identityHash,
+    keyVersion: value.keyVersion,
+    identityJson: value.identityJson,
+  };
+}
+
+function isRegionalRetailer(retailer: string): boolean {
+  return ["publix", "aldi", "winndixie", "winn-dixie", "bravo"].includes(retailer);
+}
+
+function usableStandardOffer(
+  offer: ProductTruthLegacyBridgeOfferRow,
+  evaluatedAt: string,
+): boolean {
+  const retailer = offer.retailer.trim().toLowerCase();
+  if (["bjs", "bj's", "sams", "samsclub", "sam's club", "costco"].includes(retailer)) return false;
+  if (offer.via.trim().toLowerCase() !== "direct" || offer.isFirstParty !== true) return false;
+  if (!offer.productUrl || offer.currency.toUpperCase() !== "USD") return false;
+  if (!(Number(offer.price) > 0)) return false;
+  if (offer.packSizeSeen != null && offer.packSizeSeen !== 1) return false;
+  if (isRegionalRetailer(retailer) && offer.zip !== "33765") return false;
+  return evaluatePriceEvidenceEligibility({
+    retailer: offer.retailer,
+    via: offer.via,
+    price: offer.price,
+    isFirstParty: offer.isFirstParty,
+    inStock: offer.inStock,
+    zip: offer.zip,
+    localityEvidence: offer.localityEvidence,
+    fetchedAt: offer.fetchedAt,
+    matchVerdict: "EXACT_IDENTITY",
+  }, {
+    now: evaluatedAt,
+    maxAgeMs: PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS,
+  }).eligibility === "FACT";
+}
+
+function offerUnitPrice(offer: ProductTruthLegacyBridgeOfferRow): number {
+  return Number(offer.pricePerUnit) > 0 ? Number(offer.pricePerUnit) : Number(offer.price);
+}
+
+function usableContentSourceOffer(offer: ProductTruthLegacyBridgeOfferRow): boolean {
+  const retailer = offer.retailer.trim().toLowerCase();
+  return !["bjs", "bj's", "sams", "samsclub", "sam's club", "costco"].includes(retailer)
+    && offer.via.trim().toLowerCase() === "direct"
+    && offer.isFirstParty === true
+    && Boolean(offer.productUrl?.startsWith("https://"))
+    && Boolean(offer.sourceApi);
+}
+
+function chooseContentSourceOffer(
+  donorProductId: string,
+  offersByDonor: ReadonlyMap<string, readonly ProductTruthLegacyBridgeOfferRow[]>,
+  exactTargetRetailerProductId: string | null = null,
+): ProductTruthLegacyBridgeOfferRow | null {
+  return [...(offersByDonor.get(donorProductId) ?? [])]
+    .filter((offer) =>
+      usableContentSourceOffer(offer)
+      && (
+        exactTargetRetailerProductId === null
+        || (
+          offer.retailer.trim().toLowerCase() === "target"
+          && offer.retailerProductId === exactTargetRetailerProductId
+          && targetRetailerProductIdFromUrl(offer.productUrl) === exactTargetRetailerProductId
+        )
+      ))
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.fetchedAt ?? "");
+      const rightTime = Date.parse(right.fetchedAt ?? "");
+      return (Number.isFinite(rightTime) ? rightTime : -Infinity)
+        - (Number.isFinite(leftTime) ? leftTime : -Infinity)
+        || left.retailer.localeCompare(right.retailer)
+        || left.id.localeCompare(right.id);
+    })[0] ?? null;
+}
+
+function parsedJson(value: string | null): unknown {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function explicitStorageEvidence(attributes: string | null): unknown {
+  const parsed = parsedJson(attributes);
+  if (!Array.isArray(parsed)) return null;
+  return parsed.find((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+    const row = item as Record<string, unknown>;
+    return /(?:food condition|state of readiness|storage)/i.test(
+      String(row.name ?? row.label ?? ""),
+    )
+      && Boolean(stringOrNull(row.value));
+  }) ?? null;
+}
+
+function directTargetStorageEvidence(
+  evidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow | null,
+): unknown {
+  const value = evidence?.retailerContent.attributes.find((attribute) =>
+    /^(?:food condition|state of readiness|storage)\s*:/i.test(attribute.trim()));
+  if (!value) return null;
+  return {
+    source: "targetDirectHtml.productDescription.attributes",
+    value: value.replace(/^[^:]+:\s*/, "").trim() || value,
+  };
+}
+
+function explicitAllergensEvidence(
+  nutritionFacts: string | null,
+  ingredients: string | null,
+): unknown {
+  const nutrition = parsedJson(nutritionFacts);
+  if (nutrition && typeof nutrition === "object" && !Array.isArray(nutrition)) {
+    const record = nutrition as Record<string, unknown>;
+    const key = Object.keys(record).find((candidate) => /allergen/i.test(candidate));
+    if (key) return { source: "nutritionFacts", value: record[key] };
+  }
+  if (Array.isArray(nutrition)) {
+    const item = nutrition.find((candidate) =>
+      candidate && typeof candidate === "object" && !Array.isArray(candidate)
+      && /allergen/i.test(String((candidate as Record<string, unknown>).name ?? "")));
+    if (item) return { source: "nutritionFacts", value: item };
+  }
+  const explicit = ingredients?.match(/\b(?:contains|may contain)\s*:[^|\n]+/i)?.[0]?.trim();
+  return explicit ? { source: "ingredients", value: explicit } : null;
+}
+
+function httpsUrl(value: string | null): boolean {
+  if (!value) return false;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function assessLegacyContent(
+  donor: ProductTruthLegacyBridgeDonorRow,
+  sourceOffer: ProductTruthLegacyBridgeOfferRow | null,
+  barcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow | null = null,
+  directTargetEvidence:
+    ProductTruthLegacyBridgeDirectTargetContentEvidenceRow | null = null,
+): NonNullable<ProductTruthLegacyBridgeComponentPlan["contentAssessment"]> {
+  const missing: string[] = [];
+  const images = parsedJson(donor.imageUrls);
+  const imageUrls = Array.isArray(images)
+    ? images.filter((value): value is string => typeof value === "string")
+    : [];
+  const targetContent = barcodeEvidence?.retailerContent
+    ?? directTargetEvidence?.retailerContent
+    ?? null;
+  const evidenceArtifactSha256 = barcodeEvidence?.evidenceArtifactSha256
+    ?? directTargetEvidence?.evidenceArtifactSha256
+    ?? null;
+  const contentOverride = targetContent && evidenceArtifactSha256 ? {
+    evidenceType: barcodeEvidence
+      ? "LIVE_IMAGE_BARCODE" as const
+      : "DIRECT_TARGET_CONTENT" as const,
+    sourceUrl: targetContent.finalUrl,
+    sourceApi: "target_direct_html" as const,
+    observedAt: targetContent.fetchedAt,
+    evidenceArtifactSha256,
+    rawHtmlSha256: targetContent.htmlSha256,
+    title: targetContent.title,
+    description: targetContent.description,
+    bullets: targetContent.bullets,
+    attributes: targetContent.attributes,
+    nutritionFacts: targetContent.nutritionFacts,
+    ingredients: targetContent.ingredients,
+  } : null;
+  const storageEvidence = barcodeEvidence?.buyerPdp.foodCondition
+    ? {
+        source: "walmartBuyerPdp.foodCondition",
+        value: barcodeEvidence.buyerPdp.foodCondition,
+      }
+    : directTargetStorageEvidence(directTargetEvidence)
+      ?? explicitStorageEvidence(donor.attributes);
+  const allergensEvidence = targetContent?.allergens
+    ? {
+        source: "targetDirectHtml.nutritionFacts.warning",
+        value: targetContent.allergens,
+      }
+    : explicitAllergensEvidence(donor.nutritionFacts, donor.ingredients);
+  if (!donor.title && !contentOverride?.title) missing.push("TITLE");
+  if (!donor.description && !contentOverride?.description) missing.push("DESCRIPTION");
+  if (!normalizeProductTruthBridgeGtin(donor.upc)) missing.push("MANUFACTURER_UPC");
+  if (!donor.ingredients && !contentOverride?.ingredients) missing.push("INGREDIENTS");
+  if (!donor.nutritionFacts && !contentOverride?.nutritionFacts) missing.push("NUTRITION");
+  if (!donor.category) missing.push("CATEGORY");
+  if (!storageEvidence) missing.push("STORAGE");
+  if (!allergensEvidence) missing.push("ALLERGENS");
+  if (!httpsUrl(donor.mainImageUrl)) missing.push("MAIN_IMAGE");
+  if (
+    !imageUrls.length
+    || imageUrls.some((url) => !httpsUrl(url))
+    || !donor.mainImageUrl
+    || !imageUrls.includes(donor.mainImageUrl)
+  ) missing.push("GALLERY");
+  if (!sourceOffer) missing.push("EXACT_SOURCE_URL");
+  return {
+    complete: missing.length === 0,
+    missing,
+    storageEvidence,
+    allergensEvidence,
+    contentOverride,
+  };
+}
+
+function chooseOffer(
+  donorProductId: string,
+  explicitOfferId: string | null,
+  componentRetailer: string | null,
+  evaluatedAt: string,
+  offersById: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow>,
+  offersByDonor: ReadonlyMap<string, readonly ProductTruthLegacyBridgeOfferRow[]>,
+): ProductTruthLegacyBridgeOfferRow | null {
+  if (explicitOfferId) {
+    const explicit = offersById.get(explicitOfferId);
+    if (
+      explicit
+      && explicit.donorProductId === donorProductId
+      && usableStandardOffer(explicit, evaluatedAt)
+    ) return explicit;
+  }
+  const preferredRetailer = componentRetailer?.trim().toLowerCase() || null;
+  const candidates = [...(offersByDonor.get(donorProductId) ?? [])]
+    .filter((offer) => usableStandardOffer(offer, evaluatedAt))
+    .sort((left, right) => {
+      const leftPreferred = preferredRetailer && left.retailer.toLowerCase() === preferredRetailer ? 0 : 1;
+      const rightPreferred = preferredRetailer && right.retailer.toLowerCase() === preferredRetailer ? 0 : 1;
+      return leftPreferred - rightPreferred
+        || offerUnitPrice(left) - offerUnitPrice(right)
+        || left.retailer.localeCompare(right.retailer)
+        || left.id.localeCompare(right.id);
+    });
+  return candidates[0] ?? null;
+}
+
+function parseIdentity(
+  value: string | null,
+): { identity: ParsedProductIdentity | null; blockers: ProductTruthBridgeBlocker[] } {
+  if (!value) {
+    return {
+      identity: null,
+      blockers: [bridgeError("PRODUCT_IDENTITY_MISSING", "SkuShippingData.productIdentity is empty")],
+    };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return {
+      identity: null,
+      blockers: [bridgeError("PRODUCT_IDENTITY_INVALID_JSON", "productIdentity is not valid JSON")],
+    };
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return {
+      identity: null,
+      blockers: [bridgeError("PRODUCT_IDENTITY_INVALID", "productIdentity must be an object")],
+    };
+  }
+  return { identity: parsed as ParsedProductIdentity, blockers: [] };
+}
+
+function linkedDonorId(
+  component: ProductTruthLegacyBridgeComponentRow,
+): { donorProductId: string | null; blockers: ProductTruthBridgeBlocker[] } {
+  const contentIds = [...new Set(
+    [component.contentDonorProductId, component.donorProductId].filter(
+      (value): value is string => Boolean(value),
+    ),
+  )];
+  if (contentIds.length > 1) {
+    return {
+      donorProductId: null,
+      blockers: [bridgeError(
+        "LEGACY_DONOR_LINK_CONFLICT",
+        "deprecated and exact-content donor links disagree",
+      )],
+    };
+  }
+  const donorProductId = contentIds[0] ?? component.priceEvidenceDonorProductId;
+  if (!donorProductId) {
+    return {
+      donorProductId: null,
+      blockers: [bridgeError("LEGACY_DONOR_LINK_MISSING", "component has no donor link")],
+    };
+  }
+  return { donorProductId, blockers: [] };
+}
+
+function componentPlan(input: {
+  listingKey: string;
+  componentIndex: number;
+  quantity: number;
+  targetIdentity: CanonicalProductIdentity | null;
+  legacyComponent: ProductTruthLegacyBridgeComponentRow | null;
+  barcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow | null;
+  targetBlockers?: ProductTruthBridgeBlocker[];
+  listingGtin: string | null;
+  evaluatedAt: string;
+  donorsById: ReadonlyMap<string, ProductTruthLegacyBridgeDonorRow>;
+  donorsByGtin: ReadonlyMap<string, readonly ProductTruthLegacyBridgeDonorRow[]>;
+  canonicalDonorVariants: ReadonlyMap<string, ReadonlySet<string>>;
+  directTargetContentEvidenceByDonor: ReadonlyMap<
+    string,
+    ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
+  >;
+  offersById: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow>;
+  offersByDonor: ReadonlyMap<string, readonly ProductTruthLegacyBridgeOfferRow[]>;
+}): ProductTruthLegacyBridgeComponentPlan {
+  const blockers = [...(input.targetBlockers ?? [])];
+  if (!input.legacyComponent) {
+    blockers.push(bridgeError("LEGACY_COMPONENT_MISSING", "no SkuComponent row exists at this index"));
+  }
+  if (!input.targetIdentity) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent?.id ?? null,
+      donorProductId: null,
+      legacyDonorProductId: null,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: null,
+      targetVariant: null,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  if (!input.legacyComponent) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: null,
+      donorProductId: null,
+      legacyDonorProductId: null,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: input.targetIdentity,
+      targetVariant: null,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  const link = linkedDonorId(input.legacyComponent);
+  blockers.push(...link.blockers);
+  const linkedDonor = link.donorProductId ? input.donorsById.get(link.donorProductId) : null;
+  const gtinCandidates = input.listingGtin
+    ? [...(input.donorsByGtin.get(input.listingGtin) ?? [])]
+    : [];
+  const exactGtinDonor = gtinCandidates
+    .sort((left, right) => {
+      const leftLinked = left.id === link.donorProductId ? 0 : 1;
+      const rightLinked = right.id === link.donorProductId ? 0 : 1;
+      return leftLinked - rightLinked
+        || Number(Boolean(right.title)) - Number(Boolean(left.title))
+        || left.id.localeCompare(right.id);
+    })[0] ?? null;
+  const barcodeGtin = input.barcodeEvidence?.barcode.normalizedGtin14 ?? null;
+  const barcodeCandidates = barcodeGtin
+    ? [...(input.donorsByGtin.get(barcodeGtin) ?? [])]
+    : [];
+  const barcodeDonor = barcodeCandidates
+    .sort((left, right) => {
+      const leftLinked = left.id === link.donorProductId ? 0 : 1;
+      const rightLinked = right.id === link.donorProductId ? 0 : 1;
+      return leftLinked - rightLinked
+        || Number(Boolean(right.title)) - Number(Boolean(left.title))
+        || left.id.localeCompare(right.id);
+    })[0] ?? null;
+  let resolvedTargetIdentity = input.targetIdentity;
+  let acceptedBarcodeDonor: ProductTruthLegacyBridgeDonorRow | null = null;
+  if (input.barcodeEvidence) {
+    if (!barcodeDonor) {
+      blockers.push(bridgeError(
+        "LIVE_BARCODE_EVIDENCE_INVALID",
+        "decoded barcode has no exact donor GTIN candidate",
+      ));
+    } else {
+      const assessment = assessLiveBarcodeEvidence({
+        evidence: input.barcodeEvidence,
+        expectedListingKey: input.listingKey,
+        expectedComponentIndex: input.componentIndex,
+        expectedQuantity: input.quantity,
+        evaluatedAt: input.evaluatedAt,
+        targetIdentity: input.targetIdentity,
+        donor: barcodeDonor,
+      });
+      blockers.push(...assessment.blockers);
+      if (assessment.valid) {
+        acceptedBarcodeDonor = barcodeDonor;
+        resolvedTargetIdentity = assessment.targetIdentity;
+      }
+    }
+  }
+  const donor = acceptedBarcodeDonor ?? exactGtinDonor ?? linkedDonor;
+  if (link.donorProductId && !linkedDonor) {
+    blockers.push(bridgeError("LEGACY_DONOR_ORPHANED", `DonorProduct ${link.donorProductId} does not exist`));
+  }
+  if (!donor) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: link.donorProductId,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant: null,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  let targetVariant: ProductTruthBridgeCanonicalVariantProjection | null = null;
+  try {
+    targetVariant = projectVariant(buildCanonicalProductVariantKey(resolvedTargetIdentity));
+  } catch (error) {
+    blockers.push(bridgeError(
+      "TARGET_VARIANT_INVALID",
+      error instanceof Error ? error.message : "target variant could not be built",
+    ));
+  }
+  if (!targetVariant) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor.id,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant: null,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+  const existingCanonicalVariants = input.canonicalDonorVariants.get(donor.id);
+  if (
+    existingCanonicalVariants
+    && [...existingCanonicalVariants].some(
+      (canonicalVariantId) =>
+        canonicalVariantId !== targetVariant.canonicalVariantId,
+    )
+  ) {
+    blockers.push(bridgeError(
+      "CANONICAL_DONOR_VARIANT_CONFLICT",
+      [
+        `DonorProduct ${donor.id} is already bound to`,
+        [...existingCanonicalVariants].sort().join(","),
+        `instead of ${targetVariant.canonicalVariantId}`,
+      ].join(" "),
+    ));
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor.id,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  if (acceptedBarcodeDonor || exactGtinDonor) {
+    const contentSourceOffer = chooseContentSourceOffer(
+      donor.id,
+      input.offersByDonor,
+      acceptedBarcodeDonor && input.barcodeEvidence
+        ? input.barcodeEvidence.retailerContent.retailerProductId
+        : null,
+    );
+    const contentAssessment = assessLegacyContent(
+      donor,
+      contentSourceOffer,
+      acceptedBarcodeDonor ? input.barcodeEvidence : null,
+    );
+    const offer = chooseOffer(
+      donor.id,
+      input.legacyComponent.priceEvidenceOfferId,
+      input.legacyComponent.retailer,
+      input.evaluatedAt,
+      input.offersById,
+      input.offersByDonor,
+    );
+    if (!offer) {
+      blockers.push(bridgeError(
+        "FIRST_PARTY_DIRECT_OFFER_MISSING",
+        "exact GTIN donor has no standard non-club first-party direct USD offer",
+      ));
+    }
+    // A valid manufacturer GTIN is variant-specific identity evidence. It may
+    // repair a stale legacy donor link, but the legacy row is never mutated.
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor.id,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: offer?.id ?? null,
+      contentSourceOfferId: contentSourceOffer?.id ?? null,
+      identityProof: acceptedBarcodeDonor ? "EXACT_LIVE_IMAGE_BARCODE" : "EXACT_GTIN",
+      contentAssessment,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: !contentAssessment.complete
+        ? "EXACT_IDENTITY_ONLY_CANDIDATE"
+        : offer
+          ? "EXACT_CONTENT_AND_PRICE_CANDIDATE"
+          : "EXACT_CONTENT_ONLY_CANDIDATE",
+      blockers: blockers.filter((blocker) =>
+        blocker.code !== "LEGACY_DONOR_LINK_MISSING"
+        && blocker.code !== "LEGACY_DONOR_ORPHANED"),
+    };
+  }
+
+  const match = matchCanonicalProductTitle(resolvedTargetIdentity, {
+    title: donor.title,
+    // Legacy donor.brand is frequently truncated. The strict bridge still
+    // proves the complete target brand as a brand-led phrase in donor.title.
+    brand: null,
+  });
+  if (match.verdict === "REJECT") {
+    blockers.push(bridgeError(
+      "DONOR_TITLE_MATCH_REJECTED",
+      `strict matcher rejected donor title: ${match.reasonCodes.join(",")}`,
+    ));
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor.id,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant,
+      matcherVerdict: match.verdict,
+      matcherReasonCodes: match.reasonCodes,
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+  if (match.verdict !== "EXACT_IDENTITY") {
+    blockers.push(bridgeError(
+      "DONOR_TITLE_MATCH_ESTIMATE_ONLY",
+      `${match.verdict} may provide typed price evidence but never content truth`,
+    ));
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor.id,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant,
+      matcherVerdict: match.verdict,
+      matcherReasonCodes: match.reasonCodes,
+      disposition: "PRICE_ONLY_ESTIMATE",
+      blockers,
+    };
+  }
+
+  const directTargetEvidence =
+    input.directTargetContentEvidenceByDonor.get(donor.id) ?? null;
+  const contentSourceOffer = directTargetEvidence
+    ? input.offersById.get(directTargetEvidence.offerId) ?? null
+    : chooseContentSourceOffer(donor.id, input.offersByDonor);
+  const contentAssessment = assessLegacyContent(
+    donor,
+    contentSourceOffer,
+    null,
+    directTargetEvidence,
+  );
+  const offer = chooseOffer(
+    donor.id,
+    input.legacyComponent.priceEvidenceOfferId,
+    input.legacyComponent.retailer,
+    input.evaluatedAt,
+    input.offersById,
+    input.offersByDonor,
+  );
+  if (!offer) {
+    blockers.push(bridgeError(
+      "FIRST_PARTY_DIRECT_OFFER_MISSING",
+      "no standard non-club first-party direct USD offer is usable",
+    ));
+  }
+  return {
+    componentIndex: input.componentIndex,
+    qty: input.quantity,
+    legacyComponentId: input.legacyComponent.id,
+    donorProductId: donor.id,
+    legacyDonorProductId: link.donorProductId,
+    donorOfferId: offer?.id ?? null,
+    contentSourceOfferId: contentSourceOffer?.id ?? null,
+    identityProof: "STRICT_TITLE_MATCH",
+    contentAssessment,
+    targetIdentity: resolvedTargetIdentity,
+    targetVariant,
+    matcherVerdict: match.verdict,
+    matcherReasonCodes: match.reasonCodes,
+    disposition: !contentAssessment.complete
+      ? "EXACT_IDENTITY_ONLY_CANDIDATE"
+      : offer
+        ? "EXACT_CONTENT_AND_PRICE_CANDIDATE"
+        : "EXACT_CONTENT_ONLY_CANDIDATE",
+    blockers,
+  };
+}
+
+function aggregateScope(
+  listing: ProductTruthLegacyBridgeListingRow,
+  components: ProductTruthLegacyBridgeComponentPlan[],
+  blockers: ProductTruthBridgeBlocker[],
+): ProductTruthLegacyBridgeScopePlan {
+  const allExact = components.length > 0 && components.every((component) =>
+    component.disposition === "EXACT_CONTENT_AND_PRICE_CANDIDATE"
+    || component.disposition === "EXACT_CONTENT_ONLY_CANDIDATE");
+  const allPriced = allExact && components.every(
+    (component) => component.disposition === "EXACT_CONTENT_AND_PRICE_CANDIDATE",
+  );
+  const allIdentityOnlyOrBetter = components.length > 0 && components.every((component) =>
+    component.disposition === "EXACT_CONTENT_AND_PRICE_CANDIDATE"
+    || component.disposition === "EXACT_CONTENT_ONLY_CANDIDATE"
+    || component.disposition === "EXACT_IDENTITY_ONLY_CANDIDATE");
+  const disposition: ProductTruthBridgeScopeDisposition = blockers.length || !allIdentityOnlyOrBetter
+    ? "QUARANTINE"
+    : !allExact
+      ? "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE"
+      : allPriced
+        ? "EXACT_CANONICALIZATION_CANDIDATE"
+        : "CONTENT_ONLY_CANONICALIZATION_CANDIDATE";
+  return {
+    listingKey: listing.listingKey,
+    channel: listing.channel,
+    storeIndex: listing.storeIndex,
+    sku: listing.sku,
+    disposition,
+    writeEligible: disposition === "EXACT_CANONICALIZATION_CANDIDATE"
+      || disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+    blockers,
+    components,
+  };
+}
+
+function classifyExistingCanonicalScope(
+  scope: ProductTruthLegacyBridgeScopePlan,
+  rows: readonly ProductTruthLegacyBridgeCanonicalListingComponentRow[],
+): ProductTruthLegacyBridgeScopePlan {
+  if (!rows.length) return scope;
+  const costIds = new Set(rows.map((row) => row.skuCostId));
+  const byIndex = new Map<number, ProductTruthLegacyBridgeCanonicalListingComponentRow>();
+  let valid = costIds.size === 1 && rows.length === scope.components.length;
+  for (const row of rows) {
+    if (byIndex.has(row.componentIndex)) valid = false;
+    byIndex.set(row.componentIndex, row);
+  }
+  for (const component of scope.components) {
+    const row = byIndex.get(component.componentIndex);
+    const targetVariantId = component.targetVariant?.canonicalVariantId ?? null;
+    if (
+      !row
+      || !targetVariantId
+      || !["FACT", "MANUAL_FACT", "ESTIMATE", "REJECT"].includes(row.evidenceStatus)
+      || row.targetCanonicalVariantId !== targetVariantId
+      || row.contentCanonicalVariantId !== targetVariantId
+      || !row.contentObservationId
+      || row.observedContentCanonicalVariantId !== targetVariantId
+      || row.decisionStatus !== "exact_confirmed"
+      || row.decisionCanonicalVariantId !== targetVariantId
+    ) {
+      valid = false;
+    }
+  }
+  if (valid) {
+    return {
+      ...scope,
+      disposition: "ALREADY_CANONICAL",
+      writeEligible: false,
+      blockers: [],
+      components: scope.components.map((component) => ({
+        ...component,
+        disposition: "ALREADY_CANONICAL",
+        blockers: [],
+      })),
+    };
+  }
+  const blocker = bridgeError(
+    "CANONICAL_LISTING_STATE_INVALID",
+    [
+      `latest canonical evidence for ${scope.listingKey} is incomplete or conflicts`,
+      `with the current target identity (${[...costIds].sort().join(",") || "no cost id"})`,
+    ].join(" "),
+  );
+  return {
+    ...scope,
+    disposition: "QUARANTINE",
+    writeEligible: false,
+    blockers: [...scope.blockers, blocker],
+    components: scope.components.map((component) => ({
+      ...component,
+      disposition: "QUARANTINE",
+      blockers: [...component.blockers, blocker],
+    })),
+  };
+}
+
+export function renderProductTruthLegacyBridgeSnapshot(
+  value: ProductTruthLegacyBridgeSnapshot,
+): string {
+  return renderProductTruthOperationalJson(value);
+}
+
+export function renderProductTruthLegacyBridgePlan(
+  value: ProductTruthLegacyBridgePlan,
+): string {
+  return renderProductTruthOperationalJson(value);
+}
+
+export function productTruthLegacyBridgeSha256(value: unknown): string {
+  return productTruthOperationalSha256(value);
+}
+
+export function productTruthLegacyBridgeBytesSha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+export function compileProductTruthLegacyBridgePlan(input: {
+  snapshot: ProductTruthLegacyBridgeSnapshot;
+  snapshotJson: string;
+  snapshotSha256: string;
+  generatedAt: string;
+}): ProductTruthLegacyBridgePlan {
+  if (input.snapshot.schemaVersion !== PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION) {
+    throw new Error("LEGACY_BRIDGE_SNAPSHOT_VERSION_INVALID");
+  }
+  const canonicalSnapshotJson = renderProductTruthLegacyBridgeSnapshot(input.snapshot);
+  if (canonicalSnapshotJson !== input.snapshotJson) {
+    throw new Error("LEGACY_BRIDGE_SNAPSHOT_NOT_CANONICAL");
+  }
+  if (
+    !/^[a-f0-9]{64}$/.test(input.snapshotSha256)
+    || productTruthLegacyBridgeBytesSha256(input.snapshotJson) !== input.snapshotSha256
+  ) {
+    throw new Error("LEGACY_BRIDGE_SNAPSHOT_SHA256_MISMATCH");
+  }
+  if (!Number.isFinite(Date.parse(input.generatedAt))) {
+    throw new Error("LEGACY_BRIDGE_GENERATED_AT_INVALID");
+  }
+  if (input.snapshot.manifest.listingCount !== input.snapshot.listings.length) {
+    throw new Error("LEGACY_BRIDGE_MANIFEST_COUNT_MISMATCH");
+  }
+
+  const barcodeEvidenceByComponent = new Map<
+    string,
+    ProductTruthLegacyBridgeComponentBarcodeEvidenceRow
+  >();
+  for (const evidence of input.snapshot.componentBarcodeEvidence) {
+    const key = `${evidence.listingKey}:${evidence.componentIndex}`;
+    if (barcodeEvidenceByComponent.has(key)) {
+      throw new Error(`LEGACY_BRIDGE_BARCODE_EVIDENCE_DUPLICATE:${key}`);
+    }
+    barcodeEvidenceByComponent.set(key, evidence);
+  }
+  const donorsById = new Map(input.snapshot.donors.map((row) => [row.id, row]));
+  const donorsByGtin = new Map<string, ProductTruthLegacyBridgeDonorRow[]>();
+  for (const donor of input.snapshot.donors) {
+    const keys = [...new Set(
+      [normalizeProductTruthBridgeGtin(donor.upc), normalizeProductTruthBridgeGtin(donor.gtin)]
+        .filter((value): value is string => Boolean(value)),
+    )];
+    for (const key of keys) {
+      const list = donorsByGtin.get(key) ?? [];
+      list.push(donor);
+      donorsByGtin.set(key, list);
+    }
+  }
+  const offersById = new Map(input.snapshot.offers.map((row) => [row.id, row]));
+  const directTargetContentEvidenceByDonor = new Map<
+    string,
+    ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
+  >();
+  for (const evidence of input.snapshot.directTargetContentEvidence) {
+    if (directTargetContentEvidenceByDonor.has(evidence.donorProductId)) {
+      throw new Error(
+        `LEGACY_BRIDGE_DIRECT_TARGET_CONTENT_EVIDENCE_DUPLICATE:${evidence.donorProductId}`,
+      );
+    }
+    assertDirectTargetContentEvidence({
+      evidence,
+      donor: donorsById.get(evidence.donorProductId),
+      offer: offersById.get(evidence.offerId),
+      evaluatedAt: input.snapshot.capturedAt,
+    });
+    directTargetContentEvidenceByDonor.set(evidence.donorProductId, evidence);
+  }
+  const canonicalDonorVariants = new Map<string, Set<string>>();
+  for (const binding of input.snapshot.canonicalDonorBindings) {
+    if (binding.decisionStatus !== "exact_confirmed") continue;
+    const variants = canonicalDonorVariants.get(binding.donorProductId) ?? new Set<string>();
+    variants.add(binding.canonicalVariantId);
+    canonicalDonorVariants.set(binding.donorProductId, variants);
+  }
+  const offersByDonor = new Map<string, ProductTruthLegacyBridgeOfferRow[]>();
+  for (const offer of input.snapshot.offers) {
+    const list = offersByDonor.get(offer.donorProductId) ?? [];
+    list.push(offer);
+    offersByDonor.set(offer.donorProductId, list);
+  }
+  const componentsBySku = new Map<string, ProductTruthLegacyBridgeComponentRow[]>();
+  for (const component of input.snapshot.components) {
+    const list = componentsBySku.get(component.sku) ?? [];
+    list.push(component);
+    componentsBySku.set(component.sku, list);
+  }
+  for (const list of componentsBySku.values()) {
+    list.sort((left, right) => left.idx - right.idx || left.id.localeCompare(right.id));
+  }
+  const canonicalComponentsByListing = new Map<
+    string,
+    ProductTruthLegacyBridgeCanonicalListingComponentRow[]
+  >();
+  for (const component of input.snapshot.canonicalListingComponents) {
+    const list = canonicalComponentsByListing.get(component.listingKey) ?? [];
+    list.push(component);
+    canonicalComponentsByListing.set(component.listingKey, list);
+  }
+  for (const list of canonicalComponentsByListing.values()) {
+    list.sort((left, right) =>
+      left.componentIndex - right.componentIndex || left.skuCostId.localeCompare(right.skuCostId));
+  }
+
+  const scopes = [...input.snapshot.listings]
+    .sort((left, right) => left.listingKey.localeCompare(right.listingKey))
+    .map((listing): ProductTruthLegacyBridgeScopePlan => {
+      const parsed = parseIdentity(listing.productIdentityJson);
+      const scopeBlockers = [...parsed.blockers];
+      const legacyComponents = componentsBySku.get(listing.sku) ?? [];
+      if (!parsed.identity) {
+        return classifyExistingCanonicalScope(
+          aggregateScope(listing, [], scopeBlockers),
+          canonicalComponentsByListing.get(listing.listingKey) ?? [],
+        );
+      }
+
+      const isBundle = parsed.identity.is_bundle === true;
+      const listingQuantity = positiveInteger(parsed.identity.units_in_listing) ?? 1;
+      // A marketplace listing UPC identifies the sellable outer offer. It can
+      // prove the donor base unit only for an explicitly single-unit listing;
+      // multipacks and bundles must use component-level evidence instead.
+      const listingGtin = isBundle || listingQuantity !== 1
+        ? null
+        : normalizeProductTruthBridgeGtin(listing.listingUpc);
+      const identityComponents = Array.isArray(parsed.identity.components)
+        ? parsed.identity.components as ParsedBundleComponent[]
+        : [];
+      const expectedCount = isBundle ? identityComponents.length : 1;
+      if (legacyComponents.length !== expectedCount) {
+        scopeBlockers.push(bridgeError(
+          "LEGACY_COMPONENT_COUNT_MISMATCH",
+          `identity expects ${expectedCount} component(s), legacy BOM has ${legacyComponents.length}`,
+        ));
+      }
+
+      const plans: ProductTruthLegacyBridgeComponentPlan[] = [];
+      if (!isBundle) {
+        const target: CanonicalProductIdentity = {
+          brand: stringOrNull(parsed.identity.brand),
+          productLine: stringOrNull(parsed.identity.product_line),
+          flavor: stringOrNull(parsed.identity.flavor),
+          form: stringOrNull(parsed.identity.container_type),
+          size: stringOrNull(parsed.identity.size),
+          outerPackCount: 1,
+        };
+        plans.push(componentPlan({
+          listingKey: listing.listingKey,
+          componentIndex: 0,
+          quantity: listingQuantity,
+          targetIdentity: target,
+          legacyComponent: legacyComponents.find((row) => row.idx === 0) ?? legacyComponents[0] ?? null,
+          barcodeEvidence:
+            barcodeEvidenceByComponent.get(`${listing.listingKey}:0`) ?? null,
+          listingGtin,
+          evaluatedAt: input.snapshot.capturedAt,
+          donorsById,
+          donorsByGtin,
+          canonicalDonorVariants,
+          directTargetContentEvidenceByDonor,
+          offersById,
+          offersByDonor,
+        }));
+      } else if (!identityComponents.length) {
+        scopeBlockers.push(bridgeError(
+          "PRODUCT_IDENTITY_INVALID",
+          "bundle identity has no components",
+        ));
+      } else {
+        for (let index = 0; index < identityComponents.length; index += 1) {
+          const identityComponent = identityComponents[index];
+          const legacyComponent = legacyComponents.find((row) => row.idx === index) ?? null;
+          const link = legacyComponent ? linkedDonorId(legacyComponent) : { donorProductId: null, blockers: [] };
+          const donorBrand = link.donorProductId
+            ? donorsById.get(link.donorProductId)?.brand ?? null
+            : null;
+          const target = explicitBundleTarget(identityComponent, donorBrand);
+          const targetBlockers = target
+            ? []
+            : [bridgeError(
+                "BUNDLE_COMPONENT_BRAND_UNPROVEN",
+                "bundle component product must begin with the exact linked donor brand",
+              )];
+          plans.push(componentPlan({
+            listingKey: listing.listingKey,
+            componentIndex: index,
+            quantity: positiveInteger(identityComponent.qty) ?? legacyComponent?.qty ?? 1,
+            targetIdentity: target,
+            legacyComponent,
+            barcodeEvidence:
+              barcodeEvidenceByComponent.get(`${listing.listingKey}:${index}`) ?? null,
+            targetBlockers,
+            listingGtin: null,
+            evaluatedAt: input.snapshot.capturedAt,
+            donorsById,
+            donorsByGtin,
+            canonicalDonorVariants,
+            directTargetContentEvidenceByDonor,
+            offersById,
+            offersByDonor,
+          }));
+        }
+      }
+      return classifyExistingCanonicalScope(
+        aggregateScope(listing, plans, scopeBlockers),
+        canonicalComponentsByListing.get(listing.listingKey) ?? [],
+      );
+    });
+
+  const componentPlans = scopes.flatMap((scope) => scope.components);
+  return {
+    schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
+    policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
+    generatedAt: new Date(input.generatedAt).toISOString(),
+    source: {
+      snapshotSchemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+      snapshotSha256: input.snapshotSha256,
+      targetFingerprint: input.snapshot.targetFingerprint,
+      manifest: input.snapshot.manifest,
+    },
+    matcher: {
+      version: CANONICAL_PRODUCT_MATCHER_VERSION,
+      implementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      releaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    },
+    pricePolicy: {
+      version: PRICE_EVIDENCE_POLICY_VERSION,
+      evaluatedAt: input.snapshot.capturedAt,
+      maxAgeMs: PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS,
+    },
+    safety: {
+      readOnly: true,
+      databaseWrites: 0,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerFetches: 0,
+      mutatesLegacyCatalog: false,
+      createsAdditionalCatalog: false,
+      historicalExactFlagsAreIdentityProof: false,
+      priceProxyMayProvideContent: false,
+    },
+    counts: {
+      listingsTotal: scopes.length,
+      alreadyCanonicalListings: scopes.filter(
+        (scope) => scope.disposition === "ALREADY_CANONICAL",
+      ).length,
+      exactCanonicalizationCandidates: scopes.filter(
+        (scope) => scope.disposition === "EXACT_CANONICALIZATION_CANDIDATE",
+      ).length,
+      contentOnlyCanonicalizationCandidates: scopes.filter(
+        (scope) => scope.disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+      ).length,
+      identityOnlyCanonicalizationCandidates: scopes.filter(
+        (scope) => scope.disposition === "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
+      ).length,
+      quarantinedListings: scopes.filter((scope) => scope.disposition === "QUARANTINE").length,
+      componentsTotal: componentPlans.length,
+      alreadyCanonicalComponents: componentPlans.filter(
+        (component) => component.disposition === "ALREADY_CANONICAL",
+      ).length,
+      exactContentAndPriceCandidates: componentPlans.filter(
+        (component) => component.disposition === "EXACT_CONTENT_AND_PRICE_CANDIDATE",
+      ).length,
+      exactContentOnlyCandidates: componentPlans.filter(
+        (component) => component.disposition === "EXACT_CONTENT_ONLY_CANDIDATE",
+      ).length,
+      exactIdentityOnlyCandidates: componentPlans.filter(
+        (component) => component.disposition === "EXACT_IDENTITY_ONLY_CANDIDATE",
+      ).length,
+      priceOnlyEstimates: componentPlans.filter(
+        (component) => component.disposition === "PRICE_ONLY_ESTIMATE",
+      ).length,
+      quarantinedComponents: componentPlans.filter(
+        (component) => component.disposition === "QUARANTINE",
+      ).length,
+    },
+    scopes,
+  };
+}

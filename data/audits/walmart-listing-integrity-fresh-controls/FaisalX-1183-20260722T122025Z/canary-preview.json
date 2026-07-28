@@ -1,0 +1,88 @@
+{
+  "schema_version": "walmart-listing-integrity-canary-preview/v1",
+  "generated_at": "2026-07-22T12:43:05Z",
+  "status": "BYTE_CUSTODY_COMPLETE_VISUAL_ATTESTATION_PENDING",
+  "scope": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1183",
+    "item_id": "8419413379",
+    "upc": "684611898937",
+    "expected_outer_units": 6
+  },
+  "source_manifest": {
+    "path": "data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/manifest.json",
+    "sha256": "d98bd9d55fb919683349304bbba2dd4bb2b290bbdf5882ee839d4ef26754a627"
+  },
+  "before_assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-6_734d74a7-8310-41ed-8925-3fecc70788f2.a8abe64e760534776a26c10e1a4901b6.jpeg",
+      "local_path": "data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/raw/fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736.jpeg",
+      "sha256": "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736",
+      "bytes": 300936,
+      "width": 2000,
+      "height": 2000
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/6141a75b-b058-4c54-8ced-9b40610023f4.9722f02f31301c22b0a8acba419dcb1d.jpeg",
+      "local_path": "data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/raw/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpeg",
+      "sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+      "bytes": 415231,
+      "width": 2000,
+      "height": 2000
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/a5e9bfe7-7a52-479a-9dce-e8f85cdfa863.92bf704f4fc6dc8f2a2cb00bda67d192.jpeg",
+      "local_path": "data/audits/walmart-listing-integrity-fresh-controls/FaisalX-1183-20260722T122025Z/raw/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpeg",
+      "sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+      "bytes": 238255,
+      "width": 2000,
+      "height": 2000
+    }
+  ],
+  "selected_target": {
+    "slot": "MAIN",
+    "asset_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-fix1.png",
+    "local_path": "data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/raw/faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06.png",
+    "sha256": "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06",
+    "bytes": 2041615,
+    "width": 2200,
+    "height": 2200,
+    "represented_outer_units": 6
+  },
+  "exact_diff": {
+    "changed_fields": ["MAIN"],
+    "before_main_sha256": "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736",
+    "target_main_sha256": "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06",
+    "before_visible_outer_units": 1,
+    "target_visible_outer_units": 6,
+    "unchanged_fields": [
+      "title",
+      "description",
+      "bullet_points",
+      "attributes",
+      "price",
+      "inventory",
+      "gallery"
+    ]
+  },
+  "qualification_requirements": [
+    "seal source-aware visual attestation for exact current and target bytes",
+    "obtain separate owner approval for this exact one-SKU diff",
+    "apply MAIN-only mutation once",
+    "wait for Walmart propagation",
+    "reread exact seller item and buyer PDP",
+    "verify title, description, bullet points, attributes, MAIN and every gallery image as one product",
+    "verify PUBLISHED and ACTIVE status and preserve indexing",
+    "publish factual before-after gallery only after Qualification PASS"
+  ],
+  "external_effects": {
+    "walmart_listing_writes": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "paid_api_calls": 0
+  }
+}

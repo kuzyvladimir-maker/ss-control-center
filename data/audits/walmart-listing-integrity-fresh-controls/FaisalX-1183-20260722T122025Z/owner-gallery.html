@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FaisalX-1183 — проверка изображений</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body { margin: 0; background: #111318; color: #f3f4f6; }
+    main { max-width: 1480px; margin: auto; padding: 28px; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .note { color: #b8c0cc; margin: 0 0 24px; }
+    .comparison { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 22px; }
+    .card { background: #1b1f27; border: 1px solid #343b48; border-radius: 14px; overflow: hidden; }
+    .card.good { border-color: #1f9d63; }
+    .card.bad { border-color: #d45151; }
+    .label { padding: 14px 16px; font-size: 18px; font-weight: 750; }
+    .bad .label { background: #421f25; }
+    .good .label { background: #153b2c; }
+    .image-wrap { display: grid; place-items: center; background: white; padding: 12px; min-height: 480px; }
+    img { max-width: 100%; max-height: 720px; object-fit: contain; display: block; }
+    .details { padding: 14px 16px 18px; line-height: 1.5; }
+    h2 { margin-top: 34px; }
+    .gallery { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 22px; }
+    .gallery .image-wrap { min-height: 360px; }
+    .status { display: inline-block; padding: 4px 9px; border-radius: 999px; background: #2a303b; }
+    @media (max-width: 850px) { .comparison, .gallery { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>FaisalX-1183 — визуальное подтверждение</h1>
+    <p class="note">На Walmart ничего не отправлено. Предлагается заменить только главную картинку.</p>
+
+    <section class="comparison">
+      <article class="card bad">
+        <div class="label">ДО — текущая MAIN</div>
+        <div class="image-wrap"><img src="raw/fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736.jpeg" alt="Текущая главная картинка: одна упаковка"></div>
+        <div class="details"><span class="status">Ошибка</span> В листинге Pack of 6, но покупатель видит одну упаковку.</div>
+      </article>
+
+      <article class="card good">
+        <div class="label">ПРЕДЛАГАЕТСЯ — новая MAIN</div>
+        <div class="image-wrap"><img src="/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/raw/faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06.png" alt="Предлагаемая главная картинка: шесть упаковок"></div>
+        <div class="details"><span class="status">Проверено алгоритмом</span> Тот же Pepperidge Farm Top Sliced Butter Hot Dog Buns, показано ровно шесть упаковок.</div>
+      </article>
+    </section>
+
+    <h2>Дополнительные изображения — остаются без изменений</h2>
+    <section class="gallery">
+      <article class="card">
+        <div class="label">Текущая дополнительная — lifestyle</div>
+        <div class="image-wrap"><img src="raw/90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88.jpeg" alt="Lifestyle image"></div>
+      </article>
+      <article class="card">
+        <div class="label">Текущая дополнительная — Nutrition Facts</div>
+        <div class="image-wrap"><img src="raw/bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd.jpeg" alt="Nutrition Facts"></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
