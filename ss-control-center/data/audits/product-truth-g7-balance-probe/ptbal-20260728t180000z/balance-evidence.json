@@ -1,0 +1,29 @@
+{
+  "actualCreditsUsed": 2.5,
+  "authorizedMaxUnits": 1,
+  "balanceUnits": 99692.5,
+  "budgetViolation": true,
+  "httpStatus": 200,
+  "observedAt": "2026-07-28T18:43:40.880Z",
+  "planSha256": "bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c",
+  "probeId": "ptbal-20260728t180000z",
+  "provider": "unwrangle",
+  "providerCalls": 1,
+  "rawResponseBytes": 49990,
+  "rawResponseSha256": "f8272c5acb326852d7462744cef147fffd769927e7c68547a24ed49ab3b84bbf",
+  "requestedAt": "2026-07-28T18:43:33.391Z",
+  "reserveFloor": 15000,
+  "resultCount": 30,
+  "retryCount": 0,
+  "schemaVersion": "product-truth-unwrangle-balance-evidence/1.0.0",
+  "success": true,
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "terminalDisposition": "STOP_MAIN_EXECUTION_AND_REPLAN"
+}

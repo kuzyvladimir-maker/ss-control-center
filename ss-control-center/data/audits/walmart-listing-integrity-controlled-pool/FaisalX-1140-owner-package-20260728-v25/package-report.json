@@ -1,0 +1,78 @@
+{
+  "schema_version": "walmart-listing-repair-owner-package-report/v1",
+  "status": "READY_FOR_EXPLICIT_EXECUTE",
+  "created_at": "2026-07-28T19:09:16.368Z",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1140",
+    "listing_key": "walmart:1:FaisalX-1140",
+    "item_id": "8401770647"
+  },
+  "changed_fields": [
+    "description",
+    "bullets",
+    "main",
+    "gallery"
+  ],
+  "product_type": "Breads & Buns",
+  "artifacts": {
+    "compilation-request.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/compilation-request.json",
+    "reviewed-one-sku-product-truth.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/reviewed-one-sku-product-truth.json",
+    "product-truth-binding.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/product-truth-binding.json",
+    "sequence-authorization.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/sequence-authorization.json",
+    "repair-plan.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/repair-plan.json",
+    "reviewed-image-set-certificate.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/reviewed-image-set-certificate.json",
+    "surgical-schema-contract.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-schema-contract.json",
+    "surgical-get-spec-receipt.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-get-spec-receipt.json",
+    "surgical-live-item-receipt.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-live-item-receipt.json",
+    "surgical-get-spec-request.bin": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-get-spec-request.bin",
+    "surgical-get-spec-response.bin": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-get-spec-response.bin",
+    "surgical-live-item-response.bin": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-live-item-response.bin",
+    "surgical-request-manifest.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-request-manifest.json",
+    "surgical-request-payload.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/surgical-request-payload.json",
+    "one-sku-owner-permit.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/one-sku-owner-permit.json",
+    "execution-package.json": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-controlled-pool/FaisalX-1140-owner-package-20260728-v25/execution-package.json"
+  },
+  "hashes": {
+    "compilation-request.json": "edaf6fccf232f943e2a6b439d29dd22698065ba9f168b38389aac02911309e97",
+    "reviewed-one-sku-product-truth.json": "5c03c16dfdbfe6b2e4ef4839e24540557833233262960493a7dd5bc7f47ebd36",
+    "product-truth-binding.json": "e60aebe85a3ab5114b601a8c0b3639be10ca7bbb20cdafca5349826ae2cadd40",
+    "sequence-authorization.json": "6632c5ae7ecba8d976e9d88732f772e17169154721b8e4b80bec4c1a61f42c72",
+    "repair-plan.json": "38006cca9893cb4a1d407de492acedabe2ed6f55f494a7a342807121cfd1ef01",
+    "reviewed-image-set-certificate.json": "b0701058bf40830a7df5fb3da71ffae0318b0b5fe6491f0be079b24425c78a92",
+    "surgical-schema-contract.json": "9ec903de3f3b9694dd32b853a415553b98c98d7440dcf92f513349f150530a95",
+    "surgical-get-spec-receipt.json": "4e94fff7d2e91b5fc1d2fe9cf9d71d5248441726847a81f7c45dbfbd57ee7326",
+    "surgical-live-item-receipt.json": "e0a0c61f7fa2234d22143cb3a9e78bcd5f3848955cbb1b1c30d8cb5e42a0e601",
+    "surgical-get-spec-request.bin": "4ef57a1d53424aaed515f946f95b7263931bbd6f2252aff83c2006577aba4b28",
+    "surgical-get-spec-response.bin": "d1e24d8c7cc638e1b8d601fb399a945f6628b7ac014d3a5fe5ec4444465d00c9",
+    "surgical-live-item-response.bin": "6c0d5e5b952ddd1db278a9b9b8607371d378c96f8bb7fcc52a2a3a5c9d9df1ec",
+    "surgical-request-manifest.json": "6472128167fa0461ab4afb2b9a8b7b0b2259f15bf82b91e31b2fda125dffbedd",
+    "surgical-request-payload.json": "86b6f6a1a5afe995ebca07f547350a79aee7e18f6a6dcf28dcdd0387cce0cbe1",
+    "one-sku-owner-permit.json": "b22fe2c92ea5686cd1aa99b5ed460f116149e63bc70350c26d58660b86ef0b6e",
+    "execution-package.json": "1d6884b23dcb39050c743296ad674a92bc82aa0fbabe852a308f6ec7876cf959"
+  },
+  "execution": {
+    "oauth_token_calls": 1,
+    "walmart_read_calls": 2,
+    "walmart_content_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "retries": 0,
+    "redirects": 0
+  },
+  "safety": {
+    "exact_listing_count": 1,
+    "signed_one_sku_permit": true,
+    "package_is_not_executed": true,
+    "title_unchanged": true,
+    "images_unchanged": false,
+    "price_unchanged": true,
+    "inventory_unchanged": true,
+    "listing_status_unchanged": true,
+    "mass_apply_allowed": false
+  },
+  "next_command": "doctor --out \"/Users/vladimirkuznetsov/.ss-command-center/walmart-listing-repair-owner-v1/doctor-20260728T190914197Z-edaf6fccf232f943.json\"",
+  "body_sha256": "740a37023f4d36da1eed33eee63f141f447b8bbae0096bd541a73e62db0468b1"
+}

@@ -21,13 +21,23 @@ const NORMALIZED_PIN = "__WALMART_LISTING_REPAIR_RELEASE_ID__";
 const RUNTIME_ENTRYPOINTS = Object.freeze([
   "scripts/build-walmart-listing-main-candidate.ts",
   "scripts/build-walmart-listing-main-compilation-request.ts",
+  "scripts/build-walmart-listing-image-set-candidate.ts",
+  "scripts/verify-walmart-listing-image-set-candidate.ts",
+  "scripts/curate-walmart-listing-image-set-candidate.ts",
+  "scripts/build-walmart-listing-image-set-repair-preview.ts",
+  "scripts/build-walmart-listing-integrity-live-gallery.mjs",
+  "scripts/build-walmart-listing-image-set-compilation-request.ts",
   "scripts/build-walmart-listing-attribute-compilation-request.ts",
+  "scripts/build-walmart-listing-variant-group-evidence.ts",
+  "scripts/build-walmart-listing-integrity-controlled-pool.ts",
+  "scripts/capture-walmart-listing-integrity-terminal-failure.ts",
   "scripts/stage-walmart-listing-main-candidate-r2.ts",
   "scripts/verify-walmart-listing-main-candidate.ts",
   "scripts/verify-and-run-walmart-listing-repair.mjs",
   "scripts/walmart-listing-repair-operator.ts",
   "scripts/walmart-listing-integrity-process.ts",
   "scripts/walmart-listing-repair-owner-package.ts",
+  "src/lib/walmart/listing-integrity-monitor-lifecycle.ts",
 ]);
 const TEST_ENTRYPOINTS = Object.freeze([
   "scripts/__tests__/walmart-listing-repair-operator.test.ts",
@@ -39,6 +49,7 @@ const TEST_ENTRYPOINTS = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-remediation-ledger-adapter.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-transport.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-payload.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-variant-group-evidence.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-closed-loop.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-image-certificate.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-apply-evidence.test.ts",
@@ -47,8 +58,16 @@ const TEST_ENTRYPOINTS = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-remediation-owner-compiler.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-owner-material-capture.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-reviewed-main-certificate.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-reviewed-image-set-certificate.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-unchanged-image-certificate.test.ts",
+  "src/lib/walmart/__tests__/catalog-visual-audit-rounding.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-monitor-lifecycle.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-terminal-failure.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-operations.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-operations.server.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-routes.test.ts",
+  "src/components/walmart-growth/__tests__/ListingIntegrityPanel.test.tsx",
 ]);
 const TARGETED_LINT = Object.freeze([
   "scripts/verify-and-run-walmart-listing-repair.mjs",
@@ -58,7 +77,16 @@ const TARGETED_LINT = Object.freeze([
   "scripts/walmart-listing-repair-owner-package.ts",
   "scripts/build-walmart-listing-main-candidate.ts",
   "scripts/build-walmart-listing-main-compilation-request.ts",
+  "scripts/build-walmart-listing-image-set-candidate.ts",
+  "scripts/verify-walmart-listing-image-set-candidate.ts",
+  "scripts/curate-walmart-listing-image-set-candidate.ts",
+  "scripts/build-walmart-listing-image-set-repair-preview.ts",
+  "scripts/build-walmart-listing-integrity-live-gallery.mjs",
+  "scripts/build-walmart-listing-image-set-compilation-request.ts",
   "scripts/build-walmart-listing-attribute-compilation-request.ts",
+  "scripts/build-walmart-listing-variant-group-evidence.ts",
+  "scripts/build-walmart-listing-integrity-controlled-pool.ts",
+  "scripts/capture-walmart-listing-integrity-terminal-failure.ts",
   "scripts/stage-walmart-listing-main-candidate-r2.ts",
   "scripts/verify-walmart-listing-main-candidate.ts",
   "scripts/__tests__/walmart-listing-repair-operator.test.ts",
@@ -74,7 +102,17 @@ const TARGETED_LINT = Object.freeze([
   "src/lib/walmart/listing-integrity-remediation-execution-package.ts",
   "src/lib/walmart/listing-integrity-remediation-owner-compiler.ts",
   "src/lib/walmart/listing-integrity-remediation-owner-material-capture.ts",
+  "src/lib/walmart/listing-integrity-variant-group-evidence.ts",
+  "src/lib/walmart/listing-integrity-monitor-lifecycle.ts",
+  "src/lib/walmart/listing-integrity-terminal-failure.ts",
+  "src/lib/walmart/listing-integrity-operations.ts",
+  "src/lib/walmart/listing-integrity-operations.server.ts",
+  "src/lib/walmart/listing-integrity-shadow-contract.ts",
+  "src/app/api/walmart/growth/listing-integrity/route.ts",
+  "src/app/api/walmart/growth/listing-integrity/gallery/[sku]/route.ts",
+  "src/components/walmart-growth/ListingIntegrityPanel.tsx",
   "src/lib/walmart/listing-integrity-remediation-reviewed-main-certificate.ts",
+  "src/lib/walmart/listing-integrity-remediation-reviewed-image-set-certificate.ts",
   "src/lib/walmart/listing-integrity-remediation-unchanged-image-certificate.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-transport.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-closed-loop.test.ts",
@@ -83,9 +121,18 @@ const TARGETED_LINT = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-remediation-live-qualification.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-owner-compiler.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-owner-material-capture.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-variant-group-evidence.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-reviewed-main-certificate.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-remediation-reviewed-image-set-certificate.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-remediation-unchanged-image-certificate.test.ts",
+  "src/lib/walmart/__tests__/catalog-visual-audit-rounding.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-monitor-lifecycle.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-terminal-failure.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-operations.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-operations.server.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-routes.test.ts",
+  "src/components/walmart-growth/__tests__/ListingIntegrityPanel.test.tsx",
 ]);
 const IMPORT_PATTERN = /(?:\bfrom\s*|\bimport\s*\()\s*["']([^"']+)["']/gu;
 
@@ -167,9 +214,16 @@ async function resolveImport(root, importer, specifier) {
       ? path.resolve(root, path.dirname(importer), specifier)
       : null;
   if (!base) return null;
-  const candidates = path.extname(base)
+  const candidates = /\.(?:ts|tsx|mjs|js)$/u.test(base)
     ? [base]
-    : [base, `${base}.ts`, `${base}.mjs`, `${base}.js`, path.join(base, "index.ts")];
+    : [
+        base,
+        `${base}.ts`,
+        `${base}.tsx`,
+        `${base}.mjs`,
+        `${base}.js`,
+        path.join(base, "index.ts"),
+      ];
   for (const candidate of candidates) {
     if (path.relative(root, candidate).startsWith("..")) fail("PATH_ESCAPE", `import escaped: ${specifier}`);
     try {
@@ -318,7 +372,7 @@ async function certify(input, runtimePaths, allPaths, releaseId) {
     },
     certification: {
       test_entrypoints: TEST_ENTRYPOINTS,
-      expected_test_count: 157,
+      expected_test_count: 186,
       logs: logRows,
     },
     source_inventory: sourceInventory,

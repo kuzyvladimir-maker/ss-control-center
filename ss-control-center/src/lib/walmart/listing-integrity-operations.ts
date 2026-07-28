@@ -4,10 +4,16 @@ import {
   type WalmartListingIntegrityCatalogCensus,
   type WalmartListingIntegrityScanPlan,
 } from "./listing-integrity-catalog-orchestrator";
+import {
+  verifyWalmartListingIntegrityTerminalFailureDisposition,
+  type WalmartListingIntegrityTerminalFailureDisposition,
+} from "./listing-integrity-terminal-failure";
 
 export const WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA =
-  "walmart-listing-integrity-controlled-pool/v2" as const;
+  "walmart-listing-integrity-controlled-pool/v3" as const;
 export const WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA =
+  "walmart-listing-integrity-controlled-pool/v2" as const;
+export const WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_V1_SCHEMA =
   "walmart-listing-integrity-controlled-pool/v1" as const;
 export const WALMART_LISTING_INTEGRITY_LIVE_VERIFICATION_SCHEMA =
   "walmart-listing-integrity-live-canary-verification/v1" as const;
@@ -44,6 +50,20 @@ export interface WalmartListingIntegrityCompletedCase {
   galleryFileSha256: string;
   verificationPath: string;
   galleryPath: string;
+}
+
+export interface WalmartListingIntegrityQuarantinedCase {
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  storeIndex: number;
+  createdAt: string;
+  status: "QUARANTINED_UNRESOLVED";
+  outcome: "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET";
+  nextAction: "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN";
+  dispositionBodySha256: string;
+  dispositionFileSha256: string;
+  dispositionPath: string;
 }
 
 export interface WalmartListingIntegrityControlledPoolItem {
@@ -106,14 +126,18 @@ export interface WalmartListingIntegrityControlledPool {
     walmartWritesAllowed: false;
     modelCallsAllowed: false;
     paidProviderCallsAllowed: false;
+    terminalFailureMayQuarantineAndAdvance: true;
   };
   completedListingKeys: string[];
+  quarantinedListingKeys: string[];
+  quarantinedItems: WalmartListingIntegrityQuarantinedCase[];
   items: WalmartListingIntegrityControlledPoolItem[];
   sourceRequiredItems: WalmartListingIntegrityControlledPoolItem[];
   sourceReadiness: {
     candidateCount: number;
     repairReadyCount: number;
     sourceRequiredCount: number;
+    quarantinedCount: number;
   };
   externalEffects: {
     databaseReads: number;
@@ -230,6 +254,45 @@ export function parseWalmartListingIntegrityCompletedCase(input: {
   };
 }
 
+export function parseWalmartListingIntegrityQuarantinedCase(input: {
+  disposition: unknown;
+  dispositionFileSha256: string;
+  dispositionPath: string;
+}): WalmartListingIntegrityQuarantinedCase {
+  const disposition = input.disposition as WalmartListingIntegrityTerminalFailureDisposition;
+  verifyWalmartListingIntegrityTerminalFailureDisposition(disposition);
+  return {
+    listingKey: exactText(
+      disposition.listing.listing_key,
+      "quarantine listing_key",
+      600,
+    ),
+    sku: exactText(disposition.listing.sku, "quarantine sku", 500),
+    itemId: exactText(disposition.listing.item_id, "quarantine item_id", 100),
+    storeIndex: positiveInteger(
+      disposition.listing.store_index,
+      "quarantine store_index",
+    ),
+    createdAt: instant(disposition.created_at, "quarantine created_at"),
+    status: "QUARANTINED_UNRESOLVED",
+    outcome: "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET",
+    nextAction: "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN",
+    dispositionBodySha256: exactSha(
+      disposition.body_sha256,
+      "quarantine body_sha256",
+    ),
+    dispositionFileSha256: exactSha(
+      input.dispositionFileSha256,
+      "quarantine file SHA",
+    ),
+    dispositionPath: exactText(
+      input.dispositionPath,
+      "quarantine disposition path",
+      2_000,
+    ),
+  };
+}
+
 function performanceRowsBySku(
   rows: readonly WalmartListingIntegrityPerformanceRow[],
   storeIndex: number,
@@ -295,7 +358,7 @@ function compareCandidates(
 
 function controlledPoolCatalogRows(input: {
   census: WalmartListingIntegrityCatalogCensus;
-  completedListingKeys: ReadonlySet<string>;
+  excludedListingKeys: ReadonlySet<string>;
 }) {
   return input.census.rows.filter((row) => (
     row.scan_disposition === "VISUAL_TRIAGE_READY"
@@ -303,7 +366,7 @@ function controlledPoolCatalogRows(input: {
     && row.lifecycle_status === "ACTIVE"
     && !!row.item_id
     && !!row.title
-    && !input.completedListingKeys.has(row.listing_key)
+    && !input.excludedListingKeys.has(row.listing_key)
     && (
       row.deterministic_findings.length > 0
       || (row.title_outer_count?.status === "EXACT"
@@ -315,11 +378,15 @@ function controlledPoolCatalogRows(input: {
 export function listWalmartListingIntegrityControlledPoolCandidateScopes(input: {
   census: WalmartListingIntegrityCatalogCensus;
   completedListingKeys: readonly string[];
+  quarantinedListingKeys?: readonly string[];
 }): Array<{ listingKey: string; storeIndex: number; sku: string }> {
-  const completed = new Set(input.completedListingKeys);
+  const excluded = new Set([
+    ...input.completedListingKeys,
+    ...(input.quarantinedListingKeys ?? []),
+  ]);
   return controlledPoolCatalogRows({
     census: input.census,
-    completedListingKeys: completed,
+    excludedListingKeys: excluded,
   }).map((row) => ({
     listingKey: row.listing_key,
     storeIndex: row.store_index,
@@ -337,6 +404,7 @@ export function buildWalmartListingIntegrityControlledPool(input: {
   authoritativeManifestSha256: string;
   databaseReads: number;
   completedCases: readonly WalmartListingIntegrityCompletedCase[];
+  quarantinedCases?: readonly WalmartListingIntegrityQuarantinedCase[];
   createdAt: string;
   requestedSize: number;
 }): WalmartListingIntegrityControlledPool {
@@ -351,10 +419,36 @@ export function buildWalmartListingIntegrityControlledPool(input: {
     input.completedCases.map((entry) => entry.listingKey),
   )].sort((left, right) => left.localeCompare(right, "en"));
   const completed = new Set(completedListingKeys);
+  const quarantinedByListing = new Map<
+    string,
+    WalmartListingIntegrityQuarantinedCase
+  >();
+  for (const candidate of [...(input.quarantinedCases ?? [])].sort((left, right) => (
+    Date.parse(right.createdAt) - Date.parse(left.createdAt)
+    || right.dispositionFileSha256.localeCompare(left.dispositionFileSha256, "en")
+  ))) {
+    if (candidate.storeIndex !== input.census.store_index) {
+      throw new Error(`quarantine store differs for ${candidate.listingKey}`);
+    }
+    const previous = quarantinedByListing.get(candidate.listingKey);
+    if (previous
+      && (previous.sku !== candidate.sku || previous.itemId !== candidate.itemId)) {
+      throw new Error(`quarantine identity conflict for ${candidate.listingKey}`);
+    }
+    if (!previous) quarantinedByListing.set(candidate.listingKey, candidate);
+  }
+  const quarantinedItems = [...quarantinedByListing.values()].sort(
+    (left, right) => left.listingKey.localeCompare(right.listingKey, "en"),
+  );
+  const quarantinedListingKeys = quarantinedItems.map((entry) => entry.listingKey);
+  if (quarantinedListingKeys.some((listingKey) => completed.has(listingKey))) {
+    throw new Error("one listing cannot be both completed and quarantined");
+  }
+  const excluded = new Set([...completedListingKeys, ...quarantinedListingKeys]);
   const performance = performanceRowsBySku(input.performanceRows, input.census.store_index);
   const candidateRows = controlledPoolCatalogRows({
     census: input.census,
-    completedListingKeys: completed,
+    excludedListingKeys: excluded,
   });
   const readiness = new Map<string, WalmartListingIntegrityProductTruthReadiness>();
   for (const [index, row] of input.productTruthReadiness.entries()) {
@@ -442,14 +536,18 @@ export function buildWalmartListingIntegrityControlledPool(input: {
       walmartWritesAllowed: false as const,
       modelCallsAllowed: false as const,
       paidProviderCallsAllowed: false as const,
+      terminalFailureMayQuarantineAndAdvance: true as const,
     },
     completedListingKeys,
+    quarantinedListingKeys,
+    quarantinedItems,
     items: eligible,
     sourceRequiredItems: sourceRequired,
     sourceReadiness: {
       candidateCount: candidates.length,
       repairReadyCount: candidates.filter((row) => row.authority.productTruthReady).length,
       sourceRequiredCount: candidates.filter((row) => !row.authority.productTruthReady).length,
+      quarantinedCount: quarantinedItems.length,
     },
     externalEffects: {
       databaseReads,
@@ -481,10 +579,20 @@ export function verifyWalmartListingIntegrityControlledPool(
     || value.policy.maxApplyInFlight !== 1
     || value.policy.walmartWritesAllowed !== false
     || value.policy.automaticRetryAllowed !== false
+    || value.policy.terminalFailureMayQuarantineAndAdvance !== true
     || value.items.length > value.policy.requestedSize
     || value.sourceRequiredItems.length > value.policy.sourceRequiredPreviewSize
     || value.sourceReadiness.candidateCount
       !== value.sourceReadiness.repairReadyCount + value.sourceReadiness.sourceRequiredCount
+    || value.sourceReadiness.quarantinedCount !== value.quarantinedItems.length
+    || value.quarantinedItems.length !== value.quarantinedListingKeys.length
+    || value.quarantinedItems.some((item, index) => (
+      item.listingKey !== value.quarantinedListingKeys[index]
+      || item.status !== "QUARANTINED_UNRESOLVED"
+      || item.outcome !== "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET"
+      || item.nextAction !== "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN"
+    ))
+    || value.completedListingKeys.some((key) => value.quarantinedListingKeys.includes(key))
     || value.items.some((item, index) => (
       item.ordinal !== index
       || item.stage !== "PRODUCT_TRUTH_READY"

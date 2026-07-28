@@ -44,6 +44,15 @@ import type {
 import {
   verifyWalmartListingRepairTargetImageCertificateBytes,
 } from "./listing-integrity-remediation-image-certificate.ts";
+import {
+  verifyWalmartListingRepairReviewedMainCertificateBytes,
+} from "./listing-integrity-remediation-reviewed-main-certificate.ts";
+import {
+  verifyWalmartListingRepairReviewedImageSetCertificateBytes,
+} from "./listing-integrity-remediation-reviewed-image-set-certificate.ts";
+import {
+  verifyWalmartListingRepairUnchangedImageCertificateBytes,
+} from "./listing-integrity-remediation-unchanged-image-certificate.ts";
 
 export const WALMART_LISTING_REPAIR_HTTP_RECEIPT_V2_SCHEMA =
   "walmart-listing-repair-http-receipt/v2" as const;
@@ -58,6 +67,29 @@ const MAX_LEDGER_BYTES = 1024 * 1024;
 const MAX_JSON_BYTES = 64 * 1024 * 1024;
 
 type JsonRecord = Record<string, unknown>;
+
+function verifyExactTargetImageCertificate(input: {
+  certificate_bytes: Uint8Array;
+  plan: SealedWalmartListingRepairPlan;
+  at: string;
+}): void {
+  const verifiers = [
+    verifyWalmartListingRepairReviewedImageSetCertificateBytes,
+    verifyWalmartListingRepairReviewedMainCertificateBytes,
+    verifyWalmartListingRepairUnchangedImageCertificateBytes,
+    verifyWalmartListingRepairTargetImageCertificateBytes,
+  ] as const;
+  let firstError: unknown;
+  for (const verifier of verifiers) {
+    try {
+      verifier(input);
+      return;
+    } catch (error) {
+      firstError ??= error;
+    }
+  }
+  throw firstError;
+}
 
 export interface WalmartListingRepairWriterApplyArtifacts {
   request_manifest_bytes: Uint8Array;
@@ -769,7 +801,7 @@ export function verifyWalmartListingRepairCustodyLoadedApplyEvidence(input: {
   );
   const manifestPreparedAt = instant(manifestRaw.prepared_at, "request manifest prepared_at");
   try {
-    verifyWalmartListingRepairTargetImageCertificateBytes({
+    verifyExactTargetImageCertificate({
       certificate_bytes: supporting.target_image_certificate_bytes,
       plan: input.plan,
       at: manifestPreparedAt,
@@ -904,7 +936,7 @@ export function verifyWalmartListingRepairCustodyLoadedApplyEvidence(input: {
     fail("POST response feedId differs from ledger ACCEPTED");
   }
   try {
-    verifyWalmartListingRepairTargetImageCertificateBytes({
+    verifyExactTargetImageCertificate({
       certificate_bytes: supporting.target_image_certificate_bytes,
       plan: input.plan,
       at: postReceipt.captured_at,

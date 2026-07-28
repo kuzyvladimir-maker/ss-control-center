@@ -17,6 +17,7 @@ import {
   canonicalIdentityFromTarget,
   parseProductTruthTargetedWalmartDonorSnapshot,
   PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
+  TARGETED_WALMART_MAX_WALL_CLOCK_MS,
   targetedWalmartDonorSnapshotSha256,
   type ProductTruthTargetedWalmartDonorSnapshot,
   type ProductTruthTargetedWalmartEvidenceTarget,
@@ -24,6 +25,7 @@ import {
 import {
   deriveTargetedWalmartLegacyCanonicalIdentity,
   decideProductTruthTargetedResume,
+  PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS,
   selectExactTargetedWalmartOffer,
 } from "../product-truth-targeted-walmart-evidence";
 import type { RetailOffer } from "../retail-fetch";
@@ -31,6 +33,15 @@ import type { RetailOffer } from "../retail-fetch";
 const CREATED_AT = "2026-07-19T12:00:00.000Z";
 const EXPIRES_AT = "2026-07-19T13:00:00.000Z";
 const HASH = "a".repeat(64);
+
+test("targeted Walmart run lease outlives its sealed wall-clock budget", () => {
+  assert.ok(
+    PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS
+      > TARGETED_WALMART_MAX_WALL_CLOCK_MS,
+  );
+  assert.ok(PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS <= 10 * 60 * 1_000);
+});
+
 const DECISION_EVIDENCE_JSON = JSON.stringify({
   matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,

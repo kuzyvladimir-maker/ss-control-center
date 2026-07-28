@@ -186,6 +186,21 @@ export interface ListingIntegrityCompletedOperation {
   verificationFileSha256: string;
 }
 
+export interface ListingIntegrityQuarantinedOperation {
+  listingKey: string;
+  sku: string;
+  itemId: string;
+  quarantinedAt: string;
+  status: "QUARANTINED_UNRESOLVED";
+  outcome: "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET";
+  nextAction: "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN";
+  listingRepairComplete: false;
+  samePayloadReapplyAllowed: false;
+  walmartWriteAuthorized: false;
+  dispositionBodySha256: string;
+  dispositionFileSha256: string;
+}
+
 export interface ListingIntegrityControlledPoolRow {
   ordinal: number;
   listingKey: string;
@@ -234,7 +249,9 @@ export interface ListingIntegrityOperationsState {
   sourceCandidateCount: number;
   repairReadyCount: number;
   sourceRequiredCount: number;
+  quarantinedCount: number;
   completed: ListingIntegrityCompletedOperation[];
+  quarantined: ListingIntegrityQuarantinedOperation[];
   pool: ListingIntegrityControlledPoolRow[];
   sourceRequired: ListingIntegritySourceRequiredRow[];
 }

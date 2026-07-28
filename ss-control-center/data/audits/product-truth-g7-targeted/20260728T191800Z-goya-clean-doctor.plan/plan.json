@@ -1,0 +1,112 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "createdAt": "2026-07-28T19:19:50.612Z",
+  "engineReleaseSha256": "87347e3d575fe3d3ca913d708b3dd28a2a8b113d54f35e0f5fd4ec1579a4cdde",
+  "expiresAt": "2026-07-28T21:00:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-28T19:19:50.612Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "3d3663a8b4680283bd14a6cab4546fc1f6d38d6bc7e95162182f41534d11d93e"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-goya",
+  "schemaFingerprintSha256": "359de1c5f9732093730877f9d6ef5dde091fdb3630c59f6becadb5e2c026c6d7",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.3.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "1e425a1b9054cc7343a961ef7cb139df3ff494468becabdc5f52661060575403",
+  "targets": [
+    {
+      "canonicalIdentityHash": "4bbd54dc6f3d5f4798f6aa09c2e8ed955a531e642d0385767479a41dc6aac704",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"goya\",\"productLine\":\"beans can pinto\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":439.4176084375,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:4bbd54dc6f3d5f4798f6aa09c2e8ed955a531e642d0385767479a41dc6aac704",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": null,
+      "decisionEvidenceJson": null,
+      "decisionStatus": null,
+      "donorIdentityStatus": "legacy_unverified",
+      "donorOfferId": "do:walmart:30856904",
+      "donorProductId": "72b01aae-2cf7-498d-bd8a-f752006cad9e",
+      "donorSnapshotSha256": "3d3663a8b4680283bd14a6cab4546fc1f6d38d6bc7e95162182f41534d11d93e",
+      "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+      "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+      "isFirstParty": true,
+      "legacySnapshot": {
+        "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-07T17:23:46.478Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"72b01aae-2cf7-498d-bd8a-f752006cad9e\",\n  \"fetchedAt\": \"2026-07-10T14:32:27.787Z\",\n  \"id\": \"do:walmart:30856904\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 1.52,\n  \"pricePerUnit\": 1.52,\n  \"productUrl\": \"https://www.walmart.com/ip/GOYA-Pinto-Beans-15-5-Oz/30856904?classType=VARIANT\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"30856904\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-10T14:32:27.787Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+        "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"name\\\":\\\"Brand\\\",\\\"value\\\":\\\"Goya\\\"},{\\\"name\\\":\\\"Canned & jarred beans & legumes type\\\",\\\"value\\\":\\\"Pinto Beans\\\"},{\\\"name\\\":\\\"Flavor\\\",\\\"value\\\":\\\"Original\\\"},{\\\"name\\\":\\\"Size\\\",\\\"value\\\":\\\"15.5 oz\\\"},{\\\"name\\\":\\\"Product net content parent\\\",\\\"value\\\":\\\"15.5 Ounces\\\"},{\\\"name\\\":\\\"Product net content uom\\\",\\\"value\\\":\\\"Ounce\\\"},{\\\"name\\\":\\\"Pack quantity\\\",\\\"value\\\":\\\"1\\\"},{\\\"name\\\":\\\"Container type\\\",\\\"value\\\":\\\"Can\\\"},{\\\"name\\\":\\\"Food preparation method\\\",\\\"value\\\":\\\"Refried\\\"},{\\\"name\\\":\\\"Food form\\\",\\\"value\\\":\\\"Bites\\\"},{\\\"name\\\":\\\"Texture\\\",\\\"value\\\":\\\"Creamy\\\"},{\\\"name\\\":\\\"Shelf life\\\",\\\"value\\\":\\\"365 days\\\"},{\\\"name\\\":\\\"Cuisine\\\",\\\"value\\\":\\\"Latin American, Mexican\\\"},{\\\"name\\\":\\\"Nutrition facts label image\\\",\\\"value\\\":\\\"https://portal.goya.com/goyaimages/web/nfp/2437.jpg\\\"},{\\\"name\\\":\\\"Food & drug fact label type\\\",\\\"value\\\":\\\"Nutrition Fact Panel\\\"},{\\\"name\\\":\\\"Material\\\",\\\"value\\\":\\\"Can\\\"},{\\\"name\\\":\\\"Assembled product weight\\\",\\\"value\\\":\\\"1.15 lbs\\\"},{\\\"name\\\":\\\"Food condition\\\",\\\"value\\\":\\\"Shelf-Stable\\\"},{\\\"name\\\":\\\"Ingredient list image\\\",\\\"value\\\":\\\"https://d3d71ba2asa5oz.cloudfront.net/12026801/images/2packgoyapinto2874725.jpg\\\"}]\",\n  \"bestPrice\": 1.52,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Goya\",\n  \"bullets\": \"[\\\"Brand: GOYA\\\",\\\"Delicious and versatile Latin favorite\\\",\\\"Distinct, delicate flavor and creamy texture\\\",\\\"Chef'sBest® Excellence Award winner for overall quality\\\",\\\"Ideal for classic recipes like Habichuelas Pintas, Frijoles Refritos, and Frijoles de Olla\\\",\\\"Great for chili, soups, salads, or paired with rice\\\",\\\"No fat\\\",\\\"No saturated fat\\\",\\\"Cholesterol Free\\\",\\\"Good source of fiber, iron, and potassium\\\",\\\"Kosher Certified\\\",\\\"Gluten Free\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-07T17:23:46.478Z\",\n  \"currency\": \"USD\",\n  \"description\": \"Discover the creamy and delicate taste of Goya Pinto Beans, a favorite in Latin cuisine. These beans are perfect for making classic dishes like Refried Beans and chili. They're cholesterol-free and gluten-free, providing a healthy source of fiber and nutrients. Enjoy them in soups, salads, or as a side with rice. Proudly grown and canned, these beans guarantee always-delicious flavor and quality.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"72b01aae-2cf7-498d-bd8a-f752006cad9e\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"goya|pinto|beans|can|15 5 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://i5.walmartimages.com/seo/GOYA-Pinto-Beans-15-5-Oz_f07751eb-f713-46a1-a8d3-d0770d599e51.dbdbc324308bf2f2e2039c629aa30ae9.jpeg\\\",\\\"https://i5.walmartimages.com/asr/717b62de-524f-405d-9067-f8367fa43378.194e5defd60fac947f26434674dd0d5d.jpeg\\\",\\\"https://i5.walmartimages.com/asr/4ccbc82c-c1f8-4952-a46f-181b08bb81c5.956738d9edc0455427a5c7e8a021257e.jpeg\\\",\\\"https://i5.walmartimages.com/asr/8eeb4167-7528-4fc8-ac5c-877d8f0e30e1.de59e8fff5d337d450abf19d1dfb1154.jpeg\\\",\\\"https://i5.walmartimages.com/asr/396c5c8e-1aa9-4514-be76-d742e075a3b6.cb8859c0249f66c29983b8ba5320f0d3.jpeg\\\",\\\"https://i5.walmartimages.com/asr/139ae2de-3c96-44a4-a289-df6d81046062.e1b0bb3fccd15d71f4d73191560426b2.jpeg\\\",\\\"https://i5.walmartimages.com/asr/73c1fcf2-9133-4fa3-b7a2-7c5700492cd9.7dc3e54b2d05e6fe436de439ccb6ede9.jpeg\\\"]\",\n  \"ingredients\": \"Pinto Beans, Water, Salt, Calcium Chloride added as a firming agent and Calcium Disodium EDTA added to promote color retention.\",\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/GOYA-Pinto-Beans-15-5-Oz_f07751eb-f713-46a1-a8d3-d0770d599e51.dbdbc324308bf2f2e2039c629aa30ae9.jpeg\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": \"[{\\\"name\\\":\\\"Nutrition facts label image\\\",\\\"value\\\":\\\"https://portal.goya.com/goyaimages/web/nfp/2437.jpg\\\"},{\\\"name\\\":\\\"Food & drug fact label type\\\",\\\"value\\\":\\\"Nutrition Fact Panel\\\"}]\",\n  \"pricePerMeasure\": 0.098,\n  \"productLine\": null,\n  \"size\": \"15.5 oz\",\n  \"title\": \"GOYA Pinto Beans 15.5 oz Can\",\n  \"unitAmount\": 15.5,\n  \"unitMeasure\": \"oz\",\n  \"upc\": \"041331124379\",\n  \"updatedAt\": \"2026-07-10T14:32:27.787Z\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+        "sha256": "43a8790d8e284a7b7186624cbc99f7a6b2855fc79ae996ad7ed6f5715b56d65d"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/30856904",
+      "ordinal": 0,
+      "query": "GOYA Pinto Beans 15.5 oz Can",
+      "retailer": "walmart",
+      "retailerProductId": "30856904",
+      "variantDecisionId": null,
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

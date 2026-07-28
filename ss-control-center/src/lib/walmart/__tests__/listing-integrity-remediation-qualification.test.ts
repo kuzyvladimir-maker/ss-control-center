@@ -777,7 +777,7 @@ test("production verifier is pinned and still rejects an owner key outside the p
   assert.deepEqual(inspectWalmartListingRepairQualificationProductionReadiness(), {
     verifier_release_pinned: true,
     verifier_engine_release_sha256:
-      "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a",
+      "e5e8bfbb1ba10da3e6a346bd9dbb3f8075ce877f3053d3d3b3d8b361f250ae91",
     walmart_native_payload_validator_ready: true,
     frozen_apply_writer_attestation_ready: true,
   });
@@ -898,6 +898,34 @@ test("FaisalX-1183 review target needs explicit Pack of 6 in description and bul
       expected,
     }),
     { valid: true, marketplace_write_authorized: false },
+  );
+
+  const broadAttributeSurface = clone(proposedSurface);
+  broadAttributeSurface.attribute_claims = broadAttributeSurface.attribute_claims.map(
+    (claim) => claim.kind === "product" && "text" in claim
+      ? { ...claim, text: "Bakery Buns" }
+      : claim,
+  );
+  assert.deepEqual(
+    precheckWalmartListingRepairTargetForReview({
+      surface: broadAttributeSurface,
+      expected,
+    }),
+    { valid: true, marketplace_write_authorized: false },
+  );
+
+  const forbiddenAttributeSurface = clone(proposedSurface);
+  forbiddenAttributeSurface.attribute_claims = forbiddenAttributeSurface.attribute_claims.map(
+    (claim) => claim.kind === "product" && "text" in claim
+      ? { ...claim, text: "Hamburger Buns" }
+      : claim,
+  );
+  assert.throws(
+    () => precheckWalmartListingRepairTargetForReview({
+      surface: forbiddenAttributeSurface,
+      expected,
+    }),
+    /typed attributes contradict Product Truth identity/u,
   );
 
   const packFirstSurface = clone(proposedSurface);

@@ -15,7 +15,11 @@ import {
   oxylabsWalmartProduct,
   oxylabsWalmartSearch,
 } from "../oxylabs-fetch";
-import { bluecartWalmartSearch, unwrangleSearch } from "../retail-fetch";
+import {
+  bluecartWalmartSearch,
+  unwrangleSearch,
+  unwrangleSearchCreditUnits,
+} from "../retail-fetch";
 import { askVisionJson, visionFreeOnly } from "../vision";
 
 const ENV_KEYS = [
@@ -80,6 +84,10 @@ async function assertBlocked(run: () => Promise<unknown>): Promise<void> {
 test("BlueCart and Unwrangle adapters fail before network without a permit", async () => {
   await assertBlocked(() => bluecartWalmartSearch("test cereal"));
   await assertBlocked(() => unwrangleSearch("target", "test cereal"));
+});
+
+test("Unwrangle Target search reserves the live-observed 2.5-credit tariff", () => {
+  assert.equal(unwrangleSearchCreditUnits("target"), 2.5);
 });
 
 test("Oxylabs and Gemini adapters fail before network without a permit", async () => {

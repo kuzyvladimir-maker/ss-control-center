@@ -60,6 +60,11 @@ import {
   type WalmartListingRepairReviewedMainEvidence,
 } from "../src/lib/walmart/listing-integrity-remediation-reviewed-main-certificate.ts";
 import {
+  certifyWalmartListingRepairReviewedImageSet,
+  type ExactReviewedImageSetArtifact,
+  type WalmartListingRepairReviewedImageSetEvidence,
+} from "../src/lib/walmart/listing-integrity-remediation-reviewed-image-set-certificate.ts";
+import {
   canonicalWalmartListingSurgicalJson,
 } from "../src/lib/walmart/listing-integrity-remediation-payload.ts";
 import {
@@ -100,13 +105,14 @@ export interface WalmartListingRepairOwnerPackageReport {
   changed_fields:
     | ["description", "bullets"]
     | ["description", "bullets", "main"]
+    | ["description", "bullets", "main", "gallery"]
     | ["attributes"];
   product_type: string;
   artifacts: Record<string, string>;
   hashes: Record<string, string>;
   execution: {
     oauth_token_calls: 1;
-    walmart_read_calls: 2;
+    walmart_read_calls: 2 | 3;
     walmart_content_writes: 0;
     database_reads: 0;
     database_writes: 0;
@@ -248,6 +254,61 @@ async function loadReviewedMainEvidence(
     }),
   );
   return Object.fromEntries(entries) as unknown as WalmartListingRepairReviewedMainEvidence;
+}
+
+async function loadReviewedImageSetEvidence(
+  request: VerifiedWalmartListingRepairCompilationRequest,
+): Promise<WalmartListingRepairReviewedImageSetEvidence | null> {
+  const refs = request.repair.changed_image_set_evidence;
+  if (!refs) return null;
+  const loadOne = async (
+    role: string,
+    reference: { absolute_path: string; file_sha256: string },
+  ): Promise<ExactReviewedImageSetArtifact> => {
+    const bytes = await readStable(
+      reference.absolute_path,
+      `changed image-set evidence ${role}`,
+    );
+    if (sha256(bytes) !== reference.file_sha256) {
+      fail(`changed image-set evidence ${role} exact file SHA mismatch`);
+    }
+    return { bytes, sha256: reference.file_sha256 };
+  };
+  return {
+    product_truth: await loadOne("product_truth", refs.product_truth),
+    main_candidate_manifest: await loadOne(
+      "main_candidate_manifest",
+      refs.main_candidate_manifest,
+    ),
+    single_unit_source: await loadOne("single_unit_source", refs.single_unit_source),
+    source_candidate_manifest: await loadOne(
+      "source_candidate_manifest",
+      refs.source_candidate_manifest,
+    ),
+    source_candidate_assets: await Promise.all(
+      refs.source_candidate_assets.map((reference, index) =>
+        loadOne(`source_candidate_assets[${index}]`, reference)),
+    ),
+    source_qualification: await loadOne(
+      "source_qualification",
+      refs.source_qualification,
+    ),
+    observer_plan: await loadOne("observer_plan", refs.observer_plan),
+    observer_requests: await Promise.all(
+      refs.observer_requests.map((reference, index) =>
+        loadOne(`observer_requests[${index}]`, reference)),
+    ),
+    observer_responses: await Promise.all(
+      refs.observer_responses.map((reference, index) =>
+        loadOne(`observer_responses[${index}]`, reference)),
+    ),
+    curated_manifest: await loadOne("curated_manifest", refs.curated_manifest),
+    curated_target_assets: await Promise.all(
+      refs.curated_target_assets.map((reference, index) =>
+        loadOne(`curated_target_assets[${index}]`, reference)),
+    ),
+    r2_staging: await loadOne("r2_staging", refs.r2_staging),
+  };
 }
 
 function parseJson(bytes: Uint8Array, label: string): unknown {
@@ -472,9 +533,12 @@ function artifactMap(input: {
   permit: unknown;
   result: ReturnType<typeof finalizeWalmartListingRepairExecutionPackage>;
 }): Record<string, Uint8Array> {
-  const certificateName = input.draft.target_image_certificate_kind === "REVIEWED_CHANGED_MAIN"
-    ? "reviewed-main-certificate.json"
-    : "unchanged-image-certificate.json";
+  const certificateName =
+    input.draft.target_image_certificate_kind === "REVIEWED_CHANGED_MAIN"
+      ? "reviewed-main-certificate.json"
+      : input.draft.target_image_certificate_kind === "REVIEWED_CHANGED_IMAGE_SET"
+        ? "reviewed-image-set-certificate.json"
+        : "unchanged-image-certificate.json";
   return {
     "compilation-request.json": input.compilationRequestBytes,
     "reviewed-one-sku-product-truth.json": renderJson(input.reviewedTruth),
@@ -493,6 +557,13 @@ function artifactMap(input: {
       input.capture.materials.get_spec_response_bytes,
     "surgical-live-item-response.bin":
       input.capture.materials.live_item_response_bytes,
+    ...(input.capture.materials.variant_group_all_items_receipt
+      && input.capture.materials.variant_group_all_items_response_bytes ? {
+        "variant-group-all-items-receipt.json":
+          renderJson(input.capture.materials.variant_group_all_items_receipt),
+        "variant-group-all-items-response.bin":
+          input.capture.materials.variant_group_all_items_response_bytes,
+      } : {}),
     "surgical-request-manifest.json":
       input.draft.built_request.request_manifest_bytes,
     "surgical-request-payload.json": input.draft.built_request.payload_bytes,
@@ -545,6 +616,7 @@ export async function executeWalmartListingRepairOwnerPackage(
     fail("owner confirmation differs from the exact frozen review");
   }
   const reviewedMainEvidence = await loadReviewedMainEvidence(request);
+  const reviewedImageSetEvidence = await loadReviewedImageSetEvidence(request);
   const requestFileSha = sha256(requestBytes);
   const initialNow = (injected.now ?? (() => new Date()))();
   if (!Number.isFinite(initialNow.getTime())) fail("current time is invalid");
@@ -580,6 +652,11 @@ export async function executeWalmartListingRepairOwnerPackage(
     fetch_impl: injected.fetch_impl,
     now: injected.now,
     random_uuid: injected.random_uuid,
+    // The frozen compilation request does not carry the two immutable ITEM
+    // report inputs required to build variant-group evidence.  Capturing an
+    // extra All Items response here would therefore be unused and would also
+    // violate the package's declared two-read network contract.
+    capture_variant_group: false,
   });
 
   const now = (injected.now ?? (() => new Date()))();
@@ -650,7 +727,47 @@ export async function executeWalmartListingRepairOwnerPackage(
     now,
   );
   let reviewedMainCertificateBytes: Uint8Array | undefined;
-  if (request.repair.changed_fields.includes("main")) {
+  let reviewedImageSetCertificateBytes: Uint8Array | undefined;
+  if (request.repair.changed_fields.includes("gallery")) {
+    if (!reviewedImageSetEvidence || !request.product_truth_candidate.expected) {
+      fail("reviewed image-set repair lacks exact evidence or Product Truth expected facts");
+    }
+    const prebuiltPlan = buildWalmartListingRepairPlanFromCompilationRequest({
+      compilation_request: request,
+      compilation_request_file_sha256: requestFileSha,
+      owner_confirmation: text(
+        args.owner_confirmation,
+        "--owner-confirmation",
+      ),
+      sequence_authorization: sequence,
+      product_truth_binding: truth,
+      plan_id: ids.plan_id,
+      created_at: timing.plan_created_at,
+      expires_at: timing.plan_expires_at,
+      verifier_engine_release_sha256:
+        digest(args.verifier_release_sha256, "--verifier-release-sha256"),
+      apply_engine_release_sha256:
+        digest(args.apply_release_sha256, "--apply-release-sha256"),
+      expected_environment: "PRODUCTION",
+    });
+    const certificate = await certifyWalmartListingRepairReviewedImageSet({
+      now: timing.certificate_created_at,
+      expires_at: timing.certificate_expires_at,
+      plan: prebuiltPlan,
+      expected: request.product_truth_candidate.expected,
+      compilation_request_file_sha256: requestFileSha,
+      compilation_request_body_sha256: request.body_sha256,
+      owner_confirmation: text(
+        args.owner_confirmation,
+        "--owner-confirmation",
+      ),
+      evidence: reviewedImageSetEvidence,
+    });
+    reviewedImageSetCertificateBytes = Buffer.from(
+      canonicalWalmartListingSurgicalJson(certificate),
+      "utf8",
+    );
+  } else if (request.repair.changed_fields.includes("main")) {
     if (!reviewedMainEvidence || !request.product_truth_candidate.expected) {
       fail("reviewed MAIN repair lacks exact evidence or Product Truth expected facts");
     }
@@ -691,8 +808,8 @@ export async function executeWalmartListingRepairOwnerPackage(
       canonicalWalmartListingSurgicalJson(reviewedMainCertificate),
       "utf8",
     );
-  } else if (reviewedMainEvidence) {
-    fail("unchanged-image repair unexpectedly carries changed MAIN evidence");
+  } else if (reviewedMainEvidence || reviewedImageSetEvidence) {
+    fail("unchanged-image repair unexpectedly carries changed image evidence");
   }
   const draft = compileWalmartListingRepairOwnerDraft({
     environment: "PRODUCTION",
@@ -712,6 +829,7 @@ export async function executeWalmartListingRepairOwnerPackage(
     timing,
     materials: capture.materials,
     reviewed_main_certificate_bytes: reviewedMainCertificateBytes,
+    reviewed_image_set_certificate_bytes: reviewedImageSetCertificateBytes,
   });
   const permitRaw = signEnvelope(
     walmartListingRepairOneSkuPermitSigningEnvelope({
@@ -762,7 +880,11 @@ export async function executeWalmartListingRepairOwnerPackage(
     hashes: artifactHashes,
     execution: {
       oauth_token_calls: 1 as const,
-      walmart_read_calls: 2 as const,
+      walmart_read_calls: (
+        capture.call_counts.exact_item_get_calls
+        + capture.call_counts.variant_group_all_items_get_calls
+        + capture.call_counts.get_spec_post_calls
+      ) as 2 | 3,
       walmart_content_writes: 0 as const,
       database_reads: 0 as const,
       database_writes: 0 as const,
@@ -775,7 +897,8 @@ export async function executeWalmartListingRepairOwnerPackage(
       signed_one_sku_permit: true as const,
       package_is_not_executed: true as const,
       title_unchanged: true as const,
-      images_unchanged: !request.repair.changed_fields.includes("main"),
+      images_unchanged: !request.repair.changed_fields.includes("main")
+        && !request.repair.changed_fields.includes("gallery"),
       price_unchanged: true as const,
       inventory_unchanged: true as const,
       listing_status_unchanged: true as const,

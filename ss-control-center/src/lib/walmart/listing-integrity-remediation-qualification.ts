@@ -63,7 +63,7 @@ const FIELD_ORDER = Object.freeze([
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
 const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
-  "0378f1581a5682a8554bb5ea251f9673083ced83c3b03708efb4b1faa01df56a";
+  "e5e8bfbb1ba10da3e6a346bd9dbb3f8075ce877f3053d3d3b3d8b361f250ae91";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE
@@ -894,38 +894,10 @@ function assertTargetSurfaceMatchesProductTruth(
       || claim.kind === "variant")
     .map((claim) => "text" in claim ? claim.text : "")
     .join(" ");
-  const typedIdentityGroups = [
-    {
-      kind: "brand",
-      aliases: [expected.identity.brand_aliases],
-    },
-    {
-      kind: "product",
-      aliases: expected.identity.product_marker_groups,
-    },
-    {
-      kind: "variant",
-      aliases: expected.identity.variant_marker_groups,
-    },
-  ] as const;
-  const identityClaimsByKind = new Map(
-    typedIdentityGroups.map(({ kind }) => [
-      kind,
-      surface.attribute_claims.filter((claim) => (
-        claim.kind === kind && "text" in claim
-      )).map((claim) => "text" in claim ? claim.text : ""),
-    ]),
-  );
-  if (typedIdentityGroups.some(({ kind, aliases }) => {
-    const claims = identityClaimsByKind.get(kind) ?? [];
-    return claims.length > 0 && aliases.some((group) => (
-      !claims.some((claim) => (
-        kind === "brand"
-          ? containsAlias(claim, group)
-          : containsIdentityAlias(claim, group)
-      ))
-    ));
-  }) || expected.identity.forbidden_markers.some((row) => (
+  // Keep review-time precheck aligned with the canonical text decision:
+  // incomplete/broad marketplace attributes are REVIEW evidence, not a hard
+  // contradiction. Only an explicit Product Truth forbidden marker is BAD.
+  if (expected.identity.forbidden_markers.some((row) => (
       containsAlias(identityClaims, row.aliases)
     ))) {
     fail("repair target typed attributes contradict Product Truth identity");

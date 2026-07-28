@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "owner-pt-g7-turnkey-goya-20260728t192400z",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99680,
+      "evidenceSha256": "24623b11fe8a2c4d82e9649e1af501512c8c70ff49e3c19fcc1c8b66ee848786",
+      "observedAt": "2026-07-28T19:23:49.725Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-28T20:15:00.000Z",
+  "issuedAt": "2026-07-28T19:24:00.000Z",
+  "meteredPermit": {
+    "approvalId": "owner-pt-g7-turnkey-goya-20260728t192400z",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-28T20:15:00.000Z",
+    "issuedAt": "2026-07-28T19:24:00.000Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-g7-targeted-clean-20260728T191800Z-goya",
+    "version": 1
+  },
+  "planSha256": "da44d4e2d397636f66620b141bec1307325e8888441b06b3409ac8a88a3e86d5",
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-goya",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

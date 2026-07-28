@@ -18,6 +18,7 @@ import {
   WALMART_LISTING_SURGICAL_LIVE_ITEM_RECEIPT_SCHEMA,
   WALMART_LISTING_SURGICAL_REQUEST_MANIFEST_SCHEMA,
   WALMART_LISTING_SURGICAL_SCHEMA_CONTRACT_SCHEMA,
+  WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA,
   buildWalmartListingSurgicalRequest,
   canonicalWalmartListingSurgicalJson,
   verifyWalmartListingSurgicalRequestBytes,
@@ -32,6 +33,7 @@ const H = (char: string): string => char.repeat(64);
 const SELLER = H("a");
 const SPEC_VERSION = WALMART_LISTING_SURGICAL_CURRENT_SPEC_VERSION;
 const PRODUCT_TYPE = "Food And Beverage";
+type JsonRecord = Record<string, unknown>;
 
 function seal<T extends Record<string, unknown>>(body: T): T & { body_sha256: string } {
   return { ...body, body_sha256: walmartListingSurgicalSha256(body) };
@@ -622,6 +624,209 @@ test("fails closed when an ordinary one-SKU attribute repair changes a live vari
   assert.throws(
     () => build(incompleteVariantEvidence),
     /VARIANT_GROUP_REPAIR_REQUIRED.*incomplete variant-group evidence/iu,
+  );
+});
+
+test("allows one exact complete single-member variant-group repair and emits group fields", () => {
+  const targetClaims: ListingAttributeClaim[] = [
+    {
+      field_path: "product.attributes.Count",
+      kind: "inner_item_count",
+      value: 4,
+      unit: "count",
+    },
+    {
+      field_path: "product.attributes.Count Per Pack",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+    {
+      field_path: "product.attributes.Flavor",
+      kind: "variant",
+      text: "Golden Mushroom",
+    },
+    {
+      field_path: "product.attributes.Multipack Quantity",
+      kind: "outer_units",
+      value: 4,
+      unit: "count",
+    },
+  ];
+  const unchangedImages = [
+    image("main", "old-main", "1"),
+    image("gallery-1", "gallery-one", "2"),
+  ];
+  const planData = planFixture({
+    baselineSurface: surface({
+      title: "Exact Soup Quantity of 4",
+      claims: [],
+    }),
+    targetSurface: surface({
+      title: "Exact Soup Quantity of 4",
+      claims: targetClaims,
+    }),
+    baselineImages: unchangedImages,
+    targetImages: unchangedImages,
+    changedFields: ["attributes"],
+  });
+  const source = fixture({
+    planData,
+    liveItemMutator: (row) => {
+      row.variantGroupId = "campCondGoldMush";
+      row.variantGroupInfo = {
+        isPrimary: false,
+        groupingAttributes: [{ name: "flavor", value: "qty 4" }],
+      };
+    },
+    schemaMutator: (schema) => {
+      const mpItem = (schema.properties as Record<string, JsonRecord>).MPItem;
+      const item = mpItem.items as JsonRecord;
+      const itemProperties = item.properties as Record<string, JsonRecord>;
+      const visible = itemProperties.Visible;
+      const visibleProperties =
+        visible.properties as Record<string, JsonRecord>;
+      const product = visibleProperties[PRODUCT_TYPE];
+      const properties = product.properties as JsonRecord;
+      properties.variantGroupId = { type: "string" };
+      properties.variantAttributeNames = {
+        type: "array",
+        items: { type: "string", enum: ["flavor"] },
+      };
+      properties.isPrimaryVariant = {
+        type: "string",
+        enum: ["No", "Yes"],
+      };
+      properties.flavor = { type: "string" };
+      properties.count = { type: "integer" };
+      properties.countPerPack = { type: "integer" };
+    },
+  });
+  const evidenceBody = {
+    schema_version: "walmart-listing-variant-group-repair-evidence/v2" as const,
+    created_at: source.request.prepared_at,
+    listing: {
+      channel: "WALMART_US" as const,
+      store_index: 1,
+      sku: "SKU-EXACT-1",
+      listing_key: "walmart:1:SKU-EXACT-1",
+      item_id: "123456789",
+      product_type: PRODUCT_TYPE,
+    },
+    current_group: {
+      variant_group_id: "campCondGoldMush",
+      exact_member_count: 1 as const,
+      current_is_primary_variant: "No" as const,
+      grouping_attributes: [{ name: "flavor" as const, value: "qty 4" }],
+    },
+    requested_group_update: {
+      variant_group_id: "campCondGoldMush",
+      variant_attribute_names: ["flavor"] as ["flavor"],
+      is_primary_variant: "Yes" as const,
+      flavor: "Golden Mushroom",
+      count: 4,
+      count_per_pack: 1 as const,
+      multipack_quantity: 4,
+    },
+    population_authority: {
+      catalog_source_body_sha256: H("1"),
+      catalog_source_file_sha256: H("2"),
+      decoded_report_sha256: H("3"),
+      report_request_id_sha256: H("4"),
+      report_cutoff_at: "2026-07-20T12:00:00.000Z",
+      catalog_population_complete: true as const,
+      unique_listing_count: 5_236,
+      exact_group_member_source_record_sha256: H("5"),
+      all_items_receipt_body_sha256: H("6"),
+      all_items_response_sha256: H("7"),
+      all_items_variant_group_id: "campCondGoldMush",
+      all_items_total_items: 1 as const,
+      all_items_exact_member_count: 1 as const,
+      group_completeness_authority:
+        "FRESH_WALMART_ALL_ITEMS_VARIANT_GROUP_FILTER" as const,
+    },
+    live_authority: {
+      seller_item_file_sha256: source.liveReceipt.response_payload_sha256,
+      get_spec_response_file_sha256: source.receipt.response_payload_sha256,
+      seller_group_matches_report: true as const,
+      current_spec_supports_exact_group_fields: true as const,
+    },
+    claims: {
+      read_only: true as const,
+      exact_single_member_group: true as const,
+      complete_group_submission_count: 1 as const,
+      price_unchanged: true as const,
+      inventory_unchanged: true as const,
+      listing_status_unchanged: true as const,
+      walmart_writes_authorized: false as const,
+    },
+  };
+  const evidence = {
+    ...evidenceBody,
+    body_sha256: walmartListingIntegritySha256(evidenceBody),
+  };
+  const contractBody = structuredClone(source.contract) as unknown as JsonRecord;
+  delete contractBody.body_sha256;
+  contractBody.schema_version =
+    WALMART_LISTING_VARIANT_GROUP_SURGICAL_SCHEMA_CONTRACT_SCHEMA;
+  contractBody.variant_group_evidence = evidence;
+  contractBody.attribute_mappings = targetClaims.map((claim) => {
+    const normalized = claim.field_path.toLowerCase().replace(/[^a-z0-9]/gu, "");
+    const walmartVisibleField = normalized.endsWith("countperpack")
+      ? "countPerPack"
+      : normalized.endsWith("multipackquantity")
+        ? "multipackQuantity"
+        : normalized.endsWith("flavor") ? "flavor" : "count";
+    const walmartValue = "text" in claim ? claim.text : claim.value;
+    return {
+      source_field_path: claim.field_path,
+      source_kind: claim.kind,
+      source_claim_sha256: walmartListingIntegritySha256(claim),
+      walmart_visible_field: walmartVisibleField,
+      walmart_value: walmartValue,
+      walmart_value_sha256: walmartListingSurgicalSha256(walmartValue),
+    };
+  }).sort((left, right) => left.walmart_visible_field.localeCompare(
+    right.walmart_visible_field,
+    "en",
+  ));
+  source.contract = seal(
+    contractBody,
+  ) as unknown as WalmartListingSurgicalSchemaContract;
+
+  const result = build(source);
+  const item = (result.payload.MPItem as Array<JsonRecord>)[0]!;
+  const visible = (item.Visible as Record<string, JsonRecord>)[PRODUCT_TYPE]!;
+  assert.deepEqual(visible, {
+    count: 4,
+    countPerPack: 1,
+    flavor: "Golden Mushroom",
+    multipackQuantity: 4,
+    variantGroupId: "campCondGoldMush",
+    variantAttributeNames: ["flavor"],
+    isPrimaryVariant: "Yes",
+  });
+  assert.equal(result.validation.exact_item_count, 1);
+
+  const mismatched = structuredClone(source);
+  const mismatchedContract =
+    structuredClone(mismatched.contract) as unknown as JsonRecord;
+  delete mismatchedContract.body_sha256;
+  const mismatchedEvidence =
+    mismatchedContract.variant_group_evidence as JsonRecord;
+  delete mismatchedEvidence.body_sha256;
+  const liveAuthority = mismatchedEvidence.live_authority as JsonRecord;
+  liveAuthority.seller_item_file_sha256 = H("f");
+  mismatchedContract.variant_group_evidence = {
+    ...mismatchedEvidence,
+    body_sha256: walmartListingIntegritySha256(mismatchedEvidence),
+  };
+  mismatched.contract = seal(
+    mismatchedContract,
+  ) as unknown as WalmartListingSurgicalSchemaContract;
+  assert.throws(
+    () => build(mismatched),
+    /sealed group evidence differs from fresh live\/spec bytes/u,
   );
 });
 

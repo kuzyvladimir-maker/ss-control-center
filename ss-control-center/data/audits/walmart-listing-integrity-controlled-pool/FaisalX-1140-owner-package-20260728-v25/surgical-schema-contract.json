@@ -1,0 +1,47 @@
+{
+  "schema_version": "walmart-listing-integrity-surgical-schema-contract/v1",
+  "contract_id": "contract-edaf6fccf232f943e2a6b439",
+  "plan_id": "plan-edaf6fccf232f943e2a6b439",
+  "plan_body_sha256": "80f9e72c67a8e9e05d2fa48e9b1df9b0dfa6b96c008ee2e9332400e2bc35a52b",
+  "target_sha256": "f0ffbe8e90840747873eaa9336dfdcc893e8df91ff228544b82a8a8550e660b5",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1140",
+    "listing_key": "walmart:1:FaisalX-1140",
+    "item_id": "8401770647",
+    "product_identifier": {
+      "productIdType": "UPC",
+      "productId": "684611898500"
+    },
+    "product_type": "Breads & Buns",
+    "live_item_capture_sha256": "6c0d5e5b952ddd1db278a9b9b8607371d378c96f8bb7fcc52a2a3a5c9d9df1ec",
+    "live_item_receipt_body_sha256": "f9b4e93732518b67368f679c7755d854ac68ff52a91ae028f965f254dbbae19a",
+    "live_item_captured_at": "2026-07-28T19:09:15.478Z"
+  },
+  "spec": {
+    "feed_type": "MP_MAINTENANCE",
+    "business_unit": "WALMART_US",
+    "locale": "en",
+    "version": "5.0.20260501-19_21_29-api",
+    "product_type": "Breads & Buns",
+    "request_payload_sha256": "4ef57a1d53424aaed515f946f95b7263931bbd6f2252aff83c2006577aba4b28",
+    "response_payload_sha256": "d1e24d8c7cc638e1b8d601fb399a945f6628b7ac014d3a5fe5ec4444465d00c9",
+    "schema_sha256": "83aa99cb144116e9cbf44a3f2ecd82c0ccafdb1727000a888895350a7770368e",
+    "get_spec_receipt_body_sha256": "f0c1883f89b78039de1638aec8aed44c3c811580772687f9bd82f194fe9d3d9c",
+    "valid_until": "2026-07-28T19:39:16.367Z"
+  },
+  "schema_mapping_approval_sha256": "14246aaa3d4d68037bb826459cc159dd1736dd427269a94e07018604491ddfa6",
+  "attribute_mappings": [],
+  "claims": {
+    "exact_one_sku": true,
+    "changed_fields_only": true,
+    "full_target_is_qa_reference_only": true,
+    "audit_claims_are_not_write_schema": true,
+    "blank_or_null_clear_forbidden": true,
+    "preserve_unapproved_fields_by_omission": true,
+    "retries": 0,
+    "redirects": 0
+  },
+  "body_sha256": "5cf6fc6df55b72d1c1b863e7874dd6e6ebc550b8afc30ab99d123ac682198c7b"
+}

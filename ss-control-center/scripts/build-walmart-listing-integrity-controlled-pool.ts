@@ -25,6 +25,7 @@ import {
   buildWalmartListingIntegrityControlledPool,
   listWalmartListingIntegrityControlledPoolCandidateScopes,
   parseWalmartListingIntegrityCompletedCase,
+  parseWalmartListingIntegrityQuarantinedCase,
   verifyWalmartListingIntegrityControlledPool,
 } from "../src/lib/walmart/listing-integrity-operations.ts";
 import {
@@ -43,6 +44,7 @@ const HELP = `Usage:
     --expect-plan-sha256=<sha256> \
     --manifest-sha256=<authoritative-manifest-sha256> \
     --completed-root=/absolute/walmart-listing-integrity-post-canary \
+    --quarantine-root=/absolute/walmart-listing-integrity-quarantine \
     --limit=10 \
     --output-dir=/absolute/new/directory
 
@@ -86,6 +88,7 @@ function parseArgs(argv) {
     "expect-plan-sha256",
     "manifest-sha256",
     "completed-root",
+    "quarantine-root",
     "limit",
     "output-dir",
   ];
@@ -107,6 +110,7 @@ function parseArgs(argv) {
     expect_plan_sha256: exactSha(flags.get("expect-plan-sha256"), "--expect-plan-sha256"),
     manifest_sha256: exactSha(flags.get("manifest-sha256"), "--manifest-sha256"),
     completed_root: absolutePath(flags.get("completed-root"), "--completed-root"),
+    quarantine_root: absolutePath(flags.get("quarantine-root"), "--quarantine-root"),
     limit,
     output_dir: absolutePath(flags.get("output-dir"), "--output-dir"),
   };
@@ -193,6 +197,43 @@ async function completedCases(root) {
   return [...newestByListing.values()].sort(
     (left, right) => left.listingKey.localeCompare(right.listingKey, "en"),
   );
+}
+
+async function quarantinedCases(root) {
+  const rootStat = await lstat(root);
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) {
+    fail("--quarantine-root must be a real directory");
+  }
+  const directories = (await readdir(root, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
+    .map((entry) => entry.name)
+    .sort();
+  const parsed = [];
+  for (const directory of directories) {
+    const dispositionPath = path.join(root, directory, "failure-disposition.json");
+    const shaPath = path.join(root, directory, "failure-disposition.sha256");
+    let dispositionBytes;
+    let shaBytes;
+    try {
+      [dispositionBytes, shaBytes] = await Promise.all([
+        readFile(dispositionPath),
+        readFile(shaPath),
+      ]);
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    const dispositionFileSha256 = sha256(dispositionBytes);
+    if (shaBytes.toString("utf8").trim() !== dispositionFileSha256) {
+      fail(`${dispositionPath}: exact-file SHA mismatch`);
+    }
+    parsed.push(parseWalmartListingIntegrityQuarantinedCase({
+      disposition: JSON.parse(dispositionBytes.toString("utf8")),
+      dispositionFileSha256,
+      dispositionPath,
+    }));
+  }
+  return parsed;
 }
 
 async function readPerformance(storeIndex) {
@@ -292,10 +333,11 @@ async function main() {
     process.stdout.write(HELP);
     return;
   }
-  const [censusFile, planFile, completed] = await Promise.all([
+  const [censusFile, planFile, completed, quarantined] = await Promise.all([
     readPinnedJson(options.census, options.expect_census_sha256, "census"),
     readPinnedJson(options.plan, options.expect_plan_sha256, "plan"),
     completedCases(options.completed_root),
+    quarantinedCases(options.quarantine_root),
   ]);
   verifyWalmartListingIntegrityCatalogArtifacts({
     census: censusFile.value,
@@ -304,6 +346,7 @@ async function main() {
   const scopes = listWalmartListingIntegrityControlledPoolCandidateScopes({
     census: censusFile.value,
     completedListingKeys: completed.map((entry) => entry.listingKey),
+    quarantinedListingKeys: quarantined.map((entry) => entry.listingKey),
   });
   const createdAt = new Date();
   const [performanceRows, productTruth] = await Promise.all([
@@ -324,6 +367,7 @@ async function main() {
     authoritativeManifestSha256: options.manifest_sha256,
     databaseReads: 1 + productTruth.logicalReads,
     completedCases: completed,
+    quarantinedCases: quarantined,
     createdAt: createdAt.toISOString(),
     requestedSize: options.limit,
   });
@@ -342,6 +386,12 @@ async function main() {
       returns_90: item.performance.returns90,
       units_90: item.performance.units90,
       sales_90: item.performance.sales90,
+    })),
+    quarantined_items: pool.quarantinedItems.map((item) => ({
+      sku: item.sku,
+      item_id: item.itemId,
+      outcome: item.outcome,
+      next_action: item.nextAction,
     })),
     completed_listing_keys: pool.completedListingKeys,
     source_readiness: pool.sourceReadiness,

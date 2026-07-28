@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1140",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1140",
+    "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+    "upc": "684611898500",
+    "gtin14": "00684611898500",
+    "wpid": "57DE5FHWA6BT",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "8401770647",
+    "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_3458cbd1-a906-4aec-bf99-aacdca05cd0a.c5c2530c6f8b33eeb7ba35ebfb5bde63.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "c6cd75b0492c30967759963c7235b6579c7f4b45646c6cad52e8a364ed627743",
+    "catalog_search_payload_canonical_sha256": "b21bd9f50aa9564e9d59ff9abf1d9968e5f8c295999abf1e59ba0beb2f6c939a"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1140",
+    "seller.ItemResponse[0].sku=FaisalX-1140",
+    "seller.ItemResponse[0].upc=684611898500",
+    "seller.normalized_gtin14=00684611898500",
+    "seller.wpid_not_itemId=57DE5FHWA6BT",
+    "catalog.items[0].standardUpc~=00684611898500;itemId=8401770647",
+    "catalog.unique_numeric_public_itemId=8401770647"
+  ]
+}

@@ -9,10 +9,14 @@ import type {
 import {
   WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA,
   WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA,
+  WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_V1_SCHEMA,
   parseWalmartListingIntegrityCompletedCase,
   verifyWalmartListingIntegrityControlledPool,
   type WalmartListingIntegrityControlledPool,
 } from "./listing-integrity-operations";
+import {
+  walmartListingIntegrityCatalogSha256,
+} from "./listing-integrity-catalog-orchestrator";
 
 const DEFAULT_OPERATIONS_ROOT = path.join(
   process.cwd(),
@@ -47,7 +51,9 @@ function emptyState(): ListingIntegrityOperationsState {
     sourceCandidateCount: 0,
     repairReadyCount: 0,
     sourceRequiredCount: 0,
+    quarantinedCount: 0,
     completed: [],
+    quarantined: [],
     pool: [],
     sourceRequired: [],
   };
@@ -186,15 +192,60 @@ async function loadLatestPool(
     if (!/^[a-f0-9]{64}$/u.test(expectedSha) || expectedSha !== fileSha256) {
       throw new Error(`${jsonPath}: controlled pool exact-file SHA mismatch`);
     }
-    const decoded = JSON.parse(bytes.toString("utf8")) as { schemaVersion?: unknown };
-    if (decoded.schemaVersion === WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA) {
+    const decoded = JSON.parse(bytes.toString("utf8")) as {
+      schemaVersion?: unknown;
+      poolId?: unknown;
+      bodySha256?: unknown;
+      policy?: Record<string, unknown>;
+      sourceReadiness?: Record<string, unknown>;
+    };
+    if (decoded.schemaVersion
+      === WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_V1_SCHEMA) {
       continue;
     }
-    if (decoded.schemaVersion !== WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA) {
+    if (decoded.schemaVersion !== WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA
+      && decoded.schemaVersion !== WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA) {
       throw new Error(`${jsonPath}: unsupported controlled pool schema`);
     }
-    const pool = decoded as WalmartListingIntegrityControlledPool;
-    verifyWalmartListingIntegrityControlledPool(pool);
+    let pool: WalmartListingIntegrityControlledPool;
+    if (decoded.schemaVersion === WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA) {
+      const body = { ...decoded };
+      delete body.poolId;
+      delete body.bodySha256;
+      const rebuilt = walmartListingIntegrityCatalogSha256(body);
+      if (decoded.bodySha256 !== rebuilt
+        || decoded.poolId !== `controlled-pool-${rebuilt.slice(0, 20)}`
+        || decoded.policy?.mode !== "READ_ONLY_CONTROLLED_POOL"
+        || decoded.policy?.maxApplyInFlight !== 1
+        || decoded.policy?.walmartWritesAllowed !== false
+        || decoded.policy?.automaticRetryAllowed !== false) {
+        throw new Error(`${jsonPath}: legacy v2 pool seal or policy differs`);
+      }
+      pool = {
+        ...(decoded as unknown as Omit<
+          WalmartListingIntegrityControlledPool,
+          "schemaVersion" | "policy" | "quarantinedListingKeys"
+          | "quarantinedItems" | "sourceReadiness"
+        >),
+        schemaVersion: WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA,
+        policy: {
+          ...(decoded.policy as unknown as WalmartListingIntegrityControlledPool["policy"]),
+          terminalFailureMayQuarantineAndAdvance: true,
+        },
+        quarantinedListingKeys: [],
+        quarantinedItems: [],
+        sourceReadiness: {
+          ...(decoded.sourceReadiness as unknown as Omit<
+            WalmartListingIntegrityControlledPool["sourceReadiness"],
+            "quarantinedCount"
+          >),
+          quarantinedCount: 0,
+        },
+      };
+    } else {
+      pool = decoded as WalmartListingIntegrityControlledPool;
+      verifyWalmartListingIntegrityControlledPool(pool);
+    }
     candidates.push({
       pool,
       fileSha256,
@@ -237,7 +288,22 @@ export async function loadListingIntegrityOperationsState(
     sourceCandidateCount: selected.pool.sourceReadiness.candidateCount,
     repairReadyCount: selected.pool.sourceReadiness.repairReadyCount,
     sourceRequiredCount: selected.pool.sourceReadiness.sourceRequiredCount,
+    quarantinedCount: selected.pool.sourceReadiness.quarantinedCount,
     completed,
+    quarantined: selected.pool.quarantinedItems.map((item) => ({
+      listingKey: item.listingKey,
+      sku: item.sku,
+      itemId: item.itemId,
+      quarantinedAt: item.createdAt,
+      status: item.status,
+      outcome: item.outcome,
+      nextAction: item.nextAction,
+      listingRepairComplete: false as const,
+      samePayloadReapplyAllowed: false as const,
+      walmartWriteAuthorized: false as const,
+      dispositionBodySha256: item.dispositionBodySha256,
+      dispositionFileSha256: item.dispositionFileSha256,
+    })),
     pool: selected.pool.items.map((item) => ({
       ordinal: item.ordinal,
       listingKey: item.listingKey,

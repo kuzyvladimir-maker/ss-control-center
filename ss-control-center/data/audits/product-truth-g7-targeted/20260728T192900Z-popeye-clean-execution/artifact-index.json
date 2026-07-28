@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4416,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "33536df89895778b95b3385b04659925a5efbf711443787870fa43de3d7b0b31"
+    }
+  ],
+  "manifestSha256": "4354bfd082fdb5f58d9486fc3c2713af91bd43b3b5a2b133fbb83d287569cf7f",
+  "planSha256": "631707ab3014cbacdaf11eca991afa4275130a1e8f63dc27a81f627486db3c41",
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-popeye",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

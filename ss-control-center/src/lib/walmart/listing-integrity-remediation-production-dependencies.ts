@@ -10,6 +10,9 @@ import { createWalmartListingRepairArtifactCustody } from "./listing-integrity-r
 import { verifyWalmartListingRepairTargetImageCertificateBytes } from "./listing-integrity-remediation-image-certificate.ts";
 import { verifyWalmartListingRepairReviewedMainCertificateBytes } from "./listing-integrity-remediation-reviewed-main-certificate.ts";
 import {
+  verifyWalmartListingRepairReviewedImageSetCertificateBytes,
+} from "./listing-integrity-remediation-reviewed-image-set-certificate.ts";
+import {
   verifyWalmartListingRepairUnchangedImageCertificateBytes,
 } from "./listing-integrity-remediation-unchanged-image-certificate.ts";
 import { createWalmartListingRepairLedgerAdapter } from "./listing-integrity-remediation-ledger-adapter.ts";
@@ -250,20 +253,28 @@ export function createWalmartListingRepairProductionDependencies(
       const certificate = imagesChanged
         ? (() => {
           try {
-            return verifyWalmartListingRepairReviewedMainCertificateBytes({
+            return verifyWalmartListingRepairReviewedImageSetCertificateBytes({
               certificate_bytes,
               plan,
               at: now,
             });
-          } catch (reviewedMainError) {
+          } catch (reviewedImageSetError) {
             try {
-              return verifyWalmartListingRepairTargetImageCertificateBytes({
+              return verifyWalmartListingRepairReviewedMainCertificateBytes({
                 certificate_bytes,
                 plan,
                 at: now,
               });
             } catch {
-              throw reviewedMainError;
+              try {
+                return verifyWalmartListingRepairTargetImageCertificateBytes({
+                  certificate_bytes,
+                  plan,
+                  at: now,
+                });
+              } catch {
+                throw reviewedImageSetError;
+              }
             }
           }
         })()

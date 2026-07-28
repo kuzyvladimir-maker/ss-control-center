@@ -61,6 +61,7 @@ import {
   PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION,
+  TARGETED_WALMART_MAX_WALL_CLOCK_MS,
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalIdentityFromTarget,
   normalizeExactWalmartProductUrl,
@@ -83,7 +84,14 @@ import {
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REPORT_VERSION =
   "product-truth-targeted-walmart-evidence-report/1.0.0" as const;
 
-const LEASE_MS = 4 * 60 * 1_000;
+// The run/job lease must outlive the complete sealed invocation. A four-minute
+// lease could expire while the six-minute targeted wall-clock budget was still
+// valid, leaving a terminal evidence job behind a `running` run row during
+// report finalization. Keep a bounded two-minute reconciliation margin while
+// remaining below the operational store's ten-minute lease ceiling.
+export const PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS =
+  TARGETED_WALMART_MAX_WALL_CLOCK_MS + 2 * 60 * 1_000;
+const LEASE_MS = PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS;
 const JOB_SOURCE_PREFIX = "product-truth-targeted-walmart-evidence";
 const REQUESTED_FIELDS = ["content", "offers"] as const;
 

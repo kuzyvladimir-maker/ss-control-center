@@ -691,6 +691,20 @@ test("same-unit values are exact while cross-unit rounding tolerance is at most 
   assert.equal(outsideTolerance.verdict, "BAD");
 });
 
+test("equivalent multi-unit label accepts rounded metric beside exact oz and lb", () => {
+  const breadCase = caseWith({
+    package_facts: [
+      { kind: "net_content", value: 453.59237, unit: "g", requirement: "required" },
+    ],
+  });
+  const decision = decideBlind(breadCase, image, observation({
+    visible_size_texts: ["NET WT 16 OZ (1 LB) (454g)"],
+    inner_contents_claims: [],
+  }));
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.package_facts.net_content, "MATCH");
+});
+
 test("nutrition grams cannot become a package-size contradiction", () => {
   const breadCase = caseWith({
     package_facts: [

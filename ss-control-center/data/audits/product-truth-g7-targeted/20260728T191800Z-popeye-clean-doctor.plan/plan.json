@@ -1,0 +1,112 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "createdAt": "2026-07-28T19:19:09.421Z",
+  "engineReleaseSha256": "87347e3d575fe3d3ca913d708b3dd28a2a8b113d54f35e0f5fd4ec1579a4cdde",
+  "expiresAt": "2026-07-28T21:00:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-28T19:19:09.421Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "4354bfd082fdb5f58d9486fc3c2713af91bd43b3b5a2b133fbb83d287569cf7f"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-g7-targeted-clean-20260728T191800Z-popeye",
+  "schemaFingerprintSha256": "359de1c5f9732093730877f9d6ef5dde091fdb3630c59f6becadb5e2c026c6d7",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.3.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "0462e656c1ac34097f45997c55a5c952d7772a23522f06b36f9c767f8be289f9",
+  "targets": [
+    {
+      "canonicalIdentityHash": "f8c5609042ed37df2bb5d75efd784fd0edfb9766d71c79d4a49dea4c12bef570",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"popeye\",\"productLine\":\"can leaf spinach\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":382.7185621875,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:f8c5609042ed37df2bb5d75efd784fd0edfb9766d71c79d4a49dea4c12bef570",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": null,
+      "decisionEvidenceJson": null,
+      "decisionStatus": null,
+      "donorIdentityStatus": "legacy_unverified",
+      "donorOfferId": "do:walmart:10312200",
+      "donorProductId": "cc0c7f6f-c607-456b-8b46-272d835b2133",
+      "donorSnapshotSha256": "4354bfd082fdb5f58d9486fc3c2713af91bd43b3b5a2b133fbb83d287569cf7f",
+      "identityDerivationVersion": "product-truth-targeted-walmart-identity-derivation/1.0.0",
+      "identityMode": "EVIDENCE_VERIFIED_BOOTSTRAP",
+      "isFirstParty": true,
+      "legacySnapshot": {
+        "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-03T18:44:01.034Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"cc0c7f6f-c607-456b-8b46-272d835b2133\",\n  \"fetchedAt\": \"2026-07-09T02:37:53.304Z\",\n  \"id\": \"do:walmart:10312200\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 1.74,\n  \"pricePerUnit\": 1.74,\n  \"productUrl\": \"https://www.walmart.com/ip/Popeye-Leaf-Spinach-13-5-oz/10312200?classType=VARIANT\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"10312200\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-09T02:37:53.304Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+        "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"name\\\":\\\"Brand\\\",\\\"value\\\":\\\"Popeye Spinach\\\"},{\\\"name\\\":\\\"Vegetable type\\\",\\\"value\\\":\\\"Spinach\\\"},{\\\"name\\\":\\\"Flavor\\\",\\\"value\\\":\\\"Unseasoned\\\"},{\\\"name\\\":\\\"Size\\\",\\\"value\\\":\\\"13.5 fl oz\\\"},{\\\"name\\\":\\\"Net content statement\\\",\\\"value\\\":\\\"13.5 oz (383g)\\\"},{\\\"name\\\":\\\"Container type\\\",\\\"value\\\":\\\"Can\\\"},{\\\"name\\\":\\\"Food form\\\",\\\"value\\\":\\\"Bites\\\"},{\\\"name\\\":\\\"Spice level\\\",\\\"value\\\":\\\"No Spice\\\"},{\\\"name\\\":\\\"Texture\\\",\\\"value\\\":\\\"Solid\\\"},{\\\"name\\\":\\\"Cuisine\\\",\\\"value\\\":\\\"Southern Style\\\"},{\\\"name\\\":\\\"Pack quantity\\\",\\\"value\\\":\\\"1\\\"},{\\\"name\\\":\\\"Material\\\",\\\"value\\\":\\\"Glass\\\"},{\\\"name\\\":\\\"Shelf life\\\",\\\"value\\\":\\\"365\\\"},{\\\"name\\\":\\\"Food condition\\\",\\\"value\\\":\\\"Shelf-Stable\\\"},{\\\"name\\\":\\\"Product net content uom\\\",\\\"value\\\":\\\"Ounce\\\"},{\\\"name\\\":\\\"Product net content parent\\\",\\\"value\\\":\\\"13.5 Ounces\\\"},{\\\"name\\\":\\\"Weight\\\",\\\"value\\\":\\\"0.8437 POUNDS\\\"}]\",\n  \"bestPrice\": 1.74,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Popeye\",\n  \"bullets\": \"[\\\"One 13.5 oz. can of Allens Popeye Spinach\\\",\\\"Farm fresh, high quality spinach grown by hardworking farmers\\\",\\\"Vitamin-rich canned greens pack valuable nutrients into meal time\\\",\\\"Gluten free greens have no cholesterol or saturated fat\\\",\\\"Ready to eat—simply heat on the stove top or in the microwave\\\",\\\"Makes a great side dish on its own and an ideal ingredient in your favorite Southern recipes\\\",\\\"Popeye's canned vegetables are an easy and affordable way to pack valuable nutrients into mealtime\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-03T18:44:01.034Z\",\n  \"currency\": \"USD\",\n  \"description\": \"Allens Popeye Spinach packages the highest-quality spinach, grown from hardworking and trustworthy farmers to deliver only the best for you. This canned spinach comes ready for you to season your way for a nutritious and delicious dish just for you. Ready to heat and eat, canned farm fresh spinach makes a delicious side dish without wasting even a minute. No washing or cooking required. Vitamin-rich greens are also made without saturated fat or cholesterol, making them an ideal, all-natural option for Southern style dinners. Whether you're making main dishes or traditional dinner sides, canned spinach leaves are the perfect accompaniment to a traditional Southern meal and an ideal ingredient in your favorite casseroles, soups and stews. Use these gluten free greens to make quick garlic spinach, creamy spinach sauce, or cheesy spinach dip. Allens Popeye canned vegetables help bring something delicious and nutritious to the dinner table.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"cc0c7f6f-c607-456b-8b46-272d835b2133\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"popeye|leaf|spinach|can|13 5 oz\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://i5.walmartimages.com/seo/Popeye-Leaf-Spinach-13-5-oz_e0923cbc-1706-4508-8967-45dacaa59172.423f5dfc7b8b241d6dc9ca5f4f3ed5b9.jpeg\\\",\\\"https://i5.walmartimages.com/asr/b0c3620e-1385-40a5-b4a4-450b5fa5ebbb.3a1c6ac2ab8ae9e63f9ad722e652a05c.jpeg\\\",\\\"https://i5.walmartimages.com/asr/84cbbd2a-6697-49ad-b925-8870e4e19bca.a45add6e60f9502d1ffc78f6ea125117.jpeg\\\",\\\"https://i5.walmartimages.com/asr/468fd0f5-a352-40d0-a5f6-147c5f973c15.f9eb291159a3959841098a5930ac8deb.jpeg\\\",\\\"https://i5.walmartimages.com/asr/9a4fed50-5b78-42f5-85ad-bd8323123aaf.b6630c026b293375a27147c65bb8f4fc.jpeg\\\",\\\"https://i5.walmartimages.com/asr/34d21694-6ff5-4d3c-b9dc-37e8103345bb.97e16d6fa71de67ff8ccfcb0d15e5413.jpeg\\\"]\",\n  \"ingredients\": \"Spinach, Water, Salt.\",\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/Popeye-Leaf-Spinach-13-5-oz_e0923cbc-1706-4508-8967-45dacaa59172.423f5dfc7b8b241d6dc9ca5f4f3ed5b9.jpeg\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": null,\n  \"pricePerMeasure\": 0.129,\n  \"productLine\": null,\n  \"size\": \"13.5 oz\",\n  \"title\": \"Popeye Leaf Spinach, 13.5 oz., Can\",\n  \"unitAmount\": 13.5,\n  \"unitMeasure\": \"oz\",\n  \"upc\": \"034700065106\",\n  \"updatedAt\": \"2026-07-09T02:37:53.304Z\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+        "sha256": "a94ae40f6a7aa932b1417f6c2519969c8ed5786034ba3ac68939cc61850f59a2"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10312200",
+      "ordinal": 0,
+      "query": "Popeye Leaf Spinach 13.5 oz Can",
+      "retailer": "walmart",
+      "retailerProductId": "10312200",
+      "variantDecisionId": null,
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "approvalId": "owner-pt-g7-turnkey-v3-20260728t185655z",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "counts": {
+    "terminal_gap": 5
+  },
+  "environment": "production",
+  "generatedAt": "2026-07-28T19:01:31.159Z",
+  "items": [
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T18:58:17.276Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-1315",
+      "ordinal": 0,
+      "queueJobId": "6a631793-4dc5-442c-be5e-bc83a8aa492f",
+      "resultSha256": "49d4f7b6b8ebe8237c5f2b336c308d9c25e623535c706884f61307d4dc24ef05",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T18:59:01.049Z",
+      "lastError": null,
+      "listingKey": "walmart:1:RizwanX-3481",
+      "ordinal": 1,
+      "queueJobId": "35c1870c-11c1-409c-8e57-35f70053943a",
+      "resultSha256": "4d38838f167b02c8d41d0be9a8b48634d44946bee602ef984e30887a8f7d5780",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T18:59:43.796Z",
+      "lastError": null,
+      "listingKey": "walmart:1:RizwanX-3499",
+      "ordinal": 2,
+      "queueJobId": "262e8a77-6235-4f34-bc7d-e2c6a2ed0d51",
+      "resultSha256": "f98be1787397169fbc375687ef07d10ce23bf35e862095d321c5b317174afc49",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T19:00:30.135Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-2195",
+      "ordinal": 3,
+      "queueJobId": "48747c16-a347-4a00-9d9b-f851aa2b6cf2",
+      "resultSha256": "08dd0dff060f2dcb585b448ac3cde68ec44b73817e881809bc8d20165728771e",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-28T19:01:31.159Z",
+      "lastError": null,
+      "listingKey": "walmart:1:RizwanX-3237",
+      "ordinal": 4,
+      "queueJobId": "8ea0baf9-5349-40fe-a27a-18b3184a46f9",
+      "resultSha256": "9615e57bd19d78ca65b6e932dbc73d6f9dca94a66af9597cfd4173bb1f860ef4",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    }
+  ],
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_0f6ca38ec21d4e7e1d5b42bf204452f6c6cdc4a57a17caa7a7233c62ddf56c76",
+        "createdAt": "2026-07-28T18:57:55.584Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_5fbd95cb1e0e74ffa2eb86fcca67f1ceb8ceeeeda9dde3b0977524aaeb3fb15d",
+        "reservationKey": "mpr_v1_50c5f05348ed432c07e74ffc670c56fbcbd76c2fea497711b627ecf271b4429d",
+        "reservedAt": "2026-07-28T18:57:55.584Z",
+        "settledAt": "2026-07-28T18:58:04.775Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_0f6ca38ec21d4e7e1d5b42bf204452f6c6cdc4a57a17caa7a7233c62ddf56c76",
+        "createdAt": "2026-07-28T18:58:39.849Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_49a4008ab062faa558d5231df2573874c01bedee75f9bb73aa235a22efb5a0a9",
+        "reservationKey": "mpr_v1_c4fdbcc85682f0a5cdeb21864519d3431072e9c37e5d4a3285b81b6d0bd88783",
+        "reservedAt": "2026-07-28T18:58:39.849Z",
+        "settledAt": "2026-07-28T18:58:48.565Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_0f6ca38ec21d4e7e1d5b42bf204452f6c6cdc4a57a17caa7a7233c62ddf56c76",
+        "createdAt": "2026-07-28T18:59:21.434Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_7c7c2fc6fa570081a0ce8dff32b41439c8883b965a9a747e75a49027185a2534",
+        "reservationKey": "mpr_v1_367010f68eeaaeea255ae03573fa81e584fb811f7801abf5e908d76e580acbea",
+        "reservedAt": "2026-07-28T18:59:21.434Z",
+        "settledAt": "2026-07-28T18:59:31.959Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_0f6ca38ec21d4e7e1d5b42bf204452f6c6cdc4a57a17caa7a7233c62ddf56c76",
+        "createdAt": "2026-07-28T19:00:04.488Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_d6c296fab01c92db052742d358cea4a95b99691ee5e30e50e68fadff0f29d2d5",
+        "reservationKey": "mpr_v1_402761ff29a569fb05da97b3dc4331f2c234c11531a2224e7104adca074ab5b7",
+        "reservedAt": "2026-07-28T19:00:04.488Z",
+        "settledAt": "2026-07-28T19:00:14.390Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_0f6ca38ec21d4e7e1d5b42bf204452f6c6cdc4a57a17caa7a7233c62ddf56c76",
+        "createdAt": "2026-07-28T19:00:56.303Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_9aa90bdd9f5e00cd6d1a37bb4a0c91e49be568f7ed9930c9e46b424b2eb648ba",
+        "reservationKey": "mpr_v1_c9cf71ee67fe11ae08dc48b601f9ddd65e469bdb8bb784dfdf6459e352bc3685",
+        "reservedAt": "2026-07-28T19:00:56.303Z",
+        "settledAt": "2026-07-28T19:01:14.425Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "pt-g7-canary-20260728T185508Z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 5,
+          "units": 5
+        }
+      },
+      "calls": 5,
+      "units": 5
+    }
+  },
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "mode": "CANARY",
+  "outcome": "COMPLETED_WITH_GAPS",
+  "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+  "resultContractVersion": "product-truth-operational-result/1.0.0",
+  "runId": "pt-g7-canary-20260728T185508Z",
+  "runnerVersion": "product-truth-operational-runner/1.0.0",
+  "schemaVersion": "product-truth-operational-report/1.0.0",
+  "targetSetSha256": "e651217dbbc2783b3460dd15b2fd854ce68aeb27094eaccfc9fb23a2269c94a8"
+}
