@@ -9,7 +9,8 @@
 
 export const WALMART_CANONICAL_OPERATOR_MESSAGE =
   "Walmart new SKU creation uses the canonical Bundle Factory Walmart pilot workflow. " +
-  "Run the verified `npm run walmart:new-sku -- ...` engine through Claude Code.";
+  "This web request does not start the verified `npm run walmart:new-sku -- ...` engine automatically; " +
+  "Claude Code must execute its exact operator workflow.";
 
 export type StudioChannelRoute =
   | "LEGACY_STUDIO_ALLOWED"

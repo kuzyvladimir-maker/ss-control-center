@@ -1,6 +1,6 @@
 # Walmart New SKU — execution board
 
-> **Статус:** active implementation board, обновлено 2026-07-27.
+> **Статус:** active implementation board, обновлено 2026-07-28.
 >
 > **Канон:** [[product-catalog-architecture]]. Операторский workflow:
 > [[walmart-new-sku-operator-runbook]]. Product Truth prerequisites:
@@ -97,6 +97,47 @@ UPC reservations текущих staged artifacts истекают
 правит JSON и не выбирает UPC вручную; он запускает новый v32 doctor и следует exact
 recovery `next_command`. `rotate-upc` разрешён только после доказанного
 `MP_ITEM_MATCH`.
+
+## Production incident — 2026-07-28, Campbell's 5 × 8
+
+- ✅ **Выполнение: exact request найден.** Production `GenerationJob`
+  `cms4q03ni003v04lc00uy293y` содержит owner prompt на пять Campbell's canned-soup
+  listings по восемь банок, store 1 / SIRIUS и active free `Default Template`.
+  Запрос не потерялся.
+- ✅ **Выполнение: root cause доказан.** Старый Studio API не извлекал количество из
+  plain-language prompt, молча записывал default `listing_count=2`, создавал
+  `PENDING / WALMART_REQUEST_READY` и останавливался. Result page при этом назывался
+  `Building listings`, хотя frozen engine не запускался. Это UI/orchestration defect,
+  а не ошибка владельца.
+- ✅ **Выполнение: fail-closed исправление.** Добавлен deterministic RU/EN parser
+  `listing_count`/`pack_count`, conflict check между prompt и structured fields,
+  HTTP `422` для scope вне verified release и отдельный Walmart scope block в UI.
+  Запрос `5 листингов / по 8 банок` теперь сохраняется как exact `5 × 8` intent и
+  получает два понятных blocker; его запрещено заменять на `2 × 2` или создавать как
+  ложную running job.
+- ✅ **Выполнение: честный web status.** Кнопка текущего pilot называется
+  `Prepare Walmart request`; success page прямо сообщает, что inputs записаны, но
+  generation не стартовала и Walmart publication равна `0`. До отдельного
+  default-OFF web→worker bridge Command Center не выдаёт web-session за исполнение
+  frozen operator CLI.
+- ✅ **Выполнение: regression.** Exact русский Campbell's test, structured/prompt
+  conflict tests, supported-pilot test, targeted ESLint и полный Next production
+  build прошли.
+- ⛔ **Product Truth readiness для exact owner intent.** В production донорском
+  каталоге найдены ровно пять Campbell's canned-soup variants с
+  `identityStatus=exact_confirmed`, exact content и 7–12 изображениями: Tomato,
+  Cream of Chicken, Golden Mushroom, Heart Healthy Cream of Mushroom и Chunky
+  Chicken Pot Pie. Но у всех пяти отсутствуют свежие append-only
+  `DonorOfferObservation` с canonical variant binding; текущие materialized offers
+  датированы 2026-07-10/11 и не являются свежим 24-hour price evidence. Frozen v32
+  также разрешает только pack 2/3 и максимум два SKU. Legacy `bestPrice` не может
+  быть подменён под current FACT.
+- ⬜ **Следующая отдельная реализация.** Для реального Campbell's `5 × 8` нужен новый
+  post-pilot release: targeted fresh price evidence по пяти exact variants,
+  arbitrary homogeneous pack count `8`, bounded five-candidate plan, пять
+  count-accurate image previews, новый regression/frozen release и затем обычные
+  certification/owner gates. Это расширение не включено молча в v32 и не выполняет
+  Walmart write.
 
 ## Правило статусов
 

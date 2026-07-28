@@ -21,6 +21,9 @@ import {
   WalmartShippingTemplateSelector,
   type WalmartShippingSelection,
 } from "@/components/bundle-factory/WalmartShippingTemplateSelector";
+import {
+  resolveWalmartStudioRequestIntent,
+} from "@/lib/bundle-factory/walmart-studio-request";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 
@@ -75,6 +78,7 @@ export default function StudioStartPage() {
   const [flavorsError, setFlavorsError] = useState<string | null>(null);
   const [selectedFlavors, setSelectedFlavors] = useState<Set<string>>(new Set());
   const [listingCount, setListingCount] = useState("");
+  const [packCount, setPackCount] = useState("");
 
   async function loadFlavors() {
     const theme = prompt.trim();
@@ -126,9 +130,33 @@ export default function StudioStartPage() {
       walmartShipping != null &&
       walmartShipping.template_status === "ACTIVE"
     );
+  const structuredListingCount =
+    /^\d+$/.test(listingCount) && Number(listingCount) >= 1
+      ? Number(listingCount)
+      : null;
+  const structuredPackCount =
+    /^\d+$/.test(packCount) && Number(packCount) >= 1
+      ? Number(packCount)
+      : null;
+  const walmartRequest =
+    channel === "WALMART"
+      ? resolveWalmartStudioRequestIntent({
+          prompt,
+          listingCount: structuredListingCount,
+          packCount: structuredPackCount,
+        })
+      : null;
+  const walmartFieldsValid =
+    channel !== "WALMART" ||
+    (
+      (listingCount === "" || structuredListingCount != null) &&
+      (packCount === "" || structuredPackCount != null) &&
+      walmartRequest?.blockers.length === 0
+    );
   const canGenerate =
     prompt.trim().length > 0 &&
     walmartShippingReady &&
+    walmartFieldsValid &&
     !submitting;
 
   async function onGenerate() {
@@ -175,6 +203,9 @@ export default function StudioStartPage() {
             : {}),
           ...(listingCount && Number(listingCount) >= 1
             ? { listing_count: Number(listingCount) }
+            : {}),
+          ...(channel === "WALMART" && packCount && Number(packCount) >= 1
+            ? { pack_count: Number(packCount) }
             : {}),
         }),
       });
@@ -310,7 +341,8 @@ export default function StudioStartPage() {
                 })}
               </div>
 
-              <div className="mt-3 flex items-center gap-3">
+              {channel !== "WALMART" && (
+                <div className="mt-3 flex items-center gap-3">
                 <label className="text-[12.5px] font-medium text-ink-2">Listings to create</label>
                 <input
                   type="number"
@@ -327,6 +359,7 @@ export default function StudioStartPage() {
                     : "no flavors selected — the engine uses all it finds"}
                 </span>
               </div>
+              )}
             </>
           )}
         </div>
@@ -351,10 +384,79 @@ export default function StudioStartPage() {
         </div>
 
         {channel === "WALMART" && (
-          <WalmartShippingTemplateSelector
-            value={walmartShipping}
-            onChange={setWalmartShipping}
-          />
+          <>
+            <div className="rounded-[12px] border border-rule bg-surface px-3.5 py-3.5">
+              <div className="text-[13px] font-semibold text-ink">
+                Walmart request scope
+              </div>
+              <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
+                The current verified pilot can prepare 1–2 listings with 2 or
+                3 identical units in each listing. Values written in the
+                prompt are detected automatically and are never silently
+                replaced.
+              </p>
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="text-[12.5px] font-medium text-ink-2">
+                  Listings to create
+                  <input
+                    type="number"
+                    min={1}
+                    max={2}
+                    value={listingCount}
+                    onChange={(e) => setListingCount(e.target.value)}
+                    placeholder={
+                      walmartRequest?.prompt_listing_count != null
+                        ? String(walmartRequest.prompt_listing_count)
+                        : "2"
+                    }
+                    className="mt-1.5 block w-full rounded-[10px] border border-rule bg-surface px-2.5 py-2 text-[13px] text-ink outline-none focus:border-silver-line"
+                  />
+                </label>
+                <label className="text-[12.5px] font-medium text-ink-2">
+                  Units in each listing
+                  <input
+                    type="number"
+                    min={2}
+                    max={3}
+                    value={packCount}
+                    onChange={(e) => setPackCount(e.target.value)}
+                    placeholder={
+                      walmartRequest?.prompt_pack_count != null
+                        ? String(walmartRequest.prompt_pack_count)
+                        : "2"
+                    }
+                    className="mt-1.5 block w-full rounded-[10px] border border-rule bg-surface px-2.5 py-2 text-[13px] text-ink outline-none focus:border-silver-line"
+                  />
+                </label>
+              </div>
+
+              {walmartRequest && walmartRequest.blockers.length > 0 ? (
+                <div className="mt-3 space-y-1.5 rounded-[10px] border border-danger/20 bg-danger-tint px-3 py-2.5 text-[12px] leading-relaxed text-danger">
+                  {walmartRequest.blockers.map((blocker) => (
+                    <p key={blocker.code}>{blocker.message}</p>
+                  ))}
+                  <p className="font-semibold">
+                    No request will be started or changed to different numbers.
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 text-[12px] text-ink-3">
+                  Request that will be recorded:{" "}
+                  <span className="font-medium text-ink">
+                    {walmartRequest?.listing_count ?? 2} listing
+                    {(walmartRequest?.listing_count ?? 2) === 1 ? "" : "s"} ·
+                    pack of {walmartRequest?.pack_count ?? 2}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            <WalmartShippingTemplateSelector
+              value={walmartShipping}
+              onChange={setWalmartShipping}
+            />
+          </>
         )}
 
         {/* ADVANCED — only what the operator might want to tune: brand, model, photos, margin. */}
@@ -455,12 +557,18 @@ export default function StudioStartPage() {
 
         <div className="flex items-center gap-3 pt-1">
           <Btn variant="primary" size="md" onClick={onGenerate} disabled={!canGenerate} loading={submitting} icon={<Sparkles size={15} strokeWidth={1.9} />}>
-            Generate listings
+            {channel === "WALMART"
+              ? "Prepare Walmart request"
+              : "Generate listings"}
           </Btn>
           <span className="text-[12px] text-ink-3">
             {channel === "WALMART" && !walmartShippingReady
               ? "Select an active Walmart shipping template first."
-              : "Nothing publishes until you approve the batch."}
+              : channel === "WALMART" && !walmartFieldsValid
+                ? "Correct the Walmart scope shown above."
+                : channel === "WALMART"
+                  ? "This records the request; generation does not start automatically."
+                  : "Nothing publishes until you approve the batch."}
           </span>
         </div>
       </div>

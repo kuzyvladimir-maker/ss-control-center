@@ -31,6 +31,9 @@ import {
   getWalmartClient,
   getWalmartStoreStatus,
 } from "@/lib/walmart";
+import {
+  resolveWalmartStudioRequestIntent,
+} from "@/lib/bundle-factory/walmart-studio-request";
 
 export const dynamic = "force-dynamic";
 
@@ -90,17 +93,33 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
     }
     listingCount = rawCount;
   }
-  if (
-    channel === "WALMART" &&
-    listingCount != null &&
-    listingCount > 2
-  ) {
-    return badRequest(
-      "The current owner-gated Walmart pilot allows 1–2 SKU per request.",
-    );
+  let packCount: number | null = null;
+  if (body.pack_count !== undefined && body.pack_count !== null) {
+    const rawCount = Number(body.pack_count);
+    if (!Number.isInteger(rawCount) || rawCount < 1 || rawCount > 500) {
+      return badRequest("pack_count must be a whole number from 1 to 500.");
+    }
+    packCount = rawCount;
   }
 
   if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED") {
+    const intent = resolveWalmartStudioRequestIntent({
+      prompt,
+      listingCount,
+      packCount,
+    });
+    if (intent.blockers.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "This Walmart request cannot run in the currently verified pilot. " +
+            intent.blockers.map((blocker) => blocker.message).join(" "),
+          code: "WALMART_REQUEST_OUTSIDE_VERIFIED_PILOT",
+          walmart_request: intent,
+        },
+        { status: 422 },
+      );
+    }
     const selected =
       body.walmart_shipping &&
         typeof body.walmart_shipping === "object" &&
@@ -173,12 +192,17 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
       );
     }
     const batchRequest = {
-      studio_version: 3,
+      studio_version: 4,
       workflow: "CANONICAL_WALMART_NEW_SKU",
       source: "prompt",
       prompt,
       channel,
-      listing_count: listingCount ?? 2,
+      listing_count: intent.listing_count,
+      pack_count: intent.pack_count,
+      prompt_intent: {
+        listing_count: intent.prompt_listing_count,
+        pack_count: intent.prompt_pack_count,
+      },
       target_margin_pct: targetMarginPct ?? 30,
       photo_strategy: "reuse-donor",
       walmart_shipping: {
@@ -191,7 +215,7 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         engine: "npm run walmart:new-sku",
         marketplace_mutation_authorized: false,
         next_step:
-          "Claude Code follows docs/wiki/walmart-new-sku-operator-runbook.md and the engine's exact next_command.",
+          "Generation has not started. Claude Code follows docs/wiki/walmart-new-sku-operator-runbook.md and the engine's exact next_command.",
       },
     };
     const job = await prisma.generationJob.create({
@@ -199,14 +223,16 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         brief: JSON.stringify(batchRequest),
         current_stage: "WALMART_REQUEST_READY",
         status: "PENDING",
-        bundles_target: listingCount ?? 2,
+        bundles_target: intent.listing_count,
         user_id: "user",
         notes: JSON.stringify({
           progress: {
             status: "PENDING",
             phase: "walmart-owner-request",
-            step: WALMART_CANONICAL_OPERATOR_MESSAGE,
-            total: listingCount ?? 2,
+            step:
+              "Request recorded; generation has not started. " +
+              WALMART_CANONICAL_OPERATOR_MESSAGE,
+            total: intent.listing_count,
             done: 0,
             failed: 0,
             done_flag: false,

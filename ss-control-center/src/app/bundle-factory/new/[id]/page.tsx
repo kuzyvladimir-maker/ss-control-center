@@ -63,12 +63,20 @@ export default async function StudioBatchPage({
       !Array.isArray(walmartShipping.template)
       ? walmartShipping.template as Record<string, unknown>
       : null;
+  const listingCount =
+    typeof req.listing_count === "number" ? req.listing_count : null;
+  const packCount =
+    typeof req.pack_count === "number" ? req.pack_count : null;
 
   return (
     <>
       <PageHead
-        title="Building listings"
-        subtitle={<span>The algorithm is creating your batch. Watch it below — nothing publishes until you approve.</span>}
+        title={isCanonicalWalmart ? "Walmart request prepared" : "Building listings"}
+        subtitle={
+          isCanonicalWalmart
+            ? <span>Inputs were recorded exactly. Generation has not started and nothing has been published.</span>
+            : <span>The algorithm is creating your batch. Watch it below — nothing publishes until you approve.</span>
+        }
       />
 
       <Link
@@ -93,14 +101,22 @@ export default async function StudioBatchPage({
         {isCanonicalWalmart ? (
           <div className="rounded-[14px] border border-rule bg-surface p-5">
             <div className="text-[13.5px] font-semibold text-ink">
-              Walmart request is ready for the canonical engine
+              Request recorded — generation has not started
             </div>
             <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
-              Nothing has been published. Claude Code can now execute the
-              sealed Walmart workflow; every step remains visible and stops
-              before live publication until the owner gate.
+              The Command Center currently records this request for the sealed
+              Walmart workflow; it does not run that workflow automatically.
+              Claude Code must execute the exact operator steps. Nothing has
+              been published.
             </p>
             <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
+              <div>
+                Requested output:{" "}
+                <span className="font-medium text-ink">
+                  {listingCount == null ? "—" : `${listingCount} listing${listingCount === 1 ? "" : "s"}`}
+                  {packCount == null ? "" : ` · pack of ${packCount}`}
+                </span>
+              </div>
               <div>
                 Account:{" "}
                 <span className="font-medium text-ink">
