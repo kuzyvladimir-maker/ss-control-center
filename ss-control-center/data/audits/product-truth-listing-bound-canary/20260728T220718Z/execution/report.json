@@ -1,0 +1,111 @@
+{
+  "approvalId": "owner-pt-listing-bound-canary-20260728t232827z",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:7069f19ce150f115b4bf4badfba0600826af3e1da8f0e4aa901f79b220125bce",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 1,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "LISTING_BOUND_BOOTSTRAP",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": true,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 1
+  },
+  "donorOfferId": "do:walmart:10452831",
+  "donorProductId": "c8b542f1-ed9b-45c5-883c-dcf9e00944ea",
+  "generatedAt": "2026-07-28T23:32:36.556Z",
+  "job": {
+    "approvalId": "owner-pt-listing-bound-canary-20260728t232827z",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": null,
+      "detailReceiptId": null,
+      "identityMode": "LISTING_BOUND_BOOTSTRAP",
+      "planSha256": "4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d",
+      "priceObservationId": "doo:d829e33f372bf9d610b61793b70df547ae47838a6355c5ae621a67391a90d3b3",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_54dc0c714aa64e9585ff4bad02e1db24dee290488d64a6ba7d4671611bf3d59b",
+      "stage": "SEARCH_PERSISTED",
+      "variantDecisionId": "dpvd-exact:0b7aabf3d8740b8eb53d4793cdadb1419785debcd64d209ad99b5db58d2db30a"
+    },
+    "error": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+    "id": "ptej_c0fe7f21efc87322f9deef3636bae909a9aa171e48b900b3ac514b7a45729fda",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+    },
+    "runId": "pt-listing-bound-canary-20260728t220718z",
+    "status": "error",
+    "terminalReason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_b96bcd7f56520cacbc1f24003ce1076b4b98effd10355a99a7c85cf3d1b184fa",
+        "createdAt": "2026-07-28T23:29:38.704Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_54dc0c714aa64e9585ff4bad02e1db24dee290488d64a6ba7d4671611bf3d59b",
+        "reservationKey": "mpr_v1_acdd379d2c61d1da1518a597776bdb523732bc3478a80e458e97fbd51468013e",
+        "reservedAt": "2026-07-28T23:29:38.704Z",
+        "settledAt": "2026-07-28T23:29:47.237Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_b47e552231aa6d22cc68dbcb78feb5f97c6c1313372bf9f983df1f6f28096797",
+        "createdAt": "2026-07-28T23:31:49.052Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_aa0fae34dea1be09a75896c3672bd6fefb06f4e9a5c63daf23e18a179daccc8f",
+        "reservationKey": "mpr_v1_2e1909ac8da59042ebd95303bf3c8aa1b3c38de420906b9c5ee8eae3dd454754",
+        "reservedAt": "2026-07-28T23:31:49.052Z",
+        "settledAt": "2026-07-28T23:31:56.285Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-listing-bound-canary-20260728t220718z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d",
+  "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.0.0",
+  "retailerProductId": "10452831",
+  "runId": "pt-listing-bound-canary-20260728t220718z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

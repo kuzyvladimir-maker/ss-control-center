@@ -413,6 +413,85 @@ test("listing-bound bootstrap prevents a second ID caused by field partition dri
   );
 });
 
+test("listing-bound bootstrap rejects one donor referenced by conflicting listing identities", () => {
+  const donorProductRow = {
+    id: "donor-acme",
+    brand: "Acme",
+    title: "Acme Potato Chips Original Bag, 8 oz",
+  };
+  const selectedScope = {
+    listingKey: "walmart:1:SKU-A",
+    channel: "walmart",
+    storeIndex: 1,
+    sku: "SKU-A",
+  };
+  const selectedShipping = {
+    sku: "SKU-A",
+    productIdentity: JSON.stringify({
+      brand: "Acme",
+      product_line: "Potato Chips",
+      flavor: "Original",
+      container_type: "Bag",
+      size: "8 oz",
+      is_bundle: false,
+      units_in_listing: 1,
+    }),
+  };
+  const selectedComponent = {
+    id: "component-a",
+    sku: "SKU-A",
+    idx: 0,
+    donorProductId: "donor-acme",
+    contentDonorProductId: null,
+  };
+  const conflictingScope = {
+    listingKey: "walmart:1:SKU-B",
+    channel: "walmart",
+    storeIndex: 1,
+    sku: "SKU-B",
+  };
+  const conflictingShipping = {
+    sku: "SKU-B",
+    productIdentity: JSON.stringify({
+      brand: "Acme",
+      product_line: "Potato Chips Original",
+      flavor: null,
+      container_type: "Bag",
+      size: "8 oz",
+      is_bundle: false,
+      units_in_listing: 1,
+    }),
+  };
+  const conflictingComponent = {
+    id: "component-b",
+    sku: "SKU-B",
+    idx: 0,
+    donorProductId: "donor-acme",
+    contentDonorProductId: null,
+  };
+  assert.throws(
+    () => buildProductTruthTargetedWalmartListingBinding({
+      listingScopeRow: selectedScope,
+      shippingRow: selectedShipping,
+      componentRow: selectedComponent,
+      donorProductRow,
+      donorGraphRows: [
+        {
+          listingScopeRow: conflictingScope,
+          shippingRow: conflictingShipping,
+          componentRow: conflictingComponent,
+        },
+        {
+          listingScopeRow: selectedScope,
+          shippingRow: selectedShipping,
+          componentRow: selectedComponent,
+        },
+      ],
+    }),
+    /TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_VARIANT_CONFLICT/,
+  );
+});
+
 test("listing-bound title proof preserves original multi-word brand order", () => {
   const snapshot = listingBoundBootstrapSnapshot({
     brand: "Pepperidge Farm",

@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4402,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "8d2a420c0c683edf81d1d7b7b630a31ec8990ef999ac574d76018183d629cd71"
+    }
+  ],
+  "manifestSha256": "fb3727e6cb097c9764442533c7fb082d3f4bd3c8c2e06b1a8577d295a511c2ed",
+  "planSha256": "4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d",
+  "runId": "pt-listing-bound-canary-20260728t220718z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

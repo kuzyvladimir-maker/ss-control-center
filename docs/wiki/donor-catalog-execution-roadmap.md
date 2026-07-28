@@ -741,8 +741,11 @@ G7 закончен как диагностический production canary, н�
   flavor/form/productLine/size/multi-word brand;
 - ✅ выпустить и повторно сертифицировать clean frozen release;
 - ✅ провести новый read-only production `doctor → plan` на frozen release;
-- ⛔ выполнить single-SKU provider canary после exact money gate;
-- ⬜ после успешного bridge postcheck вернуться к bounded Phase 1 waves.
+- ✅ выполнить single-SKU provider canary после exact money gate;
+- ✅ выполнить fresh full-denominator bridge postcheck;
+- 🔄 выпустить contract `1.5.0` с same-donor graph guard и выбрать новый
+  collision-free candidate read-only;
+- ⬜ после успешного successor canary вернуться к bounded Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
 
@@ -760,6 +763,14 @@ G7 закончен как диагностический production canary, н�
   clean-checkout certification `512/512`;
 - ✅ production read-only plan `4e8524d7332c…` sealed для одного untouched
   listing-bound candidate, provider calls/DB writes `0`;
-- ⛔ provider canary остаётся ровно один SKU / no retry и ожидает один exact
-  owner-money gate: combined maximum `6` units (`2.5` balance probe + `3.5`
-  working run); следующая wave закрыта до fresh bridge postcheck.
+- ✅ provider canary consumed combined `6` units (`2.5` balance probe + `3.5`
+  working run), retry `0`; terminal outcome
+  `UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`, неполный detail не стал
+  content truth;
+- ✅ postcheck `77c7cc9a…ffd5c` выявил, что тот же donor обслуживает два листинга
+  с разной legacy field partition, поэтому single-listing binding недостаточен;
+- ✅ request/plan `1.5.0` и listing binding `1.1.0` теперь byte-exact seals весь
+  authoritative same-donor graph и блокирует mismatch до spend; TypeScript,
+  unit `15/15`, integration `12/12`, полный suite `514/514`;
+- 🔄 готовится clean release и новый read-only collision-free preflight;
+  terminal canary не replay.

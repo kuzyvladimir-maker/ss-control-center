@@ -446,6 +446,8 @@ unsettled receipts и integrity blockers. Readiness plan не применяет
 ```bash
 npm run product-truth -- doctor \
   --donor-product-id <EXACT_DONOR_PRODUCT_ID> \
+  --listing-key <EXACT_LISTING_KEY> \
+  --component-index <EXACT_COMPONENT_INDEX> \
   --query '<EXACT_QUERY_FOR_THIS_VARIANT>' \
   --run-id <NEW_EXACT_RUN_ID> \
   --expires-at <CANONICAL_ISO_UTC_NOT_MORE_THAN_24H> \
@@ -461,9 +463,16 @@ release и exact donor graph. Допустим только один direct firs
 `sellerName=Walmart.com`, numeric item ID и тем же нормализованным URL; pre-existing
 detail-harvest lifecycle блокирует новый план.
 
-Для `EXISTING_EXACT` команда переиспользует подтверждённый alias. Для eligible legacy
-donor она в режиме `EVIDENCE_VERIFIED_BOOTSTRAP` сама выводит conservative identity
-из sealed donor bytes. В обоих случаях команда записывает
+`--listing-key` и `--component-index` передаются парой для legacy bootstrap; для
+`EXISTING_EXACT` они не нужны. Existing exact команда переиспользует подтверждённый
+alias. Новый legacy bootstrap использует только
+`LISTING_BOUND_BOOTSTRAP` contract `1.5.0`: target identity выводится из exact
+authoritative listing component, а strict donor title является независимым
+доказательством. Binding `1.1.0` дополнительно seals все текущие authoritative
+Walmart scope/shipping/component rows, ссылающиеся на тот же donor. Разные derived
+variant IDs во всём donor graph блокируют doctor до provider boundary; старый
+unbound `EVIDENCE_VERIFIED_BOOTSTRAP` не выпускает исполняемый plan. В обоих
+допустимых режимах команда записывает
 `request.json`/`request.sha256` и выдаёт exact `next_argv` для plan. Любой
 `--canonical-identity` отклоняется как retired input. Claude Code не редактирует
 request и дальше использует только emitted `next_argv`.
@@ -510,8 +519,9 @@ npm run product-truth -- plan \
 exact DB donor/offer bytes, отсутствие detail-harvest lifecycle, target/schema/
 migration/release bindings и делает ноль provider calls/DB writes. Он также создаёт
 `plan.json`, `plan.sha256` и `approval-instructions.json`. Для
-`EVIDENCE_VERIFIED_BOOTSTRAP` instructions явно фиксируют machine-derived identity и
-обязательное свежее exact Walmart evidence до canonical write. Owner approval
+`LISTING_BOUND_BOOTSTRAP` instructions явно фиксируют machine-derived listing
+identity, byte-bound same-donor graph и обязательное свежее exact Walmart evidence
+до canonical write. Owner approval
 разрешает только exact metered plan. Plan нельзя исполнять без отдельного metered
 approval, exact Oxylabs/Unwrangle permit, fresh Unwrangle balance evidence и exact
 confirmation.
@@ -557,7 +567,8 @@ npm run product-truth -- execute \
 ```
 
 Перед первым paid call runner ещё раз проверяет frozen release, schema/migration set,
-DB fingerprint, exact donor graph, owner approval/permit/balance, expiry и отсутствующий
+DB fingerprint, exact donor/authoritative-listing graph,
+owner approval/permit/balance, expiry и отсутствующий
 harvest lifecycle. В bootstrap fresh exact search обязан пройти раньше любого canonical
 write; transactional scope guard не позволяет выйти за один sealed donor/offer/
 variant/decision. Любой incomplete/wrong-variant/non-local/3P outcome завершается

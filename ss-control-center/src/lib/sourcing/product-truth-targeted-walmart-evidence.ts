@@ -798,6 +798,18 @@ export async function readTargetedWalmartListingBoundDonorSnapshot(
       `expected one exact legacy component; found ${componentRows.rows.length}`,
     );
   }
+  const graphComponentRows = await db.execute({
+    sql: `SELECT * FROM "SkuComponent"
+          WHERE contentDonorProductId=? OR donorProductId=?
+          ORDER BY sku,idx,id`,
+    args: [input.donorProductId, input.donorProductId],
+  });
+  if (graphComponentRows.rows.length === 0) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+      "listing-bound donor has no authoritative legacy component graph",
+    );
+  }
   const product = canonicalDbRow(products.rows[0] as Record<string, unknown>);
   const offer = canonicalDbRow(offers.rows[0] as Record<string, unknown>);
   const shipping = canonicalDbRow(
@@ -806,6 +818,46 @@ export async function readTargetedWalmartListingBoundDonorSnapshot(
   const component = canonicalDbRow(
     componentRows.rows[0] as Record<string, unknown>,
   );
+  const donorGraphRows: Array<{
+    listingScopeRow: Record<string, unknown>;
+    shippingRow: Record<string, unknown>;
+    componentRow: Record<string, unknown>;
+  }> = [];
+  for (const rawGraphComponent of graphComponentRows.rows) {
+    const graphComponent = canonicalDbRow(
+      rawGraphComponent as Record<string, unknown>,
+    );
+    const graphSku = String(graphComponent.sku ?? "");
+    const graphScopes = await db.execute({
+      sql: `SELECT * FROM "ProductTruthListingScope"
+            WHERE sku=? AND channel='walmart'
+            ORDER BY listingKey`,
+      args: [graphSku],
+    });
+    if (graphScopes.rows.length === 0) continue;
+    const graphShippingRows = await db.execute({
+      sql: `SELECT * FROM "SkuShippingData" WHERE sku=? ORDER BY sku`,
+      args: [graphSku],
+    });
+    if (graphShippingRows.rows.length !== 1) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+        `expected one SkuShippingData row for graph SKU ${graphSku}; found ${graphShippingRows.rows.length}`,
+      );
+    }
+    const graphShipping = canonicalDbRow(
+      graphShippingRows.rows[0] as Record<string, unknown>,
+    );
+    for (const rawGraphScope of graphScopes.rows) {
+      donorGraphRows.push({
+        listingScopeRow: canonicalDbRow(
+          rawGraphScope as Record<string, unknown>,
+        ),
+        shippingRow: graphShipping,
+        componentRow: graphComponent,
+      });
+    }
+  }
   const canonical = deriveProductTruthTargetedWalmartListingCanonicalIdentity({
     listingScopeRow: scope,
     shippingRow: shipping,
@@ -864,6 +916,7 @@ export async function readTargetedWalmartListingBoundDonorSnapshot(
       shippingRow: shipping,
       componentRow: component,
       donorProductRow: product,
+      donorGraphRows,
     }),
   });
 }

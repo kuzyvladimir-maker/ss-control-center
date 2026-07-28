@@ -1048,7 +1048,7 @@ export async function seedProductTruthTargetedEvidenceControlRun(
   db: Client,
   input: {
     plan: {
-      schemaVersion: "product-truth-targeted-walmart-evidence-plan/1.4.0";
+      schemaVersion: "product-truth-targeted-walmart-evidence-plan/1.5.0";
       runId: string;
       mode: "WAVE";
       targetFingerprint: string;
@@ -2537,6 +2537,7 @@ export async function reapExpiredProductTruthTargetedEvidenceRun(
     if (![
       "product-truth-targeted-walmart-evidence-plan/1.3.0",
       "product-truth-targeted-walmart-evidence-plan/1.4.0",
+      "product-truth-targeted-walmart-evidence-plan/1.5.0",
     ].includes(run.planSchemaVersion)) {
       throw storeError(
         "OPERATIONAL_RUN_KIND_MISMATCH",

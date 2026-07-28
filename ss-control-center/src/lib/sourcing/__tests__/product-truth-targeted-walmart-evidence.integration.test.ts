@@ -50,6 +50,7 @@ import {
   buildProductTruthTargetedWalmartEvidencePlan,
   buildProductTruthTargetedWalmartEvidenceRequest,
   validateProductTruthTargetedWalmartEvidenceApproval,
+  type ProductTruthTargetedWalmartDonorSnapshot,
   type ProductTruthTargetedWalmartEvidencePlan,
   type ProductTruthTargetedWalmartEvidencePlanRequest,
 } from "../product-truth-targeted-walmart-evidence-contract";
@@ -318,6 +319,7 @@ async function createFixture(input: {
   runId: string;
   initialAt?: string;
   planExpiresAt?: string;
+  conflictingDonorGraph?: boolean;
 }): Promise<Fixture> {
   const directory = await mkdtemp(join(tmpdir(), "targeted-walmart-evidence-integration-"));
   scratchDirectories.add(directory);
@@ -370,6 +372,16 @@ async function createFixture(input: {
           VALUES (?,?,0,'Acme Potato Chips','Original','8 oz',1,?)`,
     args: [`component-${input.runId}`, sku, donorProductId],
   });
+  const conflictingSku = `${sku}-CONFLICT`;
+  const conflictingListingKey = `walmart:1:${conflictingSku}`;
+  if (input.conflictingDonorGraph) {
+    await db.execute({
+      sql: `INSERT INTO "SkuComponent"
+            (id,sku,idx,product,flavor,size,qty,donorProductId)
+            VALUES (?,?,0,'Acme Potato Chips Original',NULL,'8 oz',1,?)`,
+      args: [`component-${input.runId}-conflict`, conflictingSku, donorProductId],
+    });
+  }
 
   for (const migrationUrl of migrationUrls) {
     await db.executeMultiple(await readFile(migrationUrl, "utf8"));
@@ -395,11 +407,37 @@ async function createFixture(input: {
       units_in_listing: 1,
     })],
   });
-  const snapshot = await readTargetedWalmartListingBoundDonorSnapshot(db, {
-    donorProductId,
-    listingKey,
-    componentIndex: 0,
-  });
+  if (input.conflictingDonorGraph) {
+    await db.execute({
+      sql: `INSERT INTO "ProductTruthListingScope"
+            (listingKey,keyVersion,channel,storeIndex,sku,manifestSha256)
+            VALUES (?,'product-truth-listing-key/1.0.0','walmart',1,?,?)`,
+      args: [conflictingListingKey, conflictingSku, "e".repeat(64)],
+    });
+    await db.execute({
+      sql: `INSERT INTO "SkuShippingData"(sku,productIdentity) VALUES (?,?)`,
+      args: [conflictingSku, JSON.stringify({
+        brand: "Acme",
+        product_line: "Potato Chips Original",
+        flavor: null,
+        container_type: "Bag",
+        size: "8 oz",
+        is_bundle: false,
+        units_in_listing: 1,
+      })],
+    });
+  }
+  let snapshot: ProductTruthTargetedWalmartDonorSnapshot;
+  try {
+    snapshot = await readTargetedWalmartListingBoundDonorSnapshot(db, {
+      donorProductId,
+      listingKey,
+      componentIndex: 0,
+    });
+  } catch (error) {
+    db.close();
+    throw error;
+  }
   const request = buildProductTruthTargetedWalmartEvidenceRequest({
     runId: input.runId,
     createdAt,
@@ -693,6 +731,16 @@ async function scalarCount(db: Client, table: string, where = ""): Promise<numbe
 }
 
 describe("targeted Walmart evidence executor integration", { concurrency: false }, () => {
+  test("doctor capture rejects a conflicting same-donor listing graph before provider work", async () => {
+    await assert.rejects(
+      () => createFixture({
+        runId: "targeted-conflicting-donor-graph",
+        conflictingDonorGraph: true,
+      }),
+      /TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_VARIANT_CONFLICT/,
+    );
+  });
+
   test("bootstrap deadline after price persistence resumes with detail only and no paid replay", async () => {
     const fixture = await createFixture({ runId: "targeted-bootstrap-crash" });
     try {

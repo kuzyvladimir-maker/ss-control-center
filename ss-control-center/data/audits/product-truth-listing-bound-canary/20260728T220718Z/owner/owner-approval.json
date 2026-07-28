@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "owner-pt-listing-bound-canary-20260728t232827z",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99670,
+      "evidenceSha256": "c90105afc0bc0db29c028784ef3b34739f25525fa7468bc34002f1a73f784f12",
+      "observedAt": "2026-07-28T23:28:16.595Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T00:15:00.000Z",
+  "issuedAt": "2026-07-28T23:28:27.000Z",
+  "meteredPermit": {
+    "approvalId": "owner-pt-listing-bound-canary-20260728t232827z",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T00:15:00.000Z",
+    "issuedAt": "2026-07-28T23:28:27.000Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-listing-bound-canary-20260728t220718z",
+    "version": 1
+  },
+  "planSha256": "4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d",
+  "runId": "pt-listing-bound-canary-20260728t220718z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

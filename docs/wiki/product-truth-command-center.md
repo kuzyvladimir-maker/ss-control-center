@@ -825,8 +825,18 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [x] ✅ Повторный production `doctor → plan` для untouched
   `walmart:1:FaisalX-1177` прошёл read-only: `0` provider calls, `0` DB writes;
   listing-bound plan SHA `4e8524d7332c…`.
-- [ ] ⛔ Один no-retry provider canary ожидает единственный exact owner-money
-  gate из `product-truth-owner-gates.md`: fresh Unwrangle balance probe `2.5`
-  units + рабочий ceiling `3.5`, combined maximum `6`.
-- [ ] ⬜ После успешного canary — обязательный
-  fresh bridge postcheck до любой следующей wave.
+- [x] ✅ Exact owner-money gate consumed один раз: fresh balance probe `2.5`
+  units + working run `3.5`, retry `0`, cumulative `6`.
+- [x] ✅ Canary terminal fail-closed:
+  `AMBIGUOUS / UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`. Search
+  сохранил exact price/decision evidence; неполный detail не стал content truth.
+- [x] ✅ Fresh bridge postcheck `77c7cc9a…ffd5c` выполнен read-only и выявил
+  same-donor graph conflict между `FaisalX-1176` и `FaisalX-1177`; aggregate
+  остаётся `20 canonical / 71 identity-only / 5844 quarantine`.
+- [x] ✅ Contract `1.5.0` теперь seals весь authoritative same-donor listing
+  graph и блокирует разные derived variant IDs до provider boundary.
+  TypeScript PASS; unit `15/15`; integration `12/12`; полный suite `514/514`.
+- [ ] 🔄 Выпустить clean frozen release `1.5.0` и read-only выбрать новый
+  untouched collision-free donor graph.
+- [ ] ⬜ Новый paid canary возможен только для нового sealed plan; terminal
+  `4e8524d7…a05d` никогда не replay.

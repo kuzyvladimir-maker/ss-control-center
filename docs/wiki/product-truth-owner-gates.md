@@ -35,7 +35,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `AWAITING_LISTING_BOUND_CANARY_APPROVAL` | Старый G7 закрыт closeout-артефактом. Новый listing-bound plan `4e8524d7…a05d` прошёл clean release и read-only production preflight; нужен один exact money gate на fresh balance probe + one-SKU no-retry run |
+| G7. Provider canary / paid wave | `CANARY_CONSUMED_GRAPH_FIX_LOCAL` | Listing-bound plan `4e8524d7…a05d` выполнен один раз без retry; outcome `AMBIGUOUS` выявил same-donor multi-listing identity conflict. Contract `1.5.0` исправлен и локально сертифицирован `514/514`; следующего paid gate пока нет |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -826,7 +826,39 @@ Required exact owner decision:
 
 `APPROVE_PRODUCT_TRUTH_LISTING_BOUND_CANARY_V1:a5debaf7540e94f19bd0cac3f95548e94c862dd0:4e8524d7332c562980aa7199e3f98cd797bdf731cdd4c04522867a734603a05d:pt-listing-bound-canary-20260728t220718z:1_LISTING:OXYLABS_1_QUERY_CALL_1_UNIT:UNWRANGLE_BALANCE_PROBE_1_TARGET_SEARCH_CALL_2.5_UNITS:UNWRANGLE_1_DETAIL_CALL_2.5_UNITS:COMBINED_6_MAX_PROVIDER_UNITS:15000_UNWRANGLE_RESERVE_FLOOR:NO_RETRY:NO_CLUBS:NO_BJS:NO_MARKETPLACE_MUTATIONS:NO_PRICE_OR_INVENTORY_CHANGES:NO_DELISTING:NO_CONSUMER_ACTIVATION:NO_PROCUREMENT`
 
-До exact ответа владельца balance probe и provider run не выполняются. Это один
-money gate, а не серия технических разрешений. После его consumption следующий
-обязательный шаг — fresh canonical bridge postcheck; разрешение не переносится на
-другой SKU или paid wave.
+Владелец ответил на этот exact gate требованием продолжать без искусственных
+остановок. Gate consumed только в перечисленных границах:
+
+- balance probe: HTTP `200`, `2.5` units, balance `99670`, evidence SHA-256
+  `c90105afc0bc0db29c028784ef3b34739f25525fa7468bc34002f1a73f784f12`;
+- working run: Oxylabs `1` call / `1` unit, Unwrangle `1` call / `2.5` units,
+  retry `0`;
+- result: `AMBIGUOUS /
+  UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`;
+- exact price observation и variant decision сохранены, content observation
+  отсутствует; provider response не был выдан за полный content truth;
+- report SHA-256:
+  `8d2a420c0c683edf81d1d7b7b630a31ec8990ef999ac574d76018183d629cd71`;
+- artifact-index SHA-256:
+  `28bf4110d6ed9e096fcb15457497a9e0c1944fde2e89d8c04120677d8a604357`;
+- marketplace/listing/price/inventory/delist/consumer/procurement actions:
+  `0`.
+
+Fresh read-only full-denominator postcheck, source SHA
+`1798a7b0…fbe49`, plan SHA `77c7cc9a…ffd5c`, сохранил aggregate counts:
+`20` already canonical, `71` identity-only, `5844` quarantine. Он доказал
+следующий дефект: тот же donor привязан также к `walmart:1:FaisalX-1176`, но
+старые listing identities выводят разные variant IDs (`loaf/Seeded` против
+`bag/Seeded Rye`). Run terminal и никогда не replay.
+
+### Same-donor graph guard v1.5 — local status
+
+Request/plan подняты до `1.5.0`, listing binding до `1.1.0`. Новый bootstrap
+byte-exact seals все текущие authoritative Walmart listing scope/shipping/
+component rows, ссылающиеся на donor. Если их independently derived variant IDs
+не совпадают, `doctor` останавливается с
+`TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_VARIANT_CONFLICT` до provider boundary.
+TypeScript = `PASS`; unit `15/15`; integration `12/12`; полный Product Truth
+suite `514/514`. Это исправление выполнило `0` дополнительных provider calls и
+`0` production writes. Следующие шаги: clean frozen release и выбор нового
+untouched collision-free donor graph только через read-only `doctor`.

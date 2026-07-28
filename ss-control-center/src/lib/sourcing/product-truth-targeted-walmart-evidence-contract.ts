@@ -30,9 +30,9 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION =
-  "product-truth-targeted-walmart-evidence-request/1.4.0" as const;
+  "product-truth-targeted-walmart-evidence-request/1.5.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION =
-  "product-truth-targeted-walmart-evidence-plan/1.4.0" as const;
+  "product-truth-targeted-walmart-evidence-plan/1.5.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION =
   "product-truth-targeted-walmart-evidence-scope/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION =
@@ -51,7 +51,7 @@ export const PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION =
   "product-truth-targeted-walmart-identity-derivation/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION =
-  "product-truth-targeted-walmart-listing-binding/1.0.0" as const;
+  "product-truth-targeted-walmart-listing-binding/1.1.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION =
   "product-truth-targeted-walmart-listing-identity-derivation/1.0.0" as const;
 
@@ -73,7 +73,25 @@ export interface ProductTruthTargetedWalmartListingBinding {
   listingScopeRowJson: string;
   shippingRowJson: string;
   componentRowJson: string;
+  donorGraph: readonly ProductTruthTargetedWalmartListingGraphEntry[];
+  donorGraphSha256: string;
   sha256: string;
+}
+
+export interface ProductTruthTargetedWalmartListingGraphEntry {
+  listingKey: string;
+  componentIndex: number;
+  legacyComponentId: string;
+  canonicalVariantId: string;
+  listingScopeRowJson: string;
+  shippingRowJson: string;
+  componentRowJson: string;
+}
+
+export interface ProductTruthTargetedWalmartListingGraphInput {
+  listingScopeRow: Record<string, unknown>;
+  shippingRow: Record<string, unknown>;
+  componentRow: Record<string, unknown>;
 }
 
 interface ProductTruthTargetedWalmartDonorSnapshotBase {
@@ -690,6 +708,7 @@ export function buildProductTruthTargetedWalmartListingBinding(input: {
   shippingRow: Record<string, unknown>;
   componentRow: Record<string, unknown>;
   donorProductRow: Record<string, unknown>;
+  donorGraphRows?: readonly ProductTruthTargetedWalmartListingGraphInput[];
 }): ProductTruthTargetedWalmartListingBinding {
   const listingScopeRowJson = renderProductTruthOperationalJson(input.listingScopeRow);
   const shippingRowJson = renderProductTruthOperationalJson(input.shippingRow);
@@ -726,7 +745,118 @@ export function buildProductTruthTargetedWalmartListingBinding(input: {
   }
   // Run the strict derivation now so a binding can never seal rows that are
   // structurally valid but identity-incompatible.
-  deriveProductTruthTargetedWalmartListingCanonicalIdentity(input);
+  const selectedCanonical =
+    deriveProductTruthTargetedWalmartListingCanonicalIdentity(input);
+  const donorProductId = requiredRowText(
+    input.donorProductRow,
+    "id",
+    "donorProductRow",
+  );
+  const donorGraphInputs = input.donorGraphRows ?? [{
+    listingScopeRow: input.listingScopeRow,
+    shippingRow: input.shippingRow,
+    componentRow: input.componentRow,
+  }];
+  if (!donorGraphInputs.length || donorGraphInputs.length > 100) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+      "listing-bound donor graph must contain 1-100 authoritative components",
+    );
+  }
+  const donorGraph = donorGraphInputs.map(
+    (entry): ProductTruthTargetedWalmartListingGraphEntry => {
+      const graphListingScopeRowJson =
+        renderProductTruthOperationalJson(entry.listingScopeRow);
+      const graphShippingRowJson =
+        renderProductTruthOperationalJson(entry.shippingRow);
+      const graphComponentRowJson =
+        renderProductTruthOperationalJson(entry.componentRow);
+      const graphListingKey = requiredRowText(
+        entry.listingScopeRow,
+        "listingKey",
+        "listingScopeRow",
+      );
+      const graphSku = requiredRowText(
+        entry.listingScopeRow,
+        "sku",
+        "listingScopeRow",
+      );
+      const graphComponentIndex = Number(entry.componentRow.idx);
+      const graphLegacyComponentId = requiredRowText(
+        entry.componentRow,
+        "id",
+        "componentRow",
+      );
+      const linkedDonors = [...new Set(
+        [entry.componentRow.contentDonorProductId, entry.componentRow.donorProductId]
+          .filter((value): value is string =>
+            typeof value === "string" && Boolean(value)),
+      )];
+      if (
+        entry.listingScopeRow.channel !== "walmart"
+        || entry.shippingRow.sku !== graphSku
+        || entry.componentRow.sku !== graphSku
+        || !Number.isSafeInteger(graphComponentIndex)
+        || graphComponentIndex < 0
+        || linkedDonors.length !== 1
+        || linkedDonors[0] !== donorProductId
+      ) {
+        fail(
+          "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+          `graph entry ${graphListingKey}:${graphComponentIndex} does not prove the exact donor`,
+        );
+      }
+      const canonical =
+        deriveProductTruthTargetedWalmartListingCanonicalIdentity({
+          listingScopeRow: entry.listingScopeRow,
+          shippingRow: entry.shippingRow,
+          componentRow: entry.componentRow,
+          donorProductRow: input.donorProductRow,
+        });
+      if (canonical.canonicalVariantId !== selectedCanonical.canonicalVariantId) {
+        fail(
+          "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_VARIANT_CONFLICT",
+          [
+            `DonorProduct ${donorProductId} is referenced by`,
+            `${graphListingKey}:${graphComponentIndex}`,
+            `as ${canonical.canonicalVariantId}`,
+            `instead of ${selectedCanonical.canonicalVariantId}`,
+          ].join(" "),
+        );
+      }
+      return {
+        listingKey: graphListingKey,
+        componentIndex: graphComponentIndex,
+        legacyComponentId: graphLegacyComponentId,
+        canonicalVariantId: canonical.canonicalVariantId,
+        listingScopeRowJson: graphListingScopeRowJson,
+        shippingRowJson: graphShippingRowJson,
+        componentRowJson: graphComponentRowJson,
+      };
+    },
+  ).sort((left, right) =>
+    left.listingKey.localeCompare(right.listingKey)
+    || left.componentIndex - right.componentIndex
+    || left.legacyComponentId.localeCompare(right.legacyComponentId));
+  const graphKeys = donorGraph.map(
+    (entry) =>
+      `${entry.listingKey}:${entry.componentIndex}:${entry.legacyComponentId}`,
+  );
+  if (
+    new Set(graphKeys).size !== graphKeys.length
+    || donorGraph.filter(
+      (entry) =>
+        entry.listingKey === listingKey
+        && entry.componentIndex === componentIndex
+        && entry.legacyComponentId === legacyComponentId,
+    ).length !== 1
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+      "listing-bound donor graph must contain the selected component exactly once",
+    );
+  }
+  const donorGraphSha256 = productTruthOperationalSha256(donorGraph);
   return {
     schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION,
     listingKey,
@@ -738,10 +868,13 @@ export function buildProductTruthTargetedWalmartListingBinding(input: {
     listingScopeRowJson,
     shippingRowJson,
     componentRowJson,
+    donorGraph,
+    donorGraphSha256,
     sha256: productTruthOperationalSha256({
       listingScopeRowJson,
       shippingRowJson,
       componentRowJson,
+      donorGraphSha256,
     }),
   };
 }
@@ -763,7 +896,8 @@ function parseListingBinding(
   exactKeys(value, [
     "schemaVersion", "listingKey", "channel", "storeIndex", "sku",
     "componentIndex", "legacyComponentId", "listingScopeRowJson",
-    "shippingRowJson", "componentRowJson", "sha256",
+    "shippingRowJson", "componentRowJson", "donorGraph",
+    "donorGraphSha256", "sha256",
   ], "listingBinding");
   if (
     value.schemaVersion !== PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION
@@ -801,6 +935,74 @@ function parseListingBinding(
     [component.row.contentDonorProductId, component.row.donorProductId]
       .filter((entry): entry is string => typeof entry === "string" && Boolean(entry)),
   )];
+  if (!Array.isArray(value.donorGraph)) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+      "listingBinding.donorGraph must be an array",
+    );
+  }
+  const donorGraphRows = value.donorGraph.map((entry, index) => {
+    if (!isRecord(entry)) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+        `listingBinding.donorGraph[${index}] must be an object`,
+      );
+    }
+    exactKeys(entry, [
+      "listingKey", "componentIndex", "legacyComponentId",
+      "canonicalVariantId", "listingScopeRowJson", "shippingRowJson",
+      "componentRowJson",
+    ], `listingBinding.donorGraph[${index}]`);
+    const graphScope = canonicalBoundRowJson(
+      entry.listingScopeRowJson,
+      `listingBinding.donorGraph[${index}].listingScopeRowJson`,
+    );
+    const graphShipping = canonicalBoundRowJson(
+      entry.shippingRowJson,
+      `listingBinding.donorGraph[${index}].shippingRowJson`,
+    );
+    const graphComponent = canonicalBoundRowJson(
+      entry.componentRowJson,
+      `listingBinding.donorGraph[${index}].componentRowJson`,
+    );
+    const graphListingKey = safeId(
+      entry.listingKey,
+      `listingBinding.donorGraph[${index}].listingKey`,
+    );
+    const graphComponentIndex = finiteNonNegative(
+      entry.componentIndex,
+      `listingBinding.donorGraph[${index}].componentIndex`,
+    );
+    const graphLegacyComponentId = safeId(
+      entry.legacyComponentId,
+      `listingBinding.donorGraph[${index}].legacyComponentId`,
+    );
+    const graphCanonicalVariantId = safeId(
+      entry.canonicalVariantId,
+      `listingBinding.donorGraph[${index}].canonicalVariantId`,
+    );
+    if (
+      !Number.isSafeInteger(graphComponentIndex)
+      || graphScope.row.listingKey !== graphListingKey
+      || Number(graphComponent.row.idx) !== graphComponentIndex
+      || graphComponent.row.id !== graphLegacyComponentId
+      || graphCanonicalVariantId !== canonicalVariantId
+    ) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+        `listingBinding.donorGraph[${index}] scalar fields differ from sealed rows`,
+      );
+    }
+    return {
+      listingScopeRow: graphScope.row,
+      shippingRow: graphShipping.row,
+      componentRow: graphComponent.row,
+    };
+  });
+  const donorGraphSha256 = exactSha(
+    value.donorGraphSha256,
+    "listingBinding.donorGraphSha256",
+  );
   const digest = exactSha(value.sha256, "listingBinding.sha256");
   if (
     !Number.isSafeInteger(storeIndex)
@@ -817,10 +1019,12 @@ function parseListingBinding(
     || component.row.id !== legacyComponentId
     || linkedDonors.length !== 1
     || linkedDonors[0] !== donorProductId
+    || donorGraphSha256 !== productTruthOperationalSha256(value.donorGraph)
     || digest !== productTruthOperationalSha256({
       listingScopeRowJson: scope.text,
       shippingRowJson: shipping.text,
       componentRowJson: component.text,
+      donorGraphSha256,
     })
   ) {
     fail(
@@ -844,19 +1048,23 @@ function parseListingBinding(
       "listing-derived variant differs from the donor snapshot target",
     );
   }
-  return {
-    schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION,
-    listingKey,
-    channel: "walmart",
-    storeIndex,
-    sku,
-    componentIndex,
-    legacyComponentId,
-    listingScopeRowJson: scope.text,
-    shippingRowJson: shipping.text,
-    componentRowJson: component.text,
-    sha256: digest,
-  };
+  const rebuilt = buildProductTruthTargetedWalmartListingBinding({
+    listingScopeRow: scope.row,
+    shippingRow: shipping.row,
+    componentRow: component.row,
+    donorProductRow,
+    donorGraphRows,
+  });
+  if (
+    renderProductTruthOperationalJson(rebuilt)
+      !== renderProductTruthOperationalJson(value)
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
+      "listing-bound donor graph bytes or digests differ from the rebuilt graph",
+    );
+  }
+  return rebuilt;
 }
 
 export function parseProductTruthTargetedWalmartDonorSnapshot(
