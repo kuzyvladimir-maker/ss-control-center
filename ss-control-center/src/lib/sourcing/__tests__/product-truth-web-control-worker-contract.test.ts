@@ -140,6 +140,25 @@ test("worker canonicalizes its temporary artifact root before invoking the stric
   );
 });
 
+test("worker verifies runner artifacts with the canonical Product Truth renderer", async () => {
+  const contract = await readFile(
+    new URL("../product-truth-web-control-worker-contract.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    contract,
+    /text !== renderProductTruthOperationalJson\(request\)/u,
+  );
+  assert.match(
+    contract,
+    /text !== renderProductTruthOperationalJson\(plan\)/u,
+  );
+  assert.doesNotMatch(
+    contract,
+    /text !== `\$\{JSON\.stringify\((?:request|plan)\)\}\\n`/u,
+  );
+});
+
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {
   const proxy = await readFile(
     new URL("../../../proxy.ts", import.meta.url),
