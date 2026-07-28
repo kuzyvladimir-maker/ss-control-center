@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-27.
+> **Статус:** живой decision ledger, сверено 2026-07-28.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -27,7 +27,7 @@
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
-| G2b. Bundle Factory no-spend web bridge | `AWAITING_EXACT_OWNER_APPROVAL` | Production служебная migration и bounded `doctor → plan` activation |
+| G2b. Bundle Factory no-spend web bridge | `CONSUMED_2026-07-28` | Bounded production `doctor → plan` активирован; metered execution остаётся закрыт |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
 | G5a. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified |
@@ -172,20 +172,36 @@ paid spend или marketplace actions.
 
 ## G2b — Bundle Factory bounded no-spend web bridge
 
-### Уже доказано
+### Consumed evidence 2026-07-28
 
-- clean release commit `8178f5194c149e473dddcb2ddfa9a2e15282a91f`,
-  tree `f4cc943349e69ba721d989315abf1900506d7d08`, executable SHA-256
-  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+- финальный clean release
+  `product-truth-web-control-2026-07-28-r5`: commit
+  `80348398a1124c6bc74573a886f20ee0987916de`, tree
+  `0580fa702a593c9dfee8ccfc0dfe1e748f41d212`, executable SHA-256
+  `e9b76f36f6d67c266041d9cb6f301f468a996d0166180cff317b8e8c2d5d9b9b`;
 - migration SHA-256
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
-- Product Truth `508/508`, Bundle Factory UI/route `2/2`, TypeScript, focused
-  ESLint и production build = `PASS`;
-- Vercel deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` = `Ready`, но runtime
-  `OFF`;
-- read-only production preflight: все три control tables отсутствуют,
-  activation env отсутствует;
-- provider calls, Product Truth business writes и Walmart actions = `0`.
+- Stage A применён к exact production target
+  `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`;
+  control schema содержит command/artifact/event custody, а Product Truth
+  business tables не менялись;
+- authoritative manifest
+  `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`;
+- Product Truth `512/512`, TypeScript, focused ESLint и production build =
+  `PASS`;
+- production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` = `Ready` и
+  назначен на `salutemsolutions.info`;
+- отдельный launchd worker активен из clean pinned checkout; pre/post claim
+  вернул HTTP `200` и `claim:null`;
+- финальный Bundle Factory Campbell's batch
+  `ptbfw-cdc58a911597fd5e37e6afac`: `5/5 DOCTOR SUCCEEDED`,
+  `5/5 RUN_PLAN SUCCEEDED`, общий статус `AWAITING_OWNER`;
+- provider calls, metered execution, Product Truth business writes и
+  Walmart/marketplace actions = `0`.
+
+Калибровочные releases r1–r4 выявили и закрыли canonical temp-path,
+operational-JSON и heartbeat/event-chain races. Их незавершённые control
+commands сохранены как immutable evidence, не replay и не переносятся в r5.
 
 ### Точная граница
 

@@ -1,7 +1,7 @@
 # Product Truth Control Center — план постоянного внедрения
 
 > **Статус:** active implementation board, owner direction 2026-07-19; сверено
-> 2026-07-27.
+> 2026-07-28.
 >
 > **Верхний канон:** [[product-catalog-architecture]]. Порядок бизнес-gates:
 > [[donor-catalog-execution-roadmap]]. Operator safety:
@@ -688,13 +688,21 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
   Product Truth readiness. Продолжение Walmart Generate допустимо только при
   `enough_ready=true` и отсутствии отдельного engine capability gap.
 
-### 🔄 Фаза BF-W2 — Web→worker implementation
+### ✅ Фаза BF-W2 — Web→worker no-spend production activation
 
 - [x] strict batch/job contracts и deterministic idempotency;
 - [x] append-only command/artifact/event admission поверх Stage A custody;
 - [x] separately authenticated, allowlisted, `shell:false` no-spend worker;
 - [x] Bundle Factory launch/status UI и readiness recheck;
-- [x] offline/local certification без provider calls, production DB writes или
-  Walmart actions: Product Truth `506/506`, targeted integration/safety
-  `51/51`, UI route `2/2`, TypeScript, focused ESLint и production build =
-  `PASS`; provider calls, production writes и Walmart actions = `0`.
+- [x] final clean release
+  `product-truth-web-control-2026-07-28-r5`,
+  commit `80348398a1124c6bc74573a886f20ee0987916de`, Product Truth
+  `512/512`, TypeScript, focused ESLint и production build = `PASS`;
+- [x] production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` = `Ready`,
+  runtime `PRODUCTION_READ_ONLY`, pinned launchd worker active;
+- [x] Campbell's E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
+  `AWAITING_OWNER`; provider calls, metered execution, Product Truth business
+  writes и Walmart actions = `0`;
+- [x] heartbeat/completion race закрыта сериализацией in-flight heartbeat;
+  r1–r4 calibration commands сохранены без replay как immutable evidence.

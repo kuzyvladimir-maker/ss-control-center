@@ -733,7 +733,7 @@ track и больше не обозначается blocker текущего Wal
   требуется.
 - Live Walmart new SKU создано: `0`.
 
-## 🔄 Bundle Factory Product Truth fallback — 2026-07-28
+## ✅ Bundle Factory Product Truth no-spend fallback — 2026-07-28
 
 - [x] Зафиксирован boundary: Walmart Studio использует только общий Product Truth;
   один exact donor = один independent targeted-evidence workflow, максимум пять
@@ -744,9 +744,13 @@ track и больше не обозначается blocker текущего Wal
   Stage A custody.
 - [x] Добавить в Walmart Studio кнопку запуска, прогресс и повторную readiness
   проверку; Generate продолжается только если data gaps и capability gaps закрыты.
-- [x] Сертифицировать default-OFF/local no-spend release: Product Truth
-  `506/506`, targeted integration/safety `51/51`, UI route `2/2`,
-  TypeScript/ESLint/production build = `PASS`; provider, production DB и
-  Walmart effects = `0`.
-- [ ] Отдельно решить
-  production admission/worker/metered activation gates.
+- [x] Сертифицирован и активирован bounded production no-spend release
+  `product-truth-web-control-2026-07-28-r5`, commit
+  `80348398a1124c6bc74573a886f20ee0987916de`: Product Truth `512/512`,
+  TypeScript/ESLint/production build = `PASS`.
+- [x] Production E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
+  `AWAITING_OWNER`; worker active, postcheck `claim:null`.
+- [ ] Отдельный Stage F money/permit gate всё ещё требуется для `execute` и
+  фактического сбора свежих цен. Provider spend, Product Truth business writes,
+  UPC reservation, listing publication и Walmart effects = `0`.

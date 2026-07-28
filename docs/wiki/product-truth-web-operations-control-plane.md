@@ -1,7 +1,7 @@
 # Product Truth Web Operations Control Plane
 
-> **Статус:** `NO_SPEND_BRIDGE_CODE_CERTIFIED / RUNTIME_OFF /
-> PRODUCTION_GATE_REQUIRED`.
+> **Статус:** `NO_SPEND_BRIDGE_PRODUCTION_ACTIVE / METERED_OFF /
+> MARKETPLACE_OFF`.
 >
 > **Дата:** 2026-07-25.
 >
@@ -9,9 +9,9 @@
 > [[product-truth-operator-runbook]]. Implementation board:
 > [[product-truth-command-center]].
 >
-> Этот документ является design/decision packet. Он **не** выдаёт owner approval,
-> не активирует web execution, не создаёт production trust root, не запускает
-> provider, не расходует credits и не изменяет marketplace.
+> Этот документ хранит design/decision packet и consumed production evidence.
+> Активирован только bounded `doctor → plan`; он **не** выдаёт metered authority,
+> не запускает provider, не расходует credits и не изменяет marketplace.
 
 ## 1. Решение в одном абзаце
 
@@ -392,17 +392,19 @@ owner gate.
 - отдельный owner activation;
 - результаты сравниваются с ручным sealed CLI.
 
-### Сертифицированный no-spend bridge candidate — 2026-07-28
+### Активированный production no-spend bridge — 2026-07-28
 
 Bundle Factory Walmart demand fallback реализован только для bounded
 `doctor → plan` участка:
 
+- release:
+  `product-truth-web-control-2026-07-28-r5`;
 - release commit:
-  `8178f5194c149e473dddcb2ddfa9a2e15282a91f`;
+  `80348398a1124c6bc74573a886f20ee0987916de`;
 - Git tree:
-  `f4cc943349e69ba721d989315abf1900506d7d08`;
+  `0580fa702a593c9dfee8ccfc0dfe1e748f41d212`;
 - executable tree SHA-256:
-  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+  `e9b76f36f6d67c266041d9cb6f301f468a996d0166180cff317b8e8c2d5d9b9b`;
 - Stage A migration SHA-256:
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
 - authoritative Phase 1 manifest v3 SHA-256:
@@ -410,24 +412,34 @@ Bundle Factory Walmart demand fallback реализован только для 
 - production Product Truth target fingerprint:
   `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`.
 
-Clean-checkout evidence: Product Truth `508/508`, Bundle Factory UI/route
-`2/2`, TypeScript, focused ESLint и production build = `PASS`. Worker до
+Clean-checkout evidence: Product Truth `512/512`, TypeScript, focused ESLint и
+production build = `PASS`. Worker до
 первого HTTP request доказывает clean checkout, exact commit/tree и производный
 SHA-256 executable tree; activation confirmation связывает stage, release,
 commit, tree, executable digest, target и manifest.
 
-Production deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` имеет статус
-`Ready` и назначен на `salutemsolutions.info`, но runtime остаётся `OFF`.
-Read-only production preflight доказал:
+Production deployment `dpl_EnfcxYpbyxytccPzdg6nr82DEWhg` имеет статус
+`Ready` и назначен на `salutemsolutions.info`. Runtime активен только как
+`PRODUCTION_READ_ONLY`; отдельный launchd worker читает только allowlisted
+`DOCTOR` и `RUN_PLAN`. Production postcheck доказал:
 
-- `ProductTruthControlCommand`, `ProductTruthControlArtifact` и
-  `ProductTruthControlEvent` в production отсутствуют;
-- activation/release/manifest/worker env отсутствуют;
+- Stage A control custody применён к exact production target;
+- worker pinned к r5 и после полного batch остаётся active;
+- pre/post claim HTTP `200`, `claim:null`;
+- Campbell's batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`,
+  status `AWAITING_OWNER`;
 - provider calls, Product Truth business writes и Walmart actions = `0`.
 
-Этот candidate не реализует и не разрешает `execute`, `resume`, provider calls,
+Эта активация не реализует и не разрешает `execute`, `resume`, provider calls,
 paid spend, Product Truth business writes или marketplace actions. Для реального
 сбора данных после `plan` остаётся отдельный Stage F money/permit gate.
+
+Во время production-калибровки releases r1–r4 fail-closed выявили canonical
+temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
+r5 сериализует in-flight heartbeat до completion; regression закреплён в
+`512/512`. Незавершённые calibration commands остаются immutable audit evidence
+и не replay.
 
 ### Exact owner gate для bounded no-spend activation
 
@@ -443,6 +455,9 @@ local no-spend worker и PRODUCTION_READ_ONLY только для doctor и plan
 resume, provider calls, paid spend, Product Truth business writes или любые
 Walmart/marketplace actions.
 ```
+
+Gate consumed 2026-07-28. Exact r5 evidence и остающиеся закрытыми boundaries
+зафиксированы выше и в [[product-truth-owner-gates]].
 
 ### Stage E — owner-gated DB writes
 
