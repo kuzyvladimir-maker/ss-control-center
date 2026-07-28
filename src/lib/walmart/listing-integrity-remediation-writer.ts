@@ -40,7 +40,7 @@ export const WALMART_LISTING_REPAIR_REQUEST_TIMEOUT_MS = 60_000;
 
 /** Filled only by the final frozen release. Null is an intentional production NO-GO. */
 const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null =
-  "20f26335035c4a90df1cb97372bacbbd10e660e009fe5228cfd52ca95fd1a51a";
+  "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81";
 /**
  * One exact predecessor is accepted only by the no-replay recovery entrypoint.
  * It is never used by normal plan/execute and cannot authorize a new POST.

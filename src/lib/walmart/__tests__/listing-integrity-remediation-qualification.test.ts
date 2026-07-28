@@ -777,7 +777,7 @@ test("production verifier is pinned and still rejects an owner key outside the p
   assert.deepEqual(inspectWalmartListingRepairQualificationProductionReadiness(), {
     verifier_release_pinned: true,
     verifier_engine_release_sha256:
-      "f8fbc5003e05a469d7cdb9204e22256b02aec9913415e63bce99965680cad34c",
+      "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81",
     walmart_native_payload_validator_ready: true,
     frozen_apply_writer_attestation_ready: true,
   });
