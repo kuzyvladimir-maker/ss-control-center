@@ -35,7 +35,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `AWAITING_OWNER_APPROVAL` | Exact 5-listing plan `ae810cb1…5360e`, max `17.5` units, reserve floor `15000`, expires `2026-07-28T12:39:07Z` |
+| G7. Provider canary / paid wave | `AWAITING_AMENDED_COMBINED_APPROVAL` | Replacement plan `bca2decb…6413c` is still current. First balance probe exposed live Target Search tariff `2.5`, not `1`; main run was stopped before execution. One amended cumulative ceiling is required |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -601,6 +601,95 @@ G7 теперь ожидает только exact owner money/provider approval 
 fresh balance evidence, plan-bound metered permit и execution confirmation.
 Если plan истечёт, approval не переносится: нужен новый fresh plan SHA.
 
+### G7 exact owner approval and balance-evidence blocker 2026-07-27
+
+Владелец выдал exact approval для plan
+`ae810cb1a3badcc0e562b6d229912bc3c961a296f68062405b7548710b55360e`:
+пять listings, Oxylabs `5 calls / 5 units`, Unwrangle detail
+`5 calls / 12.5 units`, reserve floor `15000`; clubs/BJ's, marketplace writes,
+price/inventory changes, delisting, consumer activation и procurement запрещены.
+
+Fresh remote `doctor` после approval подтвердил operational schema и target
+fingerprint `57ff2af9…0003`; provider calls `0`. Execution не начался и
+provider units не потрачены. Перед сборкой canonical approval artifact контракт
+потребовал Unwrangle balance evidence не старше десяти минут. Бесплатного
+Unwrangle balance endpoint нет, production cache `svc_unwrangle_credits` пуст,
+а последний независимый receipt `2026-07-27T13:16:48.681Z` уже stale.
+
+Первоначальный exact approval разрешает только пять рабочих Unwrangle detail
+calls и максимум `17.5` run units; он не разрешает дополнительный
+`target_search` balance probe. Поэтому execution остаётся fail-closed, старый
+timestamp не переиздаётся и незаявленный шестой provider call не выполняется.
+Минимальный следующий money gate — один отдельный Unwrangle `target_search`
+balance probe максимум `1` unit, только для immutable balance evidence; после
+него основной plan сохраняет собственные неизменные ceilings.
+
+### G7 expired approval and byte-new replacement 2026-07-28
+
+Когда владелец выдал отдельный balance-probe gate для old plan
+`ae810cb1…5360e`, его expiry `2026-07-28T12:39:07Z` уже прошёл. Pre-network
+проверка остановила workflow: old main approval и probe gate не были
+использованы, provider calls/units и production writes остались `0`.
+
+Canonical offline planner бесплатно выпустил replacement:
+
+- plan:
+  `ss-control-center/data/audits/product-truth-g7-plan/20260728T175740Z-canary-v2/plan.json`;
+- plan SHA-256:
+  `bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c`;
+- request SHA-256:
+  `3ee96292c8fbfabb36a45bf8f06c10c531240784536dc4387cb3e9ec08a3dc83`;
+- approval instructions SHA-256:
+  `5b7954b5ce09fc22479a45ee124764682eb30fb94cf231b77332a823ebf32e5b`;
+- run ID: `pt-g7-canary-20260728T175740Z`;
+- expires: `2026-07-29T17:27:40.000Z`;
+- target set неизменен: `f7284014…c2ab`, те же exact пять listings;
+- ceilings неизменны: Oxylabs `5/5`, Unwrangle detail `5/12.5`, reserve
+  floor `15000`; clubs/BJ's и все marketplace/business actions запрещены;
+- plan generation: offline, DB connections `0`, provider calls `0`.
+
+Approval bytes старого plan не переносятся. Следующий owner token должен одним
+exact решением связать replacement plan, отдельный one-call/one-unit balance
+probe и основной run ceiling `17.5` (`18.5` combined maximum).
+
+### G7 live Target Search tariff drift and fail-closed stop 2026-07-28
+
+Владелец выдал combined approval для replacement plan
+`bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c`,
+пяти listings, основного ceiling `17.5` и отдельного Target Search balance
+probe максимум `1` unit (`18.5` combined). Pre-network plan/expiry checks
+прошли.
+
+Единственный probe без retry вернул HTTP `200`, balance `99692.5`, но live
+receipt показал фактическое списание `2.5` units. Immutable evidence:
+
+- artifact:
+  `ss-control-center/data/audits/product-truth-g7-balance-probe/ptbal-20260728t180000z/balance-evidence.json`;
+- SHA-256:
+  `9c38565005d6f5c347b863ffb3fe99743352d0ee5dcfbba196ba424685041a6f`;
+- raw response SHA-256:
+  `f8272c5acb326852d7462744cef147fffd769927e7c68547a24ed49ab3b84bbf`;
+- provider calls `1`, actual units `2.5`, retry `0`;
+- canonical/marketplace/price/inventory/delist/consumer/procurement writes `0`.
+
+Поскольку `2.5 + 17.5 = 20.0` превышает exact approved combined ceiling
+`18.5`, основной run не запускался. Локальный Target Search reservation
+исправлен с `1` на live-observed `2.5` и закреплён regression test; полная
+Product Truth certification = `489/489`.
+
+Plan `bca2decb…6413c` остаётся byte-exact и действует до
+`2026-07-29T17:27:40Z`. Если existing evidence старше десяти минут на момент
+execution, контракт требует ещё один fresh probe. Поэтому следующий единый
+owner gate должен одновременно:
+
+1. признать уже фактически consumed `2.5` units;
+2. разрешить не более одного нового evidence-only Target Search probe /
+   `2.5` units только если evidence stale, без retry;
+3. сохранить основной plan ceiling `17.5`;
+4. установить cumulative maximum `22.5` units;
+5. сохранить запреты clubs/BJ's, marketplace writes, price/inventory,
+   delisting, consumer activation и procurement.
+
 ### Walmart Listing Integrity v14 canary authority 2026-07-27
 
 Владелец дал точную standing-команду:
@@ -661,3 +750,35 @@ purchase действий не разрешаю.
 ```
 
 Можно одобрить только отдельные номера, например: `Разрешаю только G1`.
+
+---
+
+## G7 owner authority consumed — 2026-07-28
+
+Владелец явно разрешил довести ограниченный Product Truth G7 workflow под ключ без
+микро-подтверждений. Это решение было использовано только для exact five-listing
+canary, fresh balance evidence и single-donor targeted runs. Итоговый immutable
+closeout:
+
+- файл:
+  `ss-control-center/data/audits/product-truth-g7-closeout/20260728T194500Z/g7-closeout.json`;
+- SHA-256:
+  `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`;
+- расход: `32.5` provider units / `19` calls;
+- marketplace/listing writes, price/inventory changes, delisting, consumer
+  activation, procurement, clubs и BJ's: `0`.
+
+Этот exact G7 gate считается **consumed**. Он не разрешает replay terminal/ambiguous
+runs и не разрешает следующую paid wave на старом bootstrap contract. Локальная
+реализация, тестирование и рецертификация `LISTING_BOUND_TARGETED_BOOTSTRAP`
+продолжаются без нового owner gate; новый provider canary должен быть связан с новым
+frozen plan/release и отдельным свежим budget evidence.
+
+### Listing-bound v1.4 implementation status
+
+Локальная реализация завершена и сертифицирована `511/511`. Это изменение не
+потребило provider units и не изменило production DB/marketplace. Старый unbound
+bootstrap больше не может выпустить новый plan. Следующий provider gate может
+потребляться только одним exact listing-bound plan, одним SKU, без retry, после
+fresh balance evidence; он не распространяется на controlled wave, consumer
+activation, repricing, inventory, delisting или procurement.

@@ -449,8 +449,44 @@ entrypoint.
   Frozen v20 read-only Qualification = `PENDING_PROPAGATION`, потому что buyer
   PDP ещё показывает старые attributes; текст, все изображения, публикация и
   индексация сохранены. V20 использует опубликованную Walmart шестичасовую SLA,
-  а не прежний ложный двухчасовой failure gate. До buyer PASS разрешён только
-  fresh no-write reread.
+  а не прежний ложный двухчасовой failure gate. Frozen v21
+  `0378f158…df56a` (`157/157`) параллельно закрывает compiler gap: обычная
+  one-SKU attribute lane теперь не может менять активный variant-group key и
+  возвращает `VARIANT_GROUP_REPAIR_REQUIRED`. Frozen v22
+  `5af7bc87…5846b81` (`162/162`) добавляет только narrow single-member
+  group-aware fallback, доказанный полным ITEM v6 population и теми же fresh
+  live/spec bytes; один SKU, один primary, один POST maximum, zero retry.
+  Ordinary v18 feed после полного шестичасового SLA доказанно не опубликовал
+  атрибуты и закрыт fresh Qualification `FAIL`; все нецелевые поля остались
+  PASS. V22 group-aware payload `e29c3947…353a` был отправлен ровно один раз:
+  feed `18C646C459EA512FA3901FDEDE289A71@AX8BBgA` = `PROCESSED`,
+  `1/1 SUCCESS`, retry `0`. Первая fresh Qualification =
+  `PENDING_PROPAGATION`; scheduled rereads дали тот же честный результат при
+  PASS всех нецелевых facets. Final Qualification at
+  `2026-07-28T04:45:10Z`, after the exact SLA boundary, is `FAIL`: buyer PDP
+  still shows `Count=1` and omits Flavor, Count per pack and Multipack
+  quantity. Receipt SHA `c8a6110a…add53f`; no factual gallery or successor pool
+  was created. The next action is a targeted attribute-update contract replan,
+  not another blind POST. The completed monitor's accidental launchd keepalive
+  job was removed.
+- [x] Refresh the Walmart Listing Integrity census and controlled pool after
+  sync `2026-07-28T06:00:01Z`: `3566` SKU / `2644 PUBLISHED` / `3471 ACTIVE`,
+  census file SHA `f5b08a01…92226d`, plan file SHA `74ed37e7…19f0b7`.
+  Pool `controlled-pool-c2a1c74507029bf12380`, file SHA
+  `99cd89b2…e72a9`, contains `14 repair-ready` / `1190 source-required` from
+  `1204` candidates and excludes unresolved `FaisalX-2768` quarantine without
+  marking it repaired. Historical remediation `ok=1` remains non-authoritative;
+  only three cases have fresh Qualification PASS and factual galleries.
+- [ ] Complete the next Product Truth consumer canary `FaisalX-1140`.
+  Product Truth identifies Pepperidge Farm Farmhouse Hearty White Bread,
+  Pack of 4; the reviewed Walmart diff changes only description, bullets, MAIN
+  and gallery. Frozen Listing Integrity v26 `e5e8bfbb…250ae91` passed
+  `186/186` and accepts the exact v25 execution as its only Qualification
+  predecessor. Walmart accepted exactly one POST as feed
+  `18C689CE7F4F50BCBC0E931360F8D73F@AX8BBwA`; current state is
+  `APPLIED_PROPAGATING / FEED_NOT_TERMINAL`. Only GET-only continuation is
+  allowed. The consumer remains incomplete until fresh Qualification PASS and
+  a factual gallery prove the Product Truth target, publication and indexing.
 - [x] Повторить full-denominator readiness: `5935/5935` reconciled, Bundle
   Factory и Listing Improvement `20 ready`, Unit Economics `20 UNSOURCEABLE` /
   `5915 missing`, Procurement `0`; report `5c56c425…e92b`, provider calls и
@@ -501,8 +537,29 @@ entrypoint.
   expiry `2026-07-28T12:39:07Z`, max `17.5` units, reserve floor `15000`.
   Plan generation имела DB connections/provider calls `0`; automatic
   publish/delist/reprice/purchase = `false`.
-- [ ] Получить exact owner approval для plan `ae810cb1…5360e`, затем только
-  fresh balance evidence + plan-bound permit/confirmation и execute.
+- [x] Получить exact owner approval для plan `ae810cb1…5360e` на пять listings,
+  max `17.5` run units и reserve floor `15000`.
+- [x] Старый plan истёк до использования отдельного probe gate; pre-network
+  check сохранил provider calls/units и production writes на `0`.
+- [x] Бесплатно перевыпустить тот же target set и ceilings: replacement plan
+  `bca2decb…6413c`, request `3ee96292…c83`, target set `f7284014…c2ab`,
+  expiry `2026-07-29T17:27:40Z`; plan-time DB/provider calls `0`.
+- [x] Получить объединённый exact owner gate для replacement plan и balance
+  probe с заявленным combined ceiling `18.5`.
+- [x] Выполнить один Target Search balance probe без retry. Provider вернул
+  HTTP `200` и balance `99692.5`, но live tariff оказался `2.5`, а не
+  разрешённым `1`. Evidence `9c385650…1a6f`; provider calls `1`, actual units
+  `2.5`, canonical/marketplace/business writes `0`. Основной run fail-closed
+  не запускался, потому что его worst-case `17.5` дал бы combined `20.0` >
+  approved `18.5`.
+- [x] Исправить локальный Target Search tariff guard на `2.5`, добавить
+  regression test и пересертифицировать Product Truth: `489/489`.
+- [ ] Получить один amended combined owner gate: признать consumed `2.5`,
+  разрешить максимум один fresh evidence-only probe `2.5` только если stale
+  и основной unchanged plan `17.5`; cumulative ceiling `22.5`. Plan
+  `bca2decb…6413c` действует до `2026-07-29T17:27:40Z`.
+- [ ] После fresh balance evidence собрать exact plan-bound permit/confirmation
+  и выполнить один sealed execute.
 - [ ] Закрывать 86 `UNRESOLVED_EVIDENCE` только authoritative evidence.
 
 **Exit:** production schema доказана отдельно от локального кода; authoritative
@@ -698,3 +755,65 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
   Walmart actions: Product Truth `506/506`, targeted integration/safety
   `51/51`, UI route `2/2`, TypeScript, focused ESLint и production build =
   `PASS`; provider calls, production writes и Walmart actions = `0`.
+
+---
+
+## 9. G7 production canary closeout — 2026-07-28
+
+Immutable closeout:
+`ss-control-center/data/audits/product-truth-g7-closeout/20260728T194500Z/g7-closeout.json`,
+SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
+
+- [x] ✅ Exact five-listing listing-scope canary выполнен и сохранён. Первый run
+  остановил дефект отсутствующего `REJECT matchTier`; после исправления
+  replacement run честно завершил все пять listings как `terminal_gap`.
+- [x] ✅ Targeted exact-item canary выполнен без retry: Fritos, GOYA и Popeye
+  получили fresh local first-party price observations; Mott's был отклонён как
+  `inStock=false`; Glory не прошёл бесплатный bootstrap preflight
+  `TITLE_BRAND_NOT_FOUND`.
+- [x] ✅ Unwrangle live tariff закреплён как `2.5` units и для search, и для
+  Walmart detail. Фактический полный G7 расход: `19` provider calls /
+  `32.5` provider units (`Oxylabs 10`, `Unwrangle 22.5`), последний
+  наблюдавшийся Unwrangle balance `99672.5`.
+- [x] ✅ Повторы отсутствовали; clubs/BJ's/marketplace writes/price-inventory
+  changes/delist/consumer activation/procurement = `0`.
+- [x] ✅ Lease bug закрыт: targeted lease теперь `8 min` при sealed wall clock
+  `6 min`; Popeye orphaned control-run транзакционно reconciled в
+  `ambiguous` по уже закрытым receipts, без нового provider call.
+- [x] ✅ Полная Product Truth certification после исправлений: `508/508`.
+- [x] ✅ Fresh post-canary bridge audit выполнен: bridge plan SHA
+  `d644d6ba…ae55`, `5935` listings, `20` already canonical,
+  `71` identity-only write candidates, `5844` quarantine.
+- [ ] ⬜ G7 не может переходить в следующую paid wave: bootstrap создаёт
+  conservative donor-title canonical variants, которые у Fritos/GOYA/Popeye
+  не совпадают со structured listing-component variants. Bridge правильно
+  возвращает `CANONICAL_DONOR_VARIANT_CONFLICT`.
+- [ ] 🔄 Следующая инженерная граница —
+  `LISTING_BOUND_TARGETED_BOOTSTRAP`: exact listing scope/target variant должен
+  быть sealed в plan и независимо подтверждён fresh exact retailer evidence
+  текущим strict matcher. Старые paid receipts не replay и не перепривязываются
+  вручную.
+
+### Listing-bound bootstrap v1.4 — local certification 2026-07-28
+
+- [x] ✅ Request/plan contract поднят до `1.4.0`; новый
+  `LISTING_BOUND_BOOTSTRAP` требует exact `listingKey + componentIndex`.
+- [x] ✅ Target canonical variant теперь строится только из уже импортированной
+  `SkuShippingData.productIdentity` конкретного scope/component. Retailer/donor
+  title служит строгим доказательством, но больше не определяет раскладку
+  `productLine/flavor/form`.
+- [x] ✅ Sealed binding включает byte-exact full rows
+  `ProductTruthListingScope`, `SkuShippingData`, `SkuComponent`, их общий SHA-256
+  и exact donor link. Любой drift блокируется до provider boundary.
+- [x] ✅ Старый `EVIDENCE_VERIFIED_BOOTSTRAP` остаётся читаемым только как
+  исторический artifact, но новый исполняемый plan из него не строится:
+  `TARGETED_EVIDENCE_UNBOUND_BOOTSTRAP_RETIRED`.
+- [x] ✅ Regression воспроизводит прежний duplicate-ID defect и доказывает, что
+  listing-bound ID равен target ID листинга. TypeScript = PASS; unit `13/13`;
+  executor integration `11/11`; полный Product Truth suite `511/511`.
+- [x] ✅ Три ошибочно привязанных pilot donor aliases не менялись и остаются
+  quarantined append-only history; их receipts не replay.
+- [ ] 🔄 Следующая граница: clean frozen release + read-only preflight одного
+  untouched listing-bound candidate.
+- [ ] ⬜ После успешного preflight — один no-retry provider canary и обязательный
+  fresh bridge postcheck до любой следующей wave.

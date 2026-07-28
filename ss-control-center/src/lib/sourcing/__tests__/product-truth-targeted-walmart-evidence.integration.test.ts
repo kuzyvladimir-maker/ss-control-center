@@ -56,7 +56,7 @@ import {
 import {
   executeProductTruthTargetedWalmartEvidence,
   inspectProductTruthTargetedWalmartEvidenceRun,
-  readTargetedWalmartLegacyDonorSnapshot,
+  readTargetedWalmartListingBoundDonorSnapshot,
   type ProductTruthTargetedWalmartEvidenceAdapter,
   type ProductTruthTargetedWalmartEvidenceReport,
 } from "../product-truth-targeted-walmart-evidence";
@@ -213,7 +213,17 @@ async function createBaseSchema(db: Client): Promise<void> {
     );
     CREATE TABLE SkuComponent (
       id TEXT PRIMARY KEY,
+      sku TEXT NOT NULL,
+      idx INTEGER NOT NULL,
+      product TEXT,
+      flavor TEXT,
+      size TEXT,
+      qty INTEGER NOT NULL DEFAULT 1,
       donorProductId TEXT
+    );
+    CREATE TABLE SkuShippingData (
+      sku TEXT PRIMARY KEY,
+      productIdentity TEXT
     );
     CREATE TABLE SkuCost (
       id TEXT PRIMARY KEY,
@@ -314,23 +324,22 @@ async function createFixture(input: {
   const databaseUrl = `file:${join(directory, "scratch.db")}`;
   const db = createClient({ url: databaseUrl, concurrency: 1 });
   await createBaseSchema(db);
-  for (const migrationUrl of migrationUrls) {
-    await db.executeMultiple(await readFile(migrationUrl, "utf8"));
-  }
-  await createOperationalDependencies(db);
-  await db.executeMultiple(await readFile(operationalMigrationUrl, "utf8"));
-
   const initialAt = input.initialAt ?? new Date().toISOString();
   const createdAt = plusMilliseconds(initialAt, -60_000);
   const expiresAt = input.planExpiresAt ?? plusMilliseconds(initialAt, 60 * 60_000);
   const legacyAt = plusMilliseconds(createdAt, -60_000);
   const donorProductId = `legacy-${input.runId}`;
   const donorOfferId = `offer-${input.runId}`;
+  const sku = `SKU-${input.runId}`;
+  const listingKey = `walmart:1:${sku}`;
+
+  // These are deliberately pre-migration legacy rows. The production
+  // migration correctly forbids creating new mutable legacy evidence links.
   await db.execute({
     sql: `INSERT INTO "DonorProduct"
           (id,brand,productLine,flavor,containerType,size,unitMeasure,unitAmount,title,
-           currency,identityKey,identityStatus,needsReview,createdAt,updatedAt)
-          VALUES (?,?,?,?,?,?,?,?,?,'USD',?,'legacy_unverified',0,?,?)`,
+           currency,identityKey,needsReview,createdAt,updatedAt)
+          VALUES (?,?,?,?,?,?,?,?,?,'USD',?,0,?,?)`,
     args: [
       donorProductId,
       "Acme",
@@ -349,17 +358,48 @@ async function createFixture(input: {
   await db.execute({
     sql: `INSERT INTO "DonorOffer"
           (id,donorProductId,retailer,retailerProductId,via,price,packSizeSeen,
-           pricePerUnit,currency,zip,localityEvidence,inStock,productUrl,sellerName,
+           pricePerUnit,currency,zip,inStock,productUrl,sellerName,
            isFirstParty,sourceApi,fetchedAt,createdAt,updatedAt)
           VALUES (?,?,'walmart',?,'direct',4.49,1,4.49,'USD','33765',
-                  'zip_scoped',1,?,'Walmart.com',1,'legacy',?,?,?)`,
+                  1,?,'Walmart.com',1,'legacy',?,?,?)`,
     args: [donorOfferId, donorProductId, WALMART_ITEM_ID, WALMART_URL, legacyAt, legacyAt, legacyAt],
   });
+  await db.execute({
+    sql: `INSERT INTO "SkuComponent"
+          (id,sku,idx,product,flavor,size,qty,donorProductId)
+          VALUES (?,?,0,'Acme Potato Chips','Original','8 oz',1,?)`,
+    args: [`component-${input.runId}`, sku, donorProductId],
+  });
 
-  const snapshot = await readTargetedWalmartLegacyDonorSnapshot(
-    db,
+  for (const migrationUrl of migrationUrls) {
+    await db.executeMultiple(await readFile(migrationUrl, "utf8"));
+  }
+  await createOperationalDependencies(db);
+  await db.executeMultiple(await readFile(operationalMigrationUrl, "utf8"));
+
+  await db.execute({
+    sql: `INSERT INTO "ProductTruthListingScope"
+          (listingKey,keyVersion,channel,storeIndex,sku,manifestSha256)
+          VALUES (?,'product-truth-listing-key/1.0.0','walmart',1,?,?)`,
+    args: [listingKey, sku, "e".repeat(64)],
+  });
+  await db.execute({
+    sql: `INSERT INTO "SkuShippingData"(sku,productIdentity) VALUES (?,?)`,
+    args: [sku, JSON.stringify({
+      brand: "Acme",
+      product_line: "Potato Chips",
+      flavor: "Original",
+      container_type: "Bag",
+      size: "8 oz",
+      is_bundle: false,
+      units_in_listing: 1,
+    })],
+  });
+  const snapshot = await readTargetedWalmartListingBoundDonorSnapshot(db, {
     donorProductId,
-  );
+    listingKey,
+    componentIndex: 0,
+  });
   const request = buildProductTruthTargetedWalmartEvidenceRequest({
     runId: input.runId,
     createdAt,

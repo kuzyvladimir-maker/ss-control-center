@@ -45,8 +45,8 @@ import {
   PRODUCT_TRUTH_TARGETED_WALMART_PRODUCTION_ADAPTER,
   executeProductTruthTargetedWalmartEvidence,
   inspectProductTruthTargetedWalmartEvidenceRun,
-  readTargetedWalmartLegacyDonorSnapshot,
   readTargetedWalmartDonorSnapshot,
+  readTargetedWalmartListingBoundDonorSnapshot,
 } from "../src/lib/sourcing/product-truth-targeted-walmart-evidence";
 import {
   donorHarvestStateId,
@@ -150,6 +150,8 @@ export type ProductTruthRunnerCliOptions =
   | (CommonDatabaseOptions & {
       command: "doctor";
       donorProductId?: string;
+      listingKey?: string;
+      componentIndex?: number;
       query?: string;
       runId?: string;
       expiresAt?: string;
@@ -258,6 +260,7 @@ const COMMAND_VALUE_FLAGS: Record<ProductTruthRunnerCommand, readonly string[]> 
   doctor: [
     "--url", "--auth-token-env", "--donor-product-id", "--query", "--run-id",
     "--expires-at", "--unwrangle-reserve-floor", "--out", "--canonical-identity",
+    "--listing-key", "--component-index",
   ],
   plan: ["--url", "--auth-token-env", "--request", "--manifest", "--out"],
   readiness: [
@@ -361,6 +364,18 @@ function exactNonNegativeNumberFlag(value: string | undefined, flag: string): nu
   return parsed;
 }
 
+function exactNonNegativeIntegerFlag(value: string | undefined, flag: string): number {
+  const text = exactValue(value, flag);
+  if (!/^(?:0|[1-9][0-9]*)$/.test(text)) {
+    usageError("CLI_ARGUMENT_VALUE_INVALID", `${flag} must be a non-negative base-10 integer`);
+  }
+  const parsed = Number(text);
+  if (!Number.isSafeInteger(parsed) || parsed > 1_000) {
+    usageError("CLI_ARGUMENT_VALUE_INVALID", `${flag} must not exceed 1000`);
+  }
+  return parsed;
+}
+
 /** Strict parser: no ambient URL, implicit scope, or catch-all command exists. */
 export function parseProductTruthRunnerArguments(
   argv: readonly string[],
@@ -427,10 +442,31 @@ export function parseProductTruthRunnerArguments(
         "targeted doctor requires --donor-product-id, --query, --run-id, --expires-at, --unwrangle-reserve-floor and --out together",
       );
     }
+    const listingKey = flagText(flags, "--listing-key");
+    const componentIndex = flagText(flags, "--component-index");
+    if ((listingKey === undefined) !== (componentIndex === undefined)) {
+      usageError(
+        "CLI_TARGETED_DOCTOR_LISTING_BINDING_INCOMPLETE",
+        "--listing-key and --component-index must be supplied together",
+      );
+    }
+    if (targetedCount === 0 && listingKey !== undefined) {
+      usageError(
+        "CLI_TARGETED_DOCTOR_LISTING_BINDING_WITHOUT_TARGET",
+        "listing binding is valid only for targeted doctor",
+      );
+    }
     return targetedCount === 0 ? { ...common, command } : {
       ...common,
       command,
       donorProductId: exactValue(targetedValues[0], "--donor-product-id"),
+      ...(listingKey === undefined ? {} : {
+        listingKey: exactValue(listingKey, "--listing-key"),
+        componentIndex: exactNonNegativeIntegerFlag(
+          componentIndex,
+          "--component-index",
+        ),
+      }),
       query: exactValue(targetedValues[1], "--query"),
       runId: exactValue(targetedValues[2], "--run-id"),
       expiresAt: exactValue(targetedValues[3], "--expires-at"),
@@ -530,8 +566,9 @@ export function productTruthRunnerUsage(command?: ProductTruthRunnerCommand): st
     "  doctor --url URL [--allow-remote --auth-token-env NAME]",
     "  doctor --donor-product-id ID --query QUERY --run-id RUN_ID --expires-at ISO_TIMESTAMP",
     "       --unwrangle-reserve-floor UNITS --url URL --out NEW_DIR",
+    "       [--listing-key WALMART_LISTING_KEY --component-index ZERO_BASED_INDEX]",
     "       [--allow-remote --auth-token-env NAME]",
-    "       # exact donor is reused; eligible legacy donor gets a conservative engine-derived identity",
+    "       # exact donor is reused; a legacy donor requires authoritative listing binding",
     "  plan --request REQUEST.json --manifest MANIFEST.json --url URL --out NEW_DIR",
     "       [--allow-remote]  # canonical listing lane",
     "  plan --request TARGETED_REQUEST.json --url URL --out NEW_DIR",
@@ -2334,6 +2371,8 @@ export function productTruthTargetedDoctorExitCode(result: Record<string, unknow
 async function buildTargetedEvidenceRequestArtifacts(input: {
   options: Extract<ProductTruthRunnerCliOptions, { command: "doctor" }> & {
     donorProductId: string;
+    listingKey?: string;
+    componentIndex?: number;
     query: string;
     runId: string;
     expiresAt: string;
@@ -2353,10 +2392,20 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
     try {
       return await readTargetedWalmartDonorSnapshot(db, input.options.donorProductId);
     } catch {
-      return readTargetedWalmartLegacyDonorSnapshot(
-        db,
-        input.options.donorProductId,
-      );
+      if (
+        input.options.listingKey === undefined
+        || input.options.componentIndex === undefined
+      ) {
+        fail(
+          "TARGETED_EVIDENCE_LISTING_BINDING_REQUIRED",
+          "a non-canonical donor requires --listing-key and --component-index",
+        );
+      }
+      return readTargetedWalmartListingBoundDonorSnapshot(db, {
+        donorProductId: input.options.donorProductId,
+        listingKey: input.options.listingKey,
+        componentIndex: input.options.componentIndex,
+      });
     }
   });
   const output = resolveNewOutputDirectory(input.cwd, input.options.outputDirectory);
@@ -2453,11 +2502,18 @@ async function buildOfflinePlanArtifacts(input: {
     });
     const actual = await withReadOnlyClient(input.resolved, async (db) => {
       const identityMode = donorRequest?.identityMode;
-      const donor = identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP"
-        ? await readTargetedWalmartLegacyDonorSnapshot(
-            db,
+      const donor = identityMode === "LISTING_BOUND_BOOTSTRAP"
+        ? await readTargetedWalmartListingBoundDonorSnapshot(db, {
             donorProductId,
-          )
+            listingKey: String(
+              (donorRequest?.listingBinding as Record<string, unknown> | undefined)
+                ?.listingKey ?? "",
+            ),
+            componentIndex: Number(
+              (donorRequest?.listingBinding as Record<string, unknown> | undefined)
+                ?.componentIndex,
+            ),
+          })
         : await readTargetedWalmartDonorSnapshot(db, donorProductId);
       return {
         donor,
@@ -2511,9 +2567,9 @@ async function buildOfflinePlanArtifacts(input: {
     providerCeilings: plan.providerCeilings,
     sourcePolicy: plan.sourcePolicy,
     ...(targeted && (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].identityMode
-      === "EVIDENCE_VERIFIED_BOOTSTRAP" ? {
+      === "LISTING_BOUND_BOOTSTRAP" ? {
         machineIdentityVerification: {
-          statement: "The engine derived a conservative title-signature identity from sealed legacy bytes. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, complete identity token set, size and base-unit pack.",
+          statement: "The engine bound the legacy donor to one authoritative listing component. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, listing-derived structured identity, size and base-unit pack.",
           donorProductId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].donorProductId,
           donorOfferId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].donorOfferId,
           retailerProductId: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].retailerProductId,
@@ -2522,6 +2578,7 @@ async function buildOfflinePlanArtifacts(input: {
           canonicalIdentityHash: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].canonicalIdentityHash,
           legacySnapshotSha256: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].legacySnapshot?.sha256,
           identityDerivationVersion: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].identityDerivationVersion,
+          listingBindingSha256: (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].listingBinding?.sha256,
           planExpiresAt: plan.expiresAt,
         },
       } : {}),

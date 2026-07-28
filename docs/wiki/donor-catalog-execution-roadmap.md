@@ -336,7 +336,24 @@ ceiling `17.5` provider units, calls/writes `0`. Recommended review values
 материализованы canonical offline planner-ом без provider/DB calls: exact plan
 `ae810cb1…5360e`, пять listings, ceiling `17.5`, reserve floor `15000`,
 expiry `2026-07-28T12:39:07Z`; plan-time DB/provider calls `0`. G7 execution
-остаётся закрыт до plan-bound owner approval, fresh balance evidence и permit.
+получил exact owner approval на неизменные run ceilings. Fresh remote doctor
+прошёл, но execution остаётся fail-closed до отдельно разрешённого свежего
+Unwrangle balance probe: free endpoint отсутствует, cache пуст, старый receipt
+stale; фактический spend пока `0`. После balance evidence всё ещё обязательны
+plan-bound permit и confirmation.
+Old plan `ae810cb1…5360e` истёк до использования probe gate и не потратил
+кредиты. Его byte-new offline replacement `bca2decb…6413c` сохраняет exact
+target set `f7284014…c2ab`, те же ceilings/запреты и действует до
+`2026-07-29T17:27:40Z`; plan generation снова имела DB/provider calls `0`.
+Старые approval bytes не переносятся.
+Combined gate для replacement был получен. Единственный Target Search balance
+probe без retry дал HTTP `200`, balance `99692.5`, но списал `2.5` units вместо
+заявленного `1`. Evidence `9c385650…1a6f`; canonical и marketplace writes `0`.
+Основной run не запускался, потому что `2.5 + 17.5` превысило exact combined
+ceiling `18.5`. Target tariff guard исправлен на `2.5`, Product Truth
+certification `489/489`. Plan всё ещё current; следующий единый gate должен
+покрыть consumed `2.5`, при необходимости один fresh `2.5` probe и unchanged
+main ceiling `17.5`, cumulative maximum `22.5`.
 Успешная активация schema сама по себе не означает content/price readiness или
 разрешение marketplace actions.
 
@@ -692,3 +709,45 @@ Walmart publication.
 
 Code-quality, read-only audits, tests, shadow replays и безопасные schema/code fixes
 внутри утвержденной архитектуры выполняются до этих gates без расхода платных кредитов.
+
+---
+
+## 10. G7 canary — фактический результат 2026-07-28
+
+G7 закончен как диагностический production canary, но **не** как готовность к
+массовому enrichment. Канонический closeout SHA:
+`c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
+
+1. Generic listing-scope runner после исправления `UNSOURCEABLE matchTier` завершил
+   пять scopes как честные gaps и не угадал точные товары.
+2. Exact-item lane подтвердил fresh identity/price для Fritos `49909665`, GOYA
+   `30856904` и Popeye `10312200`; exact detail во всех трёх не имел явных
+   `ALLERGENS` и `STORAGE`, поэтому full content не выпущен.
+3. Mott's `2918451132` был `out of stock`, detail не вызывался. Glory `10532985`
+   не прошёл machine bootstrap title proof, provider spend = `0`.
+4. Фактический расход всего G7: `32.5` provider units / `19` calls. Retry,
+   club/BJ's и marketplace mutations отсутствовали.
+5. Canary выявил и закрыл lease/wall-clock mismatch; certification = `508/508`.
+6. Canary выявил открытый архитектурный blocker: donor-title bootstrap и
+   structured listing target строят разные canonical variant IDs. До
+   `LISTING_BOUND_TARGETED_BOOTSTRAP` следующая paid wave запрещена: ручной alias,
+   rebind или перенос price/content через конфликтующий variant недопустим.
+
+Следующий порядок:
+
+- 🔄 реализовать и сертифицировать listing-bound plan/request contract без provider
+  calls и без изменения уже сохранённых evidence;
+- ⬜ доказать offline positive/negative fixtures для flavor/form/productLine/size;
+- ⬜ провести новый single-SKU canary только на новом frozen release;
+- ⬜ после успешного bridge postcheck вернуться к bounded Phase 1 waves.
+
+Статус 2026-07-28 после исправления:
+
+- ✅ listing-bound request/plan `1.4.0` реализован; unbound bootstrap retired;
+- ✅ exact scope/shipping/component full-row binding и strict donor-title proof
+  проверяются до provider boundary;
+- ✅ duplicate canonical ID regression добавлен;
+- ✅ TypeScript, unit `13/13`, integration `11/11`, полный suite `511/511`;
+- 🔄 готовится clean frozen release и один read-only candidate preflight;
+- ⬜ provider canary остаётся ровно один SKU / no retry; следующая wave закрыта до
+  fresh bridge postcheck.

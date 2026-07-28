@@ -13,10 +13,12 @@ import type { ProductTruthOperationalMeteredReceipt } from "../product-truth-ope
 import {
   buildProductTruthTargetedWalmartEvidencePlan,
   buildProductTruthTargetedWalmartEvidenceRequest,
+  buildProductTruthTargetedWalmartListingBinding,
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalIdentityFromTarget,
   parseProductTruthTargetedWalmartDonorSnapshot,
   PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION,
+  PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION,
   TARGETED_WALMART_MAX_WALL_CLOCK_MS,
   targetedWalmartDonorSnapshotSha256,
   type ProductTruthTargetedWalmartDonorSnapshot,
@@ -86,6 +88,7 @@ function exactSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
     via: "direct",
     isFirstParty: true,
     legacySnapshot: null,
+    listingBinding: null,
   });
 }
 
@@ -142,6 +145,93 @@ function bootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
     legacySnapshot: buildProductTruthTargetedWalmartLegacySnapshot({
       donorProductRow: product,
       donorOfferRow: offer,
+    }),
+    listingBinding: null,
+  });
+}
+
+function listingBoundBootstrapSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
+  const product = {
+    id: "donor-1",
+    identityStatus: "legacy_unverified",
+    brand: "Acme",
+    size: "8 oz",
+    title: "Acme Potato Chips Original Bag 8 oz",
+    createdAt: CREATED_AT,
+    updatedAt: CREATED_AT,
+  };
+  const offer = {
+    id: "offer-1",
+    donorProductId: "donor-1",
+    retailer: "walmart",
+    retailerProductId: "123456789",
+    via: "direct",
+    isFirstParty: 1,
+    packSizeSeen: 1,
+    sellerName: "Walmart.com",
+    productUrl: "https://www.walmart.com/ip/123456789",
+    createdAt: CREATED_AT,
+    updatedAt: CREATED_AT,
+  };
+  const listingScope = {
+    listingKey: "walmart:1:SKU-1",
+    channel: "walmart",
+    storeIndex: 1,
+    sku: "SKU-1",
+    manifestSha256: HASH,
+  };
+  const shipping = {
+    sku: "SKU-1",
+    productIdentity: JSON.stringify({
+      brand: "Acme",
+      product_line: "Potato Chips",
+      flavor: "Original",
+      container_type: "Bag",
+      size: "8 oz",
+      is_bundle: false,
+      units_in_listing: 1,
+    }),
+  };
+  const component = {
+    id: "component-1",
+    sku: "SKU-1",
+    idx: 0,
+    donorProductId: "donor-1",
+    contentDonorProductId: null,
+    priceEvidenceDonorProductId: "donor-1",
+  };
+  return parseProductTruthTargetedWalmartDonorSnapshot({
+    identityMode: "LISTING_BOUND_BOOTSTRAP",
+    identityDerivationVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION,
+    donorProductId: "donor-1",
+    donorOfferId: "offer-1",
+    donorIdentityStatus: "legacy_unverified",
+    variantDecisionId: null,
+    canonicalVariantId: canonical.canonicalVariantId,
+    decisionStatus: null,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    decisionEvidenceHash: null,
+    decisionEvidenceJson: null,
+    canonicalVariantKeyVersion: canonical.keyVersion,
+    canonicalIdentityHash: canonical.identityHash,
+    canonicalIdentityJson: canonical.identityJson,
+    retailer: "walmart",
+    retailerProductId: "123456789",
+    normalizedProductUrl: "https://www.walmart.com/ip/123456789",
+    via: "direct",
+    isFirstParty: true,
+    legacySnapshot: buildProductTruthTargetedWalmartLegacySnapshot({
+      donorProductRow: product,
+      donorOfferRow: offer,
+    }),
+    listingBinding: buildProductTruthTargetedWalmartListingBinding({
+      listingScopeRow: listingScope,
+      shippingRow: shipping,
+      componentRow: component,
+      donorProductRow: product,
     }),
   });
 }
@@ -251,7 +341,7 @@ test("existing exact snapshots preserve canonical decision evidence with a trail
   );
 });
 
-test("existing and evidence-verified bootstrap plans seal honest write claims", () => {
+test("existing and listing-bound bootstrap plans seal honest write claims", () => {
   const existing = planFor(exactSnapshot());
   assert.equal(existing.claims.identityMode, "EXISTING_EXACT");
   assert.equal(existing.claims.canonicalVariantWritesMax, 0);
@@ -265,16 +355,47 @@ test("existing and evidence-verified bootstrap plans seal honest write claims", 
   assert.equal(existing.sourcePolicy.allowClubs, false);
   assert.equal(existing.sourcePolicy.allowBjs, false);
 
-  const bootstrap = planFor(bootstrapSnapshot());
-  assert.equal(bootstrap.claims.identityMode, "EVIDENCE_VERIFIED_BOOTSTRAP");
+  const bootstrap = planFor(listingBoundBootstrapSnapshot());
+  assert.equal(bootstrap.claims.identityMode, "LISTING_BOUND_BOOTSTRAP");
   assert.equal(bootstrap.claims.canonicalVariantWritesMax, 1);
   assert.equal(bootstrap.claims.variantDecisionWritesMax, 1);
   assert.equal(bootstrap.claims.targetProductProjectionMayChange, true);
   assert.ok(bootstrap.targets[0].legacySnapshot?.sha256);
 });
 
+test("listing-bound bootstrap prevents a second ID caused by field partition drift", () => {
+  const oldTitleSignature = bootstrapSnapshot();
+  const listingBound = listingBoundBootstrapSnapshot();
+  assert.notEqual(
+    oldTitleSignature.canonicalVariantId,
+    listingBound.canonicalVariantId,
+    "the retired title-signature bootstrap reproduces the historical duplicate-ID defect",
+  );
+  assert.equal(listingBound.canonicalVariantId, canonical.canonicalVariantId);
+  assert.equal(
+    listingBound.listingBinding?.listingKey,
+    "walmart:1:SKU-1",
+  );
+  assert.throws(
+    () => planFor(oldTitleSignature),
+    /TARGETED_EVIDENCE_UNBOUND_BOOTSTRAP_RETIRED/,
+  );
+
+  const changedBinding = {
+    ...listingBound.listingBinding!,
+    componentIndex: 1,
+  };
+  assert.throws(
+    () => parseProductTruthTargetedWalmartDonorSnapshot({
+      ...listingBound,
+      listingBinding: changedBinding,
+    }),
+    /TARGETED_EVIDENCE_LISTING_BINDING_INVALID/,
+  );
+});
+
 test("bootstrap identity must round-trip through the canonical builder", () => {
-  const valid = bootstrapSnapshot();
+  const valid = listingBoundBootstrapSnapshot();
   const malformed = JSON.parse(valid.canonicalIdentityJson) as Record<string, unknown>;
   malformed.brand = "ACME";
   const malformedJson = JSON.stringify(malformed);
@@ -386,8 +507,14 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
       donorProductRow: product,
       donorOfferRow: legacyOffer,
     }),
+    listingBinding: null,
   });
-  const target = planFor(snapshot).targets[0];
+  const target = {
+    ordinal: 0,
+    ...snapshot,
+    query: product.title,
+    donorSnapshotSha256: targetedWalmartDonorSnapshotSha256(snapshot),
+  } as ProductTruthTargetedWalmartEvidenceTarget;
   const exactOffer: RetailOffer = {
     retailer: "walmart",
     retailerProductId: "34312392",

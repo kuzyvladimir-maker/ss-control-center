@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
+  matchCanonicalProductTitle,
   type CanonicalProductIdentity,
 } from "./canonical-product-match";
 import {
@@ -29,9 +30,9 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION =
-  "product-truth-targeted-walmart-evidence-request/1.3.0" as const;
+  "product-truth-targeted-walmart-evidence-request/1.4.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION =
-  "product-truth-targeted-walmart-evidence-plan/1.3.0" as const;
+  "product-truth-targeted-walmart-evidence-plan/1.4.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_SCOPE_VERSION =
   "product-truth-targeted-walmart-evidence-scope/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION =
@@ -49,6 +50,10 @@ export const PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION =
   "product-truth-targeted-walmart-legacy-snapshot/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION =
   "product-truth-targeted-walmart-identity-derivation/1.0.0" as const;
+export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION =
+  "product-truth-targeted-walmart-listing-binding/1.0.0" as const;
+export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION =
+  "product-truth-targeted-walmart-listing-identity-derivation/1.0.0" as const;
 
 export interface ProductTruthTargetedWalmartLegacySnapshot {
   schemaVersion: typeof PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION;
@@ -57,11 +62,29 @@ export interface ProductTruthTargetedWalmartLegacySnapshot {
   sha256: string;
 }
 
+export interface ProductTruthTargetedWalmartListingBinding {
+  schemaVersion: typeof PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION;
+  listingKey: string;
+  channel: "walmart";
+  storeIndex: number;
+  sku: string;
+  componentIndex: number;
+  legacyComponentId: string;
+  listingScopeRowJson: string;
+  shippingRowJson: string;
+  componentRowJson: string;
+  sha256: string;
+}
+
 interface ProductTruthTargetedWalmartDonorSnapshotBase {
-  identityMode: "EXISTING_EXACT" | "EVIDENCE_VERIFIED_BOOTSTRAP";
+  identityMode:
+    | "EXISTING_EXACT"
+    | "EVIDENCE_VERIFIED_BOOTSTRAP"
+    | "LISTING_BOUND_BOOTSTRAP";
   identityDerivationVersion:
     | null
-    | typeof PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION;
+    | typeof PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION
+    | typeof PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION;
   donorProductId: string;
   donorOfferId: string;
   canonicalVariantId: string;
@@ -78,6 +101,7 @@ interface ProductTruthTargetedWalmartDonorSnapshotBase {
   normalizedProductUrl: string;
   via: "direct";
   isFirstParty: true;
+  listingBinding: ProductTruthTargetedWalmartListingBinding | null;
 }
 
 export interface ProductTruthTargetedWalmartExistingExactSnapshot
@@ -90,6 +114,7 @@ export interface ProductTruthTargetedWalmartExistingExactSnapshot
   decisionEvidenceHash: string;
   decisionEvidenceJson: string;
   legacySnapshot: null;
+  listingBinding: null;
 }
 
 export interface ProductTruthTargetedWalmartBootstrapSnapshot
@@ -103,11 +128,27 @@ export interface ProductTruthTargetedWalmartBootstrapSnapshot
   decisionEvidenceHash: null;
   decisionEvidenceJson: null;
   legacySnapshot: ProductTruthTargetedWalmartLegacySnapshot;
+  listingBinding: null;
+}
+
+export interface ProductTruthTargetedWalmartListingBoundBootstrapSnapshot
+  extends ProductTruthTargetedWalmartDonorSnapshotBase {
+  identityMode: "LISTING_BOUND_BOOTSTRAP";
+  identityDerivationVersion:
+    typeof PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION;
+  donorIdentityStatus: "candidate" | "legacy_unverified";
+  variantDecisionId: null;
+  decisionStatus: null;
+  decisionEvidenceHash: null;
+  decisionEvidenceJson: null;
+  legacySnapshot: ProductTruthTargetedWalmartLegacySnapshot;
+  listingBinding: ProductTruthTargetedWalmartListingBinding;
 }
 
 export type ProductTruthTargetedWalmartDonorSnapshot =
   | ProductTruthTargetedWalmartExistingExactSnapshot
-  | ProductTruthTargetedWalmartBootstrapSnapshot;
+  | ProductTruthTargetedWalmartBootstrapSnapshot
+  | ProductTruthTargetedWalmartListingBoundBootstrapSnapshot;
 
 export interface ProductTruthTargetedWalmartEvidencePlanRequest {
   schemaVersion: typeof PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION;
@@ -185,7 +226,10 @@ export interface ProductTruthTargetedWalmartEvidencePlan {
   };
   maxWallClockMs: typeof TARGETED_WALMART_MAX_WALL_CLOCK_MS;
   claims: {
-    identityMode: "EXISTING_EXACT" | "EVIDENCE_VERIFIED_BOOTSTRAP";
+    identityMode:
+      | "EXISTING_EXACT"
+      | "EVIDENCE_VERIFIED_BOOTSTRAP"
+      | "LISTING_BOUND_BOOTSTRAP";
     exactOneExistingDonor: true;
     exactOneExistingDirectFirstPartyWalmartOffer: true;
     initialDetailHarvestStateAbsent: true;
@@ -470,6 +514,359 @@ function parseLegacySnapshot(
   };
 }
 
+function requiredRowText(
+  row: Record<string, unknown>,
+  key: string,
+  label: string,
+): string {
+  const value = row[key];
+  if (typeof value !== "string" || !value.trim()) {
+    fail("TARGETED_EVIDENCE_LISTING_BINDING_INVALID", `${label}.${key} is required`);
+  }
+  return value;
+}
+
+function nullableIdentityText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function listingIdentityTokens(value: string): string[] {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/**
+ * Derives the exact base-product variant from the already-imported listing
+ * identity. This is deliberately listing-bound: a legacy donor title may prove
+ * the proposed structured identity, but may never invent a second field
+ * partition for the same physical product.
+ */
+export function deriveProductTruthTargetedWalmartListingCanonicalIdentity(input: {
+  listingScopeRow: Record<string, unknown>;
+  shippingRow: Record<string, unknown>;
+  componentRow: Record<string, unknown>;
+  donorProductRow: Record<string, unknown>;
+}): ReturnType<typeof buildCanonicalProductVariantKey> {
+  const listingKey = requiredRowText(
+    input.listingScopeRow,
+    "listingKey",
+    "listingScopeRow",
+  );
+  const channel = requiredRowText(
+    input.listingScopeRow,
+    "channel",
+    "listingScopeRow",
+  );
+  const sku = requiredRowText(input.listingScopeRow, "sku", "listingScopeRow");
+  const storeIndex = Number(input.listingScopeRow.storeIndex);
+  const componentIndex = Number(input.componentRow.idx);
+  if (
+    channel !== "walmart"
+    || !Number.isSafeInteger(storeIndex)
+    || storeIndex <= 0
+    || listingKey !== `walmart:${storeIndex}:${sku}`
+    || input.shippingRow.sku !== sku
+    || input.componentRow.sku !== sku
+    || !Number.isSafeInteger(componentIndex)
+    || componentIndex < 0
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "listing, shipping and component rows do not form one exact Walmart listing component",
+    );
+  }
+  const rawIdentity = input.shippingRow.productIdentity;
+  if (typeof rawIdentity !== "string" || !rawIdentity.trim()) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_IDENTITY_MISSING",
+      "SkuShippingData.productIdentity is required",
+    );
+  }
+  let identity: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(rawIdentity) as unknown;
+    if (!isRecord(parsed)) throw new Error("not an object");
+    identity = parsed;
+  } catch {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_IDENTITY_INVALID",
+      "SkuShippingData.productIdentity must encode one object",
+    );
+  }
+
+  let target: CanonicalProductIdentity;
+  if (identity.is_bundle === true) {
+    if (!Array.isArray(identity.components)) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_IDENTITY_INVALID",
+        "bundle identity must contain components",
+      );
+    }
+    const component = identity.components[componentIndex];
+    if (!isRecord(component)) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_COMPONENT_MISSING",
+        `bundle identity has no component ${componentIndex}`,
+      );
+    }
+    const brand = nullableIdentityText(input.donorProductRow.brand);
+    const product = nullableIdentityText(component.product);
+    if (!brand || !product) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_IDENTITY_INCOMPLETE",
+        "bundle component requires exact donor brand and product text",
+      );
+    }
+    const brandTokens = listingIdentityTokens(brand);
+    const productTokens = listingIdentityTokens(product);
+    if (
+      !brandTokens.length
+      || brandTokens.length >= productTokens.length
+      || brandTokens.some((token, index) => token !== productTokens[index])
+    ) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_BRAND_MISMATCH",
+        "bundle component product must begin with the exact donor brand",
+      );
+    }
+    target = {
+      brand,
+      productLine: productTokens.slice(brandTokens.length).join(" "),
+      flavor: nullableIdentityText(component.flavor),
+      form: nullableIdentityText(component.container_type),
+      size: nullableIdentityText(component.size),
+      outerPackCount: 1,
+    };
+  } else {
+    if (componentIndex !== 0) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_COMPONENT_INVALID",
+        "a non-bundle listing may bind only component zero",
+      );
+    }
+    target = {
+      brand: nullableIdentityText(identity.brand),
+      productLine: nullableIdentityText(identity.product_line),
+      flavor: nullableIdentityText(identity.flavor),
+      form: nullableIdentityText(identity.container_type),
+      size: nullableIdentityText(identity.size),
+      outerPackCount: 1,
+    };
+  }
+
+  let canonical: ReturnType<typeof buildCanonicalProductVariantKey>;
+  try {
+    canonical = buildCanonicalProductVariantKey(target);
+  } catch (error) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_IDENTITY_INCOMPLETE",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+  const donorTitle = nullableIdentityText(input.donorProductRow.title);
+  const proof = matchCanonicalProductTitle(
+    {
+      brand: canonical.normalized.brand,
+      productLine: canonical.normalized.productLine,
+      flavor: canonical.normalized.flavor,
+      modifiers: canonical.normalized.modifiers,
+      form: canonical.normalized.form,
+      size: `${canonical.normalized.size.baseAmount} ${canonical.normalized.size.baseUnit}`,
+      outerPackCount: 1,
+    },
+    { title: donorTitle, brand: null },
+  );
+  if (proof.verdict !== "EXACT_IDENTITY") {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_DONOR_MATCH_REJECTED",
+      proof.reasonCodes.join(",") || proof.verdict,
+    );
+  }
+  return canonical;
+}
+
+export function buildProductTruthTargetedWalmartListingBinding(input: {
+  listingScopeRow: Record<string, unknown>;
+  shippingRow: Record<string, unknown>;
+  componentRow: Record<string, unknown>;
+  donorProductRow: Record<string, unknown>;
+}): ProductTruthTargetedWalmartListingBinding {
+  const listingScopeRowJson = renderProductTruthOperationalJson(input.listingScopeRow);
+  const shippingRowJson = renderProductTruthOperationalJson(input.shippingRow);
+  const componentRowJson = renderProductTruthOperationalJson(input.componentRow);
+  const listingKey = requiredRowText(
+    input.listingScopeRow,
+    "listingKey",
+    "listingScopeRow",
+  );
+  const channel = requiredRowText(
+    input.listingScopeRow,
+    "channel",
+    "listingScopeRow",
+  );
+  const sku = requiredRowText(input.listingScopeRow, "sku", "listingScopeRow");
+  const storeIndex = Number(input.listingScopeRow.storeIndex);
+  const componentIndex = Number(input.componentRow.idx);
+  const legacyComponentId = requiredRowText(
+    input.componentRow,
+    "id",
+    "componentRow",
+  );
+  if (
+    channel !== "walmart"
+    || !Number.isSafeInteger(storeIndex)
+    || storeIndex <= 0
+    || !Number.isSafeInteger(componentIndex)
+    || componentIndex < 0
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "listing binding channel/store/component is invalid",
+    );
+  }
+  // Run the strict derivation now so a binding can never seal rows that are
+  // structurally valid but identity-incompatible.
+  deriveProductTruthTargetedWalmartListingCanonicalIdentity(input);
+  return {
+    schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION,
+    listingKey,
+    channel: "walmart",
+    storeIndex,
+    sku,
+    componentIndex,
+    legacyComponentId,
+    listingScopeRowJson,
+    shippingRowJson,
+    componentRowJson,
+    sha256: productTruthOperationalSha256({
+      listingScopeRowJson,
+      shippingRowJson,
+      componentRowJson,
+    }),
+  };
+}
+
+function parseListingBinding(
+  value: unknown,
+  donorProductId: string,
+  donorProductRow: Record<string, unknown>,
+  canonicalVariantId: string,
+  canonicalIdentityHash: string,
+  canonicalIdentityJson: string,
+): ProductTruthTargetedWalmartListingBinding {
+  if (!isRecord(value)) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "listingBinding must be an object",
+    );
+  }
+  exactKeys(value, [
+    "schemaVersion", "listingKey", "channel", "storeIndex", "sku",
+    "componentIndex", "legacyComponentId", "listingScopeRowJson",
+    "shippingRowJson", "componentRowJson", "sha256",
+  ], "listingBinding");
+  if (
+    value.schemaVersion !== PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION
+    || value.channel !== "walmart"
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "listing binding version/channel differs",
+    );
+  }
+  const scope = canonicalBoundRowJson(
+    value.listingScopeRowJson,
+    "listingBinding.listingScopeRowJson",
+  );
+  const shipping = canonicalBoundRowJson(
+    value.shippingRowJson,
+    "listingBinding.shippingRowJson",
+  );
+  const component = canonicalBoundRowJson(
+    value.componentRowJson,
+    "listingBinding.componentRowJson",
+  );
+  const listingKey = safeId(value.listingKey, "listingBinding.listingKey");
+  const sku = exactText(value.sku, "listingBinding.sku", 300);
+  const storeIndex = finiteNonNegative(value.storeIndex, "listingBinding.storeIndex");
+  const componentIndex = finiteNonNegative(
+    value.componentIndex,
+    "listingBinding.componentIndex",
+  );
+  const legacyComponentId = safeId(
+    value.legacyComponentId,
+    "listingBinding.legacyComponentId",
+  );
+  const linkedDonors = [...new Set(
+    [component.row.contentDonorProductId, component.row.donorProductId]
+      .filter((entry): entry is string => typeof entry === "string" && Boolean(entry)),
+  )];
+  const digest = exactSha(value.sha256, "listingBinding.sha256");
+  if (
+    !Number.isSafeInteger(storeIndex)
+    || storeIndex <= 0
+    || !Number.isSafeInteger(componentIndex)
+    || listingKey !== `walmart:${storeIndex}:${sku}`
+    || scope.row.listingKey !== listingKey
+    || scope.row.channel !== "walmart"
+    || Number(scope.row.storeIndex) !== storeIndex
+    || scope.row.sku !== sku
+    || shipping.row.sku !== sku
+    || component.row.sku !== sku
+    || Number(component.row.idx) !== componentIndex
+    || component.row.id !== legacyComponentId
+    || linkedDonors.length !== 1
+    || linkedDonors[0] !== donorProductId
+    || digest !== productTruthOperationalSha256({
+      listingScopeRowJson: scope.text,
+      shippingRowJson: shipping.text,
+      componentRowJson: component.text,
+    })
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "sealed rows do not prove one exact listing/component/donor relationship",
+    );
+  }
+  const canonical = deriveProductTruthTargetedWalmartListingCanonicalIdentity({
+    listingScopeRow: scope.row,
+    shippingRow: shipping.row,
+    componentRow: component.row,
+    donorProductRow,
+  });
+  if (
+    canonical.canonicalVariantId !== canonicalVariantId
+    || canonical.identityHash !== canonicalIdentityHash
+    || canonical.identityJson !== canonicalIdentityJson
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_VARIANT_MISMATCH",
+      "listing-derived variant differs from the donor snapshot target",
+    );
+  }
+  return {
+    schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION,
+    listingKey,
+    channel: "walmart",
+    storeIndex,
+    sku,
+    componentIndex,
+    legacyComponentId,
+    listingScopeRowJson: scope.text,
+    shippingRowJson: shipping.text,
+    componentRowJson: component.text,
+    sha256: digest,
+  };
+}
+
 export function parseProductTruthTargetedWalmartDonorSnapshot(
   value: unknown,
 ): ProductTruthTargetedWalmartDonorSnapshot {
@@ -482,6 +879,7 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
     "canonicalVariantKeyVersion",
     "canonicalIdentityHash", "canonicalIdentityJson", "retailer", "retailerProductId",
     "normalizedProductUrl", "via", "isFirstParty", "legacySnapshot",
+    "listingBinding",
   ], "donorSnapshot");
   if (
     value.matcherVersion !== CANONICAL_PRODUCT_MATCHER_VERSION
@@ -496,6 +894,7 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
   if (
     value.identityMode !== "EXISTING_EXACT"
     && value.identityMode !== "EVIDENCE_VERIFIED_BOOTSTRAP"
+    && value.identityMode !== "LISTING_BOUND_BOOTSTRAP"
   ) fail("TARGETED_EVIDENCE_IDENTITY_MODE_INVALID", "identityMode is unsupported");
   const donorProductId = safeId(value.donorProductId, "donorSnapshot.donorProductId");
   const donorOfferId = safeId(value.donorOfferId, "donorSnapshot.donorOfferId");
@@ -605,6 +1004,7 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
       value.donorIdentityStatus !== "exact_confirmed"
       || value.decisionStatus !== "exact_confirmed"
       || value.legacySnapshot !== null
+      || value.listingBinding !== null
     ) {
       fail("TARGETED_EVIDENCE_IDENTITY_NOT_EXACT", "existing mode requires one exact alias and no legacy snapshot");
     }
@@ -622,12 +1022,17 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
       decisionEvidenceHash: decisionEvidence.evidenceHash,
       decisionEvidenceJson: decisionEvidence.evidenceJson,
       legacySnapshot: null,
+      listingBinding: null,
     };
   }
+  const legacySnapshot = parseLegacySnapshot(
+    value.legacySnapshot,
+    donorProductId,
+    donorOfferId,
+    retailerProductId,
+    normalizedProductUrl,
+  );
   if (
-    value.identityDerivationVersion
-      !== PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION
-    ||
     !["candidate", "legacy_unverified"].includes(String(value.donorIdentityStatus))
     || value.variantDecisionId !== null
     || value.decisionStatus !== null
@@ -637,6 +1042,51 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
     fail(
       "TARGETED_EVIDENCE_BOOTSTRAP_STATE_INVALID",
       "bootstrap mode requires an unconfirmed donor and no pre-existing decision",
+    );
+  }
+  if (value.identityMode === "LISTING_BOUND_BOOTSTRAP") {
+    if (
+      value.identityDerivationVersion
+        !== PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION
+    ) {
+      fail(
+        "TARGETED_EVIDENCE_BOOTSTRAP_STATE_INVALID",
+        "listing-bound bootstrap derivation version differs",
+      );
+    }
+    const product = canonicalBoundRowJson(
+      legacySnapshot.donorProductRowJson,
+      "legacySnapshot.donorProductRowJson",
+    );
+    return {
+      ...common,
+      identityMode: "LISTING_BOUND_BOOTSTRAP",
+      identityDerivationVersion:
+        PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION,
+      donorIdentityStatus: value.donorIdentityStatus as "candidate" | "legacy_unverified",
+      variantDecisionId: null,
+      decisionStatus: null,
+      decisionEvidenceHash: null,
+      decisionEvidenceJson: null,
+      legacySnapshot,
+      listingBinding: parseListingBinding(
+        value.listingBinding,
+        donorProductId,
+        product.row,
+        common.canonicalVariantId,
+        canonicalIdentityHash,
+        canonicalIdentityJson,
+      ),
+    };
+  }
+  if (
+    value.identityDerivationVersion
+      !== PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION
+    || value.listingBinding !== null
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_BOOTSTRAP_STATE_INVALID",
+      "legacy bootstrap derivation/listing binding differs",
     );
   }
   return {
@@ -649,13 +1099,8 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
     decisionStatus: null,
     decisionEvidenceHash: null,
     decisionEvidenceJson: null,
-    legacySnapshot: parseLegacySnapshot(
-      value.legacySnapshot,
-      donorProductId,
-      donorOfferId,
-      retailerProductId,
-      normalizedProductUrl,
-    ),
+    legacySnapshot,
+    listingBinding: null,
   };
 }
 
@@ -867,6 +1312,15 @@ export function buildProductTruthTargetedWalmartEvidencePlan(input: {
   const actualDonorSnapshot = parseProductTruthTargetedWalmartDonorSnapshot(
     input.actualDonorSnapshot,
   );
+  if (
+    request.donorSnapshot.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP"
+    || actualDonorSnapshot.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP"
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_UNBOUND_BOOTSTRAP_RETIRED",
+      "new bootstrap plans must be bound to one authoritative listing component",
+    );
+  }
   if (request.expectedTargetFingerprint !== targetFingerprint) {
     fail("TARGETED_EVIDENCE_TARGET_MISMATCH", "request is bound to another database target");
   }
@@ -941,9 +1395,9 @@ export function buildProductTruthTargetedWalmartEvidencePlan(input: {
       exactOneExistingDonor: true,
       exactOneExistingDirectFirstPartyWalmartOffer: true,
       initialDetailHarvestStateAbsent: true,
-      canonicalVariantWritesMax: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP" ? 1 : 0,
-      variantDecisionWritesMax: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP" ? 1 : 0,
-      targetProductProjectionMayChange: target.identityMode === "EVIDENCE_VERIFIED_BOOTSTRAP",
+      canonicalVariantWritesMax: target.identityMode === "LISTING_BOUND_BOOTSTRAP" ? 1 : 0,
+      variantDecisionWritesMax: target.identityMode === "LISTING_BOUND_BOOTSTRAP" ? 1 : 0,
+      targetProductProjectionMayChange: target.identityMode === "LISTING_BOUND_BOOTSTRAP",
       unrelatedOfferWrites: false,
       unrelatedProductWrites: false,
       openFoodFactsCalls: false,
@@ -984,7 +1438,8 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
     "matcherReleaseSha256", "decisionEvidenceHash", "decisionEvidenceJson",
     "canonicalVariantKeyVersion",
     "canonicalIdentityHash", "canonicalIdentityJson", "retailer", "retailerProductId",
-    "normalizedProductUrl", "via", "isFirstParty", "legacySnapshot", "query", "donorSnapshotSha256",
+    "normalizedProductUrl", "via", "isFirstParty", "legacySnapshot",
+    "listingBinding", "query", "donorSnapshotSha256",
   ], "plan.targets[0]");
   if (rawTarget.ordinal !== 0) fail("TARGETED_EVIDENCE_PLAN_INVALID", "target ordinal must be zero");
   const donorSnapshot = parseProductTruthTargetedWalmartDonorSnapshot({
@@ -1010,6 +1465,7 @@ export function parseProductTruthTargetedWalmartEvidencePlan(
     via: rawTarget.via,
     isFirstParty: rawTarget.isFirstParty,
     legacySnapshot: rawTarget.legacySnapshot,
+    listingBinding: rawTarget.listingBinding,
   });
   const request: ProductTruthTargetedWalmartEvidencePlanRequest = {
     schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
