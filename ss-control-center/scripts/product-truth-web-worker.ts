@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import {
   mkdtemp,
   readFile,
+  realpath,
   rm,
   writeFile,
 } from "node:fs/promises";
@@ -24,6 +25,7 @@ import type {
 
 const POLL_MS = 5_000;
 const HEARTBEAT_MS = 30_000;
+const MAX_GIT_OUTPUT_BYTES = 64 * 1024;
 const RUNNER_PATH = resolve(
   process.cwd(),
   "scripts/product-truth-runner.ts",
@@ -57,6 +59,90 @@ function exactEnv(name: string): string {
 
 function sha256(value: Uint8Array | string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+async function runPinnedGit(args: readonly string[]): Promise<string> {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn("git", [...args], {
+      cwd: process.cwd(),
+      env: {
+        PATH: process.env.PATH,
+        GIT_CONFIG_NOSYSTEM: "1",
+        GIT_TERMINAL_PROMPT: "0",
+      },
+      shell: false,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let byteSize = 0;
+    let outputTooLarge = false;
+    const capture = (target: Buffer[]) => (chunk: Buffer) => {
+      byteSize += chunk.byteLength;
+      if (byteSize > MAX_GIT_OUTPUT_BYTES) {
+        outputTooLarge = true;
+        child.kill("SIGTERM");
+        return;
+      }
+      target.push(chunk);
+    };
+    child.stdout.on("data", capture(stdout));
+    child.stderr.on("data", capture(stderr));
+    child.on("error", rejectPromise);
+    child.on("close", (code) => {
+      if (outputTooLarge) {
+        rejectPromise(
+          new Error("pinned git verification exceeded its output limit"),
+        );
+        return;
+      }
+      if (code !== 0) {
+        rejectPromise(
+          new Error(
+            `pinned git verification failed: ${Buffer.concat(stderr)
+              .toString("utf8")
+              .trim() || `exit ${String(code)}`}`,
+          ),
+        );
+        return;
+      }
+      resolvePromise(Buffer.concat(stdout).toString("utf8"));
+    });
+  });
+}
+
+async function verifyPinnedCheckout(runtime: WorkerRuntime): Promise<void> {
+  const [topLevelRaw, commitRaw, treeRaw, status] = await Promise.all([
+    runPinnedGit(["rev-parse", "--show-toplevel"]),
+    runPinnedGit(["rev-parse", "HEAD"]),
+    runPinnedGit(["rev-parse", "HEAD^{tree}"]),
+    runPinnedGit([
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all",
+      "--ignore-submodules=none",
+    ]),
+  ]);
+  const topLevel = topLevelRaw.trim();
+  const commitSha = commitRaw.trim();
+  const treeSha = treeRaw.trim();
+  const [actualCwd, expectedCwd] = await Promise.all([
+    realpath(process.cwd()),
+    realpath(join(topLevel, "ss-control-center")),
+  ]);
+  if (actualCwd !== expectedCwd) {
+    fail("worker must start from the pinned ss-control-center directory");
+  }
+  if (status.length !== 0) {
+    fail("worker checkout contains tracked or untracked release drift");
+  }
+  if (
+    commitSha !== runtime.release.commitSha
+    || treeSha !== runtime.release.treeSha
+    || sha256(`${treeSha}\n`) !== runtime.release.executableTreeSha256
+  ) {
+    fail("worker checkout differs from the pinned release");
+  }
 }
 
 function runtimeFromEnv(): WorkerRuntime {
@@ -358,6 +444,7 @@ async function executeClaim(
 
 async function main(): Promise<void> {
   const runtime = runtimeFromEnv();
+  await verifyPinnedCheckout(runtime);
   for (;;) {
     const response = await api(
       runtime,

@@ -111,6 +111,24 @@ test("worker script uses spawn shell:false and cannot invoke metered commands", 
   assert.doesNotMatch(script, /execSync|execFileSync|spawnSync|shell:\s*true/u);
 });
 
+test("worker proves its clean pinned checkout before its first control API call", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const verifierAt = script.indexOf("await verifyPinnedCheckout(runtime)");
+  const claimAt = script.indexOf('"/api/external/product-truth/control/claim"');
+  assert.ok(verifierAt >= 0);
+  assert.ok(claimAt > verifierAt);
+  assert.match(script, /rev-parse",\s*"HEAD\^\{tree\}"/u);
+  assert.match(script, /--porcelain=v1/u);
+  assert.match(script, /--untracked-files=all/u);
+  assert.match(
+    script,
+    /sha256\(`\$\{treeSha\}\\n`\)\s*!==\s*runtime\.release\.executableTreeSha256/u,
+  );
+});
+
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {
   const proxy = await readFile(
     new URL("../../../proxy.ts", import.meta.url),
