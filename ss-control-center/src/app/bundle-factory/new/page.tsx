@@ -62,6 +62,60 @@ interface CatalogFlavor {
   art_approved: boolean | null;
 }
 
+interface WalmartReadinessCandidate {
+  donor_product_id: string;
+  canonical_variant_id: string;
+  title: string;
+  brand: string;
+  ready: boolean;
+  missing: string[];
+  data_collection: {
+    supported: boolean;
+    reason: string;
+  } | null;
+}
+
+interface WalmartReadinessResult {
+  catalog: {
+    matched_variants: number;
+    ready_variants: number;
+    enough_ready: boolean;
+    candidates: WalmartReadinessCandidate[];
+  };
+  diagnosis: {
+    capability_gaps: Array<{ code: string; message: string }>;
+    data_gap: {
+      requested_variants: number;
+      ready_variants: number;
+      missing_ready_variants: number;
+    } | null;
+    no_exact_matches: boolean;
+  };
+  fallback: {
+    required: boolean;
+    engine: string | null;
+    target_donor_product_ids: string[];
+    automatic_web_execution: false;
+    automatic_web_execution_reason: string;
+    recommendation: string | null;
+  };
+}
+
+const WALMART_GAP_LABELS: Record<string, string> = {
+  EXACT_CONTENT_EVIDENCE: "verified exact product content",
+  TITLE: "exact title",
+  MAIN_IMAGE: "main image",
+  MANUFACTURER_UPC: "manufacturer UPC",
+  INGREDIENTS: "ingredients",
+  NUTRITION: "nutrition facts",
+  ALLERGENS: "allergen information",
+  FRESH_LOCAL_PRICE: "current exact purchase price",
+  CATEGORY: "category evidence",
+  SHELF_STABLE_CLASSIFICATION: "shelf-stable classification",
+  CURRENT_MATCHER_PROVENANCE: "current exact-identity proof",
+  POLICY_ELIGIBILITY: "Walmart pilot eligibility evidence",
+};
+
 export default function StudioStartPage() {
   const router = useRouter();
 
@@ -79,6 +133,11 @@ export default function StudioStartPage() {
   const [selectedFlavors, setSelectedFlavors] = useState<Set<string>>(new Set());
   const [listingCount, setListingCount] = useState("");
   const [packCount, setPackCount] = useState("");
+  const [walmartReadiness, setWalmartReadiness] =
+    useState<WalmartReadinessResult | null>(null);
+  const [walmartReadinessLoading, setWalmartReadinessLoading] = useState(false);
+  const [walmartReadinessError, setWalmartReadinessError] =
+    useState<string | null>(null);
 
   async function loadFlavors() {
     const theme = prompt.trim();
@@ -110,6 +169,40 @@ export default function StudioStartPage() {
       else next.add(key);
       return next;
     });
+  }
+
+  async function checkWalmartReadiness() {
+    const theme = prompt.trim();
+    if (theme.length < 3) {
+      setWalmartReadinessError("Describe the products first.");
+      return;
+    }
+    setWalmartReadinessLoading(true);
+    setWalmartReadinessError(null);
+    try {
+      const search = new URLSearchParams({ prompt: theme });
+      if (structuredListingCount != null) {
+        search.set("listing_count", String(structuredListingCount));
+      }
+      if (structuredPackCount != null) {
+        search.set("pack_count", String(structuredPackCount));
+      }
+      const res = await fetch(
+        `/api/bundle-factory/walmart/readiness?${search.toString()}`,
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error ?? "Walmart readiness check failed");
+      }
+      setWalmartReadiness(data as WalmartReadinessResult);
+    } catch (e) {
+      setWalmartReadinessError(
+        e instanceof Error ? e.message : "Walmart readiness check failed",
+      );
+      setWalmartReadiness(null);
+    } finally {
+      setWalmartReadinessLoading(false);
+    }
   }
 
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -248,7 +341,10 @@ export default function StudioStartPage() {
           </p>
           <textarea
             value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            onChange={(e) => {
+              setPrompt(e.target.value);
+              setWalmartReadiness(null);
+            }}
             rows={3}
             placeholder="e.g. 50 Uncrustables gift sets in different variations"
             className="mt-2 w-full resize-y rounded-[12px] border border-rule bg-surface px-3.5 py-3 text-[14px] leading-relaxed text-ink outline-none placeholder:text-ink-4 focus:border-silver-line"
@@ -258,7 +354,10 @@ export default function StudioStartPage() {
               <button
                 key={ex}
                 type="button"
-                onClick={() => setPrompt(ex)}
+                onClick={() => {
+                  setPrompt(ex);
+                  setWalmartReadiness(null);
+                }}
                 className="rounded-full border border-rule bg-surface px-2.5 py-1 text-[11.5px] text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink"
               >
                 {ex}
@@ -270,7 +369,8 @@ export default function StudioStartPage() {
         {/* FLAVORS — real catalog flavors for the typed theme; pick exactly
             which to build and how many listings. Optional: skipping it keeps
             the classic prompt-only behaviour. */}
-        <div className="rounded-[12px] border border-rule bg-surface-tint/40 px-3.5 py-3.5">
+        {channel !== "WALMART" && (
+          <div className="rounded-[12px] border border-rule bg-surface-tint/40 px-3.5 py-3.5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-[13px] font-semibold text-ink">Flavors from the catalog</div>
@@ -362,7 +462,8 @@ export default function StudioStartPage() {
               )}
             </>
           )}
-        </div>
+          </div>
+        )}
 
         {/* SELL ON — where it publishes. */}
         <div>
@@ -372,7 +473,10 @@ export default function StudioStartPage() {
           </p>
           <select
             value={channel}
-            onChange={(e) => setChannel(e.target.value)}
+            onChange={(e) => {
+              setChannel(e.target.value);
+              setWalmartReadiness(null);
+            }}
             className="mt-2 w-full rounded-[10px] border border-rule bg-surface px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-silver-line"
           >
             {CHANNELS.map((c) => (
@@ -404,7 +508,10 @@ export default function StudioStartPage() {
                     min={1}
                     max={2}
                     value={listingCount}
-                    onChange={(e) => setListingCount(e.target.value)}
+                    onChange={(e) => {
+                      setListingCount(e.target.value);
+                      setWalmartReadiness(null);
+                    }}
                     placeholder={
                       walmartRequest?.prompt_listing_count != null
                         ? String(walmartRequest.prompt_listing_count)
@@ -420,7 +527,10 @@ export default function StudioStartPage() {
                     min={2}
                     max={3}
                     value={packCount}
-                    onChange={(e) => setPackCount(e.target.value)}
+                    onChange={(e) => {
+                      setPackCount(e.target.value);
+                      setWalmartReadiness(null);
+                    }}
                     placeholder={
                       walmartRequest?.prompt_pack_count != null
                         ? String(walmartRequest.prompt_pack_count)
@@ -449,6 +559,130 @@ export default function StudioStartPage() {
                     pack of {walmartRequest?.pack_count ?? 2}
                   </span>
                 </p>
+              )}
+            </div>
+
+            <div className="rounded-[12px] border border-rule bg-surface px-3.5 py-3.5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[13px] font-semibold text-ink">
+                    Product data readiness
+                  </div>
+                  <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
+                    Checks the shared Product Truth donor catalog. This is
+                    read-only: it does not call donor sites or spend provider
+                    credits.
+                  </p>
+                </div>
+                <Btn
+                  size="sm"
+                  variant="ghost"
+                  onClick={checkWalmartReadiness}
+                  disabled={walmartReadinessLoading}
+                >
+                  {walmartReadinessLoading
+                    ? "Checking…"
+                    : walmartReadiness
+                      ? "Check again"
+                      : "Check products"}
+                </Btn>
+              </div>
+
+              {walmartReadinessError && (
+                <p className="mt-3 text-[12px] text-danger">
+                  {walmartReadinessError}
+                </p>
+              )}
+
+              {walmartReadiness && (
+                <div className="mt-3 space-y-3">
+                  <div
+                    className={cn(
+                      "rounded-[10px] border px-3 py-2.5 text-[12px] leading-relaxed",
+                      walmartReadiness.catalog.enough_ready
+                        ? "border-green/20 bg-green/5 text-ink-2"
+                        : "border-danger/20 bg-danger-tint text-danger",
+                    )}
+                  >
+                    {walmartReadiness.catalog.enough_ready
+                      ? `${walmartReadiness.catalog.ready_variants} exact variants are ready for the requested ${walmartRequest?.listing_count ?? 2} listings.`
+                      : `${walmartReadiness.catalog.ready_variants} of ${walmartRequest?.listing_count ?? 2} requested variants are ready now.`}
+                  </div>
+
+                  {walmartReadiness.diagnosis.capability_gaps.length > 0 && (
+                    <div className="rounded-[10px] border border-rule bg-bg-elev px-3 py-2.5 text-[12px] leading-relaxed text-ink-2">
+                      <p className="font-semibold">Engine capability limit</p>
+                      {walmartReadiness.diagnosis.capability_gaps.map((gap) => (
+                        <p key={gap.code} className="mt-1 text-ink-3">
+                          {gap.message}
+                        </p>
+                      ))}
+                      <p className="mt-1 font-medium">
+                        Collecting more product data cannot fix this. A new
+                        tested Walmart engine release is required.
+                      </p>
+                    </div>
+                  )}
+
+                  {walmartReadiness.catalog.candidates.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {walmartReadiness.catalog.candidates
+                        .slice(0, 12)
+                        .map((candidate) => (
+                          <div
+                            key={candidate.canonical_variant_id}
+                            className="rounded-[10px] border border-rule bg-surface-tint/40 px-3 py-2"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="text-[12.5px] font-medium text-ink">
+                                {candidate.title}
+                              </span>
+                              <span
+                                className={cn(
+                                  "shrink-0 text-[11px] font-semibold",
+                                  candidate.ready ? "text-green" : "text-danger",
+                                )}
+                              >
+                                {candidate.ready ? "READY" : "DATA MISSING"}
+                              </span>
+                            </div>
+                            {!candidate.ready && (
+                              <p className="mt-1 text-[11.5px] leading-snug text-ink-3">
+                                Missing:{" "}
+                                {candidate.missing
+                                  .map(
+                                    (gap) =>
+                                      WALMART_GAP_LABELS[gap] ?? gap,
+                                  )
+                                  .join(", ") || "verified Product Truth evidence"}
+                                {candidate.data_collection?.supported
+                                  ? " · targeted collection is supported"
+                                  : " · broader Product Truth discovery is required"}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-[10px] border border-rule bg-bg-elev px-3 py-2.5 text-[12px] leading-relaxed text-ink-3">
+                      No exact Product Truth variant matched this request.
+                    </p>
+                  )}
+
+                  {walmartReadiness.fallback.required && (
+                    <div className="rounded-[10px] border border-silver-line bg-bg-elev px-3 py-2.5 text-[12px] leading-relaxed text-ink-2">
+                      <p className="font-semibold">Recommended next step</p>
+                      <p className="mt-1">
+                        {walmartReadiness.fallback.recommendation}
+                      </p>
+                      <p className="mt-1 text-ink-3">
+                        The data-collection worker is not activated in the
+                        Command Center yet, so this check did not pretend to
+                        start a collection run.
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

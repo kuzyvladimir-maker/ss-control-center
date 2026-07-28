@@ -9,6 +9,8 @@ import {
   parseWalmartPromptIntent,
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
+import { scoreProductTruthWalmartRequestMatch } from
+  "@/lib/sourcing/product-truth-read-contract";
 
 test("legacy Studio routes Amazon normally but never creates Walmart work", () => {
   assert.equal(studioChannelRoute("AMAZON_SALUTEM"), "LEGACY_STUDIO_ALLOWED");
@@ -42,6 +44,15 @@ test("Russian Campbell's request preserves 5 listings and 8 cans instead of appl
     request.blockers.map((blocker) => blocker.code),
     ["LISTING_COUNT_OUTSIDE_PILOT", "PACK_COUNT_OUTSIDE_PILOT"],
   );
+  assert.deepEqual(
+    request.blockers.map((blocker) => blocker.kind),
+    ["ENGINE_CAPABILITY_GAP", "ENGINE_CAPABILITY_GAP"],
+  );
+  assert.ok(
+    request.blockers.every(
+      (blocker) => blocker.can_data_collection_fix === false,
+    ),
+  );
 });
 
 test("structured Walmart fields must agree with numbers written in the prompt", () => {
@@ -54,6 +65,10 @@ test("structured Walmart fields must agree with numbers written in the prompt", 
   assert.deepEqual(
     request.blockers.map((blocker) => blocker.code),
     ["LISTING_COUNT_CONFLICT", "PACK_COUNT_CONFLICT"],
+  );
+  assert.deepEqual(
+    request.blockers.map((blocker) => blocker.kind),
+    ["INPUT_CONFLICT", "INPUT_CONFLICT"],
   );
 });
 
@@ -81,4 +96,30 @@ test("verified Walmart pilot scope remains accepted and defaults are explicit", 
   assert.equal(accepted.listing_count, 1);
   assert.equal(accepted.pack_count, 3);
   assert.deepEqual(accepted.blockers, []);
+});
+
+test("Product Truth request matcher finds the Campbell's brand inside a Russian Walmart brief", () => {
+  const query =
+    "Создай 5 листингов с использованием консервированных супов Campbell's, по 8 банок.";
+  assert.ok(
+    scoreProductTruthWalmartRequestMatch({
+      query,
+      title: "Campbell's Condensed Tomato Soup, 10.75 oz Can",
+      brand: "Campbell's",
+      productLine: "Condensed Soup",
+      flavor: "Tomato",
+      category: "Canned Soup",
+    }) >= 30,
+  );
+  assert.equal(
+    scoreProductTruthWalmartRequestMatch({
+      query,
+      title: "RITZ Bits Cheese Sandwich Crackers, 8.8 oz",
+      brand: "RITZ",
+      productLine: "Bits",
+      flavor: "Cheese",
+      category: "Crackers",
+    }),
+    0,
+  );
 });

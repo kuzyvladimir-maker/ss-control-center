@@ -225,6 +225,21 @@ test("existing exact snapshots bind decision evidence bytes and reject forged pr
   assert.notEqual(plan.targetSetSha256, changedPlan.targetSetSha256);
 });
 
+test("existing exact snapshots preserve canonical decision evidence with a trailing LF", () => {
+  const snapshot = exactSnapshot();
+  const evidenceJson = `${DECISION_EVIDENCE_JSON}\n`;
+  const parsed = parseProductTruthTargetedWalmartDonorSnapshot({
+    ...snapshot,
+    decisionEvidenceHash: createHash("sha256").update(evidenceJson).digest("hex"),
+    decisionEvidenceJson: evidenceJson,
+  });
+  assert.equal(parsed.decisionEvidenceJson, evidenceJson);
+  assert.equal(
+    parsed.decisionEvidenceHash,
+    createHash("sha256").update(evidenceJson).digest("hex"),
+  );
+});
+
 test("existing and evidence-verified bootstrap plans seal honest write claims", () => {
   const existing = planFor(exactSnapshot());
   assert.equal(existing.claims.identityMode, "EXISTING_EXACT");

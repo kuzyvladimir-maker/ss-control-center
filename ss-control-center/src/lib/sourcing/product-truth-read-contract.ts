@@ -1517,9 +1517,11 @@ export {
   ProductTruthRecipeInputError as ProductTruthNewSkuReadError,
   buildWalmartPilotCandidateFromNewSkuView as buildProductTruthWalmartPilotCandidate,
   buildProductTruthRecipeComponentFromRows as buildProductTruthNewSkuRecipeComponentFromRows,
+  diagnoseWalmartPilotRequest as diagnoseProductTruthWalmartPilotRequest,
   listWalmartPilotCandidates as listProductTruthWalmartPilotCandidates,
   readProductTruthRecipeInput as readProductTruthNewSkuView,
   readWalmartPilotCandidate as readProductTruthWalmartPilotCandidate,
+  scoreProductTruthWalmartRequestMatch,
 } from "./product-truth-new-sku-view";
 
 export type {
@@ -1530,6 +1532,9 @@ export type {
   ProductTruthRecipeInput as ProductTruthNewSkuView,
   ProductTruthRecipeReadOptions as ProductTruthNewSkuReadOptions,
   ProductTruthRecipeRequest as ProductTruthNewSkuRecipeRequest,
+  ProductTruthWalmartRequestCandidateDiagnostic,
+  ProductTruthWalmartRequestDiagnostic,
+  ProductTruthWalmartRequestGap,
   ProductTruthWalmartPilotCandidateRead,
   ProductTruthWalmartPilotCandidateReadOptions,
   WalmartPilotCandidate as ProductTruthWalmartPilotCandidate,

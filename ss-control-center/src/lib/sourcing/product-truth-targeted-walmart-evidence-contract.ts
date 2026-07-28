@@ -235,6 +235,25 @@ function exactText(value: unknown, label: string, maximum = 500): string {
   return value;
 }
 
+function exactJsonBytesText(
+  value: unknown,
+  label: string,
+  maximum: number,
+): string {
+  if (
+    typeof value !== "string"
+    || value.trim().length === 0
+    || value.length > maximum
+    || value.includes("\0")
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_INPUT_INVALID",
+      `${label} must be bounded exact JSON bytes`,
+    );
+  }
+  return value;
+}
+
 function safeId(value: unknown, label: string): string {
   const result = exactText(value, label, 160);
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(result)) {
@@ -279,7 +298,7 @@ function parseExactDecisionEvidence(value: {
     value.evidenceHash,
     "donorSnapshot.decisionEvidenceHash",
   );
-  const evidenceJson = exactText(
+  const evidenceJson = exactJsonBytesText(
     value.evidenceJson,
     "donorSnapshot.decisionEvidenceJson",
     200_000,

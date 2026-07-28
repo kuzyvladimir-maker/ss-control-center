@@ -18,8 +18,14 @@ export type WalmartStudioRequestBlockerCode =
   | "PACK_COUNT_CONFLICT"
   | "PACK_COUNT_OUTSIDE_PILOT";
 
+export type WalmartStudioRequestBlockerKind =
+  | "INPUT_CONFLICT"
+  | "ENGINE_CAPABILITY_GAP";
+
 export interface WalmartStudioRequestBlocker {
   code: WalmartStudioRequestBlockerCode;
+  kind: WalmartStudioRequestBlockerKind;
+  can_data_collection_fix: false;
   message: string;
 }
 
@@ -85,6 +91,8 @@ export function resolveWalmartStudioRequestIntent(input: {
   ) {
     blockers.push({
       code: "LISTING_COUNT_CONFLICT",
+      kind: "INPUT_CONFLICT",
+      can_data_collection_fix: false,
       message:
         `The prompt asks for ${parsed.listing_count} listings, but the ` +
         `Listings field says ${input.listingCount}. Make them match.`,
@@ -93,6 +101,8 @@ export function resolveWalmartStudioRequestIntent(input: {
   if (listingCount > WALMART_PILOT_MAX_LISTINGS) {
     blockers.push({
       code: "LISTING_COUNT_OUTSIDE_PILOT",
+      kind: "ENGINE_CAPABILITY_GAP",
+      can_data_collection_fix: false,
       message:
         `The request asks for ${listingCount} listings. The currently ` +
         `verified Walmart pilot can prepare only 1–${WALMART_PILOT_MAX_LISTINGS} ` +
@@ -106,6 +116,8 @@ export function resolveWalmartStudioRequestIntent(input: {
   ) {
     blockers.push({
       code: "PACK_COUNT_CONFLICT",
+      kind: "INPUT_CONFLICT",
+      can_data_collection_fix: false,
       message:
         `The prompt asks for ${parsed.pack_count} units per listing, but the ` +
         `Units field says ${input.packCount}. Make them match.`,
@@ -118,6 +130,8 @@ export function resolveWalmartStudioRequestIntent(input: {
   ) {
     blockers.push({
       code: "PACK_COUNT_OUTSIDE_PILOT",
+      kind: "ENGINE_CAPABILITY_GAP",
+      can_data_collection_fix: false,
       message:
         `The request asks for ${packCount} units per listing. The currently ` +
         `verified Walmart pilot supports only packs of ` +

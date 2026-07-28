@@ -160,6 +160,44 @@ export interface ProductTruthWalmartPilotCandidateRead {
   newSkuView: ProductTruthRecipeInput;
 }
 
+export type ProductTruthWalmartRequestGap =
+  | "EXACT_CONTENT_EVIDENCE"
+  | "TITLE"
+  | "MAIN_IMAGE"
+  | "MANUFACTURER_UPC"
+  | "INGREDIENTS"
+  | "NUTRITION"
+  | "ALLERGENS"
+  | "FRESH_LOCAL_PRICE"
+  | "CATEGORY"
+  | "SHELF_STABLE_CLASSIFICATION"
+  | "CURRENT_MATCHER_PROVENANCE"
+  | "POLICY_ELIGIBILITY";
+
+export interface ProductTruthWalmartRequestCandidateDiagnostic {
+  donor_product_id: string;
+  canonical_variant_id: string;
+  title: string;
+  brand: string;
+  flavor: string | null;
+  match_score: number;
+  ready: boolean;
+  missing: ProductTruthWalmartRequestGap[];
+  blockers: string[];
+  candidate: WalmartPilotCandidate | null;
+}
+
+export interface ProductTruthWalmartRequestDiagnostic {
+  contractVersion: typeof PRODUCT_TRUTH_READ_CONTRACT_VERSION;
+  query: string;
+  as_of: string;
+  price_max_age_ms: number;
+  zip: string;
+  matched_variants: number;
+  ready_variants: number;
+  candidates: ProductTruthWalmartRequestCandidateDiagnostic[];
+}
+
 export class ProductTruthRecipeInputError extends Error {
   readonly code = "PRODUCT_TRUTH_RECIPE_INPUT_BLOCKED";
   readonly blockers: string[];
@@ -1268,4 +1306,305 @@ export async function listWalmartPilotCandidates(
         qty: 2,
       })).candidate,
   });
+}
+
+const WALMART_REQUEST_QUERY_STOP_WORDS = new Set([
+  "create", "make", "build", "prepare", "generate", "listing", "listings",
+  "sku", "skus", "product", "products", "page", "pages", "using", "with",
+  "from", "each", "pack", "packs", "units", "unit", "cans", "canned",
+  "создать", "сделать", "подготовить", "сгенерировать", "листинг",
+  "листинга", "листинги", "листингов", "карточка", "карточки", "карточек",
+  "товар", "товара", "товаров", "используя", "использованием", "каждом",
+  "каждый", "упаковка", "упаковки", "банка", "банки", "банок",
+]);
+
+function normalizedSearchTokens(value: string): string[] {
+  return value
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .split(/\s+/u)
+    .filter(
+      (token) =>
+        token.length >= 3
+        && !/^\d+$/u.test(token)
+        && !WALMART_REQUEST_QUERY_STOP_WORDS.has(token),
+    );
+}
+
+export function scoreProductTruthWalmartRequestMatch(input: {
+  query: string;
+  title: string;
+  brand: string;
+  productLine?: string | null;
+  flavor?: string | null;
+  category?: string | null;
+}): number {
+  const queryTokens = [...new Set(normalizedSearchTokens(input.query))];
+  if (queryTokens.length === 0) return 0;
+  const productTokens = new Set(normalizedSearchTokens([
+    input.title,
+    input.brand,
+    input.productLine,
+    input.flavor,
+    input.category,
+  ].filter((value): value is string => typeof value === "string").join(" ")));
+  let score = 0;
+  for (const queryToken of queryTokens) {
+    const exact = productTokens.has(queryToken);
+    const stem = exact
+      ? false
+      : [...productTokens].some(
+          (productToken) =>
+            queryToken.length >= 5
+            && productToken.length >= 5
+            && (
+              productToken.startsWith(queryToken)
+              || queryToken.startsWith(productToken)
+            ),
+        );
+    if (exact || stem) {
+      score += exact ? 10 : 6;
+      if (
+        normalizedSearchTokens(input.brand).some(
+          (brandToken) =>
+            brandToken === queryToken
+            || brandToken.startsWith(queryToken)
+            || queryToken.startsWith(brandToken),
+        )
+      ) {
+        score += 20;
+      }
+    }
+  }
+  return score;
+}
+
+function requestGapsFromBlockers(
+  blockers: readonly string[],
+  facts: ReturnType<typeof contentFacts>,
+): ProductTruthWalmartRequestGap[] {
+  const gaps = new Set<ProductTruthWalmartRequestGap>();
+  const codes = blockers.map((blocker) => {
+    const separator = blocker.indexOf(":");
+    return separator >= 0 ? blocker.slice(separator + 1) : blocker;
+  });
+  if (codes.some((code) => code === "EXACT_CONTENT_EVIDENCE_MISSING")) {
+    if (!facts.title) gaps.add("TITLE");
+    if (!facts.mainImage) gaps.add("MAIN_IMAGE");
+    if (!facts.manufacturerUpc) gaps.add("MANUFACTURER_UPC");
+    if (!facts.ingredients) gaps.add("INGREDIENTS");
+    if (facts.nutrition == null) gaps.add("NUTRITION");
+    if (facts.allergens == null) gaps.add("ALLERGENS");
+    if (gaps.size === 0) gaps.add("EXACT_CONTENT_EVIDENCE");
+  }
+  for (const code of codes) {
+    if (code === "FRESH_LOCAL_PRICE_EVIDENCE_MISSING") {
+      gaps.add("FRESH_LOCAL_PRICE");
+    } else if (code === "TITLE_MISSING") {
+      gaps.add("TITLE");
+    } else if (code === "MAIN_IMAGE_MISSING") {
+      gaps.add("MAIN_IMAGE");
+    } else if (code === "MANUFACTURER_UPC_MISSING") {
+      gaps.add("MANUFACTURER_UPC");
+    } else if (code === "INGREDIENTS_MISSING") {
+      gaps.add("INGREDIENTS");
+    } else if (code === "NUTRITION_MISSING") {
+      gaps.add("NUTRITION");
+    } else if (code === "ALLERGENS_MISSING") {
+      gaps.add("ALLERGENS");
+    } else if (code === "CATEGORY_EVIDENCE_MISSING") {
+      gaps.add("CATEGORY");
+    } else if (
+      code === "STORAGE_EVIDENCE_MISSING"
+      || code === "STORAGE_NOT_SHELF_STABLE"
+    ) {
+      gaps.add("SHELF_STABLE_CLASSIFICATION");
+    } else if (
+      code.includes("MATCHER_")
+      || code.includes("CANONICAL_IDENTITY")
+      || code.includes("DECISION_EVIDENCE")
+    ) {
+      gaps.add("CURRENT_MATCHER_PROVENANCE");
+    } else if (
+      code.startsWith("PRICE_")
+      || code.includes("POLICY")
+      || code.includes("PILOT_CATEGORY")
+      || code.includes("CLASSIFICATION_FIELD")
+    ) {
+      gaps.add("POLICY_ELIGIBILITY");
+    }
+  }
+  return [...gaps];
+}
+
+/**
+ * Canonical, read-only request diagnosis for Bundle Factory's Walmart branch.
+ * It searches only exact-confirmed Product Truth content and compiles readiness
+ * through the same new-SKU read contract used by the frozen Walmart engine.
+ * No mutable DonorProduct fields, providers, writes, or marketplace APIs are
+ * consulted here.
+ */
+export async function diagnoseWalmartPilotRequest(
+  db: Client,
+  options: ProductTruthRecipeReadOptions & {
+    query: string;
+    limit?: number;
+  },
+): Promise<ProductTruthWalmartRequestDiagnostic> {
+  await assertProductTruthEvidenceSchema(db);
+  const query = options.query.trim();
+  if (query.length < 3 || query.length > 1_000) {
+    throw new Error("query must contain 3-1000 characters");
+  }
+  const asOf = normalizeInstant(options.asOf, "asOf");
+  const maxPriceAgeMs =
+    options.maxPriceAgeMs ?? DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS;
+  const zip = options.zip?.trim() || DEFAULT_WALMART_PILOT_ZIP;
+  const limit = Math.max(1, Math.min(50, options.limit ?? 20));
+  const rows = await db.execute({
+    sql: `SELECT
+        decision.donorProductId,
+        decision.canonicalVariantId,
+        variant.normalizedBrand,
+        variant.normalizedProductLine,
+        variant.normalizedFlavor,
+        content.contentJson
+      FROM DonorProductVariantDecision decision
+      JOIN CanonicalProductVariant variant
+        ON variant.id=decision.canonicalVariantId
+      JOIN ProductContentObservation content
+        ON content.donorProductId=decision.donorProductId
+       AND content.variantDecisionId=decision.id
+       AND content.canonicalVariantId=variant.id
+      WHERE decision.decisionStatus='exact_confirmed'
+        AND decision.matcherVersion=?
+        AND decision.matcherImplementationSha256=?
+        AND decision.matcherReleaseSha256=?
+        AND variant.outerPackCount=1
+        AND julianday(decision.decidedAt)<=julianday(?)
+        AND julianday(decision.createdAt)<=julianday(?)
+        AND julianday(variant.createdAt)<=julianday(?)
+        AND julianday(content.observedAt)<=julianday(?)
+        AND julianday(content.createdAt)<=julianday(?)
+        AND content.id=(
+          SELECT latest.id
+          FROM ProductContentObservation latest
+          WHERE latest.donorProductId=decision.donorProductId
+            AND latest.variantDecisionId=decision.id
+            AND latest.canonicalVariantId=variant.id
+            AND julianday(latest.observedAt)<=julianday(?)
+            AND julianday(latest.createdAt)<=julianday(?)
+          ORDER BY julianday(latest.observedAt) DESC, latest.observedAt DESC,
+            julianday(latest.createdAt) DESC, latest.createdAt DESC, latest.id DESC
+          LIMIT 1
+        )
+      ORDER BY decision.donorProductId ASC
+      LIMIT 1000`,
+    args: [
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      asOf,
+      asOf,
+      asOf,
+      asOf,
+      asOf,
+      asOf,
+      asOf,
+    ],
+  });
+
+  const matches = rows.rows
+    .map((row) => {
+      const facts = contentFacts(row);
+      const brand = optionalText(row.normalizedBrand) ?? "";
+      const title = facts.title ?? [
+        brand,
+        optionalText(row.normalizedProductLine),
+        optionalText(row.normalizedFlavor),
+      ].filter(Boolean).join(" ");
+      return {
+        row,
+        facts,
+        brand,
+        title,
+        score: scoreProductTruthWalmartRequestMatch({
+          query,
+          title,
+          brand,
+          productLine: optionalText(row.normalizedProductLine),
+          flavor: optionalText(row.normalizedFlavor),
+          category: facts.classification.category,
+        }),
+      };
+    })
+    .filter((match) => match.score > 0)
+    .sort(
+      (left, right) =>
+        right.score - left.score
+        || left.title.localeCompare(right.title, "en-US"),
+    );
+
+  const selected: typeof matches = [];
+  const seenVariants = new Set<string>();
+  for (const match of matches) {
+    const canonicalVariantId = requiredText(
+      match.row.canonicalVariantId,
+      "canonicalVariantId",
+    );
+    if (seenVariants.has(canonicalVariantId)) continue;
+    seenVariants.add(canonicalVariantId);
+    selected.push(match);
+    if (selected.length >= limit) break;
+  }
+
+  const candidates: ProductTruthWalmartRequestCandidateDiagnostic[] = [];
+  for (const match of selected) {
+    const donorProductId = requiredText(
+      match.row.donorProductId,
+      "donorProductId",
+    );
+    let candidate: WalmartPilotCandidate | null = null;
+    let blockers: string[] = [];
+    try {
+      candidate = (await readWalmartPilotCandidate(db, {
+        ...options,
+        donorProductId,
+        qty: 2,
+      })).candidate;
+    } catch (error) {
+      if (!(error instanceof ProductTruthRecipeInputError)) throw error;
+      blockers = [...error.blockers];
+    }
+    candidates.push({
+      donor_product_id: donorProductId,
+      canonical_variant_id: requiredText(
+        match.row.canonicalVariantId,
+        "canonicalVariantId",
+      ),
+      title: match.title,
+      brand: match.brand,
+      flavor: optionalText(match.row.normalizedFlavor),
+      match_score: match.score,
+      ready: candidate !== null,
+      missing: candidate
+        ? []
+        : requestGapsFromBlockers(blockers, match.facts),
+      blockers,
+      candidate,
+    });
+  }
+
+  return {
+    contractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+    query,
+    as_of: asOf,
+    price_max_age_ms: maxPriceAgeMs,
+    zip,
+    matched_variants: candidates.length,
+    ready_variants: candidates.filter((candidate) => candidate.ready).length,
+    candidates,
+  };
 }
