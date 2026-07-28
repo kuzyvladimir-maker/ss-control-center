@@ -13,7 +13,7 @@
  * (brand, model, photos, margin) lives under "Advanced". UI strings English.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHead, Btn } from "@/components/kit";
@@ -95,10 +95,40 @@ interface WalmartReadinessResult {
     required: boolean;
     engine: string | null;
     target_donor_product_ids: string[];
-    automatic_web_execution: false;
+    web_control: {
+      status: "OFF" | "ACTIVE";
+      stage: string;
+      command_admission: boolean;
+      worker_claims: boolean;
+      metered_execution: false;
+      provider_calls_from_web: false;
+      marketplace_mutations: false;
+    };
+    automatic_web_execution: boolean;
     automatic_web_execution_reason: string;
     recommendation: string | null;
   };
+}
+
+interface WalmartCollectionState {
+  batchId: string;
+  status:
+    | "QUEUED_NO_SPEND"
+    | "RUNNING_NO_SPEND"
+    | "AWAITING_OWNER"
+    | "FAILED"
+    | "AMBIGUOUS"
+    | "SUCCEEDED";
+  jobs: Array<{
+    run_id: string;
+    donor_product_id: string;
+    title: string;
+    missing_fields: string[];
+    doctor_status: string;
+    plan_status: string | null;
+    phase: string;
+    error_code: string | null;
+  }>;
 }
 
 const WALMART_GAP_LABELS: Record<string, string> = {
@@ -138,6 +168,31 @@ export default function StudioStartPage() {
   const [walmartReadinessLoading, setWalmartReadinessLoading] = useState(false);
   const [walmartReadinessError, setWalmartReadinessError] =
     useState<string | null>(null);
+  const [walmartCollection, setWalmartCollection] =
+    useState<WalmartCollectionState | null>(null);
+  const [walmartCollectionLoading, setWalmartCollectionLoading] =
+    useState(false);
+  const [walmartCollectionError, setWalmartCollectionError] =
+    useState<string | null>(null);
+  const collectionPollTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  useEffect(() => () => {
+    if (collectionPollTimer.current) {
+      clearTimeout(collectionPollTimer.current);
+    }
+  }, []);
+
+  function clearWalmartCollection() {
+    if (collectionPollTimer.current) {
+      clearTimeout(collectionPollTimer.current);
+      collectionPollTimer.current = null;
+    }
+    setWalmartCollection(null);
+    setWalmartCollectionError(null);
+    setWalmartCollectionLoading(false);
+  }
 
   async function loadFlavors() {
     const theme = prompt.trim();
@@ -255,6 +310,162 @@ export default function StudioStartPage() {
     walmartFieldsValid &&
     !submitting;
 
+  async function submitStudioGeneration() {
+    const res = await fetch("/api/bundle-factory/studio/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: prompt.trim(),
+        channel,
+        house_brand: houseBrand,
+        text_model: textModel,
+        photo_strategy: photoStrategy,
+        image_quality: imageQuality,
+        uncrustables_image_mode: uncrustablesImageMode,
+        target_margin_pct: targetMargin ? Number(targetMargin) : null,
+        ...(channel === "WALMART" && walmartShipping
+          ? {
+              walmart_shipping: {
+                store_index: walmartShipping.store_index,
+                account_name: walmartShipping.account_name,
+                template_id: walmartShipping.template_id,
+                template_name: walmartShipping.template_name,
+                template_status: walmartShipping.template_status,
+                rate_model_type: walmartShipping.rate_model_type,
+                is_free_shipping: walmartShipping.is_free_shipping,
+                template_sha256: walmartShipping.template_sha256,
+                template_modified_at:
+                  walmartShipping.template_modified_at,
+              },
+            }
+          : {}),
+        ...(selectedFlavors.size > 0 && flavors
+          ? {
+              // Keys are the engine's own identity tokens (same dedupe run) —
+              // labels proved ambiguous across pools (review 2026-07-21).
+              flavors: flavors
+                .filter((f) => selectedFlavors.has(f.key))
+                .map((f) => f.key),
+            }
+          : {}),
+        ...(listingCount && Number(listingCount) >= 1
+          ? { listing_count: Number(listingCount) }
+          : {}),
+        ...(channel === "WALMART" && packCount && Number(packCount) >= 1
+          ? { pack_count: Number(packCount) }
+          : {}),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error ?? "Failed to start the build");
+    router.push(`/bundle-factory/new/${data.batch_id}`);
+  }
+
+  async function continueAfterCollection() {
+    const readiness = await checkWalmartReadiness();
+    if (
+      !readiness
+      || !readiness.catalog.enough_ready
+      || readiness.diagnosis.capability_gaps.length > 0
+    ) {
+      setError(
+        "Product data changed, but the Walmart request still has a visible blocker. Review the updated readiness result.",
+      );
+      return;
+    }
+    if (!walmartShippingReady || !walmartFieldsValid) {
+      setError(
+        "Product data is ready. Select an active shipping template and correct the visible Walmart scope to continue.",
+      );
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitStudioGeneration();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+      setSubmitting(false);
+    }
+  }
+
+  async function pollWalmartCollection(batchId: string) {
+    try {
+      const res = await fetch(
+        `/api/bundle-factory/walmart/data-collection?batch_id=${encodeURIComponent(batchId)}`,
+        { cache: "no-store" },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          data?.message ?? data?.code ?? "Collection status check failed",
+        );
+      }
+      const collection = data.collection as WalmartCollectionState;
+      setWalmartCollection(collection);
+      if (
+        collection.status === "QUEUED_NO_SPEND"
+        || collection.status === "RUNNING_NO_SPEND"
+      ) {
+        collectionPollTimer.current = setTimeout(
+          () => void pollWalmartCollection(batchId),
+          4_000,
+        );
+      } else if (collection.status === "SUCCEEDED") {
+        await continueAfterCollection();
+      }
+    } catch (e) {
+      setWalmartCollectionError(
+        e instanceof Error ? e.message : "Collection status check failed",
+      );
+    }
+  }
+
+  async function startWalmartDataCollection() {
+    setWalmartCollectionLoading(true);
+    setWalmartCollectionError(null);
+    setError(null);
+    try {
+      const res = await fetch(
+        "/api/bundle-factory/walmart/data-collection",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: prompt.trim(),
+            listing_count:
+              structuredListingCount ?? walmartRequest?.listing_count ?? 2,
+            pack_count:
+              structuredPackCount ?? walmartRequest?.pack_count ?? 2,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          data?.message ?? data?.code ?? "Data collection could not start",
+        );
+      }
+      const collection = data.collection as WalmartCollectionState;
+      setWalmartCollection(collection);
+      if (
+        collection.status === "QUEUED_NO_SPEND"
+        || collection.status === "RUNNING_NO_SPEND"
+      ) {
+        collectionPollTimer.current = setTimeout(
+          () => void pollWalmartCollection(collection.batchId),
+          2_000,
+        );
+      }
+    } catch (e) {
+      setWalmartCollectionError(
+        e instanceof Error ? e.message : "Data collection could not start",
+      );
+    } finally {
+      setWalmartCollectionLoading(false);
+    }
+  }
+
   async function onGenerate() {
     if (!canGenerate) return;
     setSubmitting(true);
@@ -280,54 +491,7 @@ export default function StudioStartPage() {
           return;
         }
       }
-      const res = await fetch("/api/bundle-factory/studio/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          channel,
-          house_brand: houseBrand,
-          text_model: textModel,
-          photo_strategy: photoStrategy,
-          image_quality: imageQuality,
-          uncrustables_image_mode: uncrustablesImageMode,
-          target_margin_pct: targetMargin ? Number(targetMargin) : null,
-          ...(channel === "WALMART" && walmartShipping
-            ? {
-                walmart_shipping: {
-                  store_index: walmartShipping.store_index,
-                  account_name: walmartShipping.account_name,
-                  template_id: walmartShipping.template_id,
-                  template_name: walmartShipping.template_name,
-                  template_status: walmartShipping.template_status,
-                  rate_model_type: walmartShipping.rate_model_type,
-                  is_free_shipping: walmartShipping.is_free_shipping,
-                  template_sha256: walmartShipping.template_sha256,
-                  template_modified_at:
-                    walmartShipping.template_modified_at,
-                },
-              }
-            : {}),
-          ...(selectedFlavors.size > 0 && flavors
-            ? {
-                // Keys are the engine's own identity tokens (same dedupe run) —
-                // labels proved ambiguous across pools (review 2026-07-21).
-                flavors: flavors
-                  .filter((f) => selectedFlavors.has(f.key))
-                  .map((f) => f.key),
-              }
-            : {}),
-          ...(listingCount && Number(listingCount) >= 1
-            ? { listing_count: Number(listingCount) }
-            : {}),
-          ...(channel === "WALMART" && packCount && Number(packCount) >= 1
-            ? { pack_count: Number(packCount) }
-            : {}),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Failed to start the build");
-      router.push(`/bundle-factory/new/${data.batch_id}`);
+      await submitStudioGeneration();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
       setSubmitting(false);
@@ -367,6 +531,7 @@ export default function StudioStartPage() {
             onChange={(e) => {
               setPrompt(e.target.value);
               setWalmartReadiness(null);
+              clearWalmartCollection();
             }}
             rows={3}
             placeholder="e.g. 50 Uncrustables gift sets in different variations"
@@ -380,6 +545,7 @@ export default function StudioStartPage() {
                 onClick={() => {
                   setPrompt(ex);
                   setWalmartReadiness(null);
+                  clearWalmartCollection();
                 }}
                 className="rounded-full border border-rule bg-surface px-2.5 py-1 text-[11.5px] text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink"
               >
@@ -499,6 +665,7 @@ export default function StudioStartPage() {
             onChange={(e) => {
               setChannel(e.target.value);
               setWalmartReadiness(null);
+              clearWalmartCollection();
             }}
             className="mt-2 w-full rounded-[10px] border border-rule bg-surface px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-silver-line"
           >
@@ -534,6 +701,7 @@ export default function StudioStartPage() {
                     onChange={(e) => {
                       setListingCount(e.target.value);
                       setWalmartReadiness(null);
+                      clearWalmartCollection();
                     }}
                     placeholder={
                       walmartRequest?.prompt_listing_count != null
@@ -553,6 +721,7 @@ export default function StudioStartPage() {
                     onChange={(e) => {
                       setPackCount(e.target.value);
                       setWalmartReadiness(null);
+                      clearWalmartCollection();
                     }}
                     placeholder={
                       walmartRequest?.prompt_pack_count != null
@@ -698,11 +867,84 @@ export default function StudioStartPage() {
                       <p className="mt-1">
                         {walmartReadiness.fallback.recommendation}
                       </p>
-                      <p className="mt-1 text-ink-3">
-                        The data-collection worker is not activated in the
-                        Command Center yet, so this check did not pretend to
-                        start a collection run.
-                      </p>
+                      {walmartReadiness.fallback.engine
+                        === "TARGETED_WALMART_EVIDENCE"
+                        && walmartReadiness.fallback
+                          .target_donor_product_ids.length > 0 && (
+                          <div className="mt-3">
+                            <Btn
+                              size="sm"
+                              variant="primary"
+                              onClick={startWalmartDataCollection}
+                              disabled={walmartCollectionLoading}
+                              loading={walmartCollectionLoading}
+                            >
+                              Collect missing product data
+                            </Btn>
+                            <p className="mt-1.5 text-[11px] text-ink-3">
+                              Prepares up to five independent exact-product
+                              jobs. No listing is published and no Walmart
+                              setting is changed.
+                            </p>
+                          </div>
+                        )}
+
+                      {!walmartReadiness.fallback.automatic_web_execution && (
+                        <p className="mt-2 text-ink-3">
+                          The collection worker is currently off. The button
+                          will show the exact activation blocker without
+                          pretending that a run started.
+                        </p>
+                      )}
+
+                      {walmartCollectionError && (
+                        <p className="mt-2 rounded-[8px] border border-danger/20 bg-danger-tint px-2.5 py-2 text-danger">
+                          {walmartCollectionError}
+                        </p>
+                      )}
+
+                      {walmartCollection && (
+                        <div className="mt-3 space-y-2 rounded-[8px] border border-rule bg-surface px-2.5 py-2.5">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-semibold">Collection progress</p>
+                            <span className="text-[10.5px] font-semibold text-ink-3">
+                              {walmartCollection.status === "QUEUED_NO_SPEND"
+                                ? "QUEUED"
+                                : walmartCollection.status === "RUNNING_NO_SPEND"
+                                  ? "PREPARING"
+                                  : walmartCollection.status === "AWAITING_OWNER"
+                                    ? "PLAN READY"
+                                    : walmartCollection.status}
+                            </span>
+                          </div>
+                          {walmartCollection.jobs.map((job) => (
+                            <div
+                              key={job.run_id}
+                              className="flex items-start justify-between gap-3 border-t border-rule pt-2 first:border-t-0 first:pt-0"
+                            >
+                              <span className="min-w-0 text-[11.5px] text-ink-2">
+                                {job.title}
+                              </span>
+                              <span className="shrink-0 text-[10.5px] font-medium text-ink-3">
+                                {job.phase === "QUEUED_NO_SPEND"
+                                  ? "queued"
+                                  : job.phase === "RUNNING_NO_SPEND"
+                                    ? "preparing"
+                                    : job.phase === "AWAITING_OWNER"
+                                      ? "plan ready"
+                                      : job.phase.toLowerCase()}
+                              </span>
+                            </div>
+                          ))}
+                          {walmartCollection.status === "AWAITING_OWNER" && (
+                            <p className="border-t border-rule pt-2 text-[11px] text-ink-3">
+                              Free preparation is complete. The exact
+                              one-product plans are ready; provider execution
+                              has not started.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -824,7 +1066,7 @@ export default function StudioStartPage() {
               : channel === "WALMART" && !walmartFieldsValid
                 ? "Correct the Walmart scope shown above."
                 : channel === "WALMART"
-                  ? "This records the request; generation does not start automatically."
+                  ? "Product readiness is checked first. Nothing publishes until approval."
                   : "Nothing publishes until you approve the batch."}
           </span>
         </div>

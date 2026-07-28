@@ -10,6 +10,10 @@ import {
 } from "@/lib/sourcing/product-truth-read-contract";
 import { readTargetedWalmartDonorSnapshot } from
   "@/lib/sourcing/product-truth-targeted-walmart-evidence";
+import {
+  loadProductTruthWebControlRuntime,
+  productTruthWebControlPublicStatus,
+} from "@/lib/sourcing/product-truth-web-control-runtime";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +133,22 @@ export const GET = withErrorHandler(
       const needsDataCollection =
         !enoughReady && diagnostic.matched_variants > 0;
       const noExactMatches = diagnostic.matched_variants === 0;
+      let webControl;
+      try {
+        webControl = productTruthWebControlPublicStatus(
+          loadProductTruthWebControlRuntime(),
+        );
+      } catch {
+        webControl = {
+          status: "OFF" as const,
+          stage: "OFF" as const,
+          command_admission: false,
+          worker_claims: false,
+          metered_execution: false as const,
+          provider_calls_from_web: false as const,
+          marketplace_mutations: false as const,
+        };
+      }
 
       return NextResponse.json({
         ok: true,
@@ -167,9 +187,13 @@ export const GET = withErrorHandler(
           target_donor_product_ids: collectionTargets.map(
             (candidate) => candidate.donor_product_id,
           ),
-          automatic_web_execution: false,
+          web_control: webControl,
+          automatic_web_execution:
+            webControl.command_admission && webControl.worker_claims,
           automatic_web_execution_reason:
-            "The Product Truth Web Operations worker is not activated; the Command Center must not pretend that a provider run started.",
+            webControl.command_admission && webControl.worker_claims
+              ? "The no-spend Product Truth worker can prepare exact one-donor plans. Metered execution still requires exact owner authority."
+              : "The Product Truth Web Operations worker is not activated; the Command Center must not pretend that a provider run started.",
           recommendation:
             collectionTargets.length > 0
               ? "Include the verified compatibility fix in a new frozen Product Truth release, run targeted evidence for the shown exact donors, then repeat this readiness check."

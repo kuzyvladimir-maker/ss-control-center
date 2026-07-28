@@ -732,3 +732,21 @@ track и больше не обозначается blocker текущего Wal
 - Full all-status Walmart ITEM catalog source отсутствует и для new-SKU workflow не
   требуется.
 - Live Walmart new SKU создано: `0`.
+
+## 🔄 Bundle Factory Product Truth fallback — 2026-07-28
+
+- [x] Зафиксирован boundary: Walmart Studio использует только общий Product Truth;
+  один exact donor = один independent targeted-evidence workflow, максимум пять
+  owner-visible jobs в одной UI-группе, без multi-target paid run.
+- [x] Автоматический участок до owner money gate ограничен no-spend
+  `doctor → plan`; публикация, UPC reservation и Walmart mutation отсутствуют.
+- [x] Реализовать Web→worker admission и immutable status поверх существующего
+  Stage A custody.
+- [x] Добавить в Walmart Studio кнопку запуска, прогресс и повторную readiness
+  проверку; Generate продолжается только если data gaps и capability gaps закрыты.
+- [x] Сертифицировать default-OFF/local no-spend release: Product Truth
+  `506/506`, targeted integration/safety `51/51`, UI route `2/2`,
+  TypeScript/ESLint/production build = `PASS`; provider, production DB и
+  Walmart effects = `0`.
+- [ ] Отдельно решить
+  production admission/worker/metered activation gates.

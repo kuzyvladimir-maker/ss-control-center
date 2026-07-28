@@ -1,3 +1,5 @@
+import { createHash, timingSafeEqual } from "node:crypto";
+
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
 import { parseAccessCookie } from "@/lib/rbac/access-cookie";
@@ -9,6 +11,34 @@ import {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Product Truth worker routes use a separate least-privilege credential.
+  // They must never inherit the generic admin API tokens accepted below.
+  if (pathname.startsWith("/api/external/product-truth/control/")) {
+    const expectedSha =
+      process.env.PRODUCT_TRUTH_WEB_CONTROL_WORKER_TOKEN_SHA256;
+    const bearer = request.headers
+      .get("Authorization")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
+    if (
+      bearer
+      && bearer.length >= 32
+      && bearer.length <= 500
+      && expectedSha
+      && /^[a-f0-9]{64}$/.test(expectedSha)
+    ) {
+      const actual = createHash("sha256").update(bearer).digest();
+      const expected = Buffer.from(expectedSha, "hex");
+      if (
+        actual.length === expected.length
+        && timingSafeEqual(actual, expected)
+      ) {
+        return NextResponse.next();
+      }
+    }
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   // ── 1. API key auth (Authorization: Bearer SSCC_API_TOKEN) ──────────
   // Accepted on ALL /api/* routes so external clients (OpenClaw agent,

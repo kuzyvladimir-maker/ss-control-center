@@ -666,3 +666,35 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
 6. никакого merge/push в shared branch без отдельного owner decision.
 
 Это no-spend/local-only sequence. Он не открывает Turso/provider/marketplace gates.
+
+---
+
+## 8. Bundle Factory Walmart demand fallback — 2026-07-28
+
+### ✅ Фаза BF-W1 — канонический request boundary
+
+- Один exact `DonorProduct` с одним direct first-party Walmart offer образует
+  ровно один `TARGETED_WALMART_EVIDENCE` workflow.
+- Одна owner-facing кнопка может подготовить максимум пять независимых jobs, но
+  не превращает их в multi-target provider run: concurrency и attempts каждого
+  job остаются `1`, automatic replay запрещён.
+- Первый автоматический участок ограничен no-spend
+  `doctor → plan`; он не вызывает providers, не пишет marketplace и не создаёт
+  второй каталог.
+- Каждый будущий `execute` должен отдельно связать exact one-donor plan, fresh
+  balance evidence, provider permit и owner authority. Общая команда `делай`
+  разрешает реализацию default-OFF кода и тестов, но не заменяет этот money gate.
+- После успешного execution Bundle Factory обязан повторно читать canonical
+  Product Truth readiness. Продолжение Walmart Generate допустимо только при
+  `enough_ready=true` и отсутствии отдельного engine capability gap.
+
+### 🔄 Фаза BF-W2 — Web→worker implementation
+
+- [x] strict batch/job contracts и deterministic idempotency;
+- [x] append-only command/artifact/event admission поверх Stage A custody;
+- [x] separately authenticated, allowlisted, `shell:false` no-spend worker;
+- [x] Bundle Factory launch/status UI и readiness recheck;
+- [x] offline/local certification без provider calls, production DB writes или
+  Walmart actions: Product Truth `506/506`, targeted integration/safety
+  `51/51`, UI route `2/2`, TypeScript, focused ESLint и production build =
+  `PASS`; provider calls, production writes и Walmart actions = `0`.

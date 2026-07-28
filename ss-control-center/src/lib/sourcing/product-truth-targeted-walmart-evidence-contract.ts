@@ -782,6 +782,17 @@ function parseRequest(value: unknown): ProductTruthTargetedWalmartEvidencePlanRe
   };
 }
 
+/**
+ * Public strict verifier for custody/worker boundaries. It exposes no new
+ * execution authority; callers receive only the byte-canonical one-donor
+ * request already accepted by the frozen targeted-evidence planner.
+ */
+export function parseProductTruthTargetedWalmartEvidenceRequest(
+  value: unknown,
+): ProductTruthTargetedWalmartEvidencePlanRequest {
+  return parseRequest(value);
+}
+
 export function buildProductTruthTargetedWalmartEvidenceRequest(input: {
   runId: string;
   createdAt: string;
