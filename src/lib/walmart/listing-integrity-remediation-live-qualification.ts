@@ -39,7 +39,7 @@ const MAX_DECODED_IMAGE_PIXELS = 40_000_000;
 const REVIEWED_MAIN_MAX_DHASH_DISTANCE = 2;
 const REVIEWED_MAIN_MIN_PSNR_MILLIDB = 38_000;
 const PINNED_ACCEPTED_LIVE_QUALIFICATION_SOURCE_RELEASE_SHA256 =
-  "f8fbc5003e05a469d7cdb9204e22256b02aec9913415e63bce99965680cad34c";
+  "7f418e7c108783882a302ea48a7777e63a712a663279b3afaeb3f9fcb63aaf81";
 const SHA256 = /^[a-f0-9]{64}$/u;
 
 type JsonRecord = Record<string, unknown>;
@@ -671,9 +671,16 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
     plan.changed_fields,
     ["description", "bullets", "main"],
   );
+  const reviewedImageSet = exactChangedFields(
+    plan.changed_fields,
+    ["description", "bullets", "main", "gallery"],
+  );
   const attributeOnly = exactChangedFields(plan.changed_fields, ["attributes"]);
-  if (!textOnly && !reviewedMain && !attributeOnly) {
-    fail("live Qualification supports only exact text-only, reviewed-MAIN, or attribute-only repairs");
+  if (!textOnly && !reviewedMain && !reviewedImageSet && !attributeOnly) {
+    fail(
+      "live Qualification supports only exact text-only, reviewed-MAIN, "
+      + "reviewed-image-set, or attribute-only repairs",
+    );
   }
   const facts = attributeOnly ? null : targetFacts(plan);
   const attributeTarget = attributeOnly
@@ -690,7 +697,7 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
   );
   const exactMainBytes = liveImages[0] === targetImages[0]!.sha256;
   const exactMainUrl = buyerImages[0] === targetImages[0]!.source_url;
-  const mainEquivalence = reviewedMain
+  const mainEquivalence = reviewedMain || reviewedImageSet
     ? await reviewedMainEquivalence({
       target_bytes: input.target_main_bytes
         ?? fail("reviewed MAIN Qualification requires exact target source bytes"),
@@ -782,7 +789,7 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
       && mainPass && galleryPass && (!attributeOnly || attributes)
     ),
     unchanged_fields_preserved: pass(
-      (textOnly || reviewedMain || attributeOnly)
+      (textOnly || reviewedMain || reviewedImageSet || attributeOnly)
       && buyerTitle === plan.target.surface.title
       && (!attributeOnly
         || (buyerDescription === targetDescription
