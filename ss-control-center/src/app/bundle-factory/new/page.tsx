@@ -171,11 +171,11 @@ export default function StudioStartPage() {
     });
   }
 
-  async function checkWalmartReadiness() {
+  async function checkWalmartReadiness(): Promise<WalmartReadinessResult | null> {
     const theme = prompt.trim();
     if (theme.length < 3) {
       setWalmartReadinessError("Describe the products first.");
-      return;
+      return null;
     }
     setWalmartReadinessLoading(true);
     setWalmartReadinessError(null);
@@ -194,12 +194,15 @@ export default function StudioStartPage() {
       if (!res.ok) {
         throw new Error(data?.error ?? "Walmart readiness check failed");
       }
-      setWalmartReadiness(data as WalmartReadinessResult);
+      const result = data as WalmartReadinessResult;
+      setWalmartReadiness(result);
+      return result;
     } catch (e) {
       setWalmartReadinessError(
         e instanceof Error ? e.message : "Walmart readiness check failed",
       );
       setWalmartReadiness(null);
+      return null;
     } finally {
       setWalmartReadinessLoading(false);
     }
@@ -257,6 +260,26 @@ export default function StudioStartPage() {
     setSubmitting(true);
     setError(null);
     try {
+      if (channel === "WALMART") {
+        const readiness = await checkWalmartReadiness();
+        if (!readiness) {
+          setError(
+            "Generation did not start because product readiness could not be verified.",
+          );
+          setSubmitting(false);
+          return;
+        }
+        if (
+          !readiness.catalog.enough_ready ||
+          readiness.diagnosis.capability_gaps.length > 0
+        ) {
+          setError(
+            "Generation did not start. Review Product data readiness and the recommended next step below.",
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
       const res = await fetch("/api/bundle-factory/studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
