@@ -652,7 +652,11 @@ export async function executeWalmartListingRepairOwnerPackage(
     fetch_impl: injected.fetch_impl,
     now: injected.now,
     random_uuid: injected.random_uuid,
-    capture_variant_group: variantGroupSource !== undefined,
+    // The frozen compilation request does not carry the two immutable ITEM
+    // report inputs required to build variant-group evidence.  Capturing an
+    // extra All Items response here would therefore be unused and would also
+    // violate the package's declared two-read network contract.
+    capture_variant_group: false,
   });
 
   const now = (injected.now ?? (() => new Date()))();
