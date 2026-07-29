@@ -41,7 +41,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.6.0" as const;
+  "product-truth-legacy-bridge-policy/1.7.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -1870,8 +1870,28 @@ function authoritativeWalmartEvidenceCore(
   return core;
 }
 
-function exactNormalizedTitleKey(value: string | null | undefined): string {
-  return JSON.stringify(normalizeIdentityTokens(value));
+function authoritativeWalmartDonorBaseTitle(
+  value: string | null | undefined,
+): ReturnType<
+  typeof parseProductTruthAuthoritativeWalmartOuterPackTitle
+> | null {
+  const parsed = parseProductTruthAuthoritativeWalmartOuterPackTitle(value);
+  if (
+    parsed.status === "INVALID"
+    || parsed.status === "AMBIGUOUS"
+    || (parsed.status === "PARSED" && parsed.count !== 1)
+    || parsed.baseTokens.length === 0
+  ) {
+    return null;
+  }
+  return parsed;
+}
+
+function exactNormalizedTitleKey(
+  value: string | null | undefined,
+): string | null {
+  const parsed = authoritativeWalmartDonorBaseTitle(value);
+  return parsed ? JSON.stringify(parsed.normalizedBaseTokens) : null;
 }
 
 function titleContainsEquivalentCanonicalSize(
@@ -1922,6 +1942,7 @@ function normalizeLegacyComponentSizeEvidence(
 function authoritativeWalmartPackageSize(input: {
   donorTitle: string;
   donorSize: string | null;
+  donorAttributes: string | null;
   legacyComponentSize: string | null;
 }): string | null {
   const source =
@@ -1942,6 +1963,11 @@ function authoritativeWalmartPackageSize(input: {
   ) {
     return donorSize;
   }
+  const attributeSize = explicitDonorAttributePackageSize({
+    attributes: input.donorAttributes,
+    title: input.donorTitle,
+  });
+  if (attributeSize) return attributeSize;
   if (
     parseCanonicalSize(input.donorTitle)
     && [...input.donorTitle.matchAll(
@@ -1976,6 +2002,51 @@ function explicitDonorAttributeBrand(attributes: string | null): string | null {
     values.map((value) => [foldedTokens(value).join("\u0000"), value]),
   );
   return normalized.size === 1 ? [...normalized.values()][0]! : null;
+}
+
+function explicitDonorAttributePackageSize(input: {
+  attributes: string | null;
+  title: string;
+}): string | null {
+  const parsed = parsedJson(input.attributes);
+  if (!Array.isArray(parsed)) return null;
+  const rows = parsed
+    .map((item): { name: string; value: string } | null => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+      const row = item as Record<string, unknown>;
+      const name =
+        stringOrNull(row.name ?? row.label)?.toLowerCase().trim() ?? "";
+      const value = stringOrNull(row.value);
+      return name && value ? { name, value } : null;
+    })
+    .filter((row): row is { name: string; value: string } => row !== null);
+
+  const netContent = rows
+    .filter((row) =>
+      /^(?:net content(?: statement)?|net weight)$/.test(row.name))
+    .map((row) => row.value)
+    .filter((value) => parseCanonicalSize(value) !== null);
+  if (netContent.length) {
+    const first = netContent[0]!;
+    return netContent.every((value) =>
+      equivalentCanonicalSize(first, value))
+      ? first
+      : null;
+  }
+
+  const counts = rows
+    .filter((row) => row.name === "count")
+    .map((row) => positiveInteger(row.value))
+    .filter((value): value is number => value !== null);
+  const distinctCounts = [...new Set(counts)];
+  if (distinctCounts.length !== 1) return null;
+  const count = distinctCounts[0]!;
+  const explicitCountNoun = new RegExp(
+    `\\b${count}\\s+(?:(?:dish|tea)\\s+)?`
+      + "(?:sponges?|bags?|pieces?|pcs?|cartridges?|counts?|cts?)\\b",
+    "i",
+  );
+  return explicitCountNoun.test(input.title) ? `${count} count` : null;
 }
 
 function orderedPrefix(
@@ -2044,8 +2115,10 @@ function recoverAuthoritativeWalmartReportScope(input: {
     ?? [];
   if (titleCandidates.length !== 1) return null;
   const donor = titleCandidates[0]!;
+  const donorBaseTitle = authoritativeWalmartDonorBaseTitle(donor.title);
   if (
     !donor.title
+    || !donorBaseTitle
     || !donor.brand
     || !evidence.brand
   ) return null;
@@ -2073,7 +2146,7 @@ function recoverAuthoritativeWalmartReportScope(input: {
       || orderedPrefix(reportBrandTokens, donorBrandTokens)
     )
     || !canonicalBrand
-    || foldedTokens(donor.title).join("\u0000")
+    || donorBaseTitle.baseTokens.join("\u0000")
       !== outerPack.baseTokens.join("\u0000")
   ) return null;
 
@@ -2096,6 +2169,7 @@ function recoverAuthoritativeWalmartReportScope(input: {
   const size = authoritativeWalmartPackageSize({
     donorTitle: donor.title,
     donorSize: donor.size,
+    donorAttributes: donor.attributes,
     legacyComponentSize: legacyComponent?.size ?? null,
   });
   if (!size) return null;
@@ -2594,6 +2668,7 @@ export function compileProductTruthLegacyBridgePlan(input: {
   for (const donor of input.snapshot.donors) {
     if (!donor.title) continue;
     const key = exactNormalizedTitleKey(donor.title);
+    if (!key) continue;
     const list = donorsByExactTitle.get(key) ?? [];
     list.push(donor);
     donorsByExactTitle.set(key, list);

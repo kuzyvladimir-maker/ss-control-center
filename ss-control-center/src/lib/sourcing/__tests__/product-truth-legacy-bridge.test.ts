@@ -602,6 +602,68 @@ test("authoritative Walmart exact title never treats nutrition protein grams as 
   assert.equal(compile(value).scopes[0]?.disposition, "QUARANTINE");
 });
 
+test("authoritative Walmart exact title accepts a one-pack donor with explicit net-content attributes", () => {
+  const donorTitle =
+    "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix 1-Pack";
+  const reportTitle =
+    "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix (Pack of 4)";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Cirkul",
+      title: donorTitle,
+      size: null,
+      attributes: JSON.stringify([
+        { name: "Net content statement", value: "20 mL (0.68 fl oz)" },
+        { name: "Count ", value: "1" },
+      ]),
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: reportTitle,
+      brand: "Cirkul",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "20 mL (0.68 fl oz)");
+  assert.equal(componentPlan.qty, 4);
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart exact title accepts an explicit structured item count", () => {
+  const title =
+    "Scotch-Brite Zero Scratch Non-Scratch Cleaning Scrub Sponge 3 Dish Sponges";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Scotch-Brite",
+      title,
+      size: null,
+      attributes: JSON.stringify([
+        { name: "Count ", value: "3" },
+        { name: "Items included", value: "3 SCRUB SPONGES" },
+      ]),
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title,
+      brand: "Scotch-Brite",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "3 count");
+  assert.equal(componentPlan.qty, 1);
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
 test("authoritative Walmart title recovery rejects ambiguous or contradictory legacy package evidence", () => {
   const title =
     "Guerrero Street Taco Zero Net Carbs Tortillas 14 ct 8.89 oz";
