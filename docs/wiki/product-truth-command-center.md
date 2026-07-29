@@ -801,7 +801,7 @@ quote: production campaign registry/runtime всё ещё отсутствует
 BF-W4 не меняет live mutation authority: protected execution остаётся
 последовательным, а marketplace publication не следует из размера owner request.
 
-### 🔄 Фаза BF-W5 — channel-specific Advanced и автоматический enrichment quote
+### ✅ Фаза BF-W5 — channel-specific Advanced и автоматический enrichment quote
 
 - [x] Walmart `Advanced` отделён от Amazon/Uncrustables: house brand,
   Uncrustables image style, generative photo controls и per-request text-model
@@ -825,8 +825,12 @@ BF-W4 не меняет live mutation authority: protected execution остаё�
 - [x] Certification: focused fallback/content `19/19`; полная Walmart/Studio
   regression `194/194`; Product Truth `519/519`; TypeScript, focused ESLint
   (0 errors, 2 pre-existing A+ warnings) и production build `PASS`.
-- [ ] Опубликовать exact commit в production и выполнить authenticated UI /
-  no-spend HTTP postcheck.
+- [x] Production deployment `dpl_3PPs9HP2xMAyQrueV3U1kSKADgky` = `READY`,
+  alias `salutemsolutions.info`. No-spend HTTP postcheck:
+  `/bundle-factory/new` штатно вернул unauthenticated `307 → /login`, а
+  protected readiness API — `401`; provider calls и Walmart mutations `0`.
+  Подключённая authenticated browser-сессия отсутствовала, поэтому visual
+  postcheck не был ложно заявлен.
 
 BF-W5 не авторизует provider spend или Walmart mutation. No-spend planning
 может стартовать автоматически; paid enrichment начинается только после

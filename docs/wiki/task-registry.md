@@ -75,6 +75,9 @@
   text pin обновлён через live Anthropic Models API до `claude-opus-5`;
   deterministic Walmart content от LLM не зависит. Regression:
   Walmart/Studio `194/194`, Product Truth `519/519`, TypeScript/build `PASS`.
+  Production deployment `dpl_3PPs9HP2xMAyQrueV3U1kSKADgky` = `READY`;
+  no-spend HTTP postcheck подтвердил auth boundary (`307 → /login`, protected
+  API `401`) без provider calls или Walmart mutations.
   Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
   `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
   `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,
