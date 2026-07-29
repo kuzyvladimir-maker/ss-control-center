@@ -734,6 +734,123 @@ test("authoritative Walmart exact title accepts a one-pack donor with explicit n
   assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
 });
 
+test("authoritative Walmart exact title accepts one byte-bound Publix URL package size", () => {
+  const value = snapshot({
+    capturedAt: "2026-07-29T12:00:00.000Z",
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Goya",
+      title: "Goya Pinto Beans",
+      size: null,
+      attributes: null,
+      description: null,
+      bullets: null,
+      nutritionFacts: null,
+      ingredients: null,
+    })],
+    offers: [offer({
+      retailer: "publix",
+      retailerProductId: "441620-goya-pinto-beans-dry-14-oz",
+      productUrl:
+        "https://delivery.publix.com/store/publix/products/441620-goya-pinto-beans-dry-14-oz",
+      sourceApi: "openclaw",
+      fetchedAt: "2026-07-10T14:34:57.520Z",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: "Goya Pinto Beans (Pack of 2)",
+      brand: "Goya",
+    })],
+  });
+  const scope = compile(value).scopes[0]!;
+  const componentPlan = scope.components[0]!;
+  assert.equal(
+    componentPlan.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+  assert.equal(componentPlan.targetIdentity?.size, "14 oz");
+  assert.equal(componentPlan.qty, 2);
+  assert.equal(componentPlan.donorOfferId, null);
+  assert.equal(
+    componentPlan.disposition,
+    "EXACT_IDENTITY_ONLY_CANDIDATE",
+  );
+});
+
+test("authoritative Walmart Publix URL size preserves a hyphenated decimal", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Stur",
+      title: "Stur Drinks Coconut Pineapple Liquid Water Enhancer",
+      size: null,
+      attributes: null,
+    })],
+    offers: [offer({
+      retailer: "publix",
+      retailerProductId:
+        "3056323-stur-liquid-water-enhancer-coconut-pineapple-1-62-fl-oz",
+      productUrl:
+        "https://delivery.publix.com/store/publix/products/3056323-stur-liquid-water-enhancer-coconut-pineapple-1-62-fl-oz",
+      sourceApi: "openclaw",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title:
+        "Stur Drinks Coconut Pineapple Liquid Water Enhancer (Pack of 6)",
+      brand: "Stur",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "1.62 fl oz");
+  assert.equal(componentPlan.qty, 6);
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart URL size rejects an unbound or ambiguous Publix slug", () => {
+  for (const retailerProductId of [
+    "different-product-id",
+    "441620-goya-pinto-beans-dry-14-oz-2-lb",
+  ]) {
+    const productUrl = retailerProductId === "different-product-id"
+      ? "https://delivery.publix.com/store/publix/products/441620-goya-pinto-beans-dry-14-oz"
+      : `https://delivery.publix.com/store/publix/products/${retailerProductId}`;
+    const value = snapshot({
+      listings: [{
+        ...snapshot().listings[0],
+        productIdentityJson: null,
+        productIdentityUpdatedAt: null,
+      }],
+      components: [],
+      donors: [donor({
+        brand: "Goya",
+        title: "Goya Pinto Beans",
+        size: null,
+        attributes: null,
+      })],
+      offers: [offer({
+        retailer: "publix",
+        retailerProductId,
+        productUrl,
+        sourceApi: "openclaw",
+      })],
+      authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+        title: "Goya Pinto Beans (Pack of 2)",
+        brand: "Goya",
+      })],
+    });
+    assert.equal(compile(value).scopes[0]?.disposition, "QUARANTINE");
+  }
+});
+
 test("authoritative Walmart exact title accepts an explicit structured item count", () => {
   const title =
     "Scotch-Brite Zero Scratch Non-Scratch Cleaning Scrub Sponge 3 Dish Sponges";

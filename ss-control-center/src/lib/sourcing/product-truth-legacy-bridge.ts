@@ -37,11 +37,11 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.9.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.10.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.9.0" as const;
+  "product-truth-legacy-bridge-plan/1.10.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.9.0" as const;
+  "product-truth-legacy-bridge-policy/1.10.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -1999,11 +1999,86 @@ function normalizeLegacyComponentSizeEvidence(
   return { status: "INVALID", value: null };
 }
 
+const PUBLIX_PRODUCT_URL_SIZE =
+  /(?:^|-)(\d{1,4})(?:-(\d{1,3}))?-(fl-oz|fluid-ounces?|oz|ounces?|lbs?|pounds?|kgs?|kilograms?|grams?|g|ml|milliliters?|liters?|litres?|l|counts?|ct)(?=-|$)/gi;
+
+function directPublixOfferUrlPackageSize(
+  offer: ProductTruthLegacyBridgeOfferRow | null,
+): string | null {
+  if (
+    !offer
+    || !usableContentSourceOffer(offer)
+    || offer.retailer.trim().toLowerCase() !== "publix"
+    || !offer.retailerProductId
+  ) return null;
+  let url: URL;
+  try {
+    url = new URL(offer.productUrl!);
+  } catch {
+    return null;
+  }
+  if (url.hostname.toLowerCase() !== "delivery.publix.com") return null;
+  const productSlug = decodeURIComponent(url.pathname)
+    .split("/")
+    .filter(Boolean)
+    .at(-1);
+  if (!productSlug || productSlug !== offer.retailerProductId) return null;
+
+  const unitLabels: Record<string, string> = {
+    "fl-oz": "fl oz",
+    "fluid-ounce": "fl oz",
+    "fluid-ounces": "fl oz",
+    oz: "oz",
+    ounce: "oz",
+    ounces: "oz",
+    lb: "lb",
+    lbs: "lb",
+    pound: "lb",
+    pounds: "lb",
+    kg: "kg",
+    kgs: "kg",
+    kilogram: "kg",
+    kilograms: "kg",
+    g: "g",
+    gram: "g",
+    grams: "g",
+    ml: "ml",
+    milliliter: "ml",
+    milliliters: "ml",
+    l: "l",
+    liter: "l",
+    liters: "l",
+    litre: "l",
+    litres: "l",
+    count: "count",
+    counts: "count",
+    ct: "count",
+  };
+  const candidates = [...productSlug.matchAll(
+    new RegExp(PUBLIX_PRODUCT_URL_SIZE.source, PUBLIX_PRODUCT_URL_SIZE.flags),
+  )]
+    .map((match) => {
+      const whole = Number(match[1]);
+      const decimal = match[2] ?? null;
+      const unit = unitLabels[(match[3] ?? "").toLowerCase()];
+      if (!Number.isInteger(whole) || whole <= 0 || !unit) return null;
+      const amount = decimal === null
+        ? String(whole)
+        : `${whole}.${decimal}`;
+      const candidate = `${amount} ${unit}`;
+      return parseCanonicalSize(candidate) ? candidate : null;
+    })
+    .filter((candidate): candidate is string => candidate !== null);
+  const distinct = [...new Set(candidates)];
+  return distinct.length === 1 ? distinct[0]! : null;
+}
+
 function authoritativeWalmartPackageSize(input: {
   donorTitle: string;
   donorSize: string | null;
   donorAttributes: string | null;
   legacyComponentSize: string | null;
+  contentSourceOffer?: ProductTruthLegacyBridgeOfferRow | null;
 }): string | null {
   const source =
     normalizeLegacyComponentSizeEvidence(input.legacyComponentSize);
@@ -2043,7 +2118,7 @@ function authoritativeWalmartPackageSize(input: {
   ) {
     return input.donorTitle;
   }
-  return null;
+  return directPublixOfferUrlPackageSize(input.contentSourceOffer ?? null);
 }
 
 function explicitRetailPackageInnerCount(
@@ -2400,11 +2475,17 @@ function recoverAuthoritativeWalmartReportScope(input: {
       && !/^\d+$/.test(token));
   if (productLineTokens.length === 0) return null;
 
+  const contentSourceOffer = chooseContentSourceOffer(
+    donor.id,
+    input.offersByDonor,
+  );
+  if (!contentSourceOffer) return null;
   const size = authoritativeWalmartPackageSize({
     donorTitle: donor.title,
     donorSize: donor.size,
     donorAttributes: donor.attributes,
     legacyComponentSize: legacyComponent?.size ?? null,
+    contentSourceOffer,
   });
   if (!size) return null;
   const targetIdentity: CanonicalProductIdentity = {
@@ -2441,11 +2522,6 @@ function recoverAuthoritativeWalmartReportScope(input: {
     })
   ) return null;
 
-  const contentSourceOffer = chooseContentSourceOffer(
-    donor.id,
-    input.offersByDonor,
-  );
-  if (!contentSourceOffer) return null;
   const directTargetEvidence =
     input.directTargetContentEvidenceByDonor.get(donor.id) ?? null;
   const contentAssessment = assessLegacyContent(
