@@ -905,8 +905,67 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `IDENTITY_ONLY_CANONICALIZATION_CANDIDATE`: donor truth сохранён, но
   canonical listing recipe/COGS ещё не материализованы, а недостающие content
   facts не выдумываются.
-- [ ] 🔄 Следующая фаза: независимо материализовать canonical listing recipe и
-  typed COGS из уже сохранённых exact variant/price/content evidence, не
-  повторяя provider calls и не связывая content readiness с ценовым outcome.
+- [x] ✅ Canonical listing recipe и typed COGS независимо материализованы из
+  уже сохранённых exact variant/price/content evidence: `10 FACT`, `93
+  UNSOURCEABLE`, provider calls `0`; content readiness не зависит от COGS.
 - [x] ✅ Старые планы `2cfea49a…0070` и `04f27fd7…f7ae` superseded и никогда
   не исполняются.
+
+---
+
+## 10. Canonical recipe / saved COGS checkpoint — 2026-07-29
+
+- [x] ✅ Existing Product Truth catalog reused in place; no parallel catalog was
+  created. Authoritative denominator remains `5935/5935`.
+- [x] ✅ Canonical recipe reconciliation produced `103` typed economic outcomes.
+  Fresh full-denominator readiness after saved-price promotion:
+  `FACT 10 / ESTIMATE 0 / UNSOURCEABLE 93 / MISSING 5832 / INVALID 0`;
+  Procurement is ready for the same `10` listings, while Bundle Factory and
+  Listing Improvement retain their independent `22` content-ready listings.
+- [x] ✅ Ten fresh exact local first-party observations were promoted
+  append-only from saved evidence only: `10 SkuCost + 10
+  SkuComponentEvidence + 10 SkuCostListingScopeLink`. Apply report SHA-256
+  `edbb8d578938ffb96a0127715b965dc04371611a72d9eb74f3f9221bde452eaf`;
+  postcheck is `ALREADY_APPLIED`.
+- [x] ✅ Readiness report SHA-256
+  `bab117ffc4a58d3fd34fa7f099e8e7d4d02f71ebb21bb3c0c0f22e626601fcec`,
+  payload SHA-256
+  `fd077a3dccc7d39841441d0ed8f383af7ca3ec60044a09c9d993c0f98ea7430e`.
+- [x] ✅ Saved canonical price graph was exhausted before any new spend:
+  six eligible current non-club observations cover exactly the ten FACT
+  listings; the other `93` recipes have neither another FACT nor a typed
+  ESTIMATE under the current matcher, locality and 48-hour policy.
+- [x] ✅ A post-promotion audit regression was found and fixed. Legacy audit no
+  longer joins a current recipe to a later cost through equal `runId` /
+  `approvalId`; product identity provenance remains independent from COGS
+  provenance. Fresh read-only bridge audit restored `102` already-canonical
+  listings / `102` components and `5833` quarantined listings. Source SHA-256
+  `75931071d885c59425c7b6a652ac57a9845e24c492e5765d8cbb9fbb291b152f`;
+  plan SHA-256
+  `45b1d14be7122d993f968e7e8202e9734c43b243c5212f4e97b73007b8938462`.
+- [x] ✅ Quarantine partition is deterministic, source-byte-bound and
+  exhaustive: all `5833` quarantined listings are assigned to exactly one
+  primary work lane without a database write, provider call or marketplace
+  mutation. The sealed report SHA-256 is
+  `48c6c87e1cce2db7a306f15b3b0c04c375b74e68325bd46e55385000f416e4d2`;
+  artifact-index SHA-256 is
+  `07e89126880041758d4a53f804f372b6b0c484b7179365f00a4d94747a87414f`.
+- [x] ✅ Primary lane denominator:
+  `CANONICAL_INTEGRITY_CONFLICT 157`,
+  `LISTING_IDENTITY_RECOVERY 899`,
+  `COMPONENT_GRAPH_RECOVERY 284`,
+  `DONOR_LINK_RECOVERY 800`,
+  `EXACT_DONOR_OFFER_ENRICHMENT 33`,
+  `PRICE_ONLY_PROXY_RESEARCH 21`,
+  `RETAILER_IDENTITY_RESEARCH 3639`,
+  `OTHER_QUARANTINE 0`. These are priority lanes, not truth mutations.
+- [x] ✅ Clean-checkout release commit
+  `8f8b39282feeb764ef1fec3b89cf8caf295f5864`, tree
+  `aeb5649fbc173b3ad33e872d0de96b01403d5714`: Product Truth `535/535`,
+  TypeScript, Prisma, diff and clean-worktree checks pass.
+- [ ] 🔄 Current phase: rank each lane by exact unresolved graph distance and
+  reuse potential, then execute only bounded collision-free
+  enrichment/materialization waves.
+- [ ] ⬜ After materially higher recipe/COGS coverage, run canonical backfill
+  readiness and four-consumer SHADOW comparison. Consumer ENFORCED activation
+  remains outside this checkpoint.

@@ -1379,6 +1379,32 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `ss-control-center/data/audits/product-truth-standing-authority/20260729T004612Z-canary-v1/`.
 - [x] ✅ Status/report и full-denominator postcheck `5935/5935`: exact Sunkist
   variant/price/partial content сохранены; missing allergens/storage явны.
-- [ ] 🔄 Отделить canonical listing recipe/COGS materialization от content
-  completeness и переиспользовать сохранённые exact evidence без нового
-  provider spend.
+- [x] ✅ Canonical listing recipe/COGS materialization отделена от content
+  completeness: сохранённые exact evidence дали `10 FACT`, остальные `93`
+  canonical recipes честно остались `UNSOURCEABLE`; provider spend `0`.
+
+---
+
+## Product Truth Phase 1 — checkpoint 2026-07-29
+
+- [x] ✅ Saved-evidence canonical materialization завершена без повторного
+  retailer/provider spend: readiness `5935/5935`, `FACT 10`, `ESTIMATE 0`,
+  `UNSOURCEABLE 93`, `MISSING 5832`, `INVALID 0`.
+- [x] ✅ Independent content/economics axes сохранены: Bundle Factory и Listing
+  Improvement `22 ready`, Procurement `10 ready`.
+- [x] ✅ FACT wave atomарно записала `30` append-only canonical rows; apply SHA
+  `edbb8d57…52eaf`, повторный preflight = `ALREADY_APPLIED`.
+- [x] ✅ Исправлен audit-only provenance regression после FACT promotion.
+  Fresh bridge снова показывает `102` canonical / `5833` quarantine; plan SHA
+  `45b1d14b…38462`.
+- [x] ✅ Systemic quarantine partition исчерпывающе разложил все `5833`
+  listings по восьми primary lanes: integrity `157`, listing identity `899`,
+  component graph `284`, donor link `800`, exact donor offer `33`, price proxy
+  `21`, retailer identity `3639`, other `0`. Report SHA
+  `48c6c87e…6e4d2`; все effects равны нулю.
+- [x] ✅ Clean release `8f8b3928…f5864`, tree `aeb5649f…d5714`,
+  Product Truth `535/535`, TypeScript, Prisma, diff и clean-worktree PASS.
+- [ ] 🔄 Ранжировать partition по exact unresolved graph distance/reuse и
+  построить следующую bounded collision-free очередь.
+- [ ] ⬜ Повторять materialization/readiness до исчерпания безопасных классов,
+  затем выполнить backfill readiness и four-consumer SHADOW comparison.

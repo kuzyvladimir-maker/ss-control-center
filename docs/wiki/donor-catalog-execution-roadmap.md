@@ -756,11 +756,14 @@ G7 закончен как диагностический production canary, н�
 - ✅ подтвердить full-denominator postcheck `5935/5935`: exact donor
   variant/price/partial content сохранены, но target listing ещё не имеет
   independent canonical recipe/COGS и остаётся identity-only;
-- 🔄 материализовать canonical listing recipe и typed COGS независимо от
-  полноты content snapshot, переиспользуя уже сохранённые evidence без нового
-  provider spend;
-- ⬜ после machine acceptance recipe/COGS separation вернуться к bounded
-  Phase 1 waves.
+- ✅ canonical listing recipe и typed COGS независимо материализованы из
+  сохранённых evidence: `10 FACT / 0 ESTIMATE / 93 UNSOURCEABLE`, provider
+  spend `0`; full-denominator readiness остаётся `5935/5935`;
+- ✅ systemic partition исчерпывающе разложил все `5833` quarantine listings
+  по восьми взаимоисключающим primary lanes; report SHA
+  `48c6c87e…6e4d2`, provider/DB/marketplace effects `0`;
+- 🔄 ранжировать lanes по exact unresolved graph distance и reuse potential,
+  затем продолжить только bounded collision-free Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
 
