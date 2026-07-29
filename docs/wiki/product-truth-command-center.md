@@ -800,3 +800,34 @@ quote: production campaign registry/runtime всё ещё отсутствует
 
 BF-W4 не меняет live mutation authority: protected execution остаётся
 последовательным, а marketplace publication не следует из размера owner request.
+
+### 🔄 Фаза BF-W5 — channel-specific Advanced и автоматический enrichment quote
+
+- [x] Walmart `Advanced` отделён от Amazon/Uncrustables: house brand,
+  Uncrustables image style, generative photo controls и per-request text-model
+  selector не рендерятся и не отправляются в Walmart request. Server route
+  входит в canonical Walmart branch до parsing/defaulting этих Amazon-only
+  полей, поэтому они не могут повлиять на manufacturer brand или image truth.
+- [x] Walmart `Advanced` оставляет только target margin; blank сохраняет
+  owner default `30%`. UI явно фиксирует exact manufacturer brand и verified
+  donor imagery без generative product redraw.
+- [x] Устаревший, фактически неиспользуемый Bundle Factory model selector
+  удалён. Text model теперь выбирается только центральным
+  `src/lib/ai-models.ts`; live Anthropic Models API 2026-07-29 подтвердил
+  `claude-opus-5`, и premium pin/Bundle Factory content generation переведены
+  на этот ID после проверки migration boundary. Walmart deterministic content
+  от LLM по-прежнему не зависит.
+- [x] При exact existing donor data gap основной Generate автоматически
+  запускает только no-spend preparation пяти независимых targeted collection
+  plans. Лишняя owner-кнопка `Prepare collection plans` удалена; первый
+  обязательный owner action — review и `Approve exact quote`. Retry остаётся
+  только для честной infrastructure failure.
+- [x] Certification: focused fallback/content `19/19`; полная Walmart/Studio
+  regression `194/194`; Product Truth `519/519`; TypeScript, focused ESLint
+  (0 errors, 2 pre-existing A+ warnings) и production build `PASS`.
+- [ ] Опубликовать exact commit в production и выполнить authenticated UI /
+  no-spend HTTP postcheck.
+
+BF-W5 не авторизует provider spend или Walmart mutation. No-spend planning
+может стартовать автоматически; paid enrichment начинается только после
+external owner signature точного показанного quote.

@@ -67,6 +67,14 @@
   `dpl_561wp4SR15HHGb7dPN8uB2U3NG43` = `READY`; no-spend HTTP postcheck
   `salutemsolutions.info` и `/bundle-factory/new` подтвердил штатный
   authentication redirect `307 → /login`.
+  BF-W5 implementation commit `69e17e55…`: Walmart `Advanced` больше не
+  содержит и не передаёт Amazon house brand, Uncrustables style, generative
+  photos или model selector; остаётся margin и exact donor/manufacturer
+  identity contract. Existing-donor data gap теперь автоматически запускает
+  no-spend plan preparation и переходит прямо к owner quote. Central premium
+  text pin обновлён через live Anthropic Models API до `claude-opus-5`;
+  deterministic Walmart content от LLM не зависит. Regression:
+  Walmart/Studio `194/194`, Product Truth `519/519`, TypeScript/build `PASS`.
   Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
   `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
   `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,
