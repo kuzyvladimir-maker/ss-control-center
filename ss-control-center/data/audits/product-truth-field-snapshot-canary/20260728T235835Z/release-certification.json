@@ -1,0 +1,15 @@
+{
+  "certifiedAt": "2026-07-28T23:58:35.000Z",
+  "cleanCheckout": true,
+  "commit": "a2675452ec07cf06475f7d7c9d80ad5050f72a8c",
+  "engineReleaseSha256": "288d348a1811b2a651c155ff99c58bc5a4e6640c6e0458b1119bd2b68452df84",
+  "providerCalls": 0,
+  "schemaVersion": "product-truth-release-certification/1.0.0",
+  "tests": {
+    "failed": 0,
+    "passed": 516,
+    "typescript": "PASS"
+  },
+  "tree": "e7b409485351a5d85411032adcaebf7e842aabc9",
+  "worktreeStatus": "CLEAN"
+}

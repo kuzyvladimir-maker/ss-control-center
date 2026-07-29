@@ -35,7 +35,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `CANARY_CONSUMED_V1_6_CERTIFICATION_PENDING` | Plan `4e8524d7…a05d` consumed без retry. Graph guard `1.5.0` clean-certified `514/514`; successor `2cfea49a…0070` superseded до spend после доказательства all-or-nothing content loss. Field snapshot `1.6.0` focused `43/43`; следующего paid gate пока нет |
+| G7. Provider canary / paid wave | `AWAITING_EXACT_V1_6_CANARY_GATE` | Plan `4e8524d7…a05d` consumed без retry. v1.6 clean release `a2675452…`, `516/516`; read-only successor plan `04f27fd7…f7ae` готов. Требуется только новый exact combined-6 money gate |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -880,5 +880,23 @@ publish requirements не ослаблены. TypeScript PASS, focused productio
 suite `43/43`, полный shared-worktree suite `516/516`, Wiki-Brain `0` orphan /
 `0` broken links; provider calls и production writes этого исправления = `0`.
 
-Следующий provider gate появится только после full clean-checkout certification
-и byte-new `1.6.0 doctor → plan`. Plan `2cfea49a…0070` не исполняется.
+Clean release: commit `a2675452ec07cf06475f7d7c9d80ad5050f72a8c`,
+tree `e7b409485351a5d85411032adcaebf7e842aabc9`, engine
+`288d348a1811b2a651c155ff99c58bc5a4e6640c6e0458b1119bd2b68452df84`,
+TypeScript PASS, Product Truth `516/516`, worktree clean.
+
+Новый read-only `doctor → plan` для `walmart:1:FaisalX-1828`:
+
+- request SHA `f39e5075828df9337e2731e3843c566e5162868c1d3d3d6c6b004414aa3492b1`;
+- plan SHA `04f27fd7d1e111f7f156a2a6719d69bfa30c61dc03db05be3c99237a7c9cf7ae`;
+- run `pt-field-snapshot-canary-20260728t235835z`;
+- expiry `2026-07-29T22:30:00.000Z`;
+- work ceiling: Oxylabs query `1/1`, Unwrangle detail `1/2.5`,
+  reserve floor `15000`;
+- required fresh balance evidence: one Unwrangle Target Search call `1/2.5`;
+- combined maximum `6`, retry `0`, clubs/BJ's/marketplace/price/inventory/
+  delist/consumer activation/procurement запрещены.
+
+Plan `2cfea49a…0070` не исполняется. Новый exact approval phrase:
+
+`APPROVE_PRODUCT_TRUTH_FIELD_SNAPSHOT_CANARY_V1:a2675452ec07cf06475f7d7c9d80ad5050f72a8c:04f27fd7d1e111f7f156a2a6719d69bfa30c61dc03db05be3c99237a7c9cf7ae:pt-field-snapshot-canary-20260728t235835z:1_LISTING:OXYLABS_1_QUERY_CALL_1_UNIT:UNWRANGLE_BALANCE_PROBE_1_TARGET_SEARCH_CALL_2.5_UNITS:UNWRANGLE_1_DETAIL_CALL_2.5_UNITS:COMBINED_6_MAX_PROVIDER_UNITS:15000_UNWRANGLE_RESERVE_FLOOR:NO_RETRY:NO_CLUBS:NO_BJS:NO_MARKETPLACE_MUTATIONS:NO_PRICE_OR_INVENTORY_CHANGES:NO_DELISTING:NO_CONSUMER_ACTIVATION:NO_PROCUREMENT`

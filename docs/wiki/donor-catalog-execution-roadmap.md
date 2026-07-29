@@ -788,5 +788,11 @@ G7 закончен как диагностический production canary, н�
   в mutable donor projection и не ослабляет Walmart publish requirements;
   TypeScript PASS, focused production-like suite `43/43`, полный shared-worktree
   suite `516/516`, Wiki-Brain `0/0`;
-- 🔄 выполняется full clean-checkout certification `1.6.0`; старый successor
-  plan `2cfea49a…0070` superseded и не исполняется, terminal canary не replay.
+- ✅ clean `1.6.0` release: commit `a2675452ec07cf06475f7d7c9d80ad5050f72a8c`,
+  tree `e7b409485351a5d85411032adcaebf7e842aabc9`, engine
+  `288d348a…df84`, TypeScript PASS, `516/516`;
+- ✅ новый read-only request `f39e5075…92b1` и plan `04f27fd7…f7ae`
+  построены для `walmart:1:FaisalX-1828`, provider calls/DB writes `0`;
+- ⛔ canary ждёт нового exact plan-bound gate максимум на combined `6` units;
+  старый successor plan `2cfea49a…0070` superseded и не исполняется, terminal
+  canary не replay.

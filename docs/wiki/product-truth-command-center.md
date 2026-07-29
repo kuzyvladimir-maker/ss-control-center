@@ -870,6 +870,16 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [x] ✅ TypeScript PASS; focused production-like suite `43/43`; полный
   shared-worktree Product Truth suite `516/516`; Wiki-Brain `0` orphan /
   `0` broken links.
-- [ ] 🔄 Clean-checkout certification и новый `1.6.0` doctor/plan.
+- [x] ✅ Clean release `1.6.0`: commit
+  `a2675452ec07cf06475f7d7c9d80ad5050f72a8c`, tree
+  `e7b409485351a5d85411032adcaebf7e842aabc9`, engine release
+  `288d348a…df84`; clean TypeScript PASS и Product Truth `516/516`.
+- [x] ✅ Новый production `doctor → plan` выполнен read-only для
+  `walmart:1:FaisalX-1828`: request `f39e5075…92b1`, plan
+  `04f27fd7…f7ae`, provider calls/DB writes `0`, expires
+  `2026-07-29T22:30:00Z`.
+- [ ] ⛔ Exact v1.6 canary ждёт только новый plan-bound money gate: balance
+  probe `1 × 2.5` units + work `1 Oxylabs/1` и `1 Unwrangle detail/2.5`,
+  combined maximum `6`, retry `0`.
 - [ ] ⬜ Старый `1.5.0` successor plan `2cfea49a…0070` superseded и не
   исполняется; новый paid gate возможен только для byte-new `1.6.0` plan.
