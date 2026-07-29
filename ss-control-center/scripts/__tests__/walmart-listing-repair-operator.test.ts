@@ -16,7 +16,7 @@ import type {
   WalmartListingRepairProductionExecutionInput,
 } from "../../src/lib/walmart/listing-integrity-remediation-writer.ts";
 
-const RELEASE_ID = "b413a185759136cc30ab8b1b24aa99d040e9b62fbfebc01ab62cc86f5b2aa9a0";
+const RELEASE_ID = "680c00fa891f31fa3c2bad4071ca2cdeb5db6bbf65d98850dbd11a20a7a3e55b";
 
 test("operator CLI requires wrapper-attested release hashes and rejects test runtime flags", () => {
   assert.throws(

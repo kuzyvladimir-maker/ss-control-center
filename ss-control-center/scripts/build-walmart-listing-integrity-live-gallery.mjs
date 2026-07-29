@@ -142,13 +142,28 @@ export function walmartListingIntegrityGalleryQuantityTarget(input) {
   const visibleCountPerPack = Number(
     afterSpecs.get("Count per pack") ?? afterSpecs.get("Count Per Pack"),
   );
+  const countPerPackClaims = claims.filter((claim) => (
+    claim?.kind === "inner_item_count"
+      && claim.field_path === "walmart.Visible.countPerPack"
+  ));
+  const targetCountPerPack = countPerPackClaims.length === 1
+    ? countPerPackClaims[0].value
+    : null;
+  const totalCountMatch = Number.isSafeInteger(targetCount)
+    && Number.isSafeInteger(visibleTotalCount)
+    && visibleTotalCount === targetCount;
   return {
     target_count: targetCount,
+    target_count_per_pack: targetCountPerPack,
     visible_total_count: visibleTotalCount,
     visible_count_per_pack: visibleCountPerPack,
-    total_count_match: Number.isSafeInteger(targetCount)
-      && Number.isSafeInteger(visibleTotalCount)
-      && visibleTotalCount === targetCount,
+    total_count_match: totalCountMatch,
+    count_per_pack_match: Number.isSafeInteger(targetCountPerPack)
+      && (
+        Number.isSafeInteger(visibleCountPerPack)
+          ? visibleCountPerPack === targetCountPerPack
+          : targetCountPerPack === 1 && totalCountMatch
+      ),
   };
 }
 
@@ -366,20 +381,12 @@ async function main() {
     target_attribute_claims: target.attribute_claims,
     after_specifications: after.specifications,
   });
-  const targetCountPerPack = target.attribute_claims?.find(
-    (claim) => claim.field_path === "walmart.Visible.countPerPack",
-  )?.value;
-  const visibleCountPerPack = Number(
-    afterSpecs.get("Count per pack") ?? afterSpecs.get("Count Per Pack"),
-  );
   const attributesExactTarget = !attributeOnly || (
     afterSpecs.get("Flavor") === targetFlavor
     && afterSpecs.get("Brand") === targetBrand
     && galleryQuantity.total_count_match
     && Number(afterSpecs.get("Multipack quantity")) === outerUnits
-    && (Number.isSafeInteger(visibleCountPerPack)
-      ? visibleCountPerPack === targetCountPerPack
-      : targetCountPerPack === 1 && Number(afterSpecs.get("Count")) === outerUnits)
+    && galleryQuantity.count_per_pack_match
   );
   const textChangedAsApproved = attributeOnly
     ? before.description === after.description

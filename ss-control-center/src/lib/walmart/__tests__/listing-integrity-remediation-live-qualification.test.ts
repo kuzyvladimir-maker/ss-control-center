@@ -22,7 +22,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "b413a185759136cc30ab8b1b24aa99d040e9b62fbfebc01ab62cc86f5b2aa9a0";
+  "680c00fa891f31fa3c2bad4071ca2cdeb5db6bbf65d98850dbd11a20a7a3e55b";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -582,10 +582,27 @@ test("factual gallery accepts Walmart Total count for the exact synthetic count 
   });
   assert.deepEqual(result, {
     target_count: 4,
+    target_count_per_pack: 1,
     visible_total_count: 4,
     visible_count_per_pack: 1,
     total_count_match: true,
+    count_per_pack_match: true,
   });
+});
+
+test("factual gallery accepts implicit Count per pack 1 when exact Total count is visible", () => {
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: totalCountRecoveryPlan().target.surface.attribute_claims,
+    after_specifications: [
+      { name: "Piece count", value: "20" },
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total count", value: "4" },
+    ],
+  });
+  assert.equal(result.total_count_match, true);
+  assert.equal(result.target_count_per_pack, 1);
+  assert.equal(result.visible_count_per_pack, Number.NaN);
+  assert.equal(result.count_per_pack_match, true);
 });
 
 test("factual gallery rejects a wrong Walmart Total count", () => {
@@ -600,6 +617,27 @@ test("factual gallery rejects a wrong Walmart Total count", () => {
   assert.equal(result.target_count, 4);
   assert.equal(result.visible_total_count, 20);
   assert.equal(result.total_count_match, false);
+  assert.equal(result.count_per_pack_match, true);
+});
+
+test("factual gallery rejects an implicit non-unit Count per pack", () => {
+  const targetClaims = structuredClone(
+    totalCountRecoveryPlan().target.surface.attribute_claims,
+  );
+  const countPerPack = targetClaims.find(
+    (claim) => claim.field_path === "walmart.Visible.countPerPack",
+  );
+  assert.ok(countPerPack && countPerPack.kind === "inner_item_count");
+  countPerPack.value = 2;
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: targetClaims,
+    after_specifications: [
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total count", value: "4" },
+    ],
+  });
+  assert.equal(result.total_count_match, true);
+  assert.equal(result.count_per_pack_match, false);
 });
 
 test("attribute-only live Qualification remains no-write PENDING on the stale buyer surface", async () => {
