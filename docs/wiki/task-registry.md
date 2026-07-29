@@ -1507,6 +1507,19 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   Bundle Factory/Listing Improvement `100`, Unit Economics
   `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING`, Procurement
   `22`; incomplete content не был relabelled как complete.
+- [x] ✅ Fresh sales-priority ranking выбрал Glory Foods Seasoned Mustard
+  Greens 27 oz donor `8936f4ab…9d51`: три convertible recipes и `$486.47`
+  `sales180`. One-attempt run для `RizwanX-3236 / component 0`, plan
+  `ce974bef…e278`, прошёл исправленный multi-word brand identity path.
+- [x] ✅ Content detail terminalized `AMBIGUOUS` без retry, но exact
+  first-party search независимо сохранил price observation
+  `doo:7883ceda…75d1`; lifecycle spend `6` units, marketplace/business
+  mutations `0`.
+- [x] ✅ Zero-paid reconcile plan `28e3a989…b47e`, apply
+  `8b9e8be3…243c`: `9` append-only rows, `3 FACT` для
+  `RizwanX-3235/3236/3237`. Full readiness `0497687d…1339`:
+  `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING`, Procurement
+  `25`, denominator `5935/5935`.
 - [ ] 🔄 Выбрать следующий highest-impact untouched exact Phase 1 target,
   выполнить один bounded standing-authority lifecycle и независимо
   материализовать только подтверждённые content/price evidence в существующий

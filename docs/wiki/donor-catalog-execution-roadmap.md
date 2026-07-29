@@ -852,6 +852,20 @@ G7 закончен как диагностический production canary, н�
   reconciled, Bundle Factory/Listing Improvement `100`, Unit Economics
   `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING`, Procurement
   `22`. Content gaps не были повышены до complete и не уничтожили price truth;
+- ✅ sales-priority ranking выбрал Glory Foods Seasoned Mustard Greens 27 oz:
+  три convertible recipes и `$486.47` в доступном `sales180`. Exact canonical
+  run выполнен один раз для `walmart:1:RizwanX-3236 / component 0`; plan
+  `ce974bef…e278`, retry `0`, combined spend `6` units;
+- ✅ content detail terminalized `AMBIGUOUS /
+  UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`, replay запрещён, но
+  exact Walmart search независимо сохранил first-party price observation
+  `doo:7883ceda…75d1`. Multi-word `Glory Foods` brand path прошёл production
+  identity gate; incomplete content не был повышен до truth;
+- ✅ бесплатный canonical reconcile plan `28e3a989…b47e`, apply
+  `8b9e8be3…243c` добавил `9` append-only rows и `3 FACT` для
+  `RizwanX-3235/3236/3237`. Readiness `0497687d…1339` подтверждает
+  `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING`, Procurement
+  `25`, denominator `5935/5935`;
 - 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
   authority; отдельно сохранить successful content/price evidence, materialize
   только доказанные данные в существующие canonical recipe/typed COGS и снова

@@ -1223,6 +1223,24 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   Improvement remain `100 ready`; Unit Economics is now
   `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING / 0 INVALID`;
   Procurement is `22 ready`.
+- [x] ✅ Fresh impact ranking used both convertible recipe count and available
+  Walmart `sales180`. Glory Foods Seasoned Mustard Greens 27 oz donor
+  `8936f4ab-6336-4169-8592-83b496799d51` ranked first: three recipes and
+  `$486.47` historical sales. It was executed once with binding
+  `walmart:1:RizwanX-3236 / component 0`; plan SHA `ce974bef…e278`.
+- [x] ✅ Exact search passed the repaired multi-word `Glory Foods` identity
+  path and persisted first-party price observation `doo:7883ceda…75d1`.
+  Unwrangle detail then terminalized
+  `AMBIGUOUS / UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`; no retry
+  is allowed. Total lifecycle spend was `6` units and business mutations were
+  `0`; incomplete content was not promoted.
+- [x] ✅ Zero-paid COGS plan SHA `28e3a989…b47e` and fresh preflight
+  `READY_TO_APPLY` produced `9` append-only rows and three `FACT` costs for
+  `RizwanX-3235/3236/3237`; apply report SHA `8b9e8be3…243c`.
+- [x] ✅ Full-denominator readiness report SHA `0497687d…1339` proves
+  `5935/5935` reconciled, Unit Economics
+  `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING / 0 INVALID`,
+  Procurement `25`, and unchanged Bundle Factory/Listing Improvement `100`.
 - [ ] 🔄 Select the next highest-impact untouched exact Phase 1 target and
   repeat the bounded one-attempt standing-authority lifecycle. Persist
   successful content and price evidence on their independent axes, then
