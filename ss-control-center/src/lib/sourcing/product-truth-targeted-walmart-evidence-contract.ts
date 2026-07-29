@@ -2094,29 +2094,60 @@ export function canonicalIdentityFromTarget(
 
 /**
  * Canonical identity JSON is token-normalized and may sort a multi-word brand
- * for deterministic hashing. Title proof, however, must use the original
- * listing-bound brand phrase ("Pepperidge Farm", not "farm pepperidge").
- * The listing binding already proves that the raw phrase rebuilds to the same
- * canonical ID, so restoring that phrase changes no identity or write target.
+ * for deterministic hashing. Title proof, however, must use the original brand
+ * phrase ("Pepperidge Farm", not "farm pepperidge"). Bootstrap targets retain
+ * it in the immutable donor row; existing exact decisions may retain it in
+ * their hash-bound targetIdentity evidence. In both cases the raw phrase is
+ * restored only when rebuilding with it produces the exact same canonical ID,
+ * so brand word order can improve title proof without changing identity.
  */
 export function canonicalMatchIdentityFromTarget(
   target: ProductTruthTargetedWalmartEvidenceTarget,
 ): CanonicalProductIdentity {
   const canonical = canonicalIdentityFromTarget(target);
+  let rawBrand: string | null = null;
   if (
-    target.identityMode !== "LISTING_BOUND_BOOTSTRAP"
-    || !target.legacySnapshot
-  ) return canonical;
-  const product = canonicalBoundRowJson(
-    target.legacySnapshot.donorProductRowJson,
-    "legacySnapshot.donorProductRowJson",
-  );
-  const rawBrand = nullableIdentityText(product.row.brand);
-  if (!rawBrand) {
-    fail(
-      "TARGETED_EVIDENCE_LISTING_IDENTITY_INCOMPLETE",
-      "listing-bound donor brand is missing",
+    target.identityMode === "LISTING_BOUND_BOOTSTRAP"
+    && target.legacySnapshot
+  ) {
+    const product = canonicalBoundRowJson(
+      target.legacySnapshot.donorProductRowJson,
+      "legacySnapshot.donorProductRowJson",
     );
+    rawBrand = nullableIdentityText(product.row.brand);
+    if (!rawBrand) {
+      fail(
+        "TARGETED_EVIDENCE_LISTING_IDENTITY_INCOMPLETE",
+        "listing-bound donor brand is missing",
+      );
+    }
+  } else if (
+    target.identityMode === "EXISTING_EXACT"
+    && target.decisionEvidenceJson
+  ) {
+    try {
+      const evidence = JSON.parse(target.decisionEvidenceJson) as unknown;
+      rawBrand = isRecord(evidence) && isRecord(evidence.targetIdentity)
+        ? nullableIdentityText(evidence.targetIdentity.brand)
+        : null;
+    } catch {
+      // Snapshot parsing already verifies the JSON bytes. Preserve the
+      // normalized fail-closed identity if an independently constructed target
+      // reaches this pure projection without that prior validation.
+      rawBrand = null;
+    }
   }
-  return { ...canonical, brand: rawBrand };
+  if (!rawBrand) return canonical;
+
+  try {
+    const rebuilt = buildCanonicalProductVariantKey({
+      ...canonical,
+      brand: rawBrand,
+    });
+    return rebuilt.canonicalVariantId === target.canonicalVariantId
+      ? { ...canonical, brand: rawBrand }
+      : canonical;
+  } catch {
+    return canonical;
+  }
 }

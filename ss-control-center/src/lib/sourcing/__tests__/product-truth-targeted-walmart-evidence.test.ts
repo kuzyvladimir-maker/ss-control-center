@@ -569,6 +569,89 @@ test("listing-bound title proof preserves original multi-word brand order", () =
   );
 });
 
+test("existing exact title proof restores only a canonical-equivalent brand phrase from sealed decision evidence", () => {
+  const gloryCanonical = buildCanonicalProductVariantKey({
+    brand: "Glory Foods",
+    productLine: "Seasoned Southern Style Honey Carrots Canned Vegetables",
+    flavor: null,
+    modifiers: [],
+    form: null,
+    size: "15.5 oz",
+    outerPackCount: 1,
+  });
+  const evidenceJson = JSON.stringify({
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    schemaVersion: "product-truth-legacy-bridge-variant-decision-evidence/2.0.0",
+    targetIdentity: {
+      brand: "Glory Foods",
+    },
+  });
+  const snapshot = parseProductTruthTargetedWalmartDonorSnapshot({
+    ...exactSnapshot(),
+    canonicalVariantId: gloryCanonical.canonicalVariantId,
+    canonicalIdentityHash: gloryCanonical.identityHash,
+    canonicalIdentityJson: gloryCanonical.identityJson,
+    decisionEvidenceHash: createHash("sha256").update(evidenceJson).digest("hex"),
+    decisionEvidenceJson: evidenceJson,
+  });
+  const target = planFor(snapshot).targets[0];
+  assert.equal(canonicalIdentityFromTarget(target).brand, "foods glory");
+  assert.equal(canonicalMatchIdentityFromTarget(target).brand, "Glory Foods");
+
+  const selected = selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        retailer: "walmart",
+        retailerProductId: target.retailerProductId,
+        title: "Glory Foods Seasoned Southern Style Honey Carrots, Canned Vegetables, 15.5 oz",
+        brand: "Glory Foods",
+        description: null,
+        keyFeatures: [],
+        imageUrls: [],
+        price: 1.98,
+        currency: "USD",
+        inStock: true,
+        productUrl: `https://www.walmart.com/ip/${target.retailerProductId}`,
+        zip: "33765",
+        localityEvidence: "zip_scoped",
+        observedAt: "2026-07-19T12:01:00.000Z",
+        packSizeSeen: 1,
+        isMarketplaceItem: false,
+        sellerName: "Walmart.com",
+        sourceApi: "oxylabs",
+        via: "direct",
+        meteredReceiptId: "receipt-glory-1",
+        meteredRunId: "targeted-run-1",
+        meteredApprovalId: "approval-1",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  });
+  assert.equal(selected.retailerProductId, target.retailerProductId);
+
+  const contradictoryEvidenceJson = JSON.stringify({
+    ...JSON.parse(evidenceJson) as Record<string, unknown>,
+    targetIdentity: { brand: "Glory Farm" },
+  });
+  const contradictorySnapshot = parseProductTruthTargetedWalmartDonorSnapshot({
+    ...snapshot,
+    decisionEvidenceHash: createHash("sha256")
+      .update(contradictoryEvidenceJson)
+      .digest("hex"),
+    decisionEvidenceJson: contradictoryEvidenceJson,
+  });
+  const contradictoryTarget = planFor(contradictorySnapshot).targets[0];
+  assert.equal(
+    canonicalMatchIdentityFromTarget(contradictoryTarget).brand,
+    "foods glory",
+  );
+});
+
 test("bootstrap identity must round-trip through the canonical builder", () => {
   const valid = listingBoundBootstrapSnapshot();
   const malformed = JSON.parse(valid.canonicalIdentityJson) as Record<string, unknown>;
