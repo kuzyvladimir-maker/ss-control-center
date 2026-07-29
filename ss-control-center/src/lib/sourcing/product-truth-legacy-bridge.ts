@@ -37,11 +37,11 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.8.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.9.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.8.0" as const;
+  "product-truth-legacy-bridge-plan/1.9.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.8.0" as const;
+  "product-truth-legacy-bridge-policy/1.9.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -892,11 +892,17 @@ function assessLiveBarcodeEvidence(input: {
 function explicitBundleTarget(
   component: ParsedBundleComponent,
   donorBrand: string | null,
+  listingBrand: string | null,
 ): CanonicalProductIdentity | null {
   const product = stringOrNull(component.product);
-  if (!product || !donorBrand) return null;
+  // A linked donor remains the stronger constraint and can never be silently
+  // overridden by the parent listing. When no donor is linked, the preserved
+  // bundle identity itself may prove its component brand only when the exact
+  // parent brand is already the whole-token prefix of the component product.
+  const explicitBrand = donorBrand ?? listingBrand;
+  if (!product || !explicitBrand) return null;
   const productTokens = foldedTokens(product);
-  const brandTokens = foldedTokens(donorBrand);
+  const brandTokens = foldedTokens(explicitBrand);
   if (
     !brandTokens.length
     || brandTokens.length >= productTokens.length
@@ -905,7 +911,7 @@ function explicitBundleTarget(
   const productLine = productTokens.slice(brandTokens.length).join(" ");
   if (!productLine) return null;
   return {
-    brand: donorBrand,
+    brand: explicitBrand,
     productLine,
     flavor: stringOrNull(component.flavor),
     form: stringOrNull(component.container_type),
@@ -3144,7 +3150,11 @@ export function compileProductTruthLegacyBridgePlan(input: {
           const donorBrand = link.donorProductId
             ? donorsById.get(link.donorProductId)?.brand ?? null
             : null;
-          const target = explicitBundleTarget(identityComponent, donorBrand);
+          const target = explicitBundleTarget(
+            identityComponent,
+            donorBrand,
+            stringOrNull(parsed.identity.brand),
+          );
           const targetBlockers = target
             ? []
             : [bridgeError(

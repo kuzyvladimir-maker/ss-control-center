@@ -1570,6 +1570,71 @@ test("bundle component brand must be explicit in the preserved identity", () => 
   );
 });
 
+test("an exact parent-brand prefix unlocks unique catalog rematch for an unlinked bundle component", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Acme",
+        product_line: "Snack Box",
+        is_bundle: true,
+        components: [{
+          product: "Acme Crunch Chips",
+          flavor: "Barbecue",
+          size: "8 oz",
+          container_type: "Bag",
+          qty: 2,
+        }],
+      }),
+    }],
+    components: [component({
+      donorProductId: null,
+      contentDonorProductId: null,
+      priceEvidenceDonorProductId: null,
+      priceEvidenceOfferId: null,
+      qty: 2,
+    })],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.equal(
+    result.identityProof,
+    "STRICT_TITLE_MATCH",
+    JSON.stringify(result, null, 2),
+  );
+  assert.equal(result.donorProductId, "donor-1");
+  assert.equal(result.qty, 2);
+  assert.equal(result.disposition, "EXACT_CONTENT_AND_PRICE_CANDIDATE");
+  assert.equal(result.targetIdentity?.brand, "Acme");
+  assert.equal(result.targetIdentity?.productLine, "crunch chips");
+});
+
+test("a parent brand never overrides a conflicting linked donor brand", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Acme",
+        product_line: "Snack Box",
+        is_bundle: true,
+        components: [{
+          product: "Acme Crunch Chips",
+          flavor: "Barbecue",
+          size: "8 oz",
+          qty: 2,
+        }],
+      }),
+    }],
+    donors: [donor({ brand: "Different Brand" })],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.equal(result.disposition, "QUARANTINE");
+  assert.ok(
+    result.blockers.some(
+      (item) => item.code === "BUNDLE_COMPONENT_BRAND_UNPROVEN",
+    ),
+  );
+});
+
 test("regional and club offers are not silently promoted", () => {
   const regional = snapshot({
     offers: [offer({ retailer: "publix", zip: "00000" })],
