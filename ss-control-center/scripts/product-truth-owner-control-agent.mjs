@@ -30,18 +30,23 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
+import productTruthControlPlane from
+  "../src/lib/sourcing/product-truth-control-plane.ts";
+import productTruthWalmartEnrichmentQuote from
+  "../src/lib/sourcing/product-truth-walmart-enrichment-quote.ts";
+
+const {
   PRODUCT_TRUTH_CONTROL_ALGORITHM,
   PRODUCT_TRUTH_CONTROL_KEY_FAMILY,
   parseProductTruthControlEnvelope,
   productTruthControlRequestSha256,
   productTruthControlSigningMessage,
-} from "../src/lib/sourcing/product-truth-control-plane.ts";
-import {
+} = productTruthControlPlane;
+const {
   parseProductTruthWalmartEnrichmentQuote,
   productTruthWalmartEnrichmentQuoteSha256,
   renderProductTruthWalmartEnrichmentQuote,
-} from "../src/lib/sourcing/product-truth-walmart-enrichment-quote.ts";
+} = productTruthWalmartEnrichmentQuote;
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const PROJECT_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");

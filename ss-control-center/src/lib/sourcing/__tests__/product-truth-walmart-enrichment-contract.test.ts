@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { resolve } from "node:path";
 import { test } from "node:test";
 
 import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
@@ -39,6 +41,25 @@ const DECISION_EVIDENCE_JSON = JSON.stringify({
 const DECISION_EVIDENCE_HASH = createHash("sha256")
   .update(DECISION_EVIDENCE_JSON)
   .digest("hex");
+
+test("owner control agent boots as a standalone process before parsing CLI", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      resolve(process.cwd(), "scripts/product-truth-owner-control-agent.mjs"),
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /CLI_INVALID/u);
+  assert.doesNotMatch(result.stderr, /does not provide an export named/u);
+});
 
 function fixture(count = 2) {
   const candidates = Array.from({ length: count }, (_, index) => {
