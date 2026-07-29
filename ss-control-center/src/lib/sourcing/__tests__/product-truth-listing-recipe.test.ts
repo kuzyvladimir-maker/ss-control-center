@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import { createClient, type Client } from "@libsql/client";
@@ -11,10 +13,22 @@ import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
 } from "../canonical-product-match-provenance";
 import {
+  applyProductTruthCanonicalRecipeReconciliation,
+  planProductTruthCanonicalRecipeReconciliation,
+  preflightProductTruthCanonicalRecipeReconciliation,
+  renderProductTruthCanonicalRecipeReconcilePlan,
+  renderProductTruthCanonicalRecipeReconcilePreflight,
+} from "../product-truth-canonical-recipe-reconcile";
+import {
   buildProductTruthListingRecipeMaterialization,
   materializeProductTruthListingRecipe,
+  productTruthListingRecipeStructuralHash,
   type ProductTruthListingRecipeCandidate,
 } from "../product-truth-listing-recipe";
+import {
+  renderProductTruthLegacyBridgeStandingPolicy,
+  type ProductTruthLegacyBridgeStandingPolicy,
+} from "../product-truth-legacy-bridge-apply";
 import {
   assertProductTruthListingScopeSchema,
 } from "../product-truth-schema-gate";
@@ -78,6 +92,13 @@ async function createBaseSchema(db: Client): Promise<void> {
     );
     CREATE UNIQUE INDEX SkuCost_sku_source_effectiveDate_key
       ON SkuCost(sku, source, effectiveDate);
+    CREATE TABLE ProductTruthMigrationReceipt (
+      migrationId TEXT PRIMARY KEY,
+      migrationSha256 TEXT NOT NULL,
+      targetFingerprint TEXT NOT NULL,
+      action TEXT NOT NULL,
+      appliedAt DATETIME NOT NULL
+    );
   `);
   for (const relative of [
     "../../../../prisma/migrations/20260718234500_product_truth_evidence_provenance/migration.sql",
@@ -194,6 +215,145 @@ function candidate(
   };
 }
 
+async function seedCanonicalCostGraph(db: Client): Promise<void> {
+  await db.execute({
+    sql: `INSERT INTO ProductTruthMigrationReceipt (
+      migrationId,migrationSha256,targetFingerprint,action,appliedAt
+    ) VALUES (?,?,?,?,?)`,
+    args: [
+      "20260729010000_product_truth_listing_recipe",
+      "1800ecf61715e1c61dbb9113c5e688dce2544002b3e564ea6f11f6f569b2acba",
+      HASH_A,
+      "applied",
+      "2026-07-29T00:04:00.000Z",
+    ],
+  });
+  const costId = "recipe-cost";
+  const recipeHash = productTruthListingRecipeStructuralHash({
+    listingKey: LISTING_KEY,
+    components: [{
+      componentIndex: 0,
+      quantity: 6,
+      targetCanonicalVariantId: VARIANT_ID,
+    }],
+  });
+  const legacyCostRecipeHash = HASH_B;
+  assert.notEqual(recipeHash, legacyCostRecipeHash);
+  const componentEvidence = {
+    schemaVersion: "product-truth-sku-component-evidence/1.0.0",
+    evidenceStatus: "REJECT",
+    targetCanonicalVariantId: VARIANT_ID,
+    contentCanonicalVariantId: null,
+    priceCanonicalVariantId: null,
+    contentObservationId: null,
+    priceObservationId: null,
+    matchTier: "EXACT_IDENTITY",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    pricePolicyVersion: "price-evidence-eligibility/1.0.0",
+    product: "Acme Orange Soda",
+    flavor: "Orange",
+    size: "2 L",
+    qty: 6,
+    perUnit: null,
+    method: "no-fresh-first-party-price",
+    targetComparableUnitPrice: null,
+  };
+  const costComponent = {
+    idx: 0,
+    targetCanonicalVariantId: VARIANT_ID,
+    contentCanonicalVariantId: null,
+    priceCanonicalVariantId: null,
+    contentObservationId: null,
+    priceEvidenceObservationId: null,
+    contentDonorProductId: null,
+    priceEvidenceDonorProductId: null,
+    priceEvidenceOfferId: null,
+    priceVariantDecisionId: null,
+    priceEvidenceStatus: "REJECT",
+    matchTier: "EXACT_IDENTITY",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    pricePolicyVersion: "price-evidence-eligibility/1.0.0",
+    product: "Acme Orange Soda",
+    flavor: "Orange",
+    size: "2 L",
+    qty: 6,
+    perUnit: null,
+    method: "no-fresh-first-party-price",
+  };
+  const costEvidence = {
+    schemaVersion: "product-truth-cogs-evidence/1.0.0",
+    channel: "walmart",
+    storeIndex: 1,
+    listingKey: LISTING_KEY,
+    listingKeyVersion: "product-truth-listing-key/1.0.0",
+    outcome: "UNSOURCEABLE",
+    recipeHash: legacyCostRecipeHash,
+    evaluatedAt: "2026-07-29T00:03:00.000Z",
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    components: [costComponent],
+  };
+  const componentJson = JSON.stringify(componentEvidence);
+  const costJson = JSON.stringify(costEvidence);
+  await db.batch([
+    {
+      sql: `INSERT INTO SkuComponentEvidence (
+        id,evidenceKey,skuCostId,componentIndex,evidenceStatus,
+        targetCanonicalVariantId,contentCanonicalVariantId,
+        priceCanonicalVariantId,contentObservationId,priceObservationId,
+        matchTier,matcherVersion,matcherImplementationSha256,
+        matcherReleaseSha256,pricePolicyVersion,evidenceHash,evidenceJson,createdAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        "recipe-component-evidence", HASH_C, costId, 0, "REJECT",
+        VARIANT_ID, null, null, null, null, "EXACT_IDENTITY",
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+        "price-evidence-eligibility/1.0.0", sha(componentJson), componentJson,
+        "2026-07-29T00:03:00.000Z",
+      ],
+    },
+    {
+      sql: `INSERT INTO SkuCostListingScopeLink (
+        skuCostId,listingKey,linkVersion,createdAt
+      ) VALUES (?,?,?,?)`,
+      args: [
+        costId,
+        LISTING_KEY,
+        "sku-cost-listing-scope-link/1.0.0",
+        "2026-07-29T00:03:00.000Z",
+      ],
+    },
+    {
+      sql: `INSERT INTO SkuCost (
+        id,sku,effectiveDate,productCost,packagingCost,iceCost,totalCost,
+        costPerUnit,packSize,includesPackaging,currency,source,confidence,
+        needsReview,notes,createdAt,updatedAt,observationKey,recipeHash,
+        evidenceJson,evidenceOutcome,matcherVersion,
+        matcherImplementationSha256,matcherReleaseSha256,pricePolicyVersion,
+        runId,approvalId
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        costId, "RECIPE-SKU", "2026-07-29T00:03:00.000Z",
+        null, null, null, null, null, null, 0, "USD",
+        "retail:batch", null, 1, "fixture",
+        "2026-07-29T00:03:00.000Z", "2026-07-29T00:03:00.000Z",
+        HASH_A, legacyCostRecipeHash, costJson, "UNSOURCEABLE",
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+        "price-evidence-eligibility/1.0.0", null, null,
+      ],
+    },
+  ], "write");
+}
+
 test("listing recipe is structural, independent of cost, append-only, and idempotent", async () => {
   const db = createClient({ url: "file::memory:" });
   try {
@@ -261,6 +421,107 @@ test("listing recipe is structural, independent of cost, append-only, and idempo
     );
   } finally {
     db.close();
+  }
+});
+
+test("bounded standing-authority reconciliation restores a recipe from an exact canonical cost graph", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "canonical-recipe-reconcile-"));
+  const db = createClient({ url: `file:${join(directory, "fixture.sqlite")}` });
+  try {
+    await createBaseSchema(db);
+    await seedExactIdentity(db);
+    await seedCanonicalCostGraph(db);
+    const plan = await planProductTruthCanonicalRecipeReconciliation({
+      db,
+      databaseTargetFingerprint: HASH_A,
+      manifestSha256: HASH_B,
+      listingKeys: [LISTING_KEY],
+      createdAt: "2026-07-29T00:05:00.000Z",
+      expiresAt: "2026-07-29T23:59:00.000Z",
+    });
+    assert.deepEqual(plan.databaseWrites, {
+      maximumRows: 2,
+      listingRecipes: 1,
+      listingRecipeComponents: 1,
+    });
+    assert.equal(
+      plan.targets[0].sourceBinding.costRecipeHashMode,
+      "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+    );
+    const planJson = renderProductTruthCanonicalRecipeReconcilePlan(plan);
+    const planSha256 = sha(planJson);
+    const preflight = await preflightProductTruthCanonicalRecipeReconciliation({
+      db,
+      databaseTargetFingerprint: HASH_A,
+      plan,
+      planJson,
+      planSha256,
+      checkedAt: "2026-07-29T00:06:00.000Z",
+    });
+    assert.equal(preflight.status, "READY_TO_APPLY");
+    const preflightJson =
+      renderProductTruthCanonicalRecipeReconcilePreflight(preflight);
+    const policy: ProductTruthLegacyBridgeStandingPolicy = {
+      schemaVersion: "product-truth-legacy-bridge-standing-policy/1.0.0",
+      policyId: "recipe-standing-policy",
+      approvedBy: "owner",
+      issuedAt: "2026-07-29T00:00:00.000Z",
+      expiresAt: null,
+      databaseTargetFingerprint: HASH_A,
+      manifestSha256: HASH_B,
+      maximumDatabaseRowsPerWave: 100,
+      maximumPreflightAgeMs: 15 * 60 * 1_000,
+      requiresCollisionFree: true,
+      requiresFreshReadyToApplyPreflight: true,
+      allowCanonicalMaterialization: true,
+      allowProviderCalls: false,
+      allowPaidCalls: false,
+      allowMarketplaceListingWrites: false,
+      allowPriceChanges: false,
+      allowInventoryChanges: false,
+      allowDelisting: false,
+      allowConsumerActivation: false,
+      allowProcurement: false,
+      revocationRequiresOwnerDecision: true,
+      ownerStatement: "Fixture bounded canonical materialization.",
+    };
+    const policyJson = renderProductTruthLegacyBridgeStandingPolicy(policy);
+    const applied = await applyProductTruthCanonicalRecipeReconciliation({
+      db,
+      databaseTargetFingerprint: HASH_A,
+      plan,
+      planJson,
+      planSha256,
+      standingPolicy: policy,
+      standingPolicyJson: policyJson,
+      standingPolicySha256: sha(policyJson),
+      preflight,
+      preflightJson,
+      preflightSha256: sha(preflightJson),
+      startedAt: "2026-07-29T00:06:00.000Z",
+      completedAt: "2026-07-29T00:06:00.000Z",
+    });
+    assert.equal(applied.status, "APPLIED");
+    assert.equal(applied.counts.insertedRows, 2);
+    assert.equal(
+      (await db.execute(
+        "SELECT sourceKind FROM ProductTruthListingRecipe",
+      )).rows[0]?.sourceKind,
+      "CANONICAL_COST_GRAPH",
+    );
+    const postcheck = await preflightProductTruthCanonicalRecipeReconciliation({
+      db,
+      databaseTargetFingerprint: HASH_A,
+      plan,
+      planJson,
+      planSha256,
+      checkedAt: "2026-07-29T00:07:00.000Z",
+    });
+    assert.equal(postcheck.status, "ALREADY_APPLIED");
+    assert.equal(postcheck.counts.exactExistingRows, 2);
+  } finally {
+    db.close();
+    await rm(directory, { recursive: true, force: true });
   }
 });
 
