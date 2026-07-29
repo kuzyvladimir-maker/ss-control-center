@@ -802,6 +802,18 @@ G7 закончен как диагностический production canary, н�
   используется только в versioned comparison evidence, mismatch fail-closed;
   clean release `48788374`, tree `6462f400…4890`, Product Truth `575/575`,
   TypeScript и clean-worktree PASS;
+- ✅ targeted standing `doctor` теперь требует canonical listing/component
+  binding и не выпускает заведомо ineligible unbound plan; clean release
+  `39474394`, tree `fd53fc74…6580`, Product Truth `575/575`, TypeScript PASS;
+- ✅ Glory Honey Carrots выполнен один раз с exact canonical binding и
+  terminalized `AMBIGUOUS` на token-sorted multi-word brand phrase; combined
+  spend `3.5` units, retry/detail/canonical/marketplace writes `0`, replay
+  запрещён; execution report `0c44d4a3…62e`;
+- ✅ existing-exact title proof теперь восстанавливает исходный порядок
+  multi-word brand только из hash-bound decision evidence и только при
+  неизменном canonical variant ID. Clean release `38997655`, tree
+  `973dea2d…d5c0`, shared Product Truth `579/579`, clean checkout `576/576`,
+  TypeScript PASS; canonical matcher `1.2.1` не изменён;
 - 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
   authority и при exact success materialize evidence в существующие
   canonical recipe/typed COGS, затем обновить полный denominator.

@@ -478,9 +478,11 @@ release и exact donor graph. Допустим только один direct firs
 `sellerName=Walmart.com`, numeric item ID и тем же нормализованным URL; pre-existing
 detail-harvest lifecycle блокирует новый план.
 
-`--listing-key` и `--component-index` передаются парой для legacy bootstrap; для
-`EXISTING_EXACT` они не нужны. Existing exact команда переиспользует подтверждённый
-alias. Новый legacy bootstrap использует только
+`--listing-key` и `--component-index` обязательны для каждого targeted standing
+run. Для `EXISTING_EXACT` они byte-bind текущий canonical recipe component и
+authoritative Phase 1 manifest; unbound doctor не может выпускать plan, который
+последующий standing verifier всё равно отвергнет. Existing exact команда
+переиспользует подтверждённый alias. Новый legacy bootstrap использует только
 `LISTING_BOUND_BOOTSTRAP` contract `1.6.0`: target identity выводится из exact
 authoritative listing component, а strict donor title является независимым
 доказательством. Binding `1.1.0` дополнительно seals все текущие authoritative
@@ -491,6 +493,13 @@ unbound `EVIDENCE_VERIFIED_BOOTSTRAP` не выпускает исполняем
 `request.json`/`request.sha256` и выдаёт exact `next_argv` для plan. Любой
 `--canonical-identity` отклоняется как retired input. Claude Code не редактирует
 request и дальше использует только emitted `next_argv`.
+
+Для `EXISTING_EXACT` multi-word brand phrase восстанавливается из hash-bound
+`decisionEvidenceJson.targetIdentity.brand` только для title comparison и только
+если повторная сборка даёт тот же exact `canonicalVariantId`. Это сохраняет
+исходный порядок слов (`Glory Foods`, а не token-sorted `foods glory`) без
+изменения canonical identity. Отсутствующее или противоречивое evidence остаётся
+fail-closed; observed retailer title никогда не переписывается.
 
 ### 4.2. `plan` — sealed plan
 

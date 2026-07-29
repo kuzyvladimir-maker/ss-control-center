@@ -1136,6 +1136,29 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   changed. Release commit `4878837412d9ebe611b67cd5e0e997727eb7cc76`,
   tree `6462f4000a6d0bfa281be8d5b6bf85a7e2454890`; exact clean checkout passed
   Product Truth `575/575`, TypeScript and clean-worktree verification.
+- [x] ✅ Standing `doctor` now requires an exact
+  `listingKey + componentIndex` for every targeted run, matching the standing
+  verifier instead of producing an unusable unbound plan. Release
+  `394743946bd434fc8e4086216fa82d31c1abd721`, tree
+  `fd53fc74f8469ffc465be0ae483cd8d9ec791658`; clean Product Truth
+  `575/575` and TypeScript passed.
+- [x] ✅ Glory Honey Carrots donor
+  `7d8ce205-152c-46ee-a904-af92e1d2560e` was executed once with canonical
+  binding `walmart:1:RizwanX-3049 / component 0`. Balance evidence SHA
+  `a8bd3233…55b7e`; execution report SHA `0c44d4a3…62e`. Terminal outcome is
+  `AMBIGUOUS`, retry/detail/canonical/marketplace writes `0`; combined spend is
+  `3.5` units (`2.5` balance + `1` Oxylabs).
+- [x] ✅ The Glory rejection exposed a second deterministic multi-word-brand
+  defect: canonical identity stores a sorted token key (`foods glory`) while
+  exact title proof needs the original phrase (`Glory Foods`). Existing-exact
+  title comparison now restores the hash-bound
+  `decisionEvidenceJson.targetIdentity.brand` only after rebuilding to the same
+  canonical variant ID. Contradictory evidence stays fail-closed; observed
+  title and matcher `1.2.1` remain unchanged.
+- [x] ✅ Release `389976551979528ac169fc67341446a263e0e19a`, tree
+  `973dea2d65e79b0d4ca4dd064282ad7c6fe8d5c0`: shared Product Truth
+  `579/579`, exact clean checkout `576/576`, TypeScript and clean-worktree
+  checks pass.
 - [ ] 🔄 Select a new untouched exact Phase 1 target and run the same
   one-attempt `doctor → plan → balance-probe → authorize → execute` workflow.
   Any successful exact FACT evidence must then be propagated through the

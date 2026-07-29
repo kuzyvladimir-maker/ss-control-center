@@ -1452,6 +1452,19 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   title. Observed title и canonical matcher `1.2.1` не изменены; conflicting
   brand остаётся reject. Clean release `48788374`, tree `6462f400…4890`,
   Product Truth `575/575`, TypeScript и clean checkout PASS.
+- [x] ✅ Standing doctor/plan contradiction закрыт: каждый targeted run требует
+  exact canonical listing/component binding. Release `39474394`, tree
+  `fd53fc74…6580`, clean Product Truth `575/575`, TypeScript PASS.
+- [x] ✅ Glory Honey Carrots выполнен ровно один раз для
+  `walmart:1:RizwanX-3049 / component 0`; terminal outcome `AMBIGUOUS`,
+  combined spend `3.5` units, retry/detail/canonical/marketplace writes `0`.
+  Report `0c44d4a3…62e`; автоматический replay запрещён.
+- [x] ✅ Root cause второго multi-word brand false reject закрыт:
+  existing-exact path восстанавливает `Glory Foods` из hash-bound decision
+  evidence только если raw phrase пересобирается в тот же canonical variant ID.
+  Contradictory brand остаётся fail-closed; matcher `1.2.1` не изменён.
+  Release `38997655`, tree `973dea2d…d5c0`; shared Product Truth `579/579`,
+  clean checkout `576/576`, TypeScript PASS.
 - [ ] 🔄 Выбрать новый untouched exact Phase 1 target, выполнить один bounded
   standing-authority lifecycle и при exact success материализовать FACT/content
   в существующий canonical graph с новым full-denominator postcheck.
