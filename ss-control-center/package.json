@@ -29,6 +29,7 @@
     "walmart-listing-triage": "node --experimental-strip-types scripts/walmart-listing-integrity-triage.mjs",
     "walmart-listing-triage-observer": "node --experimental-strip-types scripts/walmart-listing-integrity-triage-observer.mjs",
     "walmart:listing-integrity": "node --import tsx scripts/walmart-listing-integrity-process.ts",
+    "walmart:listing-text-review": "node --import tsx scripts/build-walmart-listing-text-review-candidate.ts",
     "walmart:listing-main-candidate": "node --import tsx scripts/build-walmart-listing-main-candidate.ts",
     "walmart:listing-main-qualify": "node --import tsx scripts/verify-walmart-listing-main-candidate.ts",
     "walmart:listing-main-stage": "node --import tsx scripts/stage-walmart-listing-main-candidate-r2.ts",
