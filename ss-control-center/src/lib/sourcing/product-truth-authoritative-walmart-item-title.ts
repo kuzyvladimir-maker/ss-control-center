@@ -77,6 +77,7 @@ export function parseProductTruthAuthoritativeWalmartOuterPackTitle(
     if (
       OUTER_PACK_NOUNS.has(token)
       && /^\d+$/.test(tokens[index + 1] ?? "")
+      && !findings.some((finding) => finding.positions.includes(index))
     ) {
       add(Number(tokens[index + 1]), [index, index + 1]);
     }

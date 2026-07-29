@@ -41,7 +41,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.5.0" as const;
+  "product-truth-legacy-bridge-policy/1.6.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -1850,7 +1850,7 @@ function canonicalDonorConflictBlocker(input: {
 }
 
 const AUTHORITATIVE_WALMART_TITLE_MEASURE =
-  /\b\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|ounce|ounces|lb|lbs|pound|pounds|kg|kgs|g|gram|grams|ml|l|liter|liters|litre|litres|ct|count|counts)\b/gi;
+  /\b\d+(?:\.\d+)?\s*(?:fl\.?\s*oz\.?|floz|fluid\s*(?:oz\.?|ounces?)|oz\.?|ounces?|lbs?|pounds?|kgs?|kilograms?|grams?|g|ml|milliliters?|millilitres?|liters?|litres?|l|cts?|counts?|pieces?|pcs?)(?=\s|$|[(),;/])/gi;
 const AUTHORITATIVE_WALMART_TITLE_NEUTRAL =
   new Set<string>(CANONICAL_TITLE_NEUTRAL_TOKENS);
 const AUTHORITATIVE_WALMART_PLACEHOLDER_SIGNATURES = new Set([
@@ -1884,8 +1884,80 @@ function titleContainsEquivalentCanonicalSize(
       AUTHORITATIVE_WALMART_TITLE_MEASURE.flags,
     ),
   );
-  return [...matches].some((match) =>
-    equivalentCanonicalSize(size, match[0] ?? null));
+  return [...matches].some((match) => {
+    if (!equivalentCanonicalSize(size, match[0] ?? null)) return false;
+    const matchEnd = (match.index ?? 0) + match[0].length;
+    const following = title.slice(matchEnd);
+    const preceding = title.slice(0, match.index ?? 0);
+    return !(
+      /^\s*(?:(?:of|from)\s+)?protein\b/i.test(following)
+      || /^\s*per\s+serving\b/i.test(following)
+      || /\bprotein\s*$/i.test(preceding)
+    );
+  });
+}
+
+type LegacyComponentSizeEvidence =
+  | { status: "MISSING" | "INVALID"; value: null }
+  | { status: "PARSED"; value: string };
+
+function normalizeLegacyComponentSizeEvidence(
+  value: string | null | undefined,
+): LegacyComponentSizeEvidence {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) return { status: "MISSING", value: null };
+  if (parseCanonicalSize(trimmed)) {
+    return { status: "PARSED", value: trimmed };
+  }
+  const explicitTeaBagCount = trimmed.match(/^(\d+)\s+tea\s+bags?$/i);
+  if (explicitTeaBagCount) {
+    return {
+      status: "PARSED",
+      value: `${Number(explicitTeaBagCount[1])} count`,
+    };
+  }
+  return { status: "INVALID", value: null };
+}
+
+function authoritativeWalmartPackageSize(input: {
+  donorTitle: string;
+  donorSize: string | null;
+  legacyComponentSize: string | null;
+}): string | null {
+  const source =
+    normalizeLegacyComponentSizeEvidence(input.legacyComponentSize);
+  if (source.status === "INVALID") return null;
+  if (
+    source.status === "PARSED"
+    && titleContainsEquivalentCanonicalSize(input.donorTitle, source.value)
+  ) {
+    return source.value;
+  }
+
+  const donorSize = input.donorSize?.trim() ?? "";
+  if (
+    donorSize
+    && parseCanonicalSize(donorSize)
+    && titleContainsEquivalentCanonicalSize(input.donorTitle, donorSize)
+  ) {
+    return donorSize;
+  }
+  if (
+    parseCanonicalSize(input.donorTitle)
+    && [...input.donorTitle.matchAll(
+      new RegExp(
+        AUTHORITATIVE_WALMART_TITLE_MEASURE.source,
+        AUTHORITATIVE_WALMART_TITLE_MEASURE.flags,
+      ),
+    )].some((match) =>
+      titleContainsEquivalentCanonicalSize(
+        input.donorTitle,
+        match[0] ?? "",
+      ))
+  ) {
+    return input.donorTitle;
+  }
+  return null;
 }
 
 function explicitDonorAttributeBrand(attributes: string | null): string | null {
@@ -2021,20 +2093,11 @@ function recoverAuthoritativeWalmartReportScope(input: {
       && !/^\d+$/.test(token));
   if (productLineTokens.length === 0) return null;
 
-  const sourceSize = legacyComponent?.size?.trim() || null;
-  const size = sourceSize
-    ? parseCanonicalSize(sourceSize)
-        && titleContainsEquivalentCanonicalSize(donor.title, sourceSize)
-      ? sourceSize
-      : null
-    : donor.size?.trim()
-      ? parseCanonicalSize(donor.size)
-          && titleContainsEquivalentCanonicalSize(donor.title, donor.size)
-        ? donor.size.trim()
-        : null
-      : parseCanonicalSize(donor.title)
-        ? donor.title
-        : null;
+  const size = authoritativeWalmartPackageSize({
+    donorTitle: donor.title,
+    donorSize: donor.size,
+    legacyComponentSize: legacyComponent?.size ?? null,
+  });
   if (!size) return null;
   const targetIdentity: CanonicalProductIdentity = {
     brand: canonicalBrand,

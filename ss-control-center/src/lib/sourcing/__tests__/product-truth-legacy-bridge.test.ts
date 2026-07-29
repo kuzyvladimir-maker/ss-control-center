@@ -471,6 +471,137 @@ test("authoritative Walmart exact title uses the agreeing legacy package size", 
   assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
 });
 
+test("authoritative Walmart exact title accepts Fluid Ounce and fl. oz. package evidence", () => {
+  for (const sizeLabel of ["12 Fluid Ounce", "12 fl. oz."]) {
+    const title = `Hidden Valley Seafood Secret Sauce ${sizeLabel}`;
+    const value = snapshot({
+      listings: [{
+        ...snapshot().listings[0],
+        productIdentityJson: identity({
+          brand: "Hidden Valley",
+          product_line: "Seafood Secret Sauce",
+          flavor: null,
+          size: "12 fl oz",
+          units_in_listing: 4,
+        }),
+      }],
+      components: [component({
+        product: "Seafood Secret Sauce",
+        flavor: null,
+        size: "12 fl oz",
+        qty: 4,
+        donorProductId: "stale-adjacent-donor",
+      })],
+      donors: [donor({
+        brand: "Hidden Valley",
+        title,
+        size: "12 fl oz",
+      })],
+      authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+        title: `${title} (Pack of 4)`,
+        brand: "Hidden Valley",
+      })],
+    });
+    const componentPlan = compile(value).scopes[0]!.components[0]!;
+    assert.equal(
+      componentPlan.identityProof,
+      "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+    );
+    assert.equal(componentPlan.targetIdentity?.size, "12 fl oz");
+    assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+  }
+});
+
+test("authoritative Walmart exact title normalizes explicit tea-bag count evidence", () => {
+  const title = "Celestial Seasonings Lemon Honey Tea 16 Count";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Celestial Seasonings",
+        product_line: "Lemon Honey Tea",
+        flavor: null,
+        size: "16 Count",
+        units_in_listing: 4,
+      }),
+    }],
+    components: [component({
+      product: "Lemon Honey Tea",
+      flavor: null,
+      size: "16 tea bags",
+      qty: 4,
+    })],
+    donors: [donor({
+      brand: "Celestial Seasonings",
+      title,
+      size: "16 Count",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: `${title} (Pack of 4)`,
+      brand: "Celestial Seasonings",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "16 count");
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart exact title falls back to report-proven donor count when legacy mass is a different dimension", () => {
+  const title = "Jammin Lemon Ginger Herbal Tea 20 Count";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Jammin",
+        product_line: "Lemon Ginger Herbal Tea",
+        flavor: null,
+        size: "20 Count",
+        units_in_listing: 4,
+      }),
+    }],
+    components: [component({
+      product: "Lemon Ginger Herbal Tea",
+      flavor: null,
+      size: "1.6 oz (45g)",
+      qty: 4,
+    })],
+    donors: [donor({
+      brand: "Jammin",
+      title,
+      size: "20 Count",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: `${title} (Pack of 4)`,
+      brand: "Jammin",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "20 Count");
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart exact title never treats nutrition protein grams as package size", () => {
+  const title = "Quest Chocolate Brownie Protein Bar 20g Protein";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Quest",
+      title,
+      size: "20 g",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: `${title} (Pack of 4)`,
+      brand: "Quest",
+    })],
+  });
+  assert.equal(compile(value).scopes[0]?.disposition, "QUARANTINE");
+});
+
 test("authoritative Walmart title recovery rejects ambiguous or contradictory legacy package evidence", () => {
   const title =
     "Guerrero Street Taco Zero Net Carbs Tortillas 14 ct 8.89 oz";

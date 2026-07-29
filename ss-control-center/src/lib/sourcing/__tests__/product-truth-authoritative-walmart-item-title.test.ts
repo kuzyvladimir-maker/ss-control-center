@@ -39,6 +39,17 @@ test("authoritative Walmart parser removes only explicit outer-pack syntax", () 
       normalizedBaseTokens: ["12", "acme", "cakes", "ct", "snack"],
     },
   );
+  assert.deepEqual(
+    parseProductTruthAuthoritativeWalmartOuterPackTitle(
+      "Goya Tomato Sauce, 8 pk./8 oz.",
+    ),
+    {
+      status: "PARSED",
+      count: 8,
+      baseTokens: ["goya", "tomato", "sauce", "8", "oz"],
+      normalizedBaseTokens: ["8", "goya", "oz", "sauce", "tomato"],
+    },
+  );
 });
 
 test("authoritative Walmart parser rejects contradictory outer-pack counts", () => {
