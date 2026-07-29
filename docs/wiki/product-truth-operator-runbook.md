@@ -2,9 +2,11 @@
 
 > **Операционный контракт v1.6, актуализирован 2026-07-27.** Этот runbook подчинён
 > [[product-catalog-architecture]] и [[donor-catalog-execution-roadmap]]. Он описывает,
-> как оператор исполняет уже готовый движок, но не даёт разрешения на production,
-> платный прогон или изменение бизнес-данных. Каждый такой запуск по-прежнему требует
-> соответствующий owner gate.
+> как оператор исполняет уже готовый движок. Обычный Product Truth
+> retailer/provider enrichment разрешается постоянной policy из
+> [[product-truth-standing-authority]]: отдельный chat approval для каждого plan
+> запрещено запрашивать. Marketplace/business mutations остаются за отдельными
+> owner decisions.
 >
 > Перед передачей этого workflow Claude Code обязательно выполнить Git boundary и
 > clean-checkout acceptance из [[product-truth-release-scope]]. Зелёный dirty
@@ -18,7 +20,7 @@
 npm run product-truth:census -- ...
 npm run product-truth:manifest -- ...
 npm run product-truth:migrations -- <plan|apply|recover-report> ...
-npm run product-truth -- <doctor|backfill-plan|backfill-apply|readiness|plan|execute|resume|status|report> ...
+npm run product-truth -- <doctor|backfill-plan|backfill-apply|readiness|plan|balance-probe|authorize|execute|resume|status|report> ...
 node /ABS/FROZEN-VERIFIER/verify-and-run-matcher-replay.mjs <sealed-v2.2-args>
 ```
 
@@ -42,8 +44,9 @@ Claude Code запрещено:
   entrypoint;
 - придумывать scope, расширять список SKU, использовать `--all`, implicit scope,
   ambient `DATABASE_URL` или «обработать всё оставшееся»;
-- менять budget ceilings, reserve floor, provider operations, source policy либо
-  создавать owner approval от имени владельца;
+- менять budget ceilings, reserve floor, provider operations или source policy.
+  Внутренний approval разрешено создавать только готовой командой `authorize`
+  из exact plan и pinned standing policy; вручную сочинять его запрещено;
 - использовать BJ's при любых условиях; Sam's Club/Costco разрешены только в отдельном
   owner-approved club budget bucket с `allowClubs=true` и exact retailer list, а в
   обычном canary/wave остаются выключенными;
@@ -81,20 +84,22 @@ Claude Code запрещено:
    все подключённые scopes.
 3. Exact plan-request с явными listing keys, новым `runId`, сроком действия, source
    policy, provider ceilings, reserve floor и wall-clock limit.
-4. Явное решение owner gate о canary/wave и бюджете.
-5. После `plan` — canonical owner approval, связанную с точным `plan.sha256`, target
-   fingerprint, permit и свежим balance evidence.
-6. Exact execution confirmation из approval и sealed plan.
+4. Pinned standing provider policy и её exact SHA-256.
+5. После `plan` — fresh balance evidence, созданное готовой командой
+   `balance-probe`; ручной provider probe запрещён.
+6. Внутренние approval, permit и execution confirmation, автоматически созданные
+   готовой командой `authorize` из exact plan, policy и balance evidence.
 7. Точный DB URL и имя env-переменной, в которой уже находится auth token. Секрет
    нельзя помещать в URL, аргумент команды, лог или артефакт.
 
 Для узкого `TARGETED_WALMART_EVIDENCE` дополнительно нужны один exact
 `DonorProduct.id`, поисковая строка именно этого варианта, новый `runId`, expiry не
-дальше 24 часов и owner-approved Unwrangle reserve floor. Если eligible donor ещё не
+дальше 24 часов и standing-policy-compatible Unwrangle reserve floor. Если eligible donor ещё не
 имеет exact alias, `doctor` сам выводит консервативную identity из sealed
 brand/title/size bytes и сразу создаёт request. Ручной identity-файл,
 `--canonical-identity` и техническая аттестация владельца запрещены. Внешнее решение
-владельца требуется только для точного metered plan, бюджета и provider permit.
+владельца для каждого metered plan не требуется: `authorize` выводит permit из
+pinned standing policy. Ручная подмена identity или budget по-прежнему запрещена.
 
 Историческая Walmart ITEM v6 reconciliation session остаётся quarantined read-only:
 неизвестный параллельный процесс добавил read-only GET и конфликтующие поздние
@@ -128,8 +133,8 @@ custody владельца и передаются оператору как н�
 нельзя переносить сюда тестовый или Walmart signing key и нельзя заявлять техническую
 owner authentication.
 
-Для `EVIDENCE_VERIFIED_BOOTSTRAP` owner approval не является identity attestation.
-Он разрешает только конкретный metered plan, бюджет и provider permit. Exact identity
+Для `EVIDENCE_VERIFIED_BOOTSTRAP` standing authorization не является identity
+attestation. Она разрешает только конкретный metered plan, бюджет и provider permit. Exact identity
 доказывает сам движок: сначала детерминированная conservative identity из sealed
 legacy bytes, затем обязательное свежее независимое Walmart evidence до canonical
 write. Approval другого plan SHA не переносит разрешение на расход или execution.
@@ -501,8 +506,9 @@ npm run product-truth -- plan \
 parent directory. CLI не перезаписывает артефакты. Если каталог уже существует,
 нужно остановиться и выбрать новый путь, а не удалять/заменять старое доказательство.
 
-После `plan` Claude Code не запускает `execute`, пока владелец не проверил exact scope,
-источники, ceilings, reserve floor и не выдал canonical approval.
+После `plan` Claude Code без обращения к владельцу последовательно выполняет exact
+`balance-probe` и `authorize`, затем следует emitted `next_argv`. Любое несоответствие
+scope, ceilings, reserve floor или policy останавливается машиной, а не chat prompt.
 
 Targeted Walmart plan запускается только через exact `next_argv`, выданный предыдущим
 `doctor`; `--manifest` для него запрещён:
@@ -521,10 +527,9 @@ migration/release bindings и делает ноль provider calls/DB writes. О
 `plan.json`, `plan.sha256` и `approval-instructions.json`. Для
 `LISTING_BOUND_BOOTSTRAP` instructions явно фиксируют machine-derived listing
 identity, byte-bound same-donor graph и обязательное свежее exact Walmart evidence
-до canonical write. Owner approval
-разрешает только exact metered plan. Plan нельзя исполнять без отдельного metered
-approval, exact Oxylabs/Unwrangle permit, fresh Unwrangle balance evidence и exact
-confirmation.
+до canonical write. Standing authorization разрешает только exact metered plan.
+Plan нельзя исполнять без автоматически выпущенного plan-bound approval, exact
+Oxylabs/Unwrangle permit, fresh Unwrangle balance evidence и exact confirmation.
 
 Unwrangle detail может не публиковать allergens/storage даже когда возвращает UPC,
 ingredients, nutrition, gallery и остальные exact facts. Contract `1.6.0` не
@@ -534,6 +539,52 @@ ingredients, nutrition, gallery и остальные exact facts. Contract `1.6
 Walmart new-SKU, Bundle Factory и другие consumers отдельно проверяют нужные им
 поля. `retailer_search_partial` никогда не читается как content truth.
 
+#### 4.2.1. `balance-probe` — один автоматический balance call
+
+После каждого нового plan оператор без обращения к владельцу запускает:
+
+```bash
+npm run product-truth -- balance-probe \
+  --plan /ABSOLUTE/PATH/plan-NEW/plan.json \
+  --plan-sha /ABSOLUTE/PATH/plan-NEW/plan.sha256 \
+  --standing-policy /ABSOLUTE/PATH/standing-provider-policy-20260728-v1.json \
+  --url libsql://EXACT-DATABASE-HOST \
+  --allow-remote --auth-token-env TURSO_AUTH_TOKEN \
+  --out /ABSOLUTE/PATH/balance-NEW
+```
+
+Команда до network проверяет exact policy SHA, plan, production target/manifest,
+provider tariffs, max units, reserve floor, concurrency, no-retry и все запрещённые
+business actions. До HTTP она автоматически выпускает отдельный one-call permit и
+резервирует `2.5` units в distributed ledger. Затем выполняет ровно один Unwrangle
+`target_search` call, не делает retry и сохраняет raw response/evidence/receipt/hash.
+API key не попадает в argv, stdout или artifacts. При любом mismatch рабочий run
+не начинается.
+
+#### 4.2.2. `authorize` — внутренний permit без owner prompt
+
+Сразу после fresh balance:
+
+```bash
+npm run product-truth -- authorize \
+  --plan /ABSOLUTE/PATH/plan-NEW/plan.json \
+  --plan-sha /ABSOLUTE/PATH/plan-NEW/plan.sha256 \
+  --standing-policy /ABSOLUTE/PATH/standing-provider-policy-20260728-v1.json \
+  --balance-evidence /ABSOLUTE/PATH/balance-NEW/balance-evidence.json \
+  --balance-evidence-sha /ABSOLUTE/PATH/balance-NEW/balance-evidence.sha256 \
+  --balance-raw-response /ABSOLUTE/PATH/balance-NEW/raw-response.json \
+  --url libsql://EXACT-DATABASE-HOST \
+  --allow-remote --auth-token-env TURSO_AUTH_TOKEN \
+  --out /ABSOLUTE/PATH/authorization-NEW \
+  --execute-out /ABSOLUTE/PATH/execution-NEW
+```
+
+Для обычного listing-scope plan добавляется exact `--manifest`; targeted plan его
+запрещает. `authorize` не вызывает provider/DB и автоматически создаёт
+`approval.json`, metered permit, confirmation, artifact index и exact `next_argv`.
+`ownerActionRequired=false`. Оператор сразу выполняет emitted command. Запрашивать
+у владельца approval phrase, plan SHA, approval ID или confirmation запрещено.
+
 ### 4.3. `execute` — один утверждённый run
 
 ```bash
@@ -541,8 +592,8 @@ npm run product-truth -- execute \
   --plan /ABSOLUTE/PATH/canary-plan-NEW/plan.json \
   --plan-sha /ABSOLUTE/PATH/canary-plan-NEW/plan.sha256 \
   --manifest /ABSOLUTE/PATH/authoritative-phase1-manifest.json \
-  --approval /ABSOLUTE/PATH/canary-OWNER-approval.json \
-  --confirm 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:EXACT_PLAN_SHA:EXACT_APPROVAL_ID' \
+  --approval /ABSOLUTE/PATH/authorization-NEW/approval.json \
+  --confirm 'EXACT_AUTOMATIC_CONFIRMATION_EMITTED_BY_AUTHORIZE' \
   --url libsql://EXACT-DATABASE-HOST \
   --allow-remote \
   --auth-token-env TURSO_AUTH_TOKEN \
@@ -567,8 +618,8 @@ run. Один listing обрабатывается за раз; завершён
 npm run product-truth -- execute \
   --plan /ABSOLUTE/PATH/targeted-walmart-plan-NEW/plan.json \
   --plan-sha /ABSOLUTE/PATH/targeted-walmart-plan-NEW/plan.sha256 \
-  --approval /ABSOLUTE/OWNER-CUSTODY/targeted-walmart-approval.json \
-  --confirm 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:EXACT_PLAN_SHA:EXACT_APPROVAL_ID' \
+  --approval /ABSOLUTE/PATH/authorization-NEW/approval.json \
+  --confirm 'EXACT_AUTOMATIC_CONFIRMATION_EMITTED_BY_AUTHORIZE' \
   --url libsql://EXACT-DATABASE-HOST \
   --allow-remote --auth-token-env TURSO_AUTH_TOKEN \
   --out /ABSOLUTE/PATH/artifacts/targeted-walmart-execution-NEW
@@ -576,7 +627,7 @@ npm run product-truth -- execute \
 
 Перед первым paid call runner ещё раз проверяет frozen release, schema/migration set,
 DB fingerprint, exact donor/authoritative-listing graph,
-owner approval/permit/balance, expiry и отсутствующий
+standing policy/permit/balance, expiry и отсутствующий
 harvest lifecycle. В bootstrap fresh exact search обязан пройти раньше любого canonical
 write; transactional scope guard не позволяет выйти за один sealed donor/offer/
 variant/decision. Любой incomplete/wrong-variant/non-local/3P outcome завершается
@@ -685,7 +736,7 @@ gate.
 
 - новый `runId` и exact request;
 - новый `plan` directory и `plan.sha256`;
-- новую owner approval/`approvalId`, balance evidence и confirmation;
+- новый автоматически созданный `approvalId`, balance evidence и confirmation;
 - новый execution artifact directory;
 - отдельную сверку spend/quality до следующей wave.
 
@@ -775,7 +826,7 @@ cron secret не являются Product Truth owner action/budget artifact.
 - `1` — contract, artifact, schema, ledger или runtime failure; автоматического retry нет.
 
 Ни один exit code сам по себе не разрешает следующую wave. Решение принимается по
-durable status, ledger, artifacts и owner gate.
+durable status, ledger, artifacts и standing-policy machine gates.
 
 ## 9. Короткий handoff для Claude Code
 
@@ -791,13 +842,13 @@ npm matcher-replay и scripts/product-truth-runner.ts запрещены.
 Не расширяй exact scope, не используй --all/BJ's и не обходи approval/budget.
 Sam's/Costco — только отдельный owner-approved club plan; обычный canary без clubs.
 Не выполняй publish/delist/reprice/purchase.
-Новый canary/wave = новый plan + owner approval + artifact directory.
+Новый canary/wave = новый plan + automatic standing authorization + artifact directory.
 Resume = только exact interrupted run; ambiguous никогда не replay.
 TARGETED_WALMART_EVIDENCE = ровно один sealed donor + один direct first-party Walmart
 offer. Запускай только engine-generated doctor→plan→execute/resume/status/report.
 Не создавай canonical identity вручную: для eligible legacy donor её консервативный
 вариант выводит движок, а свежий exact Walmart search обязан подтвердить его до записи.
-Owner approval разрешает только exact metered plan, бюджет и provider permit.
+Standing authorization разрешает только exact metered plan, бюджет и provider permit.
 Не используй OFF/clubs/BJ's/fanout; один query + один detail — абсолютный максимум.
 При любом fail-closed состоянии остановись и передай доказательства владельцу/Codex.
 ```

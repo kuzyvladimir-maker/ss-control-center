@@ -1344,3 +1344,30 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   сохранены в quarantine без rewrite/replay.
 - [ ] 🔄 Clean frozen release + read-only preflight одного untouched candidate.
 - [ ] ⬜ Один no-retry canary и fresh bridge postcheck.
+
+---
+
+## Product Truth standing provider authority — 2026-07-28
+
+- [x] ✅ Найден источник ручных approval prompts: `AGENTS.md`,
+  `product-truth-operator-runbook.md`, `product-truth-owner-gates.md` и CLI
+  `--approval/--confirm`; это был project contract, не требование OpenAI.
+- [x] ✅ Owner direction закреплена канонически: обычный Product Truth
+  retailer/provider enrichment больше не требует chat approval, plan SHA,
+  permit ID или confirmation от владельца.
+- [x] ✅ Pinned policy
+  `ss-control-center/data/audits/product-truth-standing-authority/standing-provider-policy-20260728-v1.json`,
+  SHA `7b7bcc99…3eb0`: target/manifest bound, ≤100 listings/≤100 provider units
+  на plan, Unwrangle floor `15000`, concurrency/attempt `1`, no retry/replay,
+  clubs/BJ's/marketplace/price/inventory/delist/activation/procurement `false`.
+- [x] ✅ Готовые CLI-команды `balance-probe` и `authorize` реализованы:
+  первый делает ровно один no-retry Target Search balance call, второй offline
+  выпускает внутренние approval/permit/confirmation и exact `next_argv`.
+  API key не попадает в artifacts/stdout; owner action = `false`.
+- [x] ✅ Balance probe переведён на mandatory distributed spend ledger:
+  automatic one-call permit, deterministic reservation, durable receipt и
+  settlement до выпуска evidence.
+- [x] ✅ TypeScript PASS; полный Product Truth suite `519/519`.
+- [ ] 🔄 Выпустить clean-checkout engine release и read-only successor plan.
+- [ ] ⬜ Без нового owner prompt выполнить single-SKU field-snapshot canary,
+  status/report и full-denominator postcheck.

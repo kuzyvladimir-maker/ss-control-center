@@ -592,8 +592,8 @@ reprice, delist и purchase остаются отдельными owner action g
 
 ### ⬜ Phase 7 — Controlled operation и Phase 1/2
 
-- [ ] Owner-approved canary 5–10 exact listings, concurrency 1.
-- [ ] Ручная проверка quality/spend/idempotency и отдельное решение canary → wave.
+- [ ] Standing-policy canary 5–10 exact listings, concurrency 1.
+- [ ] Machine quality/spend/idempotency acceptance canary → bounded wave.
 - [ ] Waves `25 → 50 → 100 → controlled remainder`.
 - [ ] Завершить Phase 1 для всего live Amazon/Walmart assortment.
 - [ ] Запустить Phase 2 campaigns по brand/category/retailer/demand.
@@ -610,7 +610,7 @@ reprice, delist и purchase остаются отдельными owner action g
 
 - materialization publish/merge в общий Git remote, если затрагивается shared branch;
 - Turso migration apply и backfill writer;
-- paid/provider canary или любой wave;
+- изменение pinned Product Truth provider budget policy за её текущие границы;
 - включением Sam's/Costco; BJ's запрещён;
 - consumer `ENFORCED` activation;
 - publish/apply/delist/reprice/min-max/cart/order/purchase.
@@ -878,8 +878,16 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `walmart:1:FaisalX-1828`: request `f39e5075…92b1`, plan
   `04f27fd7…f7ae`, provider calls/DB writes `0`, expires
   `2026-07-29T22:30:00Z`.
-- [ ] ⛔ Exact v1.6 canary ждёт только новый plan-bound money gate: balance
-  probe `1 × 2.5` units + work `1 Oxylabs/1` и `1 Unwrangle detail/2.5`,
-  combined maximum `6`, retry `0`.
+- [x] ✅ Per-plan chat approval отменён owner direction 2026-07-28. Pinned
+  standing policy `7b7bcc99…3eb0` сохраняет exact plan, provider ceilings,
+  reserve floor `15000`, no retry/clubs/BJ's/marketplace/business actions.
+- [x] ✅ Runtime `balance-probe → authorize` реализован без `--approval`/`--confirm`
+  со стороны владельца. Balance permit резервируется в distributed ledger до
+  HTTP и сохраняет receipt; TypeScript и полный Product Truth `519/519` PASS.
+- [ ] 🔄 Выпустить clean-checkout release и byte-new read-only plan, потому что
+  новый controller меняет engine release SHA.
+- [ ] ⬜ Выполнить v1.6 successor canary автоматически: balance probe
+  `1 × 2.5` units + work `1 Oxylabs/1` и `1 Unwrangle detail/2.5`,
+  combined maximum `6`, retry `0`; owner action не требуется.
 - [ ] ⬜ Старый `1.5.0` successor plan `2cfea49a…0070` superseded и не
   исполняется; новый paid gate возможен только для byte-new `1.6.0` plan.

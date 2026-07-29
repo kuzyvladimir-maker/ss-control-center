@@ -1,0 +1,239 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { test } from "node:test";
+
+import {
+  PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+  assertProductTruthPlanEligibleForStandingAuthority,
+  buildProductTruthStandingAuthorization,
+  buildProductTruthStandingBalanceProbeArtifact,
+  buildProductTruthStandingBalanceProbePermit,
+  parseProductTruthStandingBalanceProbeArtifact,
+  parseProductTruthStandingProviderPolicy,
+  validateProductTruthStandingProviderPolicy,
+} from "../product-truth-standing-provider-authority";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
+import {
+  parseProductTruthTargetedWalmartEvidencePlan,
+  validateProductTruthTargetedWalmartEvidenceApproval,
+} from "../product-truth-targeted-walmart-evidence-contract";
+import { parseProductTruthRunnerArguments } from "../../../../scripts/product-truth-runner";
+
+const POLICY_PATH = join(
+  process.cwd(),
+  "data/audits/product-truth-standing-authority/standing-provider-policy-20260728-v1.json",
+);
+const PLAN_PATH = join(
+  process.cwd(),
+  "data/audits/product-truth-field-snapshot-canary/20260728T235835Z/preflight/plan/plan.json",
+);
+const NOW = "2026-07-29T00:05:00.000Z";
+const RAW_RESPONSE = `${JSON.stringify({
+  success: true,
+  remaining_credits: 99_650,
+  results: [],
+})}\n`;
+const METERED_AUTHORIZATION = {
+  approvalId: "pt-standing-balance:test",
+  reservationKey: `mpr_v1_${"a".repeat(64)}`,
+  receiptId: "mrr_test_balance_1",
+};
+
+async function fixture() {
+  const [policyJson, planJson] = await Promise.all([
+    readFile(POLICY_PATH, "utf8"),
+    readFile(PLAN_PATH, "utf8"),
+  ]);
+  const policyValue = JSON.parse(policyJson) as unknown;
+  const policy = validateProductTruthStandingProviderPolicy({
+    policy: policyValue,
+    policyJson,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+  });
+  const plan = parseProductTruthTargetedWalmartEvidencePlan(
+    JSON.parse(planJson) as unknown,
+  );
+  const planSha256 = productTruthOperationalSha256(plan);
+  return { policyJson, policyValue, policy, plan, planSha256 };
+}
+
+test("pinned standing policy replaces chat approval without weakening exact plan gates", async () => {
+  const { policy, plan, planSha256 } = await fixture();
+  assert.doesNotThrow(() => assertProductTruthPlanEligibleForStandingAuthority({
+    plan,
+    planSha256,
+    policy,
+    now: NOW,
+  }));
+  const balancePermit = buildProductTruthStandingBalanceProbePermit({
+    plan,
+    planSha256,
+    policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    now: NOW,
+  });
+  assert.equal(balancePermit.permit.providers.unwrangle?.maxCalls, 1);
+  assert.equal(balancePermit.permit.providers.unwrangle?.maxUnits, 2.5);
+  assert.match(balancePermit.confirmation, /^APPROVE_METERED_RUN:/u);
+  const evidence = buildProductTruthStandingBalanceProbeArtifact({
+    plan,
+    planSha256,
+    policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    probeId: "ptbal-standing-test",
+    requestedAt: "2026-07-29T00:04:00.000Z",
+    observedAt: "2026-07-29T00:04:05.000Z",
+    httpStatus: 200,
+    rawResponseText: RAW_RESPONSE,
+    meteredAuthorization: METERED_AUTHORIZATION,
+  });
+  const evidenceJson = renderProductTruthOperationalJson(evidence);
+  const evidenceSha256 = productTruthOperationalSha256(evidence);
+  const parsedEvidence = parseProductTruthStandingBalanceProbeArtifact({
+    value: JSON.parse(evidenceJson) as unknown,
+    json: evidenceJson,
+    expectedSha256: evidenceSha256,
+    rawResponseText: RAW_RESPONSE,
+    plan,
+    planSha256,
+    policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    now: NOW,
+  });
+  const authorization = buildProductTruthStandingAuthorization({
+    plan,
+    planSha256,
+    policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    balanceEvidence: parsedEvidence,
+    balanceEvidenceSha256: evidenceSha256,
+    now: NOW,
+  });
+  assert.equal(authorization.approval.approvedBy, "owner");
+  assert.match(authorization.approvalId, /^pt-standing:/);
+  assert.equal(
+    authorization.approval.meteredPermit.providers.oxylabs?.maxUnits,
+    1,
+  );
+  assert.equal(
+    authorization.approval.meteredPermit.providers.unwrangle?.maxUnits,
+    2.5,
+  );
+  assert.equal(authorization.approval.balanceEvidence[0]?.balanceUnits, 99_650);
+  assert.doesNotThrow(() => validateProductTruthTargetedWalmartEvidenceApproval({
+    plan,
+    planSha256,
+    approval: authorization.approval,
+    executionConfirmation: authorization.executionConfirmation,
+    now: NOW,
+  }));
+});
+
+test("standing policy and authorization fail closed on expansion, tariff drift, stale evidence, and raw mismatch", async () => {
+  const { policyValue, policy, plan, planSha256 } = await fixture();
+  const expandedPolicy = {
+    ...(policyValue as Record<string, unknown>),
+    allowClubs: true,
+  };
+  assert.throws(
+    () => parseProductTruthStandingProviderPolicy(expandedPolicy),
+    /STANDING_AUTHORITY_POLICY_INVALID/u,
+  );
+
+  const expandedPlan = structuredClone(plan);
+  const unwrangle = expandedPlan.providerCeilings.find(
+    (ceiling) => ceiling.provider === "unwrangle",
+  );
+  assert.ok(unwrangle);
+  unwrangle.maxUnits = 5;
+  assert.throws(
+    () => assertProductTruthPlanEligibleForStandingAuthority({
+      plan: expandedPlan,
+      planSha256: productTruthOperationalSha256(expandedPlan),
+      policy,
+      now: NOW,
+    }),
+    /STANDING_AUTHORITY_PLAN_INELIGIBLE/u,
+  );
+
+  const evidence = buildProductTruthStandingBalanceProbeArtifact({
+    plan,
+    planSha256,
+    policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    probeId: "ptbal-standing-stale-test",
+    requestedAt: "2026-07-29T00:00:00.000Z",
+    observedAt: "2026-07-29T00:00:05.000Z",
+    httpStatus: 200,
+    rawResponseText: RAW_RESPONSE,
+    meteredAuthorization: METERED_AUTHORIZATION,
+  });
+  const evidenceJson = renderProductTruthOperationalJson(evidence);
+  const evidenceSha256 = productTruthOperationalSha256(evidence);
+  assert.throws(
+    () => parseProductTruthStandingBalanceProbeArtifact({
+      value: JSON.parse(evidenceJson) as unknown,
+      json: evidenceJson,
+      expectedSha256: evidenceSha256,
+      rawResponseText: RAW_RESPONSE,
+      plan,
+      planSha256,
+      policy,
+      policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+      now: "2026-07-29T00:11:00.000Z",
+    }),
+    /STANDING_AUTHORITY_BALANCE_EVIDENCE_STALE/u,
+  );
+  assert.throws(
+    () => parseProductTruthStandingBalanceProbeArtifact({
+      value: JSON.parse(evidenceJson) as unknown,
+      json: evidenceJson,
+      expectedSha256: evidenceSha256,
+      rawResponseText: RAW_RESPONSE.replace("99650", "99649"),
+      plan,
+      planSha256,
+      policy,
+      policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+      now: NOW,
+    }),
+    /STANDING_AUTHORITY_BALANCE_EVIDENCE_INVALID/u,
+  );
+});
+
+test("CLI exposes automatic balance-probe and authorize commands without manual approval flags", () => {
+  const balance = parseProductTruthRunnerArguments([
+    "balance-probe",
+    "--plan", "/tmp/plan.json",
+    "--plan-sha", "/tmp/plan.sha256",
+    "--standing-policy", "/tmp/policy.json",
+    "--url", "libsql://example.turso.io",
+    "--allow-remote",
+    "--auth-token-env", "TURSO_AUTH_TOKEN",
+    "--out", "/tmp/balance-new",
+  ]);
+  assert.equal(balance.command, "balance-probe");
+  assert.equal("approvalPath" in balance, false);
+  assert.equal("executionConfirmation" in balance, false);
+
+  const authorize = parseProductTruthRunnerArguments([
+    "authorize",
+    "--plan", "/tmp/plan.json",
+    "--plan-sha", "/tmp/plan.sha256",
+    "--standing-policy", "/tmp/policy.json",
+    "--balance-evidence", "/tmp/balance.json",
+    "--balance-evidence-sha", "/tmp/balance.sha256",
+    "--balance-raw-response", "/tmp/raw.json",
+    "--url", "libsql://example.turso.io",
+    "--allow-remote",
+    "--auth-token-env", "TURSO_AUTH_TOKEN",
+    "--out", "/tmp/authorization-new",
+    "--execute-out", "/tmp/execution-new",
+  ]);
+  assert.equal(authorize.command, "authorize");
+  assert.equal("approvalPath" in authorize, false);
+  assert.equal("executionConfirmation" in authorize, false);
+});

@@ -7,8 +7,10 @@
 > [[product-truth-command-center]]. Web operations:
 > [[product-truth-web-operations-control-plane]].
 >
-> Ни один пункт этого файла не считается одобренным по факту его наличия. Owner
-> approval существует только после явного ответа владельца на точный пункт.
+> Обычный Product Truth retailer/provider enrichment с 2026-07-28 подчинён
+> [[product-truth-standing-authority]] и не требует отдельного ответа владельца,
+> approval phrase или копирования хэшей. Остальные materially different business
+> actions считаются одобренными только после отдельного решения владельца.
 
 ## Зачем этот файл
 
@@ -35,7 +37,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `AWAITING_EXACT_V1_6_CANARY_GATE` | Plan `4e8524d7…a05d` consumed без retry. v1.6 clean release `a2675452…`, `516/516`; read-only successor plan `04f27fd7…f7ae` готов. Требуется только новый exact combined-6 money gate |
+| G7. Provider canary / paid wave | `ACTIVE_STANDING_RELEASE_PENDING` | Ручной combined-6 gate отменён. `balance-probe → authorize` с durable ledger сертифицирован `519/519`; нужен byte-new clean release/plan, затем canary выполняется без owner prompt |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -47,13 +49,17 @@ scope безопасные действия: чтение, исследован�
 shipping-template reads и предусмотренные движком internal pilot preparation
 steps, которые явно сообщают `marketplace_mutated: false`.
 
-Эта standing direction устраняет повторные вопросы, но не превращается в подпись или
-фактическое evidence. Она не разрешает paid provider spend, новую production
-migration/backfill вне уже consumed gate, Walmart feed POST, delist, repricing,
-purchase, расширение pilot, waves или schedule. Для live Walmart new-SKU apply
-по-прежнему нужен exact candidate-bound Ed25519 owner permit по
-[[walmart-new-sku-operator-runbook]]. Общая фраза «разрешаю всё» не может заменить
-SKU/UPC/payload/account/evidence-bound permit.
+Owner direction 2026-07-28 расширила этот режим на обычный Product Truth
+retailer/provider enrichment. Для него движок автоматически выпускает внутренние
+plan-bound approval/permit/confirmation artifacts по pinned standing policy; владелец
+не копирует их и не подтверждает каждый plan. Полный контракт:
+[[product-truth-standing-authority]].
+
+Standing authority не разрешает новую production migration/backfill вне уже
+consumed gate, Walmart feed POST, delist, repricing, inventory, purchase, consumer
+activation, harvest-cron или club/BJ's expansion. Для live Walmart new-SKU apply
+по-прежнему нужен candidate-bound Ed25519 owner permit по
+[[walmart-new-sku-operator-runbook]].
 
 ## Owner decision 2026-07-26
 
@@ -897,6 +903,9 @@ TypeScript PASS, Product Truth `516/516`, worktree clean.
 - combined maximum `6`, retry `0`, clubs/BJ's/marketplace/price/inventory/
   delist/consumer activation/procurement запрещены.
 
-Plan `2cfea49a…0070` не исполняется. Новый exact approval phrase:
-
-`APPROVE_PRODUCT_TRUTH_FIELD_SNAPSHOT_CANARY_V1:a2675452ec07cf06475f7d7c9d80ad5050f72a8c:04f27fd7d1e111f7f156a2a6719d69bfa30c61dc03db05be3c99237a7c9cf7ae:pt-field-snapshot-canary-20260728t235835z:1_LISTING:OXYLABS_1_QUERY_CALL_1_UNIT:UNWRANGLE_BALANCE_PROBE_1_TARGET_SEARCH_CALL_2.5_UNITS:UNWRANGLE_1_DETAIL_CALL_2.5_UNITS:COMBINED_6_MAX_PROVIDER_UNITS:15000_UNWRANGLE_RESERVE_FLOOR:NO_RETRY:NO_CLUBS:NO_BJS:NO_MARKETPLACE_MUTATIONS:NO_PRICE_OR_INVENTORY_CHANGES:NO_DELISTING:NO_CONSUMER_ACTIVATION:NO_PROCUREMENT`
+Plan `2cfea49a…0070` не исполняется. Для plan `04f27fd7…f7ae` ручная approval
+phrase отменена owner direction 2026-07-28. Standing-policy runtime
+`balance-probe → authorize` сертифицирован TypeScript + `519/519`; balance call
+получает собственный automatic permit и distributed-ledger receipt. После byte-new
+clean release/plan движок сам выполняет `execute` в указанных границах. Запрашивать
+у владельца plan SHA, код или confirmation запрещено.

@@ -146,7 +146,7 @@ Amazon, Walmart, eBay, TikTok Shop, собственный сайт и буду�
   typed outcome (`FACT/ESTIMATE/UNSOURCEABLE`) и воспроизводимым evidence.
 - `MeteredProviderBudget` + `MeteredReservationReceipt` — hard budget ledger;
   платное content/price observation обязано ссылаться на успешно закрытый receipt
-  того же provider, run и owner approval.
+  того же provider, run и plan-bound standing authorization.
 - `GeneratedContent` и channel listings — производные артефакты, не товарная истина.
 - `WalmartCatalogItem` / Amazon snapshots — зеркала наших живых каналов, не доноры.
 
@@ -237,7 +237,8 @@ Legacy Unit Economics пока явно помечена
 даёт nullable `BLOCKED`, а не расчёт прибыли с COGS=0.
 
 Операционное исполнение вынесено в sealed Product Truth runner и CLI с командами
-doctor/plan/execute/resume/status/report: immutable plan и approval связывают точный
+doctor/plan/balance-probe/authorize/execute/resume/status/report: immutable plan и
+автоматическая standing authorization связывают точный
 scope, provider ceilings и DB target; concurrency равна 1; queue/ledger attempt
 закрывается атомарно; crash recovery запрещает replay неопределённого результата;
 report и artifact index имеют неизменяемую hash-binding. Legacy batch entrypoint
@@ -280,8 +281,9 @@ literal matcher version `1.2.0` до version/provenance migration и consumer cu
   donor/offer. Движок сам детерминированно выводит консервативную identity из точного
   brand, полного post-brand title signature и нормализованного размера в sealed
   donor bytes. Ручной identity-файл и техническая аттестация владельца запрещены.
-  Внешний owner approval разрешает только точный metered plan и его бюджет, но не
-  заменяет машинное доказательство товарной идентичности.
+  Pinned standing owner policy разрешает только точный metered plan и его бюджет,
+  но не заменяет машинное доказательство товарной идентичности. Approval/permit
+  создаются движком; владелец не копирует технические tokens.
 
 Bootstrap ничего не записывает до свежего exact Walmart search evidence, которое
 обязано независимо подтвердить тот же numeric item ID, нормализованный URL,
@@ -301,7 +303,7 @@ Claude Code исполняет только frozen CLI и exact emitted argument
 Статус этого узкого lane на 2026-07-19: **source implemented and locally certified**.
 Focused, integration, stress и полный Product Truth suite прошли без provider calls;
 исполняемым handoff считается только отдельно замороженный clean release с exact tree
-и checksum. До такого release binding, отдельных owner approvals и metered permits
+и checksum. До такого release binding, pinned standing policy и metered permits
 платный запуск не разрешён.
 
 Это **не означает external production readiness**: 8 migrations не применялись и не
@@ -558,7 +560,9 @@ Phase 2 превращает справочник из отражения тек
 - Не считать наличие одного изображения «полной карточкой».
 - Не считать `needsReview=0` достаточным доказательством exact/local truth без provenance.
 - Не перезаписывать cost history текущим числом.
-- Не запускать paid enrichment без измеримого плана и owner approval.
+- Не запускать paid enrichment без измеримого плана, pinned standing policy,
+  fresh balance evidence и hard budget ledger; ручной per-plan chat approval
+  для обычного Product Truth enrichment не запрашивать.
 - Не делистить или репрайсить массово до повторной проверки затронутых SKU исправленным
   matcher/local-availability контуром.
 

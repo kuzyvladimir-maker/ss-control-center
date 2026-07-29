@@ -196,7 +196,7 @@ Exit gate:
   price/COGS evidence, immutable observations/provenance, append-only cost history,
   versioned Product Truth read-contract и **8 ordered migrations** в owner-gated
   migration planner;
-- 🟢 operational runner и CLI исполняют только sealed plan/approval/DB target:
+- 🟢 operational runner и CLI исполняют только sealed plan/standing authorization/DB target:
   concurrency 1, exact listing-scope queue, максимум одна попытка, distributed hard
   budget ledger, atomic queue/item terminalization, checkpoint/resume, crash recovery
   без replay неопределённого результата и immutable hash-bound report/artifact index;
@@ -453,8 +453,8 @@ Owner gate: утвердить конкретный credit ceiling и reserve fl
    `--canonical-identity`, owner-review/template и ручная техническая аттестация
    владельца не используются.
 2. `plan` повторно сверяет target/schema/release/migration и exact donor graph. Для
-   `EVIDENCE_VERIFIED_BOOTSTRAP` внешний owner approval разрешает только exact
-   metered plan, бюджет и provider permit; он не является доказательством identity.
+   `EVIDENCE_VERIFIED_BOOTSTRAP` pinned standing authorization разрешает только
+   exact metered plan, бюджет и provider permit; она не является доказательством identity.
    До canonical write свежий Walmart search обязан независимо подтвердить item ID,
    URL, first-party seller, полный identity token set, размер и base-unit pack.
 3. Hard cap одного run: Oxylabs Walmart query ≤ `1` call/`1` unit, Unwrangle Walmart
@@ -465,9 +465,10 @@ Owner gate: утвердить конкретный credit ceiling и reserve fl
    пока detail receipt не существует. После начала detail старый content не может
    закрыть outcome и paid call не replay.
 
-Каждый target требует отдельные owner approval, exact two-provider permit, fresh
-Unwrangle balance evidence и immutable output directories. Claude Code только выполняет
-frozen CLI и emitted `next_argv`; код, SQL и ручные API запрещены. Source lane
+Каждый target требует exact automatic standing authorization, two-provider permit,
+fresh Unwrangle balance evidence и immutable output directories. Claude Code только
+выполняет frozen CLI и emitted `next_argv`; owner prompt, код, SQL и ручные API
+запрещены. Source lane
 реализован, но его final focused/integration certification ещё не завершена; до неё
 платный target run не разрешён.
 
@@ -671,9 +672,9 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    Следующий независимый шаг — graph-aware no-paid plan с fail-closed
    donor→multiple-variant collision, новый owner gate на exact wave и только
    после достаточного покрытия staged cutover; consumer cutover = 0.
-7. ⚪ **Budget proposal** — прогноз по источникам, cheap-first plan, explicit owner gate.
-8. ⚪ **Canary** — 5–10 SKU с жестким лимитом и ручной проверкой.
-9. ⚪ **Controlled waves** — только после успешного canary и отдельного approval.
+7. ⚪ **Budget proposal** — прогноз по источникам и cheap-first standing-policy plan.
+8. ⚪ **Canary** — 5–10 SKU с жёстким лимитом и machine acceptance.
+9. ⚪ **Controlled waves** — только после успешного canary и automatic bounded authorization.
 10. ⚪ **Consumer activation** — Unit Economics, Listing Improvement, Bundle Factory
     catalog-first и Procurement read-only MVP через один read-contract.
 11. ⚪ **Phase 2 campaign engine** — управляемое brand/group/retailer/demand expansion.
@@ -745,8 +746,12 @@ G7 закончен как диагностический production canary, н�
 - ✅ выполнить fresh full-denominator bridge postcheck;
 - ✅ выпустить contract `1.5.0` с same-donor graph guard и выбрать новый
   collision-free candidate read-only;
-- 🔄 заменить all-or-nothing detail rollback на exact field snapshot с
+- ✅ заменить all-or-nothing detail rollback на exact field snapshot с
   consumer-specific readiness и выпустить clean contract `1.6.0`;
+- ✅ заменить per-plan chat approval на pinned standing authority и
+  сертифицировать `balance-probe → authorize`: TypeScript + `519/519`;
+- 🔄 выпустить clean release/byte-new plan и выполнить successor canary без
+  нового owner prompt;
 - ⬜ после успешного successor canary вернуться к bounded Phase 1 waves.
 
 Статус 2026-07-28 после исправления:

@@ -27,10 +27,12 @@
    default-OFF design web→worker bridge, отдельного Product Truth owner trust root,
    immutable command artifacts и staged activation.
 10. `docs/wiki/product-truth-owner-gates.md` — единый живой реестр независимых
-    owner decisions, их точных границ, approval phrases и consumed evidence.
-11. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
+    owner decisions, их точных границ и consumed evidence.
+11. `docs/wiki/product-truth-standing-authority.md` — постоянная owner policy для
+    автономного retailer/provider enrichment без ручных approval-фраз в чате.
+12. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
    это единственный operator workflow готового движка.
-12. Для исправления существующих Walmart-листингов —
+13. Для исправления существующих Walmart-листингов —
     `docs/wiki/walmart-listing-integrity-operator-runbook.md`; это единственный
     operator workflow frozen Listing Integrity repair engine.
 
@@ -54,18 +56,24 @@
 - Наличие migration или теста в worktree не означает, что schema применена к Turso
   или что данные backfilled. Перед runtime-выводом отдельно доказать migration state,
   authoritative marketplace inputs и consumer cutover.
-- Никаких платных массовых прогонов, включения harvest-cron, делистинга,
-  репрайсинга/min-max, публикации листингов или закупок без соответствующего
-  owner gate из roadmap.
+- Обычный Product Truth retailer/provider enrichment выполняется автономно по
+  `product-truth-standing-authority.md`: владелец не копирует approval-фразы,
+  plan SHA, permit IDs или confirmation tokens. Движок сам выпускает внутренний
+  plan-bound permit только после проверки immutable standing policy, scope,
+  тарифов, reserve floor, budget ledger и всех fail-closed запретов.
+- Standing authority не разрешает включение harvest-cron, BJ's/club expansion,
+  marketplace/listing writes, репрайсинг/min-max, inventory changes, делистинг,
+  consumer activation или закупки. Эти materially different действия остаются
+  отдельными owner decisions из roadmap.
 - В операционном режиме Claude Code только вызывает готовый suite из
   `product-truth-operator-runbook.md`: `product-truth:census`,
   `product-truth:manifest`, `product-truth:migrations` и canonical
-  `product-truth doctor|backfill-plan|backfill-apply|readiness|plan|execute|resume|status|report`.
+  `product-truth doctor|backfill-plan|backfill-apply|readiness|plan|balance-probe|authorize|execute|resume|status|report`.
   Matcher replay v2.2 — исключение: только exact sealed wrapper-команда из runbook;
   direct npm `matcher-replay` и direct runner запрещены.
   Он не редактирует движок, не запускает `scripts/cogs-enrich-batch.ts`, не использует
-  `--all`/implicit scope или BJ's и не обходит sealed plan, approval, budget ledger
-  или immutable artifacts. Sam's/Costco — только отдельный exact owner-approved club
+  `--all`/implicit scope или BJ's и не обходит sealed plan, standing policy,
+  budget ledger или immutable artifacts. Sam's/Costco — только отдельный exact owner-approved club
   plan; `ambiguous` никогда не replay автоматически.
 - Для Walmart new-SKU pilot Claude Code только вызывает готовый
   `npm run walmart:new-sku -- doctor|plan|stage|rotate-upc|certify|dry-run|approve|apply|verify`
@@ -103,7 +111,8 @@
 - `✅` — этап завершён и проверен;
 - `🔄` — единственный текущий этап;
 - `⬜` — ещё не начат;
-- `⛔` — ожидает owner gate или внешний вход.
+- `⛔` — ожидает действительно отдельное owner decision или внешний вход; обычный
+  Product Truth provider spend внутри standing authority этим статусом не блокируется.
 
 После каждого завершённого этапа агент обновляет план в чате и соответствующий
 канонический execution board/реестр задач. Нельзя оставлять владельца более чем на

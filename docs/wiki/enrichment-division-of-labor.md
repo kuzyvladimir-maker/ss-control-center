@@ -42,21 +42,23 @@ npm run product-truth -- <matcher-replay|doctor|backfill-plan|backfill-apply|rea
 
 Полный контракт команд и артефактов: [[product-truth-operator-runbook]]. Для Claude
 Code запрещены собственные enrichment-скрипты/SQL/API/browser fallback, legacy
-`scripts/cogs-enrich-batch.ts`, `--all`/implicit scope, обход approval/budget ledger,
+`scripts/cogs-enrich-batch.ts`, `--all`/implicit scope, обход standing policy/budget ledger,
 BJ's и любые publish/delist/reprice/purchase mutations. Sam's/Costco допускаются
 только отдельным exact owner-approved club plan; обычные canary/waves идут без clubs.
 
 Каждый canary и каждая новая wave получают новый exact request/runId, sealed plan,
-owner approval и immutable artifact directory. `resume` применим только к тому же
-безопасно `interrupted` run с теми же plan/approval/DB bindings. `ambiguous` никогда
-не replay автоматически: сначала ручная ledger/provider reconciliation и owner
-disposition.
+автоматическую standing authorization и immutable artifact directory. `resume`
+применим только к тому же безопасно `interrupted` run с теми же
+plan/authorization/DB bindings. `ambiguous` никогда не replay автоматически:
+сначала ledger/provider reconciliation; обычный technical outcome не создаёт
+новый owner prompt.
 
 Matcher Gate 1 имеет отдельную fail-closed boundary: v2.2 запускается Claude Code
 только через exact sealed runtime wrapper из [[product-truth-matcher-replay-v2]], а
 не direct npm runner. Offline semantic `304/304 PASS` не разрешает enrichment:
 86 source rows остаются `UNRESOLVED_EVIDENCE`, full truth `BLOCKED`, и очередь
-1 458 по-прежнему ждёт отдельного authoritative scope/budget owner gate.
+1 458 может исполняться только после authoritative scope и standing-policy
+budget plan, не по старому handoff.
 
 ## Кто что делает
 
@@ -111,8 +113,8 @@ Matcher Gate 1 имеет отдельную fail-closed boundary: v2.2 запу
 7. **Один операционный entrypoint.** Управляемые Product Truth canary/waves
    запускаются только через `npm run product-truth -- ...`. Наличие API key,
    legacy script или строки в очереди не является разрешением на paid execution.
-   Exact plan, manifest, DB fingerprint, owner approval, confirmation и budget
-   ledger обязательны вместе.
+   Exact plan, manifest, DB fingerprint, pinned standing policy, automatic
+   confirmation и budget ledger обязательны вместе.
 8. **Schema/backfill readiness — fail closed.** Локальный schema gate проверяет
    обязательные Product Truth tables/columns/indexes/triggers/foreign keys.
    Отдельный `READ_ONLY_NO_PAID_PLAN` может только сопоставить manifest, migration

@@ -42,6 +42,20 @@ import {
   type ProductTruthTargetedWalmartEvidencePlan,
 } from "../src/lib/sourcing/product-truth-targeted-walmart-evidence-contract";
 import {
+  PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+  assertProductTruthPlanEligibleForStandingAuthority,
+  buildProductTruthStandingAuthorization,
+  buildProductTruthStandingBalanceProbeArtifact,
+  buildProductTruthStandingBalanceProbePermit,
+  parseProductTruthStandingBalanceProbeArtifact,
+  validateProductTruthStandingProviderPolicy,
+  type ProductTruthStandingProviderPolicy,
+} from "../src/lib/sourcing/product-truth-standing-provider-authority";
+import {
+  withMeteredProviderCall,
+  type MeteredProviderAuthorization,
+} from "../src/lib/sourcing/metered-provider-call";
+import {
   PRODUCT_TRUTH_TARGETED_WALMART_PRODUCTION_ADAPTER,
   executeProductTruthTargetedWalmartEvidence,
   inspectProductTruthTargetedWalmartEvidenceRun,
@@ -111,6 +125,10 @@ const READINESS_ARTIFACT_INDEX_VERSION =
   "product-truth-consumer-readiness-artifact-index/1.0.0" as const;
 const MATCHER_REPLAY_ARTIFACT_INDEX_VERSION =
   "product-truth-matcher-replay-artifact-index/1.0.0" as const;
+const STANDING_BALANCE_ARTIFACT_INDEX_VERSION =
+  "product-truth-standing-balance-artifact-index/1.0.0" as const;
+const STANDING_AUTHORIZATION_ARTIFACT_INDEX_VERSION =
+  "product-truth-standing-authorization-artifact-index/1.0.0" as const;
 
 const JSON_LIMIT_BYTES = 5 * 1024 * 1024;
 const MANIFEST_LIMIT_BYTES = 100 * 1024 * 1024;
@@ -123,6 +141,8 @@ const COMMANDS = [
   "backfill-plan",
   "backfill-apply",
   "matcher-replay",
+  "balance-probe",
+  "authorize",
   "execute",
   "resume",
   "status",
@@ -148,6 +168,13 @@ export type ProductTruthRunnerCliOptions =
       help: boolean;
     }
   | (CommonDatabaseOptions & {
+      command: "balance-probe";
+      planPath: string;
+      planShaPath: string;
+      standingPolicyPath: string;
+      outputDirectory: string;
+    })
+  | (CommonDatabaseOptions & {
       command: "doctor";
       donorProductId?: string;
       listingKey?: string;
@@ -163,6 +190,18 @@ export type ProductTruthRunnerCliOptions =
       requestPath: string;
       manifestPath?: string;
       outputDirectory: string;
+    })
+  | (CommonDatabaseOptions & {
+      command: "authorize";
+      planPath: string;
+      planShaPath: string;
+      manifestPath?: string;
+      standingPolicyPath: string;
+      balanceEvidencePath: string;
+      balanceEvidenceShaPath: string;
+      balanceRawResponsePath: string;
+      outputDirectory: string;
+      executionOutputDirectory: string;
     })
   | (CommonDatabaseOptions & {
       command: "readiness";
@@ -277,6 +316,14 @@ const COMMAND_VALUE_FLAGS: Record<ProductTruthRunnerCommand, readonly string[]> 
     "--approval", "--approval-sha", "--confirm", "--out",
   ],
   "matcher-replay": ["--corpus", "--required-case-count", "--out"],
+  "balance-probe": [
+    "--url", "--auth-token-env", "--plan", "--plan-sha", "--standing-policy", "--out",
+  ],
+  authorize: [
+    "--url", "--auth-token-env", "--plan", "--plan-sha", "--manifest",
+    "--standing-policy", "--balance-evidence", "--balance-evidence-sha",
+    "--balance-raw-response", "--out", "--execute-out",
+  ],
   execute: [
     "--url", "--auth-token-env", "--plan", "--plan-sha", "--manifest",
     "--approval", "--confirm", "--out",
@@ -296,6 +343,8 @@ const COMMAND_BOOLEAN_FLAGS: Record<ProductTruthRunnerCommand, readonly string[]
   "backfill-plan": ["--allow-remote", "--help"],
   "backfill-apply": ["--allow-remote", "--help"],
   "matcher-replay": ["--help"],
+  "balance-probe": ["--allow-remote", "--help"],
+  authorize: ["--allow-remote", "--help"],
   execute: ["--allow-remote", "--help"],
   resume: ["--allow-remote", "--help"],
   status: ["--allow-remote", "--help"],
@@ -413,6 +462,22 @@ export function parseProductTruthRunnerArguments(
       help: false,
     };
   }
+  if (command === "balance-probe") {
+    return {
+      command,
+      databaseUrl: exactValue(flagText(flags, "--url"), "--url"),
+      allowRemote: flags.get("--allow-remote") === true,
+      authTokenEnv: flagText(flags, "--auth-token-env"),
+      planPath: exactValue(flagText(flags, "--plan"), "--plan"),
+      planShaPath: exactValue(flagText(flags, "--plan-sha"), "--plan-sha"),
+      standingPolicyPath: exactValue(
+        flagText(flags, "--standing-policy"),
+        "--standing-policy",
+      ),
+      outputDirectory: exactValue(flagText(flags, "--out"), "--out"),
+      help: false,
+    };
+  }
 
   const common = {
     databaseUrl: exactValue(flagText(flags, "--url"), "--url"),
@@ -420,6 +485,36 @@ export function parseProductTruthRunnerArguments(
     authTokenEnv: flagText(flags, "--auth-token-env"),
     help: false,
   };
+  if (command === "authorize") {
+    return {
+      ...common,
+      command,
+      planPath: exactValue(flagText(flags, "--plan"), "--plan"),
+      planShaPath: exactValue(flagText(flags, "--plan-sha"), "--plan-sha"),
+      manifestPath: flagText(flags, "--manifest"),
+      standingPolicyPath: exactValue(
+        flagText(flags, "--standing-policy"),
+        "--standing-policy",
+      ),
+      balanceEvidencePath: exactValue(
+        flagText(flags, "--balance-evidence"),
+        "--balance-evidence",
+      ),
+      balanceEvidenceShaPath: exactValue(
+        flagText(flags, "--balance-evidence-sha"),
+        "--balance-evidence-sha",
+      ),
+      balanceRawResponsePath: exactValue(
+        flagText(flags, "--balance-raw-response"),
+        "--balance-raw-response",
+      ),
+      outputDirectory: exactValue(flagText(flags, "--out"), "--out"),
+      executionOutputDirectory: exactValue(
+        flagText(flags, "--execute-out"),
+        "--execute-out",
+      ),
+    };
+  }
   if (command === "doctor") {
     if (flagText(flags, "--canonical-identity")) {
       usageError(
@@ -587,6 +682,15 @@ export function productTruthRunnerUsage(command?: ProductTruthRunnerCommand): st
     "       [--allow-remote --auth-token-env NAME]",
     "  matcher-replay --corpus CORPUS.json --required-case-count INTEGER",
     "       --out NEW_DIR",
+    "  balance-probe --plan plan.json --plan-sha plan.sha256",
+    "       --standing-policy STANDING_POLICY.json --url URL --out NEW_DIR",
+    "       [--allow-remote --auth-token-env NAME]",
+    "  authorize --plan plan.json --plan-sha plan.sha256",
+    "       --standing-policy STANDING_POLICY.json",
+    "       --balance-evidence BALANCE.json --balance-evidence-sha BALANCE.sha256",
+    "       --balance-raw-response RAW.json --url URL --out NEW_DIR",
+    "       --execute-out NEW_EXECUTION_DIR",
+    "       [--manifest MANIFEST.json] [--allow-remote --auth-token-env NAME]",
     "  execute --plan plan.json --plan-sha plan.sha256 --manifest MANIFEST.json",
     "       --approval APPROVAL.json --confirm EXACT_TOKEN --url URL --out NEW_DIR",
     "       [--allow-remote --auth-token-env NAME]",
@@ -606,6 +710,10 @@ export function productTruthRunnerUsage(command?: ProductTruthRunnerCommand): st
     "  import sealed authoritative listing scopes and never recomputes canonical cost.",
     "  matcher-replay is strictly offline: --url, database, approval, and provider flags",
     "  are forbidden; the corpus must be exact canonical JSON.",
+    "  balance-probe performs exactly one pinned Unwrangle Target Search call with",
+    "  no retry after validating the immutable standing policy and exact plan.",
+    "  authorize is network-free and creates the plan-bound internal approval, permit,",
+    "  confirmation, and exact execute command without a manual owner phrase.",
     "  Every --out path must be a new directory; artifacts are never overwritten.",
   ];
   return command ? `${lines.join("\n")}\n\nSelected command: ${command}` : lines.join("\n");
@@ -737,6 +845,70 @@ function parseSha256File(text: string): string {
   const digest = text.trim();
   if (!SHA256_PATTERN.test(digest)) fail("PLAN_SHA_FILE_INVALID", "plan SHA-256 is malformed");
   return digest;
+}
+
+type StandingAuthorityPlan =
+  | ProductTruthOperationalPlan
+  | ProductTruthTargetedWalmartEvidencePlan;
+
+interface LoadedStandingAuthorityInputs {
+  plan: StandingAuthorityPlan;
+  planSha256: string;
+  planPath: string;
+  planShaPath: string;
+  policy: ProductTruthStandingProviderPolicy;
+  policyJson: string;
+  policyPath: string;
+}
+
+async function loadStandingAuthorityInputs(input: {
+  planPath: string;
+  planShaPath: string;
+  standingPolicyPath: string;
+  cwd: string;
+}): Promise<LoadedStandingAuthorityInputs> {
+  const [planFile, planShaFile, policyFile] = await Promise.all([
+    readExactRegularUtf8File(input.planPath, "plan", input.cwd, JSON_LIMIT_BYTES),
+    readExactRegularUtf8File(input.planShaPath, "plan SHA", input.cwd, 1024),
+    readExactRegularUtf8File(
+      input.standingPolicyPath,
+      "standing provider policy",
+      input.cwd,
+      JSON_LIMIT_BYTES,
+    ),
+  ]);
+  const planValue = parseJson(planFile.text, "plan");
+  const targeted = isRecord(planValue)
+    && planValue.schemaVersion === PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION;
+  const plan = targeted
+    ? parseProductTruthTargetedWalmartEvidencePlan(planValue)
+    : parseProductTruthOperationalPlan(planValue);
+  assertCanonicalJson(planFile.text, plan, "plan");
+  const planSha256 = parseSha256File(planShaFile.text);
+  if (
+    planSha256 !== sha256(planFile.text)
+    || planSha256 !== productTruthOperationalSha256(plan)
+  ) {
+    fail(
+      "PLAN_HASH_MISMATCH",
+      "plan bytes, SHA sidecar, and canonical plan do not match",
+    );
+  }
+  const policyValue = parseJson(policyFile.text, "standing provider policy");
+  const policy = validateProductTruthStandingProviderPolicy({
+    policy: policyValue,
+    policyJson: policyFile.text,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+  });
+  return {
+    plan,
+    planSha256,
+    planPath: planFile.absolutePath,
+    planShaPath: planShaFile.absolutePath,
+    policy,
+    policyJson: policyFile.text,
+    policyPath: policyFile.absolutePath,
+  };
 }
 
 type ProductTruthMigrationQueueImpact = NonNullable<ProductTruthMigrationPlan["queueImpact"]>;
@@ -1855,6 +2027,424 @@ async function writeNewArtifactDirectory(
   await syncDirectory(dirname(output));
 }
 
+type ProductTruthFetch = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>;
+
+async function runStandingBalanceProbeCommand(input: {
+  options: Extract<ProductTruthRunnerCliOptions, { command: "balance-probe" }>;
+  resolved: ResolvedCliDatabaseTarget;
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+  now: () => string;
+  fetchImpl: ProductTruthFetch;
+}): Promise<{ result: unknown; exitCode: number }> {
+  const loaded = await loadStandingAuthorityInputs({
+    planPath: input.options.planPath,
+    planShaPath: input.options.planShaPath,
+    standingPolicyPath: input.options.standingPolicyPath,
+    cwd: input.cwd,
+  });
+  const eligibilityAt = input.now();
+  assertProductTruthPlanEligibleForStandingAuthority({
+    plan: loaded.plan,
+    planSha256: loaded.planSha256,
+    policy: loaded.policy,
+    now: eligibilityAt,
+  });
+  if (loaded.plan.targetFingerprint !== input.resolved.target.fingerprint) {
+    fail(
+      "DATABASE_TARGET_FINGERPRINT_MISMATCH",
+      "balance ledger target differs from sealed plan and standing policy",
+    );
+  }
+  const balancePermit = buildProductTruthStandingBalanceProbePermit({
+    plan: loaded.plan,
+    planSha256: loaded.planSha256,
+    policy: loaded.policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    now: eligibilityAt,
+  });
+  const outputDirectory = resolveNewOutputDirectory(
+    input.cwd,
+    input.options.outputDirectory,
+  );
+  await assertOutputDirectoryAvailable(outputDirectory);
+  const rawKey = input.env.UNWRANGLE_API_KEY?.trim() ?? "";
+  const apiKey = rawKey.replace(/^['"]|['"]$/g, "");
+  if (!apiKey) {
+    fail(
+      "STANDING_BALANCE_PROVIDER_KEY_MISSING",
+      "UNWRANGLE_API_KEY is absent; no provider call was made",
+    );
+  }
+  const endpoint = new URL("https://data.unwrangle.com/api/getter/");
+  endpoint.searchParams.set("platform", loaded.policy.balanceProbe.operation);
+  endpoint.searchParams.set("search", loaded.policy.balanceProbe.query);
+  endpoint.searchParams.set("api_key", apiKey);
+  let meteredAuthorization: MeteredProviderAuthorization | null = null;
+  let providerResult: {
+    requestedAt: string;
+    observedAt: string;
+    httpStatus: number;
+    rawResponseText: string;
+  };
+  try {
+    providerResult = await withMeteredProviderCall(
+      {
+        provider: "unwrangle",
+        operation: loaded.policy.balanceProbe.operation,
+        units: loaded.policy.balanceProbe.maxUnitsPerCall,
+        requestFingerprint: {
+          contract: "product-truth-standing-balance-probe/1.0.0",
+          planSha256: loaded.planSha256,
+          standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+          platform: loaded.policy.balanceProbe.operation,
+          query: loaded.policy.balanceProbe.query,
+        },
+        onAuthorized: (authorization) => {
+          meteredAuthorization = authorization;
+        },
+      },
+      async () => {
+        const requestedAt = input.now();
+        let response: Response;
+        try {
+          response = await input.fetchImpl(endpoint, {
+            method: "GET",
+            redirect: "error",
+            signal: AbortSignal.timeout(90_000),
+            headers: { accept: "application/json" },
+          });
+        } catch (error) {
+          fail(
+            "STANDING_BALANCE_PROVIDER_CALL_FAILED",
+            "single no-retry Unwrangle balance probe failed",
+            { cause: error },
+          );
+        }
+        let rawResponseText: string;
+        try {
+          rawResponseText = await response.text();
+        } catch (error) {
+          fail(
+            "STANDING_BALANCE_PROVIDER_RESPONSE_FAILED",
+            "single balance response could not be read; no retry is allowed",
+            { cause: error },
+          );
+        }
+        return {
+          requestedAt,
+          observedAt: input.now(),
+          httpStatus: response.status,
+          rawResponseText,
+        };
+      },
+      {
+        SS_METERED_RUN_PERMIT: balancePermit.encodedPermit,
+        SS_METERED_RUN_CONFIRM: balancePermit.confirmation,
+        TURSO_DATABASE_URL: input.resolved.target.clientUrl,
+        TURSO_AUTH_TOKEN: input.resolved.authToken,
+      },
+    );
+  } catch (error) {
+    fail(
+      "STANDING_BALANCE_METERED_CALL_FAILED",
+      "durable one-call balance reservation or provider call failed; no retry is allowed",
+      { cause: error },
+    );
+  }
+  const authorization = meteredAuthorization as MeteredProviderAuthorization | null;
+  if (!authorization) {
+    fail(
+      "STANDING_BALANCE_METERED_AUTHORIZATION_MISSING",
+      "durable ledger did not return a balance reservation receipt",
+    );
+  }
+  const {
+    requestedAt,
+    observedAt,
+    httpStatus,
+    rawResponseText,
+  } = providerResult;
+  const probeId = `ptbal-standing-${loaded.planSha256.slice(0, 16)}-${observedAt
+    .replace(/[-:.TZ]/g, "")
+    .slice(0, 14)}`;
+  const evidence = buildProductTruthStandingBalanceProbeArtifact({
+    plan: loaded.plan,
+    planSha256: loaded.planSha256,
+    policy: loaded.policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    probeId,
+    requestedAt,
+    observedAt,
+    httpStatus,
+    rawResponseText,
+    meteredAuthorization: {
+      approvalId: authorization.approvalId,
+      reservationKey: authorization.reservationKey,
+      receiptId: authorization.receiptId,
+    },
+  });
+  const evidenceJson = renderProductTruthOperationalJson(evidence);
+  const evidenceSha256 = sha256(evidenceJson);
+  const rawResponseSha256 = sha256(rawResponseText);
+  const artifactIndex = {
+    schemaVersion: STANDING_BALANCE_ARTIFACT_INDEX_VERSION,
+    createdAt: observedAt,
+    runId: loaded.plan.runId,
+    planSha256: loaded.planSha256,
+    standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    providerCalls: 1,
+    providerUnits: 2.5,
+    retryCount: 0,
+    meteredApprovalId: evidence.meteredApprovalId,
+    meteredReservationKey: evidence.meteredReservationKey,
+    meteredReceiptId: evidence.meteredReceiptId,
+    files: {
+      balanceEvidence: {
+        name: "balance-evidence.json",
+        sha256: evidenceSha256,
+      },
+      rawResponse: {
+        name: "raw-response.json",
+        sha256: rawResponseSha256,
+      },
+    },
+    safety: evidence.safety,
+  };
+  const artifactIndexJson = renderProductTruthOperationalJson(artifactIndex);
+  const artifactIndexSha256 = sha256(artifactIndexJson);
+  await writeNewArtifactDirectory(outputDirectory, [
+    { name: "balance-evidence.json", content: evidenceJson },
+    { name: "balance-evidence.sha256", content: `${evidenceSha256}\n` },
+    { name: "raw-response.json", content: rawResponseText },
+    { name: "raw-response.sha256", content: `${rawResponseSha256}\n` },
+    { name: "artifact-index.json", content: artifactIndexJson },
+    { name: "artifact-index.sha256", content: `${artifactIndexSha256}\n` },
+  ]);
+  return {
+    result: {
+      ok: true,
+      command: "balance-probe",
+      runId: loaded.plan.runId,
+      planSha256: loaded.planSha256,
+      standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+      providerCalls: 1,
+      providerUnits: 2.5,
+      retryCount: 0,
+      meteredApprovalId: evidence.meteredApprovalId,
+      meteredReservationKey: evidence.meteredReservationKey,
+      meteredReceiptId: evidence.meteredReceiptId,
+      balanceUnits: evidence.balanceUnits,
+      reserveFloor: evidence.reserveFloor,
+      evidenceSha256,
+      artifactIndexSha256,
+      outputDirectory,
+      nextCommand: "authorize",
+      ownerActionRequired: false,
+    },
+    exitCode: 0,
+  };
+}
+
+async function runStandingAuthorizeCommand(input: {
+  options: Extract<ProductTruthRunnerCliOptions, { command: "authorize" }>;
+  resolved: ResolvedCliDatabaseTarget;
+  cwd: string;
+  now: () => string;
+}): Promise<{ result: unknown; exitCode: number }> {
+  const loaded = await loadStandingAuthorityInputs({
+    planPath: input.options.planPath,
+    planShaPath: input.options.planShaPath,
+    standingPolicyPath: input.options.standingPolicyPath,
+    cwd: input.cwd,
+  });
+  if (loaded.plan.targetFingerprint !== input.resolved.target.fingerprint) {
+    fail(
+      "DATABASE_TARGET_FINGERPRINT_MISMATCH",
+      "explicit execution target differs from sealed plan and standing policy",
+    );
+  }
+  if (
+    loaded.plan.schemaVersion
+      === PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION
+  ) {
+    if (input.options.manifestPath) {
+      usageError(
+        "TARGETED_EVIDENCE_MANIFEST_FORBIDDEN",
+        "targeted standing authorization must not receive a separate manifest",
+      );
+    }
+  } else {
+    if (!input.options.manifestPath) {
+      usageError(
+        "CLI_ARGUMENT_REQUIRED",
+        "listing-scope standing authorization requires --manifest",
+      );
+    }
+    const manifest = await readCanonicalManifest(
+      input.options.manifestPath,
+      input.cwd,
+    );
+    assertProductTruthOperationalManifestBinding({
+      plan: loaded.plan,
+      manifest: manifest.manifest,
+      manifestJson: manifest.manifestJson,
+    });
+  }
+  const [balanceFile, balanceShaFile, rawResponseFile] = await Promise.all([
+    readExactRegularUtf8File(
+      input.options.balanceEvidencePath,
+      "balance evidence",
+      input.cwd,
+      JSON_LIMIT_BYTES,
+    ),
+    readExactRegularUtf8File(
+      input.options.balanceEvidenceShaPath,
+      "balance evidence SHA",
+      input.cwd,
+      1024,
+    ),
+    readExactRegularUtf8File(
+      input.options.balanceRawResponsePath,
+      "balance raw response",
+      input.cwd,
+      JSON_LIMIT_BYTES,
+    ),
+  ]);
+  const now = input.now();
+  const balanceEvidenceSha256 = parseSha256File(balanceShaFile.text);
+  const balanceEvidence = parseProductTruthStandingBalanceProbeArtifact({
+    value: parseJson(balanceFile.text, "balance evidence"),
+    json: balanceFile.text,
+    expectedSha256: balanceEvidenceSha256,
+    rawResponseText: rawResponseFile.text,
+    plan: loaded.plan,
+    planSha256: loaded.planSha256,
+    policy: loaded.policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    now,
+  });
+  const authorization = buildProductTruthStandingAuthorization({
+    plan: loaded.plan,
+    planSha256: loaded.planSha256,
+    policy: loaded.policy,
+    policySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    balanceEvidence,
+    balanceEvidenceSha256,
+    now,
+  });
+  const outputDirectory = resolveNewOutputDirectory(
+    input.cwd,
+    input.options.outputDirectory,
+  );
+  const executionOutputDirectory = resolveNewOutputDirectory(
+    input.cwd,
+    input.options.executionOutputDirectory,
+  );
+  await Promise.all([
+    assertOutputDirectoryAvailable(outputDirectory),
+    assertOutputDirectoryAvailable(executionOutputDirectory),
+  ]);
+  const approvalJson = renderProductTruthOperationalJson(authorization.approval);
+  if (sha256(approvalJson) !== authorization.approvalSha256) {
+    fail(
+      "STANDING_AUTHORIZATION_INTERNAL_HASH_MISMATCH",
+      "automatic approval hash did not reconcile",
+    );
+  }
+  const approvalPath = resolve(outputDirectory, "approval.json");
+  const nextArgv = [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    loaded.planPath,
+    "--plan-sha",
+    loaded.planShaPath,
+    ...(input.options.manifestPath
+      ? ["--manifest", resolve(input.cwd, input.options.manifestPath)]
+      : []),
+    "--approval",
+    approvalPath,
+    "--confirm",
+    authorization.executionConfirmation,
+    "--url",
+    input.options.databaseUrl,
+    ...(input.options.allowRemote ? ["--allow-remote"] : []),
+    ...(input.options.authTokenEnv
+      ? ["--auth-token-env", input.options.authTokenEnv]
+      : []),
+    "--out",
+    executionOutputDirectory,
+  ];
+  const authorizationJson = renderProductTruthOperationalJson({
+    ...authorization,
+    next_argv: nextArgv,
+    next_command: nextArgv.map(shellQuote).join(" "),
+    ownerActionRequired: false,
+  });
+  const authorizationSha256 = sha256(authorizationJson);
+  const artifactIndex = {
+    schemaVersion: STANDING_AUTHORIZATION_ARTIFACT_INDEX_VERSION,
+    createdAt: now,
+    runId: loaded.plan.runId,
+    planSha256: loaded.planSha256,
+    standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    balanceEvidenceSha256,
+    approvalSha256: authorization.approvalSha256,
+    authorizationSha256,
+    ownerActionRequired: false,
+    files: {
+      approval: {
+        name: "approval.json",
+        sha256: authorization.approvalSha256,
+      },
+      authorization: {
+        name: "authorization.json",
+        sha256: authorizationSha256,
+      },
+    },
+  };
+  const artifactIndexJson = renderProductTruthOperationalJson(artifactIndex);
+  const artifactIndexSha256 = sha256(artifactIndexJson);
+  await writeNewArtifactDirectory(outputDirectory, [
+    { name: "approval.json", content: approvalJson },
+    {
+      name: "approval.sha256",
+      content: `${authorization.approvalSha256}\n`,
+    },
+    { name: "authorization.json", content: authorizationJson },
+    { name: "authorization.sha256", content: `${authorizationSha256}\n` },
+    { name: "artifact-index.json", content: artifactIndexJson },
+    { name: "artifact-index.sha256", content: `${artifactIndexSha256}\n` },
+  ]);
+  return {
+    result: {
+      ok: true,
+      command: "authorize",
+      runId: loaded.plan.runId,
+      planSha256: loaded.planSha256,
+      standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+      balanceEvidenceSha256,
+      approvalId: authorization.approvalId,
+      approvalSha256: authorization.approvalSha256,
+      authorizationSha256,
+      artifactIndexSha256,
+      outputDirectory,
+      executionOutputDirectory,
+      next_argv: nextArgv,
+      next_command: nextArgv.map(shellQuote).join(" "),
+      ownerActionRequired: false,
+    },
+    exitCode: 0,
+  };
+}
+
 export function createProductTruthReportArtifactWriter(input: {
   outputDirectory: string;
   plan: Pick<
@@ -2563,7 +3153,10 @@ async function buildOfflinePlanArtifacts(input: {
     targetFingerprint: plan.targetFingerprint,
     planExpiresAt: plan.expiresAt,
     executionConfirmationFormat:
-      `EXECUTE_PRODUCT_TRUTH_PLAN_V1:${planSha256}:<OWNER_APPROVAL_ID>`,
+      `EXECUTE_PRODUCT_TRUTH_PLAN_V1:${planSha256}:<AUTOMATIC_STANDING_APPROVAL_ID>`,
+    authorizationMode: "PINNED_STANDING_OWNER_POLICY",
+    standingPolicySha256: PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256,
+    ownerActionRequired: false,
     providerCeilings: plan.providerCeilings,
     sourcePolicy: plan.sourcePolicy,
     ...(targeted && (plan as ProductTruthTargetedWalmartEvidencePlan).targets[0].identityMode
@@ -2583,8 +3176,8 @@ async function buildOfflinePlanArtifacts(input: {
         },
       } : {}),
     warning: targeted
-      ? "Owner approval, exact two-provider permit, fresh Unwrangle balance evidence, and exact confirmation are required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
-      : "Owner approval, fresh balance evidence, and exact execution confirmation are required; this plan authorizes no automatic publish, delist, reprice, or purchase.",
+      ? "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the exact two-provider permit and confirmation automatically; no chat approval is required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
+      : "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the plan-bound permit and confirmation automatically; no chat approval is required and no publish, delist, reprice, or purchase is authorized.",
   };
   const output = resolveNewOutputDirectory(input.cwd, input.options.outputDirectory);
   await writeNewArtifactDirectory(output, [
@@ -2796,6 +3389,7 @@ interface CliRuntime {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   now?: () => string;
+  fetchImpl?: ProductTruthFetch;
   stdout?: (text: string) => void;
   stderr?: (text: string) => void;
 }
@@ -2813,7 +3407,7 @@ function errorMessage(error: unknown): string {
 
 async function executeCommand(
   options: ProductTruthRunnerCliOptions,
-  runtime: Required<Pick<CliRuntime, "cwd" | "env" | "now">>,
+  runtime: Required<Pick<CliRuntime, "cwd" | "env" | "now" | "fetchImpl">>,
 ): Promise<{ result: unknown; exitCode: number }> {
   if (options.help) {
     return { result: productTruthRunnerUsage(options.command), exitCode: 0 };
@@ -2842,6 +3436,24 @@ async function executeCommand(
     cwd: runtime.cwd,
     env: runtime.env,
   });
+  if (options.command === "balance-probe") {
+    return runStandingBalanceProbeCommand({
+      options,
+      resolved,
+      cwd: runtime.cwd,
+      env: runtime.env,
+      now: runtime.now,
+      fetchImpl: runtime.fetchImpl,
+    });
+  }
+  if (options.command === "authorize") {
+    return runStandingAuthorizeCommand({
+      options,
+      resolved,
+      cwd: runtime.cwd,
+      now: runtime.now,
+    });
+  }
   if (options.command === "plan") {
     return {
       result: await buildOfflinePlanArtifacts({
@@ -3093,6 +3705,7 @@ export async function runProductTruthRunnerCli(
       cwd: runtime.cwd ?? process.cwd(),
       env: runtime.env ?? process.env,
       now: runtime.now ?? (() => new Date().toISOString()),
+      fetchImpl: runtime.fetchImpl ?? fetch,
     });
     if (typeof execution.result === "string") stdout(`${execution.result}\n`);
     else stdout(renderProductTruthOperationalJson(execution.result));
