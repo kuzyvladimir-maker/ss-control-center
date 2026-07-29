@@ -1,0 +1,30 @@
+{
+  "_comment": "СГЕНЕРИРОВАНО scripts/release-pins.mjs — не редактировать руками. Источник истины: содержимое release-artifacts/ на диске.",
+  "generatedFrom": "release-artifacts/",
+  "releases": {
+    "walmart-listing-repair-engine-2026-07-28-v31": {
+      "release": "walmart-listing-repair-engine-2026-07-28-v31",
+      "manifestSha256": "01469d9e64a1d41df0a64b3b38a22e7741d579c2910760afae94c72223712c1d",
+      "claimedSha256": "01469d9e64a1d41df0a64b3b38a22e7741d579c2910760afae94c72223712c1d",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-07-29-v32": {
+      "release": "walmart-listing-repair-engine-2026-07-29-v32",
+      "manifestSha256": "8e6c7f72720023fd51db5f9b8bd0cf5e3ca1dc08cee3678626f0e9cb43c5014b",
+      "claimedSha256": "8e6c7f72720023fd51db5f9b8bd0cf5e3ca1dc08cee3678626f0e9cb43c5014b",
+      "claimMatches": true
+    },
+    "walmart-listing-repair-engine-2026-07-29-v33": {
+      "release": "walmart-listing-repair-engine-2026-07-29-v33",
+      "manifestSha256": "cf31377403c4036b0f81a60b9084f71ee9ebb2cb49f9ef589c247ced44a398cb",
+      "claimedSha256": "cf31377403c4036b0f81a60b9084f71ee9ebb2cb49f9ef589c247ced44a398cb",
+      "claimMatches": true
+    },
+    "walmart-new-sku-pilot-engine-2026-07-29-v33": {
+      "release": "walmart-new-sku-pilot-engine-2026-07-29-v33",
+      "manifestSha256": "2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f",
+      "claimedSha256": "2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f",
+      "claimMatches": true
+    }
+  }
+}

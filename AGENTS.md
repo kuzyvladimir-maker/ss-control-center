@@ -1,121 +1,250 @@
-# AGENTS.md — обязательный контекст проекта
+# AGENTS.md — операционный контракт для Claude Code и Codex
 
-## Product Truth Platform / донорский справочный каталог
+> Ревизия 2026-07-29. Заменяет предыдущую редакцию после разбора трёх недель
+> работы. Что именно было сломано и почему — в
+> `docs/wiki/agent-operating-contract-2026-07-29.md`. Читать этот файл целиком
+> обязательно; он намеренно короткий.
 
-Перед любой работой, затрагивающей товарную идентичность, `DonorProduct`,
-`DonorOffer`, `SkuComponent`, `SkuCost`, retailer sourcing, Bundle Factory,
-создание или улучшение листингов, unit economics либо Procurement, обязательно
-прочитать полностью:
+---
 
-1. `docs/wiki/product-catalog-architecture.md` — **OWNER CANON**, главный источник
-   истины о назначении и архитектуре каталога.
-2. `docs/wiki/donor-catalog-execution-roadmap.md` — текущий порядок работ, gates,
-   критерии готовности и решения, требующие подтверждения владельца.
-3. `docs/wiki/enrichment-division-of-labor.md` — контракт единого enrichment-контура
-   и его потребителей.
-4. `docs/wiki/product-truth-operator-runbook.md` — единственный operator workflow
-   готового Product Truth engine и жёсткая граница роли Claude Code.
-5. `docs/wiki/product-truth-consumer-cutover.md` — доказанный список consumer bypasses,
-   manifest-bound/set-based read boundary и staged shadow→owner activation→enforced.
-6. `docs/wiki/product-truth-release-scope.md` — точный Git/release boundary и
-   обязательный clean-checkout gate перед передачей готового движка оператору.
-7. `docs/wiki/product-truth-matcher-replay-v2.md` — канонический offline Gate 1,
-   восемь immutable inputs, честный post-blind provenance и sealed wrapper boundary.
-8. `docs/wiki/product-truth-command-center.md` — живой implementation board
-   постоянного модуля Catalog / Product Truth, его фазы, acceptance gates и прогресс.
-9. `docs/wiki/product-truth-web-operations-control-plane.md` — канонический
-   default-OFF design web→worker bridge, отдельного Product Truth owner trust root,
-   immutable command artifacts и staged activation.
-10. `docs/wiki/product-truth-owner-gates.md` — единый живой реестр независимых
-    owner decisions, их точных границ и consumed evidence.
-11. `docs/wiki/product-truth-standing-authority.md` — постоянная owner policy для
-    автономного retailer/provider enrichment без ручных approval-фраз в чате.
-12. Для создания новых Walmart SKU — `docs/wiki/walmart-new-sku-operator-runbook.md`;
-   это единственный operator workflow готового движка.
-13. Для исправления существующих Walmart-листингов —
-    `docs/wiki/walmart-listing-integrity-operator-runbook.md`; это единственный
-    operator workflow frozen Listing Integrity repair engine.
+## 0. Что изменено и почему
 
-Обязательные правила:
+Разбор 348 коммитов за 08–29 июля показал: движки писались, но не доходили до
+результата. Причина — не способности агента, а сам регламент:
 
-- Это один независимый от каналов Product Truth Platform для четырёх потребителей:
-  Bundle Factory, Listing Improvement, Unit Economics и Procurement.
-- Phase 1 — закрыть весь текущий продаваемый ассортимент Amazon и Walmart;
-  продажи и выручка задают приоритет, но не сужают границу Phase 1.
-- Phase 2 — системно расширять каталог по бренду, группе/категории, ретейлеру и
-  demand-driven запросам, затем постоянно обновлять цены и наличие.
-- Контент разрешено переносить только с точного товарного варианта. Ценовой proxy
-  или другая фасовка — отдельное `price evidence`, а не `content donor`.
-- Потребители читают общий каталог. Если данных нет, они ставят задачу в единую
-  очередь и не создают параллельный каталог или собственный retailer-harvest.
-- Canonical consumers должны использовать единый versioned Product Truth read-contract,
-  а не самостоятельно трактовать mutable/legacy `DonorProduct`, `SkuComponent` или
-  последний ненулевой `SkuCost`. Content readiness и price/COGS outcome — независимые
-  оси: exact content не исчезает из-за estimate/unsourceable цены, а price proxy
-  никогда не становится content truth.
-- Наличие migration или теста в worktree не означает, что schema применена к Turso
-  или что данные backfilled. Перед runtime-выводом отдельно доказать migration state,
-  authoritative marketplace inputs и consumer cutover.
-- Обычный Product Truth retailer/provider enrichment выполняется автономно по
-  `product-truth-standing-authority.md`: владелец не копирует approval-фразы,
-  plan SHA, permit IDs или confirmation tokens. Движок сам выпускает внутренний
-  plan-bound permit только после проверки immutable standing policy, scope,
-  тарифов, reserve floor, budget ledger и всех fail-closed запретов.
-- Standing authority не разрешает включение harvest-cron, BJ's/club expansion,
-  marketplace/listing writes, репрайсинг/min-max, inventory changes, делистинг,
-  consumer activation или закупки. Эти materially different действия остаются
-  отдельными owner decisions из roadmap.
-- В операционном режиме Claude Code только вызывает готовый suite из
-  `product-truth-operator-runbook.md`: `product-truth:census`,
-  `product-truth:manifest`, `product-truth:migrations` и canonical
-  `product-truth doctor|backfill-plan|backfill-apply|readiness|plan|balance-probe|authorize|execute|resume|status|report`.
-  Matcher replay v2.2 — исключение: только exact sealed wrapper-команда из runbook;
-  direct npm `matcher-replay` и direct runner запрещены.
-  Он не редактирует движок, не запускает `scripts/cogs-enrich-batch.ts`, не использует
-  `--all`/implicit scope или BJ's и не обходит sealed plan, standing policy,
-  budget ledger или immutable artifacts. Sam's/Costco — только отдельный exact owner-approved club
-  plan; `ambiguous` никогда не replay автоматически.
-- Для Walmart new-SKU pilot Claude Code только вызывает готовый
-  `npm run walmart:new-sku -- doctor|plan|stage|rotate-upc|certify|dry-run|approve|apply|verify`
-  и следует exact `next_command`. Он не редактирует движок/tests/schema/migrations,
-  не запускает owner/Codex-only `walmart:new-sku:schema` или
-  `walmart:new-sku:catalog`, не создаёт owner permit/activation approval и
-  останавливается при `next_command: null`. `apply --mode live` требует свежий doctor,
-  reviewed apply-preview и отдельный Ed25519-signed external owner permit из pinned
-  trust root; hash-only/self-asserted permit запрещён. Pilot release ограничен двумя
-  SKU и не разрешает волны 15–20 либо schedule.
-- Для Walmart Listing Integrity Claude Code только вызывает готовый
-  verifier-wrapper из clean checkout по единственной команде и exact trust inputs
-  из `walmart-listing-integrity-operator-runbook.md` (release ID `cb9d4f2b…38ae2`,
-  manifest SHA `208c4cee…ea2c`), затем только
-  `doctor|plan|execute|resume|status|report`, следует exact `next_command` и
-  останавливается при `next_command: null`. Прямой запуск mutable
-  `scripts/walmart-listing-repair-operator.ts` запрещён. Он не
-  редактирует движок/tests/schema/release pins/trust roots/package/permit/receipt,
-  не использует legacy multipack writer, `--all`, retry или implicit scope.
-  `execute` ограничен одним SKU и одним owner-signed permit; неизвестный POST
-  никогда не replay, `resume` выполняет только exact feed GET.
-- Датированный handoff — оперативный snapshot, не архитектурный канон.
+| Что было | Следствие |
+|---|---|
+| 231 SHA переписан в прозу руками | `AGENTS.md` противоречил своему же ранбуку; агент, исполняя правило буквально, обязан был отказаться от единственной рабочей команды |
+| `release-artifacts/` вне git | 6 обязательных командных путей и 1 запиненный коммит **физически исчезли**; целые линии стали неисполнимы |
+| TTL допусков 15–30 минут | Короче времени человеческой подписи — цепочка не могла закрыться арифметически |
+| Церемония подтверждений в чате | 44 % коммитов ушло в координацию, не изменившую продукт |
+| Чекауты никто не убирал | 150 ГБ в `/private/tmp`, диск встал |
 
-Если реализация, старый документ или локальный план противоречит OWNER CANON,
-не продолжать молча: обозначить расхождение и привести контракт к канону. После
-существенного изменения обновить Wiki‑Brain/реестр задач и запустить
-`node scripts/wiki-brain.mjs`.
+Доказательство от противного: 28 июля сняли один слой церемонии — следующий же
+автономный прогон завершился `COMPLETED` с первой попытки и без единого
+обращения к владельцу. Ограничением была церемония.
 
-## Обязательный протокол видимого прогресса
+Поэтому ниже church-правила заменены на машинные проверки, а согласования — на
+постоянную автономию.
 
-Для любой многоэтапной работы агент обязан до существенных действий показать
-владельцу конечную цель и полный фазовый чек-лист. В каждом последующем обновлении
-использовать одни и те же статусы:
+---
 
-- `✅` — этап завершён и проверен;
-- `🔄` — единственный текущий этап;
-- `⬜` — ещё не начат;
-- `⛔` — ожидает действительно отдельное owner decision или внешний вход; обычный
-  Product Truth provider spend внутри standing authority этим статусом не блокируется.
+## 1. Как агент ведёт задачу
 
-После каждого завершённого этапа агент обновляет план в чате и соответствующий
-канонический execution board/реестр задач. Нельзя оставлять владельца более чем на
-один существенный tool/test цикл без короткого статуса: где мы, что доказано, что
-делается сейчас и что будет следующим. Поток логов или строк кода не заменяет
-прогресс-отчёт.
+Обязательно для любой работы длиннее одного шага:
+
+1. **План до действий.** Сформулировать конечную цель своими словами, показать
+   владельцу фазовый чек-лист. Не начинать существенные действия раньше.
+2. **Декомпозиция.** Разбить на подзадачи, у каждой — проверяемый критерий
+   готовности. «Сделал» = машинно доказано, а не «написал код».
+3. **Шаг за шагом.** Идти по списку, после каждой завершённой фазы обновлять
+   статус в чате.
+4. **Опора на прошлое.** Перед стартом сверяться с тем, что уже сделано и что
+   уже проваливалось: `docs/wiki/`, git-история, предыдущие аудиты. Не
+   переизобретать и не повторять известную ошибку.
+
+Статусы едины: `✅` завершено и проверено, `🔄` текущий (ровно один),
+`⬜` не начат, `⛔` ждёт действительно внешнего входа.
+
+Нельзя оставлять владельца дольше одного существенного tool/test-цикла без
+короткого статуса: где мы, что доказано, что делается сейчас, что дальше.
+Поток логов не заменяет отчёт.
+
+---
+
+## 2. Автономия — без пошаговых согласований
+
+**Поручение владельца с понятным действием и границей уже является решением для
+этой границы.** Владелец сформулировал это прямо 2026-07-29.
+
+Запрещено:
+
+- просить повторить согласие на уже названное;
+- просить скопировать confirmation string, plan/payload SHA, permit ID, токен;
+- останавливаться ради «подтвердите, что можно продолжать»;
+- превращать владельца в транспорт для copy/paste.
+
+Агент сам извлекает границу задачи, выполняет **все** доступные шаги внутри неё
+и проходит машинные проверки. Если frozen-workflow требует подпись из pinned
+trust root — использовать доступный signer. Отсутствие signer — это
+`AUTOMATION_GAP`, о нём надо сообщить и **построить недостающий инструмент**, а
+не устраивать церемонию в чате.
+
+Нельзя: подделывать подпись, обходить fail-closed контроль, расширять границу за
+пределы поручения.
+
+### Что всё-таки остаётся отдельным решением владельца
+
+Только материально необратимое и денежное:
+
+- закупки и любые траты сверх согласованного потолка;
+- делистинг и снятие товара с продажи;
+- включение массового репрайсинга и min/max;
+- изменение остатков;
+- расширение на новые каналы или клубные сети (BJ's, Sam's, Costco);
+- публикация новых SKU сверх согласованного объёма пилота.
+
+Всё остальное — обычная работа, выполняется автономно.
+
+---
+
+## 3. Параллельная работа Claude Code и Codex
+
+Оба агента работают в одном репозитории. Координация живёт **вне git** —
+предыдущая доска внутри git съела 44 % коммитов.
+
+Инструмент: `node scripts/agent-sync.mjs`
+
+```bash
+node scripts/agent-sync.mjs claim <полоса> "<что делаю>"    # в начале работы
+node scripts/agent-sync.mjs status                           # кто что делает
+node scripts/agent-sync.mjs sync "<msg>" <path> [path...]    # commit+rebase+push под локом
+node scripts/agent-sync.mjs release                          # в конце
+node scripts/agent-sync.mjs doctor                           # проверка здоровья
+```
+
+Правила:
+
+1. **Заявить полосу перед работой.** Полоса — это область: `walmart`,
+   `product-truth`, `bundle-factory`, `pricing`, `infra`, `docs`. Если полоса
+   занята другим агентом — взять другую, не лезть в те же файлы.
+2. **Коммитить только через `sync`, всегда с явными путями.** Он держит
+   эксклюзивный лок, поэтому два агента не могут выполнять git-операции
+   одновременно — именно одновременные операции оставили 12 ГБ битых `tmp_pack`.
+   **`git add -A` запрещён:** дерево общее, и `-A` заберёт незаконченную работу
+   другого агента. Так cron авто-сохранения закоммитил недописанный файл и
+   заморозил прод-деплои на 5 дней (`cee52107`).
+3. **Каждый коммит немедленно уезжает на origin.** Работа не живёт только на
+   локальном диске. `sync` делает `pull --rebase` и `push` в одном шаге.
+4. **Никогда не `push --force` в `main`.** Расхождение решается rebase.
+5. **Вики: каждый агент пишет свой файл.** Общие доски
+   (`product-truth-command-center.md`, `product-truth-owner-gates.md`,
+   `task-registry.md`) правятся только добавлением в конец своей секции.
+   Индекс не редактировать руками — его пересобирает `node scripts/wiki-brain.mjs`.
+
+Репозиторий настроен так, что разойтись повторно нельзя: `pull.rebase=true`,
+`push.autoSetupRemote=true`, `rerere.enabled=true` (запоминает разрешённые
+конфликты).
+
+---
+
+## 4. Гигиена чекаутов и диска
+
+В июле 30 брошенных чекаутов заняли 150 ГБ и остановили работу.
+
+- **Только `git worktree add`, никогда `git clone`.** Клон копирует всю базу
+  объектов; worktree её разделяет. Один клон стоил 20 ГБ.
+- **Чекаут удаляется тем, кто его создал**, в том же прогоне. Аварийный выход —
+  тоже повод убрать за собой.
+- **Никогда не создавать чекауты в `~/Library/Application Support/`** — этот
+  каталог не чистится ничем и попадает в резервные копии. Только
+  `~/.cache/sscc/checkouts/`.
+- **Перед завершением сессии:** `node scripts/agent-sync.mjs doctor`. Он ругается
+  на брошенные worktree, мусор в `.git`, незапушенные коммиты и малый диск.
+- **Норма — не больше 3 зарегистрированных worktree.**
+
+`ss-control-center/data/` — накопительные артефакты аудита (11 898 файлов).
+Новые аудиты в git не добавлять; писать в `data/`, который уже под `.gitignore`
+для тяжёлых веток.
+
+---
+
+## 5. Пины релизов — машинные, не прозаические
+
+Хеши релизов **больше не переписываются в документы руками**. Единственный
+источник истины — `release-pins.json` в корне, генерируемый из содержимого диска:
+
+```bash
+node scripts/release-pins.mjs generate   # пересобрать из release-artifacts/
+node scripts/release-pins.mjs verify     # сверить документы с диском
+```
+
+Если документ и диск разошлись — прав **диск**. Правится документ.
+
+Историческая справка: прежняя редакция `AGENTS.md` пинила Listing Integrity на
+`5af7bc87…5846b81` / `b3961fca…216e33`, тогда как реальный манифест v33 на диске
+даёт `cf313774…398cb`. Ранбук был прав, `AGENTS.md` — нет. Ровно этот класс
+ошибок и устраняет генерация пинов.
+
+---
+
+## 6. Доменный канон — Product Truth Platform
+
+Перед работой, затрагивающей товарную идентичность, `DonorProduct`, `DonorOffer`,
+`SkuComponent`, `SkuCost`, retailer sourcing, Bundle Factory, создание или
+улучшение листингов, unit economics либо Procurement — прочитать:
+
+1. `docs/wiki/product-catalog-architecture.md` — **OWNER CANON**, назначение и архитектура.
+2. `docs/wiki/donor-catalog-execution-roadmap.md` — порядок работ и критерии готовности.
+3. `docs/wiki/enrichment-division-of-labor.md` — контракт единого enrichment-контура.
+4. `docs/wiki/product-truth-operator-runbook.md` — operator workflow готового движка.
+5. `docs/wiki/walmart-new-sku-operator-runbook.md` — создание новых Walmart SKU.
+6. `docs/wiki/walmart-listing-integrity-operator-runbook.md` — ремонт существующих листингов.
+
+Остальные документы — по необходимости, а не «всё подряд перед каждым действием».
+
+Неизменные принципы платформы:
+
+- Это **один** каталог для четырёх потребителей: Bundle Factory, Listing
+  Improvement, Unit Economics, Procurement. Параллельные каталоги и собственные
+  retailer-harvest запрещены.
+- **Контент переносится только с точного товарного варианта.** Другая фасовка или
+  ценовой proxy — это `price evidence`, но никогда не `content donor`.
+- Content readiness и price/COGS — **независимые оси**. Exact content не исчезает
+  из-за estimate-цены; price proxy не становится content truth.
+- Наличие миграции в рабочем дереве **не означает**, что схема применена к Turso
+  или что данные backfilled. Доказывать отдельно.
+
+---
+
+## 7. Защитные правила, которые остаются
+
+Каждое куплено реальным инцидентом. Не ослаблять.
+
+- **Один SKU, один POST, ноль retry.** Неизвестный результат POST **никогда** не
+  повторяется — только GET для выяснения. Причина: v8, feed ID с символом `@`
+  был отвергнут валидатором уже после успешной записи.
+- **Fail-closed на `ambiguous` при платных операциях.** Причина: двойное списание
+  кредитов провайдера.
+- **Контент только с точного варианта.** Причина: 220 и когорта 16 июня —
+  сотни живых плиток с чужим товаром.
+- **Обязательная проверка витрины покупателя после записи.** Фид «принят» ≠
+  покупатель видит правильное. Причина: FaisalX-2768.
+- **Frozen — только Amazon.** Замороженный донор за листингом Walmart = неверный товар.
+- **Никогда не открывать Amazon в локальном Chrome.** У каждого аккаунта свой VPS.
+
+### Что отменено как непропорциональное
+
+- Ручное копирование confirm-строк и токенов владельцем.
+- Прозаические SHA в документах (заменены генерацией).
+- TTL 15–30 минут на doctor/approval — подняты до 4 часов и цепочка
+  возобновляема без перегенерации верхних хешей.
+- Целостность ссылок Wiki-Brain как условие релиза кода.
+- Повторное согласование уже поручённого.
+
+---
+
+## 8. Бренд-голос и контент листингов
+
+Правила владельца, применяются ко **всему** контенту на всех каналах. Полностью —
+в `CLAUDE.md`. Кратко:
+
+- **Никаких эмодзи** в листингах.
+- **Никаких промо-прилагательных**: ultimate, perfect, premium, best, amazing и т. п.
+- **Никаких заявлений о продаже/доставке/срочности**: `ships frozen`, `free
+  shipping`, `limited time`. Пиши инструкцию хранения (`Keep frozen`), а не
+  заявление о доставке.
+- **Никаких health/medical claims** без FDA.
+- Обязателен curator-дисклеймер: `Curated and assembled by Salutem Solutions LLC
+  as a gift basket.`
+- UI-строки продукта — по-английски. Переписка с владельцем — по-русски.
+
+---
+
+## 9. Если документ противоречит реальности
+
+Не продолжать молча. Обозначить расхождение, привести контракт к тому, что
+доказано на диске и в git, и записать изменение в `docs/wiki/`. После
+существенного изменения — `node scripts/wiki-brain.mjs`.
+
+Датированный handoff — оперативный снимок, а не архитектурный канон.
