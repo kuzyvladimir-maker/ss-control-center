@@ -322,6 +322,13 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       title: "Acme Crunch Chips Barbecue 8 oz",
       description: "Target content description",
       ingredients: "Potatoes, oil, seasoning",
+      nutritionFacts: { calories: 150 },
+      allergens: "Contains: none declared.",
+      category: "Snacks",
+      storage: "Shelf-Stable",
+      upc: "036000291452",
+      normalizedGtin14: "00036000291452",
+      mainImageUrl: "https://target.example.test/front.jpg",
       imageUrls: ["https://target.example.test/front.jpg"],
     });
     await db.execute({

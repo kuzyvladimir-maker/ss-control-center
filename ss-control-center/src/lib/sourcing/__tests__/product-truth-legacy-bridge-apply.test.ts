@@ -203,6 +203,10 @@ function sourceFixture(): {
 
 function rebuildFixture(
   snapshot: ProductTruthLegacyBridgeSnapshot,
+  expected: {
+    contentOnly?: number;
+    identityOnly?: number;
+  } = {},
 ): ReturnType<typeof sourceFixture> {
   const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
   const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);
@@ -212,7 +216,14 @@ function rebuildFixture(
     snapshotSha256,
     generatedAt: CAPTURED_AT,
   });
-  assert.equal(bridgePlan.counts.contentOnlyCanonicalizationCandidates, 5);
+  assert.equal(
+    bridgePlan.counts.contentOnlyCanonicalizationCandidates,
+    expected.contentOnly ?? 5,
+  );
+  assert.equal(
+    bridgePlan.counts.identityOnlyCanonicalizationCandidates,
+    expected.identityOnly ?? 0,
+  );
   const bridgePlanJson = renderProductTruthLegacyBridgePlan(bridgePlan);
   return {
     snapshot,
@@ -223,6 +234,17 @@ function rebuildFixture(
     bridgePlanSha256: productTruthLegacyBridgeBytesSha256(bridgePlanJson),
     listingKeys: snapshot.listings.map((listing) => listing.listingKey),
   };
+}
+
+function identityOnlyFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  for (const donor of snapshot.donors) {
+    donor.description = null;
+    donor.upc = null;
+    donor.mainImageUrl = null;
+    donor.imageUrls = null;
+  }
+  return rebuildFixture(snapshot, { contentOnly: 0, identityOnly: 5 });
 }
 
 function liveBarcodeFixture(): ReturnType<typeof sourceFixture> {
@@ -827,6 +849,60 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
   assert.equal(second.counts.exactExistingRows, 37);
+});
+
+test("exact identity-only legacy evidence materializes partial content, recipe, and typed UNSOURCEABLE COGS", async (t) => {
+  const input = applyPlan(identityOnlyFixture());
+  assert.equal(input.plan.targets.length, 5);
+  assert.equal(input.plan.databaseWrites.maximumRows, 45);
+  for (const target of input.plan.targets) {
+    const content = JSON.parse(target.content.contentJson) as {
+      description: unknown;
+      normalizedGtin14: unknown;
+      mainImageUrl: unknown;
+      imageUrls: unknown[];
+    };
+    assert.equal(content.description, null);
+    assert.equal(content.normalizedGtin14, null);
+    assert.equal(content.mainImageUrl, null);
+    assert.deepEqual(content.imageUrls, []);
+  }
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  assert.equal(result.counts.insertedRows, 45);
+  assert.equal(result.verification.bundleFactoryReady, 0);
+  assert.equal(result.verification.listingImprovementReady, 0);
+  assert.equal(result.verification.unitEconomicsUnsourceable, 5);
+  for (const target of input.plan.targets) {
+    const snapshot = await readProductTruthSnapshot(db, {
+      sku: target.sku,
+      channel: target.channel,
+      storeIndex: target.storeIndex,
+      expectedManifestSha256: MANIFEST_SHA256,
+      asOf: APPLY_AT,
+      maxPriceAgeMs: 24 * 60 * 60 * 1_000,
+    });
+    assert.equal(snapshot.views.bundleFactory.ready, false);
+    assert.equal(snapshot.views.unitEconomics.status, "UNSOURCEABLE");
+    assert.equal(
+      snapshot.views.listingImprovement.ready,
+      false,
+      JSON.stringify(snapshot.views.listingImprovement),
+    );
+    assert.ok(
+      snapshot.views.listingImprovement.blockers.some((blocker) =>
+        blocker.includes("CONTENT_DESCRIPTION_MISSING")
+      ),
+    );
+    assert.ok(
+      snapshot.views.listingImprovement.blockers.some((blocker) =>
+        blocker.includes("CONTENT_GALLERY_MISSING")
+      ),
+    );
+  }
 });
 
 test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {

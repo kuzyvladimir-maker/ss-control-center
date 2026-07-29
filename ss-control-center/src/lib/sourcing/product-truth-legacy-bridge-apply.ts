@@ -53,11 +53,11 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.0.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.1.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.0.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.1.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
   "product-truth-legacy-bridge-preflight-report/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
@@ -311,6 +311,12 @@ export interface ProductTruthLegacyBridgeApplyTarget {
   donorProductId: string;
   contentSourceOfferId: string;
   sourceBinding: ProductTruthLegacyBridgeSourceBinding;
+  expectedReadiness: {
+    bundleFactory: boolean;
+    listingImprovement: boolean;
+    unitEconomics: "UNSOURCEABLE";
+    procurement: false;
+  };
   variant: ProductTruthLegacyBridgeVariantRow;
   decision: ProductTruthLegacyBridgeDecisionRow;
   donorTransition: ProductTruthLegacyBridgeDonorTransition;
@@ -586,12 +592,12 @@ function contentPayload(input: {
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
 }): Record<string, unknown> {
-  const images = parseJson(input.donor.imageUrls);
+  const parsedImages = parseJson(input.donor.imageUrls);
+  const images = parsedImages == null ? [] : parsedImages;
   if (!Array.isArray(images) || images.some((image) => typeof image !== "string")) {
     fail("LEGACY_BRIDGE_CONTENT_INVALID", `${input.donor.id} image gallery is invalid`);
   }
   const upc = normalizeProductTruthBridgeGtin(input.donor.upc);
-  if (!upc) fail("LEGACY_BRIDGE_CONTENT_INVALID", `${input.donor.id} UPC is invalid`);
   const content = input.contentOverride;
   return {
     _schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION,
@@ -606,7 +612,7 @@ function contentPayload(input: {
     category: input.donor.category,
     storage: evidenceValue(input.storageEvidence),
     upc: input.donor.upc,
-    normalizedGtin14: upc,
+    normalizedGtin14: upc ?? null,
     mainImageUrl: input.donor.mainImageUrl,
     imageUrls: images,
     sourceBinding: {
@@ -717,12 +723,15 @@ function targetFromScope(input: {
   }
   if (
     !scope.writeEligible
-    || scope.disposition !== "CONTENT_ONLY_CANONICALIZATION_CANDIDATE"
+    || ![
+      "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+      "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
+    ].includes(scope.disposition)
     || scope.components.length !== 1
   ) {
     fail(
       "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
-      `${input.listingKey} must be a one-component content-only candidate`,
+      `${input.listingKey} must be a one-component exact-identity candidate`,
     );
   }
   const componentPlan = scope.components[0];
@@ -741,18 +750,21 @@ function targetFromScope(input: {
     && componentPlan.identityProof === "EXACT_LIVE_IMAGE_BARCODE"
     && barcodeEvidence !== null;
   if (
-    componentPlan.disposition !== "EXACT_CONTENT_ONLY_CANDIDATE"
+    ![
+      "EXACT_CONTENT_ONLY_CANDIDATE",
+      "EXACT_IDENTITY_ONLY_CANDIDATE",
+    ].includes(componentPlan.disposition)
     || (!strictTitleProof && !exactLiveBarcodeProof)
     || !componentPlan.targetIdentity
     || !componentPlan.targetVariant
-    || !componentPlan.contentAssessment?.complete
+    || !componentPlan.contentAssessment
     || !componentPlan.legacyComponentId
     || !componentPlan.donorProductId
     || !componentPlan.contentSourceOfferId
   ) {
     fail(
       "LEGACY_BRIDGE_WAVE_SCOPE_INVALID",
-      `${input.listingKey} has incomplete exact content proof`,
+      `${input.listingKey} has incomplete exact identity proof`,
     );
   }
   const overrideEvidenceType =
@@ -1046,6 +1058,14 @@ function targetFromScope(input: {
     donorProductId: donor.id,
     contentSourceOfferId: offer.id,
     sourceBinding,
+    expectedReadiness: {
+      bundleFactory:
+        scope.disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+      listingImprovement:
+        scope.disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+      unitEconomics: "UNSOURCEABLE",
+      procurement: false,
+    },
     variant: {
       ...rebuiltVariant.db,
       createdAt: input.createdAt,
@@ -2290,19 +2310,31 @@ export async function applyProductTruthLegacyBridgeWave(input: {
     procurementReady = snapshots.filter(
       (snapshot) => snapshot.views.procurement.ready,
     ).length;
+    const expectedBundleFactoryReady = input.plan.targets.filter(
+      (target) => target.expectedReadiness.bundleFactory,
+    ).length;
+    const expectedListingImprovementReady = input.plan.targets.filter(
+      (target) => target.expectedReadiness.listingImprovement,
+    ).length;
+    const expectedUnitEconomicsUnsourceable = input.plan.targets.filter(
+      (target) => target.expectedReadiness.unitEconomics === "UNSOURCEABLE",
+    ).length;
+    const expectedProcurementReady = input.plan.targets.filter(
+      (target) => target.expectedReadiness.procurement,
+    ).length;
     if (
-      bundleFactoryReady !== input.plan.targets.length
-      || listingImprovementReady !== input.plan.targets.length
-      || unitEconomicsUnsourceable !== input.plan.targets.length
-      || procurementReady !== 0
+      bundleFactoryReady !== expectedBundleFactoryReady
+      || listingImprovementReady !== expectedListingImprovementReady
+      || unitEconomicsUnsourceable !== expectedUnitEconomicsUnsourceable
+      || procurementReady !== expectedProcurementReady
     ) {
       fail(
         "LEGACY_BRIDGE_READ_CONTRACT_VERIFY_FAILED",
         [
-          `bundle=${bundleFactoryReady}`,
-          `listing=${listingImprovementReady}`,
-          `unsourceable=${unitEconomicsUnsourceable}`,
-          `procurement=${procurementReady}`,
+          `bundle=${bundleFactoryReady}/${expectedBundleFactoryReady}`,
+          `listing=${listingImprovementReady}/${expectedListingImprovementReady}`,
+          `unsourceable=${unitEconomicsUnsourceable}/${expectedUnitEconomicsUnsourceable}`,
+          `procurement=${procurementReady}/${expectedProcurementReady}`,
         ].join(" "),
       );
     }

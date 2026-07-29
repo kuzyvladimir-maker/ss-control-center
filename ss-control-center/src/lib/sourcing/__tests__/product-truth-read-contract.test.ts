@@ -192,6 +192,11 @@ async function insertContent(
     attributes: { form: "chips" },
     nutritionFacts: { calories: 150 },
     ingredients: "Potatoes, oil, seasoning",
+    allergens: "Contains: none declared.",
+    category: "Snacks",
+    storage: "Shelf-Stable",
+    upc: "036000291452",
+    normalizedGtin14: "00036000291452",
     mainImageUrl: `https://images.example.test/${input.id}-main.jpg`,
     imageUrls: [
       `https://images.example.test/${input.id}-main.jpg`,

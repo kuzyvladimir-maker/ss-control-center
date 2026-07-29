@@ -1512,7 +1512,8 @@ function aggregateScope(
     sku: listing.sku,
     disposition,
     writeEligible: disposition === "EXACT_CANONICALIZATION_CANDIDATE"
-      || disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+      || disposition === "CONTENT_ONLY_CANONICALIZATION_CANDIDATE"
+      || disposition === "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
     blockers,
     components,
   };

@@ -95,6 +95,11 @@ export interface ProductTruthContentFacts {
     attributes: unknown;
     nutritionFacts: unknown;
     ingredients: string | null;
+    allergens: unknown;
+    category: string | null;
+    storage: unknown;
+    upc: string | null;
+    normalizedGtin14: string | null;
     mainImageUrl: string | null;
     imageUrls: string[];
   };
@@ -1110,20 +1115,54 @@ function contentForComponent(
   if (blockers.length || !currentContent || !content || !fieldHashes || !identity) {
     return { content: null, blockers: unique(blockers) };
   }
+  const title = textValue(content.title);
+  const description = textValue(content.description);
+  const ingredients = textValue(content.ingredients);
+  const category = textValue(content.category);
+  const upc = textValue(content.upc);
+  const normalizedGtin14 = textValue(content.normalizedGtin14);
+  const mainImageUrl = textValue(content.mainImageUrl);
+  const imageUrls = stringArray(content.imageUrls);
+  const exactFactsBlockers = [
+    !title ? "CONTENT_TITLE_MISSING" : null,
+    !description ? "CONTENT_DESCRIPTION_MISSING" : null,
+    !ingredients ? "CONTENT_INGREDIENTS_MISSING" : null,
+    content.nutritionFacts == null ? "CONTENT_NUTRITION_MISSING" : null,
+    !category ? "CONTENT_CATEGORY_MISSING" : null,
+    content.storage == null ? "CONTENT_STORAGE_MISSING" : null,
+    content.allergens == null ? "CONTENT_ALLERGENS_MISSING" : null,
+    !normalizedGtin14 || !/^\d{14}$/.test(normalizedGtin14)
+      ? "CONTENT_MANUFACTURER_UPC_MISSING"
+      : null,
+    !mainImageUrl || !mainImageUrl.startsWith("https://")
+      ? "CONTENT_MAIN_IMAGE_MISSING"
+      : null,
+    imageUrls.length === 0
+      || imageUrls.some((url) => !url.startsWith("https://"))
+      || !mainImageUrl
+      || !imageUrls.includes(mainImageUrl)
+      ? "CONTENT_GALLERY_MISSING"
+      : null,
+  ].filter((blocker): blocker is string => blocker !== null);
   return {
-    blockers: [],
+    blockers: unique(exactFactsBlockers),
     content: {
       canonicalVariantId: String(row.targetCanonicalVariantId),
       identity,
       facts: {
-        title: textValue(content.title),
-        description: textValue(content.description),
+        title,
+        description,
         bullets: content.bullets ?? null,
         attributes: content.attributes ?? null,
         nutritionFacts: content.nutritionFacts ?? null,
-        ingredients: textValue(content.ingredients),
-        mainImageUrl: textValue(content.mainImageUrl),
-        imageUrls: stringArray(content.imageUrls),
+        ingredients,
+        allergens: content.allergens ?? null,
+        category,
+        storage: content.storage ?? null,
+        upc,
+        normalizedGtin14,
+        mainImageUrl,
+        imageUrls,
       },
       provenance: {
         contentObservationId: String(currentContent.id),
