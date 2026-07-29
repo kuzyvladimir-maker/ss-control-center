@@ -1,8 +1,9 @@
 {
   "schemaVersion": "product-truth-standing-wave-production-activation-receipt/1.0.0",
-  "activatedAt": "2026-07-29T21:59:16.000Z",
-  "observedAt": "2026-07-29T22:00:04.000Z",
+  "activatedAt": "2026-07-29T22:12:59.000Z",
+  "observedAt": "2026-07-29T22:13:35.000Z",
   "activationPacketSha256": "2d5fed991810e7ea025ea640fa6772a93d55aafd4cc8c571ac8787aa4a578193",
+  "supersedesErroneousReceiptSha256": "97a68c97279f4c7987c96abf0a830de14c355280b44b1631f9846bc532788bf8",
   "release": {
     "releaseId": "product-truth-standing-web-2026-07-29-r6",
     "commitSha": "9571b8a5985aac09852f342854cdabd500416709",
@@ -27,10 +28,14 @@
     "cleanTrackedCheckout": "PASS"
   },
   "deployment": {
-    "deploymentId": "dpl_A2CEPKBstem6wggxiauZVsfVjanM",
-    "deploymentUrl": "https://ss-control-center-mmkgxvsay-kuzyvladimir-makers-projects.vercel.app",
+    "deploymentId": "dpl_H9Q8QdSDCpjT4QFqMy8boXy4YWTv",
+    "deploymentUrl": "https://ss-control-center-r0ja7p42b-kuzyvladimir-makers-projects.vercel.app",
     "productionAlias": "https://salutemsolutions.info",
-    "readyState": "READY"
+    "readyState": "READY",
+    "buildPlatform": "VERCEL_REMOTE_LINUX",
+    "portableSourceFileCount": 2297,
+    "portableSourceArchive": "40.2MB",
+    "deploymentIgnoreSha256": "7433599fb2cd73becf41205101e25861fea6501e9de9b490facb33191e534758"
   },
   "workers": {
     "generic": {
@@ -55,11 +60,25 @@
     }
   },
   "productionProbe": {
-    "method": "STABLE_LAUNCHD_AND_RUNNER_PIDS_ACROSS_MULTIPLE_POLL_CYCLES",
-    "pollWindowSeconds": 12,
-    "genericWorkerNewErrorBytes": 0,
-    "standingWaveWorkerNewErrorBytes": 0,
-    "result": "BOTH_R6_CLAIM_LOOPS_STABLE"
+    "catalogStatusHttp": 200,
+    "catalogStatus": "READY",
+    "runtimeStatus": "ACTIVE",
+    "canStart": true,
+    "activeCommandId": null,
+    "resumableCommandId": null,
+    "genericWorkerClaimHttp": 200,
+    "standingWaveWorkerClaimHttp": 200,
+    "result": "BOTH_R6_CLAIM_ROUTES_200_IDLE"
+  },
+  "deploymentCorrection": {
+    "rejectedDeploymentId": "dpl_A2CEPKBstem6wggxiauZVsfVjanM",
+    "rejectedBuildMethod": "LOCAL_MACOS_PREBUILT",
+    "failureCode": "MISSING_LIBSQL_LINUX_ARM64_GNU",
+    "observedBehavior": "CLAIM_ROUTES_HTTP_500_RETRY_LOOP",
+    "providerCalls": 0,
+    "productTruthBusinessWrites": 0,
+    "marketplaceMutations": 0,
+    "correction": "REMOTE_LINUX_SOURCE_BUILD_PROMOTED_AFTER_401_JSON_PREPROMOTION_RUNTIME_PROBE"
   },
   "reconciledPredecessorRun": {
     "runId": "ptsw-web-baa5080612f889477d8ebb40a8f6a7b2-03",
