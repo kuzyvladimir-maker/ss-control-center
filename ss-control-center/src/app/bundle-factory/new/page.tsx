@@ -51,6 +51,9 @@ const EXAMPLES = [
   "20 chocolate variety gift baskets",
 ];
 
+const WALMART_COLLECTION_RECOVERY_KEY =
+  "bundle-factory:walmart-product-truth-collection:v1";
+
 interface CatalogFlavor {
   key: string;
   label: string;
@@ -100,7 +103,7 @@ interface WalmartReadinessResult {
       stage: string;
       command_admission: boolean;
       worker_claims: boolean;
-      metered_execution: false;
+      metered_execution: boolean;
       provider_calls_from_web: false;
       marketplace_mutations: false;
     };
@@ -116,6 +119,8 @@ interface WalmartCollectionState {
     | "QUEUED_NO_SPEND"
     | "RUNNING_NO_SPEND"
     | "AWAITING_OWNER"
+    | "RUNNING_ENRICHMENT"
+    | "DECLINED"
     | "FAILED"
     | "AMBIGUOUS"
     | "SUCCEEDED";
@@ -129,6 +134,35 @@ interface WalmartCollectionState {
     phase: string;
     error_code: string | null;
   }>;
+  quote: null | {
+    quote_id: string;
+    quote_sha256: string;
+    expires_at: string;
+    cost_unit: "PREPAID_PROVIDER_CREDITS";
+    usd_equivalent: null;
+    balance_probe_maximum_units: number;
+    job_maximum_units: number;
+    maximum_provider_units: number;
+    actions: Array<{
+      ordinal: number;
+      run_id: string;
+      title: string;
+      missing_fields: string[];
+      oxylabs_query_maximum_units: number;
+      unwrangle_detail_maximum_units: number;
+      maximum_provider_units: number;
+    }>;
+  };
+  approval: null | {
+    command_id: string;
+    status: string;
+    outcome: string | null;
+    error_code: string | null;
+    authorized_at: string | null;
+    authorization_expires_at: string | null;
+    execution_started_at: string | null;
+    updated_at: string;
+  };
 }
 
 const WALMART_GAP_LABELS: Record<string, string> = {
@@ -172,10 +206,17 @@ export default function StudioStartPage() {
     useState<WalmartCollectionState | null>(null);
   const [walmartCollectionLoading, setWalmartCollectionLoading] =
     useState(false);
+  const [walmartApprovalLoading, setWalmartApprovalLoading] =
+    useState<"APPROVE" | "DECLINE" | null>(null);
   const [walmartCollectionError, setWalmartCollectionError] =
+    useState<string | null>(null);
+  const [restoredWalmartCollectionBatchId, setRestoredWalmartCollectionBatchId] =
     useState<string | null>(null);
   const collectionPollTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
+  );
+  const pollWalmartCollectionRef = useRef<(batchId: string) => void>(
+    () => undefined,
   );
 
   useEffect(() => () => {
@@ -183,6 +224,68 @@ export default function StudioStartPage() {
       clearTimeout(collectionPollTimer.current);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(
+        WALMART_COLLECTION_RECOVERY_KEY,
+      );
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        batchId?: unknown;
+        prompt?: unknown;
+        listingCount?: unknown;
+        packCount?: unknown;
+        walmartShipping?: unknown;
+      };
+      if (
+        typeof saved.batchId !== "string"
+        || !/^ptbfw-[a-f0-9]{24}$/u.test(saved.batchId)
+        || typeof saved.prompt !== "string"
+        || saved.prompt.length < 3
+        || saved.prompt.length > 1_000
+      ) {
+        window.sessionStorage.removeItem(
+          WALMART_COLLECTION_RECOVERY_KEY,
+        );
+        return;
+      }
+      setChannel("WALMART");
+      setPrompt(saved.prompt);
+      setListingCount(
+        typeof saved.listingCount === "number"
+          ? String(saved.listingCount)
+          : "",
+      );
+      setPackCount(
+        typeof saved.packCount === "number"
+          ? String(saved.packCount)
+          : "",
+      );
+      if (
+        saved.walmartShipping !== null
+        && typeof saved.walmartShipping === "object"
+        && !Array.isArray(saved.walmartShipping)
+        && "template_id" in saved.walmartShipping
+        && typeof saved.walmartShipping.template_id === "string"
+      ) {
+        setWalmartShipping(
+          saved.walmartShipping as WalmartShippingSelection,
+        );
+      }
+      setRestoredWalmartCollectionBatchId(saved.batchId);
+    } catch {
+      window.sessionStorage.removeItem(
+        WALMART_COLLECTION_RECOVERY_KEY,
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!restoredWalmartCollectionBatchId) return;
+    pollWalmartCollectionRef.current(restoredWalmartCollectionBatchId);
+    setRestoredWalmartCollectionBatchId(null);
+  }, [restoredWalmartCollectionBatchId]);
 
   function clearWalmartCollection() {
     if (collectionPollTimer.current) {
@@ -192,6 +295,8 @@ export default function StudioStartPage() {
     setWalmartCollection(null);
     setWalmartCollectionError(null);
     setWalmartCollectionLoading(false);
+    setWalmartApprovalLoading(null);
+    window.sessionStorage.removeItem(WALMART_COLLECTION_RECOVERY_KEY);
   }
 
   async function loadFlavors() {
@@ -358,6 +463,7 @@ export default function StudioStartPage() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error ?? "Failed to start the build");
+    window.sessionStorage.removeItem(WALMART_COLLECTION_RECOVERY_KEY);
     router.push(`/bundle-factory/new/${data.batch_id}`);
   }
 
@@ -389,6 +495,21 @@ export default function StudioStartPage() {
     }
   }
 
+  function persistWalmartCollectionRecovery(batchId: string) {
+    window.sessionStorage.setItem(
+      WALMART_COLLECTION_RECOVERY_KEY,
+      JSON.stringify({
+        batchId,
+        prompt: prompt.trim(),
+        listingCount:
+          structuredListingCount ?? walmartRequest?.listing_count ?? 2,
+        packCount:
+          structuredPackCount ?? walmartRequest?.pack_count ?? 2,
+        walmartShipping,
+      }),
+    );
+  }
+
   async function pollWalmartCollection(batchId: string) {
     try {
       const res = await fetch(
@@ -403,9 +524,11 @@ export default function StudioStartPage() {
       }
       const collection = data.collection as WalmartCollectionState;
       setWalmartCollection(collection);
+      persistWalmartCollectionRecovery(collection.batchId);
       if (
         collection.status === "QUEUED_NO_SPEND"
         || collection.status === "RUNNING_NO_SPEND"
+        || collection.status === "RUNNING_ENRICHMENT"
       ) {
         collectionPollTimer.current = setTimeout(
           () => void pollWalmartCollection(batchId),
@@ -418,6 +541,132 @@ export default function StudioStartPage() {
       setWalmartCollectionError(
         e instanceof Error ? e.message : "Collection status check failed",
       );
+    }
+  }
+  pollWalmartCollectionRef.current = (batchId: string) => {
+    void pollWalmartCollection(batchId);
+  };
+
+  async function prepareWalmartOwnerAuthorization(
+    collection: WalmartCollectionState,
+  ) {
+    if (!collection.quote) {
+      throw new Error("The exact enrichment quote is not available.");
+    }
+    const res = await fetch(
+      `/api/bundle-factory/walmart/data-collection/${encodeURIComponent(collection.batchId)}/approval`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PREPARE_OWNER_AUTHORIZATION",
+          quote_sha256: collection.quote.quote_sha256,
+        }),
+      },
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        data?.message ?? data?.code ?? "Owner authorization could not be prepared",
+      );
+    }
+    return data.approval as {
+      command_id: string;
+      command_sha256: string;
+      quote: unknown;
+      quote_sha256: string;
+      envelope: unknown;
+      owner_agent_url: string;
+    };
+  }
+
+  async function approveWalmartEnrichment() {
+    if (!walmartCollection?.quote) return;
+    setWalmartApprovalLoading("APPROVE");
+    setWalmartCollectionError(null);
+    try {
+      const approval = await prepareWalmartOwnerAuthorization(
+        walmartCollection,
+      );
+      let ownerResponse: Response;
+      try {
+        ownerResponse = await fetch(approval.owner_agent_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            command_sha256: approval.command_sha256,
+            quote_sha256: approval.quote_sha256,
+            quote: approval.quote,
+            envelope: approval.envelope,
+          }),
+        });
+      } catch {
+        throw new Error(
+          "The protected owner approval agent on this Mac is not reachable. No provider credits were spent.",
+        );
+      }
+      const signed = await ownerResponse.json();
+      if (!ownerResponse.ok || signed?.ok !== true) {
+        throw new Error(
+          signed?.message
+            ?? "The local owner agent rejected this exact quote. No credits were spent.",
+        );
+      }
+      const authorize = await fetch(
+        `/api/bundle-factory/walmart/data-collection/${encodeURIComponent(walmartCollection.batchId)}/approval`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "AUTHORIZE",
+            command_id: approval.command_id,
+            signature_base64: signed.signature_base64,
+          }),
+        },
+      );
+      const result = await authorize.json();
+      if (!authorize.ok) {
+        throw new Error(
+          result?.message ?? result?.code ?? "Exact approval was not admitted",
+        );
+      }
+      await pollWalmartCollection(walmartCollection.batchId);
+    } catch (e) {
+      setWalmartCollectionError(
+        e instanceof Error ? e.message : "Enrichment approval failed closed",
+      );
+    } finally {
+      setWalmartApprovalLoading(null);
+    }
+  }
+
+  async function declineWalmartEnrichment() {
+    if (!walmartCollection?.quote) return;
+    setWalmartApprovalLoading("DECLINE");
+    setWalmartCollectionError(null);
+    try {
+      await prepareWalmartOwnerAuthorization(walmartCollection);
+      const response = await fetch(
+        `/api/bundle-factory/walmart/data-collection/${encodeURIComponent(walmartCollection.batchId)}/approval`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "DECLINE" }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          result?.message ?? result?.code ?? "Quote could not be declined",
+        );
+      }
+      await pollWalmartCollection(walmartCollection.batchId);
+    } catch (e) {
+      setWalmartCollectionError(
+        e instanceof Error ? e.message : "Quote could not be declined",
+      );
+    } finally {
+      setWalmartApprovalLoading(null);
     }
   }
 
@@ -448,9 +697,11 @@ export default function StudioStartPage() {
       }
       const collection = data.collection as WalmartCollectionState;
       setWalmartCollection(collection);
+      persistWalmartCollectionRecovery(collection.batchId);
       if (
         collection.status === "QUEUED_NO_SPEND"
         || collection.status === "RUNNING_NO_SPEND"
+        || collection.status === "RUNNING_ENRICHMENT"
       ) {
         collectionPollTimer.current = setTimeout(
           () => void pollWalmartCollection(collection.batchId),
@@ -888,6 +1139,17 @@ export default function StudioStartPage() {
                             </p>
                           </div>
                         )}
+                      {walmartReadiness.fallback.engine
+                        === "PRODUCT_TRUTH_DEMAND_DISCOVERY" && (
+                          <div className="mt-3 rounded-[8px] border border-silver-line bg-surface px-2.5 py-2 text-[11px] leading-relaxed text-ink-2">
+                            No exact donor variant exists yet. This is a new
+                            Product Truth catalog-expansion campaign, not a
+                            missing-field enrichment of an existing exact
+                            product. The current exact-product quote cannot be
+                            reused for it, and no provider action has been
+                            authorized.
+                          </div>
+                        )}
 
                       {!walmartReadiness.fallback.automatic_web_execution && (
                         <p className="mt-2 text-ink-3">
@@ -914,6 +1176,10 @@ export default function StudioStartPage() {
                                   ? "PREPARING"
                                   : walmartCollection.status === "AWAITING_OWNER"
                                     ? "PLAN READY"
+                                    : walmartCollection.status === "RUNNING_ENRICHMENT"
+                                      ? "ENRICHING"
+                                      : walmartCollection.status === "DECLINED"
+                                        ? "DECLINED"
                                     : walmartCollection.status}
                             </span>
                           </div>
@@ -937,12 +1203,154 @@ export default function StudioStartPage() {
                             </div>
                           ))}
                           {walmartCollection.status === "AWAITING_OWNER" && (
+                            <div className="space-y-2 border-t border-rule pt-2">
+                              <p className="text-[11px] text-ink-3">
+                                Free preparation is complete. Review the exact
+                                products and maximum provider-credit cost below.
+                                Nothing has been spent yet.
+                              </p>
+                              {walmartCollection.quote && (
+                                <div className="rounded-[8px] border border-silver-line bg-bg-elev px-2.5 py-2.5">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-[11.5px] font-semibold text-ink">
+                                        Enrichment quote
+                                      </p>
+                                      <p className="mt-0.5 text-[10.5px] text-ink-3">
+                                        One balance check:{" "}
+                                        {walmartCollection.quote.balance_probe_maximum_units.toFixed(1)} credits
+                                        {" · "}
+                                        {walmartCollection.quote.actions.length} exact product
+                                        {walmartCollection.quote.actions.length === 1 ? "" : "s"}:{" "}
+                                        {walmartCollection.quote.job_maximum_units.toFixed(1)} credits each
+                                      </p>
+                                      <p className="mt-0.5 text-[9.5px] text-ink-4">
+                                        Exact quote valid until{" "}
+                                        {walmartCollection.quote.expires_at}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-[15px] font-semibold text-ink">
+                                        ≤ {walmartCollection.quote.maximum_provider_units.toFixed(1)}
+                                      </p>
+                                      <p className="text-[9.5px] uppercase tracking-wide text-ink-4">
+                                        provider credits
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="mt-2 space-y-1 border-t border-rule pt-2">
+                                    {walmartCollection.quote.actions.map((action) => (
+                                      <div
+                                        key={action.run_id}
+                                        className="flex items-start justify-between gap-3 text-[10.5px]"
+                                      >
+                                        <span className="min-w-0 text-ink-2">
+                                          <span>
+                                            {action.ordinal}. {action.title}
+                                          </span>
+                                          <span className="mt-0.5 block text-[9.5px] leading-relaxed text-ink-4">
+                                            Fill:{" "}
+                                            {action.missing_fields
+                                              .map(
+                                                (gap) =>
+                                                  WALMART_GAP_LABELS[gap] ?? gap,
+                                              )
+                                              .join(", ")}
+                                            {" · "}Walmart exact search ≤{" "}
+                                            {action.oxylabs_query_maximum_units.toFixed(1)}
+                                            {" · "}exact product detail ≤{" "}
+                                            {action.unwrangle_detail_maximum_units.toFixed(1)}
+                                          </span>
+                                        </span>
+                                        <span className="shrink-0 font-medium text-ink-3">
+                                          ≤ {action.maximum_provider_units.toFixed(1)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <p className="mt-2 text-[10px] leading-relaxed text-ink-3">
+                                    Cost is shown in prepaid provider credits;
+                                    no unsupported dollar conversion is used.
+                                    Approval enriches Product Truth only. It
+                                    does not publish, edit, or price a Walmart
+                                    listing.
+                                  </p>
+                                  <div className="mt-2.5 flex flex-wrap gap-2">
+                                    <Btn
+                                      size="sm"
+                                      variant="primary"
+                                      onClick={approveWalmartEnrichment}
+                                      disabled={walmartApprovalLoading !== null}
+                                      loading={walmartApprovalLoading === "APPROVE"}
+                                    >
+                                      Approve exact quote
+                                    </Btn>
+                                    <Btn
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={declineWalmartEnrichment}
+                                      disabled={walmartApprovalLoading !== null}
+                                    >
+                                      {walmartApprovalLoading === "DECLINE"
+                                        ? "Declining…"
+                                        : "Decline"}
+                                    </Btn>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {walmartCollection.status === "RUNNING_ENRICHMENT" && (
                             <p className="border-t border-rule pt-2 text-[11px] text-ink-3">
-                              Free preparation is complete. The exact
-                              one-product plans are ready; provider execution
-                              has not started and still requires separate owner
-                              authority.
+                              Exact quote approved. Products are being enriched
+                              one at a time. The worker stops on stale balance,
+                              ambiguous evidence, or any possible replay.
                             </p>
+                          )}
+                          {walmartCollection.status === "DECLINED" && (
+                            <p className="border-t border-rule pt-2 text-[11px] text-ink-3">
+                              Quote declined. No provider call or catalog
+                              mutation was authorized.
+                            </p>
+                          )}
+                          {walmartCollection.status === "AMBIGUOUS" && (
+                            <p className="rounded-[8px] border border-danger/20 bg-danger-tint px-2.5 py-2 text-[11px] leading-relaxed text-danger">
+                              A provider outcome is uncertain. Automatic retry
+                              is permanently disabled for this command. Product
+                              Truth requires ledger/provider reconciliation
+                              before another paid action.
+                            </p>
+                          )}
+                          {walmartCollection.status === "FAILED" && (
+                            <p className="rounded-[8px] border border-danger/20 bg-danger-tint px-2.5 py-2 text-[11px] leading-relaxed text-danger">
+                              Enrichment stopped safely
+                              {walmartCollection.approval?.error_code
+                                ? `: ${walmartCollection.approval.error_code}`
+                                : "."}{" "}
+                              No automatic retry will be attempted. Check the
+                              products again before preparing another quote.
+                            </p>
+                          )}
+                          {walmartCollection.status === "SUCCEEDED" && (
+                            <p className="rounded-[8px] border border-green/20 bg-green/5 px-2.5 py-2 text-[11px] leading-relaxed text-ink-2">
+                              Product Truth enrichment completed. Bundle
+                              Factory is rechecking readiness and continuing
+                              the original Generate request.
+                            </p>
+                          )}
+                          {walmartCollection.approval && (
+                            <div className="border-t border-rule pt-2 text-[10px] leading-relaxed text-ink-4">
+                              Audit: {walmartCollection.approval.status}
+                              {walmartCollection.approval.outcome
+                                ? ` · ${walmartCollection.approval.outcome}`
+                                : ""}
+                              {walmartCollection.approval.authorized_at
+                                ? ` · approved ${walmartCollection.approval.authorized_at}`
+                                : ""}
+                              {walmartCollection.approval.execution_started_at
+                                ? ` · execution started ${walmartCollection.approval.execution_started_at}`
+                                : ""}
+                            </div>
                           )}
                         </div>
                       )}

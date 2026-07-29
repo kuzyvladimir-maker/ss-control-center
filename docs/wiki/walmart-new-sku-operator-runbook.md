@@ -1286,3 +1286,25 @@ Buyer worksheet никогда не передавай прямо в status: с�
 verify --mode seal-evidence с выданным verify receipt, затем его exact next_argv.
 При любом fail-closed состоянии остановись и передай artifacts владельцу/Codex.
 ```
+
+## 10. Bundle Factory Product Truth enrichment fallback
+
+До `walmart:new-sku doctor` Bundle Factory может обнаружить, что exact donor
+существует, но ему не хватает обязательного content/price evidence. Тогда web UI
+может выполнить готовый BF-W3 workflow:
+
+```text
+readiness → no-spend doctor → no-spend plan → displayed exact quote
+→ local owner click/signature → sequential enrichment → readiness recheck
+→ original Generate
+```
+
+Это не Walmart listing publication и не часть `apply --mode live`. Claude Code
+не редактирует BF-W3, не подписывает quote, не получает owner key/Keychain и не
+запускает provider adapter напрямую. При `AMBIGUOUS`, `FAILED` либо
+`next_command: null` автоматического retry нет.
+
+Если readiness даёт `matched_variants=0`, BF-W3 exact-product quote неприменим:
+нужна отдельная owner-gated Phase 2 demand-expansion campaign. Нельзя создавать
+параллельный consumer catalog или использовать legacy retailer harvest как
+скрытый fallback.

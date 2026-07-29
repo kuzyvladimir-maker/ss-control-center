@@ -679,3 +679,22 @@ purchase действий не разрешаю.
 ```
 
 Можно одобрить только отдельные номера, например: `Разрешаю только G1`.
+
+### BF-W3 — per-quote Walmart donor enrichment authority
+
+Этот gate не является standing approval и не может быть consumed из общего
+сообщения в чате. Для каждого Bundle Factory batch владелец видит:
+
+- exact products и missing fields;
+- один Unwrangle balance probe `≤2.5` credits;
+- на каждый product Oxylabs query `≤1.0` и Unwrangle detail `≤2.5`;
+- общий maximum provider credits;
+- явную границу: Product Truth enrichment only, Walmart mutations `0`.
+
+Gate считается выданным только после клика `Approve exact quote`, когда локальный
+owner agent подписал exact command/quote/plans отдельным Product Truth Ed25519
+ключом. `Decline` terminal до spend. Signature не переносится на changed/expired
+quote, другой target, новый donor, retry, wave или marketplace action.
+
+Статус 2026-07-28: контракт/worker/UI сертифицированы; production enrollment и
+activation ожидают final clean release. Ни один BF-W3 paid quote ещё не consumed.

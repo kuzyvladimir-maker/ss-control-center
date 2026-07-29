@@ -192,11 +192,13 @@ export const GET = withErrorHandler(
             webControl.command_admission && webControl.worker_claims,
           automatic_web_execution_reason:
             webControl.command_admission && webControl.worker_claims
-              ? "The no-spend Product Truth worker can prepare exact one-donor plans. Metered execution still requires exact owner authority."
+              ? webControl.metered_execution
+                ? "The Product Truth worker can prepare exact one-donor plans and run the displayed enrichment quote after one-click owner approval."
+                : "The no-spend Product Truth worker can prepare exact one-donor plans, but owner-gated metered execution is not activated."
               : "The Product Truth Web Operations worker is not activated; the Command Center must not pretend that a provider run started.",
           recommendation:
             collectionTargets.length > 0
-              ? "Prepare the exact one-product no-spend plans now. Review those plans and grant separate owner authority before any paid provider execution, then repeat this readiness check."
+              ? "Prepare the exact one-product plans now. Review the displayed actions and maximum provider-credit cost, then approve or decline the exact quote. After success, Bundle Factory rechecks Product Truth and continues Generate automatically."
               : noExactMatches
                 ? "Run a bounded Product Truth demand-discovery campaign for this request, then repeat this readiness check."
                 : needsDataCollection

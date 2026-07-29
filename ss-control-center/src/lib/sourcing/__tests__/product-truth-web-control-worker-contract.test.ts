@@ -100,15 +100,49 @@ test("successful result requires exact allowlisted artifact names", () => {
   );
 });
 
-test("worker script uses spawn shell:false and cannot invoke metered commands", async () => {
+test("worker script keeps shell:false and meters only the exact owner-gated execute lane", async () => {
   const script = await readFile(
     new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
     "utf8",
   );
   assert.match(script, /spawn\(process\.execPath/u);
   assert.match(script, /shell:\s*false/u);
-  assert.doesNotMatch(script, /["'](?:execute|resume|backfill-apply|migrations-apply)["']/u);
+  assert.match(script, /claim\.spec\.kind === "EXECUTE"/u);
+  assert.match(script, /withMeteredProviderCall/u);
+  assert.match(script, /oneInitialBalanceProbeMaximum:\s*true/u);
+  assert.match(script, /automaticReplay:\s*false/u);
+  assert.match(
+    script,
+    /DETAIL_RESPONSE_OMITTED_BALANCE_EVIDENCE_NO_EXTRA_PROBE_AUTHORIZED/u,
+  );
+  assert.doesNotMatch(script, /["'](?:resume|backfill-apply|migrations-apply)["']/u);
   assert.doesNotMatch(script, /execSync|execFileSync|spawnSync|shell:\s*true/u);
+});
+
+test("local owner agent keeps the private key off-server and signs only exact pinned quotes", async () => {
+  const script = await readFile(
+    new URL(
+      "../../../../scripts/product-truth-owner-control-agent.mjs",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(script, /const LOOPBACK_HOST = "127\.0\.0\.1"/u);
+  assert.match(script, /cipher: "aes-256-cbc"/u);
+  assert.match(script, /MACOS_LOGIN_KEYCHAIN/u);
+  assert.match(script, /origin !== allowedOrigin/u);
+  assert.match(
+    script,
+    /envelope\.engine\.executableTreeSha256 !== pins\.executableTreeSha256/u,
+  );
+  assert.match(
+    script,
+    /signed command does not bind every exact plan/u,
+  );
+  assert.match(script, /private_key_disclosed:\s*false/u);
+  assert.match(script, /provider_calls:\s*0/u);
+  assert.match(script, /marketplace_mutations:\s*0/u);
+  assert.doesNotMatch(script, /UNWRANGLE_API_KEY|OXYLABS|WALMART_CLIENT_ID/u);
 });
 
 test("worker proves its clean pinned checkout before its first control API call", async () => {
@@ -183,6 +217,21 @@ test("worker verifies runner artifacts with the canonical Product Truth renderer
   assert.doesNotMatch(
     contract,
     /text !== `\$\{JSON\.stringify\((?:request|plan)\)\}\\n`/u,
+  );
+});
+
+test("metered completion preserves an ambiguous paid outcome as terminal ambiguous", async () => {
+  const server = await readFile(
+    new URL("../product-truth-web-control-worker.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    server,
+    /result\.status === "AMBIGUOUS"\s*\?\s*"AMBIGUOUS"/u,
+  );
+  assert.match(
+    server,
+    /terminalStatus === "AMBIGUOUS"[\s\S]*executionBoundary: "UNKNOWN"/u,
   );
 });
 

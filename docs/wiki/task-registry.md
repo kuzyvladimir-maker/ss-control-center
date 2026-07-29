@@ -40,6 +40,19 @@
 
 ### Текущее состояние и следующие ветки
 
+- 🟡 **Bundle Factory Walmart exact enrichment fallback BF-W3 — release/activation:**
+  existing exact donor с missing content/price теперь проходит
+  no-spend plan → displayed exact credit quote → one-click local Ed25519 owner
+  approval → sequential paid enrichment → canonical readiness recheck →
+  original Generate. Quote cap = `2.5 + 3.5 × jobs`, jobs ≤5, concurrency/attempts
+  `1`, automatic replay и Walmart mutations `0`; reload recovery и audit UI
+  готовы. Product Truth `518/518`, focused Walmart/Bundle Factory `18/18`,
+  TypeScript/ESLint/build `PASS`. Осталось выпустить clean pinned release,
+  enroll external Keychain owner key и включить
+  `PRODUCTION_OWNER_GATED_METERED` без provider smoke. `matched_variants=0`
+  остаётся отдельной Phase 2 demand-expansion campaign, а не скрытым legacy
+  harvest. Деталь: [[product-truth-command-center]],
+  [[product-truth-web-operations-control-plane]].
 - 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-27:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
   донорский справочник. Frozen release v32 выдан в

@@ -142,6 +142,13 @@ export interface ProductTruthTargetedWalmartEvidenceReport {
     imageCount: number;
     observedPrice: number;
   };
+  nextBalanceEvidence: null | {
+    provider: "unwrangle";
+    observedAt: string;
+    balanceUnits: number;
+    reserveFloor: number;
+    evidenceSha256: string;
+  };
   job: ProductTruthTargetedEvidenceJobInspection | null;
   ledger: ProductTruthOperationalLedgerSnapshot;
   claims: ProductTruthTargetedWalmartEvidencePlan["claims"];
@@ -1785,6 +1792,8 @@ export async function executeProductTruthTargetedWalmartEvidence(
     let finalOutcome: ProductTruthTargetedWalmartEvidenceReport["outcome"] = "FAILED";
     let finalReason = "TARGETED_EVIDENCE_FAILED";
     let candidate: Awaited<ReturnType<typeof readWalmartPilotCandidate>> | null = null;
+    let nextBalanceEvidence:
+      ProductTruthTargetedWalmartEvidenceReport["nextBalanceEvidence"] = null;
     let job: ProductTruthTargetedEvidenceJobInspection | null = null;
     let jobLeaseToken: string | null = null;
     try {
@@ -2005,6 +2014,15 @@ export async function executeProductTruthTargetedWalmartEvidence(
             return assertExecutionDeadline("before content observation write");
           },
         });
+        if (harvestResult.harvest?.providerBalanceEvidence) {
+          nextBalanceEvidence = {
+            ...harvestResult.harvest.providerBalanceEvidence,
+            reserveFloor:
+              plan.providerCeilings.find(
+                (ceiling) => ceiling.provider === "unwrangle",
+              )?.reserveFloor ?? 0,
+          };
+        }
         assertExecutionDeadline("after detail writer");
         state = await reconciliationState({
           db, plan, approvalId: raw.validatedApproval.approval.approvalId,
@@ -2197,6 +2215,7 @@ export async function executeProductTruthTargetedWalmartEvidence(
         imageCount: candidate.candidate.image_count,
         observedPrice: candidate.candidate.observed_price,
       } : null,
+      nextBalanceEvidence,
       job,
       ledger,
       claims: plan.claims,

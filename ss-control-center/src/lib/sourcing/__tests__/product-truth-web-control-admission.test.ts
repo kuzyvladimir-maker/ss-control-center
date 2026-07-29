@@ -104,7 +104,11 @@ test("admission implementation has no provider, process, shell, or Walmart write
   const source = await readFile(sourceUrl, "utf8");
   assert.doesNotMatch(
     source,
-    /child_process|spawn\(|exec\(|fetch\(|oxylabs|unwrangle|WalmartClient|MP_ITEM|SKU_TEMPLATE_MAP/u,
+    /child_process|spawn\(|exec\(|fetch\(|WalmartClient|MP_ITEM|SKU_TEMPLATE_MAP/u,
+  );
+  assert.doesNotMatch(
+    source,
+    /from "\.\/(?:donor-catalog|oxylabs-fetch|retail-fetch)"/u,
   );
   assert.match(
     source,

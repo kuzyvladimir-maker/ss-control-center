@@ -289,6 +289,15 @@ export interface HarvestResult {
   imageFlagged?: boolean;
   reason?: string;
   blockers?: string[];
+  /** Fresh provider-account observation returned by the same paid detail
+   * response. It is execution-control evidence only and is never materialized
+   * as product content. */
+  providerBalanceEvidence?: {
+    provider: "unwrangle";
+    observedAt: string;
+    balanceUnits: number;
+    evidenceSha256: string;
+  };
 }
 
 export interface DetailContent {
@@ -308,6 +317,8 @@ export interface DetailContent {
   storage: string | null;
   categories: string[];
   source: string;
+  /** Provider response metadata, not Product Truth content. */
+  providerCreditsRemaining?: number | null;
 }
 
 function normImages(arr: unknown): string[] {
@@ -403,6 +414,13 @@ export function parseUnwrangleDetailPayload(json: unknown): DetailContent | null
     ? j.detail
     : isUnknownRecord(j?.product) ? j.product : null;
   if (!d || j?.success === false) return null;
+  const rawCreditsRemaining = j?.remaining_credits;
+  const providerCreditsRemaining =
+    typeof rawCreditsRemaining === "number"
+    && Number.isFinite(rawCreditsRemaining)
+    && rawCreditsRemaining >= 0
+      ? rawCreditsRemaining
+      : null;
   const images = normImages([d.main_image, ...(Array.isArray(d.images) ? d.images : [])]);
   if (!images.length && !d.upc) return null;
   const categories = Array.isArray(d.categories)
@@ -453,6 +471,7 @@ export function parseUnwrangleDetailPayload(json: unknown): DetailContent | null
     ),
     categories: categories.map((category) => String(category)),
     source: "unwrangle",
+    providerCreditsRemaining,
   };
 }
 
@@ -776,6 +795,24 @@ export async function harvestDonorDetail(
       merged: 0,
       upcConflicts: persisted.upcConflicts,
       imageFlagged: false,
+      ...(c.source === "unwrangle" && c.providerCreditsRemaining != null
+        ? {
+            providerBalanceEvidence: {
+              provider: "unwrangle" as const,
+              observedAt: now,
+              balanceUnits: c.providerCreditsRemaining,
+              evidenceSha256: sha256(stableJson({
+                schemaVersion: "unwrangle-balance-observation/1.0.0",
+                provider: "unwrangle",
+                observedAt: now,
+                balanceUnits: c.providerCreditsRemaining,
+                receiptId: authorization.receiptId,
+                retailer,
+                retailerProductId: itemId,
+              })),
+            },
+          }
+        : {}),
     };
   } catch (error) {
     if (error instanceof ExactContentSnapshotBlockedError) {

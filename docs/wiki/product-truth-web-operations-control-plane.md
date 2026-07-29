@@ -437,6 +437,35 @@ Production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` имеет статус
 paid spend, Product Truth business writes или marketplace actions. Для реального
 сбора данных после `plan` остаётся отдельный Stage F money/permit gate.
 
+### One-click exact Walmart enrichment — BF-W3
+
+BF-W3 реализует Stage F не как общий standing permit, а как отдельный exact
+owner decision для каждого показанного quote:
+
+1. сервер восстанавливает только successful immutable DOCTOR/RUN_PLAN artifacts;
+2. quote перечисляет каждый exact target, missing fields и потолок
+   `2.5 + 3.5 × jobs` prepaid credits;
+3. браузер по клику передаёт exact quote/envelope локальному
+   `127.0.0.1:47321` owner agent;
+4. agent принимает только exact HTTPS origin, release/commit/tree/executable,
+   target/manifest, quote SHA и все plan SHA; private key остаётся encrypted
+   outside repository и открывается Login Keychain;
+5. server проверяет detached Ed25519 signature против pinned public trust root
+   и только затем переводит `AWAITING_OWNER → ADMITTED`;
+6. pinned worker выполняет один balance probe и максимум один
+   Oxylabs-query + один Unwrangle-detail на target, concurrency `1`;
+7. Unwrangle detail response обязан дать fresh next-balance evidence.
+   Missing/stale evidence останавливает следующие jobs без дополнительного
+   probe/spend;
+8. `resume` и automatic replay в этом batch отсутствуют. Возможный unknown
+   paid outcome становится terminal `AMBIGUOUS`;
+9. результат не разрешает Walmart publication. После success Bundle Factory
+   только повторяет canonical readiness и возвращается к обычному Generate.
+
+Owner authority не находится на Vercel и не подменяется паролем, hash-only
+подтверждением либо общим сообщением «разрешаю всё». Реальным money gate является
+только click по показанному exact quote и его detached Ed25519 signature.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
 r5 сериализует in-flight heartbeat до completion; regression закреплён в

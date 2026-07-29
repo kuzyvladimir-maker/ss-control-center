@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import test from "node:test";
 
 import {
@@ -18,7 +19,11 @@ const TREE = "d".repeat(40);
 const EXECUTABLE = productTruthExecutableTreeSha256(TREE);
 
 function activeEnv(
-  stage: "ADMISSION_ONLY" | "LOCAL_NO_SPEND" | "PRODUCTION_READ_ONLY",
+  stage:
+    | "ADMISSION_ONLY"
+    | "LOCAL_NO_SPEND"
+    | "PRODUCTION_READ_ONLY"
+    | "PRODUCTION_OWNER_GATED_METERED",
   environment: "LOCAL" | "STAGING" | "PRODUCTION",
 ) {
   return {
@@ -102,6 +107,45 @@ test("production read-only worker cannot be pointed at a local target", () => {
   assert.throws(
     () => loadProductTruthWebControlRuntime({ env }),
     isRuntimeError("WEB_CONTROL_STAGE_TARGET_MISMATCH"),
+  );
+});
+
+test("owner-gated metered stage requires and pins a separate Ed25519 trust root", () => {
+  const { publicKey } = generateKeyPairSync("ed25519");
+  const publicDer = Buffer.from(
+    publicKey.export({ format: "der", type: "spki" }),
+  );
+  const base = {
+    ...activeEnv("PRODUCTION_OWNER_GATED_METERED", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256]: "f".repeat(64),
+  };
+  assert.throws(
+    () => loadProductTruthWebControlRuntime({ env: base }),
+    isRuntimeError("WEB_CONTROL_CONFIG_INCOMPLETE"),
+  );
+  const runtime = loadProductTruthWebControlRuntime({
+    env: {
+      ...base,
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId]:
+        "product-truth-owner-production-1",
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64]:
+        publicDer.toString("base64"),
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256]:
+        createHash("sha256").update(publicDer).digest("hex"),
+    },
+  });
+  assert.equal(runtime.status, "ACTIVE");
+  if (runtime.status !== "ACTIVE") return;
+  assert.equal(runtime.claims.meteredExecutionAdmission, true);
+  assert.equal(runtime.claims.providerCallsInWebRuntime, false);
+  assert.equal(runtime.claims.marketplaceMutations, false);
+  assert.equal(
+    runtime.ownerTrustedKey?.publicKeySpkiSha256,
+    createHash("sha256").update(publicDer).digest("hex"),
+  );
+  assert.equal(
+    productTruthWebControlPublicStatus(runtime).metered_execution,
+    true,
   );
 });
 

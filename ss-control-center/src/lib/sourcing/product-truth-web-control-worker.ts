@@ -13,6 +13,22 @@ import {
 import {
   parseProductTruthWalmartCollectionJob,
 } from "./product-truth-walmart-collection-contract";
+import {
+  parseProductTruthWalmartEnrichmentQuote,
+  productTruthWalmartEnrichmentQuoteSha256,
+} from "./product-truth-walmart-enrichment-quote";
+import {
+  assertProductTruthWalmartEnrichmentResult,
+  renderProductTruthWalmartEnrichmentResult,
+  type ProductTruthWalmartEnrichmentResult,
+} from "./product-truth-walmart-enrichment-worker-contract";
+import {
+  parseProductTruthTargetedWalmartEvidencePlan,
+} from "./product-truth-targeted-walmart-evidence-contract";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
 import type {
   ProductTruthWebControlRuntimeActive,
 } from "./product-truth-web-control-runtime";
@@ -28,7 +44,7 @@ export const PRODUCT_TRUTH_WEB_WORKER_LEASE_MS = 15 * 60_000;
 
 export interface ProductTruthWebWorkerClaim {
   command_id: string;
-  command_kind: "DOCTOR" | "RUN_PLAN";
+  command_kind: "DOCTOR" | "RUN_PLAN" | "EXECUTE";
   lease_token: string;
   lease_expires_at: string;
   engine: {
@@ -56,6 +72,17 @@ export interface ProductTruthWebWorkerClaim {
         run_id: string;
         request_sha256: string;
         request_content_base64: string;
+      }
+    | {
+        kind: "EXECUTE";
+        batch_id: string;
+        quote_sha256: string;
+        quote_content_base64: string;
+        plans: readonly {
+          run_id: string;
+          plan_sha256: string;
+          plan_content_base64: string;
+        }[];
       };
 }
 
@@ -107,6 +134,7 @@ function exactRequestArtifact(
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -161,7 +189,8 @@ async function appendWorkerEvent(
       | "EXECUTION_BOUNDARY"
       | "ARTIFACT_RECEIVED"
       | "SUCCEEDED"
-      | "FAILED";
+      | "FAILED"
+      | "AMBIGUOUS";
     occurredAt: string;
     payload: unknown;
   },
@@ -212,6 +241,7 @@ function buildClaimSpec(
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -253,6 +283,56 @@ function buildClaimSpec(
       request_content_base64: Buffer.from(artifact.content).toString("base64"),
     };
   }
+  if (command.commandKind === "EXECUTE") {
+    const quote = parseProductTruthWalmartEnrichmentQuote(
+      parseCanonicalJsonBytes(artifact.content, "enrichment quote"),
+    );
+    if (quote.batchId !== command.runId) {
+      fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute batch binding drifted");
+    }
+    const planArtifacts = command.artifacts
+      .filter((entry) => entry.role === "RUN_PLAN")
+      .sort((left, right) => left.sha256.localeCompare(right.sha256, "en-US"));
+    if (planArtifacts.length !== quote.actions.jobs.length) {
+      fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan count drifted");
+    }
+    const plans = quote.actions.jobs.map((job) => {
+      const planArtifact = planArtifacts.find(
+        (entry) => entry.sha256 === job.planSha256,
+      );
+      if (
+        !planArtifact
+        || planArtifact.content.byteLength !== planArtifact.byteSize
+        || sha256(planArtifact.content) !== planArtifact.sha256
+      ) {
+        fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan seal is invalid");
+      }
+      const plan = parseProductTruthTargetedWalmartEvidencePlan(
+        parseCanonicalJsonBytes(planArtifact.content, "execute plan"),
+      );
+      if (
+        plan.runId !== job.runId
+        || productTruthOperationalSha256(plan) !== job.planSha256
+        || renderProductTruthOperationalJson(plan)
+          !== Buffer.from(planArtifact.content).toString("utf8")
+      ) {
+        fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan scope drifted");
+      }
+      return {
+        run_id: job.runId,
+        plan_sha256: job.planSha256,
+        plan_content_base64:
+          Buffer.from(planArtifact.content).toString("base64"),
+      };
+    });
+    return {
+      kind: "EXECUTE",
+      batch_id: quote.batchId,
+      quote_sha256: productTruthWalmartEnrichmentQuoteSha256(quote),
+      quote_content_base64: Buffer.from(artifact.content).toString("base64"),
+      plans,
+    };
+  }
   fail("WORKER_COMMAND_FORBIDDEN", "worker command is not allowlisted");
 }
 
@@ -271,8 +351,16 @@ export async function claimProductTruthNoSpendCommand(input: {
     const candidate = await prisma.productTruthControlCommand.findFirst({
       where: {
         status: "ADMITTED",
-        commandKind: { in: ["DOCTOR", "RUN_PLAN"] },
-        gateClass: { in: ["READ_ONLY", "ARTIFACT_PLAN"] },
+        commandKind: {
+          in: input.runtime.claims.meteredExecutionAdmission
+            ? ["DOCTOR", "RUN_PLAN", "EXECUTE"]
+            : ["DOCTOR", "RUN_PLAN"],
+        },
+        gateClass: {
+          in: input.runtime.claims.meteredExecutionAdmission
+            ? ["READ_ONLY", "ARTIFACT_PLAN", "METERED_EXECUTE"]
+            : ["READ_ONLY", "ARTIFACT_PLAN"],
+        },
         environment: input.runtime.target.environment,
         databaseTargetFingerprint:
           input.runtime.target.databaseTargetFingerprint,
@@ -284,9 +372,7 @@ export async function claimProductTruthNoSpendCommand(input: {
           input.runtime.engine.executableTreeSha256,
       },
       include: {
-        artifacts: {
-          where: { role: "REQUEST" },
-        },
+        artifacts: true,
       },
       orderBy: { requestedAt: "asc" },
     });
@@ -327,7 +413,7 @@ export async function claimProductTruthNoSpendCommand(input: {
     if (!claimed) continue;
     return {
       command_id: candidate.commandId,
-      command_kind: candidate.commandKind as "DOCTOR" | "RUN_PLAN",
+      command_kind: candidate.commandKind as "DOCTOR" | "RUN_PLAN" | "EXECUTE",
       lease_token: leaseToken,
       lease_expires_at: leaseExpiresAt.toISOString(),
       engine: {
@@ -376,7 +462,25 @@ export async function startProductTruthNoSpendCommand(input: {
     if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
       fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
     }
-    const boundary = `NO_SPEND:${row.requestSha256}`;
+    if (
+      row.commandKind === "EXECUTE"
+      && (
+        row.gateClass !== "METERED_EXECUTE"
+        || !row.ownerKeyId
+        || !row.ownerSignatureSha256
+        || !row.ownerAuthorizationExpiresAt
+        || row.ownerAuthorizationExpiresAt.getTime() <= now.getTime()
+      )
+    ) {
+      fail(
+        "WORKER_OWNER_AUTHORITY_INVALID",
+        "metered execution lacks a current verified owner authority",
+      );
+    }
+    const boundary =
+      row.commandKind === "EXECUTE"
+        ? `METERED_EXECUTE:${row.requestSha256}`
+        : `NO_SPEND:${row.requestSha256}`;
     await tx.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
@@ -395,7 +499,7 @@ export async function startProductTruthNoSpendCommand(input: {
         executionBoundary: boundary,
         attempt: 1,
         shell: false,
-        providerCalls: 0,
+        providerCalls: row.commandKind === "EXECUTE" ? "OWNER_QUOTE_BOUND" : 0,
         marketplaceMutations: 0,
       },
     });
@@ -452,6 +556,7 @@ function assertResultBoundToCommand(input: {
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -499,23 +604,14 @@ export async function completeProductTruthNoSpendCommand(input: {
   result: unknown;
   now?: Date;
 }): Promise<{
-  status: "SUCCEEDED" | "FAILED";
+  status: "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
   next: "RUN_PLAN_ADMITTED" | "AWAITING_OWNER" | null;
 }> {
-  let result;
-  try {
-    result = parseProductTruthWorkerResult(input.result);
-  } catch (error) {
-    if (error instanceof ProductTruthWorkerContractError) {
-      fail(error.code, error.message, error);
-    }
-    throw error;
-  }
   const now = input.now ?? new Date();
   const command = await prisma.productTruthControlCommand.findUnique({
     where: { commandId: input.commandId },
     include: {
-      artifacts: { where: { role: "REQUEST" } },
+      artifacts: true,
     },
   });
   if (
@@ -524,6 +620,101 @@ export async function completeProductTruthNoSpendCommand(input: {
     || !leaseMatches(command, input.leaseToken, now)
   ) {
     fail("WORKER_LEASE_INVALID", "completion lease is invalid");
+  }
+  if (command.commandKind === "EXECUTE") {
+    const quoteArtifact = exactRequestArtifact(command);
+    const quote = parseProductTruthWalmartEnrichmentQuote(
+      parseCanonicalJsonBytes(quoteArtifact.content, "enrichment quote"),
+    );
+    const result = assertProductTruthWalmartEnrichmentResult({
+      result: input.result as ProductTruthWalmartEnrichmentResult,
+      quote,
+      commandId: command.commandId,
+    });
+    const resultBytes = Buffer.from(
+      renderProductTruthWalmartEnrichmentResult(result),
+      "utf8",
+    );
+    const artifact = sealProductTruthControlArtifact({
+      artifactId:
+        `pta-${command.commandId.slice(4)}-result-${sha256(resultBytes).slice(0, 8)}`,
+      commandId: command.commandId,
+      role: "RESULT",
+      mediaType: "application/json",
+      content: resultBytes,
+      createdAt: now.toISOString(),
+      createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
+    });
+    const terminalStatus =
+      result.status === "COMPLETED"
+        ? "SUCCEEDED"
+        : result.status === "AMBIGUOUS"
+          ? "AMBIGUOUS"
+          : "FAILED";
+    await prisma.$transaction(async (tx) => {
+      await tx.productTruthControlArtifact.create({
+        data: {
+          artifactId: artifact.artifactId,
+          commandId: artifact.commandId,
+          schemaVersion: artifact.schemaVersion,
+          role: artifact.role,
+          mediaType: artifact.mediaType,
+          content: prismaBytes(artifact.content),
+          byteSize: artifact.byteSize,
+          sha256: artifact.sha256,
+          locator: artifact.locator,
+          createdAt: new Date(artifact.createdAt),
+          createdByPrincipal: artifact.createdByPrincipal,
+        },
+      });
+      await appendWorkerEvent(tx, {
+        commandId: command.commandId,
+        eventType: "ARTIFACT_RECEIVED",
+        occurredAt: now.toISOString(),
+        payload: {
+          role: artifact.role,
+          sha256: artifact.sha256,
+          byteSize: artifact.byteSize,
+        },
+      });
+      await tx.productTruthControlCommand.update({
+        where: { commandId: command.commandId },
+        data: {
+          status: terminalStatus,
+          resultArtifactId: artifact.artifactId,
+          exitCode: terminalStatus === "SUCCEEDED" ? 0 : 2,
+          outcome: result.status,
+          ...(terminalStatus === "AMBIGUOUS"
+            ? { executionBoundary: "UNKNOWN" }
+            : {}),
+          errorCode:
+            terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
+        },
+      });
+      await appendWorkerEvent(tx, {
+        commandId: command.commandId,
+        eventType: terminalStatus,
+        occurredAt: now.toISOString(),
+        payload: {
+          outcome: result.status,
+          reason: result.reason,
+          providerCalls: result.providerCalls,
+          providerUnits: result.providerUnits,
+          marketplaceMutations: 0,
+          resultArtifactSha256: artifact.sha256,
+        },
+      });
+    });
+    return { status: terminalStatus, next: null };
+  }
+  let result;
+  try {
+    result = parseProductTruthWorkerResult(input.result);
+  } catch (error) {
+    if (error instanceof ProductTruthWorkerContractError) {
+      fail(error.code, error.message, error);
+    }
+    throw error;
   }
   const verifiedOutput = assertResultBoundToCommand({ command, result });
   const resultBytes = Buffer.from(renderProductTruthWorkerResult(result), "utf8");

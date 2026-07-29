@@ -458,6 +458,7 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
 test("Unwrangle detail preserves independent identity and excludes generated copy", () => {
   const parsed = parseUnwrangleDetailPayload({
     success: true,
+    remaining_credits: 742.5,
     detail: {
       name: "Other Brand Tortilla Chips 12 oz",
       id: "999999999",
@@ -472,6 +473,7 @@ test("Unwrangle detail preserves independent identity and excludes generated cop
   assert.equal(parsed.retailerProductId, "999999999");
   assert.equal(parsed.productUrl, "https://www.walmart.com/ip/999999999");
   assert.equal(parsed.description, null);
+  assert.equal(parsed.providerCreditsRemaining, 742.5);
 
   const scalarSentinels = parseUnwrangleDetailPayload({
     success: true,

@@ -30,6 +30,13 @@ import {
 import type {
   ProductTruthWebControlRuntimeActive,
 } from "./product-truth-web-control-runtime";
+import {
+  readProductTruthWalmartEnrichmentCommand,
+  readProductTruthWalmartEnrichmentQuote,
+} from "./product-truth-walmart-enrichment-admission";
+import {
+  productTruthWalmartEnrichmentQuoteSha256,
+} from "./product-truth-walmart-enrichment-quote";
 
 export const PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION =
   "product-truth-web-control-admission/1.0.0" as const;
@@ -57,6 +64,8 @@ export interface ProductTruthWalmartCollectionStatus {
     | "QUEUED_NO_SPEND"
     | "RUNNING_NO_SPEND"
     | "AWAITING_OWNER"
+    | "RUNNING_ENRICHMENT"
+    | "DECLINED"
     | "FAILED"
     | "AMBIGUOUS"
     | "SUCCEEDED";
@@ -76,9 +85,38 @@ export interface ProductTruthWalmartCollectionStatus {
       | "SUCCEEDED";
     error_code: string | null;
   }[];
+  quote: null | {
+    quote_id: string;
+    quote_sha256: string;
+    expires_at: string;
+    cost_unit: "PREPAID_PROVIDER_CREDITS";
+    usd_equivalent: null;
+    balance_probe_maximum_units: number;
+    job_maximum_units: number;
+    maximum_provider_units: number;
+    actions: readonly {
+      ordinal: number;
+      run_id: string;
+      title: string;
+      missing_fields: readonly string[];
+      oxylabs_query_maximum_units: number;
+      unwrangle_detail_maximum_units: number;
+      maximum_provider_units: number;
+    }[];
+  };
+  approval: null | {
+    command_id: string;
+    status: string;
+    outcome: string | null;
+    error_code: string | null;
+    authorized_at: string | null;
+    authorization_expires_at: string | null;
+    execution_started_at: string | null;
+    updated_at: string;
+  };
   claims: {
-    provider_calls_started: false;
-    metered_execution_admitted: false;
+    provider_calls_may_have_started: boolean;
+    metered_execution_admitted: boolean;
     marketplace_mutations: false;
   };
 }
@@ -588,7 +626,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
     };
   });
   const phases = new Set(jobs.map((job) => job.phase));
-  const status: ProductTruthWalmartCollectionStatus["status"] =
+  let status: ProductTruthWalmartCollectionStatus["status"] =
     phases.has("AMBIGUOUS")
       ? "AMBIGUOUS"
       : phases.has("FAILED")
@@ -600,14 +638,87 @@ export async function readProductTruthWalmartCollectionStatus(input: {
             : phases.has("RUNNING_NO_SPEND")
               ? "RUNNING_NO_SPEND"
               : "QUEUED_NO_SPEND";
+  let quote: ProductTruthWalmartCollectionStatus["quote"] = null;
+  if ([...phases].every((phase) => phase === "AWAITING_OWNER")) {
+    const exactQuote = await readProductTruthWalmartEnrichmentQuote({
+      batchId: input.batchId,
+      ...(input.requestedByUserId
+        ? { requestedByUserId: input.requestedByUserId }
+        : {}),
+    });
+    quote = {
+      quote_id: exactQuote.quoteId,
+      quote_sha256:
+        productTruthWalmartEnrichmentQuoteSha256(exactQuote),
+      expires_at: exactQuote.expiresAt,
+      cost_unit: "PREPAID_PROVIDER_CREDITS",
+      usd_equivalent: null,
+      balance_probe_maximum_units:
+        exactQuote.totals.balanceProbeMaximumUnits,
+      job_maximum_units: 3.5,
+      maximum_provider_units:
+        exactQuote.totals.maximumProviderUnits,
+      actions: exactQuote.actions.jobs.map((job) => ({
+        ordinal: job.ordinal,
+        run_id: job.runId,
+        title: job.title,
+        missing_fields: job.missingFields,
+        oxylabs_query_maximum_units: job.oxylabs.maximumProviderUnits,
+        unwrangle_detail_maximum_units:
+          job.unwrangle.maximumProviderUnits,
+        maximum_provider_units: job.maximumProviderUnits,
+      })),
+    };
+  }
+  const enrichment = await readProductTruthWalmartEnrichmentCommand({
+    batchId: input.batchId,
+    ...(input.requestedByUserId
+      ? { requestedByUserId: input.requestedByUserId }
+      : {}),
+  });
+  if (enrichment) {
+    if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {
+      status = "RUNNING_ENRICHMENT";
+    } else if (enrichment.status === "SUCCEEDED") {
+      status = "SUCCEEDED";
+    } else if (enrichment.status === "CANCELLED") {
+      status = "DECLINED";
+    } else if (enrichment.status === "AMBIGUOUS") {
+      status = "AMBIGUOUS";
+    } else if (["BLOCKED", "FAILED"].includes(enrichment.status)) {
+      status = "FAILED";
+    }
+  }
   return {
     schemaVersion: PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION,
     batchId: input.batchId,
     status,
     jobs,
+    quote,
+    approval: enrichment
+      ? {
+          command_id: enrichment.commandId,
+          status: enrichment.status,
+          outcome: enrichment.outcome,
+          error_code: enrichment.errorCode,
+          authorized_at:
+            enrichment.ownerAuthorizedAt?.toISOString() ?? null,
+          authorization_expires_at:
+            enrichment.ownerAuthorizationExpiresAt?.toISOString() ?? null,
+          execution_started_at:
+            enrichment.executionStartedAt?.toISOString() ?? null,
+          updated_at: enrichment.updatedAt.toISOString(),
+        }
+      : null,
     claims: {
-      provider_calls_started: false,
-      metered_execution_admitted: false,
+      provider_calls_may_have_started:
+        enrichment?.executionStartedAt !== null
+        && enrichment?.executionStartedAt !== undefined,
+      metered_execution_admitted:
+        enrichment !== null
+        && ["ADMITTED", "CLAIMED", "RUNNING", "SUCCEEDED"].includes(
+          enrichment.status,
+        ),
       marketplace_mutations: false,
     },
   };

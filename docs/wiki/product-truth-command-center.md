@@ -709,3 +709,38 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
   `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
 - [x] heartbeat/completion race закрыта сериализацией in-flight heartbeat;
   r1–r4 calibration commands сохранены без replay как immutable evidence.
+
+### 🔄 Фаза BF-W3 — one-click exact enrichment quote
+
+- [x] один экран показывает exact products, missing fields, balance-probe,
+  Oxylabs query `≤1.0`, Unwrangle detail `≤2.5` и суммарный ceiling
+  `2.5 + 3.5 × jobs` prepaid provider credits; unsupported USD conversion
+  запрещён;
+- [x] один click может подписать только все отдельно перечисленные exact
+  one-donor targets через отдельный Product Truth Ed25519 trust root;
+- [x] private key хранится вне repository в encrypted PKCS8 и открывается
+  macOS Login Keychain; Vercel/server/worker/browser получают только public key
+  либо detached signature;
+- [x] `Approve` создаёт append-only OWNER_APPROVAL, `Decline` оставляет
+  terminal `CANCELLED` до spend;
+- [x] paid worker выполняет один initial balance probe, затем jobs
+  последовательно; следующая job требует balance evidence из предыдущего
+  detail response; missing/stale evidence останавливает batch без второго
+  probe;
+- [x] `maxAttemptsPerJob=1`, `automaticReplay=false`, `marketplaceMutations=0`;
+  unknown paid outcome сохраняется как terminal `AMBIGUOUS`;
+- [x] успешный batch повторно читает canonical readiness и только при
+  `enough_ready=true` и нулевом capability gap продолжает исходный Walmart
+  Generate;
+- [x] UI восстанавливает batch/request/shipping selection после reload и
+  показывает approval/execution audit;
+- [x] certification: Product Truth `518/518`, Walmart/Bundle Factory focused
+  `18/18`, TypeScript, ESLint и production build = `PASS`;
+- [ ] final clean release, external owner-key enrollment, production
+  `PRODUCTION_OWNER_GATED_METERED` activation и no-spend smoke.
+
+Граница BF-W3: она обогащает только уже существующий exact `DonorProduct` с
+direct first-party Walmart offer. `matched_variants=0` означает отдельную Phase 2
+demand-expansion campaign. Такой новый donor нельзя незаметно создать тем же
+quote: production campaign registry/runtime всё ещё отсутствует и остаётся
+отдельным blocker, а consumer только показывает честную границу.
