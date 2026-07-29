@@ -322,6 +322,81 @@ async function assertActivationAbsent(url: string): Promise<void> {
   }
 }
 
+async function downgradeFixtureToLegacyEightMigrationRelease(url: string): Promise<void> {
+  const db = createClient({ url });
+  const legacyNames = MIGRATION_IDS.slice(0, 8)
+    .map((id) => `'${id}'`)
+    .join(",");
+  try {
+    await db.executeMultiple(`
+      DROP TRIGGER ProductTruthMigrationReceipt_update_guard;
+      DROP TRIGGER ProductTruthMigrationReceipt_delete_guard;
+      DROP TRIGGER ProductTruthMigrationActivationReceipt_update_guard;
+      DROP TRIGGER ProductTruthMigrationActivationReceipt_delete_guard;
+      DROP TRIGGER ProductTruthPrismaMigrationReceipt_update_guard;
+      DROP TRIGGER ProductTruthPrismaMigrationReceipt_delete_guard;
+      DROP TRIGGER ProductTruthPrismaMigrationReceipt_duplicate_guard;
+
+      DELETE FROM ProductTruthMigrationReceipt
+      WHERE migrationId='${MIGRATION_IDS[8]}';
+      UPDATE ProductTruthMigrationReceipt
+      SET migrationSetSha256='2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0',
+          activationContractSha256='7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e';
+      DELETE FROM "_prisma_migrations"
+      WHERE migration_name='${MIGRATION_IDS[8]}';
+      DELETE FROM ProductTruthMigrationActivationReceipt;
+
+      DROP TABLE ProductTruthListingRecipeComponent;
+      DROP TABLE ProductTruthListingRecipe;
+
+      CREATE TRIGGER "ProductTruthMigrationReceipt_update_guard"
+      BEFORE UPDATE ON "ProductTruthMigrationReceipt"
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_MIGRATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthMigrationReceipt_delete_guard"
+      BEFORE DELETE ON "ProductTruthMigrationReceipt"
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_MIGRATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthMigrationActivationReceipt_update_guard"
+      BEFORE UPDATE ON "ProductTruthMigrationActivationReceipt"
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_MIGRATION_ACTIVATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthMigrationActivationReceipt_delete_guard"
+      BEFORE DELETE ON "ProductTruthMigrationActivationReceipt"
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_MIGRATION_ACTIVATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthPrismaMigrationReceipt_update_guard"
+      BEFORE UPDATE ON "_prisma_migrations"
+      WHEN OLD."migration_name" IN (${legacyNames})
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthPrismaMigrationReceipt_delete_guard"
+      BEFORE DELETE ON "_prisma_migrations"
+      WHEN OLD."migration_name" IN (${legacyNames})
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+      END;
+      CREATE TRIGGER "ProductTruthPrismaMigrationReceipt_duplicate_guard"
+      BEFORE INSERT ON "_prisma_migrations"
+      WHEN NEW."migration_name" IN (${legacyNames})
+        AND EXISTS (
+          SELECT 1 FROM "_prisma_migrations" existing
+          WHERE existing."migration_name" = NEW."migration_name"
+        )
+      BEGIN
+        SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_DUPLICATE');
+      END;
+    `);
+  } finally {
+    await db.close();
+  }
+}
+
 test("canonical release is exactly nine deterministic migrations", async () => {
   const first = await loadProductTruthMigrationFiles();
   const second = await loadProductTruthMigrationFiles();
@@ -598,6 +673,68 @@ test("a newly sealed post-activation plan is idempotent without rewriting receip
     assert.deepEqual(prisma.rows.map((row) => ({ ...row })), prismaReceipts);
   } finally {
     await after.close();
+  }
+});
+
+test("an exact legacy eight-migration release upgrades append-only to migration nine", async (t) => {
+  const url = await temporaryDatabase(t);
+  await createBaseProductTruthSchema(url);
+  const initial = await prepareActivation(t, url, { name: "legacy-fixture" });
+  await applyProductTruthMigrations(applyOptions(url, initial));
+  await downgradeFixtureToLegacyEightMigrationRelease(url);
+
+  const incremental = await prepareActivation(t, url, { name: "incremental-nine" });
+  assert.equal(
+    incremental.plan.canApply,
+    true,
+    JSON.stringify(incremental.plan.blockers),
+  );
+  assert.deepEqual(
+    incremental.plan.migrations.map((migration) => [migration.state, migration.tracking]),
+    [
+      ...MIGRATION_IDS.slice(0, 8).map(() => ["applied", "tracked"]),
+      ["pending", "not_checked"],
+    ],
+  );
+
+  const result = await applyProductTruthMigrations(applyOptions(url, incremental));
+  assert.deepEqual(
+    result.actions.map((action) => [action.id, action.action]),
+    [
+      ...MIGRATION_IDS.slice(0, 8).map((id) => [id, "already_applied"]),
+      [MIGRATION_IDS[8], "applied"],
+    ],
+  );
+  const verified = createClient({ url });
+  try {
+    const receipts = await verified.execute(
+      `SELECT migrationId,migrationSetSha256,activationContractSha256
+       FROM ProductTruthMigrationReceipt ORDER BY migrationId`,
+    );
+    assert.equal(receipts.rows.length, 9);
+    assert.equal(receipts.rows.slice(0, 8).every((row) =>
+      row.migrationSetSha256
+        === "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0"
+      && row.activationContractSha256
+        === "7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e"
+    ), true);
+    assert.equal(receipts.rows[8]?.migrationSetSha256, result.migrationSetSha256);
+    assert.equal(
+      receipts.rows[8]?.activationContractSha256,
+      result.activationContractSha256,
+    );
+    const guards = await verified.execute(
+      `SELECT sql FROM sqlite_schema
+       WHERE type='trigger'
+         AND name LIKE 'ProductTruthPrismaMigrationReceipt_%'
+       ORDER BY name`,
+    );
+    assert.equal(guards.rows.length, 3);
+    assert.equal(guards.rows.every((row) =>
+      String(row.sql).includes('FROM "ProductTruthMigrationReceipt" receipt')
+    ), true);
+  } finally {
+    await verified.close();
   }
 });
 
