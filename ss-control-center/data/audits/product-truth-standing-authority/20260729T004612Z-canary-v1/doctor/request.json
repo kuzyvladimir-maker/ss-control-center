@@ -1,0 +1,95 @@
+{
+  "createdAt": "2026-07-29T00:47:10.103Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"sunkist\",\"productLine\":\"orange pop soda sugar zero\",\"flavor\":\"orange\",\"modifiers\":[\"zero_sugar\"],\"form\":\"bottle\",\"size\":{\"dimension\":\"VOLUME\",\"baseAmount\":2000,\"baseUnit\":\"ml\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": null,
+    "decisionEvidenceJson": null,
+    "decisionStatus": null,
+    "donorIdentityStatus": "legacy_unverified",
+    "donorOfferId": "do:walmart:16940511",
+    "donorProductId": "a3ee205c-fab4-4e2f-bdce-cea91fe79555",
+    "identityDerivationVersion": "product-truth-targeted-walmart-listing-identity-derivation/1.0.0",
+    "identityMode": "LISTING_BOUND_BOOTSTRAP",
+    "isFirstParty": true,
+    "legacySnapshot": {
+      "donorOfferRowJson": "{\n  \"createdAt\": \"2026-07-08T15:19:12.809Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"a3ee205c-fab4-4e2f-bdce-cea91fe79555\",\n  \"fetchedAt\": \"2026-07-08T15:19:12.809Z\",\n  \"id\": \"do:walmart:16940511\",\n  \"inStock\": 1,\n  \"isFirstParty\": 1,\n  \"localityEvidence\": null,\n  \"packSizeSeen\": 1,\n  \"price\": 1.42,\n  \"pricePerUnit\": 1.42,\n  \"productUrl\": \"https://www.walmart.com/ip/Sunkist-Zero-Sugar-Orange-Soda-Pop-2-L-Bottle/16940511?classType=REGULAR&athbdg=L1300\",\n  \"retailer\": \"walmart\",\n  \"retailerProductId\": \"16940511\",\n  \"sellerName\": \"Walmart.com\",\n  \"sourceApi\": \"oxylabs\",\n  \"updatedAt\": \"2026-07-08T15:19:12.809Z\",\n  \"via\": \"direct\",\n  \"zip\": \"33765\"\n}\n",
+      "donorProductRowJson": "{\n  \"attributes\": \"[{\\\"name\\\":\\\"Flavor\\\",\\\"value\\\":\\\"Orange\\\"},{\\\"name\\\":\\\"Product line\\\",\\\"value\\\":\\\"Sunkist Zero Sugar Orange\\\"},{\\\"name\\\":\\\"Net content statement\\\",\\\"value\\\":\\\"2 LITERS\\\"},{\\\"name\\\":\\\"Caffeine designation\\\",\\\"value\\\":\\\"Caffeine Added\\\"},{\\\"name\\\":\\\"Size\\\",\\\"value\\\":\\\"2 L\\\"},{\\\"name\\\":\\\"Shelf life\\\",\\\"value\\\":\\\"91 days\\\"},{\\\"name\\\":\\\"Brand\\\",\\\"value\\\":\\\"Sunkist\\\"},{\\\"name\\\":\\\"Container type\\\",\\\"value\\\":\\\"Bottle\\\"},{\\\"name\\\":\\\"Material\\\",\\\"value\\\":\\\"Plastic\\\"},{\\\"name\\\":\\\"Nutrition facts label image\\\",\\\"value\\\":\\\"https://images.salsify.com/image/upload/s--DX81xYSx--/c_pad,ar_1:1,cs_srgb/ilnub86lxxafn1gpm62f.jpg\\\"},{\\\"name\\\":\\\"Ingredient list image\\\",\\\"value\\\":\\\"https://i5.walmartimages.com/seo/Sunkist-Zero-Sugar-Orange-Soda-Pop-2-L-Bottle_59a6d1d9-a5f2-42ff-ad8c-03a726316d34.dc1a5696efffccefb24602ba63c42675.jpeg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF\\\"},{\\\"name\\\":\\\"Manufacturer\\\",\\\"value\\\":\\\"Sunkist Growers, Inc., USA by Dr Pepper/Seven Up, Inc\\\"}]\",\n  \"bestPrice\": 1.42,\n  \"bestRetailer\": \"walmart\",\n  \"brand\": \"Sunkist\",\n  \"bullets\": \"[\\\"BOLD ORANGE TASTE: Beaming with bold, orange flavor, Sunkist Orange Zero Sugar always satisfies your thirst\\\",\\\"ZERO SUGAR: There's only one soda to reach for when you're craving the refreshing taste of orange without the calories\\\",\\\"CAFFEINATED SODA: The only caffeinated Zero Sugar orange soft drink in the market for that little bit of extra kick you won’t find anywhere else\\\",\\\"ORANGE TREAT: Enjoy Sunkist all year long and delight in a Sunkist Orange Zero Sugar Float when summer comes along\\\",\\\"TRUSTED BRAND: Original Sunkist Orange is a favorite for flavor-loving soda drinkers since its creation in 1979\\\",\\\"One 2 liter bottle\\\"]\",\n  \"category\": \"Dry\",\n  \"confidence\": null,\n  \"containerType\": null,\n  \"createdAt\": \"2026-07-08T15:19:12.809Z\",\n  \"currency\": \"USD\",\n  \"description\": \"Soak up the taste of the sun with Sunkist Zero Sugar, beaming with bold, guilt-free orange flavor to satisfy your thirst. Enjoy Sunkist Zero Sugar Soda anytime or mix with ice cream for delicious orange floats. Gear up for good times with the bright taste of Sunkist Zero Sugar Soda. Sunkist is a registered trademark of Sunkist Growers, Inc., USA used under license by Dr Pepper/Seven Up, Inc. © 2021 Sunkist Growers, Inc. and Dr Pepper/Seven Up, Inc.\",\n  \"flavor\": null,\n  \"gtin\": null,\n  \"id\": \"a3ee205c-fab4-4e2f-bdce-cea91fe79555\",\n  \"identityConfirmedAt\": null,\n  \"identityEvidenceJson\": null,\n  \"identityKey\": \"sunkist|zero|sugar|orange|soda|pop|bottle|2 l\",\n  \"identityMatcherImplementationSha256\": null,\n  \"identityMatcherReleaseSha256\": null,\n  \"identityMatcherVersion\": null,\n  \"identityStatus\": \"legacy_unverified\",\n  \"imageUrls\": \"[\\\"https://i5.walmartimages.com/seo/Sunkist-Zero-Sugar-Orange-Soda-Pop-2-L-Bottle_59a6d1d9-a5f2-42ff-ad8c-03a726316d34.dc1a5696efffccefb24602ba63c42675.jpeg\\\",\\\"https://i5.walmartimages.com/asr/c3bb5662-cee5-4a93-a8fa-aa3438cf4371.6c22b95fecccd4f7e83bec9b4bf52270.jpeg\\\",\\\"https://i5.walmartimages.com/asr/0387fc2e-7346-45ee-bdfc-16d6a22f1533.02cf11ebdd6089432ab973e11abc3e1b.jpeg\\\",\\\"https://i5.walmartimages.com/asr/1cde0d54-867d-48f1-b1ee-516b1cb45b93.05f4c8e1d9e7487153319c94a8044342.jpeg\\\",\\\"https://i5.walmartimages.com/asr/e6a338f2-fdbb-47a0-941a-d58ac808906a.502150d278483a9ecfe1e84b59cd16f0.jpeg\\\",\\\"https://i5.walmartimages.com/asr/0b7f894b-3ac0-45be-8fb0-1a0531f52a38.ec7699bdd3c99dd00fa89602bd313202.jpeg\\\"]\",\n  \"ingredients\": \"CARBONATED WATER, CITRIC ACID, SODIUM BENZOATE PRESERVATIVE, ASPARTAME, MALIC ACID, SODIUM CITRATE, NATURAL FLAVORS, ACESULFAME POTASSIUM, MODIFIED FOOD STARCH, ESTER GUM, CAFFEINE, YELLOW 6, RED 40\",\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/Sunkist-Zero-Sugar-Orange-Soda-Pop-2-L-Bottle_59a6d1d9-a5f2-42ff-ad8c-03a726316d34.dc1a5696efffccefb24602ba63c42675.jpeg\",\n  \"needsReview\": 0,\n  \"nutritionFacts\": \"[{\\\"name\\\":\\\"Nutrition facts label image\\\",\\\"value\\\":\\\"https://images.salsify.com/image/upload/s--DX81xYSx--/c_pad,ar_1:1,cs_srgb/ilnub86lxxafn1gpm62f.jpg\\\"}]\",\n  \"pricePerMeasure\": 0.71,\n  \"productLine\": null,\n  \"size\": \"2 L\",\n  \"title\": \"Sunkist Zero Sugar Orange Soda Pop, 2 L, Bottle\",\n  \"unitAmount\": 2,\n  \"unitMeasure\": \"l\",\n  \"upc\": \"078000122466\",\n  \"updatedAt\": \"2026-07-08T15:19:23.159Z\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-legacy-snapshot/1.0.0",
+      "sha256": "4c96dcd830268143c1e1a39906b4c40311148c8c15e70411a3b6bbabd5fdfdcb"
+    },
+    "listingBinding": {
+      "channel": "walmart",
+      "componentIndex": 0,
+      "componentRowJson": "{\n  \"channel\": \"walmart\",\n  \"contentDonorProductId\": null,\n  \"costMethod\": \"exact\",\n  \"createdAt\": \"2026-07-08T15:19:24.635Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"a3ee205c-fab4-4e2f-bdce-cea91fe79555\",\n  \"flavor\": \"Orange\",\n  \"id\": \"comp:FaisalX-1828:0\",\n  \"idx\": 0,\n  \"isBundleComponent\": 0,\n  \"lineCost\": 8.52,\n  \"matchTier\": null,\n  \"matchedTitle\": \"Sunkist Zero Sugar Orange Soda Pop, 2 L, Bottle\",\n  \"matcherVersion\": null,\n  \"perUnitCost\": 1.42,\n  \"priceEvidenceDonorProductId\": null,\n  \"priceEvidenceJson\": null,\n  \"priceEvidenceObservationId\": null,\n  \"priceEvidenceOfferId\": null,\n  \"priceEvidenceStatus\": null,\n  \"pricePolicyVersion\": null,\n  \"product\": \"Zero Sugar Orange Soda Pop\",\n  \"qty\": 6,\n  \"retailer\": \"walmart\",\n  \"size\": \"2 Liter\",\n  \"sku\": \"FaisalX-1828\",\n  \"updatedAt\": \"2026-07-08T15:19:24.635Z\"\n}\n",
+      "donorGraph": [
+        {
+          "canonicalVariantId": "cpv1:a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+          "componentIndex": 0,
+          "componentRowJson": "{\n  \"channel\": \"walmart\",\n  \"contentDonorProductId\": null,\n  \"costMethod\": \"exact\",\n  \"createdAt\": \"2026-07-08T15:19:24.635Z\",\n  \"currency\": \"USD\",\n  \"donorProductId\": \"a3ee205c-fab4-4e2f-bdce-cea91fe79555\",\n  \"flavor\": \"Orange\",\n  \"id\": \"comp:FaisalX-1828:0\",\n  \"idx\": 0,\n  \"isBundleComponent\": 0,\n  \"lineCost\": 8.52,\n  \"matchTier\": null,\n  \"matchedTitle\": \"Sunkist Zero Sugar Orange Soda Pop, 2 L, Bottle\",\n  \"matcherVersion\": null,\n  \"perUnitCost\": 1.42,\n  \"priceEvidenceDonorProductId\": null,\n  \"priceEvidenceJson\": null,\n  \"priceEvidenceObservationId\": null,\n  \"priceEvidenceOfferId\": null,\n  \"priceEvidenceStatus\": null,\n  \"pricePolicyVersion\": null,\n  \"product\": \"Zero Sugar Orange Soda Pop\",\n  \"qty\": 6,\n  \"retailer\": \"walmart\",\n  \"size\": \"2 Liter\",\n  \"sku\": \"FaisalX-1828\",\n  \"updatedAt\": \"2026-07-08T15:19:24.635Z\"\n}\n",
+          "legacyComponentId": "comp:FaisalX-1828:0",
+          "listingKey": "walmart:1:FaisalX-1828",
+          "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:FaisalX-1828\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"FaisalX-1828\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+          "shippingRowJson": "{\n  \"baseUnitDesc\": \"Sunkist Zero Sugar Orange Soda Pop 2 Liter bottle\",\n  \"category\": null,\n  \"createdAt\": \"2026-07-08T15:19:12.685Z\",\n  \"height\": null,\n  \"id\": \"ssd:cogs:FaisalX-1828\",\n  \"marketplace\": \"Walmart\",\n  \"notes\": null,\n  \"productIdentity\": \"{\\\"brand\\\":\\\"Sunkist\\\",\\\"product_line\\\":\\\"Zero Sugar Orange Soda Pop\\\",\\\"flavor\\\":\\\"Orange\\\",\\\"size\\\":\\\"2 Liter\\\",\\\"container_type\\\":\\\"bottle\\\",\\\"base_unit\\\":\\\"Sunkist Zero Sugar Orange Soda Pop 2 Liter bottle\\\",\\\"units_in_listing\\\":6,\\\"unit_basis\\\":\\\"bottle\\\",\\\"is_bundle\\\":false,\\\"components\\\":[],\\\"retail_search_query\\\":\\\"Sunkist Zero Sugar Orange Soda 2 Liter bottle\\\",\\\"confidence\\\":0.93,\\\"notes\\\":\\\"Straightforward multipack of 6 identical 2-liter bottles of Sunkist Zero Sugar Orange Soda. No photos were provided to visually confirm label or container, but the title is unambiguous. Not a bundle — same single SKU repeated x6.\\\",\\\"imagesUsed\\\":0}\",\n  \"productTitle\": null,\n  \"sampleCount\": 0,\n  \"sku\": \"FaisalX-1828\",\n  \"source\": \"cogs-identify\",\n  \"unitsInListing\": 6,\n  \"upc\": null,\n  \"upcSource\": null,\n  \"updatedAt\": \"2026-07-08T15:19:12.685Z\",\n  \"weight\": null,\n  \"weightFedex\": null,\n  \"width\": null\n}\n"
+        }
+      ],
+      "donorGraphSha256": "4df80e43224bc6f558cdb43829a406bf9020e19a56b01e221cf951bed320c865",
+      "legacyComponentId": "comp:FaisalX-1828:0",
+      "listingKey": "walmart:1:FaisalX-1828",
+      "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:FaisalX-1828\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"FaisalX-1828\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-listing-binding/1.1.0",
+      "sha256": "deba2a500aeec958f79c2d4fc7dbd03b41ef8d826844e14b450140deed8511f8",
+      "shippingRowJson": "{\n  \"baseUnitDesc\": \"Sunkist Zero Sugar Orange Soda Pop 2 Liter bottle\",\n  \"category\": null,\n  \"createdAt\": \"2026-07-08T15:19:12.685Z\",\n  \"height\": null,\n  \"id\": \"ssd:cogs:FaisalX-1828\",\n  \"marketplace\": \"Walmart\",\n  \"notes\": null,\n  \"productIdentity\": \"{\\\"brand\\\":\\\"Sunkist\\\",\\\"product_line\\\":\\\"Zero Sugar Orange Soda Pop\\\",\\\"flavor\\\":\\\"Orange\\\",\\\"size\\\":\\\"2 Liter\\\",\\\"container_type\\\":\\\"bottle\\\",\\\"base_unit\\\":\\\"Sunkist Zero Sugar Orange Soda Pop 2 Liter bottle\\\",\\\"units_in_listing\\\":6,\\\"unit_basis\\\":\\\"bottle\\\",\\\"is_bundle\\\":false,\\\"components\\\":[],\\\"retail_search_query\\\":\\\"Sunkist Zero Sugar Orange Soda 2 Liter bottle\\\",\\\"confidence\\\":0.93,\\\"notes\\\":\\\"Straightforward multipack of 6 identical 2-liter bottles of Sunkist Zero Sugar Orange Soda. No photos were provided to visually confirm label or container, but the title is unambiguous. Not a bundle — same single SKU repeated x6.\\\",\\\"imagesUsed\\\":0}\",\n  \"productTitle\": null,\n  \"sampleCount\": 0,\n  \"sku\": \"FaisalX-1828\",\n  \"source\": \"cogs-identify\",\n  \"unitsInListing\": 6,\n  \"upc\": null,\n  \"upcSource\": null,\n  \"updatedAt\": \"2026-07-08T15:19:12.685Z\",\n  \"weight\": null,\n  \"weightFedex\": null,\n  \"width\": null\n}\n",
+      "sku": "FaisalX-1828",
+      "storeIndex": 1
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/16940511",
+    "retailer": "walmart",
+    "retailerProductId": "16940511",
+    "variantDecisionId": null,
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "a68be719bf045bf27dce0b1e3e738665fb95e144faf2a3998b7ade301731d1c0",
+  "engineReleaseSha256": "805431de1af81ca27e7bb1c9cd04883d49522dc6a1fb7a867a08214c3123b355",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-29T20:46:12.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Sunkist Zero Sugar Orange Soda Pop 2 L Bottle",
+  "runId": "pt-field-snapshot-standing-20260729t004612z",
+  "schemaFingerprintSha256": "6743242a37e6c854b9f9f380527c1284d53e13997247741fc3064fe0ae76c711",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.6.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

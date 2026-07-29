@@ -750,9 +750,17 @@ G7 закончен как диагностический production canary, н�
   consumer-specific readiness и выпустить clean contract `1.6.0`;
 - ✅ заменить per-plan chat approval на pinned standing authority и
   сертифицировать `balance-probe → authorize`: TypeScript + `519/519`;
-- 🔄 выпустить clean release/byte-new plan и выполнить successor canary без
-  нового owner prompt;
-- ⬜ после успешного successor canary вернуться к bounded Phase 1 waves.
+- ✅ выпустить clean release `bc98d341…6fc12`, byte-new plan
+  `d9f1ffaf…ad21` и выполнить successor canary без owner prompt: terminal
+  `COMPLETED`, combined spend `6`, retry `0`;
+- ✅ подтвердить full-denominator postcheck `5935/5935`: exact donor
+  variant/price/partial content сохранены, но target listing ещё не имеет
+  independent canonical recipe/COGS и остаётся identity-only;
+- 🔄 материализовать canonical listing recipe и typed COGS независимо от
+  полноты content snapshot, переиспользуя уже сохранённые evidence без нового
+  provider spend;
+- ⬜ после machine acceptance recipe/COGS separation вернуться к bounded
+  Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
 

@@ -37,7 +37,7 @@
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
 | G5d. Standing no-paid waves ≤100 rows | `ACTIVE_2026-07-27` | Collision-free only, fresh `READY_TO_APPLY` required; all money/marketplace gates remain closed |
 | G6. Consumer SHADOW activation | `NOT_READY` | Coverage недостаточен: content `21/5935`, Unit Economics `21 UNSOURCEABLE`, Procurement `0 ready` |
-| G7. Provider canary / paid wave | `ACTIVE_STANDING_RELEASE_PENDING` | Ручной combined-6 gate отменён. `balance-probe → authorize` с durable ledger сертифицирован `519/519`; нужен byte-new clean release/plan, затем canary выполняется без owner prompt |
+| G7. Provider canary / paid wave | `STANDING_ACTIVE_CANARY_PASS` | Ручной gate отменён. Clean release `bc98d341…6fc12`, plan `d9f1ffaf…ad21`; первый autonomous canary terminal `COMPLETED`, `6` units, retry `0`, no business mutations. Следующие bounded plans используют ту же standing policy без owner prompt |
 | G8. Marketplace/purchase actions | `NOT_READY` | Никогда не разрешаются data/readiness gate-ами |
 
 ## Рабочий режим без повторных вопросов — owner direction 2026-07-27
@@ -903,9 +903,24 @@ TypeScript PASS, Product Truth `516/516`, worktree clean.
 - combined maximum `6`, retry `0`, clubs/BJ's/marketplace/price/inventory/
   delist/consumer activation/procurement запрещены.
 
-Plan `2cfea49a…0070` не исполняется. Для plan `04f27fd7…f7ae` ручная approval
-phrase отменена owner direction 2026-07-28. Standing-policy runtime
-`balance-probe → authorize` сертифицирован TypeScript + `519/519`; balance call
-получает собственный automatic permit и distributed-ledger receipt. После byte-new
-clean release/plan движок сам выполняет `execute` в указанных границах. Запрашивать
-у владельца plan SHA, код или confirmation запрещено.
+Plans `2cfea49a…0070` и `04f27fd7…f7ae` superseded и не исполняются.
+Standing-policy runtime `balance-probe → authorize` сертифицирован TypeScript +
+`519/519`; balance call получает собственный automatic permit и
+distributed-ledger receipt.
+
+Byte-new clean release/plan:
+
+- commit `bc98d341ee3dbe79a709e4dd3bf68661c1e6fc12`;
+- tree `6eaed9761863dcf6596d67402b1d8ecfc441fe5d`;
+- engine `805431de…b355`;
+- request `50483a90…3389`;
+- plan `d9f1ffaf…ad21`.
+
+Canary `pt-field-snapshot-standing-20260729t004612z` выполнен автоматически:
+balance `2.5`, working providers `3.5`, combined `6`, retry `0`; terminal
+`COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`. Exact decision,
+price observation и partial content snapshot с шестью images сохранены;
+allergens/storage остаются явными gaps. Full-denominator postcheck
+`5935/5935` подтвердил donor truth, но target listing ещё не имеет независимого
+canonical recipe/COGS. Это следующий технический этап, не новый owner gate.
+Запрашивать у владельца plan SHA, код или confirmation запрещено.

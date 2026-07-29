@@ -1368,6 +1368,17 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   automatic one-call permit, deterministic reservation, durable receipt и
   settlement до выпуска evidence.
 - [x] ✅ TypeScript PASS; полный Product Truth suite `519/519`.
-- [ ] 🔄 Выпустить clean-checkout engine release и read-only successor plan.
-- [ ] ⬜ Без нового owner prompt выполнить single-SKU field-snapshot canary,
-  status/report и full-denominator postcheck.
+- [x] ✅ Clean-checkout release `bc98d341…6fc12`, tree
+  `6eaed976…fe5d`, engine `805431de…b355`; clean TypeScript, Prisma,
+  Wiki-Brain и Product Truth `519/519`.
+- [x] ✅ Read-only request `50483a90…3389` / plan `d9f1ffaf…ad21`;
+  provider calls/DB writes `0`.
+- [x] ✅ Без owner prompt выполнен single-SKU field-snapshot canary:
+  terminal `COMPLETED`, combined spend `6`, retry `0`, no marketplace/business
+  mutations. Immutable packet:
+  `ss-control-center/data/audits/product-truth-standing-authority/20260729T004612Z-canary-v1/`.
+- [x] ✅ Status/report и full-denominator postcheck `5935/5935`: exact Sunkist
+  variant/price/partial content сохранены; missing allergens/storage явны.
+- [ ] 🔄 Отделить canonical listing recipe/COGS materialization от content
+  completeness и переиспользовать сохранённые exact evidence без нового
+  provider spend.

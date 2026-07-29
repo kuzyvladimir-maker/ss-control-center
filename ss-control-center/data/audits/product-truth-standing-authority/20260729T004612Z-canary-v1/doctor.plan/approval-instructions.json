@@ -1,0 +1,60 @@
+{
+  "authorizationMode": "PINNED_STANDING_OWNER_POLICY",
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:d9f1ffaf75951d75443b64f66cbaa6b9e1f637ac60567377805b8b1cadc3ad21:<AUTOMATIC_STANDING_APPROVAL_ID>",
+  "machineIdentityVerification": {
+    "canonicalIdentityHash": "a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+    "canonicalVariantId": "cpv1:a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+    "donorOfferId": "do:walmart:16940511",
+    "donorProductId": "a3ee205c-fab4-4e2f-bdce-cea91fe79555",
+    "identityDerivationVersion": "product-truth-targeted-walmart-listing-identity-derivation/1.0.0",
+    "legacySnapshotSha256": "4c96dcd830268143c1e1a39906b4c40311148c8c15e70411a3b6bbabd5fdfdcb",
+    "listingBindingSha256": "deba2a500aeec958f79c2d4fc7dbd03b41ef8d826844e14b450140deed8511f8",
+    "normalizedProductUrl": "https://www.walmart.com/ip/16940511",
+    "planExpiresAt": "2026-07-29T20:46:12.000Z",
+    "retailerProductId": "16940511",
+    "statement": "The engine bound the legacy donor to one authoritative listing component. No canonical row may be written until one fresh exact local first-party Walmart search independently matches the same item, URL, brand, listing-derived structured identity, size and base-unit pack."
+  },
+  "mode": "WAVE",
+  "ownerActionRequired": false,
+  "planExpiresAt": "2026-07-29T20:46:12.000Z",
+  "planSha256": "d9f1ffaf75951d75443b64f66cbaa6b9e1f637ac60567377805b8b1cadc3ad21",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "pt-field-snapshot-standing-20260729t004612z",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "warning": "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the exact two-provider permit and confirmation automatically; no chat approval is required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
+}

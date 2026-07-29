@@ -884,10 +884,29 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [x] ✅ Runtime `balance-probe → authorize` реализован без `--approval`/`--confirm`
   со стороны владельца. Balance permit резервируется в distributed ledger до
   HTTP и сохраняет receipt; TypeScript и полный Product Truth `519/519` PASS.
-- [ ] 🔄 Выпустить clean-checkout release и byte-new read-only plan, потому что
-  новый controller меняет engine release SHA.
-- [ ] ⬜ Выполнить v1.6 successor canary автоматически: balance probe
-  `1 × 2.5` units + work `1 Oxylabs/1` и `1 Unwrangle detail/2.5`,
-  combined maximum `6`, retry `0`; owner action не требуется.
-- [ ] ⬜ Старый `1.5.0` successor plan `2cfea49a…0070` superseded и не
-  исполняется; новый paid gate возможен только для byte-new `1.6.0` plan.
+- [x] ✅ Standing-authority clean release выпущен: commit
+  `bc98d341ee3dbe79a709e4dd3bf68661c1e6fc12`, tree
+  `6eaed9761863dcf6596d67402b1d8ecfc441fe5d`, engine
+  `805431de…b355`; clean `npm ci`, TypeScript, Prisma, Wiki-Brain и
+  Product Truth `519/519` PASS.
+- [x] ✅ Byte-new production `doctor → plan` выполнен read-only: request
+  `50483a90…3389`, plan `d9f1ffaf…ad21`, provider calls/DB writes `0`.
+- [x] ✅ Первый standing-authority canary завершён без owner prompt:
+  balance probe `1 × 2.5`, working run `Oxylabs 1 × 1` +
+  `Unwrangle 1 × 2.5`, total `6` units, retry `0`; outcome
+  `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`.
+- [x] ✅ Exact variant decision, fresh price observation и
+  `exact_field_snapshot_v2` сохранены для Sunkist; snapshot содержит `6`
+  images и честные gaps `allergens`/`storageTemp`. Marketplace/business
+  mutations, clubs/BJ's, activation и procurement = `0`.
+- [x] ✅ Full-denominator postcheck: `5935/5935` reconciled; bridge audit
+  `15e96a44…525c`, readiness `84c6c72c…bd00`. Listing
+  `walmart:1:FaisalX-1828` остаётся
+  `IDENTITY_ONLY_CANONICALIZATION_CANDIDATE`: donor truth сохранён, но
+  canonical listing recipe/COGS ещё не материализованы, а недостающие content
+  facts не выдумываются.
+- [ ] 🔄 Следующая фаза: независимо материализовать canonical listing recipe и
+  typed COGS из уже сохранённых exact variant/price/content evidence, не
+  повторяя provider calls и не связывая content readiness с ценовым outcome.
+- [x] ✅ Старые планы `2cfea49a…0070` и `04f27fd7…f7ae` superseded и никогда
+  не исполняются.

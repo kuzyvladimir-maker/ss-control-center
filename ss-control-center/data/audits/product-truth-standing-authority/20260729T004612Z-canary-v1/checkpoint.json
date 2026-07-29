@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "product-truth-standing-authority-canary-checkpoint/1.0.0",
+  "capturedAt": "2026-07-29T00:56:00.000Z",
+  "release": {
+    "commit": "bc98d341ee3dbe79a709e4dd3bf68661c1e6fc12",
+    "tree": "6eaed9761863dcf6596d67402b1d8ecfc441fe5d",
+    "engineReleaseSha256": "805431de1af81ca27e7bb1c9cd04883d49522dc6a1fb7a867a08214c3123b355",
+    "cleanCheckoutCertification": {
+      "typescript": "PASS",
+      "productTruthTestsPassed": 519,
+      "productTruthTestsFailed": 0,
+      "prismaValidate": "PASS",
+      "wikiBrainOrphans": 0,
+      "wikiBrainBrokenLinks": 0
+    }
+  },
+  "standingAuthority": {
+    "policySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0",
+    "ownerActionRequired": false,
+    "manualApprovalPhraseRequired": false,
+    "manualPlanShaConfirmationRequired": false
+  },
+  "target": {
+    "listingKey": "walmart:1:FaisalX-1828",
+    "donorProductId": "a3ee205c-fab4-4e2f-bdce-cea91fe79555",
+    "donorOfferId": "do:walmart:16940511",
+    "retailerProductId": "16940511",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "run": {
+    "runId": "pt-field-snapshot-standing-20260729t004612z",
+    "requestSha256": "50483a90a340baf67d85221486dce94ab12a3d41abe5934294bb4b4d4c7a3389",
+    "planSha256": "d9f1ffaf75951d75443b64f66cbaa6b9e1f637ac60567377805b8b1cadc3ad21",
+    "balanceEvidenceSha256": "a08e56cf4e73c686caae9907a69bc177d19a66e66438d26d9759914266949e33",
+    "approvalSha256": "f71ad940d6d14aed3274abe0423c0c2a049f8618cbb67d58129a53afc68a8d33",
+    "reportSha256": "c0adabe7f4e8a8f77e7dbfa289dedf093f64ac4df60c2c214beeb926eb44069a",
+    "artifactIndexSha256": "416a27aa0bb27889db09cbdb0ec3a2a2c888b7dafdde52c136cec95cf1d5132e",
+    "outcome": "COMPLETED",
+    "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+    "attempts": 1,
+    "retryCount": 0,
+    "nextCommand": null
+  },
+  "spend": {
+    "balanceProbe": {
+      "provider": "unwrangle",
+      "operation": "target_search",
+      "calls": 1,
+      "units": 2.5,
+      "observedBalanceUnits": 99665,
+      "reserveFloor": 15000
+    },
+    "workingRun": {
+      "calls": 2,
+      "units": 3.5,
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      }
+    },
+    "totalCalls": 3,
+    "totalUnits": 6
+  },
+  "canonicalEvidence": {
+    "canonicalVariantId": "cpv1:a45aff276e038e9ae685a963047a5c18f302c346500e22a26ea9e3d1985a951d",
+    "variantDecisionId": "dpvd-exact:6b5d5dab1c6d67982a4bbb8e1b99bc9246ff5d6956908406ebb11bef590eb064",
+    "contentObservationId": "pco:2b884d88a54afe60db4dca8de4da02a08ea328e00fe90820cf743c2f27c51738",
+    "priceObservationId": "doo:fdeb9f184f5434b81986b2b6dfeaa9f9ff048735ea5542ebe534ce11088c7b32",
+    "capture": "exact_field_snapshot_v2",
+    "imageCount": 6,
+    "missingFields": [
+      "allergens",
+      "storageTemp"
+    ]
+  },
+  "postcheck": {
+    "artifactIndexSha256": "b499fa702ed48123eafe6852f996efdd19a2db38681ec697bd0e811ca028b87c",
+    "sourceSnapshotSha256": "544e5ae8ccd67ae4a8ca5bae343c311d506a02ab884221a29b8d9aeec0ce0efd",
+    "bridgePlanSha256": "15e96a44b55bf18460148ac7d785c328f25d250694693c268732618b24ce525c",
+    "listingsTotal": 5935,
+    "alreadyCanonicalListings": 20,
+    "identityOnlyCanonicalizationCandidates": 71,
+    "quarantinedListings": 5844,
+    "targetDisposition": "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
+    "targetWriteEligible": false,
+    "targetMissingContentFacts": [
+      "ALLERGENS",
+      "STORAGE"
+    ],
+    "providerCalls": 0,
+    "databaseWrites": 0
+  },
+  "readiness": {
+    "artifactIndexSha256": "db3703c0696682cc21fc177e312afb90e5b2ad148847469dd62e5bd63bfe0451",
+    "reportSha256": "84c6c72c26125f3966dc530ed8825ded81a90e281101fbb1bb770cef461fbd00",
+    "denominator": 5935,
+    "reconciled": 5935,
+    "bundleFactoryReady": 21,
+    "listingImprovementReady": 21,
+    "unitEconomicsUnsourceable": 26,
+    "procurementReady": 0,
+    "targetCurrentBlocker": "CURRENT_SCOPED_SKU_COST_MISSING",
+    "targetInterpretation": "The donor identity, price observation, and partial exact content are canonical. The listing still lacks an independently materialized canonical recipe/COGS record, and the preserved content snapshot explicitly lacks allergens and storage facts."
+  },
+  "safety": {
+    "bjsCalls": 0,
+    "clubCalls": 0,
+    "retries": 0,
+    "marketplaceMutations": 0,
+    "priceChanges": 0,
+    "inventoryChanges": 0,
+    "delistings": 0,
+    "consumerActivations": 0,
+    "procurementActions": 0,
+    "harvestCronChanges": 0
+  },
+  "nextTechnicalStep": "Materialize canonical listing recipe and typed COGS independently from content completeness, reusing the stored exact variant/price/content evidence without another provider call."
+}
