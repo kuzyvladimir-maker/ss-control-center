@@ -522,6 +522,40 @@ ReturnType<typeof sourceFixture> {
   return rebuildFixture(snapshot);
 }
 
+function sharedAuthoritativeWalmartReportRecipeFixture():
+ReturnType<typeof sourceFixture> {
+  const fixture = authoritativeWalmartReportRecipeFixture();
+  const snapshot = structuredClone(fixture.snapshot);
+  const listing = snapshot.listings[1];
+  const donor = snapshot.donors[0];
+  const firstEvidence =
+    snapshot.authoritativeWalmartItemReportEvidence[0];
+  assert.ok(listing);
+  assert.ok(donor?.title);
+  assert.ok(firstEvidence);
+  listing.productIdentityJson = null;
+  listing.productIdentityUpdatedAt = null;
+  snapshot.components = snapshot.components.filter(
+    (component) => component.sku !== listing.sku,
+  );
+  const evidenceCore = {
+    ...firstEvidence,
+    listingKey: listing.listingKey,
+    sku: listing.sku,
+    itemId: "item-2",
+    title: `${donor.title} (Pack of 4)`,
+    sourceRowNumber: 3,
+  };
+  delete (
+    evidenceCore as Partial<typeof firstEvidence>
+  ).evidenceRowSha256;
+  snapshot.authoritativeWalmartItemReportEvidence.push({
+    ...evidenceCore,
+    evidenceRowSha256: productTruthOperationalSha256(evidenceCore),
+  });
+  return rebuildFixture(snapshot);
+}
+
 function sharedGraphFixture(): ReturnType<typeof sourceFixture> {
   const snapshot = structuredClone(sourceFixture().snapshot);
   const sharedDonor = snapshot.donors[0];
@@ -1443,6 +1477,10 @@ test("authoritative Walmart multipack materializes without a legacy component ro
     component.sourceBinding.authoritativeWalmartItemReportEvidenceSha256,
     evidence.evidenceRowSha256,
   );
+  assert.match(
+    component.sourceBinding.authoritativeWalmartDonorTitleProofSha256 ?? "",
+    /^[a-f0-9]{64}$/,
+  );
   assert.equal(target.listingRecipeComponents[0]?.sourceComponentId, null);
   assert.equal(target.listingRecipeComponents[0]?.quantity, 2);
 
@@ -1471,6 +1509,41 @@ test("authoritative Walmart multipack materializes without a legacy component ro
 
   const postcheck = await executeApproved(db, input);
   assert.equal(postcheck.status, "ALREADY_APPLIED");
+});
+
+test("shared Walmart multipacks reuse one donor proof without graph collision", async (t) => {
+  const input = applyPlan(sharedAuthoritativeWalmartReportRecipeFixture());
+  const targets = input.plan.targets.filter((target) =>
+    ["walmart:1:SKU-1", "walmart:1:SKU-2"].includes(target.listingKey));
+  assert.equal(targets.length, 2);
+  const components = targets.map((target) => target.components[0]!);
+  assert.equal(components[0]?.donorProductId, components[1]?.donorProductId);
+  assert.notEqual(
+    components[0]?.sourceBinding
+      .authoritativeWalmartItemReportEvidenceSha256,
+    components[1]?.sourceBinding
+      .authoritativeWalmartItemReportEvidenceSha256,
+  );
+  assert.equal(
+    components[0]?.sourceBinding
+      .authoritativeWalmartDonorTitleProofSha256,
+    components[1]?.sourceBinding
+      .authoritativeWalmartDonorTitleProofSha256,
+  );
+  assert.equal(
+    components[0]?.decision?.id,
+    components[1]?.decision?.id,
+  );
+  assert.equal(
+    components[0]?.donorTransition?.exactProjection.identityEvidenceJson,
+    components[1]?.donorTransition?.exactProjection.identityEvidenceJson,
+  );
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  assert.equal(result.verification.unitEconomicsUnsourceable, 5);
 });
 
 test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {

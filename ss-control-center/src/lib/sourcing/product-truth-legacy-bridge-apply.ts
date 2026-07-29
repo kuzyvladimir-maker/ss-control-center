@@ -164,6 +164,7 @@ export interface ProductTruthLegacyBridgeSourceBinding {
   listingSha256: string;
   legacyComponentSha256: string | null;
   authoritativeWalmartItemReportEvidenceSha256: string | null;
+  authoritativeWalmartDonorTitleProofSha256: string | null;
   donorProductSha256: string;
   donorContentSha256: string;
   contentSourceOfferSha256: string;
@@ -631,7 +632,7 @@ function contentPayload(input: {
     | "contentSourceOfferSha256"
     | "componentBarcodeEvidenceSha256"
     | "directTargetContentEvidenceSha256"
-    | "authoritativeWalmartItemReportEvidenceSha256"
+    | "authoritativeWalmartDonorTitleProofSha256"
   >;
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
@@ -1361,6 +1362,25 @@ function singleComponentDraftFromScope(input: {
       authoritativeWalmartTitleProof
         ? authoritativeWalmartTitleEvidence?.evidenceRowSha256 ?? null
         : null,
+    authoritativeWalmartDonorTitleProofSha256:
+      authoritativeWalmartTitleProof
+        ? rowHash({
+            schemaVersion:
+              "product-truth-authoritative-walmart-donor-title-proof/1.0.0",
+            sourceReportId:
+              authoritativeWalmartTitleEvidence?.sourceReportId,
+            sourceReportSha256:
+              authoritativeWalmartTitleEvidence?.sourceReportSha256,
+            donorProductId: donor.id,
+            donorTitle: donor.title,
+            targetCanonicalVariantId: targetVariant.canonicalVariantId,
+            matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+            matcherImplementationSha256:
+              CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+            matcherReleaseSha256:
+              CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+          })
+        : null,
     donorProductSha256: rowHash(donor),
     donorContentSha256: rowHash(sourceContentFields(donor)),
     contentSourceOfferSha256: rowHash(contentSourceOfferFields(offer)),
@@ -1381,8 +1401,8 @@ function singleComponentDraftFromScope(input: {
       sourceBinding.componentBarcodeEvidenceSha256,
     directTargetContentEvidenceSha256:
       sourceBinding.directTargetContentEvidenceSha256,
-    authoritativeWalmartItemReportEvidenceSha256:
-      sourceBinding.authoritativeWalmartItemReportEvidenceSha256,
+    authoritativeWalmartDonorTitleProofSha256:
+      sourceBinding.authoritativeWalmartDonorTitleProofSha256,
   };
   const supersedesInvalidCanonicalCostIds = [
     ...scope.supersedesInvalidCanonicalCostIds,
@@ -2943,12 +2963,22 @@ async function preflightTarget(
       )
       || (
         source.component === null
-          ? !/^[a-f0-9]{64}$/.test(
-              componentTarget.sourceBinding
-                .authoritativeWalmartItemReportEvidenceSha256 ?? "",
+          ? (
+              !/^[a-f0-9]{64}$/.test(
+                componentTarget.sourceBinding
+                  .authoritativeWalmartItemReportEvidenceSha256 ?? "",
+              )
+              || !/^[a-f0-9]{64}$/.test(
+                componentTarget.sourceBinding
+                  .authoritativeWalmartDonorTitleProofSha256 ?? "",
+              )
             )
-          : componentTarget.sourceBinding
-              .authoritativeWalmartItemReportEvidenceSha256 !== null
+          : (
+              componentTarget.sourceBinding
+                .authoritativeWalmartItemReportEvidenceSha256 !== null
+              || componentTarget.sourceBinding
+                .authoritativeWalmartDonorTitleProofSha256 !== null
+            )
       )
       || rowHash(contentSourceOfferFields(source.offer))
         !== componentTarget.sourceBinding.contentSourceOfferSha256
