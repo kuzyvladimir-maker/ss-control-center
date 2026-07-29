@@ -2,26 +2,87 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  ProductTruthHeartbeatRetryPolicy,
   ProductTruthWorkerLease,
   ProductTruthWorkerLeaseExpiredError,
+  productTruthControlApiFailureDisposition,
   productTruthHeartbeatFailureRequiresTermination,
   retryProductTruthLeaseOperation,
   terminateProductTruthWorkerProcessTree,
 } from "../product-truth-worker-lease";
 
-test("lease accepts only canonical timestamps and advances monotonically", () => {
+test("lease accepts canonical timestamps, idempotent refresh and no regression", () => {
   assert.throws(
     () => new ProductTruthWorkerLease("2026-07-29 20:30:00Z"),
     /timestamp is not canonical/u,
   );
   const lease = new ProductTruthWorkerLease("2026-07-29T20:30:00.000Z");
   assert.equal(lease.expiresAt, "2026-07-29T20:30:00.000Z");
-  assert.throws(
-    () => lease.refresh("2026-07-29T20:30:00.000Z"),
-    /did not advance/u,
-  );
+  lease.refresh("2026-07-29T20:30:00.000Z");
   lease.refresh("2026-07-29T20:31:00.000Z");
   assert.equal(lease.expiresAt, "2026-07-29T20:31:00.000Z");
+  assert.throws(
+    () => lease.refresh("2026-07-29T20:30:59.999Z"),
+    /regressed/u,
+  );
+});
+
+test("control conflicts distinguish transient storage errors from authority loss", () => {
+  assert.deepEqual(
+    productTruthControlApiFailureDisposition({
+      status: 409,
+      code: "P2034",
+    }),
+    { retryable: true, authorityRejected: false },
+  );
+  assert.deepEqual(
+    productTruthControlApiFailureDisposition({
+      status: 409,
+      code: "STANDING_WAVE_WEB_REQUEST_FAILED",
+    }),
+    { retryable: true, authorityRejected: false },
+  );
+  assert.deepEqual(
+    productTruthControlApiFailureDisposition({
+      status: 409,
+      code: "STANDING_WAVE_WEB_LEASE_INVALID",
+    }),
+    { retryable: false, authorityRejected: true },
+  );
+  assert.deepEqual(
+    productTruthControlApiFailureDisposition({
+      status: 409,
+      code: "STANDING_WAVE_WEB_RESULT_MISMATCH",
+    }),
+    { retryable: false, authorityRejected: false },
+  );
+  assert.deepEqual(
+    productTruthControlApiFailureDisposition({
+      status: 401,
+      code: null,
+    }),
+    { retryable: false, authorityRejected: false },
+  );
+});
+
+test("heartbeat confirms an authority rejection once before terminating", () => {
+  const policy = new ProductTruthHeartbeatRetryPolicy();
+  assert.equal(
+    policy.shouldRetry({ retryable: false, authorityRejected: true }),
+    true,
+  );
+  assert.equal(
+    policy.shouldRetry({ retryable: false, authorityRejected: true }),
+    false,
+  );
+  assert.equal(
+    policy.shouldRetry({ retryable: true, authorityRejected: false }),
+    true,
+  );
+  assert.equal(
+    policy.shouldRetry({ retryable: false, authorityRejected: false }),
+    false,
+  );
 });
 
 test("one transient control failure retries without surrendering the lease", async () => {

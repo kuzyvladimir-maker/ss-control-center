@@ -33,8 +33,8 @@ export class ProductTruthWorkerLease {
 
   refresh(expiresAt: string): void {
     const next = exactLeaseTimestamp(expiresAt);
-    if (next <= this.#expiresAtMs) {
-      throw new Error("Product Truth worker lease did not advance");
+    if (next < this.#expiresAtMs) {
+      throw new Error("Product Truth worker lease regressed");
     }
     this.#expiresAtMs = next;
   }
@@ -57,6 +57,72 @@ export class ProductTruthWorkerLease {
 
   remainingMs(nowMs = Date.now()): number {
     return Math.max(0, this.#expiresAtMs - nowMs);
+  }
+}
+
+const PRODUCT_TRUTH_CONTROL_AUTHORITY_REJECTION_CODES = new Set([
+  "STANDING_WAVE_WEB_LEASE_INVALID",
+  "WORKER_LEASE_INVALID",
+]);
+
+const PRODUCT_TRUTH_CONTROL_TERMINAL_CONFLICT_CODES = new Set([
+  "STANDING_WAVE_WEB_ADMISSION_DRIFT",
+  "STANDING_WAVE_WEB_ARTIFACT_INVALID",
+  "STANDING_WAVE_WEB_LIMIT_INVALID",
+  "STANDING_WAVE_WEB_RESULT_MISMATCH",
+  "STANDING_WAVE_WEB_RESUME_BINDING_DRIFT",
+  "STANDING_WAVE_WEB_RESUME_FORBIDDEN",
+  "STANDING_WAVE_WEB_SOURCE_INVALID",
+  "STANDING_WAVE_WEB_STATUS_DRIFT",
+  "STANDING_WAVE_WEB_VALUE_INVALID",
+  "WORKER_COMMAND_FORBIDDEN",
+  "WORKER_REQUEST_ARTIFACT_INVALID",
+  "WORKER_RESULT_COMMAND_MISMATCH",
+]);
+
+export function productTruthControlApiFailureDisposition(input: {
+  status: number;
+  code: string | null;
+}): {
+  retryable: boolean;
+  authorityRejected: boolean;
+} {
+  const authorityRejected =
+    input.code !== null
+    && PRODUCT_TRUTH_CONTROL_AUTHORITY_REJECTION_CODES.has(input.code);
+  if (authorityRejected) {
+    return { retryable: false, authorityRejected: true };
+  }
+  if (
+    input.code !== null
+    && PRODUCT_TRUTH_CONTROL_TERMINAL_CONFLICT_CODES.has(input.code)
+  ) {
+    return { retryable: false, authorityRejected: false };
+  }
+  return {
+    retryable:
+      input.status === 408
+      || input.status === 409
+      || input.status === 425
+      || input.status === 429
+      || input.status >= 500,
+    authorityRejected: false,
+  };
+}
+
+export class ProductTruthHeartbeatRetryPolicy {
+  #authorityRejections = 0;
+
+  shouldRetry(input: {
+    retryable: boolean;
+    authorityRejected: boolean;
+  }): boolean {
+    if (input.retryable) return true;
+    if (input.authorityRejected && this.#authorityRejections === 0) {
+      this.#authorityRejections += 1;
+      return true;
+    }
+    return false;
   }
 }
 

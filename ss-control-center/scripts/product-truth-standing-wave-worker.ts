@@ -34,7 +34,9 @@ import {
 import {
   PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS,
   PRODUCT_TRUTH_WORKER_HEARTBEAT_MS,
+  ProductTruthHeartbeatRetryPolicy,
   ProductTruthWorkerLease,
+  productTruthControlApiFailureDisposition,
   productTruthHeartbeatFailureRequiresTermination,
   retryProductTruthLeaseOperation,
   terminateProductTruthWorkerProcessTree,
@@ -96,11 +98,26 @@ class WorkerStageError extends Error {
 
 class WorkerControlApiError extends Error {
   readonly retryable: boolean;
+  readonly authorityRejected: boolean;
+  readonly code: string | null;
 
-  constructor(message: string, retryable: boolean, cause?: unknown) {
-    super(message, { cause });
+  constructor(
+    message: string,
+    options: {
+      retryable: boolean;
+      authorityRejected?: boolean;
+      code?: string | null;
+      cause?: unknown;
+    },
+  ) {
+    super(
+      message,
+      options.cause === undefined ? undefined : { cause: options.cause },
+    );
     this.name = "WorkerControlApiError";
-    this.retryable = retryable;
+    this.retryable = options.retryable;
+    this.authorityRejected = options.authorityRejected ?? false;
+    this.code = options.code ?? null;
   }
 }
 
@@ -354,8 +371,7 @@ async function api(
   } catch (error) {
     throw new WorkerControlApiError(
       `control API ${path} was temporarily unreachable`,
-      true,
-      error,
+      { retryable: true, cause: error },
     );
   }
   let value: unknown;
@@ -364,8 +380,15 @@ async function api(
   } catch (error) {
     throw new WorkerControlApiError(
       `control API ${path} returned unreadable JSON`,
-      response.ok || response.status >= 500,
-      error,
+      {
+        retryable:
+          response.ok
+          || productTruthControlApiFailureDisposition({
+            status: response.status,
+            code: null,
+          }).retryable,
+        cause: error,
+      },
     );
   }
   if (
@@ -374,12 +397,22 @@ async function api(
     || typeof value !== "object"
     || Array.isArray(value)
   ) {
+    const code =
+      value !== null
+      && typeof value === "object"
+      && !Array.isArray(value)
+      && typeof (value as { code?: unknown }).code === "string"
+        ? (value as { code: string }).code
+        : null;
+    const disposition = productTruthControlApiFailureDisposition({
+      status: response.status,
+      code,
+    });
     throw new WorkerControlApiError(
-      `control API ${path} returned HTTP ${response.status}`,
-      response.status === 408
-        || response.status === 425
-        || response.status === 429
-        || response.status >= 500,
+      `control API ${path} returned HTTP ${response.status}${
+        code ? ` (${code})` : ""
+      }`,
+      { ...disposition, code },
     );
   }
   return value as Record<string, unknown>;
@@ -399,6 +432,36 @@ async function leaseBoundApi(
     lease,
     shouldRetry: retryableControlError,
     operation: () => api(runtime, path, body),
+  });
+}
+
+async function heartbeatLeaseBoundApi(
+  runtime: WorkerRuntime,
+  lease: ProductTruthWorkerLease,
+  path: string,
+  body: unknown,
+): Promise<void> {
+  const retryPolicy = new ProductTruthHeartbeatRetryPolicy();
+  await retryProductTruthLeaseOperation({
+    lease,
+    shouldRetry: (error) =>
+      retryPolicy.shouldRetry({
+        retryable: retryableControlError(error),
+        authorityRejected:
+          error instanceof WorkerControlApiError
+          && error.authorityRejected,
+      }),
+    operation: async () => {
+      const response = await api(runtime, path, body);
+      try {
+        refreshLease(lease, response);
+      } catch (error) {
+        throw new WorkerControlApiError(
+          `control API ${path} returned an invalid lease renewal`,
+          { retryable: true, cause: error },
+        );
+      }
+    },
   });
 }
 
@@ -837,12 +900,12 @@ async function executeClaim(
   const workspace = join(runtime.custodyRoot, claim.workspace_key);
   let providerBoundaryStarted = false;
   const heartbeat = async () => {
-    const response = await api(
+    await heartbeatLeaseBoundApi(
       runtime,
+      lease,
       `/api/external/product-truth/standing-wave/${claim.command_id}/heartbeat`,
       { lease_token: claim.lease_token },
     );
-    refreshLease(lease, response);
   };
   let result: ProductTruthStandingWaveWebResult;
   try {
