@@ -37,17 +37,19 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.7.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.8.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.7.0" as const;
+  "product-truth-legacy-bridge-plan/1.8.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.7.0" as const;
+  "product-truth-legacy-bridge-policy/1.8.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
   "product-truth-direct-target-content-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION =
   "product-truth-authoritative-walmart-item-report-evidence/1.0.0" as const;
+export const PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION =
+  "product-truth-bundle-factory-recipe-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS =
   24 * 60 * 60 * 1_000;
 
@@ -70,6 +72,7 @@ export type ProductTruthBridgeIdentityProof =
   | "EXACT_GTIN"
   | "EXACT_LIVE_IMAGE_BARCODE"
   | "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE"
+  | "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN"
   | "STRICT_TITLE_MATCH"
   | "NONE";
 
@@ -361,6 +364,45 @@ export interface ProductTruthAuthoritativeWalmartItemReportEvidenceRow {
   evidenceRowSha256: string;
 }
 
+/**
+ * Immutable recovery evidence from the legacy Bundle Factory graph. This is
+ * migration input into Product Truth, never a competing runtime catalog.
+ *
+ * `componentUnitCount` is the number of consumer units represented by the
+ * component in the sellable bundle. The bridge converts it to retail-package
+ * quantity only when the exact GTIN donor exposes one unambiguous inner count
+ * and the division has no remainder.
+ */
+export interface ProductTruthBundleFactoryRecipeEvidenceRow {
+  schemaVersion:
+    typeof PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION;
+  listingKey: string;
+  storeIndex: number;
+  sku: string;
+  asin: string;
+  listingTitle: string;
+  channelSkuId: string;
+  channelSkuUpdatedAt: string;
+  masterBundleId: string;
+  masterBundleName: string;
+  masterBundlePackCount: number;
+  masterBundleUpdatedAt: string;
+  componentId: string;
+  componentIndex: number;
+  componentUpdatedAt: string;
+  productName: string;
+  manufacturerBrand: string;
+  manufacturerUpc: string;
+  normalizedGtin14: string;
+  flavor: string | null;
+  variant: string | null;
+  componentUnitCount: number;
+  unitWeightOz: number | null;
+  unitWeightLb: number | null;
+  sourceUrl: string | null;
+  evidenceRowSha256: string;
+}
+
 export interface ProductTruthLegacyBridgeSnapshot {
   schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION;
   capturedAt: string;
@@ -376,6 +418,8 @@ export interface ProductTruthLegacyBridgeSnapshot {
   directTargetContentEvidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
   authoritativeWalmartItemReportEvidence:
     ProductTruthAuthoritativeWalmartItemReportEvidenceRow[];
+  bundleFactoryRecipeEvidence?:
+    ProductTruthBundleFactoryRecipeEvidenceRow[];
 }
 
 export interface ProductTruthBridgeBlocker {
@@ -1870,6 +1914,16 @@ function authoritativeWalmartEvidenceCore(
   return core;
 }
 
+export function productTruthBundleFactoryEvidenceCore(
+  evidence: ProductTruthBundleFactoryRecipeEvidenceRow,
+): Omit<ProductTruthBundleFactoryRecipeEvidenceRow, "evidenceRowSha256"> {
+  const core = { ...evidence };
+  delete (
+    core as Partial<ProductTruthBundleFactoryRecipeEvidenceRow>
+  ).evidenceRowSha256;
+  return core;
+}
+
 function authoritativeWalmartDonorBaseTitle(
   value: string | null | undefined,
 ): ReturnType<
@@ -1984,6 +2038,180 @@ function authoritativeWalmartPackageSize(input: {
     return input.donorTitle;
   }
   return null;
+}
+
+function explicitRetailPackageInnerCount(
+  donor: ProductTruthLegacyBridgeDonorRow,
+): number | null {
+  const countValues = [
+    ...String(donor.title ?? "").matchAll(
+      /(?:^|[^\d])(\d{1,3})\s*(?:count|ct\.?)(?=$|[^a-z])/gi,
+    ),
+    ...String(donor.size ?? "").matchAll(
+      /(?:^|[^\d])(\d{1,3})\s*(?:count|ct\.?)(?=$|[^a-z])/gi,
+    ),
+  ]
+    .map((match) => Number(match[1]))
+    .filter((value) => Number.isInteger(value) && value > 0 && value <= 999);
+  const distinct = [...new Set(countValues)];
+  return distinct.length === 1 ? distinct[0]! : null;
+}
+
+function recoverBundleFactoryRecipeScope(input: {
+  listing: ProductTruthLegacyBridgeListingRow;
+  legacyComponents: readonly ProductTruthLegacyBridgeComponentRow[];
+  evidence: readonly ProductTruthBundleFactoryRecipeEvidenceRow[];
+  donorsByGtin: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeDonorRow[]
+  >;
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+  directTargetContentEvidenceByDonor: ReadonlyMap<
+    string,
+    ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
+  >;
+  offersById: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow>;
+  offersByDonor: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeOfferRow[]
+  >;
+}): ProductTruthLegacyBridgeScopePlan | null {
+  const { listing } = input;
+  if (
+    listing.channel !== "amazon"
+    || input.legacyComponents.length !== 0
+    || input.evidence.length === 0
+  ) return null;
+  const evidence = [...input.evidence].sort(
+    (left, right) =>
+      left.componentIndex - right.componentIndex
+      || left.componentId.localeCompare(right.componentId),
+  );
+  const first = evidence[0]!;
+  if (
+    evidence.some((row, index) =>
+      row.schemaVersion
+        !== PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION
+      || row.listingKey !== listing.listingKey
+      || row.storeIndex !== listing.storeIndex
+      || row.sku !== listing.sku
+      || row.channelSkuId !== first.channelSkuId
+      || row.masterBundleId !== first.masterBundleId
+      || row.masterBundlePackCount !== first.masterBundlePackCount
+      || row.componentIndex !== index
+      || row.evidenceRowSha256
+        !== productTruthOperationalSha256(
+          productTruthBundleFactoryEvidenceCore(row),
+        )
+      || !Number.isFinite(Date.parse(row.channelSkuUpdatedAt))
+      || !Number.isFinite(Date.parse(row.masterBundleUpdatedAt))
+      || !Number.isFinite(Date.parse(row.componentUpdatedAt))
+      || !Number.isInteger(row.componentUnitCount)
+      || row.componentUnitCount < 1
+    )
+    || new Set(evidence.map((row) => row.componentId)).size
+      !== evidence.length
+    || !Number.isInteger(first.masterBundlePackCount)
+    || first.masterBundlePackCount < 1
+    || evidence.reduce(
+      (total, row) => total + row.componentUnitCount,
+      0,
+    ) !== first.masterBundlePackCount
+  ) return null;
+
+  const components: ProductTruthLegacyBridgeComponentPlan[] = [];
+  for (const row of evidence) {
+    if (
+      normalizeProductTruthBridgeGtin(row.manufacturerUpc)
+        !== row.normalizedGtin14
+    ) return null;
+    const donors = input.donorsByGtin.get(row.normalizedGtin14) ?? [];
+    if (donors.length !== 1) return null;
+    const donor = donors[0]!;
+    const donorGtin = normalizeProductTruthBridgeGtin(donor.upc)
+      ?? normalizeProductTruthBridgeGtin(donor.gtin);
+    if (donorGtin !== row.normalizedGtin14 || !donor.title) return null;
+    const brandTokens = foldedTokens(row.manufacturerBrand);
+    const productTokens = foldedTokens(row.productName);
+    const donorTitleTokens = new Set(foldedTokens(donor.title));
+    if (
+      brandTokens.length === 0
+      || productTokens.length === 0
+      || !brandTokens.every((token) => donorTitleTokens.has(token))
+      || !productTokens.every((token) => donorTitleTokens.has(token))
+    ) return null;
+    const innerCount = explicitRetailPackageInnerCount(donor);
+    if (
+      innerCount === null
+      || row.componentUnitCount % innerCount !== 0
+    ) return null;
+    const size = authoritativeWalmartPackageSize({
+      donorTitle: donor.title,
+      donorSize: donor.size,
+      donorAttributes: donor.attributes,
+      legacyComponentSize: null,
+    });
+    if (!size) return null;
+    const targetIdentity: CanonicalProductIdentity = {
+      brand: row.manufacturerBrand,
+      productLine: row.productName,
+      flavor: null,
+      modifiers: row.variant?.trim() ? [row.variant.trim()] : [],
+      form: null,
+      size,
+      outerPackCount: 1,
+    };
+    let targetVariant: ProductTruthBridgeCanonicalVariantProjection;
+    try {
+      targetVariant = projectVariant(
+        buildCanonicalProductVariantKey(targetIdentity),
+      );
+    } catch {
+      return null;
+    }
+    if (
+      canonicalDonorConflictBlocker({
+        donor,
+        targetVariant,
+        canonicalDonorBindings: input.canonicalDonorBindings,
+      })
+    ) return null;
+    const directTargetEvidence =
+      input.directTargetContentEvidenceByDonor.get(donor.id) ?? null;
+    const contentSourceOffer = directTargetEvidence
+      ? input.offersById.get(directTargetEvidence.offerId) ?? null
+      : chooseContentSourceOffer(donor.id, input.offersByDonor);
+    if (!contentSourceOffer) return null;
+    const contentAssessment = assessLegacyContent(
+      donor,
+      contentSourceOffer,
+      null,
+      directTargetEvidence,
+    );
+    components.push({
+      componentIndex: row.componentIndex,
+      qty: row.componentUnitCount / innerCount,
+      legacyComponentId: null,
+      donorProductId: donor.id,
+      legacyDonorProductId: null,
+      donorOfferId: null,
+      contentSourceOfferId: contentSourceOffer.id,
+      identityProof: "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN",
+      contentAssessment,
+      targetIdentity,
+      targetVariant,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: contentAssessment.complete
+        ? "EXACT_CONTENT_ONLY_CANDIDATE"
+        : "EXACT_IDENTITY_ONLY_CANDIDATE",
+      blockers: [],
+    });
+  }
+  return aggregateScope(listing, components, []);
 }
 
 function explicitDonorAttributeBrand(attributes: string | null): string | null {
@@ -2634,6 +2862,66 @@ export function compileProductTruthLegacyBridgePlan(input: {
       evidence,
     );
   }
+  const bundleFactoryEvidenceByListing = new Map<
+    string,
+    ProductTruthBundleFactoryRecipeEvidenceRow[]
+  >();
+  for (const evidence of input.snapshot.bundleFactoryRecipeEvidence ?? []) {
+    const listing = listingsByKey.get(evidence.listingKey);
+    const instants = [
+      evidence.channelSkuUpdatedAt,
+      evidence.masterBundleUpdatedAt,
+      evidence.componentUpdatedAt,
+    ];
+    if (
+      evidence.schemaVersion
+        !== PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION
+      || !listing
+      || listing.channel !== "amazon"
+      || listing.storeIndex !== evidence.storeIndex
+      || listing.sku !== evidence.sku
+      || !evidence.asin
+      || !evidence.listingTitle
+      || !evidence.channelSkuId
+      || !evidence.masterBundleId
+      || !evidence.masterBundleName
+      || !evidence.componentId
+      || !evidence.productName
+      || !evidence.manufacturerBrand
+      || normalizeProductTruthBridgeGtin(evidence.manufacturerUpc)
+        !== evidence.normalizedGtin14
+      || !Number.isInteger(evidence.componentIndex)
+      || evidence.componentIndex < 0
+      || !Number.isInteger(evidence.componentUnitCount)
+      || evidence.componentUnitCount < 1
+      || !Number.isInteger(evidence.masterBundlePackCount)
+      || evidence.masterBundlePackCount < 1
+      || instants.some(
+        (instant) =>
+          !Number.isFinite(Date.parse(instant))
+          || Date.parse(instant) > Date.parse(input.snapshot.capturedAt),
+      )
+      || evidence.evidenceRowSha256
+        !== productTruthOperationalSha256(
+          productTruthBundleFactoryEvidenceCore(evidence),
+        )
+    ) {
+      throw new Error(
+        `LEGACY_BRIDGE_BUNDLE_FACTORY_EVIDENCE_INVALID:${evidence.listingKey}`,
+      );
+    }
+    const rows =
+      bundleFactoryEvidenceByListing.get(evidence.listingKey) ?? [];
+    rows.push(evidence);
+    bundleFactoryEvidenceByListing.set(evidence.listingKey, rows);
+  }
+  for (const rows of bundleFactoryEvidenceByListing.values()) {
+    rows.sort(
+      (left, right) =>
+        left.componentIndex - right.componentIndex
+        || left.componentId.localeCompare(right.componentId),
+    );
+  }
   const donorsById = new Map(input.snapshot.donors.map((row) => [row.id, row]));
   const donorsByGtin = new Map<string, ProductTruthLegacyBridgeDonorRow[]>();
   for (const donor of input.snapshot.donors) {
@@ -2742,6 +3030,23 @@ export function compileProductTruthLegacyBridgePlan(input: {
       const scopeBlockers = [...parsed.blockers];
       const legacyComponents = componentsBySku.get(listing.sku) ?? [];
       if (!parsed.identity) {
+        const bundleFactoryRecovered = recoverBundleFactoryRecipeScope({
+          listing,
+          legacyComponents,
+          evidence:
+            bundleFactoryEvidenceByListing.get(listing.listingKey) ?? [],
+          donorsByGtin,
+          canonicalDonorBindings,
+          directTargetContentEvidenceByDonor,
+          offersById,
+          offersByDonor,
+        });
+        if (bundleFactoryRecovered) {
+          return classifyExistingCanonicalScope(
+            bundleFactoryRecovered,
+            canonicalComponentsByListing.get(listing.listingKey) ?? [],
+          );
+        }
         const recovered = recoverAuthoritativeWalmartReportScope({
           listing,
           legacyComponents,

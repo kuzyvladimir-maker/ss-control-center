@@ -13,6 +13,7 @@ import {
 import { buildCanonicalProductVariantKey } from "./canonical-product-variant";
 import {
   normalizeProductTruthBridgeGtin,
+  PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
@@ -20,6 +21,7 @@ import {
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeCanonicalDonorBindingRow,
+  type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthLegacyBridgeComponentRow,
   type ProductTruthLegacyBridgeComponentPlan,
   type ProductTruthLegacyBridgeDonorRow,
@@ -54,13 +56,13 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.7.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.8.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.7.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.8.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
-  "product-truth-legacy-bridge-preflight-report/2.2.0" as const;
+  "product-truth-legacy-bridge-preflight-report/2.3.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
   "product-truth-legacy-bridge-standing-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION =
@@ -165,6 +167,8 @@ export interface ProductTruthLegacyBridgeSourceBinding {
   legacyComponentSha256: string | null;
   authoritativeWalmartItemReportEvidenceSha256: string | null;
   authoritativeWalmartDonorTitleProofSha256: string | null;
+  bundleFactoryComponentId: string | null;
+  bundleFactoryComponentEvidenceSha256: string | null;
   donorProductSha256: string;
   donorContentSha256: string;
   contentSourceOfferSha256: string;
@@ -633,6 +637,7 @@ function contentPayload(input: {
     | "componentBarcodeEvidenceSha256"
     | "directTargetContentEvidenceSha256"
     | "authoritativeWalmartDonorTitleProofSha256"
+    | "bundleFactoryComponentEvidenceSha256"
   >;
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
@@ -1217,6 +1222,18 @@ function singleComponentDraftFromScope(input: {
       === "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE"
     && componentPlan.legacyComponentId === null
     && authoritativeWalmartTitleEvidence !== null;
+  const bundleFactoryComponentEvidence =
+    (input.snapshot.bundleFactoryRecipeEvidence ?? []).find(
+      (row) =>
+        row.listingKey === input.listingKey
+        && row.componentIndex === input.componentIndex,
+    ) ?? null;
+  const bundleFactoryComponentProof =
+    componentPlan.matcherVerdict === null
+    && componentPlan.identityProof
+      === "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN"
+    && componentPlan.legacyComponentId === null
+    && bundleFactoryComponentEvidence !== null;
   if (
     ![
       "EXACT_CONTENT_ONLY_CANDIDATE",
@@ -1226,6 +1243,7 @@ function singleComponentDraftFromScope(input: {
       !strictTitleProof
       && !exactLiveBarcodeProof
       && !authoritativeWalmartTitleProof
+      && !bundleFactoryComponentProof
     )
     || !componentPlan.targetIdentity
     || !componentPlan.targetVariant
@@ -1288,6 +1306,17 @@ function singleComponentDraftFromScope(input: {
       && component !== null
     )
     || offer.donorProductId !== donor.id
+    || (
+      bundleFactoryComponentProof
+      && (
+        bundleFactoryComponentEvidence?.componentId === undefined
+        || (
+          normalizeProductTruthBridgeGtin(donor.upc)
+          ?? normalizeProductTruthBridgeGtin(donor.gtin)
+        )
+          !== bundleFactoryComponentEvidence.normalizedGtin14
+      )
+    )
   ) {
     fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} source graph is broken`);
   }
@@ -1381,6 +1410,14 @@ function singleComponentDraftFromScope(input: {
               CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
           })
         : null,
+    bundleFactoryComponentId:
+      bundleFactoryComponentProof
+        ? bundleFactoryComponentEvidence?.componentId ?? null
+        : null,
+    bundleFactoryComponentEvidenceSha256:
+      bundleFactoryComponentProof
+        ? bundleFactoryComponentEvidence?.evidenceRowSha256 ?? null
+        : null,
     donorProductSha256: rowHash(donor),
     donorContentSha256: rowHash(sourceContentFields(donor)),
     contentSourceOfferSha256: rowHash(contentSourceOfferFields(offer)),
@@ -1403,6 +1440,8 @@ function singleComponentDraftFromScope(input: {
       sourceBinding.directTargetContentEvidenceSha256,
     authoritativeWalmartDonorTitleProofSha256:
       sourceBinding.authoritativeWalmartDonorTitleProofSha256,
+    bundleFactoryComponentEvidenceSha256:
+      sourceBinding.bundleFactoryComponentEvidenceSha256,
   };
   const supersedesInvalidCanonicalCostIds = [
     ...scope.supersedesInvalidCanonicalCostIds,
@@ -2742,6 +2781,9 @@ async function readCurrentSourceRows(
 ): Promise<{
   listing: ProductTruthLegacyBridgeListingRow;
   component: ProductTruthLegacyBridgeComponentRow | null;
+  bundleFactoryComponent:
+    Omit<ProductTruthBundleFactoryRecipeEvidenceRow, "evidenceRowSha256">
+    | null;
   donor: ProductTruthLegacyBridgeDonorRow;
   offer: ProductTruthLegacyBridgeOfferRow;
   donorRaw: Row;
@@ -2774,6 +2816,41 @@ async function readCurrentSourceRows(
           FROM SkuComponent WHERE id=?`,
         args: [componentTarget.legacyComponentId],
       })).rows[0];
+  const bundleFactoryRow =
+    componentTarget.sourceBinding.bundleFactoryComponentId === null
+      ? null
+      : (await db.execute({
+          sql: `SELECT
+            scope.listingKey, scope.storeIndex, scope.sku,
+            channel.id AS channelSkuId,
+            channel.asin,
+            channel.title AS listingTitle,
+            channel.updated_at AS channelSkuUpdatedAt,
+            bundle.id AS masterBundleId,
+            bundle.name AS masterBundleName,
+            bundle.pack_count AS masterBundlePackCount,
+            bundle.updated_at AS masterBundleUpdatedAt,
+            component.id AS componentId,
+            component.product_name AS productName,
+            component.manufacturer_brand AS manufacturerBrand,
+            component.manufacturer_upc AS manufacturerUpc,
+            component.flavor,
+            component.variant,
+            component.qty AS componentUnitCount,
+            component.unit_weight_oz AS unitWeightOz,
+            component.unit_weight_lb AS unitWeightLb,
+            component.source_url AS sourceUrl,
+            component.updated_at AS componentUpdatedAt
+          FROM BundleComponent component
+          JOIN MasterBundle bundle ON bundle.id=component.master_bundle_id
+          JOIN ChannelSKU channel ON channel.master_bundle_id=bundle.id
+          JOIN ProductTruthListingScope scope ON scope.sku=channel.sku
+          WHERE component.id=? AND scope.listingKey=?`,
+          args: [
+            componentTarget.sourceBinding.bundleFactoryComponentId,
+            target.listingKey,
+          ],
+        })).rows[0];
   const donorRow = (await db.execute({
     sql: `SELECT
       id, brand, productLine, flavor, containerType, size, category, upc, gtin,
@@ -2797,6 +2874,10 @@ async function readCurrentSourceRows(
     || (
       componentTarget.legacyComponentId !== null
       && !componentRow
+    )
+    || (
+      componentTarget.sourceBinding.bundleFactoryComponentId !== null
+      && !bundleFactoryRow
     )
     || !donorRow
     || !offerRow
@@ -2840,6 +2921,44 @@ async function readCurrentSourceRows(
     priceEvidenceDonorProductId: nullableText(componentRow.priceEvidenceDonorProductId),
     priceEvidenceOfferId: nullableText(componentRow.priceEvidenceOfferId),
     } : null;
+  const bundleFactoryComponent:
+    Omit<ProductTruthBundleFactoryRecipeEvidenceRow, "evidenceRowSha256">
+    | null = bundleFactoryRow
+      ? {
+          schemaVersion:
+            PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
+          listingKey: String(bundleFactoryRow.listingKey),
+          storeIndex: Number(bundleFactoryRow.storeIndex),
+          sku: String(bundleFactoryRow.sku),
+          asin: String(bundleFactoryRow.asin),
+          listingTitle: String(bundleFactoryRow.listingTitle),
+          channelSkuId: String(bundleFactoryRow.channelSkuId),
+          channelSkuUpdatedAt: String(bundleFactoryRow.channelSkuUpdatedAt),
+          masterBundleId: String(bundleFactoryRow.masterBundleId),
+          masterBundleName: String(bundleFactoryRow.masterBundleName),
+          masterBundlePackCount:
+            Number(bundleFactoryRow.masterBundlePackCount),
+          masterBundleUpdatedAt:
+            String(bundleFactoryRow.masterBundleUpdatedAt),
+          componentId: String(bundleFactoryRow.componentId),
+          componentIndex: componentTarget.componentIndex,
+          componentUpdatedAt:
+            String(bundleFactoryRow.componentUpdatedAt),
+          productName: String(bundleFactoryRow.productName),
+          manufacturerBrand: String(bundleFactoryRow.manufacturerBrand),
+          manufacturerUpc: String(bundleFactoryRow.manufacturerUpc),
+          normalizedGtin14:
+            normalizeProductTruthBridgeGtin(
+              String(bundleFactoryRow.manufacturerUpc),
+            ) ?? "",
+          flavor: nullableText(bundleFactoryRow.flavor),
+          variant: nullableText(bundleFactoryRow.variant),
+          componentUnitCount: Number(bundleFactoryRow.componentUnitCount),
+          unitWeightOz: nullableNumber(bundleFactoryRow.unitWeightOz),
+          unitWeightLb: nullableNumber(bundleFactoryRow.unitWeightLb),
+          sourceUrl: nullableText(bundleFactoryRow.sourceUrl),
+        }
+      : null;
   const donor: ProductTruthLegacyBridgeDonorRow = {
     id: String(donorRow.id),
     brand: nullableText(donorRow.brand),
@@ -2881,7 +3000,14 @@ async function readCurrentSourceRows(
     sourceApi: nullableText(offerRow.sourceApi),
     fetchedAt: nullableText(offerRow.fetchedAt),
   };
-  return { listing, component, donor, offer, donorRaw: donorRow };
+  return {
+    listing,
+    component,
+    bundleFactoryComponent,
+    donor,
+    offer,
+    donorRaw: donorRow,
+  };
 }
 
 function donorExactProjectionMatches(
@@ -2952,6 +3078,45 @@ async function preflightTarget(
       target,
       componentTarget,
     );
+    const walmartSyntheticSourceValid =
+      /^[a-f0-9]{64}$/.test(
+        componentTarget.sourceBinding
+          .authoritativeWalmartItemReportEvidenceSha256 ?? "",
+      )
+      && /^[a-f0-9]{64}$/.test(
+        componentTarget.sourceBinding
+          .authoritativeWalmartDonorTitleProofSha256 ?? "",
+      )
+      && componentTarget.sourceBinding.bundleFactoryComponentId === null
+      && componentTarget.sourceBinding
+        .bundleFactoryComponentEvidenceSha256 === null
+      && source.bundleFactoryComponent === null;
+    const bundleFactorySyntheticSourceValid =
+      componentTarget.sourceBinding
+        .authoritativeWalmartItemReportEvidenceSha256 === null
+      && componentTarget.sourceBinding
+        .authoritativeWalmartDonorTitleProofSha256 === null
+      && componentTarget.sourceBinding.bundleFactoryComponentId !== null
+      && /^[a-f0-9]{64}$/.test(
+        componentTarget.sourceBinding
+          .bundleFactoryComponentEvidenceSha256 ?? "",
+      )
+      && source.bundleFactoryComponent !== null
+      && rowHash(source.bundleFactoryComponent)
+        === componentTarget.sourceBinding
+          .bundleFactoryComponentEvidenceSha256;
+    const sourceKindValid = source.component === null
+      ? walmartSyntheticSourceValid || bundleFactorySyntheticSourceValid
+      : (
+          componentTarget.sourceBinding
+            .authoritativeWalmartItemReportEvidenceSha256 === null
+          && componentTarget.sourceBinding
+            .authoritativeWalmartDonorTitleProofSha256 === null
+          && componentTarget.sourceBinding.bundleFactoryComponentId === null
+          && componentTarget.sourceBinding
+            .bundleFactoryComponentEvidenceSha256 === null
+          && source.bundleFactoryComponent === null
+        );
     if (
       rowHash(sourceListingFields(source.listing))
         !== componentTarget.sourceBinding.listingSha256
@@ -2961,25 +3126,7 @@ async function preflightTarget(
           : rowHash(sourceComponentFields(source.component))
             !== componentTarget.sourceBinding.legacyComponentSha256
       )
-      || (
-        source.component === null
-          ? (
-              !/^[a-f0-9]{64}$/.test(
-                componentTarget.sourceBinding
-                  .authoritativeWalmartItemReportEvidenceSha256 ?? "",
-              )
-              || !/^[a-f0-9]{64}$/.test(
-                componentTarget.sourceBinding
-                  .authoritativeWalmartDonorTitleProofSha256 ?? "",
-              )
-            )
-          : (
-              componentTarget.sourceBinding
-                .authoritativeWalmartItemReportEvidenceSha256 !== null
-              || componentTarget.sourceBinding
-                .authoritativeWalmartDonorTitleProofSha256 !== null
-            )
-      )
+      || !sourceKindValid
       || rowHash(contentSourceOfferFields(source.offer))
         !== componentTarget.sourceBinding.contentSourceOfferSha256
     ) {

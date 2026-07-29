@@ -27,11 +27,14 @@ import {
 } from "../product-truth-legacy-bridge-apply";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
+  productTruthBundleFactoryEvidenceCore,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthDirectTargetContentEvidence,
+  type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthLegacyBridgeSnapshot,
 } from "../product-truth-legacy-bridge";
 import {
@@ -208,6 +211,77 @@ function sourceFixture(): {
     bridgePlanSha256: productTruthLegacyBridgeBytesSha256(bridgePlanJson),
     listingKeys: listings.map((listing) => listing.listingKey),
   };
+}
+
+function bundleFactoryRecoveryFixture(): ReturnType<typeof sourceFixture> {
+  const base = sourceFixture().snapshot;
+  const listing = {
+    ...base.listings[0]!,
+    channel: "amazon" as const,
+    listingKey: `amazon:${base.listings[0]!.storeIndex}:${base.listings[0]!.sku}`,
+    productIdentityJson: null,
+    productIdentityUpdatedAt: null,
+  };
+  const donor = {
+    ...base.donors[0]!,
+    size: "4 Count",
+    title:
+      "Acme Brand 1 Crunch Chips Original, 4 Count, 2 oz Each",
+    description: null,
+  };
+  const offer = {
+    ...base.offers[0]!,
+    donorProductId: donor.id,
+  };
+  const evidenceCore = {
+    schemaVersion:
+      PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
+    listingKey: listing.listingKey,
+    storeIndex: listing.storeIndex,
+    sku: listing.sku,
+    asin: "B012345678",
+    listingTitle:
+      "Acme Brand 1 Crunch Chips Original Variety Pack, 12 Count",
+    channelSkuId: "channel-sku-1",
+    channelSkuUpdatedAt: "2026-07-26T09:00:00.000Z",
+    masterBundleId: "master-bundle-1",
+    masterBundleName: "Acme Crunch Chips Original — 12 Count",
+    masterBundlePackCount: 12,
+    masterBundleUpdatedAt: "2026-07-26T09:00:00.000Z",
+    componentId: "bundle-component-1",
+    componentIndex: 0,
+    componentUpdatedAt: "2026-07-26T09:00:00.000Z",
+    productName: "Crunch Chips Original",
+    manufacturerBrand: "Acme Brand 1",
+    manufacturerUpc: VALID_UPC,
+    normalizedGtin14: "00036000291452",
+    flavor: "Original",
+    variant: null,
+    componentUnitCount: 12,
+    unitWeightOz: 2,
+    unitWeightLb: null,
+    sourceUrl: offer.productUrl,
+  };
+  const evidence: ProductTruthBundleFactoryRecipeEvidenceRow = {
+    ...evidenceCore,
+    evidenceRowSha256: productTruthOperationalSha256(
+      productTruthBundleFactoryEvidenceCore(
+        evidenceCore as ProductTruthBundleFactoryRecipeEvidenceRow,
+      ),
+    ),
+  };
+  return rebuildFixture({
+    ...base,
+    manifest: { ...base.manifest, listingCount: 1 },
+    listings: [listing],
+    components: [],
+    donors: [donor],
+    offers: [offer],
+    bundleFactoryRecipeEvidence: [evidence],
+  }, {
+    contentOnly: 0,
+    identityOnly: 1,
+  });
 }
 
 function rebuildFixture(
@@ -884,6 +958,34 @@ async function createSchema(db: Client): Promise<void> {
       gmv30d REAL, orders30d INTEGER, units30d INTEGER, scoredAt DATETIME,
       UNIQUE(storeIndex, sku)
     );
+    CREATE TABLE MasterBundle (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      pack_count INTEGER NOT NULL,
+      updated_at DATETIME NOT NULL
+    );
+    CREATE TABLE ChannelSKU (
+      id TEXT PRIMARY KEY,
+      master_bundle_id TEXT NOT NULL,
+      sku TEXT NOT NULL UNIQUE,
+      asin TEXT,
+      title TEXT NOT NULL,
+      updated_at DATETIME NOT NULL
+    );
+    CREATE TABLE BundleComponent (
+      id TEXT PRIMARY KEY,
+      master_bundle_id TEXT NOT NULL,
+      product_name TEXT NOT NULL,
+      manufacturer_brand TEXT NOT NULL,
+      manufacturer_upc TEXT,
+      flavor TEXT,
+      variant TEXT,
+      qty INTEGER NOT NULL,
+      unit_weight_oz REAL,
+      unit_weight_lb REAL,
+      source_url TEXT,
+      updated_at DATETIME NOT NULL
+    );
   `);
   for (const migrationId of MIGRATION_IDS) {
     const migration = new URL(
@@ -942,6 +1044,61 @@ async function seededDatabase(
         `quality-${listing.sku}`, listing.storeIndex, listing.sku,
         listing.priorityGmv30d, listing.priorityOrders30d,
         listing.priorityUnits30d, listing.priorityObservedAt,
+      ],
+    });
+  }
+  const seededBundleIds = new Set<string>();
+  const seededChannelSkuIds = new Set<string>();
+  for (const evidence of fixture.snapshot.bundleFactoryRecipeEvidence ?? []) {
+    if (!seededBundleIds.has(evidence.masterBundleId)) {
+      await db.execute({
+        sql: `INSERT INTO MasterBundle (
+          id,name,pack_count,updated_at
+        ) VALUES (?,?,?,?)`,
+        args: [
+          evidence.masterBundleId,
+          evidence.masterBundleName,
+          evidence.masterBundlePackCount,
+          evidence.masterBundleUpdatedAt,
+        ],
+      });
+      seededBundleIds.add(evidence.masterBundleId);
+    }
+    if (!seededChannelSkuIds.has(evidence.channelSkuId)) {
+      await db.execute({
+        sql: `INSERT INTO ChannelSKU (
+          id,master_bundle_id,sku,asin,title,updated_at
+        ) VALUES (?,?,?,?,?,?)`,
+        args: [
+          evidence.channelSkuId,
+          evidence.masterBundleId,
+          evidence.sku,
+          evidence.asin,
+          evidence.listingTitle,
+          evidence.channelSkuUpdatedAt,
+        ],
+      });
+      seededChannelSkuIds.add(evidence.channelSkuId);
+    }
+    await db.execute({
+      sql: `INSERT INTO BundleComponent (
+        id,master_bundle_id,product_name,manufacturer_brand,
+        manufacturer_upc,flavor,variant,qty,unit_weight_oz,unit_weight_lb,
+        source_url,updated_at
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        evidence.componentId,
+        evidence.masterBundleId,
+        evidence.productName,
+        evidence.manufacturerBrand,
+        evidence.manufacturerUpc,
+        evidence.flavor,
+        evidence.variant,
+        evidence.componentUnitCount,
+        evidence.unitWeightOz,
+        evidence.unitWeightLb,
+        evidence.sourceUrl,
+        evidence.componentUpdatedAt,
       ],
     });
   }
@@ -1130,6 +1287,60 @@ test("legacy bridge wave plan is byte-deterministic for explicitly selected cata
   assert.equal(first.plan.claims.createsAdditionalCatalog, false);
   assert.equal(first.plan.claims.paidCalls, 0);
   assert.equal(first.plan.claims.marketplaceMutations, 0);
+});
+
+test("Bundle Factory GTIN recipe evidence materializes atomically and detects source drift", async (t) => {
+  const input = applyPlan(bundleFactoryRecoveryFixture());
+  assert.equal(input.plan.targets.length, 1);
+  const component = input.plan.targets[0]?.components[0];
+  assert.ok(component);
+  assert.equal(component.legacyComponentId, null);
+  assert.equal(
+    component.sourceBinding.bundleFactoryComponentId,
+    "bundle-component-1",
+  );
+  assert.match(
+    component.sourceBinding.bundleFactoryComponentEvidenceSha256 ?? "",
+    /^[a-f0-9]{64}$/,
+  );
+  assert.equal(
+    component.sourceBinding
+      .authoritativeWalmartItemReportEvidenceSha256,
+    null,
+  );
+  assert.equal(
+    input.plan.targets[0]?.listingRecipeComponents[0]?.quantity,
+    3,
+  );
+
+  const driftDb = await seededDatabase(t, input.fixture);
+  t.after(() => driftDb.close());
+  await driftDb.execute(
+    "UPDATE BundleComponent SET qty=8 WHERE id='bundle-component-1'",
+  );
+  await assert.rejects(
+    () => executeApproved(driftDb, input),
+    /LEGACY_BRIDGE_SOURCE_DRIFT/,
+  );
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const report = await executeApproved(db, input);
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.verification.listingKeys.length, 1);
+  assert.equal(report.verification.unitEconomicsUnsourceable, 1);
+  assert.equal(
+    Number((await db.execute(
+      "SELECT COUNT(*) AS count FROM ProductTruthListingRecipe",
+    )).rows[0]?.count),
+    1,
+  );
+  assert.equal(
+    Number((await db.execute(
+      "SELECT quantity FROM ProductTruthListingRecipeComponent",
+    )).rows[0]?.quantity),
+    3,
+  );
 });
 
 test("graph-aware wave materializes one shared donor/content graph for several listings", async (t) => {

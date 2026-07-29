@@ -13,13 +13,17 @@ import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
+  PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
   productTruthLegacyBridgeBytesSha256,
+  productTruthBundleFactoryEvidenceCore,
+  normalizeProductTruthBridgeGtin,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeCanonicalDonorBindingRow,
+  type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthLegacyBridgeCanonicalListingComponentRow,
   type ProductTruthLegacyBridgeComponentRow,
   type ProductTruthLegacyBridgeComponentBarcodeEvidenceRow,
@@ -526,6 +530,179 @@ async function readListings(
   return rows.sort((left, right) => left.listingKey.localeCompare(right.listingKey));
 }
 
+export async function readBundleFactoryRecipeEvidence(
+  db: Client,
+  manifest: Phase1ScopeManifest,
+  manifestSha256: string,
+): Promise<ProductTruthBundleFactoryRecipeEvidenceRow[]> {
+  const result = await db.execute({
+    sql: `SELECT
+            scope.listingKey, scope.storeIndex, scope.sku,
+            channel.id AS channelSkuId,
+            channel.asin,
+            channel.title AS listingTitle,
+            channel.updated_at AS channelSkuUpdatedAt,
+            bundle.id AS masterBundleId,
+            bundle.name AS masterBundleName,
+            bundle.pack_count AS masterBundlePackCount,
+            bundle.updated_at AS masterBundleUpdatedAt,
+            component.id AS componentId,
+            component.product_name AS productName,
+            component.manufacturer_brand AS manufacturerBrand,
+            component.manufacturer_upc AS manufacturerUpc,
+            component.flavor,
+            component.variant,
+            component.qty AS componentUnitCount,
+            component.unit_weight_oz AS unitWeightOz,
+            component.unit_weight_lb AS unitWeightLb,
+            component.source_url AS sourceUrl,
+            component.updated_at AS componentUpdatedAt
+          FROM ProductTruthListingScope scope
+          JOIN ChannelSKU channel ON channel.sku=scope.sku
+          JOIN MasterBundle bundle ON bundle.id=channel.master_bundle_id
+          JOIN BundleComponent component
+            ON component.master_bundle_id=bundle.id
+          WHERE scope.manifestSha256=?
+            AND scope.channel='amazon'
+          ORDER BY scope.listingKey, component.id`,
+    args: [manifestSha256],
+  });
+  const manifestByListingKey = new Map(
+    manifest.listings.map((listing) => [listing.listingKey, listing]),
+  );
+  const grouped = new Map<string, typeof result.rows>();
+  for (const row of result.rows) {
+    const listingKey = text(row.listingKey, "BundleFactory.listingKey");
+    const rows = grouped.get(listingKey) ?? [];
+    rows.push(row);
+    grouped.set(listingKey, rows);
+  }
+  const evidence: ProductTruthBundleFactoryRecipeEvidenceRow[] = [];
+  for (const [listingKey, unsortedRows] of [...grouped].sort(
+    (left, right) => left[0].localeCompare(right[0]),
+  )) {
+    const listing = manifestByListingKey.get(listingKey);
+    const rows = [...unsortedRows].sort((left, right) =>
+      text(left.componentId, "BundleComponent.id").localeCompare(
+        text(right.componentId, "BundleComponent.id"),
+      ));
+    const first = rows[0];
+    if (
+      !listing
+      || listing.channel !== "amazon"
+      || !first
+      || text(first.sku, "BundleFactory.sku") !== listing.sku
+      || numberValue(first.storeIndex, "BundleFactory.storeIndex")
+        !== listing.storeIndex
+      || nullableText(first.asin) !== listing.listingId
+      || nullableText(first.listingTitle) !== listing.title
+      || listing.sourceStatus !== "ACTIVE"
+      || rows.some((row) =>
+        text(row.channelSkuId, "ChannelSKU.id")
+          !== text(first.channelSkuId, "ChannelSKU.id")
+        || text(row.masterBundleId, "MasterBundle.id")
+          !== text(first.masterBundleId, "MasterBundle.id")
+        || numberValue(
+          row.masterBundlePackCount,
+          "MasterBundle.pack_count",
+        ) !== numberValue(
+          first.masterBundlePackCount,
+          "MasterBundle.pack_count",
+        ))
+      || new Set(rows.map((row) => text(row.componentId, "BundleComponent.id")))
+        .size !== rows.length
+    ) {
+      continue;
+    }
+    const packCount = numberValue(
+      first.masterBundlePackCount,
+      "MasterBundle.pack_count",
+    );
+    const prepared = rows.map((row) => {
+      const manufacturerUpc = nullableText(row.manufacturerUpc)?.trim() ?? "";
+      const normalizedGtin14 =
+        normalizeProductTruthBridgeGtin(manufacturerUpc);
+      const productName = nullableText(row.productName)?.trim() ?? "";
+      const manufacturerBrand =
+        nullableText(row.manufacturerBrand)?.trim() ?? "";
+      const componentUnitCount = numberValue(
+        row.componentUnitCount,
+        "BundleComponent.qty",
+      );
+      return {
+        row,
+        manufacturerUpc,
+        normalizedGtin14,
+        productName,
+        manufacturerBrand,
+        componentUnitCount,
+      };
+    });
+    if (
+      !Number.isInteger(packCount)
+      || packCount < 1
+      || prepared.some((row) =>
+        !row.manufacturerUpc
+        || !row.normalizedGtin14
+        || !row.productName
+        || !row.manufacturerBrand
+        || !Number.isInteger(row.componentUnitCount)
+        || row.componentUnitCount < 1)
+      || prepared.reduce(
+        (total, row) => total + row.componentUnitCount,
+        0,
+      ) !== packCount
+    ) {
+      continue;
+    }
+    for (let componentIndex = 0; componentIndex < prepared.length; componentIndex += 1) {
+      const preparedRow = prepared[componentIndex]!;
+      const row = preparedRow.row;
+      const core = {
+        schemaVersion:
+          PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
+        listingKey,
+        storeIndex: listing.storeIndex,
+        sku: listing.sku,
+        asin: listing.listingId,
+        listingTitle: listing.title,
+        channelSkuId: text(row.channelSkuId, "ChannelSKU.id"),
+        channelSkuUpdatedAt:
+          text(row.channelSkuUpdatedAt, "ChannelSKU.updated_at"),
+        masterBundleId: text(row.masterBundleId, "MasterBundle.id"),
+        masterBundleName:
+          text(row.masterBundleName, "MasterBundle.name"),
+        masterBundlePackCount: packCount,
+        masterBundleUpdatedAt:
+          text(row.masterBundleUpdatedAt, "MasterBundle.updated_at"),
+        componentId: text(row.componentId, "BundleComponent.id"),
+        componentIndex,
+        componentUpdatedAt:
+          text(row.componentUpdatedAt, "BundleComponent.updated_at"),
+        productName: preparedRow.productName,
+        manufacturerBrand: preparedRow.manufacturerBrand,
+        manufacturerUpc: preparedRow.manufacturerUpc,
+        normalizedGtin14: preparedRow.normalizedGtin14!,
+        flavor: nullableText(row.flavor)?.trim() || null,
+        variant: nullableText(row.variant)?.trim() || null,
+        componentUnitCount: preparedRow.componentUnitCount,
+        unitWeightOz: nullableNumber(row.unitWeightOz),
+        unitWeightLb: nullableNumber(row.unitWeightLb),
+        sourceUrl: nullableText(row.sourceUrl)?.trim() || null,
+      };
+      evidence.push({
+        ...core,
+        evidenceRowSha256: productTruthOperationalSha256(
+          productTruthBundleFactoryEvidenceCore(
+            core as ProductTruthBundleFactoryRecipeEvidenceRow,
+          ),
+        ),
+      });
+    }
+  }
+  return evidence;
+}
+
 async function readComponents(
   db: Client,
   skus: ReadonlySet<string>,
@@ -788,11 +965,17 @@ async function buildSnapshot(
     offers,
     canonicalDonorBindings,
     canonicalListingComponents,
+    bundleFactoryRecipeEvidence,
   ] = await Promise.all([
     readDonors(db),
     readOffers(db),
     readCanonicalDonorBindings(db, input.capturedAt),
     readCanonicalListingComponents(db, input.manifestSha256, input.capturedAt),
+    readBundleFactoryRecipeEvidence(
+      db,
+      input.manifest,
+      input.manifestSha256,
+    ),
   ]);
   return {
     schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
@@ -814,6 +997,7 @@ async function buildSnapshot(
     directTargetContentEvidence: input.directTargetContentEvidence,
     authoritativeWalmartItemReportEvidence:
       input.authoritativeWalmartItemReportEvidence,
+    bundleFactoryRecipeEvidence,
   };
 }
 

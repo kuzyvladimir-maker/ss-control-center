@@ -16,11 +16,14 @@ import {
 } from "../canonical-product-variant";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
+  productTruthBundleFactoryEvidenceCore,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeComponentRow,
+  type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
   type ProductTruthDirectTargetContentEvidence,
   type ProductTruthLegacyBridgeDonorRow,
@@ -211,6 +214,50 @@ function walmartItemReportEvidence(
   };
 }
 
+function bundleFactoryRecipeEvidence(
+  overrides: Partial<ProductTruthBundleFactoryRecipeEvidenceRow> = {},
+): ProductTruthBundleFactoryRecipeEvidenceRow {
+  const core = {
+    schemaVersion:
+      PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
+    listingKey: "ptls1:test",
+    storeIndex: 1,
+    sku: "SKU-1",
+    asin: "B012345678",
+    listingTitle: "Acme Crunch Chips Barbecue Variety Pack, 12 Count",
+    channelSkuId: "channel-sku-1",
+    channelSkuUpdatedAt: "2026-07-25T10:00:00.000Z",
+    masterBundleId: "bundle-1",
+    masterBundleName: "Acme Crunch Chips Barbecue — 12 Count",
+    masterBundlePackCount: 12,
+    masterBundleUpdatedAt: "2026-07-25T10:00:00.000Z",
+    componentId: "bundle-component-1",
+    componentIndex: 0,
+    componentUpdatedAt: "2026-07-25T10:00:00.000Z",
+    productName: "Crunch Chips Barbecue",
+    manufacturerBrand: "Acme",
+    manufacturerUpc: "036000291452",
+    normalizedGtin14: "00036000291452",
+    flavor: "Barbecue",
+    variant: null,
+    componentUnitCount: 12,
+    unitWeightOz: 2,
+    unitWeightLb: null,
+    sourceUrl: "https://www.walmart.com/ip/123",
+  };
+  const merged = { ...core, ...overrides };
+  return {
+    ...merged,
+    evidenceRowSha256:
+      overrides.evidenceRowSha256
+      ?? productTruthOperationalSha256(
+        productTruthBundleFactoryEvidenceCore(
+          merged as ProductTruthBundleFactoryRecipeEvidenceRow,
+        ),
+      ),
+  };
+}
+
 function walmartManifestForReport(
   csv: string,
   title = "Acme Crunch Chips Barbecue Bag 8 oz (Pack of 4)",
@@ -353,6 +400,59 @@ test("authoritative Walmart exact-title multipack recovers a missing legacy reci
   );
   assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
   assert.equal(componentPlan.donorProductId, "donor-1");
+});
+
+test("exact Bundle Factory component GTIN recovers a missing Amazon bundle recipe", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      channel: "amazon",
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      size: "4 Count",
+      title: "Acme Crunch Chips Barbecue, 4 Count, 2 oz Each",
+    })],
+    bundleFactoryRecipeEvidence: [bundleFactoryRecipeEvidence()],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(
+    scope.disposition,
+    "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+  );
+  assert.equal(scope.components.length, 1);
+  assert.equal(scope.components[0]?.qty, 3);
+  assert.equal(scope.components[0]?.legacyComponentId, null);
+  assert.equal(
+    scope.components[0]?.identityProof,
+    "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN",
+  );
+  assert.equal(scope.components[0]?.donorProductId, "donor-1");
+});
+
+test("Bundle Factory recovery fails closed when consumer units do not divide by the exact donor package", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      channel: "amazon",
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      size: "10 Count",
+      title: "Acme Crunch Chips Barbecue, 10 Count, 2 oz Each",
+    })],
+    bundleFactoryRecipeEvidence: [bundleFactoryRecipeEvidence()],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(scope.disposition, "QUARANTINE");
+  assert.deepEqual(
+    scope.blockers.map((blocker) => blocker.code),
+    ["PRODUCT_IDENTITY_MISSING"],
+  );
 });
 
 test("authoritative Walmart title recovery accepts a report-proven expanded brand phrase", () => {
