@@ -829,6 +829,7 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   const first = await executeApproved(db, input);
   assert.equal(first.status, "APPLIED");
   assert.equal(first.counts.insertedRows, 37);
+  assert.equal(first.counts.canonicalVariantReuses, 0);
   assert.equal(first.counts.donorIdentityTransitions, 3);
   assert.equal(first.verification.bundleFactoryReady, 5);
   assert.equal(first.verification.listingImprovementReady, 5);
@@ -849,6 +850,7 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
   assert.equal(second.counts.exactExistingRows, 37);
+  assert.equal(second.counts.canonicalVariantReuses, 3);
 });
 
 test("exact identity-only legacy evidence materializes partial content, recipe, and typed UNSOURCEABLE COGS", async (t) => {
@@ -1033,12 +1035,99 @@ test("standing no-paid policy authorizes a fresh bounded READY_TO_APPLY wave", a
   });
   assert.equal(report.status, "APPLIED");
   assert.equal(report.counts.insertedRows, 45);
+  assert.equal(report.counts.canonicalVariantReuses, 0);
   assert.deepEqual(report.authorization, {
     mode: "STANDING_NO_PAID_POLICY",
     standingPolicyId: policy.value.policyId,
     standingPolicySha256: policy.sha256,
     preflightReportSha256: productTruthLegacyBridgeBytesSha256(preflightJson),
   });
+});
+
+test("standing wave reuses a compatible canonical variant with an earlier createdAt", async (t) => {
+  const input = applyPlan();
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const variant = input.plan.targets[0].variant;
+  await db.execute({
+    sql: `INSERT INTO CanonicalProductVariant (
+      id,variantKey,identityHash,keyVersion,normalizedBrand,
+      normalizedProductLine,normalizedFlavor,normalizedModifiersJson,
+      normalizedForm,sizeDimension,sizeBaseAmount,sizeBaseUnit,
+      outerPackCount,identityJson,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      variant.id,
+      variant.variantKey,
+      variant.identityHash,
+      variant.keyVersion,
+      variant.normalizedBrand,
+      variant.normalizedProductLine,
+      variant.normalizedFlavor,
+      variant.normalizedModifiersJson,
+      variant.normalizedForm,
+      variant.sizeDimension,
+      variant.sizeBaseAmount,
+      variant.sizeBaseUnit,
+      variant.outerPackCount,
+      variant.identityJson,
+      "2026-07-01T00:00:00.000Z",
+    ],
+  });
+
+  const preflight = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  assert.equal(preflight.status, "READY_TO_APPLY");
+  assert.equal(preflight.counts.absentRows, 44);
+  assert.equal(preflight.counts.exactExistingRows, 1);
+  assert.equal(preflight.counts.canonicalVariantReuses, 1);
+  const preflightJson = renderProductTruthLegacyBridgePreflightReport(preflight);
+  const policy = standingPolicy();
+  const report = await applyProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    standingPolicy: policy.value,
+    standingPolicyJson: policy.json,
+    standingPolicySha256: policy.sha256,
+    standingPreflightReport: preflight,
+    standingPreflightReportJson: preflightJson,
+    standingPreflightReportSha256:
+      productTruthLegacyBridgeBytesSha256(preflightJson),
+    startedAt: APPLY_AT,
+    completedAt: APPLY_AT,
+  });
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.counts.insertedRows, 44);
+  assert.equal(report.counts.exactExistingRows, 1);
+  assert.equal(report.counts.canonicalVariantReuses, 1);
+  assert.equal(
+    Number((await db.execute(
+      "SELECT COUNT(*) AS count FROM CanonicalProductVariant",
+    )).rows[0]?.count),
+    5,
+  );
+
+  const postcheck = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  assert.equal(postcheck.status, "ALREADY_APPLIED");
+  assert.equal(postcheck.counts.absentRows, 0);
+  assert.equal(postcheck.counts.exactExistingRows, 45);
+  assert.equal(postcheck.counts.canonicalVariantReuses, 5);
 });
 
 test("inverted apply timestamps fail before any canonical write", async (t) => {
@@ -1148,12 +1237,14 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
   });
   assert.equal(before.status, "READY_TO_APPLY");
   assert.equal(before.counts.absentRows, 45);
+  assert.equal(before.counts.canonicalVariantReuses, 0);
   const first = await executeApproved(db, input);
   assert.equal(first.status, "APPLIED");
   assert.equal(first.counts.insertedRows, 45);
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
   assert.equal(second.counts.exactExistingRows, 45);
+  assert.equal(second.counts.canonicalVariantReuses, 5);
   const after = await preflightProductTruthLegacyBridgeWave({
     db,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
@@ -1164,6 +1255,7 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
   });
   assert.equal(after.status, "ALREADY_APPLIED");
   assert.equal(after.counts.exactExistingRows, 45);
+  assert.equal(after.counts.canonicalVariantReuses, 5);
 
   for (const target of input.plan.targets) {
     const contentRow = (await db.execute({

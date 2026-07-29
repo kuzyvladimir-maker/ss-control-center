@@ -57,9 +57,9 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.1.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
-  "product-truth-legacy-bridge-preflight-report/2.0.0" as const;
+  "product-truth-legacy-bridge-preflight-report/2.1.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
   "product-truth-legacy-bridge-standing-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION =
@@ -69,6 +69,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE =
   "legacy-materialized-bridge" as const;
 
 type SqlReader = Pick<Client, "execute"> | Pick<Transaction, "execute">;
+const CANONICAL_VARIANT_REUSE_IGNORED_COLUMNS = new Set(["createdAt"]);
 
 export class ProductTruthLegacyBridgeApplyError extends Error {
   readonly code: string;
@@ -446,6 +447,7 @@ export interface ProductTruthLegacyBridgeApplyReport {
     targets: number;
     insertedRows: number;
     exactExistingRows: number;
+    canonicalVariantReuses: number;
     donorIdentityTransitions: number;
   };
   verification: {
@@ -471,6 +473,7 @@ export interface ProductTruthLegacyBridgePreflightReport {
     targets: number;
     absentRows: number;
     exactExistingRows: number;
+    canonicalVariantReuses: number;
     donorIdentityTransitionsRequired: number;
   };
   listingKeys: string[];
@@ -1612,8 +1615,14 @@ function validateStandingPolicyAuthorization(input: {
     || preflightReport.planSha256 !== input.planSha256
     || preflightReport.databaseTargetFingerprint !== plan.databaseTargetFingerprint
     || preflightReport.counts.targets !== plan.targets.length
-    || preflightReport.counts.absentRows !== plan.databaseWrites.maximumRows
-    || preflightReport.counts.exactExistingRows !== 0
+    || preflightReport.counts.absentRows <= 0
+    || preflightReport.counts.absentRows
+      + preflightReport.counts.exactExistingRows
+      !== plan.databaseWrites.maximumRows
+    || preflightReport.counts.canonicalVariantReuses
+      !== preflightReport.counts.exactExistingRows
+    || preflightReport.counts.canonicalVariantReuses
+      > plan.databaseWrites.canonicalProductVariants
     || preflightReport.counts.donorIdentityTransitionsRequired
       !== plan.databaseWrites.donorIdentityTransitions
     || preflightReport.foreignKeyViolations.length !== 0
@@ -1653,8 +1662,10 @@ function assertExactDatabaseRow(
   row: Row,
   expected: Record<string, unknown>,
   code: string,
+  ignoredColumns: ReadonlySet<string> = new Set(),
 ): void {
   for (const [key, expectedValue] of Object.entries(expected)) {
+    if (ignoredColumns.has(key)) continue;
     if (comparable(row[key]) !== comparable(expectedValue)) {
       fail(code, `${key} differs from the approved row`);
     }
@@ -1667,13 +1678,14 @@ async function exactOrAbsent(
   keyColumn: string,
   expected: Record<string, unknown>,
   collisionCode: string,
+  ignoredColumns: ReadonlySet<string> = new Set(),
 ): Promise<"ABSENT" | "EXACT"> {
   const row = (await db.execute({
     sql: `SELECT * FROM "${table}" WHERE "${keyColumn}"=?`,
     args: [expected[keyColumn] as string],
   })).rows[0];
   if (!row) return "ABSENT";
-  assertExactDatabaseRow(row, expected, collisionCode);
+  assertExactDatabaseRow(row, expected, collisionCode, ignoredColumns);
   return "EXACT";
 }
 
@@ -1827,7 +1839,11 @@ function donorExactProjectionMatches(
 async function preflightTarget(
   db: SqlReader,
   target: ProductTruthLegacyBridgeApplyTarget,
-): Promise<{ exactRows: number; absentRows: number; donorNeedsTransition: boolean }> {
+): Promise<{
+  graphState: "ABSENT" | "EXACT";
+  variantState: "ABSENT" | "EXACT";
+  donorNeedsTransition: boolean;
+}> {
   const source = await readCurrentSourceRows(db, target);
   if (
     rowHash(sourceListingFields(source.listing)) !== target.sourceBinding.listingSha256
@@ -1854,17 +1870,18 @@ async function preflightTarget(
     fail("LEGACY_BRIDGE_SOURCE_DRIFT", `${target.listingKey} donor content drifted`);
   }
 
+  // Canonical variants are keyed only by normalized product identity. A
+  // compatible row may have been created by an earlier evidence lane, so its
+  // historical creation timestamp is not part of the identity contract.
+  const variantState = await exactOrAbsent(
+    db,
+    "CanonicalProductVariant",
+    "id",
+    target.variant as unknown as Record<string, unknown>,
+    "LEGACY_BRIDGE_VARIANT_COLLISION",
+    CANONICAL_VARIANT_REUSE_IGNORED_COLUMNS,
+  );
   const rows: Array<["ABSENT" | "EXACT", string]> = [];
-  rows.push([
-    await exactOrAbsent(
-      db,
-      "CanonicalProductVariant",
-      "id",
-      target.variant as unknown as Record<string, unknown>,
-      "LEGACY_BRIDGE_VARIANT_COLLISION",
-    ),
-    "variant",
-  ]);
   rows.push([
     await exactOrAbsent(
       db,
@@ -1945,6 +1962,13 @@ async function preflightTarget(
       `${target.listingKey} has a partial immutable canonical graph`,
     );
   }
+  const graphState = exactRows === rows.length ? "EXACT" : "ABSENT";
+  if (graphState === "EXACT" && variantState !== "EXACT") {
+    fail(
+      "LEGACY_BRIDGE_PARTIAL_GRAPH",
+      `${target.listingKey} immutable graph exists without its canonical variant`,
+    );
+  }
   if (exactRows === rows.length && !exactDonor) {
     fail(
       "LEGACY_BRIDGE_PARTIAL_GRAPH",
@@ -1958,8 +1982,8 @@ async function preflightTarget(
     );
   }
   return {
-    exactRows: exactRows + (exactDonor ? 1 : 0),
-    absentRows: absentRows + (exactDonor ? 0 : 1),
+    graphState,
+    variantState,
     donorNeedsTransition: !exactDonor,
   };
 }
@@ -2013,14 +2037,24 @@ async function applyListingRows(
 async function applyWaveRows(
   tx: Transaction,
   targets: readonly ProductTruthLegacyBridgeApplyTarget[],
-): Promise<void> {
+): Promise<number> {
   const rows = waveRows(targets);
+  let canonicalVariantReuses = 0;
   for (const variant of rows.variants) {
-    await insertRow(
+    const row = variant as unknown as Record<string, unknown>;
+    const state = await exactOrAbsent(
       tx,
       "CanonicalProductVariant",
-      variant as unknown as Record<string, unknown>,
+      "id",
+      row,
+      "LEGACY_BRIDGE_VARIANT_COLLISION",
+      CANONICAL_VARIANT_REUSE_IGNORED_COLUMNS,
     );
+    if (state === "EXACT") {
+      canonicalVariantReuses += 1;
+    } else {
+      await insertRow(tx, "CanonicalProductVariant", row);
+    }
   }
   for (const decision of rows.decisions) {
     await insertRow(
@@ -2071,6 +2105,7 @@ async function applyWaveRows(
   for (const target of targets) {
     await applyListingRows(tx, target);
   }
+  return canonicalVariantReuses;
 }
 
 async function foreignKeyViolations(db: SqlReader): Promise<string[]> {
@@ -2083,7 +2118,7 @@ async function verifyAppliedTarget(
   target: ProductTruthLegacyBridgeApplyTarget,
 ): Promise<void> {
   const state = await preflightTarget(db, target);
-  if (state.absentRows !== 0 || state.donorNeedsTransition) {
+  if (state.graphState !== "EXACT" || state.donorNeedsTransition) {
     fail("LEGACY_BRIDGE_POST_VERIFY_FAILED", `${target.listingKey} graph is incomplete`);
   }
 }
@@ -2111,11 +2146,11 @@ export async function preflightProductTruthLegacyBridgeWave(input: {
   await assertProductTruthListingScopeSchema(input.db);
   const tx = await input.db.transaction("read");
   try {
-    const states = [];
+    const states: Awaited<ReturnType<typeof preflightTarget>>[] = [];
     for (const target of input.plan.targets) {
       states.push(await preflightTarget(tx, target));
     }
-    const exactGraphs = states.filter((state) => state.absentRows === 0).length;
+    const exactGraphs = states.filter((state) => state.graphState === "EXACT").length;
     if (exactGraphs !== 0 && exactGraphs !== input.plan.targets.length) {
       fail("LEGACY_BRIDGE_PARTIAL_WAVE", "wave is partially applied");
     }
@@ -2123,24 +2158,32 @@ export async function preflightProductTruthLegacyBridgeWave(input: {
     if (violations.length) {
       fail("LEGACY_BRIDGE_FOREIGN_KEY_VIOLATION", violations.join("; "));
     }
+    const status = exactGraphs === input.plan.targets.length
+      ? "ALREADY_APPLIED"
+      : "READY_TO_APPLY";
+    const canonicalVariantReuses = new Set(
+      input.plan.targets
+        .filter((_, index) => states[index]?.variantState === "EXACT")
+        .map((target) => target.variant.id),
+    ).size;
     return {
       schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION,
-      status: exactGraphs === input.plan.targets.length
-        ? "ALREADY_APPLIED"
-        : "READY_TO_APPLY",
+      status,
       planId: input.plan.planId,
       planSha256: input.planSha256,
       databaseTargetFingerprint: input.databaseTargetFingerprint,
       checkedAt,
       counts: {
         targets: input.plan.targets.length,
-        absentRows: exactGraphs === 0 ? input.plan.databaseWrites.maximumRows : 0,
-        exactExistingRows:
-          exactGraphs === input.plan.targets.length
-            ? input.plan.databaseWrites.maximumRows
-            : 0,
+        absentRows: status === "READY_TO_APPLY"
+          ? input.plan.databaseWrites.maximumRows - canonicalVariantReuses
+          : 0,
+        exactExistingRows: status === "ALREADY_APPLIED"
+          ? input.plan.databaseWrites.maximumRows
+          : canonicalVariantReuses,
+        canonicalVariantReuses,
         donorIdentityTransitionsRequired:
-          exactGraphs === 0
+          status === "READY_TO_APPLY"
             ? input.plan.databaseWrites.donorIdentityTransitions
             : 0,
       },
@@ -2259,6 +2302,7 @@ export async function applyProductTruthLegacyBridgeWave(input: {
   }
   let insertedRows = 0;
   let exactExistingRows = 0;
+  let canonicalVariantReuses = 0;
   let donorIdentityTransitions = 0;
   let bundleFactoryReady = 0;
   let listingImprovementReady = 0;
@@ -2268,21 +2312,48 @@ export async function applyProductTruthLegacyBridgeWave(input: {
   await assertProductTruthListingScopeSchema(input.db);
   const tx = await input.db.transaction("write");
   try {
-    const preflight = [];
+    const preflight: Awaited<ReturnType<typeof preflightTarget>>[] = [];
     for (const target of input.plan.targets) {
       preflight.push(await preflightTarget(tx, target));
     }
-    const exactGraphs = preflight.filter((state) => state.absentRows === 0).length;
+    const exactGraphs = preflight.filter((state) => state.graphState === "EXACT").length;
     if (exactGraphs !== 0 && exactGraphs !== input.plan.targets.length) {
       fail("LEGACY_BRIDGE_PARTIAL_WAVE", "wave is partially applied");
     }
+    const preflightCanonicalVariantReuses = new Set(
+      input.plan.targets
+        .filter((_, index) => preflight[index]?.variantState === "EXACT")
+        .map((target) => target.variant.id),
+    ).size;
+    if (
+      input.standingPolicy
+      && (
+        exactGraphs !== 0
+        || preflightCanonicalVariantReuses
+          !== input.standingPreflightReport.counts.canonicalVariantReuses
+      )
+    ) {
+      fail(
+        "LEGACY_BRIDGE_STANDING_PREFLIGHT_DRIFT",
+        "canonical database state changed after the standing-policy preflight",
+      );
+    }
     if (exactGraphs === 0) {
-      await applyWaveRows(tx, input.plan.targets);
-      insertedRows = input.plan.databaseWrites.maximumRows;
+      canonicalVariantReuses = await applyWaveRows(tx, input.plan.targets);
+      if (canonicalVariantReuses !== preflightCanonicalVariantReuses) {
+        fail(
+          "LEGACY_BRIDGE_TRANSACTION_PREFLIGHT_DRIFT",
+          "canonical variant state changed inside the write transaction",
+        );
+      }
+      insertedRows =
+        input.plan.databaseWrites.maximumRows - canonicalVariantReuses;
+      exactExistingRows = canonicalVariantReuses;
       donorIdentityTransitions =
         input.plan.databaseWrites.donorIdentityTransitions;
     } else {
       exactExistingRows = input.plan.databaseWrites.maximumRows;
+      canonicalVariantReuses = input.plan.databaseWrites.canonicalProductVariants;
     }
     const violations = await foreignKeyViolations(tx);
     if (violations.length) {
@@ -2376,6 +2447,7 @@ export async function applyProductTruthLegacyBridgeWave(input: {
       targets: input.plan.targets.length,
       insertedRows,
       exactExistingRows,
+      canonicalVariantReuses,
       donorIdentityTransitions,
     },
     verification: {
