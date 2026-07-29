@@ -363,6 +363,13 @@ function leaseMatches(
   );
 }
 
+function leaseTokenMatches(
+  row: { workerLeaseTokenSha256: string | null },
+  leaseToken: string,
+): boolean {
+  return row.workerLeaseTokenSha256 === sha256(leaseToken);
+}
+
 export async function startProductTruthNoSpendCommand(input: {
   commandId: string;
   leaseToken: string;
@@ -373,10 +380,18 @@ export async function startProductTruthNoSpendCommand(input: {
     const row = await tx.productTruthControlCommand.findUnique({
       where: { commandId: input.commandId },
     });
+    const boundary = row ? `NO_SPEND:${row.requestSha256}` : "";
+    if (
+      row
+      && row.status === "RUNNING"
+      && row.executionBoundary === boundary
+      && leaseMatches(row, input.leaseToken, now)
+    ) {
+      return { status: "RUNNING" as const, execution_boundary: boundary };
+    }
     if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
       fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
     }
-    const boundary = `NO_SPEND:${row.requestSha256}`;
     await tx.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
@@ -515,18 +530,57 @@ export async function completeProductTruthNoSpendCommand(input: {
   const command = await prisma.productTruthControlCommand.findUnique({
     where: { commandId: input.commandId },
     include: {
-      artifacts: { where: { role: "REQUEST" } },
+      artifacts: { where: { role: { in: ["REQUEST", "RESULT"] } } },
     },
   });
   if (
     !command
-    || command.status !== "RUNNING"
+  ) {
+    fail("WORKER_RESULT_COMMAND_MISMATCH", "completion command is absent");
+  }
+  const verifiedOutput = assertResultBoundToCommand({ command, result });
+  const resultBytes = Buffer.from(renderProductTruthWorkerResult(result), "utf8");
+  const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
+  if (
+    (command.status === "SUCCEEDED" || command.status === "FAILED")
+    && command.status === terminalStatus
+    && command.resultArtifactId !== null
+    && leaseTokenMatches(command, input.leaseToken)
+  ) {
+    const existing = command.artifacts.find(
+      (candidate) => candidate.artifactId === command.resultArtifactId,
+    );
+    if (
+      !existing
+      || existing.byteSize !== resultBytes.byteLength
+      || existing.sha256 !== sha256(resultBytes)
+      || !Buffer.from(existing.content).equals(resultBytes)
+    ) {
+      fail(
+        "WORKER_RESULT_COMMAND_MISMATCH",
+        "terminal result differs from the durable artifact",
+      );
+    }
+    if (terminalStatus === "FAILED") {
+      return { status: "FAILED", next: null };
+    }
+    if (command.commandKind === "DOCTOR") {
+      await admitProductTruthWalmartRunPlan({
+        targetedRequest: verifiedOutput,
+        runtime: input.runtime,
+        requestedByUserId: command.requestedByUserId,
+        requestedAt: now.toISOString(),
+      });
+      return { status: "SUCCEEDED", next: "RUN_PLAN_ADMITTED" };
+    }
+    return { status: "SUCCEEDED", next: "AWAITING_OWNER" };
+  }
+  if (
+    command.status !== "RUNNING"
     || !leaseMatches(command, input.leaseToken, now)
   ) {
     fail("WORKER_LEASE_INVALID", "completion lease is invalid");
   }
-  const verifiedOutput = assertResultBoundToCommand({ command, result });
-  const resultBytes = Buffer.from(renderProductTruthWorkerResult(result), "utf8");
   const artifact = sealProductTruthControlArtifact({
     artifactId: `pta-${command.commandId.slice(4)}-result-${sha256(resultBytes).slice(0, 8)}`,
     commandId: command.commandId,
@@ -536,7 +590,6 @@ export async function completeProductTruthNoSpendCommand(input: {
     createdAt: now.toISOString(),
     createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
   });
-  const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
   await prisma.$transaction(async (tx) => {
     await tx.productTruthControlArtifact.create({
       data: {

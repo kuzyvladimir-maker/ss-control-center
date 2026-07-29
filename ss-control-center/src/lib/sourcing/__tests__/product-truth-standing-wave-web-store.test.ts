@@ -331,6 +331,18 @@ test("durable standing-wave command admits, leases, completes and exposes exact 
     leaseToken: claim.lease_token,
     now: new Date(base.getTime() + 3 * 60_000),
   });
+  const repeatedStart = await store.startProductTruthStandingWaveWebCommand({
+    commandId,
+    leaseToken: claim.lease_token,
+    now: new Date(base.getTime() + 3 * 60_000 + 1_000),
+  });
+  assert.equal(repeatedStart.status, "RUNNING");
+  assert.equal(
+    await prismaModule.prisma.productTruthControlEvent.count({
+      where: { commandId, eventType: "EXECUTION_BOUNDARY" },
+    }),
+    1,
+  );
   const completion = await store.completeProductTruthStandingWaveWebCommand({
     runtime,
     commandId,
@@ -339,6 +351,27 @@ test("durable standing-wave command admits, leases, completes and exposes exact 
     now: new Date(base.getTime() + 4 * 60_000),
   });
   assert.equal(completion.status, "SUCCEEDED");
+  const repeatedCompletion =
+    await store.completeProductTruthStandingWaveWebCommand({
+      runtime,
+      commandId,
+      leaseToken: claim.lease_token,
+      result: completedResult(commandId),
+      now: new Date(base.getTime() + 4 * 60_000 + 1_000),
+    });
+  assert.equal(repeatedCompletion.status, "SUCCEEDED");
+  assert.equal(
+    await prismaModule.prisma.productTruthControlArtifact.count({
+      where: { commandId, role: "RESULT" },
+    }),
+    1,
+  );
+  assert.equal(
+    await prismaModule.prisma.productTruthControlEvent.count({
+      where: { commandId, eventType: "SUCCEEDED" },
+    }),
+    1,
+  );
   const status = await store.readProductTruthStandingWaveWebStatus({
     runtime,
     now: new Date(base.getTime() + 5 * 60_000),

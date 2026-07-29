@@ -567,6 +567,13 @@ function leaseMatches(
   );
 }
 
+function leaseTokenMatches(
+  row: { workerLeaseTokenSha256: string | null },
+  leaseToken: string,
+): boolean {
+  return row.workerLeaseTokenSha256 === sha256(leaseToken);
+}
+
 export async function reconcileExpiredProductTruthStandingWaveWebCommands(
   now = new Date(),
 ): Promise<void> {
@@ -820,6 +827,18 @@ export async function startProductTruthStandingWaveWebCommand(input: {
     const row = await tx.productTruthControlCommand.findUnique({
       where: { commandId: input.commandId },
     });
+    const boundary = row
+      ? `STANDING_WAVE:${row.requestSha256}`
+      : "";
+    if (
+      row
+      && row.commandKind === PRODUCT_TRUTH_STANDING_WAVE_WEB_COMMAND_KIND
+      && row.status === "RUNNING"
+      && row.executionBoundary === boundary
+      && leaseMatches(row, input.leaseToken, now)
+    ) {
+      return { status: "RUNNING" as const, execution_boundary: boundary };
+    }
     if (
       !row
       || row.commandKind !== PRODUCT_TRUTH_STANDING_WAVE_WEB_COMMAND_KIND
@@ -828,7 +847,6 @@ export async function startProductTruthStandingWaveWebCommand(input: {
     ) {
       fail("STANDING_WAVE_WEB_LEASE_INVALID", "claim lease is invalid");
     }
-    const boundary = `STANDING_WAVE:${row.requestSha256}`;
     await tx.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
@@ -913,16 +931,16 @@ export async function completeProductTruthStandingWaveWebCommand(input: {
   const now = input.now ?? new Date();
   const command = await prisma.productTruthControlCommand.findUnique({
     where: { commandId: input.commandId },
-    include: { artifacts: { where: { role: "REQUEST" } } },
+    include: {
+      artifacts: { where: { role: { in: ["REQUEST", "RESULT"] } } },
+    },
   });
   if (
     !command
     || command.commandKind !== PRODUCT_TRUTH_STANDING_WAVE_WEB_COMMAND_KIND
-    || command.status !== "RUNNING"
-    || !leaseMatches(command, input.leaseToken, now)
     || result.commandId !== command.commandId
   ) {
-    fail("STANDING_WAVE_WEB_LEASE_INVALID", "completion lease is invalid");
+    fail("STANDING_WAVE_WEB_RESULT_MISMATCH", "completion identity is invalid");
   }
   const request = requestArtifact(command);
   if (
@@ -938,6 +956,38 @@ export async function completeProductTruthStandingWaveWebCommand(input: {
     renderProductTruthStandingWaveWebResult(result),
     "utf8",
   );
+  const terminalStatus =
+    result.outcome === "COMPLETED"
+      ? "SUCCEEDED"
+      : result.outcome;
+  if (
+    ["SUCCEEDED", "FAILED", "AMBIGUOUS"].includes(command.status)
+    && command.resultArtifactId !== null
+    && command.status === terminalStatus
+    && leaseTokenMatches(command, input.leaseToken)
+  ) {
+    const existing = command.artifacts.find(
+      (candidate) => candidate.artifactId === command.resultArtifactId,
+    );
+    if (
+      existing
+      && existing.byteSize === resultBytes.byteLength
+      && existing.sha256 === sha256(resultBytes)
+      && Buffer.from(existing.content).equals(resultBytes)
+    ) {
+      return { status: terminalStatus };
+    }
+    fail(
+      "STANDING_WAVE_WEB_RESULT_MISMATCH",
+      "terminal result differs from the durable artifact",
+    );
+  }
+  if (
+    command.status !== "RUNNING"
+    || !leaseMatches(command, input.leaseToken, now)
+  ) {
+    fail("STANDING_WAVE_WEB_LEASE_INVALID", "completion lease is invalid");
+  }
   const artifact = sealProductTruthControlArtifact({
     artifactId:
       `pta-${command.commandId.slice(6)}-result-${sha256(resultBytes).slice(0, 8)}`,
@@ -948,10 +998,6 @@ export async function completeProductTruthStandingWaveWebCommand(input: {
     createdAt: now.toISOString(),
     createdByPrincipal: command.workerLeaseOwner ?? "standing-wave-worker",
   });
-  const terminalStatus =
-    result.outcome === "COMPLETED"
-      ? "SUCCEEDED"
-      : result.outcome;
   await prisma.$transaction(async (tx) => {
     await tx.productTruthControlArtifact.create({
       data: {

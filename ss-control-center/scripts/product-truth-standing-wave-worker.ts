@@ -31,9 +31,16 @@ import type {
 import {
   productTruthExecutableTreeSha256,
 } from "../src/lib/sourcing/product-truth-web-control-runtime";
+import {
+  PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS,
+  PRODUCT_TRUTH_WORKER_HEARTBEAT_MS,
+  ProductTruthWorkerLease,
+  productTruthHeartbeatFailureRequiresTermination,
+  retryProductTruthLeaseOperation,
+  terminateProductTruthWorkerProcessTree,
+} from "../src/lib/sourcing/product-truth-worker-lease";
 
 const POLL_MS = 5_000;
-const HEARTBEAT_MS = 30_000;
 const MAX_CAPTURE_BYTES = 1024 * 1024;
 const MAX_READINESS_BYTES = 16 * 1024 * 1024;
 const RUNNER_PATH = resolve(
@@ -84,6 +91,16 @@ class WorkerStageError extends Error {
     this.exitCode = execution.exitCode;
     this.stdoutSha256 = execution.stdoutSha256;
     this.stderrSha256 = execution.stderrSha256;
+  }
+}
+
+class WorkerControlApiError extends Error {
+  readonly retryable: boolean;
+
+  constructor(message: string, retryable: boolean, cause?: unknown) {
+    super(message, { cause });
+    this.name = "WorkerControlApiError";
+    this.retryable = retryable;
   }
 }
 
@@ -321,25 +338,78 @@ async function api(
   path: string,
   body: unknown,
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(`${runtime.baseUrl}${path}`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${runtime.token}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
-  });
-  const value = await response.json() as unknown;
+  let response: Response;
+  try {
+    response = await fetch(`${runtime.baseUrl}${path}`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${runtime.token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(
+        PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS,
+      ),
+    });
+  } catch (error) {
+    throw new WorkerControlApiError(
+      `control API ${path} was temporarily unreachable`,
+      true,
+      error,
+    );
+  }
+  let value: unknown;
+  try {
+    value = await response.json() as unknown;
+  } catch (error) {
+    throw new WorkerControlApiError(
+      `control API ${path} returned unreadable JSON`,
+      response.ok || response.status >= 500,
+      error,
+    );
+  }
   if (
     !response.ok
     || value === null
     || typeof value !== "object"
     || Array.isArray(value)
   ) {
-    fail(`control API ${path} returned HTTP ${response.status}`);
+    throw new WorkerControlApiError(
+      `control API ${path} returned HTTP ${response.status}`,
+      response.status === 408
+        || response.status === 425
+        || response.status === 429
+        || response.status >= 500,
+    );
   }
   return value as Record<string, unknown>;
+}
+
+function retryableControlError(error: unknown): boolean {
+  return error instanceof WorkerControlApiError && error.retryable;
+}
+
+async function leaseBoundApi(
+  runtime: WorkerRuntime,
+  lease: ProductTruthWorkerLease,
+  path: string,
+  body: unknown,
+): Promise<Record<string, unknown>> {
+  return retryProductTruthLeaseOperation({
+    lease,
+    shouldRetry: retryableControlError,
+    operation: () => api(runtime, path, body),
+  });
+}
+
+function refreshLease(
+  lease: ProductTruthWorkerLease,
+  response: Record<string, unknown>,
+): void {
+  if (typeof response.lease_expires_at !== "string") {
+    fail("heartbeat omitted its lease expiry");
+  }
+  lease.refresh(response.lease_expires_at);
 }
 
 function parseClaim(value: unknown): ProductTruthStandingWaveWebClaim | null {
@@ -417,11 +487,13 @@ function commonArgs(
 async function spawnRunner(input: {
   args: readonly string[];
   heartbeat: () => Promise<void>;
+  lease: ProductTruthWorkerLease;
 }): Promise<StageExecution> {
   return new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(process.execPath, [...input.args], {
       cwd: process.cwd(),
       env: process.env,
+      detached: process.platform !== "win32",
       shell: false,
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -430,6 +502,16 @@ async function spawnRunner(input: {
     let stdoutBytes = 0;
     let stderrBytes = 0;
     let overflow = false;
+    let heartbeatInFlight = false;
+    let terminationRequested = false;
+    const terminateTree = () => {
+      if (terminationRequested) return;
+      terminationRequested = true;
+      terminateProductTruthWorkerProcessTree({
+        pid: child.pid,
+        killChild: (signal) => child.kill(signal),
+      });
+    };
     const capture = (
       target: Buffer[],
       counter: () => number,
@@ -438,7 +520,7 @@ async function spawnRunner(input: {
       increment(chunk.byteLength);
       if (counter() > MAX_CAPTURE_BYTES) {
         overflow = true;
-        child.kill("SIGTERM");
+        terminateTree();
         return;
       }
       target.push(chunk);
@@ -457,8 +539,28 @@ async function spawnRunner(input: {
     );
     child.on("error", rejectPromise);
     const timer = setInterval(() => {
-      void input.heartbeat().catch(() => child.kill("SIGTERM"));
-    }, HEARTBEAT_MS);
+      if (!input.lease.canContinue()) {
+        terminateTree();
+        return;
+      }
+      if (heartbeatInFlight) return;
+      heartbeatInFlight = true;
+      void input.heartbeat()
+        .catch((error) => {
+          if (
+            productTruthHeartbeatFailureRequiresTermination({
+              lease: input.lease,
+              retryable: retryableControlError(error),
+            })
+          ) {
+            terminateTree();
+          }
+        })
+        .finally(() => {
+          heartbeatInFlight = false;
+          if (!input.lease.canContinue()) terminateTree();
+        });
+    }, PRODUCT_TRUTH_WORKER_HEARTBEAT_MS);
     child.on("close", (code) => {
       clearInterval(timer);
       const stdoutValue = Buffer.concat(stdout);
@@ -477,10 +579,12 @@ async function runStage(input: {
   stage: string;
   args: readonly string[];
   heartbeat: () => Promise<void>;
+  lease: ProductTruthWorkerLease;
 }): Promise<void> {
   const execution = await spawnRunner({
     args: input.args,
     heartbeat: input.heartbeat,
+    lease: input.lease,
   });
   if (execution.exitCode !== 0) {
     throw new WorkerStageError(input.stage, execution);
@@ -723,19 +827,22 @@ async function executeClaim(
   claim: ProductTruthStandingWaveWebClaim,
 ): Promise<void> {
   verifyClaimPins(runtime, claim);
-  await api(
+  const lease = new ProductTruthWorkerLease(claim.lease_expires_at);
+  await leaseBoundApi(
     runtime,
+    lease,
     `/api/external/product-truth/standing-wave/${claim.command_id}/start`,
     { lease_token: claim.lease_token },
   );
   const workspace = join(runtime.custodyRoot, claim.workspace_key);
   let providerBoundaryStarted = false;
   const heartbeat = async () => {
-    await api(
+    const response = await api(
       runtime,
       `/api/external/product-truth/standing-wave/${claim.command_id}/heartbeat`,
       { lease_token: claim.lease_token },
     );
+    refreshLease(lease, response);
   };
   let result: ProductTruthStandingWaveWebResult;
   try {
@@ -744,6 +851,7 @@ async function executeClaim(
       await runStage({
         stage: "PLAN",
         heartbeat,
+        lease,
         args: [
           "--import",
           "tsx",
@@ -780,6 +888,7 @@ async function executeClaim(
     await runStage({
       stage: claim.operation === "START" ? "EXECUTE" : "RESUME",
       heartbeat,
+      lease,
       args: [
         "--import",
         "tsx",
@@ -798,8 +907,9 @@ async function executeClaim(
   } catch (error) {
     result = failedResult({ claim, error, providerBoundaryStarted });
   }
-  await api(
+  await leaseBoundApi(
     runtime,
+    lease,
     `/api/external/product-truth/standing-wave/${claim.command_id}/complete`,
     {
       lease_token: claim.lease_token,
@@ -812,11 +922,20 @@ async function main(): Promise<void> {
   const runtime = runtimeFromEnv();
   await verifyRuntime(runtime);
   for (;;) {
-    const response = await api(
-      runtime,
-      "/api/external/product-truth/standing-wave/claim",
-      { worker_id: runtime.workerId },
-    );
+    let response: Record<string, unknown>;
+    try {
+      response = await api(
+        runtime,
+        "/api/external/product-truth/standing-wave/claim",
+        { worker_id: runtime.workerId },
+      );
+    } catch (error) {
+      if (!retryableControlError(error) || runtime.once) throw error;
+      await new Promise<void>((resolvePromise) => {
+        setTimeout(resolvePromise, POLL_MS);
+      });
+      continue;
+    }
     const claim = parseClaim(response.claim);
     if (claim) await executeClaim(runtime, claim);
     if (runtime.once) return;
