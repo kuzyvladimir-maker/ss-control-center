@@ -1241,7 +1241,23 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `5935/5935` reconciled, Unit Economics
   `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING / 0 INVALID`,
   Procurement `25`, and unchanged Bundle Factory/Listing Improvement `100`.
-- [ ] 🔄 Select the next highest-impact untouched exact Phase 1 target and
-  repeat the bounded one-attempt standing-authority lifecycle. Persist
-  successful content and price evidence on their independent axes, then
-  propagate only verified evidence through the existing canonical graph.
+- [x] ✅ Del Monte Yellow Cling Peach Chunks 15.25 oz donor
+  `aee46f4c-ed04-4e53-a4e8-a94c468381db` was the next sales-ranked target and
+  was executed once with `walmart:1:RizwanX-2686 / component 0`. Plan SHA
+  `082761b4…938f`; execution report SHA `b5c447e6…2507`; terminal outcome
+  `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`.
+- [x] ✅ The lifecycle consumed `6` units, retry `0`, and retained exact price,
+  six images and available content. Allergens/storage remain explicit gaps;
+  marketplace/business mutations were `0`.
+- [x] ✅ Zero-paid COGS plan SHA `0447a3ae…1fb2`, fresh preflight
+  `READY_TO_APPLY`, and apply report SHA `beab72cd…cce1` inserted `9`
+  append-only rows for three `FACT` costs: `RizwanX-2686/2687/2688`.
+- [x] ✅ Full-denominator readiness report SHA `c85b9555…cba2` proves
+  `5935/5935` reconciled, Unit Economics
+  `28 FACT / 3 ESTIMATE / 730 UNSOURCEABLE / 5174 MISSING / 0 INVALID`,
+  Procurement `28`, and Bundle Factory/Listing Improvement `100`.
+- [ ] ⬜ Replace manual agent-by-agent repetition with a certified
+  sales-ranked standing-authority wave orchestrator in Command Center. It must
+  preserve concurrency `1`, one attempt/no retry, immutable per-target
+  artifacts, provider ledger/reserve floor, independent content/price axes and
+  a separate zero-paid COGS materialization plus full readiness checkpoint.

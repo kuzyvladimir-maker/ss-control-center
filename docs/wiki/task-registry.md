@@ -1520,7 +1520,17 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `RizwanX-3235/3236/3237`. Full readiness `0497687d…1339`:
   `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING`, Procurement
   `25`, denominator `5935/5935`.
-- [ ] 🔄 Выбрать следующий highest-impact untouched exact Phase 1 target,
-  выполнить один bounded standing-authority lifecycle и независимо
-  материализовать только подтверждённые content/price evidence в существующий
-  canonical graph с новым full-denominator postcheck.
+- [x] ✅ Del Monte Yellow Cling Peach Chunks 15.25 oz donor
+  `aee46f4c…81db` выполнен один раз для `RizwanX-2686 / component 0`: plan
+  `082761b4…938f`, terminal `COMPLETED`, report `b5c447e6…2507`, lifecycle
+  spend `6` units, retry `0`. Exact price и available content сохранены
+  независимо; allergens/storage остаются gaps.
+- [x] ✅ Zero-paid COGS plan `0447a3ae…1fb2`, apply `beab72cd…cce1`:
+  `9` append-only rows, `3 FACT` для `RizwanX-2686/2687/2688`. Full readiness
+  `c85b9555…cba2`: `28 FACT / 3 ESTIMATE / 730 UNSOURCEABLE / 5174 MISSING`,
+  Procurement `28`, denominator `5935/5935`.
+- [ ] ⬜ Следующий крупный этап: сертифицировать в Command Center
+  sales-ranked standing-authority wave orchestrator вместо ручного повторения
+  каждого target. Обязательные границы: concurrency `1`, one-attempt/no-retry,
+  immutable artifacts, exact provider ledger/reserve floor, независимые
+  content/price outcomes и отдельный zero-paid COGS/readiness checkpoint.

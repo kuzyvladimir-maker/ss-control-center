@@ -866,10 +866,20 @@ G7 закончен как диагностический production canary, н�
   `RizwanX-3235/3236/3237`. Readiness `0497687d…1339` подтверждает
   `25 FACT / 3 ESTIMATE / 733 UNSOURCEABLE / 5174 MISSING`, Procurement
   `25`, denominator `5935/5935`;
-- 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
-  authority; отдельно сохранить successful content/price evidence, materialize
-  только доказанные данные в существующие canonical recipe/typed COGS и снова
-  обновить полный denominator.
+- ✅ следующий sales-priority donor Del Monte Yellow Cling Peach Chunks 15.25
+  oz выполнен один раз для `walmart:1:RizwanX-2686 / component 0`. Plan
+  `082761b4…938f`, execution `b5c447e6…2507`, terminal `COMPLETED`, combined
+  spend `6` units, retry `0`; exact price, six images и доступный content
+  snapshot сохранены, allergens/storage остались явными gaps;
+- ✅ zero-paid COGS plan `0447a3ae…1fb2`, apply `beab72cd…cce1` добавил `9`
+  append-only rows и `3 FACT` для `RizwanX-2686/2687/2688`. Full readiness
+  `c85b9555…cba2` подтверждает `5935/5935`, Unit Economics
+  `28 FACT / 3 ESTIMATE / 730 UNSOURCEABLE / 5174 MISSING`, Procurement `28`;
+- ⬜ следующий крупный этап — убрать ручное агентское участие из повторяемого
+  one-target цикла: проверить и довести безопасный sales-ranked
+  standing-authority wave orchestrator в Command Center, сохранив
+  concurrency `1`, one-attempt/no-retry, immutable artifacts, provider ledger
+  и отдельную materialization/readiness границу.
 
 Статус 2026-07-28 после исправления:
 
