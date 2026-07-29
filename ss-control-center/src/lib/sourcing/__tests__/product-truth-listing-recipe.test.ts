@@ -13,6 +13,13 @@ import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
 } from "../canonical-product-match-provenance";
 import {
+  applyProductTruthCanonicalCogsReconciliation,
+  planProductTruthCanonicalCogsReconciliation,
+  preflightProductTruthCanonicalCogsReconciliation,
+  renderProductTruthCanonicalCogsReconcilePlan,
+  renderProductTruthCanonicalCogsReconcilePreflight,
+} from "../product-truth-canonical-cogs-reconcile";
+import {
   applyProductTruthCanonicalRecipeReconciliation,
   planProductTruthCanonicalRecipeReconciliation,
   preflightProductTruthCanonicalRecipeReconciliation,
@@ -519,6 +526,84 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
     });
     assert.equal(postcheck.status, "ALREADY_APPLIED");
     assert.equal(postcheck.counts.exactExistingRows, 2);
+
+    const cogsPlan = await planProductTruthCanonicalCogsReconciliation({
+      db,
+      databaseTargetFingerprint: HASH_A,
+      manifestSha256: HASH_B,
+      listingKeys: [LISTING_KEY],
+      createdAt: "2026-07-29T00:08:00.000Z",
+      expiresAt: "2026-07-29T23:59:00.000Z",
+    });
+    assert.deepEqual(cogsPlan.databaseWrites, {
+      maximumRows: 3,
+      skuCosts: 1,
+      componentEvidence: 1,
+      listingScopeLinks: 1,
+    });
+    assert.equal(cogsPlan.targets[0].sourceCostId, "recipe-cost");
+    assert.equal(cogsPlan.targets[0].cost.evidenceOutcome, "UNSOURCEABLE");
+    assert.equal(
+      cogsPlan.targets[0].cost.recipeHash,
+      plan.targets[0].listingRecipe.recipeHash,
+    );
+    const cogsPlanJson =
+      renderProductTruthCanonicalCogsReconcilePlan(cogsPlan);
+    const cogsPlanSha256 = sha(cogsPlanJson);
+    const cogsPreflight =
+      await preflightProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: cogsPlan,
+        planJson: cogsPlanJson,
+        planSha256: cogsPlanSha256,
+        checkedAt: "2026-07-29T00:09:00.000Z",
+      });
+    assert.equal(cogsPreflight.status, "READY_TO_APPLY");
+    assert.equal(cogsPreflight.counts.absentRows, 3);
+    const cogsPreflightJson =
+      renderProductTruthCanonicalCogsReconcilePreflight(cogsPreflight);
+    const cogsApplied =
+      await applyProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: cogsPlan,
+        planJson: cogsPlanJson,
+        planSha256: cogsPlanSha256,
+        standingPolicy: policy,
+        standingPolicyJson: policyJson,
+        standingPolicySha256: sha(policyJson),
+        preflight: cogsPreflight,
+        preflightJson: cogsPreflightJson,
+        preflightSha256: sha(cogsPreflightJson),
+        startedAt: "2026-07-29T00:09:00.000Z",
+        completedAt: "2026-07-29T00:09:00.000Z",
+      });
+    assert.equal(cogsApplied.status, "APPLIED");
+    assert.equal(cogsApplied.counts.insertedRows, 3);
+    const currentCosts = (await db.execute({
+      sql: `SELECT id,recipeHash,evidenceOutcome
+            FROM SkuCost WHERE sku=? ORDER BY createdAt,id`,
+      args: ["RECIPE-SKU"],
+    })).rows;
+    assert.equal(currentCosts.length, 2, "historical cost must remain immutable");
+    assert.equal(currentCosts[0].id, "recipe-cost");
+    assert.equal(
+      currentCosts[1].recipeHash,
+      plan.targets[0].listingRecipe.recipeHash,
+    );
+    assert.equal(currentCosts[1].evidenceOutcome, "UNSOURCEABLE");
+    const cogsPostcheck =
+      await preflightProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: cogsPlan,
+        planJson: cogsPlanJson,
+        planSha256: cogsPlanSha256,
+        checkedAt: "2026-07-29T00:10:00.000Z",
+      });
+    assert.equal(cogsPostcheck.status, "ALREADY_APPLIED");
+    assert.equal(cogsPostcheck.counts.exactExistingRows, 3);
   } finally {
     db.close();
     await rm(directory, { recursive: true, force: true });
