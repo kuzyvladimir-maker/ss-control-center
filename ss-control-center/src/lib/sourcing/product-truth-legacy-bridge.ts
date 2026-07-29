@@ -32,9 +32,9 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.3.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.4.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.3.0" as const;
+  "product-truth-legacy-bridge-plan/1.4.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
   "product-truth-legacy-bridge-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
@@ -186,8 +186,14 @@ export interface ProductTruthLegacyBridgeCanonicalListingComponentRow {
   contentCanonicalVariantId: string | null;
   contentObservationId: string | null;
   observedContentCanonicalVariantId: string | null;
+  decisionId?: string | null;
   decisionStatus: string | null;
   decisionCanonicalVariantId: string | null;
+  recipeTargetCanonicalVariantId?: string | null;
+  recipeDonorProductId?: string | null;
+  recipeVariantDecisionId?: string | null;
+  recipeComponentEvidenceHash?: string | null;
+  recipeComponentEvidenceJson?: string | null;
 }
 
 export interface ProductTruthLiveImageBarcodeEvidence {
@@ -1519,6 +1525,208 @@ function aggregateScope(
   };
 }
 
+type ProductTruthLegacyBridgeReconciliationSourceTarget = {
+  listingKey: string;
+  originalCanonicalVariantId: string;
+  originalTargetIdentitySha256: string;
+  overlappingProductFlavorTokens: number;
+};
+
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function identityPartitionPhysicalProjection(
+  rebuiltVariant: CanonicalProductVariantKey,
+): {
+  brand: string;
+  identityTokens: string[];
+  modifiers: string[];
+  form: string | null;
+  size: CanonicalProductVariantKey["normalized"]["size"];
+  outerPackCount: number;
+} {
+  const productTokens = new Set(
+    rebuiltVariant.normalized.productLine?.split(/\s+/).filter(Boolean) ?? [],
+  );
+  const flavorTokens = new Set(
+    rebuiltVariant.normalized.flavor?.split(/\s+/).filter(Boolean) ?? [],
+  );
+  const identityTokens = new Set(
+    [...productTokens, ...flavorTokens].filter((token) => token !== "with"),
+  );
+  return {
+    brand: rebuiltVariant.normalized.brand,
+    identityTokens: [...identityTokens].sort((left, right) =>
+      left.localeCompare(right, "en-US")),
+    modifiers: [...rebuiltVariant.normalized.modifiers].sort((left, right) =>
+      left.localeCompare(right, "en-US")),
+    form: rebuiltVariant.normalized.form,
+    size: rebuiltVariant.normalized.size,
+    outerPackCount: rebuiltVariant.normalized.outerPackCount,
+  };
+}
+
+function validIdentityPartitionReconciliation(input: {
+  component: ProductTruthLegacyBridgeComponentPlan;
+  row: ProductTruthLegacyBridgeCanonicalListingComponentRow;
+}): boolean {
+  const { component, row } = input;
+  if (
+    !component.targetIdentity
+    || !component.targetVariant
+    || !row.recipeComponentEvidenceHash
+    || !row.recipeComponentEvidenceJson
+    || !row.recipeTargetCanonicalVariantId
+    || !row.recipeDonorProductId
+    || !row.recipeVariantDecisionId
+    || !row.decisionId
+  ) {
+    return false;
+  }
+  if (
+    createHash("sha256").update(row.recipeComponentEvidenceJson).digest("hex")
+      !== row.recipeComponentEvidenceHash
+  ) {
+    return false;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(row.recipeComponentEvidenceJson);
+  } catch {
+    return false;
+  }
+  if (
+    renderProductTruthOperationalJson(parsed)
+      !== row.recipeComponentEvidenceJson
+  ) {
+    return false;
+  }
+  const evidence = recordValue(parsed);
+  const sourceEvidence = recordValue(evidence?.sourceEvidence);
+  const reconciliation = recordValue(sourceEvidence?.identityReconciliation);
+  const canonicalTargetIdentity =
+    recordValue(reconciliation?.canonicalTargetIdentity);
+  const canonicalTargetVariant =
+    recordValue(reconciliation?.canonicalTargetVariant);
+  const sourceTargets = Array.isArray(reconciliation?.sourceTargets)
+    ? reconciliation.sourceTargets
+    : null;
+  if (
+    !evidence
+    || evidence.schemaVersion
+      !== "product-truth-listing-recipe-component-evidence/1.0.0"
+    || evidence.listingKey !== row.listingKey
+    || evidence.componentIndex !== row.componentIndex
+    || evidence.targetCanonicalVariantId
+      !== row.recipeTargetCanonicalVariantId
+    || evidence.donorProductId !== row.recipeDonorProductId
+    || evidence.variantDecisionId !== row.recipeVariantDecisionId
+    || evidence.sourceEvidenceSha256
+      !== productTruthOperationalSha256(sourceEvidence)
+    || sourceEvidence?.schemaVersion
+      !== "product-truth-legacy-bridge-recipe-component-source/1.0.0"
+    || reconciliation?.schemaVersion
+      !== "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0"
+    || reconciliation.mode !== "LEXICALLY_EQUIVALENT_DONOR_GRAPH"
+    || reconciliation.donorProductId !== row.recipeDonorProductId
+    || typeof reconciliation.canonicalListingKey !== "string"
+    || !canonicalTargetIdentity
+    || !canonicalTargetVariant
+    || !sourceTargets
+    || sourceTargets.length < 2
+    || reconciliation.sourceTargetsSha256
+      !== productTruthOperationalSha256(sourceTargets)
+  ) {
+    return false;
+  }
+  const parsedSourceTargets =
+    sourceTargets.map((value): ProductTruthLegacyBridgeReconciliationSourceTarget | null => {
+      const target = recordValue(value);
+      if (
+        !target
+        || typeof target.listingKey !== "string"
+        || typeof target.originalCanonicalVariantId !== "string"
+        || typeof target.originalTargetIdentitySha256 !== "string"
+        || typeof target.overlappingProductFlavorTokens !== "number"
+        || !Number.isInteger(target.overlappingProductFlavorTokens)
+        || target.overlappingProductFlavorTokens < 0
+      ) {
+        return null;
+      }
+      return {
+        listingKey: target.listingKey,
+        originalCanonicalVariantId: target.originalCanonicalVariantId,
+        originalTargetIdentitySha256: target.originalTargetIdentitySha256,
+        overlappingProductFlavorTokens:
+          Number(target.overlappingProductFlavorTokens),
+      };
+    });
+  if (
+    parsedSourceTargets.some((value) => value === null)
+    || new Set(parsedSourceTargets.map((value) => value!.listingKey)).size
+      !== parsedSourceTargets.length
+    || !parsedSourceTargets.some(
+      (value) => value!.listingKey === reconciliation.canonicalListingKey,
+    )
+    || parsedSourceTargets.some(
+      (value, index) =>
+        index > 0
+        && parsedSourceTargets[index - 1]!.listingKey.localeCompare(
+          value!.listingKey,
+          "en-US",
+        ) >= 0,
+    )
+  ) {
+    return false;
+  }
+  const sourceTarget = parsedSourceTargets.find(
+    (value) => value!.listingKey === row.listingKey,
+  );
+  if (
+    !sourceTarget
+    || sourceTarget.originalCanonicalVariantId
+      !== component.targetVariant.canonicalVariantId
+    || sourceTarget.originalTargetIdentitySha256
+      !== productTruthOperationalSha256(component.targetIdentity)
+  ) {
+    return false;
+  }
+  try {
+    const original = buildCanonicalProductVariantKey(component.targetIdentity);
+    const canonical = buildCanonicalProductVariantKey(
+      canonicalTargetIdentity as CanonicalProductIdentity,
+    );
+    const canonicalProjection = projectVariant(canonical);
+    return (
+      original.canonicalVariantId
+        === component.targetVariant.canonicalVariantId
+      && canonical.canonicalVariantId === row.targetCanonicalVariantId
+      && row.recipeTargetCanonicalVariantId === row.targetCanonicalVariantId
+      && row.recipeVariantDecisionId === row.decisionId
+      && canonicalTargetVariant.canonicalVariantId
+        === canonicalProjection.canonicalVariantId
+      && canonicalTargetVariant.variantKey === canonicalProjection.variantKey
+      && canonicalTargetVariant.identityHash === canonicalProjection.identityHash
+      && canonicalTargetVariant.keyVersion === canonicalProjection.keyVersion
+      && canonicalTargetVariant.identityJson === canonicalProjection.identityJson
+      && productTruthOperationalSha256(
+        identityPartitionPhysicalProjection(original),
+      ) === productTruthOperationalSha256(
+        identityPartitionPhysicalProjection(canonical),
+      )
+      && reconciliation.physicalIdentitySha256
+        === productTruthOperationalSha256(
+          identityPartitionPhysicalProjection(canonical),
+        )
+    );
+  } catch {
+    return false;
+  }
+}
+
 function classifyExistingCanonicalScope(
   scope: ProductTruthLegacyBridgeScopePlan,
   rows: readonly ProductTruthLegacyBridgeCanonicalListingComponentRow[],
@@ -1534,16 +1742,24 @@ function classifyExistingCanonicalScope(
   for (const component of scope.components) {
     const row = byIndex.get(component.componentIndex);
     const targetVariantId = component.targetVariant?.canonicalVariantId ?? null;
+    const canonicalEvidenceVariantId = row?.targetCanonicalVariantId ?? null;
+    const targetBindingValid =
+      targetVariantId === canonicalEvidenceVariantId
+      || (
+        row !== undefined
+        && validIdentityPartitionReconciliation({ component, row })
+      );
     if (
       !row
       || !targetVariantId
+      || !canonicalEvidenceVariantId
       || !["FACT", "MANUAL_FACT", "ESTIMATE", "REJECT"].includes(row.evidenceStatus)
-      || row.targetCanonicalVariantId !== targetVariantId
-      || row.contentCanonicalVariantId !== targetVariantId
+      || !targetBindingValid
+      || row.contentCanonicalVariantId !== canonicalEvidenceVariantId
       || !row.contentObservationId
-      || row.observedContentCanonicalVariantId !== targetVariantId
+      || row.observedContentCanonicalVariantId !== canonicalEvidenceVariantId
       || row.decisionStatus !== "exact_confirmed"
-      || row.decisionCanonicalVariantId !== targetVariantId
+      || row.decisionCanonicalVariantId !== canonicalEvidenceVariantId
     ) {
       valid = false;
     }

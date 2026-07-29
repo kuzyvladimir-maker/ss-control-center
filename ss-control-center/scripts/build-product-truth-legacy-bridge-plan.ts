@@ -482,6 +482,9 @@ async function readCanonicalListingComponents(
             SELECT
               scope.listingKey,
               cost.id AS skuCostId,
+              cost.recipeHash,
+              cost.runId,
+              cost.approvalId,
               ROW_NUMBER() OVER (
                 PARTITION BY scope.listingKey
                 ORDER BY
@@ -509,14 +512,29 @@ async function readCanonicalListingComponents(
             evidence.contentCanonicalVariantId,
             evidence.contentObservationId,
             content.canonicalVariantId AS observedContentCanonicalVariantId,
+            decision.id AS decisionId,
             decision.decisionStatus,
-            decision.canonicalVariantId AS decisionCanonicalVariantId
+            decision.canonicalVariantId AS decisionCanonicalVariantId,
+            recipeComponent.targetCanonicalVariantId
+              AS recipeTargetCanonicalVariantId,
+            recipeComponent.donorProductId AS recipeDonorProductId,
+            recipeComponent.variantDecisionId AS recipeVariantDecisionId,
+            recipeComponent.evidenceHash AS recipeComponentEvidenceHash,
+            recipeComponent.evidenceJson AS recipeComponentEvidenceJson
           FROM ranked_costs ranked
           JOIN SkuComponentEvidence evidence ON evidence.skuCostId=ranked.skuCostId
           LEFT JOIN ProductContentObservation content
             ON content.id=evidence.contentObservationId
           LEFT JOIN DonorProductVariantDecision decision
             ON decision.id=content.variantDecisionId
+          LEFT JOIN ProductTruthListingRecipe recipe
+            ON recipe.listingKey=ranked.listingKey
+           AND recipe.recipeHash=ranked.recipeHash
+           AND recipe.runId IS ranked.runId
+           AND recipe.approvalId IS ranked.approvalId
+          LEFT JOIN ProductTruthListingRecipeComponent recipeComponent
+            ON recipeComponent.listingRecipeId=recipe.id
+           AND recipeComponent.componentIndex=evidence.componentIndex
           WHERE ranked.rank=1
           ORDER BY ranked.listingKey, evidence.componentIndex, evidence.id`,
     args: [manifestSha256, capturedAt, capturedAt],
@@ -533,8 +551,17 @@ async function readCanonicalListingComponents(
     contentCanonicalVariantId: nullableText(row.contentCanonicalVariantId),
     contentObservationId: nullableText(row.contentObservationId),
     observedContentCanonicalVariantId: nullableText(row.observedContentCanonicalVariantId),
+    decisionId: nullableText(row.decisionId),
     decisionStatus: nullableText(row.decisionStatus),
     decisionCanonicalVariantId: nullableText(row.decisionCanonicalVariantId),
+    recipeTargetCanonicalVariantId:
+      nullableText(row.recipeTargetCanonicalVariantId),
+    recipeDonorProductId: nullableText(row.recipeDonorProductId),
+    recipeVariantDecisionId: nullableText(row.recipeVariantDecisionId),
+    recipeComponentEvidenceHash:
+      nullableText(row.recipeComponentEvidenceHash),
+    recipeComponentEvidenceJson:
+      nullableText(row.recipeComponentEvidenceJson),
   }));
 }
 

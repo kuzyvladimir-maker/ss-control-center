@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  buildCanonicalProductVariantKey,
+} from "../canonical-product-variant";
+import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   compileProductTruthLegacyBridgePlan,
   productTruthLegacyBridgeBytesSha256,
@@ -13,7 +16,10 @@ import {
   type ProductTruthLegacyBridgeOfferRow,
   type ProductTruthLegacyBridgeSnapshot,
 } from "../product-truth-legacy-bridge";
-import { renderProductTruthOperationalJson } from "../product-truth-operational-run-contract";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
 
 function component(
   overrides: Partial<ProductTruthLegacyBridgeComponentRow> = {},
@@ -672,6 +678,149 @@ test("current exact content evidence is classified as already canonical", () => 
   assert.equal(plan.counts.alreadyCanonicalListings, 1);
   assert.equal(plan.counts.alreadyCanonicalComponents, 1);
   assert.equal(plan.counts.exactCanonicalizationCandidates, 0);
+});
+
+test("field-partition reconciliation remains canonical on the next audit", () => {
+  const base = snapshot();
+  const originalComponent = compile(base).scopes[0].components[0];
+  assert.ok(originalComponent.targetIdentity);
+  assert.ok(originalComponent.targetVariant);
+  const canonicalIdentity = {
+    brand: "Acme",
+    productLine: "Crunch Chips Barbecue",
+    flavor: null,
+    form: "Bag",
+    size: "8 oz",
+    outerPackCount: 1,
+  };
+  const canonical = buildCanonicalProductVariantKey(canonicalIdentity);
+  const canonicalVariant = {
+    canonicalVariantId: canonical.canonicalVariantId,
+    variantKey: canonical.variantKey,
+    identityHash: canonical.identityHash,
+    keyVersion: canonical.keyVersion,
+    identityJson: canonical.identityJson,
+  };
+  const physicalIdentity = {
+    brand: canonical.normalized.brand,
+    identityTokens: ["barbecue", "chips", "crunch"],
+    modifiers: [],
+    form: canonical.normalized.form,
+    size: canonical.normalized.size,
+    outerPackCount: canonical.normalized.outerPackCount,
+  };
+  const sourceTargets = [
+    {
+      listingKey: "ptls1:canonical",
+      originalCanonicalVariantId: canonical.canonicalVariantId,
+      originalTargetIdentitySha256:
+        productTruthOperationalSha256(canonicalIdentity),
+      overlappingProductFlavorTokens: 0,
+    },
+    {
+      listingKey: "ptls1:test",
+      originalCanonicalVariantId:
+        originalComponent.targetVariant.canonicalVariantId,
+      originalTargetIdentitySha256:
+        productTruthOperationalSha256(originalComponent.targetIdentity),
+      overlappingProductFlavorTokens: 0,
+    },
+  ];
+  const reconciliation = {
+    schemaVersion:
+      "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0",
+    mode: "LEXICALLY_EQUIVALENT_DONOR_GRAPH",
+    donorProductId: "donor-1",
+    canonicalListingKey: "ptls1:canonical",
+    canonicalTargetIdentity: canonicalIdentity,
+    canonicalTargetVariant: canonicalVariant,
+    physicalIdentitySha256:
+      productTruthOperationalSha256(physicalIdentity),
+    sourceTargets,
+    sourceTargetsSha256: productTruthOperationalSha256(sourceTargets),
+  };
+  const sourceEvidence = {
+    schemaVersion:
+      "product-truth-legacy-bridge-recipe-component-source/1.0.0",
+    identityProof: "STRICT_TITLE_MATCH",
+    matcherReasonCodes: [
+      "IDENTITY_EXACT",
+      "SIZE_EXACT",
+      "TITLE_FALLBACK_IDENTITY_PROVEN",
+    ],
+    sourceSnapshotSha256: "1".repeat(64),
+    bridgePlanSha256: "2".repeat(64),
+    sourceBinding: {},
+    identityReconciliation: reconciliation,
+  };
+  const componentEvidence = {
+    schemaVersion:
+      "product-truth-listing-recipe-component-evidence/1.0.0",
+    listingKey: "ptls1:test",
+    componentIndex: 0,
+    quantity: 1,
+    product: "Acme Crunch Chips",
+    flavor: "Barbecue",
+    size: "8 oz",
+    targetCanonicalVariantId: canonical.canonicalVariantId,
+    donorProductId: "donor-1",
+    variantDecisionId: "decision-1",
+    sourceComponentId: "component-1",
+    sourceEvidenceSha256: productTruthOperationalSha256(sourceEvidence),
+    sourceEvidence,
+  };
+  const recipeComponentEvidenceJson =
+    renderProductTruthOperationalJson(componentEvidence);
+  const canonicalRow = {
+    listingKey: "ptls1:test",
+    skuCostId: "cost-1",
+    componentIndex: 0,
+    evidenceStatus: "REJECT",
+    targetCanonicalVariantId: canonical.canonicalVariantId,
+    contentCanonicalVariantId: canonical.canonicalVariantId,
+    contentObservationId: "content-1",
+    observedContentCanonicalVariantId: canonical.canonicalVariantId,
+    decisionId: "decision-1",
+    decisionStatus: "exact_confirmed",
+    decisionCanonicalVariantId: canonical.canonicalVariantId,
+    recipeTargetCanonicalVariantId: canonical.canonicalVariantId,
+    recipeDonorProductId: "donor-1",
+    recipeVariantDecisionId: "decision-1",
+    recipeComponentEvidenceHash:
+      productTruthOperationalSha256(componentEvidence),
+    recipeComponentEvidenceJson,
+  };
+  const reconciled = compile(snapshot({
+    canonicalDonorBindings: [{
+      donorProductId: "donor-1",
+      canonicalVariantId: canonical.canonicalVariantId,
+      decisionId: "decision-1",
+      decisionStatus: "exact_confirmed",
+      decidedAt: "2026-07-26T11:30:00.000Z",
+    }],
+    canonicalListingComponents: [canonicalRow],
+  }));
+  assert.equal(reconciled.scopes[0].disposition, "ALREADY_CANONICAL");
+  assert.equal(reconciled.scopes[0].components[0].disposition, "ALREADY_CANONICAL");
+  assert.equal(reconciled.scopes[0].blockers.length, 0);
+
+  const tampered = compile(snapshot({
+    canonicalDonorBindings: [{
+      donorProductId: "donor-1",
+      canonicalVariantId: canonical.canonicalVariantId,
+      decisionId: "decision-1",
+      decisionStatus: "exact_confirmed",
+      decidedAt: "2026-07-26T11:30:00.000Z",
+    }],
+    canonicalListingComponents: [{
+      ...canonicalRow,
+      recipeComponentEvidenceHash: "0".repeat(64),
+    }],
+  }));
+  assert.equal(tampered.scopes[0].disposition, "QUARANTINE");
+  assert.ok(tampered.scopes[0].blockers.some(
+    (item) => item.code === "CANONICAL_LISTING_STATE_INVALID",
+  ));
 });
 
 test("an exact donor already bound to another variant fails closed", () => {
