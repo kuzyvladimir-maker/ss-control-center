@@ -1480,8 +1480,20 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING`, Procurement
   `18`. Все восемь Cinnamon listings читаются как `FACT`/`READY`; incomplete
   content не был relabelled как complete.
-- [ ] 🔄 Выбрать следующий untouched exact Phase 1 target, выполнить один
-  bounded standing-authority lifecycle и независимо материализовать только
-  подтверждённые content/price evidence в существующий canonical graph с новым
-  full-denominator postcheck.
+- [x] ✅ Cheez-It Original 21 oz donor `fce8b1aa…4e7e` выбран как следующий
+  highest immediate-impact target: пять single-component Walmart recipes,
+  binding `FaisalX-4464 / component 0`, plan `96181a7f…5856`.
+- [x] ✅ Единственный provider attempt terminalized `AMBIGUOUS`: Oxylabs row
+  не содержал все required target tokens. Report `36d8a694…1a19`, lifecycle
+  spend `3.5` units, retry/detail/price/content/canonical/marketplace writes
+  `0`; автоматический replay запрещён.
+- [x] ✅ Provider reject diagnostics теперь перечисляют точные
+  `MISSING_TARGET_TOKENS`/`UNEXPLAINED_CANDIDATE_TOKENS`, поэтому следующий
+  fail-closed result диагностируется без повторного spend. Release
+  `87b50d71`, tree `11ea7895…0a9`; focused `16/16`, full Product Truth
+  `576/576`, TypeScript и targeted ESLint PASS.
+- [ ] 🔄 Выбрать следующий highest-impact untouched exact Phase 1 target,
+  выполнить один bounded standing-authority lifecycle и независимо
+  материализовать только подтверждённые content/price evidence в существующий
+  canonical graph с новым full-denominator postcheck.
 

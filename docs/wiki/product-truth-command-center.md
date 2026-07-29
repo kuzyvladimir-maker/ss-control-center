@@ -1183,8 +1183,28 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING / 0 INVALID`;
   Procurement is `18 ready`. All eight Cinnamon listings independently read
   as Unit Economics `FACT` and Procurement `READY`.
-- [ ] 🔄 Select the next untouched exact Phase 1 target and repeat the bounded
-  one-attempt standing-authority lifecycle. Persist successful content and
-  price evidence on their independent axes, then propagate only verified
-  evidence through the existing canonical recipe/typed COGS graph.
+- [x] ✅ Highest immediate-COGS-impact untouched target was selected from the
+  current canonical graph: Cheez-It Original 21 oz donor
+  `fce8b1aa-529e-46dd-af3a-c39a57d14e7e`, bound to
+  `walmart:1:FaisalX-4464 / component 0` and shared by five single-component
+  recipes. Doctor and plan were read-only; plan SHA `96181a7f…5856`.
+- [x] ✅ The one permitted provider attempt terminalized `AMBIGUOUS` because
+  the Oxylabs title lacked at least one required target token. Execution report
+  SHA `36d8a694…1a19`; total lifecycle spend `3.5` units (`2.5` balance +
+  `1` Oxylabs), retry/detail/price/content/canonical/marketplace writes `0`.
+  The target is not replayable.
+- [x] ✅ Official current Walmart title and the legacy exact title both pass
+  the unchanged matcher locally, so the paid response cannot be relabelled
+  without its exact rejected title. The selector now records deterministic
+  `MISSING_TARGET_TOKENS(...)` and
+  `UNEXPLAINED_CANDIDATE_TOKENS(...)` diagnostics for every future rejected
+  provider row, without weakening any verdict gate.
+- [x] ✅ Observability release `87b50d7161a27d744833b7444d9f841a911e7691`,
+  tree `11ea78955ab60828aebdd14dabcc6f17d08de0a9`: focused `16/16`,
+  full Product Truth `576/576`, TypeScript and targeted ESLint pass in the
+  exact clean tree.
+- [ ] 🔄 Select the next highest-impact untouched exact Phase 1 target and
+  repeat the bounded one-attempt standing-authority lifecycle. Persist
+  successful content and price evidence on their independent axes, then
+  propagate only verified evidence through the existing canonical graph.
 

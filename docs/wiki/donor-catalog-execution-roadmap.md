@@ -828,6 +828,14 @@ G7 закончен как диагностический production canary, н�
   Unit Economics `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING`,
   Procurement `18`. Content completeness и price/COGS outcome остались
   независимыми;
+- ✅ следующий highest-impact target Cheez-It Original 21 oz был sealed для
+  пяти single-component recipes. Plan `96181a7f…5856`; единственный Oxylabs
+  query terminalized `AMBIGUOUS` на missing target token. Total lifecycle spend
+  `3.5` units, retry/detail/canonical/marketplace writes `0`, replay запрещён;
+- ✅ rejected provider rows теперь сохраняют имена missing/unexplained title
+  tokens в terminal diagnostic, не меняя matcher или verdict. Release
+  `87b50d71`, tree `11ea7895…0a9`, clean Product Truth `576/576`, TypeScript и
+  targeted ESLint PASS;
 - 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
   authority; отдельно сохранить successful content/price evidence, materialize
   только доказанные данные в существующие canonical recipe/typed COGS и снова
