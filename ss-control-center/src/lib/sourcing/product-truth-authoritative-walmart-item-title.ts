@@ -72,6 +72,13 @@ export function parseProductTruthAuthoritativeWalmartOuterPackTitle(
       && /^\d+$/.test(tokens[index + 2] ?? "")
     ) {
       add(Number(tokens[index + 2]), [index, index + 1, index + 2]);
+      continue;
+    }
+    if (
+      OUTER_PACK_NOUNS.has(token)
+      && /^\d+$/.test(tokens[index + 1] ?? "")
+    ) {
+      add(Number(tokens[index + 1]), [index, index + 1]);
     }
   }
   const consumed = new Set(findings.flatMap((finding) => finding.positions));

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
   CANONICAL_TITLE_NEUTRAL_TOKENS,
+  matchCanonicalProduct,
   matchCanonicalProductTitle,
   normalizeIdentityTokens,
   parseCanonicalSize,
@@ -40,7 +41,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.4.0" as const;
+  "product-truth-legacy-bridge-policy/1.5.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -1873,6 +1874,38 @@ function exactNormalizedTitleKey(value: string | null | undefined): string {
   return JSON.stringify(normalizeIdentityTokens(value));
 }
 
+function titleContainsEquivalentCanonicalSize(
+  title: string,
+  size: string,
+): boolean {
+  const matches = title.matchAll(
+    new RegExp(
+      AUTHORITATIVE_WALMART_TITLE_MEASURE.source,
+      AUTHORITATIVE_WALMART_TITLE_MEASURE.flags,
+    ),
+  );
+  return [...matches].some((match) =>
+    equivalentCanonicalSize(size, match[0] ?? null));
+}
+
+function explicitDonorAttributeBrand(attributes: string | null): string | null {
+  const parsed = parsedJson(attributes);
+  if (!Array.isArray(parsed)) return null;
+  const values = parsed
+    .map((item): string | null => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+      const row = item as Record<string, unknown>;
+      return /^brand$/i.test(String(row.name ?? row.label ?? "").trim())
+        ? stringOrNull(row.value)
+        : null;
+    })
+    .filter((value): value is string => value !== null);
+  const normalized = new Map(
+    values.map((value) => [foldedTokens(value).join("\u0000"), value]),
+  );
+  return normalized.size === 1 ? [...normalized.values()][0]! : null;
+}
+
 function orderedPrefix(
   prefix: readonly string[],
   value: readonly string[],
@@ -1884,6 +1917,7 @@ function orderedPrefix(
 
 function recoverAuthoritativeWalmartReportScope(input: {
   listing: ProductTruthLegacyBridgeListingRow;
+  legacyComponents: readonly ProductTruthLegacyBridgeComponentRow[];
   evidence: ProductTruthAuthoritativeWalmartItemReportEvidenceRow | null;
   donorsByExactTitle: ReadonlyMap<
     string,
@@ -1918,6 +1952,15 @@ function recoverAuthoritativeWalmartReportScope(input: {
     || outerPack.status === "AMBIGUOUS"
     || !outerPack.baseTokens.length
   ) return null;
+  const quantity = outerPack.status === "PARSED" ? outerPack.count! : 1;
+  const legacyComponent = input.legacyComponents.length === 0
+    ? null
+    : input.legacyComponents.length === 1
+        && input.legacyComponents[0]?.idx === 0
+        && positiveInteger(input.legacyComponents[0].qty) === quantity
+      ? input.legacyComponents[0]
+      : undefined;
+  if (legacyComponent === undefined) return null;
   const baseSignature = outerPack.baseTokens.join(" ");
   if (
     AUTHORITATIVE_WALMART_PLACEHOLDER_SIGNATURES.has(baseSignature)
@@ -1937,17 +1980,32 @@ function recoverAuthoritativeWalmartReportScope(input: {
   const reportBrandTokens = foldedTokens(evidence.brand);
   const donorBrandTokens = foldedTokens(donor.brand);
   const donorTitleTokens = foldedTokens(donor.title);
+  const reportBrandIsTitlePrefix =
+    orderedPrefix(reportBrandTokens, donorTitleTokens);
+  const donorAttributeBrandTokens =
+    foldedTokens(explicitDonorAttributeBrand(donor.attributes) ?? "");
+  const reportBrandIsAttributeCorroboratedExpansion =
+    orderedPrefix(donorBrandTokens, reportBrandTokens)
+    && donorBrandTokens.length < reportBrandTokens.length
+    && orderedPrefix(donorBrandTokens, donorTitleTokens)
+    && donorAttributeBrandTokens.join("\u0000")
+      === reportBrandTokens.join("\u0000");
+  const canonicalBrand = reportBrandIsTitlePrefix
+    ? evidence.brand
+    : reportBrandIsAttributeCorroboratedExpansion
+      ? donor.brand
+      : null;
   if (
     !(
       orderedPrefix(donorBrandTokens, reportBrandTokens)
       || orderedPrefix(reportBrandTokens, donorBrandTokens)
     )
-    || !orderedPrefix(reportBrandTokens, donorTitleTokens)
+    || !canonicalBrand
     || foldedTokens(donor.title).join("\u0000")
       !== outerPack.baseTokens.join("\u0000")
   ) return null;
 
-  const brandTokens = reportBrandTokens;
+  const brandTokens = foldedTokens(canonicalBrand);
   const titleWithoutMeasure =
     donor.title.replace(AUTHORITATIVE_WALMART_TITLE_MEASURE, " ");
   const titleTokens = foldedTokens(titleWithoutMeasure);
@@ -1963,16 +2021,23 @@ function recoverAuthoritativeWalmartReportScope(input: {
       && !/^\d+$/.test(token));
   if (productLineTokens.length === 0) return null;
 
-  const size = donor.size?.trim()
-    ? parseCanonicalSize(donor.size)
-      ? donor.size.trim()
+  const sourceSize = legacyComponent?.size?.trim() || null;
+  const size = sourceSize
+    ? parseCanonicalSize(sourceSize)
+        && titleContainsEquivalentCanonicalSize(donor.title, sourceSize)
+      ? sourceSize
       : null
-    : parseCanonicalSize(donor.title)
-      ? donor.title
-      : null;
+    : donor.size?.trim()
+      ? parseCanonicalSize(donor.size)
+          && titleContainsEquivalentCanonicalSize(donor.title, donor.size)
+        ? donor.size.trim()
+        : null
+      : parseCanonicalSize(donor.title)
+        ? donor.title
+        : null;
   if (!size) return null;
   const targetIdentity: CanonicalProductIdentity = {
-    brand: evidence.brand,
+    brand: canonicalBrand,
     productLine: productLineTokens.join(" "),
     flavor: null,
     modifiers: [],
@@ -1980,10 +2045,13 @@ function recoverAuthoritativeWalmartReportScope(input: {
     size,
     outerPackCount: 1,
   };
-  const matcher = matchCanonicalProductTitle(targetIdentity, {
-    title: donor.title,
-    brand: evidence.brand,
-  });
+  // The report base title and donor title have already passed byte-bound,
+  // ordered whole-token equality above. A second raw-title parse would turn
+  // legitimate inner package evidence such as `10.8 oz, 14 Count` into an
+  // artificial ambiguous-size rejection. Validate the resulting structured
+  // canonical identity against itself instead; this still requires an exact
+  // brand, discriminator, one parseable donor size, and a valid outer count.
+  const matcher = matchCanonicalProduct(targetIdentity, targetIdentity);
   if (matcher.verdict !== "EXACT_IDENTITY") return null;
 
   let targetVariant: ProductTruthBridgeCanonicalVariantProjection;
@@ -2017,7 +2085,7 @@ function recoverAuthoritativeWalmartReportScope(input: {
   );
   const component: ProductTruthLegacyBridgeComponentPlan = {
     componentIndex: 0,
-    qty: outerPack.status === "PARSED" ? outerPack.count! : 1,
+    qty: quantity,
     legacyComponentId: null,
     donorProductId: donor.id,
     legacyDonorProductId: null,
@@ -2538,6 +2606,7 @@ export function compileProductTruthLegacyBridgePlan(input: {
       if (!parsed.identity) {
         const recovered = recoverAuthoritativeWalmartReportScope({
           listing,
+          legacyComponents,
           evidence:
             authoritativeWalmartEvidenceByListing.get(listing.listingKey)
             ?? null,
@@ -2670,6 +2739,7 @@ export function compileProductTruthLegacyBridgePlan(input: {
       ) return classified;
       const recovered = recoverAuthoritativeWalmartReportScope({
         listing,
+        legacyComponents,
         evidence:
           authoritativeWalmartEvidenceByListing.get(listing.listingKey)
           ?? null,

@@ -28,6 +28,17 @@ test("authoritative Walmart parser removes only explicit outer-pack syntax", () 
       normalizedBaseTokens: ["12", "acme", "cakes", "ct", "snack"],
     },
   );
+  assert.deepEqual(
+    parseProductTruthAuthoritativeWalmartOuterPackTitle(
+      "Acme Snack Cakes, 12 ct (Pack 2)",
+    ),
+    {
+      status: "PARSED",
+      count: 2,
+      baseTokens: ["acme", "snack", "cakes", "12", "ct"],
+      normalizedBaseTokens: ["12", "acme", "cakes", "ct", "snack"],
+    },
+  );
 });
 
 test("authoritative Walmart parser rejects contradictory outer-pack counts", () => {

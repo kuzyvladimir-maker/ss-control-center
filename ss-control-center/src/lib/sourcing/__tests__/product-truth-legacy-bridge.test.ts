@@ -381,6 +381,137 @@ test("authoritative Walmart title recovery accepts a report-proven expanded bran
   assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
 });
 
+test("authoritative Walmart title recovery accepts an attribute-corroborated brand expansion", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Bigelow",
+      title: "Bigelow Salted Caramel Black Tea Bags 18 Count",
+      size: "18 Count",
+      attributes: JSON.stringify([{
+        name: "Brand",
+        value: "Bigelow Tea",
+      }]),
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: "Bigelow Salted Caramel Black Tea Bags 18 Count (Pack of 4)",
+      brand: "Bigelow Tea",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(
+    componentPlan.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+  assert.equal(componentPlan.targetIdentity?.brand, "Bigelow");
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart exact title accepts a structured size beside an inner count", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "La Banderita",
+      title: "La Banderita Birria Flour Tortillas 10.8 oz 14 Count Bag",
+      size: "10.8 oz",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: "La Banderita Birria Flour Tortillas 10.8 oz 14 Count Bag (Pack of 6)",
+      brand: "La Banderita",
+    })],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.notEqual(scope.disposition, "QUARANTINE");
+  assert.equal(scope.components[0]?.qty, 6);
+  assert.equal(scope.components[0]?.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart exact title uses the agreeing legacy package size", () => {
+  const title =
+    "Jack Link's Sweet Hot Beef Jerky 2.85 oz 9 g Protein Per Serving";
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Jack Link's",
+        product_line: "Beef Jerky",
+        flavor: "Sweet Hot",
+        size: "2.85 oz",
+        units_in_listing: 4,
+      }),
+    }],
+    components: [component({
+      product: "Beef Jerky",
+      flavor: "Sweet Hot",
+      size: "2.85 oz",
+      qty: 4,
+    })],
+    donors: [donor({
+      brand: "Jack Link's",
+      title,
+      size: "9 g",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: `${title} (Pack of 4)`,
+      brand: "Jack Link's",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(componentPlan.targetIdentity?.size, "2.85 oz");
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart title recovery rejects ambiguous or contradictory legacy package evidence", () => {
+  const title =
+    "Guerrero Street Taco Zero Net Carbs Tortillas 14 ct 8.89 oz";
+  const base = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        brand: "Guerrero",
+        product_line: "Street Taco Tortillas",
+        flavor: "Zero Net Carbs",
+        size: "8.89 oz",
+        units_in_listing: 4,
+      }),
+    }],
+    components: [component({
+      product: "Street Taco Tortillas",
+      flavor: "Zero Net Carbs",
+      size: "8.89 oz (14 ct)",
+      qty: 4,
+    })],
+    donors: [donor({
+      brand: "Guerrero",
+      title,
+      size: "14 ct",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: `${title} (Pack of 4)`,
+      brand: "Guerrero",
+    })],
+  });
+  assert.equal(compile(base).scopes[0]?.disposition, "QUARANTINE");
+
+  base.components[0] = component({
+    product: "Street Taco Tortillas",
+    flavor: "Zero Net Carbs",
+    size: "8.89 oz",
+    qty: 3,
+  });
+  assert.equal(compile(base).scopes[0]?.disposition, "QUARANTINE");
+});
+
 test("authoritative Walmart title recovery rejects a non-prefix brand expansion", () => {
   const value = snapshot({
     listings: [{
