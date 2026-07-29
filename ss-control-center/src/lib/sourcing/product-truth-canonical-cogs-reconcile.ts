@@ -34,11 +34,13 @@ import {
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PLAN_VERSION =
   "product-truth-canonical-cogs-reconcile-plan/2.0.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PREFLIGHT_VERSION =
-  "product-truth-canonical-cogs-reconcile-preflight/2.0.0" as const;
+  "product-truth-canonical-cogs-reconcile-preflight/2.1.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_REPORT_VERSION =
-  "product-truth-canonical-cogs-reconcile-report/2.0.0" as const;
+  "product-truth-canonical-cogs-reconcile-report/2.1.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_MAX_LISTINGS = 33 as const;
 export const PRODUCT_TRUTH_SAVED_PRICE_MAX_AGE_MS = 48 * 60 * 60 * 1_000;
+export const PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE =
+  "SEALED_TARGET_GRAPH" as const;
 
 const LISTING_RECIPE_MIGRATION_ID =
   "20260729010000_product_truth_listing_recipe";
@@ -244,6 +246,7 @@ export interface ProductTruthCanonicalCogsReconcilePreflight {
     exactExistingRows: number;
   };
   listingKeys: string[];
+  integrityScope: typeof PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE;
   foreignKeyViolations: string[];
 }
 
@@ -271,6 +274,7 @@ export interface ProductTruthCanonicalCogsReconcileReport {
     costIds: string[];
     recipeHashes: string[];
     costOutcomes: Array<"FACT" | "UNSOURCEABLE">;
+    integrityScope: typeof PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE;
     foreignKeyViolations: string[];
     providerCalls: 0;
     paidCalls: 0;
@@ -390,12 +394,6 @@ function assertExactRow(
       fail(code, `${key} differs`);
     }
   }
-}
-
-async function foreignKeyViolations(db: SqlReader): Promise<string[]> {
-  const rows = (await db.execute("PRAGMA foreign_key_check")).rows;
-  return rows.map((row) =>
-    `${String(row.table)}:${String(row.rowid)}:${String(row.parent)}`);
 }
 
 function expectedDatabaseWrites(
@@ -1491,6 +1489,10 @@ export async function preflightProductTruthCanonicalCogsReconciliation(input: {
   await assertProductTruthListingScopeSchema(input.db);
   const tx = await input.db.transaction("read");
   try {
+    // This bounded preflight re-derives every sealed source row and checks the
+    // exact append-only target graph. A whole-database PRAGMA
+    // foreign_key_check belongs to doctor/readiness; running it here would
+    // serialize unrelated control-plane writes for every small wave.
     const states = [];
     for (const target of input.plan.targets) {
       await assertSourceBinding(tx, input.plan, target);
@@ -1499,10 +1501,6 @@ export async function preflightProductTruthCanonicalCogsReconciliation(input: {
     const exactTargets = states.filter((state) => state === "EXACT").length;
     if (exactTargets !== 0 && exactTargets !== input.plan.targets.length) {
       fail("CANONICAL_COGS_PARTIAL_WAVE", "wave is partially applied");
-    }
-    const violations = await foreignKeyViolations(tx);
-    if (violations.length) {
-      fail("CANONICAL_COGS_FOREIGN_KEY_VIOLATION", violations.join("; "));
     }
     const status = exactTargets === input.plan.targets.length
       ? "ALREADY_APPLIED"
@@ -1524,6 +1522,7 @@ export async function preflightProductTruthCanonicalCogsReconciliation(input: {
           : 0,
       },
       listingKeys: input.plan.targets.map((target) => target.listingKey),
+      integrityScope: PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE,
       foreignKeyViolations: [],
     };
   } finally {
@@ -1603,6 +1602,8 @@ function validateStandingAuthorization(input: {
     || preflight.counts.exactExistingRows !== 0
     || canonicalJson(preflight.listingKeys)
       !== canonicalJson(plan.targets.map((target) => target.listingKey))
+    || preflight.integrityScope
+      !== PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE
     || preflight.foreignKeyViolations.length !== 0
   ) {
     fail(
@@ -1684,9 +1685,12 @@ export async function applyProductTruthCanonicalCogsReconciliation(input: {
   await assertProductTruthEvidenceSchema(input.db);
   await assertProductTruthListingScopeSchema(input.db);
   let insertedRows = 0;
-  let exactExistingRows = 0;
+  const exactExistingRows = 0;
   const tx = await input.db.transaction("write");
   try {
+    // Schema gates prove that FK enforcement and the deferred child→SkuCost
+    // constraints are installed. Commit enforces those constraints atomically;
+    // targetState below verifies the exact sealed rows before and after commit.
     const states = [];
     for (const target of input.plan.targets) {
       await assertSourceBinding(tx, input.plan, target);
@@ -1718,10 +1722,6 @@ export async function applyProductTruthCanonicalCogsReconciliation(input: {
       );
     }
     insertedRows = input.plan.databaseWrites.maximumRows;
-    const violations = await foreignKeyViolations(tx);
-    if (violations.length) {
-      fail("CANONICAL_COGS_FOREIGN_KEY_VIOLATION", violations.join("; "));
-    }
     for (const target of input.plan.targets) {
       if (await targetState(tx, target) !== "EXACT") {
         fail("CANONICAL_COGS_POST_VERIFY_FAILED", target.listingKey);
@@ -1745,10 +1745,6 @@ export async function applyProductTruthCanonicalCogsReconciliation(input: {
     if (await targetState(input.db, target) !== "EXACT") {
       fail("CANONICAL_COGS_POST_VERIFY_FAILED", target.listingKey);
     }
-  }
-  const violations = await foreignKeyViolations(input.db);
-  if (violations.length) {
-    fail("CANONICAL_COGS_POST_VERIFY_FAILED", violations.join("; "));
   }
   const completedAt = requestedCompletedAt ?? new Date().toISOString();
   return {
@@ -1779,6 +1775,7 @@ export async function applyProductTruthCanonicalCogsReconciliation(input: {
       costOutcomes: [...new Set(
         input.plan.targets.map((target) => target.cost.evidenceOutcome),
       )].sort() as Array<"FACT" | "UNSOURCEABLE">,
+      integrityScope: PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE,
       foreignKeyViolations: [],
       providerCalls: 0,
       paidCalls: 0,

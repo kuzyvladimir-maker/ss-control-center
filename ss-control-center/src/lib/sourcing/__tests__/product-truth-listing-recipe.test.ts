@@ -16,6 +16,7 @@ import {
   applyProductTruthCanonicalCogsReconciliation,
   planProductTruthCanonicalCogsReconciliation,
   preflightProductTruthCanonicalCogsReconciliation,
+  PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE,
   renderProductTruthCanonicalCogsReconcilePlan,
   renderProductTruthCanonicalCogsReconcilePreflight,
 } from "../product-truth-canonical-cogs-reconcile";
@@ -547,6 +548,26 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
     assert.equal(postcheck.status, "ALREADY_APPLIED");
     assert.equal(postcheck.counts.exactExistingRows, 2);
 
+    // A bounded COGS wave proves only its immutable target graph. An unrelated
+    // historical violation belongs to the full doctor/readiness gate and must
+    // not turn every small append into a whole-database FK scan.
+    await db.executeMultiple(`
+      PRAGMA foreign_keys=OFF;
+      CREATE TABLE UnrelatedLegacyParent (id TEXT PRIMARY KEY);
+      CREATE TABLE UnrelatedLegacyChild (
+        id TEXT PRIMARY KEY,
+        parentId TEXT NOT NULL REFERENCES UnrelatedLegacyParent(id)
+      );
+      INSERT INTO UnrelatedLegacyChild (id,parentId)
+      VALUES ('legacy-child','missing-parent');
+      PRAGMA foreign_keys=ON;
+    `);
+    assert.equal(
+      (await db.execute("PRAGMA foreign_key_check")).rows.length,
+      1,
+      "fixture must contain one unrelated legacy violation",
+    );
+
     const cogsPlan = await planProductTruthCanonicalCogsReconciliation({
       db,
       databaseTargetFingerprint: HASH_A,
@@ -581,6 +602,10 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
       });
     assert.equal(cogsPreflight.status, "READY_TO_APPLY");
     assert.equal(cogsPreflight.counts.absentRows, 3);
+    assert.equal(
+      cogsPreflight.integrityScope,
+      PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE,
+    );
     const cogsPreflightJson =
       renderProductTruthCanonicalCogsReconcilePreflight(cogsPreflight);
     const cogsApplied =
@@ -601,6 +626,10 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
       });
     assert.equal(cogsApplied.status, "APPLIED");
     assert.equal(cogsApplied.counts.insertedRows, 3);
+    assert.equal(
+      cogsApplied.verification.integrityScope,
+      PRODUCT_TRUTH_CANONICAL_COGS_INTEGRITY_SCOPE,
+    );
     const currentCosts = (await db.execute({
       sql: `SELECT id,recipeHash,evidenceOutcome
             FROM SkuCost WHERE sku=? ORDER BY createdAt,id`,
