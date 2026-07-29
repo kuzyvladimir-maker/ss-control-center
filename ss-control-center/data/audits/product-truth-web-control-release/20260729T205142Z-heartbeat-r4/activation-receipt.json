@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "product-truth-standing-wave-production-activation-receipt/1.0.0",
+  "activatedAt": "2026-07-29T20:59:35.000Z",
+  "activationPacketSha256": "3f1ecd1aedf4e8cb63e8239b0f60ff3c2c78a9a1d98b2d73c6a77a3d3a335ecf",
+  "release": {
+    "releaseId": "product-truth-standing-web-2026-07-29-r4",
+    "commitSha": "fa7161a35c9bc1c100ffc47a5271e33400a4aec9",
+    "treeSha": "b932a79adcc36f756a7f186a49570a064ad59ba8",
+    "executableTreeSha256": "a5d8663f316b8af78540093c9ec7ffb19558eb886767c567ca96a1fc784e9769",
+    "cleanCheckout": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/fa7161a35"
+  },
+  "certification": {
+    "focusedTests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "productTruthTests": {
+      "passed": 596,
+      "failed": 0
+    },
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "productionBuild": "PASS"
+  },
+  "deployment": {
+    "deploymentId": "dpl_5q1j3erooh2x1ZdeLh1vAPpzA1f7",
+    "deploymentUrl": "https://ss-control-center-coofjx9w4-kuzyvladimir-makers-projects.vercel.app",
+    "productionAlias": "https://salutemsolutions.info",
+    "readyState": "READY"
+  },
+  "workers": {
+    "generic": {
+      "launchdLabel": "com.salutem.product-truth-worker",
+      "pid": 27082,
+      "runnerPid": 27110,
+      "state": "RUNNING",
+      "startupScriptSha256": "c96ccbf3ef41162909eff9b1f42ece6a822e2a823e578ab79752a11e8d8fd2be"
+    },
+    "standingWave": {
+      "launchdLabel": "com.salutem.product-truth-standing-wave-worker",
+      "pid": 27086,
+      "runnerPid": 27111,
+      "state": "RUNNING",
+      "startupScriptSha256": "77b52fb0961423024fc3b1552b08c9e278207a5090e2ee35c4bea727cfb0b011"
+    }
+  },
+  "productionProbe": {
+    "operation": "POST /api/external/product-truth/standing-wave/claim",
+    "httpStatus": 200,
+    "result": "NO_ACTIVE_COMMAND",
+    "providerCalls": 0,
+    "canonicalWrites": 0,
+    "marketplaceMutations": 0
+  }
+}
