@@ -19,6 +19,7 @@ import {
   type ProductTruthOperationalPlan,
 } from "./product-truth-operational-run-contract";
 import {
+  PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
   validateProductTruthTargetedWalmartEvidenceApproval,
   type ProductTruthTargetedWalmartEvidencePlan,
@@ -606,6 +607,16 @@ function planManifestSha256(
       targetRecord.listingBinding,
       `plan.targets[${index}].listingBinding`,
     );
+    if (
+      targetRecord.identityMode === "EXISTING_EXACT"
+      && binding.schemaVersion
+        !== PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION
+    ) {
+      fail(
+        "STANDING_AUTHORITY_PLAN_INELIGIBLE",
+        `plan.targets[${index}] existing exact donor must bind a current canonical recipe component`,
+      );
+    }
     const rowJson = exactJsonBytes(
       binding.listingScopeRowJson,
       `plan.targets[${index}].listingBinding.listingScopeRowJson`,

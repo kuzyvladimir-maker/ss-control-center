@@ -2979,8 +2979,12 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
     now: input.now,
   });
   const snapshot = await withReadOnlyClient(input.resolved, async (db) => {
+    let exact: Awaited<ReturnType<typeof readTargetedWalmartDonorSnapshot>>;
     try {
-      return await readTargetedWalmartDonorSnapshot(db, input.options.donorProductId);
+      exact = await readTargetedWalmartDonorSnapshot(
+        db,
+        input.options.donorProductId,
+      );
     } catch {
       if (
         input.options.listingKey === undefined
@@ -2997,6 +3001,20 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
         componentIndex: input.options.componentIndex,
       });
     }
+    if (
+      input.options.listingKey !== undefined
+      && input.options.componentIndex !== undefined
+    ) {
+      return readTargetedWalmartDonorSnapshot(
+        db,
+        input.options.donorProductId,
+        {
+          listingKey: input.options.listingKey,
+          componentIndex: input.options.componentIndex,
+        },
+      );
+    }
+    return exact;
   });
   const output = resolveNewOutputDirectory(input.cwd, input.options.outputDirectory);
   if (!await withReadOnlyClient(input.resolved, (db) => targetedHarvestStateAbsent(
@@ -3104,7 +3122,24 @@ async function buildOfflinePlanArtifacts(input: {
                 ?.componentIndex,
             ),
           })
-        : await readTargetedWalmartDonorSnapshot(db, donorProductId);
+        : await readTargetedWalmartDonorSnapshot(
+            db,
+            donorProductId,
+            donorRequest?.listingBinding === null
+              ? undefined
+              : {
+                  listingKey: String(
+                    (donorRequest?.listingBinding as
+                      | Record<string, unknown>
+                      | undefined)?.listingKey ?? "",
+                  ),
+                  componentIndex: Number(
+                    (donorRequest?.listingBinding as
+                      | Record<string, unknown>
+                      | undefined)?.componentIndex,
+                  ),
+                },
+          );
       return {
         donor,
         harvestAbsent: await targetedHarvestStateAbsent(

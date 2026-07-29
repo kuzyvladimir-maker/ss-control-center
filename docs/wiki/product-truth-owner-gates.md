@@ -924,3 +924,12 @@ allergens/storage остаются явными gaps. Full-denominator postcheck
 `5935/5935` подтвердил donor truth, но target listing ещё не имеет независимого
 canonical recipe/COGS. Это следующий технический этап, не новый owner gate.
 Запрашивать у владельца plan SHA, код или confirmation запрещено.
+
+Successor correction 2026-07-29 не расширяет standing authority: exact donor
+refresh теперь обязан нести immutable binding к текущему
+`ProductTruthListingRecipeComponent` и authoritative manifest. Unbound exact
+plans блокируются до balance/provider call. Read-only Campbell's request
+`fde57669…4345` / plan `f302cfb1…e542` прошёл offline standing eligibility с
+provider calls/DB writes `0`; полный Product Truth suite `556/556`. Выполнение
+этого bounded plan остаётся внутри уже активного G7 и не требует новой owner
+approval phrase.

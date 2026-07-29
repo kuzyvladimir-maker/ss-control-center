@@ -63,6 +63,7 @@ import {
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION,
   TARGETED_WALMART_MAX_WALL_CLOCK_MS,
+  buildProductTruthTargetedWalmartCanonicalRecipeBinding,
   buildProductTruthTargetedWalmartListingBinding,
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalMatchIdentityFromTarget,
@@ -424,6 +425,10 @@ export function selectExactTargetedWalmartOffer(input: {
 export async function readTargetedWalmartDonorSnapshot(
   db: Client,
   donorProductId: string,
+  listing?: {
+    listingKey: string;
+    componentIndex: number;
+  },
 ): Promise<ProductTruthTargetedWalmartDonorSnapshot> {
   const result = await db.execute({
     sql: `SELECT product.id AS donorProductId,
@@ -466,6 +471,18 @@ export async function readTargetedWalmartDonorSnapshot(
     fail("TARGETED_EVIDENCE_DONOR_GRAPH_AMBIGUOUS", `expected one exact donor/decision/Walmart offer row; found ${result.rows.length}`);
   }
   const row = result.rows[0]!;
+  const canonicalVariantId = String(row.canonicalVariantId);
+  const canonicalIdentityHash = String(row.canonicalIdentityHash);
+  const canonicalIdentityJson = String(row.canonicalIdentityJson);
+  const listingBinding = listing
+    ? await readExistingExactTargetedWalmartListingBinding(db, {
+        donorProductId,
+        listingKey: listing.listingKey,
+        componentIndex: listing.componentIndex,
+        canonicalVariantId,
+        variantDecisionId: String(row.variantDecisionId),
+      })
+    : null;
   return parseProductTruthTargetedWalmartDonorSnapshot({
     identityMode: "EXISTING_EXACT",
     identityDerivationVersion: null,
@@ -473,7 +490,7 @@ export async function readTargetedWalmartDonorSnapshot(
     donorOfferId: String(row.donorOfferId),
     donorIdentityStatus: row.donorIdentityStatus,
     variantDecisionId: String(row.variantDecisionId),
-    canonicalVariantId: String(row.canonicalVariantId),
+    canonicalVariantId,
     decisionStatus: row.decisionStatus,
     matcherVersion: row.matcherVersion,
     matcherImplementationSha256: row.matcherImplementationSha256,
@@ -481,8 +498,8 @@ export async function readTargetedWalmartDonorSnapshot(
     decisionEvidenceHash: row.decisionEvidenceHash,
     decisionEvidenceJson: row.decisionEvidenceJson,
     canonicalVariantKeyVersion: String(row.canonicalVariantKeyVersion),
-    canonicalIdentityHash: String(row.canonicalIdentityHash),
-    canonicalIdentityJson: String(row.canonicalIdentityJson),
+    canonicalIdentityHash,
+    canonicalIdentityJson,
     retailer: row.retailer,
     retailerProductId: String(row.retailerProductId),
     normalizedProductUrl: normalizeExactWalmartProductUrl(
@@ -492,7 +509,7 @@ export async function readTargetedWalmartDonorSnapshot(
     via: row.via,
     isFirstParty: Number(row.isFirstParty) === 1,
     legacySnapshot: null,
-    listingBinding: null,
+    listingBinding,
   });
 }
 
@@ -510,6 +527,95 @@ function canonicalDbRow(row: Record<string, unknown>): Record<string, unknown> {
     ) return [key, value];
     fail("TARGETED_EVIDENCE_LEGACY_ROW_TYPE_INVALID", `${key} has unsupported DB type`);
   }));
+}
+
+/**
+ * Builds an immutable authoritative Phase 1 scope binding for an already
+ * canonical donor. Unlike listing-bound bootstrap, this path creates no new
+ * variant or alias: it proves only that the exact donor refresh belongs to one
+ * current listing component. Other legacy references to the same donor remain
+ * independently quarantinable and cannot veto or inherit this exact binding.
+ */
+async function readExistingExactTargetedWalmartListingBinding(
+  db: Client,
+  input: {
+    donorProductId: string;
+    listingKey: string;
+    componentIndex: number;
+    canonicalVariantId: string;
+    variantDecisionId: string;
+  },
+) {
+  if (
+    !input.listingKey
+    || input.listingKey !== input.listingKey.trim()
+    || !Number.isSafeInteger(input.componentIndex)
+    || input.componentIndex < 0
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
+      "listingKey and non-negative componentIndex are required",
+    );
+  }
+  const scopes = await db.execute({
+    sql: `SELECT * FROM "ProductTruthListingScope"
+          WHERE listingKey=? AND channel='walmart'`,
+    args: [input.listingKey],
+  });
+  if (scopes.rows.length !== 1) {
+    fail(
+      "TARGETED_EVIDENCE_LISTING_SCOPE_AMBIGUOUS",
+      `expected one authoritative Walmart listing scope; found ${scopes.rows.length}`,
+    );
+  }
+  const scope = canonicalDbRow(scopes.rows[0] as Record<string, unknown>);
+  const currentRecipes = await db.execute({
+    sql: `SELECT * FROM "ProductTruthListingRecipe"
+          WHERE listingKey=?
+          ORDER BY julianday(effectiveAt) DESC,effectiveAt DESC,
+                   julianday(createdAt) DESC,createdAt DESC,id DESC
+          LIMIT 2`,
+    args: [input.listingKey],
+  });
+  if (currentRecipes.rows.length === 0) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "existing exact standing target requires a current canonical listing recipe",
+    );
+  }
+  const recipe = canonicalDbRow(
+    currentRecipes.rows[0] as Record<string, unknown>,
+  );
+  const canonicalComponents = await db.execute({
+    sql: `SELECT * FROM "ProductTruthListingRecipeComponent"
+          WHERE listingRecipeId=? AND componentIndex=?
+          ORDER BY id`,
+    args: [String(recipe.id ?? ""), input.componentIndex],
+  });
+  if (canonicalComponents.rows.length !== 1) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      `expected one current canonical recipe component; found ${canonicalComponents.rows.length}`,
+    );
+  }
+  const canonicalComponent = canonicalDbRow(
+    canonicalComponents.rows[0] as Record<string, unknown>,
+  );
+  if (
+    canonicalComponent.donorProductId !== input.donorProductId
+    || canonicalComponent.targetCanonicalVariantId !== input.canonicalVariantId
+    || canonicalComponent.variantDecisionId !== input.variantDecisionId
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "current canonical recipe component differs from the exact donor decision",
+    );
+  }
+  return buildProductTruthTargetedWalmartCanonicalRecipeBinding({
+    listingScopeRow: scope,
+    listingRecipeRow: recipe,
+    recipeComponentRow: canonicalComponent,
+  });
 }
 
 function exactTrimmedText(value: unknown): string | null {
@@ -940,7 +1046,16 @@ async function assertRuntimeBindings(input: {
 }): Promise<void> {
   const target = input.plan.targets[0];
   if (target.identityMode === "EXISTING_EXACT") {
-    const stored = await readTargetedWalmartDonorSnapshot(input.db, target.donorProductId);
+    const stored = await readTargetedWalmartDonorSnapshot(
+      input.db,
+      target.donorProductId,
+      target.listingBinding === null
+        ? undefined
+        : {
+            listingKey: target.listingBinding.listingKey,
+            componentIndex: target.listingBinding.componentIndex,
+          },
+    );
     if (
       targetedWalmartDonorSnapshotSha256(stored) !== target.donorSnapshotSha256
       || renderProductTruthOperationalJson(stored)

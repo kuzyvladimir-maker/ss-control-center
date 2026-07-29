@@ -52,6 +52,8 @@ export const PRODUCT_TRUTH_TARGETED_WALMART_IDENTITY_DERIVATION_VERSION =
   "product-truth-targeted-walmart-identity-derivation/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION =
   "product-truth-targeted-walmart-listing-binding/1.1.0" as const;
+export const PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION =
+  "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0" as const;
 export const PRODUCT_TRUTH_TARGETED_WALMART_LISTING_IDENTITY_DERIVATION_VERSION =
   "product-truth-targeted-walmart-listing-identity-derivation/1.0.0" as const;
 
@@ -75,6 +77,23 @@ export interface ProductTruthTargetedWalmartListingBinding {
   componentRowJson: string;
   donorGraph: readonly ProductTruthTargetedWalmartListingGraphEntry[];
   donorGraphSha256: string;
+  sha256: string;
+}
+
+export interface ProductTruthTargetedWalmartCanonicalRecipeBinding {
+  schemaVersion:
+    typeof PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION;
+  listingKey: string;
+  channel: "walmart";
+  storeIndex: number;
+  sku: string;
+  componentIndex: number;
+  donorProductId: string;
+  canonicalVariantId: string;
+  variantDecisionId: string;
+  listingScopeRowJson: string;
+  listingRecipeRowJson: string;
+  recipeComponentRowJson: string;
   sha256: string;
 }
 
@@ -119,7 +138,10 @@ interface ProductTruthTargetedWalmartDonorSnapshotBase {
   normalizedProductUrl: string;
   via: "direct";
   isFirstParty: true;
-  listingBinding: ProductTruthTargetedWalmartListingBinding | null;
+  listingBinding:
+    | ProductTruthTargetedWalmartListingBinding
+    | ProductTruthTargetedWalmartCanonicalRecipeBinding
+    | null;
 }
 
 export interface ProductTruthTargetedWalmartExistingExactSnapshot
@@ -132,7 +154,19 @@ export interface ProductTruthTargetedWalmartExistingExactSnapshot
   decisionEvidenceHash: string;
   decisionEvidenceJson: string;
   legacySnapshot: null;
-  listingBinding: null;
+  /**
+   * Existing exact donors may optionally carry an immutable Phase 1
+   * listing/component binding. Current standing execution requires the
+   * canonical-recipe form; the canonical donor decision remains the identity
+   * authority while the binding proves membership in the owner-pinned Phase 1
+   * denominator.
+   * Unbound snapshots remain valid for non-standing/offline workflows, while
+   * standing authority continues to reject them fail-closed.
+   */
+  listingBinding:
+    | ProductTruthTargetedWalmartListingBinding
+    | ProductTruthTargetedWalmartCanonicalRecipeBinding
+    | null;
 }
 
 export interface ProductTruthTargetedWalmartBootstrapSnapshot
@@ -879,10 +913,170 @@ export function buildProductTruthTargetedWalmartListingBinding(input: {
   };
 }
 
+export function buildProductTruthTargetedWalmartCanonicalRecipeBinding(input: {
+  listingScopeRow: Record<string, unknown>;
+  listingRecipeRow: Record<string, unknown>;
+  recipeComponentRow: Record<string, unknown>;
+}): ProductTruthTargetedWalmartCanonicalRecipeBinding {
+  const listingScopeRowJson =
+    renderProductTruthOperationalJson(input.listingScopeRow);
+  const listingRecipeRowJson =
+    renderProductTruthOperationalJson(input.listingRecipeRow);
+  const recipeComponentRowJson =
+    renderProductTruthOperationalJson(input.recipeComponentRow);
+  const listingKey = requiredRowText(
+    input.listingScopeRow,
+    "listingKey",
+    "listingScopeRow",
+  );
+  const channel = requiredRowText(
+    input.listingScopeRow,
+    "channel",
+    "listingScopeRow",
+  );
+  const sku = requiredRowText(
+    input.listingScopeRow,
+    "sku",
+    "listingScopeRow",
+  );
+  const storeIndex = Number(input.listingScopeRow.storeIndex);
+  const componentIndex = Number(input.recipeComponentRow.componentIndex);
+  const donorProductId = requiredRowText(
+    input.recipeComponentRow,
+    "donorProductId",
+    "recipeComponentRow",
+  );
+  const canonicalVariantId = requiredRowText(
+    input.recipeComponentRow,
+    "targetCanonicalVariantId",
+    "recipeComponentRow",
+  );
+  const variantDecisionId = requiredRowText(
+    input.recipeComponentRow,
+    "variantDecisionId",
+    "recipeComponentRow",
+  );
+  if (
+    channel !== "walmart"
+    || !Number.isSafeInteger(storeIndex)
+    || storeIndex <= 0
+    || listingKey !== `walmart:${storeIndex}:${sku}`
+    || input.listingRecipeRow.listingKey !== listingKey
+    || input.listingRecipeRow.manifestSha256
+      !== input.listingScopeRow.manifestSha256
+    || input.recipeComponentRow.listingRecipeId !== input.listingRecipeRow.id
+    || !Number.isSafeInteger(componentIndex)
+    || componentIndex < 0
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "scope, current recipe and component do not form one authoritative Walmart target",
+    );
+  }
+  return {
+    schemaVersion:
+      PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION,
+    listingKey,
+    channel: "walmart",
+    storeIndex,
+    sku,
+    componentIndex,
+    donorProductId,
+    canonicalVariantId,
+    variantDecisionId,
+    listingScopeRowJson,
+    listingRecipeRowJson,
+    recipeComponentRowJson,
+    sha256: productTruthOperationalSha256({
+      listingScopeRowJson,
+      listingRecipeRowJson,
+      recipeComponentRowJson,
+    }),
+  };
+}
+
+function parseCanonicalRecipeBinding(
+  value: unknown,
+  expected: {
+    donorProductId: string;
+    canonicalVariantId: string;
+    variantDecisionId: string;
+  },
+): ProductTruthTargetedWalmartCanonicalRecipeBinding {
+  if (!isRecord(value)) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "canonical recipe binding must be an object",
+    );
+  }
+  exactKeys(value, [
+    "schemaVersion", "listingKey", "channel", "storeIndex", "sku",
+    "componentIndex", "donorProductId", "canonicalVariantId",
+    "variantDecisionId", "listingScopeRowJson", "listingRecipeRowJson",
+    "recipeComponentRowJson", "sha256",
+  ], "canonicalRecipeBinding");
+  if (
+    value.schemaVersion
+      !== PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION
+    || value.channel !== "walmart"
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "canonical recipe binding version/channel differs",
+    );
+  }
+  const scope = canonicalBoundRowJson(
+    value.listingScopeRowJson,
+    "canonicalRecipeBinding.listingScopeRowJson",
+  );
+  const recipe = canonicalBoundRowJson(
+    value.listingRecipeRowJson,
+    "canonicalRecipeBinding.listingRecipeRowJson",
+  );
+  const component = canonicalBoundRowJson(
+    value.recipeComponentRowJson,
+    "canonicalRecipeBinding.recipeComponentRowJson",
+  );
+  const rebuilt = buildProductTruthTargetedWalmartCanonicalRecipeBinding({
+    listingScopeRow: scope.row,
+    listingRecipeRow: recipe.row,
+    recipeComponentRow: component.row,
+  });
+  if (
+    rebuilt.listingKey !== safeId(value.listingKey, "canonicalRecipeBinding.listingKey")
+    || rebuilt.storeIndex
+      !== finiteNonNegative(value.storeIndex, "canonicalRecipeBinding.storeIndex")
+    || rebuilt.sku !== exactText(value.sku, "canonicalRecipeBinding.sku", 300)
+    || rebuilt.componentIndex
+      !== finiteNonNegative(
+        value.componentIndex,
+        "canonicalRecipeBinding.componentIndex",
+      )
+    || rebuilt.donorProductId !== expected.donorProductId
+    || rebuilt.canonicalVariantId !== expected.canonicalVariantId
+    || rebuilt.variantDecisionId !== expected.variantDecisionId
+    || rebuilt.donorProductId !== value.donorProductId
+    || rebuilt.canonicalVariantId !== value.canonicalVariantId
+    || rebuilt.variantDecisionId !== value.variantDecisionId
+    || rebuilt.sha256 !== exactSha(
+      value.sha256,
+      "canonicalRecipeBinding.sha256",
+    )
+    || renderProductTruthOperationalJson(rebuilt)
+      !== renderProductTruthOperationalJson(value)
+  ) {
+    fail(
+      "TARGETED_EVIDENCE_CANONICAL_RECIPE_BINDING_INVALID",
+      "sealed current recipe bytes differ from the exact donor target",
+    );
+  }
+  return rebuilt;
+}
+
 function parseListingBinding(
   value: unknown,
   donorProductId: string,
-  donorProductRow: Record<string, unknown>,
+  donorProductRow: Record<string, unknown> | null,
   canonicalVariantId: string,
   canonicalIdentityHash: string,
   canonicalIdentityJson: string,
@@ -984,9 +1178,21 @@ function parseListingBinding(
     if (
       !Number.isSafeInteger(graphComponentIndex)
       || graphScope.row.listingKey !== graphListingKey
+      || graphScope.row.channel !== "walmart"
+      || graphScope.row.sku !== graphShipping.row.sku
+      || graphScope.row.sku !== graphComponent.row.sku
       || Number(graphComponent.row.idx) !== graphComponentIndex
       || graphComponent.row.id !== graphLegacyComponentId
       || graphCanonicalVariantId !== canonicalVariantId
+      || [...new Set(
+        [graphComponent.row.contentDonorProductId, graphComponent.row.donorProductId]
+          .filter((child): child is string =>
+            typeof child === "string" && Boolean(child)),
+      )].length !== 1
+      || ![
+        graphComponent.row.contentDonorProductId,
+        graphComponent.row.donorProductId,
+      ].includes(donorProductId)
     ) {
       fail(
         "TARGETED_EVIDENCE_LISTING_DONOR_GRAPH_INVALID",
@@ -1031,6 +1237,33 @@ function parseListingBinding(
       "TARGETED_EVIDENCE_LISTING_BINDING_INVALID",
       "sealed rows do not prove one exact listing/component/donor relationship",
     );
+  }
+  if (donorProductRow === null) {
+    const donorGraph = (value.donorGraph as Array<Record<string, unknown>>)
+      .map((entry) => ({
+        listingKey: entry.listingKey as string,
+        componentIndex: entry.componentIndex as number,
+        legacyComponentId: entry.legacyComponentId as string,
+        canonicalVariantId: entry.canonicalVariantId as string,
+        listingScopeRowJson: entry.listingScopeRowJson as string,
+        shippingRowJson: entry.shippingRowJson as string,
+        componentRowJson: entry.componentRowJson as string,
+      }));
+    return {
+      schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_LISTING_BINDING_VERSION,
+      listingKey,
+      channel: "walmart",
+      storeIndex,
+      sku,
+      componentIndex,
+      legacyComponentId,
+      listingScopeRowJson: scope.text,
+      shippingRowJson: shipping.text,
+      componentRowJson: component.text,
+      donorGraph,
+      donorGraphSha256,
+      sha256: digest,
+    };
   }
   const canonical = deriveProductTruthTargetedWalmartListingCanonicalIdentity({
     listingScopeRow: scope.row,
@@ -1204,25 +1437,49 @@ export function parseProductTruthTargetedWalmartDonorSnapshot(
       value.donorIdentityStatus !== "exact_confirmed"
       || value.decisionStatus !== "exact_confirmed"
       || value.legacySnapshot !== null
-      || value.listingBinding !== null
     ) {
-      fail("TARGETED_EVIDENCE_IDENTITY_NOT_EXACT", "existing mode requires one exact alias and no legacy snapshot");
+      fail(
+        "TARGETED_EVIDENCE_IDENTITY_NOT_EXACT",
+        "existing mode requires one exact alias and no legacy snapshot",
+      );
     }
     const decisionEvidence = parseExactDecisionEvidence({
       evidenceHash: value.decisionEvidenceHash,
       evidenceJson: value.decisionEvidenceJson,
     });
+    const variantDecisionId = safeId(
+      value.variantDecisionId,
+      "donorSnapshot.variantDecisionId",
+    );
+    const listingBinding = value.listingBinding === null
+      ? null
+      : isRecord(value.listingBinding)
+        && value.listingBinding.schemaVersion
+          === PRODUCT_TRUTH_TARGETED_WALMART_CANONICAL_RECIPE_BINDING_VERSION
+        ? parseCanonicalRecipeBinding(value.listingBinding, {
+            donorProductId,
+            canonicalVariantId: common.canonicalVariantId,
+            variantDecisionId,
+          })
+        : parseListingBinding(
+            value.listingBinding,
+            donorProductId,
+            null,
+            common.canonicalVariantId,
+            canonicalIdentityHash,
+            canonicalIdentityJson,
+          );
     return {
       ...common,
       identityMode: "EXISTING_EXACT",
       identityDerivationVersion: null,
       donorIdentityStatus: "exact_confirmed",
-      variantDecisionId: safeId(value.variantDecisionId, "donorSnapshot.variantDecisionId"),
+      variantDecisionId,
       decisionStatus: "exact_confirmed",
       decisionEvidenceHash: decisionEvidence.evidenceHash,
       decisionEvidenceJson: decisionEvidence.evidenceJson,
       legacySnapshot: null,
-      listingBinding: null,
+      listingBinding,
     };
   }
   const legacySnapshot = parseLegacySnapshot(

@@ -1430,3 +1430,18 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   rematch/materialization без provider spend.
 - [ ] ⬜ Повторять materialization/readiness до исчерпания безопасных классов,
   затем выполнить backfill readiness и four-consumer SHADOW comparison.
+
+Текущее продолжение:
+
+- [x] ✅ Canonical listing recipe/COGS отделены от content completeness:
+  сохранённые exact evidence материализованы бесплатными bounded waves.
+- [x] ✅ Current denominator audit: `5935` listings, `671` canonical,
+  `5264` typed quarantine, automatic no-paid candidates `0`; параллельный каталог
+  не создан.
+- [x] ✅ `EXISTING_EXACT` standing plan теперь привязан к текущему
+  `ProductTruthListingRecipeComponent`, а не mutable legacy `SkuComponent`.
+  Real read-only Campbell's plan `f302cfb1…e542` прошёл standing eligibility;
+  provider calls/DB writes `0`; certification `556/556`.
+- [ ] 🔄 Выполнить bounded Campbell's enrichment из clean release и
+  материализовать результат в canonical recipe/typed COGS, затем продолжать
+  только по доказанным quarantine lanes.

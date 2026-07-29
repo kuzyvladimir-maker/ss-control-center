@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -18,9 +19,21 @@ import {
   renderProductTruthOperationalJson,
 } from "../product-truth-operational-run-contract";
 import {
+  PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
+  buildProductTruthTargetedWalmartCanonicalRecipeBinding,
+  buildProductTruthTargetedWalmartEvidencePlan,
+  parseProductTruthTargetedWalmartDonorSnapshot,
   parseProductTruthTargetedWalmartEvidencePlan,
+  targetedWalmartDonorSnapshotSha256,
   validateProductTruthTargetedWalmartEvidenceApproval,
 } from "../product-truth-targeted-walmart-evidence-contract";
+import {
+  CANONICAL_PRODUCT_MATCHER_VERSION,
+} from "../canonical-product-match";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "../canonical-product-match-provenance";
 import { parseProductTruthRunnerArguments } from "../../../../scripts/product-truth-runner";
 
 const POLICY_PATH = join(
@@ -131,6 +144,126 @@ test("pinned standing policy replaces chat approval without weakening exact plan
     executionConfirmation: authorization.executionConfirmation,
     now: NOW,
   }));
+});
+
+test("standing authority accepts an exact donor only when it carries a sealed Phase 1 listing binding", async () => {
+  const { policy, plan } = await fixture();
+  const source = plan.targets[0];
+  assert.ok(source.listingBinding);
+  const sourceScope = JSON.parse(
+    source.listingBinding.listingScopeRowJson,
+  ) as Record<string, unknown>;
+  const canonicalRecipeBinding =
+    buildProductTruthTargetedWalmartCanonicalRecipeBinding({
+      listingScopeRow: sourceScope,
+      listingRecipeRow: {
+        id: "recipe-standing-exact",
+        listingKey: source.listingBinding.listingKey,
+        manifestSha256: sourceScope.manifestSha256,
+      },
+      recipeComponentRow: {
+        id: "recipe-component-standing-exact",
+        listingRecipeId: "recipe-standing-exact",
+        componentIndex: source.listingBinding.componentIndex,
+        donorProductId: source.donorProductId,
+        targetCanonicalVariantId: source.canonicalVariantId,
+        variantDecisionId: "decision-standing-exact",
+      },
+    });
+  const evidenceJson = renderProductTruthOperationalJson({
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    schemaVersion: "donor-source-identity-evidence/1.2.0",
+  });
+  const exact = parseProductTruthTargetedWalmartDonorSnapshot({
+    identityMode: "EXISTING_EXACT",
+    identityDerivationVersion: null,
+    donorProductId: source.donorProductId,
+    donorOfferId: source.donorOfferId,
+    donorIdentityStatus: "exact_confirmed",
+    variantDecisionId: "decision-standing-exact",
+    canonicalVariantId: source.canonicalVariantId,
+    decisionStatus: "exact_confirmed",
+    matcherVersion: source.matcherVersion,
+    matcherImplementationSha256: source.matcherImplementationSha256,
+    matcherReleaseSha256: source.matcherReleaseSha256,
+    decisionEvidenceHash: createHash("sha256").update(evidenceJson).digest("hex"),
+    decisionEvidenceJson: evidenceJson,
+    canonicalVariantKeyVersion: source.canonicalVariantKeyVersion,
+    canonicalIdentityHash: source.canonicalIdentityHash,
+    canonicalIdentityJson: source.canonicalIdentityJson,
+    retailer: source.retailer,
+    retailerProductId: source.retailerProductId,
+    normalizedProductUrl: source.normalizedProductUrl,
+    via: source.via,
+    isFirstParty: source.isFirstParty,
+    legacySnapshot: null,
+    listingBinding: canonicalRecipeBinding,
+  });
+  const build = (listingBinding: typeof exact.listingBinding) => {
+    const snapshot = parseProductTruthTargetedWalmartDonorSnapshot({
+      ...exact,
+      listingBinding,
+    });
+    return buildProductTruthTargetedWalmartEvidencePlan({
+      request: {
+        schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
+        runId: "pt-standing-existing-exact",
+        createdAt: plan.createdAt,
+        expiresAt: plan.expiresAt,
+        expectedTargetFingerprint: plan.targetFingerprint,
+        engineReleaseSha256: plan.engineReleaseSha256,
+        schemaFingerprintSha256: plan.schemaFingerprintSha256,
+        migrationSetSha256: plan.migrationSetSha256,
+        matcherVersion: plan.matcherVersion,
+        matcherImplementationSha256: plan.matcherImplementationSha256,
+        matcherReleaseSha256: plan.matcherReleaseSha256,
+        query: source.query,
+        donorSnapshot: snapshot,
+        donorSnapshotSha256: targetedWalmartDonorSnapshotSha256(snapshot),
+        providerCeilings: plan.providerCeilings,
+        verificationPolicy: plan.verificationPolicy,
+        maxWallClockMs: plan.maxWallClockMs,
+      },
+      actualTargetFingerprint: plan.targetFingerprint,
+      actualEngineReleaseSha256: plan.engineReleaseSha256,
+      actualSchemaFingerprintSha256: plan.schemaFingerprintSha256,
+      actualMigrationSetSha256: plan.migrationSetSha256,
+      actualDonorSnapshot: snapshot,
+      actualDetailHarvestStateAbsent: true,
+    });
+  };
+  const boundPlan = build(exact.listingBinding);
+  const boundPlanSha256 = productTruthOperationalSha256(boundPlan);
+  assert.doesNotThrow(() => assertProductTruthPlanEligibleForStandingAuthority({
+    plan: boundPlan,
+    planSha256: boundPlanSha256,
+    policy,
+    now: NOW,
+  }));
+
+  const legacyBoundPlan = build(source.listingBinding);
+  assert.throws(
+    () => assertProductTruthPlanEligibleForStandingAuthority({
+      plan: legacyBoundPlan,
+      planSha256: productTruthOperationalSha256(legacyBoundPlan),
+      policy,
+      now: NOW,
+    }),
+    /STANDING_AUTHORITY_PLAN_INELIGIBLE/u,
+  );
+
+  const unboundPlan = build(null);
+  assert.throws(
+    () => assertProductTruthPlanEligibleForStandingAuthority({
+      plan: unboundPlan,
+      planSha256: productTruthOperationalSha256(unboundPlan),
+      policy,
+      now: NOW,
+    }),
+    /STANDING_AUTHORITY_PLAN_INELIGIBLE/u,
+  );
 });
 
 test("standing policy and authorization fail closed on expansion, tariff drift, stale evidence, and raw mismatch", async () => {

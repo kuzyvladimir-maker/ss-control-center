@@ -997,3 +997,35 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [ ] ⬜ After materially higher recipe/COGS coverage, run canonical backfill
   readiness and four-consumer SHADOW comparison. Consumer ENFORCED activation
   remains outside this checkpoint.
+
+### Phase 1 reconciliation continuation — 2026-07-29
+
+- [x] ✅ Сохранён один каталог: legacy evidence повторно оценён и материализован
+  через append-only `ProductTruthListingRecipe`/typed COGS, без создания третьей
+  базы и без consumer activation.
+- [x] ✅ После бесплатных bounded waves full-denominator audit содержит
+  `5935` authoritative listings: `671` canonical, `5264` fail-closed quarantine,
+  `0` оставшихся automatic no-paid candidates. Canonical components `686`;
+  quarantine components `5828`.
+- [x] ✅ Quarantine разбит на непересекающиеся рабочие lanes:
+  integrity conflict `317`, listing identity `731`, component graph `399`,
+  donor link `700`, exact-offer enrichment `45`, price proxy `17`, retailer
+  identity research `3055`.
+- [x] ✅ Исправлен standing-provider contract для `EXISTING_EXACT`: metered
+  refresh теперь допускается только с immutable binding к текущему
+  `ProductTruthListingRecipeComponent` и authoritative manifest. Mutable legacy
+  `SkuComponent` не является scope truth; unbound exact plans остаются
+  ineligible.
+- [x] ✅ Production read-only Campbell's proof:
+  `walmart:1:RizwanX-4182`, donor
+  `50a9f252-1224-4710-b518-b0eec7675cd3`; doctor/request
+  `fde57669…4345`, plan `f302cfb1…e542`, provider calls/DB writes `0`.
+  Offline standing verifier подтвердил canonical-recipe binding
+  `1.0.0` и manifest `94359db1…9062c`.
+- [x] ✅ Сертификация исправления: focused `19/19`, TypeScript, targeted ESLint
+  и полный Product Truth suite `556/556` — `PASS`.
+- [ ] 🔄 Выполнить single-target bounded enrichment этим plan после clean
+  release, затем materialize полученное price/content evidence в связанные
+  recipes/typed COGS без marketplace/business mutations.
+- [ ] ⬜ Повторять только для доказанных gap targets; каждый terminal outcome
+  возвращать в full-denominator audit и не replay автоматически.

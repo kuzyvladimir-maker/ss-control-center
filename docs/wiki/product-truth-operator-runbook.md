@@ -101,6 +101,14 @@ brand/title/size bytes и сразу создаёт request. Ручной identi
 владельца для каждого metered plan не требуется: `authorize` выводит permit из
 pinned standing policy. Ручная подмена identity или budget по-прежнему запрещена.
 
+Для `EXISTING_EXACT` под standing authority обязательны также exact
+`--listing-key` и `--component-index`. `doctor` читает текущую append-only
+`ProductTruthListingRecipe` и её `ProductTruthListingRecipeComponent`, затем
+запечатывает canonical-recipe binding вместе с authoritative
+`ProductTruthListingScope` bytes. Старый mutable `SkuComponent` не может заменить
+эту связь. Unbound exact donor остаётся допустимым только для read-only/offline
+анализа и fail-closed отвергается `balance-probe` до provider boundary.
+
 Историческая Walmart ITEM v6 reconciliation session остаётся quarantined read-only:
 неизвестный параллельный процесс добавил read-only GET и конфликтующие поздние
 `CAPTURED`/`ABSENCE_ONLY` artifacts поверх terminal `PAGINATION_INCOMPLETE`. Её final,
@@ -162,6 +170,8 @@ Targeted plan содержит ровно один уже существующи
 first-party Walmart offer. Он фиксирует режим identity:
 
 - `EXISTING_EXACT` — canonical variant и immutable exact decision уже существуют;
+  для standing execution план дополнительно связан с одним текущим canonical
+  listing-recipe component и exact Phase 1 manifest;
 - `EVIDENCE_VERIFIED_BOOTSTRAP` — до run нет canonical alias/decision; движок
   детерминированно выводит conservative identity из exact brand, полного post-brand
   title signature и нормализованного размера. Identity вместе с full-row legacy
@@ -626,7 +636,7 @@ npm run product-truth -- execute \
 ```
 
 Перед первым paid call runner ещё раз проверяет frozen release, schema/migration set,
-DB fingerprint, exact donor/authoritative-listing graph,
+DB fingerprint, exact donor и authoritative current canonical-recipe binding,
 standing policy/permit/balance, expiry и отсутствующий
 harvest lifecycle. В bootstrap fresh exact search обязан пройти раньше любого canonical
 write; transactional scope guard не позволяет выйти за один sealed donor/offer/

@@ -13,6 +13,7 @@ import type { ProductTruthOperationalMeteredReceipt } from "../product-truth-ope
 import {
   buildProductTruthTargetedWalmartEvidencePlan,
   buildProductTruthTargetedWalmartEvidenceRequest,
+  buildProductTruthTargetedWalmartCanonicalRecipeBinding,
   buildProductTruthTargetedWalmartListingBinding,
   buildProductTruthTargetedWalmartLegacySnapshot,
   canonicalIdentityFromTarget,
@@ -90,6 +91,44 @@ function exactSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
     isFirstParty: true,
     legacySnapshot: null,
     listingBinding: null,
+  });
+}
+
+function exactListingBoundSnapshot(): ProductTruthTargetedWalmartDonorSnapshot {
+  const listingBound = listingBoundBootstrapSnapshot();
+  return parseProductTruthTargetedWalmartDonorSnapshot({
+    ...exactSnapshot(),
+    listingBinding: listingBound.listingBinding,
+  });
+}
+
+function exactCanonicalRecipeBoundSnapshot():
+ProductTruthTargetedWalmartDonorSnapshot {
+  const binding = buildProductTruthTargetedWalmartCanonicalRecipeBinding({
+    listingScopeRow: {
+      listingKey: "walmart:1:SKU-1",
+      channel: "walmart",
+      storeIndex: 1,
+      sku: "SKU-1",
+      manifestSha256: HASH,
+    },
+    listingRecipeRow: {
+      id: "recipe-1",
+      listingKey: "walmart:1:SKU-1",
+      manifestSha256: HASH,
+    },
+    recipeComponentRow: {
+      id: "recipe-component-1",
+      listingRecipeId: "recipe-1",
+      componentIndex: 0,
+      donorProductId: "donor-1",
+      targetCanonicalVariantId: canonical.canonicalVariantId,
+      variantDecisionId: "decision-1",
+    },
+  });
+  return parseProductTruthTargetedWalmartDonorSnapshot({
+    ...exactSnapshot(),
+    listingBinding: binding,
   });
 }
 
@@ -373,6 +412,24 @@ test("existing and listing-bound bootstrap plans seal honest write claims", () =
   assert.equal(existing.sourcePolicy.allowOpenFoodFactsSupplement, false);
   assert.equal(existing.sourcePolicy.allowClubs, false);
   assert.equal(existing.sourcePolicy.allowBjs, false);
+
+  const existingListingBound = planFor(exactListingBoundSnapshot());
+  assert.equal(existingListingBound.claims.identityMode, "EXISTING_EXACT");
+  assert.equal(
+    existingListingBound.targets[0].listingBinding?.listingKey,
+    "walmart:1:SKU-1",
+  );
+  assert.equal(existingListingBound.claims.canonicalVariantWritesMax, 0);
+  assert.equal(existingListingBound.claims.variantDecisionWritesMax, 0);
+
+  const existingCanonicalRecipeBound =
+    planFor(exactCanonicalRecipeBoundSnapshot());
+  assert.equal(
+    existingCanonicalRecipeBound.targets[0].listingBinding?.schemaVersion,
+    "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+  );
+  assert.equal(existingCanonicalRecipeBound.claims.canonicalVariantWritesMax, 0);
+  assert.equal(existingCanonicalRecipeBound.claims.variantDecisionWritesMax, 0);
 
   const bootstrap = planFor(listingBoundBootstrapSnapshot());
   assert.equal(bootstrap.claims.identityMode, "LISTING_BOUND_BOOTSTRAP");
