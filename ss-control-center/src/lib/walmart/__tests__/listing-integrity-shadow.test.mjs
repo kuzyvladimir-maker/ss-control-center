@@ -23,17 +23,17 @@ const REVIEW_ROOT = path.resolve(
 test("projects the fresh quantity-confusion control into read-only Command Center data", async () => {
   const data = await loadListingIntegrityShadowData(ROOT);
   assert.equal(data.mode, "SHADOW_READ_ONLY");
-  assert.equal(data.catalog.status, "CAPTURE_TEST_READY");
+  assert.equal(data.catalog.status, "CATALOG_PLAN_READY");
   assert.equal(data.catalog.snapshotVerified, true);
-  assert.equal(data.catalog.catalog.total, 3936);
+  assert.equal(data.catalog.catalog.total, 3566);
   assert.equal(data.catalog.catalog.exactOnce, true);
   assert.equal(data.catalog.catalog.duplicateSkus, 0);
-  assert.equal(data.catalog.queues.visualTriageReady, 1464);
-  assert.equal(data.catalog.queues.sourceAcquisitionRequired, 1431);
-  assert.equal(data.catalog.visualScan.tasks, 1964);
-  assert.equal(data.catalog.visualScan.partitions, 57);
-  assert.equal(data.catalog.visualScan.capturedPartitions, 1);
-  assert.equal(data.catalog.visualScan.capturedAssets, 32);
+  assert.equal(data.catalog.queues.visualTriageReady, 1298);
+  assert.equal(data.catalog.queues.sourceAcquisitionRequired, 1346);
+  assert.equal(data.catalog.visualScan.tasks, 1738);
+  assert.equal(data.catalog.visualScan.partitions, 49);
+  assert.equal(data.catalog.visualScan.capturedPartitions, 0);
+  assert.equal(data.catalog.visualScan.capturedAssets, 0);
   assert.equal(data.catalog.visualScan.captureTechnicalErrors, 0);
   assert.equal(data.catalog.visualScan.modelCallsCompleted, 0);
   assert.equal(data.catalog.visualScan.walmartWrites, 0);
@@ -45,22 +45,24 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(data.engine.shadowTestsPassed, 8);
   assert.equal(data.engine.walmartWrites, 0);
   assert.equal(data.ownerRepairReview.status, "OWNER_REVIEW_REQUIRED");
-  assert.equal(data.ownerRepairReview.sku, "FaisalX-1181");
-  assert.equal(data.ownerRepairReview.itemId, "8389917875");
+  assert.equal(data.ownerRepairReview.sku, "FaisalX-1228");
+  assert.equal(data.ownerRepairReview.itemId, "8393619891");
   assert.deepEqual(data.ownerRepairReview.changedFields, ["description", "bullets"]);
-  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 2);
-  assert.equal(data.ownerRepairReview.productTruth.singleUnitInnerCount, 8);
-  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 16);
+  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 6);
+  assert.equal(data.ownerRepairReview.productTruth.singleUnitInnerCount, 16);
+  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 96);
+  assert.equal(data.ownerRepairReview.productTruth.donorStatus, "EXACT_PRODUCT_DONOR");
+  assert.equal(data.ownerRepairReview.productTruth.wrongLegacyDonorId, null);
   assert.equal(data.ownerRepairReview.current.images.length, 3);
-  assert.match(data.ownerRepairReview.current.bullets[2], /hamburger buns/u);
-  assert.match(data.ownerRepairReview.proposed.bullets[2], /PACK OF 2/u);
+  assert.doesNotMatch(data.ownerRepairReview.current.bullets.join(" "), /PACK OF 6/iu);
+  assert.match(data.ownerRepairReview.proposed.bullets[0], /PACK OF 6/u);
   assert.equal(data.ownerRepairReview.qualificationPrecheck, "PASS");
   assert.equal(data.ownerRepairReview.exactImageBytesVerified, true);
   assert.equal(data.ownerRepairReview.walmartWriteAuthorized, false);
   assert.equal(data.ownerRepairReview.databaseWriteAuthorized, false);
   assert.equal(
     data.ownerRepairReview.reviewFileSha256,
-    "8e6e4e21727396b74d3314566fec42a6e8628ac2ac1c8491a165bb8fe0a7dc48",
+    "4e81c7cae683cdffaa4c977f0fa01dd769e2bae6b98a2a9ba29c337ef3d6e58f",
   );
   assert.equal(data.productTruth.status, "BLOCKED_SKU_TRUTH_NOT_READY");
   assert.equal(data.productTruth.schemaReady, true);
@@ -102,7 +104,7 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(control.ownerVisualReview.proposedMainAcceptedAsSixPackages, true);
   assert.equal(control.ownerVisualReview.galleryAccepted, true);
   assert.equal(control.ownerVisualReview.walmartWriteAuthorized, false);
-  assert.match(data.gates.next, /Owner reviews FaisalX-1181/);
+  assert.match(data.gates.next, /Owner reviews FaisalX-1228/);
   assert.match(data.gates.next, /certified description\/bullets diff/);
   assert.deepEqual(control.changedFields, ["MAIN"]);
   assert.equal(control.currentImages.length, 3);

@@ -1,0 +1,168 @@
+{
+  "actions": [
+    {
+      "action": "already_applied",
+      "id": "20260718230000_product_truth_queue_v2",
+      "sha256": "f6c675df5eb0cf76ee39c83e6d34ae6fb8af19ac648d58171d6814d817ecf46f"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260718233000_donor_harvest_lifecycle",
+      "sha256": "76eca447b6419f2a0f666a4d177df21d9bcea86caf1e6a801ae19d99de6f56f7"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260718234500_product_truth_evidence_provenance",
+      "sha256": "cbc3748a46d101d609d8767d3b15302d3c306d6f8b0af2a8236095eb98b6ee5e"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260719000000_metered_budget_ledger",
+      "sha256": "91e2ca1346e3d3ef4c37c62153b846cc7be5b537822252ec4edef1b010e80b68"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260719001000_product_truth_metered_evidence_link",
+      "sha256": "d8bb681c2d18158ddc9108f352419f4b6655e8650a5602e1ac35b8b441353007"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260719002000_product_truth_listing_scope",
+      "sha256": "5a98474712f8c48c9958cbe17855871aaef610b05b658e739418b61b40b9f775"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260719003000_product_truth_queue_listing_scope",
+      "sha256": "edbeeaac5e8900fbe403c3970eeea85946d39828210977d0e4a4d1f8f3aa4bc7"
+    },
+    {
+      "action": "already_applied",
+      "id": "20260719004000_product_truth_operational_run",
+      "sha256": "d1c75164517d52db85d579ef738223c5ec5d25463540fd1fef859f2131452e45"
+    },
+    {
+      "action": "applied",
+      "id": "20260729010000_product_truth_listing_recipe",
+      "sha256": "1800ecf61715e1c61dbb9113c5e688dce2544002b3e564ea6f11f6f569b2acba"
+    }
+  ],
+  "activationContractSha256": "77cf4b4989c0612474ccf86893af20fba7df4f97b745de56b4c339d0086c4e56",
+  "approvalId": "standing-owner-goal-20260729",
+  "approvalSha256": "5c4ad78bb9d9bc910883287c85f9aee6e7a4a4bdb1227952738a1b98f6508dab",
+  "contractVersion": "product-truth-migration-report/2",
+  "final": {
+    "migrationStates": [
+      {
+        "id": "20260718230000_product_truth_queue_v2",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260718233000_donor_harvest_lifecycle",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260718234500_product_truth_evidence_provenance",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719000000_metered_budget_ledger",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719001000_product_truth_metered_evidence_link",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719002000_product_truth_listing_scope",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719003000_product_truth_queue_listing_scope",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260719004000_product_truth_operational_run",
+        "state": "applied",
+        "tracking": "tracked"
+      },
+      {
+        "id": "20260729010000_product_truth_listing_recipe",
+        "state": "applied",
+        "tracking": "tracked"
+      }
+    ],
+    "prismaLedger": "ready",
+    "receiptLedger": "ready"
+  },
+  "generatedAt": "2026-07-29T06:07:35.396Z",
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "apply",
+  "planSha256": "e90132d2f79bb32b830175c12ef27226a510535d9662935eabb0d83564e3b1c7",
+  "queueImpact": {
+    "contractVersion": "product-truth-migration-queue-impact/1",
+    "queueV2CompatibilityBackfill": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "queueV3Cancellation": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "runningQueueJobs": {
+      "count": 0,
+      "rowIds": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "sha256": "0705e814f9b7cc7f704ab9e02ee8d1b2ee248e5a0f3191b2e612ce6af3830fde"
+  },
+  "runId": "ptr-recipe-cogs-v4-20260729-v2",
+  "schemaAfterSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaBeforeSha256": "6743242a37e6c854b9f9f380527c1284d53e13997247741fc3064fe0ae76c711",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "writerActivityAtPlan": {
+    "blockerSets": {
+      "enrichmentRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "harvestRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "operationalRunning": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unfinishedPrismaMigrations": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "unsettledMeteredReceipts": {
+        "count": 0,
+        "rowIds": [],
+        "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    },
+    "contractVersion": "product-truth-migration-writer-activity/1",
+    "enrichmentRunning": 0,
+    "externalWriterQuiescenceRequired": true,
+    "harvestRunning": 0,
+    "operationalRunning": 0,
+    "sha256": "2af0ea916ca2b98bb488faa64723122748e209ab6a39b25444d0ae31d903240c",
+    "unfinishedPrismaMigrations": 0,
+    "unsettledMeteredReceipts": 0
+  }
+}

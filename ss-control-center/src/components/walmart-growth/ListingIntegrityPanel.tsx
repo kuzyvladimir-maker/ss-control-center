@@ -514,14 +514,18 @@ function CurrentOwnerRepairReview({
               </p>
               <p className="mt-1 text-[11px] text-ink-2">
                 Pack of {review.productTruth.outerUnits}: каждая упаковка {review.productTruth.singleUnitSize},
-                {" "}{review.productTruth.singleUnitInnerCount} buns; всего {review.productTruth.totalUnits}.
+                {" "}{review.productTruth.singleUnitInnerCount} внутренних единиц; всего{" "}
+                {review.productTruth.totalUnits}.
                 UPC единичной упаковки {review.productTruth.singleUnitUpc}.
               </p>
             </div>
             <StatusPill tone="success">Exact donor</StatusPill>
           </div>
           <div className="mt-2 font-mono text-[9px] text-ink-3">
-            donor {review.productTruth.donorProductId} · forbidden legacy donor {review.productTruth.wrongLegacyDonorId}
+            donor {review.productTruth.donorProductId} · {review.productTruth.donorStatus}
+            {review.productTruth.wrongLegacyDonorId
+              ? ` · forbidden legacy donor ${review.productTruth.wrongLegacyDonorId}`
+              : ""}
           </div>
         </section>
 

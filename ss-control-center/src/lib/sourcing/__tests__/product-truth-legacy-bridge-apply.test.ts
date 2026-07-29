@@ -6,6 +6,11 @@ import { test, type TestContext } from "node:test";
 
 import { createClient, type Client } from "@libsql/client";
 
+import { CANONICAL_PRODUCT_MATCHER_VERSION } from "../canonical-product-match";
+import {
+  CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+  CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+} from "../canonical-product-match-provenance";
 import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
 import {
   applyProductTruthLegacyBridgeWave,
@@ -1128,6 +1133,200 @@ test("standing wave reuses a compatible canonical variant with an earlier create
   assert.equal(postcheck.counts.absentRows, 0);
   assert.equal(postcheck.counts.exactExistingRows, 45);
   assert.equal(postcheck.counts.canonicalVariantReuses, 5);
+});
+
+test("standing wave reuses an immutable exact donor decision instead of inserting a duplicate", async (t) => {
+  const base = identityOnlyFixture();
+  const snapshot = structuredClone(base.snapshot);
+  const firstScope = base.bridgePlan.scopes[0];
+  const firstComponent = firstScope?.components[0];
+  assert.ok(firstComponent?.targetVariant);
+  assert.ok(firstComponent.donorProductId);
+  const donor = snapshot.donors.find(
+    (row) => row.id === firstComponent.donorProductId,
+  );
+  assert.ok(donor);
+  donor.identityStatus = "exact_confirmed";
+  const existingDecisionId = "existing-exact-decision";
+  const decidedAt = "2026-07-26T09:00:00.000Z";
+  snapshot.canonicalDonorBindings = [{
+    donorProductId: donor.id,
+    canonicalVariantId: firstComponent.targetVariant.canonicalVariantId,
+    decisionId: existingDecisionId,
+    decisionStatus: "exact_confirmed",
+    decidedAt,
+  }];
+  const fixture = rebuildFixture(snapshot, { contentOnly: 0, identityOnly: 5 });
+  const input = applyPlan(fixture);
+  const reusedTarget = input.plan.targets.find(
+    (target) => target.donorProductId === donor.id,
+  );
+  assert.ok(reusedTarget);
+  assert.equal(reusedTarget.decision, null);
+  assert.deepEqual(reusedTarget.reusedDecision, {
+    decisionId: existingDecisionId,
+    donorProductId: donor.id,
+    canonicalVariantId: firstComponent.targetVariant.canonicalVariantId,
+    decisionStatus: "exact_confirmed",
+    decidedAt,
+  });
+  assert.equal(reusedTarget.donorTransition, null);
+  assert.equal(reusedTarget.content.variantDecisionId, existingDecisionId);
+  assert.equal(
+    reusedTarget.listingRecipeComponents[0]?.variantDecisionId,
+    existingDecisionId,
+  );
+  assert.equal(input.plan.databaseWrites.maximumRows, 43);
+  assert.equal(input.plan.databaseWrites.donorVariantDecisions, 4);
+  assert.equal(input.plan.databaseWrites.donorIdentityTransitions, 4);
+
+  // The fixture DB must recreate the historical transition order enforced by
+  // the real schema: legacy donor -> exact decision -> exact donor projection.
+  const databaseFixture = {
+    ...fixture,
+    snapshot: structuredClone(fixture.snapshot),
+  };
+  const stagedDonor = databaseFixture.snapshot.donors.find(
+    (row) => row.id === donor.id,
+  );
+  assert.ok(stagedDonor);
+  stagedDonor.identityStatus = "legacy_unverified";
+  const db = await seededDatabase(t, databaseFixture);
+  t.after(() => db.close());
+  const variant = reusedTarget.variant;
+  await db.execute({
+    sql: `INSERT INTO CanonicalProductVariant (
+      id,variantKey,identityHash,keyVersion,normalizedBrand,
+      normalizedProductLine,normalizedFlavor,normalizedModifiersJson,
+      normalizedForm,sizeDimension,sizeBaseAmount,sizeBaseUnit,
+      outerPackCount,identityJson,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      variant.id,
+      variant.variantKey,
+      variant.identityHash,
+      variant.keyVersion,
+      variant.normalizedBrand,
+      variant.normalizedProductLine,
+      variant.normalizedFlavor,
+      variant.normalizedModifiersJson,
+      variant.normalizedForm,
+      variant.sizeDimension,
+      variant.sizeBaseAmount,
+      variant.sizeBaseUnit,
+      variant.outerPackCount,
+      variant.identityJson,
+      decidedAt,
+    ],
+  });
+  const decisionEvidence = {
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    verdict: "EXACT_IDENTITY",
+  };
+  const decisionEvidenceJson =
+    renderProductTruthOperationalJson(decisionEvidence);
+  await db.execute({
+    sql: `INSERT INTO DonorProductVariantDecision (
+      id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
+      matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+      evidenceHash,evidenceJson,decidedAt,runId,approvalId,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      existingDecisionId,
+      "f".repeat(64),
+      donor.id,
+      variant.id,
+      "exact_confirmed",
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      productTruthLegacyBridgeBytesSha256(decisionEvidenceJson),
+      decisionEvidenceJson,
+      decidedAt,
+      null,
+      null,
+      decidedAt,
+    ],
+  });
+  await db.execute({
+    sql: `UPDATE DonorProduct SET
+      identityStatus='exact_confirmed',
+      identityMatcherVersion=?,
+      identityMatcherImplementationSha256=?,
+      identityMatcherReleaseSha256=?,
+      identityEvidenceJson=?,
+      identityConfirmedAt=?
+      WHERE id=?`,
+    args: [
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      decisionEvidenceJson,
+      decidedAt,
+      donor.id,
+    ],
+  });
+
+  const preflight = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  assert.equal(preflight.status, "READY_TO_APPLY");
+  assert.equal(preflight.counts.absentRows, 42);
+  assert.equal(preflight.counts.exactExistingRows, 1);
+  assert.equal(preflight.counts.canonicalVariantReuses, 1);
+  assert.equal(preflight.counts.donorVariantDecisionReuses, 1);
+  assert.equal(preflight.counts.donorIdentityTransitionsRequired, 4);
+  const preflightJson = renderProductTruthLegacyBridgePreflightReport(preflight);
+  const policy = standingPolicy();
+  const report = await applyProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    standingPolicy: policy.value,
+    standingPolicyJson: policy.json,
+    standingPolicySha256: policy.sha256,
+    standingPreflightReport: preflight,
+    standingPreflightReportJson: preflightJson,
+    standingPreflightReportSha256:
+      productTruthLegacyBridgeBytesSha256(preflightJson),
+    startedAt: APPLY_AT,
+    completedAt: APPLY_AT,
+  });
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.counts.insertedRows, 42);
+  assert.equal(report.counts.exactExistingRows, 1);
+  assert.equal(report.counts.canonicalVariantReuses, 1);
+  assert.equal(report.counts.donorVariantDecisionReuses, 1);
+  assert.equal(report.counts.donorIdentityTransitions, 4);
+  assert.equal(
+    Number((await db.execute(
+      "SELECT COUNT(*) AS count FROM DonorProductVariantDecision",
+    )).rows[0]?.count),
+    5,
+  );
+
+  const postcheck = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  assert.equal(postcheck.status, "ALREADY_APPLIED");
+  assert.equal(postcheck.counts.absentRows, 0);
+  assert.equal(postcheck.counts.exactExistingRows, 43);
+  assert.equal(postcheck.counts.canonicalVariantReuses, 5);
+  assert.equal(postcheck.counts.donorVariantDecisionReuses, 1);
 });
 
 test("inverted apply timestamps fail before any canonical write", async (t) => {

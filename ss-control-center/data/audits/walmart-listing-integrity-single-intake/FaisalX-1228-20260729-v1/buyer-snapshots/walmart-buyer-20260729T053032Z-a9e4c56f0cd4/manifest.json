@@ -1,0 +1,110 @@
+{
+  "schema_version": "walmart-buyer-facing-snapshot/v3",
+  "captured_at": "2026-07-29T05:30:32.726Z",
+  "target": {
+    "sku": "FaisalX-1228",
+    "item_id": "8393619891"
+  },
+  "identity": {
+    "exact_sku_match": true,
+    "exact_item_id_match": true,
+    "buyer_facing_verified": true,
+    "seller": {
+      "sku": "FaisalX-1228",
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "upc": "684611899385",
+      "gtin14": "00684611899385",
+      "wpid": "57P5LHMFUUS4",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "8393619891",
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "main_image_url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "buyer": {
+      "item_id": "8393619891",
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "identity_evidence": [
+        "product.item_id=8393619891",
+        "product.product_url=8393619891"
+      ]
+    },
+    "chain_evidence": {
+      "seller_to_catalog": [
+        "request.sku=FaisalX-1228",
+        "seller.ItemResponse[0].sku=FaisalX-1228",
+        "seller.ItemResponse[0].upc=684611899385",
+        "seller.normalized_gtin14=00684611899385",
+        "seller.wpid_not_itemId=57P5LHMFUUS4",
+        "catalog.items[0].standardUpc~=00684611899385;itemId=8393619891",
+        "catalog.unique_numeric_public_itemId=8393619891"
+      ],
+      "catalog_to_buyer_pdp": [
+        "product.item_id=8393619891",
+        "product.product_url=8393619891"
+      ]
+    }
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer": "walmart_buyer_pdp_exact_item_get",
+    "positional_or_fuzzy_fallbacks": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0
+  },
+  "payload_hashes": {
+    "seller_payload_canonical_sha256": "ffd58d05afe88d71b4b087c87042f0d8393ccc4c51d94cc698cdc050356e4347",
+    "catalog_search_payload_canonical_sha256": "1b80d8832cf792452a208bd563d465e639e6b11dbe40e4575af74765e5995c87",
+    "resolution_canonical_sha256": "9d270483df784dfc108493627b4190b0ba08c72afd20080eb8e70b8f833e8a63",
+    "buyer_payload_canonical_sha256": "7a8293e3aca1377e990444d02643a0b8e47f76b00e2c110b063d20ec75c894a5"
+  },
+  "assets": [
+    {
+      "slot": "MAIN",
+      "source_url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png",
+      "final_url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png",
+      "sha256": "0e303024206f31d3cd4f4ca141a263f493a87e738d5bb7aef450b3b5db868440",
+      "bytes": 580546,
+      "media_type": "image/png",
+      "extension": "png",
+      "decoded_format": "png",
+      "decoded_width": 2200,
+      "decoded_height": 2200,
+      "local_path": "assets/0e303024206f31d3cd4f4ca141a263f493a87e738d5bb7aef450b3b5db868440.png"
+    },
+    {
+      "slot": "GALLERY_1",
+      "source_url": "https://i5.walmartimages.com/asr/3a8351b6-c943-4cde-942a-3f849a63a281.ea9753a00b2823990ca3ad8b58dd2b60.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/3a8351b6-c943-4cde-942a-3f849a63a281.ea9753a00b2823990ca3ad8b58dd2b60.jpeg",
+      "sha256": "30f5a8e434637a5b53efe8ff2d855a346447a9096d49d04b301519bda636e2a8",
+      "bytes": 403667,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/30f5a8e434637a5b53efe8ff2d855a346447a9096d49d04b301519bda636e2a8.jpg"
+    },
+    {
+      "slot": "GALLERY_2",
+      "source_url": "https://i5.walmartimages.com/asr/32cb9c41-d6c8-4d34-accf-5065049afa15.94f40e3294fd1aca83012ddd25d96633.jpeg",
+      "final_url": "https://i5.walmartimages.com/asr/32cb9c41-d6c8-4d34-accf-5065049afa15.94f40e3294fd1aca83012ddd25d96633.jpeg",
+      "sha256": "aa1f0e2caf55861444823053bfde139696adbc594d448a20a3b118e52745759d",
+      "bytes": 390134,
+      "media_type": "image/jpeg",
+      "extension": "jpg",
+      "decoded_format": "jpeg",
+      "decoded_width": 2000,
+      "decoded_height": 2000,
+      "local_path": "assets/aa1f0e2caf55861444823053bfde139696adbc594d448a20a3b118e52745759d.jpg"
+    }
+  ],
+  "snapshot_id": "walmart-buyer-20260729T053032Z-a9e4c56f0cd4",
+  "body_sha256": "a9e4c56f0cd4f3d5f2f105e9fab0f09ce463abed0071ac292814374688a9bef8"
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "walmart-exact-item-resolution/v1",
+  "sku": "FaisalX-1228",
+  "buyer_facing_verified": false,
+  "seller": {
+    "sku": "FaisalX-1228",
+    "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+    "upc": "684611899385",
+    "gtin14": "00684611899385",
+    "wpid": "57P5LHMFUUS4",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE"
+  },
+  "catalog_search_candidate": {
+    "item_id": "8393619891",
+    "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+    "main_image_url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png",
+    "is_marketplace_item": true,
+    "duplicate_rows_collapsed": 1
+  },
+  "source_contract": {
+    "seller": "walmart_marketplace_exact_sku_get",
+    "candidate": "walmart_catalog_search_exact_upc",
+    "buyer_pdp": "not_verified",
+    "positional_or_fuzzy_fallbacks": 0
+  },
+  "source_hashes": {
+    "seller_payload_canonical_sha256": "ffd58d05afe88d71b4b087c87042f0d8393ccc4c51d94cc698cdc050356e4347",
+    "catalog_search_payload_canonical_sha256": "1b80d8832cf792452a208bd563d465e639e6b11dbe40e4575af74765e5995c87"
+  },
+  "identity_evidence": [
+    "request.sku=FaisalX-1228",
+    "seller.ItemResponse[0].sku=FaisalX-1228",
+    "seller.ItemResponse[0].upc=684611899385",
+    "seller.normalized_gtin14=00684611899385",
+    "seller.wpid_not_itemId=57P5LHMFUUS4",
+    "catalog.items[0].standardUpc~=00684611899385;itemId=8393619891",
+    "catalog.unique_numeric_public_itemId=8393619891"
+  ]
+}

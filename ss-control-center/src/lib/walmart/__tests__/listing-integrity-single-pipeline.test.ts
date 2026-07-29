@@ -829,6 +829,20 @@ test("review command seals one exact Product Truth diff with image bytes but aut
       compilation.repair.baseline_images,
       compilation.repair.target_images,
     );
+    assert.equal(
+      compilation.repair.baseline_surface.attribute_claims.every(
+        (claim) => !claim.field_path.startsWith("review."),
+      ),
+      true,
+    );
+    assert.deepEqual(
+      compilation.repair.baseline_surface.attribute_claims,
+      compilation.repair.target_surface.attribute_claims,
+    );
+    assert.deepEqual(
+      compilation.repair.baseline_surface.unmapped_attributes,
+      compilation.repair.target_surface.unmapped_attributes,
+    );
     assert.equal(compilation.repair.unchanged_image_bytes, true);
     assert.equal(compilation.owner_gate.current_walmart_write_authorized, false);
     assert.equal(compilation.owner_gate.current_mass_run_authorized, false);
@@ -867,6 +881,56 @@ test("review command seals one exact Product Truth diff with image bytes but aut
         output: path.join(fixture.root, "tampered-compilation-must-not-exist.json"),
       }),
       /existing review certification differs/u,
+    );
+
+    const exactDonorAuditPath = path.join(
+      fixture.root,
+      "review-exact-donor-audit.json",
+    );
+    const exactDonorProposalPath = path.join(
+      fixture.root,
+      "review-exact-donor-proposal.json",
+    );
+    const exactDonorCertificationPath = path.join(
+      fixture.root,
+      "review-exact-donor-certification.json",
+    );
+    await writeFile(exactDonorAuditPath, `${JSON.stringify({
+      exact_content_candidate: donorAudit.exact_content_candidate,
+      current_legacy_component: {
+        donor_product_id: "donor-exact-oat",
+        finding: "EXACT_PRODUCT_DONOR",
+        canonical_use_allowed: true,
+      },
+    })}\n`, { flag: "wx" });
+    const exactDonorProposal = structuredClone(proposal);
+    delete (
+      exactDonorProposal.exact_product_truth_candidate as {
+        legacy_wrong_donor_forbidden?: unknown;
+      }
+    ).legacy_wrong_donor_forbidden;
+    exactDonorProposal.fresh_live_evidence.donor_audit_sha256 =
+      await fileSha(exactDonorAuditPath);
+    await writeFile(
+      exactDonorProposalPath,
+      `${JSON.stringify(exactDonorProposal)}\n`,
+      { flag: "wx" },
+    );
+    const exactDonorCertification = await executeWalmartListingSingleProcess({
+      command: "review",
+      proposal: exactDonorProposalPath,
+      diagnosis: diagnosisPath,
+      buyer_snapshot: fixture.buyer_snapshot_path,
+      buyer_pdp: buyerPdpPath,
+      donor_audit: exactDonorAuditPath,
+      asset_root: fixture.asset_root,
+      output: exactDonorCertificationPath,
+    });
+    assert.equal(
+      "qualification_precheck" in exactDonorCertification
+        ? exactDonorCertification.qualification_precheck
+        : null,
+      "PASS",
     );
   } finally {
     await fixture.cleanup();

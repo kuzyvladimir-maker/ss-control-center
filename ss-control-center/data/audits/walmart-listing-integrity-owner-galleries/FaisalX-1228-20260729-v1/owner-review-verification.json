@@ -1,0 +1,31 @@
+{
+  "schema_version": "walmart-listing-integrity-owner-review-gallery/v1",
+  "created_at": "2026-07-29T05:44:37.063Z",
+  "status": "OWNER_REVIEW_READY",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1228",
+    "listing_key": "walmart:1:FaisalX-1228",
+    "item_id": "8393619891",
+    "seller_upc": "684611899385",
+    "captured_at": "2026-07-29T05:30:32.726Z",
+    "published_status": "PUBLISHED",
+    "lifecycle_status": "ACTIVE",
+    "composition": "same_product"
+  },
+  "review_file_sha256": "4e81c7cae683cdffaa4c977f0fa01dd769e2bae6b98a2a9ba29c337ef3d6e58f",
+  "compilation_request_file_sha256": "643f8c48ca309ae404d5b098dfed287b17e53d4e72a2953abc7cb603043fc1cb",
+  "compilation_request_body_sha256": "503e974ba920cfe318966350b706c9625ce17b42cbbdba355ccffb00445f3e4e",
+  "certification_file_sha256": "0929b2a7fd7237aa40e7e35842bea7daac1f1c25a00ad1d90da7fb12657f7eb2",
+  "snapshot_file_sha256": "38b9976ffa4fe65e2f048698d0bebcccabb0416273d337634d7fed071dba5def",
+  "checks": {
+    "qualification_precheck": "PASS",
+    "exact_image_bytes": "PASS",
+    "changed_fields_only": "description, bullets",
+    "title_unchanged": "PASS",
+    "images_unchanged": "PASS",
+    "walmart_writes": 0
+  },
+  "body_sha256": "5f6370300079f8484e1bda0a4ae6b405fcae5df41cd373d99c78474e99856639"
+}

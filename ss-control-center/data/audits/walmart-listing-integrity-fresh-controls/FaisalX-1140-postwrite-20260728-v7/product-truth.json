@@ -1,0 +1,581 @@
+{
+  "contractVersion": "product-truth-read-contract/3.2.0",
+  "snapshot": {
+    "sku": "FaisalX-1140",
+    "channel": "walmart",
+    "storeIndex": 1,
+    "listingKey": "walmart:1:FaisalX-1140",
+    "asOf": "2026-07-28T22:04:22.616Z",
+    "maxPriceAgeMs": 2592000000,
+    "skuCostId": "retail:FaisalX-1140:bridge:889e584666e9800eb0a59669"
+  },
+  "recipe": {
+    "components": [
+      {
+        "componentEvidenceId": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+        "componentIndex": 0,
+        "product": "White Sandwich Bread",
+        "flavor": "White",
+        "size": "16 oz",
+        "qty": 4,
+        "targetCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+        "evidenceStatus": "REJECT",
+        "content": {
+          "canonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+          "identity": {
+            "variantKey": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+            "identityHash": "2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+            "keyVersion": "canonical-product-variant-key/1.0.0",
+            "brand": "farm pepperidge",
+            "productLine": "bread sandwich white",
+            "flavor": "white",
+            "modifiers": [],
+            "form": "loaf",
+            "sizeDimension": "MASS",
+            "sizeBaseAmount": 453.59237,
+            "sizeBaseUnit": "g",
+            "outerPackCount": 1,
+            "identity": {
+              "schemaVersion": "canonical-product-variant-identity/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bread sandwich white",
+              "flavor": "white",
+              "modifiers": [],
+              "form": "loaf",
+              "size": {
+                "dimension": "MASS",
+                "baseAmount": 453.59237,
+                "baseUnit": "g"
+              },
+              "outerPackCount": 1
+            }
+          },
+          "facts": {
+            "title": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+            "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+            "bullets": [
+              "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+              "QUALITY INGREDIENTS: No high-fructose corn syrup",
+              "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+              "WRAPPED WITH CARE: Double-wrapped for freshness",
+              "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness",
+              "Shelf-stable product."
+            ],
+            "attributes": [
+              {
+                "name": "Bread & bun type",
+                "value": "Sandwich Bread Loaf"
+              },
+              {
+                "name": "Flavor",
+                "value": "White Sandwich"
+              },
+              {
+                "name": "Shelf life",
+                "value": "17 days"
+              },
+              {
+                "name": "Net content statement",
+                "value": "16 OZ (1 LB) (454g)"
+              },
+              {
+                "name": "Food condition",
+                "value": "Shelf-Stable"
+              },
+              {
+                "name": "Grain type",
+                "value": "Common Wheat"
+              },
+              {
+                "name": "Ingredient list image",
+                "value": "https://images.salsify.com/image/upload/s--3zP2oBS_--/w_2400,h_2400,dn_300,c_fit/kt8oqb6sznfrq7xsgyus.jpg"
+              },
+              {
+                "name": "Nutrition facts label image",
+                "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+              },
+              {
+                "name": "Brand",
+                "value": "Pepperidge Farm"
+              },
+              {
+                "name": "Assembled product weight",
+                "value": "1 lb"
+              }
+            ],
+            "nutritionFacts": [
+              {
+                "name": "Nutrition facts label image",
+                "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+              }
+            ],
+            "ingredients": "Made from: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean and/or Canola), Contains 2% or Less of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate and Sorbic Acid to Extend Freshness, Malted Barley Flour, Soy Lecithin. | Made From: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean And/Or Canola), Contains 2% Or Less Of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate And Sorbic Acid To Extend Freshness, Malted Barley Flour, Soy Lecithin. \nContains: Wheat, Milk, Soy.",
+            "mainImageUrl": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+            "imageUrls": [
+              "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+              "https://i5.walmartimages.com/asr/2ec44d86-d2fe-4ac4-a2ce-24caa12d6d6f.85da5152ca1a40020408d0e0ccc4d659.jpeg",
+              "https://i5.walmartimages.com/asr/812d98dc-ff47-49e0-8a7e-c242fd79b5ba.aaa79cb90454652b35630b951c8ea233.jpeg",
+              "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+              "https://i5.walmartimages.com/asr/df43d28a-8bcd-4653-be3a-64e300d1ef3a.cdf66a2f024e3d39aa79dc9dc63d7065.jpeg",
+              "https://i5.walmartimages.com/asr/302f716d-23a0-4357-8562-88ca1271f7d3.1d5462829146a511c4c2c179105ccd6b.jpeg",
+              "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg"
+            ]
+          },
+          "provenance": {
+            "contentObservationId": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+            "observationKey": "8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+            "donorProductId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+            "variantDecisionId": "dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686",
+            "matcherVersion": "canonical-product-match/1.2.1",
+            "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+            "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+            "decisionEvidenceHash": "05b5439af7e0d7b6cd6f937a47df6b4d1b41504e12bf086a4f4c9648a06ce48b",
+            "contentHash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+            "fieldHashes": {
+              "allergens": "e1dbc898f09d3bb79ddaa1c65d412c127635832b950adcba597f837d2c779223",
+              "attributes": "aaf70bea96076395e3c23de408b7233b4be2d4d7cfc16c24e8c6297c139f23a3",
+              "bullets": "5e866f3686e53ac7c5f665d2f3f60cea26dd92fdda69abd66238ec7221b9fcb9",
+              "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+              "description": "494ac63df12caee9c31e95ddc99bef5d15aac3dd1c63d9e41f023530a46a3202",
+              "imageUrls": "95a8c37b4d8779665d8150d5dba4740ef432c419971261e1e6e0f500478aa1ef",
+              "ingredients": "6fdc6e8ff39fb14c39813ae30351c9bb2be53b31dbdd4431d6e96673a8049a23",
+              "mainImageUrl": "59ee6a2a22619d078c7268ef92f61176d17a069017e1e410603dcc65568b9cd5",
+              "nutritionFacts": "c8da56e768bf6ed7657bd7834fb4554f75f0090c85cee5aa00811f519769d573",
+              "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+              "title": "49a5920293aa0ab7bdce336d4e8a1ca7355b08ceef4de414ef4861748b8f1d74",
+              "upc": "01211777bafc571138af46c003b1580138d82319b8d020f0ab78943326810774"
+            },
+            "sourceUrl": "https://www.walmart.com/ip/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf/12018216?classType=REGULAR",
+            "sourceApi": "legacy-materialized-bridge",
+            "observedAt": "2026-07-09T06:10:29.280Z",
+            "runId": "ptlb-canary-536c452b982f272a4dacd5ea",
+            "approvalId": "owner-ptlb-canary-536c452b982f272a4dacd5ea",
+            "meteredReceiptId": null
+          }
+        },
+        "contentBlockers": []
+      }
+    ],
+    "blockers": []
+  },
+  "views": {
+    "bundleFactory": {
+      "consumer": "BUNDLE_FACTORY",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+          "componentIndex": 0,
+          "product": "White Sandwich Bread",
+          "flavor": "White",
+          "size": "16 oz",
+          "qty": 4,
+          "targetCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+            "identity": {
+              "variantKey": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "identityHash": "2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bread sandwich white",
+              "flavor": "white",
+              "modifiers": [],
+              "form": "loaf",
+              "sizeDimension": "MASS",
+              "sizeBaseAmount": 453.59237,
+              "sizeBaseUnit": "g",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "farm pepperidge",
+                "productLine": "bread sandwich white",
+                "flavor": "white",
+                "modifiers": [],
+                "form": "loaf",
+                "size": {
+                  "dimension": "MASS",
+                  "baseAmount": 453.59237,
+                  "baseUnit": "g"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+              "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+              "bullets": [
+                "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+                "QUALITY INGREDIENTS: No high-fructose corn syrup",
+                "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+                "WRAPPED WITH CARE: Double-wrapped for freshness",
+                "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness",
+                "Shelf-stable product."
+              ],
+              "attributes": [
+                {
+                  "name": "Bread & bun type",
+                  "value": "Sandwich Bread Loaf"
+                },
+                {
+                  "name": "Flavor",
+                  "value": "White Sandwich"
+                },
+                {
+                  "name": "Shelf life",
+                  "value": "17 days"
+                },
+                {
+                  "name": "Net content statement",
+                  "value": "16 OZ (1 LB) (454g)"
+                },
+                {
+                  "name": "Food condition",
+                  "value": "Shelf-Stable"
+                },
+                {
+                  "name": "Grain type",
+                  "value": "Common Wheat"
+                },
+                {
+                  "name": "Ingredient list image",
+                  "value": "https://images.salsify.com/image/upload/s--3zP2oBS_--/w_2400,h_2400,dn_300,c_fit/kt8oqb6sznfrq7xsgyus.jpg"
+                },
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+                },
+                {
+                  "name": "Brand",
+                  "value": "Pepperidge Farm"
+                },
+                {
+                  "name": "Assembled product weight",
+                  "value": "1 lb"
+                }
+              ],
+              "nutritionFacts": [
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+                }
+              ],
+              "ingredients": "Made from: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean and/or Canola), Contains 2% or Less of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate and Sorbic Acid to Extend Freshness, Malted Barley Flour, Soy Lecithin. | Made From: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean And/Or Canola), Contains 2% Or Less Of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate And Sorbic Acid To Extend Freshness, Malted Barley Flour, Soy Lecithin. \nContains: Wheat, Milk, Soy.",
+              "mainImageUrl": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+              "imageUrls": [
+                "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+                "https://i5.walmartimages.com/asr/2ec44d86-d2fe-4ac4-a2ce-24caa12d6d6f.85da5152ca1a40020408d0e0ccc4d659.jpeg",
+                "https://i5.walmartimages.com/asr/812d98dc-ff47-49e0-8a7e-c242fd79b5ba.aaa79cb90454652b35630b951c8ea233.jpeg",
+                "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+                "https://i5.walmartimages.com/asr/df43d28a-8bcd-4653-be3a-64e300d1ef3a.cdf66a2f024e3d39aa79dc9dc63d7065.jpeg",
+                "https://i5.walmartimages.com/asr/302f716d-23a0-4357-8562-88ca1271f7d3.1d5462829146a511c4c2c179105ccd6b.jpeg",
+                "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+              "observationKey": "8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+              "donorProductId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+              "variantDecisionId": "dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "05b5439af7e0d7b6cd6f937a47df6b4d1b41504e12bf086a4f4c9648a06ce48b",
+              "contentHash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+              "fieldHashes": {
+                "allergens": "e1dbc898f09d3bb79ddaa1c65d412c127635832b950adcba597f837d2c779223",
+                "attributes": "aaf70bea96076395e3c23de408b7233b4be2d4d7cfc16c24e8c6297c139f23a3",
+                "bullets": "5e866f3686e53ac7c5f665d2f3f60cea26dd92fdda69abd66238ec7221b9fcb9",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "494ac63df12caee9c31e95ddc99bef5d15aac3dd1c63d9e41f023530a46a3202",
+                "imageUrls": "95a8c37b4d8779665d8150d5dba4740ef432c419971261e1e6e0f500478aa1ef",
+                "ingredients": "6fdc6e8ff39fb14c39813ae30351c9bb2be53b31dbdd4431d6e96673a8049a23",
+                "mainImageUrl": "59ee6a2a22619d078c7268ef92f61176d17a069017e1e410603dcc65568b9cd5",
+                "nutritionFacts": "c8da56e768bf6ed7657bd7834fb4554f75f0090c85cee5aa00811f519769d573",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "49a5920293aa0ab7bdce336d4e8a1ca7355b08ceef4de414ef4861748b8f1d74",
+                "upc": "01211777bafc571138af46c003b1580138d82319b8d020f0ab78943326810774"
+              },
+              "sourceUrl": "https://www.walmart.com/ip/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf/12018216?classType=REGULAR",
+              "sourceApi": "legacy-materialized-bridge",
+              "observedAt": "2026-07-09T06:10:29.280Z",
+              "runId": "ptlb-canary-536c452b982f272a4dacd5ea",
+              "approvalId": "owner-ptlb-canary-536c452b982f272a4dacd5ea",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "listingImprovement": {
+      "consumer": "LISTING_IMPROVEMENT",
+      "ready": true,
+      "components": [
+        {
+          "componentEvidenceId": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+          "componentIndex": 0,
+          "product": "White Sandwich Bread",
+          "flavor": "White",
+          "size": "16 oz",
+          "qty": 4,
+          "targetCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+          "evidenceStatus": "REJECT",
+          "content": {
+            "canonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+            "identity": {
+              "variantKey": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "identityHash": "2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "keyVersion": "canonical-product-variant-key/1.0.0",
+              "brand": "farm pepperidge",
+              "productLine": "bread sandwich white",
+              "flavor": "white",
+              "modifiers": [],
+              "form": "loaf",
+              "sizeDimension": "MASS",
+              "sizeBaseAmount": 453.59237,
+              "sizeBaseUnit": "g",
+              "outerPackCount": 1,
+              "identity": {
+                "schemaVersion": "canonical-product-variant-identity/1.0.0",
+                "brand": "farm pepperidge",
+                "productLine": "bread sandwich white",
+                "flavor": "white",
+                "modifiers": [],
+                "form": "loaf",
+                "size": {
+                  "dimension": "MASS",
+                  "baseAmount": 453.59237,
+                  "baseUnit": "g"
+                },
+                "outerPackCount": 1
+              }
+            },
+            "facts": {
+              "title": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+              "description": "We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+              "bullets": [
+                "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+                "QUALITY INGREDIENTS: No high-fructose corn syrup",
+                "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+                "WRAPPED WITH CARE: Double-wrapped for freshness",
+                "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness",
+                "Shelf-stable product."
+              ],
+              "attributes": [
+                {
+                  "name": "Bread & bun type",
+                  "value": "Sandwich Bread Loaf"
+                },
+                {
+                  "name": "Flavor",
+                  "value": "White Sandwich"
+                },
+                {
+                  "name": "Shelf life",
+                  "value": "17 days"
+                },
+                {
+                  "name": "Net content statement",
+                  "value": "16 OZ (1 LB) (454g)"
+                },
+                {
+                  "name": "Food condition",
+                  "value": "Shelf-Stable"
+                },
+                {
+                  "name": "Grain type",
+                  "value": "Common Wheat"
+                },
+                {
+                  "name": "Ingredient list image",
+                  "value": "https://images.salsify.com/image/upload/s--3zP2oBS_--/w_2400,h_2400,dn_300,c_fit/kt8oqb6sznfrq7xsgyus.jpg"
+                },
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+                },
+                {
+                  "name": "Brand",
+                  "value": "Pepperidge Farm"
+                },
+                {
+                  "name": "Assembled product weight",
+                  "value": "1 lb"
+                }
+              ],
+              "nutritionFacts": [
+                {
+                  "name": "Nutrition facts label image",
+                  "value": "https://images.salsify.com/image/upload/s--Vm79C70G--/w_2400,h_2400,dn_300,c_fit/ne0tk8m9xdwtf8dekbpt.jpg"
+                }
+              ],
+              "ingredients": "Made from: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean and/or Canola), Contains 2% or Less of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate and Sorbic Acid to Extend Freshness, Malted Barley Flour, Soy Lecithin. | Made From: Enriched Wheat Flour (Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Vegetable Oil (Soybean And/Or Canola), Contains 2% Or Less Of: Wheat Gluten, Salt, Monoglycerides, Whey, Calcium Propionate And Sorbic Acid To Extend Freshness, Malted Barley Flour, Soy Lecithin. \nContains: Wheat, Milk, Soy.",
+              "mainImageUrl": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+              "imageUrls": [
+                "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+                "https://i5.walmartimages.com/asr/2ec44d86-d2fe-4ac4-a2ce-24caa12d6d6f.85da5152ca1a40020408d0e0ccc4d659.jpeg",
+                "https://i5.walmartimages.com/asr/812d98dc-ff47-49e0-8a7e-c242fd79b5ba.aaa79cb90454652b35630b951c8ea233.jpeg",
+                "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+                "https://i5.walmartimages.com/asr/df43d28a-8bcd-4653-be3a-64e300d1ef3a.cdf66a2f024e3d39aa79dc9dc63d7065.jpeg",
+                "https://i5.walmartimages.com/asr/302f716d-23a0-4357-8562-88ca1271f7d3.1d5462829146a511c4c2c179105ccd6b.jpeg",
+                "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg"
+              ]
+            },
+            "provenance": {
+              "contentObservationId": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+              "observationKey": "8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+              "donorProductId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+              "variantDecisionId": "dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "decisionEvidenceHash": "05b5439af7e0d7b6cd6f937a47df6b4d1b41504e12bf086a4f4c9648a06ce48b",
+              "contentHash": "c507041eb972b61f2b9ce87defd2669c11b6460faa6c8287179350ce693affa4",
+              "fieldHashes": {
+                "allergens": "e1dbc898f09d3bb79ddaa1c65d412c127635832b950adcba597f837d2c779223",
+                "attributes": "aaf70bea96076395e3c23de408b7233b4be2d4d7cfc16c24e8c6297c139f23a3",
+                "bullets": "5e866f3686e53ac7c5f665d2f3f60cea26dd92fdda69abd66238ec7221b9fcb9",
+                "category": "fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d",
+                "description": "494ac63df12caee9c31e95ddc99bef5d15aac3dd1c63d9e41f023530a46a3202",
+                "imageUrls": "95a8c37b4d8779665d8150d5dba4740ef432c419971261e1e6e0f500478aa1ef",
+                "ingredients": "6fdc6e8ff39fb14c39813ae30351c9bb2be53b31dbdd4431d6e96673a8049a23",
+                "mainImageUrl": "59ee6a2a22619d078c7268ef92f61176d17a069017e1e410603dcc65568b9cd5",
+                "nutritionFacts": "c8da56e768bf6ed7657bd7834fb4554f75f0090c85cee5aa00811f519769d573",
+                "storage": "8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158",
+                "title": "49a5920293aa0ab7bdce336d4e8a1ca7355b08ceef4de414ef4861748b8f1d74",
+                "upc": "01211777bafc571138af46c003b1580138d82319b8d020f0ab78943326810774"
+              },
+              "sourceUrl": "https://www.walmart.com/ip/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf/12018216?classType=REGULAR",
+              "sourceApi": "legacy-materialized-bridge",
+              "observedAt": "2026-07-09T06:10:29.280Z",
+              "runId": "ptlb-canary-536c452b982f272a4dacd5ea",
+              "approvalId": "owner-ptlb-canary-536c452b982f272a4dacd5ea",
+              "meteredReceiptId": null
+            }
+          },
+          "contentBlockers": []
+        }
+      ],
+      "blockers": []
+    },
+    "unitEconomics": {
+      "consumer": "UNIT_ECONOMICS",
+      "status": "UNSOURCEABLE",
+      "current": {
+        "id": "retail:FaisalX-1140:bridge:889e584666e9800eb0a59669",
+        "observationKey": "889e584666e9800eb0a59669ab7b0220d1d69a1653d7042b5df30b605d625504",
+        "recipeHash": "107b675fa503ef700ad005052c766cbfddf7a2951ce382d684adb14b73abc896",
+        "sku": "FaisalX-1140",
+        "effectiveDate": "2026-07-26T23:53:35.000Z",
+        "createdAt": "2026-07-26T23:53:35.000Z",
+        "source": "retail:batch",
+        "productCost": null,
+        "packagingCost": null,
+        "iceCost": null,
+        "totalCost": null,
+        "costPerUnit": null,
+        "packSize": null,
+        "currency": "USD",
+        "needsReview": true,
+        "matcherVersion": "canonical-product-match/1.2.1",
+        "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+        "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+        "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+        "evidenceOutcome": "UNSOURCEABLE",
+        "evidence": {
+          "approvalId": "owner-ptlb-canary-536c452b982f272a4dacd5ea",
+          "channel": "walmart",
+          "components": [
+            {
+              "contentCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "contentDonorProductId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+              "contentObservationId": "pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3",
+              "flavor": "White",
+              "idx": 0,
+              "matchTier": "EXACT_IDENTITY",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "method": "no-fresh-first-party-price",
+              "perUnit": null,
+              "priceCanonicalVariantId": null,
+              "priceEvidenceDonorProductId": null,
+              "priceEvidenceObservationId": null,
+              "priceEvidenceOfferId": null,
+              "priceEvidenceStatus": "REJECT",
+              "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+              "priceVariantDecisionId": null,
+              "product": "White Sandwich Bread",
+              "qty": 4,
+              "size": "16 oz",
+              "targetCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+              "targetComparableUnitPrice": null
+            }
+          ],
+          "evaluatedAt": "2026-07-26T23:53:35.000Z",
+          "listingKey": "walmart:1:FaisalX-1140",
+          "listingKeyVersion": "product-truth-listing-key/1.0.0",
+          "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+          "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+          "matcherVersion": "canonical-product-match/1.2.1",
+          "outcome": "UNSOURCEABLE",
+          "procurementZip": "33765",
+          "recipeHash": "107b675fa503ef700ad005052c766cbfddf7a2951ce382d684adb14b73abc896",
+          "runId": "ptlb-canary-536c452b982f272a4dacd5ea",
+          "schemaVersion": "product-truth-cogs-evidence/1.0.0",
+          "sourcePolicy": {
+            "evidence": "existing-catalog-only",
+            "maxPriceAgeMs": 86400000,
+            "paidCalls": 0,
+            "providerCalls": 0
+          },
+          "storeIndex": 1
+        },
+        "runId": "ptlb-canary-536c452b982f272a4dacd5ea",
+        "approvalId": "owner-ptlb-canary-536c452b982f272a4dacd5ea",
+        "componentProvenance": [
+          {
+            "componentIndex": 0,
+            "kind": "REJECT",
+            "matcher": {
+              "matcherVersion": "canonical-product-match/1.2.1",
+              "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+              "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2"
+            },
+            "manualCost": null
+          }
+        ]
+      },
+      "factualCost": null,
+      "estimatedCost": null,
+      "blockers": []
+    },
+    "procurement": {
+      "consumer": "PROCUREMENT",
+      "ready": false,
+      "components": [
+        {
+          "componentIndex": 0,
+          "product": "White Sandwich Bread",
+          "requiredQuantity": 4,
+          "factualOptions": [],
+          "estimateOptions": [],
+          "manualCost": null,
+          "blockers": [
+            "PRICE_EVIDENCE_NOT_ACCEPTED",
+            "SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+            "NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+          ]
+        }
+      ],
+      "blockers": [
+        "COMPONENT_0:PRICE_EVIDENCE_NOT_ACCEPTED",
+        "COMPONENT_0:SELECTED_IMMUTABLE_PRICE_OBSERVATION_MISSING",
+        "COMPONENT_0:NO_CURRENT_ELIGIBLE_LOCAL_PRICE"
+      ]
+    }
+  }
+}

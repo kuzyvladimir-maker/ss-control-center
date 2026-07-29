@@ -1,0 +1,33 @@
+{
+  "ItemResponse": [
+    {
+      "mart": "WALMART_US",
+      "sku": "FaisalX-1228",
+      "condition": "New",
+      "availability": "In_stock",
+      "wpid": "57P5LHMFUUS4",
+      "upc": "684611899385",
+      "gtin": "00684611899385",
+      "productName": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "shelf": "Home Page/Food/Bakery & Bread/Bread/Multigrain Bread",
+      "productType": "Breads & Buns",
+      "price": {
+        "currency": "USD",
+        "amount": 64.8
+      },
+      "publishedStatus": "PUBLISHED",
+      "lifecycleStatus": "ACTIVE",
+      "variantGroupId": "Faisalxbread064",
+      "variantGroupInfo": {
+        "isPrimary": false,
+        "groupingAttributes": [
+          {
+            "name": "number_of_pieces",
+            "value": "6"
+          }
+        ]
+      }
+    }
+  ],
+  "totalItems": 1
+}

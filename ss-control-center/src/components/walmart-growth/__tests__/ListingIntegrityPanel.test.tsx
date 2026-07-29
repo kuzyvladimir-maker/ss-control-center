@@ -15,6 +15,10 @@ const ROOT = path.resolve(
   process.cwd(),
   "data/audits/walmart-listing-integrity-fresh-controls",
 );
+const OWNER_REVIEW_ROOT = path.resolve(
+  process.cwd(),
+  "data/audits/walmart-listing-integrity-single-calibration",
+);
 
 test("renders qualified canaries and the sealed controlled pool without mutation controls", async () => {
   const fixture = await createListingIntegrityOperationsFixture();
@@ -22,7 +26,7 @@ test("renders qualified canaries and the sealed controlled pool without mutation
     ROOT,
     null,
     null,
-    null,
+    OWNER_REVIEW_ROOT,
     {
       operationsRoot: fixture.operationsRoot,
       completedRoot: fixture.completedRoot,
@@ -105,7 +109,11 @@ test("renders qualified canaries and the sealed controlled pool without mutation
   assert.match(html, /1190 из 1204 кандидатов/);
   assert.match(html, /Write authority: false/);
   assert.match(html, new RegExp(fixture.pool.poolId));
-  assert.doesNotMatch(html, /Актуальное исправление/);
+  assert.match(html, /Актуальное исправление/);
+  assert.match(html, /FaisalX-1228/);
+  assert.match(html, /PACK OF 6/);
+  assert.match(html, /EXACT_PRODUCT_DONOR/);
+  assert.match(html, /Подтверждаю FaisalX-1228 и diff 4e81c7ca…6e58f/);
   assert.match(html, /Весь каталог Walmart/);
   assert.match(html, /3566\/3566 SKU/);
   assert.match(html, /1298/);

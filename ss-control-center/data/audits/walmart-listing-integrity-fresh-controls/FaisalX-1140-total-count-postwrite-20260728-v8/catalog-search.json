@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "itemId": "8401770647",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_4803dac1-b591-4e67-9504-025274d05759.3a141a15b2403c42e287dc57207da57e.png"
+        }
+      ],
+      "customerRating": "5.0",
+      "price": {
+        "amount": "51.31",
+        "currency": "USD"
+      },
+      "description": "<li>SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches</li><li>WRAPPED WITH CARE: Double-wrapped for freshness</li><li>BAKER'S TOUCHES: Versatile</li>",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+      "brand": "Pepperidge Farm",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611898500"
+      ],
+      "properties": {
+        "numReviews": "1",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "White Bread"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

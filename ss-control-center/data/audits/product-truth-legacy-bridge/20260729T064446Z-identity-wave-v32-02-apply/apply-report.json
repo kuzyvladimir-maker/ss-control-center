@@ -1,0 +1,59 @@
+{
+  "approvalId": "owner-ptlb-wave-25650ac617a5e00e08909720",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "700bfe3a65df10e3565418890288d11b6bc043bd418356717eb844543845748b",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T06:45:27.909Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 8,
+    "exactExistingRows": 0,
+    "insertedRows": 92,
+    "targets": 12
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-25650ac617a5e00e08909720",
+  "planSha256": "1b5e4376fbe56ec456999210f2544df35c22512a04d0b93de8c150002c84d96c",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.2.0",
+  "startedAt": "2026-07-29T06:44:46.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "walmart:1:FaisalX-3466",
+      "walmart:1:FaisalX-3467",
+      "walmart:1:FaisalX-3468",
+      "walmart:1:FaisalX-3642",
+      "walmart:1:RizwanX-2676",
+      "walmart:1:RizwanX-2679",
+      "walmart:1:RizwanX-2734",
+      "walmart:1:RizwanX-3013",
+      "walmart:1:RizwanX-3015",
+      "walmart:1:RizwanX-776",
+      "walmart:1:RizwanX-777",
+      "walmart:1:RizwanX-810"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 12
+  }
+}

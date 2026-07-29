@@ -53,13 +53,13 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.1.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.2.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.3.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
-  "product-truth-legacy-bridge-preflight-report/2.1.0" as const;
+  "product-truth-legacy-bridge-preflight-report/2.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
   "product-truth-legacy-bridge-standing-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION =
@@ -319,8 +319,15 @@ export interface ProductTruthLegacyBridgeApplyTarget {
     procurement: false;
   };
   variant: ProductTruthLegacyBridgeVariantRow;
-  decision: ProductTruthLegacyBridgeDecisionRow;
-  donorTransition: ProductTruthLegacyBridgeDonorTransition;
+  decision: ProductTruthLegacyBridgeDecisionRow | null;
+  reusedDecision: {
+    decisionId: string;
+    donorProductId: string;
+    canonicalVariantId: string;
+    decisionStatus: "exact_confirmed";
+    decidedAt: string;
+  } | null;
+  donorTransition: ProductTruthLegacyBridgeDonorTransition | null;
   content: ProductTruthLegacyBridgeContentRow;
   listingRecipe: ProductTruthListingRecipeRow;
   listingRecipeComponents: ProductTruthListingRecipeComponentRow[];
@@ -448,6 +455,7 @@ export interface ProductTruthLegacyBridgeApplyReport {
     insertedRows: number;
     exactExistingRows: number;
     canonicalVariantReuses: number;
+    donorVariantDecisionReuses: number;
     donorIdentityTransitions: number;
   };
   verification: {
@@ -474,6 +482,7 @@ export interface ProductTruthLegacyBridgePreflightReport {
     absentRows: number;
     exactExistingRows: number;
     canonicalVariantReuses: number;
+    donorVariantDecisionReuses: number;
     donorIdentityTransitionsRequired: number;
   };
   listingKeys: string[];
@@ -846,6 +855,28 @@ function targetFromScope(input: {
     directTargetContentEvidenceSha256:
       sourceBinding.directTargetContentEvidenceSha256,
   };
+  const reusableDecisionBindings = input.snapshot.canonicalDonorBindings.filter(
+    (row) =>
+      row.donorProductId === donor.id
+      && row.canonicalVariantId === rebuiltVariant.canonicalVariantId
+      && row.decisionStatus === "exact_confirmed",
+  );
+  if (reusableDecisionBindings.length > 1) {
+    fail(
+      "LEGACY_BRIDGE_DECISION_COLLISION",
+      `${donor.id} has more than one exact decision for the target variant`,
+    );
+  }
+  const reusableDecisionBinding = reusableDecisionBindings[0] ?? null;
+  if (
+    reusableDecisionBinding !== null
+    && donor.identityStatus !== "exact_confirmed"
+  ) {
+    fail(
+      "LEGACY_BRIDGE_DECISION_COLLISION",
+      `${donor.id} exact decision is not backed by an exact donor projection`,
+    );
+  }
   const decisionEvidence = {
     schemaVersion: "product-truth-legacy-bridge-variant-decision-evidence/2.0.0",
     policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
@@ -871,7 +902,16 @@ function targetFromScope(input: {
     decisionStatus: "exact_confirmed",
     evidenceHash: decisionEvidenceHash,
   });
-  const decisionId = prefixedId("dpvd", decisionKey);
+  const createdDecisionId = prefixedId("dpvd", decisionKey);
+  const decisionId =
+    reusableDecisionBinding?.decisionId ?? createdDecisionId;
+  const decisionSourceHash = reusableDecisionBinding === null
+    ? decisionEvidenceHash
+    : rowHash({
+      schemaVersion:
+        "product-truth-legacy-bridge-reused-variant-decision/1.0.0",
+      ...reusableDecisionBinding,
+    });
   const payload = contentPayload({
     donor,
     offer,
@@ -983,7 +1023,7 @@ function targetFromScope(input: {
       sourceSnapshotSha256: input.snapshotSha256,
       bridgePlanSha256: input.bridgePlanSha256,
       sourceBinding,
-      decisionEvidenceHash,
+      decisionEvidenceHash: decisionSourceHash,
     }),
     effectiveAt: input.createdAt,
     createdAt: input.createdAt,
@@ -1073,8 +1113,8 @@ function targetFromScope(input: {
       ...rebuiltVariant.db,
       createdAt: input.createdAt,
     },
-    decision: {
-      id: decisionId,
+    decision: reusableDecisionBinding === null ? {
+      id: createdDecisionId,
       decisionKey,
       donorProductId: donor.id,
       canonicalVariantId: rebuiltVariant.canonicalVariantId,
@@ -1088,8 +1128,15 @@ function targetFromScope(input: {
       runId: input.planId,
       approvalId: input.approvalId,
       createdAt: input.createdAt,
+    } : null,
+    reusedDecision: reusableDecisionBinding === null ? null : {
+      decisionId: reusableDecisionBinding.decisionId,
+      donorProductId: reusableDecisionBinding.donorProductId,
+      canonicalVariantId: reusableDecisionBinding.canonicalVariantId,
+      decisionStatus: "exact_confirmed",
+      decidedAt: reusableDecisionBinding.decidedAt,
     },
-    donorTransition: {
+    donorTransition: reusableDecisionBinding === null ? {
       donorProductId: donor.id,
       sourceIdentityStatus: donor.identityStatus,
       sourceIdentityKey: donor.identityKey,
@@ -1100,7 +1147,7 @@ function targetFromScope(input: {
         decisionEvidenceJson,
         input.createdAt,
       ),
-    },
+    } : null,
     content: {
       id: contentId,
       observationKey,
@@ -1222,12 +1269,14 @@ function waveRows(targets: readonly ProductTruthLegacyBridgeApplyTarget[]): {
   return {
     variants: uniqueExactRows(targets.map((target) => target.variant), (row) => row.id, "variant"),
     decisions: uniqueExactRows(
-      targets.map((target) => target.decision),
+      targets.flatMap((target) =>
+        target.decision === null ? [] : [target.decision]),
       (row) => row.id,
       "decision",
     ),
     donorTransitions: uniqueExactRows(
-      targets.map((target) => target.donorTransition),
+      targets.flatMap((target) =>
+        target.donorTransition === null ? [] : [target.donorTransition]),
       (row) => row.donorProductId,
       "donor transition",
     ),
@@ -1267,6 +1316,17 @@ function expectedDatabaseWrites(
     skuComponentEvidence: targets.length,
     skuCosts: targets.length,
   };
+}
+
+function donorVariantDecisionReuseCount(
+  targets: readonly ProductTruthLegacyBridgeApplyTarget[],
+): number {
+  return new Set(
+    targets.flatMap((target) =>
+      target.reusedDecision === null
+        ? []
+        : [target.reusedDecision.decisionId]),
+  ).size;
 }
 
 export function planProductTruthLegacyBridgeApply(input: {
@@ -1421,9 +1481,41 @@ function validatePlan(
   if (sha256Text(planJson) !== exactSha(planSha256, "planSha256")) {
     fail("LEGACY_BRIDGE_APPLY_PLAN_INVALID", "plan SHA-256 mismatch");
   }
+  const decisionBindingsValid = plan.targets.every((target) => {
+    if (
+      (target.decision === null) === (target.reusedDecision === null)
+      || (target.decision === null) !== (target.donorTransition === null)
+    ) {
+      return false;
+    }
+    const decisionId =
+      target.decision?.id ?? target.reusedDecision?.decisionId;
+    const decisionDonorProductId =
+      target.decision?.donorProductId
+      ?? target.reusedDecision?.donorProductId;
+    const decisionCanonicalVariantId =
+      target.decision?.canonicalVariantId
+      ?? target.reusedDecision?.canonicalVariantId;
+    return (
+      decisionId !== undefined
+      && decisionDonorProductId === target.donorProductId
+      && decisionCanonicalVariantId === target.variant.id
+      && target.content.donorProductId === target.donorProductId
+      && target.content.canonicalVariantId === target.variant.id
+      && target.content.variantDecisionId === decisionId
+      && target.listingRecipeComponents.length > 0
+      && target.listingRecipeComponents.every(
+        (component) =>
+          component.donorProductId === target.donorProductId
+          && component.targetCanonicalVariantId === target.variant.id
+          && component.variantDecisionId === decisionId,
+      )
+    );
+  });
   if (
     plan.targets.length < 1
     || plan.targets.length > PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS
+    || !decisionBindingsValid
     || rowHash(plan.targets) !== plan.targetsSha256
     || canonicalJson(plan.databaseWrites)
       !== canonicalJson(expectedDatabaseWrites(plan.targets))
@@ -1623,6 +1715,8 @@ function validateStandingPolicyAuthorization(input: {
       !== preflightReport.counts.exactExistingRows
     || preflightReport.counts.canonicalVariantReuses
       > plan.databaseWrites.canonicalProductVariants
+    || preflightReport.counts.donorVariantDecisionReuses
+      !== donorVariantDecisionReuseCount(plan.targets)
     || preflightReport.counts.donorIdentityTransitionsRequired
       !== plan.databaseWrites.donorIdentityTransitions
     || preflightReport.foreignKeyViolations.length !== 0
@@ -1830,10 +1924,41 @@ function donorExactProjectionMatches(
   row: Row,
   target: ProductTruthLegacyBridgeApplyTarget,
 ): boolean {
+  if (target.donorTransition === null) {
+    return target.reusedDecision !== null
+      && row.identityStatus === "exact_confirmed";
+  }
   const projection = target.donorTransition.exactProjection;
   return Object.entries(projection).every(
     ([key, value]) => comparable(row[key]) === comparable(value),
   );
+}
+
+async function assertReusedDecision(
+  db: SqlReader,
+  target: ProductTruthLegacyBridgeApplyTarget,
+): Promise<void> {
+  if (target.reusedDecision === null) return;
+  const rows = (await db.execute({
+    sql: `SELECT id,donorProductId,canonicalVariantId,decisionStatus,decidedAt
+          FROM DonorProductVariantDecision WHERE id=?`,
+    args: [target.reusedDecision.decisionId],
+  })).rows;
+  if (
+    rows.length !== 1
+    || rows[0].id !== target.reusedDecision.decisionId
+    || rows[0].donorProductId !== target.reusedDecision.donorProductId
+    || rows[0].canonicalVariantId
+      !== target.reusedDecision.canonicalVariantId
+    || rows[0].decisionStatus !== target.reusedDecision.decisionStatus
+    || comparable(rows[0].decidedAt)
+      !== comparable(target.reusedDecision.decidedAt)
+  ) {
+    fail(
+      "LEGACY_BRIDGE_REUSED_DECISION_DRIFT",
+      `${target.listingKey} exact decision binding differs`,
+    );
+  }
 }
 
 async function preflightTarget(
@@ -1857,9 +1982,13 @@ async function preflightTarget(
   const sourceDonorHashMatches =
     rowHash(source.donor) === target.sourceBinding.donorProductSha256;
   const exactDonor = donorExactProjectionMatches(source.donorRaw, target);
-  if (!sourceDonorHashMatches && !exactDonor) {
+  if (
+    (!sourceDonorHashMatches && !exactDonor)
+    || (target.reusedDecision !== null && !sourceDonorHashMatches)
+  ) {
     fail("LEGACY_BRIDGE_SOURCE_DRIFT", `${target.listingKey} donor row drifted`);
   }
+  await assertReusedDecision(db, target);
   // Content fields are immutable inputs to this bridge even after the
   // transitional identity projection changes.
   const plannedContent = recordValue(JSON.parse(target.content.contentJson))?.sourceBinding;
@@ -1882,16 +2011,18 @@ async function preflightTarget(
     CANONICAL_VARIANT_REUSE_IGNORED_COLUMNS,
   );
   const rows: Array<["ABSENT" | "EXACT", string]> = [];
-  rows.push([
-    await exactOrAbsent(
-      db,
-      "DonorProductVariantDecision",
-      "id",
-      target.decision as unknown as Record<string, unknown>,
-      "LEGACY_BRIDGE_DECISION_COLLISION",
-    ),
-    "decision",
-  ]);
+  if (target.decision !== null) {
+    rows.push([
+      await exactOrAbsent(
+        db,
+        "DonorProductVariantDecision",
+        "id",
+        target.decision as unknown as Record<string, unknown>,
+        "LEGACY_BRIDGE_DECISION_COLLISION",
+      ),
+      "decision",
+    ]);
+  }
   rows.push([
     await exactOrAbsent(
       db,
@@ -1975,7 +2106,11 @@ async function preflightTarget(
       `${target.listingKey} immutable graph exists but donor projection is not exact`,
     );
   }
-  if (exactRows === 0 && exactDonor) {
+  if (
+    exactRows === 0
+    && exactDonor
+    && target.reusedDecision === null
+  ) {
     fail(
       "LEGACY_BRIDGE_PARTIAL_GRAPH",
       `${target.listingKey} donor projection exists without its immutable graph`,
@@ -1984,7 +2119,7 @@ async function preflightTarget(
   return {
     graphState,
     variantState,
-    donorNeedsTransition: !exactDonor,
+    donorNeedsTransition: target.donorTransition !== null && !exactDonor,
   };
 }
 
@@ -2166,6 +2301,8 @@ export async function preflightProductTruthLegacyBridgeWave(input: {
         .filter((_, index) => states[index]?.variantState === "EXACT")
         .map((target) => target.variant.id),
     ).size;
+    const donorVariantDecisionReuses =
+      donorVariantDecisionReuseCount(input.plan.targets);
     return {
       schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION,
       status,
@@ -2182,6 +2319,7 @@ export async function preflightProductTruthLegacyBridgeWave(input: {
           ? input.plan.databaseWrites.maximumRows
           : canonicalVariantReuses,
         canonicalVariantReuses,
+        donorVariantDecisionReuses,
         donorIdentityTransitionsRequired:
           status === "READY_TO_APPLY"
             ? input.plan.databaseWrites.donorIdentityTransitions
@@ -2303,6 +2441,8 @@ export async function applyProductTruthLegacyBridgeWave(input: {
   let insertedRows = 0;
   let exactExistingRows = 0;
   let canonicalVariantReuses = 0;
+  const donorVariantDecisionReuses =
+    donorVariantDecisionReuseCount(input.plan.targets);
   let donorIdentityTransitions = 0;
   let bundleFactoryReady = 0;
   let listingImprovementReady = 0;
@@ -2331,6 +2471,8 @@ export async function applyProductTruthLegacyBridgeWave(input: {
         exactGraphs !== 0
         || preflightCanonicalVariantReuses
           !== input.standingPreflightReport.counts.canonicalVariantReuses
+        || donorVariantDecisionReuses
+          !== input.standingPreflightReport.counts.donorVariantDecisionReuses
       )
     ) {
       fail(
@@ -2448,6 +2590,7 @@ export async function applyProductTruthLegacyBridgeWave(input: {
       insertedRows,
       exactExistingRows,
       canonicalVariantReuses,
+      donorVariantDecisionReuses,
       donorIdentityTransitions,
     },
     verification: {

@@ -1,0 +1,77 @@
+{
+  "schema_version": "walmart-listing-integrity-live-canary-verification/v1",
+  "status": "LIVE_SURFACE_PASS",
+  "listing": {
+    "listing_key": "walmart:1:FaisalX-1140",
+    "sku": "FaisalX-1140",
+    "item_id": "8401770647",
+    "store_index": 1
+  },
+  "feed_id": "18C693DEE51E5DD8A2D5A0A65924E778@AX8BBgA",
+  "exact_payload_sha256": "25e7972aae797314d0a59e2ae5552b2f84c1def2f40101af11a9d75bfcc21304",
+  "execution_package_file_sha256": "cf5570df37468b7dba130d1d1e74f198aaa2cb5cf3691faa7e44f2508f4fbdaf",
+  "terminal_feed_receipt_file_sha256": "3a403f9ae4cebcad021f4bf63af0dbdc9106a507f1b3bd491aeef896cbd91ceb",
+  "terminal_report_file_sha256": "6e5467d7130dc4dd6a30d7e5a5ecfa9ba1a8a57fee753aaad96da04dee27a5c9",
+  "qualification_receipt_file_sha256": "d437fc3a6ec481ee0fd706202ca9a7b5218ce65e03e16c38e9beee9cbfbee845",
+  "before": {
+    "captured_at": "2026-07-28T22:04:30.577Z",
+    "intake_index_file_sha256": "cc6aaee1179d932b2eb9a153b74f66948ac688c808b4ef283f9fd26cd7ef8a4a",
+    "intake_index_body_sha256": "0592eb9ca193a84693e3a369f6e8192af25497a664f7482659f8492db5cb61e3",
+    "buyer_pdp_file_sha256": "be268563846d7fe7353cb912cdf64a47da954e6bb968189725a9a8e5a0f8dd28",
+    "image_sha256": [
+      "5c3d98f57a13bdc84a102ae86b105bab38a8310c41511261e8d0bd8c61f73056",
+      "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+      "94bc164d0fa1efb900c1065b4a9fc83002bc4d8faa4af5c2666bea8a3cf851b4"
+    ]
+  },
+  "after": {
+    "captured_at": "2026-07-29T05:24:02.496Z",
+    "intake_index_file_sha256": "158dda9a5c02912cd1fd6de5bd30cffc8dbcf57f0770947553a258fb5dd55fa3",
+    "intake_index_body_sha256": "9bf30d483b35c74f4b0a58d1752242b2bfc3f9b5d5647d641543e734db92f224",
+    "buyer_pdp_file_sha256": "8156fe68f5de86c77efec2688cb73b4c36583a82005ae9394ec25c21125f2456",
+    "image_sha256": [
+      "5c3d98f57a13bdc84a102ae86b105bab38a8310c41511261e8d0bd8c61f73056",
+      "cd517c558dca9923e4f088ac78d6fc9fd96164fed22304ecbfff791bcf6fd6ab",
+      "df76d9b4cde486d45652d287bd48058d6bde71621a6f2740ce26d113f762289c"
+    ]
+  },
+  "plan": {
+    "plan_id": "plan-936e1efd683385f8f9f53107",
+    "plan_body_sha256": "c024aaf75e0560015734f3cfe51818b81f8bf570cf78e31a783f7b7abd00c1fc",
+    "target_sha256": "5951efb0ddbf8f5ceeae9ce9aeb3e0773e3f9fe88b1130da1278e4ddcf10f01d",
+    "changed_fields": [
+      "attributes"
+    ]
+  },
+  "checks": {
+    "feed_terminal_succeeded": true,
+    "frozen_qualification_pass": true,
+    "exact_listing_identity": true,
+    "published_and_active": true,
+    "title_exact_target": true,
+    "description_exact_target": true,
+    "bullets_exact_target": true,
+    "title_unchanged": true,
+    "main_url_changed_only_if_approved": true,
+    "main_bytes_changed_only_if_approved": true,
+    "main_semantic_qualification_pass": true,
+    "gallery_urls_changed_only_if_approved": true,
+    "gallery_bytes_changed_only_if_approved": true,
+    "gallery_urls_exact_target": true,
+    "gallery_bytes_exact_target_when_gallery_changed": true,
+    "gallery_preserved_by_exact_reviewed_urls_when_unchanged": true,
+    "attributes_exact_target": true,
+    "attributes_qualification_pass": true,
+    "attributes_changed_only_if_approved": true,
+    "text_changed_only_if_approved": true,
+    "only_approved_fields_changed": true,
+    "quantity_explicit_in_description": true,
+    "quantity_explicit_in_bullets": true
+  },
+  "qualification_boundary": {
+    "buyer_facing_live_surface_verified": true,
+    "frozen_sequence_gate_receipt_emitted": true,
+    "next_sku_unblocked": true
+  },
+  "body_sha256": "128068b7c6f0afa4b3a7288a01addf1bb2be3c780a95a01f7a221d6ad5090f51"
+}

@@ -1,0 +1,10 @@
+{
+  "allMigrationsApplied": true,
+  "allReceiptsTracked": true,
+  "contractVersion": "product-truth-migration-certification/1.0.0",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "migrationReportSha256": "55227d6514eb13b3587d346d1929ed96de08fb229219fb06a0eef63c087f9f43",
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "receiptLedgerReady": true,
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6"
+}

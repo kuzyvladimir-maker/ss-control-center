@@ -1,0 +1,44 @@
+{
+  "status": "READY",
+  "adapter_version": "walmart-listing-single-pipeline-truth-adapter/v5",
+  "listing_key": "walmart:1:FaisalX-1228",
+  "expected": {
+    "title": "Arnold Healthy Multigrain Bread - 24oz",
+    "outer_units": 6,
+    "identity": {
+      "brand_aliases": [
+        "arnold"
+      ],
+      "product_marker_groups": [
+        [
+          "bread grains healthy whole",
+          "Whole Grains Healthy Bread"
+        ]
+      ],
+      "variant_marker_groups": [
+        [
+          "grain multi"
+        ],
+        [
+          "Multi-Grain"
+        ],
+        [
+          "multigrain"
+        ]
+      ],
+      "forbidden_markers": []
+    },
+    "package_facts": [
+      {
+        "kind": "net_content",
+        "requirement": "required",
+        "value": 680.388555,
+        "unit": "g"
+      }
+    ],
+    "truth_source": "recipe"
+  },
+  "component_evidence_id": "sce:3cd47747c54b197491838ff34ef65cadb50bd0b5f0dfc297637883e6562a7ebb",
+  "canonical_variant_id": "cpv1:35d31b708062dfd06c14c637fbf7f13f34c411bcf5cc8d158764e179a7370d5a",
+  "blockers": []
+}

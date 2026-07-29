@@ -27,7 +27,8 @@ export interface ListingIntegrityOwnerRepairReview {
     singleUnitUpc: string;
     outerUnits: number;
     totalUnits: number;
-    wrongLegacyDonorId: string;
+    donorStatus: "EXACT_PRODUCT_DONOR" | "WRONG_PRODUCT_DONOR_REPLACED";
+    wrongLegacyDonorId: string | null;
   };
   current: {
     description: string;

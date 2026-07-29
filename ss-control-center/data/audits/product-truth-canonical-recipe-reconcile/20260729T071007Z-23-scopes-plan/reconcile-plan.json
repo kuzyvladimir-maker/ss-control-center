@@ -1,0 +1,1362 @@
+{
+  "claims": {
+    "consumerCutover": false,
+    "delisting": 0,
+    "inventoryChanges": 0,
+    "marketplaceMutations": 0,
+    "mutatesExistingCanonicalEvidence": false,
+    "paidCalls": 0,
+    "priceChanges": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0
+  },
+  "createdAt": "2026-07-29T07:10:07.000Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "databaseWrites": {
+    "listingRecipeComponents": 23,
+    "listingRecipes": 23,
+    "maximumRows": 46
+  },
+  "expiresAt": "2026-07-29T08:10:07.000Z",
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planId": "ptcr-b656bd94e06c562b0d326922",
+  "schemaVersion": "product-truth-canonical-recipe-reconcile-plan/1.0.0",
+  "targets": [
+    {
+      "costId": "retail:FaisalX-1140:bridge:889e584666e9800eb0a59669",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-1140",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-26T23:53:35.000Z",
+        "evidenceHash": "8db5b66bfccbd614cb3aeae00b1e2aba81e805a341000e819bcc69f675141ce8",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"d5dcb0a69bbf5c6c540e63c2a18f6b9d44f608ba270222c5f28bedcb2b5b1f15\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"218df7d6-59d2-48a1-99af-3f9b32f76244\",\n      \"flavor\": \"White\",\n      \"product\": \"White Sandwich Bread\",\n      \"quantity\": 4,\n      \"size\": \"16 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f\",\n      \"variantDecisionId\": \"dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-26T23:53:35.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-1140\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"57cc5e05f05366f43ba1cce2a5ec60598b7a3309f6fceab986216c220bb8a4b0\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"f2198a24af9eb23b4df3b6147c4bf5b06a46fc9245cab0b06cdae70755c632aa\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:f36a74db341a0ab965fba40918ea82e67de9b10094cf4156574eadb3ec106dcc",
+        "listingKey": "walmart:1:FaisalX-1140",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "57cc5e05f05366f43ba1cce2a5ec60598b7a3309f6fceab986216c220bb8a4b0",
+        "recipeKey": "f36a74db341a0ab965fba40918ea82e67de9b10094cf4156574eadb3ec106dcc",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "f2198a24af9eb23b4df3b6147c4bf5b06a46fc9245cab0b06cdae70755c632aa",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "d9a2155b74dfb5770c27accc97552ede8eda4d971eb220a46535f81e422e76a9",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "218df7d6-59d2-48a1-99af-3f9b32f76244",
+          "evidenceHash": "d5dcb0a69bbf5c6c540e63c2a18f6b9d44f608ba270222c5f28bedcb2b5b1f15",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"218df7d6-59d2-48a1-99af-3f9b32f76244\",\n  \"flavor\": \"White\",\n  \"listingKey\": \"walmart:1:FaisalX-1140\",\n  \"product\": \"White Sandwich Bread\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3\",\n    \"componentEvidenceSha256\": \"1e130bd99b53f3fd363961715473413dd0921117273fbe6a71c4cfb72543aecb\",\n    \"contentAnchorId\": \"pco:8aa6d30884a2956e796fdb3099dc33d7271b6c71d02a1d7a49804d051d83bbc3\",\n    \"contentAnchorSha256\": \"a02f9a50547d635b3016fc400929409efbd39d926ca2afe157232b9bc42ae9f3\",\n    \"decisionSha256\": \"715d9bd20d1bb32258a561a455b77ed59ac954b9ec1b002f50d46293723f426f\",\n    \"listingKey\": \"walmart:1:FaisalX-1140\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-1140:bridge:889e584666e9800eb0a59669\",\n    \"variantDecisionId\": \"dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686\"\n  },\n  \"sourceEvidenceSha256\": \"0f3f5ca92f4c62a84b1baf9829fa6b05c1eac7af9335e992d5fa279e16c24205\",\n  \"targetCanonicalVariantId\": \"cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f\",\n  \"variantDecisionId\": \"dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686\"\n}\n",
+          "flavor": "White",
+          "id": "ptrc:d9a2155b74dfb5770c27accc97552ede8eda4d971eb220a46535f81e422e76a9",
+          "listingRecipeId": "ptr:f36a74db341a0ab965fba40918ea82e67de9b10094cf4156574eadb3ec106dcc",
+          "product": "White Sandwich Bread",
+          "quantity": 4,
+          "size": "16 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+          "variantDecisionId": "dpvd:f375804b5189b64d92596c525e9fae2b013ffc56a79fef22fb0caa002628a686"
+        }
+      ],
+      "sku": "FaisalX-1140",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "1e130bd99b53f3fd363961715473413dd0921117273fbe6a71c4cfb72543aecb",
+            "componentIndex": 0,
+            "contentAnchorSha256": "a02f9a50547d635b3016fc400929409efbd39d926ca2afe157232b9bc42ae9f3",
+            "decisionSha256": "715d9bd20d1bb32258a561a455b77ed59ac954b9ec1b002f50d46293723f426f",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "73f136f5c589736b37b4194915801aeffb9d206030d54b039df9af8391ef88f0",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "f4af1f390979119940bb5ad42201443333db391ee9ca00a305e27e2e9851afb0",
+        "sourceGraphSha256": "f2198a24af9eb23b4df3b6147c4bf5b06a46fc9245cab0b06cdae70755c632aa"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-1148:bridge:6c6c0347a09e0ee7d2f19831",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-1148",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T13:04:00.000Z",
+        "evidenceHash": "8fce1ff73d538ea726a5667291ca4b65d346ad36bb048b32871385621ad63790",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"30dff78262387d65b17a581bfef97e46c62f9518bc48744275e2c3d9e84e5112\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"f6bd4b69-0146-41b1-8578-4ecbe24caf67\",\n      \"flavor\": \"White\",\n      \"product\": \"Hot Dog Buns\",\n      \"quantity\": 2,\n      \"size\": \"8 count\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7\",\n      \"variantDecisionId\": \"dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T13:04:00.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-1148\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"486fdd70d22fbb1dbe4fac9416ee31d5258356758918b836d035592504506f9e\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"28d85fb0228d43bff05dc7384b68c7b399ca46820c471134a9ea59983e141e6d\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:eb8bdd4d5b3056cdb866569828c80624631e4c17a8618bd0f667b9790e0a295f",
+        "listingKey": "walmart:1:FaisalX-1148",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "486fdd70d22fbb1dbe4fac9416ee31d5258356758918b836d035592504506f9e",
+        "recipeKey": "eb8bdd4d5b3056cdb866569828c80624631e4c17a8618bd0f667b9790e0a295f",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "28d85fb0228d43bff05dc7384b68c7b399ca46820c471134a9ea59983e141e6d",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "97807b134d6e4a06835f4c53e1cbd4d455868b68ed4f5f708bf547b5ad176c7e",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "f6bd4b69-0146-41b1-8578-4ecbe24caf67",
+          "evidenceHash": "30dff78262387d65b17a581bfef97e46c62f9518bc48744275e2c3d9e84e5112",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"f6bd4b69-0146-41b1-8578-4ecbe24caf67\",\n  \"flavor\": \"White\",\n  \"listingKey\": \"walmart:1:FaisalX-1148\",\n  \"product\": \"Hot Dog Buns\",\n  \"quantity\": 2,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"8 count\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:dfc1490133149e7519aa5f769b1c5d9c223fd9b22338a59dc4af83368d7bd2e5\",\n    \"componentEvidenceSha256\": \"0ddf0f77336fc8384a746a6be303c4c6f5202638f5b2952c2ab830c253efa585\",\n    \"contentAnchorId\": \"pco:d75810c17c1a3b555d3e36933a0d8abff852d8e978d443b83c21d7645c19a157\",\n    \"contentAnchorSha256\": \"73f966a890503d5ade00564b15d9b9893c3bd1caf5fc522fe0d7c9f24afb0eaf\",\n    \"decisionSha256\": \"f20bee4f476802e85668d727876f50935cb6fb0456d3f726cea232cd607a1ee2\",\n    \"listingKey\": \"walmart:1:FaisalX-1148\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-1148:bridge:6c6c0347a09e0ee7d2f19831\",\n    \"variantDecisionId\": \"dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36\"\n  },\n  \"sourceEvidenceSha256\": \"d419896c4b36607c999f716c2e1b3ef7056eea0ae95fb01dc80365f14d310211\",\n  \"targetCanonicalVariantId\": \"cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7\",\n  \"variantDecisionId\": \"dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36\"\n}\n",
+          "flavor": "White",
+          "id": "ptrc:97807b134d6e4a06835f4c53e1cbd4d455868b68ed4f5f708bf547b5ad176c7e",
+          "listingRecipeId": "ptr:eb8bdd4d5b3056cdb866569828c80624631e4c17a8618bd0f667b9790e0a295f",
+          "product": "Hot Dog Buns",
+          "quantity": 2,
+          "size": "8 count",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:9f56eb8785dca2eb5c5401815f8864fa124ef65c0cbf902e3e357db7708dcfd7",
+          "variantDecisionId": "dpvd:28dd5e83b76f6f6d61addfa20294589095da5e34a25f13bbc43baa0b5af75d36"
+        }
+      ],
+      "sku": "FaisalX-1148",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "0ddf0f77336fc8384a746a6be303c4c6f5202638f5b2952c2ab830c253efa585",
+            "componentIndex": 0,
+            "contentAnchorSha256": "73f966a890503d5ade00564b15d9b9893c3bd1caf5fc522fe0d7c9f24afb0eaf",
+            "decisionSha256": "f20bee4f476802e85668d727876f50935cb6fb0456d3f726cea232cd607a1ee2",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "2958c1ca0064b713d430539d08ff536d21e512aac16fd18fd2f27dcf1c06e647",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "c6d85e42b339a84c06e6ad18e48535dcc56bb3e2c240fae52c985105d543e9ec",
+        "sourceGraphSha256": "28d85fb0228d43bff05dc7384b68c7b399ca46820c471134a9ea59983e141e6d"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-1228:bridge:de9dbc42a8b1b34983c17068",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-1228",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T13:23:48.000Z",
+        "evidenceHash": "e1fb4aaeec55a6c0356a64a93803c7cb64ff7caf750678f58152dce8a6740423",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"dad94fb1e7acd1a1c7d7d27c2ca669f4556c63fd9862450ee09d497bfbbcc3f2\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"4229bfb6-270e-4bff-a93a-b051657b8e79\",\n      \"flavor\": \"Multi-Grain\",\n      \"product\": \"Whole Grains Healthy Bread\",\n      \"quantity\": 6,\n      \"size\": \"24 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:35d31b708062dfd06c14c637fbf7f13f34c411bcf5cc8d158764e179a7370d5a\",\n      \"variantDecisionId\": \"dpvd:c7348cd348d4aa8198680548acf9562b12b1c44664242645f7ce66b90743c870\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T13:23:48.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-1228\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"0fdc6ce703eec8713b0badee2d1b62adb3ec84246ce4628e17e32b4913892347\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"24bd6174e1908dad17649fd17db6a13dcab9d9c000582f8093be095dee132273\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:fdedea43ae295655e9ddd593c30f2d45cc200be4172d8c108e82f87e2d2476d4",
+        "listingKey": "walmart:1:FaisalX-1228",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "0fdc6ce703eec8713b0badee2d1b62adb3ec84246ce4628e17e32b4913892347",
+        "recipeKey": "fdedea43ae295655e9ddd593c30f2d45cc200be4172d8c108e82f87e2d2476d4",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "24bd6174e1908dad17649fd17db6a13dcab9d9c000582f8093be095dee132273",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "cd474ac037b5e9c899eeb6491e267fe4bd13312ccfb3e234947bad3f589235d5",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+          "evidenceHash": "dad94fb1e7acd1a1c7d7d27c2ca669f4556c63fd9862450ee09d497bfbbcc3f2",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"4229bfb6-270e-4bff-a93a-b051657b8e79\",\n  \"flavor\": \"Multi-Grain\",\n  \"listingKey\": \"walmart:1:FaisalX-1228\",\n  \"product\": \"Whole Grains Healthy Bread\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"24 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:3cd47747c54b197491838ff34ef65cadb50bd0b5f0dfc297637883e6562a7ebb\",\n    \"componentEvidenceSha256\": \"b5c5d19f05fa3d3653b30d7822cecc349d4f633475245ede349f2610fe84e890\",\n    \"contentAnchorId\": \"pco:3c0980abd132e774271db9b59fe4127c7b323a2b8c40843d29073fa99f2ccee6\",\n    \"contentAnchorSha256\": \"2dbbc25b24ee7ea655608d2759203eb8624a03749a87b5f61fcc76e44bf9c878\",\n    \"decisionSha256\": \"f0015c660d8787d5fb8845b93a4c563bd92ac3985a756346af1cbb6859c3bbee\",\n    \"listingKey\": \"walmart:1:FaisalX-1228\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-1228:bridge:de9dbc42a8b1b34983c17068\",\n    \"variantDecisionId\": \"dpvd:c7348cd348d4aa8198680548acf9562b12b1c44664242645f7ce66b90743c870\"\n  },\n  \"sourceEvidenceSha256\": \"cb3300e9145e25fc48154b171a79b5c72bbe97b99c44ca73c3c23891da47e4ab\",\n  \"targetCanonicalVariantId\": \"cpv1:35d31b708062dfd06c14c637fbf7f13f34c411bcf5cc8d158764e179a7370d5a\",\n  \"variantDecisionId\": \"dpvd:c7348cd348d4aa8198680548acf9562b12b1c44664242645f7ce66b90743c870\"\n}\n",
+          "flavor": "Multi-Grain",
+          "id": "ptrc:cd474ac037b5e9c899eeb6491e267fe4bd13312ccfb3e234947bad3f589235d5",
+          "listingRecipeId": "ptr:fdedea43ae295655e9ddd593c30f2d45cc200be4172d8c108e82f87e2d2476d4",
+          "product": "Whole Grains Healthy Bread",
+          "quantity": 6,
+          "size": "24 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:35d31b708062dfd06c14c637fbf7f13f34c411bcf5cc8d158764e179a7370d5a",
+          "variantDecisionId": "dpvd:c7348cd348d4aa8198680548acf9562b12b1c44664242645f7ce66b90743c870"
+        }
+      ],
+      "sku": "FaisalX-1228",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "b5c5d19f05fa3d3653b30d7822cecc349d4f633475245ede349f2610fe84e890",
+            "componentIndex": 0,
+            "contentAnchorSha256": "2dbbc25b24ee7ea655608d2759203eb8624a03749a87b5f61fcc76e44bf9c878",
+            "decisionSha256": "f0015c660d8787d5fb8845b93a4c563bd92ac3985a756346af1cbb6859c3bbee",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "aaec8d37f44ee041f6cfed6c0b6ecf7c771e4b6b92ef00598f3c672e15b195bb",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "cfe0b1e8d7da2c4fb50ac43255e23ace470ebf90eb751d703157fc4d7ef56832",
+        "sourceGraphSha256": "24bd6174e1908dad17649fd17db6a13dcab9d9c000582f8093be095dee132273"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2195:batch:5ee2277484f899610931d149",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2195",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-28T18:00:00.000Z",
+        "evidenceHash": "8dfc2ca2fdb628b6c32445a67cc3340e605b4d21869108276d6655dd97891913",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"66ea8b081cc5ed676edcccc76c4eb56fc10db1f4784e5de4460711f900b7a134\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"13ff39b9-b2c7-4c31-96d4-5d2b1456c91c\",\n      \"flavor\": \"Original Apple\",\n      \"product\": \"100% Juice\",\n      \"quantity\": 4,\n      \"size\": \"48 fl oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7\",\n      \"variantDecisionId\": \"dpvd:e7a8a3256e39b76c94951a9b7b4881b813fb6b69f6533d83d16ef002418421c1\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-28T18:00:00.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2195\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"209b99742842cb50397b3ab090027392b49470905ea424f141f179db09cff6e9\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"533c57ef5a945a555f81355668945c7e8b591fbde6366d5b50c2ed4f2da03ec4\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:930b1763190db805cb4489a0c2f702788351e528605d63836a428bfe1c169de0",
+        "listingKey": "walmart:1:FaisalX-2195",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "209b99742842cb50397b3ab090027392b49470905ea424f141f179db09cff6e9",
+        "recipeKey": "930b1763190db805cb4489a0c2f702788351e528605d63836a428bfe1c169de0",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "533c57ef5a945a555f81355668945c7e8b591fbde6366d5b50c2ed4f2da03ec4",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "4efec8ea3503b30f05330e03edd028747cca1ca9b0a26e3aaa3b13e5151f74e4",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "13ff39b9-b2c7-4c31-96d4-5d2b1456c91c",
+          "evidenceHash": "66ea8b081cc5ed676edcccc76c4eb56fc10db1f4784e5de4460711f900b7a134",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"13ff39b9-b2c7-4c31-96d4-5d2b1456c91c\",\n  \"flavor\": \"Original Apple\",\n  \"listingKey\": \"walmart:1:FaisalX-2195\",\n  \"product\": \"100% Juice\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"48 fl oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:09d489aca905f2b80189af006fca9cd49bfab7e6108dfad1d01ca485ad528c9e\",\n    \"componentEvidenceSha256\": \"bce90d7f372d2bcc8c1ee427596bf03e246bf5b4866a7ebdd278d466f75cfd0d\",\n    \"contentAnchorId\": null,\n    \"contentAnchorSha256\": null,\n    \"decisionSha256\": \"b3cf78db8527db549de6637c5afc929db91bd0dd9c608001bfee5be67fd4feba\",\n    \"listingKey\": \"walmart:1:FaisalX-2195\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2195:batch:5ee2277484f899610931d149\",\n    \"variantDecisionId\": \"dpvd:e7a8a3256e39b76c94951a9b7b4881b813fb6b69f6533d83d16ef002418421c1\"\n  },\n  \"sourceEvidenceSha256\": \"52b8c3b018fdb68033e4bc837214201639e8073c6b767b1e73daf4886c2e9cff\",\n  \"targetCanonicalVariantId\": \"cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7\",\n  \"variantDecisionId\": \"dpvd:e7a8a3256e39b76c94951a9b7b4881b813fb6b69f6533d83d16ef002418421c1\"\n}\n",
+          "flavor": "Original Apple",
+          "id": "ptrc:4efec8ea3503b30f05330e03edd028747cca1ca9b0a26e3aaa3b13e5151f74e4",
+          "listingRecipeId": "ptr:930b1763190db805cb4489a0c2f702788351e528605d63836a428bfe1c169de0",
+          "product": "100% Juice",
+          "quantity": 4,
+          "size": "48 fl oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7",
+          "variantDecisionId": "dpvd:e7a8a3256e39b76c94951a9b7b4881b813fb6b69f6533d83d16ef002418421c1"
+        }
+      ],
+      "sku": "FaisalX-2195",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "bce90d7f372d2bcc8c1ee427596bf03e246bf5b4866a7ebdd278d466f75cfd0d",
+            "componentIndex": 0,
+            "contentAnchorSha256": null,
+            "decisionSha256": "b3cf78db8527db549de6637c5afc929db91bd0dd9c608001bfee5be67fd4feba",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "033dfcc944aaaf862acd35705687c358e00696caba781e4996f60b7e93dd976d",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "eee9713903c155cc9c1d7d6a7ca8c6f3278c0659d775c5ca9377559cdf0f1987",
+        "sourceGraphSha256": "533c57ef5a945a555f81355668945c7e8b591fbde6366d5b50c2ed4f2da03ec4"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2209:bridge:430cc474fc3c8899a6304120",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2209",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-26T23:53:35.000Z",
+        "evidenceHash": "41d752b3d39a96fddec7ea3729baf1534174509bdabddcd9f826a47c84b75f97",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"60aeede4f991a94eaeb48e7a98d9822de5d554964612c36c006397318dd9fd14\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"2bae2db1-091b-42d6-aeb6-1f2817e39bfc\",\n      \"flavor\": \"Fruit Punch\",\n      \"product\": \"100% Juice\",\n      \"quantity\": 8,\n      \"size\": \"48 fl oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:6975ece1ba542d00860a19d30db045cb1583c0c624d2b193543e32519cd29376\",\n      \"variantDecisionId\": \"dpvd:e357bf2512f3a8b09e76d12a98c7756a01a20218296d6fca48bf27543bee381b\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-26T23:53:35.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2209\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"dfe1f8b508e6223008b310939f0b1759384171e29e8e4bf243b9df1b339c38c1\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"2d74a815d62803d35c90351f60ac7e01b01bc66540de6d57c196180817912c7f\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:f518811a44ad9c039c1583884bad044deaa2b6c56e8b7022410c8e65bf2c809a",
+        "listingKey": "walmart:1:FaisalX-2209",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "dfe1f8b508e6223008b310939f0b1759384171e29e8e4bf243b9df1b339c38c1",
+        "recipeKey": "f518811a44ad9c039c1583884bad044deaa2b6c56e8b7022410c8e65bf2c809a",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "2d74a815d62803d35c90351f60ac7e01b01bc66540de6d57c196180817912c7f",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "83a6d6ba5799ccb1396fa451dbc74ffa3aa60586699827b5de02b88332b0383e",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "2bae2db1-091b-42d6-aeb6-1f2817e39bfc",
+          "evidenceHash": "60aeede4f991a94eaeb48e7a98d9822de5d554964612c36c006397318dd9fd14",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"2bae2db1-091b-42d6-aeb6-1f2817e39bfc\",\n  \"flavor\": \"Fruit Punch\",\n  \"listingKey\": \"walmart:1:FaisalX-2209\",\n  \"product\": \"100% Juice\",\n  \"quantity\": 8,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"48 fl oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:55616a0c5857a90da5feddb26a301c908948c735ece18b957202b640e8d49e5b\",\n    \"componentEvidenceSha256\": \"e8082f89070f583b660528f195dfd68b122900fd0f3a746cfb9361c6f9b09d5b\",\n    \"contentAnchorId\": \"pco:c1f4fadd369bf3c3f36a7e16f940ab6e75926b70b4e849e525fb601d87493d2c\",\n    \"contentAnchorSha256\": \"7954f7f2f62b77f3eae52907374e4984f93aad7bf9cc6c202d5072af37bfb390\",\n    \"decisionSha256\": \"d38190145d60796d5b2adabebe23b8e8bfd26997c201d16d8a2a777bd5b5abab\",\n    \"listingKey\": \"walmart:1:FaisalX-2209\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2209:bridge:430cc474fc3c8899a6304120\",\n    \"variantDecisionId\": \"dpvd:e357bf2512f3a8b09e76d12a98c7756a01a20218296d6fca48bf27543bee381b\"\n  },\n  \"sourceEvidenceSha256\": \"ace419a333b21d99d4d36449ee9858b5166bce18afd51e2ced4dcf36e6e6bfed\",\n  \"targetCanonicalVariantId\": \"cpv1:6975ece1ba542d00860a19d30db045cb1583c0c624d2b193543e32519cd29376\",\n  \"variantDecisionId\": \"dpvd:e357bf2512f3a8b09e76d12a98c7756a01a20218296d6fca48bf27543bee381b\"\n}\n",
+          "flavor": "Fruit Punch",
+          "id": "ptrc:83a6d6ba5799ccb1396fa451dbc74ffa3aa60586699827b5de02b88332b0383e",
+          "listingRecipeId": "ptr:f518811a44ad9c039c1583884bad044deaa2b6c56e8b7022410c8e65bf2c809a",
+          "product": "100% Juice",
+          "quantity": 8,
+          "size": "48 fl oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:6975ece1ba542d00860a19d30db045cb1583c0c624d2b193543e32519cd29376",
+          "variantDecisionId": "dpvd:e357bf2512f3a8b09e76d12a98c7756a01a20218296d6fca48bf27543bee381b"
+        }
+      ],
+      "sku": "FaisalX-2209",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "e8082f89070f583b660528f195dfd68b122900fd0f3a746cfb9361c6f9b09d5b",
+            "componentIndex": 0,
+            "contentAnchorSha256": "7954f7f2f62b77f3eae52907374e4984f93aad7bf9cc6c202d5072af37bfb390",
+            "decisionSha256": "d38190145d60796d5b2adabebe23b8e8bfd26997c201d16d8a2a777bd5b5abab",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "d4040017c6000182b8c22e506559355ac003914c4c78e621524e1a1feda3e93e",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "f6b0172d74b2edc047b44dca343f212c5d38988d120b6d2520491ce5a53dcbbb",
+        "sourceGraphSha256": "2d74a815d62803d35c90351f60ac7e01b01bc66540de6d57c196180817912c7f"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-231:bridge:f9772953fb992d35146951a0",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-231",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-26T23:53:35.000Z",
+        "evidenceHash": "c1c96728f87a66ae3289ef2e1a822f9737add3dc54dce4fd045f62938f8fd4b9",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"e5007844d1b4b9eeaa41ce3d75bce4883494bd3bda603601e9de13d8376544c0\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"702af605-b9ed-45b0-a979-f1aa6d034816\",\n      \"flavor\": \"Cinnamon\",\n      \"product\": \"Swirl Breakfast Bread\",\n      \"quantity\": 4,\n      \"size\": \"16 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:5608a4939862658d0897fb82cc756cf1e82e507e9f8f2c4bc098f22fe39d1116\",\n      \"variantDecisionId\": \"dpvd:17e9a34024deea5df2bc3e4530734989447cf995cc32a7e20a3c2bee90c9470d\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-26T23:53:35.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-231\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"536b5a3b624424132ad2a4c0fb4e316f034e7cc41324efb7dd7a5ec224bba8e0\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"1a88079f6b6caba648b1c15f477b55f450663178c2df81972d2d84e469b655d1\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:af97dce8f4647acef771e0600a4d3861bdbbdcfd9a5c4a65c27f7642cccbedb2",
+        "listingKey": "walmart:1:FaisalX-231",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "536b5a3b624424132ad2a4c0fb4e316f034e7cc41324efb7dd7a5ec224bba8e0",
+        "recipeKey": "af97dce8f4647acef771e0600a4d3861bdbbdcfd9a5c4a65c27f7642cccbedb2",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "1a88079f6b6caba648b1c15f477b55f450663178c2df81972d2d84e469b655d1",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "328823e412177c9a874b2ae62cdadc61f575adb1b1fdd5430f6b5b1c6b52e9d3",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "702af605-b9ed-45b0-a979-f1aa6d034816",
+          "evidenceHash": "e5007844d1b4b9eeaa41ce3d75bce4883494bd3bda603601e9de13d8376544c0",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"702af605-b9ed-45b0-a979-f1aa6d034816\",\n  \"flavor\": \"Cinnamon\",\n  \"listingKey\": \"walmart:1:FaisalX-231\",\n  \"product\": \"Swirl Breakfast Bread\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:fd5cba499a19322237cc6dc7f5d4c6bc2297231f3ca65c484972eabdfed1d8ea\",\n    \"componentEvidenceSha256\": \"5164edd9fc688cc7af996abc232281944070d4787d0b8ed78634625a1dac8c2b\",\n    \"contentAnchorId\": \"pco:7ee2bae7e92ec3fa32baf7b1fe478297c8bec4f8f5722f738d00771d28649795\",\n    \"contentAnchorSha256\": \"9c5eff1ab90013b0a3dd92a59f771f74d101011b0938bae5e26267707f48578d\",\n    \"decisionSha256\": \"946f2595e49e0b44105f0eeb69bc67ec383c67e1db29bf754e2a68761f6f3064\",\n    \"listingKey\": \"walmart:1:FaisalX-231\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-231:bridge:f9772953fb992d35146951a0\",\n    \"variantDecisionId\": \"dpvd:17e9a34024deea5df2bc3e4530734989447cf995cc32a7e20a3c2bee90c9470d\"\n  },\n  \"sourceEvidenceSha256\": \"e6587fba049c62d35d644d8fa0298a3265295fbf44e78194270df3fddc8c2238\",\n  \"targetCanonicalVariantId\": \"cpv1:5608a4939862658d0897fb82cc756cf1e82e507e9f8f2c4bc098f22fe39d1116\",\n  \"variantDecisionId\": \"dpvd:17e9a34024deea5df2bc3e4530734989447cf995cc32a7e20a3c2bee90c9470d\"\n}\n",
+          "flavor": "Cinnamon",
+          "id": "ptrc:328823e412177c9a874b2ae62cdadc61f575adb1b1fdd5430f6b5b1c6b52e9d3",
+          "listingRecipeId": "ptr:af97dce8f4647acef771e0600a4d3861bdbbdcfd9a5c4a65c27f7642cccbedb2",
+          "product": "Swirl Breakfast Bread",
+          "quantity": 4,
+          "size": "16 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:5608a4939862658d0897fb82cc756cf1e82e507e9f8f2c4bc098f22fe39d1116",
+          "variantDecisionId": "dpvd:17e9a34024deea5df2bc3e4530734989447cf995cc32a7e20a3c2bee90c9470d"
+        }
+      ],
+      "sku": "FaisalX-231",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "5164edd9fc688cc7af996abc232281944070d4787d0b8ed78634625a1dac8c2b",
+            "componentIndex": 0,
+            "contentAnchorSha256": "9c5eff1ab90013b0a3dd92a59f771f74d101011b0938bae5e26267707f48578d",
+            "decisionSha256": "946f2595e49e0b44105f0eeb69bc67ec383c67e1db29bf754e2a68761f6f3064",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "61aad2922a385582ec1a6180b723b7468dcf8b81b5e24362ce8c92c9eb8d654e",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "162ac85e32971479aa1ca93197aa70a5e94483dd0478c956068dafe60359796a",
+        "sourceGraphSha256": "1a88079f6b6caba648b1c15f477b55f450663178c2df81972d2d84e469b655d1"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2526:bridge:d80ff9eaa896b660c339e0df",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2526",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-26T23:53:35.000Z",
+        "evidenceHash": "79e52de8a67e142c00d6aea61c6d2aaa027f7e3b8f7f3404d17e79c24d606a36",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"d2fe1656ce95c9dc616281e75c937c24eef5ab4023f5420df967f2a992755417\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"460e54d8-1785-4236-a06e-3cdcdc4a31e4\",\n      \"flavor\": \"Pub-Style Chicken Pot Pie\",\n      \"product\": \"Chunky Soup\",\n      \"quantity\": 4,\n      \"size\": \"18.8 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:bc1eb2921d31b716d8590bea50f5879e58fada65f0425eb450e95c6ac35968c1\",\n      \"variantDecisionId\": \"dpvd:32945d6ae44a50e5e684f2d03f88620d10ea0464b216fdcb4bdb1dfdbab0f7fe\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-26T23:53:35.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2526\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"037316582727d1d2d9b51837e368d36416c19dcb7d9a671d5b293d813ff715ae\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"da8292b43bea26b68a71e00e6972f55fa26dee6c2266f1526a80500c9cdcaac1\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:64fd46068e15f0e1c2a341924a994ca4c2398b9cf6dbcad2fe31a390c44fc57e",
+        "listingKey": "walmart:1:FaisalX-2526",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "037316582727d1d2d9b51837e368d36416c19dcb7d9a671d5b293d813ff715ae",
+        "recipeKey": "64fd46068e15f0e1c2a341924a994ca4c2398b9cf6dbcad2fe31a390c44fc57e",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "da8292b43bea26b68a71e00e6972f55fa26dee6c2266f1526a80500c9cdcaac1",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "dbd8f79f641be6321296845b33dffa8ffa77d139915403dabf143dbf31e0a948",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "460e54d8-1785-4236-a06e-3cdcdc4a31e4",
+          "evidenceHash": "d2fe1656ce95c9dc616281e75c937c24eef5ab4023f5420df967f2a992755417",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"460e54d8-1785-4236-a06e-3cdcdc4a31e4\",\n  \"flavor\": \"Pub-Style Chicken Pot Pie\",\n  \"listingKey\": \"walmart:1:FaisalX-2526\",\n  \"product\": \"Chunky Soup\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"18.8 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:ec8af8233958d4dff96728067be3e2b9b516a99372f129ede7f77c711e0dbb71\",\n    \"componentEvidenceSha256\": \"af4a6b42c2bb98389809483f44a9df9fdcef5d77db58a6c9f568e4bd50177699\",\n    \"contentAnchorId\": \"pco:10b2e6ea52be19fc4247b8b8c12fbda783fe9867134ca346ac29fca210243f17\",\n    \"contentAnchorSha256\": \"c4e91951a2645c9203df2d2e37074ef519f69626ee5f8977c065236d1637579a\",\n    \"decisionSha256\": \"43fabfb856c43539d4ca8e6b19842ed24540462c3018caae12c24f8f0628039d\",\n    \"listingKey\": \"walmart:1:FaisalX-2526\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2526:bridge:d80ff9eaa896b660c339e0df\",\n    \"variantDecisionId\": \"dpvd:32945d6ae44a50e5e684f2d03f88620d10ea0464b216fdcb4bdb1dfdbab0f7fe\"\n  },\n  \"sourceEvidenceSha256\": \"ffc61a017e09e9659bfaaf1b2ca1b0fa86800712f465ac13d3c3b7cfe14833d9\",\n  \"targetCanonicalVariantId\": \"cpv1:bc1eb2921d31b716d8590bea50f5879e58fada65f0425eb450e95c6ac35968c1\",\n  \"variantDecisionId\": \"dpvd:32945d6ae44a50e5e684f2d03f88620d10ea0464b216fdcb4bdb1dfdbab0f7fe\"\n}\n",
+          "flavor": "Pub-Style Chicken Pot Pie",
+          "id": "ptrc:dbd8f79f641be6321296845b33dffa8ffa77d139915403dabf143dbf31e0a948",
+          "listingRecipeId": "ptr:64fd46068e15f0e1c2a341924a994ca4c2398b9cf6dbcad2fe31a390c44fc57e",
+          "product": "Chunky Soup",
+          "quantity": 4,
+          "size": "18.8 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:bc1eb2921d31b716d8590bea50f5879e58fada65f0425eb450e95c6ac35968c1",
+          "variantDecisionId": "dpvd:32945d6ae44a50e5e684f2d03f88620d10ea0464b216fdcb4bdb1dfdbab0f7fe"
+        }
+      ],
+      "sku": "FaisalX-2526",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "af4a6b42c2bb98389809483f44a9df9fdcef5d77db58a6c9f568e4bd50177699",
+            "componentIndex": 0,
+            "contentAnchorSha256": "c4e91951a2645c9203df2d2e37074ef519f69626ee5f8977c065236d1637579a",
+            "decisionSha256": "43fabfb856c43539d4ca8e6b19842ed24540462c3018caae12c24f8f0628039d",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "7a6229f8308ae2c4b1fb1328fe7c55a2dd57cbeee4e2ca991de4dbe2f38657c3",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "d8d8166bf8752706ebc224cf79168625ac1ed856dfd634d1f579f7aac339275f",
+        "sourceGraphSha256": "da8292b43bea26b68a71e00e6972f55fa26dee6c2266f1526a80500c9cdcaac1"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2734:bridge:13d8b850ddf4a78bf804ff23",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2734",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-26T23:53:35.000Z",
+        "evidenceHash": "69014351b8386331b3d5b734746a9e36b782ce0f68ee0a5eb3d30795b60cd34c",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"a8744026b8c5fc087fb7a3ca7c34d0b6c8155e0602615545d319d9b8c497b736\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"4d524561-e880-4117-9ad1-12858d50666f\",\n      \"flavor\": \"Cream of Chicken\",\n      \"product\": \"Condensed Cream of Chicken Soup\",\n      \"quantity\": 8,\n      \"size\": \"10.5 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:de1ce90c90423de4cb698c151d839d0be22b117668782937b14ba2556c5c53e9\",\n      \"variantDecisionId\": \"dpvd:3a5a082d41f44ae4496c3f5582a0ebbc2f30c925edb5d913a8c87e89b7140354\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-26T23:53:35.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2734\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"cb22989725bd78f33eb279a778a6b3afeb813f40e719694c62bf67c838811d04\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"be9632fecbf579d91117ae0d0bef5624e33bae37f876fac976713ac026286cbd\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:dee2d2757b8a20a715a0de2f112e484d49ddd2188b1f696fea0c68fb142b6d32",
+        "listingKey": "walmart:1:FaisalX-2734",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "cb22989725bd78f33eb279a778a6b3afeb813f40e719694c62bf67c838811d04",
+        "recipeKey": "dee2d2757b8a20a715a0de2f112e484d49ddd2188b1f696fea0c68fb142b6d32",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "be9632fecbf579d91117ae0d0bef5624e33bae37f876fac976713ac026286cbd",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "62752b1e993d87f72cdcd73f679f53636b795f8de067cff11cd0abef1fc83b9d",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "4d524561-e880-4117-9ad1-12858d50666f",
+          "evidenceHash": "a8744026b8c5fc087fb7a3ca7c34d0b6c8155e0602615545d319d9b8c497b736",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"4d524561-e880-4117-9ad1-12858d50666f\",\n  \"flavor\": \"Cream of Chicken\",\n  \"listingKey\": \"walmart:1:FaisalX-2734\",\n  \"product\": \"Condensed Cream of Chicken Soup\",\n  \"quantity\": 8,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.5 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:56d67438463fef5336654f916f7eb8bf202be13a722b0cb50aeea51db57898a8\",\n    \"componentEvidenceSha256\": \"10bb7aa99856a161a8ddbcea5c162b711f1edbbf695a0674ac1a39b7c26e78b0\",\n    \"contentAnchorId\": \"pco:42c0fa35b8aca85b930a53167e5ea107e766f5b50d633fb0fab53f517faab5be\",\n    \"contentAnchorSha256\": \"c77ba2a32f76ca8d08c6e610e7f0365ad7eae726d552056854ac4d3b1a1ac54d\",\n    \"decisionSha256\": \"b035b14d6a94999e3eecda24a4d17c78934a45266be721feacc7d14bd242713b\",\n    \"listingKey\": \"walmart:1:FaisalX-2734\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2734:bridge:13d8b850ddf4a78bf804ff23\",\n    \"variantDecisionId\": \"dpvd:3a5a082d41f44ae4496c3f5582a0ebbc2f30c925edb5d913a8c87e89b7140354\"\n  },\n  \"sourceEvidenceSha256\": \"b0afda8aae72106680da826dff42f432944a93793e17565427ce6f69cbe0035f\",\n  \"targetCanonicalVariantId\": \"cpv1:de1ce90c90423de4cb698c151d839d0be22b117668782937b14ba2556c5c53e9\",\n  \"variantDecisionId\": \"dpvd:3a5a082d41f44ae4496c3f5582a0ebbc2f30c925edb5d913a8c87e89b7140354\"\n}\n",
+          "flavor": "Cream of Chicken",
+          "id": "ptrc:62752b1e993d87f72cdcd73f679f53636b795f8de067cff11cd0abef1fc83b9d",
+          "listingRecipeId": "ptr:dee2d2757b8a20a715a0de2f112e484d49ddd2188b1f696fea0c68fb142b6d32",
+          "product": "Condensed Cream of Chicken Soup",
+          "quantity": 8,
+          "size": "10.5 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:de1ce90c90423de4cb698c151d839d0be22b117668782937b14ba2556c5c53e9",
+          "variantDecisionId": "dpvd:3a5a082d41f44ae4496c3f5582a0ebbc2f30c925edb5d913a8c87e89b7140354"
+        }
+      ],
+      "sku": "FaisalX-2734",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "10bb7aa99856a161a8ddbcea5c162b711f1edbbf695a0674ac1a39b7c26e78b0",
+            "componentIndex": 0,
+            "contentAnchorSha256": "c77ba2a32f76ca8d08c6e610e7f0365ad7eae726d552056854ac4d3b1a1ac54d",
+            "decisionSha256": "b035b14d6a94999e3eecda24a4d17c78934a45266be721feacc7d14bd242713b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "244150177628a551e7c59bd7c27a96de20ec3ca100d312f9c4cf1dbe508f6272",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "2577c7dd10aaf1035c5f76161d63432b3a9bd4618b5d1f54993a7e40ad6a8e4f",
+        "sourceGraphSha256": "be9632fecbf579d91117ae0d0bef5624e33bae37f876fac976713ac026286cbd"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2751:bridge:51d7a48232d4e2c56ddb4e19",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2751",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "7d7d129182ab0a6da3402e45fb3c1315fc115579305de580e3865b0d9d8a3b3d",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"3674fb7bb28bc192dbe565a2b6ea4a1cbf8424322779ba322c0f4039dc24f9ac\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"47ae8dca-b144-4a92-ab12-1082f9e70a9c\",\n      \"flavor\": \"Tomato\",\n      \"product\": \"Condensed Soup\",\n      \"quantity\": 6,\n      \"size\": \"10.75 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:4aba1272ef701663a26e17266a88b76e0d7c3b62a1d17b489b39a8ec06cb145b\",\n      \"variantDecisionId\": \"dpvd:1a8de46df9e66ca7150908050ee2201b1ec37a8ad5c7594d69b37426f1cd79fb\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2751\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"f75154d5faeddcd5140f4f56dabe0f247d75b8acb2da85299e8a6abcb9125899\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"d76732890fc82621e602fcaddecb839067a35241145c89d22156bb546aa8b8e6\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:bd8bb354f9fed38fd55e84623dd9167617c1c9df4eba9ad06eaded978c79da38",
+        "listingKey": "walmart:1:FaisalX-2751",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "f75154d5faeddcd5140f4f56dabe0f247d75b8acb2da85299e8a6abcb9125899",
+        "recipeKey": "bd8bb354f9fed38fd55e84623dd9167617c1c9df4eba9ad06eaded978c79da38",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "d76732890fc82621e602fcaddecb839067a35241145c89d22156bb546aa8b8e6",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "9fb82baae2839ffea499e671c14732c51e56437d3f396991a2f5287ce06da9d0",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "47ae8dca-b144-4a92-ab12-1082f9e70a9c",
+          "evidenceHash": "3674fb7bb28bc192dbe565a2b6ea4a1cbf8424322779ba322c0f4039dc24f9ac",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"47ae8dca-b144-4a92-ab12-1082f9e70a9c\",\n  \"flavor\": \"Tomato\",\n  \"listingKey\": \"walmart:1:FaisalX-2751\",\n  \"product\": \"Condensed Soup\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.75 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:d80bdb1f54929278dedac07a3ccf28015d871d591aaee30589b9f9b4f1fb18cf\",\n    \"componentEvidenceSha256\": \"8e921d7acd744cc240de7bfbd9f79e8e75e950ddc61cc8c605011ef8d9d0d9eb\",\n    \"contentAnchorId\": \"pco:d22a6ecae40cd93cb6264c642f3a6d8f9a9ae1fc03a15344f4300d41fffeb6f9\",\n    \"contentAnchorSha256\": \"5a0f54c1501813e2a86224f620f1171384dbf887757d37dc1b3a93321b8779f1\",\n    \"decisionSha256\": \"c342c56a47f67d12bf9bbbbb374b46eb1e9d7f1d54e8240b51a33967996f3cd8\",\n    \"listingKey\": \"walmart:1:FaisalX-2751\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2751:bridge:51d7a48232d4e2c56ddb4e19\",\n    \"variantDecisionId\": \"dpvd:1a8de46df9e66ca7150908050ee2201b1ec37a8ad5c7594d69b37426f1cd79fb\"\n  },\n  \"sourceEvidenceSha256\": \"b4c4d0c82d5c6d587dbd2c3d200a6b5241cbda69983150fae0864cb1985b62ba\",\n  \"targetCanonicalVariantId\": \"cpv1:4aba1272ef701663a26e17266a88b76e0d7c3b62a1d17b489b39a8ec06cb145b\",\n  \"variantDecisionId\": \"dpvd:1a8de46df9e66ca7150908050ee2201b1ec37a8ad5c7594d69b37426f1cd79fb\"\n}\n",
+          "flavor": "Tomato",
+          "id": "ptrc:9fb82baae2839ffea499e671c14732c51e56437d3f396991a2f5287ce06da9d0",
+          "listingRecipeId": "ptr:bd8bb354f9fed38fd55e84623dd9167617c1c9df4eba9ad06eaded978c79da38",
+          "product": "Condensed Soup",
+          "quantity": 6,
+          "size": "10.75 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:4aba1272ef701663a26e17266a88b76e0d7c3b62a1d17b489b39a8ec06cb145b",
+          "variantDecisionId": "dpvd:1a8de46df9e66ca7150908050ee2201b1ec37a8ad5c7594d69b37426f1cd79fb"
+        }
+      ],
+      "sku": "FaisalX-2751",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "8e921d7acd744cc240de7bfbd9f79e8e75e950ddc61cc8c605011ef8d9d0d9eb",
+            "componentIndex": 0,
+            "contentAnchorSha256": "5a0f54c1501813e2a86224f620f1171384dbf887757d37dc1b3a93321b8779f1",
+            "decisionSha256": "c342c56a47f67d12bf9bbbbb374b46eb1e9d7f1d54e8240b51a33967996f3cd8",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "423ba21bcefdfaa4de2b2a943cff364a486c45092ae99b6590021e024c76f968",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "eb0bd4e599c31b3972b62851fadc6f6c9d511afe25fc87a890d1dc2f94621dfc",
+        "sourceGraphSha256": "d76732890fc82621e602fcaddecb839067a35241145c89d22156bb546aa8b8e6"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2768:bridge:4ad7791816b05ab1b0e70278",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2768",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "55dfaa3e7fa0b0d0bd4c023d15d2413e441a086722b72350edb93e11ac8bb2db",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"c87d0f2ec7657b9c0c362847f4760135582b5b8b7391b2fd67103a002cabfb92\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n      \"flavor\": \"Golden Mushroom\",\n      \"product\": \"Condensed Soup\",\n      \"quantity\": 4,\n      \"size\": \"10.5 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n      \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2768\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"8be102149aad59145501bb01f668f70b00070dfc8b215b36bf3d008a31462a96\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"3de1fdd638f12d2c2a3606d5f37bf4cd7d975edc0c80209af54924f313837d70\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:79e7289ec4230004e37f206e2dad47ea4396f31804a55b37c9f8686a2c3fd1e2",
+        "listingKey": "walmart:1:FaisalX-2768",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "8be102149aad59145501bb01f668f70b00070dfc8b215b36bf3d008a31462a96",
+        "recipeKey": "79e7289ec4230004e37f206e2dad47ea4396f31804a55b37c9f8686a2c3fd1e2",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "3de1fdd638f12d2c2a3606d5f37bf4cd7d975edc0c80209af54924f313837d70",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "e2554953b59c7709012363cc78acb35e1d3b1bb12eca79c08760a26d71b392ca",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+          "evidenceHash": "c87d0f2ec7657b9c0c362847f4760135582b5b8b7391b2fd67103a002cabfb92",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n  \"flavor\": \"Golden Mushroom\",\n  \"listingKey\": \"walmart:1:FaisalX-2768\",\n  \"product\": \"Condensed Soup\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.5 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:5f29917eb2bda41d9d42675a18fd8b92c7d5739654ca123c22fe9907527389ac\",\n    \"componentEvidenceSha256\": \"4ec01d19beb0cf39af72c5e11794eece2bc45311490c32957ac1c428ba3b19ff\",\n    \"contentAnchorId\": \"pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563\",\n    \"contentAnchorSha256\": \"419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3\",\n    \"decisionSha256\": \"ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b\",\n    \"listingKey\": \"walmart:1:FaisalX-2768\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2768:bridge:4ad7791816b05ab1b0e70278\",\n    \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n  },\n  \"sourceEvidenceSha256\": \"7d487dc23991187f01ad3bcefc64410ade4366f69d8dd6e2f4382b74762e11b6\",\n  \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n  \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n}\n",
+          "flavor": "Golden Mushroom",
+          "id": "ptrc:e2554953b59c7709012363cc78acb35e1d3b1bb12eca79c08760a26d71b392ca",
+          "listingRecipeId": "ptr:79e7289ec4230004e37f206e2dad47ea4396f31804a55b37c9f8686a2c3fd1e2",
+          "product": "Condensed Soup",
+          "quantity": 4,
+          "size": "10.5 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f"
+        }
+      ],
+      "sku": "FaisalX-2768",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "4ec01d19beb0cf39af72c5e11794eece2bc45311490c32957ac1c428ba3b19ff",
+            "componentIndex": 0,
+            "contentAnchorSha256": "419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3",
+            "decisionSha256": "ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "2727093a98abfd87d49c0daa11caa713f681c12de9c51b47e13985124daa4612",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "c2225cc5214328b3c0df117b3b09a123b86e94caa043cc2e95651765dd0618ab",
+        "sourceGraphSha256": "3de1fdd638f12d2c2a3606d5f37bf4cd7d975edc0c80209af54924f313837d70"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2769:bridge:5322bad061f5b8479c33d62a",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2769",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "0421101af0a28d154dee855535543149dc1c2040abf14d15749c67465ae5244a",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"70dc5264b85e1956c23e70875d9eeb648bb99d88d02b8760d4a295cda2c034f7\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n      \"flavor\": \"Golden Mushroom\",\n      \"product\": \"Condensed Soup\",\n      \"quantity\": 6,\n      \"size\": \"10.5 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n      \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2769\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"62ba8f3752cc3febb0f52514681668dbe5d999fe0dcf4b7da240f7072785041d\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"fab1813946420d3995d0ed8348f421c160fc7a36e33cc576c1c81aed2068855c\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:7aaff31e14929fb69487d29ba46c334f099ff9fb0642db6250f7f1b46e3f4626",
+        "listingKey": "walmart:1:FaisalX-2769",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "62ba8f3752cc3febb0f52514681668dbe5d999fe0dcf4b7da240f7072785041d",
+        "recipeKey": "7aaff31e14929fb69487d29ba46c334f099ff9fb0642db6250f7f1b46e3f4626",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "fab1813946420d3995d0ed8348f421c160fc7a36e33cc576c1c81aed2068855c",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "5f6e409357fac3f34fde5362e22a5a13c5ad284ca935eb7b0b8bdeed3351b8f7",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+          "evidenceHash": "70dc5264b85e1956c23e70875d9eeb648bb99d88d02b8760d4a295cda2c034f7",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n  \"flavor\": \"Golden Mushroom\",\n  \"listingKey\": \"walmart:1:FaisalX-2769\",\n  \"product\": \"Condensed Soup\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.5 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:6da09af8b075742775f2bfb62c0f37f2867e737d567af5a3e52665fc7644397e\",\n    \"componentEvidenceSha256\": \"c0861eb273918340c41e0061057ee6a34fca52fa169f4ad5914593d3cab9dfd1\",\n    \"contentAnchorId\": \"pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563\",\n    \"contentAnchorSha256\": \"419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3\",\n    \"decisionSha256\": \"ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b\",\n    \"listingKey\": \"walmart:1:FaisalX-2769\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2769:bridge:5322bad061f5b8479c33d62a\",\n    \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n  },\n  \"sourceEvidenceSha256\": \"2a52adc1c5320d93d5e518954c876a1a0225df88126c97346dc17d1748b94890\",\n  \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n  \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n}\n",
+          "flavor": "Golden Mushroom",
+          "id": "ptrc:5f6e409357fac3f34fde5362e22a5a13c5ad284ca935eb7b0b8bdeed3351b8f7",
+          "listingRecipeId": "ptr:7aaff31e14929fb69487d29ba46c334f099ff9fb0642db6250f7f1b46e3f4626",
+          "product": "Condensed Soup",
+          "quantity": 6,
+          "size": "10.5 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f"
+        }
+      ],
+      "sku": "FaisalX-2769",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "c0861eb273918340c41e0061057ee6a34fca52fa169f4ad5914593d3cab9dfd1",
+            "componentIndex": 0,
+            "contentAnchorSha256": "419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3",
+            "decisionSha256": "ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "49fee12f5d0909964cbea27e48ea68c75bee63a177de16b59415ba932ba8f302",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "d1057f0aba36a9f781992c78f122a6436620f87d4fe625ef91e74eff429c0369",
+        "sourceGraphSha256": "fab1813946420d3995d0ed8348f421c160fc7a36e33cc576c1c81aed2068855c"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2770:bridge:6ae013023b7936c505da4e9b",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2770",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "cb29bd037ce3c48349430a40fa51e7956e7ba2627a0eae684a06e7712f43423a",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"ec25475ca816ff5a76597aebf924ad5836434748d1073799942d5211c37cc9a0\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n      \"flavor\": \"Golden Mushroom\",\n      \"product\": \"Condensed Soup\",\n      \"quantity\": 8,\n      \"size\": \"10.5 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n      \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2770\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"f573e33f3d54ba7dee0010f7a9f5e4428e2d6f63e49725775cf1e10467f68594\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"f102a2010af5436ca68d843b0e2093af5fe3e5986cf5314326e49ad64da71a52\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:7fbdd4d0964d68c823f92997075af4a1411c4a31bdfdc29585a6689eb155c654",
+        "listingKey": "walmart:1:FaisalX-2770",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "f573e33f3d54ba7dee0010f7a9f5e4428e2d6f63e49725775cf1e10467f68594",
+        "recipeKey": "7fbdd4d0964d68c823f92997075af4a1411c4a31bdfdc29585a6689eb155c654",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "f102a2010af5436ca68d843b0e2093af5fe3e5986cf5314326e49ad64da71a52",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "0ac9e8ee0fe6e901d0a8a57610097b8fa916db39a7eed7140c9d7c7451194bb5",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb",
+          "evidenceHash": "ec25475ca816ff5a76597aebf924ad5836434748d1073799942d5211c37cc9a0",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"79cf2f6f-d38f-4ae1-a5ae-4bf54e6e1ffb\",\n  \"flavor\": \"Golden Mushroom\",\n  \"listingKey\": \"walmart:1:FaisalX-2770\",\n  \"product\": \"Condensed Soup\",\n  \"quantity\": 8,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.5 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:881d73603cc177e6f1275c2450867ce74efd0f9d682deec57a147aa47b44baf2\",\n    \"componentEvidenceSha256\": \"be64eabfcb91c61df702ea96ec5f92f87a9d5e7ca8dfd057efc6da0755718121\",\n    \"contentAnchorId\": \"pco:e1522165dd111a6f08d8c00708dcf389d58bd5d8a82b063f3f049b5b9192b563\",\n    \"contentAnchorSha256\": \"419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3\",\n    \"decisionSha256\": \"ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b\",\n    \"listingKey\": \"walmart:1:FaisalX-2770\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2770:bridge:6ae013023b7936c505da4e9b\",\n    \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n  },\n  \"sourceEvidenceSha256\": \"baf132a9c32566a2db753a79a5362e233789be340759b628cd27349fa9b0945f\",\n  \"targetCanonicalVariantId\": \"cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1\",\n  \"variantDecisionId\": \"dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f\"\n}\n",
+          "flavor": "Golden Mushroom",
+          "id": "ptrc:0ac9e8ee0fe6e901d0a8a57610097b8fa916db39a7eed7140c9d7c7451194bb5",
+          "listingRecipeId": "ptr:7fbdd4d0964d68c823f92997075af4a1411c4a31bdfdc29585a6689eb155c654",
+          "product": "Condensed Soup",
+          "quantity": 8,
+          "size": "10.5 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:4a74e66e0e15735d8210364e09cf101c3fda6f5d9515e1e31c06eeadde8baff1",
+          "variantDecisionId": "dpvd:9c01e228bf789faf3b805518aa58bc3960ddd8e489b9b235112df4dc27d0dc6f"
+        }
+      ],
+      "sku": "FaisalX-2770",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "be64eabfcb91c61df702ea96ec5f92f87a9d5e7ca8dfd057efc6da0755718121",
+            "componentIndex": 0,
+            "contentAnchorSha256": "419f64d38e3eca81b8b903ae40c8e5e1c609dc559e9d2eb64902722adc9c77e3",
+            "decisionSha256": "ea8d3534422c66e0e92b9767accbfddd743a3efd19b9db3cda53ee5e4a12e10b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "6ae4646b23da1a658eb28e2a9700f039e34e525074d3724a384919a4f00dc8cb",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "0a589d3436971aceaf869c1d5c2146c710d866cd811f3805c508e1d48c921e2a",
+        "sourceGraphSha256": "f102a2010af5436ca68d843b0e2093af5fe3e5986cf5314326e49ad64da71a52"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-2811:bridge:911004bcea7be7091539c401",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-2811",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "841233700595341952c9ff5615d80262e50501edf38eeb94b764f390591e78e6",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"b565fb3412a7603af6beb9cc4199165e8d83cb9f65b29b4566dd0333ca98b378\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"97bf285c-79c5-4df8-a542-4d44a5c9776c\",\n      \"flavor\": \"Cream of Mushroom\",\n      \"product\": \"Condensed Heart Healthy Cream of Mushroom Soup\",\n      \"quantity\": 6,\n      \"size\": \"10.5 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:9e7615717885ac0e83d0e4c7b9d44884244020a47c1d8f5fd9215f03052b00df\",\n      \"variantDecisionId\": \"dpvd:6567575765724b6b1e2c92c0a95f79a691eb3620dd792e0ca747944e5e0d661d\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-2811\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"96b2971f2148417672fe4338df959f23ec6bf0d266e5d7288fd61847b30f8724\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"6d0c6adeda6027652adbeeabaa2a006b707ffdb6583b4b6272ae4c53cf0b0a0f\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:27170c173b6c03a5518db65b3094dee330735e3310f09c82b1a093869c4b5320",
+        "listingKey": "walmart:1:FaisalX-2811",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "96b2971f2148417672fe4338df959f23ec6bf0d266e5d7288fd61847b30f8724",
+        "recipeKey": "27170c173b6c03a5518db65b3094dee330735e3310f09c82b1a093869c4b5320",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "6d0c6adeda6027652adbeeabaa2a006b707ffdb6583b4b6272ae4c53cf0b0a0f",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "0e8e0b5fc02eb7cfd223e7484d27d274396e136aaee4867b5def9fa13bc064c9",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "97bf285c-79c5-4df8-a542-4d44a5c9776c",
+          "evidenceHash": "b565fb3412a7603af6beb9cc4199165e8d83cb9f65b29b4566dd0333ca98b378",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"97bf285c-79c5-4df8-a542-4d44a5c9776c\",\n  \"flavor\": \"Cream of Mushroom\",\n  \"listingKey\": \"walmart:1:FaisalX-2811\",\n  \"product\": \"Condensed Heart Healthy Cream of Mushroom Soup\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"10.5 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:05c36436220bd5453bbb2a4abfa80fbb9b6f8e2e9383a83819f4997b0850fb20\",\n    \"componentEvidenceSha256\": \"38051713c2170ea1fac9a4768fed621da77ee4d22f11a6ba8fe8b8156441d32d\",\n    \"contentAnchorId\": \"pco:7f8897984fb969dd2eb7149ad94b571458f656446b0581efabb96297c1555ec8\",\n    \"contentAnchorSha256\": \"21d4351e02a6c849eeba53daf42694711f282fc83f8dbf4dd9041e02fe0a057a\",\n    \"decisionSha256\": \"2fb2dcb37e7c020f686e75ba04a88ef328441f9a98878b455f3c8a518699c301\",\n    \"listingKey\": \"walmart:1:FaisalX-2811\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-2811:bridge:911004bcea7be7091539c401\",\n    \"variantDecisionId\": \"dpvd:6567575765724b6b1e2c92c0a95f79a691eb3620dd792e0ca747944e5e0d661d\"\n  },\n  \"sourceEvidenceSha256\": \"41e81dbcc900e350c2f2d3d7eb0dcc0be1c2ed85f6f6767bfde52cb35b0369f0\",\n  \"targetCanonicalVariantId\": \"cpv1:9e7615717885ac0e83d0e4c7b9d44884244020a47c1d8f5fd9215f03052b00df\",\n  \"variantDecisionId\": \"dpvd:6567575765724b6b1e2c92c0a95f79a691eb3620dd792e0ca747944e5e0d661d\"\n}\n",
+          "flavor": "Cream of Mushroom",
+          "id": "ptrc:0e8e0b5fc02eb7cfd223e7484d27d274396e136aaee4867b5def9fa13bc064c9",
+          "listingRecipeId": "ptr:27170c173b6c03a5518db65b3094dee330735e3310f09c82b1a093869c4b5320",
+          "product": "Condensed Heart Healthy Cream of Mushroom Soup",
+          "quantity": 6,
+          "size": "10.5 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:9e7615717885ac0e83d0e4c7b9d44884244020a47c1d8f5fd9215f03052b00df",
+          "variantDecisionId": "dpvd:6567575765724b6b1e2c92c0a95f79a691eb3620dd792e0ca747944e5e0d661d"
+        }
+      ],
+      "sku": "FaisalX-2811",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "38051713c2170ea1fac9a4768fed621da77ee4d22f11a6ba8fe8b8156441d32d",
+            "componentIndex": 0,
+            "contentAnchorSha256": "21d4351e02a6c849eeba53daf42694711f282fc83f8dbf4dd9041e02fe0a057a",
+            "decisionSha256": "2fb2dcb37e7c020f686e75ba04a88ef328441f9a98878b455f3c8a518699c301",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "c4badb7f76c1204b4bd2a94f1dcc54be479cbe9129f2782130ee24a0c52efb49",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "4b35f98a4b6f2d399d414b2c052c260686ef17702ae432a085886b436705c675",
+        "sourceGraphSha256": "6d0c6adeda6027652adbeeabaa2a006b707ffdb6583b4b6272ae4c53cf0b0a0f"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3484:bridge:236f8596b344318a2829a3f8",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3484",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "c4b7967ad5430fb1468c4c3fbaeebaad11fcad34d9bc34196cc5767253b5ebb6",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"4c08dcd3ac764bdae38b1db6519094440116a3466bddac183981a3df9ba6ba6a\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n      \"flavor\": \"Savory Herbs\",\n      \"product\": \"Stuffing Mix\",\n      \"quantity\": 6,\n      \"size\": \"6 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n      \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3484\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"d49b6fa71f975049bdab2f1d9f0445d91fd390b6a633ff243af3a572f0f74bf1\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"d3cd7bfb0fa027018d0f9f948c036b22998f2e6feebf14e0872f2b9bc53fa7a9\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:a8cd6612214ba22407140adb02fda8a8533b96e00a4443948fd2ea0a858754fc",
+        "listingKey": "walmart:1:FaisalX-3484",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "d49b6fa71f975049bdab2f1d9f0445d91fd390b6a633ff243af3a572f0f74bf1",
+        "recipeKey": "a8cd6612214ba22407140adb02fda8a8533b96e00a4443948fd2ea0a858754fc",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "d3cd7bfb0fa027018d0f9f948c036b22998f2e6feebf14e0872f2b9bc53fa7a9",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "c32fcde9a284d84a37f9b8256712c859307da08e39b000df2ccec701aa56ee8e",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "690cb6c2-308d-4f6a-9119-7f29b8451388",
+          "evidenceHash": "4c08dcd3ac764bdae38b1db6519094440116a3466bddac183981a3df9ba6ba6a",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n  \"flavor\": \"Savory Herbs\",\n  \"listingKey\": \"walmart:1:FaisalX-3484\",\n  \"product\": \"Stuffing Mix\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"6 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:25ed19b55930230c074aa4f8cca98b269177ec2aec35ce107847bef181247c33\",\n    \"componentEvidenceSha256\": \"571b3ef592bb68e05c02c13a80812fa5b3f83f72fac52c960d762b9caaffea3d\",\n    \"contentAnchorId\": \"pco:1662ca6effdffccd0346fbd1782a66939f0557a7782b66acf0083790ad4a4811\",\n    \"contentAnchorSha256\": \"5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba\",\n    \"decisionSha256\": \"cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf\",\n    \"listingKey\": \"walmart:1:FaisalX-3484\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3484:bridge:236f8596b344318a2829a3f8\",\n    \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n  },\n  \"sourceEvidenceSha256\": \"e4a5bd39ceed4a1bd77b25af5207803f067df71c6a80519727ba7d7660f2cf55\",\n  \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n  \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n}\n",
+          "flavor": "Savory Herbs",
+          "id": "ptrc:c32fcde9a284d84a37f9b8256712c859307da08e39b000df2ccec701aa56ee8e",
+          "listingRecipeId": "ptr:a8cd6612214ba22407140adb02fda8a8533b96e00a4443948fd2ea0a858754fc",
+          "product": "Stuffing Mix",
+          "quantity": 6,
+          "size": "6 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e",
+          "variantDecisionId": "dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254"
+        }
+      ],
+      "sku": "FaisalX-3484",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "571b3ef592bb68e05c02c13a80812fa5b3f83f72fac52c960d762b9caaffea3d",
+            "componentIndex": 0,
+            "contentAnchorSha256": "5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba",
+            "decisionSha256": "cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "accf7cb6dc6bc0a20e45f39d163872453a2113a404e7463ed4505045804f74cc",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "fa8f6c0f2a18c175bb3b5bef55e13525e9d68411b7c2027b66892a30644ae055",
+        "sourceGraphSha256": "d3cd7bfb0fa027018d0f9f948c036b22998f2e6feebf14e0872f2b9bc53fa7a9"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3485:bridge:bff3cfa4aae65430c69a828e",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3485",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "408db8496d76d0fa763cc5370b87bd05b0d9de8a7f2f4d94bdf222c30c509c89",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"dcaa5f1f73dec9d65c71e4d33d0cb4c0a763bb9bf0012a11eefffb00a716f8e6\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n      \"flavor\": \"Savory Herbs\",\n      \"product\": \"Stuffing Mix\",\n      \"quantity\": 8,\n      \"size\": \"6 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n      \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3485\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"a03c7ec4a4d7a483ca942769b9b95544a09b75ae6899df3fbb3a0549d986d0d4\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"a19aeba042de588db4672ca8e8145e6f5727bf0fdb29ae10d7f4dd81595f1073\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:505aa9a992b4257ae352d82644bb2aa64c245146a12eeba013ea52b823d84f02",
+        "listingKey": "walmart:1:FaisalX-3485",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "a03c7ec4a4d7a483ca942769b9b95544a09b75ae6899df3fbb3a0549d986d0d4",
+        "recipeKey": "505aa9a992b4257ae352d82644bb2aa64c245146a12eeba013ea52b823d84f02",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "a19aeba042de588db4672ca8e8145e6f5727bf0fdb29ae10d7f4dd81595f1073",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "05eb2b723ae80cd3486112823712b1a6a8c5350d32ec88dffdf5bdfbe8197edd",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "690cb6c2-308d-4f6a-9119-7f29b8451388",
+          "evidenceHash": "dcaa5f1f73dec9d65c71e4d33d0cb4c0a763bb9bf0012a11eefffb00a716f8e6",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n  \"flavor\": \"Savory Herbs\",\n  \"listingKey\": \"walmart:1:FaisalX-3485\",\n  \"product\": \"Stuffing Mix\",\n  \"quantity\": 8,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"6 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:303d6789f196bd36882e7446113d59bdde1e830dfad323ebc804eb5486d10ada\",\n    \"componentEvidenceSha256\": \"4f2e439d0d2eaeb19a038861858039da8d2e2f91505718ec2ffe7dd7c50a3533\",\n    \"contentAnchorId\": \"pco:1662ca6effdffccd0346fbd1782a66939f0557a7782b66acf0083790ad4a4811\",\n    \"contentAnchorSha256\": \"5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba\",\n    \"decisionSha256\": \"cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf\",\n    \"listingKey\": \"walmart:1:FaisalX-3485\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3485:bridge:bff3cfa4aae65430c69a828e\",\n    \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n  },\n  \"sourceEvidenceSha256\": \"541ee77c94a4c888dcff75057d80dd02d271d74739a1386d7058ffcebde2f250\",\n  \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n  \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n}\n",
+          "flavor": "Savory Herbs",
+          "id": "ptrc:05eb2b723ae80cd3486112823712b1a6a8c5350d32ec88dffdf5bdfbe8197edd",
+          "listingRecipeId": "ptr:505aa9a992b4257ae352d82644bb2aa64c245146a12eeba013ea52b823d84f02",
+          "product": "Stuffing Mix",
+          "quantity": 8,
+          "size": "6 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e",
+          "variantDecisionId": "dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254"
+        }
+      ],
+      "sku": "FaisalX-3485",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "4f2e439d0d2eaeb19a038861858039da8d2e2f91505718ec2ffe7dd7c50a3533",
+            "componentIndex": 0,
+            "contentAnchorSha256": "5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba",
+            "decisionSha256": "cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "501a46c27c6935fcc640b70a11e84d2cae9defa27748e764970ad934e6aa6bee",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "3026a0e840a18f222dfffcf306576938dd23c3d1288d7bca009ab671e461cf9d",
+        "sourceGraphSha256": "a19aeba042de588db4672ca8e8145e6f5727bf0fdb29ae10d7f4dd81595f1073"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3486:bridge:432c702aa7ca95c43b66a7c5",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3486",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "d010169f3766679dadc2356754d38d613260fe22b01491b1b28b4446a73c6c08",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"96dc95e1c984ce1a62c43b58987764485aec7799401c7554edb94b62db5be457\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n      \"flavor\": \"Savory Herbs\",\n      \"product\": \"Stuffing Mix\",\n      \"quantity\": 10,\n      \"size\": \"6 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n      \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3486\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"e0a39d4d86e2a60de4d72c3e21ac99af2ea1e07275892e3d8237915d5f950df7\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"25b85eabaa91f3905f7a7059df989f26684f6fd667143934d5df9c0f15e95f76\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:6b9668d1060a4faf779af2c8c4ae742e11dcf4484445b59526610dcdfa58e5a4",
+        "listingKey": "walmart:1:FaisalX-3486",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "e0a39d4d86e2a60de4d72c3e21ac99af2ea1e07275892e3d8237915d5f950df7",
+        "recipeKey": "6b9668d1060a4faf779af2c8c4ae742e11dcf4484445b59526610dcdfa58e5a4",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "25b85eabaa91f3905f7a7059df989f26684f6fd667143934d5df9c0f15e95f76",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "4d80a4994a43851f52d4b74e85529e99ebd2c794f9c799e3431ffb846659dc84",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "690cb6c2-308d-4f6a-9119-7f29b8451388",
+          "evidenceHash": "96dc95e1c984ce1a62c43b58987764485aec7799401c7554edb94b62db5be457",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"690cb6c2-308d-4f6a-9119-7f29b8451388\",\n  \"flavor\": \"Savory Herbs\",\n  \"listingKey\": \"walmart:1:FaisalX-3486\",\n  \"product\": \"Stuffing Mix\",\n  \"quantity\": 10,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"6 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:5ba5d8859ab5cc4b397835fecb23d2230539255b71ab43a8ce30c5d05c67d181\",\n    \"componentEvidenceSha256\": \"cd9286c02c51e346bada8051dac54ab57f39bffc86f0643dfa48a3b7de792520\",\n    \"contentAnchorId\": \"pco:1662ca6effdffccd0346fbd1782a66939f0557a7782b66acf0083790ad4a4811\",\n    \"contentAnchorSha256\": \"5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba\",\n    \"decisionSha256\": \"cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf\",\n    \"listingKey\": \"walmart:1:FaisalX-3486\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3486:bridge:432c702aa7ca95c43b66a7c5\",\n    \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n  },\n  \"sourceEvidenceSha256\": \"9ad3684d9a87ecd3b6646207fa92fbe70cb7f5e429e6994ba0441ed18cea715d\",\n  \"targetCanonicalVariantId\": \"cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e\",\n  \"variantDecisionId\": \"dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254\"\n}\n",
+          "flavor": "Savory Herbs",
+          "id": "ptrc:4d80a4994a43851f52d4b74e85529e99ebd2c794f9c799e3431ffb846659dc84",
+          "listingRecipeId": "ptr:6b9668d1060a4faf779af2c8c4ae742e11dcf4484445b59526610dcdfa58e5a4",
+          "product": "Stuffing Mix",
+          "quantity": 10,
+          "size": "6 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:dedb497e9f92bb6106e3ebe44c2d7d73991d091867c669a0581c70eedffa747e",
+          "variantDecisionId": "dpvd:b6ce9ea17aaef7608c2c00215d6b10f0f4daf001f55c0950c449089ed9eb8254"
+        }
+      ],
+      "sku": "FaisalX-3486",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "cd9286c02c51e346bada8051dac54ab57f39bffc86f0643dfa48a3b7de792520",
+            "componentIndex": 0,
+            "contentAnchorSha256": "5c811201ac709e86f0d15e9cca33b6b5d212ac5d0bab133a0acee1f063b486ba",
+            "decisionSha256": "cd5d81706cbc3c670860e6ccb8cfe30c6793c79cb144f6be28e75b0d652123bf",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "a33c530ae2890f0e9b85565a6605f9fb5420984f252eaf894b515841296db105",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "177523b539c7715e28e9a45df05bdee93455c3a216a6558bcd4bab74c04b4dc7",
+        "sourceGraphSha256": "25b85eabaa91f3905f7a7059df989f26684f6fd667143934d5df9c0f15e95f76"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3637:bridge:9697eae43524d7c6328f502a",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3637",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "b61370c204879205f83fcb27efdd613ba2f0142b625b0a8da79ac61060019cbc",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"1624a4e14ca18c2628bb0afac30b49e455c8493e31dada59cf61a425bf380cd9\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n      \"flavor\": \"Flamin' Hot\",\n      \"product\": \"Mac 'N Cheese\",\n      \"quantity\": 4,\n      \"size\": \"5.9 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n      \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3637\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"e7c573b4520ba463779b14e9668fb09658275164dd7300aac9bc29dd110b4c39\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"8e885ef667efdc0ad9fa842ceaa536e34a2ff06988b6741615365035358f0058\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:124daf391049efd2f6b38a2724a7a397dbbcfe35db81e816c1c602e474f4a91f",
+        "listingKey": "walmart:1:FaisalX-3637",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "e7c573b4520ba463779b14e9668fb09658275164dd7300aac9bc29dd110b4c39",
+        "recipeKey": "124daf391049efd2f6b38a2724a7a397dbbcfe35db81e816c1c602e474f4a91f",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "8e885ef667efdc0ad9fa842ceaa536e34a2ff06988b6741615365035358f0058",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "1bd112bd637495589e4bbdc4ec4b0ce4ae90456de2dcd1d379de4234dca344df",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "558c40f4-e0a6-46e0-a3b3-643326e7b023",
+          "evidenceHash": "1624a4e14ca18c2628bb0afac30b49e455c8493e31dada59cf61a425bf380cd9",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n  \"flavor\": \"Flamin' Hot\",\n  \"listingKey\": \"walmart:1:FaisalX-3637\",\n  \"product\": \"Mac 'N Cheese\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"5.9 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:c6d9dfad210f645989d53f9de884008397d51bd0c2eedaf8f0e71c90c0e213fb\",\n    \"componentEvidenceSha256\": \"fc5e2c62fe137213d43ef4881d24e9eee9d4b04c00aefafb175a0970e83aba5f\",\n    \"contentAnchorId\": \"pco:815556bf76afa844e42736582f4c3f99c4f220b08a0c3b3dcfe0e61b0acc565e\",\n    \"contentAnchorSha256\": \"28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657\",\n    \"decisionSha256\": \"2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b\",\n    \"listingKey\": \"walmart:1:FaisalX-3637\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3637:bridge:9697eae43524d7c6328f502a\",\n    \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n  },\n  \"sourceEvidenceSha256\": \"369ac1aaa63eeec9042f60b77cbddafe2ada8efa7c7594de77e184f13b1d4ccb\",\n  \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n  \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n}\n",
+          "flavor": "Flamin' Hot",
+          "id": "ptrc:1bd112bd637495589e4bbdc4ec4b0ce4ae90456de2dcd1d379de4234dca344df",
+          "listingRecipeId": "ptr:124daf391049efd2f6b38a2724a7a397dbbcfe35db81e816c1c602e474f4a91f",
+          "product": "Mac 'N Cheese",
+          "quantity": 4,
+          "size": "5.9 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6",
+          "variantDecisionId": "dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a"
+        }
+      ],
+      "sku": "FaisalX-3637",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "fc5e2c62fe137213d43ef4881d24e9eee9d4b04c00aefafb175a0970e83aba5f",
+            "componentIndex": 0,
+            "contentAnchorSha256": "28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657",
+            "decisionSha256": "2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "e39cd36a07d14ac9261803eae8264ed9661bb8bc9040dd6051952ce933a35830",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "aa3c9338afb689781cecf4ca1cb0c9a968273591b11b9ed2337643efacad085a",
+        "sourceGraphSha256": "8e885ef667efdc0ad9fa842ceaa536e34a2ff06988b6741615365035358f0058"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3638:bridge:befb027d493029ba6a49f2c0",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3638",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "de65f20cd6ac46aaa9b934328fa4f7e6b1908be9a1e4ad391d21620ad1ccf571",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"c127f68df348aef22b9a7793ba5c20aac11d96038612d6bf3f58c5a7ee769714\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n      \"flavor\": \"Flamin' Hot\",\n      \"product\": \"Mac 'N Cheese\",\n      \"quantity\": 6,\n      \"size\": \"5.9 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n      \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3638\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"7ac2fa2f73737558cf9e848e4d7fcff2fcd0038a9df6eb055dbfd5a2476ebb7a\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"b8d908e85b0658831801bf493f967c1ea23ac77b77b4b52acb22cf75cfecdcd5\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:9d044aa127299fbd087e7db1dc870a1b401b6edca44d571e34fc81993f2068a3",
+        "listingKey": "walmart:1:FaisalX-3638",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "7ac2fa2f73737558cf9e848e4d7fcff2fcd0038a9df6eb055dbfd5a2476ebb7a",
+        "recipeKey": "9d044aa127299fbd087e7db1dc870a1b401b6edca44d571e34fc81993f2068a3",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "b8d908e85b0658831801bf493f967c1ea23ac77b77b4b52acb22cf75cfecdcd5",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "03a8c29b6b43e0025483d744bf2351cf692ef67c72501c9a8177fcea3b6ebd77",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "558c40f4-e0a6-46e0-a3b3-643326e7b023",
+          "evidenceHash": "c127f68df348aef22b9a7793ba5c20aac11d96038612d6bf3f58c5a7ee769714",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n  \"flavor\": \"Flamin' Hot\",\n  \"listingKey\": \"walmart:1:FaisalX-3638\",\n  \"product\": \"Mac 'N Cheese\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"5.9 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:8656e904b2ff7e4cd152b0650b8a2d233c29c54340faf038dc2fe7c001d1dcdf\",\n    \"componentEvidenceSha256\": \"1e9f9069622b47a990c5d6bb402c40bea154cbcced2fc4aee361da274aeaf0db\",\n    \"contentAnchorId\": \"pco:815556bf76afa844e42736582f4c3f99c4f220b08a0c3b3dcfe0e61b0acc565e\",\n    \"contentAnchorSha256\": \"28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657\",\n    \"decisionSha256\": \"2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b\",\n    \"listingKey\": \"walmart:1:FaisalX-3638\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3638:bridge:befb027d493029ba6a49f2c0\",\n    \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n  },\n  \"sourceEvidenceSha256\": \"2b6b7b56ac4a2b45eb36de50f63679afd69da45d64ef8068992657b90844aaee\",\n  \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n  \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n}\n",
+          "flavor": "Flamin' Hot",
+          "id": "ptrc:03a8c29b6b43e0025483d744bf2351cf692ef67c72501c9a8177fcea3b6ebd77",
+          "listingRecipeId": "ptr:9d044aa127299fbd087e7db1dc870a1b401b6edca44d571e34fc81993f2068a3",
+          "product": "Mac 'N Cheese",
+          "quantity": 6,
+          "size": "5.9 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6",
+          "variantDecisionId": "dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a"
+        }
+      ],
+      "sku": "FaisalX-3638",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "1e9f9069622b47a990c5d6bb402c40bea154cbcced2fc4aee361da274aeaf0db",
+            "componentIndex": 0,
+            "contentAnchorSha256": "28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657",
+            "decisionSha256": "2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "e6c6074934b419b1d79b47c5238e1deed647d6fa8660ae40af87cfa5c6cdba0b",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "ceb934498d9f9d358b16d5924f4da1409d3fba65f7a30f244272f9af668173e4",
+        "sourceGraphSha256": "b8d908e85b0658831801bf493f967c1ea23ac77b77b4b52acb22cf75cfecdcd5"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3639:bridge:48c1093d66f0b6e3a1a75016",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3639",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "d3af34b1c8cf323080a70213d17444615ac367080799c79aa79a1f1776c8f024",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"a7e425fc2ee5ca983087e70ef8728f60c62c8a7f1387eaf2725b01292f346286\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n      \"flavor\": \"Flamin' Hot\",\n      \"product\": \"Mac 'N Cheese\",\n      \"quantity\": 8,\n      \"size\": \"5.9 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n      \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3639\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"669846d0c4936e393f625b053217f9dca4ff4694f3986a38c7a45416d685114b\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"236bee2455be3c562979502c2b5e79c0b0ae6547051e39665724388ad99df697\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:c6e5dc575c5b45701da9bf033169783ee65717b2b9947f4e7ca5e01a8bccba47",
+        "listingKey": "walmart:1:FaisalX-3639",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "669846d0c4936e393f625b053217f9dca4ff4694f3986a38c7a45416d685114b",
+        "recipeKey": "c6e5dc575c5b45701da9bf033169783ee65717b2b9947f4e7ca5e01a8bccba47",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "236bee2455be3c562979502c2b5e79c0b0ae6547051e39665724388ad99df697",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "5c9e30ca6b21d4bbb61f3e4f08525fc15dade9087ef9e94f87f1852604840090",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "558c40f4-e0a6-46e0-a3b3-643326e7b023",
+          "evidenceHash": "a7e425fc2ee5ca983087e70ef8728f60c62c8a7f1387eaf2725b01292f346286",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"558c40f4-e0a6-46e0-a3b3-643326e7b023\",\n  \"flavor\": \"Flamin' Hot\",\n  \"listingKey\": \"walmart:1:FaisalX-3639\",\n  \"product\": \"Mac 'N Cheese\",\n  \"quantity\": 8,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"5.9 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:bc3cb48691d828118376b3328b4f4344bcc9d775ab4b98201af36b3218aa02cf\",\n    \"componentEvidenceSha256\": \"a97be87641448d71cb2a9197cd89e5d469def4fc4ce6d80a0c4ecf00f78374c4\",\n    \"contentAnchorId\": \"pco:815556bf76afa844e42736582f4c3f99c4f220b08a0c3b3dcfe0e61b0acc565e\",\n    \"contentAnchorSha256\": \"28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657\",\n    \"decisionSha256\": \"2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b\",\n    \"listingKey\": \"walmart:1:FaisalX-3639\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3639:bridge:48c1093d66f0b6e3a1a75016\",\n    \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n  },\n  \"sourceEvidenceSha256\": \"4b981bda5f1249a5c40c6ee2a62150a2f6b896bca92217ccacbc73f4d5fd7e54\",\n  \"targetCanonicalVariantId\": \"cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6\",\n  \"variantDecisionId\": \"dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a\"\n}\n",
+          "flavor": "Flamin' Hot",
+          "id": "ptrc:5c9e30ca6b21d4bbb61f3e4f08525fc15dade9087ef9e94f87f1852604840090",
+          "listingRecipeId": "ptr:c6e5dc575c5b45701da9bf033169783ee65717b2b9947f4e7ca5e01a8bccba47",
+          "product": "Mac 'N Cheese",
+          "quantity": 8,
+          "size": "5.9 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:0c31d71f958b8ca59d0e20dd69b0dd96b6e3756602d3d91856d918c715a8ece6",
+          "variantDecisionId": "dpvd:974d2de2e905a3e437f3dae25b8f8ff4898d4d98f16eb6337c6538ed76ddaf2a"
+        }
+      ],
+      "sku": "FaisalX-3639",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "a97be87641448d71cb2a9197cd89e5d469def4fc4ce6d80a0c4ecf00f78374c4",
+            "componentIndex": 0,
+            "contentAnchorSha256": "28054ceead336c5efbea4c63b41e0edf8a78796bcfef3528aff5cb1e45699657",
+            "decisionSha256": "2954b4720532e87b8de91b41e910749c1bdb5a223e12a0228059af61bccc472b",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "8312b80efd22293bcea8d8855acd4d5ea09163dd75958b31e4b363a710653827",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "1809b9a0ed4f35aef4c6fd2795be00659e96e2ee4eb929c2acc9a752376c92aa",
+        "sourceGraphSha256": "236bee2455be3c562979502c2b5e79c0b0ae6547051e39665724388ad99df697"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3814:bridge:d7163ba9ce71e2933a934fb9",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3814",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "bad9147aab8751841dcaeea966f0b1c58e082b0888ad664b5046441bbe979da3",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"9a5136f1be910e151f5d6a3e8de0c2bfba0882ba9ef4f8289eeb0f456e110aa0\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"34b31d7b-e0fb-4927-a43e-4756f507442f\",\n      \"flavor\": \"Chicken\",\n      \"product\": \"100% Natural Chicken Broth\",\n      \"quantity\": 4,\n      \"size\": \"32 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136\",\n      \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3814\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"0e7a97ba2cc716c521db20dfefc972c3eb89411206cbb21ed34152c2544e65f7\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"cf9d18b89672bd1898b2e74d057372e6f4ef0ded3e3afb51c999dac24f76009b\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:425b22bd9bbd60d1c17ac9d78faa871599e54f6e807dc923fdb25ee066a225bd",
+        "listingKey": "walmart:1:FaisalX-3814",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "0e7a97ba2cc716c521db20dfefc972c3eb89411206cbb21ed34152c2544e65f7",
+        "recipeKey": "425b22bd9bbd60d1c17ac9d78faa871599e54f6e807dc923fdb25ee066a225bd",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "cf9d18b89672bd1898b2e74d057372e6f4ef0ded3e3afb51c999dac24f76009b",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "d97fba8ac3e5989bd99e764bc2ed4ee3b4750029bb9b57bb3e7dcf86c5d02f59",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "34b31d7b-e0fb-4927-a43e-4756f507442f",
+          "evidenceHash": "9a5136f1be910e151f5d6a3e8de0c2bfba0882ba9ef4f8289eeb0f456e110aa0",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"34b31d7b-e0fb-4927-a43e-4756f507442f\",\n  \"flavor\": \"Chicken\",\n  \"listingKey\": \"walmart:1:FaisalX-3814\",\n  \"product\": \"100% Natural Chicken Broth\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"32 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:9017a7fa5673f768978d140bb98e1950930d1aa8b9a8d79bc9df0aa1035cd03c\",\n    \"componentEvidenceSha256\": \"ef37bd4cbbee8168d6411a616cbe02af6844d3531ca95d6f323df42ba69df28f\",\n    \"contentAnchorId\": \"pco:1bf6b20a90baaac58c71616307dc0e75124f669bb316c14449ec68e400aae40f\",\n    \"contentAnchorSha256\": \"18a664f808f20d62a9e05abb421445c65383e03acab4bb8edbcb644e31c4ca80\",\n    \"decisionSha256\": \"1e1d098931a6b6f8936d7362479cf5cefdb2034e00adcfe6a9f9e49959118387\",\n    \"listingKey\": \"walmart:1:FaisalX-3814\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3814:bridge:d7163ba9ce71e2933a934fb9\",\n    \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n  },\n  \"sourceEvidenceSha256\": \"027e716f7e173cd476ec6f9288940a15832b96b129b863c70ca01a19ed669e11\",\n  \"targetCanonicalVariantId\": \"cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136\",\n  \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n}\n",
+          "flavor": "Chicken",
+          "id": "ptrc:d97fba8ac3e5989bd99e764bc2ed4ee3b4750029bb9b57bb3e7dcf86c5d02f59",
+          "listingRecipeId": "ptr:425b22bd9bbd60d1c17ac9d78faa871599e54f6e807dc923fdb25ee066a225bd",
+          "product": "100% Natural Chicken Broth",
+          "quantity": 4,
+          "size": "32 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136",
+          "variantDecisionId": "dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f"
+        }
+      ],
+      "sku": "FaisalX-3814",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "ef37bd4cbbee8168d6411a616cbe02af6844d3531ca95d6f323df42ba69df28f",
+            "componentIndex": 0,
+            "contentAnchorSha256": "18a664f808f20d62a9e05abb421445c65383e03acab4bb8edbcb644e31c4ca80",
+            "decisionSha256": "1e1d098931a6b6f8936d7362479cf5cefdb2034e00adcfe6a9f9e49959118387",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "870e4826054ac1edb7f87994d8b2949e3233542ed8f912256a5efb127c07f040",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "c5a0b96d86c5a8771b0f2c5ca20df81a80c8093f4e3989c85aaaaacdc9b6c1cd",
+        "sourceGraphSha256": "cf9d18b89672bd1898b2e74d057372e6f4ef0ded3e3afb51c999dac24f76009b"
+      }
+    },
+    {
+      "costId": "retail:FaisalX-3815:bridge:e916d8ad11d7855dda96322d",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:FaisalX-3815",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "abb824841a0ce1d2a1b4631dc5c65cf51b4fdb260bd7a76b4c16dafd0ec60145",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"dd05de80e3bbec52d6b15e95b54584daa5b67b9fdc56c4e081cfc062ee48b608\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"34b31d7b-e0fb-4927-a43e-4756f507442f\",\n      \"flavor\": \"Chicken\",\n      \"product\": \"100% Natural Chicken Broth\",\n      \"quantity\": 6,\n      \"size\": \"32 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136\",\n      \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:FaisalX-3815\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"117b07e98f7d0c29797c6dab591da6bad799671282bf41a6f1705dc5c307540f\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"8ec6c3432504b277ccdb2a8e9bef8432f652a46ca6c426d1747fb061c91a883a\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:732886a46d5d0aa318377e11460433e2e3defd123c5a8c5e6eeece8e3d1f14ad",
+        "listingKey": "walmart:1:FaisalX-3815",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "117b07e98f7d0c29797c6dab591da6bad799671282bf41a6f1705dc5c307540f",
+        "recipeKey": "732886a46d5d0aa318377e11460433e2e3defd123c5a8c5e6eeece8e3d1f14ad",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "8ec6c3432504b277ccdb2a8e9bef8432f652a46ca6c426d1747fb061c91a883a",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "4fd5644a95d49a3896323b7c82cf2b2e2046c092946a54277d2b25808384b6ca",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "34b31d7b-e0fb-4927-a43e-4756f507442f",
+          "evidenceHash": "dd05de80e3bbec52d6b15e95b54584daa5b67b9fdc56c4e081cfc062ee48b608",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"34b31d7b-e0fb-4927-a43e-4756f507442f\",\n  \"flavor\": \"Chicken\",\n  \"listingKey\": \"walmart:1:FaisalX-3815\",\n  \"product\": \"100% Natural Chicken Broth\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"32 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:6a0bcc07a74156fb19642b3bd37f941874dba6b12f7dbc4ee7c4afeff6f20131\",\n    \"componentEvidenceSha256\": \"bbcc12aa0847b04d5f29054fcb502ca752892c128285f953f79b8fa38459cf4c\",\n    \"contentAnchorId\": \"pco:1bf6b20a90baaac58c71616307dc0e75124f669bb316c14449ec68e400aae40f\",\n    \"contentAnchorSha256\": \"18a664f808f20d62a9e05abb421445c65383e03acab4bb8edbcb644e31c4ca80\",\n    \"decisionSha256\": \"1e1d098931a6b6f8936d7362479cf5cefdb2034e00adcfe6a9f9e49959118387\",\n    \"listingKey\": \"walmart:1:FaisalX-3815\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:FaisalX-3815:bridge:e916d8ad11d7855dda96322d\",\n    \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n  },\n  \"sourceEvidenceSha256\": \"333e930a2ed28f1f7d184324a7ac41ad99970933fd1a589fdb12b68a0d5cc761\",\n  \"targetCanonicalVariantId\": \"cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136\",\n  \"variantDecisionId\": \"dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f\"\n}\n",
+          "flavor": "Chicken",
+          "id": "ptrc:4fd5644a95d49a3896323b7c82cf2b2e2046c092946a54277d2b25808384b6ca",
+          "listingRecipeId": "ptr:732886a46d5d0aa318377e11460433e2e3defd123c5a8c5e6eeece8e3d1f14ad",
+          "product": "100% Natural Chicken Broth",
+          "quantity": 6,
+          "size": "32 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:391f29b9cb6350521a8796f2f9eb4200bb962ffe346a76564547a3202aef3136",
+          "variantDecisionId": "dpvd:1cba87cee78899ec186be707b31a19d281a080e76f324ed9f4d45ae3a3b8c83f"
+        }
+      ],
+      "sku": "FaisalX-3815",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "bbcc12aa0847b04d5f29054fcb502ca752892c128285f953f79b8fa38459cf4c",
+            "componentIndex": 0,
+            "contentAnchorSha256": "18a664f808f20d62a9e05abb421445c65383e03acab4bb8edbcb644e31c4ca80",
+            "decisionSha256": "1e1d098931a6b6f8936d7362479cf5cefdb2034e00adcfe6a9f9e49959118387",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "3a33bf50b7f9b4dd0b4a1557803040b9778c2afa08a50280c28b6748951edb6e",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "597b234570f3216667d434981ef079395c447fc72f7ad607111999430a1d5190",
+        "sourceGraphSha256": "8ec6c3432504b277ccdb2a8e9bef8432f652a46ca6c426d1747fb061c91a883a"
+      }
+    },
+    {
+      "costId": "retail:RizwanX-3008:bridge:34aeb24e377f290bea8611bf",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:RizwanX-3008",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-27T12:16:37.000Z",
+        "evidenceHash": "51668056711856e21744d10f68c0ba61a57ff65cc451d89c2db6941c052561f2",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"17f42cf1280ac1d0f2efbe3f33337a88f18617be56f1465165acd44def26a3b7\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"fa59b172-1102-4d00-8c59-ccea8ddbfeba\",\n      \"flavor\": \"Roasted Garlic\",\n      \"product\": \"Tomato Paste\",\n      \"quantity\": 6,\n      \"size\": \"6 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:f846f383d133516878ff3c691ccf140aa8e312258476ce98e2b4ad2c2876d0f1\",\n      \"variantDecisionId\": \"dpvd:6dfe6d85a1999fe96399e4c0093d2b950b3517cdd6b03bb536ab902253cb0459\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-27T12:16:37.000Z\",\n  \"listingKey\": \"walmart:1:RizwanX-3008\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"1196770dac57941a1e9912c4708659c970c95d425031e80c0fb09d19ebcefde2\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"53aeede657ab2b0592df09611ceb44803bcb65dfae7b5c36fd4e1a8c477be4b3\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:c3d0cdf7ee9f4e23967fd2fd623e8026fda0e6eb5660266c95eab8de8abe4225",
+        "listingKey": "walmart:1:RizwanX-3008",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "1196770dac57941a1e9912c4708659c970c95d425031e80c0fb09d19ebcefde2",
+        "recipeKey": "c3d0cdf7ee9f4e23967fd2fd623e8026fda0e6eb5660266c95eab8de8abe4225",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "53aeede657ab2b0592df09611ceb44803bcb65dfae7b5c36fd4e1a8c477be4b3",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "102b48342136e7ca36993e58b2e4b939d46fc0e3829b67b654d1532c681409b2",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "fa59b172-1102-4d00-8c59-ccea8ddbfeba",
+          "evidenceHash": "17f42cf1280ac1d0f2efbe3f33337a88f18617be56f1465165acd44def26a3b7",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"fa59b172-1102-4d00-8c59-ccea8ddbfeba\",\n  \"flavor\": \"Roasted Garlic\",\n  \"listingKey\": \"walmart:1:RizwanX-3008\",\n  \"product\": \"Tomato Paste\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"6 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:86170580ad980673422337f5ee6c441ab9f937fad73835451d90478f740dd069\",\n    \"componentEvidenceSha256\": \"00e999a26c0f105ffd5aad2f0f89b3ecac2cdf0c23fad72104e228f78d274d3c\",\n    \"contentAnchorId\": \"pco:93fedb41591d0a816db11202106a5d20c8dfb452639efdaab7a6ed105873d0d3\",\n    \"contentAnchorSha256\": \"6ca8cf164bad5f744830e96d125a46cfcae1aefa53ab6cf0dc6a4294ccc8b37b\",\n    \"decisionSha256\": \"b269f83b475a94397073f4f9440aa316feba6dc4e0d7c95fae18f217707c9b52\",\n    \"listingKey\": \"walmart:1:RizwanX-3008\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:RizwanX-3008:bridge:34aeb24e377f290bea8611bf\",\n    \"variantDecisionId\": \"dpvd:6dfe6d85a1999fe96399e4c0093d2b950b3517cdd6b03bb536ab902253cb0459\"\n  },\n  \"sourceEvidenceSha256\": \"1a1041490b90f54000b5777a5083fc0fbf310938a18362417ba6aeb9be85eac6\",\n  \"targetCanonicalVariantId\": \"cpv1:f846f383d133516878ff3c691ccf140aa8e312258476ce98e2b4ad2c2876d0f1\",\n  \"variantDecisionId\": \"dpvd:6dfe6d85a1999fe96399e4c0093d2b950b3517cdd6b03bb536ab902253cb0459\"\n}\n",
+          "flavor": "Roasted Garlic",
+          "id": "ptrc:102b48342136e7ca36993e58b2e4b939d46fc0e3829b67b654d1532c681409b2",
+          "listingRecipeId": "ptr:c3d0cdf7ee9f4e23967fd2fd623e8026fda0e6eb5660266c95eab8de8abe4225",
+          "product": "Tomato Paste",
+          "quantity": 6,
+          "size": "6 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:f846f383d133516878ff3c691ccf140aa8e312258476ce98e2b4ad2c2876d0f1",
+          "variantDecisionId": "dpvd:6dfe6d85a1999fe96399e4c0093d2b950b3517cdd6b03bb536ab902253cb0459"
+        }
+      ],
+      "sku": "RizwanX-3008",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "00e999a26c0f105ffd5aad2f0f89b3ecac2cdf0c23fad72104e228f78d274d3c",
+            "componentIndex": 0,
+            "contentAnchorSha256": "6ca8cf164bad5f744830e96d125a46cfcae1aefa53ab6cf0dc6a4294ccc8b37b",
+            "decisionSha256": "b269f83b475a94397073f4f9440aa316feba6dc4e0d7c95fae18f217707c9b52",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "f50bbbf9f2d43e70fcb654b35484c85d9e662649f324dcf30d6bf19841c46bd8",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "89b6d2fd1796cfa40f01f90ec35d329e71324f85cf4b9e9364ff3e1b3eeb60f9",
+        "sourceGraphSha256": "53aeede657ab2b0592df09611ceb44803bcb65dfae7b5c36fd4e1a8c477be4b3"
+      }
+    },
+    {
+      "costId": "retail:RizwanX-3237:batch:4c1e04dc6144b2da0f77704c",
+      "costOutcome": "UNSOURCEABLE",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "listingRecipe": {
+        "approvalId": null,
+        "componentCount": 1,
+        "createdAt": "2026-07-29T07:10:07.000Z",
+        "effectiveAt": "2026-07-28T19:00:00.000Z",
+        "evidenceHash": "3977fff5ec2f82b2b29ca99aae5c512ebbd4d180dabba0976606fc83a7440c05",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"1041ba2394b277e0edf987813f59037ebece9b273bf4d5f5d3f4ad42215c851b\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"8936f4ab-6336-4169-8592-83b496799d51\",\n      \"flavor\": \"Mustard Greens\",\n      \"product\": \"Seasoned Southern Style\",\n      \"quantity\": 6,\n      \"size\": \"27 oz\",\n      \"sourceComponentId\": null,\n      \"targetCanonicalVariantId\": \"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\",\n      \"variantDecisionId\": \"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-28T19:00:00.000Z\",\n  \"listingKey\": \"walmart:1:RizwanX-3237\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"3cc3bd8ac6c9f5d9633c03eb4f2ad7ae1928423a859a91255d47596461dfddf5\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"81085cd947c6722501780a50950207bf074bfceff8fa7e0c7843d3782bef7e96\",\n  \"sourceKind\": \"CANONICAL_COST_GRAPH\"\n}\n",
+        "id": "ptr:444f815197f98f0b10ca8a21571d7772a636d7cb0f92a4c8b1f62101486cddce",
+        "listingKey": "walmart:1:RizwanX-3237",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "3cc3bd8ac6c9f5d9633c03eb4f2ad7ae1928423a859a91255d47596461dfddf5",
+        "recipeKey": "444f815197f98f0b10ca8a21571d7772a636d7cb0f92a4c8b1f62101486cddce",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": null,
+        "sourceArtifactSha256": "81085cd947c6722501780a50950207bf074bfceff8fa7e0c7843d3782bef7e96",
+        "sourceKind": "CANONICAL_COST_GRAPH"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "e5c5bed8b4f5769efeff3f0d111ee5555d92131d9552ab9a3ef7bbbf072f248d",
+          "createdAt": "2026-07-29T07:10:07.000Z",
+          "donorProductId": "8936f4ab-6336-4169-8592-83b496799d51",
+          "evidenceHash": "1041ba2394b277e0edf987813f59037ebece9b273bf4d5f5d3f4ad42215c851b",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"8936f4ab-6336-4169-8592-83b496799d51\",\n  \"flavor\": \"Mustard Greens\",\n  \"listingKey\": \"walmart:1:RizwanX-3237\",\n  \"product\": \"Seasoned Southern Style\",\n  \"quantity\": 6,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"27 oz\",\n  \"sourceComponentId\": null,\n  \"sourceEvidence\": {\n    \"componentEvidenceId\": \"sce:cf37dd3df87bc460b59d3f7749549bea13c9d23f1bf21bb76c4fd17150d77c7c\",\n    \"componentEvidenceSha256\": \"47f8e48bf021225ec070ad6084ddfa5d5c722368a93a9806198e56252edb7e78\",\n    \"contentAnchorId\": null,\n    \"contentAnchorSha256\": null,\n    \"decisionSha256\": \"b3c36634f5cdc3db04e99f7d8266977c025b503d2f9045053290742cf8208cd3\",\n    \"listingKey\": \"walmart:1:RizwanX-3237\",\n    \"priceAnchorId\": null,\n    \"priceAnchorSha256\": null,\n    \"schemaVersion\": \"product-truth-canonical-recipe-reconcile-component-source/1.0.0\",\n    \"skuCostId\": \"retail:RizwanX-3237:batch:4c1e04dc6144b2da0f77704c\",\n    \"variantDecisionId\": \"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\"\n  },\n  \"sourceEvidenceSha256\": \"006f01de89a7e2d1b5d7366ce1a9f9b7a038bbefc396be1180bc2f82c7413068\",\n  \"targetCanonicalVariantId\": \"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\",\n  \"variantDecisionId\": \"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\"\n}\n",
+          "flavor": "Mustard Greens",
+          "id": "ptrc:e5c5bed8b4f5769efeff3f0d111ee5555d92131d9552ab9a3ef7bbbf072f248d",
+          "listingRecipeId": "ptr:444f815197f98f0b10ca8a21571d7772a636d7cb0f92a4c8b1f62101486cddce",
+          "product": "Seasoned Southern Style",
+          "quantity": 6,
+          "size": "27 oz",
+          "sourceComponentId": null,
+          "targetCanonicalVariantId": "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+          "variantDecisionId": "dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce"
+        }
+      ],
+      "sku": "RizwanX-3237",
+      "sourceBinding": {
+        "components": [
+          {
+            "componentEvidenceSha256": "47f8e48bf021225ec070ad6084ddfa5d5c722368a93a9806198e56252edb7e78",
+            "componentIndex": 0,
+            "contentAnchorSha256": null,
+            "decisionSha256": "b3c36634f5cdc3db04e99f7d8266977c025b503d2f9045053290742cf8208cd3",
+            "priceAnchorSha256": null
+          }
+        ],
+        "costRecipeHashMode": "LEGACY_PRE_LISTING_RECIPE_MIGRATION",
+        "costSha256": "8057e9694bb1085f2828147e8b1129185c4a0092079e388b059ea331fdb21c3d",
+        "listingRecipeMigrationReceiptSha256": "d61da4ff69cc93ec98739eb48508bbd21696c95f6c2b82db082587330fca1149",
+        "scopeSha256": "3ac1b0731f41d6e0f1ec17515b81fbe11ea01dfbd7ed1529645967228e75ddc8",
+        "sourceGraphSha256": "81085cd947c6722501780a50950207bf074bfceff8fa7e0c7843d3782bef7e96"
+      }
+    }
+  ],
+  "targetsSha256": "5035d844577d07b7f5caeafe37fb1ccde3d642dd2e4f7a79ff3d1afa34d2cec0"
+}

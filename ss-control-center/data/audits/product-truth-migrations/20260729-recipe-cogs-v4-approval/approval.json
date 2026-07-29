@@ -1,0 +1,18 @@
+{
+  "activationContractSha256": "77cf4b4989c0612474ccf86893af20fba7df4f97b745de56b4c339d0086c4e56",
+  "approvalId": "standing-owner-goal-20260729",
+  "approvedBy": "owner",
+  "backupReference": "preactivation-schema-fingerprint:6743242a37e6c854b9f9f380527c1284d53e13997247741fc3064fe0ae76c711;owner-goal-sha256:fa0c2e724bf598acec9fcaaca85cd1b20345003aea53edaefe30a9506932978a",
+  "contractVersion": "product-truth-migration-approval/2",
+  "decision": "APPROVE_PRODUCT_TRUTH_MIGRATIONS",
+  "expiresAt": "2026-07-29T06:26:28.000Z",
+  "issuedAt": "2026-07-29T06:06:28.000Z",
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "planSha256": "e90132d2f79bb32b830175c12ef27226a510535d9662935eabb0d83564e3b1c7",
+  "queueImpactSha256": "0705e814f9b7cc7f704ab9e02ee8d1b2ee248e5a0f3191b2e612ce6af3830fde",
+  "runId": "ptr-recipe-cogs-v4-20260729-v2",
+  "schemaBeforeSha256": "6743242a37e6c854b9f9f380527c1284d53e13997247741fc3064fe0ae76c711",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "writerActivitySha256": "2af0ea916ca2b98bb488faa64723122748e209ab6a39b25444d0ae31d903240c",
+  "writersQuiesced": true
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "walmart-listing-integrity-surgical-live-item-receipt/v1",
+  "method": "GET",
+  "path": "/v3/items/FaisalX-1140",
+  "response_content_type": "application/json",
+  "http_status": 200,
+  "correlation_id_sha256": "fd6b187e7fd08d18b19ab3d69bd2e53c5e78394001214896eee19b2391acdc45",
+  "seller_account_fingerprint_sha256": "a135315771d89961b51864ae27a80fc5e1f72c27ce9cbe1a4bf4ba7f93505127",
+  "response_payload_sha256": "6c0d5e5b952ddd1db278a9b9b8607371d378c96f8bb7fcc52a2a3a5c9d9df1ec",
+  "captured_at": "2026-07-28T22:13:40.061Z",
+  "body_sha256": "525403f8180948831f5b97432aba39c7b2941a72b49a69cf42c41a64c40e8e06"
+}

@@ -1,0 +1,100 @@
+{
+  "product": {
+    "item_id": "8401770647",
+    "product_url": "https://www.walmart.com/ip/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4/8401770647",
+    "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+    "main_image": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_4803dac1-b591-4e67-9504-025274d05759.3a141a15b2403c42e287dc57207da57e.png",
+    "images": [
+      "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Pack-of-4_4803dac1-b591-4e67-9504-025274d05759.3a141a15b2403c42e287dc57207da57e.png",
+      "https://i5.walmartimages.com/asr/b72317c0-5a0c-42b0-8148-42b7ad9376ad.5ee340d8e0337516384b43cf0fc8d1ad.jpeg",
+      "https://i5.walmartimages.com/asr/ae8e876d-f765-4359-8a9c-fed637a4dfcb.25fe259123cb998cb64da0b02d9b5d2a.jpeg"
+    ],
+    "description": "PACK OF 4: This listing includes four 16 oz loaves of Pepperidge Farm White Sandwich Bread, for 64 oz total. We have been baking delicious breads with carefully selected ingredients for over 75 years. At Pepperidge Farm, baking is more than a job. To us, it’s a real passion. Our dedication to quality shows in the care we put into every detail. Pepperidge Farm white sandwich bread stays true to the classic recipe you know and love: with its convenient shape and delightfully light, mild flavor, Pepperidge Farm Sandwich White bread is ideal for sandwich lovers. A delicious, versatile white bread baked with quality ingredients and a touch of sweetness, with no high-fructose corn syrup. Each loaf of bread is double wrapped for freshness. Each 16-oz. loaf of bread has approximately 20 slices per loaf. Enjoy Pepperidge Farm breads, buns and melt-in-your-mouth cookies, all baked with care in a variety of craveable flavors. Shelf-stable product.",
+    "feature_bullets": [
+      "PACK OF 4: Includes 4 loaves of Pepperidge Farm White Sandwich Bread; each loaf is 16 oz, for 64 oz total",
+      "CLASSIC SANDWICH BREAD: A classic recipe that you know and love",
+      "QUALITY INGREDIENTS: No high-fructose corn syrup",
+      "SANDWICH READY: Delightfully light and mild flavor and a versatile square shape ideal for sandwiches",
+      "WRAPPED WITH CARE: Double-wrapped for freshness",
+      "BAKER'S TOUCHES: Versatile white bread baked with a touch of sweetness"
+    ],
+    "specifications": [
+      {
+        "name": "Brand",
+        "value": "Pepperidge Farm"
+      },
+      {
+        "name": "Bread & bun type",
+        "value": "Sandwich Bread Loaf"
+      },
+      {
+        "name": "Grain type",
+        "value": "Wheat"
+      },
+      {
+        "name": "Flavor",
+        "value": "Bread"
+      },
+      {
+        "name": "Piece count",
+        "value": "20"
+      },
+      {
+        "name": "Total count",
+        "value": "4"
+      },
+      {
+        "name": "Multipack quantity",
+        "value": "4"
+      },
+      {
+        "name": "Food form",
+        "value": "Squares"
+      },
+      {
+        "name": "Size",
+        "value": "One Size"
+      },
+      {
+        "name": "Food condition",
+        "value": "Shelf-Stable"
+      },
+      {
+        "name": "Texture",
+        "value": "light"
+      },
+      {
+        "name": "Product net content uom",
+        "value": "Ounce"
+      },
+      {
+        "name": "Product net content parent",
+        "value": "16 Ounces"
+      },
+      {
+        "name": "Manufacturer",
+        "value": "Pepperidge"
+      },
+      {
+        "name": "Container type",
+        "value": "Bag"
+      },
+      {
+        "name": "Material",
+        "value": "Bag"
+      },
+      {
+        "name": "Size descriptor",
+        "value": "Regular"
+      },
+      {
+        "name": "Food preparation method",
+        "value": "Baked"
+      },
+      {
+        "name": "Food & drug fact label type",
+        "value": "Nutrition Fact Panel"
+      }
+    ]
+  }
+}

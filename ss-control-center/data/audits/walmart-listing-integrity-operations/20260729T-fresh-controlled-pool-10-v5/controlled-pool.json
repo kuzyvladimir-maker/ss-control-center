@@ -1,0 +1,801 @@
+{
+  "schemaVersion": "walmart-listing-integrity-controlled-pool/v3",
+  "createdAt": "2026-07-29T05:27:52.985Z",
+  "storeIndex": 1,
+  "source": {
+    "censusId": "census-683f5202ffbf87b6d6a7",
+    "censusBodySha256": "683f5202ffbf87b6d6a7aff7b3be9320ed1765667d7751548ed80ee988160b9d",
+    "censusFileSha256": "f5b08a010e70d9df43fe0c5530263f587206c1c1f91e9f4a71a3c4574492226d",
+    "scanPlanId": "scan-plan-2d52dd6c4c34906c069f",
+    "scanPlanBodySha256": "2d52dd6c4c34906c069fa84607c555132df03849f6ff00919573ba3255c71085",
+    "scanPlanFileSha256": "74ed37e75645806f2a8c758b3b7b6e352d93c7610fd1ba915eb7cbc3bd19f0b7",
+    "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c"
+  },
+  "policy": {
+    "mode": "READ_ONLY_CONTROLLED_POOL",
+    "requestedSize": 10,
+    "sourceRequiredPreviewSize": 10,
+    "strictSequence": true,
+    "maxApplyInFlight": 1,
+    "automaticRetryAllowed": false,
+    "unknownPostReplayAllowed": false,
+    "walmartWritesAllowed": false,
+    "modelCallsAllowed": false,
+    "paidProviderCallsAllowed": false,
+    "terminalFailureMayQuarantineAndAdvance": true
+  },
+  "completedListingKeys": [
+    "walmart:1:FaisalX-1140",
+    "walmart:1:FaisalX-1148",
+    "walmart:1:FaisalX-1181",
+    "walmart:1:FaisalX-1183"
+  ],
+  "quarantinedListingKeys": [
+    "walmart:1:FaisalX-2768"
+  ],
+  "quarantinedItems": [
+    {
+      "listingKey": "walmart:1:FaisalX-2768",
+      "sku": "FaisalX-2768",
+      "itemId": "1838619805",
+      "storeIndex": 1,
+      "createdAt": "2026-07-28T18:00:53.641Z",
+      "status": "QUARANTINED_UNRESOLVED",
+      "outcome": "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET",
+      "nextAction": "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN",
+      "dispositionBodySha256": "5b007cfa7d04558e95d45d2412032d223b41281d76e69ee4d6a774b6a7915539",
+      "dispositionFileSha256": "e5f1de0ed310a474aaf1bf7fbe4d344558814c37e1c7fc2c345b5b8e77b3e665",
+      "dispositionPath": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-listing-integrity-quarantine/FaisalX-2768-20260728-v1/failure-disposition.json"
+    }
+  ],
+  "items": [
+    {
+      "listingKey": "walmart:1:FaisalX-1228",
+      "storeIndex": 1,
+      "sku": "FaisalX-1228",
+      "itemId": "57P5LHMFUUS4",
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 0
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-231",
+      "storeIndex": 1,
+      "sku": "FaisalX-231",
+      "itemId": "7DLP6U7K4SF6",
+      "title": "Pepperidge Farm Swirl Cinnamon Breakfast Bread, 16 oz. Loaf (Pack of 4)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 4,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 1
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2526",
+      "storeIndex": 1,
+      "sku": "FaisalX-2526",
+      "itemId": "1EYB5T033N6J",
+      "title": "Campbell's Chunky Soup, Pub-Style Chicken Pot Pie Soup, 18.8 oz Can, (Pack of 4)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 4,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 2
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2734",
+      "storeIndex": 1,
+      "sku": "FaisalX-2734",
+      "itemId": "1A8RQL3O8TLD",
+      "title": "Campbell's Condensed Cream of Chicken Soup, 10.5 Ounce Cans (Pack of 8)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 8,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 3
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2751",
+      "storeIndex": 1,
+      "sku": "FaisalX-2751",
+      "itemId": "35A6Q1NJ4ZUH",
+      "title": "Campbell's Condensed Tomato Soup, 10.75 Ounce Can, Quantity of 6",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 4
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2769",
+      "storeIndex": 1,
+      "sku": "FaisalX-2769",
+      "itemId": "2KKNJYPMKZ04",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can (Pack of 6)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 5
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-2770",
+      "storeIndex": 1,
+      "sku": "FaisalX-2770",
+      "itemId": "3OKYHLQGK8DZ",
+      "title": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can (Pack of 8)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 8,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 6
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3485",
+      "storeIndex": 1,
+      "sku": "FaisalX-3485",
+      "itemId": "539JSUF6TSAG",
+      "title": "Stove Top Savory Herbs Stuffing Mix Side Dish, 6 oz Box (Pack of 8)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 8,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 7
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3486",
+      "storeIndex": 1,
+      "sku": "FaisalX-3486",
+      "itemId": "2COKOQLX9UFC",
+      "title": "Stove Top Savory Herbs Stuffing Mix Side Dish, 6 oz Box (Pack of 10)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 10,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 8
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3637",
+      "storeIndex": 1,
+      "sku": "FaisalX-3637",
+      "itemId": "6X75ZF7S11GG",
+      "title": "Cheetos Mac 'N Cheese, Flamin' Hot Flavor, 5.9 oz Box (Pack of 4)",
+      "stage": "PRODUCT_TRUTH_READY",
+      "nextAction": "FRESH_SOURCE_AWARE_AUDIT",
+      "titleOuterCount": 4,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [],
+      "performance": {
+        "computedAt": null,
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 0,
+        "sales90": 0,
+        "orders90": 0,
+        "returns90": 0,
+        "returnRate90": null
+      },
+      "authority": {
+        "productTruthReady": true,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 9
+    }
+  ],
+  "sourceRequiredItems": [
+    {
+      "listingKey": "walmart:1:FaisalX-1220",
+      "storeIndex": 1,
+      "sku": "FaisalX-1220",
+      "itemId": "5TWJL0OXMVQG",
+      "title": "Sara Lee Artesano Bakery Bread Plain Sausage Rolls, 6 count, Soft Hot Dog Buns, 15 oz Bag (Pack of 2)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:51.000Z",
+        "units30": 20,
+        "sales30": 245.8,
+        "orders30": 18,
+        "returns30": 1,
+        "units90": 22,
+        "sales90": 270.38,
+        "orders90": 19,
+        "returns90": 1,
+        "returnRate90": 0.045454545454545456
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 0
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1241",
+      "storeIndex": 1,
+      "sku": "FaisalX-1241",
+      "itemId": "6BZ1JU8QBY1Y",
+      "title": "Arnold Keto Bread Loaf, Low Carb Sandwich Bread, 20 oz (Pack of 2)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:35.000Z",
+        "units30": 10,
+        "sales30": 202.4,
+        "orders30": 10,
+        "returns30": 0,
+        "units90": 22,
+        "sales90": 445.28,
+        "orders90": 19,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 1
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3330",
+      "storeIndex": 1,
+      "sku": "FaisalX-3330",
+      "itemId": "4PS6ZW2X8KYF",
+      "title": "Maruchan Instant Lunch Hot & Spicy Chicken Flavor Instant Lunch, 2.25 oz (Pack of 10)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 10,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:39.000Z",
+        "units30": 4,
+        "sales30": 48.96,
+        "orders30": 4,
+        "returns30": 0,
+        "units90": 18,
+        "sales90": 220.32,
+        "orders90": 18,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 2
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1139",
+      "storeIndex": 1,
+      "sku": "FaisalX-1139",
+      "itemId": "4Q48YJPIVZDZ",
+      "title": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 2)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:35.000Z",
+        "units30": 10,
+        "sales30": 168.6,
+        "orders30": 9,
+        "returns30": 0,
+        "units90": 17,
+        "sales90": 286.62,
+        "orders90": 16,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 3
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1121",
+      "storeIndex": 1,
+      "sku": "FaisalX-1121",
+      "itemId": "5GG3AFGCQEYA",
+      "title": "Nature’s Own Life Honey Wheat, 40 Calories per Slice Keto Friendly Sandwich Bread, 16 oz (Pack of 2)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:39.000Z",
+        "units30": 7,
+        "sales30": 86.03,
+        "orders30": 7,
+        "returns30": 0,
+        "units90": 17,
+        "sales90": 208.93,
+        "orders90": 15,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 4
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1250",
+      "storeIndex": 1,
+      "sku": "FaisalX-1250",
+      "itemId": "50ZJ38XC2U60",
+      "title": "Arnold Jewish Rye Bread, Seeded, 16 oz (Pack of 2)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 2,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:41.000Z",
+        "units30": 5,
+        "sales30": 94.45,
+        "orders30": 5,
+        "returns30": 0,
+        "units90": 15,
+        "sales90": 283.35,
+        "orders90": 15,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 5
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-2168",
+      "storeIndex": 1,
+      "sku": "RizwanX-2168",
+      "itemId": "3AX6ENJUV883",
+      "title": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein (Pack of 6)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:37.000Z",
+        "units30": 3,
+        "sales30": 101.7,
+        "orders30": 3,
+        "returns30": 0,
+        "units90": 13,
+        "sales90": 440.7,
+        "orders90": 10,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 6
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-3360",
+      "storeIndex": 1,
+      "sku": "FaisalX-3360",
+      "itemId": "3O7BA8M805KW",
+      "title": "Maruchan Instant Hot & Spicy Beef Ramen Soup, 2.25 oz Shelf Stable Cup (Pack of 10)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 10,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:38.000Z",
+        "units30": 2,
+        "sales30": 43.06,
+        "orders30": 2,
+        "returns30": 0,
+        "units90": 11,
+        "sales90": 236.83,
+        "orders90": 8,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 7
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-2705",
+      "storeIndex": 1,
+      "sku": "RizwanX-2705",
+      "itemId": "5E7W0LKA0CHJ",
+      "title": "Del Monte Lite Apricot Halves Canned Fruit 15 oz Can (Pack of 4)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 4,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:38.000Z",
+        "units30": 0,
+        "sales30": 0,
+        "orders30": 0,
+        "returns30": 0,
+        "units90": 10,
+        "sales90": 302.5,
+        "orders90": 6,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 8
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1144",
+      "storeIndex": 1,
+      "sku": "FaisalX-1144",
+      "itemId": "3AVBUC6GCQH2",
+      "title": "Pepperidge Farm Very Thin 100% Whole Wheat Bread, 16 oz (Pack of 6)",
+      "stage": "SOURCE_REQUIRED",
+      "nextAction": "ENRICH_EXACT_PRODUCT_TRUTH",
+      "titleOuterCount": 6,
+      "deterministicFindings": [],
+      "reasonCodes": [
+        "REUSABLE_IMAGE_EVIDENCE_AVAILABLE"
+      ],
+      "productTruthBlockers": [
+        "CURRENT_SCOPED_SKU_COST_MISSING",
+        "SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_0"
+      ],
+      "performance": {
+        "computedAt": "2026-06-14T22:58:44.000Z",
+        "units30": 3,
+        "sales30": 170.07,
+        "orders30": 3,
+        "returns30": 0,
+        "units90": 8,
+        "sales90": 453.52,
+        "orders90": 7,
+        "returns90": 0,
+        "returnRate90": 0
+      },
+      "authority": {
+        "productTruthReady": false,
+        "freshBuyerRereadReady": false,
+        "repairPlanReady": false,
+        "ownerPermitReady": false,
+        "walmartWriteAuthorized": false
+      },
+      "ordinal": 9
+    }
+  ],
+  "sourceReadiness": {
+    "candidateCount": 1203,
+    "repairReadyCount": 13,
+    "sourceRequiredCount": 1190,
+    "quarantinedCount": 1
+  },
+  "externalEffects": {
+    "databaseReads": 14,
+    "databaseWrites": 0,
+    "walmartReads": 0,
+    "walmartWrites": 0,
+    "modelCalls": 0,
+    "paidProviderCalls": 0
+  },
+  "poolId": "controlled-pool-67d25236c64ade2a96e0",
+  "bodySha256": "67d25236c64ade2a96e0b9b64e8d47dfa0daf2c732483fa24330a1456d561e84"
+}

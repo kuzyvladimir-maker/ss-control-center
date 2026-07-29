@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    {
+      "file": "preflight-report.json",
+      "role": "preflight_report",
+      "sha256": "21738a4675dbd54b4e01321d861e65fdaedf459e517a257e6db95bd59e4da38f"
+    }
+  ],
+  "checkedAt": "2026-07-29T07:10:35.000Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "42e58af4522e090f47fcf9231aa460e68cc902c0e06f1c31aaa0e055c4da9e0c",
+  "schemaVersion": "product-truth-canonical-recipe-reconcile-preflight-index/1.0.0",
+  "status": "READY_TO_APPLY"
+}

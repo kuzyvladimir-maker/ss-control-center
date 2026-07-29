@@ -796,21 +796,32 @@ async function loadCurrentOwnerRepairReview(
     donor.exact_content_candidate,
     "current owner repair donor.exact_content_candidate",
   );
-  const wrongDonor = record(
-    candidate.legacy_wrong_donor_forbidden,
-    "current owner repair review.legacy_wrong_donor_forbidden",
-  );
   const legacyDonor = record(
     donor.current_legacy_component,
     "current owner repair donor.current_legacy_component",
   );
+  const wrongDonor = candidate.legacy_wrong_donor_forbidden === undefined
+    ? null
+    : record(
+        candidate.legacy_wrong_donor_forbidden,
+        "current owner repair review.legacy_wrong_donor_forbidden",
+      );
+  const donorStatus = legacyDonor.finding === "EXACT_PRODUCT_DONOR"
+      && legacyDonor.canonical_use_allowed === true
+      && legacyDonor.donor_product_id === exactDonor.donor_product_id
+      && wrongDonor === null
+    ? "EXACT_PRODUCT_DONOR"
+    : legacyDonor.finding === "WRONG_PRODUCT_DONOR"
+      && legacyDonor.canonical_use_allowed === false
+      && wrongDonor !== null
+      && wrongDonor.donor_product_id === legacyDonor.donor_product_id
+      ? "WRONG_PRODUCT_DONOR_REPLACED"
+      : null;
   if (candidate.donor_product_id !== exactDonor.donor_product_id
     || candidate.single_unit_upc !== exactDonor.upc
     || candidate.single_unit_size !== exactDonor.size
     || candidate.single_unit_inner_count !== exactDonor.inner_count
-    || wrongDonor.donor_product_id !== legacyDonor.donor_product_id
-    || legacyDonor.finding !== "WRONG_PRODUCT_DONOR"
-    || legacyDonor.canonical_use_allowed !== false) {
+    || donorStatus === null) {
     throw new Error("current owner repair Product Truth donor binding mismatch");
   }
 
@@ -844,7 +855,9 @@ async function loadCurrentOwnerRepairReview(
   return {
     status: "OWNER_REVIEW_REQUIRED",
     selectedAt: text(index.selected_at, "current owner repair review index.selected_at"),
-    createdAt: text(review.created_at, "current owner repair review.created_at"),
+    createdAt: typeof review.created_at === "string"
+      ? text(review.created_at, "current owner repair review.created_at")
+      : text(index.selected_at, "current owner repair review index.selected_at"),
     listingKey,
     sku,
     itemId,
@@ -869,11 +882,17 @@ async function loadCurrentOwnerRepairReview(
       ),
       singleUnitUpc: text(candidate.single_unit_upc, "current owner repair UPC"),
       outerUnits: count(candidate.outer_units, "current owner repair outer units"),
-      totalUnits: count(candidate.total_buns, "current owner repair total units"),
-      wrongLegacyDonorId: text(
-        wrongDonor.donor_product_id,
-        "current owner repair wrong legacy donor id",
-      ),
+      totalUnits: candidate.total_buns === undefined
+        ? count(candidate.outer_units, "current owner repair outer units")
+          * count(candidate.single_unit_inner_count, "current owner repair inner count")
+        : count(candidate.total_buns, "current owner repair total units"),
+      donorStatus,
+      wrongLegacyDonorId: wrongDonor === null
+        ? null
+        : text(
+            wrongDonor.donor_product_id,
+            "current owner repair wrong legacy donor id",
+          ),
     },
     current: {
       description: currentDescription,
@@ -1873,7 +1892,13 @@ export async function loadListingIntegrityShadowData(
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name, "en"))) {
     if (!entry.isDirectory() || !/^[A-Za-z0-9._-]+$/u.test(entry.name)) continue;
     const manifestPath = path.join(root, entry.name, "manifest.json");
-    const bytes = await readFile(manifestPath);
+    let bytes: Buffer;
+    try {
+      bytes = await readFile(manifestPath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+      throw error;
+    }
     if (bytes.byteLength > 1_000_000) {
       throw new Error(`${manifestPath}: manifest exceeds 1 MB`);
     }

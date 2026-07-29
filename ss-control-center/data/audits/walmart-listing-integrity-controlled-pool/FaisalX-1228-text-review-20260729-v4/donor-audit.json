@@ -1,0 +1,20 @@
+{
+  "schema_version": "walmart-listing-exact-donor-audit/v1",
+  "exact_content_candidate": {
+    "donor_product_id": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+    "upc": "073410013854",
+    "size": "24 oz",
+    "inner_count": 16
+  },
+  "current_legacy_component": {
+    "donor_product_id": "4229bfb6-270e-4bff-a93a-b051657b8e79",
+    "finding": "EXACT_PRODUCT_DONOR",
+    "canonical_use_allowed": true
+  },
+  "evidence": {
+    "content_observation_id": "pco:3c0980abd132e774271db9b59fe4127c7b323a2b8c40843d29073fa99f2ccee6",
+    "content_hash": "f3c78acf078919f569f05693cb83bf9571e38e7179ca3afce6c947825c83eb07",
+    "source_url": "https://www.target.com/p/arnold-healthy-multigrain-bread-24oz/-/A-12973001",
+    "source_file_sha256": "1fd29173fb1c6523b2dd0c885860a768e7cc27770e66352069d99218306c7988"
+  }
+}

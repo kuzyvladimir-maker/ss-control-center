@@ -1,0 +1,64 @@
+{
+  "schema_version": "walmart-listing-integrity-surgical-schema-contract/v1",
+  "contract_id": "contract-936e1efd683385f8f9f53107",
+  "plan_id": "plan-936e1efd683385f8f9f53107",
+  "plan_body_sha256": "c024aaf75e0560015734f3cfe51818b81f8bf570cf78e31a783f7b7abd00c1fc",
+  "target_sha256": "5951efb0ddbf8f5ceeae9ce9aeb3e0773e3f9fe88b1130da1278e4ddcf10f01d",
+  "listing": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1140",
+    "listing_key": "walmart:1:FaisalX-1140",
+    "item_id": "8401770647",
+    "product_identifier": {
+      "productIdType": "UPC",
+      "productId": "684611898500"
+    },
+    "product_type": "Breads & Buns",
+    "live_item_capture_sha256": "6c0d5e5b952ddd1db278a9b9b8607371d378c96f8bb7fcc52a2a3a5c9d9df1ec",
+    "live_item_receipt_body_sha256": "525403f8180948831f5b97432aba39c7b2941a72b49a69cf42c41a64c40e8e06",
+    "live_item_captured_at": "2026-07-28T22:13:40.061Z"
+  },
+  "spec": {
+    "feed_type": "MP_MAINTENANCE",
+    "business_unit": "WALMART_US",
+    "locale": "en",
+    "version": "5.0.20260501-19_21_29-api",
+    "product_type": "Breads & Buns",
+    "request_payload_sha256": "4ef57a1d53424aaed515f946f95b7263931bbd6f2252aff83c2006577aba4b28",
+    "response_payload_sha256": "d1e24d8c7cc638e1b8d601fb399a945f6628b7ac014d3a5fe5ec4444465d00c9",
+    "schema_sha256": "83aa99cb144116e9cbf44a3f2ecd82c0ccafdb1727000a888895350a7770368e",
+    "get_spec_receipt_body_sha256": "4383b027c3cdf023fa67c777916f353c6be527692a7854780228440ddc12308e",
+    "valid_until": "2026-07-28T22:43:40.549Z"
+  },
+  "schema_mapping_approval_sha256": "f8f1c8ee8a860f5d8fa43c58eed541c1bcaba3ed21b111ed5a73b736b3790203",
+  "attribute_mappings": [
+    {
+      "source_field_path": "walmart.Visible.count",
+      "source_kind": "inner_item_count",
+      "source_claim_sha256": "034366072aa4227dc8020f498d547793195367dc6eac34b4428a2174e1aa3999",
+      "walmart_visible_field": "count",
+      "walmart_value": 4,
+      "walmart_value_sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    },
+    {
+      "source_field_path": "walmart.Visible.countPerPack",
+      "source_kind": "inner_item_count",
+      "source_claim_sha256": "73e815db172a66c48bfd4460ef32d41bb87dbd8b16c7b75817cd5f5bcdba7f3a",
+      "walmart_visible_field": "countPerPack",
+      "walmart_value": 1,
+      "walmart_value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    }
+  ],
+  "claims": {
+    "exact_one_sku": true,
+    "changed_fields_only": true,
+    "full_target_is_qa_reference_only": true,
+    "audit_claims_are_not_write_schema": true,
+    "blank_or_null_clear_forbidden": true,
+    "preserve_unapproved_fields_by_omission": true,
+    "retries": 0,
+    "redirects": 0
+  },
+  "body_sha256": "9392db49f1ee58f7c4f669afbff372dbfe468658e0c61772de4bf59ad7381fef"
+}

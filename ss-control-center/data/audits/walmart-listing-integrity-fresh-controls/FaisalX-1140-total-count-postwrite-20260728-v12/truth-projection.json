@@ -1,0 +1,39 @@
+{
+  "status": "READY",
+  "adapter_version": "walmart-listing-single-pipeline-truth-adapter/v5",
+  "listing_key": "walmart:1:FaisalX-1140",
+  "expected": {
+    "title": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+    "outer_units": 4,
+    "identity": {
+      "brand_aliases": [
+        "Pepperidge Farm",
+        "farm pepperidge"
+      ],
+      "product_marker_groups": [
+        [
+          "bread sandwich white",
+          "White Sandwich Bread"
+        ]
+      ],
+      "variant_marker_groups": [
+        [
+          "white"
+        ]
+      ],
+      "forbidden_markers": []
+    },
+    "package_facts": [
+      {
+        "kind": "net_content",
+        "requirement": "required",
+        "value": 453.59237,
+        "unit": "g"
+      }
+    ],
+    "truth_source": "recipe"
+  },
+  "component_evidence_id": "sce:194f696865dd2c93dfb99314390301dd327febc5a1fe5339206b3967b67f5db3",
+  "canonical_variant_id": "cpv1:2174241d0cc7e92f4111e8eb899c7cf60ba102f28b1fb6e74680f1a834cf0f0f",
+  "blockers": []
+}

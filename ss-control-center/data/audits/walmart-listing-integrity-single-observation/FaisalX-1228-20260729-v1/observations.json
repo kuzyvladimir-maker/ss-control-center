@@ -1,0 +1,99 @@
+{
+  "schema_version": "wm_visual_observation_batch/v3",
+  "observations": [
+    {
+      "image_id": "i_1ce9948ce700378da192",
+      "visual_role": "tiled_main",
+      "visible_brand_text": "ARNOLD",
+      "visible_product_text": "Whole Grains HEALTHY MULTI-GRAIN",
+      "visible_variant_text": null,
+      "visible_size_texts": [
+        "24 oz"
+      ],
+      "external_package_count": {
+        "mode": "exact",
+        "value": 6,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [
+        "6 bags visible in 2x3 grid"
+      ],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "single_sellable_package",
+      "front_visibility": "all",
+      "background": "white",
+      "multiple_distinct_products": "no",
+      "readable_identity": "clear",
+      "evidence": [
+        "ARNOLD on each bag",
+        "Whole Grains HEALTHY MULTI-GRAIN on each bag",
+        "24 oz on each bag",
+        "6 repeated identical packages in 2 rows of 3"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_d75811e1729c17046044",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "ARNOLD",
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "partial",
+      "evidence": [
+        "ARNOLD logo and banner visible",
+        "DELICIOUS & WHOLESOME text",
+        "sandwich with bread shown, no package present",
+        "red background"
+      ],
+      "flags": []
+    },
+    {
+      "image_id": "i_b50c2336171f4ba08122",
+      "visual_role": "lifestyle",
+      "visible_brand_text": "ARNOLD",
+      "visible_product_text": null,
+      "visible_variant_text": null,
+      "visible_size_texts": [],
+      "external_package_count": {
+        "mode": "unknown",
+        "value": null,
+        "min": null,
+        "max": null
+      },
+      "outer_package_claims": [],
+      "inner_contents_claims": [],
+      "case_package_claims": [],
+      "unclear_quantity_claims": [],
+      "grid_cell_kind": "not_a_grid",
+      "front_visibility": "not_applicable",
+      "background": "colored",
+      "multiple_distinct_products": "no",
+      "readable_identity": "partial",
+      "evidence": [
+        "ARNOLD logo and banner visible",
+        "NO HIGH FRUCTOSE CORN SYRUP text",
+        "open-face toast with toppings shown, no package present",
+        "red background"
+      ],
+      "flags": []
+    }
+  ]
+}

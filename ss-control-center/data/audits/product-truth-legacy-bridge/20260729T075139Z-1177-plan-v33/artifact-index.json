@@ -1,0 +1,38 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-plan.json",
+      "role": "apply_plan",
+      "sha256": "e8581a5763b4aa1d24d681bedbcaec5622e72d8b4fd3e1e0ab411ca58b193ed6"
+    },
+    {
+      "file": "UNAPPROVED-owner-approval-template.json",
+      "role": "unapproved_owner_template",
+      "sha256": "7073216e9c88231127c6bee542466c19897af76a64476fb40f80471afde37005"
+    },
+    {
+      "file": "required-confirmation.txt",
+      "role": "required_confirmation",
+      "sha256": "d12eb46899fcc951a3abd79b774a8baab10da651a1c5eee931685185d5ff7ca6"
+    }
+  ],
+  "counts": {
+    "listings": 1,
+    "marketplaceMutations": 0,
+    "maximumDatabaseRows": 9,
+    "paidCalls": 0,
+    "providerCalls": 0
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "generatedAt": "2026-07-29T07:51:39.000Z",
+  "schemaVersion": "product-truth-legacy-bridge-wave-artifact-index/2.0.0",
+  "source": {
+    "bridgePlanSchemaVersion": "product-truth-legacy-bridge-plan/1.3.0",
+    "bridgePlanSha256": "d320741785078196add5afbdc8572a51122bd0e10ee16c90cfcc99246655e1a1",
+    "bridgePolicyVersion": "product-truth-legacy-bridge-policy/1.0.0",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "snapshotSchemaVersion": "product-truth-legacy-bridge-snapshot/1.3.0",
+    "snapshotSha256": "e02397c7ef71dbe9f9ddf3af57c9cf9cde8939a98b3041b963b52f549fcf39e1"
+  },
+  "status": "AWAITING_OWNER_APPROVAL"
+}

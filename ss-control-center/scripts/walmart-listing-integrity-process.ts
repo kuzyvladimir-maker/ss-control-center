@@ -560,53 +560,45 @@ function exactStringArray(value: unknown, label: string): string[] {
 }
 
 function buildWalmartListingReviewSurface(input: {
-  candidate: JsonObject;
+  diagnosis: JsonObject;
   expected: WalmartListingIntegrityInput["expected"];
   title: string;
   description: unknown;
   bullets: unknown;
 }): WalmartListingSurface {
-  const facts = Array.isArray(input.expected.package_facts)
-    ? input.expected.package_facts
-    : [];
-  const attributeClaims: WalmartListingSurface["attribute_claims"] = [
-    {
-      field_path: "review.brand",
-      kind: "brand",
-      text: requiredText(input.candidate.brand, "Product Truth brand"),
-    },
-    {
-      field_path: "review.product",
-      kind: "product",
-      text: requiredText(input.candidate.product, "Product Truth product"),
-    },
-    {
-      field_path: "review.variant",
-      kind: "variant",
-      text: requiredText(input.candidate.variant, "Product Truth variant"),
-    },
-    {
-      field_path: "review.outer_units",
-      kind: "outer_units",
-      value: input.expected.outer_units,
-      unit: "count",
-    },
-    ...facts.map((fact, index) => {
-      const row = record(fact, `expected.package_facts[${index}]`);
-      return {
-        field_path: `review.package_facts.${index}`,
-        kind: requiredText(row.kind, `expected.package_facts[${index}].kind`),
-        value: Number(row.value),
-        unit: requiredText(row.unit, `expected.package_facts[${index}].unit`),
-      } as WalmartListingSurface["attribute_claims"][number];
-    }),
-  ];
+  const detectorInput = record(
+    input.diagnosis.detector_input,
+    "one-SKU diagnosis.detector_input",
+  );
+  const detectorExpected = record(
+    detectorInput.expected,
+    "one-SKU diagnosis.detector_input.expected",
+  );
+  if (detectorExpected.title !== input.expected.title
+    || detectorExpected.outer_units !== input.expected.outer_units) {
+    throw new Error(
+      "repair review title/count differs from the exact live diagnosis",
+    );
+  }
+  const liveSurface = record(
+    detectorInput.surface,
+    "one-SKU diagnosis.detector_input.surface",
+  );
+  if (liveSurface.title !== input.title
+    || !Array.isArray(liveSurface.attribute_claims)
+    || !Array.isArray(liveSurface.unmapped_attributes)) {
+    throw new Error("repair review surface differs from the exact live diagnosis");
+  }
   return {
     title: input.title,
     description: requiredText(input.description, "review surface description"),
     bullets: exactStringArray(input.bullets, "review surface bullets"),
-    attribute_claims: attributeClaims,
-    unmapped_attributes: [],
+    attribute_claims: structuredClone(
+      liveSurface.attribute_claims,
+    ) as WalmartListingSurface["attribute_claims"],
+    unmapped_attributes: structuredClone(
+      liveSurface.unmapped_attributes,
+    ) as WalmartListingSurface["unmapped_attributes"],
   };
 }
 
@@ -739,15 +731,23 @@ async function executeWalmartListingSingleReview(
       throw new Error(`Product Truth candidate ${proposalField} differs from donor audit`);
     }
   }
-  const wrongDonor = record(
-    candidate.legacy_wrong_donor_forbidden,
-    "legacy_wrong_donor_forbidden",
-  );
   const legacy = record(donorAudit.current_legacy_component, "current_legacy_component");
-  if (wrongDonor.donor_product_id !== legacy.donor_product_id
-    || legacy.finding !== "WRONG_PRODUCT_DONOR"
-    || legacy.canonical_use_allowed !== false) {
-    throw new Error("legacy wrong-product donor is not proven forbidden");
+  if (candidate.legacy_wrong_donor_forbidden === undefined) {
+    if (candidate.donor_product_id !== legacy.donor_product_id
+      || legacy.finding !== "EXACT_PRODUCT_DONOR"
+      || legacy.canonical_use_allowed !== true) {
+      throw new Error("active exact Product Truth donor is not independently proven");
+    }
+  } else {
+    const wrongDonor = record(
+      candidate.legacy_wrong_donor_forbidden,
+      "legacy_wrong_donor_forbidden",
+    );
+    if (wrongDonor.donor_product_id !== legacy.donor_product_id
+      || legacy.finding !== "WRONG_PRODUCT_DONOR"
+      || legacy.canonical_use_allowed !== false) {
+      throw new Error("legacy wrong-product donor is not proven forbidden");
+    }
   }
 
   const repair = record(proposal.proposed_repair, "proposed_repair");
@@ -774,7 +774,7 @@ async function executeWalmartListingSingleReview(
     throw new Error("Product Truth expected title/count differs from the review listing");
   }
   const targetSurface = buildWalmartListingReviewSurface({
-    candidate,
+    diagnosis,
     expected,
     title,
     description: after.description,
@@ -896,14 +896,14 @@ async function executeWalmartListingSingleRepairPreparation(
   const after = record(repair.after, "proposed_repair.after");
   const title = requiredText(listing.title, "repair review title");
   const baselineSurface = buildWalmartListingReviewSurface({
-    candidate,
+    diagnosis: diagnosisFile.value as unknown as JsonObject,
     expected,
     title,
     description: before.description,
     bullets: before.bullets,
   });
   const targetSurface = buildWalmartListingReviewSurface({
-    candidate,
+    diagnosis: diagnosisFile.value as unknown as JsonObject,
     expected,
     title,
     description: after.description,

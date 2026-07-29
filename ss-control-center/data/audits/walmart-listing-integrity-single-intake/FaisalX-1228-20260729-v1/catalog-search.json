@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "itemId": "8393619891",
+      "isMarketPlaceItem": true,
+      "images": [
+        {
+          "url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png"
+        }
+      ],
+      "customerRating": "5.0",
+      "price": {
+        "amount": "60.97",
+        "currency": "USD"
+      },
+      "description": "<li>Baked with a delicious blend of oats, sunflower seeds and flaxseed providing a rich, nutritious flavor</li><li>Arnold multi-grain bread is free from artificial colors, artificial flavors,</li>",
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "brand": "Arnold",
+      "productType": "Breads & Buns",
+      "standardUpc": [
+        "00684611899385"
+      ],
+      "properties": {
+        "numReviews": "2",
+        "categories": [
+          "Food",
+          "Bakery & Bread",
+          "Bread",
+          "Multigrain Bread"
+        ]
+      }
+    }
+  ],
+  "relatedQueries": []
+}

@@ -1,0 +1,58 @@
+{
+  "approvalId": "owner-ptlb-wave-9127dd9878343adc6685f40f",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "f4da0733fb0713e087ac0e5db902b6a526d07ba46f9caaad41840f63f4774905",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T06:47:55.490Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 6,
+    "exactExistingRows": 0,
+    "insertedRows": 79,
+    "targets": 11
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-9127dd9878343adc6685f40f",
+  "planSha256": "d0758fde53f4ae09eaa4241c810d86cca99eea26f4d01062c33135e367a23532",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.2.0",
+  "startedAt": "2026-07-29T06:47:27.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "walmart:1:FaisalX-2213",
+      "walmart:1:FaisalX-2214",
+      "walmart:1:FaisalX-2215",
+      "walmart:1:FaisalX-3451",
+      "walmart:1:FaisalX-3452",
+      "walmart:1:FaisalX-3965",
+      "walmart:1:RizwanX-163",
+      "walmart:1:RizwanX-164",
+      "walmart:1:RizwanX-165",
+      "walmart:1:RizwanX-2705",
+      "walmart:1:RizwanX-303"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 11
+  }
+}

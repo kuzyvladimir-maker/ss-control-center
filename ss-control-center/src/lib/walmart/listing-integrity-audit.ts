@@ -452,6 +452,7 @@ function projectAttribute(
   }
   if (name === "inner item count"
     || name === "count"
+    || name === "total count"
     || (name === "piece count" && options.preferCountOverPieceCount !== true)) {
     const count = exactPositiveInteger(value);
     return count === null ? null

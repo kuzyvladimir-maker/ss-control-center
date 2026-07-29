@@ -1,0 +1,560 @@
+{
+  "schema_version": "walmart-listing-single-process-report/v1",
+  "created_at": "2026-07-29T05:32:43.011Z",
+  "listing_key": "walmart:1:FaisalX-1228",
+  "inputs": {
+    "product_truth_file_sha256": "eb437e387f55da75c1f623cfe153a62d26bab2eb29f6c712046d73ef331c9e58",
+    "buyer_snapshot_file_sha256": "38b9976ffa4fe65e2f048698d0bebcccabb0416273d337634d7fed071dba5def",
+    "buyer_pdp_file_sha256": "345f0273cb047f5e4bccc8527a477ef82d9d5546cf4b082186bde33bf1ff9733",
+    "observations_file_sha256": "6df02c992db6cd33db9df0415f8be73745d1df79c86c15702a022e23819ba6a5",
+    "image_assets": [
+      {
+        "slot": "MAIN",
+        "sha256": "0e303024206f31d3cd4f4ca141a263f493a87e738d5bb7aef450b3b5db868440",
+        "bytes": 580546
+      },
+      {
+        "slot": "GALLERY_1",
+        "sha256": "30f5a8e434637a5b53efe8ff2d855a346447a9096d49d04b301519bda636e2a8",
+        "bytes": 403667
+      },
+      {
+        "slot": "GALLERY_2",
+        "sha256": "aa1f0e2caf55861444823053bfde139696adbc594d448a20a3b118e52745759d",
+        "bytes": 390134
+      }
+    ]
+  },
+  "outcome": {
+    "status": "REVIEW",
+    "blockers": [
+      "description/bullets contain no expected identity evidence",
+      "typed identity attributes are incomplete or non-matching",
+      "required typed package attributes are missing",
+      "13 source attributes are not covered by the deterministic mapper",
+      "MAIN contains an unparsed outer-package claim",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-1: required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread; required variant evidence missing: grain multi, Multi-Grain, multigrain; identity readability is partial",
+      "gallery-2: required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread; required variant evidence missing: grain multi, Multi-Grain, multigrain; identity readability is partial"
+    ],
+    "next_step": "MANUAL_OR_ADDITIONAL_EVIDENCE_REVIEW"
+  },
+  "declared_consistency": {
+    "schema_version": "walmart-listing-declared-consistency/v1",
+    "listing_key": "walmart:1:FaisalX-1228",
+    "captured_at": "2026-07-29T05:30:32.726Z",
+    "authority": {
+      "establishes_product_truth": false,
+      "authorizes_repair": false,
+      "basis": "LIVE_LISTING_SELF_CONSISTENCY_ONLY"
+    },
+    "declared_outer_units": {
+      "status": "EXACT",
+      "value": 6,
+      "phrases": [
+        "Pack of 6"
+      ]
+    },
+    "verdict": "NO_CONTRADICTION_FOUND",
+    "findings": [],
+    "next_step": "ENRICH_EXACT_PRODUCT_TRUTH",
+    "body_sha256": "6e6760227cf33a95bf2609107809f77d0e866d82df883e0a21b4d0817850b3df"
+  },
+  "detector_input": {
+    "schema_version": "walmart-listing-integrity-input/v1",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1228",
+      "listing_key": "walmart:1:FaisalX-1228",
+      "item_id": "8393619891",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-29T05:30:32.726Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1228",
+      "product_truth_snapshot_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1228",
+      "catalog_truth_export_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1228",
+      "catalog_truth_preflight_sha256": "68e8916feff446d9d9d9fcc3eedf726390861acd33a0c41835ea5add271054f9",
+      "truth_revision_id": "sce:3cd47747c54b197491838ff34ef65cadb50bd0b5f0dfc297637883e6562a7ebb",
+      "truth_revision_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "truth_approval_sha256": "6846881732145fec8f184b4307299ca19621738534824bb6ff51f640eb0f136a",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1228",
+      "buyer_index_body_sha256": "a9e4c56f0cd4f3d5f2f105e9fab0f09ce463abed0071ac292814374688a9bef8",
+      "buyer_snapshot_id": "walmart-buyer-20260729T053032Z-a9e4c56f0cd4",
+      "buyer_snapshot_body_sha256": "a9e4c56f0cd4f3d5f2f105e9fab0f09ce463abed0071ac292814374688a9bef8",
+      "buyer_payload_sha256": "7a8293e3aca1377e990444d02643a0b8e47f76b00e2c110b063d20ec75c894a5",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1228",
+      "surface_snapshot_body_sha256": "a13f9aa8e7af8190ed34b2cf748abb73b4af52557674dd8d740113437c254c14",
+      "surface_payload_sha256": "7a8293e3aca1377e990444d02643a0b8e47f76b00e2c110b063d20ec75c894a5"
+    },
+    "expected": {
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "outer_units": 6,
+      "identity": {
+        "brand_aliases": [
+          "arnold"
+        ],
+        "product_marker_groups": [
+          [
+            "bread grains healthy whole",
+            "Whole Grains Healthy Bread"
+          ]
+        ],
+        "variant_marker_groups": [
+          [
+            "grain multi"
+          ],
+          [
+            "Multi-Grain"
+          ],
+          [
+            "multigrain"
+          ]
+        ],
+        "forbidden_markers": []
+      },
+      "package_facts": [
+        {
+          "kind": "net_content",
+          "requirement": "required",
+          "value": 680.388555,
+          "unit": "g"
+        }
+      ],
+      "truth_source": "recipe"
+    },
+    "surface": {
+      "title": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain Bread, Bag (Pack of 6)",
+      "description": "Arnold Whole Grains Healthy Multi Grain Bread is baked with the goodness of grains, making it a simple choice that supports your goal of living a balanced life. Filled with a delicious blend of diverse grains, this whole grain bread loaf gives your favorite sandwiches a rich, nutritional flavor. Free from artificial colors, flavors and preservatives, as well as high fructose corn syrup, this loaf of bread delivers nutrition in every bite and is heart healthy. Arnold Multi-Grain Bread provides a great foundation for savory egg salad sandwiches and other tasty meals whether you are at home, at work or need on the go snacks. This sandwich bread is also great for peanut butter and jelly or deli sandwiches as part of a school lunch. Enjoy a slice of Arnold Whole Grains Healthy Multi Grain Bread as your morning toast topped with butter and jelly or use it in other kitchen creations. Arnold Whole Grains Bread offers delicious nutrition for your balanced life from an expert name in bread. This item is Shelf Stable. Size Description: Regular.",
+      "bullets": [
+        "Baked with a delicious blend of oats, sunflower seeds and flaxseed providing a rich, nutritious flavor",
+        "Arnold multi-grain bread is free from artificial colors, artificial flavors, artificial preservatives and high fructose corn syrup",
+        "This hearty whole grain bread is great for chicken salad sandwiches, toasting and topping with butter, making a classic PB and J and more"
+      ],
+      "attribute_claims": [
+        {
+          "field_path": "product.specifications[0].Brand",
+          "kind": "brand",
+          "text": "Arnold"
+        },
+        {
+          "field_path": "product.specifications[1].Bread & bun type",
+          "kind": "product",
+          "text": "Sandwich Bread Loaf"
+        },
+        {
+          "field_path": "product.specifications[3].Flavor",
+          "kind": "variant",
+          "text": "Multigrain"
+        },
+        {
+          "field_path": "product.specifications[4].Piece count",
+          "kind": "inner_item_count",
+          "value": 6,
+          "unit": "count"
+        },
+        {
+          "field_path": "product.specifications[5].Multipack quantity",
+          "kind": "outer_units",
+          "value": 6,
+          "unit": "count"
+        }
+      ],
+      "unmapped_attributes": [
+        {
+          "field_path": "product.specifications[2].Grain type",
+          "value_sha256": "ddd7314bf74d7edde40a2cf2381aeb152ba1ce315e6a21111313528406243079"
+        },
+        {
+          "field_path": "product.specifications[6].Food form",
+          "value_sha256": "52f3c4f0eca9df16c4d03a0fa4779550c4cb05f04576696bb5f31a1c6b38146e"
+        },
+        {
+          "field_path": "product.specifications[7].Size",
+          "value_sha256": "002e0a5591a36a45843d67b787a52447514bbb319f9b19f293ef323fc0f6833b"
+        },
+        {
+          "field_path": "product.specifications[8].Food condition",
+          "value_sha256": "b65dff99b92126fd18da6c81549b731415dc24aa5acdf2144c50fbe073ef63a0"
+        },
+        {
+          "field_path": "product.specifications[9].Texture",
+          "value_sha256": "d266d83ec490df4e229674bf9ef59479c309d1d6655cf563a13f10d7957de437"
+        },
+        {
+          "field_path": "product.specifications[10].Product net content uom",
+          "value_sha256": "17b1293bcc3fef323c5406dec70c0195ae6a8295fefe87b595e3b86bf3cb7b16"
+        },
+        {
+          "field_path": "product.specifications[11].Product net content parent",
+          "value_sha256": "4ccedb5c427f338da9fb57fed34b6eb6f1c38c89cf84d505ab5fac01dfae6fb4"
+        },
+        {
+          "field_path": "product.specifications[12].Manufacturer",
+          "value_sha256": "dcf903f529ecd3d913c6201a87615e619983ebfd499714975b3b30b916bb0215"
+        },
+        {
+          "field_path": "product.specifications[13].Product line",
+          "value_sha256": "9b94f2bb8ea384a5aff199552f647efd3f73775a5779add2c8bc991dbd6df614"
+        },
+        {
+          "field_path": "product.specifications[14].Container type",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[15].Material",
+          "value_sha256": "4742edd3b83b8e57e829187ca633120f33c12cb0ad3d871551d293b5fb1e279e"
+        },
+        {
+          "field_path": "product.specifications[16].Size descriptor",
+          "value_sha256": "cf73746490803a9f136376b95338ad86c3831e081d99da1523e9e2d02e906634"
+        },
+        {
+          "field_path": "product.specifications[17].Food preparation method",
+          "value_sha256": "4f61b1db70c3ce957b7201c18bb20955cd1e1325a8c545d573e696d1e4d05234"
+        }
+      ]
+    },
+    "images": {
+      "assets": [
+        {
+          "slot": "main",
+          "source_url": "https://i5.walmartimages.com/seo/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6_59cb8dd5-a244-4adb-b1e9-6e4285b8a3d7.8e0157eb37591298700948908adb3c95.png",
+          "sha256": "0e303024206f31d3cd4f4ca141a263f493a87e738d5bb7aef450b3b5db868440",
+          "byte_length": 580546,
+          "decoded_width": 2200,
+          "decoded_height": 2200,
+          "dhash64": "00dadadad688c9d2",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-1",
+          "source_url": "https://i5.walmartimages.com/asr/3a8351b6-c943-4cde-942a-3f849a63a281.ea9753a00b2823990ca3ad8b58dd2b60.jpeg",
+          "sha256": "30f5a8e434637a5b53efe8ff2d855a346447a9096d49d04b301519bda636e2a8",
+          "byte_length": 403667,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "050f0d0116031f1b",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        },
+        {
+          "slot": "gallery-2",
+          "source_url": "https://i5.walmartimages.com/asr/32cb9c41-d6c8-4d34-accf-5065049afa15.94f40e3294fd1aca83012ddd25d96633.jpeg",
+          "sha256": "aa1f0e2caf55861444823053bfde139696adbc594d448a20a3b118e52745759d",
+          "byte_length": 390134,
+          "decoded_width": 2000,
+          "decoded_height": 2000,
+          "dhash64": "050f0d0149110a00",
+          "buyer_facing_verified": true,
+          "surface": "buyer_pdp"
+        }
+      ],
+      "evidence": [
+        {
+          "slot": "main",
+          "asset_sha256": "0e303024206f31d3cd4f4ca141a263f493a87e738d5bb7aef450b3b5db868440",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_1ce9948ce700378da192",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "ARNOLD",
+            "visible_product_text": "Whole Grains HEALTHY MULTI-GRAIN",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "24 oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "6 bags visible in 2x3 grid"
+            ],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "ARNOLD on each bag",
+              "Whole Grains HEALTHY MULTI-GRAIN on each bag",
+              "24 oz on each bag",
+              "6 repeated identical packages in 2 rows of 3"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-1",
+          "asset_sha256": "30f5a8e434637a5b53efe8ff2d855a346447a9096d49d04b301519bda636e2a8",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_d75811e1729c17046044",
+            "visual_role": "lifestyle",
+            "visible_brand_text": "ARNOLD",
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "partial",
+            "evidence": [
+              "ARNOLD logo and banner visible",
+              "DELICIOUS & WHOLESOME text",
+              "sandwich with bread shown, no package present",
+              "red background"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        },
+        {
+          "slot": "gallery-2",
+          "asset_sha256": "aa1f0e2caf55861444823053bfde139696adbc594d448a20a3b118e52745759d",
+          "state": "observed",
+          "observation": {
+            "image_id": "i_b50c2336171f4ba08122",
+            "visual_role": "lifestyle",
+            "visible_brand_text": "ARNOLD",
+            "visible_product_text": null,
+            "visible_variant_text": null,
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "unknown",
+              "value": null,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "not_a_grid",
+            "front_visibility": "not_applicable",
+            "background": "colored",
+            "multiple_distinct_products": "no",
+            "readable_identity": "partial",
+            "evidence": [
+              "ARNOLD logo and banner visible",
+              "NO HIGH FRUCTOSE CORN SYRUP text",
+              "open-face toast with toppings shown, no package present",
+              "red background"
+            ],
+            "flags": []
+          },
+          "auxiliary_ocr": {
+            "ocr_texts": []
+          },
+          "local_ocr_truncated": false
+        }
+      ],
+      "duplicate_summary": null
+    }
+  },
+  "detector_report": {
+    "schema_version": "walmart-listing-integrity-report/v1",
+    "input_body_sha256": "cb8ef43348cc2d532944879036f4fd76b522c06bb0c1af484640f81b843a1b3f",
+    "listing": {
+      "channel": "WALMART_US",
+      "store_index": 1,
+      "sku": "FaisalX-1228",
+      "listing_key": "walmart:1:FaisalX-1228",
+      "item_id": "8393619891",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE",
+      "captured_at": "2026-07-29T05:30:32.726Z",
+      "composition": "same_product"
+    },
+    "source_bindings": {
+      "product_truth_snapshot_id": "product-truth-read-contract/3.2.0:walmart:1:FaisalX-1228",
+      "product_truth_snapshot_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "catalog_truth_export_id": "single-diagnostic:walmart:1:FaisalX-1228",
+      "catalog_truth_export_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "catalog_truth_case_id": "single-diagnostic-case:walmart:1:FaisalX-1228",
+      "catalog_truth_preflight_sha256": "68e8916feff446d9d9d9fcc3eedf726390861acd33a0c41835ea5add271054f9",
+      "truth_revision_id": "sce:3cd47747c54b197491838ff34ef65cadb50bd0b5f0dfc297637883e6562a7ebb",
+      "truth_revision_body_sha256": "926e0f09bb7960ee8b343035fe0e961805c6ab9fe7581493a0bef43ee9002417",
+      "truth_approval_sha256": "6846881732145fec8f184b4307299ca19621738534824bb6ff51f640eb0f136a",
+      "buyer_index_id": "single-buyer-index:walmart:1:FaisalX-1228",
+      "buyer_index_body_sha256": "a9e4c56f0cd4f3d5f2f105e9fab0f09ce463abed0071ac292814374688a9bef8",
+      "buyer_snapshot_id": "walmart-buyer-20260729T053032Z-a9e4c56f0cd4",
+      "buyer_snapshot_body_sha256": "a9e4c56f0cd4f3d5f2f105e9fab0f09ce463abed0071ac292814374688a9bef8",
+      "buyer_payload_sha256": "7a8293e3aca1377e990444d02643a0b8e47f76b00e2c110b063d20ec75c894a5",
+      "surface_snapshot_id": "single-surface:walmart:1:FaisalX-1228",
+      "surface_snapshot_body_sha256": "a13f9aa8e7af8190ed34b2cf748abb73b4af52557674dd8d740113437c254c14",
+      "surface_payload_sha256": "7a8293e3aca1377e990444d02643a0b8e47f76b00e2c110b063d20ec75c894a5"
+    },
+    "text_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "title_identity": "MATCH",
+        "title_outer_units": "MATCH",
+        "title_package_facts": "MATCH",
+        "body_identity": "UNKNOWN",
+        "body_outer_units": "NOT_APPLICABLE",
+        "body_package_facts": "NOT_APPLICABLE",
+        "attributes_identity": "UNKNOWN",
+        "attributes_outer_units": "MATCH",
+        "attributes_package_facts": "UNKNOWN"
+      },
+      "hard_failures": [],
+      "review_reasons": [
+        "description/bullets contain no expected identity evidence",
+        "typed identity attributes are incomplete or non-matching",
+        "required typed package attributes are missing",
+        "13 source attributes are not covered by the deterministic mapper"
+      ]
+    },
+    "main_decision": {
+      "verdict": "REVIEW",
+      "checks": {
+        "identity": "UNKNOWN",
+        "package_facts": {
+          "net_content": "MATCH",
+          "inner_item_count": "NOT_APPLICABLE"
+        },
+        "external_quantity": "MATCH",
+        "single_package_per_cell": "MATCH",
+        "front": "MATCH",
+        "background": "MATCH",
+        "no_mixed_product": "MATCH"
+      },
+      "hard_failures": [],
+      "unknowns": [
+        "required product markers missing: bread grains healthy whole|Whole Grains Healthy Bread",
+        "required variant markers missing: multigrain"
+      ]
+    },
+    "gallery_decisions": [
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-1",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread",
+          "required variant evidence missing: grain multi, Multi-Grain, multigrain",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      },
+      {
+        "schema_version": "walmart-gallery-audit/v1",
+        "slot": "gallery-2",
+        "verdict": "REVIEW",
+        "matched_component_id": null,
+        "checks": {
+          "identity": "UNKNOWN",
+          "package_facts": {
+            "net_content": "NOT_VISIBLE",
+            "inner_item_count": "NOT_APPLICABLE"
+          }
+        },
+        "hard_failures": [],
+        "review_reasons": [
+          "required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread",
+          "required variant evidence missing: grain multi, Multi-Grain, multigrain",
+          "identity readability is partial"
+        ],
+        "missing_reason": null,
+        "technical_error": null
+      }
+    ],
+    "duplicate_summary": {
+      "source_binding_sha256": "e43c25508f6563755c68f1e9a140cf2c077be39ce0124f4c4ed03b9fce57aa9b",
+      "dhash_distance_threshold": 5,
+      "exact_duplicate_groups": 0,
+      "near_duplicate_pairs": 0,
+      "missing_assets": 0,
+      "technical_errors": 0
+    },
+    "engine_versions": {
+      "listing_engine": "walmart-listing-integrity-engine/v1",
+      "blind_prompt": "walmart-visual-blind/v4",
+      "main_comparator": "walmart-visual-comparator/v5",
+      "gallery_comparator": "walmart-gallery-audit/v1"
+    },
+    "overall_verdict": "REVIEW",
+    "blocking_reasons": [],
+    "review_reasons": [
+      "description/bullets contain no expected identity evidence",
+      "typed identity attributes are incomplete or non-matching",
+      "required typed package attributes are missing",
+      "13 source attributes are not covered by the deterministic mapper",
+      "MAIN contains an unparsed outer-package claim",
+      "source artifacts, surface snapshot, and image bytes were not independently verified",
+      "blind observation and local OCR artifacts were not independently verified",
+      "gallery-1: required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread; required variant evidence missing: grain multi, Multi-Grain, multigrain; identity readability is partial",
+      "gallery-2: required product evidence missing: bread grains healthy whole|Whole Grains Healthy Bread; required variant evidence missing: grain multi, Multi-Grain, multigrain; identity readability is partial"
+    ],
+    "provenance": null,
+    "assurance": {
+      "compilation_mode": "input_only",
+      "source_artifacts_verified": false,
+      "surface_snapshot_verified": false,
+      "asset_bytes_verified": false,
+      "observation_artifacts_verified": false,
+      "caller_verdicts_accepted": false,
+      "image_decisions_recomputed": true,
+      "unknown_promoted_to_pass": false,
+      "network_calls": 0,
+      "model_calls": 0,
+      "marketplace_writes": 0,
+      "database_writes": 0
+    },
+    "report_id": "walmart-integrity-1-9ab15a4163140c48",
+    "body_sha256": "9ab15a4163140c48ba8c5f5dfbaf5737f15cb61444eeacbfad59174e1003c02a"
+  },
+  "assurance": {
+    "input_files_read_once": true,
+    "image_sha256_verified": true,
+    "walmart_reads": 0,
+    "walmart_writes": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "body_sha256": "a743d8520bb4d8b71212876b311cab0d07275ceab3ce6c6236cbc749483029a4"
+}
