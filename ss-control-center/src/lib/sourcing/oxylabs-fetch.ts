@@ -341,6 +341,7 @@ export function parseOxylabsWalmartProductResult(
     ? content.general as {
       url?: unknown;
       title?: unknown;
+      brand?: unknown;
       description?: unknown;
       main_image?: unknown;
       images?: unknown;
@@ -354,6 +355,9 @@ export function parseOxylabsWalmartProductResult(
   ].filter((value): value is string => value !== null))];
   const responseItemId = responseIds.length === 1 ? responseIds[0]! : "";
   const title = typeof general?.title === "string" ? general.title.trim() : "";
+  const brand = typeof general?.brand === "string"
+    ? general.brand.trim()
+    : "";
   const seller = content?.seller && typeof content.seller === "object"
     ? content.seller as { name?: unknown }
     : null;
@@ -400,6 +404,7 @@ export function parseOxylabsWalmartProductResult(
     localityEvidence: locality.localityProven ? "zip_scoped" : "national_unscoped",
     observedAt,
     title,
+    ...(brand ? { brand } : {}),
     description: typeof general?.description === "string"
       ? general.description
       : null,

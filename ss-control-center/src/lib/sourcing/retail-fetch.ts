@@ -34,6 +34,8 @@ export type RetailOffer = {
   localityEvidence: "zip_scoped" | "store_scoped" | "national_unscoped" | null;
   observedAt: string;
   title: string | null;
+  /** Optional retailer-provided structured brand; never inferred from title. */
+  brand?: string | null;
   /**
    * Optional, explicitly audited identity-comparison title. The observed title
    * above is never replaced. This is used only for a narrowly versioned
@@ -224,11 +226,15 @@ function hasStructuredDiscriminator(cp: CanonicalProduct): boolean {
 // and cannot become exact content/cost evidence until separately certified.
 export function tokenGate(
   offerTitle: string | null,
-  cp: CanonicalProduct
+  cp: CanonicalProduct,
+  offerBrand?: string | null,
 ): { ok: boolean; reason: string; identityMatch: CanonicalProductMatchResult | null } {
   if (!offerTitle?.trim()) return { ok: false, reason: "no title", identityMatch: null };
   if (hasStructuredDiscriminator(cp)) {
-    const identityMatch = matchCanonicalProductTitle(canonicalIdentity(cp), { title: offerTitle });
+    const identityMatch = matchCanonicalProductTitle(canonicalIdentity(cp), {
+      title: offerTitle,
+      brand: offerBrand,
+    });
     return identityMatch.verdict === "REJECT"
       ? { ok: false, reason: `canonical reject: ${identityMatch.reasonCodes.join(",")}`, identityMatch }
       : { ok: true, reason: identityMatch.verdict, identityMatch };
@@ -442,7 +448,11 @@ export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffe
   const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false, identityMatch: null as CanonicalProductMatchResult | null };
   if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
   if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
-  const tg = tokenGate(offer.identityEvidenceTitle ?? offer.title, cp);
+  const tg = tokenGate(
+    offer.identityEvidenceTitle ?? offer.title,
+    cp,
+    offer.brand,
+  );
   if (!tg.ok) return { ...base, rejectReason: tg.reason, identityMatch: tg.identityMatch };
   if (offer.price === null) return { ...base, rejectReason: "no price" };
   const isBase = (offer.packSizeSeen ?? 1) === 1;

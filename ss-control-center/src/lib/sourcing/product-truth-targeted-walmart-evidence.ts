@@ -6,6 +6,7 @@ import {
   CANONICAL_TITLE_NEUTRAL_TOKENS,
   CANONICAL_PRODUCT_MATCHER_VERSION,
   matchCanonicalProductTitle,
+  normalizeIdentityTokens,
   type CanonicalProductIdentity,
 } from "./canonical-product-match";
 import {
@@ -314,20 +315,62 @@ function canonicalProductFromTarget(target: ProductTruthTargetedWalmartEvidenceT
   };
 }
 
+export const WALMART_STRUCTURED_BRAND_TITLE_NORMALIZATION =
+  "walmart-structured-brand-title/1.0.0" as const;
+
 /**
  * Walmart currently inserts the inclusive merchandising phrase
  * "for kids and adults" into otherwise identical grocery titles. It describes
  * the same all-ages item, not a kids-only/adults-only variant. Preserve the
  * source title and record a second comparison title only when the complete
  * phrase occurs exactly once; partial audience wording remains identity-bearing.
+ *
+ * Oxylabs' dedicated Walmart product parser also returns `general.brand`
+ * independently from `general.title`. Some exact Walmart titles omit the
+ * repeated brand text. Only an exact token-equal structured brand may supply
+ * that omitted prefix in the comparison title; the observed title is retained
+ * unchanged and every other identity/size/pack/unexplained-token gate still runs.
  */
-function withTargetedWalmartIdentityEvidenceTitle(offer: RetailOffer): RetailOffer {
-  const evidence = walmartIdentityEvidenceTitle(offer.title);
-  if (!evidence.identityEvidenceNormalization) return offer;
+function withTargetedWalmartIdentityEvidenceTitle(
+  offer: RetailOffer,
+  canonicalIdentity: CanonicalProductIdentity,
+): RetailOffer {
+  const audience = walmartIdentityEvidenceTitle(offer.title);
+  const normalizedOffer = audience.identityEvidenceNormalization
+    ? {
+      ...offer,
+      identityEvidenceTitle: audience.identityEvidenceTitle,
+      identityEvidenceNormalization: audience.identityEvidenceNormalization,
+    }
+    : offer;
+  const comparisonTitle =
+    normalizedOffer.identityEvidenceTitle ?? normalizedOffer.title;
+  const targetBrand = canonicalIdentity.brand?.trim() ?? "";
+  const observedBrand = normalizedOffer.brand?.trim() ?? "";
+  const targetBrandTokens = normalizeIdentityTokens(targetBrand);
+  const observedBrandTokens = normalizeIdentityTokens(observedBrand);
+  const structuredBrandExact =
+    targetBrandTokens.length > 0
+    && targetBrandTokens.length === observedBrandTokens.length
+    && targetBrandTokens.every(
+      (token, index) => token === observedBrandTokens[index],
+    );
+  if (!comparisonTitle || !structuredBrandExact) return normalizedOffer;
+
+  const titleProbe = matchCanonicalProductTitle(canonicalIdentity, {
+    title: comparisonTitle,
+    brand: observedBrand,
+  });
+  if (!titleProbe.reasonCodes.includes("TITLE_BRAND_NOT_FOUND")) {
+    return normalizedOffer;
+  }
   return {
-    ...offer,
-    identityEvidenceTitle: evidence.identityEvidenceTitle,
-    identityEvidenceNormalization: evidence.identityEvidenceNormalization,
+    ...normalizedOffer,
+    identityEvidenceTitle: `${observedBrand} ${comparisonTitle}`,
+    identityEvidenceNormalization: [
+      normalizedOffer.identityEvidenceNormalization,
+      WALMART_STRUCTURED_BRAND_TITLE_NORMALIZATION,
+    ].filter(Boolean).join("+"),
   };
 }
 
@@ -349,7 +392,10 @@ export function selectExactTargetedWalmartOffer(input: {
   const matches: ScoredOffer[] = [];
   const rejectedChecks: string[] = [];
   for (const [index, observedOffer] of input.result.offers.entries()) {
-    const offer = withTargetedWalmartIdentityEvidenceTitle(observedOffer);
+    const offer = withTargetedWalmartIdentityEvidenceTitle(
+      observedOffer,
+      canonicalIdentity,
+    );
     let normalizedUrl: string;
     try {
       normalizedUrl = normalizeExactWalmartProductUrl(
@@ -362,6 +408,7 @@ export function selectExactTargetedWalmartOffer(input: {
     }
     const titleMatch = matchCanonicalProductTitle(canonicalIdentity, {
       title: offer.identityEvidenceTitle ?? offer.title,
+      brand: offer.brand,
     });
     const scored = scoreOffer(offer, canonicalProduct);
     const checks: Array<readonly [boolean, string]> = [

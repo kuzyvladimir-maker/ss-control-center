@@ -722,6 +722,40 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
       trialExhausted: false,
     },
   }).retailerProductId, "34312392");
+  const structuredBrandOffer = selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        ...exactOffer,
+        title: "Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz",
+        brand: "RITZ",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  });
+  assert.equal(
+    structuredBrandOffer.identityEvidenceTitle,
+    "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz",
+  );
+  assert.equal(
+    structuredBrandOffer.identityEvidenceNormalization,
+    "walmart-structured-brand-title/1.0.0",
+  );
+  assert.throws(() => selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        ...exactOffer,
+        title: "Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz",
+        brand: "Oreo",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  }), /TITLE_BRAND_MISMATCH/);
   const currentWalmartTitle =
     "RITZ Bits Cheese Sandwich Crackers, Snacks for Kids and Adults, Lunch Snacks, 8.8 oz";
   const currentWalmartOffer = selectExactTargetedWalmartOffer({

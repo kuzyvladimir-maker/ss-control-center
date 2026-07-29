@@ -79,6 +79,7 @@ test("parses one direct Walmart product result without trusting the requested ID
         url: "https://www.walmart.com/ip/RITZ-Bits-Cheese/34312392",
         meta: { sku: "5207432412", gtin: "0044000035457" },
         title: "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz",
+        brand: "RITZ",
         description: "Exact product description.",
         main_image: "https://i5.walmartimages.com/seo/ritz-front.jpeg?odnWidth=612",
         images: [
@@ -108,6 +109,7 @@ test("parses one direct Walmart product result without trusting the requested ID
     localityEvidence: "zip_scoped",
     observedAt: "2026-07-27T12:00:00.000Z",
     title: "RITZ Bits Cheese Sandwich Crackers Lunch Snacks, 8.8 oz",
+    brand: "RITZ",
     description: "Exact product description.",
     keyFeatures: [],
     imageUrls: [
