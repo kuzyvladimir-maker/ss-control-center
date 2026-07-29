@@ -36,7 +36,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.6.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.0.0" as const;
+  "product-truth-legacy-bridge-policy/1.1.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -2116,17 +2116,31 @@ export function compileProductTruthLegacyBridgePlan(input: {
         );
       }
 
-      const isBundle = parsed.identity.is_bundle === true;
       const listingQuantity = positiveInteger(parsed.identity.units_in_listing) ?? 1;
+      const identityComponents = Array.isArray(parsed.identity.components)
+        ? parsed.identity.components as ParsedBundleComponent[]
+        : [];
+      const declaredBundle = parsed.identity.is_bundle === true;
+      // Historical identity rows sometimes called a same-product multipack a
+      // bundle while preserving no mixed component graph. Recovery is allowed
+      // only when the independent legacy BOM has exactly one base component
+      // and its quantity exactly equals the declared listing quantity. The
+      // component still has to pass the normal strict matcher; this structural
+      // repair by itself proves no product identity.
+      const recoverEmptyBundleAsMultipack =
+        declaredBundle
+        && identityComponents.length === 0
+        && listingQuantity > 1
+        && legacyComponents.length === 1
+        && legacyComponents[0].idx === 0
+        && positiveInteger(legacyComponents[0].qty) === listingQuantity;
+      const isBundle = declaredBundle && !recoverEmptyBundleAsMultipack;
       // A marketplace listing UPC identifies the sellable outer offer. It can
       // prove the donor base unit only for an explicitly single-unit listing;
       // multipacks and bundles must use component-level evidence instead.
       const listingGtin = isBundle || listingQuantity !== 1
         ? null
         : normalizeProductTruthBridgeGtin(listing.listingUpc);
-      const identityComponents = Array.isArray(parsed.identity.components)
-        ? parsed.identity.components as ParsedBundleComponent[]
-        : [];
       const expectedCount = isBundle ? identityComponents.length : 1;
       if (legacyComponents.length !== expectedCount) {
         scopeBlockers.push(bridgeError(

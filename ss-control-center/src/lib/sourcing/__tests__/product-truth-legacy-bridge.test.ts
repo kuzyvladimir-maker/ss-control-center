@@ -458,6 +458,53 @@ test("exact existing donor becomes a no-fetch canonicalization candidate", () =>
   assert.equal(plan.pricePolicy.maxAgeMs, 86_400_000);
 });
 
+test("an empty legacy bundle flag recovers only as an exact one-component multipack", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        units_in_listing: 4,
+        is_bundle: true,
+        components: [],
+      }),
+    }],
+    components: [component({ qty: 4 })],
+  });
+  const plan = compile(value);
+  assert.equal(plan.scopes[0].disposition, "EXACT_CANONICALIZATION_CANDIDATE");
+  assert.equal(plan.scopes[0].components.length, 1);
+  assert.equal(plan.scopes[0].components[0].qty, 4);
+  assert.equal(plan.scopes[0].components[0].matcherVerdict, "EXACT_IDENTITY");
+  assert.equal(
+    plan.scopes[0].blockers.some(
+      (blocker) => blocker.code === "PRODUCT_IDENTITY_INVALID",
+    ),
+    false,
+  );
+});
+
+test("an empty bundle flag with a mismatched BOM quantity remains invalid", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        units_in_listing: 4,
+        is_bundle: true,
+        components: [],
+      }),
+    }],
+    components: [component({ qty: 3 })],
+  });
+  const plan = compile(value);
+  assert.equal(plan.scopes[0].disposition, "QUARANTINE");
+  assert.equal(plan.scopes[0].components.length, 0);
+  assert.ok(
+    plan.scopes[0].blockers.some(
+      (blocker) => blocker.code === "PRODUCT_IDENTITY_INVALID",
+    ),
+  );
+});
+
 test("historical exact flag cannot admit Hot target matched to Maple donor", () => {
   const value = snapshot({
     listings: [{

@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
+  PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   type ProductTruthLegacyBridgePlan,
@@ -88,7 +89,7 @@ function plan(): ProductTruthLegacyBridgePlan {
   ];
   return {
     schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
-    policyVersion: "product-truth-legacy-bridge-policy/1.0.0",
+    policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
     generatedAt,
     source: {
       snapshotSchemaVersion: "product-truth-legacy-bridge-snapshot/1.6.0",
