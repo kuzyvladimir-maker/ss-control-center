@@ -24,11 +24,11 @@ import {
 import {
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
+import { CLAUDE, CLAUDE_MODEL_LABELS } from "@/lib/ai-models";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 
 type HouseBrand = "Salutem Vita" | "Starfit";
-type TextModel = "sonnet" | "opus";
 type PhotoStrategy = "reuse-donor" | "generate";
 type ImageQuality = "cheaper" | "best";
 type UncrustablesImageMode = "retail_boxes" | "individual_wraps";
@@ -370,7 +370,6 @@ export default function StudioStartPage() {
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [houseBrand, setHouseBrand] = useState<HouseBrand>("Salutem Vita");
-  const [textModel, setTextModel] = useState<TextModel>("opus");
   const [photoStrategy, setPhotoStrategy] = useState<PhotoStrategy>("reuse-donor");
   const [imageQuality, setImageQuality] = useState<ImageQuality>("cheaper");
   const [uncrustablesImageMode, setUncrustablesImageMode] =
@@ -422,12 +421,15 @@ export default function StudioStartPage() {
       body: JSON.stringify({
         prompt: prompt.trim(),
         channel,
-        house_brand: houseBrand,
-        text_model: textModel,
-        photo_strategy: photoStrategy,
-        image_quality: imageQuality,
-        uncrustables_image_mode: uncrustablesImageMode,
         target_margin_pct: targetMargin ? Number(targetMargin) : null,
+        ...(channel !== "WALMART"
+          ? {
+              house_brand: houseBrand,
+              photo_strategy: photoStrategy,
+              image_quality: imageQuality,
+              uncrustables_image_mode: uncrustablesImageMode,
+            }
+          : {}),
         ...(channel === "WALMART" && walmartShipping
           ? {
               walmart_shipping: {
@@ -735,6 +737,15 @@ export default function StudioStartPage() {
           !readiness.catalog.enough_ready ||
           readiness.diagnosis.capability_gaps.length > 0
         ) {
+          if (
+            readiness.diagnosis.capability_gaps.length === 0 &&
+            readiness.fallback.engine === "TARGETED_WALMART_EVIDENCE" &&
+            readiness.fallback.target_donor_product_ids.length > 0
+          ) {
+            await startWalmartDataCollection();
+            setSubmitting(false);
+            return;
+          }
           setError(
             "Generation did not start. Review Product data readiness and the recommended next step below.",
           );
@@ -1124,21 +1135,31 @@ export default function StudioStartPage() {
                       {walmartReadiness.fallback.engine
                         === "TARGETED_WALMART_EVIDENCE"
                         && walmartReadiness.fallback
-                          .target_donor_product_ids.length > 0 && (
+                          .target_donor_product_ids.length > 0
+                        && !walmartCollection && (
                           <div className="mt-3">
-                            <Btn
-                              size="sm"
-                              variant="primary"
-                              onClick={startWalmartDataCollection}
-                              disabled={walmartCollectionLoading}
-                              loading={walmartCollectionLoading}
-                            >
-                              Prepare collection plans
-                            </Btn>
+                            {walmartCollectionLoading ? (
+                              <p className="font-medium text-ink-2">
+                                Preparing the exact no-spend collection plan…
+                              </p>
+                            ) : walmartCollectionError ? (
+                              <Btn
+                                size="sm"
+                                variant="primary"
+                                onClick={startWalmartDataCollection}
+                              >
+                                Retry plan preparation
+                              </Btn>
+                            ) : (
+                              <p className="text-ink-3">
+                                Prepare Walmart request will build this plan
+                                automatically at no cost, then show the exact
+                                quote for your approval.
+                              </p>
+                            )}
                             <p className="mt-1.5 text-[11px] text-ink-3">
-                              Prepares up to five independent exact-product
-                              jobs. No listing is published and no Walmart
-                              setting is changed.
+                              Nothing is published and no Walmart setting is
+                              changed.
                             </p>
                           </div>
                         )}
@@ -1370,7 +1391,9 @@ export default function StudioStartPage() {
           </>
         )}
 
-        {/* ADVANCED — only what the operator might want to tune: brand, model, photos, margin. */}
+        {/* ADVANCED — channel-specific controls only. Walmart preserves the
+            donor/manufacturer brand and exact catalog imagery, so Amazon
+            house-brand and Uncrustables controls must never enter that path. */}
         <div className="rounded-[12px] border border-rule bg-surface-tint/40">
           <button
             type="button"
@@ -1379,77 +1402,88 @@ export default function StudioStartPage() {
           >
             {showAdvanced ? <ChevronDown size={15} strokeWidth={1.9} /> : <ChevronRight size={15} strokeWidth={1.9} />}
             Advanced
-            <span className="ml-1 text-[11.5px] font-normal text-ink-4">brand · model · photos · margin</span>
+            <span className="ml-1 text-[11.5px] font-normal text-ink-4">
+              {channel === "WALMART"
+                ? "margin"
+                : "brand · photos · margin"}
+            </span>
           </button>
 
           {showAdvanced && (
             <div className="space-y-5 border-t border-rule px-3.5 py-4">
-              <Row label="House brand" hint="Which of your registered brands these publish under.">
-                <Segmented
-                  value={houseBrand}
-                  onChange={setHouseBrand}
-                  options={[
-                    { value: "Salutem Vita", label: "Salutem Vita" },
-                    { value: "Starfit", label: "Starfit" },
-                  ]}
-                />
-              </Row>
+              {channel !== "WALMART" && (
+                <>
+                  <Row label="House brand" hint="Which of your registered brands these publish under.">
+                    <Segmented
+                      value={houseBrand}
+                      onChange={setHouseBrand}
+                      options={[
+                        { value: "Salutem Vita", label: "Salutem Vita" },
+                        { value: "Starfit", label: "Starfit" },
+                      ]}
+                    />
+                  </Row>
 
-              <Row label="Text model" hint="The model that writes titles, bullets and descriptions.">
-                <Segmented
-                  value={textModel}
-                  onChange={setTextModel}
-                  options={[
-                    { value: "sonnet", label: "Cheaper · Sonnet 4.6" },
-                    { value: "opus", label: "Best · Opus 4.8" },
-                  ]}
-                />
-              </Row>
+                  <div className="rounded-[10px] border border-rule bg-bg-elev px-3 py-2.5 text-[11.5px] leading-relaxed text-ink-3">
+                    Text engine: {CLAUDE_MODEL_LABELS[CLAUDE.premium]}.
+                    Model versions are managed centrally and compatibility
+                    checked before deployment, not selected per listing.
+                  </div>
 
-              <Row label="Photos" hint="Reuse real catalog photos, or generate new ones.">
-                <Segmented
-                  value={photoStrategy}
-                  onChange={setPhotoStrategy}
-                  options={[
-                    { value: "reuse-donor", label: "Use catalog photos" },
-                    { value: "generate", label: "Generate" },
-                  ]}
-                />
-              </Row>
+                  <Row label="Photos" hint="Reuse real catalog photos, or generate new ones.">
+                    <Segmented
+                      value={photoStrategy}
+                      onChange={setPhotoStrategy}
+                      options={[
+                        { value: "reuse-donor", label: "Use catalog photos" },
+                        { value: "generate", label: "Generate" },
+                      ]}
+                    />
+                  </Row>
 
-              {photoStrategy === "generate" && (
-                <Row label="Image quality" hint="Cheaper or the best generator available.">
-                  <Segmented
-                    value={imageQuality}
-                    onChange={setImageQuality}
-                    options={[
-                      { value: "cheaper", label: "Cheaper" },
-                      { value: "best", label: "Best" },
-                    ]}
-                  />
-                </Row>
+                  {photoStrategy === "generate" && (
+                    <Row label="Image quality" hint="Cheaper or the best generator available.">
+                      <Segmented
+                        value={imageQuality}
+                        onChange={setImageQuality}
+                        options={[
+                          { value: "cheaper", label: "Cheaper" },
+                          { value: "best", label: "Best" },
+                        ]}
+                      />
+                    </Row>
+                  )}
+
+                  <Row
+                    label="Uncrustables image style"
+                    hint="Only affects Uncrustables own-brand sets outside the Walmart new-SKU branch."
+                  >
+                    <Segmented
+                      value={uncrustablesImageMode}
+                      onChange={setUncrustablesImageMode}
+                      options={[
+                        { value: "retail_boxes", label: "Retail boxes" },
+                        { value: "individual_wraps", label: "Individual wraps" },
+                      ]}
+                    />
+                  </Row>
+                </>
               )}
 
-              <Row
-                label="Uncrustables image style"
-                hint="Only affects Uncrustables (own-brand) sets: show real retail cartons, or the individual flavor-coloured sandwich wrappers."
-              >
-                <Segmented
-                  value={uncrustablesImageMode}
-                  onChange={setUncrustablesImageMode}
-                  options={[
-                    { value: "retail_boxes", label: "Retail boxes" },
-                    { value: "individual_wraps", label: "Individual wraps" },
-                  ]}
-                />
-              </Row>
+              {channel === "WALMART" && (
+                <div className="rounded-[10px] border border-rule bg-bg-elev px-3 py-2.5 text-[11.5px] leading-relaxed text-ink-3">
+                  Walmart preserves the exact manufacturer brand and verified
+                  donor product imagery. No house brand, Uncrustables style, or
+                  generative product redraw is applied.
+                </div>
+              )}
 
-              <Row label="Target margin" hint="Floor each listing must clear vs cost. Blank = global default. Price still comes from the economics module.">
+              <Row label="Target margin" hint="Floor each listing must clear vs cost. Blank = 30% for Walmart or the global channel default. Price still comes from the economics module.">
                 <div className="flex items-center gap-2">
                   <input
                     value={targetMargin}
                     onChange={(e) => setTargetMargin(e.target.value.replace(/[^0-9.]/g, ""))}
-                    placeholder="default"
+                    placeholder={channel === "WALMART" ? "30" : "default"}
                     inputMode="decimal"
                     className="w-28 rounded-[10px] border border-rule bg-surface px-3 py-2 text-[13.5px] text-ink outline-none placeholder:text-ink-4 focus:border-silver-line"
                   />

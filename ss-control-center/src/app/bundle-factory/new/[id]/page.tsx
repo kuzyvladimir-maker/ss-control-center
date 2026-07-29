@@ -47,7 +47,6 @@ export default async function StudioBatchPage({
   const prompt = typeof req.prompt === "string" ? req.prompt : "—";
   const channel = typeof req.channel === "string" ? CHANNEL_LABELS[req.channel] ?? req.channel : "—";
   const houseBrand = typeof req.house_brand === "string" ? req.house_brand : "—";
-  const textModel = req.text_model === "opus" ? "Opus 4.8" : req.text_model === "sonnet" ? "Sonnet 4.6" : "—";
   const photos = req.photo_strategy === "generate" ? "Generated" : "Catalog photos";
   const isCanonicalWalmart =
     req.workflow === "CANONICAL_WALMART_NEW_SKU";
@@ -92,8 +91,11 @@ export default async function StudioBatchPage({
           <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{prompt}</p>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-ink-3">
             <span>Sell on: <span className="text-ink-2">{channel}</span></span>
-            <span>Brand: <span className="text-ink-2">{houseBrand}</span></span>
-            <span>Model: <span className="text-ink-2">{textModel}</span></span>
+            {!isCanonicalWalmart && (
+              <>
+                <span>Brand: <span className="text-ink-2">{houseBrand}</span></span>
+              </>
+            )}
             <span>Photos: <span className="text-ink-2">{photos}</span></span>
           </div>
         </div>

@@ -20,7 +20,7 @@
  *
  * ⚠️  Before bumping a Claude model, glance at the migration notes:
  *   https://platform.claude.com/docs/en/about-claude/models/migration-guide
- *   New generations occasionally change the API (e.g. Sonnet 5 turns "thinking"
+ *   New generations occasionally change the API (e.g. Opus 5 turns "thinking"
  *   ON by default and rejects a non-default `temperature`). That is why we do
  *   NOT auto-pull the newest model at runtime — a human vets each bump.
  */
@@ -28,7 +28,7 @@
 // ── Anthropic / Claude ─────────────────────────────────────────────────────
 export const CLAUDE = {
   /** Deepest reasoning. */
-  premium: "claude-opus-4-8",
+  premium: "claude-opus-5",
   /** Default workhorse (was Sonnet 4.6 / 4.5 / 4.0 before 2026-06-30). */
   balanced: "claude-sonnet-5",
   /** Fast & cheap — high-volume / cached calls. */
@@ -53,7 +53,7 @@ export const PERPLEXITY = "sonar-pro";
 
 // ── Human-friendly labels for the Settings dropdowns ───────────────────────
 export const CLAUDE_MODEL_LABELS: Record<string, string> = {
-  [CLAUDE.premium]: "Claude Opus 4.8 (best quality)",
+  [CLAUDE.premium]: "Claude Opus 5 (best quality)",
   [CLAUDE.balanced]: "Claude Sonnet 5 (balanced, default)",
   [CLAUDE.cheap]: "Claude Haiku 4.5 (fastest, cheapest)",
 };

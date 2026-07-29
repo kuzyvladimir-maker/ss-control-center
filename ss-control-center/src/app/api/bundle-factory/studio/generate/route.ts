@@ -8,9 +8,9 @@
  *   products from the catalog and assembles the listings drains this batch.
  *
  *   Body: {
- *     prompt (required), channel, house_brand,
- *     text_model ("sonnet"|"opus"), photo_strategy ("reuse-donor"|"generate"),
- *     image_quality ("cheaper"|"best"), target_margin_pct?
+ *     prompt (required), channel, target_margin_pct?,
+ *     Amazon only: house_brand, photo_strategy ("reuse-donor"|"generate"), image_quality,
+ *     uncrustables_image_mode
  *   }
  *   Returns: { batch_id }
  */
@@ -39,7 +39,6 @@ import {
 export const dynamic = "force-dynamic";
 
 const HOUSE_BRANDS = ["Salutem Vita", "Starfit"] as const;
-const TEXT_MODELS = ["sonnet", "opus"] as const;
 const PHOTO_STRATEGIES = ["reuse-donor", "generate"] as const;
 const IMAGE_QUALITIES = ["cheaper", "best"] as const;
 // Own-brand (Uncrustables) main-image style: count-accurate retail cartons, or
@@ -59,14 +58,6 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
     return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
   }
-  const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
-  const textModel = isOneOf(TEXT_MODELS, body.text_model) ? body.text_model : "opus";
-  const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
-  const imageQuality = isOneOf(IMAGE_QUALITIES, body.image_quality) ? body.image_quality : "cheaper";
-  const uncrustablesImageMode = isOneOf(UNCRUSTABLES_IMAGE_MODES, body.uncrustables_image_mode)
-    ? body.uncrustables_image_mode
-    : "retail_boxes";
-
   const rawMargin = Number(body.target_margin_pct);
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
 
@@ -252,13 +243,22 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
     );
   }
 
+  // These controls belong to the Amazon/own-brand branch only. The Walmart
+  // branch above preserves manufacturer identity and exact donor imagery and
+  // therefore never parses, defaults, or persists them.
+  const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
+  const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
+  const imageQuality = isOneOf(IMAGE_QUALITIES, body.image_quality) ? body.image_quality : "cheaper";
+  const uncrustablesImageMode = isOneOf(UNCRUSTABLES_IMAGE_MODES, body.uncrustables_image_mode)
+    ? body.uncrustables_image_mode
+    : "retail_boxes";
+
   const batchRequest = {
     studio_version: 2,
     source: "prompt",
     prompt,
     channel,
     house_brand: houseBrand,
-    text_model: textModel,
     photo_strategy: photoStrategy,
     image_quality: imageQuality,
     uncrustables_image_mode: uncrustablesImageMode,

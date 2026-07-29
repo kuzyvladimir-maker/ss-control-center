@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("Walmart Studio exposes collection launch, progress, and readiness continuation", async () => {
+test("Walmart Studio automatically prepares collection, exposes approval, and resumes readiness", async () => {
   const page = await readFile(
     new URL(
       "../../../app/bundle-factory/new/page.tsx",
@@ -10,7 +10,9 @@ test("Walmart Studio exposes collection launch, progress, and readiness continua
     ),
     "utf8",
   );
-  assert.match(page, /Prepare collection plans/u);
+  assert.match(page, /await startWalmartDataCollection\(\)/u);
+  assert.match(page, /Preparing the exact no-spend collection plan/u);
+  assert.match(page, /Approve exact quote/u);
   assert.match(page, /\/api\/bundle-factory\/walmart\/data-collection/u);
   assert.match(page, /pollWalmartCollection/u);
   assert.match(page, /continueAfterCollection/u);
@@ -28,7 +30,32 @@ test("Walmart Studio exposes collection launch, progress, and readiness continua
   assert.match(page, /separate protected work item/u);
   assert.doesNotMatch(page, /current verified pilot can prepare 1–2 listings/u);
   assert.doesNotMatch(page, /supports only packs of 2 or 3/u);
+  assert.match(page, /channel !== "WALMART"[\s\S]*house_brand: houseBrand/u);
+  assert.doesNotMatch(page, /text_model:/u);
+  assert.match(page, /channel === "WALMART"[\s\S]*exact manufacturer brand/u);
   assert.doesNotMatch(page, /automatically approve/iu);
+});
+
+test("Walmart route never parses or persists Amazon-only Advanced controls", async () => {
+  const route = await readFile(
+    new URL(
+      "../../../app/api/bundle-factory/studio/generate/route.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const walmartBranch = route.slice(
+    route.indexOf('if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED")'),
+    route.indexOf("// These controls belong to the Amazon/own-brand branch only."),
+  );
+  assert.doesNotMatch(
+    walmartBranch,
+    /body\.(?:house_brand|text_model|photo_strategy|image_quality|uncrustables_image_mode)/u,
+  );
+  assert.doesNotMatch(
+    walmartBranch,
+    /house_brand:|text_model:|image_quality:|uncrustables_image_mode:/u,
+  );
 });
 
 test("readiness recommendation distinguishes targeted enrichment from broader demand discovery", async () => {

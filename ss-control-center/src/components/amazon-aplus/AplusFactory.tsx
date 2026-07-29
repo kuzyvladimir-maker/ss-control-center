@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Info, RefreshCw, Sparkles, ExternalLink, Eye, Check, X, Upload } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
+import { CLAUDE, CLAUDE_MODEL_LABELS } from "@/lib/ai-models";
 
 const STORES = [{ index: 1, label: "Salutem Solutions" }, { index: 3, label: "AMZ Commerce" }];
 
@@ -202,8 +203,8 @@ export function AplusFactory() {
           <span className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">Text model</span>
           <select value={textModel} onChange={(e) => setTextModel(e.target.value as typeof textModel)}
             className="rounded-md border border-rule bg-bg px-2 py-1 text-[12px] text-ink">
-            <option value="opus">Opus 4.8 (best, pricier)</option>
-            <option value="sonnet">Sonnet 4.6 (cheaper, fast)</option>
+            <option value="opus">{CLAUDE_MODEL_LABELS[CLAUDE.premium]}</option>
+            <option value="sonnet">{CLAUDE_MODEL_LABELS[CLAUDE.balanced]}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
