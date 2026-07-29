@@ -558,6 +558,126 @@ test("historical exact flag cannot admit Patties target matched to Links donor",
   assert.equal(plan.scopes[0].components[0].matcherVerdict, "REJECT");
 });
 
+test("a unique strict exact catalog donor repairs a stale neighboring-variant link", () => {
+  const value = snapshot({
+    components: [component({ donorProductId: "stale-donor" })],
+    donors: [
+      donor({
+        id: "stale-donor",
+        upc: null,
+        title: "Acme Crunch Chips Maple Bag 8 oz",
+      }),
+      donor({
+        id: "exact-donor",
+        upc: null,
+        title: "Acme Crunch Chips Barbecue Bag 8 oz",
+      }),
+    ],
+    offers: [offer({
+      id: "exact-offer",
+      donorProductId: "exact-donor",
+    })],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.equal(result.disposition, "EXACT_IDENTITY_ONLY_CANDIDATE");
+  assert.equal(result.identityProof, "STRICT_TITLE_MATCH");
+  assert.equal(result.matcherVerdict, "EXACT_IDENTITY");
+  assert.equal(result.donorProductId, "exact-donor");
+  assert.equal(result.legacyDonorProductId, "stale-donor");
+  assert.equal(result.donorOfferId, "exact-offer");
+});
+
+test("multiple strict exact catalog donors remain quarantined", () => {
+  const value = snapshot({
+    components: [component({ donorProductId: "stale-donor" })],
+    donors: [
+      donor({
+        id: "stale-donor",
+        upc: null,
+        title: "Acme Crunch Chips Maple Bag 8 oz",
+      }),
+      donor({
+        id: "exact-donor-a",
+        upc: null,
+        title: "Acme Crunch Chips Barbecue Bag 8 oz",
+      }),
+      donor({
+        id: "exact-donor-b",
+        upc: null,
+        title: "Acme Crunch Chips Barbecue Bag 8 oz",
+      }),
+    ],
+    offers: [],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.equal(result.disposition, "QUARANTINE");
+  assert.ok(result.blockers.some(
+    (blocker) => blocker.code === "DONOR_TITLE_MATCH_AMBIGUOUS",
+  ));
+});
+
+test("a unique strict exact donor with a conflicting canonical binding is not rematched", () => {
+  const targetVariantId =
+    compile(snapshot()).scopes[0].components[0].targetVariant?.canonicalVariantId;
+  assert.ok(targetVariantId);
+  const value = snapshot({
+    components: [component({ donorProductId: "stale-donor" })],
+    donors: [
+      donor({
+        id: "stale-donor",
+        upc: null,
+        title: "Acme Crunch Chips Maple Bag 8 oz",
+      }),
+      donor({
+        id: "bound-donor",
+        upc: null,
+        title: "Acme Crunch Chips Barbecue Bag 8 oz",
+      }),
+    ],
+    offers: [],
+    canonicalDonorBindings: [{
+      donorProductId: "bound-donor",
+      canonicalVariantId: `cpv1:${"f".repeat(64)}`,
+      decisionId: "decision-conflict",
+      decisionStatus: "exact_confirmed",
+      decidedAt: "2026-07-26T11:30:00.000Z",
+    }],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.notEqual(targetVariantId, `cpv1:${"f".repeat(64)}`);
+  assert.equal(result.disposition, "QUARANTINE");
+  assert.equal(result.donorProductId, "stale-donor");
+  assert.equal(result.matcherVerdict, "REJECT");
+});
+
+test("conflicting legacy donor links are not overridden by a catalog rematch", () => {
+  const value = snapshot({
+    components: [component({
+      donorProductId: "stale-donor",
+      contentDonorProductId: "exact-donor",
+    })],
+    donors: [
+      donor({
+        id: "stale-donor",
+        upc: null,
+        title: "Acme Crunch Chips Maple Bag 8 oz",
+      }),
+      donor({
+        id: "exact-donor",
+        upc: null,
+        title: "Acme Crunch Chips Barbecue Bag 8 oz",
+      }),
+    ],
+    offers: [offer({ donorProductId: "exact-donor" })],
+  });
+  const result = compile(value).scopes[0].components[0];
+  assert.equal(result.disposition, "QUARANTINE");
+  assert.equal(result.identityProof, "NONE");
+  assert.ok(result.blockers.some(
+    (blocker) => blocker.code === "LEGACY_DONOR_LINK_CONFLICT",
+  ));
+});
+
 test("cross-size donor is price-only and never content truth", () => {
   const value = snapshot({
     donors: [donor({

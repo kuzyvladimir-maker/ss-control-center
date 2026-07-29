@@ -36,7 +36,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.6.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.1.0" as const;
+  "product-truth-legacy-bridge-policy/1.2.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -77,6 +77,7 @@ export type ProductTruthBridgeBlockerCode =
   | "BUNDLE_COMPONENT_BRAND_UNPROVEN"
   | "TARGET_VARIANT_INVALID"
   | "DONOR_TITLE_MATCH_REJECTED"
+  | "DONOR_TITLE_MATCH_AMBIGUOUS"
   | "DONOR_TITLE_MATCH_ESTIMATE_ONLY"
   | "LIVE_BARCODE_EVIDENCE_INVALID"
   | "LIVE_BARCODE_IDENTITY_CONTRADICTION"
@@ -1146,6 +1147,10 @@ function componentPlan(input: {
   evaluatedAt: string;
   donorsById: ReadonlyMap<string, ProductTruthLegacyBridgeDonorRow>;
   donorsByGtin: ReadonlyMap<string, readonly ProductTruthLegacyBridgeDonorRow[]>;
+  donorsByLeadingTitleToken: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeDonorRow[]
+  >;
   canonicalDonorBindings: ReadonlyMap<
     string,
     readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
@@ -1157,7 +1162,7 @@ function componentPlan(input: {
   offersById: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow>;
   offersByDonor: ReadonlyMap<string, readonly ProductTruthLegacyBridgeOfferRow[]>;
 }): ProductTruthLegacyBridgeComponentPlan {
-  const blockers = [...(input.targetBlockers ?? [])];
+  let blockers = [...(input.targetBlockers ?? [])];
   if (!input.legacyComponent) {
     blockers.push(bridgeError("LEGACY_COMPONENT_MISSING", "no SkuComponent row exists at this index"));
   }
@@ -1252,28 +1257,9 @@ function componentPlan(input: {
       }
     }
   }
-  const donor = acceptedBarcodeDonor ?? exactGtinDonor ?? linkedDonor;
+  let donor = acceptedBarcodeDonor ?? exactGtinDonor ?? linkedDonor;
   if (link.donorProductId && !linkedDonor) {
     blockers.push(bridgeError("LEGACY_DONOR_ORPHANED", `DonorProduct ${link.donorProductId} does not exist`));
-  }
-  if (!donor) {
-    return {
-      componentIndex: input.componentIndex,
-      qty: input.quantity,
-      legacyComponentId: input.legacyComponent.id,
-      donorProductId: link.donorProductId,
-      legacyDonorProductId: link.donorProductId,
-      donorOfferId: null,
-      contentSourceOfferId: null,
-      identityProof: "NONE",
-      contentAssessment: null,
-      targetIdentity: resolvedTargetIdentity,
-      targetVariant: null,
-      matcherVerdict: null,
-      matcherReasonCodes: [],
-      disposition: "QUARANTINE",
-      blockers,
-    };
   }
 
   let targetVariant: ProductTruthBridgeCanonicalVariantProjection | null = null;
@@ -1290,7 +1276,7 @@ function componentPlan(input: {
       componentIndex: input.componentIndex,
       qty: input.quantity,
       legacyComponentId: input.legacyComponent.id,
-      donorProductId: donor.id,
+      donorProductId: donor?.id ?? link.donorProductId,
       legacyDonorProductId: link.donorProductId,
       donorOfferId: null,
       contentSourceOfferId: null,
@@ -1304,36 +1290,136 @@ function componentPlan(input: {
       blockers,
     };
   }
-  const existingCanonicalBindings =
-    input.canonicalDonorBindings.get(donor.id) ?? [];
-  const conflictingCanonicalBindings = existingCanonicalBindings.filter(
-    (binding) =>
-      binding.canonicalVariantId !== targetVariant.canonicalVariantId,
-  );
-  const physicallyEquivalentCanonicalBinding =
-    donor.identityStatus === "exact_confirmed"
-    &&
-    existingCanonicalBindings.length === 1
-    && conflictingCanonicalBindings.length === 1
-    && canonicalBindingMatchesPhysicalIdentityPartition(
-      existingCanonicalBindings[0]!,
+
+  // Conflicting legacy content links require adjudication. Independent GTIN or
+  // title evidence must not silently choose one side and erase that conflict.
+  if (link.blockers.some((blocker) => blocker.code === "LEGACY_DONOR_LINK_CONFLICT")) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: donor?.id ?? null,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
       targetVariant,
-    );
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  let titleMatch = donor
+    ? matchCanonicalProductTitle(resolvedTargetIdentity, {
+        title: donor.title,
+        // Legacy donor.brand is frequently truncated. The strict bridge still
+        // proves the complete target brand as a brand-led phrase in donor.title.
+        brand: null,
+      })
+    : null;
   if (
-    conflictingCanonicalBindings.length > 0
-    && !physicallyEquivalentCanonicalBinding
+    !acceptedBarcodeDonor
+    && !exactGtinDonor
+    && (
+      !donor
+      || titleMatch?.verdict !== "EXACT_IDENTITY"
+      || !donorCanonicalBindingCompatible({
+        donor,
+        targetVariant,
+        canonicalDonorBindings: input.canonicalDonorBindings,
+      })
+    )
   ) {
-    blockers.push(bridgeError(
-      "CANONICAL_DONOR_VARIANT_CONFLICT",
-      [
-        `DonorProduct ${donor.id} is already bound to`,
-        existingCanonicalBindings
-          .map((binding) => binding.canonicalVariantId)
-          .sort()
-          .join(","),
-        `instead of ${targetVariant.canonicalVariantId}`,
-      ].join(" "),
-    ));
+    const leadingBrandToken = foldedTokens(
+      typeof resolvedTargetIdentity.brand === "string"
+        ? resolvedTargetIdentity.brand
+        : "",
+    )[0] ?? null;
+    const exactCandidates = leadingBrandToken
+      ? (input.donorsByLeadingTitleToken.get(leadingBrandToken) ?? [])
+          .map((candidate) => ({
+            donor: candidate,
+            match: matchCanonicalProductTitle(resolvedTargetIdentity, {
+              title: candidate.title,
+              brand: null,
+            }),
+          }))
+          .filter(({ donor: candidate, match }) =>
+            match.verdict === "EXACT_IDENTITY"
+            && donorCanonicalBindingCompatible({
+              donor: candidate,
+              targetVariant,
+              canonicalDonorBindings: input.canonicalDonorBindings,
+            }))
+          .sort((left, right) => left.donor.id.localeCompare(right.donor.id))
+      : [];
+    if (exactCandidates.length === 1) {
+      donor = exactCandidates[0]!.donor;
+      titleMatch = exactCandidates[0]!.match;
+      // A unique strict exact donor repairs only missing/orphaned/stale legacy
+      // linkage. The legacy row remains immutable and its original donor ID is
+      // retained separately in the plan evidence.
+      blockers = blockers.filter((blocker) =>
+        blocker.code !== "LEGACY_DONOR_LINK_MISSING"
+        && blocker.code !== "LEGACY_DONOR_ORPHANED");
+    } else if (exactCandidates.length > 1) {
+      blockers.push(bridgeError(
+        "DONOR_TITLE_MATCH_AMBIGUOUS",
+        `strict matcher found ${exactCandidates.length} exact donor candidates: ${
+          exactCandidates.map(({ donor: candidate }) => candidate.id).join(",")
+        }`,
+      ));
+      return {
+        componentIndex: input.componentIndex,
+        qty: input.quantity,
+        legacyComponentId: input.legacyComponent.id,
+        donorProductId: donor?.id ?? link.donorProductId,
+        legacyDonorProductId: link.donorProductId,
+        donorOfferId: null,
+        contentSourceOfferId: null,
+        identityProof: "NONE",
+        contentAssessment: null,
+        targetIdentity: resolvedTargetIdentity,
+        targetVariant,
+        matcherVerdict: null,
+        matcherReasonCodes: [],
+        disposition: "QUARANTINE",
+        blockers,
+      };
+    }
+  }
+
+  if (!donor) {
+    return {
+      componentIndex: input.componentIndex,
+      qty: input.quantity,
+      legacyComponentId: input.legacyComponent.id,
+      donorProductId: link.donorProductId,
+      legacyDonorProductId: link.donorProductId,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: "NONE",
+      contentAssessment: null,
+      targetIdentity: resolvedTargetIdentity,
+      targetVariant,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "QUARANTINE",
+      blockers,
+    };
+  }
+
+  const canonicalConflict = canonicalDonorConflictBlocker({
+    donor,
+    targetVariant,
+    canonicalDonorBindings: input.canonicalDonorBindings,
+  });
+  if (canonicalConflict) {
+    blockers.push(canonicalConflict);
     return {
       componentIndex: input.componentIndex,
       qty: input.quantity,
@@ -1407,10 +1493,8 @@ function componentPlan(input: {
     };
   }
 
-  const match = matchCanonicalProductTitle(resolvedTargetIdentity, {
+  const match = titleMatch ?? matchCanonicalProductTitle(resolvedTargetIdentity, {
     title: donor.title,
-    // Legacy donor.brand is frequently truncated. The strict bridge still
-    // proves the complete target brand as a brand-led phrase in donor.title.
     brand: null,
   });
   if (match.verdict === "REJECT") {
@@ -1681,6 +1765,54 @@ function canonicalBindingMatchesPhysicalIdentityPartition(
     ) === productTruthOperationalSha256(
       identityPartitionPhysicalProjectionV2(target),
     );
+}
+
+function donorCanonicalBindingCompatible(input: {
+  donor: ProductTruthLegacyBridgeDonorRow;
+  targetVariant: ProductTruthBridgeCanonicalVariantProjection;
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+}): boolean {
+  const existingBindings =
+    input.canonicalDonorBindings.get(input.donor.id) ?? [];
+  const conflictingBindings = existingBindings.filter(
+    (binding) =>
+      binding.canonicalVariantId !== input.targetVariant.canonicalVariantId,
+  );
+  if (conflictingBindings.length === 0) return true;
+  return input.donor.identityStatus === "exact_confirmed"
+    && existingBindings.length === 1
+    && conflictingBindings.length === 1
+    && canonicalBindingMatchesPhysicalIdentityPartition(
+      existingBindings[0]!,
+      input.targetVariant,
+    );
+}
+
+function canonicalDonorConflictBlocker(input: {
+  donor: ProductTruthLegacyBridgeDonorRow;
+  targetVariant: ProductTruthBridgeCanonicalVariantProjection;
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+}): ProductTruthBridgeBlocker | null {
+  if (donorCanonicalBindingCompatible(input)) return null;
+  const existingBindings =
+    input.canonicalDonorBindings.get(input.donor.id) ?? [];
+  return bridgeError(
+    "CANONICAL_DONOR_VARIANT_CONFLICT",
+    [
+      `DonorProduct ${input.donor.id} is already bound to`,
+      existingBindings
+        .map((binding) => binding.canonicalVariantId)
+        .sort()
+        .join(","),
+      `instead of ${input.targetVariant.canonicalVariantId}`,
+    ].join(" "),
+  );
 }
 
 function validIdentityPartitionReconciliation(input: {
@@ -2044,6 +2176,20 @@ export function compileProductTruthLegacyBridgePlan(input: {
       donorsByGtin.set(key, list);
     }
   }
+  const donorsByLeadingTitleToken = new Map<
+    string,
+    ProductTruthLegacyBridgeDonorRow[]
+  >();
+  for (const donor of input.snapshot.donors) {
+    const leadingToken = foldedTokens(donor.title ?? "")[0];
+    if (!leadingToken) continue;
+    const list = donorsByLeadingTitleToken.get(leadingToken) ?? [];
+    list.push(donor);
+    donorsByLeadingTitleToken.set(leadingToken, list);
+  }
+  for (const list of donorsByLeadingTitleToken.values()) {
+    list.sort((left, right) => left.id.localeCompare(right.id));
+  }
   const offersById = new Map(input.snapshot.offers.map((row) => [row.id, row]));
   const directTargetContentEvidenceByDonor = new Map<
     string,
@@ -2171,6 +2317,7 @@ export function compileProductTruthLegacyBridgePlan(input: {
           evaluatedAt: input.snapshot.capturedAt,
           donorsById,
           donorsByGtin,
+          donorsByLeadingTitleToken,
           canonicalDonorBindings,
           directTargetContentEvidenceByDonor,
           offersById,
@@ -2209,6 +2356,7 @@ export function compileProductTruthLegacyBridgePlan(input: {
             evaluatedAt: input.snapshot.capturedAt,
             donorsById,
             donorsByGtin,
+            donorsByLeadingTitleToken,
             canonicalDonorBindings,
             directTargetContentEvidenceByDonor,
             offersById,
