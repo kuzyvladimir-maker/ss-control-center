@@ -40,7 +40,7 @@ export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
   "product-truth-legacy-bridge-plan/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.3.0" as const;
+  "product-truth-legacy-bridge-policy/1.4.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
@@ -1873,6 +1873,15 @@ function exactNormalizedTitleKey(value: string | null | undefined): string {
   return JSON.stringify(normalizeIdentityTokens(value));
 }
 
+function orderedPrefix(
+  prefix: readonly string[],
+  value: readonly string[],
+): boolean {
+  return prefix.length > 0
+    && prefix.length <= value.length
+    && prefix.every((token, index) => token === value[index]);
+}
+
 function recoverAuthoritativeWalmartReportScope(input: {
   listing: ProductTruthLegacyBridgeListingRow;
   evidence: ProductTruthAuthoritativeWalmartItemReportEvidenceRow | null;
@@ -1924,13 +1933,21 @@ function recoverAuthoritativeWalmartReportScope(input: {
     !donor.title
     || !donor.brand
     || !evidence.brand
-    || exactNormalizedTitleKey(donor.brand)
-      !== exactNormalizedTitleKey(evidence.brand)
+  ) return null;
+  const reportBrandTokens = foldedTokens(evidence.brand);
+  const donorBrandTokens = foldedTokens(donor.brand);
+  const donorTitleTokens = foldedTokens(donor.title);
+  if (
+    !(
+      orderedPrefix(donorBrandTokens, reportBrandTokens)
+      || orderedPrefix(reportBrandTokens, donorBrandTokens)
+    )
+    || !orderedPrefix(reportBrandTokens, donorTitleTokens)
     || foldedTokens(donor.title).join("\u0000")
       !== outerPack.baseTokens.join("\u0000")
   ) return null;
 
-  const brandTokens = foldedTokens(evidence.brand);
+  const brandTokens = reportBrandTokens;
   const titleWithoutMeasure =
     donor.title.replace(AUTHORITATIVE_WALMART_TITLE_MEASURE, " ");
   const titleTokens = foldedTokens(titleWithoutMeasure);
@@ -1955,7 +1972,7 @@ function recoverAuthoritativeWalmartReportScope(input: {
       : null;
   if (!size) return null;
   const targetIdentity: CanonicalProductIdentity = {
-    brand: donor.brand,
+    brand: evidence.brand,
     productLine: productLineTokens.join(" "),
     flavor: null,
     modifiers: [],
@@ -1965,7 +1982,7 @@ function recoverAuthoritativeWalmartReportScope(input: {
   };
   const matcher = matchCanonicalProductTitle(targetIdentity, {
     title: donor.title,
-    brand: donor.brand,
+    brand: evidence.brand,
   });
   if (matcher.verdict !== "EXACT_IDENTITY") return null;
 

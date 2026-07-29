@@ -355,6 +355,47 @@ test("authoritative Walmart exact-title multipack recovers a missing legacy reci
   assert.equal(componentPlan.donorProductId, "donor-1");
 });
 
+test("authoritative Walmart title recovery accepts a report-proven expanded brand phrase", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Acme",
+      title: "Acme Foods Crunch Chips Barbecue Bag 8 oz",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: "Acme Foods Crunch Chips Barbecue Bag 8 oz (Pack of 4)",
+      brand: "Acme Foods",
+    })],
+  });
+  const componentPlan = compile(value).scopes[0]!.components[0]!;
+  assert.equal(
+    componentPlan.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+  assert.equal(componentPlan.targetIdentity?.brand, "Acme Foods");
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+});
+
+test("authoritative Walmart title recovery rejects a non-prefix brand expansion", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      brand: "Acme Chips",
+    })],
+  });
+  assert.equal(compile(value).scopes[0]!.disposition, "QUARANTINE");
+});
+
 test("authoritative Walmart title recovery keeps adjacent variants quarantined", () => {
   const value = snapshot({
     listings: [{
