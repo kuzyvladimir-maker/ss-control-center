@@ -1,6 +1,6 @@
 # Walmart new-SKU engine — строгий runbook оператора
 
-> **Операционный контракт v1.22, актуализирован 2026-07-27.** Этот документ подчинён
+> **Операционный контракт v1.23, актуализирован 2026-07-29.** Этот документ подчинён
 > [[product-catalog-architecture]], [[donor-catalog-execution-roadmap]],
 > [[enrichment-division-of-labor]], [[product-truth-operator-runbook]],
 > [[product-truth-consumer-cutover]] и [[product-truth-release-scope]]. Он описывает
@@ -11,20 +11,21 @@
 ## Текущий certified release
 
 Текущий operator runtime:
-`release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32/release`.
+`release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33/release`.
 
 - engine SHA-256:
-  `cc086942b98bd7609de43be10ac22de64a986c02af43d0b0a91f3ad049948898`;
+  `fe76e6378a48c024f464d44a71ca7ebb88a7ffa1fb61c7f24eca1fcf37872946`;
 - manifest SHA-256:
-  `efa8e8cd5f1c47cc47885428cded5c382a397f6398fe9db628d8e9bd6a89135b`;
+  `2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f`;
 - certificate SHA-256:
-  `17bfde043b4bcec231d82f514d56e82e1169b3bc6583b497b6cd5576b684050c`.
+  `806c75a69fbab9d05f9e1f38a2e3396ff90592cf4b35f731386af548a84c6f1f`.
 
-Все releases до v32 не используются для нового execution. V26–v31 остаются
-историческими audit artifacts. V32 включает прежний template-aware contract,
+Все releases до v33 не используются для нового execution. V26–v32 остаются
+историческими audit artifacts. V33 включает прежний template-aware contract,
 исправленный exact output path в `doctor` и shelf-stable classification для
-`Crackers`; frozen verification прошёл Product Truth `472/472`, focused Walmart
-`21/21`, fake-live `3/3` и TypeScript. Release v32 сам по себе не снимает production
+`Crackers`, полный owner request и Pack of 8; frozen verification прошёл Product
+Truth `519/519`, focused Walmart/Bundle Factory `108/108`, source TypeScript и
+production build. Release v33 сам по себе не снимает production
 gates: publication-rights evidence для count-accurate exact-source images, exact
 staged-SKU/UPC checks, account/category evidence и каждый live SKU требуют своих
 candidate-bound решений.
@@ -475,17 +476,18 @@ exit status, artifact hashes и independent review.
 Актуальный operator release выдан:
 
 - directory:
-  `/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`;
+  `/Users/vladimirkuznetsov/SS Command Center/release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`;
 - engine SHA-256:
-  `cc086942b98bd7609de43be10ac22de64a986c02af43d0b0a91f3ad049948898`;
+  `fe76e6378a48c024f464d44a71ca7ebb88a7ffa1fb61c7f24eca1fcf37872946`;
 - manifest SHA-256:
-  `efa8e8cd5f1c47cc47885428cded5c382a397f6398fe9db628d8e9bd6a89135b`;
+  `2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f`;
 - certificate SHA-256:
-  `17bfde043b4bcec231d82f514d56e82e1169b3bc6583b497b6cd5576b684050c`.
+  `806c75a69fbab9d05f9e1f38a2e3396ff90592cf4b35f731386af548a84c6f1f`.
 
 Release read-only, self-verify прошёл; frozen Product Truth certification —
-`472/472`, focused Walmart regression — `21/21`, frozen fake-live integration
-на том же exact engine SHA — `3/3`.
+`519/519`, focused Walmart/Bundle Factory regression — `108/108`.
+Source TypeScript и production build прошли до freeze; frozen root намеренно
+не включает TypeScript dev dependency.
 Production read-only account probe дополнительно разобрал все `11` active store1
 templates; free = `3`, Walmart writes/DB writes/paid-provider calls = `0`.
 Интеграция доказала ровно один fake `MP_ITEM` POST и один связанный
@@ -634,7 +636,7 @@ Doctor receipt живёт максимум 30 минут и связан с exac
 Если цепочка заняла дольше, после apply-preview получить новый doctor receipt в новый
 путь; старый timestamp не исправлять.
 
-Если current canonical candidate отсутствует, v32 дополнительно возвращает
+Если current canonical candidate отсутствует, v33 дополнительно возвращает
 `product_truth.commercial_discovery` версии
 `walmart-new-sku-commercial-discovery/1.1.0`. Это бесплатный provisional screen
 существующего донорского Product Truth, а не listing truth:
@@ -655,13 +657,13 @@ Doctor receipt живёт максимум 30 минут и связан с exac
 
 Production diagnostics v20 от 2026-07-23 зафиксировали результат старой политики
 `20% + 125% ceiling` и являются только историей; использовать их как current decision
-запрещено. По owner contract v32 локальный sealed Product Truth projection для RITZ
+запрещено. По owner contract v33 локальный sealed Product Truth projection для RITZ
 даёт pack-of-2 `$33.13` и pack-of-3 `$40.36` при exact `30%` contribution margin.
 Это owner preview, а не fresh production doctor receipt и не разрешение публикации.
-Если свежий v32 doctor не находит canonical candidate, оператор останавливается при
+Если свежий v33 doctor не находит canonical candidate, оператор останавливается при
 `NO_CURRENT_CANONICAL_PILOT_CANDIDATES` и следует `next_command: null`.
 
-Если `doctor` запущен с `--out`, при этой остановке v32 не создаёт запрошенный
+Если `doctor` запущен с `--out`, при этой остановке v33 не создаёт запрошенный
 green doctor receipt. Вместо него рядом создаётся
 `<имя>.blocked.json` схемы `walmart-new-sku-doctor-diagnostic/1.0.0` с exact
 blockers, SHA-256 и `next_argv: null`, `next_command: null`. Этот diagnostic

@@ -54,13 +54,14 @@ default — free shipping. Paid shipping допускается только к�
 реально более быстрый service либо экономически необходимое исключение. Полный канон:
 [[walmart-new-sku-shipping-price-strategy]].
 
-## Текущий итоговый срез — 2026-07-27
+## Текущий итоговый срез — 2026-07-29
 
-- ✅ **Выполнение: движок.** Frozen operator release v32:
-  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`; engine SHA
-  `cc086942…89898`, manifest SHA `efa8e8cd…135b`, certificate SHA
-  `17bfde04…050c`. Product Truth `472/472`, focused Walmart `21/21`, fake-live
-  `3/3`, TypeScript PASS. V31 и старше — только audit history.
+- ✅ **Выполнение: движок.** Frozen operator release v33:
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`; engine SHA
+  `fe76e637…72946`, manifest SHA `2593cd46…127f`, certificate SHA
+  `806c75a6…6f1f`. Product Truth `519/519`, focused Walmart/Bundle Factory
+  `108/108`, source TypeScript и production build PASS. V32 и старше — только
+  audit history.
 - ✅ **Выполнение: Product Truth.** Exact Target content активирован для RITZ Bits
   Cheese 8.8 oz, donor `75422f18-e3d2-4c62-ae62-7287aaa75119`, canonical variant
   `cpv1:ba797…194a9`, observation `pco:68af…d59e`, activation receipt SHA
@@ -94,7 +95,7 @@ default — free shipping. Paid shipping допускается только к�
 
 UPC reservations текущих staged artifacts истекают
 `2026-07-28T13:52:56.990Z` / `2026-07-28T13:55:59.720Z`. После expiry оператор не
-правит JSON и не выбирает UPC вручную; он запускает новый v32 doctor и следует exact
+правит JSON и не выбирает UPC вручную; он запускает новый v33 doctor и следует exact
 recovery `next_command`. `rotate-upc` разрешён только после доказанного
 `MP_ITEM_MATCH`.
 
@@ -129,14 +130,14 @@ recovery `next_command`. `rotate-upc` разрешён только после �
   Cream of Chicken, Golden Mushroom, Heart Healthy Cream of Mushroom и Chunky
   Chicken Pot Pie. Но у всех пяти отсутствуют свежие append-only
   `DonorOfferObservation` с canonical variant binding; текущие materialized offers
-  датированы 2026-07-10/11 и не являются свежим 24-hour price evidence. Frozen v32
+  датированы 2026-07-10/11 и не являются свежим 24-hour price evidence. Frozen v33
   также разрешает только pack 2/3 и максимум два SKU. Legacy `bestPrice` не может
   быть подменён под current FACT.
 - ⬜ **Следующая отдельная реализация.** Для реального Campbell's `5 × 8` нужен новый
   post-pilot release: targeted fresh price evidence по пяти exact variants,
   arbitrary homogeneous pack count `8`, bounded five-candidate plan, пять
   count-accurate image previews, новый regression/frozen release и затем обычные
-  certification/owner gates. Это расширение не включено молча в v32 и не выполняет
+  certification/owner gates. Это расширение не включено молча в v33 и не выполняет
   Walmart write.
 
 ## Правило статусов

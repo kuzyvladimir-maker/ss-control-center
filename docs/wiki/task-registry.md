@@ -57,12 +57,13 @@
   отдельной Phase 2 demand-expansion campaign, а не скрытым legacy harvest.
   Деталь: [[product-truth-command-center]],
   [[product-truth-web-operations-control-plane]].
-- 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-27:** Walmart остаётся
+- 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-29:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
-  донорский справочник. Frozen release v32 выдан в
-  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`: engine
-  `cc086942…89898`, manifest `efa8e8cd…135b`, certificate `17bfde04…050c`;
-  Product Truth `472/472`, focused Walmart `21/21`, fake-live `3/3`, TypeScript PASS.
+  донорский справочник. Frozen release v33 выдан в
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`: engine
+  `fe76e637…72946`, manifest `2593cd46…127f`, certificate `806c75a6…6f1f`;
+  Product Truth `519/519`, focused Walmart/Bundle Factory `108/108`, source
+  TypeScript и production build PASS.
   Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
   `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
   `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,

@@ -785,8 +785,15 @@ quote: production campaign registry/runtime всё ещё отсутствует
   automatic paid execution `false`, marketplace mutation `false`. Existing
   owner quote ceiling для такой пятёрки остаётся `20` prepaid provider credits
   (`2.5` balance reserve + `5 × 3.5`).
-- [ ] Выпустить clean integrated release, обновить production deployment и
-  выполнить no-spend production postcheck.
+- [x] Frozen operator release v33 выпущен из commit
+  `b00aaf6ae84ab888bb04be0db54c85be2570e22a`: engine
+  `fe76e6378a48c024f464d44a71ca7ebb88a7ffa1fb61c7f24eca1fcf37872946`,
+  manifest
+  `2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f`,
+  certificate
+  `806c75a69fbab9d05f9e1f38a2e3396ff90592cf4b35f731386af548a84c6f1f`;
+  pre- и post-test self-verify `PASS`.
+- [ ] Обновить production deployment и выполнить no-spend production postcheck.
 
 BF-W4 не меняет live mutation authority: protected execution остаётся
 последовательным, а marketplace publication не следует из размера owner request.
