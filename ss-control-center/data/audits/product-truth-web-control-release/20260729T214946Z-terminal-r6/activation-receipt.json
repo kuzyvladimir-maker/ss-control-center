@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "product-truth-standing-wave-production-activation-receipt/1.0.0",
+  "activatedAt": "2026-07-29T21:59:16.000Z",
+  "observedAt": "2026-07-29T22:00:04.000Z",
+  "activationPacketSha256": "2d5fed991810e7ea025ea640fa6772a93d55aafd4cc8c571ac8787aa4a578193",
+  "release": {
+    "releaseId": "product-truth-standing-web-2026-07-29-r6",
+    "commitSha": "9571b8a5985aac09852f342854cdabd500416709",
+    "treeSha": "33d21e71cd200dd741d7139efcc55eaf67dcc53c",
+    "executableTreeSha256": "b81945f90ba21b09fb2468700e09ad285e735655b92c12d231fee968b1e9bb13",
+    "cleanCheckout": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/9571b8a59/ss-control-center"
+  },
+  "certification": {
+    "focusedTests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "productTruthTests": {
+      "passed": 600,
+      "failed": 0
+    },
+    "typescript": "PASS",
+    "changedFilesEslint": "PASS",
+    "fullRepositoryEslint": "KNOWN_PREEXISTING_FAILURE_1181_ERRORS_92_WARNINGS",
+    "productionBuild": "PASS",
+    "gitDiffCheck": "PASS",
+    "cleanTrackedCheckout": "PASS"
+  },
+  "deployment": {
+    "deploymentId": "dpl_A2CEPKBstem6wggxiauZVsfVjanM",
+    "deploymentUrl": "https://ss-control-center-mmkgxvsay-kuzyvladimir-makers-projects.vercel.app",
+    "productionAlias": "https://salutemsolutions.info",
+    "readyState": "READY"
+  },
+  "workers": {
+    "generic": {
+      "launchdLabel": "com.salutem.product-truth-worker",
+      "launchdPid": 51986,
+      "runnerPid": 52002,
+      "launchdRuns": 9,
+      "lastExitCode": 0,
+      "state": "RUNNING",
+      "cwd": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/9571b8a59/ss-control-center",
+      "startupScriptSha256": "07e4fb65a9b1d58eb0a099c59df5f7a548c92265d5cde4431972366c78d81c58"
+    },
+    "standingWave": {
+      "launchdLabel": "com.salutem.product-truth-standing-wave-worker",
+      "launchdPid": 51988,
+      "runnerPid": 52001,
+      "launchdRuns": 10,
+      "lastExitCode": 0,
+      "state": "RUNNING",
+      "cwd": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/9571b8a59/ss-control-center",
+      "startupScriptSha256": "8d9e8af6a90f62de67f770a9e85f0425962ecec2e9569b298fdc6ff2c5207a82"
+    }
+  },
+  "productionProbe": {
+    "method": "STABLE_LAUNCHD_AND_RUNNER_PIDS_ACROSS_MULTIPLE_POLL_CYCLES",
+    "pollWindowSeconds": 12,
+    "genericWorkerNewErrorBytes": 0,
+    "standingWaveWorkerNewErrorBytes": 0,
+    "result": "BOTH_R6_CLAIM_LOOPS_STABLE"
+  },
+  "reconciledPredecessorRun": {
+    "runId": "ptsw-web-baa5080612f889477d8ebb40a8f6a7b2-03",
+    "status": "ambiguous",
+    "reportSha256": "dbadeee366dab83b1c17895d6ebd3ecf7de5988955d606b92cf0778d6b7635ff",
+    "artifactIndexSha256": "223371ad196e48c15b91048b5d567d0f2b95ecd09da22cc55521659685a72738",
+    "recoveryEvent": "RUN_FINISHED_AFTER_LEASE_EXPIRY",
+    "providerCallsDuringRecovery": 0
+  },
+  "claims": {
+    "providerCallsDuringActivation": 0,
+    "productTruthBusinessWritesDuringActivation": 0,
+    "marketplaceMutations": 0,
+    "priceOrInventoryChanges": 0,
+    "delistings": 0,
+    "consumerActivations": 0,
+    "procurementActions": 0
+  }
+}
