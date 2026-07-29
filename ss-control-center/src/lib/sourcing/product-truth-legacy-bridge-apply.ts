@@ -53,11 +53,11 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.2.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.3.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.3.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.4.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
   "product-truth-legacy-bridge-preflight-report/2.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
@@ -318,6 +318,7 @@ export interface ProductTruthLegacyBridgeApplyTarget {
     unitEconomics: "UNSOURCEABLE";
     procurement: false;
   };
+  identityReconciliation: ProductTruthLegacyBridgeIdentityReconciliation | null;
   variant: ProductTruthLegacyBridgeVariantRow;
   decision: ProductTruthLegacyBridgeDecisionRow | null;
   reusedDecision: {
@@ -334,6 +335,26 @@ export interface ProductTruthLegacyBridgeApplyTarget {
   componentEvidence: ProductTruthLegacyBridgeComponentEvidenceRow;
   listingScopeLink: ProductTruthLegacyBridgeScopeLinkRow;
   cost: ProductTruthLegacyBridgeCostRow;
+}
+
+export interface ProductTruthLegacyBridgeIdentityReconciliation {
+  schemaVersion:
+    "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0";
+  mode: "LEXICALLY_EQUIVALENT_DONOR_GRAPH";
+  donorProductId: string;
+  canonicalListingKey: string;
+  canonicalTargetIdentity: CanonicalProductIdentity;
+  canonicalTargetVariant: NonNullable<
+    ProductTruthLegacyBridgeComponentPlan["targetVariant"]
+  >;
+  physicalIdentitySha256: string;
+  sourceTargets: Array<{
+    listingKey: string;
+    originalCanonicalVariantId: string;
+    originalTargetIdentitySha256: string;
+    overlappingProductFlavorTokens: number;
+  }>;
+  sourceTargetsSha256: string;
 }
 
 export interface ProductTruthLegacyBridgeApplyPlan {
@@ -717,6 +738,204 @@ function assertBridgeInputs(input: {
   }
 }
 
+type ProductTruthLegacyBridgePartitionCandidate = {
+  listingKey: string;
+  component: ProductTruthLegacyBridgeComponentPlan;
+  rebuiltVariant: ReturnType<typeof buildCanonicalProductVariantKey>;
+  physicalIdentity: {
+    brand: string;
+    identityTokens: string[];
+    modifiers: string[];
+    form: string | null;
+    size: {
+      dimension: string;
+      baseAmount: number;
+      baseUnit: string;
+    };
+    outerPackCount: number;
+  };
+  overlappingProductFlavorTokens: number;
+};
+
+function identityTokens(value: string | null): string[] {
+  return value?.split(/\s+/).filter(Boolean) ?? [];
+}
+
+function physicalIdentityProjection(
+  rebuiltVariant: ReturnType<typeof buildCanonicalProductVariantKey>,
+): ProductTruthLegacyBridgePartitionCandidate["physicalIdentity"] {
+  const productTokens = new Set(
+    identityTokens(rebuiltVariant.normalized.productLine),
+  );
+  const flavorTokens = new Set(
+    identityTokens(rebuiltVariant.normalized.flavor),
+  );
+  // "with" is a partition connector, not a sellable-variant discriminator
+  // when both sides already carry the same explicit identity tokens. For
+  // example, "Crushed Tomatoes with Roasted Garlic" and product-line
+  // "Crushed Tomatoes" + flavor "Roasted Garlic" describe the same package.
+  const identityTokenSet = new Set(
+    [...productTokens, ...flavorTokens].filter((token) => token !== "with"),
+  );
+  return {
+    brand: rebuiltVariant.normalized.brand,
+    identityTokens: [...identityTokenSet].sort((left, right) =>
+      left.localeCompare(right, "en-US")),
+    modifiers: [...rebuiltVariant.normalized.modifiers].sort((left, right) =>
+      left.localeCompare(right, "en-US")),
+    form: rebuiltVariant.normalized.form,
+    size: rebuiltVariant.normalized.size,
+    outerPackCount: rebuiltVariant.normalized.outerPackCount,
+  };
+}
+
+function partitionCandidate(
+  listingKey: string,
+  component: ProductTruthLegacyBridgeComponentPlan,
+): ProductTruthLegacyBridgePartitionCandidate {
+  if (!component.targetIdentity || !component.targetVariant) {
+    fail(
+      "LEGACY_BRIDGE_DONOR_PARTITION_INVALID",
+      `${listingKey} has no exact target identity`,
+    );
+  }
+  const rebuiltVariant =
+    buildCanonicalProductVariantKey(component.targetIdentity);
+  if (
+    rebuiltVariant.canonicalVariantId
+      !== component.targetVariant.canonicalVariantId
+    || rebuiltVariant.identityJson !== component.targetVariant.identityJson
+  ) {
+    fail(
+      "LEGACY_BRIDGE_DONOR_PARTITION_INVALID",
+      `${listingKey} target variant projection drifted`,
+    );
+  }
+  const productTokens = new Set(
+    identityTokens(rebuiltVariant.normalized.productLine),
+  );
+  const flavorTokens = new Set(
+    identityTokens(rebuiltVariant.normalized.flavor),
+  );
+  const overlappingProductFlavorTokens = [...flavorTokens].filter(
+    (token) => productTokens.has(token),
+  ).length;
+  return {
+    listingKey,
+    component,
+    rebuiltVariant,
+    physicalIdentity: physicalIdentityProjection(rebuiltVariant),
+    overlappingProductFlavorTokens,
+  };
+}
+
+function buildIdentityReconciliations(input: {
+  bridgePlan: ProductTruthLegacyBridgePlan;
+  selectedListingKeys: ReadonlySet<string>;
+}): Map<string, ProductTruthLegacyBridgeIdentityReconciliation> {
+  const candidatesByDonor = new Map<
+    string,
+    ProductTruthLegacyBridgePartitionCandidate[]
+  >();
+  for (const scope of input.bridgePlan.scopes) {
+    if (
+      !scope.writeEligible
+      || ![
+        "CONTENT_ONLY_CANONICALIZATION_CANDIDATE",
+        "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
+      ].includes(scope.disposition)
+      || scope.components.length !== 1
+    ) {
+      continue;
+    }
+    const component = scope.components[0];
+    if (
+      !component?.donorProductId
+      || !component.targetIdentity
+      || !component.targetVariant
+    ) {
+      continue;
+    }
+    const rows = candidatesByDonor.get(component.donorProductId) ?? [];
+    rows.push(partitionCandidate(scope.listingKey, component));
+    candidatesByDonor.set(component.donorProductId, rows);
+  }
+
+  const reconciliations =
+    new Map<string, ProductTruthLegacyBridgeIdentityReconciliation>();
+  for (const [donorProductId, unsortedCandidates] of candidatesByDonor) {
+    const candidates = [...unsortedCandidates].sort((left, right) =>
+      left.listingKey.localeCompare(right.listingKey, "en-US"));
+    const variants = new Set(
+      candidates.map((row) => row.rebuiltVariant.canonicalVariantId),
+    );
+    if (variants.size <= 1) continue;
+    const selected = candidates.filter((row) =>
+      input.selectedListingKeys.has(row.listingKey));
+    if (selected.length === 0) continue;
+    if (selected.length !== candidates.length) {
+      fail(
+        "LEGACY_BRIDGE_DONOR_PARTITION_SCOPE_INCOMPLETE",
+        [
+          `donor ${donorProductId} has ${candidates.length}`,
+          "write-eligible field-partition scopes; select the complete donor group",
+        ].join(" "),
+      );
+    }
+    const physicalIdentityRows = new Set(
+      candidates.map((row) => canonicalJson(row.physicalIdentity)),
+    );
+    if (physicalIdentityRows.size !== 1) {
+      fail(
+        "LEGACY_BRIDGE_DONOR_VARIANT_COLLISION",
+        `donor ${donorProductId} maps to physically different target identities`,
+      );
+    }
+    const canonical = [...candidates].sort((left, right) => {
+      const overlap =
+        left.overlappingProductFlavorTokens
+        - right.overlappingProductFlavorTokens;
+      if (overlap !== 0) return overlap;
+      const productLineLength =
+        identityTokens(right.rebuiltVariant.normalized.productLine).length
+        - identityTokens(left.rebuiltVariant.normalized.productLine).length;
+      if (productLineLength !== 0) return productLineLength;
+      const flavorLength =
+        identityTokens(left.rebuiltVariant.normalized.flavor).length
+        - identityTokens(right.rebuiltVariant.normalized.flavor).length;
+      if (flavorLength !== 0) return flavorLength;
+      return left.rebuiltVariant.canonicalVariantId.localeCompare(
+        right.rebuiltVariant.canonicalVariantId,
+        "en-US",
+      );
+    })[0]!;
+    const sourceTargets =
+      candidates.map((row) => ({
+        listingKey: row.listingKey,
+        originalCanonicalVariantId: row.rebuiltVariant.canonicalVariantId,
+        originalTargetIdentitySha256: rowHash(row.component.targetIdentity),
+        overlappingProductFlavorTokens:
+          row.overlappingProductFlavorTokens,
+      }));
+    const reconciliation: ProductTruthLegacyBridgeIdentityReconciliation = {
+      schemaVersion:
+        "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0",
+      mode: "LEXICALLY_EQUIVALENT_DONOR_GRAPH",
+      donorProductId,
+      canonicalListingKey: canonical.listingKey,
+      canonicalTargetIdentity: canonical.component.targetIdentity!,
+      canonicalTargetVariant: canonical.component.targetVariant!,
+      physicalIdentitySha256: rowHash(canonical.physicalIdentity),
+      sourceTargets,
+      sourceTargetsSha256: rowHash(sourceTargets),
+    };
+    for (const row of candidates) {
+      reconciliations.set(row.listingKey, reconciliation);
+    }
+  }
+  return reconciliations;
+}
+
 function targetFromScope(input: {
   ordinal: number;
   listingKey: string;
@@ -727,6 +946,8 @@ function targetFromScope(input: {
   planId: string;
   approvalId: string;
   createdAt: string;
+  identityReconciliation:
+    ProductTruthLegacyBridgeIdentityReconciliation | null;
 }): ProductTruthLegacyBridgeApplyTarget {
   const listing = input.snapshot.listings.find((row) => row.listingKey === input.listingKey);
   const scope = input.bridgePlan.scopes.find((row) => row.listingKey === input.listingKey);
@@ -808,6 +1029,8 @@ function targetFromScope(input: {
       `${input.listingKey} exact content evidence binding is incomplete`,
     );
   }
+  const originalTargetIdentity = componentPlan.targetIdentity;
+  const originalTargetVariant = componentPlan.targetVariant;
   const component = input.snapshot.components.find(
     (row) => row.id === componentPlan.legacyComponentId,
   );
@@ -824,12 +1047,53 @@ function targetFromScope(input: {
   ) {
     fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} source graph is broken`);
   }
-  const rebuiltVariant = buildCanonicalProductVariantKey(componentPlan.targetIdentity);
   if (
-    rebuiltVariant.canonicalVariantId !== componentPlan.targetVariant.canonicalVariantId
-    || rebuiltVariant.identityJson !== componentPlan.targetVariant.identityJson
+    input.identityReconciliation !== null
+    && (
+      input.identityReconciliation.donorProductId !== donor.id
+      || !input.identityReconciliation.sourceTargets.some(
+        (row) =>
+          row.listingKey === input.listingKey
+          && row.originalCanonicalVariantId
+            === originalTargetVariant.canonicalVariantId,
+      )
+    )
+  ) {
+    fail(
+      "LEGACY_BRIDGE_DONOR_PARTITION_INVALID",
+      `${input.listingKey} is not bound to its reconciliation group`,
+    );
+  }
+  const targetIdentity =
+    input.identityReconciliation?.canonicalTargetIdentity
+    ?? originalTargetIdentity;
+  const targetVariant =
+    input.identityReconciliation?.canonicalTargetVariant
+    ?? originalTargetVariant;
+  const rebuiltVariant = buildCanonicalProductVariantKey(targetIdentity);
+  if (
+    rebuiltVariant.canonicalVariantId !== targetVariant.canonicalVariantId
+    || rebuiltVariant.identityJson !== targetVariant.identityJson
   ) {
     fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} variant projection drifted`);
+  }
+  const decisionScope = input.identityReconciliation === null
+    ? scope
+    : input.bridgePlan.scopes.find(
+      (row) =>
+        row.listingKey === input.identityReconciliation?.canonicalListingKey,
+    );
+  const decisionComponentPlan = decisionScope?.components[0];
+  if (
+    !decisionComponentPlan
+    || decisionComponentPlan.donorProductId !== donor.id
+    || decisionComponentPlan.targetVariant?.canonicalVariantId
+      !== rebuiltVariant.canonicalVariantId
+  ) {
+    fail(
+      "LEGACY_BRIDGE_DONOR_PARTITION_INVALID",
+      `${input.listingKey} canonical decision source is incomplete`,
+    );
   }
   const sourceBinding: ProductTruthLegacyBridgeSourceBinding = {
     listingSha256: rowHash(sourceListingFields(listing)),
@@ -881,18 +1145,19 @@ function targetFromScope(input: {
     schemaVersion: "product-truth-legacy-bridge-variant-decision-evidence/2.0.0",
     policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
     verdict: "EXACT_IDENTITY",
-    identityProof: componentPlan.identityProof,
+    identityProof: decisionComponentPlan.identityProof,
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
     matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
     matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
-    matcherReasonCodes: componentPlan.matcherReasonCodes,
-    targetIdentity: componentPlan.targetIdentity,
+    matcherReasonCodes: decisionComponentPlan.matcherReasonCodes,
+    targetIdentity,
     canonicalVariantId: rebuiltVariant.canonicalVariantId,
     donorProductId: donor.id,
     donorTitle: donor.title,
     sourceSnapshotSha256: input.snapshotSha256,
     bridgePlanSha256: input.bridgePlanSha256,
     sourceBinding: graphSourceBinding,
+    identityReconciliation: input.identityReconciliation,
   };
   const decisionEvidenceJson = canonicalJson(decisionEvidence);
   const decisionEvidenceHash = sha256Text(decisionEvidenceJson);
@@ -1046,6 +1311,7 @@ function targetFromScope(input: {
         sourceSnapshotSha256: input.snapshotSha256,
         bridgePlanSha256: input.bridgePlanSha256,
         sourceBinding,
+        identityReconciliation: input.identityReconciliation,
       },
     }],
   });
@@ -1113,6 +1379,7 @@ function targetFromScope(input: {
       ...rebuiltVariant.db,
       createdAt: input.createdAt,
     },
+    identityReconciliation: input.identityReconciliation,
     decision: reusableDecisionBinding === null ? {
       id: createdDecisionId,
       decisionKey,
@@ -1143,7 +1410,7 @@ function targetFromScope(input: {
       sourceIdentityFieldsSha256: rowHash(sourceIdentityFields(donor)),
       exactProjection: exactProjectionFields(
         donor,
-        componentPlan.targetIdentity,
+        targetIdentity,
         decisionEvidenceJson,
         input.createdAt,
       ),
@@ -1370,6 +1637,10 @@ export function planProductTruthLegacyBridgeApply(input: {
   };
   const planId = `ptlb-wave-${rowHash(planSeed).slice(0, 24)}`;
   const expectedApprovalId = `owner-${planId}`;
+  const identityReconciliations = buildIdentityReconciliations({
+    bridgePlan: input.bridgePlan,
+    selectedListingKeys: new Set(listingKeys),
+  });
   const targets = listingKeys.map((listingKey, ordinal) => targetFromScope({
     ordinal,
     listingKey,
@@ -1380,6 +1651,8 @@ export function planProductTruthLegacyBridgeApply(input: {
     planId,
     approvalId: expectedApprovalId,
     createdAt,
+    identityReconciliation:
+      identityReconciliations.get(listingKey) ?? null,
   }));
   const databaseWrites = expectedDatabaseWrites(targets);
   return {
@@ -1512,10 +1785,65 @@ function validatePlan(
       )
     );
   });
+  const targetsByListingKey = new Map(
+    plan.targets.map((target) => [target.listingKey, target]),
+  );
+  const reconciliationsValid = plan.targets.every((target) => {
+    const reconciliation = target.identityReconciliation;
+    if (reconciliation === null) return true;
+    let rebuilt: ReturnType<typeof buildCanonicalProductVariantKey>;
+    try {
+      rebuilt = buildCanonicalProductVariantKey(
+        reconciliation.canonicalTargetIdentity,
+      );
+    } catch {
+      return false;
+    }
+    const sortedSourceTargets = [...reconciliation.sourceTargets].sort(
+      (left, right) =>
+        left.listingKey.localeCompare(right.listingKey, "en-US"),
+    );
+    return (
+      reconciliation.schemaVersion
+        === "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0"
+      && reconciliation.mode === "LEXICALLY_EQUIVALENT_DONOR_GRAPH"
+      && reconciliation.donorProductId === target.donorProductId
+      && rebuilt.canonicalVariantId === target.variant.id
+      && rebuilt.canonicalVariantId
+        === reconciliation.canonicalTargetVariant.canonicalVariantId
+      && rebuilt.identityJson
+        === reconciliation.canonicalTargetVariant.identityJson
+      && reconciliation.physicalIdentitySha256
+        === rowHash(physicalIdentityProjection(rebuilt))
+      && reconciliation.sourceTargetsSha256
+        === rowHash(reconciliation.sourceTargets)
+      && canonicalJson(sortedSourceTargets)
+        === canonicalJson(reconciliation.sourceTargets)
+      && new Set(
+        reconciliation.sourceTargets.map((row) => row.listingKey),
+      ).size === reconciliation.sourceTargets.length
+      && reconciliation.sourceTargets.some(
+        (row) => row.listingKey === target.listingKey,
+      )
+      && reconciliation.sourceTargets.some(
+        (row) => row.listingKey === reconciliation.canonicalListingKey,
+      )
+      && reconciliation.sourceTargets.every((row) => {
+        const groupedTarget = targetsByListingKey.get(row.listingKey);
+        return (
+          groupedTarget !== undefined
+          && groupedTarget.donorProductId === target.donorProductId
+          && canonicalJson(groupedTarget.identityReconciliation)
+            === canonicalJson(reconciliation)
+        );
+      })
+    );
+  });
   if (
     plan.targets.length < 1
     || plan.targets.length > PRODUCT_TRUTH_LEGACY_BRIDGE_WAVE_MAX_LISTINGS
     || !decisionBindingsValid
+    || !reconciliationsValid
     || rowHash(plan.targets) !== plan.targetsSha256
     || canonicalJson(plan.databaseWrites)
       !== canonicalJson(expectedDatabaseWrites(plan.targets))

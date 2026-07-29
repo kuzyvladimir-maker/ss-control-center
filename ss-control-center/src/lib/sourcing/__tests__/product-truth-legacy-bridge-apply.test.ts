@@ -474,6 +474,42 @@ function sharedGraphFixture(): ReturnType<typeof sourceFixture> {
   return rebuildFixture(snapshot);
 }
 
+function fieldPartitionDriftFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sharedGraphFixture().snapshot);
+  const donor = snapshot.donors.find((row) => row.id === "donor-1");
+  assert.ok(donor);
+  donor.flavor = "Spicy";
+  donor.title = "Acme Brand 1 Crunch Chips with Spicy, 8 oz Bag";
+  for (const row of snapshot.listings.slice(0, 3)) {
+    const identity = JSON.parse(
+      row.productIdentityJson!,
+    ) as Record<string, unknown>;
+    identity.product_line = "Crunch Chips with Spicy";
+    identity.flavor = "Spicy";
+    row.productIdentityJson = JSON.stringify(identity);
+  }
+  for (const row of snapshot.components.slice(0, 3)) {
+    row.product = "Crunch Chips with Spicy";
+    row.flavor = "Spicy";
+    row.matchedTitle = donor.title;
+  }
+  const listing = snapshot.listings.find(
+    (row) => row.listingKey === "walmart:1:SKU-2",
+  );
+  const component = snapshot.components.find((row) => row.sku === "SKU-2");
+  assert.ok(listing);
+  assert.ok(component);
+  const identity = JSON.parse(
+    listing.productIdentityJson!,
+  ) as Record<string, unknown>;
+  identity.product_line = "Crunch Chips";
+  identity.flavor = "Spicy";
+  listing.productIdentityJson = JSON.stringify(identity);
+  component.product = "Crunch Chips";
+  component.flavor = "Spicy";
+  return rebuildFixture(snapshot);
+}
+
 function donorVariantCollisionFixture(): ReturnType<typeof sourceFixture> {
   const fixture = sharedGraphFixture();
   const bridgePlan = structuredClone(fixture.bridgePlan);
@@ -856,6 +892,61 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   assert.equal(second.status, "ALREADY_APPLIED");
   assert.equal(second.counts.exactExistingRows, 37);
   assert.equal(second.counts.canonicalVariantReuses, 3);
+});
+
+test("lexically equivalent product/flavor field partitions reconcile to one donor variant", async (t) => {
+  const fixture = fieldPartitionDriftFixture();
+  assert.throws(
+    () => planProductTruthLegacyBridgeApply({
+      ...fixture,
+      listingKeys: ["walmart:1:SKU-1", "walmart:1:SKU-4"],
+      createdAt: PLAN_CREATED_AT,
+      expiresAt: PLAN_EXPIRES_AT,
+    }),
+    /LEGACY_BRIDGE_DONOR_PARTITION_SCOPE_INCOMPLETE/,
+  );
+
+  const input = applyPlan(fixture);
+  const group = input.plan.targets.filter((target) =>
+    ["walmart:1:SKU-1", "walmart:1:SKU-2", "walmart:1:SKU-3"].includes(
+      target.listingKey,
+    ));
+  assert.equal(group.length, 3);
+  assert.equal(
+    new Set(group.map((target) => target.variant.id)).size,
+    1,
+  );
+  assert.equal(
+    new Set(group.map((target) => target.decision?.id)).size,
+    1,
+  );
+  const reconciliation = group[0]?.identityReconciliation;
+  assert.ok(reconciliation);
+  assert.equal(
+    reconciliation.schemaVersion,
+    "product-truth-legacy-bridge-field-partition-reconciliation/1.0.0",
+  );
+  assert.equal(reconciliation.canonicalListingKey, "walmart:1:SKU-2");
+  assert.equal(reconciliation.sourceTargets.length, 3);
+  assert.deepEqual(
+    reconciliation.sourceTargets.map((row) => row.listingKey),
+    ["walmart:1:SKU-1", "walmart:1:SKU-2", "walmart:1:SKU-3"],
+  );
+  assert.equal(input.plan.databaseWrites.maximumRows, 37);
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const report = await executeApproved(db, input);
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.counts.insertedRows, 37);
+  assert.equal(report.counts.donorIdentityTransitions, 3);
+  assert.equal(report.verification.unitEconomicsUnsourceable, 5);
+  assert.equal(
+    Number((await db.execute(
+      "SELECT COUNT(*) AS count FROM DonorProductVariantDecision",
+    )).rows[0]?.count),
+    3,
+  );
 });
 
 test("exact identity-only legacy evidence materializes partial content, recipe, and typed UNSOURCEABLE COGS", async (t) => {
