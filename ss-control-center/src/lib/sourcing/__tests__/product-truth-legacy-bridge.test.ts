@@ -823,6 +823,134 @@ test("field-partition reconciliation remains canonical on the next audit", () =>
   ));
 });
 
+test("form/product field partition reuses an exact donor decision and remains canonical", () => {
+  const base = snapshot({
+    donors: [donor({ identityStatus: "exact_confirmed" })],
+  });
+  const originalComponent = compile(base).scopes[0].components[0];
+  assert.ok(originalComponent.targetIdentity);
+  assert.ok(originalComponent.targetVariant);
+  const canonicalIdentity = {
+    brand: "Acme",
+    productLine: "Bag Crunch Chips Barbecue",
+    flavor: null,
+    form: null,
+    size: "8 oz",
+    outerPackCount: 1,
+  };
+  const canonical = buildCanonicalProductVariantKey(canonicalIdentity);
+  const decisionId = "decision-form-partition";
+  const binding = {
+    donorProductId: "donor-1",
+    canonicalVariantId: canonical.canonicalVariantId,
+    canonicalIdentityJson: canonical.identityJson,
+    decisionId,
+    decisionStatus: "exact_confirmed",
+    decidedAt: "2026-07-26T11:30:00.000Z",
+  };
+  const candidate = compile(snapshot({
+    donors: [donor({ identityStatus: "exact_confirmed" })],
+    canonicalDonorBindings: [binding],
+  }));
+  assert.equal(
+    candidate.scopes[0].disposition,
+    "EXACT_CANONICALIZATION_CANDIDATE",
+  );
+  assert.equal(candidate.scopes[0].writeEligible, true);
+
+  const canonicalVariant = {
+    canonicalVariantId: canonical.canonicalVariantId,
+    variantKey: canonical.variantKey,
+    identityHash: canonical.identityHash,
+    keyVersion: canonical.keyVersion,
+    identityJson: canonical.identityJson,
+  };
+  const sourceTargets = [{
+    listingKey: "ptls1:test",
+    originalCanonicalVariantId:
+      originalComponent.targetVariant.canonicalVariantId,
+    originalTargetIdentitySha256:
+      productTruthOperationalSha256(originalComponent.targetIdentity),
+    overlappingProductFlavorTokens: 0,
+  }];
+  const reconciliation = {
+    schemaVersion:
+      "product-truth-legacy-bridge-field-partition-reconciliation/2.0.0",
+    mode: "LEXICALLY_EQUIVALENT_DONOR_GRAPH",
+    donorProductId: "donor-1",
+    canonicalListingKey: "ptls1:test",
+    canonicalDecisionId: decisionId,
+    canonicalTargetIdentity: canonicalIdentity,
+    canonicalTargetVariant: canonicalVariant,
+    physicalIdentitySha256: productTruthOperationalSha256({
+      brand: canonical.normalized.brand,
+      identityTokens: ["bag", "barbecue", "chips", "crunch"],
+      modifiers: [],
+      size: canonical.normalized.size,
+      outerPackCount: canonical.normalized.outerPackCount,
+    }),
+    sourceTargets,
+    sourceTargetsSha256: productTruthOperationalSha256(sourceTargets),
+  };
+  const sourceEvidence = {
+    schemaVersion:
+      "product-truth-legacy-bridge-recipe-component-source/1.0.0",
+    identityProof: "STRICT_TITLE_MATCH",
+    matcherReasonCodes: [
+      "IDENTITY_EXACT",
+      "SIZE_EXACT",
+      "TITLE_FALLBACK_IDENTITY_PROVEN",
+    ],
+    sourceSnapshotSha256: "1".repeat(64),
+    bridgePlanSha256: "2".repeat(64),
+    sourceBinding: {},
+    identityReconciliation: reconciliation,
+    supersedesInvalidCanonicalCostIds: [],
+  };
+  const componentEvidence = {
+    schemaVersion:
+      "product-truth-listing-recipe-component-evidence/1.0.0",
+    listingKey: "ptls1:test",
+    componentIndex: 0,
+    quantity: 1,
+    product: "Crunch Chips",
+    flavor: "Barbecue",
+    size: "8 oz",
+    targetCanonicalVariantId: canonical.canonicalVariantId,
+    donorProductId: "donor-1",
+    variantDecisionId: decisionId,
+    sourceComponentId: "component-1",
+    sourceEvidenceSha256: productTruthOperationalSha256(sourceEvidence),
+    sourceEvidence,
+  };
+  const evidenceJson = renderProductTruthOperationalJson(componentEvidence);
+  const reconciled = compile(snapshot({
+    donors: [donor({ identityStatus: "exact_confirmed" })],
+    canonicalDonorBindings: [binding],
+    canonicalListingComponents: [{
+      listingKey: "ptls1:test",
+      skuCostId: "cost-form-partition",
+      componentIndex: 0,
+      evidenceStatus: "REJECT",
+      targetCanonicalVariantId: canonical.canonicalVariantId,
+      contentCanonicalVariantId: canonical.canonicalVariantId,
+      contentObservationId: "content-form-partition",
+      observedContentCanonicalVariantId: canonical.canonicalVariantId,
+      decisionId,
+      decisionStatus: "exact_confirmed",
+      decisionCanonicalVariantId: canonical.canonicalVariantId,
+      recipeTargetCanonicalVariantId: canonical.canonicalVariantId,
+      recipeDonorProductId: "donor-1",
+      recipeVariantDecisionId: decisionId,
+      recipeComponentEvidenceHash:
+        productTruthOperationalSha256(componentEvidence),
+      recipeComponentEvidenceJson: evidenceJson,
+    }],
+  }));
+  assert.equal(reconciled.scopes[0].disposition, "ALREADY_CANONICAL");
+  assert.equal(reconciled.scopes[0].writeEligible, false);
+});
+
 test("an exact donor already bound to another variant fails closed", () => {
   const conflictingVariantId = `cpv1:${"f".repeat(64)}`;
   const plan = compile(snapshot({

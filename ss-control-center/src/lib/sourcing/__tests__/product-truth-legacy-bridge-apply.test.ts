@@ -510,6 +510,82 @@ function fieldPartitionDriftFixture(): ReturnType<typeof sourceFixture> {
   return rebuildFixture(snapshot);
 }
 
+function formPartitionExactDecisionFixture(): {
+  fixture: ReturnType<typeof sourceFixture>;
+  decisionId: string;
+  donorProductId: string;
+  decidedAt: string;
+} {
+  const base = identityOnlyFixture();
+  const snapshot = structuredClone(base.snapshot);
+  const listing = snapshot.listings[0];
+  const legacyComponent = snapshot.components[0];
+  assert.ok(listing);
+  assert.ok(legacyComponent);
+  const listingIdentity = JSON.parse(
+    listing.productIdentityJson!,
+  ) as Record<string, unknown>;
+  listingIdentity.flavor = "Barbecue";
+  listing.productIdentityJson = JSON.stringify(listingIdentity);
+  legacyComponent.flavor = "Barbecue";
+  legacyComponent.matchedTitle =
+    "Acme Brand 1 Crunch Chips Barbecue, 8 oz Bag";
+  const donorProductId = legacyComponent.donorProductId;
+  assert.ok(donorProductId);
+  const donor = snapshot.donors.find(
+    (row) => row.id === donorProductId,
+  );
+  assert.ok(donor);
+  donor.identityStatus = "exact_confirmed";
+  donor.flavor = "Barbecue";
+  donor.title = legacyComponent.matchedTitle;
+  const target = {
+    brand: "Acme Brand 1",
+    productLine: "Crunch Chips",
+    flavor: "Barbecue",
+    form: "bag",
+    size: "8 oz",
+    outerPackCount: 1,
+  };
+  const canonicalIdentity = {
+    brand: target.brand,
+    productLine: [
+      target.form,
+      target.productLine,
+      target.flavor,
+    ].filter(Boolean).join(" "),
+    flavor: null,
+    form: null,
+    size: target.size,
+    outerPackCount: target.outerPackCount,
+  };
+  const canonical = buildCanonicalProductVariantKey(canonicalIdentity);
+  assert.notEqual(
+    canonical.canonicalVariantId,
+    buildCanonicalProductVariantKey(target).canonicalVariantId,
+  );
+  const decisionId = "existing-form-partition-exact-decision";
+  const decidedAt = "2026-07-26T09:00:00.000Z";
+  snapshot.canonicalDonorBindings = [{
+    donorProductId: donor.id,
+    canonicalVariantId: canonical.canonicalVariantId,
+    canonicalIdentityJson: canonical.identityJson,
+    decisionId,
+    decisionStatus: "exact_confirmed",
+    decidedAt,
+  }];
+  const fixture = rebuildFixture(
+    snapshot,
+    { contentOnly: 0, identityOnly: 5 },
+  );
+  return {
+    fixture,
+    decisionId,
+    donorProductId: donor.id,
+    decidedAt,
+  };
+}
+
 function donorVariantCollisionFixture(): ReturnType<typeof sourceFixture> {
   const fixture = sharedGraphFixture();
   const bridgePlan = structuredClone(fixture.bridgePlan);
@@ -838,6 +914,93 @@ async function executeApproved(
   });
 }
 
+async function seedExactDecision(input: {
+  db: Client;
+  target: ReturnType<typeof applyPlan>["plan"]["targets"][number];
+  donorProductId: string;
+  decisionId: string;
+  decidedAt: string;
+}): Promise<void> {
+  const { db, target, donorProductId, decisionId, decidedAt } = input;
+  const variant = target.variant;
+  await db.execute({
+    sql: `INSERT INTO CanonicalProductVariant (
+      id,variantKey,identityHash,keyVersion,normalizedBrand,
+      normalizedProductLine,normalizedFlavor,normalizedModifiersJson,
+      normalizedForm,sizeDimension,sizeBaseAmount,sizeBaseUnit,
+      outerPackCount,identityJson,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      variant.id,
+      variant.variantKey,
+      variant.identityHash,
+      variant.keyVersion,
+      variant.normalizedBrand,
+      variant.normalizedProductLine,
+      variant.normalizedFlavor,
+      variant.normalizedModifiersJson,
+      variant.normalizedForm,
+      variant.sizeDimension,
+      variant.sizeBaseAmount,
+      variant.sizeBaseUnit,
+      variant.outerPackCount,
+      variant.identityJson,
+      decidedAt,
+    ],
+  });
+  const decisionEvidence = {
+    matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+    matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+    matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+    verdict: "EXACT_IDENTITY",
+  };
+  const decisionEvidenceJson =
+    renderProductTruthOperationalJson(decisionEvidence);
+  await db.execute({
+    sql: `INSERT INTO DonorProductVariantDecision (
+      id,decisionKey,donorProductId,canonicalVariantId,decisionStatus,
+      matcherVersion,matcherImplementationSha256,matcherReleaseSha256,
+      evidenceHash,evidenceJson,decidedAt,runId,approvalId,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      decisionId,
+      productTruthLegacyBridgeBytesSha256(
+        `${donorProductId}:${variant.id}:${decisionId}`,
+      ),
+      donorProductId,
+      variant.id,
+      "exact_confirmed",
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      productTruthLegacyBridgeBytesSha256(decisionEvidenceJson),
+      decisionEvidenceJson,
+      decidedAt,
+      null,
+      null,
+      decidedAt,
+    ],
+  });
+  await db.execute({
+    sql: `UPDATE DonorProduct SET
+      identityStatus='exact_confirmed',
+      identityMatcherVersion=?,
+      identityMatcherImplementationSha256=?,
+      identityMatcherReleaseSha256=?,
+      identityEvidenceJson=?,
+      identityConfirmedAt=?
+      WHERE id=?`,
+    args: [
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      decisionEvidenceJson,
+      decidedAt,
+      donorProductId,
+    ],
+  });
+}
+
 test("legacy bridge wave plan is byte-deterministic for explicitly selected catalog graphs", () => {
   const first = applyPlan();
   const second = applyPlan(first.fixture);
@@ -947,6 +1110,93 @@ test("lexically equivalent product/flavor field partitions reconcile to one dono
     )).rows[0]?.count),
     3,
   );
+});
+
+test("exact donor form partition is reconciled through the existing immutable decision", async (t) => {
+  const value = formPartitionExactDecisionFixture();
+  const input = applyPlan(value.fixture);
+  const target = input.plan.targets.find(
+    (row) => row.donorProductId === value.donorProductId,
+  );
+  assert.ok(target);
+  assert.equal(
+    target.identityReconciliation?.schemaVersion,
+    "product-truth-legacy-bridge-field-partition-reconciliation/2.0.0",
+  );
+  assert.equal(
+    target.identityReconciliation?.canonicalDecisionId,
+    value.decisionId,
+  );
+  assert.equal(target.reusedDecision?.decisionId, value.decisionId);
+  assert.equal(target.decision, null);
+  assert.equal(target.listingRecipeComponents[0]?.targetCanonicalVariantId,
+    target.variant.id);
+  assert.equal(target.listingRecipeComponents[0]?.variantDecisionId,
+    value.decisionId);
+
+  const databaseFixture = {
+    ...value.fixture,
+    snapshot: structuredClone(value.fixture.snapshot),
+  };
+  const stagedDonor = databaseFixture.snapshot.donors.find(
+    (row) => row.id === value.donorProductId,
+  );
+  assert.ok(stagedDonor);
+  stagedDonor.identityStatus = "legacy_unverified";
+  const db = await seededDatabase(t, databaseFixture);
+  t.after(() => db.close());
+  await seedExactDecision({
+    db,
+    target,
+    donorProductId: value.donorProductId,
+    decisionId: value.decisionId,
+    decidedAt: value.decidedAt,
+  });
+  const preflight = await preflightProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    checkedAt: APPLY_AT,
+  });
+  assert.equal(preflight.status, "READY_TO_APPLY");
+  assert.equal(preflight.counts.donorVariantDecisionReuses, 1);
+  const preflightJson = renderProductTruthLegacyBridgePreflightReport(
+    preflight,
+  );
+  const policy = standingPolicy();
+  const report = await applyProductTruthLegacyBridgeWave({
+    db,
+    databaseTargetFingerprint: TARGET_FINGERPRINT,
+    plan: input.plan,
+    planJson: input.planJson,
+    planSha256: input.planSha256,
+    standingPolicy: policy.value,
+    standingPolicyJson: policy.json,
+    standingPolicySha256: policy.sha256,
+    standingPreflightReport: preflight,
+    standingPreflightReportJson: preflightJson,
+    standingPreflightReportSha256:
+      productTruthLegacyBridgeBytesSha256(preflightJson),
+    startedAt: APPLY_AT,
+    completedAt: APPLY_AT,
+  });
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.counts.donorVariantDecisionReuses, 1);
+  assert.equal(report.verification.unitEconomicsUnsourceable, 5);
+  const recipe = await db.execute({
+    sql: `SELECT component.targetCanonicalVariantId,component.variantDecisionId
+          FROM ProductTruthListingRecipe recipe
+          JOIN ProductTruthListingRecipeComponent component
+            ON component.listingRecipeId=recipe.id
+          WHERE recipe.listingKey=?`,
+    args: [target.listingKey],
+  });
+  assert.deepEqual(recipe.rows, [{
+    targetCanonicalVariantId: target.variant.id,
+    variantDecisionId: value.decisionId,
+  }]);
 });
 
 test("exact identity-only legacy evidence materializes partial content, recipe, and typed UNSOURCEABLE COGS", async (t) => {

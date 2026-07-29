@@ -450,14 +450,18 @@ async function readCanonicalDonorBindings(
   capturedAt: string,
 ): Promise<ProductTruthLegacyBridgeCanonicalDonorBindingRow[]> {
   const result = await db.execute({
-    sql: `SELECT donorProductId, canonicalVariantId, id AS decisionId,
-            decisionStatus, decidedAt
-          FROM DonorProductVariantDecision
-          WHERE decisionStatus='exact_confirmed'
-            AND canonicalVariantId IS NOT NULL
-            AND julianday(decidedAt)<=julianday(?)
-            AND julianday(createdAt)<=julianday(?)
-          ORDER BY donorProductId, decidedAt, id`,
+    sql: `SELECT decision.donorProductId, decision.canonicalVariantId,
+            variant.identityJson AS canonicalIdentityJson,
+            decision.id AS decisionId, decision.decisionStatus,
+            decision.decidedAt
+          FROM DonorProductVariantDecision decision
+          JOIN CanonicalProductVariant variant
+            ON variant.id=decision.canonicalVariantId
+          WHERE decision.decisionStatus='exact_confirmed'
+            AND decision.canonicalVariantId IS NOT NULL
+            AND julianday(decision.decidedAt)<=julianday(?)
+            AND julianday(decision.createdAt)<=julianday(?)
+          ORDER BY decision.donorProductId, decision.decidedAt, decision.id`,
     args: [capturedAt, capturedAt],
   });
   return result.rows.map((row): ProductTruthLegacyBridgeCanonicalDonorBindingRow => ({
@@ -465,6 +469,10 @@ async function readCanonicalDonorBindings(
     canonicalVariantId: text(
       row.canonicalVariantId,
       "DonorProductVariantDecision.canonicalVariantId",
+    ),
+    canonicalIdentityJson: text(
+      row.canonicalIdentityJson,
+      "CanonicalProductVariant.identityJson",
     ),
     decisionId: text(row.decisionId, "DonorProductVariantDecision.id"),
     decisionStatus: text(row.decisionStatus, "DonorProductVariantDecision.decisionStatus"),
