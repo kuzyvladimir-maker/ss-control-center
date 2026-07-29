@@ -551,17 +551,21 @@ export function parseProductTruthRunnerArguments(
         "listing binding is valid only for targeted doctor",
       );
     }
+    if (targetedCount === targetedValues.length && listingKey === undefined) {
+      usageError(
+        "CLI_TARGETED_DOCTOR_LISTING_BINDING_REQUIRED",
+        "targeted doctor requires --listing-key and --component-index so standing authority binds one current Phase 1 recipe component",
+      );
+    }
     return targetedCount === 0 ? { ...common, command } : {
       ...common,
       command,
       donorProductId: exactValue(targetedValues[0], "--donor-product-id"),
-      ...(listingKey === undefined ? {} : {
-        listingKey: exactValue(listingKey, "--listing-key"),
-        componentIndex: exactNonNegativeIntegerFlag(
-          componentIndex,
-          "--component-index",
-        ),
-      }),
+      listingKey: exactValue(listingKey, "--listing-key"),
+      componentIndex: exactNonNegativeIntegerFlag(
+        componentIndex,
+        "--component-index",
+      ),
       query: exactValue(targetedValues[1], "--query"),
       runId: exactValue(targetedValues[2], "--run-id"),
       expiresAt: exactValue(targetedValues[3], "--expires-at"),
@@ -661,9 +665,9 @@ export function productTruthRunnerUsage(command?: ProductTruthRunnerCommand): st
     "  doctor --url URL [--allow-remote --auth-token-env NAME]",
     "  doctor --donor-product-id ID --query QUERY --run-id RUN_ID --expires-at ISO_TIMESTAMP",
     "       --unwrangle-reserve-floor UNITS --url URL --out NEW_DIR",
-    "       [--listing-key WALMART_LISTING_KEY --component-index ZERO_BASED_INDEX]",
+    "       --listing-key WALMART_LISTING_KEY --component-index ZERO_BASED_INDEX",
     "       [--allow-remote --auth-token-env NAME]",
-    "       # exact donor is reused; a legacy donor requires authoritative listing binding",
+    "       # every standing target binds one authoritative Phase 1 recipe component",
     "  plan --request REQUEST.json --manifest MANIFEST.json --url URL --out NEW_DIR",
     "       [--allow-remote]  # canonical listing lane",
     "  plan --request TARGETED_REQUEST.json --url URL --out NEW_DIR",
@@ -2961,8 +2965,8 @@ export function productTruthTargetedDoctorExitCode(result: Record<string, unknow
 async function buildTargetedEvidenceRequestArtifacts(input: {
   options: Extract<ProductTruthRunnerCliOptions, { command: "doctor" }> & {
     donorProductId: string;
-    listingKey?: string;
-    componentIndex?: number;
+    listingKey: string;
+    componentIndex: number;
     query: string;
     runId: string;
     expiresAt: string;
@@ -3527,6 +3531,8 @@ async function executeCommand(
       const targetedDoctorResult = await buildTargetedEvidenceRequestArtifacts({
         options: options as Extract<ProductTruthRunnerCliOptions, { command: "doctor" }> & {
           donorProductId: string;
+          listingKey: string;
+          componentIndex: number;
           query: string;
           runId: string;
           expiresAt: string;

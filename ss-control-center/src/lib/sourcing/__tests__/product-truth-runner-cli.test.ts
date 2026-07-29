@@ -285,7 +285,7 @@ test("targeted doctor retires external identity files and emitted handoff argv i
     (error: unknown) => error instanceof ProductTruthRunnerCliError
       && error.code === "CLI_TARGETED_DOCTOR_EXTERNAL_IDENTITY_RETIRED",
   );
-  const parsed = parseProductTruthRunnerArguments([
+  const targetedWithoutBinding = [
     "doctor",
     "--donor-product-id", "donor-1",
     "--query", "Acme exact item",
@@ -294,9 +294,21 @@ test("targeted doctor retires external identity files and emitted handoff argv i
     "--unwrangle-reserve-floor", "100",
     "--url", "file:/tmp/test.sqlite",
     "--out", "/tmp/targeted output",
+  ];
+  assert.throws(
+    () => parseProductTruthRunnerArguments(targetedWithoutBinding),
+    (error: unknown) => error instanceof ProductTruthRunnerCliError
+      && error.code === "CLI_TARGETED_DOCTOR_LISTING_BINDING_REQUIRED",
+  );
+  const parsed = parseProductTruthRunnerArguments([
+    ...targetedWithoutBinding,
+    "--listing-key", "walmart:1:SKU-1",
+    "--component-index", "0",
   ]);
   assert.equal(parsed.command, "doctor");
   if (parsed.command !== "doctor") assert.fail("doctor parser narrowed incorrectly");
+  assert.equal(parsed.listingKey, "walmart:1:SKU-1");
+  assert.equal(parsed.componentIndex, 0);
   assert.equal(productTruthTargetedDoctorExitCode({ ownerActionRequired: true }), 2);
   assert.equal(productTruthTargetedDoctorExitCode({ ok: true }), 0);
 
