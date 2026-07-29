@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
+  CANONICAL_TITLE_NEUTRAL_TOKENS,
   matchCanonicalProductTitle,
   normalizeIdentityTokens,
   parseCanonicalSize,
@@ -25,6 +26,9 @@ import {
   evaluatePriceEvidenceEligibility,
   PRICE_EVIDENCE_POLICY_VERSION,
 } from "./price-evidence-policy";
+import {
+  parseProductTruthAuthoritativeWalmartOuterPackTitle,
+} from "./product-truth-authoritative-walmart-item-title";
 
 /**
  * This is an immutable, read-only migration plan over the existing legacy
@@ -32,15 +36,17 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.6.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.6.0" as const;
+  "product-truth-legacy-bridge-plan/1.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
-  "product-truth-legacy-bridge-policy/1.2.0" as const;
+  "product-truth-legacy-bridge-policy/1.3.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
   "product-truth-live-image-barcode-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION =
   "product-truth-direct-target-content-evidence/1.0.0" as const;
+export const PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION =
+  "product-truth-authoritative-walmart-item-report-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS =
   24 * 60 * 60 * 1_000;
 
@@ -62,6 +68,7 @@ export type ProductTruthBridgeScopeDisposition =
 export type ProductTruthBridgeIdentityProof =
   | "EXACT_GTIN"
   | "EXACT_LIVE_IMAGE_BARCODE"
+  | "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE"
   | "STRICT_TITLE_MATCH"
   | "NONE";
 
@@ -329,6 +336,30 @@ export interface ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
   evidenceArtifactSha256: string;
 }
 
+export interface ProductTruthAuthoritativeWalmartItemReportEvidenceRow {
+  schemaVersion:
+    typeof PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION;
+  listingKey: string;
+  storeIndex: number;
+  sku: string;
+  itemId: string;
+  title: string;
+  brand: string | null;
+  gtin: string | null;
+  upc: string | null;
+  itemPageUrl: string | null;
+  primaryImageUrl: string | null;
+  publishStatus: "PUBLISHED";
+  lifecycleStatus: "ACTIVE";
+  sourceReportId: string;
+  sourceReportName: string;
+  sourceReportCapturedAt: string;
+  sourceReportSha256: string;
+  sourceReportByteLength: number;
+  sourceRowNumber: number;
+  evidenceRowSha256: string;
+}
+
 export interface ProductTruthLegacyBridgeSnapshot {
   schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION;
   capturedAt: string;
@@ -342,6 +373,8 @@ export interface ProductTruthLegacyBridgeSnapshot {
   canonicalListingComponents: ProductTruthLegacyBridgeCanonicalListingComponentRow[];
   componentBarcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[];
   directTargetContentEvidence: ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
+  authoritativeWalmartItemReportEvidence:
+    ProductTruthAuthoritativeWalmartItemReportEvidenceRow[];
 }
 
 export interface ProductTruthBridgeBlocker {
@@ -1815,6 +1848,178 @@ function canonicalDonorConflictBlocker(input: {
   );
 }
 
+const AUTHORITATIVE_WALMART_TITLE_MEASURE =
+  /\b\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|ounce|ounces|lb|lbs|pound|pounds|kg|kgs|g|gram|grams|ml|l|liter|liters|litre|litres|ct|count|counts)\b/gi;
+const AUTHORITATIVE_WALMART_TITLE_NEUTRAL =
+  new Set<string>(CANONICAL_TITLE_NEUTRAL_TOKENS);
+const AUTHORITATIVE_WALMART_PLACEHOLDER_SIGNATURES = new Set([
+  "coming soon",
+  "n a",
+  "placeholder",
+  "test",
+  "tbd",
+]);
+
+function authoritativeWalmartEvidenceCore(
+  evidence: ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
+): Omit<ProductTruthAuthoritativeWalmartItemReportEvidenceRow, "evidenceRowSha256"> {
+  const core = { ...evidence };
+  delete (core as Partial<ProductTruthAuthoritativeWalmartItemReportEvidenceRow>)
+    .evidenceRowSha256;
+  return core;
+}
+
+function exactNormalizedTitleKey(value: string | null | undefined): string {
+  return JSON.stringify(normalizeIdentityTokens(value));
+}
+
+function recoverAuthoritativeWalmartReportScope(input: {
+  listing: ProductTruthLegacyBridgeListingRow;
+  evidence: ProductTruthAuthoritativeWalmartItemReportEvidenceRow | null;
+  donorsByExactTitle: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeDonorRow[]
+  >;
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+  directTargetContentEvidenceByDonor: ReadonlyMap<
+    string,
+    ProductTruthLegacyBridgeDirectTargetContentEvidenceRow
+  >;
+  offersByDonor: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeOfferRow[]
+  >;
+}): ProductTruthLegacyBridgeScopePlan | null {
+  const { listing, evidence } = input;
+  if (
+    listing.channel !== "walmart"
+    || evidence === null
+    || evidence.listingKey !== listing.listingKey
+    || evidence.storeIndex !== listing.storeIndex
+    || evidence.sku !== listing.sku
+  ) return null;
+
+  const outerPack =
+    parseProductTruthAuthoritativeWalmartOuterPackTitle(evidence.title);
+  if (
+    outerPack.status === "INVALID"
+    || outerPack.status === "AMBIGUOUS"
+    || !outerPack.baseTokens.length
+  ) return null;
+  const baseSignature = outerPack.baseTokens.join(" ");
+  if (
+    AUTHORITATIVE_WALMART_PLACEHOLDER_SIGNATURES.has(baseSignature)
+    || baseSignature.includes("coming soon")
+  ) return null;
+
+  const titleCandidates =
+    input.donorsByExactTitle.get(JSON.stringify(outerPack.normalizedBaseTokens))
+    ?? [];
+  if (titleCandidates.length !== 1) return null;
+  const donor = titleCandidates[0]!;
+  if (
+    !donor.title
+    || !donor.brand
+    || !evidence.brand
+    || exactNormalizedTitleKey(donor.brand)
+      !== exactNormalizedTitleKey(evidence.brand)
+    || foldedTokens(donor.title).join("\u0000")
+      !== outerPack.baseTokens.join("\u0000")
+  ) return null;
+
+  const brandTokens = foldedTokens(evidence.brand);
+  const titleWithoutMeasure =
+    donor.title.replace(AUTHORITATIVE_WALMART_TITLE_MEASURE, " ");
+  const titleTokens = foldedTokens(titleWithoutMeasure);
+  if (
+    brandTokens.length === 0
+    || titleTokens.length <= brandTokens.length
+    || brandTokens.some((token, index) => titleTokens[index] !== token)
+  ) return null;
+  const productLineTokens = titleTokens
+    .slice(brandTokens.length)
+    .filter((token) =>
+      !AUTHORITATIVE_WALMART_TITLE_NEUTRAL.has(token)
+      && !/^\d+$/.test(token));
+  if (productLineTokens.length === 0) return null;
+
+  const size = donor.size?.trim()
+    ? parseCanonicalSize(donor.size)
+      ? donor.size.trim()
+      : null
+    : parseCanonicalSize(donor.title)
+      ? donor.title
+      : null;
+  if (!size) return null;
+  const targetIdentity: CanonicalProductIdentity = {
+    brand: donor.brand,
+    productLine: productLineTokens.join(" "),
+    flavor: null,
+    modifiers: [],
+    form: null,
+    size,
+    outerPackCount: 1,
+  };
+  const matcher = matchCanonicalProductTitle(targetIdentity, {
+    title: donor.title,
+    brand: donor.brand,
+  });
+  if (matcher.verdict !== "EXACT_IDENTITY") return null;
+
+  let targetVariant: ProductTruthBridgeCanonicalVariantProjection;
+  try {
+    targetVariant = projectVariant(
+      buildCanonicalProductVariantKey(targetIdentity),
+    );
+  } catch {
+    return null;
+  }
+  if (
+    canonicalDonorConflictBlocker({
+      donor,
+      targetVariant,
+      canonicalDonorBindings: input.canonicalDonorBindings,
+    })
+  ) return null;
+
+  const contentSourceOffer = chooseContentSourceOffer(
+    donor.id,
+    input.offersByDonor,
+  );
+  if (!contentSourceOffer) return null;
+  const directTargetEvidence =
+    input.directTargetContentEvidenceByDonor.get(donor.id) ?? null;
+  const contentAssessment = assessLegacyContent(
+    donor,
+    contentSourceOffer,
+    null,
+    directTargetEvidence,
+  );
+  const component: ProductTruthLegacyBridgeComponentPlan = {
+    componentIndex: 0,
+    qty: outerPack.status === "PARSED" ? outerPack.count! : 1,
+    legacyComponentId: null,
+    donorProductId: donor.id,
+    legacyDonorProductId: null,
+    donorOfferId: null,
+    contentSourceOfferId: contentSourceOffer.id,
+    identityProof: "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+    contentAssessment,
+    targetIdentity,
+    targetVariant,
+    matcherVerdict: matcher.verdict,
+    matcherReasonCodes: matcher.reasonCodes,
+    disposition: contentAssessment.complete
+      ? "EXACT_CONTENT_ONLY_CANDIDATE"
+      : "EXACT_IDENTITY_ONLY_CANDIDATE",
+    blockers: [],
+  };
+  return aggregateScope(listing, [component], []);
+}
+
 function validIdentityPartitionReconciliation(input: {
   component: ProductTruthLegacyBridgeComponentPlan;
   row: ProductTruthLegacyBridgeCanonicalListingComponentRow;
@@ -2163,6 +2368,50 @@ export function compileProductTruthLegacyBridgePlan(input: {
     }
     barcodeEvidenceByComponent.set(key, evidence);
   }
+  const listingsByKey = new Map(
+    input.snapshot.listings.map((listing) => [listing.listingKey, listing]),
+  );
+  const authoritativeWalmartEvidenceByListing = new Map<
+    string,
+    ProductTruthAuthoritativeWalmartItemReportEvidenceRow
+  >();
+  for (const evidence of input.snapshot.authoritativeWalmartItemReportEvidence) {
+    const listing = listingsByKey.get(evidence.listingKey);
+    const core = authoritativeWalmartEvidenceCore(evidence);
+    if (
+      evidence.schemaVersion
+        !== PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION
+      || authoritativeWalmartEvidenceByListing.has(evidence.listingKey)
+      || !listing
+      || listing.channel !== "walmart"
+      || listing.storeIndex !== evidence.storeIndex
+      || listing.sku !== evidence.sku
+      || !evidence.itemId
+      || !evidence.title
+      || evidence.publishStatus !== "PUBLISHED"
+      || evidence.lifecycleStatus !== "ACTIVE"
+      || !evidence.sourceReportId
+      || !evidence.sourceReportName
+      || !Number.isFinite(Date.parse(evidence.sourceReportCapturedAt))
+      || Date.parse(evidence.sourceReportCapturedAt)
+        > Date.parse(input.snapshot.capturedAt)
+      || !/^[a-f0-9]{64}$/.test(evidence.sourceReportSha256)
+      || !Number.isSafeInteger(evidence.sourceReportByteLength)
+      || evidence.sourceReportByteLength < 1
+      || !Number.isSafeInteger(evidence.sourceRowNumber)
+      || evidence.sourceRowNumber < 2
+      || !/^[a-f0-9]{64}$/.test(evidence.evidenceRowSha256)
+      || productTruthOperationalSha256(core) !== evidence.evidenceRowSha256
+    ) {
+      throw new Error(
+        `LEGACY_BRIDGE_AUTHORITATIVE_WALMART_EVIDENCE_INVALID:${evidence.listingKey}`,
+      );
+    }
+    authoritativeWalmartEvidenceByListing.set(
+      evidence.listingKey,
+      evidence,
+    );
+  }
   const donorsById = new Map(input.snapshot.donors.map((row) => [row.id, row]));
   const donorsByGtin = new Map<string, ProductTruthLegacyBridgeDonorRow[]>();
   for (const donor of input.snapshot.donors) {
@@ -2188,6 +2437,20 @@ export function compileProductTruthLegacyBridgePlan(input: {
     donorsByLeadingTitleToken.set(leadingToken, list);
   }
   for (const list of donorsByLeadingTitleToken.values()) {
+    list.sort((left, right) => left.id.localeCompare(right.id));
+  }
+  const donorsByExactTitle = new Map<
+    string,
+    ProductTruthLegacyBridgeDonorRow[]
+  >();
+  for (const donor of input.snapshot.donors) {
+    if (!donor.title) continue;
+    const key = exactNormalizedTitleKey(donor.title);
+    const list = donorsByExactTitle.get(key) ?? [];
+    list.push(donor);
+    donorsByExactTitle.set(key, list);
+  }
+  for (const list of donorsByExactTitle.values()) {
     list.sort((left, right) => left.id.localeCompare(right.id));
   }
   const offersById = new Map(input.snapshot.offers.map((row) => [row.id, row]));
@@ -2256,6 +2519,22 @@ export function compileProductTruthLegacyBridgePlan(input: {
       const scopeBlockers = [...parsed.blockers];
       const legacyComponents = componentsBySku.get(listing.sku) ?? [];
       if (!parsed.identity) {
+        const recovered = recoverAuthoritativeWalmartReportScope({
+          listing,
+          evidence:
+            authoritativeWalmartEvidenceByListing.get(listing.listingKey)
+            ?? null,
+          donorsByExactTitle,
+          canonicalDonorBindings,
+          directTargetContentEvidenceByDonor,
+          offersByDonor,
+        });
+        if (recovered) {
+          return classifyExistingCanonicalScope(
+            recovered,
+            canonicalComponentsByListing.get(listing.listingKey) ?? [],
+          );
+        }
         return classifyExistingCanonicalScope(
           aggregateScope(listing, [], scopeBlockers),
           canonicalComponentsByListing.get(listing.listingKey) ?? [],
@@ -2364,10 +2643,30 @@ export function compileProductTruthLegacyBridgePlan(input: {
           }));
         }
       }
-      return classifyExistingCanonicalScope(
+      const classified = classifyExistingCanonicalScope(
         aggregateScope(listing, plans, scopeBlockers),
         canonicalComponentsByListing.get(listing.listingKey) ?? [],
       );
+      if (
+        classified.disposition !== "QUARANTINE"
+        || (declaredBundle && identityComponents.length > 0)
+      ) return classified;
+      const recovered = recoverAuthoritativeWalmartReportScope({
+        listing,
+        evidence:
+          authoritativeWalmartEvidenceByListing.get(listing.listingKey)
+          ?? null,
+        donorsByExactTitle,
+        canonicalDonorBindings,
+        directTargetContentEvidenceByDonor,
+        offersByDonor,
+      });
+      return recovered
+        ? classifyExistingCanonicalScope(
+            recovered,
+            canonicalComponentsByListing.get(listing.listingKey) ?? [],
+          )
+        : classified;
     });
 
   const componentPlans = scopes.flatMap((scope) => scope.components);

@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import { createClient } from "@libsql/client";
 
 import {
+  loadAuthoritativeWalmartItemReportEvidence,
   readCanonicalListingComponents,
 } from "../../../../scripts/build-product-truth-legacy-bridge-plan";
 import {
@@ -16,6 +21,7 @@ import {
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeComponentRow,
+  type ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
   type ProductTruthDirectTargetContentEvidence,
   type ProductTruthLegacyBridgeDonorRow,
   type ProductTruthLegacyBridgeOfferRow,
@@ -25,6 +31,7 @@ import {
   productTruthOperationalSha256,
   renderProductTruthOperationalJson,
 } from "../product-truth-operational-run-contract";
+import type { Phase1ScopeManifest } from "../phase1-scope-manifest";
 
 function component(
   overrides: Partial<ProductTruthLegacyBridgeComponentRow> = {},
@@ -151,6 +158,7 @@ function snapshot(
     canonicalListingComponents: [],
     componentBarcodeEvidence: [],
     directTargetContentEvidence: [],
+    authoritativeWalmartItemReportEvidence: [],
     ...overrides,
   };
 }
@@ -164,6 +172,273 @@ function compile(value: ProductTruthLegacyBridgeSnapshot) {
     generatedAt: "2026-07-26T13:00:00.000Z",
   });
 }
+
+function walmartItemReportEvidence(
+  overrides: Partial<ProductTruthAuthoritativeWalmartItemReportEvidenceRow> = {},
+): ProductTruthAuthoritativeWalmartItemReportEvidenceRow {
+  const core = {
+    schemaVersion:
+      "product-truth-authoritative-walmart-item-report-evidence/1.0.0" as const,
+    listingKey: "ptls1:test",
+    storeIndex: 1,
+    sku: "SKU-1",
+    itemId: "123456789",
+    title: "Acme Crunch Chips Barbecue Bag 8 oz (Pack of 4)",
+    brand: "Acme",
+    gtin: "00036000291452",
+    upc: "036000291452",
+    itemPageUrl: "https://www.walmart.com/ip/123456789",
+    primaryImageUrl: "https://images.example/main.jpg",
+    publishStatus: "PUBLISHED" as const,
+    lifecycleStatus: "ACTIVE" as const,
+    sourceReportId: "report-1",
+    sourceReportName: "ItemReport.csv",
+    sourceReportCapturedAt: "2026-07-26T11:00:00.000Z",
+    sourceReportSha256: "d".repeat(64),
+    sourceReportByteLength: 1000,
+    sourceRowNumber: 2,
+  };
+  const merged = { ...core, ...overrides };
+  const hashInput = { ...merged };
+  delete (
+    hashInput as Partial<ProductTruthAuthoritativeWalmartItemReportEvidenceRow>
+  ).evidenceRowSha256;
+  return {
+    ...merged,
+    evidenceRowSha256:
+      overrides.evidenceRowSha256
+      ?? productTruthOperationalSha256(hashInput),
+  };
+}
+
+function walmartManifestForReport(
+  csv: string,
+  title = "Acme Crunch Chips Barbecue Bag 8 oz (Pack of 4)",
+): Phase1ScopeManifest {
+  const headers = csv.slice(0, csv.indexOf("\n")).split(",");
+  const contentSha256 = createHash("sha256").update(csv).digest("hex");
+  return {
+    sourceReports: [{
+      channel: "walmart",
+      storeIndex: 1,
+      reportId: "report-1",
+      reportType: "ITEM_CATALOG",
+      scopeKey: "store1",
+      accountId: "account-1",
+      storeId: "store1",
+      marketplaceId: null,
+      capturedAt: "2026-07-26T11:00:00.000Z",
+      sourceName: "ItemReport.csv",
+      contentSha256,
+      byteLength: Buffer.byteLength(csv),
+      delimiter: "comma",
+      headers,
+      totalRows: 1,
+      expectedRowCount: 1,
+      liveRows: 1,
+      statusCounts: { "PUBLISHED|ACTIVE": 1 },
+    }],
+    listings: [{
+      channel: "walmart",
+      scopeKey: "store1",
+      storeIndex: 1,
+      accountId: "account-1",
+      storeId: "store1",
+      marketplaceId: null,
+      listingKey: "ptls1:test",
+      listingId: "123456789",
+      sku: "SKU-1",
+      title,
+      sourceStatus: "PUBLISHED",
+      sourceLifecycleStatus: "ACTIVE",
+      phase1Status: "NOT_STARTED",
+      sourceReportId: "report-1",
+      sourceCapturedAt: "2026-07-26T11:00:00.000Z",
+      sourceContentSha256: contentSha256,
+    }],
+  } as Phase1ScopeManifest;
+}
+
+test("Walmart ITEM report loader binds exact bytes and manifest row identity", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "pt-walmart-report-"));
+  try {
+    const csv = [
+      [
+        "SKU",
+        "Item ID",
+        "Product Name",
+        "Lifecycle Status",
+        "Publish Status",
+        "Brand",
+        "GTIN",
+        "UPC",
+        "Item Page URL",
+        "Primary Image URL",
+      ].join(","),
+      [
+        "SKU-1",
+        "123456789",
+        "\"Acme Crunch Chips Barbecue Bag 8 oz (Pack of 4)\"",
+        "ACTIVE",
+        "PUBLISHED",
+        "Acme",
+        "00036000291452",
+        "036000291452",
+        "https://www.walmart.com/ip/123456789",
+        "https://images.example/main.jpg",
+      ].join(","),
+      "",
+    ].join("\n");
+    const path = join(directory, "ItemReport.csv");
+    await writeFile(path, csv);
+    const manifest = walmartManifestForReport(csv);
+    const rows = await loadAuthoritativeWalmartItemReportEvidence(
+      path,
+      manifest,
+    );
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0]?.title, manifest.listings[0]?.title);
+    assert.equal(rows[0]?.brand, "Acme");
+    assert.match(rows[0]?.evidenceRowSha256 ?? "", /^[a-f0-9]{64}$/);
+
+    await writeFile(path, `${csv}drift`);
+    await assert.rejects(
+      () => loadAuthoritativeWalmartItemReportEvidence(path, manifest),
+      /WALMART_ITEM_REPORT_BYTES_MISMATCH/,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("Walmart ITEM report loader rejects title or item identity drift", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "pt-walmart-report-"));
+  try {
+    const csv = [
+      "SKU,Item ID,Product Name,Lifecycle Status,Publish Status,Brand,GTIN,UPC,Item Page URL,Primary Image URL",
+      "SKU-1,987654321,Wrong title,ACTIVE,PUBLISHED,Acme,,,,",
+      "",
+    ].join("\n");
+    const path = join(directory, "ItemReport.csv");
+    await writeFile(path, csv);
+    const manifest = walmartManifestForReport(csv);
+    await assert.rejects(
+      () => loadAuthoritativeWalmartItemReportEvidence(path, manifest),
+      /WALMART_ITEM_REPORT_LISTING_MISMATCH/,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("authoritative Walmart exact-title multipack recovers a missing legacy recipe", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence()],
+  });
+  const plan = compile(value);
+  const scope = plan.scopes[0]!;
+  const componentPlan = scope.components[0]!;
+  assert.equal(scope.disposition, "CONTENT_ONLY_CANONICALIZATION_CANDIDATE");
+  assert.equal(componentPlan.qty, 4);
+  assert.equal(componentPlan.legacyComponentId, null);
+  assert.equal(
+    componentPlan.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+  assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
+  assert.equal(componentPlan.donorProductId, "donor-1");
+});
+
+test("authoritative Walmart title recovery keeps adjacent variants quarantined", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+    }],
+    components: [],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence({
+      title: "Acme Crunch Chips Hot Bag 8 oz (Pack of 4)",
+    })],
+  });
+  assert.equal(compile(value).scopes[0]!.disposition, "QUARANTINE");
+});
+
+test("authoritative Walmart title recovery rejects duplicate donors and placeholders", () => {
+  const duplicate = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+    }],
+    components: [],
+    donors: [donor(), donor({ id: "donor-2" })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence()],
+  });
+  assert.equal(compile(duplicate).scopes[0]!.disposition, "QUARANTINE");
+
+  const placeholderEvidence = walmartItemReportEvidence({
+    title: "Coming Soon (Pack of 2)",
+    brand: "Coming",
+  });
+  const placeholder = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: null,
+    }],
+    components: [],
+    donors: [donor({
+      brand: "Coming",
+      title: "Coming Soon",
+      size: "8 oz",
+    })],
+    authoritativeWalmartItemReportEvidence: [placeholderEvidence],
+  });
+  assert.equal(compile(placeholder).scopes[0]!.disposition, "QUARANTINE");
+});
+
+test("authoritative report fallback never replaces an explicit mixed bundle", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        is_bundle: true,
+        units_in_listing: 2,
+        components: [{
+          product: "Acme Crunch Chips",
+          flavor: "Barbecue",
+          size: "8 oz",
+          qty: 2,
+          container_type: "Bag",
+        }],
+      }),
+    }],
+    components: [],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence()],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(scope.disposition, "QUARANTINE");
+  assert.notEqual(
+    scope.components[0]?.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+});
+
+test("authoritative Walmart report evidence hash drift fails before planning", () => {
+  const evidence = walmartItemReportEvidence();
+  evidence.title = "Acme Crunch Chips Hot Bag 8 oz (Pack of 4)";
+  const value = snapshot({
+    authoritativeWalmartItemReportEvidence: [evidence],
+  });
+  assert.throws(
+    () => compile(value),
+    /LEGACY_BRIDGE_AUTHORITATIVE_WALMART_EVIDENCE_INVALID/,
+  );
+});
 
 function directTargetEvidence(
   overrides: Partial<ProductTruthDirectTargetContentEvidence> = {},

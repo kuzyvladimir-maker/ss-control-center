@@ -34,7 +34,10 @@ import {
   type ProductTruthDirectTargetContentEvidence,
   type ProductTruthLegacyBridgeSnapshot,
 } from "../product-truth-legacy-bridge";
-import { renderProductTruthOperationalJson } from "../product-truth-operational-run-contract";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
 import { readProductTruthSnapshot } from "../product-truth-read-contract";
 
 const CAPTURED_AT = "2026-07-26T10:00:00.000Z";
@@ -184,6 +187,7 @@ function sourceFixture(): {
     canonicalListingComponents: [],
     componentBarcodeEvidence: [],
     directTargetContentEvidence: [],
+    authoritativeWalmartItemReportEvidence: [],
   };
   const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
   const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);
@@ -473,6 +477,47 @@ function directTargetContentFixture(): ReturnType<typeof sourceFixture> {
     evidenceArtifactSha256: productTruthLegacyBridgeBytesSha256(
       renderProductTruthOperationalJson(evidence),
     ),
+  }];
+  return rebuildFixture(snapshot);
+}
+
+function authoritativeWalmartReportRecipeFixture():
+ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  const listing = snapshot.listings[0];
+  const donor = snapshot.donors[0];
+  assert.ok(listing);
+  assert.ok(donor?.title);
+  listing.productIdentityJson = null;
+  listing.productIdentityUpdatedAt = null;
+  snapshot.components = snapshot.components.filter(
+    (component) => component.sku !== listing.sku,
+  );
+  const evidenceCore = {
+    schemaVersion:
+      "product-truth-authoritative-walmart-item-report-evidence/1.0.0" as const,
+    listingKey: listing.listingKey,
+    storeIndex: listing.storeIndex,
+    sku: listing.sku,
+    itemId: "item-1",
+    title: `${donor.title} (Pack of 2)`,
+    brand: donor.brand,
+    gtin: null,
+    upc: null,
+    itemPageUrl: "https://www.walmart.com/ip/item-1",
+    primaryImageUrl: donor.mainImageUrl,
+    publishStatus: "PUBLISHED" as const,
+    lifecycleStatus: "ACTIVE" as const,
+    sourceReportId: "report-fixture",
+    sourceReportName: "ItemReport.csv",
+    sourceReportCapturedAt: "2026-07-26T09:00:00.000Z",
+    sourceReportSha256: "c".repeat(64),
+    sourceReportByteLength: 1000,
+    sourceRowNumber: 2,
+  };
+  snapshot.authoritativeWalmartItemReportEvidence = [{
+    ...evidenceCore,
+    evidenceRowSha256: productTruthOperationalSha256(evidenceCore),
   }];
   return rebuildFixture(snapshot);
 }
@@ -1379,6 +1424,53 @@ test("a mixed bundle wave atomically materializes every exact recipe component",
   assert.equal(snapshot.views.bundleFactory.ready, true);
   assert.equal(snapshot.views.bundleFactory.components.length, 4);
   assert.equal(snapshot.views.unitEconomics.status, "UNSOURCEABLE");
+});
+
+test("authoritative Walmart multipack materializes without a legacy component row", async (t) => {
+  const input = applyPlan(authoritativeWalmartReportRecipeFixture());
+  const target = input.plan.targets.find(
+    (row) => row.listingKey === "walmart:1:SKU-1",
+  );
+  assert.ok(target);
+  const component = target.components[0];
+  assert.ok(component);
+  const evidence =
+    input.fixture.snapshot.authoritativeWalmartItemReportEvidence[0];
+  assert.ok(evidence);
+  assert.equal(component.legacyComponentId, null);
+  assert.equal(component.sourceBinding.legacyComponentSha256, null);
+  assert.equal(
+    component.sourceBinding.authoritativeWalmartItemReportEvidenceSha256,
+    evidence.evidenceRowSha256,
+  );
+  assert.equal(target.listingRecipeComponents[0]?.sourceComponentId, null);
+  assert.equal(target.listingRecipeComponents[0]?.quantity, 2);
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  assert.equal(result.verification.unitEconomicsUnsourceable, 5);
+
+  const persisted = (await db.execute({
+    sql: `SELECT component.sourceComponentId,component.quantity,
+                 component.evidenceJson
+          FROM ProductTruthListingRecipeComponent component
+          JOIN ProductTruthListingRecipe recipe
+            ON recipe.id=component.listingRecipeId
+          WHERE recipe.listingKey=?`,
+    args: [target.listingKey],
+  })).rows[0];
+  assert.ok(persisted);
+  assert.equal(persisted.sourceComponentId, null);
+  assert.equal(Number(persisted.quantity), 2);
+  assert.match(
+    String(persisted.evidenceJson),
+    new RegExp(evidence.evidenceRowSha256),
+  );
+
+  const postcheck = await executeApproved(db, input);
+  assert.equal(postcheck.status, "ALREADY_APPLIED");
 });
 
 test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {

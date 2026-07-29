@@ -54,11 +54,11 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.6.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.6.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.7.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
   "product-truth-legacy-bridge-preflight-report/2.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
@@ -162,7 +162,8 @@ function prefixedId(prefix: string, hash: string): string {
 
 export interface ProductTruthLegacyBridgeSourceBinding {
   listingSha256: string;
-  legacyComponentSha256: string;
+  legacyComponentSha256: string | null;
+  authoritativeWalmartItemReportEvidenceSha256: string | null;
   donorProductSha256: string;
   donorContentSha256: string;
   contentSourceOfferSha256: string;
@@ -305,7 +306,7 @@ export interface ProductTruthLegacyBridgeCostRow {
 
 export interface ProductTruthLegacyBridgeApplyComponentTarget {
   componentIndex: number;
-  legacyComponentId: string;
+  legacyComponentId: string | null;
   donorProductId: string;
   contentSourceOfferId: string;
   sourceBinding: ProductTruthLegacyBridgeSourceBinding;
@@ -630,6 +631,7 @@ function contentPayload(input: {
     | "contentSourceOfferSha256"
     | "componentBarcodeEvidenceSha256"
     | "directTargetContentEvidenceSha256"
+    | "authoritativeWalmartItemReportEvidenceSha256"
   >;
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
@@ -1204,16 +1206,29 @@ function singleComponentDraftFromScope(input: {
     componentPlan.matcherVerdict === null
     && componentPlan.identityProof === "EXACT_LIVE_IMAGE_BARCODE"
     && barcodeEvidence !== null;
+  const authoritativeWalmartTitleEvidence =
+    input.snapshot.authoritativeWalmartItemReportEvidence.find(
+      (row) => row.listingKey === input.listingKey,
+    ) ?? null;
+  const authoritativeWalmartTitleProof =
+    componentPlan.matcherVerdict === "EXACT_IDENTITY"
+    && componentPlan.identityProof
+      === "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE"
+    && componentPlan.legacyComponentId === null
+    && authoritativeWalmartTitleEvidence !== null;
   if (
     ![
       "EXACT_CONTENT_ONLY_CANDIDATE",
       "EXACT_IDENTITY_ONLY_CANDIDATE",
     ].includes(componentPlan.disposition)
-    || (!strictTitleProof && !exactLiveBarcodeProof)
+    || (
+      !strictTitleProof
+      && !exactLiveBarcodeProof
+      && !authoritativeWalmartTitleProof
+    )
     || !componentPlan.targetIdentity
     || !componentPlan.targetVariant
     || !componentPlan.contentAssessment
-    || !componentPlan.legacyComponentId
     || !componentPlan.donorProductId
     || !componentPlan.contentSourceOfferId
   ) {
@@ -1255,16 +1270,22 @@ function singleComponentDraftFromScope(input: {
   const originalTargetVariant = componentPlan.targetVariant;
   const component = input.snapshot.components.find(
     (row) => row.id === componentPlan.legacyComponentId,
-  );
+  ) ?? null;
   const donor = input.snapshot.donors.find((row) => row.id === componentPlan.donorProductId);
   const offer = input.snapshot.offers.find(
     (row) => row.id === componentPlan.contentSourceOfferId,
   );
   if (
-    !component
-    || !donor
+    !donor
     || !offer
-    || component.sku !== listing.sku
+    || (
+      componentPlan.legacyComponentId !== null
+      && (!component || component.sku !== listing.sku)
+    )
+    || (
+      componentPlan.legacyComponentId === null
+      && component !== null
+    )
     || offer.donorProductId !== donor.id
   ) {
     fail("LEGACY_BRIDGE_WAVE_SCOPE_INVALID", `${input.listingKey} source graph is broken`);
@@ -1334,7 +1355,12 @@ function singleComponentDraftFromScope(input: {
   }
   const sourceBinding: ProductTruthLegacyBridgeSourceBinding = {
     listingSha256: rowHash(sourceListingFields(listing)),
-    legacyComponentSha256: rowHash(sourceComponentFields(component)),
+    legacyComponentSha256:
+      component === null ? null : rowHash(sourceComponentFields(component)),
+    authoritativeWalmartItemReportEvidenceSha256:
+      authoritativeWalmartTitleProof
+        ? authoritativeWalmartTitleEvidence?.evidenceRowSha256 ?? null
+        : null,
     donorProductSha256: rowHash(donor),
     donorContentSha256: rowHash(sourceContentFields(donor)),
     contentSourceOfferSha256: rowHash(contentSourceOfferFields(offer)),
@@ -1355,6 +1381,8 @@ function singleComponentDraftFromScope(input: {
       sourceBinding.componentBarcodeEvidenceSha256,
     directTargetContentEvidenceSha256:
       sourceBinding.directTargetContentEvidenceSha256,
+    authoritativeWalmartItemReportEvidenceSha256:
+      sourceBinding.authoritativeWalmartItemReportEvidenceSha256,
   };
   const supersedesInvalidCanonicalCostIds = [
     ...scope.supersedesInvalidCanonicalCostIds,
@@ -1483,9 +1511,21 @@ function singleComponentDraftFromScope(input: {
   const contentId = prefixedId("pco", observationKey);
 
   const product = exactText(
-    component.product ?? componentPlan.targetIdentity.productLine,
-    `${component.id}.product`,
+    component?.product ?? componentPlan.targetIdentity.productLine,
+    `${component?.id ?? listing.listingKey}.product`,
   );
+  const flavor = component?.flavor
+    ?? (
+      typeof componentPlan.targetIdentity.flavor === "string"
+        ? componentPlan.targetIdentity.flavor
+        : null
+    );
+  const size = component?.size
+    ?? (
+      typeof componentPlan.targetIdentity.size === "string"
+        ? componentPlan.targetIdentity.size
+        : null
+    );
   const componentEvidencePayload = {
     schemaVersion: "product-truth-sku-component-evidence/1.0.0",
     sourceEvidenceSchemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION,
@@ -1496,8 +1536,8 @@ function singleComponentDraftFromScope(input: {
     contentObservationId: contentId,
     priceObservationId: null,
     product,
-    flavor: component.flavor,
-    size: component.size,
+    flavor,
+    size,
     qty: componentPlan.qty,
     perUnit: null,
     method: "no-fresh-first-party-price",
@@ -1518,8 +1558,8 @@ function singleComponentDraftFromScope(input: {
   const costComponent = {
     idx: input.componentIndex,
     product,
-    flavor: component.flavor,
-    size: component.size,
+    flavor,
+    size,
     qty: componentPlan.qty,
     perUnit: null,
     method: "no-fresh-first-party-price",
@@ -1564,12 +1604,12 @@ function singleComponentDraftFromScope(input: {
       componentIndex: 0,
       quantity: componentPlan.qty,
       product,
-      flavor: component.flavor,
-      size: component.size,
+      flavor,
+      size,
       targetCanonicalVariantId: rebuiltVariant.canonicalVariantId,
       donorProductId: donor.id,
       variantDecisionId: decisionId,
-      sourceComponentId: component.id,
+      sourceComponentId: component?.id ?? null,
       sourceEvidence: {
         schemaVersion: "product-truth-legacy-bridge-recipe-component-source/1.0.0",
         identityProof: componentPlan.identityProof,
@@ -1631,7 +1671,7 @@ function singleComponentDraftFromScope(input: {
     storeIndex: listing.storeIndex,
     sku: listing.sku,
     componentIndex: input.componentIndex,
-    legacyComponentId: component.id,
+    legacyComponentId: component?.id ?? null,
     donorProductId: donor.id,
     contentSourceOfferId: offer.id,
     sourceBinding,
@@ -2681,7 +2721,7 @@ async function readCurrentSourceRows(
   componentTarget: ProductTruthLegacyBridgeApplyComponentTarget,
 ): Promise<{
   listing: ProductTruthLegacyBridgeListingRow;
-  component: ProductTruthLegacyBridgeComponentRow;
+  component: ProductTruthLegacyBridgeComponentRow | null;
   donor: ProductTruthLegacyBridgeDonorRow;
   offer: ProductTruthLegacyBridgeOfferRow;
   donorRaw: Row;
@@ -2704,14 +2744,16 @@ async function readCurrentSourceRows(
       WHERE scope.listingKey=?`,
     args: [target.listingKey],
   })).rows[0];
-  const componentRow = (await db.execute({
-    sql: `SELECT
-      id, sku, idx, product, flavor, size, qty, costMethod, retailer, matchedTitle,
-      perUnitCost, lineCost, donorProductId, contentDonorProductId,
-      priceEvidenceDonorProductId, priceEvidenceOfferId
-      FROM SkuComponent WHERE id=?`,
-    args: [componentTarget.legacyComponentId],
-  })).rows[0];
+  const componentRow = componentTarget.legacyComponentId === null
+    ? null
+    : (await db.execute({
+        sql: `SELECT
+          id, sku, idx, product, flavor, size, qty, costMethod, retailer, matchedTitle,
+          perUnitCost, lineCost, donorProductId, contentDonorProductId,
+          priceEvidenceDonorProductId, priceEvidenceOfferId
+          FROM SkuComponent WHERE id=?`,
+        args: [componentTarget.legacyComponentId],
+      })).rows[0];
   const donorRow = (await db.execute({
     sql: `SELECT
       id, brand, productLine, flavor, containerType, size, category, upc, gtin,
@@ -2730,7 +2772,15 @@ async function readCurrentSourceRows(
       FROM DonorOffer WHERE id=?`,
     args: [componentTarget.contentSourceOfferId],
   })).rows[0];
-  if (!listingRow || !componentRow || !donorRow || !offerRow) {
+  if (
+    !listingRow
+    || (
+      componentTarget.legacyComponentId !== null
+      && !componentRow
+    )
+    || !donorRow
+    || !offerRow
+  ) {
     fail("LEGACY_BRIDGE_SOURCE_DRIFT", `${target.listingKey} source graph is incomplete`);
   }
   const nullableText = (value: unknown): string | null =>
@@ -2751,7 +2801,8 @@ async function readCurrentSourceRows(
     productIdentityJson: nullableText(listingRow.productIdentity),
     productIdentityUpdatedAt: nullableText(listingRow.productIdentityUpdatedAt),
   };
-  const component: ProductTruthLegacyBridgeComponentRow = {
+  const component: ProductTruthLegacyBridgeComponentRow | null =
+    componentRow ? {
     id: String(componentRow.id),
     sku: String(componentRow.sku),
     idx: Number(componentRow.idx),
@@ -2768,7 +2819,7 @@ async function readCurrentSourceRows(
     contentDonorProductId: nullableText(componentRow.contentDonorProductId),
     priceEvidenceDonorProductId: nullableText(componentRow.priceEvidenceDonorProductId),
     priceEvidenceOfferId: nullableText(componentRow.priceEvidenceOfferId),
-  };
+    } : null;
   const donor: ProductTruthLegacyBridgeDonorRow = {
     id: String(donorRow.id),
     brand: nullableText(donorRow.brand),
@@ -2884,8 +2935,21 @@ async function preflightTarget(
     if (
       rowHash(sourceListingFields(source.listing))
         !== componentTarget.sourceBinding.listingSha256
-      || rowHash(sourceComponentFields(source.component))
-        !== componentTarget.sourceBinding.legacyComponentSha256
+      || (
+        source.component === null
+          ? componentTarget.sourceBinding.legacyComponentSha256 !== null
+          : rowHash(sourceComponentFields(source.component))
+            !== componentTarget.sourceBinding.legacyComponentSha256
+      )
+      || (
+        source.component === null
+          ? !/^[a-f0-9]{64}$/.test(
+              componentTarget.sourceBinding
+                .authoritativeWalmartItemReportEvidenceSha256 ?? "",
+            )
+          : componentTarget.sourceBinding
+              .authoritativeWalmartItemReportEvidenceSha256 !== null
+      )
       || rowHash(contentSourceOfferFields(source.offer))
         !== componentTarget.sourceBinding.contentSourceOfferSha256
     ) {

@@ -12,6 +12,7 @@ import { pathToFileURL } from "node:url";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
@@ -27,6 +28,7 @@ import {
   type ProductTruthLegacyBridgeListingRow,
   type ProductTruthLegacyBridgeOfferRow,
   type ProductTruthLegacyBridgeSnapshot,
+  type ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
   type ProductTruthLiveImageBarcodeEvidence,
   type ProductTruthDirectTargetContentEvidence,
 } from "../src/lib/sourcing/product-truth-legacy-bridge";
@@ -39,7 +41,11 @@ import {
 import {
   resolveProductTruthDatabaseTarget,
 } from "../src/lib/sourcing/product-truth-database-target";
-import { renderProductTruthOperationalJson } from "../src/lib/sourcing/product-truth-operational-run-contract";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../src/lib/sourcing/product-truth-operational-run-contract";
+import { parseCsv } from "../src/lib/walmart/reports-insights";
 
 type CliOptions = {
   url: string;
@@ -50,6 +56,7 @@ type CliOptions = {
   outDir: string;
   componentBarcodeEvidencePaths: string[];
   directTargetContentEvidencePaths: string[];
+  walmartItemReportPath: string | null;
 };
 
 function fail(code: string, message: string): never {
@@ -64,6 +71,7 @@ function usage(): string {
     "    --manifest ABS_PATH --captured-at ISO --out ABS_NEW_DIR",
     "    [--component-barcode-evidence ABS_EVIDENCE_JSON] (repeatable)",
     "    [--direct-target-content-evidence ABS_EVIDENCE_JSON] (repeatable)",
+    "    [--walmart-item-report ABS_ACCEPTED_ITEM_REPORT_CSV]",
     "    [--allow-remote --auth-token-env ENV_NAME]",
     "",
     "Safety: read-only SQL, zero provider/retailer calls, zero database writes.",
@@ -91,6 +99,7 @@ function parseOptions(argv: readonly string[]): CliOptions {
       "--out",
       "--component-barcode-evidence",
       "--direct-target-content-evidence",
+      "--walmart-item-report",
     ].includes(item)) {
       fail("CLI_ARGUMENT_UNKNOWN", item);
     }
@@ -120,12 +129,16 @@ function parseOptions(argv: readonly string[]): CliOptions {
     || !isAbsolute(outDir)
     || componentBarcodeEvidencePaths.some((path) => !isAbsolute(path))
     || directTargetContentEvidencePaths.some((path) => !isAbsolute(path))
+    || (
+      values.get("--walmart-item-report")
+      && !isAbsolute(values.get("--walmart-item-report")!)
+    )
   ) {
     fail(
       "ABSOLUTE_PATH_REQUIRED",
       [
         "--manifest, --out and every --component-barcode-evidence/",
-        "--direct-target-content-evidence must be absolute paths",
+        "--direct-target-content-evidence/--walmart-item-report must be absolute paths",
       ].join(""),
     );
   }
@@ -145,6 +158,8 @@ function parseOptions(argv: readonly string[]): CliOptions {
     outDir,
     componentBarcodeEvidencePaths,
     directTargetContentEvidencePaths,
+    walmartItemReportPath:
+      values.get("--walmart-item-report")?.trim() || null,
   };
 }
 
@@ -203,6 +218,162 @@ async function loadManifest(path: string): Promise<{
     json,
     sha256: productTruthLegacyBridgeBytesSha256(json),
   };
+}
+
+export async function loadAuthoritativeWalmartItemReportEvidence(
+  path: string | null,
+  manifest: Phase1ScopeManifest,
+): Promise<ProductTruthAuthoritativeWalmartItemReportEvidenceRow[]> {
+  const walmartListings = manifest.listings.filter(
+    (listing) => listing.channel === "walmart",
+  );
+  if (!path) {
+    if (walmartListings.length) {
+      fail(
+        "WALMART_ITEM_REPORT_REQUIRED",
+        "authoritative Walmart scope requires --walmart-item-report",
+      );
+    }
+    return [];
+  }
+  const reports = manifest.sourceReports.filter(
+    (report) => report.channel === "walmart",
+  );
+  if (reports.length !== 1) {
+    fail(
+      "WALMART_ITEM_REPORT_SCOPE_AMBIGUOUS",
+      `expected one authoritative Walmart report, found ${reports.length}`,
+    );
+  }
+  const report = reports[0]!;
+  const resolved = await realpath(path);
+  const bytes = await readFile(resolved);
+  const reportSha256 = createHash("sha256").update(bytes).digest("hex");
+  if (
+    reportSha256 !== report.contentSha256
+    || bytes.byteLength !== report.byteLength
+  ) {
+    fail(
+      "WALMART_ITEM_REPORT_BYTES_MISMATCH",
+      `${resolved} does not match manifest report ${report.reportId}`,
+    );
+  }
+  const records = parseCsv(bytes.toString("utf8"));
+  if (
+    records.length !== report.totalRows
+    || (
+      records.length > 0
+      && JSON.stringify(Object.keys(records[0]!))
+        !== JSON.stringify(report.headers)
+    )
+  ) {
+    fail(
+      "WALMART_ITEM_REPORT_STRUCTURE_MISMATCH",
+      `rows/headers differ from manifest report ${report.reportId}`,
+    );
+  }
+  const indexedRows = records.map((record, index) => ({
+    record,
+    sourceRowNumber: index + 2,
+  }));
+  const publishedRows = indexedRows.filter(
+    ({ record }) =>
+      record["Publish Status"] === "PUBLISHED"
+      && record["Lifecycle Status"] === "ACTIVE",
+  );
+  if (
+    publishedRows.length !== report.liveRows
+    || publishedRows.length !== walmartListings.length
+  ) {
+    fail(
+      "WALMART_ITEM_REPORT_LIVE_DENOMINATOR_MISMATCH",
+      [
+        `report=${publishedRows.length}`,
+        `manifest=${walmartListings.length}`,
+        `attested=${report.liveRows}`,
+      ].join(" "),
+    );
+  }
+  const byIdentity = new Map<
+    string,
+    Array<{ record: Record<string, string>; sourceRowNumber: number }>
+  >();
+  for (const row of publishedRows) {
+    const key = `${row.record.SKU}\u0000${row.record["Item ID"]}`;
+    const group = byIdentity.get(key) ?? [];
+    group.push(row);
+    byIdentity.set(key, group);
+  }
+
+  const evidenceRows = walmartListings.map(
+    (listing): ProductTruthAuthoritativeWalmartItemReportEvidenceRow => {
+      if (
+        listing.sourceReportId !== report.reportId
+        || listing.sourceContentSha256 !== report.contentSha256
+        || listing.sourceCapturedAt !== report.capturedAt
+        || listing.storeIndex !== report.storeIndex
+      ) {
+        fail(
+          "WALMART_ITEM_REPORT_MANIFEST_BINDING_MISMATCH",
+          listing.listingKey,
+        );
+      }
+      const matches =
+        byIdentity.get(`${listing.sku}\u0000${listing.listingId}`) ?? [];
+      const row = matches[0];
+      if (
+        matches.length !== 1
+        || !row
+        || row.record["Product Name"] !== listing.title
+        || row.record["Publish Status"] !== listing.sourceStatus
+        || row.record["Lifecycle Status"] !== listing.sourceLifecycleStatus
+      ) {
+        fail(
+          "WALMART_ITEM_REPORT_LISTING_MISMATCH",
+          listing.listingKey,
+        );
+      }
+      const nullable = (value: string | undefined): string | null =>
+        value?.trim() || null;
+      const core = {
+        schemaVersion:
+          PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
+        listingKey: listing.listingKey,
+        storeIndex: listing.storeIndex,
+        sku: listing.sku,
+        itemId: listing.listingId,
+        title: listing.title,
+        brand: nullable(row.record.Brand),
+        gtin: nullable(row.record.GTIN),
+        upc: nullable(row.record.UPC),
+        itemPageUrl: nullable(row.record["Item Page URL"]),
+        primaryImageUrl: nullable(row.record["Primary Image URL"]),
+        publishStatus: "PUBLISHED" as const,
+        lifecycleStatus: "ACTIVE" as const,
+        sourceReportId: report.reportId,
+        sourceReportName: report.sourceName,
+        sourceReportCapturedAt: report.capturedAt,
+        sourceReportSha256: report.contentSha256,
+        sourceReportByteLength: report.byteLength,
+        sourceRowNumber: row.sourceRowNumber,
+      };
+      return {
+        ...core,
+        evidenceRowSha256: productTruthOperationalSha256(core),
+      };
+    },
+  );
+  if (
+    new Set(evidenceRows.map((row) => row.listingKey)).size
+      !== evidenceRows.length
+  ) {
+    fail(
+      "WALMART_ITEM_REPORT_EVIDENCE_DUPLICATE",
+      "listing keys must be unique",
+    );
+  }
+  return evidenceRows.sort((left, right) =>
+    left.listingKey.localeCompare(right.listingKey));
 }
 
 async function loadComponentBarcodeEvidence(
@@ -605,6 +776,8 @@ async function buildSnapshot(
     componentBarcodeEvidence: ProductTruthLegacyBridgeComponentBarcodeEvidenceRow[];
     directTargetContentEvidence:
       ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
+    authoritativeWalmartItemReportEvidence:
+      ProductTruthAuthoritativeWalmartItemReportEvidenceRow[];
   },
 ): Promise<ProductTruthLegacyBridgeSnapshot> {
   const listings = await readListings(db, input.manifest, input.manifestSha256);
@@ -639,6 +812,8 @@ async function buildSnapshot(
     canonicalListingComponents,
     componentBarcodeEvidence: input.componentBarcodeEvidence,
     directTargetContentEvidence: input.directTargetContentEvidence,
+    authoritativeWalmartItemReportEvidence:
+      input.authoritativeWalmartItemReportEvidence,
   };
 }
 
@@ -670,6 +845,11 @@ async function run(options: CliOptions): Promise<void> {
   const directTargetContentEvidence = await loadDirectTargetContentEvidence(
     options.directTargetContentEvidencePaths,
   );
+  const authoritativeWalmartItemReportEvidence =
+    await loadAuthoritativeWalmartItemReportEvidence(
+      options.walmartItemReportPath,
+      manifest.manifest,
+    );
   const manifestListingKeys = new Set(manifest.manifest.listings.map((row) => row.listingKey));
   for (const evidence of componentBarcodeEvidence) {
     if (!manifestListingKeys.has(evidence.listingKey)) {
@@ -685,6 +865,7 @@ async function run(options: CliOptions): Promise<void> {
       manifestSha256: manifest.sha256,
       componentBarcodeEvidence,
       directTargetContentEvidence,
+      authoritativeWalmartItemReportEvidence,
     });
     const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
     const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);
