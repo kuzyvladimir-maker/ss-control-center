@@ -760,7 +760,7 @@ demand-expansion campaign. Такой новый donor нельзя незаме
 quote: production campaign registry/runtime всё ещё отсутствует и остаётся
 отдельным blocker, а consumer только показывает честную границу.
 
-### 🔄 Фаза BF-W4 — полный owner request и Pack of 8
+### ✅ Фаза BF-W4 — полный owner request и Pack of 8
 
 - [x] Удалены устаревшие owner-facing лимиты `1–2 listings` и `Pack of 2/3`:
   Bundle Factory сохраняет точные числа из prompt/structured fields и блокирует
@@ -793,7 +793,10 @@ quote: production campaign registry/runtime всё ещё отсутствует
   certificate
   `806c75a69fbab9d05f9e1f38a2e3396ff90592cf4b35f731386af548a84c6f1f`;
   pre- и post-test self-verify `PASS`.
-- [ ] Обновить production deployment и выполнить no-spend production postcheck.
+- [x] Production deployment `dpl_561wp4SR15HHGb7dPN8uB2U3NG43` =
+  `READY`, alias `salutemsolutions.info`. No-spend HTTP postcheck главной
+  страницы и `/bundle-factory/new` вернул штатный `307 → /login` для
+  неавторизованного запроса; provider calls и Walmart mutations `0`.
 
 BF-W4 не меняет live mutation authority: protected execution остаётся
 последовательным, а marketplace publication не следует из размера owner request.

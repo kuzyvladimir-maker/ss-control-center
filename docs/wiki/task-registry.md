@@ -63,7 +63,10 @@
   `release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`: engine
   `fe76e637…72946`, manifest `2593cd46…127f`, certificate `806c75a6…6f1f`;
   Product Truth `519/519`, focused Walmart/Bundle Factory `108/108`, source
-  TypeScript и production build PASS.
+  TypeScript и production build PASS. Production deployment
+  `dpl_561wp4SR15HHGb7dPN8uB2U3NG43` = `READY`; no-spend HTTP postcheck
+  `salutemsolutions.info` и `/bundle-factory/new` подтвердил штатный
+  authentication redirect `307 → /login`.
   Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
   `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
   `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,
