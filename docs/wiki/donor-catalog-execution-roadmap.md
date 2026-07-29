@@ -667,12 +667,13 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    завершён `APPLIED`: `5935/5935` exact scopes verified, без cost/legacy/provider/
    paid/marketplace/procurement effects. Последующие existing-evidence waves
    исчерпали все automatic legacy candidates без нового каталога и без provider
-   spend. Fresh state: `736 canonical / 5199 quarantine / 0 automatic write
-   candidates`, `786` canonical components. Full-denominator readiness
+   spend. Fresh state: `754 canonical / 5181 quarantine / 0 automatic write
+   candidates`, `804` canonical components. Full-denominator readiness
    `5935/5935`: Bundle Factory/Listing Improvement `100`, Unit Economics
-   `10 FACT / 730 UNSOURCEABLE / 5195 MISSING`, Procurement `10`. Existing
+   `10 FACT / 748 UNSOURCEABLE / 5177 MISSING`, Procurement `10`. Existing
    Bundle Factory recipe evidence recovered `16` Amazon listings / `51`
-   components without a parallel catalog or provider spend. Следующий
+   components and byte-bound Publix URL size evidence recovered another `18`
+   Walmart recipes without a parallel catalog or provider spend. Следующий
    независимый шаг — исчерпать оставшиеся бесплатные listing-identity и
    component-graph evidence lanes, затем повторить fail-closed
    rematch/materialization. Consumer cutover = 0.
@@ -780,10 +781,16 @@ G7 закончен как диагностический production canary, н�
   recovery: `27` listings moved from component-graph to donor-link research,
   no automatic match or canonical write; clean-checkout TypeScript, ESLint and
   Product Truth certification `572/572`;
-- ✅ fresh full-denominator state: `736 canonical / 5199 quarantine / 0
-  automatic candidates`, `786` canonical components. Readiness:
+- ✅ release `e3257f13`, tree `840efb8d…c9ef`, byte-bound standard first-party
+  Publix URL size recovery; clean-checkout TypeScript, ESLint and Product Truth
+  certification `575/575`;
+- ✅ two bounded standing-policy waves materialized `18` additional Walmart
+  recipes with typed `UNSOURCEABLE` because saved prices are stale; no paid,
+  provider, marketplace, consumer or procurement effects;
+- ✅ fresh full-denominator state: `754 canonical / 5181 quarantine / 0
+  automatic candidates`, `804` canonical components. Readiness:
   Bundle Factory/Listing Improvement `100`, Unit Economics
-  `10 FACT / 730 UNSOURCEABLE / 5195 MISSING`, Procurement `10`;
+  `10 FACT / 748 UNSOURCEABLE / 5177 MISSING`, Procurement `10`;
 - 🔄 исчерпать remaining no-paid listing-identity/component-graph evidence,
   затем продолжить только bounded collision-free Phase 1 waves.
 

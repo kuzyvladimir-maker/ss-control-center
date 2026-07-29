@@ -1074,3 +1074,35 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   Provider, retailer, marketplace, consumer and procurement effects were `0`.
 - [ ] 🔄 Current phase: exhaust the remaining no-paid listing-identity and
   component-graph evidence lanes before any new provider spend.
+
+### ✅ Byte-bound Publix URL package-size recovery — 2026-07-29
+
+- [x] ✅ Legacy bridge `1.10.0` may recover a missing retail-package size only
+  from one standard first-party direct Publix offer whose HTTPS host is exactly
+  `delivery.publix.com` and whose final URL segment byte-equals the saved
+  `retailerProductId`. An unbound URL, club source, absent source API, or more
+  than one size remains quarantined.
+- [x] ✅ Authoritative Walmart report base title must still equal exactly one
+  existing donor base title; report brand, donor brand, canonical variant and
+  integer outer-pack arithmetic remain mandatory. The URL supplies size
+  evidence only and never supplies title identity or a current price.
+- [x] ✅ Clean release commit `e3257f13`, tree `840efb8d…c9ef`; exact clean
+  checkout passed TypeScript, ESLint and Product Truth certification `575/575`.
+- [x] ✅ Read-only production audit found `18` listing candidates across `9`
+  exact donors. Two bounded standing-policy waves (`9 + 9`) passed fresh
+  `READY_TO_APPLY` preflights and finished `APPLIED`; maximum planned database
+  rows were `81` and `55`. Provider, paid, retailer, marketplace, consumer and
+  procurement effects were `0`.
+- [x] ✅ Fresh bridge state is `754 canonical / 5181 quarantine / 0 automatic
+  candidates`, with `804` canonical components. Snapshot SHA
+  `7c844d09…1b6a`; bridge-plan SHA `5938a863…b623`.
+- [x] ✅ Full-denominator readiness remains axis-separated:
+  Bundle Factory/Listing Improvement `100 ready`; Unit Economics
+  `10 FACT / 0 ESTIMATE / 748 UNSOURCEABLE / 5177 MISSING / 0 INVALID`;
+  Procurement `10 ready`. Report SHA `0d4e4229…3977`; all `5935/5935`
+  listings reconciled.
+- [x] ✅ Fresh quarantine partition SHA `ca7b10a7…0100`: integrity `381`,
+  listing identity `708`, component graph `368`, donor link `718`, exact donor
+  offer `45`, price proxy `17`, retailer identity research `2944`, other `0`.
+- [ ] 🔄 Continue the remaining no-paid saved-evidence audit before any new
+  provider wave.
