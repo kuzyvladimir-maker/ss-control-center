@@ -664,6 +664,34 @@ test("authoritative Walmart exact title accepts an explicit structured item coun
   assert.equal(componentPlan.matcherVerdict, "EXACT_IDENTITY");
 });
 
+test("authoritative Walmart exact title supersedes stale legacy identity and donor linkage", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      productIdentityJson: identity({
+        flavor: "Hot",
+        units_in_listing: 4,
+      }),
+    }],
+    components: [component({
+      flavor: "Hot",
+      qty: 4,
+      donorProductId: "stale-adjacent-donor",
+    })],
+    authoritativeWalmartItemReportEvidence: [walmartItemReportEvidence()],
+  });
+  const scope = compile(value).scopes[0]!;
+  const componentPlan = scope.components[0]!;
+  assert.notEqual(scope.disposition, "QUARANTINE");
+  assert.equal(
+    componentPlan.identityProof,
+    "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+  );
+  assert.equal(componentPlan.donorProductId, "donor-1");
+  assert.equal(componentPlan.targetIdentity?.flavor, null);
+  assert.equal(componentPlan.qty, 4);
+});
+
 test("authoritative Walmart title recovery rejects ambiguous or contradictory legacy package evidence", () => {
   const title =
     "Guerrero Street Taco Zero Net Carbs Tortillas 14 ct 8.89 oz";
