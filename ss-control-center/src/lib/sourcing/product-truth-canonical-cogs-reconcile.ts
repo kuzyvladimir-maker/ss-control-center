@@ -1013,11 +1013,7 @@ async function buildTargetFromDatabase(
     };
   });
   const evaluatedAt = materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
-    ? canonicalInstant(
-      priceSelections.map((selection) =>
-        String(selection!.selected.observedAt)).sort().at(-1),
-      "saved price evaluatedAt",
-    )
+    ? planCreatedAt
     : canonicalInstant(
       sourceCostEvidence.evaluatedAt ?? sourceEffectiveDate,
       "source cost evaluatedAt",

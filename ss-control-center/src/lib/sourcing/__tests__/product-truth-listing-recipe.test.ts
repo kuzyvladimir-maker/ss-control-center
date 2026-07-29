@@ -659,7 +659,7 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
         "walmart", "saved-price-item", "direct", "Acme Orange Soda 2 L",
         4.48, 1, 4.48, "USD", "33765", "zip_scoped", 1,
         "https://www.walmart.com/ip/saved-price-item", "Walmart.com", 1,
-        "fixture", "2026-07-29T00:10:30.000Z",
+        "fixture", "2026-07-29T00:02:30.000Z",
         "2026-07-29T00:10:30.000Z",
       ],
     });
@@ -685,7 +685,7 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
         "costco", "saved-price-club-item", "direct", "Acme Orange Soda 2 L",
         0.99, 1, 0.99, "USD", "33765", "zip_scoped", 1,
         "https://www.costco.com/saved-price-club-item", "Costco", 1,
-        "fixture", "2026-07-29T00:10:31.000Z",
+        "fixture", "2026-07-29T00:02:31.000Z",
         "2026-07-29T00:10:31.000Z",
       ],
     });
