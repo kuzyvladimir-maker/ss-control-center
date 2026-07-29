@@ -1404,7 +1404,29 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `48c6c87e…6e4d2`; все effects равны нулю.
 - [x] ✅ Clean release `8f8b3928…f5864`, tree `aeb5649f…d5714`,
   Product Truth `535/535`, TypeScript, Prisma, diff и clean-worktree PASS.
-- [ ] 🔄 Ранжировать partition по exact unresolved graph distance/reuse и
-  построить следующую bounded collision-free очередь.
+- [x] ✅ Unique strict existing-catalog rematch реализован fail-closed:
+  ambiguity, canonical conflict и legacy-link conflict не перезаписываются.
+  Clean release `628a569c…a654478`, tree `8c8a8650…fba73b`,
+  Product Truth `541/541`.
+- [x] ✅ Четыре no-paid one-component waves материализовали `46` listings:
+  `331` inserted / `9` exact existing rows; все postchecks
+  `ALREADY_APPLIED`, provider/retailer/marketplace effects `0`.
+- [x] ✅ Multi-component recipe contract `3.6.0` завершён и clean-certified:
+  release `86cc42b3`, tree `3ab97506…593f6`, Product Truth `542/542`,
+  TypeScript/ESLint/Prisma/diff/clean-worktree PASS.
+- [x] ✅ Последние пять exact bundle candidates применены одной bounded wave:
+  plan `99e93cfe…cad3e`, preflight `READY_TO_APPLY`, `99` inserted rows,
+  apply report `f53ae007…a3399`, postcheck `ALREADY_APPLIED`; paid/provider/
+  marketplace/consumer/procurement effects `0`.
+- [x] ✅ Fresh state: `154 canonical / 5781 quarantine / 0 automatic write
+  candidates`. Readiness `5935/5935`: content-ready `32`, Unit Economics
+  `10 FACT / 0 ESTIMATE / 145 UNSOURCEABLE / 5780 MISSING / 0 INVALID`,
+  Procurement `10`; report `835a9242…bcc74`.
+- [x] ✅ Fresh partition report `23034993…de9`: integrity `160`, listing
+  identity `754`, component graph `406`, donor link `741`, exact donor offer
+  `69`, price proxy `18`, retailer identity `3633`, other `0`.
+- [ ] 🔄 Восстановить listing identity/component graph из уже сохранённых
+  authoritative channel/catalog evidence и повторить fail-closed
+  rematch/materialization без provider spend.
 - [ ] ⬜ Повторять materialization/readiness до исчерпания безопасных классов,
   затем выполнить backfill readiness и four-consumer SHADOW comparison.

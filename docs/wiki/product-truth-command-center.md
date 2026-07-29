@@ -963,9 +963,37 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `8f8b39282feeb764ef1fec3b89cf8caf295f5864`, tree
   `aeb5649fbc173b3ad33e872d0de96b01403d5714`: Product Truth `535/535`,
   TypeScript, Prisma, diff and clean-worktree checks pass.
-- [ ] 🔄 Current phase: rank each lane by exact unresolved graph distance and
-  reuse potential, then execute only bounded collision-free
-  enrichment/materialization waves.
+- [x] ✅ Existing-catalog unique exact rematch was added without changing legacy
+  links or creating a parallel catalog. Ambiguous matches, canonical binding
+  conflicts and legacy-link conflicts remain quarantined. Clean release
+  `628a569c9637b49dcefbbe7597ca12da9a654478`, tree
+  `8c8a8650a7854428513549dd77bd156ca0fba73b`; certification `541/541`.
+- [x] ✅ Four bounded no-paid waves materialized `46` one-component listings
+  from existing exact donors: `331` inserted rows, `9` exact existing rows,
+  every postcheck `ALREADY_APPLIED`. Provider/retailer calls and marketplace
+  mutations were `0`.
+- [x] ✅ Multi-component recipe contract `3.6.0` now atomically materializes a
+  complete contiguous bundle recipe, per-component evidence and one typed COGS
+  outcome. Clean release `86cc42b3`, tree
+  `3ab97506004572a290c6488f9fbdda784c0593f6`; Product Truth `542/542`,
+  TypeScript, ESLint, Prisma, diff and clean-worktree checks pass.
+- [x] ✅ The final five exact four-component bundles were applied in one standing
+  no-paid wave: plan SHA `99e93cfe…cad3e`, preflight
+  `READY_TO_APPLY`, `99` inserted rows, apply report SHA
+  `f53ae007…a3399`, postcheck `ALREADY_APPLIED`. Provider/paid/marketplace/
+  consumer/procurement effects were `0`.
+- [x] ✅ Fresh full-denominator state is now `154 canonical / 5781 quarantine /
+  0 automatic write candidates`. Readiness `5935/5935`: Bundle Factory and
+  Listing Improvement `32 ready`; Unit Economics `10 FACT / 0 ESTIMATE /
+  145 UNSOURCEABLE / 5780 MISSING / 0 INVALID`; Procurement `10 ready`.
+  Readiness report SHA `835a9242…bcc74`.
+- [x] ✅ Fresh exhaustive partition report SHA `23034993…de9` assigns all
+  `5781` remaining listings: integrity `160`, listing identity `754`,
+  component graph `406`, donor link `741`, exact donor offer `69`, price proxy
+  `18`, retailer identity `3633`, other `0`.
+- [ ] 🔄 Current phase: recover listing identity and component graphs from
+  already-held authoritative channel/catalog evidence, then rerun the same
+  fail-closed rematch/materialization loop. No provider spend is implied.
 - [ ] ⬜ After materially higher recipe/COGS coverage, run canonical backfill
   readiness and four-consumer SHADOW comparison. Consumer ENFORCED activation
   remains outside this checkpoint.

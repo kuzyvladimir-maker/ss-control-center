@@ -665,13 +665,14 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
 6. 🟡 **Production schema/backfill/cutover** — Turso schema activation завершена и
    сертифицирована 8/8; authoritative manifest v3 готов. Sealed G5 scope apply
    завершён `APPLIED`: `5935/5935` exact scopes verified, без cost/legacy/provider/
-   paid/marketplace/procurement effects. Full-denominator readiness reconciled
-   `5935/5935`. Первый no-paid canary применил `35/35` approved rows для `5`
-   listings: Bundle Factory/Listing Improvement `5 ready`, Unit Economics
-   `5 UNSOURCEABLE`, Procurement `0 ready`; `5930` scopes ещё не materialized.
-   Следующий независимый шаг — graph-aware no-paid plan с fail-closed
-   donor→multiple-variant collision, новый owner gate на exact wave и только
-   после достаточного покрытия staged cutover; consumer cutover = 0.
+   paid/marketplace/procurement effects. Последующие existing-evidence waves
+   исчерпали все automatic legacy candidates без нового каталога и без provider
+   spend. Fresh state: `154 canonical / 5781 quarantine / 0 automatic write
+   candidates`; full-denominator readiness `5935/5935`, content-ready `32`,
+   Unit Economics `10 FACT / 145 UNSOURCEABLE / 5780 MISSING`, Procurement
+   `10`. Следующий независимый шаг — бесплатное восстановление listing identity
+   и component graph из уже сохранённых authoritative channel/catalog evidence,
+   затем повторный fail-closed rematch. Consumer cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам и cheap-first standing-policy plan.
 8. ⚪ **Canary** — 5–10 SKU с жёстким лимитом и machine acceptance.
 9. ⚪ **Controlled waves** — только после успешного canary и automatic bounded authorization.
@@ -762,8 +763,15 @@ G7 закончен как диагностический production canary, н�
 - ✅ systemic partition исчерпывающе разложил все `5833` quarantine listings
   по восьми взаимоисключающим primary lanes; report SHA
   `48c6c87e…6e4d2`, provider/DB/marketplace effects `0`;
-- 🔄 ранжировать lanes по exact unresolved graph distance и reuse potential,
-  затем продолжить только bounded collision-free Phase 1 waves.
+- ✅ unique exact existing-catalog rematch и bounded no-paid waves
+  материализовали ещё `51` listings, включая пять четырёхкомпонентных bundles;
+  final automatic-candidate count = `0`;
+- ✅ fresh full-denominator readiness: content-ready `32`, Unit Economics
+  `10 FACT / 145 UNSOURCEABLE / 5780 MISSING`; fresh partition
+  `154 canonical / 5781 quarantine`, report SHA `23034993…de9`;
+- 🔄 восстановить listing identity/component graph из уже имеющихся
+  authoritative channel/catalog bytes, затем продолжить только bounded
+  collision-free Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
 
