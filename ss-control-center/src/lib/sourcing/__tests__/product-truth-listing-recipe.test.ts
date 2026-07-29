@@ -246,13 +246,29 @@ async function seedCanonicalCostGraph(db: Client): Promise<void> {
   });
   const legacyCostRecipeHash = HASH_B;
   assert.notEqual(recipeHash, legacyCostRecipeHash);
+  const contentObservationId = "recipe-content-observation";
+  const contentJson = JSON.stringify({ title: "Acme Orange Soda 2 L" });
+  await db.execute({
+    sql: `INSERT INTO ProductContentObservation (
+      id,observationKey,donorProductId,canonicalVariantId,variantDecisionId,
+      sourceUrl,sourceApi,contentHash,fieldHashesJson,contentJson,observedAt,
+      runId,approvalId,meteredReceiptId,createdAt
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      contentObservationId, HASH_A, DONOR_ID, VARIANT_ID, DECISION_ID,
+      "https://www.walmart.com/ip/recipe-fixture", "walmart",
+      sha(contentJson), JSON.stringify({ title: sha("Acme Orange Soda 2 L") }),
+      contentJson, "2026-07-29T00:03:00.000Z", null, null, null,
+      "2026-07-29T00:03:00.000Z",
+    ],
+  });
   const componentEvidence = {
     schemaVersion: "product-truth-sku-component-evidence/1.0.0",
     evidenceStatus: "REJECT",
     targetCanonicalVariantId: VARIANT_ID,
-    contentCanonicalVariantId: null,
+    contentCanonicalVariantId: VARIANT_ID,
     priceCanonicalVariantId: null,
-    contentObservationId: null,
+    contentObservationId,
     priceObservationId: null,
     matchTier: "EXACT_IDENTITY",
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
@@ -270,11 +286,11 @@ async function seedCanonicalCostGraph(db: Client): Promise<void> {
   const costComponent = {
     idx: 0,
     targetCanonicalVariantId: VARIANT_ID,
-    contentCanonicalVariantId: null,
+    contentCanonicalVariantId: VARIANT_ID,
     priceCanonicalVariantId: null,
-    contentObservationId: null,
+    contentObservationId,
     priceEvidenceObservationId: null,
-    contentDonorProductId: null,
+    contentDonorProductId: DONOR_ID,
     priceEvidenceDonorProductId: null,
     priceEvidenceOfferId: null,
     priceVariantDecisionId: null,
@@ -318,7 +334,8 @@ async function seedCanonicalCostGraph(db: Client): Promise<void> {
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         "recipe-component-evidence", HASH_C, costId, 0, "REJECT",
-        VARIANT_ID, null, null, null, null, "EXACT_IDENTITY",
+        VARIANT_ID, VARIANT_ID, null, contentObservationId, null,
+        "EXACT_IDENTITY",
         CANONICAL_PRODUCT_MATCHER_VERSION,
         CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
         CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,

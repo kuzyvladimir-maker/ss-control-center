@@ -29,11 +29,11 @@ import {
 } from "./product-truth-schema-gate";
 
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PLAN_VERSION =
-  "product-truth-canonical-cogs-reconcile-plan/1.0.0" as const;
+  "product-truth-canonical-cogs-reconcile-plan/1.1.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PREFLIGHT_VERSION =
-  "product-truth-canonical-cogs-reconcile-preflight/1.0.0" as const;
+  "product-truth-canonical-cogs-reconcile-preflight/1.1.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_REPORT_VERSION =
-  "product-truth-canonical-cogs-reconcile-report/1.0.0" as const;
+  "product-truth-canonical-cogs-reconcile-report/1.1.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_MAX_LISTINGS = 33 as const;
 
 const LISTING_RECIPE_MIGRATION_ID =
@@ -81,6 +81,13 @@ const COMPONENT_EVIDENCE_COLUMNS = [
   "matchTier", "matcherVersion", "matcherImplementationSha256",
   "matcherReleaseSha256", "pricePolicyVersion", "evidenceHash",
   "evidenceJson", "createdAt",
+] as const;
+
+const CONTENT_OBSERVATION_COLUMNS = [
+  "id", "observationKey", "donorProductId", "canonicalVariantId",
+  "variantDecisionId", "sourceUrl", "sourceApi", "contentHash",
+  "fieldHashesJson", "contentJson", "observedAt", "runId", "approvalId",
+  "meteredReceiptId", "createdAt",
 ] as const;
 
 type CanonicalCostRow = {
@@ -154,6 +161,7 @@ export interface ProductTruthCanonicalCogsReconcileTarget {
     recipeComponentsSha256: string;
     sourceCostSha256: string;
     sourceComponentEvidenceSha256: string;
+    sourceContentObservationsSha256: string;
     otherScopedCostsSha256: string;
     listingRecipeMigrationReceiptSha256: string;
     sourceGraphSha256: string;
@@ -545,6 +553,36 @@ async function buildTargetFromDatabase(
       input.listingKey,
     );
   }
+  const sourceContentRows: Array<Row | null> = [];
+  for (let index = 0; index < sourceEvidenceRows.length; index += 1) {
+    const sourceRow = sourceEvidenceRows[index];
+    const contentObservationId = nullableText(sourceRow.contentObservationId);
+    if (contentObservationId === null) {
+      if (sourceRow.contentCanonicalVariantId !== null) {
+        fail(
+          "CANONICAL_COGS_SOURCE_COMPONENT_INVALID",
+          `${input.listingKey}:${index} content binding`,
+        );
+      }
+      sourceContentRows.push(null);
+      continue;
+    }
+    const contentRows = (await db.execute({
+      sql: "SELECT * FROM ProductContentObservation WHERE id=?",
+      args: [contentObservationId],
+    })).rows;
+    if (
+      contentRows.length !== 1
+      || contentRows[0].canonicalVariantId
+        !== sourceRow.contentCanonicalVariantId
+    ) {
+      fail(
+        "CANONICAL_COGS_SOURCE_COMPONENT_INVALID",
+        `${input.listingKey}:${index} content observation`,
+      );
+    }
+    sourceContentRows.push(contentRows[0]);
+  }
 
   const createdAt = canonicalInstant(recipe.createdAt, "recipe createdAt");
   const newComponentEvidence: CanonicalComponentEvidenceRow[] =
@@ -572,6 +610,13 @@ async function buildTargetFromDatabase(
       const contentCanonicalVariantId =
         nullableText(sourceRow.contentCanonicalVariantId);
       const contentObservationId = nullableText(sourceRow.contentObservationId);
+      const contentObservation = sourceContentRows[index];
+      const contentDonorProductId = contentObservation === null
+        ? null
+        : text(
+          contentObservation.donorProductId,
+          `source component ${index} content donor`,
+        );
       if (
         integer(sourceRow.componentIndex, "source componentIndex") !== index
         || sourceRow.evidenceStatus !== "REJECT"
@@ -606,6 +651,7 @@ async function buildTargetFromDatabase(
         contentCanonicalVariantId,
         priceCanonicalVariantId: null,
         contentObservationId,
+        contentDonorProductId,
         priceObservationId: null,
         matchTier: text(sourceRow.matchTier, "source matchTier"),
         matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
@@ -684,6 +730,10 @@ async function buildTargetFromDatabase(
       priceCanonicalVariantId: null,
       contentObservationId: row.contentObservationId,
       priceEvidenceObservationId: null,
+      contentDonorProductId: payload.contentDonorProductId,
+      priceEvidenceDonorProductId: null,
+      priceEvidenceOfferId: null,
+      priceVariantDecisionId: null,
       matchTier: row.matchTier,
       priceEvidenceStatus: "REJECT",
       matcherVersion: row.matcherVersion,
@@ -812,6 +862,11 @@ async function buildTargetFromDatabase(
       sourceEvidenceRows.map(
         (row) => projection(row, COMPONENT_EVIDENCE_COLUMNS),
       ),
+    ),
+    sourceContentObservationsSha256: productTruthOperationalSha256(
+      sourceContentRows.map((row) => row === null
+        ? null
+        : projection(row, CONTENT_OBSERVATION_COLUMNS)),
     ),
     otherScopedCostsSha256: productTruthOperationalSha256(
       otherCosts.map((row) => projection(row, COST_COLUMNS)),
