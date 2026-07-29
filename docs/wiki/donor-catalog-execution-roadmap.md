@@ -814,9 +814,24 @@ G7 закончен как диагностический production canary, н�
   неизменном canonical variant ID. Clean release `38997655`, tree
   `973dea2d…d5c0`, shared Product Truth `579/579`, clean checkout `576/576`,
   TypeScript PASS; canonical matcher `1.2.1` не изменён;
+- ✅ Pepperidge Farm Swirl Cinnamon выполнен один раз с exact canonical
+  binding. Content lane terminalized `AMBIGUOUS` на incomplete detail, retry
+  `0`; combined lifecycle spend `6` units. При этом exact Walmart first-party
+  price `$3.57`/unit для item `10452822`, ZIP `33765`, сохранён отдельным
+  immutable observation `doo:80dffa…06d2`;
+- ✅ бесплатный canonical COGS reconcile распространил сохранённую exact цену
+  на восемь существующих recipes `FaisalX-229/231/232/233/234/235/236/237`.
+  Plan `2adac05b…0413`, apply `b1a490e0…cf15`: `24` append-only rows,
+  `8 FACT`, provider/marketplace calls `0`;
+- ✅ новый full-denominator readiness `ad145926…9659` подтверждает
+  `5935/5935` reconciled, Bundle Factory/Listing Improvement `100`,
+  Unit Economics `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING`,
+  Procurement `18`. Content completeness и price/COGS outcome остались
+  независимыми;
 - 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
-  authority и при exact success materialize evidence в существующие
-  canonical recipe/typed COGS, затем обновить полный denominator.
+  authority; отдельно сохранить successful content/price evidence, materialize
+  только доказанные данные в существующие canonical recipe/typed COGS и снова
+  обновить полный denominator.
 
 Статус 2026-07-28 после исправления:
 

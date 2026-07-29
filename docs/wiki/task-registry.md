@@ -1465,6 +1465,23 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   Contradictory brand остаётся fail-closed; matcher `1.2.1` не изменён.
   Release `38997655`, tree `973dea2d…d5c0`; shared Product Truth `579/579`,
   clean checkout `576/576`, TypeScript PASS.
-- [ ] 🔄 Выбрать новый untouched exact Phase 1 target, выполнить один bounded
-  standing-authority lifecycle и при exact success материализовать FACT/content
-  в существующий canonical graph с новым full-denominator postcheck.
+- [x] ✅ Pepperidge Farm Swirl Cinnamon donor `702af605…34816` выполнен один
+  раз с canonical binding `walmart:1:FaisalX-229 / component 0`. Content lane
+  terminalized `AMBIGUOUS` на incomplete Unwrangle detail, retry `0`;
+  lifecycle consumed `6` units total, marketplace mutations `0`. Exact
+  first-party Walmart search всё же сохранил отдельное price observation
+  `doo:80dffa…06d2` для item `10452822`, ZIP `33765`, `$3.57`.
+- [x] ✅ Saved exact price materialized без новых provider calls во все восемь
+  shared recipes `FaisalX-229/231/232/233/234/235/236/237`: plan
+  `2adac05b…0413`, fresh preflight `READY_TO_APPLY`, apply
+  `b1a490e0…cf15`, `24` append-only rows и `8 FACT`.
+- [x] ✅ Full-denominator readiness `ad145926…9659`: `5935/5935` reconciled,
+  Bundle Factory/Listing Improvement `100`, Unit Economics
+  `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING`, Procurement
+  `18`. Все восемь Cinnamon listings читаются как `FACT`/`READY`; incomplete
+  content не был relabelled как complete.
+- [ ] 🔄 Выбрать следующий untouched exact Phase 1 target, выполнить один
+  bounded standing-authority lifecycle и независимо материализовать только
+  подтверждённые content/price evidence в существующий canonical graph с новым
+  full-denominator postcheck.
+

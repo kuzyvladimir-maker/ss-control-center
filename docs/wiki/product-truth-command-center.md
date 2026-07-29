@@ -1159,7 +1159,32 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   `973dea2d65e79b0d4ca4dd064282ad7c6fe8d5c0`: shared Product Truth
   `579/579`, exact clean checkout `576/576`, TypeScript and clean-worktree
   checks pass.
-- [ ] 🔄 Select a new untouched exact Phase 1 target and run the same
-  one-attempt `doctor → plan → balance-probe → authorize → execute` workflow.
-  Any successful exact FACT evidence must then be propagated through the
-  existing canonical recipe/typed COGS graph; no parallel catalog is created.
+- [x] ✅ Pepperidge Farm Swirl Cinnamon donor
+  `702af605-b9ed-45b0-a979-f1aa6d034816` was executed once with exact
+  canonical binding `walmart:1:FaisalX-229 / component 0`. The content lane
+  terminalized `AMBIGUOUS` on
+  `UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`; retry `0`, marketplace
+  mutations `0`. The lifecycle consumed `6` units total (`2.5` balance probe +
+  `1` Oxylabs query + `2.5` Unwrangle detail). Execution report SHA
+  `48463bf2…7542`.
+- [x] ✅ The successful exact first-party Walmart search evidence was retained
+  independently from the incomplete content result: observation
+  `doo:80dffa…06d2`, item `10452822`, ZIP `33765`, price `$3.57`, direct
+  Walmart first-party and in stock. It supplies price truth only; no partial
+  content observation was fabricated.
+- [x] ✅ Zero-paid canonical COGS reconciliation propagated that saved exact
+  price through all eight existing recipes `FaisalX-229/231/232/233/234/235/
+  236/237`. Plan SHA `2adac05b…0413`; fresh preflight `READY_TO_APPLY`; apply
+  inserted `24` append-only rows for `8` `FACT` costs, report SHA
+  `b1a490e0…cf15`; provider and marketplace calls `0`.
+- [x] ✅ Full-denominator read-only readiness report SHA
+  `ad145926…9659` proves `5935/5935` reconciled. Bundle Factory and Listing
+  Improvement remain `100 ready`; Unit Economics is now
+  `18 FACT / 3 ESTIMATE / 740 UNSOURCEABLE / 5174 MISSING / 0 INVALID`;
+  Procurement is `18 ready`. All eight Cinnamon listings independently read
+  as Unit Economics `FACT` and Procurement `READY`.
+- [ ] 🔄 Select the next untouched exact Phase 1 target and repeat the bounded
+  one-attempt standing-authority lifecycle. Persist successful content and
+  price evidence on their independent axes, then propagate only verified
+  evidence through the existing canonical recipe/typed COGS graph.
+
