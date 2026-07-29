@@ -110,6 +110,16 @@ function fail(code: string, message: string): never {
   throw new ProductTruthStandingWaveWebContractError(code, message);
 }
 
+export function productTruthStandingWaveSidecarName(name: string): string {
+  if (!/^[a-z0-9-]+\.json$/u.test(name)) {
+    fail(
+      "STANDING_WAVE_WEB_VALUE_INVALID",
+      "sealed artifact name must be a simple .json filename",
+    );
+  }
+  return `${name.slice(0, -".json".length)}.sha256`;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }

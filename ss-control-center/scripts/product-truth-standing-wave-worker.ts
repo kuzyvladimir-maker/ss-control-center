@@ -21,6 +21,7 @@ import {
   PRODUCT_TRUTH_STANDING_WAVE_WEB_RESULT_VERSION,
   parseProductTruthStandingWaveWebRequest,
   parseProductTruthStandingWaveWebResult,
+  productTruthStandingWaveSidecarName,
   type ProductTruthStandingWaveWebResult,
   type ProductTruthStandingWaveWebResultFile,
 } from "../src/lib/sourcing/product-truth-standing-wave-web-contract";
@@ -504,7 +505,9 @@ async function sealedFile(
 ): Promise<{ bytes: Buffer; sha256: string; sidecar: Buffer }> {
   const bytes = await exactFile(join(root, name), maximumBytes);
   const digest = sha256(bytes);
-  const sidecar = await exactFile(join(root, `${name.replace(/\\.json$/u, "")}.sha256`));
+  const sidecar = await exactFile(
+    join(root, productTruthStandingWaveSidecarName(name)),
+  );
   if (sidecar.toString("utf8") !== `${digest}\n`) {
     fail(`${name} sidecar differs from exact bytes`);
   }

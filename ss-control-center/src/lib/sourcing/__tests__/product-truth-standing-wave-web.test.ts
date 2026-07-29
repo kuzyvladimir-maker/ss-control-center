@@ -20,6 +20,7 @@ import {
   parseProductTruthStandingWaveWebRequest,
   parseProductTruthStandingWaveWebRequestBytes,
   parseProductTruthStandingWaveWebResult,
+  productTruthStandingWaveSidecarName,
   renderProductTruthStandingWaveWebRequest,
 } from "../product-truth-standing-wave-web-contract";
 
@@ -31,6 +32,29 @@ const MANIFEST = "4".repeat(64);
 const PROVIDER_POLICY = "5".repeat(64);
 const NO_PAID_POLICY = "6".repeat(64);
 const WORKER_TOKEN_SHA = "7".repeat(64);
+
+test("standing-wave worker resolves canonical runner sidecar names", () => {
+  assert.equal(
+    productTruthStandingWaveSidecarName("wave-plan.json"),
+    "wave-plan.sha256",
+  );
+  assert.equal(
+    productTruthStandingWaveSidecarName("wave-report.json"),
+    "wave-report.sha256",
+  );
+  assert.equal(
+    productTruthStandingWaveSidecarName("artifact-index.json"),
+    "artifact-index.sha256",
+  );
+  assert.equal(
+    productTruthStandingWaveSidecarName("readiness-report.json"),
+    "readiness-report.sha256",
+  );
+  assert.throws(
+    () => productTruthStandingWaveSidecarName("wave-plan.json.sha256"),
+    /simple \.json filename/u,
+  );
+});
 
 function activeEnv() {
   const base = {
