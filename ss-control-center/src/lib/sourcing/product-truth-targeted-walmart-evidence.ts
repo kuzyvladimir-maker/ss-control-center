@@ -39,9 +39,11 @@ import {
 } from "./product-truth-operational-ledger";
 import {
   acquireProductTruthOperationalRunLease,
+  finishExpiredProductTruthTargetedEvidenceRun,
   finishProductTruthOperationalRun,
   getProductTruthOperationalRun,
   listProductTruthOperationalEvents,
+  ProductTruthOperationalStoreError,
   reapExpiredProductTruthTargetedEvidenceRun,
   seedProductTruthTargetedEvidenceControlRun,
   type ProductTruthOperationalEnvironment,
@@ -2726,14 +2728,32 @@ export async function executeProductTruthTargetedWalmartEvidence(
       next_command: null,
     };
     const artifact = await raw.artifactWriter(report);
-    await finishProductTruthOperationalRun(db, {
-      runId: plan.runId,
-      leaseToken: runLeaseToken,
-      status: finalStatus,
-      at: generatedAt,
-      reportSha256: artifact.reportSha256,
-      artifactIndexSha256: artifact.artifactIndexSha256,
-    });
+    try {
+      await finishProductTruthOperationalRun(db, {
+        runId: plan.runId,
+        leaseToken: runLeaseToken,
+        status: finalStatus,
+        at: generatedAt,
+        reportSha256: artifact.reportSha256,
+        artifactIndexSha256: artifact.artifactIndexSha256,
+      });
+    } catch (error) {
+      if (
+        !(error instanceof ProductTruthOperationalStoreError)
+        || error.code !== "OPERATIONAL_RUN_CAS_LOST"
+      ) {
+        throw error;
+      }
+      await finishExpiredProductTruthTargetedEvidenceRun(db, {
+        runId: plan.runId,
+        leaseToken: runLeaseToken,
+        status: finalStatus,
+        at: generatedAt,
+        reason: finalReason.trim().slice(0, 500),
+        reportSha256: artifact.reportSha256,
+        artifactIndexSha256: artifact.artifactIndexSha256,
+      });
+    }
     return {
       schemaVersion: PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_RESULT_VERSION,
       runId: plan.runId,

@@ -2509,6 +2509,237 @@ export async function finishProductTruthOperationalRun(
 }
 
 /**
+ * A targeted one-donor execution may return from its final provider/database
+ * boundary after the bounded run lease has expired. The ordinary finish CAS
+ * must keep rejecting that stale lease. This narrower recovery primitive can
+ * only attach already-written immutable report artifacts to the exact expired
+ * targeted run while proving that no listing item or active product job
+ * remains. It never reopens work and grants no provider authority.
+ */
+export async function finishExpiredProductTruthTargetedEvidenceRun(
+  db: Client,
+  input: {
+    runId: string;
+    leaseToken: string;
+    status: "interrupted" | "blocked" | "ambiguous" | "completed" | "failed";
+    at: string;
+    reason: string;
+    reportSha256: string;
+    artifactIndexSha256: string;
+  },
+): Promise<StoredProductTruthOperationalRun> {
+  await assertProductTruthOperationalRunSchema(db);
+  const at = canonicalInstant(input.at, "at");
+  const runId = exactText(input.runId, "runId");
+  const leaseToken = exactText(input.leaseToken, "leaseToken", 200);
+  const reason = exactText(input.reason, "reason", 500);
+  const reportSha256 = exactHash(input.reportSha256, "reportSha256");
+  const artifactIndexSha256 = exactHash(input.artifactIndexSha256, "artifactIndexSha256");
+  const transaction = await db.transaction("write");
+  try {
+    const run = await selectRun(transaction, runId);
+    if (!run) throw storeError("OPERATIONAL_RUN_MISSING", "run does not exist");
+    if (![
+      "product-truth-targeted-walmart-evidence-plan/1.3.0",
+      "product-truth-targeted-walmart-evidence-plan/1.4.0",
+      "product-truth-targeted-walmart-evidence-plan/1.5.0",
+      "product-truth-targeted-walmart-evidence-plan/1.6.0",
+    ].includes(run.planSchemaVersion)) {
+      throw storeError(
+        "OPERATIONAL_RUN_KIND_MISMATCH",
+        "expired targeted finalizer cannot handle another plan contract",
+      );
+    }
+    if (
+      run.status !== "running"
+      || run.leaseToken !== leaseToken
+      || !run.leaseExpiresAt
+      || Date.parse(run.leaseExpiresAt) > Date.parse(at)
+      || run.reportSha256 !== null
+      || run.artifactIndexSha256 !== null
+    ) {
+      throw storeError(
+        "OPERATIONAL_RUN_CAS_LOST",
+        "targeted run is not the exact unreported expired lease",
+      );
+    }
+    const itemCount = await transaction.execute({
+      sql: `SELECT COUNT(*) AS count FROM "ProductTruthOperationalRunItem" WHERE "runId"=?`,
+      args: [runId],
+    });
+    if (integer(itemCount.rows[0]?.count, "targeted run item count") !== 0) {
+      throw storeError("OPERATIONAL_RUN_CONFLICT", "targeted run contains listing items");
+    }
+    const jobs = await transaction.execute({
+      sql: `SELECT "id","targetType","target","listingKey","requestedFields",
+                  "source","status","attempts","leaseOwner","leaseToken","leaseExpiresAt"
+            FROM "EnrichmentJob" WHERE "runId"=? AND "approvalId"=?
+            ORDER BY "createdAt","id"`,
+      args: [runId, run.approvalId],
+    });
+    if (jobs.rows.length > 1) {
+      throw storeError("OPERATIONAL_RUN_CONFLICT", "targeted run owns more than one queue job");
+    }
+    const job = jobs.rows[0];
+    let sealedTarget: string;
+    try {
+      const parsed = JSON.parse(run.planJson) as { targets?: Array<{ donorProductId?: unknown }> };
+      sealedTarget = exactText(parsed.targets?.[0]?.donorProductId, "targeted donorProductId");
+    } catch (error) {
+      throw storeError("OPERATIONAL_RUN_CONFLICT", "targeted plan target is unreadable", error);
+    }
+    const expectedJobId = `ptej_${sha256(`targeted-walmart-evidence-job/1\n${run.planSha256}`)}`;
+    const expectedSource = `product-truth-targeted-walmart-evidence:${run.planSha256}`;
+    if (job && (
+      job.id !== expectedJobId
+      || job.targetType !== "product"
+      || job.target !== sealedTarget
+      || job.listingKey !== null
+      || job.requestedFields !== JSON.stringify(["content", "offers"])
+      || job.source !== expectedSource
+      || integer(job.attempts, "targeted queue attempts") > 1
+    )) {
+      throw storeError(
+        "OPERATIONAL_RUN_CONFLICT",
+        "targeted product queue identity is invalid",
+      );
+    }
+    let jobStatus = job == null ? null : String(job.status);
+    const jobLeaseFields = job == null
+      ? []
+      : [job.leaseOwner, job.leaseToken, job.leaseExpiresAt].filter((value) => value !== null);
+    if (job && jobLeaseFields.length !== 0) {
+      if (
+        jobLeaseFields.length !== 3
+        || input.status !== "ambiguous"
+        || jobStatus !== "running"
+        || integer(job.attempts, "targeted queue attempts") !== 1
+        || Date.parse(String(job.leaseExpiresAt)) > Date.parse(at)
+      ) {
+        throw storeError(
+          "OPERATIONAL_RUN_CONFLICT",
+          "targeted product job still owns a non-recoverable lease",
+        );
+      }
+      const spend = await transaction.execute({
+        sql: `SELECT COALESCE(SUM(receipt."unitsMicros"),0) AS unitsMicros
+              FROM "MeteredReservationReceipt" receipt
+              JOIN "MeteredProviderBudget" budget ON budget."id"=receipt."budgetId"
+              WHERE budget."runId"=? AND budget."approvalId"=?`,
+        args: [runId, run.approvalId],
+      });
+      const actualSpendUnits = integer(
+        spend.rows[0]?.unitsMicros,
+        "targeted metered receipt units",
+      ) / 1_000_000;
+      const resultJson = renderProductTruthOperationalJson({
+        outcome: "AMBIGUOUS",
+        reason,
+      });
+      const quarantined = await transaction.execute({
+        sql: `UPDATE "EnrichmentJob"
+              SET "status"='error',"terminalReason"=?,"result"=?,"error"=?,
+                  "actualSpendUnits"=?,"completedFields"='[]',
+                  "unavailableFields"="requestedFields","finishedAt"=?,
+                  "nextEligibleAt"=NULL,"leaseOwner"=NULL,"leaseToken"=NULL,
+                  "leaseExpiresAt"=NULL,"heartbeatAt"=?,"updatedAt"=?
+              WHERE "id"=? AND "runId"=? AND "approvalId"=?
+                AND "status"='running' AND "attempts"=1
+                AND "leaseOwner"=? AND "leaseToken"=? AND "leaseExpiresAt"=?`,
+        args: [
+          reason,
+          resultJson,
+          reason,
+          actualSpendUnits,
+          at,
+          at,
+          at,
+          job.id,
+          runId,
+          run.approvalId,
+          job.leaseOwner,
+          job.leaseToken,
+          job.leaseExpiresAt,
+        ],
+      });
+      if (quarantined.rowsAffected !== 1) {
+        throw storeError(
+          "OPERATIONAL_QUEUE_CAS_LOST",
+          "expired targeted product job changed during finalization",
+        );
+      }
+      jobStatus = "error";
+    }
+    if (input.status === "completed" && jobStatus !== "done") {
+      throw storeError(
+        "OPERATIONAL_RUN_CONFLICT",
+        "completed targeted recovery requires its exact done product job",
+      );
+    }
+    if (
+      input.status !== "interrupted"
+      && jobStatus !== null
+      && !["done", "partial", "source_unavailable", "error", "cancelled"].includes(jobStatus)
+    ) {
+      throw storeError(
+        "OPERATIONAL_RUN_CONFLICT",
+        "terminal targeted recovery requires a terminal product job",
+      );
+    }
+    const result = await transaction.execute({
+      sql: `UPDATE "ProductTruthOperationalRun"
+            SET "status"=?, "leaseOwner"=NULL, "leaseToken"=NULL,
+                "leaseExpiresAt"=NULL, "heartbeatAt"=NULL, "finishedAt"=?,
+                "reportSha256"=?, "artifactIndexSha256"=?, "updatedAt"=?
+            WHERE "runId"=? AND "status"='running' AND "leaseToken"=?
+              AND julianday("leaseExpiresAt")<=julianday(?)
+              AND "reportSha256" IS NULL AND "artifactIndexSha256" IS NULL`,
+      args: [
+        input.status,
+        input.status === "interrupted" ? null : at,
+        reportSha256,
+        artifactIndexSha256,
+        at,
+        runId,
+        leaseToken,
+        at,
+      ],
+    });
+    if (result.rowsAffected !== 1) {
+      throw storeError("OPERATIONAL_RUN_CAS_LOST", "expired targeted run changed during finalization");
+    }
+    await appendEvent(transaction, {
+      runId,
+      eventType: "RUN_FINISHED_AFTER_LEASE_EXPIRY",
+      payload: {
+        executionKind: "TARGETED_WALMART_EVIDENCE",
+        status: input.status,
+        reason,
+        reportSha256,
+        artifactIndexSha256,
+        queueJobId: job == null ? null : String(job.id),
+      },
+      at,
+    });
+    const stored = await selectRun(transaction, runId);
+    if (!stored) throw storeError("OPERATIONAL_RUN_MISSING", "finalized targeted run disappeared");
+    verifyEventChain(stored, await selectEvents(transaction, runId));
+    await transaction.commit();
+    return stored;
+  } catch (error) {
+    await transaction.rollback();
+    if (error instanceof ProductTruthOperationalStoreError) throw error;
+    throw storeError(
+      "OPERATIONAL_RUN_FINISH_FAILED",
+      "could not finalize expired targeted evidence run",
+      error,
+    );
+  } finally {
+    transaction.close();
+  }
+}
+
+/**
  * Targeted donor evidence has no listing-scoped OperationalRunItem, so the
  * listing runner's generic expiry reaper must never interpret its product job.
  * The caller first reconciles immutable metered receipts and exact evidence,

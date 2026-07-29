@@ -1540,6 +1540,63 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
     }
   });
 
+  test("late terminal report finalizes the exact expired targeted lease without provider replay", async () => {
+    const fixture = await createFixture({ runId: "targeted-late-terminal-report" });
+    try {
+      const afterLeaseExpiry = plusMilliseconds(fixture.initialAt, 8 * 60_000 + 1);
+      const result = await executeProductTruthTargetedWalmartEvidence(
+        fixture.db,
+        executionInput(fixture, "execute", {
+          now: () => fixture.counters.unwrangle === 0
+            ? fixture.initialAt
+            : afterLeaseExpiry,
+        }),
+      );
+      assert.equal(result.status, "ambiguous");
+      assert.equal(result.outcome, "AMBIGUOUS");
+      assert.deepEqual(fixture.counters, { oxylabs: 1, unwrangle: 1 });
+      assert.equal(fixture.reports.length, 1);
+
+      const inspection = await inspectProductTruthTargetedWalmartEvidenceRun(
+        fixture.db,
+        fixture.plan.runId,
+      );
+      assert.ok(inspection.run);
+      assert.equal(inspection.run.status, "ambiguous");
+      assert.equal(inspection.run.leaseOwner, null);
+      assert.equal(inspection.run.leaseToken, null);
+      assert.equal(inspection.run.leaseExpiresAt, null);
+      assert.equal(inspection.run.reportSha256, result.reportSha256);
+      assert.equal(inspection.run.artifactIndexSha256, result.artifactIndexSha256);
+      assert.equal(inspection.job?.status, "error");
+      assert.equal(inspection.job?.attempts, 1);
+      assert.equal(inspection.job?.leaseOwner, null);
+      assert.equal(inspection.job?.leaseToken, null);
+      assert.equal(inspection.job?.leaseExpiresAt, null);
+      assert.deepEqual(
+        inspection.ledger.receipts.map((receipt) => [
+          receipt.provider,
+          receipt.operation,
+          receipt.status,
+        ]),
+        [
+          ["oxylabs", "query", "succeeded"],
+          ["unwrangle", "detail", "succeeded"],
+        ],
+      );
+      assert.deepEqual(
+        inspection.events.map((event) => event.eventType),
+        [
+          "RUN_PREPARED",
+          "RUN_LEASE_ACQUIRED",
+          "RUN_FINISHED_AFTER_LEASE_EXPIRY",
+        ],
+      );
+    } finally {
+      await fixture.db.close();
+    }
+  });
+
   test("near-expiry monotonic budget stops before provider I/O even when wall time is static", async () => {
     const initialAt = new Date().toISOString();
     const fixture = await createFixture({
