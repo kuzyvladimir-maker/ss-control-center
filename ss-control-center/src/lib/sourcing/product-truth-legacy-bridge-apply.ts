@@ -54,11 +54,11 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/3.4.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.5.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/3.5.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.6.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
   "product-truth-legacy-bridge-preflight-report/2.2.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =

@@ -680,6 +680,44 @@ test("current exact content evidence is classified as already canonical", () => 
   assert.equal(plan.counts.exactCanonicalizationCandidates, 0);
 });
 
+test("current exact listing recipe remains canonical without content evidence", () => {
+  const base = snapshot();
+  const targetVariantId =
+    compile(base).scopes[0].components[0].targetVariant?.canonicalVariantId;
+  assert.ok(targetVariantId);
+  const plan = compile(snapshot({
+    canonicalDonorBindings: [{
+      donorProductId: "donor-1",
+      canonicalVariantId: targetVariantId,
+      decisionId: "decision-identity-only",
+      decisionStatus: "exact_confirmed",
+      decidedAt: "2026-07-26T11:30:00.000Z",
+    }],
+    canonicalListingComponents: [{
+      listingKey: "ptls1:test",
+      skuCostId: "cost-identity-only",
+      componentIndex: 0,
+      evidenceStatus: "REJECT",
+      targetCanonicalVariantId: targetVariantId,
+      contentCanonicalVariantId: null,
+      contentObservationId: null,
+      observedContentCanonicalVariantId: null,
+      decisionId: "decision-identity-only",
+      decisionStatus: "exact_confirmed",
+      decisionCanonicalVariantId: targetVariantId,
+      recipeTargetCanonicalVariantId: targetVariantId,
+      recipeDonorProductId: "donor-1",
+      recipeVariantDecisionId: "decision-identity-only",
+      recipeComponentEvidenceHash: null,
+      recipeComponentEvidenceJson: null,
+    }],
+  }));
+  assert.equal(plan.scopes[0].disposition, "ALREADY_CANONICAL");
+  assert.equal(plan.scopes[0].writeEligible, false);
+  assert.equal(plan.scopes[0].components[0].disposition, "ALREADY_CANONICAL");
+  assert.equal(plan.counts.alreadyCanonicalListings, 1);
+});
+
 test("field-partition reconciliation remains canonical on the next audit", () => {
   const base = snapshot();
   const originalComponent = compile(base).scopes[0].components[0];

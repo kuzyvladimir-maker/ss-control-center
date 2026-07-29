@@ -32,9 +32,9 @@ import {
  * a historical `costMethod=exact` flag as identity proof.
  */
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION =
-  "product-truth-legacy-bridge-snapshot/1.5.0" as const;
+  "product-truth-legacy-bridge-snapshot/1.6.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PLAN_VERSION =
-  "product-truth-legacy-bridge-plan/1.5.0" as const;
+  "product-truth-legacy-bridge-plan/1.6.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION =
   "product-truth-legacy-bridge-policy/1.0.0" as const;
 export const PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION =
@@ -1883,15 +1883,28 @@ function classifyExistingCanonicalScope(
         row !== undefined
         && validIdentityPartitionReconciliation({ component, row })
       );
+    const contentBindingValid =
+      row !== undefined
+      && (
+        (
+          row.contentCanonicalVariantId === null
+          && row.contentObservationId === null
+          && row.observedContentCanonicalVariantId === null
+        )
+        || (
+          row.contentCanonicalVariantId === canonicalEvidenceVariantId
+          && Boolean(row.contentObservationId)
+          && row.observedContentCanonicalVariantId
+            === canonicalEvidenceVariantId
+        )
+      );
     if (
       !row
       || !targetVariantId
       || !canonicalEvidenceVariantId
       || !["FACT", "MANUAL_FACT", "ESTIMATE", "REJECT"].includes(row.evidenceStatus)
       || !targetBindingValid
-      || row.contentCanonicalVariantId !== canonicalEvidenceVariantId
-      || !row.contentObservationId
-      || row.observedContentCanonicalVariantId !== canonicalEvidenceVariantId
+      || !contentBindingValid
       || row.decisionStatus !== "exact_confirmed"
       || row.decisionCanonicalVariantId !== canonicalEvidenceVariantId
     ) {

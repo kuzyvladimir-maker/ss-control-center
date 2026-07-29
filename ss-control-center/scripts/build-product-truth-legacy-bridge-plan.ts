@@ -533,8 +533,6 @@ async function readCanonicalListingComponents(
           JOIN SkuComponentEvidence evidence ON evidence.skuCostId=ranked.skuCostId
           LEFT JOIN ProductContentObservation content
             ON content.id=evidence.contentObservationId
-          LEFT JOIN DonorProductVariantDecision decision
-            ON decision.id=content.variantDecisionId
           LEFT JOIN ProductTruthListingRecipe recipe
             ON recipe.listingKey=ranked.listingKey
            AND recipe.recipeHash=ranked.recipeHash
@@ -543,6 +541,11 @@ async function readCanonicalListingComponents(
           LEFT JOIN ProductTruthListingRecipeComponent recipeComponent
             ON recipeComponent.listingRecipeId=recipe.id
            AND recipeComponent.componentIndex=evidence.componentIndex
+          LEFT JOIN DonorProductVariantDecision decision
+            ON decision.id=COALESCE(
+              content.variantDecisionId,
+              recipeComponent.variantDecisionId
+            )
           WHERE ranked.rank=1
           ORDER BY ranked.listingKey, evidence.componentIndex, evidence.id`,
     args: [manifestSha256, capturedAt, capturedAt],
