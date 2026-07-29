@@ -252,6 +252,46 @@ function identityOnlyFixture(): ReturnType<typeof sourceFixture> {
   return rebuildFixture(snapshot, { contentOnly: 0, identityOnly: 5 });
 }
 
+function mixedBundleFixture(): ReturnType<typeof sourceFixture> {
+  const snapshot = structuredClone(sourceFixture().snapshot);
+  const listing = snapshot.listings[0];
+  assert.ok(listing);
+  const donors = snapshot.donors.slice(0, 4);
+  const donorIds = new Set(donors.map((donor) => donor.id));
+  listing.productIdentityJson = JSON.stringify({
+    brand: "Acme Variety",
+    product_line: "Crunch Chips Collection",
+    flavor: null,
+    size: null,
+    container_type: "bundle",
+    units_in_listing: 4,
+    is_bundle: true,
+    components: donors.map((donor) => ({
+      product: `${donor.brand} Crunch Chips`,
+      flavor: "Original",
+      size: "8 oz",
+      qty: 1,
+      container_type: "bag",
+    })),
+  });
+  snapshot.listings = [listing];
+  snapshot.components = snapshot.components.slice(0, 4).map(
+    (component, index) => ({
+      ...component,
+      id: `bundle-component-${index}`,
+      sku: listing.sku,
+      idx: index,
+      qty: 1,
+      donorProductId: donors[index]!.id,
+    }),
+  );
+  snapshot.donors = donors;
+  snapshot.offers = snapshot.offers.filter((offer) =>
+    donorIds.has(offer.donorProductId));
+  snapshot.manifest.listingCount = 1;
+  return rebuildFixture(snapshot, { contentOnly: 1, identityOnly: 0 });
+}
+
 function liveBarcodeFixture(): ReturnType<typeof sourceFixture> {
   const snapshot = structuredClone(sourceFixture().snapshot);
   const listing = snapshot.listings[0];
@@ -922,7 +962,7 @@ async function seedExactDecision(input: {
   decidedAt: string;
 }): Promise<void> {
   const { db, target, donorProductId, decisionId, decidedAt } = input;
-  const variant = target.variant;
+  const variant = target.components[0].variant;
   await db.execute({
     sql: `INSERT INTO CanonicalProductVariant (
       id,variantKey,identityHash,keyVersion,normalizedBrand,
@@ -1076,14 +1116,14 @@ test("lexically equivalent product/flavor field partitions reconcile to one dono
     ));
   assert.equal(group.length, 3);
   assert.equal(
-    new Set(group.map((target) => target.variant.id)).size,
+    new Set(group.map((target) => target.components[0].variant.id)).size,
     1,
   );
   assert.equal(
-    new Set(group.map((target) => target.decision?.id)).size,
+    new Set(group.map((target) => target.components[0].decision?.id)).size,
     1,
   );
-  const reconciliation = group[0]?.identityReconciliation;
+  const reconciliation = group[0]?.components[0].identityReconciliation;
   assert.ok(reconciliation);
   assert.equal(
     reconciliation.schemaVersion,
@@ -1116,21 +1156,27 @@ test("exact donor form partition is reconciled through the existing immutable de
   const value = formPartitionExactDecisionFixture();
   const input = applyPlan(value.fixture);
   const target = input.plan.targets.find(
-    (row) => row.donorProductId === value.donorProductId,
+    (row) => row.components.some(
+      (component) => component.donorProductId === value.donorProductId,
+    ),
   );
   assert.ok(target);
+  const targetComponent = target.components.find(
+    (component) => component.donorProductId === value.donorProductId,
+  );
+  assert.ok(targetComponent);
   assert.equal(
-    target.identityReconciliation?.schemaVersion,
+    targetComponent.identityReconciliation?.schemaVersion,
     "product-truth-legacy-bridge-field-partition-reconciliation/2.0.0",
   );
   assert.equal(
-    target.identityReconciliation?.canonicalDecisionId,
+    targetComponent.identityReconciliation?.canonicalDecisionId,
     value.decisionId,
   );
-  assert.equal(target.reusedDecision?.decisionId, value.decisionId);
-  assert.equal(target.decision, null);
+  assert.equal(targetComponent.reusedDecision?.decisionId, value.decisionId);
+  assert.equal(targetComponent.decision, null);
   assert.equal(target.listingRecipeComponents[0]?.targetCanonicalVariantId,
-    target.variant.id);
+    targetComponent.variant.id);
   assert.equal(target.listingRecipeComponents[0]?.variantDecisionId,
     value.decisionId);
 
@@ -1194,7 +1240,7 @@ test("exact donor form partition is reconciled through the existing immutable de
     args: [target.listingKey],
   });
   assert.deepEqual(recipe.rows, [{
-    targetCanonicalVariantId: target.variant.id,
+    targetCanonicalVariantId: targetComponent.variant.id,
     variantDecisionId: value.decisionId,
   }]);
 });
@@ -1204,7 +1250,7 @@ test("exact identity-only legacy evidence materializes partial content, recipe, 
   assert.equal(input.plan.targets.length, 5);
   assert.equal(input.plan.databaseWrites.maximumRows, 45);
   for (const target of input.plan.targets) {
-    const content = JSON.parse(target.content.contentJson) as {
+    const content = JSON.parse(target.components[0].content.contentJson) as {
       description: unknown;
       normalizedGtin14: unknown;
       mainImageUrl: unknown;
@@ -1253,17 +1299,100 @@ test("exact identity-only legacy evidence materializes partial content, recipe, 
   }
 });
 
+test("a mixed bundle wave atomically materializes every exact recipe component", async (t) => {
+  const input = applyPlan(mixedBundleFixture());
+  assert.equal(input.plan.targets.length, 1);
+  const target = input.plan.targets[0];
+  assert.ok(target);
+  assert.equal(target.components.length, 4);
+  assert.equal(target.listingRecipeComponents.length, 4);
+  assert.equal(target.componentEvidence.length, 4);
+  assert.deepEqual(
+    target.components.map((component) => component.componentIndex),
+    [0, 1, 2, 3],
+  );
+  assert.ok(input.plan.databaseWrites.maximumRows <= 100);
+
+  const plannedCostEvidence = JSON.parse(target.cost.evidenceJson) as {
+    components: Array<{ idx: number }>;
+  };
+  assert.deepEqual(
+    plannedCostEvidence.components.map((component) => component.idx),
+    [0, 1, 2, 3],
+  );
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const result = await executeApproved(db, input);
+  assert.equal(result.status, "APPLIED");
+  assert.equal(result.verification.bundleFactoryReady, 1);
+  assert.equal(result.verification.listingImprovementReady, 1);
+  assert.equal(result.verification.unitEconomicsUnsourceable, 1);
+
+  const persistedCounts = await Promise.all([
+    db.execute({
+      sql: `SELECT COUNT(*) AS count
+            FROM ProductTruthListingRecipeComponent component
+            JOIN ProductTruthListingRecipe recipe
+              ON recipe.id=component.listingRecipeId
+            WHERE recipe.listingKey=?`,
+      args: [target.listingKey],
+    }),
+    db.execute({
+      sql: `SELECT COUNT(*) AS count
+            FROM SkuComponentEvidence evidence
+            JOIN SkuCostListingScopeLink link
+              ON link.skuCostId=evidence.skuCostId
+            WHERE link.listingKey=?`,
+      args: [target.listingKey],
+    }),
+  ]);
+  assert.deepEqual(
+    persistedCounts.map((result) => Number(result.rows[0]?.count)),
+    [4, 4],
+  );
+
+  const persistedCost = (await db.execute({
+    sql: `SELECT cost.evidenceJson
+          FROM SkuCost cost
+          JOIN SkuCostListingScopeLink link ON link.skuCostId=cost.id
+          WHERE link.listingKey=?`,
+    args: [target.listingKey],
+  })).rows[0];
+  assert.ok(persistedCost);
+  const persistedCostEvidence = JSON.parse(
+    String(persistedCost.evidenceJson),
+  ) as { components: Array<{ idx: number }> };
+  assert.deepEqual(
+    persistedCostEvidence.components.map((component) => component.idx),
+    [0, 1, 2, 3],
+  );
+
+  const snapshot = await readProductTruthSnapshot(db, {
+    sku: target.sku,
+    channel: target.channel,
+    storeIndex: target.storeIndex,
+    expectedManifestSha256: MANIFEST_SHA256,
+    asOf: APPLY_AT,
+    maxPriceAgeMs: 24 * 60 * 60 * 1_000,
+  });
+  assert.equal(snapshot.views.bundleFactory.ready, true);
+  assert.equal(snapshot.views.bundleFactory.components.length, 4);
+  assert.equal(snapshot.views.unitEconomics.status, "UNSOURCEABLE");
+});
+
 test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {
   const input = applyPlan(liveBarcodeFixture());
   const target = input.plan.targets.find((row) => row.listingKey === "walmart:1:SKU-1");
   assert.ok(target);
-  assert.equal(target.sourceBinding.componentBarcodeEvidenceSha256, "1".repeat(64));
-  assert.equal(target.content.sourceApi, "target_direct_html");
+  const targetComponent = target.components[0];
+  assert.equal(targetComponent.sourceBinding.componentBarcodeEvidenceSha256, "1".repeat(64));
+  assert.equal(targetComponent.content.sourceApi, "target_direct_html");
   assert.equal(
-    target.content.sourceUrl,
+    targetComponent.content.sourceUrl,
     "https://www.target.com/p/pepperidge-farm-bakery-classics-top-sliced-white-hot-dog-buns-14oz-8ct/-/A-17189284",
   );
-  const plannedContent = JSON.parse(target.content.contentJson) as {
+  const plannedContent = JSON.parse(targetComponent.content.contentJson) as {
     description: string;
     nutritionFacts: Record<string, unknown>;
     ingredients: string;
@@ -1293,10 +1422,10 @@ test("live barcode retailer content is hash-bound and materialized into canonica
   assert.equal(result.status, "APPLIED");
   const persisted = (await db.execute({
     sql: "SELECT sourceApi,contentJson FROM ProductContentObservation WHERE id=?",
-    args: [target.content.id],
+    args: [targetComponent.content.id],
   })).rows[0];
   assert.equal(persisted?.sourceApi, "target_direct_html");
-  assert.equal(String(persisted?.contentJson), target.content.contentJson);
+  assert.equal(String(persisted?.contentJson), targetComponent.content.contentJson);
 });
 
 test("direct Target content is separately hash-bound and materialized", async (t) => {
@@ -1306,13 +1435,14 @@ test("direct Target content is separately hash-bound and materialized", async (t
   const evidenceSha256 =
     input.fixture.snapshot.directTargetContentEvidence[0]?.evidenceArtifactSha256;
   assert.ok(evidenceSha256);
-  assert.equal(target.sourceBinding.componentBarcodeEvidenceSha256, null);
+  const targetComponent = target.components[0];
+  assert.equal(targetComponent.sourceBinding.componentBarcodeEvidenceSha256, null);
   assert.equal(
-    target.sourceBinding.directTargetContentEvidenceSha256,
+    targetComponent.sourceBinding.directTargetContentEvidenceSha256,
     evidenceSha256,
   );
-  assert.equal(target.content.sourceApi, "target_direct_html");
-  const plannedContent = JSON.parse(target.content.contentJson) as {
+  assert.equal(targetComponent.content.sourceApi, "target_direct_html");
+  const plannedContent = JSON.parse(targetComponent.content.contentJson) as {
     description: string;
     allergens: string;
     storage: string;
@@ -1343,10 +1473,10 @@ test("direct Target content is separately hash-bound and materialized", async (t
   assert.equal(result.status, "APPLIED");
   const persisted = (await db.execute({
     sql: "SELECT sourceApi,contentJson FROM ProductContentObservation WHERE id=?",
-    args: [target.content.id],
+    args: [targetComponent.content.id],
   })).rows[0];
   assert.equal(persisted?.sourceApi, "target_direct_html");
-  assert.equal(String(persisted?.contentJson), target.content.contentJson);
+  assert.equal(String(persisted?.contentJson), targetComponent.content.contentJson);
 });
 
 test("standing no-paid policy authorizes a fresh bounded READY_TO_APPLY wave", async (t) => {
@@ -1394,7 +1524,7 @@ test("standing wave reuses a compatible canonical variant with an earlier create
   const input = applyPlan();
   const db = await seededDatabase(t, input.fixture);
   t.after(() => db.close());
-  const variant = input.plan.targets[0].variant;
+  const variant = input.plan.targets[0].components[0].variant;
   await db.execute({
     sql: `INSERT INTO CanonicalProductVariant (
       id,variantKey,identityHash,keyVersion,normalizedBrand,
@@ -1500,19 +1630,25 @@ test("standing wave reuses an immutable exact donor decision instead of insertin
   const fixture = rebuildFixture(snapshot, { contentOnly: 0, identityOnly: 5 });
   const input = applyPlan(fixture);
   const reusedTarget = input.plan.targets.find(
-    (target) => target.donorProductId === donor.id,
+    (target) => target.components.some(
+      (component) => component.donorProductId === donor.id,
+    ),
   );
   assert.ok(reusedTarget);
-  assert.equal(reusedTarget.decision, null);
-  assert.deepEqual(reusedTarget.reusedDecision, {
+  const reusedComponent = reusedTarget.components.find(
+    (component) => component.donorProductId === donor.id,
+  );
+  assert.ok(reusedComponent);
+  assert.equal(reusedComponent.decision, null);
+  assert.deepEqual(reusedComponent.reusedDecision, {
     decisionId: existingDecisionId,
     donorProductId: donor.id,
     canonicalVariantId: firstComponent.targetVariant.canonicalVariantId,
     decisionStatus: "exact_confirmed",
     decidedAt,
   });
-  assert.equal(reusedTarget.donorTransition, null);
-  assert.equal(reusedTarget.content.variantDecisionId, existingDecisionId);
+  assert.equal(reusedComponent.donorTransition, null);
+  assert.equal(reusedComponent.content.variantDecisionId, existingDecisionId);
   assert.equal(
     reusedTarget.listingRecipeComponents[0]?.variantDecisionId,
     existingDecisionId,
@@ -1534,7 +1670,7 @@ test("standing wave reuses an immutable exact donor decision instead of insertin
   stagedDonor.identityStatus = "legacy_unverified";
   const db = await seededDatabase(t, databaseFixture);
   t.after(() => db.close());
-  const variant = reusedTarget.variant;
+  const variant = reusedComponent.variant;
   await db.execute({
     sql: `INSERT INTO CanonicalProductVariant (
       id,variantKey,identityHash,keyVersion,normalizedBrand,
@@ -1798,10 +1934,11 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
   assert.equal(after.counts.canonicalVariantReuses, 5);
 
   for (const target of input.plan.targets) {
+    const targetComponent = target.components[0];
     const contentRow = (await db.execute({
       sql: `SELECT sourceApi,meteredReceiptId,contentJson
             FROM ProductContentObservation WHERE id=?`,
-      args: [target.content.id],
+      args: [targetComponent.content.id],
     })).rows[0];
     assert.equal(
       contentRow.sourceApi,
@@ -1833,7 +1970,9 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
     assert.equal(snapshot.views.unitEconomics.status, "UNSOURCEABLE");
     assert.equal(snapshot.views.procurement.ready, false);
     assert.equal(snapshot.views.bundleFactory.components[0].content?.provenance.sourceUrl,
-      input.plan.targets.find((item) => item.listingKey === target.listingKey)?.content.sourceUrl);
+      input.plan.targets.find(
+        (item) => item.listingKey === target.listingKey,
+      )?.components[0].content.sourceUrl);
   }
 });
 
@@ -1851,7 +1990,7 @@ test("approval or source drift fails before any canonical write", async (t) => {
   );
   await db.execute({
     sql: "UPDATE DonorProduct SET description=? WHERE id=?",
-    args: ["drifted", input.plan.targets[0].donorProductId],
+    args: ["drifted", input.plan.targets[0].components[0].donorProductId],
   });
   await assert.rejects(
     executeApproved(db, input),
