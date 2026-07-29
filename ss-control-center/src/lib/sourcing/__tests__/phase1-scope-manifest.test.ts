@@ -879,11 +879,23 @@ test("scope registry importer verifies canonical manifest bytes and checksum", a
       id TEXT PRIMARY KEY, sku TEXT NOT NULL, source TEXT NOT NULL,
       evidenceJson TEXT, createdAt DATETIME NOT NULL
     )`);
-    const migration = new URL(
+    await db.execute(`CREATE TABLE CanonicalProductVariant (id TEXT PRIMARY KEY)`);
+    await db.execute(`CREATE TABLE DonorProduct (
+      id TEXT PRIMARY KEY,
+      identityStatus TEXT
+    )`);
+    await db.execute(`CREATE TABLE DonorProductVariantDecision (
+      id TEXT PRIMARY KEY,
+      donorProductId TEXT,
+      canonicalVariantId TEXT,
+      decisionStatus TEXT
+    )`);
+    for (const relative of [
       "../../../../prisma/migrations/20260719002000_product_truth_listing_scope/migration.sql",
-      import.meta.url,
-    );
-    await db.executeMultiple(await readFile(migration, "utf8"));
+      "../../../../prisma/migrations/20260729010000_product_truth_listing_recipe/migration.sql",
+    ]) {
+      await db.executeMultiple(await readFile(new URL(relative, import.meta.url), "utf8"));
+    }
     const manifest = buildPhase1ScopeManifest(input());
     const manifestJson = renderPhase1ScopeManifestJson(manifest);
     const relabeledV2 = structuredClone(manifest);

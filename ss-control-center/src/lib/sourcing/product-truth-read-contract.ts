@@ -16,6 +16,13 @@ import {
 import { assertProductTruthEvidenceSchema } from "./product-truth-schema-gate";
 import { assertProductTruthListingScopeSchema } from "./product-truth-schema-gate";
 import { buildProductTruthListingScope } from "./product-truth-listing-scope";
+import {
+  PRODUCT_TRUTH_LISTING_RECIPE_VERSION,
+  productTruthListingRecipeStructuralHash,
+} from "./product-truth-listing-recipe";
+import {
+  productTruthOperationalSha256,
+} from "./product-truth-operational-run-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 import { exactProductContentCapture } from "./product-content-capture";
 
@@ -109,6 +116,8 @@ export interface ProductTruthContentFacts {
 }
 
 export interface ProductTruthRecipeComponent {
+  listingRecipeComponentId: string;
+  /** @deprecated Use listingRecipeComponentId. */
   componentEvidenceId: string;
   componentIndex: number;
   product: string;
@@ -116,7 +125,10 @@ export interface ProductTruthRecipeComponent {
   size: string | null;
   qty: number;
   targetCanonicalVariantId: string;
-  evidenceStatus: "FACT" | "MANUAL_FACT" | "ESTIMATE" | "REJECT";
+  identityEvidenceStatus: "EXACT";
+  costEvidenceStatus: "FACT" | "MANUAL_FACT" | "ESTIMATE" | "REJECT" | "MISSING";
+  /** @deprecated Price-axis compatibility alias for costEvidenceStatus. */
+  evidenceStatus: "FACT" | "MANUAL_FACT" | "ESTIMATE" | "REJECT" | "MISSING";
   content: ProductTruthContentFacts | null;
   contentBlockers: string[];
 }
@@ -217,6 +229,8 @@ export interface ProductTruthSnapshot {
     listingKey: string;
     asOf: string;
     maxPriceAgeMs: number;
+    listingRecipeId: string | null;
+    recipeHash: string | null;
     skuCostId: string | null;
   };
   recipe: { components: ProductTruthRecipeComponent[]; blockers: string[] };
@@ -409,6 +423,80 @@ async function readListingScopeRows(
      AND scope.sku=requested.sku
     ORDER BY requested.ordinal ASC`,
     args: requested.args,
+  })).rows;
+}
+
+async function readCurrentRecipeRows(
+  tx: Transaction,
+  scopes: readonly ExactProductTruthReadScope[],
+  asOf: string,
+): Promise<Row[]> {
+  const requested = requestedScopeValues(scopes);
+  return (await tx.execute({
+    sql: `WITH requested(ordinal,listingKey,channel,storeIndex,sku) AS (
+      VALUES ${requested.sql}
+    )
+    SELECT
+      requested.ordinal AS requestedOrdinal,
+      recipe.id AS listingRecipeId,
+      recipe.recipeKey,recipe.listingKey AS recipeListingKey,
+      recipe.recipeVersion,recipe.recipeHash,recipe.componentCount,
+      recipe.sourceKind,recipe.sourceArtifactSha256,recipe.manifestSha256,
+      recipe.evidenceHash AS recipeEvidenceHash,
+      recipe.evidenceJson AS recipeEvidenceJson,
+      recipe.effectiveAt AS recipeEffectiveAt,
+      recipe.runId AS recipeRunId,recipe.approvalId AS recipeApprovalId,
+      recipe.createdAt AS recipeCreatedAt,
+      component.id AS listingRecipeComponentId,
+      component.componentKey,component.componentIndex,component.quantity,
+      component.product,component.flavor,component.size,
+      component.targetCanonicalVariantId,component.donorProductId,
+      component.variantDecisionId,component.sourceComponentId,
+      component.evidenceHash AS recipeComponentEvidenceHash,
+      component.evidenceJson AS recipeComponentEvidenceJson,
+      component.createdAt AS recipeComponentCreatedAt,
+      variant.variantKey,variant.identityHash,variant.keyVersion,
+      variant.normalizedBrand,variant.normalizedProductLine,
+      variant.normalizedFlavor,variant.normalizedModifiersJson,
+      variant.normalizedForm,variant.sizeDimension,variant.sizeBaseAmount,
+      variant.sizeBaseUnit,variant.outerPackCount,
+      variant.identityJson AS variantIdentityJson,
+      variant.createdAt AS variantCreatedAt,
+      decision.decisionStatus AS recipeDecisionStatus,
+      decision.matcherVersion AS recipeDecisionMatcherVersion,
+      decision.matcherImplementationSha256
+        AS recipeDecisionMatcherImplementationSha256,
+      decision.matcherReleaseSha256 AS recipeDecisionMatcherReleaseSha256,
+      decision.evidenceHash AS recipeDecisionEvidenceHash,
+      decision.evidenceJson AS recipeDecisionEvidenceJson,
+      decision.donorProductId AS recipeDecisionDonorProductId,
+      decision.canonicalVariantId AS recipeDecisionCanonicalVariantId,
+      donor.identityStatus AS recipeDonorIdentityStatus
+    FROM requested
+    JOIN ProductTruthListingScope scope
+      ON scope.listingKey=requested.listingKey
+     AND scope.channel=requested.channel
+     AND scope.storeIndex=requested.storeIndex
+     AND scope.sku=requested.sku
+    JOIN ProductTruthListingRecipe recipe ON recipe.id=(
+      SELECT latest.id
+      FROM ProductTruthListingRecipe latest
+      WHERE latest.listingKey=requested.listingKey
+        AND julianday(latest.effectiveAt)<=julianday(?)
+        AND julianday(latest.createdAt)<=julianday(?)
+      ORDER BY julianday(latest.effectiveAt) DESC,latest.effectiveAt DESC,
+        julianday(latest.createdAt) DESC,latest.createdAt DESC,latest.id DESC
+      LIMIT 1
+    )
+    JOIN ProductTruthListingRecipeComponent component
+      ON component.listingRecipeId=recipe.id
+    JOIN CanonicalProductVariant variant
+      ON variant.id=component.targetCanonicalVariantId
+    JOIN DonorProductVariantDecision decision
+      ON decision.id=component.variantDecisionId
+    JOIN DonorProduct donor ON donor.id=component.donorProductId
+    ORDER BY requested.ordinal ASC,component.componentIndex ASC,component.id ASC`,
+    args: [...requested.args, asOf, asOf],
   })).rows;
 }
 
@@ -619,6 +707,13 @@ type ComponentContext = {
   contentLinkBlockers: string[];
 };
 
+type RecipeComponentContext = {
+  row: Row;
+  evidence: Record<string, unknown> | null;
+  recipe: ProductTruthRecipeComponent;
+  blockers: string[];
+};
+
 function canonicalIdentityFromRow(row: Row): ProductTruthContentFacts["identity"] | null {
   const identity = parseJson(row.variantIdentityJson);
   const modifiers = parseJson(row.normalizedModifiersJson);
@@ -675,6 +770,157 @@ function componentMetadata(
     qty: qty ?? 0,
     blockers,
   };
+}
+
+function recipeComponentMetadata(
+  row: Row,
+): { product: string; flavor: string | null; size: string | null; qty: number; blockers: string[] } {
+  const blockers: string[] = [];
+  const qty = integerValue(row.quantity);
+  const product = textValue(row.product);
+  if (qty === null || qty <= 0) blockers.push("COMPONENT_QUANTITY_UNPROVEN");
+  if (!product) blockers.push("COMPONENT_PRODUCT_LABEL_UNPROVEN");
+  return {
+    product: product ?? "Unresolved canonical variant",
+    flavor: textValue(row.flavor),
+    size: textValue(row.size),
+    qty: qty ?? 0,
+    blockers,
+  };
+}
+
+function validateRecipeComponentRow(row: Row, asOfMs: number): string[] {
+  const blockers: string[] = [];
+  const evidenceRaw = textValue(row.recipeComponentEvidenceJson);
+  const evidence = jsonObject(evidenceRaw);
+  const decisionRaw = textValue(row.recipeDecisionEvidenceJson);
+  const decisionEvidence = jsonObject(decisionRaw);
+  if (
+    textValue(row.listingRecipeComponentId) === null
+    || textValue(row.componentKey)?.length !== 64
+    || integerValue(row.componentIndex) === null
+    || integerValue(row.quantity) === null
+    || integerValue(row.quantity)! < 1
+  ) {
+    blockers.push("RECIPE_COMPONENT_IDENTITY_INVALID");
+  }
+  if (
+    !evidenceRaw
+    || !evidence
+    || row.recipeComponentEvidenceHash !== sha256Text(evidenceRaw)
+    || integerValue(evidence.componentIndex) !== integerValue(row.componentIndex)
+    || integerValue(evidence.quantity) !== integerValue(row.quantity)
+    || textValue(evidence.product) !== textValue(row.product)
+    || textValue(evidence.targetCanonicalVariantId)
+      !== textValue(row.targetCanonicalVariantId)
+    || textValue(evidence.donorProductId) !== textValue(row.donorProductId)
+    || textValue(evidence.variantDecisionId) !== textValue(row.variantDecisionId)
+  ) {
+    blockers.push("RECIPE_COMPONENT_EVIDENCE_INVALID");
+  }
+  if (
+    row.recipeDecisionStatus !== "exact_confirmed"
+    || row.recipeDonorIdentityStatus !== "exact_confirmed"
+    || row.recipeDecisionDonorProductId !== row.donorProductId
+    || row.recipeDecisionCanonicalVariantId !== row.targetCanonicalVariantId
+    || !isCurrentMatcherProvenance({
+      matcherVersion: row.recipeDecisionMatcherVersion,
+      matcherImplementationSha256: row.recipeDecisionMatcherImplementationSha256,
+      matcherReleaseSha256: row.recipeDecisionMatcherReleaseSha256,
+    })
+    || !decisionRaw
+    || !decisionEvidence
+    || row.recipeDecisionEvidenceHash !== sha256Text(decisionRaw)
+    || !isCurrentMatcherProvenance({
+      matcherVersion: decisionEvidence.matcherVersion,
+      matcherImplementationSha256: decisionEvidence.matcherImplementationSha256,
+      matcherReleaseSha256: decisionEvidence.matcherReleaseSha256,
+    })
+  ) {
+    blockers.push("RECIPE_COMPONENT_EXACT_IDENTITY_INVALID");
+  }
+  if (!canonicalIdentityFromRow(row)) blockers.push("CANONICAL_VARIANT_INVALID_AT_SNAPSHOT");
+  if (
+    (timeMs(row.recipeComponentCreatedAt) ?? Infinity) > asOfMs
+    || (timeMs(row.variantCreatedAt) ?? Infinity) > asOfMs
+  ) {
+    blockers.push("RECIPE_COMPONENT_NOT_AVAILABLE_AT_SNAPSHOT");
+  }
+  return unique(blockers);
+}
+
+function validateRecipeRows(
+  rows: readonly Row[],
+  scopeRow: Row | null,
+  asOfMs: number,
+): string[] {
+  if (!rows.length) return ["CURRENT_LISTING_RECIPE_MISSING"];
+  const blockers: string[] = [];
+  const first = rows[0];
+  const recipeEvidenceRaw = textValue(first.recipeEvidenceJson);
+  const recipeEvidence = jsonObject(recipeEvidenceRaw);
+  const componentCount = integerValue(first.componentCount);
+  const recipeHash = textValue(first.recipeHash);
+  const recipeKey = textValue(first.recipeKey);
+  if (
+    textValue(first.listingRecipeId) === null
+    || first.recipeVersion !== PRODUCT_TRUTH_LISTING_RECIPE_VERSION
+    || recipeKey?.length !== 64
+    || recipeHash?.length !== 64
+    || componentCount === null
+    || componentCount < 1
+    || componentCount !== rows.length
+  ) {
+    blockers.push("CURRENT_LISTING_RECIPE_HEADER_INVALID");
+  }
+  if (
+    !scopeRow
+    || first.recipeListingKey !== scopeRow.listingKey
+    || first.manifestSha256 !== scopeRow.manifestSha256
+  ) {
+    blockers.push("CURRENT_LISTING_RECIPE_SCOPE_INVALID");
+  }
+  if (
+    !recipeEvidenceRaw
+    || !recipeEvidence
+    || first.recipeEvidenceHash !== sha256Text(recipeEvidenceRaw)
+    || recipeEvidence.schemaVersion !== PRODUCT_TRUTH_LISTING_RECIPE_VERSION
+    || recipeEvidence.listingKey !== first.recipeListingKey
+    || recipeEvidence.recipeHash !== recipeHash
+    || recipeEvidence.manifestSha256 !== first.manifestSha256
+    || recipeEvidence.sourceKind !== first.sourceKind
+    || recipeEvidence.sourceArtifactSha256 !== first.sourceArtifactSha256
+    || recipeEvidence.effectiveAt !== first.recipeEffectiveAt
+  ) {
+    blockers.push("CURRENT_LISTING_RECIPE_EVIDENCE_INVALID");
+  }
+  if (
+    (timeMs(first.recipeEffectiveAt) ?? Infinity) > asOfMs
+    || (timeMs(first.recipeCreatedAt) ?? Infinity) > asOfMs
+  ) {
+    blockers.push("CURRENT_LISTING_RECIPE_NOT_AVAILABLE_AT_SNAPSHOT");
+  }
+  const indexes = rows.map((row) => integerValue(row.componentIndex));
+  if (indexes.some((index, ordinal) => index !== ordinal)) {
+    blockers.push("CURRENT_LISTING_RECIPE_INDEX_NOT_CONTIGUOUS");
+  }
+  const structuralHash = productTruthOperationalSha256({
+    schemaVersion: PRODUCT_TRUTH_LISTING_RECIPE_VERSION,
+    listingKey: textValue(first.recipeListingKey),
+    components: rows.map((row) => ({
+      componentIndex: integerValue(row.componentIndex),
+      quantity: integerValue(row.quantity),
+      targetCanonicalVariantId: textValue(row.targetCanonicalVariantId),
+    })),
+  });
+  if (structuralHash !== recipeHash) {
+    blockers.push("CURRENT_LISTING_RECIPE_HASH_INVALID");
+  }
+  for (const row of rows) {
+    blockers.push(...validateRecipeComponentRow(row, asOfMs).map((blocker) =>
+      `COMPONENT_${integerValue(row.componentIndex) ?? -1}:${blocker}`));
+  }
+  return unique(blockers);
 }
 
 function validateComponentRelations(
@@ -801,14 +1047,18 @@ function manualCostFromEvidence(
 }
 
 function contentForComponent(
-  context: ComponentContext,
+  context: {
+    row: Row;
+    coreBlockers?: readonly string[];
+    contentLinkBlockers?: readonly string[];
+  },
   currentContent: Row | undefined,
   asOfMs: number,
 ): { content: ProductTruthContentFacts | null; blockers: string[] } {
   const row = context.row;
   const blockers: string[] = [
-    ...context.coreBlockers,
-    ...context.contentLinkBlockers,
+    ...(context.coreBlockers ?? []),
+    ...(context.contentLinkBlockers ?? []),
   ];
   if (!currentContent) blockers.push("CURRENT_CONTENT_OBSERVATION_MISSING");
   const identity = canonicalIdentityFromRow(row);
@@ -1038,6 +1288,7 @@ function currentCostView(
   scope: { channel: string; storeIndex: number; listingKey: string },
   asOfMs: number,
   scopeBlockers: readonly string[],
+  currentRecipeHash: string | null,
 ): ProductTruthSnapshot["views"]["unitEconomics"] {
   if (!row) return {
     consumer: "UNIT_ECONOMICS", status: "MISSING", current: null,
@@ -1054,6 +1305,23 @@ function currentCostView(
   if (row.source !== "retail:batch") blockers.push("CURRENT_COST_NOT_CANONICAL_RETAIL_BATCH");
   if (observationKey?.length !== 64) blockers.push("COST_OBSERVATION_KEY_INVALID");
   if (recipeHash?.length !== 64) blockers.push("COST_RECIPE_HASH_INVALID");
+  try {
+    const costRecipeHash = productTruthListingRecipeStructuralHash({
+      listingKey: scope.listingKey,
+      components: contexts.map((context) => ({
+        componentIndex: integerValue(context.row.componentIndex) ?? -1,
+        quantity: componentMetadata(context.row, context.evidence).qty,
+        targetCanonicalVariantId:
+          textValue(context.row.targetCanonicalVariantId) ?? "",
+      })),
+    });
+    if (recipeHash !== costRecipeHash) blockers.push("COST_RECIPE_HASH_INVALID");
+  } catch {
+    blockers.push("COST_RECIPE_STRUCTURE_INVALID");
+  }
+  if (currentRecipeHash && recipeHash !== currentRecipeHash) {
+    blockers.push("CURRENT_COST_RECIPE_MISMATCH");
+  }
   if (!evidence || evidence.outcome !== outcome || evidence.recipeHash !== recipeHash) {
     blockers.push("COST_EVIDENCE_INVALID");
   }
@@ -1234,6 +1502,7 @@ function assembleProductTruthSnapshot(input: {
   asOfMs: number;
   maxPriceAgeMs: number;
   scopeRow: Row | null;
+  recipeRows: Row[];
   currentCost: Row | null;
   componentRows: Row[];
   currentContentByVariant: ReadonlyMap<string, Row>;
@@ -1259,40 +1528,122 @@ function assembleProductTruthSnapshot(input: {
   ) {
     scopeBlockers.push("LISTING_SCOPE_MANIFEST_MISMATCH");
   }
+  const recipeValidationBlockers = validateRecipeRows(
+    input.recipeRows,
+    input.scopeRow,
+    input.asOfMs,
+  );
+  const recipeBlockers: string[] = unique([
+    ...scopeBlockers,
+    ...recipeValidationBlockers,
+  ]);
   const costId = input.currentCost ? String(input.currentCost.id) : null;
-  const preliminary = input.componentRows.map((row) => {
+  const preliminaryCost = input.componentRows.map((row) => {
     const evidence = jsonObject(row.componentEvidenceJson);
     return { row, evidence, ...validateComponentRelations(row, input.asOfMs) };
   });
-  const recipeBlockers: string[] = [...scopeBlockers];
-  if (!input.currentCost) recipeBlockers.push("CURRENT_SCOPED_SKU_COST_MISSING");
   if (input.currentCost && !input.componentRows.length) {
-    recipeBlockers.push("CURRENT_COMPONENT_EVIDENCE_MISSING");
+    // Cost invalidity is an economics/procurement blocker, not a recipe or
+    // content blocker. It is handled by currentCostView and procurement below.
   }
-  const contexts: ComponentContext[] = preliminary.map((pre) => {
-    const metadata = componentMetadata(pre.row, pre.evidence);
+  const preliminaryCostByIndex = new Map(
+    preliminaryCost.map((pre) => [integerValue(pre.row.componentIndex) ?? -1, pre]),
+  );
+  const recipeComponents = input.recipeRows.map((row) => {
+    const componentIndex = integerValue(row.componentIndex) ?? -1;
+    const metadata = recipeComponentMetadata(row);
+    const recipeRowBlockers = validateRecipeComponentRow(row, input.asOfMs);
     const contentResult = contentForComponent(
-      { ...pre, recipe: undefined as never },
-      input.currentContentByVariant.get(String(pre.row.targetCanonicalVariantId)),
+      { row, coreBlockers: recipeRowBlockers },
+      input.currentContentByVariant.get(String(row.targetCanonicalVariantId)),
       input.asOfMs,
     );
-    const status = isEvidenceStatus(pre.row.evidenceStatus) ? pre.row.evidenceStatus : "REJECT";
-    const recipe: ProductTruthRecipeComponent = {
-      componentEvidenceId: String(pre.row.componentEvidenceId),
-      componentIndex: integerValue(pre.row.componentIndex) ?? -1,
+    const costEvidence = preliminaryCostByIndex.get(componentIndex);
+    const costStatus = costEvidence && isEvidenceStatus(costEvidence.row.evidenceStatus)
+      ? costEvidence.row.evidenceStatus
+      : "MISSING";
+    const component: ProductTruthRecipeComponent = {
+      listingRecipeComponentId: String(row.listingRecipeComponentId),
+      componentEvidenceId: String(row.listingRecipeComponentId),
+      componentIndex,
       product: metadata.product, flavor: metadata.flavor, size: metadata.size,
-      qty: metadata.qty, targetCanonicalVariantId: String(pre.row.targetCanonicalVariantId),
-      evidenceStatus: status, content: contentResult.content,
+      qty: metadata.qty, targetCanonicalVariantId: String(row.targetCanonicalVariantId),
+      identityEvidenceStatus: "EXACT",
+      costEvidenceStatus: costStatus,
+      evidenceStatus: costStatus,
+      content: contentResult.content,
       contentBlockers: unique(contentResult.blockers),
     };
     recipeBlockers.push(...metadata.blockers.map((blocker) =>
-      `COMPONENT_${recipe.componentIndex}:${blocker}`));
-    if (pre.coreBlockers.length) recipeBlockers.push(...pre.coreBlockers.map((blocker) =>
-      `COMPONENT_${recipe.componentIndex}:${blocker}`));
-    return { ...pre, recipe };
+      `COMPONENT_${component.componentIndex}:${blocker}`));
+    recipeBlockers.push(...recipeRowBlockers.map((blocker) =>
+      `COMPONENT_${component.componentIndex}:${blocker}`));
+    return component;
   });
 
-  const procurementComponents: ProductTruthProcurementComponent[] = contexts.map((context) => {
+  const recipeByIndex = new Map(
+    recipeComponents.map((component) => [component.componentIndex, component]),
+  );
+  const contexts: ComponentContext[] = preliminaryCost.map((pre) => {
+    const componentIndex = integerValue(pre.row.componentIndex) ?? -1;
+    const recipe = recipeByIndex.get(componentIndex);
+    const metadata = componentMetadata(pre.row, pre.evidence);
+    const fallback: ProductTruthRecipeComponent = {
+      listingRecipeComponentId: "",
+      componentEvidenceId: "",
+      componentIndex,
+      product: metadata.product,
+      flavor: metadata.flavor,
+      size: metadata.size,
+      qty: metadata.qty,
+      targetCanonicalVariantId: String(pre.row.targetCanonicalVariantId),
+      identityEvidenceStatus: "EXACT",
+      costEvidenceStatus: isEvidenceStatus(pre.row.evidenceStatus)
+        ? pre.row.evidenceStatus
+        : "MISSING",
+      evidenceStatus: isEvidenceStatus(pre.row.evidenceStatus)
+        ? pre.row.evidenceStatus
+        : "MISSING",
+      content: null,
+      contentBlockers: ["CURRENT_LISTING_RECIPE_COMPONENT_MISSING"],
+    };
+    const coreBlockers = [...pre.coreBlockers];
+    if (
+      recipe
+      && recipe.targetCanonicalVariantId !== pre.row.targetCanonicalVariantId
+    ) {
+      coreBlockers.push("COST_COMPONENT_RECIPE_MISMATCH");
+    }
+    return {
+      ...pre,
+      coreBlockers: unique(coreBlockers),
+      recipe: recipe ?? fallback,
+    };
+  });
+  const costContextByIndex = new Map(
+    contexts.map((context) => [context.recipe.componentIndex, context]),
+  );
+  const currentRecipeHash = input.recipeRows.length
+    ? textValue(input.recipeRows[0].recipeHash)
+    : null;
+  const currentRecipeId = input.recipeRows.length
+    ? textValue(input.recipeRows[0].listingRecipeId)
+    : null;
+
+  const procurementComponents: ProductTruthProcurementComponent[] =
+    recipeComponents.map((recipe) => {
+    const context = costContextByIndex.get(recipe.componentIndex);
+    if (!context) {
+      return {
+        componentIndex: recipe.componentIndex,
+        product: recipe.product,
+        requiredQuantity: recipe.qty,
+        factualOptions: [],
+        estimateOptions: [],
+        manualCost: null,
+        blockers: ["CURRENT_COMPONENT_COST_EVIDENCE_MISSING"],
+      };
+    }
     const manualCost = context.row.evidenceStatus === "MANUAL_FACT"
       ? manualCostFromEvidence(context.row, context.evidence, input.asOfMs) : null;
     const selected = textValue(context.row.priceObservationId)
@@ -1325,13 +1676,13 @@ function assembleProductTruthSnapshot(input: {
       blockers.push("NO_CURRENT_ELIGIBLE_LOCAL_PRICE");
     }
     return {
-      componentIndex: context.recipe.componentIndex, product: context.recipe.product,
-      requiredQuantity: context.recipe.qty, factualOptions, estimateOptions, manualCost,
+      componentIndex: recipe.componentIndex, product: recipe.product,
+      requiredQuantity: recipe.qty, factualOptions, estimateOptions, manualCost,
       blockers: unique(blockers),
     };
   });
 
-  const components = contexts.map((context) => context.recipe);
+  const components = recipeComponents;
   const contentBlockers = unique([
     ...recipeBlockers,
     ...components.flatMap((component) => component.contentBlockers.map((blocker) =>
@@ -1339,6 +1690,9 @@ function assembleProductTruthSnapshot(input: {
   ]);
   const procurementBlockers = unique([
     ...recipeBlockers,
+    ...(!input.currentCost ? ["CURRENT_SCOPED_SKU_COST_MISSING"] : []),
+    ...(input.currentCost && currentRecipeHash !== textValue(input.currentCost.recipeHash)
+      ? ["CURRENT_COST_RECIPE_MISMATCH"] : []),
     ...procurementComponents.flatMap((component) => component.blockers.map((blocker) =>
       `COMPONENT_${component.componentIndex}:${blocker}`)),
   ]);
@@ -1348,12 +1702,16 @@ function assembleProductTruthSnapshot(input: {
     { channel, storeIndex, listingKey },
     input.asOfMs,
     scopeBlockers,
+    currentRecipeHash,
   );
   return {
     contractVersion: PRODUCT_TRUTH_READ_CONTRACT_VERSION,
     snapshot: {
       sku, channel, storeIndex, listingKey, asOf: input.asOf,
-      maxPriceAgeMs: input.maxPriceAgeMs, skuCostId: costId,
+      maxPriceAgeMs: input.maxPriceAgeMs,
+      listingRecipeId: currentRecipeId,
+      recipeHash: currentRecipeHash,
+      skuCostId: costId,
     },
     recipe: { components, blockers: unique(recipeBlockers) },
     views: {
@@ -1380,11 +1738,21 @@ async function readNormalizedProductTruthSnapshotsFromTransaction(
   tx: Transaction,
   normalized: NormalizedProductTruthBatchRead,
 ): Promise<ProductTruthSnapshot[]> {
-  const scopeRows = await readListingScopeRows(tx, normalized.scopes);
-  const currentCostRows = await readCurrentCostRows(tx, normalized.scopes, normalized.asOf);
+  const [scopeRows, currentRecipeRows, currentCostRows] = await Promise.all([
+    readListingScopeRows(tx, normalized.scopes),
+    readCurrentRecipeRows(tx, normalized.scopes, normalized.asOf),
+    readCurrentCostRows(tx, normalized.scopes, normalized.asOf),
+  ]);
   const scopeByListingKey = new Map(
     scopeRows.map((row) => [String(row.listingKey), row]),
   );
+  const recipesByListingKey = new Map<string, Row[]>();
+  for (const row of currentRecipeRows) {
+    const listingKey = String(row.recipeListingKey);
+    const rows = recipesByListingKey.get(listingKey) ?? [];
+    rows.push(row);
+    recipesByListingKey.set(listingKey, rows);
+  }
   const costByListingKey = new Map(
     currentCostRows.map((row) => [String(row.scopedListingKey), row]),
   );
@@ -1397,7 +1765,7 @@ async function readNormalizedProductTruthSnapshotsFromTransaction(
     rows.push(row);
     componentsByCostId.set(costId, rows);
   }
-  const contentVariantIds = unique(componentRows.flatMap((row) =>
+  const contentVariantIds = unique(currentRecipeRows.flatMap((row) =>
     textValue(row.targetCanonicalVariantId)
       ? [String(row.targetCanonicalVariantId)] : []));
   const priceVariantIds = unique(componentRows.flatMap((row) =>
@@ -1425,6 +1793,7 @@ async function readNormalizedProductTruthSnapshotsFromTransaction(
       asOfMs: normalized.asOfMs,
       maxPriceAgeMs: normalized.maxPriceAgeMs,
       scopeRow: scopeByListingKey.get(exactScope.listingKey) ?? null,
+      recipeRows: recipesByListingKey.get(exactScope.listingKey) ?? [],
       currentCost,
       componentRows: currentCost
         ? componentsByCostId.get(String(currentCost.id)) ?? []

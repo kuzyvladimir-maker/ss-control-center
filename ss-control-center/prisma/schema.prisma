@@ -2001,11 +2001,69 @@ model ProductTruthListingScope {
   createdAt             DateTime @default(now())
 
   costLinks        SkuCostListingScopeLink[]
+  recipes          ProductTruthListingRecipe[]
   enrichmentJobs   EnrichmentJob[]
   operationalItems ProductTruthOperationalRunItem[]
 
   @@unique([channel, storeIndex, sku], map: "ProductTruthListingScope_channel_store_sku_key")
   @@index([manifestSha256, listingKey], map: "ProductTruthListingScope_manifest_idx")
+}
+
+// Independent append-only structural recipe for one exact marketplace listing.
+// Recipe identity/content is deliberately not owned by SkuCost: a listing may
+// retain an exact component graph while the current price axis is MISSING,
+// ESTIMATE, or UNSOURCEABLE.
+model ProductTruthListingRecipe {
+  id                   String                   @id
+  recipeKey            String                   @unique
+  listingKey           String
+  listingScope         ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  recipeVersion        String
+  recipeHash           String
+  componentCount       Int
+  sourceKind           String
+  sourceArtifactSha256 String
+  manifestSha256       String
+  evidenceHash         String
+  evidenceJson         String
+  effectiveAt          DateTime
+  runId                String?
+  approvalId           String?
+  createdAt            DateTime                 @default(now())
+
+  components ProductTruthListingRecipeComponent[]
+
+  @@index([listingKey, effectiveAt, createdAt], map: "ProductTruthListingRecipe_current_idx")
+  @@index([listingKey, recipeHash], map: "ProductTruthListingRecipe_hash_idx")
+}
+
+// One exact canonical variant × integer quantity in a sealed listing recipe.
+// DonorProductVariantDecision is the immutable proof that the linked
+// DonorProduct is an exact alias of the target canonical variant.
+model ProductTruthListingRecipeComponent {
+  id                       String                      @id
+  componentKey             String                      @unique
+  listingRecipeId          String
+  listingRecipe            ProductTruthListingRecipe   @relation(fields: [listingRecipeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  componentIndex           Int
+  quantity                 Int
+  product                  String
+  flavor                   String?
+  size                     String?
+  targetCanonicalVariantId String
+  targetCanonicalVariant   CanonicalProductVariant     @relation(fields: [targetCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  donorProductId           String
+  donorProduct             DonorProduct                @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  variantDecisionId        String
+  variantDecision          DonorProductVariantDecision @relation(fields: [variantDecisionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sourceComponentId        String?
+  evidenceHash             String
+  evidenceJson             String
+  createdAt                DateTime                    @default(now())
+
+  @@unique([listingRecipeId, componentIndex], map: "ProductTruthListingRecipeComponent_recipe_index_key")
+  @@index([targetCanonicalVariantId, donorProductId], map: "ProductTruthListingRecipeComponent_variant_donor_idx")
+  @@index([variantDecisionId], map: "ProductTruthListingRecipeComponent_decision_idx")
 }
 
 // One append-only retail:batch cost observation belongs to one exact listing
@@ -2200,6 +2258,7 @@ model DonorProduct {
   offerObservations   DonorOfferObservation[]
   variantDecisions    DonorProductVariantDecision[]
   contentObservations ProductContentObservation[]
+  recipeComponents    ProductTruthListingRecipeComponent[]
 
   @@index([brand])
   @@index([category])
@@ -2230,9 +2289,10 @@ model CanonicalProductVariant {
   sourceDecisions          DonorProductVariantDecision[]
   contentObservations      ProductContentObservation[]
   offerObservations        DonorOfferObservation[]
-  targetComponentEvidence  SkuComponentEvidence[]        @relation("SkuComponentEvidenceTargetVariant")
-  contentComponentEvidence SkuComponentEvidence[]        @relation("SkuComponentEvidenceContentVariant")
-  priceComponentEvidence   SkuComponentEvidence[]        @relation("SkuComponentEvidencePriceVariant")
+  targetComponentEvidence  SkuComponentEvidence[]               @relation("SkuComponentEvidenceTargetVariant")
+  contentComponentEvidence SkuComponentEvidence[]               @relation("SkuComponentEvidenceContentVariant")
+  priceComponentEvidence   SkuComponentEvidence[]               @relation("SkuComponentEvidencePriceVariant")
+  recipeComponents         ProductTruthListingRecipeComponent[]
 
   @@index([normalizedBrand, normalizedProductLine])
 }
@@ -2259,6 +2319,7 @@ model DonorProductVariantDecision {
 
   contentObservations ProductContentObservation[]
   offerObservations   DonorOfferObservation[]
+  recipeComponents    ProductTruthListingRecipeComponent[]
 
   @@index([canonicalVariantId, decisionStatus])
   @@index([donorProductId, decidedAt])

@@ -352,6 +352,18 @@ export async function assertProductTruthListingScopeSchema(db: Client): Promise<
     SkuCostListingScopeLink: [
       "skuCostId", "listingKey", "linkVersion", "createdAt",
     ],
+    ProductTruthListingRecipe: [
+      "id", "recipeKey", "listingKey", "recipeVersion", "recipeHash",
+      "componentCount", "sourceKind", "sourceArtifactSha256",
+      "manifestSha256", "evidenceHash", "evidenceJson", "effectiveAt",
+      "runId", "approvalId", "createdAt",
+    ],
+    ProductTruthListingRecipeComponent: [
+      "id", "componentKey", "listingRecipeId", "componentIndex", "quantity",
+      "product", "flavor", "size", "targetCanonicalVariantId",
+      "donorProductId", "variantDecisionId", "sourceComponentId",
+      "evidenceHash", "evidenceJson", "createdAt",
+    ],
   };
   for (const [table, requiredColumns] of Object.entries(requiredTables)) {
     try {
@@ -378,6 +390,16 @@ export async function assertProductTruthListingScopeSchema(db: Client): Promise<
     "SkuCost_listing_scope_contract_insert",
     "SkuCost_listing_scope_link_guard",
     "SkuCost_nonretail_listing_scope_guard",
+    "ProductTruthListingRecipe_duplicate_insert_guard",
+    "ProductTruthListingRecipe_contract_insert",
+    "ProductTruthListingRecipe_component_set_guard",
+    "ProductTruthListingRecipe_update_guard",
+    "ProductTruthListingRecipe_delete_guard",
+    "ProductTruthListingRecipeComponent_duplicate_insert_guard",
+    "ProductTruthListingRecipeComponent_sealed_recipe_guard",
+    "ProductTruthListingRecipeComponent_contract_insert",
+    "ProductTruthListingRecipeComponent_update_guard",
+    "ProductTruthListingRecipeComponent_delete_guard",
   ]) {
     try {
       if (!(await hasTrigger(db, trigger))) missing.push(`trigger:${trigger}`);
@@ -389,6 +411,11 @@ export async function assertProductTruthListingScopeSchema(db: Client): Promise<
     "ProductTruthListingScope_channel_store_sku_key",
     "ProductTruthListingScope_manifest_idx",
     "SkuCostListingScopeLink_listing_cost_idx",
+    "ProductTruthListingRecipe_current_idx",
+    "ProductTruthListingRecipe_hash_idx",
+    "ProductTruthListingRecipeComponent_recipe_index_key",
+    "ProductTruthListingRecipeComponent_variant_donor_idx",
+    "ProductTruthListingRecipeComponent_decision_idx",
   ]) {
     try {
       if (!(await hasIndex(db, index))) missing.push(`index:${index}`);
@@ -411,8 +438,36 @@ export async function assertProductTruthListingScopeSchema(db: Client): Promise<
         "foreign-key:SkuCostListingScopeLink.listingKey->ProductTruthListingScope.listingKey",
       );
     }
+    if (!(await hasForeignKey(
+      db,
+      "ProductTruthListingRecipe",
+      "listingKey",
+      "ProductTruthListingScope",
+      "listingKey",
+    ))) {
+      missing.push(
+        "foreign-key:ProductTruthListingRecipe.listingKey->ProductTruthListingScope.listingKey",
+      );
+    }
+    for (const [from, referencedTable] of [
+      ["listingRecipeId", "ProductTruthListingRecipe"],
+      ["targetCanonicalVariantId", "CanonicalProductVariant"],
+      ["donorProductId", "DonorProduct"],
+      ["variantDecisionId", "DonorProductVariantDecision"],
+    ] as const) {
+      if (!(await hasForeignKey(
+        db,
+        "ProductTruthListingRecipeComponent",
+        from,
+        referencedTable,
+      ))) {
+        missing.push(
+          `foreign-key:ProductTruthListingRecipeComponent.${from}->${referencedTable}.id`,
+        );
+      }
+    }
   } catch {
-    missing.push("foreign-key:SkuCostListingScopeLink");
+    missing.push("foreign-key:product-truth-listing-recipe-scope");
   }
   if (missing.length) throw new ProductTruthSchemaNotReadyError([...new Set(missing)]);
 }

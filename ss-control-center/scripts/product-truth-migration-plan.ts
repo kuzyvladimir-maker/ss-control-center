@@ -517,6 +517,49 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
       ],
     },
   },
+  {
+    id: "20260729010000_product_truth_listing_recipe",
+    // Independent structural recipes are appended after the existing sealed
+    // scope/evidence graph. This migration never infers or backfills data.
+    prerequisites: {},
+    requiredTables: [
+      "ProductTruthListingRecipe",
+      "ProductTruthListingRecipeComponent",
+    ],
+    requiredTriggers: [
+      "ProductTruthListingRecipe_duplicate_insert_guard",
+      "ProductTruthListingRecipe_contract_insert",
+      "ProductTruthListingRecipe_component_set_guard",
+      "ProductTruthListingRecipe_update_guard",
+      "ProductTruthListingRecipe_delete_guard",
+      "ProductTruthListingRecipeComponent_duplicate_insert_guard",
+      "ProductTruthListingRecipeComponent_sealed_recipe_guard",
+      "ProductTruthListingRecipeComponent_contract_insert",
+      "ProductTruthListingRecipeComponent_update_guard",
+      "ProductTruthListingRecipeComponent_delete_guard",
+    ],
+    requiredIndexes: [
+      "ProductTruthListingRecipe_current_idx",
+      "ProductTruthListingRecipe_hash_idx",
+      "ProductTruthListingRecipeComponent_recipe_index_key",
+      "ProductTruthListingRecipeComponent_variant_donor_idx",
+      "ProductTruthListingRecipeComponent_decision_idx",
+    ],
+    requiredColumns: {
+      ProductTruthListingRecipe: [
+        "id", "recipeKey", "listingKey", "recipeVersion", "recipeHash",
+        "componentCount", "sourceKind", "sourceArtifactSha256",
+        "manifestSha256", "evidenceHash", "evidenceJson", "effectiveAt",
+        "runId", "approvalId", "createdAt",
+      ],
+      ProductTruthListingRecipeComponent: [
+        "id", "componentKey", "listingRecipeId", "componentIndex", "quantity",
+        "product", "flavor", "size", "targetCanonicalVariantId",
+        "donorProductId", "variantDecisionId", "sourceComponentId",
+        "evidenceHash", "evidenceJson", "createdAt",
+      ],
+    },
+  },
 ] as const;
 
 const REQUIRED_FOREIGN_KEYS = [
@@ -546,6 +589,11 @@ const REQUIRED_FOREIGN_KEYS = [
   ["ProductTruthOperationalRunItem", "queueJobId", "EnrichmentJob", "id", "RESTRICT", "RESTRICT"],
   ["ProductTruthOperationalEvent", "runId", "ProductTruthOperationalRun", "runId", "RESTRICT", "RESTRICT"],
   ["ProductTruthOperationalEvent", "itemId", "ProductTruthOperationalRunItem", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipe", "listingKey", "ProductTruthListingScope", "listingKey", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "listingRecipeId", "ProductTruthListingRecipe", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "targetCanonicalVariantId", "CanonicalProductVariant", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "donorProductId", "DonorProduct", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "variantDecisionId", "DonorProductVariantDecision", "id", "RESTRICT", "RESTRICT"],
 ] as const;
 
 const RECEIPT_COLUMNS = [
@@ -3520,7 +3568,7 @@ export function resolveProductTruthMigrationCliAuthToken(
 
 function usage(): string {
   return [
-    "Product Truth migration activation V2 (canonical eight migrations only)",
+    "Product Truth migration activation V2 (canonical nine migrations only)",
     "",
     "Sealed read-only plan:",
     "  node --import tsx scripts/product-truth-migration-plan.ts plan --url file:/ABS/db.sqlite",

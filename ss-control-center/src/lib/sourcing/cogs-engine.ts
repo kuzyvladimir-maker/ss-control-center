@@ -57,6 +57,13 @@ import {
   SKU_COST_LISTING_SCOPE_LINK_VERSION,
   buildProductTruthListingScope,
 } from "@/lib/sourcing/product-truth-listing-scope";
+import {
+  materializeProductTruthListingRecipe,
+  productTruthListingRecipeStructuralHash,
+} from "@/lib/sourcing/product-truth-listing-recipe";
+import {
+  productTruthOperationalSha256,
+} from "@/lib/sourcing/product-truth-operational-run-contract";
 import { isExactProductContentCapture } from "@/lib/sourcing/product-content-capture";
 import {
   currentMeteredRunPermit,
@@ -318,6 +325,12 @@ type ContentObservationHit = {
   completeness: number;
 };
 
+type ExactRecipeIdentitySource = {
+  donorProductId: string;
+  variantDecisionId: string;
+  decidedAt: string;
+};
+
 function parseJsonObject(value: unknown): Record<string, unknown> {
   if (typeof value !== "string") return {};
   try {
@@ -394,6 +407,41 @@ async function bestContentObservationForVariant(
     || Date.parse(right.observedAt) - Date.parse(left.observedAt)
     || left.id.localeCompare(right.id));
   return candidates[0] ?? null;
+}
+
+async function exactRecipeIdentitySource(
+  db: Client,
+  canonicalVariantId: string,
+  preferredDonorProductId: string | null,
+): Promise<ExactRecipeIdentitySource | null> {
+  const row = (await db.execute({
+    sql: `SELECT decision.id AS variantDecisionId,
+                 decision.donorProductId AS donorProductId,
+                 decision.decidedAt AS decidedAt
+          FROM "DonorProductVariantDecision" decision
+          JOIN "DonorProduct" donor ON donor.id=decision.donorProductId
+          WHERE decision.canonicalVariantId=?
+            AND decision.decisionStatus='exact_confirmed'
+            AND decision.matcherVersion=?
+            AND decision.matcherImplementationSha256=?
+            AND decision.matcherReleaseSha256=?
+            AND donor.identityStatus='exact_confirmed'
+          ORDER BY CASE WHEN decision.donorProductId=? THEN 0 ELSE 1 END,
+                   decision.decidedAt DESC, decision.createdAt DESC, decision.id ASC
+          LIMIT 1`,
+    args: [
+      canonicalVariantId,
+      CANONICAL_PRODUCT_MATCHER_VERSION,
+      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+      preferredDonorProductId,
+    ],
+  })).rows[0];
+  return row ? {
+    donorProductId: String(row.donorProductId),
+    variantDecisionId: String(row.variantDecisionId),
+    decidedAt: String(row.decidedAt),
+  } : null;
 }
 
 function methodForSelection(selection: CanonicalCostSelection): CostMethod | null {
@@ -891,6 +939,11 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
   const MIN_CONF = opts.minConf ?? 0.7;
   const logs: string[] = [];
   const log = (s: string) => logs.push(s);
+  let listingScopeEvidence: {
+    manifestSha256: string;
+    manifestAsOf: string;
+    sourceCapturedAt: string;
+  } | null = null;
   try {
     // A non-dry COGS run may reach paid retailers and must be able to persist
     // immutable observations plus separated content/price provenance first.
@@ -898,13 +951,19 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       await assertProductTruthEvidenceSchema(db);
       await assertProductTruthListingScopeSchema(db);
       const registered = (await db.execute({
-        sql: `SELECT listingKey FROM ProductTruthListingScope
+        sql: `SELECT listingKey,manifestSha256,manifestAsOf,sourceCapturedAt
+              FROM ProductTruthListingScope
               WHERE listingKey=? AND channel=? AND storeIndex=? AND sku=?
                 AND registrationKind='AUTHORITATIVE_PHASE1_MANIFEST'
               LIMIT 1`,
         args: [listingScope.listingKey, CHANNEL, STORE_INDEX, sku],
       })).rows[0];
       if (!registered) throw new Error("PRODUCT_TRUTH_LISTING_SCOPE_NOT_REGISTERED");
+      listingScopeEvidence = {
+        manifestSha256: String(registered.manifestSha256),
+        manifestAsOf: String(registered.manifestAsOf),
+        sourceCapturedAt: String(registered.sourceCapturedAt),
+      };
     }
 
     // CACHE: identity is stable — reuse a prior identify (skips vision + SP-API/Veeqo)
@@ -1231,50 +1290,101 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       pricePolicyVersion: part.pricePolicyVersion ?? null,
       evidence: parseEvidenceJson(part.priceEvidenceJson),
     }));
-    const recipeCore = {
-      version: "product-truth-recipe/1.0.0",
-      sku,
-      channel: CHANNEL,
-      storeIndex: STORE_INDEX,
+    const recipeStructure = {
       listingKey: listingScope.listingKey,
-      listingKeyVersion: listingScope.keyVersion,
-      matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
-      matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
-      matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
-      sourcePolicy: sourcePolicyEvidence,
-      identity: {
-        inputSource: identityInputSource,
-        brand: identity.brand ?? null,
-        productLine: identity.product_line ?? null,
-        flavor: identity.flavor ?? null,
-        size: identity.size ?? null,
-        containerType: identity.container_type ?? null,
-        unitsInListing: identity.units_in_listing ?? null,
-        isBundle: !!identity.is_bundle,
-      },
       components: componentEvidence.map((part) => ({
-        idx: part.idx,
-        product: part.product,
-        flavor: part.flavor,
-        size: part.size,
-        qty: part.qty,
-        perUnit: part.perUnit,
-        method: part.method,
+        componentIndex: part.idx,
+        quantity: part.qty,
         targetCanonicalVariantId: part.targetCanonicalVariantId,
-        contentCanonicalVariantId: part.contentCanonicalVariantId,
-        priceCanonicalVariantId: part.priceCanonicalVariantId,
-        contentObservationId: part.contentObservationId,
-        priceEvidenceObservationId: part.priceEvidenceObservationId,
-        priceVariantDecisionId: part.priceVariantDecisionId,
-        matchTier: part.matchTier,
-        matcherVersion: part.matcherVersion,
-        matcherImplementationSha256: part.matcherImplementationSha256,
-        matcherReleaseSha256: part.matcherReleaseSha256,
-        priceEvidenceStatus: part.priceEvidenceStatus,
-        evidenceDigest: sha256Json(stableEvidenceForHash(part.evidence)),
       })),
     };
-    const recipeHash = sha256Json(recipeCore);
+    const recipeHash = productTruthListingRecipeStructuralHash(recipeStructure);
+    if (!listingScopeEvidence) {
+      throw new Error("PRODUCT_TRUTH_LISTING_SCOPE_EVIDENCE_MISSING");
+    }
+    const recipeIdentitySources = await Promise.all(parts.map((part) => {
+      const preferredDonorProductId = part.contentDonorProductId
+        ?? (
+          part.priceCanonicalVariantId === part.targetVariant.canonicalVariantId
+            ? part.priceEvidenceDonorProductId ?? null
+            : null
+        );
+      return exactRecipeIdentitySource(
+        db,
+        part.targetVariant.canonicalVariantId,
+        preferredDonorProductId,
+      );
+    }));
+    if (recipeIdentitySources.every(
+      (source): source is ExactRecipeIdentitySource => source !== null,
+    )) {
+      const recipeSourceComponents = parts.map((part, index) => ({
+        componentIndex: part.idx,
+        quantity: part.qty,
+        product: String(part.product || part.label).trim(),
+        flavor: typeof part.flavor === "string" && part.flavor.trim()
+          ? part.flavor.trim()
+          : null,
+        size: typeof part.size === "string" && part.size.trim()
+          ? part.size.trim()
+          : null,
+        targetCanonicalVariantId: part.targetVariant.canonicalVariantId,
+        donorProductId: recipeIdentitySources[index].donorProductId,
+        variantDecisionId: recipeIdentitySources[index].variantDecisionId,
+        sourceComponentId: null,
+        sourceEvidence: {
+          schemaVersion: "product-truth-cogs-recipe-source/1.0.0",
+          listingKey: listingScope.listingKey,
+          identityInputSource,
+          targetCanonicalVariantId: part.targetVariant.canonicalVariantId,
+          donorProductId: recipeIdentitySources[index].donorProductId,
+          variantDecisionId: recipeIdentitySources[index].variantDecisionId,
+          matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
+          matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+          matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+        },
+      }));
+      const recipeEffectiveAt = latestIsoTimestamp([
+        listingScopeEvidence.manifestAsOf,
+        listingScopeEvidence.sourceCapturedAt,
+        ...recipeIdentitySources.map((source) => source.decidedAt),
+      ], evaluationNow);
+      const sourceArtifactSha256 = productTruthOperationalSha256({
+        schemaVersion: "product-truth-cogs-recipe-source-artifact/1.0.0",
+        listingKey: listingScope.listingKey,
+        manifestSha256: listingScopeEvidence.manifestSha256,
+        identityInputSource,
+        identity: {
+          brand: identity.brand ?? null,
+          productLine: identity.product_line ?? null,
+          flavor: identity.flavor ?? null,
+          size: identity.size ?? null,
+          containerType: identity.container_type ?? null,
+          unitsInListing: identity.units_in_listing ?? null,
+          isBundle: !!identity.is_bundle,
+        },
+        components: recipeSourceComponents,
+      });
+      const recipeResult = await materializeProductTruthListingRecipe(db, {
+        listingKey: listingScope.listingKey,
+        manifestSha256: listingScopeEvidence.manifestSha256,
+        sourceKind: "CANONICAL_COST_GRAPH",
+        sourceArtifactSha256,
+        effectiveAt: recipeEffectiveAt,
+        createdAt: recipeEffectiveAt,
+        runId: null,
+        approvalId: null,
+        components: recipeSourceComponents,
+      });
+      if (recipeResult.recipeHash !== recipeHash) {
+        throw new Error("PRODUCT_TRUTH_LISTING_RECIPE_HASH_MISMATCH");
+      }
+      log(`  → canonical recipe ${recipeResult.status.toLowerCase()} (${parts.length} component${parts.length === 1 ? "" : "s"})`);
+    } else {
+      const unresolvedIndexes = recipeIdentitySources.flatMap((source, index) =>
+        source ? [] : [parts[index].idx]);
+      log(`  → canonical recipe pending exact donor identity for component(s): ${unresolvedIndexes.join(",")}`);
+    }
     let result: CostResult;
     let costStatement: InStatement;
     let costId: string;

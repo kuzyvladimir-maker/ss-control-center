@@ -32,6 +32,11 @@ import {
   SKU_COST_LISTING_SCOPE_LINK_VERSION,
 } from "./product-truth-listing-scope";
 import {
+  buildProductTruthListingRecipeMaterialization,
+  type ProductTruthListingRecipeComponentRow,
+  type ProductTruthListingRecipeRow,
+} from "./product-truth-listing-recipe";
+import {
   readProductTruthSnapshotsInTransaction,
 } from "./product-truth-read-contract";
 import {
@@ -48,11 +53,11 @@ import {
 } from "./price-evidence-policy";
 
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_PLAN_VERSION =
-  "product-truth-legacy-bridge-apply-plan/2.1.0" as const;
+  "product-truth-legacy-bridge-apply-plan/3.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPROVAL_VERSION =
   "product-truth-legacy-bridge-approval/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_APPLY_REPORT_VERSION =
-  "product-truth-legacy-bridge-apply-report/2.1.0" as const;
+  "product-truth-legacy-bridge-apply-report/3.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PREFLIGHT_REPORT_VERSION =
   "product-truth-legacy-bridge-preflight-report/2.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION =
@@ -310,6 +315,8 @@ export interface ProductTruthLegacyBridgeApplyTarget {
   decision: ProductTruthLegacyBridgeDecisionRow;
   donorTransition: ProductTruthLegacyBridgeDonorTransition;
   content: ProductTruthLegacyBridgeContentRow;
+  listingRecipe: ProductTruthListingRecipeRow;
+  listingRecipeComponents: ProductTruthListingRecipeComponentRow[];
   componentEvidence: ProductTruthLegacyBridgeComponentEvidenceRow;
   listingScopeLink: ProductTruthLegacyBridgeScopeLinkRow;
   cost: ProductTruthLegacyBridgeCostRow;
@@ -338,6 +345,8 @@ export interface ProductTruthLegacyBridgeApplyPlan {
     donorVariantDecisions: number;
     donorIdentityTransitions: number;
     productContentObservations: number;
+    productTruthListingRecipes: number;
+    productTruthListingRecipeComponents: number;
     skuCostListingScopeLinks: number;
     skuComponentEvidence: number;
     skuCosts: number;
@@ -949,11 +958,43 @@ function targetFromScope(input: {
     matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     pricePolicyVersion: PRICE_EVIDENCE_POLICY_VERSION,
   };
-  const recipeHash = rowHash({
-    schemaVersion: "product-truth-legacy-bridge-recipe/1.0.0",
+  const recipeMaterialization = buildProductTruthListingRecipeMaterialization({
     listingKey: listing.listingKey,
-    components: [costComponent],
+    manifestSha256: input.snapshot.manifest.sha256,
+    sourceKind: "LEGACY_BRIDGE",
+    sourceArtifactSha256: rowHash({
+      schemaVersion: "product-truth-legacy-bridge-recipe-source/1.0.0",
+      listingKey: listing.listingKey,
+      sourceSnapshotSha256: input.snapshotSha256,
+      bridgePlanSha256: input.bridgePlanSha256,
+      sourceBinding,
+      decisionEvidenceHash,
+    }),
+    effectiveAt: input.createdAt,
+    createdAt: input.createdAt,
+    runId: input.planId,
+    approvalId: input.approvalId,
+    components: [{
+      componentIndex: 0,
+      quantity: componentPlan.qty,
+      product,
+      flavor: component.flavor,
+      size: component.size,
+      targetCanonicalVariantId: rebuiltVariant.canonicalVariantId,
+      donorProductId: donor.id,
+      variantDecisionId: decisionId,
+      sourceComponentId: component.id,
+      sourceEvidence: {
+        schemaVersion: "product-truth-legacy-bridge-recipe-component-source/1.0.0",
+        identityProof: componentPlan.identityProof,
+        matcherReasonCodes: componentPlan.matcherReasonCodes,
+        sourceSnapshotSha256: input.snapshotSha256,
+        bridgePlanSha256: input.bridgePlanSha256,
+        sourceBinding,
+      },
+    }],
   });
+  const recipeHash = recipeMaterialization.recipe.recipeHash;
   const costEvidence = {
     schemaVersion: "product-truth-cogs-evidence/1.0.0",
     channel: listing.channel,
@@ -1054,6 +1095,8 @@ function targetFromScope(input: {
       meteredReceiptId: null,
       createdAt: input.createdAt,
     },
+    listingRecipe: recipeMaterialization.recipe,
+    listingRecipeComponents: recipeMaterialization.components,
     componentEvidence: {
       id: prefixedId("sce", componentEvidenceKey),
       evidenceKey: componentEvidenceKey,
@@ -1183,11 +1226,20 @@ function expectedDatabaseWrites(
       + rows.decisions.length
       + rows.donorTransitions.length
       + rows.contents.length
-      + targets.length * 3,
+      + targets.length * 4
+      + targets.reduce(
+        (sum, target) => sum + target.listingRecipeComponents.length,
+        0,
+      ),
     canonicalProductVariants: rows.variants.length,
     donorVariantDecisions: rows.decisions.length,
     donorIdentityTransitions: rows.donorTransitions.length,
     productContentObservations: rows.contents.length,
+    productTruthListingRecipes: targets.length,
+    productTruthListingRecipeComponents: targets.reduce(
+      (sum, target) => sum + target.listingRecipeComponents.length,
+      0,
+    ),
     skuCostListingScopeLinks: targets.length,
     skuComponentEvidence: targets.length,
     skuCosts: targets.length,
@@ -1816,6 +1868,28 @@ async function preflightTarget(
   rows.push([
     await exactOrAbsent(
       db,
+      "ProductTruthListingRecipe",
+      "id",
+      target.listingRecipe as unknown as Record<string, unknown>,
+      "LEGACY_BRIDGE_LISTING_RECIPE_COLLISION",
+    ),
+    "listingRecipe",
+  ]);
+  for (const component of target.listingRecipeComponents) {
+    rows.push([
+      await exactOrAbsent(
+        db,
+        "ProductTruthListingRecipeComponent",
+        "id",
+        component as unknown as Record<string, unknown>,
+        "LEGACY_BRIDGE_LISTING_RECIPE_COMPONENT_COLLISION",
+      ),
+      `listingRecipeComponent:${component.componentIndex}`,
+    ]);
+  }
+  rows.push([
+    await exactOrAbsent(
+      db,
       "SkuCostListingScopeLink",
       "skuCostId",
       target.listingScopeLink as unknown as Record<string, unknown>,
@@ -1887,6 +1961,18 @@ async function applyListingRows(
   tx: Transaction,
   target: ProductTruthLegacyBridgeApplyTarget,
 ): Promise<void> {
+  for (const component of target.listingRecipeComponents) {
+    await insertRow(
+      tx,
+      "ProductTruthListingRecipeComponent",
+      component as unknown as Record<string, unknown>,
+    );
+  }
+  await insertRow(
+    tx,
+    "ProductTruthListingRecipe",
+    target.listingRecipe as unknown as Record<string, unknown>,
+  );
   await insertRow(
     tx,
     "SkuCostListingScopeLink",

@@ -21,6 +21,10 @@ import {
 } from "../product-truth-consumer-activation";
 import { readProductTruthConsumerBatch } from "../product-truth-consumer-gateway";
 import {
+  buildProductTruthListingRecipeMaterialization,
+  materializeProductTruthListingRecipe,
+} from "../product-truth-listing-recipe";
+import {
   PRODUCT_TRUTH_MAX_BATCH_SCOPES,
   ProductTruthReadInputError,
   PRODUCT_TRUTH_READ_CONTRACT_VERSION,
@@ -78,6 +82,11 @@ async function applyCanonicalMigration(db: Client): Promise<void> {
     import.meta.url,
   );
   await db.executeMultiple(await readFile(scopeMigration, "utf8"));
+  const recipeMigration = new URL(
+    "../../../../prisma/migrations/20260729010000_product_truth_listing_recipe/migration.sql",
+    import.meta.url,
+  );
+  await db.executeMultiple(await readFile(recipeMigration, "utf8"));
 }
 
 type VariantSeed = {
@@ -295,6 +304,7 @@ async function insertCanonicalCost(
   const storeIndex = input.storeIndex ?? 1;
   const listingKey = `${input.channel}:${storeIndex}:${input.sku}`;
   const scopeCreatedAt = new Date(Date.parse(input.createdAt) - 2_000).toISOString();
+  const manifestSha256 = input.manifestSha256 ?? hash(`manifest:${listingKey}`);
   if (!(await db.execute({
     sql: `SELECT 1 FROM ProductTruthListingScope WHERE listingKey=?`,
     args: [listingKey],
@@ -309,13 +319,12 @@ async function insertCanonicalCost(
         listingKey, "product-truth-listing-key/1.0.0", input.channel, storeIndex,
         input.sku, "AUTHORITATIVE_PHASE1_MANIFEST",
         "phase1-authoritative-scope-manifest/v3",
-        input.manifestSha256 ?? hash(`manifest:${listingKey}`),
+        manifestSha256,
         scopeCreatedAt, `decision:${listingKey}`, `report:${listingKey}`,
         hash(`report:${listingKey}`), scopeCreatedAt, scopeCreatedAt,
       ],
     });
   }
-  const recipeHash = hash(`recipe:${input.id}`);
   const preparedComponents = await Promise.all(input.components.map(async (component) => {
     const contentSource = component.contentObservationId
       ? (await db.execute({
@@ -330,6 +339,23 @@ async function insertCanonicalCost(
           args: [component.priceObservationId],
         })).rows[0] ?? null
       : null;
+    const targetCanonicalVariantId = canonicalVariantId(component.targetVariantId);
+    const identitySource = (await db.execute({
+      sql: `SELECT decision.id AS variantDecisionId,
+                   decision.donorProductId AS donorProductId
+            FROM DonorProductVariantDecision decision
+            JOIN DonorProduct donor ON donor.id=decision.donorProductId
+            WHERE decision.canonicalVariantId=?
+              AND decision.decisionStatus='exact_confirmed'
+              AND donor.identityStatus='exact_confirmed'
+            ORDER BY decision.decidedAt DESC, decision.createdAt DESC, decision.id DESC
+            LIMIT 1`,
+      args: [targetCanonicalVariantId],
+    })).rows[0];
+    assert.ok(
+      identitySource,
+      `fixture requires exact target identity for ${listingKey}:${component.index}`,
+    );
     const manual = component.evidence.manualCost as Record<string, unknown> | undefined;
     const comparable = component.evidence.targetComparableUnitPrice;
     const perUnit = typeof manual?.amount === "number"
@@ -340,7 +366,6 @@ async function insertCanonicalCost(
     const qty = typeof component.evidence.qty === "number" ? component.evidence.qty : 1;
     const matcherVersion = CANONICAL_PRODUCT_MATCHER_VERSION;
     const pricePolicyVersion = component.pricePolicyVersion ?? PRICE_EVIDENCE_POLICY_VERSION;
-    const targetCanonicalVariantId = canonicalVariantId(component.targetVariantId);
     const contentCanonicalVariantId = component.contentVariantId
       ? canonicalVariantId(component.contentVariantId) : null;
     const priceCanonicalVariantId = component.priceVariantId
@@ -374,6 +399,11 @@ async function insertCanonicalCost(
     return {
       component,
       childEvidence,
+      identitySource: {
+        donorProductId: String(identitySource.donorProductId),
+        variantDecisionId: String(identitySource.variantDecisionId),
+      },
+      quantity: qty,
       recipe: {
         idx: component.index,
         priceEvidenceStatus: component.status,
@@ -400,6 +430,35 @@ async function insertCanonicalCost(
       },
     };
   }));
+  const recipeCandidate = {
+    listingKey,
+    manifestSha256,
+    sourceKind: "CANONICAL_COST_GRAPH" as const,
+    sourceArtifactSha256: hash(`cost-graph:${input.id}`),
+    effectiveAt: new Date(Date.parse(input.createdAt) - 1_000).toISOString(),
+    createdAt: new Date(Date.parse(input.createdAt) - 1_000).toISOString(),
+    runId: null,
+    approvalId: null,
+    components: preparedComponents.map((entry) => ({
+      componentIndex: entry.component.index,
+      quantity: entry.quantity,
+      product: String(entry.component.evidence.product),
+      flavor: typeof entry.component.evidence.flavor === "string"
+        ? entry.component.evidence.flavor
+        : null,
+      size: typeof entry.component.evidence.size === "string"
+        ? entry.component.evidence.size
+        : null,
+      targetCanonicalVariantId: canonicalVariantId(entry.component.targetVariantId),
+      donorProductId: entry.identitySource.donorProductId,
+      variantDecisionId: entry.identitySource.variantDecisionId,
+      sourceComponentId: `sce:${input.id}:${entry.component.index}`,
+      sourceEvidence: entry.childEvidence,
+    })),
+  };
+  const recipeHash =
+    buildProductTruthListingRecipeMaterialization(recipeCandidate).recipe.recipeHash;
+  await materializeProductTruthListingRecipe(db, recipeCandidate);
   const statements: InStatement[] = [{
     sql: `INSERT INTO SkuCostListingScopeLink
       (skuCostId,listingKey,linkVersion,createdAt) VALUES (?,?,?,?)`,
@@ -582,7 +641,7 @@ test("one canonical snapshot serves four views and permits different exact conte
       asOf: AS_OF, maxPriceAgeMs: MAX_AGE_MS,
     });
     assert.equal(snapshot.contractVersion, PRODUCT_TRUTH_READ_CONTRACT_VERSION);
-    assert.equal(snapshot.contractVersion, "product-truth-read-contract/3.2.0");
+    assert.equal(snapshot.contractVersion, "product-truth-read-contract/4.0.0");
     assert.equal(snapshot.snapshot.skuCostId, "cost-current");
     assert.equal(snapshot.views.bundleFactory.ready, true);
     assert.equal(snapshot.views.listingImprovement.ready, true);
@@ -660,6 +719,104 @@ test("one canonical snapshot serves four views and permits different exact conte
   }
 });
 
+test("exact recipe and content stay consumer-ready when COGS is still missing", async () => {
+  const db = createClient({ url: "file::memory:" });
+  try {
+    await createBaseSchema(db);
+    await applyCanonicalMigration(db);
+    await insertVariant(db, {
+      id: "variant-recipe-only",
+      brand: "Acme",
+      productLine: "Crunch Chips",
+      flavor: "Barbecue",
+    });
+    await insertExactSource(db, {
+      donorProductId: "dp-recipe-only",
+      decisionId: "decision-recipe-only",
+      variantId: "variant-recipe-only",
+      flavor: "Barbecue",
+    });
+    await insertContent(db, {
+      id: "content-recipe-only",
+      donorProductId: "dp-recipe-only",
+      variantId: "variant-recipe-only",
+      decisionId: "decision-recipe-only",
+      observedAt: "2026-07-18T19:00:00.000Z",
+      title: "Acme Crunch Chips Barbecue 8 oz",
+    });
+    const listingKey = "walmart:1:SKU-RECIPE-ONLY";
+    const manifestSha256 = hash(`manifest:${listingKey}`);
+    await db.execute({
+      sql: `INSERT INTO ProductTruthListingScope (
+        listingKey,keyVersion,channel,storeIndex,sku,registrationKind,
+        manifestSchemaVersion,manifestSha256,manifestAsOf,ownerDecisionId,
+        sourceReportId,sourceContentSha256,sourceCapturedAt,createdAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        listingKey,
+        "product-truth-listing-key/1.0.0",
+        "walmart",
+        1,
+        "SKU-RECIPE-ONLY",
+        "AUTHORITATIVE_PHASE1_MANIFEST",
+        "phase1-authoritative-scope-manifest/v3",
+        manifestSha256,
+        "2026-07-18T18:00:00.000Z",
+        "decision:recipe-only",
+        "report:recipe-only",
+        hash("report:recipe-only"),
+        "2026-07-18T18:00:00.000Z",
+        "2026-07-18T18:00:00.000Z",
+      ],
+    });
+    const materialized = await materializeProductTruthListingRecipe(db, {
+      listingKey,
+      manifestSha256,
+      sourceKind: "LEGACY_BRIDGE",
+      sourceArtifactSha256: hash("recipe-only-source"),
+      effectiveAt: "2026-07-18T19:01:00.000Z",
+      createdAt: "2026-07-18T19:01:00.000Z",
+      runId: null,
+      approvalId: null,
+      components: [{
+        componentIndex: 0,
+        quantity: 2,
+        product: "Acme Crunch Chips",
+        flavor: "Barbecue",
+        size: "8 oz",
+        targetCanonicalVariantId: canonicalVariantId("variant-recipe-only"),
+        donorProductId: "dp-recipe-only",
+        variantDecisionId: "decision-recipe-only",
+        sourceComponentId: "legacy-recipe-only",
+        sourceEvidence: { source: "existing exact legacy graph" },
+      }],
+    });
+
+    const snapshot = await readProductTruthSnapshot(db, {
+      sku: "SKU-RECIPE-ONLY",
+      channel: "walmart",
+      storeIndex: 1,
+      asOf: AS_OF,
+      maxPriceAgeMs: MAX_AGE_MS,
+    });
+    assert.equal(snapshot.snapshot.listingRecipeId, materialized.recipeId);
+    assert.equal(snapshot.snapshot.recipeHash, materialized.recipeHash);
+    assert.equal(snapshot.snapshot.skuCostId, null);
+    assert.equal(snapshot.recipe.components[0].qty, 2);
+    assert.equal(snapshot.recipe.components[0].identityEvidenceStatus, "EXACT");
+    assert.equal(snapshot.recipe.components[0].costEvidenceStatus, "MISSING");
+    assert.equal(snapshot.views.bundleFactory.ready, true);
+    assert.equal(snapshot.views.listingImprovement.ready, true);
+    assert.equal(snapshot.views.unitEconomics.status, "MISSING");
+    assert.ok(snapshot.views.unitEconomics.blockers.includes(
+      "CURRENT_SCOPED_SKU_COST_MISSING",
+    ));
+    assert.equal(snapshot.views.procurement.ready, false);
+  } finally {
+    await db.close();
+  }
+});
+
 test("typed estimate proxy content cannot leak into the target variant", async () => {
   const db = createClient({ url: "file::memory:" });
   try {
@@ -670,6 +827,10 @@ test("typed estimate proxy content cannot leak into the target variant", async (
     });
     await insertVariant(db, {
       id: "variant-ranch", brand: "Acme", productLine: "Crunch Chips", flavor: "Ranch",
+    });
+    await insertExactSource(db, {
+      donorProductId: "dp-bbq-target", decisionId: "decision-bbq-target",
+      variantId: "variant-bbq", flavor: "Barbecue",
     });
     await insertExactSource(db, {
       donorProductId: "dp-ranch", decisionId: "decision-ranch",
@@ -902,6 +1063,10 @@ test("manual fact is explicit accounting provenance and never a retailer buy opt
     await applyCanonicalMigration(db);
     await insertVariant(db, {
       id: "variant-own", brand: "Salutem", productLine: "House Granola", flavor: "Original",
+    });
+    await insertExactSource(db, {
+      donorProductId: "dp-own", decisionId: "decision-own",
+      variantId: "variant-own", flavor: "Original",
     });
     const manualPolicy = "manual-cost-policy/1.0.0";
     await insertCanonicalCost(db, {

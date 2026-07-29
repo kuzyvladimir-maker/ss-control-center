@@ -82,6 +82,11 @@ async function applyListingScopeMigration(db: ReturnType<typeof createClient>) {
     import.meta.url,
   );
   await db.executeMultiple(await readFile(migration, "utf8"));
+  const recipeMigration = new URL(
+    "../../../../prisma/migrations/20260729010000_product_truth_listing_recipe/migration.sql",
+    import.meta.url,
+  );
+  await db.executeMultiple(await readFile(recipeMigration, "utf8"));
 }
 
 async function registerListingScope(
@@ -456,6 +461,18 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
       CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     );
     assert.equal(costs.rows[0].pricePolicyVersion, "price-evidence-eligibility/1.0.0");
+    const recipe = (await db.execute(`
+      SELECT recipe.id,recipe.recipeHash,component.donorProductId,
+             component.variantDecisionId
+      FROM ProductTruthListingRecipe recipe
+      JOIN ProductTruthListingRecipeComponent component
+        ON component.listingRecipeId=recipe.id
+      WHERE recipe.listingKey='walmart:1:SKU-1'
+    `)).rows;
+    assert.equal(recipe.length, 1, "same structural recipe must materialize once");
+    assert.equal(recipe[0].recipeHash, costs.rows[0].recipeHash);
+    assert.equal(recipe[0].donorProductId, "target-content-donor");
+    assert.equal(recipe[0].variantDecisionId, "decision-target-content");
     const persistedCostEvidence = JSON.parse(String(costs.rows[0].evidenceJson));
     assert.deepEqual(persistedCostEvidence.sourcePolicy, {
       policyVersion: "product-truth-cost-source-policy/1.0.0",
@@ -490,7 +507,11 @@ test("COGS reuses immutable exact local evidence, separates donor roles, and app
     });
     assert.equal(snapshot.views.bundleFactory.ready, true);
     assert.equal(snapshot.views.listingImprovement.ready, true);
-    assert.equal(snapshot.views.unitEconomics.status, "FACT");
+    assert.equal(
+      snapshot.views.unitEconomics.status,
+      "FACT",
+      JSON.stringify(snapshot.views.unitEconomics.blockers),
+    );
     assert.equal(snapshot.views.procurement.ready, true);
     assert.equal(snapshot.views.bundleFactory.components[0].qty, 1);
     assert.equal(
@@ -578,6 +599,21 @@ test("own-brand landed cost is immutable MANUAL_FACT, never a retailer offer", a
       0,
       "scoped canonical writer must not mutate raw-SKU legacy SkuComponent",
     );
+    const snapshot = await readProductTruthSnapshot(db, {
+      sku: "OWN-1",
+      channel: "walmart",
+      storeIndex: 1,
+      asOf: new Date(Date.now() + 1_000).toISOString(),
+      maxPriceAgeMs: 48 * 60 * 60 * 1000,
+    });
+    assert.equal(snapshot.snapshot.listingRecipeId, null);
+    assert.equal(snapshot.views.bundleFactory.ready, false);
+    assert.equal(
+      snapshot.views.unitEconomics.status,
+      "FACT",
+      JSON.stringify(snapshot.views.unitEconomics.blockers),
+    );
+    assert.equal(snapshot.views.unitEconomics.factualCost?.totalCost, 0.8);
   } finally {
     globalThis.fetch = originalFetch;
     await db.close();

@@ -167,7 +167,7 @@ function snapshot(input: {
   costStatus: ProductTruthSnapshot["views"]["unitEconomics"]["status"];
 }): ProductTruthSnapshot {
   return {
-    contractVersion: "product-truth-read-contract/3.2.0",
+    contractVersion: "product-truth-read-contract/4.0.0",
     snapshot: {
       sku: input.sku,
       channel: "walmart",
@@ -329,6 +329,7 @@ async function createIntegrationSchema(db: Client): Promise<void> {
     "20260719000000_metered_budget_ledger/migration.sql",
     "20260719002000_product_truth_listing_scope/migration.sql",
     "20260719004000_product_truth_operational_run/migration.sql",
+    "20260729010000_product_truth_listing_recipe/migration.sql",
   ]) {
     const migration = new URL(
       `../../../../prisma/migrations/${relative}`,

@@ -21,6 +21,18 @@ const columns: Record<string, string[]> = {
   SkuCostListingScopeLink: [
     "skuCostId", "listingKey", "linkVersion", "createdAt",
   ],
+  ProductTruthListingRecipe: [
+    "id", "recipeKey", "listingKey", "recipeVersion", "recipeHash",
+    "componentCount", "sourceKind", "sourceArtifactSha256",
+    "manifestSha256", "evidenceHash", "evidenceJson", "effectiveAt",
+    "runId", "approvalId", "createdAt",
+  ],
+  ProductTruthListingRecipeComponent: [
+    "id", "componentKey", "listingRecipeId", "componentIndex", "quantity",
+    "product", "flavor", "size", "targetCanonicalVariantId",
+    "donorProductId", "variantDecisionId", "sourceComponentId",
+    "evidenceHash", "evidenceJson", "createdAt",
+  ],
 };
 
 function result(rows: Record<string, unknown>[]): ResultSet {
@@ -47,16 +59,46 @@ function fakeClient(input: {
       if (sql.includes("FROM sqlite_master")) return result([{ present: 1 }]);
       const foreignKeys = sql.match(/^PRAGMA foreign_key_list\("([^"]+)"\)$/);
       if (foreignKeys) {
-        return result(foreignKeys[1] === "SkuCostListingScopeLink" ? [
-          {
-            from: "skuCostId", table: "SkuCost", to: "id",
-            on_delete: "RESTRICT", on_update: "RESTRICT",
-          },
-          {
+        const table = foreignKeys[1];
+        if (table === "SkuCostListingScopeLink") {
+          return result([
+            {
+              from: "skuCostId", table: "SkuCost", to: "id",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+            {
+              from: "listingKey", table: "ProductTruthListingScope", to: "listingKey",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+          ]);
+        }
+        if (table === "ProductTruthListingRecipe") {
+          return result([{
             from: "listingKey", table: "ProductTruthListingScope", to: "listingKey",
             on_delete: "RESTRICT", on_update: "RESTRICT",
-          },
-        ] : []);
+          }]);
+        }
+        if (table === "ProductTruthListingRecipeComponent") {
+          return result([
+            {
+              from: "listingRecipeId", table: "ProductTruthListingRecipe", to: "id",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+            {
+              from: "targetCanonicalVariantId", table: "CanonicalProductVariant", to: "id",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+            {
+              from: "donorProductId", table: "DonorProduct", to: "id",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+            {
+              from: "variantDecisionId", table: "DonorProductVariantDecision", to: "id",
+              on_delete: "RESTRICT", on_update: "RESTRICT",
+            },
+          ]);
+        }
+        return result([]);
       }
       if (sql.includes("FROM ProductTruthListingScope")) {
         if (input.finalReads) input.finalReads.count += 1;
@@ -288,11 +330,23 @@ test("manifest page executes against the real immutable listing-scope schema", a
       evidenceJson TEXT,
       createdAt DATETIME NOT NULL
     )`);
-    const migration = new URL(
+    await db.execute(`CREATE TABLE CanonicalProductVariant (id TEXT PRIMARY KEY)`);
+    await db.execute(`CREATE TABLE DonorProduct (
+      id TEXT PRIMARY KEY,
+      identityStatus TEXT
+    )`);
+    await db.execute(`CREATE TABLE DonorProductVariantDecision (
+      id TEXT PRIMARY KEY,
+      donorProductId TEXT,
+      canonicalVariantId TEXT,
+      decisionStatus TEXT
+    )`);
+    for (const relative of [
       "../../../../prisma/migrations/20260719002000_product_truth_listing_scope/migration.sql",
-      import.meta.url,
-    );
-    await db.executeMultiple(await readFile(migration, "utf8"));
+      "../../../../prisma/migrations/20260729010000_product_truth_listing_recipe/migration.sql",
+    ]) {
+      await db.executeMultiple(await readFile(new URL(relative, import.meta.url), "utf8"));
+    }
     for (const sku of ["SKU-C", "SKU-A", "SKU-B"]) {
       await db.execute({
         sql: `INSERT INTO ProductTruthListingScope (

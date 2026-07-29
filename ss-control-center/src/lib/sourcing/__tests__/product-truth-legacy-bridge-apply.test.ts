@@ -48,6 +48,7 @@ const MIGRATION_IDS = [
   "20260719002000_product_truth_listing_scope",
   "20260719003000_product_truth_queue_listing_scope",
   "20260719004000_product_truth_operational_run",
+  "20260729010000_product_truth_listing_recipe",
 ] as const;
 
 function sourceFixture(): {
@@ -780,7 +781,7 @@ test("legacy bridge wave plan is byte-deterministic for explicitly selected cata
   assert.equal(first.planJson, second.planJson);
   assert.equal(first.planSha256, second.planSha256);
   assert.equal(first.plan.targets.length, 5);
-  assert.equal(first.plan.databaseWrites.maximumRows, 35);
+  assert.equal(first.plan.databaseWrites.maximumRows, 45);
   assert.equal(first.plan.claims.createsAdditionalCatalog, false);
   assert.equal(first.plan.claims.paidCalls, 0);
   assert.equal(first.plan.claims.marketplaceMutations, 0);
@@ -790,11 +791,13 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   const input = applyPlan(sharedGraphFixture());
   assert.equal(input.plan.targets.length, 5);
   assert.deepEqual(input.plan.databaseWrites, {
-    maximumRows: 27,
+    maximumRows: 37,
     canonicalProductVariants: 3,
     donorVariantDecisions: 3,
     donorIdentityTransitions: 3,
     productContentObservations: 3,
+    productTruthListingRecipes: 5,
+    productTruthListingRecipeComponents: 5,
     skuCostListingScopeLinks: 5,
     skuComponentEvidence: 5,
     skuCosts: 5,
@@ -803,7 +806,7 @@ test("graph-aware wave materializes one shared donor/content graph for several l
   t.after(() => db.close());
   const first = await executeApproved(db, input);
   assert.equal(first.status, "APPLIED");
-  assert.equal(first.counts.insertedRows, 27);
+  assert.equal(first.counts.insertedRows, 37);
   assert.equal(first.counts.donorIdentityTransitions, 3);
   assert.equal(first.verification.bundleFactoryReady, 5);
   assert.equal(first.verification.listingImprovementReady, 5);
@@ -813,15 +816,17 @@ test("graph-aware wave materializes one shared donor/content graph for several l
     db.execute("SELECT COUNT(*) AS count FROM CanonicalProductVariant"),
     db.execute("SELECT COUNT(*) AS count FROM DonorProductVariantDecision"),
     db.execute("SELECT COUNT(*) AS count FROM ProductContentObservation"),
+    db.execute("SELECT COUNT(*) AS count FROM ProductTruthListingRecipe"),
+    db.execute("SELECT COUNT(*) AS count FROM ProductTruthListingRecipeComponent"),
     db.execute("SELECT COUNT(*) AS count FROM SkuCost"),
   ]);
   assert.deepEqual(
     counts.map((result) => Number(result.rows[0]?.count)),
-    [3, 3, 3, 5],
+    [3, 3, 3, 5, 5, 5],
   );
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
-  assert.equal(second.counts.exactExistingRows, 27);
+  assert.equal(second.counts.exactExistingRows, 37);
 });
 
 test("live barcode retailer content is hash-bound and materialized into canonical content", async (t) => {
@@ -951,7 +956,7 @@ test("standing no-paid policy authorizes a fresh bounded READY_TO_APPLY wave", a
     completedAt: APPLY_AT,
   });
   assert.equal(report.status, "APPLIED");
-  assert.equal(report.counts.insertedRows, 35);
+  assert.equal(report.counts.insertedRows, 45);
   assert.deepEqual(report.authorization, {
     mode: "STANDING_NO_PAID_POLICY",
     standingPolicyId: policy.value.policyId,
@@ -1066,13 +1071,13 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
     checkedAt: APPLY_AT,
   });
   assert.equal(before.status, "READY_TO_APPLY");
-  assert.equal(before.counts.absentRows, 35);
+  assert.equal(before.counts.absentRows, 45);
   const first = await executeApproved(db, input);
   assert.equal(first.status, "APPLIED");
-  assert.equal(first.counts.insertedRows, 35);
+  assert.equal(first.counts.insertedRows, 45);
   const second = await executeApproved(db, input);
   assert.equal(second.status, "ALREADY_APPLIED");
-  assert.equal(second.counts.exactExistingRows, 35);
+  assert.equal(second.counts.exactExistingRows, 45);
   const after = await preflightProductTruthLegacyBridgeWave({
     db,
     databaseTargetFingerprint: TARGET_FINGERPRINT,
@@ -1082,7 +1087,7 @@ test("approved wave atomically materializes exact content with an honest UNSOURC
     checkedAt: APPLY_AT,
   });
   assert.equal(after.status, "ALREADY_APPLIED");
-  assert.equal(after.counts.exactExistingRows, 35);
+  assert.equal(after.counts.exactExistingRows, 45);
 
   for (const target of input.plan.targets) {
     const contentRow = (await db.execute({
