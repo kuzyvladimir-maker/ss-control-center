@@ -1029,3 +1029,48 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   recipes/typed COGS без marketplace/business mutations.
 - [ ] ⬜ Повторять только для доказанных gap targets; каждый terminal outcome
   возвращать в full-denominator audit и не replay автоматически.
+
+### ✅ Bundle Factory recipe evidence recovery — 2026-07-29
+
+- [x] ✅ Existing `ChannelSKU → MasterBundle → BundleComponent` graphs are now
+  read-only evidence inputs to the same Product Truth legacy bridge; no new
+  catalog, retailer harvest or provider path was created.
+- [x] ✅ Recovery is limited to exact Amazon manifest identity, exact
+  manufacturer GTIN, unique existing `DonorProduct`, contiguous component
+  graph and integer retail-package arithmetic. Two `12 consumer units / 10
+  count donor` graphs remain quarantined instead of inventing `1.2` packages.
+- [x] ✅ Apply contract `3.8.0` byte-binds every Bundle Factory component and
+  detects source drift before canonical writes. Clean release commit
+  `f0dba2b325543506d15ac3b79582343e28158bae`, tree
+  `679438f3c3efa7bf76e2902659e734762171605b`; TypeScript and Product Truth
+  certification `570/570` pass from an exact clean checkout.
+- [x] ✅ Canary plus six bounded collision-free standing-policy waves
+  materialized all `16` eligible Amazon recipes and `51` exact components.
+  Shared-donor graphs were re-snapshotted between waves; paid/provider/
+  retailer/marketplace/consumer/procurement effects were all `0`.
+- [x] ✅ Final full-denominator bridge state:
+  `736 canonical / 5199 quarantine / 0 automatic write candidates`,
+  `786` canonical components. Snapshot SHA `eb6698a4…1119`; plan SHA
+  `073c220d…1e96`.
+- [x] ✅ Fresh readiness remains axis-separated:
+  Bundle Factory and Listing Improvement `100 ready`; Unit Economics
+  `10 FACT / 0 ESTIMATE / 730 UNSOURCEABLE / 5195 MISSING / 0 INVALID`;
+  Procurement `10 ready`. Report SHA `b07db195…05a5`; provider calls and
+  database writes `0`.
+- [x] ✅ Fresh quarantine partition SHA `32007dae…c9ce` assigns all `5199`
+  remaining listings: integrity `382`, listing identity `710`, component graph
+  `395`, donor link `692`, exact donor offer `45`, price proxy `17`, retailer
+  identity research `2958`, other `0`.
+- [x] ✅ Legacy bridge `1.9.0` now preserves an unlinked bundle component's
+  parent brand only when that brand is the exact whole-token prefix of the
+  saved component product. A conflicting linked donor remains authoritative
+  and cannot be overridden. This reclassified `27` listings from component
+  graph recovery to donor-link recovery without creating a match or canonical
+  write: component graph `368`, donor link `719`, all other lanes unchanged.
+  Partition SHA `3c5d4403…9dab`; bridge snapshot SHA `1fefc600…c46`; automatic
+  candidates `0`.
+- [x] ✅ Clean release commit `aa567439`, tree `9f42f2b3…c3735`; exact clean
+  checkout passed TypeScript, ESLint and Product Truth certification `572/572`.
+  Provider, retailer, marketplace, consumer and procurement effects were `0`.
+- [ ] 🔄 Current phase: exhaust the remaining no-paid listing-identity and
+  component-graph evidence lanes before any new provider spend.

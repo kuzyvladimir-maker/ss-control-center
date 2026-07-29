@@ -667,12 +667,15 @@ campaign registry, durable lock, owner budget activation и runtime ещё не 
    завершён `APPLIED`: `5935/5935` exact scopes verified, без cost/legacy/provider/
    paid/marketplace/procurement effects. Последующие existing-evidence waves
    исчерпали все automatic legacy candidates без нового каталога и без provider
-   spend. Fresh state: `154 canonical / 5781 quarantine / 0 automatic write
-   candidates`; full-denominator readiness `5935/5935`, content-ready `32`,
-   Unit Economics `10 FACT / 145 UNSOURCEABLE / 5780 MISSING`, Procurement
-   `10`. Следующий независимый шаг — бесплатное восстановление listing identity
-   и component graph из уже сохранённых authoritative channel/catalog evidence,
-   затем повторный fail-closed rematch. Consumer cutover = 0.
+   spend. Fresh state: `736 canonical / 5199 quarantine / 0 automatic write
+   candidates`, `786` canonical components. Full-denominator readiness
+   `5935/5935`: Bundle Factory/Listing Improvement `100`, Unit Economics
+   `10 FACT / 730 UNSOURCEABLE / 5195 MISSING`, Procurement `10`. Existing
+   Bundle Factory recipe evidence recovered `16` Amazon listings / `51`
+   components without a parallel catalog or provider spend. Следующий
+   независимый шаг — исчерпать оставшиеся бесплатные listing-identity и
+   component-graph evidence lanes, затем повторить fail-closed
+   rematch/materialization. Consumer cutover = 0.
 7. ⚪ **Budget proposal** — прогноз по источникам и cheap-first standing-policy plan.
 8. ⚪ **Canary** — 5–10 SKU с жёстким лимитом и machine acceptance.
 9. ⚪ **Controlled waves** — только после успешного canary и automatic bounded authorization.
@@ -766,12 +769,23 @@ G7 закончен как диагностический production canary, н�
 - ✅ unique exact existing-catalog rematch и bounded no-paid waves
   материализовали ещё `51` listings, включая пять четырёхкомпонентных bundles;
   final automatic-candidate count = `0`;
-- ✅ fresh full-denominator readiness: content-ready `32`, Unit Economics
-  `10 FACT / 145 UNSOURCEABLE / 5780 MISSING`; fresh partition
-  `154 canonical / 5781 quarantine`, report SHA `23034993…de9`;
-- 🔄 восстановить listing identity/component graph из уже имеющихся
-  authoritative channel/catalog bytes, затем продолжить только bounded
-  collision-free Phase 1 waves.
+- ✅ fresh Bundle Factory recipe-evidence recovery materialized `16` Amazon
+  listings / `51` exact components from existing `ChannelSKU → MasterBundle →
+  BundleComponent` graphs; exact GTIN and integer retail-package arithmetic are
+  mandatory, while two fractional-package graphs remain quarantined;
+- ✅ clean release `f0dba2b3…8bae`, tree `679438f3…05b6`, TypeScript and Product
+  Truth certification `570/570`; paid/provider/retailer/marketplace/consumer/
+  procurement effects `0`;
+- ✅ release `aa567439`, tree `9f42f2b3…c3735`, fail-closed parent-brand-prefix
+  recovery: `27` listings moved from component-graph to donor-link research,
+  no automatic match or canonical write; clean-checkout TypeScript, ESLint and
+  Product Truth certification `572/572`;
+- ✅ fresh full-denominator state: `736 canonical / 5199 quarantine / 0
+  automatic candidates`, `786` canonical components. Readiness:
+  Bundle Factory/Listing Improvement `100`, Unit Economics
+  `10 FACT / 730 UNSOURCEABLE / 5195 MISSING`, Procurement `10`;
+- 🔄 исчерпать remaining no-paid listing-identity/component-graph evidence,
+  затем продолжить только bounded collision-free Phase 1 waves.
 
 Статус 2026-07-28 после исправления:
 
