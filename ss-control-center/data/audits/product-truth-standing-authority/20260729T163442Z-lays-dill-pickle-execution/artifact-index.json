@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4731,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "43039a5a81776c58075b4767c294a6ce58051255029c2fa98913142a918e2845"
+    }
+  ],
+  "manifestSha256": "2378d6319a74703c850b447eec8d9dce42681f90c0f017c541fc46a7aad7ae7c",
+  "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+  "runId": "pt-lays-dill-pickle-20260729t163233z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T15:53:10.770Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "a8bd3233c1ac24f354339963f6e6a7c5c0148588e1cc5bdf2b91f40061255b7e"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "a1c2be7090083e6ec90ee4e8ea25503990cdca5d0ba1b6bc828c715ce2b5da64"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:db79d54e38b6b6d5ff77b05a",
+  "meteredReceiptId": "mbr_8788cf209bedc7e875f2a730b06fed7dff1605f08334176df0f9a50dd5d8c4d0",
+  "meteredReservationKey": "mpr_v1_ea7d95dc8c1aa037f2bba13acfac8f00da240e25d8d858bc3cbc0d88046513f6",
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

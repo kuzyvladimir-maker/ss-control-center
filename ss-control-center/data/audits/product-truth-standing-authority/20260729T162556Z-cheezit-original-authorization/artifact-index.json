@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "747e743a17b6f409d5f6baa53b842e27359c8e9abcca1c9455d5e87390021f36",
+  "authorizationSha256": "c64f476a3b1acf75ac422655814221ac376065db696b6884a88629b5b12c8112",
+  "balanceEvidenceSha256": "34d312021de740ae41fbcb544ad1de44a0355a6fc1fdea791a2e6c2208cbf73b",
+  "createdAt": "2026-07-29T16:25:56.645Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "747e743a17b6f409d5f6baa53b842e27359c8e9abcca1c9455d5e87390021f36"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "c64f476a3b1acf75ac422655814221ac376065db696b6884a88629b5b12c8112"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+  "runId": "pt-cheezit-original-20260729t162342z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,55 @@
+{
+  "approvalId": "owner-ptlb-wave-cd0d8f75340e64ae0a438d68",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "2cc7dbbad4c5ce9c1f28ac76ad4c99c7a827a2d3a78eaf289bd9f05328654494",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T08:28:22.320Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "insertedRows": 47,
+    "targets": 7
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-cd0d8f75340e64ae0a438d68",
+  "planSha256": "288e9c271817024e19fd48aed6a03c047618650a7065cc23e11fbdd1bea2ce9f",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.4.0",
+  "startedAt": "2026-07-29T08:27:54.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "walmart:1:RizwanX-200",
+      "walmart:1:RizwanX-201",
+      "walmart:1:RizwanX-3004",
+      "walmart:1:RizwanX-3005",
+      "walmart:1:RizwanX-3006",
+      "walmart:1:RizwanX-3247",
+      "walmart:1:RizwanX-3248"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 7
+  }
+}

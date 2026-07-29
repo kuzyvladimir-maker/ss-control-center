@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4412,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "95428b6079a636f2c89d9e8410f45d07782b8ca04b4cb6ae1a2ab8e5c4bd50c1"
+    }
+  ],
+  "manifestSha256": "273e73c2a54a17a3f139e1b82a4daf91bc7b653632a26de539dbf3892c69c304",
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 4726,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "b5c447e66755e3e2a6979d26a27597227e78c6ad0c9b1962bbe0f176cceb2507"
+    }
+  ],
+  "manifestSha256": "b3166e7631efd10fd2b74bffaf8036447e48c404a3d8203d6580b4bf46793a70",
+  "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+  "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

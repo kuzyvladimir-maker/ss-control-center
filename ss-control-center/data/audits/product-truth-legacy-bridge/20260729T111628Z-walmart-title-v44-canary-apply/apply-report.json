@@ -1,0 +1,58 @@
+{
+  "approvalId": "owner-ptlb-wave-1bac2d5b5dd32f7f931e2ece",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "ec2b57f17c984f8712715d14602d4e8f4e4cec4eed987cc2974da7a5f6529ce9",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T11:17:09.948Z",
+  "counts": {
+    "canonicalVariantReuses": 1,
+    "donorIdentityTransitions": 2,
+    "donorVariantDecisionReuses": 1,
+    "exactExistingRows": 1,
+    "insertedRows": 59,
+    "targets": 10
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-1bac2d5b5dd32f7f931e2ece",
+  "planSha256": "6f75e9657ef8c8b37312751b3789559d38f91464d8e8c12e86336524e73984d9",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.7.0",
+  "startedAt": "2026-07-29T11:16:28.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 10,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 10,
+    "listingKeys": [
+      "walmart:1:FaisalX-229",
+      "walmart:1:FaisalX-232",
+      "walmart:1:FaisalX-233",
+      "walmart:1:FaisalX-234",
+      "walmart:1:FaisalX-235",
+      "walmart:1:FaisalX-236",
+      "walmart:1:FaisalX-237",
+      "walmart:1:FaisalX-2486",
+      "walmart:1:FaisalX-2487",
+      "walmart:1:FaisalX-2533"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 10
+  }
+}

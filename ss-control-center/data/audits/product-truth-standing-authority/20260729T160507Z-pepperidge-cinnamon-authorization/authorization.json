@@ -1,0 +1,80 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99652.5,
+        "evidenceSha256": "6070bd7be9e19f916489936ed17d34ba9fa4e42e7821dbf9899a10afdbf0591c",
+        "observedAt": "2026-07-29T16:04:57.018Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-29T16:15:08.070Z",
+    "issuedAt": "2026-07-29T16:05:08.070Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-29T16:15:08.070Z",
+      "issuedAt": "2026-07-29T16:05:08.070Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+      "version": 1
+    },
+    "planSha256": "92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec",
+    "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+  "approvalSha256": "475443bea5cd1dc56abe4af3a920dfc5c311dfc01dbbe37601d4fb38f5719688",
+  "balanceEvidenceSha256": "6070bd7be9e19f916489936ed17d34ba9fa4e42e7821dbf9899a10afdbf0591c",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec:pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+  "expiresAt": "2026-07-29T16:15:08.070Z",
+  "issuedAt": "2026-07-29T16:05:08.070Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160250Z-pepperidge-cinnamon-doctor.plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160250Z-pepperidge-cinnamon-doctor.plan/plan.sha256",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160507Z-pepperidge-cinnamon-authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec:pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160507Z-pepperidge-cinnamon-execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160250Z-pepperidge-cinnamon-doctor.plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160250Z-pepperidge-cinnamon-doctor.plan/plan.sha256' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160507Z-pepperidge-cinnamon-authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec:pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T160507Z-pepperidge-cinnamon-execution'",
+  "ownerActionRequired": false,
+  "planSha256": "92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,19 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-report.json",
+      "role": "apply_report",
+      "sha256": "beab72cdb0a20a5d812c455b7c1d18b04b175708de070969757f00ee4bd2cce1"
+    }
+  ],
+  "completedAt": "2026-07-29T17:29:50.774Z",
+  "costOutcomes": [
+    "FACT"
+  ],
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "0447a3ae7e5ae8120817b90aaef7672a80d9b69e5475ca7dcf8faac5b1fe1fb2",
+  "preflightReportSha256": "79ca15bd62abf53e3bf087df332e279685dbce39e539f2606495639239ff6e8e",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-result-index/1.0.0",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "status": "APPLIED"
+}

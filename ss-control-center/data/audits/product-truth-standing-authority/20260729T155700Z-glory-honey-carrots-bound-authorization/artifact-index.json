@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "33a1348c0a1d53a5e728b9ffa74d600f6fa149ae5bcbd6a1934850bab7e9d7d4",
+  "authorizationSha256": "c3b0aef4d3f7ee55a25874b17c07c8b70efa583963768523bcf32c54562661f8",
+  "balanceEvidenceSha256": "a8bd3233c1ac24f354339963f6e6a7c5c0148588e1cc5bdf2b91f40061255b7e",
+  "createdAt": "2026-07-29T15:53:25.799Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "33a1348c0a1d53a5e728b9ffa74d600f6fa149ae5bcbd6a1934850bab7e9d7d4"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "c3b0aef4d3f7ee55a25874b17c07c8b70efa583963768523bcf32c54562661f8"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

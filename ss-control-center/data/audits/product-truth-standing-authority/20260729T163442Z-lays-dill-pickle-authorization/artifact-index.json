@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "a8c1fac4c8206fc06782ac67cbcbca455f5d5d853d51add03a9d65c3dbac9f6f",
+  "authorizationSha256": "86ee6a2a992e7513736cbb698a001fac71ea92764a22daf912ea964ce198a4b3",
+  "balanceEvidenceSha256": "ee170b6fdd16c41482f8669472a255e3bb67a8994747dd12d2f1febf23ea6136",
+  "createdAt": "2026-07-29T16:34:42.639Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "a8c1fac4c8206fc06782ac67cbcbca455f5d5d853d51add03a9d65c3dbac9f6f"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "86ee6a2a992e7513736cbb698a001fac71ea92764a22daf912ea964ce198a4b3"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+  "runId": "pt-lays-dill-pickle-20260729t163233z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,112 @@
+{
+  "approvalId": "pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:5608a4939862658d0897fb82cc756cf1e82e507e9f8f2c4bc098f22fe39d1116",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:10452822",
+  "donorProductId": "702af605-b9ed-45b0-a979-f1aa6d034816",
+  "generatedAt": "2026-07-29T16:09:02.066Z",
+  "job": {
+    "approvalId": "pt-standing:92754096eaef76d7eff7:6070bd7be9e19f91",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": null,
+      "detailReceiptId": null,
+      "identityMode": "EXISTING_EXACT",
+      "planSha256": "92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec",
+      "priceObservationId": "doo:80dffa64547c708d670923ab9e5b59754c666d814ad5558879461c438be206d2",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_5717c4422be4499b4fb88cf34fd0a679bf683e6d133402a9f78f3f0ab9faad1a",
+      "stage": "SEARCH_PERSISTED",
+      "variantDecisionId": "dpvd:17e9a34024deea5df2bc3e4530734989447cf995cc32a7e20a3c2bee90c9470d"
+    },
+    "error": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+    "id": "ptej_3e1e6865741d30b9f2f157081f2d5d55fd75390fa4237a477851abbac8a9308e",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+    },
+    "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+    "status": "error",
+    "terminalReason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_a720e1dc661de7b40e53604b50cded60dbb3be5291d1330c2183feafb06a3f86",
+        "createdAt": "2026-07-29T16:05:59.869Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_5717c4422be4499b4fb88cf34fd0a679bf683e6d133402a9f78f3f0ab9faad1a",
+        "reservationKey": "mpr_v1_34996f7635efb8f4dd4600dc40e889dd19f8fd37f18b19a41991a3af6f6362bb",
+        "reservedAt": "2026-07-29T16:05:59.869Z",
+        "settledAt": "2026-07-29T16:06:08.338Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_f68abc8fe9f320f7567aa750efc79c3be502e920d3f13dd94c7f125633df78c3",
+        "createdAt": "2026-07-29T16:08:11.695Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_f6fdfb89203ae603516444d72461dd2c683b23ef791a6f5749a7fa7cd9c12201",
+        "reservationKey": "mpr_v1_efe7d4bca224f44308b0c9c87fb2fb551e8bb27db9a430801e104cbb8b61fa11",
+        "reservedAt": "2026-07-29T16:08:11.695Z",
+        "settledAt": "2026-07-29T16:08:20.391Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec",
+  "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10452822",
+  "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

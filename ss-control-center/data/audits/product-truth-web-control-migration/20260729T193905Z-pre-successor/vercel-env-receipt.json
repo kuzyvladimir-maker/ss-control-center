@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "product-truth-standing-wave-vercel-env-receipt/1.0.0",
+  "updatedAt": "2026-07-29T19:44:21.673Z",
+  "environment": "production",
+  "project": "ss-control-center",
+  "activationPacketSha256": "6b8ab80ae92d66c8ae8822f3848e1b7353bd26fe3e0118f5ebc643f7dc4a8137",
+  "variables": [
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_STAGE",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "fbca8fbcdb358464ac85520bde751e4150c0b5ab5597b536848fe41e557238cb"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_CONFIRMATION",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "b78bd272a6bde6f972c099a7616f9584c6cf3127c752dadc00a5ae13b4189909"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_RELEASE_ID",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "f1070dc26765daa2ee9db34f84054e5aa3c0b660efc16b0c189e6f52dd19de46"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_COMMIT_SHA",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "5a3304850f3192faebe55e5fc864e5cf83f946c1a6a66c7c8a5fb1f8aa596e92"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_TREE_SHA",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "d7e047cf9cd634431c8f434367f328bb77e4528e3dd24f68c4259c0df0fadd31"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_EXECUTABLE_TREE_SHA256",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "0eb20ac2f8c3a21a67485559b5cd38e24bcb1cadbfe1aa931dd464476a572835"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_ENVIRONMENT",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "ba3fbef94da9c681face49a7d0b2386487643d862b9e515bd0acfc71f5007a73"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_DATABASE_TARGET_FINGERPRINT",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "3534e12b6c73290af1c6e9db004b6e523ac60201c4db86e8aac7ce8c1763ff31"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_MANIFEST_SHA256",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "c4069236c52d9c0c17eac90aa660b332de967d8e9de3737b0ba1d06e864ee659"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_UNWRANGLE_RESERVE_FLOOR",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "d4c999ae43633bd2036188d2bca68e1be8202b2cc1f3a1c42a728eaff7d2483d"
+    },
+    {
+      "name": "PRODUCT_TRUTH_WEB_CONTROL_WORKER_TOKEN_SHA256",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "bf4efaefd65282873ffe4bc9a8b4ef873d0b979028312a9ab8e0cd793274353e"
+    },
+    {
+      "name": "PRODUCT_TRUTH_STANDING_WAVE_WEB_ENABLED",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "name": "PRODUCT_TRUTH_STANDING_WAVE_WEB_CONFIRMATION",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "12cabd4c51ce3c6474bebd1d9358c3da586fd0794314ef231421d97296dc427d"
+    },
+    {
+      "name": "PRODUCT_TRUTH_STANDING_WAVE_PROVIDER_POLICY_SHA256",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "d36124615f173bee8fee228f94a27a1ccb9dbd5839b7d09c7c7ba6a4d2695c76"
+    },
+    {
+      "name": "PRODUCT_TRUTH_STANDING_WAVE_NO_PAID_POLICY_SHA256",
+      "status": 0,
+      "signal": null,
+      "valueSha256": "efa98edcb8e943461712d6da08c58bc5771fa5cc29a124ce1e6dda0827a9f7f5"
+    }
+  ],
+  "allUpdated": true
+}

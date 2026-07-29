@@ -1,0 +1,1 @@
+{"errors":[{"code":"INVALID_REQUEST_CONTENT.INVALID_REQUEST","field":"shippingMethods[0].configurations[0].perShippingCharge.unitOfMeasure","description":"unitOfMeasure cannot be empty","info":"unitOfMeasure cannot be empty","severity":"ERROR","category":"DATA","causes":[],"errorIdentifiers":{}}]}

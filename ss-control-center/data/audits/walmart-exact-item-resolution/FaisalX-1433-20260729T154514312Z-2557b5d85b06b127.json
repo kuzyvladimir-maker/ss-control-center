@@ -1,0 +1,162 @@
+{
+  "schema_version": "walmart-exact-item-resolution-probe/v2",
+  "probe_id": "walmart-exact-item-FaisalX-1433-20260729T154514312Z",
+  "captured_at": "2026-07-29T15:45:14.312Z",
+  "input": {
+    "sku": "FaisalX-1433",
+    "store_index": 1
+  },
+  "execution": {
+    "mode": "read_only_run",
+    "walmart_logical_get_operations": 2,
+    "walmart_http_get_attempts_max": 10,
+    "oauth_token_posts_max": 3,
+    "actual_transport_attempts_observed": false,
+    "buyer_pdp_gets": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0,
+    "paid_api_calls": 0,
+    "model_calls": 0
+  },
+  "requests": [
+    {
+      "sequence": 1,
+      "method": "GET",
+      "contract": "walmart_marketplace_exact_sku_get",
+      "path": "/v3/items/FaisalX-1433",
+      "status": 200,
+      "final_correlation_id": "6055b95f-f6aa-4aad-bf5f-8c3ff341b0e7"
+    },
+    {
+      "sequence": 2,
+      "method": "GET",
+      "contract": "walmart_catalog_search_exact_upc",
+      "path": "/v3/items/walmart/search?upc=745296305452",
+      "status": 200,
+      "final_correlation_id": "f84c06b3-b2c0-4f7b-aba6-8b1df8b02529"
+    }
+  ],
+  "source_payloads": {
+    "seller": {
+      "canonical_sha256": "471ff1726e651f52d8f65e12f08ff69498fc364338f69465141b1fd3280cfa11",
+      "payload": {
+        "ItemResponse": [
+          {
+            "mart": "WALMART_US",
+            "sku": "FaisalX-1433",
+            "condition": "New",
+            "availability": "In_stock",
+            "wpid": "4JNG9WLOQSPZ",
+            "upc": "745296305452",
+            "gtin": "00745296305452",
+            "productName": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 2 Cartons",
+            "shelf": "Home Page/Food/Pantry/Soup/Ready To Heat Soup",
+            "productType": "Prepared & Packaged Soups",
+            "price": {
+              "currency": "USD",
+              "amount": 22.99
+            },
+            "publishedStatus": "PUBLISHED",
+            "lifecycleStatus": "ACTIVE",
+            "variantGroupId": "SPRCMAR00121QTY",
+            "variantGroupInfo": {
+              "isPrimary": true,
+              "groupingAttributes": [
+                {
+                  "name": "count_per_pack",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        ],
+        "totalItems": 1
+      }
+    },
+    "catalog_search": {
+      "canonical_sha256": "2d5b75304f8e02427566c9a8caa07cbe7fa6eee325c01255b6a0bf38102879bf",
+      "payload": {
+        "items": [
+          {
+            "itemId": "1209518230",
+            "isMarketPlaceItem": true,
+            "images": [
+              {
+                "url": "https://i5.walmartimages.com/seo/Maruchan-Instant-Lunch-Chicken-Chicken-Cup-12-Carton-Bundle-of-2-Cartons_9531d9a7-b2a2-4e23-b233-634c26861333.9e9e443ede4cf2db4c14aa43be85cf05.png"
+              }
+            ],
+            "customerRating": "5.0",
+            "price": {
+              "amount": "22.97",
+              "currency": "USD"
+            },
+            "description": "<li>Maruchan Instant Lunch. Chicken</li><li>Chicken - Cup - 12 / Carton</li>",
+            "title": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 2 Cartons",
+            "brand": "Maruchan",
+            "productType": "Prepared & Packaged Soups",
+            "standardUpc": [
+              "00745296305452"
+            ],
+            "properties": {
+              "numReviews": "1",
+              "categories": [
+                "Food",
+                "Pantry",
+                "Soup",
+                "Ready to heat soup"
+              ]
+            }
+          }
+        ],
+        "relatedQueries": []
+      }
+    }
+  },
+  "resolution": {
+    "schema_version": "walmart-exact-item-resolution/v1",
+    "sku": "FaisalX-1433",
+    "buyer_facing_verified": false,
+    "seller": {
+      "sku": "FaisalX-1433",
+      "title": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 2 Cartons",
+      "upc": "745296305452",
+      "gtin14": "00745296305452",
+      "wpid": "4JNG9WLOQSPZ",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "1209518230",
+      "title": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 2 Cartons",
+      "main_image_url": "https://i5.walmartimages.com/seo/Maruchan-Instant-Lunch-Chicken-Chicken-Cup-12-Carton-Bundle-of-2-Cartons_9531d9a7-b2a2-4e23-b233-634c26861333.9e9e443ede4cf2db4c14aa43be85cf05.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "source_contract": {
+      "seller": "walmart_marketplace_exact_sku_get",
+      "candidate": "walmart_catalog_search_exact_upc",
+      "buyer_pdp": "not_verified",
+      "positional_or_fuzzy_fallbacks": 0
+    },
+    "source_hashes": {
+      "seller_payload_canonical_sha256": "471ff1726e651f52d8f65e12f08ff69498fc364338f69465141b1fd3280cfa11",
+      "catalog_search_payload_canonical_sha256": "2d5b75304f8e02427566c9a8caa07cbe7fa6eee325c01255b6a0bf38102879bf"
+    },
+    "identity_evidence": [
+      "request.sku=FaisalX-1433",
+      "seller.ItemResponse[0].sku=FaisalX-1433",
+      "seller.ItemResponse[0].upc=745296305452",
+      "seller.normalized_gtin14=00745296305452",
+      "seller.wpid_not_itemId=4JNG9WLOQSPZ",
+      "catalog.items[0].standardUpc~=00745296305452;itemId=1209518230",
+      "catalog.unique_numeric_public_itemId=1209518230"
+    ]
+  },
+  "seal": {
+    "algorithm": "sha256",
+    "canonicalization": "recursive-key-sort-json/v1",
+    "body_sha256": "2557b5d85b06b1279b6965ddcd0e02fb9ebb9701bb4bcfc5d60785c5f347e594"
+  }
+}

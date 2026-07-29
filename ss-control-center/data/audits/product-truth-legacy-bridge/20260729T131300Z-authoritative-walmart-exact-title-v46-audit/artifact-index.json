@@ -1,0 +1,49 @@
+{
+  "artifacts": [
+    {
+      "file": "source-snapshot.json",
+      "role": "source_snapshot",
+      "sha256": "e393523fdf217372437e20c7a5b8fd163e0cba4331b6c5af38bef2e5411d8e0a"
+    },
+    {
+      "file": "bridge-plan.json",
+      "role": "bridge_plan",
+      "sha256": "8bd89352ddf5bbae7e72ffdac789a442e71ba8e10390eb759833989fe8f02d16"
+    }
+  ],
+  "bridgePlanSchemaVersion": "product-truth-legacy-bridge-plan/1.7.0",
+  "counts": {
+    "alreadyCanonicalComponents": 685,
+    "alreadyCanonicalListings": 670,
+    "componentsTotal": 6685,
+    "contentOnlyCanonicalizationCandidates": 15,
+    "exactCanonicalizationCandidates": 0,
+    "exactContentAndPriceCandidates": 0,
+    "exactContentOnlyCandidates": 15,
+    "exactIdentityOnlyCandidates": 178,
+    "identityOnlyCanonicalizationCandidates": 37,
+    "listingsTotal": 5935,
+    "priceOnlyEstimates": 27,
+    "quarantinedComponents": 5780,
+    "quarantinedListings": 5213
+  },
+  "generatedAt": "2026-07-29T13:13:00.000Z",
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "safety": {
+    "createsAdditionalCatalog": false,
+    "databaseWrites": 0,
+    "historicalExactFlagsAreIdentityProof": false,
+    "mutatesLegacyCatalog": false,
+    "paidCalls": 0,
+    "priceProxyMayProvideContent": false,
+    "providerCalls": 0,
+    "readOnly": true,
+    "retailerFetches": 0
+  },
+  "schemaVersion": "product-truth-legacy-bridge-artifact-index/1.0.0",
+  "target": {
+    "displayUrl": "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "fingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+    "kind": "remote"
+  }
+}

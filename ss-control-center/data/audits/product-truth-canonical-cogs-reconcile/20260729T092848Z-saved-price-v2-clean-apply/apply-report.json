@@ -1,0 +1,66 @@
+{
+  "completedAt": "2026-07-29T09:29:21.088Z",
+  "counts": {
+    "componentEvidence": 10,
+    "exactExistingRows": 0,
+    "insertedRows": 30,
+    "listingScopeLinks": 10,
+    "skuCosts": 10,
+    "targets": 10
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcc-db99cab35510c65fd5a7e62c",
+  "planSha256": "a013044e74ebf3db4b37e0df52b4f2c81f52a9ed2645247c9502c95dda9c4d33",
+  "preflightReportSha256": "a22a7b9d90920f3d19987260f297257a4a6e1822dbd010c4d1c0f0b14a942499",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-report/2.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-29T09:28:48.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "consumerCutoverChanged": false,
+    "costIds": [
+      "retail:FaisalX-1177:recipe:8433a145ee1398e9aa5138c6",
+      "retail:FaisalX-1315:recipe:89c1ba9f3944905420c3829d",
+      "retail:FaisalX-1828:recipe:db0288a99c077a2328d4e78b",
+      "retail:RizwanX-3481:recipe:74ee6e9080c4686de19d13dc",
+      "retail:RizwanX-3482:recipe:680c0780cbcb7a016fd71eb6",
+      "retail:RizwanX-3483:recipe:7759d12be967f8865f1c5db4",
+      "retail:RizwanX-3499:recipe:826141fe4f777594a98e090b",
+      "retail:RizwanX-3500:recipe:96f57af96c3a78d6dee2b494",
+      "retail:RizwanX-3501:recipe:987d4bf793ef394a8d0c9c76",
+      "retail:RizwanX-3510:recipe:905e1b2335148e92e7a05a56"
+    ],
+    "costOutcomes": [
+      "FACT"
+    ],
+    "foreignKeyViolations": [],
+    "listingKeys": [
+      "walmart:1:FaisalX-1177",
+      "walmart:1:FaisalX-1315",
+      "walmart:1:FaisalX-1828",
+      "walmart:1:RizwanX-3481",
+      "walmart:1:RizwanX-3482",
+      "walmart:1:RizwanX-3483",
+      "walmart:1:RizwanX-3499",
+      "walmart:1:RizwanX-3500",
+      "walmart:1:RizwanX-3501",
+      "walmart:1:RizwanX-3510"
+    ],
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "recipeHashes": [
+      "42a434b4d2847a4b058a0b6ba48abfaf9e5912b152c3dd8289c14585a793dc7c",
+      "50b71408b173baa5aba06a389e17fdec9d45f338a8ba4633f58f8b8023903450",
+      "1ec9fc375544d3189875d4c57a144f461e8c4d93e4a0f3b2e6a704f912c92fa5",
+      "6f7961cfe4f8d7784e3f0de9a7869df141cb1baaf17d604d6c366612ed71484a",
+      "e517e33938a8306f6f289f81fbc8148fb5bf19da0093706c2cda0593ecb4f90e",
+      "afcf7014be7c29e786530d8c08bb391109f5ee03f7fbe9d15b5dac51e7fd87f8",
+      "9408a4b32508b4c20b314094b859ab773b8b2dee6d44056fede5c43db44db1a5",
+      "25b44d528b45df089e7777d52c4a302f2daae79937a8adc4d2a648f06febcbab",
+      "ec1fff370b86f7ecf9befb5e954cee9c121efdba67044044fc0ea68aeb43981e",
+      "9539106e8ecda6530d55abff0bf75df56b2ab767f1361dc9e60fb03c2771bc37"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "artifacts": [
+    {
+      "file": "apply-report.json",
+      "role": "apply_report",
+      "sha256": "f051a216bde31a91d7155212b8cb4349ed10cd6764bb01bd920e534c956d4f77"
+    }
+  ],
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "c9ddcb351e7a97355670a65e55096001dfa31ec220ae220b160b78b3af639bc0",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "completedAt": "2026-07-29T14:19:09.555Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "59dba06d359f57664bc87fc9fcdfa0c799cf4495340393543abda7a64770ee11",
+  "schemaVersion": "product-truth-legacy-bridge-wave-result-index/2.0.0",
+  "status": "APPLIED"
+}

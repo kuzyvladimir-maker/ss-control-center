@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:af57e6ed779e58266b9d:2809d47fc4fcf661",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:25568083",
+  "donorProductId": "5d4f8fb8-9c2a-4f46-904e-3c239752b160",
+  "generatedAt": "2026-07-29T15:31:27.287Z",
+  "job": {
+    "approvalId": "pt-standing:af57e6ed779e58266b9d:2809d47fc4fcf661",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:IN_STOCK,TITLE_TITLE_BRAND_NOT_FOUND,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_BRAND_NOT_FOUND,CANONICAL_VARIANT",
+    "id": "ptej_a8108bf9b709684587d75c3490691a1f1095663bc35bc63e22f488eb1271d571",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:IN_STOCK,TITLE_TITLE_BRAND_NOT_FOUND,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_BRAND_NOT_FOUND,CANONICAL_VARIANT"
+    },
+    "runId": "pt-pepperidge-wheat-standing-20260729t153000z",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:IN_STOCK,TITLE_TITLE_BRAND_NOT_FOUND,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_BRAND_NOT_FOUND,CANONICAL_VARIANT"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_027c4496a7d8c6ce1e6ff2c438f5d8e14c922ad723c2f241c58650aab06b0641",
+        "createdAt": "2026-07-29T15:31:18.781Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_dc3e9a320a41f84830fcf9d2ac89af606890cd8596483527bdd53ec111e7eb83",
+        "reservationKey": "mpr_v1_5554474cf3c4dc589510c497c2aedfe2fd762938d20e64ac7e7df3cf9484421a",
+        "reservedAt": "2026-07-29T15:31:18.781Z",
+        "settledAt": "2026-07-29T15:31:26.977Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "pt-pepperidge-wheat-standing-20260729t153000z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "af57e6ed779e58266b9d215300b270136e1397b1a80e9c84b2d3a3d946ff9d80",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:IN_STOCK,TITLE_TITLE_BRAND_NOT_FOUND,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_BRAND_NOT_FOUND,CANONICAL_VARIANT",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "25568083",
+  "runId": "pt-pepperidge-wheat-standing-20260729t153000z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

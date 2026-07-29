@@ -1,0 +1,246 @@
+{
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "createdAt": "2026-07-29T10:00:30.000Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "databaseWrites": {
+    "canonicalProductVariants": 1,
+    "donorIdentityTransitions": 0,
+    "donorVariantDecisions": 0,
+    "maximumRows": 7,
+    "productContentObservations": 1,
+    "productTruthListingRecipeComponents": 1,
+    "productTruthListingRecipes": 1,
+    "skuComponentEvidence": 1,
+    "skuCostListingScopeLinks": 1,
+    "skuCosts": 1
+  },
+  "expectedApprovalId": "owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+  "expiresAt": "2026-07-29T10:15:30.000Z",
+  "planId": "ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+  "rollbackPolicy": {
+    "postCommitDeleteRollback": false,
+    "postCommitRecovery": "APPEND_ONLY_CORRECTION_AND_CONSUMER_CUTOVER_OFF",
+    "rollbackBeforeCommit": true,
+    "transactionMode": "SINGLE_WRITE_TRANSACTION"
+  },
+  "schemaVersion": "product-truth-legacy-bridge-apply-plan/3.5.0",
+  "source": {
+    "bridgePlanSchemaVersion": "product-truth-legacy-bridge-plan/1.6.0",
+    "bridgePlanSha256": "99b124fd9ddd3b9cf2240972d17411e26e0f5d7e71e07a339618b408f6f39ba2",
+    "bridgePolicyVersion": "product-truth-legacy-bridge-policy/1.1.0",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "snapshotSchemaVersion": "product-truth-legacy-bridge-snapshot/1.6.0",
+    "snapshotSha256": "0bca258d0011ea70d7d2df6978f63c4af99546cdb46dbe441173e850a2ecf9fa"
+  },
+  "targets": [
+    {
+      "channel": "walmart",
+      "componentEvidence": {
+        "componentIndex": 0,
+        "contentCanonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+        "contentObservationId": "pco:4006a01efd02ea4ed989d249f1e52bc8d9e4c45b111ce69d1989e0434a088474",
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "evidenceHash": "04c182146814be6db8aa3e11b4c227ef11c5aa037e47189ba9d88f8cece5230b",
+        "evidenceJson": "{\n  \"contentCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n  \"contentObservationId\": \"pco:4006a01efd02ea4ed989d249f1e52bc8d9e4c45b111ce69d1989e0434a088474\",\n  \"evidenceStatus\": \"REJECT\",\n  \"flavor\": \"Very Young Small Sweet Peas, No Salt Added\",\n  \"matchTier\": \"EXACT_IDENTITY\",\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"method\": \"no-fresh-first-party-price\",\n  \"perUnit\": null,\n  \"priceCanonicalVariantId\": null,\n  \"priceObservationId\": null,\n  \"pricePolicyVersion\": \"price-evidence-eligibility/1.0.0\",\n  \"product\": \"Tender Petites\",\n  \"qty\": 4,\n  \"rejectionReasons\": [\n    \"NO_ELIGIBLE_PRICE_WITHIN_24_HOURS\",\n    \"LEGACY_PRICE_NOT_PROMOTED\"\n  ],\n  \"schemaVersion\": \"product-truth-sku-component-evidence/1.0.0\",\n  \"size\": \"15.25 oz\",\n  \"sourceEvidenceSchemaVersion\": \"product-truth-legacy-bridge-apply-plan/3.5.0\",\n  \"targetCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n  \"targetComparableUnitPrice\": null\n}\n",
+        "evidenceKey": "0b9e33d6ac6bc5997cbd1111d9eefe4056c94e8c6ba0a69e3942942dd21bf784",
+        "evidenceStatus": "REJECT",
+        "id": "sce:0b9e33d6ac6bc5997cbd1111d9eefe4056c94e8c6ba0a69e3942942dd21bf784",
+        "matchTier": "EXACT_IDENTITY",
+        "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+        "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+        "matcherVersion": "canonical-product-match/1.2.1",
+        "priceCanonicalVariantId": null,
+        "priceObservationId": null,
+        "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+        "skuCostId": "retail:RizwanX-199:bridge:6d964b6577aff99c838426de",
+        "targetCanonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99"
+      },
+      "content": {
+        "approvalId": "owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "canonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+        "contentHash": "55768ead934a80b4e911499a3d07bcb90face1d51f0c740d06dc3da06d6545d3",
+        "contentJson": "{\n  \"_capture\": \"legacy_materialized_bridge\",\n  \"_schemaVersion\": \"product-content-observation/1.3.0\",\n  \"allergens\": null,\n  \"attributes\": [\n    {\n      \"name\": \"Brand\",\n      \"value\": \"Del Monte\"\n    },\n    {\n      \"name\": \"Vegetable type\",\n      \"value\": \"Pea\"\n    },\n    {\n      \"name\": \"Flavor\",\n      \"value\": \"Sweet Pea\"\n    },\n    {\n      \"name\": \"Size\",\n      \"value\": \"15.25 oz\"\n    },\n    {\n      \"name\": \"Container type\",\n      \"value\": \"Can\"\n    },\n    {\n      \"name\": \"Food form\",\n      \"value\": \"Whole\"\n    },\n    {\n      \"name\": \"Spice level\",\n      \"value\": \"No Spice\"\n    },\n    {\n      \"name\": \"Food preparation method\",\n      \"value\": \"MICROWAVE\"\n    },\n    {\n      \"name\": \"Texture\",\n      \"value\": \"Tender\"\n    },\n    {\n      \"name\": \"Product line\",\n      \"value\": \"Fresh Cut\"\n    },\n    {\n      \"name\": \"Material\",\n      \"value\": \"Aluminum\"\n    },\n    {\n      \"name\": \"Shelf life\",\n      \"value\": \"500 days\"\n    },\n    {\n      \"name\": \"Food condition\",\n      \"value\": \"Shelf-Stable\"\n    },\n    {\n      \"name\": \"Product net content uom\",\n      \"value\": \"Ounce\"\n    },\n    {\n      \"name\": \"Product net content parent\",\n      \"value\": \"15.3 Ounces\"\n    },\n    {\n      \"name\": \"Assembled product weight\",\n      \"value\": \"17.4 oz\"\n    }\n  ],\n  \"bullets\": [\n    \"Del Monte Tender Petites Very Young Small Sweet Peas No Salt Added, 15.25 oz. Cans, gives those watching their sodium intake control over their seasoning choices\",\n    \"These sweet peas can be a quick weeknight go-to side dish or be used more creatively in more complex recipes\",\n    \"These no salt added sweet peas bring the wholesome goodness of the earth to your dinner table\",\n    \"Packed in our non-BPA** cans, you can easily store these vegetables to keep on hand for use when needed\",\n    \"Recipe ready and non-GMO* with no artificial preservatives, feel good about stocking your pantry with this staple vegetable\"\n  ],\n  \"category\": \"Dry\",\n  \"description\": \"Exceptionally tender in texture and flavor, our Del Monte Tender Petites Very Young Small Sweet Peas No Salt Added are harvested at the peak of freshness, then packed within ours to lock in their distinctively sweet taste. Their silky texture is sure to please any pea lover. These Non-GMO* canned very young sweet peas contain no artificial preservatives, or salt, which allows you to control their seasoning. This ready-to-eat side dish can be quickly heated up as a simple side dish for busy weeknight meals, or added to more complex recipes for a culinary challenge. Add these sweet peas to avocado toast for a new twist, to ravioli lasagna, or elevate their taste with minty lemon butter. Each Non-BPA** can of peas is easy to store in a pantry or cabinet for easy access whenever you need a delicious side dish in a hurry. Bring the wholesome goodness of the earth to your dinner table with no salt added Del Monte canned very young small sweet peas. *No genetically engineered ingredients. **Can lining produced without the intentional addition of BPA.\",\n  \"imageUrls\": [\n    \"https://i5.walmartimages.com/seo/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can_187bda0a-9f9d-426f-a3f3-08fa471be7b4.be2ec1fc2575c20659f88137a072554e.jpeg\",\n    \"https://images.salsify.com/video/upload/s--w18VKtku--/vc_auto/c_limit,h_1024,w_1280/tf0f7jhe8jbu7b5kaxoq.jpg\",\n    \"https://i5.walmartimages.com/asr/e764201d-303d-4f53-a0fb-7b21bddcb684.22d304b906fc7226ef94e9c17fb5f3ab.jpeg\",\n    \"https://i5.walmartimages.com/asr/4870e1c1-7a74-431f-803f-d87c627d15b2.73b8da945b65a47587a333fa5bc768cd.jpeg\",\n    \"https://i5.walmartimages.com/asr/1961dd65-3f4d-4272-92e9-24b89694e9fc.2be35067e6f22a4122a99f3c837ed723.jpeg\",\n    \"https://i5.walmartimages.com/asr/d8486075-6ec3-4695-8a9d-8c90d3c15108.9024804ba415758b3b84578479672bcf.jpeg\",\n    \"https://i5.walmartimages.com/asr/c4a4cc12-1727-4f12-8ba5-1ec4272ed05c.9bdbec5d104e19e2d7a545cb7bec4c34.jpeg\"\n  ],\n  \"ingredients\": \"Peas, Water, Sugar. | Peas, Water, Sugar.\",\n  \"mainImageUrl\": \"https://i5.walmartimages.com/seo/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can_187bda0a-9f9d-426f-a3f3-08fa471be7b4.be2ec1fc2575c20659f88137a072554e.jpeg\",\n  \"normalizedGtin14\": \"00024000256625\",\n  \"nutritionFacts\": null,\n  \"sourceBinding\": {\n    \"bridgePlanSha256\": \"99b124fd9ddd3b9cf2240972d17411e26e0f5d7e71e07a339618b408f6f39ba2\",\n    \"donorOfferId\": \"do:walmart:3269112977\",\n    \"donorProductId\": \"755499fa-915b-40cd-a980-0e2c333ee9bf\",\n    \"donorUpdatedAt\": \"2026-07-09T01:02:25.017Z\",\n    \"exactContentEvidenceArtifactSha256\": null,\n    \"exactContentRawHtmlSha256\": null,\n    \"materializationRoute\": \"legacy-materialized-bridge\",\n    \"offerFetchedAt\": \"2026-07-08T21:42:55.066Z\",\n    \"originalSourceApi\": \"oxylabs\",\n    \"policyVersion\": \"product-truth-legacy-bridge-policy/1.1.0\",\n    \"rowHashes\": {\n      \"componentBarcodeEvidenceSha256\": null,\n      \"contentSourceOfferSha256\": \"b086ba216126b52c68d99348f745c25af0f5c9e1af98e9683666730b7b0bbe3f\",\n      \"directTargetContentEvidenceSha256\": null,\n      \"donorContentSha256\": \"0a6b7e784b3bd43c2bd6db079ca18d2d614abf87823c216220f929b3cac361fa\",\n      \"donorProductSha256\": \"af867ee405971089fca502e31fcd1728de71d8118aed59d9f2c09c6686cdfeb1\"\n    },\n    \"sourceSnapshotSha256\": \"0bca258d0011ea70d7d2df6978f63c4af99546cdb46dbe441173e850a2ecf9fa\"\n  },\n  \"storage\": \"Shelf-Stable\",\n  \"title\": \"Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 15.25 oz. Can\",\n  \"upc\": \"024000256625\"\n}\n",
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "donorProductId": "755499fa-915b-40cd-a980-0e2c333ee9bf",
+        "fieldHashesJson": "{\n  \"allergens\": \"38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed\",\n  \"attributes\": \"1da23f194c9eda7c0aee28a0bc64e725257adbe0b45b590ac9b7e2df512e82da\",\n  \"bullets\": \"8a525fefaa038a664201c2c66efe9fd031e5a3a1f67b77b2b852d548850a07f8\",\n  \"category\": \"fa477174c76c523f71580c0c4d75e6897467ef4fcc6ca7ad4245c74311aed70d\",\n  \"description\": \"dbb0632cc66f550c13b3493b3ea43138c192f47e0502008a9cf4fad04e350d35\",\n  \"imageUrls\": \"f2c87322884c15967eac6fa8f3e900cb3f93396bfa537c1f86db8253db36f1f1\",\n  \"ingredients\": \"7fdf39de2f9fbc41c4d043640d67a7b42c6e646e2baa7955c1b56029b86a0dd4\",\n  \"mainImageUrl\": \"419a51f91a7057acdd5995f6cddc491993adc1177ff4a7f299f84560e8e81a99\",\n  \"nutritionFacts\": \"38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed\",\n  \"storage\": \"8bacd74112cf96402c99692c9221cd0c66a704d81eb537907d995eb4f554f158\",\n  \"title\": \"f8fc69bc97c9732fff775a3e82b46fb1bbacac96777d6cd7bb0c9cd898fc141d\",\n  \"upc\": \"efabf51b196a0b22c0966d566c9e5c5f5502aaddc03feb8882200e0110b8fcb6\"\n}\n",
+        "id": "pco:4006a01efd02ea4ed989d249f1e52bc8d9e4c45b111ce69d1989e0434a088474",
+        "meteredReceiptId": null,
+        "observationKey": "4006a01efd02ea4ed989d249f1e52bc8d9e4c45b111ce69d1989e0434a088474",
+        "observedAt": "2026-07-09T01:02:25.017Z",
+        "runId": "ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "sourceApi": "legacy-materialized-bridge",
+        "sourceUrl": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can/3269112977?classType=VARIANT",
+        "variantDecisionId": "dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1"
+      },
+      "contentSourceOfferId": "do:walmart:3269112977",
+      "cost": {
+        "approvalId": "owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "asin": null,
+        "confidence": null,
+        "costPerUnit": null,
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "currency": "USD",
+        "effectiveDate": "2026-07-29T10:00:30.000Z",
+        "evidenceJson": "{\n  \"approvalId\": \"owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52\",\n  \"channel\": \"walmart\",\n  \"components\": [\n    {\n      \"contentCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n      \"contentDonorProductId\": \"755499fa-915b-40cd-a980-0e2c333ee9bf\",\n      \"contentObservationId\": \"pco:4006a01efd02ea4ed989d249f1e52bc8d9e4c45b111ce69d1989e0434a088474\",\n      \"flavor\": \"Very Young Small Sweet Peas, No Salt Added\",\n      \"idx\": 0,\n      \"matchTier\": \"EXACT_IDENTITY\",\n      \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n      \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n      \"matcherVersion\": \"canonical-product-match/1.2.1\",\n      \"method\": \"no-fresh-first-party-price\",\n      \"perUnit\": null,\n      \"priceCanonicalVariantId\": null,\n      \"priceEvidenceDonorProductId\": null,\n      \"priceEvidenceObservationId\": null,\n      \"priceEvidenceOfferId\": null,\n      \"priceEvidenceStatus\": \"REJECT\",\n      \"pricePolicyVersion\": \"price-evidence-eligibility/1.0.0\",\n      \"priceVariantDecisionId\": null,\n      \"product\": \"Tender Petites\",\n      \"qty\": 4,\n      \"size\": \"15.25 oz\",\n      \"targetCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n      \"targetComparableUnitPrice\": null\n    }\n  ],\n  \"evaluatedAt\": \"2026-07-29T10:00:30.000Z\",\n  \"listingKey\": \"walmart:1:RizwanX-199\",\n  \"listingKeyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"outcome\": \"UNSOURCEABLE\",\n  \"procurementZip\": \"33765\",\n  \"recipeHash\": \"19f941c6026dbd174dc7ddc472de67cb320b19d882c594ddad5fb05bb0e9866c\",\n  \"runId\": \"ptlb-wave-62d5f7c4c47d3a9eeebe4e52\",\n  \"schemaVersion\": \"product-truth-cogs-evidence/1.0.0\",\n  \"sourcePolicy\": {\n    \"evidence\": \"existing-catalog-only\",\n    \"maxPriceAgeMs\": 86400000,\n    \"paidCalls\": 0,\n    \"providerCalls\": 0\n  },\n  \"storeIndex\": 1\n}\n",
+        "evidenceOutcome": "UNSOURCEABLE",
+        "iceCost": null,
+        "id": "retail:RizwanX-199:bridge:6d964b6577aff99c838426de",
+        "includesPackaging": 0,
+        "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+        "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+        "matcherVersion": "canonical-product-match/1.2.1",
+        "needsReview": 1,
+        "notes": "UNSOURCEABLE: no eligible price within 24 hours; exact legacy content retained",
+        "observationKey": "6d964b6577aff99c838426dea7ed9c2985b7c282bc238ff68bbaa8229e36ec42",
+        "packSize": null,
+        "packagingCost": null,
+        "pricePolicyVersion": "price-evidence-eligibility/1.0.0",
+        "productCost": null,
+        "recipeHash": "19f941c6026dbd174dc7ddc472de67cb320b19d882c594ddad5fb05bb0e9866c",
+        "runId": "ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "sku": "RizwanX-199",
+        "source": "retail:batch",
+        "totalCost": null,
+        "updatedAt": "2026-07-29T10:00:30.000Z"
+      },
+      "decision": null,
+      "donorProductId": "755499fa-915b-40cd-a980-0e2c333ee9bf",
+      "donorTransition": null,
+      "expectedReadiness": {
+        "bundleFactory": false,
+        "listingImprovement": false,
+        "procurement": false,
+        "unitEconomics": "UNSOURCEABLE"
+      },
+      "identityReconciliation": {
+        "canonicalDecisionId": "dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1",
+        "canonicalListingKey": "walmart:1:RizwanX-199",
+        "canonicalTargetIdentity": {
+          "brand": "del monte",
+          "flavor": "added no salt",
+          "form": "can",
+          "modifiers": [
+            "no_salt_added"
+          ],
+          "outerPackCount": 1,
+          "productLine": "peas petites small sweet tender very young",
+          "size": "432.33022765625 g"
+        },
+        "canonicalTargetVariant": {
+          "canonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+          "identityHash": "af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+          "identityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"del monte\",\"productLine\":\"peas petites small sweet tender very young\",\"flavor\":\"added no salt\",\"modifiers\":[\"no_salt_added\"],\"form\":\"can\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":432.33022765625,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+          "keyVersion": "canonical-product-variant-key/1.0.0",
+          "variantKey": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99"
+        },
+        "donorProductId": "755499fa-915b-40cd-a980-0e2c333ee9bf",
+        "mode": "LEXICALLY_EQUIVALENT_DONOR_GRAPH",
+        "physicalIdentitySha256": "9f74b0acc861fbcb7615576d2b32c3043c60d638c633364bccbdf80592714f8f",
+        "schemaVersion": "product-truth-legacy-bridge-field-partition-reconciliation/2.0.0",
+        "sourceTargets": [
+          {
+            "listingKey": "walmart:1:RizwanX-199",
+            "originalCanonicalVariantId": "cpv1:56f9d4b151f8878ecbd747dabb030ec48580bb9d3dfe8bc673ea172912bd8d67",
+            "originalTargetIdentitySha256": "22bfac988b4e9e4f1a9ecd8450a29f52c6d20b00741b950ecf5a7d1776c55cd7",
+            "overlappingProductFlavorTokens": 0
+          }
+        ],
+        "sourceTargetsSha256": "5aee7aad72761cec6e750985e3db8100b68c62b81f684bee0244b114e7c50317"
+      },
+      "legacyComponentId": "comp:RizwanX-199:0",
+      "listingKey": "walmart:1:RizwanX-199",
+      "listingRecipe": {
+        "approvalId": "owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "componentCount": 1,
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "effectiveAt": "2026-07-29T10:00:30.000Z",
+        "evidenceHash": "8c0ba293bbc624b60ebaed78440e436cc48a9b1d0dead239224aaae80bea5c3c",
+        "evidenceJson": "{\n  \"components\": [\n    {\n      \"componentEvidenceHash\": \"af99e360dfc3cd6f983a756c1c7257f3542240d5adf667a1b798905bdf3b9b3d\",\n      \"componentIndex\": 0,\n      \"donorProductId\": \"755499fa-915b-40cd-a980-0e2c333ee9bf\",\n      \"flavor\": \"Very Young Small Sweet Peas, No Salt Added\",\n      \"product\": \"Tender Petites\",\n      \"quantity\": 4,\n      \"size\": \"15.25 oz\",\n      \"sourceComponentId\": \"comp:RizwanX-199:0\",\n      \"targetCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n      \"variantDecisionId\": \"dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1\"\n    }\n  ],\n  \"effectiveAt\": \"2026-07-29T10:00:30.000Z\",\n  \"listingKey\": \"walmart:1:RizwanX-199\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"19f941c6026dbd174dc7ddc472de67cb320b19d882c594ddad5fb05bb0e9866c\",\n  \"schemaVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"sourceArtifactSha256\": \"19006152ea9e3aecd699bd1de42635845281d375df27c8a75866899b1c47da93\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "id": "ptr:d59cb7148c9a25a2d5a4805e46443b4a905d3bc7dfb045e18ca7d5a8e7714965",
+        "listingKey": "walmart:1:RizwanX-199",
+        "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+        "recipeHash": "19f941c6026dbd174dc7ddc472de67cb320b19d882c594ddad5fb05bb0e9866c",
+        "recipeKey": "d59cb7148c9a25a2d5a4805e46443b4a905d3bc7dfb045e18ca7d5a8e7714965",
+        "recipeVersion": "product-truth-listing-recipe/1.0.0",
+        "runId": "ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+        "sourceArtifactSha256": "19006152ea9e3aecd699bd1de42635845281d375df27c8a75866899b1c47da93",
+        "sourceKind": "LEGACY_BRIDGE"
+      },
+      "listingRecipeComponents": [
+        {
+          "componentIndex": 0,
+          "componentKey": "20acc4d63ad85aaadae9f5f2d96fc6a21efe751f600a4a62388c5842db3f72a7",
+          "createdAt": "2026-07-29T10:00:30.000Z",
+          "donorProductId": "755499fa-915b-40cd-a980-0e2c333ee9bf",
+          "evidenceHash": "af99e360dfc3cd6f983a756c1c7257f3542240d5adf667a1b798905bdf3b9b3d",
+          "evidenceJson": "{\n  \"componentIndex\": 0,\n  \"donorProductId\": \"755499fa-915b-40cd-a980-0e2c333ee9bf\",\n  \"flavor\": \"Very Young Small Sweet Peas, No Salt Added\",\n  \"listingKey\": \"walmart:1:RizwanX-199\",\n  \"product\": \"Tender Petites\",\n  \"quantity\": 4,\n  \"schemaVersion\": \"product-truth-listing-recipe-component-evidence/1.0.0\",\n  \"size\": \"15.25 oz\",\n  \"sourceComponentId\": \"comp:RizwanX-199:0\",\n  \"sourceEvidence\": {\n    \"bridgePlanSha256\": \"99b124fd9ddd3b9cf2240972d17411e26e0f5d7e71e07a339618b408f6f39ba2\",\n    \"identityProof\": \"STRICT_TITLE_MATCH\",\n    \"identityReconciliation\": {\n      \"canonicalDecisionId\": \"dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1\",\n      \"canonicalListingKey\": \"walmart:1:RizwanX-199\",\n      \"canonicalTargetIdentity\": {\n        \"brand\": \"del monte\",\n        \"flavor\": \"added no salt\",\n        \"form\": \"can\",\n        \"modifiers\": [\n          \"no_salt_added\"\n        ],\n        \"outerPackCount\": 1,\n        \"productLine\": \"peas petites small sweet tender very young\",\n        \"size\": \"432.33022765625 g\"\n      },\n      \"canonicalTargetVariant\": {\n        \"canonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n        \"identityHash\": \"af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n        \"identityJson\": \"{\\\"schemaVersion\\\":\\\"canonical-product-variant-identity/1.0.0\\\",\\\"brand\\\":\\\"del monte\\\",\\\"productLine\\\":\\\"peas petites small sweet tender very young\\\",\\\"flavor\\\":\\\"added no salt\\\",\\\"modifiers\\\":[\\\"no_salt_added\\\"],\\\"form\\\":\\\"can\\\",\\\"size\\\":{\\\"dimension\\\":\\\"MASS\\\",\\\"baseAmount\\\":432.33022765625,\\\"baseUnit\\\":\\\"g\\\"},\\\"outerPackCount\\\":1}\",\n        \"keyVersion\": \"canonical-product-variant-key/1.0.0\",\n        \"variantKey\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\"\n      },\n      \"donorProductId\": \"755499fa-915b-40cd-a980-0e2c333ee9bf\",\n      \"mode\": \"LEXICALLY_EQUIVALENT_DONOR_GRAPH\",\n      \"physicalIdentitySha256\": \"9f74b0acc861fbcb7615576d2b32c3043c60d638c633364bccbdf80592714f8f\",\n      \"schemaVersion\": \"product-truth-legacy-bridge-field-partition-reconciliation/2.0.0\",\n      \"sourceTargets\": [\n        {\n          \"listingKey\": \"walmart:1:RizwanX-199\",\n          \"originalCanonicalVariantId\": \"cpv1:56f9d4b151f8878ecbd747dabb030ec48580bb9d3dfe8bc673ea172912bd8d67\",\n          \"originalTargetIdentitySha256\": \"22bfac988b4e9e4f1a9ecd8450a29f52c6d20b00741b950ecf5a7d1776c55cd7\",\n          \"overlappingProductFlavorTokens\": 0\n        }\n      ],\n      \"sourceTargetsSha256\": \"5aee7aad72761cec6e750985e3db8100b68c62b81f684bee0244b114e7c50317\"\n    },\n    \"matcherReasonCodes\": [\n      \"IDENTITY_EXACT\",\n      \"SIZE_EXACT\",\n      \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n    ],\n    \"schemaVersion\": \"product-truth-legacy-bridge-recipe-component-source/1.0.0\",\n    \"sourceBinding\": {\n      \"componentBarcodeEvidenceSha256\": null,\n      \"contentSourceOfferSha256\": \"b086ba216126b52c68d99348f745c25af0f5c9e1af98e9683666730b7b0bbe3f\",\n      \"directTargetContentEvidenceSha256\": null,\n      \"donorContentSha256\": \"0a6b7e784b3bd43c2bd6db079ca18d2d614abf87823c216220f929b3cac361fa\",\n      \"donorProductSha256\": \"af867ee405971089fca502e31fcd1728de71d8118aed59d9f2c09c6686cdfeb1\",\n      \"legacyComponentSha256\": \"6fcbc7711fa13b6c449695de1e61ffe03fab9f5df25bc4509635fd1d873fb1ef\",\n      \"listingSha256\": \"147a878c18581f25d4a71c7dfb18e2ec67339f4ad64f7f6f7f14cec5377b7589\"\n    },\n    \"sourceSnapshotSha256\": \"0bca258d0011ea70d7d2df6978f63c4af99546cdb46dbe441173e850a2ecf9fa\",\n    \"supersedesInvalidCanonicalCostIds\": []\n  },\n  \"sourceEvidenceSha256\": \"3f0aaca2e21b3f66744e10b385fe09cf0fa12b4a519ebb6c708ba5ea3162825b\",\n  \"targetCanonicalVariantId\": \"cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99\",\n  \"variantDecisionId\": \"dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1\"\n}\n",
+          "flavor": "Very Young Small Sweet Peas, No Salt Added",
+          "id": "ptrc:20acc4d63ad85aaadae9f5f2d96fc6a21efe751f600a4a62388c5842db3f72a7",
+          "listingRecipeId": "ptr:d59cb7148c9a25a2d5a4805e46443b4a905d3bc7dfb045e18ca7d5a8e7714965",
+          "product": "Tender Petites",
+          "quantity": 4,
+          "size": "15.25 oz",
+          "sourceComponentId": "comp:RizwanX-199:0",
+          "targetCanonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+          "variantDecisionId": "dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1"
+        }
+      ],
+      "listingScopeLink": {
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "linkVersion": "sku-cost-listing-scope-link/1.0.0",
+        "listingKey": "walmart:1:RizwanX-199",
+        "skuCostId": "retail:RizwanX-199:bridge:6d964b6577aff99c838426de"
+      },
+      "ordinal": 0,
+      "reusedDecision": {
+        "canonicalVariantId": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+        "decidedAt": "2026-07-29T08:27:23.000Z",
+        "decisionId": "dpvd:577dba7398cc220a04ca469c2b96e5cd53c5f2873e8b496a0a2898430a403cc1",
+        "decisionStatus": "exact_confirmed",
+        "donorProductId": "755499fa-915b-40cd-a980-0e2c333ee9bf"
+      },
+      "sku": "RizwanX-199",
+      "sourceBinding": {
+        "componentBarcodeEvidenceSha256": null,
+        "contentSourceOfferSha256": "b086ba216126b52c68d99348f745c25af0f5c9e1af98e9683666730b7b0bbe3f",
+        "directTargetContentEvidenceSha256": null,
+        "donorContentSha256": "0a6b7e784b3bd43c2bd6db079ca18d2d614abf87823c216220f929b3cac361fa",
+        "donorProductSha256": "af867ee405971089fca502e31fcd1728de71d8118aed59d9f2c09c6686cdfeb1",
+        "legacyComponentSha256": "6fcbc7711fa13b6c449695de1e61ffe03fab9f5df25bc4509635fd1d873fb1ef",
+        "listingSha256": "147a878c18581f25d4a71c7dfb18e2ec67339f4ad64f7f6f7f14cec5377b7589"
+      },
+      "storeIndex": 1,
+      "supersedesInvalidCanonicalCostIds": [],
+      "variant": {
+        "createdAt": "2026-07-29T10:00:30.000Z",
+        "id": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+        "identityHash": "af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99",
+        "identityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"del monte\",\"productLine\":\"peas petites small sweet tender very young\",\"flavor\":\"added no salt\",\"modifiers\":[\"no_salt_added\"],\"form\":\"can\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":432.33022765625,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+        "keyVersion": "canonical-product-variant-key/1.0.0",
+        "normalizedBrand": "del monte",
+        "normalizedFlavor": "added no salt",
+        "normalizedForm": "can",
+        "normalizedModifiersJson": "[\"no_salt_added\"]",
+        "normalizedProductLine": "peas petites small sweet tender very young",
+        "outerPackCount": 1,
+        "sizeBaseAmount": 432.33022765625,
+        "sizeBaseUnit": "g",
+        "sizeDimension": "MASS",
+        "variantKey": "cpv1:af118f879bf95dac5ce15db2a229ef4e158ca4666b4161ea8e794392e5645d99"
+      }
+    }
+  ],
+  "targetsSha256": "3d6f91288cb2346f988408fd83cd5efc3b7dd61a213b70a6437706707353926d"
+}

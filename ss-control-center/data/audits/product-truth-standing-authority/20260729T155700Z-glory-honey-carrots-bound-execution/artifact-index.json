@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3883,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "0c44d4a3def2189093cd648fb1937acbc882d4aa9058c60b010c8aa73f8fa62e"
+    }
+  ],
+  "manifestSha256": "d8bf1d98e718028752f4392101760ba022c48f68814116c3c3f73f5244f3873b",
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-07-29T14:27:56.610Z",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "counts": {
+    "absentRows": 48,
+    "canonicalVariantReuses": 5,
+    "donorIdentityTransitionsRequired": 4,
+    "donorVariantDecisionReuses": 5,
+    "exactExistingRows": 5,
+    "targets": 3
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "amazon:1:DT-AS2G-Y9CG",
+    "amazon:1:GC-ASMX-MJXZ",
+    "amazon:1:YV-ASLV-2L69"
+  ],
+  "planId": "ptlb-wave-7ef19899330700b46ca8ba23",
+  "planSha256": "ec362a0c110fbce5d4ae71cf83142b6739de6620d724c334c2dbe93b7b3c2e8c",
+  "schemaVersion": "product-truth-legacy-bridge-preflight-report/2.3.0",
+  "status": "READY_TO_APPLY"
+}

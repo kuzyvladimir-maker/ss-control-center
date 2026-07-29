@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:96181a7fadd963a72880:34d312021de740ae",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99647.5,
+      "evidenceSha256": "34d312021de740ae41fbcb544ad1de44a0355a6fc1fdea791a2e6c2208cbf73b",
+      "observedAt": "2026-07-29T16:25:37.291Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T16:35:56.645Z",
+  "issuedAt": "2026-07-29T16:25:56.645Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:96181a7fadd963a72880:34d312021de740ae",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T16:35:56.645Z",
+    "issuedAt": "2026-07-29T16:25:56.645Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-cheezit-original-20260729t162342z",
+    "version": 1
+  },
+  "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+  "runId": "pt-cheezit-original-20260729t162342z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

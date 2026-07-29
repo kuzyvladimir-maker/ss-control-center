@@ -1,0 +1,80 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:96181a7fadd963a72880:34d312021de740ae",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99647.5,
+        "evidenceSha256": "34d312021de740ae41fbcb544ad1de44a0355a6fc1fdea791a2e6c2208cbf73b",
+        "observedAt": "2026-07-29T16:25:37.291Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-29T16:35:56.645Z",
+    "issuedAt": "2026-07-29T16:25:56.645Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:96181a7fadd963a72880:34d312021de740ae",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-29T16:35:56.645Z",
+      "issuedAt": "2026-07-29T16:25:56.645Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "pt-cheezit-original-20260729t162342z",
+      "version": 1
+    },
+    "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+    "runId": "pt-cheezit-original-20260729t162342z",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:96181a7fadd963a72880:34d312021de740ae",
+  "approvalSha256": "747e743a17b6f409d5f6baa53b842e27359c8e9abcca1c9455d5e87390021f36",
+  "balanceEvidenceSha256": "34d312021de740ae41fbcb544ad1de44a0355a6fc1fdea791a2e6c2208cbf73b",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856:pt-standing:96181a7fadd963a72880:34d312021de740ae",
+  "expiresAt": "2026-07-29T16:35:56.645Z",
+  "issuedAt": "2026-07-29T16:25:56.645Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162342Z-cheezit-original-doctor.plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162342Z-cheezit-original-doctor.plan/plan.sha256",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162556Z-cheezit-original-authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856:pt-standing:96181a7fadd963a72880:34d312021de740ae",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162556Z-cheezit-original-execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162342Z-cheezit-original-doctor.plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162342Z-cheezit-original-doctor.plan/plan.sha256' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162556Z-cheezit-original-authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856:pt-standing:96181a7fadd963a72880:34d312021de740ae' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T162556Z-cheezit-original-execution'",
+  "ownerActionRequired": false,
+  "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

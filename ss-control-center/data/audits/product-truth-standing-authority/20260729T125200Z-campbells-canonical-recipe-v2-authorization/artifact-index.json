@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "6b90ad8a75869b5bdf68ddbf38b4a408c2550ffd2f7eeb254c76a6cf375ca2eb",
+  "authorizationSha256": "a197b67b4cfff442201b654ece72f47de8afa5a64af0a16c5d882abb5fdd3b73",
+  "balanceEvidenceSha256": "af42eeec071ccfe2cf564734b8d6c2902d4e16210b5c9247ce744ffccf2a3c4d",
+  "createdAt": "2026-07-29T12:50:52.269Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "6b90ad8a75869b5bdf68ddbf38b4a408c2550ffd2f7eeb254c76a6cf375ca2eb"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "a197b67b4cfff442201b654ece72f47de8afa5a64af0a16c5d882abb5fdd3b73"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+  "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

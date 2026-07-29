@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    {
+      "file": "preflight-report.json",
+      "role": "preflight_report",
+      "sha256": "30009c55cf3c64168eb74037e1f94718bbf7999a4de3c3a63595acb62a815d94"
+    }
+  ],
+  "checkedAt": "2026-07-29T11:28:49.520Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "59611a3253197478b6e2fed194957ebbf1dbe101fd2896e856958255c5c60f0d",
+  "schemaVersion": "product-truth-legacy-bridge-wave-preflight-index/2.0.0",
+  "status": "READY_TO_APPLY"
+}

@@ -1,0 +1,61 @@
+{
+  "approvalId": "owner-ptlb-wave-b6fb818979e723c39f3010ef",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "0d64e3bac8058d839e6add1f8bd2616ebccc194ca5346b5a294082035d1ca34d",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T12:10:59.909Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 8,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "insertedRows": 97,
+    "targets": 13
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-b6fb818979e723c39f3010ef",
+  "planSha256": "9853122a31c7db706c52004939d65a3bd55f2d036187ea10acbf8c0ccc02a03f",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.7.0",
+  "startedAt": "2026-07-29T12:10:33.064Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 1,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 1,
+    "listingKeys": [
+      "walmart:1:FaisalX-4080",
+      "walmart:1:FaisalX-5056",
+      "walmart:1:FaisalX-5057",
+      "walmart:1:FaisalX-5059",
+      "walmart:1:FaisalX-5060",
+      "walmart:1:FaisalX-5342",
+      "walmart:1:FaisalX-5614",
+      "walmart:1:RizwanX-3034",
+      "walmart:1:RizwanX-3220",
+      "walmart:1:RizwanX-3221",
+      "walmart:1:RizwanX-3222",
+      "walmart:1:RizwanX-3670",
+      "walmart:1:RizwanX-3672"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 13
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T17:00:40.835Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "37e334f95816280774c308d230132b6855bcda0b818603cf886ae10512cf5595"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "ee3f37ce0db5550b8b029b5c1095bee8790aa8040ad46f001dbccb2706f45494"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:ce974bef5caeb88f70e70a3d",
+  "meteredReceiptId": "mbr_bf399253f3e44005d38a6ea1a65a3c98701d4618f86eb1af5f6beed212bc246e",
+  "meteredReservationKey": "mpr_v1_538047243e89d0affe9f5a749856004fd2d153e326de7b1e43527cd4d0fa3087",
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

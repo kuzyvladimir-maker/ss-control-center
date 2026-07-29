@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "fc85f10175aa53d4cbfd956bf7b936ce7e56be6f72e0e736dac7dca87deb4fb3",
+  "authorizationSha256": "4d4516972c57a31fac39ca0222357a4d4002145ee2a45d0c45a4a34648e91216",
+  "balanceEvidenceSha256": "37e334f95816280774c308d230132b6855bcda0b818603cf886ae10512cf5595",
+  "createdAt": "2026-07-29T17:00:51.535Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "fc85f10175aa53d4cbfd956bf7b936ce7e56be6f72e0e736dac7dca87deb4fb3"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "4d4516972c57a31fac39ca0222357a4d4002145ee2a45d0c45a4a34648e91216"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

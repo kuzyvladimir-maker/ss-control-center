@@ -1,0 +1,66 @@
+{
+  "createdAt": "2026-07-29T12:24:07.952Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"campbells\",\"productLine\":\"condensed soup\",\"flavor\":\"cream mushroom of\",\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":297.6699928125,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": "407c06386e9b96b993732efa8055a47850189f30c9e78feb66869c41d244c2d7",
+    "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"540a3e98bb63fd38063473f3d7c02ff5f5a827a84de1088ece5d7bb34b30ab9e\",\n  \"canonicalVariantId\": \"cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8\",\n  \"donorProductId\": \"50a9f252-1224-4710-b518-b0eec7675cd3\",\n  \"donorTitle\": \"Campbell's Condensed Cream of Mushroom Soup - 10.5oz\",\n  \"identityProof\": \"STRICT_TITLE_MATCH\",\n  \"identityReconciliation\": {\n    \"canonicalListingKey\": \"walmart:1:RizwanX-4192\",\n    \"canonicalTargetIdentity\": {\n      \"brand\": \"Campbell's\",\n      \"flavor\": \"Cream of Mushroom\",\n      \"form\": null,\n      \"outerPackCount\": 1,\n      \"productLine\": \"condensed soup\",\n      \"size\": \"10.5 oz\"\n    },\n    \"canonicalTargetVariant\": {\n      \"canonicalVariantId\": \"cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8\",\n      \"identityHash\": \"e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8\",\n      \"identityJson\": \"{\\\"schemaVersion\\\":\\\"canonical-product-variant-identity/1.0.0\\\",\\\"brand\\\":\\\"campbells\\\",\\\"productLine\\\":\\\"condensed soup\\\",\\\"flavor\\\":\\\"cream mushroom of\\\",\\\"modifiers\\\":[],\\\"form\\\":null,\\\"size\\\":{\\\"dimension\\\":\\\"MASS\\\",\\\"baseAmount\\\":297.6699928125,\\\"baseUnit\\\":\\\"g\\\"},\\\"outerPackCount\\\":1}\",\n      \"keyVersion\": \"canonical-product-variant-key/1.0.0\",\n      \"variantKey\": \"cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8\"\n    },\n    \"donorProductId\": \"50a9f252-1224-4710-b518-b0eec7675cd3\",\n    \"mode\": \"LEXICALLY_EQUIVALENT_DONOR_GRAPH\",\n    \"physicalIdentitySha256\": \"7f4b9b453e61b2b4a9342d3661d0f261d6d2f366ca2f9449be3a72209baeee4f\",\n    \"schemaVersion\": \"product-truth-legacy-bridge-field-partition-reconciliation/1.0.0\",\n    \"sourceTargets\": [\n      {\n        \"listingKey\": \"walmart:1:RizwanX-4182\",\n        \"originalCanonicalVariantId\": \"cpv1:d72779e4654fd2eaa98627e817e804bd4146ad16d028b1cb54ddffe44ae30f73\",\n        \"originalTargetIdentitySha256\": \"3efaecdaa0737d04c3df7867809414a8ecdff289f05d72e352c530b45a47aa13\",\n        \"overlappingProductFlavorTokens\": 3\n      },\n      {\n        \"listingKey\": \"walmart:1:RizwanX-4186\",\n        \"originalCanonicalVariantId\": \"cpv1:d72779e4654fd2eaa98627e817e804bd4146ad16d028b1cb54ddffe44ae30f73\",\n        \"originalTargetIdentitySha256\": \"3efaecdaa0737d04c3df7867809414a8ecdff289f05d72e352c530b45a47aa13\",\n        \"overlappingProductFlavorTokens\": 3\n      },\n      {\n        \"listingKey\": \"walmart:1:RizwanX-4192\",\n        \"originalCanonicalVariantId\": \"cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8\",\n        \"originalTargetIdentitySha256\": \"76362cd7bcf6afd3d5b0ccd7fd07b869561d915f3e1d052f42dbd30d4c40f845\",\n        \"overlappingProductFlavorTokens\": 0\n      },\n      {\n        \"listingKey\": \"walmart:1:RizwanX-4196\",\n        \"originalCanonicalVariantId\": \"cpv1:d72779e4654fd2eaa98627e817e804bd4146ad16d028b1cb54ddffe44ae30f73\",\n        \"originalTargetIdentitySha256\": \"3efaecdaa0737d04c3df7867809414a8ecdff289f05d72e352c530b45a47aa13\",\n        \"overlappingProductFlavorTokens\": 3\n      }\n    ],\n    \"sourceTargetsSha256\": \"56aa6776c97436e891aaf28031f2a8b3a7e5167fe21352528088a6d9c08aa0ba\"\n  },\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.2.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"535bd879df4ca8e6cc05d3bdecefeb0052ac1a9aa9261718f843035da0ecf815\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"e4af888f28f473b89604481eba476d071be119396e8ca2c9be740c3f3d8669b3\",\n    \"donorProductSha256\": \"5e7d7d6c37aefa8646910cec9bb524611725a29d597548eaa38473b0c4466fd3\"\n  },\n  \"sourceSnapshotSha256\": \"45842aee535c445e31ce50cca76b5b22190e48e77a57eadb9bdeb91be2b69e41\",\n  \"targetIdentity\": {\n    \"brand\": \"Campbell's\",\n    \"flavor\": \"Cream of Mushroom\",\n    \"form\": null,\n    \"outerPackCount\": 1,\n    \"productLine\": \"condensed soup\",\n    \"size\": \"10.5 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+    "decisionStatus": "exact_confirmed",
+    "donorIdentityStatus": "exact_confirmed",
+    "donorOfferId": "do:walmart:10321675",
+    "donorProductId": "50a9f252-1224-4710-b518-b0eec7675cd3",
+    "identityDerivationVersion": null,
+    "identityMode": "EXISTING_EXACT",
+    "isFirstParty": true,
+    "legacySnapshot": null,
+    "listingBinding": null,
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/10321675",
+    "retailer": "walmart",
+    "retailerProductId": "10321675",
+    "variantDecisionId": "dpvd:c94de6b1cf68f5ceaed7fbc5ca1dc69bb47640c2aa16de2b008aa77f341bb8e5",
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "0de7b55762f7f1d9cae605e8fee91776be9a121ec7ef1d17e1a727cd265a9b6d",
+  "engineReleaseSha256": "a310a6a59a0559ed02c0be405ffb1bb030547567cd5c9f6de14d2cf866dde05f",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T12:00:00.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Campbell's Condensed Cream of Mushroom Soup 10.5 oz Can",
+  "runId": "pt-campbells-mushroom-standing-20260729t122500z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.6.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

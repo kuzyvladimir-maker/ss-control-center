@@ -1,0 +1,24 @@
+{
+  "allowCanonicalMaterialization": true,
+  "allowConsumerCutover": false,
+  "allowMarketplaceMutations": false,
+  "allowPaidCalls": false,
+  "allowProcurementMutations": false,
+  "allowProviderCalls": false,
+  "approvalId": "owner-ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+  "approvedBy": "owner",
+  "bridgePlanSha256": "99b124fd9ddd3b9cf2240972d17411e26e0f5d7e71e07a339618b408f6f39ba2",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "decision": "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE",
+  "expiresAt": "2026-07-29T10:15:30.000Z",
+  "issuedAt": "2026-07-29T10:00:30.000Z",
+  "listingKeys": [
+    "walmart:1:RizwanX-199"
+  ],
+  "maximumDatabaseRows": 7,
+  "planId": "ptlb-wave-62d5f7c4c47d3a9eeebe4e52",
+  "planSha256": "f0b080406bba2e3a0e125ad26817fa97a03c4541a44fbc43f426a8585c026dc7",
+  "schemaVersion": "product-truth-legacy-bridge-approval/2.0.0",
+  "sourceSnapshotSha256": "0bca258d0011ea70d7d2df6978f63c4af99546cdb46dbe441173e850a2ecf9fa",
+  "targetsSha256": "3d6f91288cb2346f988408fd83cd5efc3b7dd61a213b70a6437706707353926d"
+}

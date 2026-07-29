@@ -1,0 +1,80 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99640,
+        "evidenceSha256": "37e334f95816280774c308d230132b6855bcda0b818603cf886ae10512cf5595",
+        "observedAt": "2026-07-29T17:00:40.835Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-29T17:10:51.535Z",
+    "issuedAt": "2026-07-29T17:00:51.535Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-29T17:10:51.535Z",
+      "issuedAt": "2026-07-29T17:00:51.535Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "pt-glory-mustard-greens-20260729t165844z",
+      "version": 1
+    },
+    "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+    "runId": "pt-glory-mustard-greens-20260729t165844z",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+  "approvalSha256": "fc85f10175aa53d4cbfd956bf7b936ce7e56be6f72e0e736dac7dca87deb4fb3",
+  "balanceEvidenceSha256": "37e334f95816280774c308d230132b6855bcda0b818603cf886ae10512cf5595",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278:pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+  "expiresAt": "2026-07-29T17:10:51.535Z",
+  "issuedAt": "2026-07-29T17:00:51.535Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T165844Z-glory-mustard-greens-doctor.plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T165844Z-glory-mustard-greens-doctor.plan/plan.sha256",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T170051Z-glory-mustard-greens-authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278:pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T170051Z-glory-mustard-greens-execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T165844Z-glory-mustard-greens-doctor.plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T165844Z-glory-mustard-greens-doctor.plan/plan.sha256' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T170051Z-glory-mustard-greens-authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278:pt-standing:ce974bef5caeb88f70e7:37e334f958162807' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T170051Z-glory-mustard-greens-execution'",
+  "ownerActionRequired": false,
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

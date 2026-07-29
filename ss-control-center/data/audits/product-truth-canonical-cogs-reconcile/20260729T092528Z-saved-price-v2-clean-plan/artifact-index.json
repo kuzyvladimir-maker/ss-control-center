@@ -1,0 +1,25 @@
+{
+  "artifacts": [
+    {
+      "file": "reconcile-plan.json",
+      "role": "reconcile_plan",
+      "sha256": "076a8150031091c50b8f8dfd355847df0cf9eab2c467512fac7223b7ad4bd497"
+    }
+  ],
+  "counts": {
+    "costOutcomes": [
+      "FACT"
+    ],
+    "listings": 10,
+    "marketplaceMutations": 0,
+    "maximumDatabaseRows": 30,
+    "paidCalls": 0,
+    "providerCalls": 0
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "generatedAt": "2026-07-29T09:25:28.000Z",
+  "planId": "ptcc-bd652d52301ea8c2f645b5df",
+  "planSha256": "076a8150031091c50b8f8dfd355847df0cf9eab2c467512fac7223b7ad4bd497",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-artifact-index/1.0.0",
+  "status": "PLANNED"
+}

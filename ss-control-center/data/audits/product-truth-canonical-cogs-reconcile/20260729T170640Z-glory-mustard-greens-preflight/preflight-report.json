@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-07-29T17:06:40.376Z",
+  "counts": {
+    "absentRows": 9,
+    "exactExistingRows": 0,
+    "targets": 3
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "walmart:1:RizwanX-3235",
+    "walmart:1:RizwanX-3236",
+    "walmart:1:RizwanX-3237"
+  ],
+  "planId": "ptcc-2a429a5e76fb193340762745",
+  "planSha256": "28e3a98947e732766f4f85f52c83cb1cffe844cd6d3119077e7facd60c55b47e",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-preflight/2.0.0",
+  "status": "READY_TO_APPLY"
+}

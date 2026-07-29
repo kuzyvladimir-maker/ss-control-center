@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99655,
+      "evidenceSha256": "a8bd3233c1ac24f354339963f6e6a7c5c0148588e1cc5bdf2b91f40061255b7e",
+      "observedAt": "2026-07-29T15:53:10.770Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T16:03:25.799Z",
+  "issuedAt": "2026-07-29T15:53:25.799Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T16:03:25.799Z",
+    "issuedAt": "2026-07-29T15:53:25.799Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+    "version": 1
+  },
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

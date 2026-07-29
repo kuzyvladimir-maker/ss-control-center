@@ -1,0 +1,66 @@
+{
+  "createdAt": "2026-07-29T15:45:21.026Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"foods glory\",\"productLine\":\"canned carrots honey seasoned southern style vegetables\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":439.4176084375,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": "2380908163c711abfacb0ee6e640f28539eef4a572e0b4610c355f926d5ee567",
+    "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658\",\n  \"donorProductId\": \"7d8ce205-152c-46ee-a904-af92e1d2560e\",\n  \"donorTitle\": \"Glory Foods Seasoned Southern Style Honey Carrots, Canned Vegetables, 15.5 oz\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"9a25d0f11551a370fb2fd5fa8b6004b16c10095c44b30e47104fecfdb8a43ea0\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"5caa72dd7b1d21ffd13ff6b4bfa48e101a7300e0f39cf8b47d55dbda69935b35\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"aa45a329d0211eeaf9df6caf1c0dbe1b8238097ae4af1491619d6b83bc778c44\",\n    \"donorProductSha256\": \"2faed884bd538d90382f6a6ddab452c10040afd89a64be3ccc574b78696a4cdc\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Glory Foods\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"seasoned southern style honey carrots canned vegetables\",\n    \"size\": \"15.5 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+    "decisionStatus": "exact_confirmed",
+    "donorIdentityStatus": "exact_confirmed",
+    "donorOfferId": "do:walmart:22257756",
+    "donorProductId": "7d8ce205-152c-46ee-a904-af92e1d2560e",
+    "identityDerivationVersion": null,
+    "identityMode": "EXISTING_EXACT",
+    "isFirstParty": true,
+    "legacySnapshot": null,
+    "listingBinding": null,
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/22257756",
+    "retailer": "walmart",
+    "retailerProductId": "22257756",
+    "variantDecisionId": "dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5",
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "ec3dd4b2ba9b1a4b0efd57b27e1d933129bfbe075b96c0c95362bf5325155a35",
+  "engineReleaseSha256": "700a019e7fc094300027187fec30450c557790f84dcc6cee9df45521e007792e",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-29T19:45:00.000Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Glory Foods Seasoned Southern Style Honey Carrots 15.5 oz can",
+  "runId": "pt-glory-honey-carrots-20260729t154500z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.6.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

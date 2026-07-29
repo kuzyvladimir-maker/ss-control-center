@@ -1,0 +1,56 @@
+{
+  "capturedAt": "2026-07-29T19:39:05.356Z",
+  "commandStateCounts": [
+    {
+      "commandKind": "DOCTOR",
+      "count": 2,
+      "status": "ADMITTED"
+    },
+    {
+      "commandKind": "RUN_PLAN",
+      "count": 1,
+      "status": "ADMITTED"
+    },
+    {
+      "commandKind": "DOCTOR",
+      "count": 4,
+      "status": "CLAIMED"
+    },
+    {
+      "commandKind": "DOCTOR",
+      "count": 7,
+      "status": "FAILED"
+    },
+    {
+      "commandKind": "DOCTOR",
+      "count": 8,
+      "status": "RUNNING"
+    },
+    {
+      "commandKind": "RUN_PLAN",
+      "count": 2,
+      "status": "RUNNING"
+    },
+    {
+      "commandKind": "DOCTOR",
+      "count": 15,
+      "status": "SUCCEEDED"
+    },
+    {
+      "commandKind": "RUN_PLAN",
+      "count": 12,
+      "status": "SUCCEEDED"
+    }
+  ],
+  "counts": {
+    "ProductTruthControlArtifact": 85,
+    "ProductTruthControlCommand": 51,
+    "ProductTruthControlEvent": 347
+  },
+  "custodySnapshotSha256": "ed628ed5aeabe5889f128ad861f902a74b488d7a648aeac36a584a6adb8f249e",
+  "decision": "READY_TO_APPLY",
+  "foreignKeyViolationCount": 0,
+  "migrationSha256": "db6604bf0e0f401950d6520f60d3568056f93a852a2eb2793004bc38b8de3668",
+  "prismaMigrationRowCount": 0,
+  "schemaVersion": "product-truth-control-successor-preflight/1.0.0"
+}

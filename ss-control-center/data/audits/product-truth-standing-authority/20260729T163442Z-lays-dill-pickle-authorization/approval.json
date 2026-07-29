@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:65460f79a873546d3d3e:ee170b6fdd16c414",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99645,
+      "evidenceSha256": "ee170b6fdd16c41482f8669472a255e3bb67a8994747dd12d2f1febf23ea6136",
+      "observedAt": "2026-07-29T16:34:30.614Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T16:44:42.639Z",
+  "issuedAt": "2026-07-29T16:34:42.639Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:65460f79a873546d3d3e:ee170b6fdd16c414",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T16:44:42.639Z",
+    "issuedAt": "2026-07-29T16:34:42.639Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-lays-dill-pickle-20260729t163233z",
+    "version": 1
+  },
+  "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+  "runId": "pt-lays-dill-pickle-20260729t163233z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

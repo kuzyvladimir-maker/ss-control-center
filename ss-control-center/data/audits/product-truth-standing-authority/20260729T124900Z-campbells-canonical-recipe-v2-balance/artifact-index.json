@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T12:50:39.846Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "af42eeec071ccfe2cf564734b8d6c2902d4e16210b5c9247ce744ffccf2a3c4d"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "3f7d142f514faeb4f7c9f99ff18694a5dc50375b92ebeef550dde2ca351bcc9f"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:f302cfb18fe3b9f58a976a63",
+  "meteredReceiptId": "mbr_fca26c3dae79de7cfdf71d0ece24c85c7c2a2d174fca82b2f7b813b9f86e9b4d",
+  "meteredReservationKey": "mpr_v1_7250201222efeb1403a8c62b1d02e64bee8ec86689f8652a7540bcec9bddf6b9",
+  "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

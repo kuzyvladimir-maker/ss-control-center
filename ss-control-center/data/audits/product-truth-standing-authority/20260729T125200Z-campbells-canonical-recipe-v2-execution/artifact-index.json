@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3961,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "eef98d4c27b3cbf59949887f686f70c3f76aba7889f6281b5ff5375836ac48c4"
+    }
+  ],
+  "manifestSha256": "04218d926d5fef0e794cbf6c902eabaf034279a2c0c57d6ea6bd3d496f6dd209",
+  "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+  "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

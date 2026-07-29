@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3872,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "36d8a694cee51812d1f15cdcdf215a2681b51d1ecb0a21403383bc67562e1a19"
+    }
+  ],
+  "manifestSha256": "0fb3015d8a883d2963fa96bfeee67dae4835b24517c8f20abac49a1bd75d1f66",
+  "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+  "runId": "pt-cheezit-original-20260729t162342z",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

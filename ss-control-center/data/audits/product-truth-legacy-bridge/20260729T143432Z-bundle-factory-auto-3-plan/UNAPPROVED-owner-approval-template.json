@@ -1,0 +1,24 @@
+{
+  "allowCanonicalMaterialization": true,
+  "allowConsumerCutover": false,
+  "allowMarketplaceMutations": false,
+  "allowPaidCalls": false,
+  "allowProcurementMutations": false,
+  "allowProviderCalls": false,
+  "approvalId": "owner-ptlb-wave-c83a16c793caa4e862efe373",
+  "approvedBy": "owner",
+  "bridgePlanSha256": "f94f322e65435c4d0ed2db872074be858ee09797fef81a2a03a8d25bdb0fc51e",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "decision": "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE",
+  "expiresAt": "2026-07-30T14:34:32.282Z",
+  "issuedAt": "2026-07-29T14:34:32.282Z",
+  "listingKeys": [
+    "amazon:1:SU-ASWN-VL7M"
+  ],
+  "maximumDatabaseRows": 15,
+  "planId": "ptlb-wave-c83a16c793caa4e862efe373",
+  "planSha256": "bcea7835905851cd732539d09b792642e29ef42660427f5d5d9044fc71bf4c02",
+  "schemaVersion": "product-truth-legacy-bridge-approval/2.0.0",
+  "sourceSnapshotSha256": "53cd185d5bd21c229c4e819dde39354c667a17ef3d30f6961f198de3b19d4623",
+  "targetsSha256": "55539b5dc18720fc7265cc49c66f8cfba4fe6e1720de91543d6cfa98b028a5cc"
+}

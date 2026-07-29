@@ -1,0 +1,30 @@
+{
+  "allowCanonicalMaterialization": true,
+  "allowConsumerCutover": false,
+  "allowMarketplaceMutations": false,
+  "allowPaidCalls": false,
+  "allowProcurementMutations": false,
+  "allowProviderCalls": false,
+  "approvalId": "owner-ptlb-wave-cd0d8f75340e64ae0a438d68",
+  "approvedBy": "owner",
+  "bridgePlanSha256": "42a9c4812018ae2089386e1e7eb52d9f9d5e42089387c3aca4c9ed5ecfba8a5c",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "decision": "APPROVE_NO_PAID_LEGACY_BRIDGE_WAVE",
+  "expiresAt": "2026-07-30T08:27:23.000Z",
+  "issuedAt": "2026-07-29T08:27:23.000Z",
+  "listingKeys": [
+    "walmart:1:RizwanX-200",
+    "walmart:1:RizwanX-201",
+    "walmart:1:RizwanX-3004",
+    "walmart:1:RizwanX-3005",
+    "walmart:1:RizwanX-3006",
+    "walmart:1:RizwanX-3247",
+    "walmart:1:RizwanX-3248"
+  ],
+  "maximumDatabaseRows": 47,
+  "planId": "ptlb-wave-cd0d8f75340e64ae0a438d68",
+  "planSha256": "288e9c271817024e19fd48aed6a03c047618650a7065cc23e11fbdd1bea2ce9f",
+  "schemaVersion": "product-truth-legacy-bridge-approval/2.0.0",
+  "sourceSnapshotSha256": "3c87c9a8dd9d0005f6ab6677dce11147254ba65bfcb8e758f54293a086cf7f0d",
+  "targetsSha256": "6a5cd736f78f80ab5ebfe32ea3408af4020d8502a23a7afb6f9389a5155bc573"
+}

@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:e3f3a68ab760d43f42719150d5f53ded17a90836346e1f8fe94ab346e22652d8",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:10321675",
+  "donorProductId": "50a9f252-1224-4710-b518-b0eec7675cd3",
+  "generatedAt": "2026-07-29T12:54:00.110Z",
+  "job": {
+    "approvalId": "pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT",
+    "id": "ptej_265a914c75f5b8345e0c19c54a4ed0bda364e84e67cab19d59def19777a120fe",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT"
+    },
+    "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_b7c1fbe5b7d148f3857bd7fc48c95a4c48b4c7c66615d52dcb0380919e1d66f4",
+        "createdAt": "2026-07-29T12:53:51.506Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_0e5acd59129adb6f52f5ac40e6c3c6a33a8df5ff98e60b65d621c521de43a7e8",
+        "reservationKey": "mpr_v1_475ce5d1ef8def3cfff830757c26184656753047c979e78d5b9358bb5abf73e6",
+        "reservedAt": "2026-07-29T12:53:51.506Z",
+        "settledAt": "2026-07-29T12:53:59.834Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10321675",
+  "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T17:22:03.756Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "3a8e5dacb42cd939664b21017cc3523578877f5df9f6f8cb3be9bd5b5d9dac9c"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "11d2ece31cb474c3d3a8d3018f3618b0353b300dd4b2541a766bf4ec098f054e"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:082761b4b195d02a23de60ef",
+  "meteredReceiptId": "mbr_ecee6fb6c759819d299b65154a6e12a9d18ab2880dc203210695df5328b70532",
+  "meteredReservationKey": "mpr_v1_58d1b1e063aebb3426c9068f8e6fb92471249d2a7f381af19397dd2a02317a7f",
+  "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

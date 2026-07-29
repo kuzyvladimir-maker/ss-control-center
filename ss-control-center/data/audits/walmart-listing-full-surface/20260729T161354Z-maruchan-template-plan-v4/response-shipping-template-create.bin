@@ -1,0 +1,1 @@
+{"errors":[{"code":"INVALID_REQUEST_CONTENT.GMP_SHIPPING_TEMPLATE_API","field":"shipMethods","description":"Ensure to meet the shipping coverage requirement - Enable all 48 State Street regions within Standard ship-method OR include Value ship-method","severity":"ERROR","category":"REQUEST","causes":[],"errorIdentifiers":{}}]}

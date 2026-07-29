@@ -1,0 +1,112 @@
+{
+  "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:10532985",
+  "donorProductId": "8936f4ab-6336-4169-8592-83b496799d51",
+  "generatedAt": "2026-07-29T17:06:00.086Z",
+  "job": {
+    "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": null,
+      "detailReceiptId": null,
+      "identityMode": "EXISTING_EXACT",
+      "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+      "priceObservationId": "doo:7883ceda2a536e81c03bf675a35b6965fc74627f338e113795990646324b75d1",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_125f348e7475cc30a2254e8f39605dd4be4aa49f5fff8664ee29e4c5c32f6979",
+      "stage": "SEARCH_PERSISTED",
+      "variantDecisionId": "dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce"
+    },
+    "error": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+    "id": "ptej_0857f061d4354e5c1c09fe14737ac9b8f8643516f553e33b603a4640f82ee01d",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+    },
+    "runId": "pt-glory-mustard-greens-20260729t165844z",
+    "status": "error",
+    "terminalReason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_8a5dea9c0bb4e87ebedb2327a24196a75b9ab1935dab56a94123484b401268b0",
+        "createdAt": "2026-07-29T17:02:07.968Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_125f348e7475cc30a2254e8f39605dd4be4aa49f5fff8664ee29e4c5c32f6979",
+        "reservationKey": "mpr_v1_f79caab4f296db18093de3f1500ad899bd00a1cac095ad3b71f2beb67730432b",
+        "reservedAt": "2026-07-29T17:02:07.968Z",
+        "settledAt": "2026-07-29T17:02:15.798Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_f7ddba7cd2551390387e1620c5493127fba6bd301e5e6fef8a0c19b22496472c",
+        "createdAt": "2026-07-29T17:04:53.362Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_1d13f785d10cd7c3f9cf4e656398ae91ee9ce98687b98a0f074c1b9f6906d95e",
+        "reservationKey": "mpr_v1_0493ec58a19d68f39fbb9cb3ca84aeec2fe353c3380edee171b9a470a9ea4d58",
+        "reservedAt": "2026-07-29T17:04:53.362Z",
+        "settledAt": "2026-07-29T17:05:02.630Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-glory-mustard-greens-20260729t165844z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "reason": "UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10532985",
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

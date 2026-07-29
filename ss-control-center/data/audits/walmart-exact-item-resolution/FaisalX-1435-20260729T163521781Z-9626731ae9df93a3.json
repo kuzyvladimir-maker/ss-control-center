@@ -1,0 +1,163 @@
+{
+  "schema_version": "walmart-exact-item-resolution-probe/v2",
+  "probe_id": "walmart-exact-item-FaisalX-1435-20260729T163521781Z",
+  "captured_at": "2026-07-29T16:35:21.781Z",
+  "input": {
+    "sku": "FaisalX-1435",
+    "store_index": 1
+  },
+  "execution": {
+    "mode": "read_only_run",
+    "walmart_logical_get_operations": 2,
+    "walmart_http_get_attempts_max": 10,
+    "oauth_token_posts_max": 3,
+    "actual_transport_attempts_observed": false,
+    "buyer_pdp_gets": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "walmart_writes": 0,
+    "r2_writes": 0,
+    "paid_api_calls": 0,
+    "model_calls": 0
+  },
+  "requests": [
+    {
+      "sequence": 1,
+      "method": "GET",
+      "contract": "walmart_marketplace_exact_sku_get",
+      "path": "/v3/items/FaisalX-1435",
+      "status": 200,
+      "final_correlation_id": "6fbb0ed9-1c96-4183-872d-144c537657ad"
+    },
+    {
+      "sequence": 2,
+      "method": "GET",
+      "contract": "walmart_catalog_search_exact_upc",
+      "path": "/v3/items/walmart/search?upc=619419778860",
+      "status": 200,
+      "final_correlation_id": "9e45f223-5fff-4190-929e-fd656837a9e9"
+    }
+  ],
+  "source_payloads": {
+    "seller": {
+      "canonical_sha256": "aa945d22df5a0be968da6f388e5c6b082cc2991a7b7d6a52532e70a59f398e96",
+      "payload": {
+        "ItemResponse": [
+          {
+            "mart": "WALMART_US",
+            "sku": "FaisalX-1435",
+            "condition": "New",
+            "availability": "Out_of_stock",
+            "wpid": "6DGMKUU69V3B",
+            "upc": "619419778860",
+            "gtin": "00619419778860",
+            "productName": "Maruchan Instant Lunch Roast Chicken Flavor Ramen Noodles - Chicken - Cup - 12 / Carton | Bundle of 10 Cartons",
+            "shelf": "Home Page/Food/Pantry/Soup/Ramen Noodles",
+            "productType": "Prepared & Packaged Soups",
+            "price": {
+              "currency": "USD",
+              "amount": 111.99
+            },
+            "publishedStatus": "PUBLISHED",
+            "lifecycleStatus": "ACTIVE",
+            "variantGroupId": "SPRCMAR00121QTY",
+            "variantGroupInfo": {
+              "isPrimary": false,
+              "groupingAttributes": [
+                {
+                  "name": "count_per_pack",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        ],
+        "totalItems": 1
+      }
+    },
+    "catalog_search": {
+      "canonical_sha256": "ce3b839c5f63d50baec70c864466be24af7199a5daf313697df1564f00a70acb",
+      "payload": {
+        "items": [
+          {
+            "itemId": "1523397932",
+            "isMarketPlaceItem": true,
+            "images": [
+              {
+                "url": "https://i5.walmartimages.com/seo/Maruchan-Instant-Lunch-Roast-Chicken-Flavor-Ramen-Noodles-Chicken-Cup-12-Carton-Bundle-of-10-Cartons_1864de25-680b-431a-9fd6-95a90c7a7b4d.a03c4a4aa174091ed23348166630ddd7.png"
+              }
+            ],
+            "customerRating": "5.0",
+            "price": {
+              "amount": "145.44",
+              "currency": "USD"
+            },
+            "description": "<li>Convenient cup allows you to quickly prepare hot soup virtually anywhere</li><li>Roasted chicken flavor with hearty vegetables creates great-tasting balance</li><li>Instant recipe prepares in just</li>",
+            "title": "Maruchan Instant Lunch Roast Chicken Flavor Ramen Noodles - Chicken - Cup - 12 / Carton | Bundle of 10 Cartons",
+            "brand": "Maruchan",
+            "productType": "Prepared & Packaged Soups",
+            "standardUpc": [
+              "00619419778860"
+            ],
+            "properties": {
+              "numReviews": "1",
+              "categories": [
+                "Food",
+                "Pantry",
+                "Soup",
+                "Ramen",
+                "Ramen noodles"
+              ]
+            }
+          }
+        ],
+        "relatedQueries": []
+      }
+    }
+  },
+  "resolution": {
+    "schema_version": "walmart-exact-item-resolution/v1",
+    "sku": "FaisalX-1435",
+    "buyer_facing_verified": false,
+    "seller": {
+      "sku": "FaisalX-1435",
+      "title": "Maruchan Instant Lunch Roast Chicken Flavor Ramen Noodles - Chicken - Cup - 12 / Carton | Bundle of 10 Cartons",
+      "upc": "619419778860",
+      "gtin14": "00619419778860",
+      "wpid": "6DGMKUU69V3B",
+      "published_status": "PUBLISHED",
+      "lifecycle_status": "ACTIVE"
+    },
+    "catalog_search_candidate": {
+      "item_id": "1523397932",
+      "title": "Maruchan Instant Lunch Roast Chicken Flavor Ramen Noodles - Chicken - Cup - 12 / Carton | Bundle of 10 Cartons",
+      "main_image_url": "https://i5.walmartimages.com/seo/Maruchan-Instant-Lunch-Roast-Chicken-Flavor-Ramen-Noodles-Chicken-Cup-12-Carton-Bundle-of-10-Cartons_1864de25-680b-431a-9fd6-95a90c7a7b4d.a03c4a4aa174091ed23348166630ddd7.png",
+      "is_marketplace_item": true,
+      "duplicate_rows_collapsed": 1
+    },
+    "source_contract": {
+      "seller": "walmart_marketplace_exact_sku_get",
+      "candidate": "walmart_catalog_search_exact_upc",
+      "buyer_pdp": "not_verified",
+      "positional_or_fuzzy_fallbacks": 0
+    },
+    "source_hashes": {
+      "seller_payload_canonical_sha256": "aa945d22df5a0be968da6f388e5c6b082cc2991a7b7d6a52532e70a59f398e96",
+      "catalog_search_payload_canonical_sha256": "ce3b839c5f63d50baec70c864466be24af7199a5daf313697df1564f00a70acb"
+    },
+    "identity_evidence": [
+      "request.sku=FaisalX-1435",
+      "seller.ItemResponse[0].sku=FaisalX-1435",
+      "seller.ItemResponse[0].upc=619419778860",
+      "seller.normalized_gtin14=00619419778860",
+      "seller.wpid_not_itemId=6DGMKUU69V3B",
+      "catalog.items[0].standardUpc~=00619419778860;itemId=1523397932",
+      "catalog.unique_numeric_public_itemId=1523397932"
+    ]
+  },
+  "seal": {
+    "algorithm": "sha256",
+    "canonicalization": "recursive-key-sort-json/v1",
+    "body_sha256": "9626731ae9df93a3b51329f28f11d6815e010a6ae23e7b5d6ee3b5bf3bdf181f"
+  }
+}

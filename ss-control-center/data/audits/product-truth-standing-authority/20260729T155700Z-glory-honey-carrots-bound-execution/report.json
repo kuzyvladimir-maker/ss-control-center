@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:22257756",
+  "donorProductId": "7d8ce205-152c-46ee-a904-af92e1d2560e",
+  "generatedAt": "2026-07-29T15:54:35.170Z",
+  "job": {
+    "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT",
+    "id": "ptej_91f9d484d61325b0575222fa5018a0fffa8d7ab29ecf80a3a2becfa76dc7f8cf",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT"
+    },
+    "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_478053edaef15b283c97e98f393d1c85b7ba501f2ebe4603ef938cb4b015196c",
+        "createdAt": "2026-07-29T15:54:23.730Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_c64ba6cd2427a67cb285b7dd5fd1aa0dda764d1e35c661cfc16c3183b2f92ff0",
+        "reservationKey": "mpr_v1_62088dcebf0bc65c9cdf33e3e71ed2a6249ccb4a90fb0463609bade79646f93e",
+        "reservedAt": "2026-07-29T15:54:23.730Z",
+        "settledAt": "2026-07-29T15:54:34.913Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "22257756",
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

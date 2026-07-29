@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-29T15:51:08.349Z",
+  "engineReleaseSha256": "f452539339a6719b32a92e65f9446958f41c2ee97b2cf4bdf6d9f7975a15d954",
+  "expiresAt": "2026-07-29T19:51:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-29T15:51:08.349Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "d8bf1d98e718028752f4392101760ba022c48f68814116c3c3f73f5244f3873b"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "83e06c4027cffe8832cffe03a3bfbe2b5e693986c4c94271b0708e8d22877169",
+  "targets": [
+    {
+      "canonicalIdentityHash": "1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"foods glory\",\"productLine\":\"canned carrots honey seasoned southern style vegetables\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":439.4176084375,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "2380908163c711abfacb0ee6e640f28539eef4a572e0b4610c355f926d5ee567",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658\",\n  \"donorProductId\": \"7d8ce205-152c-46ee-a904-af92e1d2560e\",\n  \"donorTitle\": \"Glory Foods Seasoned Southern Style Honey Carrots, Canned Vegetables, 15.5 oz\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"9a25d0f11551a370fb2fd5fa8b6004b16c10095c44b30e47104fecfdb8a43ea0\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"5caa72dd7b1d21ffd13ff6b4bfa48e101a7300e0f39cf8b47d55dbda69935b35\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"aa45a329d0211eeaf9df6caf1c0dbe1b8238097ae4af1491619d6b83bc778c44\",\n    \"donorProductSha256\": \"2faed884bd538d90382f6a6ddab452c10040afd89a64be3ccc574b78696a4cdc\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Glory Foods\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"seasoned southern style honey carrots canned vegetables\",\n    \"size\": \"15.5 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:22257756",
+      "donorProductId": "7d8ce205-152c-46ee-a904-af92e1d2560e",
+      "donorSnapshotSha256": "d8bf1d98e718028752f4392101760ba022c48f68814116c3c3f73f5244f3873b",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "7d8ce205-152c-46ee-a904-af92e1d2560e",
+        "listingKey": "walmart:1:RizwanX-3049",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-e774f24d3e69b4e6ae3a2e6f\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:45.877Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:45.877Z\",\n  \"evidenceHash\": \"1eb7dd6ffa62cc6583f63ab84093d006027e3dad0a947d45febd0bf2a12b9935\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"47bad893a335cae6bcd1693c19c776a10df2f22f7f25e56cb2e3f0ff26b2e5d4\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"7d8ce205-152c-46ee-a904-af92e1d2560e\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"seasoned southern style honey carrots canned vegetables\\\",\\n      \\\"quantity\\\": 4,\\n      \\\"size\\\": \\\"15.5 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:45.877Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3049\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"3e5fe9c1af68a6552b19797611168bdf508614703855fbf164c1f60e9225006a\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"0bef2d2b5fd49b8c9f08a8b716bd1b555b139144d6e1ed610ee9e1fe6821c32c\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:50bf4e588dad5bab225bfe6bf0aff198b591bf9c5a10537e02dd4af8b3d376cb\",\n  \"listingKey\": \"walmart:1:RizwanX-3049\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"3e5fe9c1af68a6552b19797611168bdf508614703855fbf164c1f60e9225006a\",\n  \"recipeKey\": \"50bf4e588dad5bab225bfe6bf0aff198b591bf9c5a10537e02dd4af8b3d376cb\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-e774f24d3e69b4e6ae3a2e6f\",\n  \"sourceArtifactSha256\": \"0bef2d2b5fd49b8c9f08a8b716bd1b555b139144d6e1ed610ee9e1fe6821c32c\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3049\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3049\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"c2782d2f5bd807f73bd2b7ba217c2ade7949bc7f19a11977b99c13bf9190c04a\",\n  \"createdAt\": \"2026-07-29T11:24:45.877Z\",\n  \"donorProductId\": \"7d8ce205-152c-46ee-a904-af92e1d2560e\",\n  \"evidenceHash\": \"47bad893a335cae6bcd1693c19c776a10df2f22f7f25e56cb2e3f0ff26b2e5d4\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"7d8ce205-152c-46ee-a904-af92e1d2560e\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3049\\\",\\n  \\\"product\\\": \\\"seasoned southern style honey carrots canned vegetables\\\",\\n  \\\"quantity\\\": 4,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"15.5 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"9a25d0f11551a370fb2fd5fa8b6004b16c10095c44b30e47104fecfdb8a43ea0\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"22636042a0ba85d989d212be10a491708903ae42ee39e4c9dac79901e818fbff\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"5caa72dd7b1d21ffd13ff6b4bfa48e101a7300e0f39cf8b47d55dbda69935b35\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"aa45a329d0211eeaf9df6caf1c0dbe1b8238097ae4af1491619d6b83bc778c44\\\",\\n      \\\"donorProductSha256\\\": \\\"2faed884bd538d90382f6a6ddab452c10040afd89a64be3ccc574b78696a4cdc\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"92a85b4667e6ccfdce52d222e78a81b95cc61f5d1b3745ba12bcf7a0d7f87f29\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"c4cb18e7e6f22d30dbcfdc8f2909ffe8de1913865dabf4a915d6d0bfd778e946\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:c2782d2f5bd807f73bd2b7ba217c2ade7949bc7f19a11977b99c13bf9190c04a\",\n  \"listingRecipeId\": \"ptr:50bf4e588dad5bab225bfe6bf0aff198b591bf9c5a10537e02dd4af8b3d376cb\",\n  \"product\": \"seasoned southern style honey carrots canned vegetables\",\n  \"quantity\": 4,\n  \"size\": \"15.5 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:1d5f27911071ee96f05712652e6e690db44cf2451b6055fa82829b3f0f2e9658\",\n  \"variantDecisionId\": \"dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "99b0e4bbd42ac53603553eb2fa64fc4c6bf730d69d762d59a3858838e984c3d3",
+        "sku": "RizwanX-3049",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/22257756",
+      "ordinal": 0,
+      "query": "Glory Foods Seasoned Southern Style Honey Carrots 15.5 oz can",
+      "retailer": "walmart",
+      "retailerProductId": "22257756",
+      "variantDecisionId": "dpvd:283654f04b5df6f7a46aa30e5728c694d995e449e810448e411c941a08fcc3d5",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

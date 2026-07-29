@@ -1,0 +1,61 @@
+{
+  "artifacts": [
+    {
+      "file": "quarantine-partition.json",
+      "role": "quarantine_partition",
+      "sha256": "ca7b10a7bc7a8aedae048d01fbd311be0b89d4f689537ba96c950f2039b70100"
+    }
+  ],
+  "claims": {
+    "authorizesExecution": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "primaryLaneIsPriorityNotTruthMutation": true,
+    "providerCalls": 0,
+    "readOnlySource": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "alreadyCanonical": 754,
+    "automaticWriteCandidates": 0,
+    "channelStores": [
+      {
+        "alreadyCanonical": 17,
+        "channel": "amazon",
+        "quarantined": 1529,
+        "storeIndex": 1
+      },
+      {
+        "alreadyCanonical": 0,
+        "channel": "amazon",
+        "quarantined": 498,
+        "storeIndex": 3
+      },
+      {
+        "alreadyCanonical": 737,
+        "channel": "walmart",
+        "quarantined": 3154,
+        "storeIndex": 1
+      }
+    ],
+    "denominator": 5935,
+    "overlaps": {
+      "fullyExactIdentityOnly": 0,
+      "fullyPriceOnlyEstimate": 2,
+      "noComponents": 708,
+      "withExactIdentityOnlyComponent": 84,
+      "withPriceOnlyEstimateComponent": 24
+    },
+    "quarantined": 5181
+  },
+  "generatedAt": "2026-07-29T15:14:30.000Z",
+  "schemaVersion": "product-truth-quarantine-partition-artifact-index/1.0.0",
+  "source": {
+    "bridgePlanGeneratedAt": "2026-07-29T15:14:01.000Z",
+    "bridgePlanSchemaVersion": "product-truth-legacy-bridge-plan/1.10.0",
+    "bridgePlanSha256": "5938a863281504131d2d5f76387941c6263dd3778ada4fc447f943318d26b623",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  }
+}

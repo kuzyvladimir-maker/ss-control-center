@@ -1,0 +1,51 @@
+{
+  "approvalId": "owner-ptlb-wave-456a561a98de71b1d92739f9",
+  "approvalSha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "authorization": {
+    "mode": "STANDING_NO_PAID_POLICY",
+    "preflightReportSha256": "2abddae2401fb755f975a4e684e78657043831a8183cc6d41b3cfa263d1b2713",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696"
+  },
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "completedAt": "2026-07-29T14:23:01.519Z",
+  "counts": {
+    "canonicalVariantReuses": 4,
+    "donorIdentityTransitions": 6,
+    "donorVariantDecisionReuses": 4,
+    "exactExistingRows": 4,
+    "insertedRows": 57,
+    "targets": 3
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptlb-wave-456a561a98de71b1d92739f9",
+  "planSha256": "4947f7ee7da25b476365073f5a0fa089ac4fd639b2e59d5683e794655a9eae57",
+  "schemaVersion": "product-truth-legacy-bridge-apply-report/3.8.0",
+  "startedAt": "2026-07-29T14:22:23.435Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "amazon:1:MT-ASEZ-ZCBE",
+      "amazon:1:UA-ASI2-Y29N",
+      "amazon:1:UF-ASWN-FV9M"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 3
+  }
+}

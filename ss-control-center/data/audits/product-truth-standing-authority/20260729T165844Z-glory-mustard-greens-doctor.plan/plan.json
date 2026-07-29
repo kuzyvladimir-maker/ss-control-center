@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-29T16:58:44.967Z",
+  "engineReleaseSha256": "2263ee079a812bf41b8a4912e74e9c4a0907529e618d669ed3628073bb1b58b5",
+  "expiresAt": "2026-07-29T18:58:44.430Z",
+  "manifest": {
+    "asOf": "2026-07-29T16:58:44.967Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "273e73c2a54a17a3f139e1b82a4daf91bc7b653632a26de539dbf3892c69c304"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "32fc9c7011a5c90dda6c1b6c908646cdd8569435bbdf47d66e600724bd829fa7",
+  "targets": [
+    {
+      "canonicalIdentityHash": "f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"foods glory\",\"productLine\":\"seasoned southern style\",\"flavor\":\"greens mustard\",\"modifiers\":[],\"form\":\"can\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":765.437124375,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "6ce17ae65deb962d27b33e247a9b7c29c3ad1c7aa7a1626735427b8972a57b4d",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"2726b08af8d54c5c963322f75bc94d0493b735dec19288b39513941f76edeaab\",\n  \"canonicalVariantId\": \"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\",\n  \"donorProductId\": \"8936f4ab-6336-4169-8592-83b496799d51\",\n  \"donorTitle\": \"Glory Foods Seasoned Southern Style Mustard Greens, 27 oz., Can\",\n  \"identityProof\": \"STRICT_TITLE_MATCH\",\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.0.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"8366aec4a23391b63f76b1058d6812c1c3becdd08fc3a64f7fc14853f3657c59\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"c126775b868b992bcb929ad4e53a09ee39f81666604fb4f13832aef4e3dc60fe\",\n    \"donorProductSha256\": \"83f018b0fed2dbaf6b11cbb7790cdec8e2442c0d6171c44bbb5a4aa3bf0b5ea6\"\n  },\n  \"sourceSnapshotSha256\": \"a66faab7ccb27b3d31f298e2d3516f843d18a5c308f852484613ce0311a4e1f6\",\n  \"targetIdentity\": {\n    \"brand\": \"Glory Foods\",\n    \"flavor\": \"Mustard Greens\",\n    \"form\": \"can\",\n    \"outerPackCount\": 1,\n    \"productLine\": \"Seasoned Southern Style\",\n    \"size\": \"27 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:10532985",
+      "donorProductId": "8936f4ab-6336-4169-8592-83b496799d51",
+      "donorSnapshotSha256": "273e73c2a54a17a3f139e1b82a4daf91bc7b653632a26de539dbf3892c69c304",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "8936f4ab-6336-4169-8592-83b496799d51",
+        "listingKey": "walmart:1:RizwanX-3236",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-cbed404146979d664efb13d8\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T06:45:34.000Z\",\n  \"effectiveAt\": \"2026-07-29T06:45:34.000Z\",\n  \"evidenceHash\": \"07ee099f77e80dcfcf332d2e7f336468a1c4d0768a1dbd009b4af145850804dc\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"a61615b2fa111fb4c925c17d8a56cfcc56746d88a203b7be9353068a5788a94a\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"8936f4ab-6336-4169-8592-83b496799d51\\\",\\n      \\\"flavor\\\": \\\"Mustard Greens\\\",\\n      \\\"product\\\": \\\"Seasoned Southern Style\\\",\\n      \\\"quantity\\\": 4,\\n      \\\"size\\\": \\\"27 oz\\\",\\n      \\\"sourceComponentId\\\": \\\"comp:RizwanX-3236:0\\\",\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T06:45:34.000Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3236\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"d36d2978bdec038a5e54df0a26275fdd11e03e83ec434e863ce96c27f6344077\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"22ad3a53b8917022f5ad8dab9b361a6ca27044a3ea453466e440a109ea9c785b\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:0b4e7adceb4a7c77cf9fd3cc47e0d10772eaabbffb5d6b1a549b5bbabdd14670\",\n  \"listingKey\": \"walmart:1:RizwanX-3236\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"d36d2978bdec038a5e54df0a26275fdd11e03e83ec434e863ce96c27f6344077\",\n  \"recipeKey\": \"0b4e7adceb4a7c77cf9fd3cc47e0d10772eaabbffb5d6b1a549b5bbabdd14670\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-cbed404146979d664efb13d8\",\n  \"sourceArtifactSha256\": \"22ad3a53b8917022f5ad8dab9b361a6ca27044a3ea453466e440a109ea9c785b\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3236\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3236\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"d1916b97cf6af73757e5fc0cf7610a1d09b779e1d019d93c07c5a7e3430b335e\",\n  \"createdAt\": \"2026-07-29T06:45:34.000Z\",\n  \"donorProductId\": \"8936f4ab-6336-4169-8592-83b496799d51\",\n  \"evidenceHash\": \"a61615b2fa111fb4c925c17d8a56cfcc56746d88a203b7be9353068a5788a94a\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"8936f4ab-6336-4169-8592-83b496799d51\\\",\\n  \\\"flavor\\\": \\\"Mustard Greens\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3236\\\",\\n  \\\"product\\\": \\\"Seasoned Southern Style\\\",\\n  \\\"quantity\\\": 4,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"27 oz\\\",\\n  \\\"sourceComponentId\\\": \\\"comp:RizwanX-3236:0\\\",\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"2726b08af8d54c5c963322f75bc94d0493b735dec19288b39513941f76edeaab\\\",\\n    \\\"identityProof\\\": \\\"STRICT_TITLE_MATCH\\\",\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"8366aec4a23391b63f76b1058d6812c1c3becdd08fc3a64f7fc14853f3657c59\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"c126775b868b992bcb929ad4e53a09ee39f81666604fb4f13832aef4e3dc60fe\\\",\\n      \\\"donorProductSha256\\\": \\\"83f018b0fed2dbaf6b11cbb7790cdec8e2442c0d6171c44bbb5a4aa3bf0b5ea6\\\",\\n      \\\"legacyComponentSha256\\\": \\\"668846100a525290d7f878eae1d8762519fb46c4928655bc7d0204f36f3abb34\\\",\\n      \\\"listingSha256\\\": \\\"3fbcc56bc668753e1d89d292202b19bd8c810ffe26e6491418eedfeba085c083\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"a66faab7ccb27b3d31f298e2d3516f843d18a5c308f852484613ce0311a4e1f6\\\"\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"74488ed2c08110a187f82fe7d5fd97b0aac1b09fb1ad169b900ed4153351911e\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\\\"\\n}\\n\",\n  \"flavor\": \"Mustard Greens\",\n  \"id\": \"ptrc:d1916b97cf6af73757e5fc0cf7610a1d09b779e1d019d93c07c5a7e3430b335e\",\n  \"listingRecipeId\": \"ptr:0b4e7adceb4a7c77cf9fd3cc47e0d10772eaabbffb5d6b1a549b5bbabdd14670\",\n  \"product\": \"Seasoned Southern Style\",\n  \"quantity\": 4,\n  \"size\": \"27 oz\",\n  \"sourceComponentId\": \"comp:RizwanX-3236:0\",\n  \"targetCanonicalVariantId\": \"cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce\",\n  \"variantDecisionId\": \"dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "9b5a6e9771328ff081a3fb16745f6449de09a6757f544ef24beafb01d669c58a",
+        "sku": "RizwanX-3236",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10532985",
+      "ordinal": 0,
+      "query": "Glory Foods Seasoned Southern Style Mustard Greens, 27 oz., Can",
+      "retailer": "walmart",
+      "retailerProductId": "10532985",
+      "variantDecisionId": "dpvd:d11d3646880e5ef0f255539eb9575dc95f908ebb2d37fe4a6eb79f6c9dd3d1ce",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

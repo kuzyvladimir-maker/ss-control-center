@@ -1,0 +1,80 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99655,
+        "evidenceSha256": "a8bd3233c1ac24f354339963f6e6a7c5c0148588e1cc5bdf2b91f40061255b7e",
+        "observedAt": "2026-07-29T15:53:10.770Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-29T16:03:25.799Z",
+    "issuedAt": "2026-07-29T15:53:25.799Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-29T16:03:25.799Z",
+      "issuedAt": "2026-07-29T15:53:25.799Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+      "version": 1
+    },
+    "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+    "runId": "pt-glory-honey-carrots-bound-20260729t155100z",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+  "approvalSha256": "33a1348c0a1d53a5e728b9ffa74d600f6fa149ae5bcbd6a1934850bab7e9d7d4",
+  "balanceEvidenceSha256": "a8bd3233c1ac24f354339963f6e6a7c5c0148588e1cc5bdf2b91f40061255b7e",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17:pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+  "expiresAt": "2026-07-29T16:03:25.799Z",
+  "issuedAt": "2026-07-29T15:53:25.799Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155100Z-glory-honey-carrots-bound-doctor.plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155100Z-glory-honey-carrots-bound-doctor.plan/plan.sha256",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155700Z-glory-honey-carrots-bound-authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17:pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155700Z-glory-honey-carrots-bound-execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155100Z-glory-honey-carrots-bound-doctor.plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155100Z-glory-honey-carrots-bound-doctor.plan/plan.sha256' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155700Z-glory-honey-carrots-bound-authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17:pt-standing:db79d54e38b6b6d5ff77:a8bd3233c1ac24f3' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T155700Z-glory-honey-carrots-bound-execution'",
+  "ownerActionRequired": false,
+  "planSha256": "db79d54e38b6b6d5ff77b05a22a421343aed70f18372ca33c465676ecbec8d17",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

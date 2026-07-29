@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:082761b4b195d02a23de:3a8e5dacb42cd939",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99635,
+      "evidenceSha256": "3a8e5dacb42cd939664b21017cc3523578877f5df9f6f8cb3be9bd5b5d9dac9c",
+      "observedAt": "2026-07-29T17:22:03.756Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T17:32:13.021Z",
+  "issuedAt": "2026-07-29T17:22:13.021Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:082761b4b195d02a23de:3a8e5dacb42cd939",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T17:32:13.021Z",
+    "issuedAt": "2026-07-29T17:22:13.021Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+    "version": 1
+  },
+  "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+  "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,63 @@
+{
+  "bodySha256": "732f60c88354f40abbc3a28e3d1bc3764d20a137e2c338f1654a8e1f8e26982f",
+  "claims": {
+    "catalogWritesMaximum": 17,
+    "estimateCostCount": 3,
+    "exactRecipeCount": 3,
+    "factCostCount": 0,
+    "marketplaceWrites": 0,
+    "mutatesExistingCanonicalEvidence": false,
+    "providerCalls": 0,
+    "retailerCalls": 0
+  },
+  "createdAt": "2026-07-29T15:36:37.000Z",
+  "evidence": {
+    "exactContentProduct": "Maruchan Instant Lunch Roast Chicken Flavor, 2.25 oz cup",
+    "exactFlavorUpc": "041789001574",
+    "exactWalmartContentItemId": "171760021",
+    "exactWalmartContentUrl": "https://www.walmart.com/ip/171760021",
+    "officialContentUrl": "https://maruchan.com/products/instant-lunch/roast-chicken-flavor-ramen-cup",
+    "packagingCostPerListing": 1.5,
+    "priceClassification": "SIBLING_ESTIMATE",
+    "pricePerCup": 0.64,
+    "procurementZip": "33765",
+    "publicPriceRecheckedAt": "2026-07-29T15:36:37.000Z",
+    "savedZipObservationAt": "2026-07-11T13:59:21.074Z",
+    "siblingPriceProduct": "Maruchan Instant Lunch Chicken Flavor, 2.25 oz cup",
+    "siblingPriceUrl": "https://www.walmart.com/ip/10450893",
+    "siblingPriceWalmartItemId": "10450893"
+  },
+  "exactListings": [
+    {
+      "itemId": "1209518230",
+      "quantity": 24,
+      "sku": "FaisalX-1433"
+    },
+    {
+      "itemId": "517674888",
+      "quantity": 60,
+      "sku": "FaisalX-1434"
+    },
+    {
+      "itemId": "1523397932",
+      "quantity": 120,
+      "sku": "FaisalX-1435"
+    }
+  ],
+  "expiresAt": "2026-07-30T15:36:37.000Z",
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "ownerDecisionId": "G8a-maruchan-faisalx-1433-1435-20260729",
+  "planId": "maruchan-product-truth-20260729153637000",
+  "priceCanonicalVariantId": "cpv1:4e13042c9a549c9385e87d13b64ba9b8a3d40842cc7e2756906540a0209d27cd",
+  "schemaVersion": "maruchan-product-truth-materialization-plan/v1",
+  "sourceBindings": {
+    "contentDonorSha256": "9b874fc2e1c601e22e6eaa755d1ffe304b4b9e80eb322a90521fb2d9ca14ed62",
+    "contentOfferSha256": "9a7d433255ac64a9020229b008a7410f979300dc984e28bc0e5f665f452756b2",
+    "existingCanonicalGraphSha256": "0d8b739cc870439936b94db0b9d85a20d9ef56ddbe76f137799a99e5bfc00400",
+    "listingScopesSha256": "dd0726a59588d5ecc402123faa6c4c7d9051070e7e500de01bafd34cfc954f7a",
+    "priceDonorSha256": "ece28488ea7f3b0c7d5d09e5527ea3acecccd2240e917c95958fa4f17b2059b4",
+    "priceOfferSha256": "34a505ebc0e0efc691bc71058ac5b25edeea9f69f2aa63bbf16e378bbdb86173"
+  },
+  "targetCanonicalVariantId": "cpv1:c2bbda600fc06524c6838759808c48011adff998709c05f844fdf74654ca2ecb"
+}
+

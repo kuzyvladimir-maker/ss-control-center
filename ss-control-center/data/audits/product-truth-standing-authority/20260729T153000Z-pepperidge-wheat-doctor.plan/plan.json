@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-29T15:27:49.332Z",
+  "engineReleaseSha256": "9088f71463372c3b846833e661e8104489fadb98ed13a40d1b680c8c0fc9066c",
+  "expiresAt": "2026-07-30T15:00:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-29T15:27:49.332Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "2a2bbc576cad0964e4168882d1aa26023e289d31c3ba009ec66f3e5a1e90c43d"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-pepperidge-wheat-standing-20260729t153000z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "a475da078c4eb69f3be9f4e83ab0b77cd4b4e9cfbaaff716ed2dc733c732add6",
+  "targets": [
+    {
+      "canonicalIdentityHash": "a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"farm pepperidge\",\"productLine\":\"bread thin very wheat whole\",\"flavor\":null,\"modifiers\":[\"whole_wheat\"],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":453.59237,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "de04fa32ff4050457a20e4b93ac7dfb1e144eb859fffd9b69bce48b0e775b667",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5\",\n  \"donorProductId\": \"5d4f8fb8-9c2a-4f46-904e-3c239752b160\",\n  \"donorTitle\": \"Pepperidge Farm Very Thin 100% Whole Wheat Bread, 16 oz.\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"abeded801926880a47fc1783361a59482100f9731c5e5b346303279caac59d2b\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"551b7890ab483f9556430506fc06af335ee35db92db1b5c4cffb342d62008965\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"f0222c4a2c15cb223c9ee0bb199668111ec4a1ffc7b5ac7f226d768a29d77b33\",\n    \"donorProductSha256\": \"74a4779d859ba9362a56cd3cfc59fce723c59ebb05aefa062e1bdc417f962f18\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Pepperidge Farm\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"very thin whole wheat bread\",\n    \"size\": \"16 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:25568083",
+      "donorProductId": "5d4f8fb8-9c2a-4f46-904e-3c239752b160",
+      "donorSnapshotSha256": "2a2bbc576cad0964e4168882d1aa26023e289d31c3ba009ec66f3e5a1e90c43d",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "5d4f8fb8-9c2a-4f46-904e-3c239752b160",
+        "listingKey": "walmart:1:FaisalX-1142",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-9ca1ff5ca497e15c46088465\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:41.942Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:41.942Z\",\n  \"evidenceHash\": \"75ce0d8e490073c591ec9abd574f67a797ef10ef92e068fb0551a712ed3eb201\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"58263918290aa0dd9b08e0b391726bacbe79adbf7b2e3c0a8d443d93b237cf9c\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"5d4f8fb8-9c2a-4f46-904e-3c239752b160\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"very thin whole wheat bread\\\",\\n      \\\"quantity\\\": 2,\\n      \\\"size\\\": \\\"16 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:8fdc694637f4df2fd7faeb22a637404bc9884b49d609a8f9c31aca66abe15620\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:41.942Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:FaisalX-1142\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"f44b38593a4b123f3e20850467f1b47449ea2c5e7e6ef6b516f8eb225fc7f6ee\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"16c62ba6ef05d31c0daa3244012984f7a2c7082db781af2d063ed2b32deef098\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:e10640db2a9b45820a245d877330472d1393bb934b72845a2878e6f21087ca13\",\n  \"listingKey\": \"walmart:1:FaisalX-1142\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"f44b38593a4b123f3e20850467f1b47449ea2c5e7e6ef6b516f8eb225fc7f6ee\",\n  \"recipeKey\": \"e10640db2a9b45820a245d877330472d1393bb934b72845a2878e6f21087ca13\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-9ca1ff5ca497e15c46088465\",\n  \"sourceArtifactSha256\": \"16c62ba6ef05d31c0daa3244012984f7a2c7082db781af2d063ed2b32deef098\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:FaisalX-1142\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"FaisalX-1142\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"7e690143870913edfe1ed1502ecf967749f3c9cc3e417b495d978b3b49b629bc\",\n  \"createdAt\": \"2026-07-29T11:24:41.942Z\",\n  \"donorProductId\": \"5d4f8fb8-9c2a-4f46-904e-3c239752b160\",\n  \"evidenceHash\": \"58263918290aa0dd9b08e0b391726bacbe79adbf7b2e3c0a8d443d93b237cf9c\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"5d4f8fb8-9c2a-4f46-904e-3c239752b160\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:FaisalX-1142\\\",\\n  \\\"product\\\": \\\"very thin whole wheat bread\\\",\\n  \\\"quantity\\\": 2,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"16 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"abeded801926880a47fc1783361a59482100f9731c5e5b346303279caac59d2b\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"3a969a903661b2e60303e2b9a4b2c0cbda478e01a8f41b9604fc00a05b2a0378\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"551b7890ab483f9556430506fc06af335ee35db92db1b5c4cffb342d62008965\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"f0222c4a2c15cb223c9ee0bb199668111ec4a1ffc7b5ac7f226d768a29d77b33\\\",\\n      \\\"donorProductSha256\\\": \\\"74a4779d859ba9362a56cd3cfc59fce723c59ebb05aefa062e1bdc417f962f18\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"d2bf6675532332fd23654a869328c66ee137c9185f5b716fe75023b647352ad6\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"39eabad4fc282d7dd15064babb3cc5172abee967ec8e63f9f02c5b64669d0094\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:8fdc694637f4df2fd7faeb22a637404bc9884b49d609a8f9c31aca66abe15620\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:7e690143870913edfe1ed1502ecf967749f3c9cc3e417b495d978b3b49b629bc\",\n  \"listingRecipeId\": \"ptr:e10640db2a9b45820a245d877330472d1393bb934b72845a2878e6f21087ca13\",\n  \"product\": \"very thin whole wheat bread\",\n  \"quantity\": 2,\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:a89bae1f2adf16f42f75defc17a3212a068b71d1e2aed036c3cf2118babd81d5\",\n  \"variantDecisionId\": \"dpvd:8fdc694637f4df2fd7faeb22a637404bc9884b49d609a8f9c31aca66abe15620\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "9d959d8ced31f91d13a21c5740802f2e283849f0326df414aac091cf8de60b44",
+        "sku": "FaisalX-1142",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:8fdc694637f4df2fd7faeb22a637404bc9884b49d609a8f9c31aca66abe15620"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/25568083",
+      "ordinal": 0,
+      "query": "Pepperidge Farm Very Thin 100% Whole Wheat Bread 16 oz",
+      "retailer": "walmart",
+      "retailerProductId": "25568083",
+      "variantDecisionId": "dpvd:8fdc694637f4df2fd7faeb22a637404bc9884b49d609a8f9c31aca66abe15620",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

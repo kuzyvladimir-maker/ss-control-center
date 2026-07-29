@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "1b7fb6e88281526953ef2cdbcd0fc632d968021e5f191ffc488e5eb4b2e5eba7",
+  "authorizationSha256": "6f856e056adad2721d69c0b9d2f1a8a070c4f93bc4ffa8f1a51b8f3cfede572d",
+  "balanceEvidenceSha256": "3a8e5dacb42cd939664b21017cc3523578877f5df9f6f8cb3be9bd5b5d9dac9c",
+  "createdAt": "2026-07-29T17:22:13.021Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "1b7fb6e88281526953ef2cdbcd0fc632d968021e5f191ffc488e5eb4b2e5eba7"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "6f856e056adad2721d69c0b9d2f1a8a070c4f93bc4ffa8f1a51b8f3cfede572d"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+  "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

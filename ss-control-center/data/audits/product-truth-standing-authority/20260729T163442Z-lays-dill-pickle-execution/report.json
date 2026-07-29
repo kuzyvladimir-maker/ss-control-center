@@ -1,0 +1,121 @@
+{
+  "approvalId": "pt-standing:65460f79a873546d3d3e:ee170b6fdd16c414",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:23b29f47c4683f8e3b7510eee7313b6b009367d987fa7c657e350df031090387",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": {
+    "capture": "exact_field_snapshot_v2",
+    "contentObservationId": "pco:cf4fd80484d507a7937bb6542d9a6a0dd9bbf0f6c23fd707aba175a1c0dca52b",
+    "imageCount": 7,
+    "missingFields": [
+      "allergens",
+      "ingredients",
+      "storageTemp"
+    ]
+  },
+  "donorOfferId": "do:walmart:296046221",
+  "donorProductId": "78e8276f-7355-418d-b27e-b94e7891160b",
+  "generatedAt": "2026-07-29T16:40:03.155Z",
+  "job": {
+    "approvalId": "pt-standing:65460f79a873546d3d3e:ee170b6fdd16c414",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": "pco:cf4fd80484d507a7937bb6542d9a6a0dd9bbf0f6c23fd707aba175a1c0dca52b",
+      "detailReceiptId": "mbr_546860fc2ad913d284dea183a01d821c380a6b64d5d6a029975bfee9e6ea14a6",
+      "identityMode": "EXISTING_EXACT",
+      "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+      "priceObservationId": "doo:2e07698eaa8836fcbbeb13be571e085f812281e729045f629a472308fab33172",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_b25e8fdc1a0aca5a1cfeef20f5291b9c13600e63d6c4a8950e3824c54e0e40e6",
+      "stage": "EXACT_CONTENT_RECONCILED",
+      "variantDecisionId": "dpvd:d936e63ccc7ac89d54a4bd1d5c29cc391e2c2ca0ff3ce4a34eca9357fc5970e0"
+    },
+    "error": null,
+    "id": "ptej_d6d95aebfed04f5349af322c6890b207bac5a28f48e8192b891329d9eabf4ce4",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "COMPLETED",
+      "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+    },
+    "runId": "pt-lays-dill-pickle-20260729t163233z",
+    "status": "done",
+    "terminalReason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_801d5fd772a7cf0cafc396ecc6668e8e1d73304ff26e4b8fbfa42adfd803e2c9",
+        "createdAt": "2026-07-29T16:35:48.988Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_b25e8fdc1a0aca5a1cfeef20f5291b9c13600e63d6c4a8950e3824c54e0e40e6",
+        "reservationKey": "mpr_v1_5030a5a7b0b159dd39fd9afe2c017427018da09bcab70d6882cdd3c54bb41772",
+        "reservedAt": "2026-07-29T16:35:48.988Z",
+        "settledAt": "2026-07-29T16:35:57.416Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_4c58272af6fea529d53ba07237067ed55a9de5c2571971a0255eb8ac9ebb6821",
+        "createdAt": "2026-07-29T16:38:27.197Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_546860fc2ad913d284dea183a01d821c380a6b64d5d6a029975bfee9e6ea14a6",
+        "reservationKey": "mpr_v1_22ebb6a8a8fd2e5b23bf973c9e5056e48ec70d1e1a2cd638ce45934db6e400bd",
+        "reservedAt": "2026-07-29T16:38:27.197Z",
+        "settledAt": "2026-07-29T16:38:44.519Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-lays-dill-pickle-20260729t163233z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "COMPLETED",
+  "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+  "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "296046221",
+  "runId": "pt-lays-dill-pickle-20260729t163233z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

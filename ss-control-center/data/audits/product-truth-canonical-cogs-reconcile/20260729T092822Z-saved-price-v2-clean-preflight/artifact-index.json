@@ -1,0 +1,17 @@
+{
+  "artifacts": [
+    {
+      "file": "preflight-report.json",
+      "role": "preflight_report",
+      "sha256": "a22a7b9d90920f3d19987260f297257a4a6e1822dbd010c4d1c0f0b14a942499"
+    }
+  ],
+  "checkedAt": "2026-07-29T09:28:22.000Z",
+  "costOutcomes": [
+    "FACT"
+  ],
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planSha256": "a013044e74ebf3db4b37e0df52b4f2c81f52a9ed2645247c9502c95dda9c4d33",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-preflight-index/1.0.0",
+  "status": "READY_TO_APPLY"
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "product-truth-standing-wave-production-activation-receipt/1.0.0",
+  "verifiedAt": "2026-07-29T19:57:47.293Z",
+  "deployment": {
+    "id": "dpl_2K8Mwr5uYLDWWKbhrWrZ7tEkdowB",
+    "url": "https://ss-control-center-jem9oiq6u-kuzyvladimir-makers-projects.vercel.app",
+    "alias": "https://salutemsolutions.info",
+    "target": "production",
+    "ready": true
+  },
+  "release": {
+    "commitSha": "56a12b39785ca298bcaa7b6165e2d8f24e0fb4a3",
+    "treeSha": "dd01b66e0e254e62cd448cf321d087ee63421b2a",
+    "cleanCheckout": true,
+    "executableTreeSha256": "a9b21d722855888dad59e0086e219534eef3a59bf858dc37f57c95a2d6302358"
+  },
+  "services": [
+    {
+      "label": "com.salutem.product-truth-worker",
+      "printStatus": 0,
+      "state": "running",
+      "pid": 1908
+    },
+    {
+      "label": "com.salutem.product-truth-standing-wave-worker",
+      "printStatus": 0,
+      "state": "running",
+      "pid": 1911
+    }
+  ],
+  "checks": [
+    {
+      "name": "generic-claim",
+      "httpStatus": 200,
+      "ok": true,
+      "status": "IDLE",
+      "claimIsNull": true,
+      "controlStatus": null,
+      "activeCommandId": null,
+      "workerMode": "no-spend"
+    },
+    {
+      "name": "standing-claim",
+      "httpStatus": 200,
+      "ok": true,
+      "status": "IDLE",
+      "claimIsNull": true,
+      "controlStatus": null,
+      "activeCommandId": null,
+      "workerMode": "standing-wave"
+    },
+    {
+      "name": "catalog-status",
+      "httpStatus": 200,
+      "ok": true,
+      "status": "READY",
+      "claimIsNull": null,
+      "controlStatus": "ACTIVE",
+      "activeCommandId": null,
+      "workerMode": "standing-wave"
+    }
+  ],
+  "startupArtifacts": {
+    "genericWorkerSha256": "ada0f68d13b4f30986144db0cb34dd817f99c9471079ea87549fdbecadbfedb8",
+    "standingWorkerSha256": "2934f1106b204e2b608d7efcd2757278459c8af747f15bb33aa38df471ceec02",
+    "standingLaunchAgentSha256": "f5fb001735763fc9616684190e8b6d6153019a8d8941d8c076ee7bb036da1ef2"
+  },
+  "bindings": {
+    "migrationReceiptSha256": "f8387d6cc363c65bbfdc55f0507b73c2ff0ded1ef85a2875a37805bd29a7bde7",
+    "activationPacketSha256": "6b8ab80ae92d66c8ae8822f3848e1b7353bd26fe3e0118f5ebc643f7dc4a8137"
+  },
+  "claims": {
+    "providerCalls": 0,
+    "marketplaceMutations": 0,
+    "productTruthBusinessWrites": 0,
+    "admittedStandingWave": false
+  },
+  "decision": "ACTIVE_VERIFIED"
+}

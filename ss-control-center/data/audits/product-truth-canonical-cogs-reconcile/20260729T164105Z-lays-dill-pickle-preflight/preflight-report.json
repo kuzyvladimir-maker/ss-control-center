@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-07-29T16:41:05.978Z",
+  "counts": {
+    "absentRows": 12,
+    "exactExistingRows": 0,
+    "targets": 4
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "walmart:1:FaisalX-812",
+    "walmart:1:FaisalX-813",
+    "walmart:1:FaisalX-814",
+    "walmart:1:FaisalX-815"
+  ],
+  "planId": "ptcc-f53864a965a4bf08956efcec",
+  "planSha256": "318f9c36efc8a6ec76ba51fbeed99eb157946d14cceac1ab537234d88c4895db",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-preflight/2.0.0",
+  "status": "READY_TO_APPLY"
+}

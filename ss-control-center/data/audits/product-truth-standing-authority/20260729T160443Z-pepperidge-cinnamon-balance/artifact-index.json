@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T16:04:57.018Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "6070bd7be9e19f916489936ed17d34ba9fa4e42e7821dbf9899a10afdbf0591c"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "676ae1bf749bc6693248e637a363f1d7091a08f6ed19c57b1b83f52e1f2f3341"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:92754096eaef76d7eff75828",
+  "meteredReceiptId": "mbr_aaf4c44ba44d227a74608dd8c07a4e3336a8d05c3ef5bb504956c901bbfa6476",
+  "meteredReservationKey": "mpr_v1_40b6bdb93ea88d17b0b2edf3d067279f97faa671891e0b58c115982dfe0fc704",
+  "planSha256": "92754096eaef76d7eff758287646d98b925526c7b5c51c9de6bf64f343b737ec",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-pepperidge-cinnamon-20260729t160250z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99640,
+      "evidenceSha256": "37e334f95816280774c308d230132b6855bcda0b818603cf886ae10512cf5595",
+      "observedAt": "2026-07-29T17:00:40.835Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-29T17:10:51.535Z",
+  "issuedAt": "2026-07-29T17:00:51.535Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:ce974bef5caeb88f70e7:37e334f958162807",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-29T17:10:51.535Z",
+    "issuedAt": "2026-07-29T17:00:51.535Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "pt-glory-mustard-greens-20260729t165844z",
+    "version": 1
+  },
+  "planSha256": "ce974bef5caeb88f70e70a3d0ce858cd5465d8179be9b92e6e8174e45be8e278",
+  "runId": "pt-glory-mustard-greens-20260729t165844z",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

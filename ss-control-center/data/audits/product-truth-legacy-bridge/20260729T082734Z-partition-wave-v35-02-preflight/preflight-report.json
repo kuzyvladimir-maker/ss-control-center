@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-07-29T08:27:34.000Z",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingLegacyCatalog": true
+  },
+  "counts": {
+    "absentRows": 47,
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitionsRequired": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "targets": 7
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "walmart:1:RizwanX-200",
+    "walmart:1:RizwanX-201",
+    "walmart:1:RizwanX-3004",
+    "walmart:1:RizwanX-3005",
+    "walmart:1:RizwanX-3006",
+    "walmart:1:RizwanX-3247",
+    "walmart:1:RizwanX-3248"
+  ],
+  "planId": "ptlb-wave-cd0d8f75340e64ae0a438d68",
+  "planSha256": "288e9c271817024e19fd48aed6a03c047618650a7065cc23e11fbdd1bea2ce9f",
+  "schemaVersion": "product-truth-legacy-bridge-preflight-report/2.2.0",
+  "status": "READY_TO_APPLY"
+}

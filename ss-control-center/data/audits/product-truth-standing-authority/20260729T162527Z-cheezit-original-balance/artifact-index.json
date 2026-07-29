@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T16:25:37.291Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "34d312021de740ae41fbcb544ad1de44a0355a6fc1fdea791a2e6c2208cbf73b"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "ac72891f52b578b3857c46c233fdd621fdd4249c615e7af669d845b5fd223c9d"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:96181a7fadd963a72880d2f5",
+  "meteredReceiptId": "mbr_13bf60a4a18b043087a5da02428ad0b6ef371ef89f0a3e1cf5180b0ed5f2804a",
+  "meteredReservationKey": "mpr_v1_6f8fe7c9bbf79b30c78626e3cb481b67e89c8f01876d48c5221369f48660a80f",
+  "planSha256": "96181a7fadd963a72880d2f536301bf8d39768d886ef90368d8db1548dc85856",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-cheezit-original-20260729t162342z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

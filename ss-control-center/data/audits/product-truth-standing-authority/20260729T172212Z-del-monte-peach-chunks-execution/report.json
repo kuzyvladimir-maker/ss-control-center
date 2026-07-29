@@ -1,0 +1,120 @@
+{
+  "approvalId": "pt-standing:082761b4b195d02a23de:3a8e5dacb42cd939",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:adfb7e636772af77f36d5f598ebf4ae418614c4bfa4787149285633afa875177",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": {
+    "capture": "exact_field_snapshot_v2",
+    "contentObservationId": "pco:faae3e70dcefe15c89577c2da4ae12c1c2f69f37dae045bca6289cc9a2dde65f",
+    "imageCount": 6,
+    "missingFields": [
+      "allergens",
+      "storageTemp"
+    ]
+  },
+  "donorOfferId": "do:walmart:10295187",
+  "donorProductId": "aee46f4c-ed04-4e53-a4e8-a94c468381db",
+  "generatedAt": "2026-07-29T17:27:06.306Z",
+  "job": {
+    "approvalId": "pt-standing:082761b4b195d02a23de:3a8e5dacb42cd939",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": "pco:faae3e70dcefe15c89577c2da4ae12c1c2f69f37dae045bca6289cc9a2dde65f",
+      "detailReceiptId": "mbr_a36897df59f9af5bae7a967e2d2f708c960d22df8f6bb0d47be6bbe4c0fa8d44",
+      "identityMode": "EXISTING_EXACT",
+      "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+      "priceObservationId": "doo:781e568abd59281bed94190fea06f1a0dfb410e7c469a50fc04613f5edd0a05c",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_1b463bfd85c5f6a4d39b3c9bb51c10bdb85fee4b8252deb869d0974b5b712ad8",
+      "stage": "EXACT_CONTENT_RECONCILED",
+      "variantDecisionId": "dpvd:07570fd809cc473768aa84e049806d838fba527d0b32307bb3fba2a13c426e3c"
+    },
+    "error": null,
+    "id": "ptej_0cc268c1e6b6daa875828caabe0ea02762d6d35123b59f838a8b43690cdf6013",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "COMPLETED",
+      "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+    },
+    "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+    "status": "done",
+    "terminalReason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_3bd03fe4cca1945bd4a83c3df3058aa1ca8a7434c64bfa78b919de7e453c95d5",
+        "createdAt": "2026-07-29T17:23:18.438Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_1b463bfd85c5f6a4d39b3c9bb51c10bdb85fee4b8252deb869d0974b5b712ad8",
+        "reservationKey": "mpr_v1_3836c544c1fd4becb48c92612769febeeca4c8a84172cdff79ab2a9a5fd80563",
+        "reservedAt": "2026-07-29T17:23:18.438Z",
+        "settledAt": "2026-07-29T17:23:26.433Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_7ffa2276ec8bb70753145b06b0dcaf340d881d97136fcf8720c63ea7c630f2b1",
+        "createdAt": "2026-07-29T17:25:46.994Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_a36897df59f9af5bae7a967e2d2f708c960d22df8f6bb0d47be6bbe4c0fa8d44",
+        "reservationKey": "mpr_v1_6022a7adb2c8af8eb7bc435bda738acda9e115d49731a7d157ca0d9132a4e40c",
+        "reservedAt": "2026-07-29T17:25:46.994Z",
+        "settledAt": "2026-07-29T17:26:07.720Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "COMPLETED",
+  "planSha256": "082761b4b195d02a23de60ef8f97c7b703dbbf6b66ece80b7ae8ce0217cc938f",
+  "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10295187",
+  "runId": "pt-del-monte-peach-chunks-20260729t171949z",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

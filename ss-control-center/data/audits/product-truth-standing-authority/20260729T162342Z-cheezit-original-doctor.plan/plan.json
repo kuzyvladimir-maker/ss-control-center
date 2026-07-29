@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-29T16:23:43.329Z",
+  "engineReleaseSha256": "468d6c53d6ebf279d2d1a273f0609ce7fea129c15e876648893a310baa68108c",
+  "expiresAt": "2026-07-29T18:23:42.790Z",
+  "manifest": {
+    "asOf": "2026-07-29T16:23:43.329Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "0fb3015d8a883d2963fa96bfeee67dae4835b24517c8f20abac49a1bd75d1f66"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "pt-cheezit-original-20260729t162342z",
+  "schemaFingerprintSha256": "59058be44b96088a55b490f761041fb5136b4c937eb58ffc8717f2849c1965c6",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "cefae2c0b83547e0f9420855e6d85094a331d455b7c40ffdec1fa0eb64c77c72",
+  "targets": [
+    {
+      "canonicalIdentityHash": "8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"cheez it\",\"productLine\":\"baked cheese crackers original snack\",\"flavor\":null,\"modifiers\":[\"original\"],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":595.339985625,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "46903174b74668ca953d5cd9bfabf9663f51380ce2728afc89f1a975151f0a10",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be\",\n  \"donorProductId\": \"fce8b1aa-529e-46dd-af3a-c39a57d14e7e\",\n  \"donorTitle\": \"Cheez-It Original Cheese Crackers, Baked Snack Crackers, 21 oz\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"351b2da743ac295566eb0521ab39211dd861b55e67c6ac7c357b6a7f59c302c8\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"059f6315689b692d53324ce241e59920a204b54781ec209a414182e2c27186b2\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"27d928eabbfb834c58969facf679753f12111260689886b4e3ad5b8464a813fb\",\n    \"donorProductSha256\": \"0858ad6edcbb4ef41e2dae112fa5c124c3b7dbf7685c4ba477f6a2a45a78b248\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Cheez-It\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"original cheese crackers baked snack crackers\",\n    \"size\": \"21 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:10996960",
+      "donorProductId": "fce8b1aa-529e-46dd-af3a-c39a57d14e7e",
+      "donorSnapshotSha256": "0fb3015d8a883d2963fa96bfeee67dae4835b24517c8f20abac49a1bd75d1f66",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "fce8b1aa-529e-46dd-af3a-c39a57d14e7e",
+        "listingKey": "walmart:1:FaisalX-4464",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-ca30a95a34d1946a082d6ddd\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:58.084Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:58.084Z\",\n  \"evidenceHash\": \"4702793ac9138ffdb599a1f7fd07a55708b6541a8400c628ffe71b24816f2799\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"8cb716f39a362e7430d431ae13c5a99b755cedb72217c3287d7ad0275ba4de75\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"fce8b1aa-529e-46dd-af3a-c39a57d14e7e\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"original cheese crackers baked snack crackers\\\",\\n      \\\"quantity\\\": 4,\\n      \\\"size\\\": \\\"21 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:3976cb679bc83aaacca75bbe8b128a3a0865afab5ed0332625a395c25375ff8e\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:58.084Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:FaisalX-4464\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"688e3c27113c0e25a3af90429c311f3a8a7b2409667da96d9ca401f8c4bab8a1\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"72a8468cef8e80ddaeba351e5ea4335f4ff92bbfcf6984a4286cb11ea5f8f690\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:4677738311cab1bfd8d87cc175579c686aefef9604b365edad601f597164aabc\",\n  \"listingKey\": \"walmart:1:FaisalX-4464\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"688e3c27113c0e25a3af90429c311f3a8a7b2409667da96d9ca401f8c4bab8a1\",\n  \"recipeKey\": \"4677738311cab1bfd8d87cc175579c686aefef9604b365edad601f597164aabc\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-ca30a95a34d1946a082d6ddd\",\n  \"sourceArtifactSha256\": \"72a8468cef8e80ddaeba351e5ea4335f4ff92bbfcf6984a4286cb11ea5f8f690\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:FaisalX-4464\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"FaisalX-4464\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"c78a0f682c7db59f83101f26d050a3be4176eedbfe356017e4b7274933d3ffe4\",\n  \"createdAt\": \"2026-07-29T11:24:58.084Z\",\n  \"donorProductId\": \"fce8b1aa-529e-46dd-af3a-c39a57d14e7e\",\n  \"evidenceHash\": \"8cb716f39a362e7430d431ae13c5a99b755cedb72217c3287d7ad0275ba4de75\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"fce8b1aa-529e-46dd-af3a-c39a57d14e7e\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:FaisalX-4464\\\",\\n  \\\"product\\\": \\\"original cheese crackers baked snack crackers\\\",\\n  \\\"quantity\\\": 4,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"21 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"351b2da743ac295566eb0521ab39211dd861b55e67c6ac7c357b6a7f59c302c8\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"fec3712d8ea84a031f5c34ace50bfa68b29044807ee9965b46550d334b4d2a37\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"059f6315689b692d53324ce241e59920a204b54781ec209a414182e2c27186b2\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"27d928eabbfb834c58969facf679753f12111260689886b4e3ad5b8464a813fb\\\",\\n      \\\"donorProductSha256\\\": \\\"0858ad6edcbb4ef41e2dae112fa5c124c3b7dbf7685c4ba477f6a2a45a78b248\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"a47d342fe027456b61e0b32555ca1c4a1d059fcac55dcfc055bda6e7d66a3edc\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"80b26aabbf0e13d1a55d5e71d01647f58911c8977ff7109a9920d7724b65b0a6\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:3976cb679bc83aaacca75bbe8b128a3a0865afab5ed0332625a395c25375ff8e\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:c78a0f682c7db59f83101f26d050a3be4176eedbfe356017e4b7274933d3ffe4\",\n  \"listingRecipeId\": \"ptr:4677738311cab1bfd8d87cc175579c686aefef9604b365edad601f597164aabc\",\n  \"product\": \"original cheese crackers baked snack crackers\",\n  \"quantity\": 4,\n  \"size\": \"21 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:8a2a9972e38d3c3bb56d334aeb17927d20f797cbd66bb0a5fde65ed8068be0be\",\n  \"variantDecisionId\": \"dpvd:3976cb679bc83aaacca75bbe8b128a3a0865afab5ed0332625a395c25375ff8e\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "73052dff1e481f741edaaa3756c036df408bf4245632e5b958c29dc6293445b4",
+        "sku": "FaisalX-4464",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:3976cb679bc83aaacca75bbe8b128a3a0865afab5ed0332625a395c25375ff8e"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10996960",
+      "ordinal": 0,
+      "query": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 21 oz",
+      "retailer": "walmart",
+      "retailerProductId": "10996960",
+      "variantDecisionId": "dpvd:3976cb679bc83aaacca75bbe8b128a3a0865afab5ed0332625a395c25375ff8e",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

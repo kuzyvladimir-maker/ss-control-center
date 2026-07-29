@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T16:34:30.614Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "ee170b6fdd16c41482f8669472a255e3bb67a8994747dd12d2f1febf23ea6136"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "a5a12cc6a743799e28e97d0ffdd415d50792c34437c7c2f1dc863eafecdf2a38"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:65460f79a873546d3d3ee80d",
+  "meteredReceiptId": "mbr_902bc40c6d958eedfb3b4e1ed5bc1ea45ce20b33addb87d916a85ea524db8e1d",
+  "meteredReservationKey": "mpr_v1_25360e4329935b3fbab7e5f67e2f43887cebee56a98137e24d074346ada8d2bb",
+  "planSha256": "65460f79a873546d3d3ee80dbc3e6d9127180c97e50d945759f979facd8785e4",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-lays-dill-pickle-20260729t163233z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-29T15:30:04.900Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "2809d47fc4fcf66136f9c1f2e58928700914b7be6867b00e664763a51c7f37b2"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "058a81647d2eef3d61cb746623301d554d148170ef55bed9c6bf7b4dbe8404c7"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:af57e6ed779e58266b9d2153",
+  "meteredReceiptId": "mbr_ac62f416c868f6aaabd380822cbc33f80ece38a6472811fcadfb0460ed6a09cd",
+  "meteredReservationKey": "mpr_v1_528fa0759a6ab049972589af9d6b5a4c6e8cb911a37e6909366ac16899ec995e",
+  "planSha256": "af57e6ed779e58266b9d215300b270136e1397b1a80e9c84b2d3a3d946ff9d80",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "pt-pepperidge-wheat-standing-20260729t153000z",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

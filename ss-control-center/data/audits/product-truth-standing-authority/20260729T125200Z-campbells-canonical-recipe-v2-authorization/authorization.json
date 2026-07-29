@@ -1,0 +1,80 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99660,
+        "evidenceSha256": "af42eeec071ccfe2cf564734b8d6c2902d4e16210b5c9247ce744ffccf2a3c4d",
+        "observedAt": "2026-07-29T12:50:39.846Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-29T13:00:52.269Z",
+    "issuedAt": "2026-07-29T12:50:52.269Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-29T13:00:52.269Z",
+      "issuedAt": "2026-07-29T12:50:52.269Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+      "version": 1
+    },
+    "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+    "runId": "pt-campbells-mushroom-standing-20260729t124800z",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+  "approvalSha256": "6b90ad8a75869b5bdf68ddbf38b4a408c2550ffd2f7eeb254c76a6cf375ca2eb",
+  "balanceEvidenceSha256": "af42eeec071ccfe2cf564734b8d6c2902d4e16210b5c9247ce744ffccf2a3c4d",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542:pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+  "expiresAt": "2026-07-29T13:00:52.269Z",
+  "issuedAt": "2026-07-29T12:50:52.269Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/private/tmp/product-truth-campbells-standing-20260729t124800z.plan/plan.json",
+    "--plan-sha",
+    "/private/tmp/product-truth-campbells-standing-20260729t124800z.plan/plan.sha256",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T125200Z-campbells-canonical-recipe-v2-authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542:pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T125200Z-campbells-canonical-recipe-v2-execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/private/tmp/product-truth-campbells-standing-20260729t124800z.plan/plan.json' '--plan-sha' '/private/tmp/product-truth-campbells-standing-20260729t124800z.plan/plan.sha256' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T125200Z-campbells-canonical-recipe-v2-authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542:pt-standing:f302cfb18fe3b9f58a97:af42eeec071ccfe2' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-authority/20260729T125200Z-campbells-canonical-recipe-v2-execution'",
+  "ownerActionRequired": false,
+  "planSha256": "f302cfb18fe3b9f58a976a633b215e8d47f1aad16e9aab1b8fadab08cd92e542",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}
