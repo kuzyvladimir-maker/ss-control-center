@@ -40,18 +40,22 @@
 
 ### Текущее состояние и следующие ветки
 
-- 🟡 **Bundle Factory Walmart exact enrichment fallback BF-W3 — release/activation:**
+- 🟢 **Bundle Factory Walmart exact enrichment fallback BF-W3 — activated:**
   existing exact donor с missing content/price теперь проходит
   no-spend plan → displayed exact credit quote → one-click local Ed25519 owner
   approval → sequential paid enrichment → canonical readiness recheck →
   original Generate. Quote cap = `2.5 + 3.5 × jobs`, jobs ≤5, concurrency/attempts
   `1`, automatic replay и Walmart mutations `0`; reload recovery и audit UI
-  готовы. Product Truth `518/518`, focused Walmart/Bundle Factory `18/18`,
-  TypeScript/ESLint/build `PASS`. Осталось выпустить clean pinned release,
-  enroll external Keychain owner key и включить
-  `PRODUCTION_OWNER_GATED_METERED` без provider smoke. `matched_variants=0`
-  остаётся отдельной Phase 2 demand-expansion campaign, а не скрытым legacy
-  harvest. Деталь: [[product-truth-command-center]],
+  готовы. Release r7 commit `2e124192…cf42`, Product Truth `519/519`, focused
+  Walmart/Bundle Factory `18/18`, TypeScript/ESLint/build `PASS`; deployment
+  `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` = `Ready`, external Keychain owner key,
+  loopback agent и pinned worker active в
+  `PRODUCTION_OWNER_GATED_METERED`. No-spend Campbell's batch
+  `ptbfw-f464598c22650c76c631c239` завершил `5/5 DOCTOR` и `5/5 RUN_PLAN`,
+  показал exact ceiling `20` credits и остановился в `AWAITING_OWNER` без
+  provider calls или Walmart mutations. `matched_variants=0` остаётся
+  отдельной Phase 2 demand-expansion campaign, а не скрытым legacy harvest.
+  Деталь: [[product-truth-command-center]],
   [[product-truth-web-operations-control-plane]].
 - 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-27:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /

@@ -466,10 +466,30 @@ Owner authority не находится на Vercel и не подменяетс
 подтверждением либо общим сообщением «разрешаю всё». Реальным money gate является
 только click по показанному exact quote и его detached Ed25519 signature.
 
+Production activation 2026-07-28:
+
+- release `product-truth-web-control-2026-07-28-r7`, commit
+  `2e12419221665926aaa44881f2ec5692a2a7cf42`, tree
+  `91cc801e7b3e8c15b64d3af5fb2b898362d6af8f`, executable SHA-256
+  `28360067b9891a61c5c0ea8f7c836e939e0e29cdc53b7041aa7ec6820399d8f7`;
+- deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` = `Ready`,
+  `salutemsolutions.info` назначен production alias;
+- отдельный owner key enrolled вне repository через encrypted PKCS8 и Login
+  Keychain; owner public-key SHA-256
+  `6d410aeb1f4fa947b9f85d9ff5f0adaa77270967e4635019271b8a5d940417b5`;
+- runtime `PRODUCTION_OWNER_GATED_METERED`, loopback owner-agent и clean pinned
+  launchd worker active;
+- no-spend Campbell's batch `ptbfw-f464598c22650c76c631c239` завершил
+  `5/5 DOCTOR` и `5/5 RUN_PLAN`, status `AWAITING_OWNER`; exact quote
+  `ptq-6f91025cbbd87e2654e4d2c86dab3619` имеет ceiling `20` prepaid provider
+  credits;
+- smoke claims: provider calls не начаты, metered execution не admitted,
+  Product Truth business writes и Walmart mutations `0`.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
-r5 сериализует in-flight heartbeat до completion; regression закреплён в
-`512/512`. Незавершённые calibration commands остаются immutable audit evidence
+r5 сериализует in-flight heartbeat до completion; текущая regression suite
+закреплена в `519/519`. Незавершённые calibration commands остаются immutable audit evidence
 и не replay.
 
 ### Exact owner gate для bounded no-spend activation

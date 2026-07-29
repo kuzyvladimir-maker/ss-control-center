@@ -696,5 +696,11 @@ owner agent подписал exact command/quote/plans отдельным Produc
 ключом. `Decline` terminal до spend. Signature не переносится на changed/expired
 quote, другой target, новый donor, retry, wave или marketplace action.
 
-Статус 2026-07-28: контракт/worker/UI сертифицированы; production enrollment и
-activation ожидают final clean release. Ни один BF-W3 paid quote ещё не consumed.
+Статус 2026-07-28: release
+`product-truth-web-control-2026-07-28-r7` (`2e124192…cf42`) активирован в
+production deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD`; owner public-key
+SHA-256 `6d410aeb…17b5`, loopback owner-agent и pinned worker active.
+No-spend batch `ptbfw-f464598c22650c76c631c239` подготовил exact quote
+`ptq-6f91025cbbd87e2654e4d2c86dab3619` с maximum `20` prepaid provider credits
+и остановился в `AWAITING_OWNER`. Этот exact paid quote ещё не consumed:
+provider calls не начаты, metered execution не admitted, Walmart mutations `0`.

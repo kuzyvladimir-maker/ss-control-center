@@ -710,7 +710,7 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
 - [x] heartbeat/completion race закрыта сериализацией in-flight heartbeat;
   r1–r4 calibration commands сохранены без replay как immutable evidence.
 
-### 🔄 Фаза BF-W3 — one-click exact enrichment quote
+### ✅ Фаза BF-W3 — one-click exact enrichment quote
 
 - [x] один экран показывает exact products, missing fields, balance-probe,
   Oxylabs query `≤1.0`, Unwrangle detail `≤2.5` и суммарный ceiling
@@ -734,10 +734,25 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
   Generate;
 - [x] UI восстанавливает batch/request/shipping selection после reload и
   показывает approval/execution audit;
-- [x] certification: Product Truth `518/518`, Walmart/Bundle Factory focused
+- [x] certification: Product Truth `519/519`, Walmart/Bundle Factory focused
   `18/18`, TypeScript, ESLint и production build = `PASS`;
-- [ ] final clean release, external owner-key enrollment, production
-  `PRODUCTION_OWNER_GATED_METERED` activation и no-spend smoke.
+- [x] final clean release
+  `product-truth-web-control-2026-07-28-r7`: commit
+  `2e12419221665926aaa44881f2ec5692a2a7cf42`, tree
+  `91cc801e7b3e8c15b64d3af5fb2b898362d6af8f`, executable SHA-256
+  `28360067b9891a61c5c0ea8f7c836e939e0e29cdc53b7041aa7ec6820399d8f7`;
+- [x] external owner key enrolled через encrypted PKCS8 + macOS Login
+  Keychain; public trust root SHA-256
+  `6d410aeb1f4fa947b9f85d9ff5f0adaa77270967e4635019271b8a5d940417b5`;
+- [x] production deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` =
+  `Ready`, alias `salutemsolutions.info`, runtime
+  `PRODUCTION_OWNER_GATED_METERED`, pinned owner-agent и worker active;
+- [x] no-spend E2E batch `ptbfw-f464598c22650c76c631c239`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, status
+  `AWAITING_OWNER`; exact quote
+  `ptq-6f91025cbbd87e2654e4d2c86dab3619`, maximum `20` prepaid provider
+  credits; `provider_calls_may_have_started=false`,
+  `metered_execution_admitted=false`, Walmart mutations `0`.
 
 Граница BF-W3: она обогащает только уже существующий exact `DonorProduct` с
 direct first-party Walmart offer. `matched_variants=0` означает отдельную Phase 2
