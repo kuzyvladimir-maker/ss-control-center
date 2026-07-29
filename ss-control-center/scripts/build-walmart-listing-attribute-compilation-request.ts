@@ -29,6 +29,7 @@ import {
 type JsonRecord = Record<string, unknown>;
 
 const MAX_JSON_BYTES = 100 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const OWNER_CONFIRMATION =
   "В продолжании останавливайся. Я все подтверждаю и разрешаю полностью продолжить. Без дополнительных моих разрешений.";
 
@@ -45,6 +46,18 @@ function record(value: unknown, label: string): JsonRecord {
 
 function sha256(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const row = value as JsonRecord;
+    return `{${Object.keys(row).sort().map((key) => (
+      `${JSON.stringify(key)}:${canonicalJson(row[key])}`
+    )).join(",")}}`;
+  }
+  const encoded = JSON.stringify(value);
+  return encoded === undefined ? "null" : encoded;
 }
 
 function exactPath(value: string | undefined, label: string): string {
@@ -72,13 +85,22 @@ function parseArgs(argv: readonly string[]) {
     "output-dir",
   ] as const;
   const exactFlags = [...pathFlags, "single-unit-upc"] as const;
-  if (flags.size !== exactFlags.length
-    || exactFlags.some((key) => !flags.has(key))) {
-    fail(`arguments must be exactly ${exactFlags.map((key) => `--${key}=...`).join(" ")}`);
+  const allowed = new Set<string>([...exactFlags, "repair-mode"]);
+  if (exactFlags.some((key) => !flags.has(key))
+    || [...flags.keys()].some((key) => !allowed.has(key))) {
+    fail(
+      `arguments must include ${exactFlags.map((key) => `--${key}=...`).join(" ")}`
+        + " and may include --repair-mode=restore-total-count",
+    );
   }
   const singleUnitUpc = flags.get("single-unit-upc")!;
   if (!/^\d{12,14}$/u.test(singleUnitUpc)) {
     fail("--single-unit-upc must be a 12..14 digit exact base-unit identifier");
+  }
+  const repairMode = flags.get("repair-mode") ?? "legacy-pack-attributes";
+  if (repairMode !== "legacy-pack-attributes"
+    && repairMode !== "restore-total-count") {
+    fail("--repair-mode must be legacy-pack-attributes or restore-total-count");
   }
   return {
     diagnosis: exactPath(flags.get("diagnosis"), "--diagnosis"),
@@ -88,6 +110,7 @@ function parseArgs(argv: readonly string[]) {
     productTruth: exactPath(flags.get("product-truth"), "--product-truth"),
     outputDir: exactPath(flags.get("output-dir"), "--output-dir"),
     singleUnitUpc,
+    repairMode,
   };
 }
 
@@ -120,6 +143,49 @@ function sealedBody(value: JsonRecord, label: string): string {
     fail(`${label} body SHA mismatch`);
   }
   return value.body_sha256;
+}
+
+async function verifyBuyerSnapshot(
+  pathname: string,
+  value: JsonRecord,
+): Promise<string> {
+  const bodySha = value.body_sha256;
+  if (value.schema_version !== "walmart-buyer-facing-snapshot/v3"
+    || typeof bodySha !== "string"
+    || !/^[a-f0-9]{64}$/u.test(bodySha)
+    || typeof value.snapshot_id !== "string"
+    || !value.snapshot_id.endsWith(`-${bodySha.slice(0, 12)}`)) {
+    fail("buyer snapshot seal identity is invalid");
+  }
+  const body = { ...value };
+  delete body.snapshot_id;
+  delete body.body_sha256;
+  if (sha256(Buffer.from(canonicalJson(body), "utf8")) !== bodySha) {
+    fail("buyer snapshot body SHA mismatch");
+  }
+  if (!Array.isArray(value.assets) || value.assets.length < 1) {
+    fail("buyer snapshot has no image inventory");
+  }
+  const snapshotRoot = path.dirname(pathname);
+  for (const [index, asset] of value.assets.entries()) {
+    const row = record(asset, `buyer snapshot image ${index}`);
+    if (typeof row.local_path !== "string" || !row.local_path
+      || path.isAbsolute(row.local_path)) {
+      fail(`buyer snapshot image ${index}.local_path is invalid`);
+    }
+    const assetPath = path.resolve(snapshotRoot, row.local_path);
+    if (!assetPath.startsWith(`${snapshotRoot}${path.sep}`)) {
+      fail(`buyer snapshot image ${index}.local_path escapes the snapshot`);
+    }
+    const bytes = await readFile(assetPath);
+    if (!bytes.length || bytes.length > MAX_IMAGE_BYTES
+      || row.bytes !== bytes.byteLength
+      || typeof row.sha256 !== "string"
+      || sha256(bytes) !== row.sha256) {
+      fail(`buyer snapshot image ${index} bytes do not match the sealed inventory`);
+    }
+  }
+  return bodySha;
 }
 
 async function writeExclusive(pathname: string, bytes: Uint8Array): Promise<void> {
@@ -175,7 +241,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:8px;borde
 <h1>${htmlEscape(input.sku)} · Walmart item ${htmlEscape(input.itemId)}</h1>
 <p>${htmlEscape(input.title)}</p>
 <img src="${htmlEscape(input.mainUrl)}" alt="Unchanged Walmart MAIN">
-<div class="note">Изображения, title, description и bullets не меняются. Исправляются только четыре структурированных атрибута.</div>
+<div class="note">Изображения, title, description и bullets не меняются. Исправляются только показанные структурированные атрибуты.</div>
 <div class="grid">
 <section class="card before"><h2>ДО — live buyer surface</h2><table><tr><th>Источник</th><th>Тип</th><th>Значение</th></tr>${rows(input.before)}</table></section>
 <section class="card after"><h2>ПОСЛЕ — exact preview</h2><table><tr><th>Источник</th><th>Тип</th><th>Значение</th></tr>${rows(input.after)}</table></section>
@@ -200,6 +266,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     readJson(args.productTruth, "Product Truth"),
   ]);
   sealedBody(diagnosisArtifact.value, "diagnosis");
+  await verifyBuyerSnapshot(args.buyerSnapshot, snapshotArtifact.value);
   const detector = record(diagnosisArtifact.value.detector_input, "diagnosis.detector_input");
   const listing = record(detector.listing, "diagnosis listing");
   const expected = detector.expected as unknown as WalmartListingIntegrityInput["expected"];
@@ -232,40 +299,85 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     fail("Product Truth flavor/outer quantity is invalid or disagrees with diagnosis");
   }
 
-  let flavorChanges = 0;
-  let countChanges = 0;
-  let beforeFlavor = "";
-  let beforeCount = 0;
-  const targetClaims = surface.attribute_claims.map((claim): ListingAttributeClaim => {
-    if (claim.kind === "variant" && /flavor$/iu.test(claim.field_path)) {
-      flavorChanges += 1;
-      beforeFlavor = claim.text;
-      return { ...claim, text: flavor };
+  let exactDiff: JsonRecord;
+  let targetClaims: ListingAttributeClaim[];
+  if (args.repairMode === "restore-total-count") {
+    const outerClaims = surface.attribute_claims.filter((claim) => (
+      claim.kind === "outer_units"
+    ));
+    const existingTotalCountClaims = surface.attribute_claims.filter((claim) => (
+      claim.kind === "inner_item_count" && /\.count$/iu.test(claim.field_path)
+    ));
+    const opaqueTotalCount = surface.unmapped_attributes.filter((row) => (
+      /\.total count$/iu.test(row.field_path)
+    ));
+    if (outerClaims.length !== 1 || outerClaims[0]!.value !== outerUnits
+      || existingTotalCountClaims.length !== 0 || opaqueTotalCount.length !== 0) {
+      fail(
+        "restore-total-count requires one exact Multipack quantity and a missing Total count",
+      );
     }
-    if (claim.kind === "inner_item_count" && /\.count$/iu.test(claim.field_path)) {
-      countChanges += 1;
-      beforeCount = claim.value;
-      return { ...claim, value: outerUnits };
+    targetClaims = [
+      ...structuredClone(surface.attribute_claims),
+      {
+        field_path: "walmart.Visible.count",
+        kind: "inner_item_count",
+        value: outerUnits,
+        unit: "count",
+      },
+      {
+        field_path: "walmart.Visible.countPerPack",
+        kind: "inner_item_count",
+        value: 1,
+        unit: "count",
+      },
+    ];
+    exactDiff = {
+      count: { before: null, after: outerUnits },
+      countPerPack: { before: null, after: 1 },
+    };
+  } else {
+    let flavorChanges = 0;
+    let countChanges = 0;
+    let beforeFlavor = "";
+    let beforeCount = 0;
+    targetClaims = surface.attribute_claims.map((claim): ListingAttributeClaim => {
+      if (claim.kind === "variant" && /flavor$/iu.test(claim.field_path)) {
+        flavorChanges += 1;
+        beforeFlavor = claim.text;
+        return { ...claim, text: flavor };
+      }
+      if (claim.kind === "inner_item_count" && /\.count$/iu.test(claim.field_path)) {
+        countChanges += 1;
+        beforeCount = claim.value;
+        return { ...claim, value: outerUnits };
+      }
+      return structuredClone(claim);
+    });
+    if (flavorChanges !== 1 || countChanges !== 1) {
+      fail("buyer surface must expose exactly one Flavor and one Count claim");
     }
-    return structuredClone(claim);
-  });
-  if (flavorChanges !== 1 || countChanges !== 1) {
-    fail("buyer surface must expose exactly one Flavor and one Count claim");
+    targetClaims.push(
+      {
+        field_path: "walmart.Visible.countPerPack",
+        kind: "inner_item_count",
+        value: 1,
+        unit: "count",
+      },
+      {
+        field_path: "walmart.Visible.multipackQuantity",
+        kind: "outer_units",
+        value: outerUnits,
+        unit: "count",
+      },
+    );
+    exactDiff = {
+      flavor: { before: beforeFlavor, after: flavor },
+      count: { before: beforeCount, after: outerUnits },
+      countPerPack: { before: null, after: 1 },
+      multipackQuantity: { before: null, after: outerUnits },
+    };
   }
-  targetClaims.push(
-    {
-      field_path: "walmart.Visible.countPerPack",
-      kind: "inner_item_count",
-      value: 1,
-      unit: "count",
-    },
-    {
-      field_path: "walmart.Visible.multipackQuantity",
-      kind: "outer_units",
-      value: outerUnits,
-      unit: "count",
-    },
-  );
   const targetSurface = {
     ...surface,
     attribute_claims: targetClaims,
@@ -273,12 +385,18 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   };
   precheckWalmartListingRepairTargetForReview({ surface: targetSurface, expected });
 
-  const detectorImages = record(detector.images, "diagnosis images");
-  if (!Array.isArray(detectorImages.assets) || detectorImages.assets.length < 1) {
-    fail("diagnosis has no exact buyer image inventory");
+  const snapshotTarget = record(snapshotArtifact.value.target, "buyer snapshot target");
+  if (snapshotTarget.sku !== listing.sku || snapshotTarget.item_id !== listing.item_id
+    || !Array.isArray(snapshotArtifact.value.assets)
+    || snapshotArtifact.value.assets.length < 1) {
+    fail("buyer snapshot does not bind the exact listing and image inventory");
   }
-  const images = detectorImages.assets.map((asset, index) => {
-    const row = record(asset, `diagnosis image ${index}`);
+  const images = snapshotArtifact.value.assets.map((asset, index) => {
+    const row = record(asset, `buyer snapshot image ${index}`);
+    const expectedSlot = index === 0 ? "MAIN" : `GALLERY_${index}`;
+    if (row.slot !== expectedSlot) {
+      fail("buyer snapshot image slots are incomplete or non-contiguous");
+    }
     return {
       slot: index === 0 ? "main" : `gallery-${index}`,
       source_url: String(row.source_url),
@@ -293,12 +411,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     status: "READY_FOR_CONNECTED_MATERIALS",
     listing_key: String(listing.listing_key),
     changed_fields: ["attributes"],
-    exact_diff: {
-      flavor: { before: beforeFlavor, after: flavor },
-      count: { before: beforeCount, after: outerUnits },
-      countPerPack: { before: null, after: 1 },
-      multipackQuantity: { before: null, after: outerUnits },
-    },
+    exact_diff: exactDiff,
     unchanged: {
       title: true,
       description: true,
@@ -338,7 +451,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
       listing_key: String(listing.listing_key),
       item_id: String(listing.item_id),
       seller_upc: String(seller.upc),
-      captured_at: String(listing.captured_at),
+      captured_at: String(snapshotArtifact.value.captured_at),
       published_status: "PUBLISHED" as const,
       lifecycle_status: "ACTIVE" as const,
       composition: "same_product" as const,

@@ -7,6 +7,9 @@ import test from "node:test";
 import sharp from "sharp";
 
 import {
+  walmartListingIntegrityGalleryQuantityTarget,
+} from "../../../../scripts/build-walmart-listing-integrity-live-gallery.mjs";
+import {
   walmartListingIntegritySha256,
 } from "../listing-integrity-audit.ts";
 import {
@@ -19,7 +22,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "e5e8bfbb1ba10da3e6a346bd9dbb3f8075ce877f3053d3d3b3d8b361f250ae91";
+  "b413a185759136cc30ab8b1b24aa99d040e9b62fbfebc01ab62cc86f5b2aa9a0";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -43,6 +46,7 @@ function plan(input: {
     | ["attributes"];
   main_url?: string;
   main_sha256?: string;
+  gallery_sha256?: [string, string];
 } = {}): SealedWalmartListingRepairPlan {
   const value = {
     schema_version: "walmart-listing-integrity-repair-plan/v2",
@@ -62,18 +66,44 @@ function plan(input: {
         description: DESCRIPTION,
         bullets: BULLETS,
         attribute_claims: [
-          { field_path: "review.brand", kind: "brand", text: "Pepperidge Farm" },
           {
-            field_path: "review.product",
+            field_path: "product.specifications[0].Brand",
+            kind: "brand",
+            text: "Pepperidge Farm",
+          },
+          {
+            field_path: "product.specifications[1].Bread & bun type",
             kind: "product",
             text: "Bakery Classics Top Sliced Butter Hot Dog Buns",
           },
-          { field_path: "review.variant", kind: "variant", text: "Butter, Top Sliced" },
-          { field_path: "review.outer_units", kind: "outer_units", value: 6, unit: "count" },
-          { field_path: "review.net", kind: "net_content", value: 14, unit: "oz" },
-          { field_path: "review.inner", kind: "inner_item_count", value: 8, unit: "count" },
+          {
+            field_path: "product.specifications[2].Flavor",
+            kind: "variant",
+            text: "Butter",
+          },
+          {
+            field_path: "product.specifications[3].Multipack quantity",
+            kind: "outer_units",
+            value: 6,
+            unit: "count",
+          },
+          {
+            field_path: "product.specifications[4].Net content",
+            kind: "net_content",
+            value: 14,
+            unit: "oz",
+          },
+          {
+            field_path: "product.specifications[5].Count",
+            kind: "inner_item_count",
+            value: 8,
+            unit: "count",
+          },
         ],
-        unmapped_attributes: [],
+        unmapped_attributes: [{
+          field_path: "product.specifications[6].Product net content parent",
+          value_sha256: walmartListingIntegritySha256("14 Ounces"),
+        }],
       },
       images: [
         {
@@ -81,8 +111,16 @@ function plan(input: {
           source_url: input.main_url ?? URLS[0],
           sha256: input.main_sha256 ?? IMAGE_SHA[0],
         },
-        { slot: "gallery-1", source_url: URLS[1], sha256: IMAGE_SHA[1] },
-        { slot: "gallery-2", source_url: URLS[2], sha256: IMAGE_SHA[2] },
+        {
+          slot: "gallery-1",
+          source_url: URLS[1],
+          sha256: input.gallery_sha256?.[0] ?? IMAGE_SHA[1],
+        },
+        {
+          slot: "gallery-2",
+          source_url: URLS[2],
+          sha256: input.gallery_sha256?.[1] ?? IMAGE_SHA[2],
+        },
       ],
       target_sha256: H("target"),
     },
@@ -101,12 +139,12 @@ function attributePlan(): SealedWalmartListingRepairPlan {
       text: "Pepperidge Farm",
     },
     {
-      field_path: "product.specifications[1].Flavor",
+      field_path: "product.specifications[2].Flavor",
       kind: "variant",
       text: "Butter",
     },
     {
-      field_path: "product.specifications[2].Count",
+      field_path: "product.specifications[5].Count",
       kind: "inner_item_count",
       value: 6,
       unit: "count",
@@ -125,7 +163,84 @@ function attributePlan(): SealedWalmartListingRepairPlan {
     },
   ];
   value.target.surface.unmapped_attributes = [{
-    field_path: "product.specifications[4].Product net content parent",
+    field_path: "product.specifications[6].Product net content parent",
+    value_sha256: walmartListingIntegritySha256("14 Ounces"),
+  }];
+  return value as SealedWalmartListingRepairPlan;
+}
+
+function totalCountRecoveryPlan(): SealedWalmartListingRepairPlan {
+  const value = structuredClone(plan({ changed_fields: ["attributes"] }));
+  value.target.surface.title =
+    "Pepperidge Farm Butter Hot Dog Buns, Top Sliced (Pack of 4)";
+  value.target.surface.description =
+    "PACK OF 4: This listing includes four 14 oz bags of Pepperidge Farm Bakery "
+    + "Classics Top Sliced Butter Hot Dog Buns. Each bag contains 8 buns, for 32 buns total.";
+  value.target.surface.bullets = [
+    "QUALITY INGREDIENTS: Made with real butter",
+    "PERFECT BUNS: Top Sliced Butter Hot Dog Buns",
+    "PACK OF 4: Includes 4 bags; each 14 oz bag contains 8 buns",
+  ];
+  value.target.surface.attribute_claims = [
+    {
+      field_path: "product.specifications[0].Brand",
+      kind: "brand",
+      text: "Pepperidge Farm",
+    },
+    {
+      field_path: "product.specifications[1].Bread & bun type",
+      kind: "product",
+      text: "Sandwich Bread Loaf",
+    },
+    {
+      field_path: "product.specifications[2].Flavor",
+      kind: "variant",
+      text: "Butter",
+    },
+    {
+      field_path: "product.specifications[3].Multipack quantity",
+      kind: "outer_units",
+      value: 4,
+      unit: "count",
+    },
+    {
+      field_path: "product.specifications[4].Piece count",
+      kind: "inner_item_count",
+      value: 20,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.count",
+      kind: "inner_item_count",
+      value: 4,
+      unit: "count",
+    },
+    {
+      field_path: "walmart.Visible.countPerPack",
+      kind: "inner_item_count",
+      value: 1,
+      unit: "count",
+    },
+  ];
+  value.target.surface.unmapped_attributes = [{
+    field_path: "product.specifications[6].Product net content parent",
+    value_sha256: walmartListingIntegritySha256("14 Ounces"),
+  }];
+  return value as SealedWalmartListingRepairPlan;
+}
+
+function planWithoutMappedNetContent(): SealedWalmartListingRepairPlan {
+  const value = structuredClone(plan());
+  value.target.surface.attribute_claims = value.target.surface.attribute_claims
+    .filter((claim) => claim.kind !== "net_content")
+    .map((claim) => {
+      if (claim.field_path === "product.specifications[5].Count") {
+        return { ...claim, field_path: "product.specifications[4].Count" };
+      }
+      return claim;
+    });
+  value.target.surface.unmapped_attributes = [{
+    field_path: "product.specifications[5].Product net content parent",
     value_sha256: walmartListingIntegritySha256("14 Ounces"),
   }];
   return value as SealedWalmartListingRepairPlan;
@@ -134,7 +249,9 @@ function attributePlan(): SealedWalmartListingRepairPlan {
 async function fixture(input: {
   terminal_at?: string;
   captured_at?: string;
+  title?: string;
   description?: string;
+  bullets?: string[];
   main_image_bytes?: Uint8Array;
   main_image_url?: string;
   gallery_image_bytes?: [Uint8Array, Uint8Array];
@@ -143,6 +260,10 @@ async function fixture(input: {
   seller_grouping_quantity?: number;
   flavor?: string;
   count?: number;
+  count_label?: "Count" | "Total count";
+  piece_count?: number;
+  product_type?: string;
+  omit_mapped_net_content?: boolean;
 } = {}) {
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "walmart-live-qualification-")),
@@ -154,9 +275,9 @@ async function fixture(input: {
     product: {
       item_id: "12345",
       product_url: "https://www.walmart.com/ip/example/12345",
-      title: TITLE,
+      title: input.title ?? TITLE,
       description: input.description ?? DESCRIPTION,
-      feature_bullets: BULLETS,
+      feature_bullets: input.bullets ?? BULLETS,
       main_image: input.main_image_url ?? URLS[0],
       images: [
         input.main_image_url ?? URLS[0],
@@ -164,12 +285,23 @@ async function fixture(input: {
       ],
       specifications: [
         { name: "Brand", value: "Pepperidge Farm" },
+        {
+          name: "Bread & bun type",
+          value: input.product_type
+            ?? "Bakery Classics Top Sliced Butter Hot Dog Buns",
+        },
         { name: "Flavor", value: input.flavor ?? "Butter" },
-        { name: "Count", value: String(input.count ?? 8) },
         {
           name: "Multipack quantity",
           value: String(input.multipack_quantity ?? 6),
         },
+        ...(
+          input.omit_mapped_net_content
+            ? [] : [{ name: "Net content", value: "14 Ounces" }]
+        ),
+        ...(input.piece_count === undefined
+          ? [] : [{ name: "Piece count", value: String(input.piece_count) }]),
+        { name: input.count_label ?? "Count", value: String(input.count ?? 8) },
         { name: "Product net content parent", value: "14 Ounces" },
       ],
     },
@@ -265,7 +397,7 @@ test("fresh frozen live reread unblocks the next SKU only on exact target PASS",
     capture_summary: fx.capture,
     evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
   });
-  assert.equal(result.verdict, "PASS");
+  assert.equal(result.verdict, "PASS", JSON.stringify(result, null, 2));
   assert.equal(result.next_sku_unblocked, true);
   assert.equal(result.next_action, "ADVANCE_TO_NEXT_SKU");
   assert.deepEqual(Object.values(result.facets), Array(Object.keys(result.facets).length).fill("PASS"));
@@ -288,6 +420,44 @@ test("a mismatch inside the propagation window remains no-write PENDING", async 
   assert.equal(result.next_action, "RECHECK_SAME_SKU_NO_WRITE");
 });
 
+test("content repair Qualification accepts an exact catalog without a mapped net-content claim", async () => {
+  const fx = await fixture({ omit_mapped_net_content: true });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: planWithoutMappedNetContent(),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS");
+  assert.equal(result.facets.attributes, "PASS");
+  assert.equal(result.next_sku_unblocked, true);
+});
+
+test("content repair Qualification blocks when an unchanged opaque attribute disappears", async () => {
+  const target = structuredClone(plan());
+  target.target.surface.unmapped_attributes.push({
+    field_path: "product.specifications[7].Total count",
+    value_sha256: walmartListingIntegritySha256("6"),
+  });
+  const fx = await fixture();
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: target,
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.attributes, "FAIL");
+  assert.equal(result.facets.unchanged_fields_preserved, "FAIL");
+  assert.equal(result.next_sku_unblocked, false);
+});
+
 test("attribute-only live Qualification PASSes only after exact buyer-visible propagation", async () => {
   const fx = await fixture({ count: 6, multipack_quantity: 6 });
   const result = await qualifyWalmartListingRepairFreshLive({
@@ -303,6 +473,133 @@ test("attribute-only live Qualification PASSes only after exact buyer-visible pr
   assert.equal(result.facets.attributes, "PASS");
   assert.equal(result.facets.unchanged_fields_preserved, "PASS");
   assert.equal(result.next_sku_unblocked, true);
+});
+
+test("attribute-only Total count recovery PASSes for an exact Pack of 4 surface", async () => {
+  const target = totalCountRecoveryPlan();
+  const fx = await fixture({
+    title: target.target.surface.title,
+    description: target.target.surface.description ?? undefined,
+    bullets: target.target.surface.bullets,
+    count: 4,
+    count_label: "Total count",
+    piece_count: 20,
+    product_type: "Sandwich Bread Loaf",
+    multipack_quantity: 4,
+    seller_grouping_quantity: 4,
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: target,
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS", JSON.stringify(result, null, 2));
+  assert.equal(result.facets.attributes, "PASS");
+  assert.equal(result.facets.unchanged_fields_preserved, "PASS");
+  assert.equal(result.next_sku_unblocked, true);
+});
+
+test("unchanged gallery accepts Walmart JPEG re-encoding only under exact reviewed URLs", async () => {
+  const reviewed = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 250, g: 250, b: 250 },
+    },
+  }).composite([{
+    input: Buffer.from(
+      '<svg width="96" height="96"><rect x="12" y="20" width="72" height="56" fill="#d79b34"/></svg>',
+    ),
+  }]).jpeg({ quality: 92 }).toBuffer();
+  const reencoded = await sharp(reviewed).jpeg({ quality: 91 }).toBuffer();
+  assert.notEqual(H(reviewed), H(reencoded));
+  const fx = await fixture({
+    gallery_image_bytes: [reencoded, IMAGE_BYTES[2]],
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      gallery_sha256: [H(reviewed), IMAGE_SHA[2]!],
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS", JSON.stringify(result, null, 2));
+  assert.equal(result.facets.gallery, "PASS");
+  assert.equal(result.facets.unchanged_fields_preserved, "PASS");
+});
+
+test("unchanged gallery still rejects a re-encoded asset under a different URL", async () => {
+  const reviewed = await sharp({
+    create: {
+      width: 96,
+      height: 96,
+      channels: 3,
+      background: { r: 250, g: 250, b: 250 },
+    },
+  }).jpeg({ quality: 92 }).toBuffer();
+  const reencoded = await sharp(reviewed).jpeg({ quality: 91 }).toBuffer();
+  const fx = await fixture({
+    gallery_image_bytes: [reencoded, IMAGE_BYTES[2]],
+    gallery_image_urls: [
+      "https://i5.walmartimages.com/unreviewed-gallery-1.jpg",
+      URLS[2]!,
+    ],
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: plan({
+      gallery_sha256: [H(reviewed), IMAGE_SHA[2]!],
+    }),
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PENDING_PROPAGATION");
+  assert.equal(result.facets.gallery, "FAIL");
+  assert.equal(result.next_sku_unblocked, false);
+});
+
+test("factual gallery accepts Walmart Total count for the exact synthetic count target", () => {
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: totalCountRecoveryPlan().target.surface.attribute_claims,
+    after_specifications: [
+      { name: "Count", value: "20" },
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total count", value: "4" },
+      { name: "Count per pack", value: "1" },
+    ],
+  });
+  assert.deepEqual(result, {
+    target_count: 4,
+    visible_total_count: 4,
+    visible_count_per_pack: 1,
+    total_count_match: true,
+  });
+});
+
+test("factual gallery rejects a wrong Walmart Total count", () => {
+  const result = walmartListingIntegrityGalleryQuantityTarget({
+    target_attribute_claims: totalCountRecoveryPlan().target.surface.attribute_claims,
+    after_specifications: [
+      { name: "Multipack quantity", value: "4" },
+      { name: "Total Count", value: "20" },
+      { name: "Count Per Pack", value: "1" },
+    ],
+  });
+  assert.equal(result.target_count, 4);
+  assert.equal(result.visible_total_count, 20);
+  assert.equal(result.total_count_match, false);
 });
 
 test("attribute-only live Qualification remains no-write PENDING on the stale buyer surface", async () => {

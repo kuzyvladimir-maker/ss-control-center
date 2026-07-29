@@ -372,7 +372,7 @@ async function certify(input, runtimePaths, allPaths, releaseId) {
     },
     certification: {
       test_entrypoints: TEST_ENTRYPOINTS,
-      expected_test_count: 186,
+      expected_test_count: 193,
       logs: logRows,
     },
     source_inventory: sourceInventory,
