@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
+  lstat,
   mkdir,
   mkdtemp,
   readFile,
@@ -24,6 +25,7 @@ import {
   type ProductTruthStandingWaveCandidate,
 } from "../product-truth-standing-wave";
 import {
+  assertProductTruthStandingWaveProviderEnvironment,
   assertProductTruthStandingWaveExecuteArgv,
   runProductTruthStandingWave,
   type ProductTruthStandingWaveCommandExecutor,
@@ -38,6 +40,11 @@ const SHA_B = "b".repeat(64);
 const SHA_C = "c".repeat(64);
 const CREATED_AT = "2026-07-29T18:00:00.000Z";
 const EXPIRES_AT = "2026-07-30T18:00:00.000Z";
+const PROVIDER_ENV = Object.freeze({
+  UNWRANGLE_API_KEY: "test-unwrangle",
+  OXYLABS_USERNAME: "test-oxylabs-user",
+  OXYLABS_PASSWORD: "test-oxylabs-password",
+});
 
 function candidate(
   donorProductId: string,
@@ -147,6 +154,16 @@ test("wave parser rejects safety drift, reordered targets, and tampered seals", 
         planSha256: "e".repeat(64),
       }),
     isWaveError("STANDING_WAVE_SEAL_INVALID"),
+  );
+});
+
+test("provider credentials fail before a wave boundary can exist", async () => {
+  assert.throws(
+    () => assertProductTruthStandingWaveProviderEnvironment({}),
+    /STANDING_WAVE_PROVIDER_CREDENTIALS_MISSING/u,
+  );
+  assert.doesNotThrow(() =>
+    assertProductTruthStandingWaveProviderEnvironment(PROVIDER_ENV),
   );
 });
 
@@ -450,6 +467,21 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
     planSha256: sealed.planSha256,
     workDir,
   };
+  const deniedWorkDir = join(root, "denied-work");
+  let deniedCalls = 0;
+  await assert.rejects(
+    runProductTruthStandingWave(
+      { ...options, workDir: deniedWorkDir },
+      async () => {
+        deniedCalls += 1;
+        return { exitCode: 0, stdout: "", stderr: "" };
+      },
+      {},
+    ),
+    /STANDING_WAVE_PROVIDER_CREDENTIALS_MISSING/u,
+  );
+  assert.equal(deniedCalls, 0);
+  await assert.rejects(lstat(deniedWorkDir), { code: "ENOENT" });
   const invoked: string[][] = [];
   const fakeExecutor: ProductTruthStandingWaveCommandExecutor =
     async (argv) => {
@@ -570,7 +602,7 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
       }
       return { exitCode: 0, stdout: "", stderr: "" };
     };
-  await runProductTruthStandingWave(options, fakeExecutor);
+  await runProductTruthStandingWave(options, fakeExecutor, PROVIDER_ENV);
   assert.equal(invoked.length, 9);
   assert.equal(
     invoked.filter((argv) => argv.includes("execute")).length,
@@ -598,6 +630,7 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
       resumeCalls += 1;
       return { exitCode: 255, stdout: "", stderr: "" };
     },
+    {},
   );
   assert.equal(resumeCalls, 0);
 });

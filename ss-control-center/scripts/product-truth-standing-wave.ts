@@ -502,6 +502,31 @@ async function defaultExecutor(
   });
 }
 
+function childFailureCode(result: CommandResult): string | null {
+  for (const output of [result.stderr, result.stdout]) {
+    const trimmed = output.trim();
+    if (!trimmed || trimmed.length > 64 * 1024) continue;
+    try {
+      const parsed = JSON.parse(trimmed) as unknown;
+      if (
+        parsed !== null
+        && typeof parsed === "object"
+        && "error" in parsed
+        && parsed.error !== null
+        && typeof parsed.error === "object"
+        && "code" in parsed.error
+        && typeof parsed.error.code === "string"
+        && /^[A-Z][A-Z0-9_]{2,100}$/u.test(parsed.error.code)
+      ) {
+        return parsed.error.code;
+      }
+    } catch {
+      // Child output is not required to be JSON. Never echo arbitrary output.
+    }
+  }
+  return null;
+}
+
 async function runSealedStage(input: {
   stagePath: string;
   requiredFiles: readonly string[];
@@ -533,9 +558,12 @@ async function runSealedStage(input: {
     label: input.label,
   });
   if (completed !== "COMPLETE") {
+    const failureCode = childFailureCode(result);
     fail(
       "STANDING_WAVE_STAGE_AMBIGUOUS",
-      `${input.label} exited ${result.exitCode} without complete artifacts`,
+      `${input.label} exited ${result.exitCode}`
+        + `${failureCode ? ` (${failureCode})` : ""}`
+        + " without complete artifacts",
     );
   }
   if (!(input.allowedExitCodes ?? [0]).includes(result.exitCode)) {
@@ -545,6 +573,27 @@ async function runSealedStage(input: {
     );
   }
   return "EXECUTED";
+}
+
+export function assertProductTruthStandingWaveProviderEnvironment(
+  environment: Record<string, string | undefined>,
+): void {
+  const required = [
+    "UNWRANGLE_API_KEY",
+    "OXYLABS_USERNAME",
+    "OXYLABS_PASSWORD",
+  ] as const;
+  const missing = required.filter((name) => {
+    const raw = environment[name]?.trim() ?? "";
+    return raw.replace(/^['"]|['"]$/gu, "").length === 0;
+  });
+  if (missing.length > 0) {
+    fail(
+      "STANDING_WAVE_PROVIDER_CREDENTIALS_MISSING",
+      `${missing.join(", ")} must be present before the wave boundary;`
+        + " no provider call was made",
+    );
+  }
 }
 
 async function exactDigest(path: string, label: string): Promise<string> {
@@ -1258,6 +1307,7 @@ async function writeWaveReport(input: {
 export async function runProductTruthStandingWave(
   options: ProductTruthStandingWaveRunOptions,
   executor: ProductTruthStandingWaveCommandExecutor = defaultExecutor,
+  environment: Record<string, string | undefined> = process.env,
 ): Promise<void> {
   await validateBoundInputs(options);
   const plan = await loadPlan(options);
@@ -1267,6 +1317,7 @@ export async function runProductTruthStandingWave(
   const cwd = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const allowExisting = options.command === "resume";
   if (options.command === "execute") {
+    assertProductTruthStandingWaveProviderEnvironment(environment);
     await createNewDirectory(options.workDir);
   } else if (!(await isDirectory(options.workDir))) {
     fail("STANDING_WAVE_RESUME_ROOT_MISSING", "resume work directory is missing");
@@ -1290,6 +1341,9 @@ export async function runProductTruthStandingWave(
       "wave artifact index",
     ));
     return;
+  }
+  if (options.command === "resume") {
+    assertProductTruthStandingWaveProviderEnvironment(environment);
   }
   const targetReports: TargetReport[] = [];
   for (const [ordinal, target] of plan.targets.entries()) {
