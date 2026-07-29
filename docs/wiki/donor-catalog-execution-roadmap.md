@@ -836,6 +836,22 @@ G7 закончен как диагностический production canary, н�
   tokens в terminal diagnostic, не меняя matcher или verdict. Release
   `87b50d71`, tree `11ea7895…0a9`, clean Product Truth `576/576`, TypeScript и
   targeted ESLint PASS;
+- ✅ highest-impact untouched donor Lay's Dill Pickle Party Size 12.5 oz
+  выполнен один раз с exact canonical binding
+  `walmart:1:FaisalX-812 / component 0`. Plan `65460f79…85e4`; terminal
+  outcome `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`,
+  execution report `43039a5a…2845`, retry `0`. Exact first-party price,
+  UPC/галерея и partial content сохранены независимо; ingredients, allergens и
+  storage остаются явными content gaps. Combined lifecycle spend `6` units;
+- ✅ бесплатный canonical COGS reconcile распространил сохранённую exact цену
+  на четыре shared recipes `FaisalX-812/813/814/815`. Plan
+  `318f9c36…95db`, preflight `READY_TO_APPLY`, apply
+  `9a1e91f2…a548`: `12` append-only rows, `4 FACT`, provider/marketplace calls
+  `0`;
+- ✅ full-denominator readiness `ede2ccef…3997` подтверждает `5935/5935`
+  reconciled, Bundle Factory/Listing Improvement `100`, Unit Economics
+  `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING`, Procurement
+  `22`. Content gaps не были повышены до complete и не уничтожили price truth;
 - 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
   authority; отдельно сохранить successful content/price evidence, materialize
   только доказанные данные в существующие canonical recipe/typed COGS и снова

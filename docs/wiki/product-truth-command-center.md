@@ -1203,8 +1203,27 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   tree `11ea78955ab60828aebdd14dabcc6f17d08de0a9`: focused `16/16`,
   full Product Truth `576/576`, TypeScript and targeted ESLint pass in the
   exact clean tree.
+- [x] ✅ Lay's Dill Pickle Party Size 12.5 oz donor
+  `78e8276f-7355-418d-b27e-b94e7891160b` was executed once with exact
+  canonical binding `walmart:1:FaisalX-812 / component 0`, shared by four
+  single-component recipes. Plan SHA `65460f79…85e4`; execution report SHA
+  `43039a5a…2845`; terminal outcome is
+  `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`.
+- [x] ✅ The lifecycle consumed `6` units total (`2.5` balance probe + `1`
+  Oxylabs query + `2.5` Unwrangle detail), retry `0`. Exact first-party price,
+  UPC, seven images and the available content snapshot were retained on their
+  own axes. Missing ingredients, allergens and storage remain explicit gaps;
+  no marketplace/business mutation occurred.
+- [x] ✅ Zero-paid canonical COGS reconciliation propagated the saved exact
+  price to `FaisalX-812/813/814/815`. Plan SHA `318f9c36…95db`; fresh
+  preflight `READY_TO_APPLY`; apply inserted `12` append-only rows for four
+  `FACT` costs, report SHA `9a1e91f2…a548`; provider and marketplace calls `0`.
+- [x] ✅ Full-denominator read-only readiness report SHA
+  `ede2ccef…3997` proves `5935/5935` reconciled. Bundle Factory and Listing
+  Improvement remain `100 ready`; Unit Economics is now
+  `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING / 0 INVALID`;
+  Procurement is `22 ready`.
 - [ ] 🔄 Select the next highest-impact untouched exact Phase 1 target and
   repeat the bounded one-attempt standing-authority lifecycle. Persist
   successful content and price evidence on their independent axes, then
   propagate only verified evidence through the existing canonical graph.
-

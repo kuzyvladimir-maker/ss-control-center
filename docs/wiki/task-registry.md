@@ -1492,8 +1492,22 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   fail-closed result диагностируется без повторного spend. Release
   `87b50d71`, tree `11ea7895…0a9`; focused `16/16`, full Product Truth
   `576/576`, TypeScript и targeted ESLint PASS.
+- [x] ✅ Lay's Dill Pickle Party Size 12.5 oz donor `78e8276f…1160b`
+  выполнен один раз с binding `walmart:1:FaisalX-812 / component 0`.
+  Plan `65460f79…85e4`; terminal outcome
+  `COMPLETED / EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS`, report
+  `43039a5a…2845`, retry `0`, combined spend `6` units. Exact first-party
+  price и доступный content snapshot сохранены независимо; ingredients,
+  allergens и storage остаются честными gaps.
+- [x] ✅ Saved exact price материализирован без новых provider calls в четыре
+  shared recipes `FaisalX-812/813/814/815`: plan `318f9c36…95db`, fresh
+  preflight `READY_TO_APPLY`, apply `9a1e91f2…a548`, `12` append-only rows и
+  `4 FACT`.
+- [x] ✅ Full-denominator readiness `ede2ccef…3997`: `5935/5935` reconciled,
+  Bundle Factory/Listing Improvement `100`, Unit Economics
+  `22 FACT / 3 ESTIMATE / 736 UNSOURCEABLE / 5174 MISSING`, Procurement
+  `22`; incomplete content не был relabelled как complete.
 - [ ] 🔄 Выбрать следующий highest-impact untouched exact Phase 1 target,
   выполнить один bounded standing-authority lifecycle и независимо
   материализовать только подтверждённые content/price evidence в существующий
   canonical graph с новым full-denominator postcheck.
-
