@@ -76,7 +76,8 @@ function usage(): string {
     "    --started-at ISO --out ABS_NEW_DIR",
     "",
     "Safety: exact explicit scope, no provider/retailer/marketplace calls,",
-    "append-only current-recipe COGS only, maximum 100 rows per wave.",
+    "append-only current-recipe COGS only, including FACT promotion from",
+    "already-saved exact local first-party observations; maximum 100 rows.",
   ].join("\n");
 }
 
@@ -311,6 +312,7 @@ async function runPlan(options: Options): Promise<void> {
       counts: {
         listings: plan.targets.length,
         maximumDatabaseRows: plan.databaseWrites.maximumRows,
+        costOutcomes: plan.claims.costOutcomes,
         providerCalls: 0,
         paidCalls: 0,
         marketplaceMutations: 0,
@@ -369,6 +371,7 @@ async function runPreflight(options: Options): Promise<void> {
       checkedAt: report.checkedAt,
       databaseTargetFingerprint: target.fingerprint,
       planSha256: options.planSha256,
+      costOutcomes: plan.claims.costOutcomes,
       artifacts: [{
         role: "preflight_report",
         file: "preflight-report.json",
@@ -428,6 +431,7 @@ async function runApply(options: Options): Promise<void> {
       planSha256: options.planSha256,
       standingPolicySha256: options.policySha256,
       preflightReportSha256: options.preflightSha256,
+      costOutcomes: report.verification.costOutcomes,
       artifacts: [{
         role: "apply_report",
         file: "apply-report.json",

@@ -50,6 +50,7 @@
     "product-truth:migrations": "node --import tsx scripts/product-truth-migration-plan.ts",
     "product-truth:legacy-bridge-plan": "node --import tsx scripts/build-product-truth-legacy-bridge-plan.ts",
     "product-truth:legacy-bridge-wave": "node --import tsx scripts/product-truth-legacy-bridge-wave.ts",
+    "product-truth:canonical-cogs-reconcile": "node --import tsx scripts/product-truth-canonical-cogs-reconcile.ts",
     "product-truth:barcode-evidence": "node --import tsx scripts/build-product-truth-live-barcode-evidence.ts",
     "product-truth:target-content-evidence": "node --import tsx scripts/build-product-truth-direct-target-content-evidence.ts",
     "product-truth:target-content-activation": "node --import tsx scripts/product-truth-direct-target-content-activation.ts",

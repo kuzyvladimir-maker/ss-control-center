@@ -39,6 +39,9 @@ import {
 import {
   assertProductTruthListingScopeSchema,
 } from "../product-truth-schema-gate";
+import {
+  readProductTruthSnapshot,
+} from "../product-truth-read-contract";
 
 const HASH_A = "a".repeat(64);
 const HASH_B = "b".repeat(64);
@@ -621,6 +624,174 @@ test("bounded standing-authority reconciliation restores a recipe from an exact 
       });
     assert.equal(cogsPostcheck.status, "ALREADY_APPLIED");
     assert.equal(cogsPostcheck.counts.exactExistingRows, 3);
+    await assert.rejects(
+      planProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        manifestSha256: HASH_B,
+        listingKeys: [LISTING_KEY],
+        createdAt: "2026-07-29T00:10:00.000Z",
+        expiresAt: "2026-07-29T23:59:00.000Z",
+      }),
+      /CANONICAL_COGS_SAVED_PRICE_MISSING/,
+      "current UNSOURCEABLE must not become FACT without saved exact evidence",
+    );
+
+    await db.execute({
+      sql: `INSERT INTO DonorOffer (
+        id,donorProductId,retailer,retailerProductId,via
+      ) VALUES (?,?,?,?,?)`,
+      args: [
+        "saved-price-walmart-offer", DONOR_ID, "walmart",
+        "saved-price-item", "direct",
+      ],
+    });
+    await db.execute({
+      sql: `INSERT INTO DonorOfferObservation (
+        id,observationKey,donorOfferId,donorProductId,canonicalVariantId,
+        variantDecisionId,retailer,retailerProductId,via,title,price,
+        packSizeSeen,pricePerUnit,currency,zip,localityEvidence,inStock,
+        productUrl,sellerName,isFirstParty,sourceApi,observedAt,createdAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        "saved-price-walmart-observation", sha("saved-price-walmart"),
+        "saved-price-walmart-offer", DONOR_ID, VARIANT_ID, DECISION_ID,
+        "walmart", "saved-price-item", "direct", "Acme Orange Soda 2 L",
+        4.48, 1, 4.48, "USD", "33765", "zip_scoped", 1,
+        "https://www.walmart.com/ip/saved-price-item", "Walmart.com", 1,
+        "fixture", "2026-07-29T00:10:30.000Z",
+        "2026-07-29T00:10:30.000Z",
+      ],
+    });
+    await db.execute({
+      sql: `INSERT INTO DonorOffer (
+        id,donorProductId,retailer,retailerProductId,via
+      ) VALUES (?,?,?,?,?)`,
+      args: [
+        "saved-price-club-offer", DONOR_ID, "costco",
+        "saved-price-club-item", "direct",
+      ],
+    });
+    await db.execute({
+      sql: `INSERT INTO DonorOfferObservation (
+        id,observationKey,donorOfferId,donorProductId,canonicalVariantId,
+        variantDecisionId,retailer,retailerProductId,via,title,price,
+        packSizeSeen,pricePerUnit,currency,zip,localityEvidence,inStock,
+        productUrl,sellerName,isFirstParty,sourceApi,observedAt,createdAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        "saved-price-club-observation", sha("saved-price-club"),
+        "saved-price-club-offer", DONOR_ID, VARIANT_ID, DECISION_ID,
+        "costco", "saved-price-club-item", "direct", "Acme Orange Soda 2 L",
+        0.99, 1, 0.99, "USD", "33765", "zip_scoped", 1,
+        "https://www.costco.com/saved-price-club-item", "Costco", 1,
+        "fixture", "2026-07-29T00:10:31.000Z",
+        "2026-07-29T00:10:31.000Z",
+      ],
+    });
+
+    const savedPricePlan =
+      await planProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        manifestSha256: HASH_B,
+        listingKeys: [LISTING_KEY],
+        createdAt: "2026-07-29T00:11:00.000Z",
+        expiresAt: "2026-07-29T23:59:00.000Z",
+      });
+    assert.equal(
+      savedPricePlan.targets[0].materializationMode,
+      "PROMOTE_SAVED_EXACT_PRICE",
+    );
+    assert.equal(savedPricePlan.targets[0].cost.evidenceOutcome, "FACT");
+    assert.equal(savedPricePlan.targets[0].cost.productCost, 26.88);
+    assert.equal(savedPricePlan.targets[0].cost.costPerUnit, 4.48);
+    assert.equal(savedPricePlan.targets[0].cost.packSize, 6);
+    assert.equal(
+      savedPricePlan.targets[0].componentEvidence[0].priceObservationId,
+      "saved-price-walmart-observation",
+      "cheaper club evidence must remain excluded",
+    );
+    const savedPricePlanJson =
+      renderProductTruthCanonicalCogsReconcilePlan(savedPricePlan);
+    const savedPricePlanSha256 = sha(savedPricePlanJson);
+    const savedPricePreflight =
+      await preflightProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: savedPricePlan,
+        planJson: savedPricePlanJson,
+        planSha256: savedPricePlanSha256,
+        checkedAt: "2026-07-29T00:11:30.000Z",
+      });
+    assert.equal(savedPricePreflight.status, "READY_TO_APPLY");
+    const savedPricePreflightJson =
+      renderProductTruthCanonicalCogsReconcilePreflight(savedPricePreflight);
+    const savedPriceApplied =
+      await applyProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: savedPricePlan,
+        planJson: savedPricePlanJson,
+        planSha256: savedPricePlanSha256,
+        standingPolicy: policy,
+        standingPolicyJson: policyJson,
+        standingPolicySha256: sha(policyJson),
+        preflight: savedPricePreflight,
+        preflightJson: savedPricePreflightJson,
+        preflightSha256: sha(savedPricePreflightJson),
+        startedAt: "2026-07-29T00:12:00.000Z",
+        completedAt: "2026-07-29T00:12:00.000Z",
+      });
+    assert.equal(savedPriceApplied.status, "APPLIED");
+    assert.deepEqual(savedPriceApplied.verification.costOutcomes, ["FACT"]);
+    const factualCost = (await db.execute({
+      sql: `SELECT cost.evidenceOutcome,cost.totalCost,evidence.evidenceStatus,
+                   evidence.priceObservationId
+            FROM SkuCost cost
+            JOIN SkuComponentEvidence evidence ON evidence.skuCostId=cost.id
+            WHERE cost.id=?`,
+      args: [savedPricePlan.targets[0].cost.id],
+    })).rows[0];
+    assert.equal(factualCost.evidenceOutcome, "FACT");
+    assert.equal(factualCost.totalCost, 26.88);
+    assert.equal(factualCost.evidenceStatus, "FACT");
+    assert.equal(
+      factualCost.priceObservationId,
+      "saved-price-walmart-observation",
+    );
+    const savedPriceSnapshot = await readProductTruthSnapshot(db, {
+      sku: "RECIPE-SKU",
+      channel: "walmart",
+      storeIndex: 1,
+      expectedManifestSha256: HASH_B,
+      asOf: "2026-07-29T00:12:30.000Z",
+      maxPriceAgeMs: 48 * 60 * 60 * 1_000,
+    });
+    assert.equal(
+      savedPriceSnapshot.views.unitEconomics.status,
+      "FACT",
+      JSON.stringify(savedPriceSnapshot.views.unitEconomics.blockers),
+    );
+    assert.equal(savedPriceSnapshot.views.unitEconomics.current?.totalCost, 26.88);
+    assert.equal(savedPriceSnapshot.views.procurement.ready, true);
+    assert.equal(
+      savedPriceSnapshot.views.procurement.components[0].factualOptions.some(
+        (option) => option.observationId === "saved-price-walmart-observation",
+      ),
+      true,
+    );
+    const savedPricePostcheck =
+      await preflightProductTruthCanonicalCogsReconciliation({
+        db,
+        databaseTargetFingerprint: HASH_A,
+        plan: savedPricePlan,
+        planJson: savedPricePlanJson,
+        planSha256: savedPricePlanSha256,
+        checkedAt: "2026-07-29T00:13:00.000Z",
+      });
+    assert.equal(savedPricePostcheck.status, "ALREADY_APPLIED");
+    assert.equal(savedPricePostcheck.counts.exactExistingRows, 3);
   } finally {
     db.close();
     await rm(directory, { recursive: true, force: true });

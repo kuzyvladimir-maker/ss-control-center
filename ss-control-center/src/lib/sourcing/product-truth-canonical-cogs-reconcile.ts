@@ -7,7 +7,10 @@ import {
   CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   CANONICAL_PRODUCT_MATCHER_VERSION,
 } from "./canonical-product-match-provenance";
-import { PRICE_EVIDENCE_POLICY_VERSION } from "./price-evidence-policy";
+import {
+  evaluatePriceEvidenceEligibility,
+  PRICE_EVIDENCE_POLICY_VERSION,
+} from "./price-evidence-policy";
 import {
   type ProductTruthLegacyBridgeStandingPolicy,
   PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION,
@@ -29,12 +32,13 @@ import {
 } from "./product-truth-schema-gate";
 
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PLAN_VERSION =
-  "product-truth-canonical-cogs-reconcile-plan/1.1.0" as const;
+  "product-truth-canonical-cogs-reconcile-plan/2.0.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_PREFLIGHT_VERSION =
-  "product-truth-canonical-cogs-reconcile-preflight/1.1.0" as const;
+  "product-truth-canonical-cogs-reconcile-preflight/2.0.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_REPORT_VERSION =
-  "product-truth-canonical-cogs-reconcile-report/1.1.0" as const;
+  "product-truth-canonical-cogs-reconcile-report/2.0.0" as const;
 export const PRODUCT_TRUTH_CANONICAL_COGS_RECONCILE_MAX_LISTINGS = 33 as const;
+export const PRODUCT_TRUTH_SAVED_PRICE_MAX_AGE_MS = 48 * 60 * 60 * 1_000;
 
 const LISTING_RECIPE_MIGRATION_ID =
   "20260729010000_product_truth_listing_recipe";
@@ -90,27 +94,47 @@ const CONTENT_OBSERVATION_COLUMNS = [
   "meteredReceiptId", "createdAt",
 ] as const;
 
+const PRICE_OBSERVATION_COLUMNS = [
+  "id", "observationKey", "donorOfferId", "donorProductId",
+  "canonicalVariantId", "variantDecisionId", "retailer",
+  "retailerProductId", "via", "title", "price", "packSizeSeen",
+  "pricePerUnit", "currency", "zip", "localityEvidence", "inStock",
+  "productUrl", "sellerName", "isFirstParty", "sourceApi", "observedAt",
+  "runId", "approvalId", "meteredReceiptId", "createdAt",
+] as const;
+
+const DECISION_COLUMNS = [
+  "id", "decisionKey", "donorProductId", "canonicalVariantId",
+  "decisionStatus", "matcherVersion", "matcherImplementationSha256",
+  "matcherReleaseSha256", "evidenceHash", "evidenceJson", "decidedAt",
+  "runId", "approvalId", "createdAt",
+] as const;
+
+type CanonicalCogsMaterializationMode =
+  | "CANONICALIZE_PRE_RECIPE_UNSOURCEABLE"
+  | "PROMOTE_SAVED_EXACT_PRICE";
+
 type CanonicalCostRow = {
   id: string;
   observationKey: string;
   sku: string;
   asin: null;
   effectiveDate: string;
-  productCost: null;
+  productCost: number | null;
   packagingCost: null;
   iceCost: null;
-  totalCost: null;
-  costPerUnit: null;
-  packSize: null;
+  totalCost: number | null;
+  costPerUnit: number | null;
+  packSize: number | null;
   includesPackaging: 0;
   currency: string;
   source: "retail:batch";
   confidence: number | null;
-  needsReview: 1;
+  needsReview: 0 | 1;
   notes: string;
   recipeHash: string;
   evidenceJson: string;
-  evidenceOutcome: "UNSOURCEABLE";
+  evidenceOutcome: "FACT" | "UNSOURCEABLE";
   matcherVersion: string;
   matcherImplementationSha256: string;
   matcherReleaseSha256: string;
@@ -126,12 +150,12 @@ type CanonicalComponentEvidenceRow = {
   evidenceKey: string;
   skuCostId: string;
   componentIndex: number;
-  evidenceStatus: "REJECT";
+  evidenceStatus: "FACT" | "REJECT";
   targetCanonicalVariantId: string;
   contentCanonicalVariantId: string | null;
-  priceCanonicalVariantId: null;
+  priceCanonicalVariantId: string | null;
   contentObservationId: string | null;
-  priceObservationId: null;
+  priceObservationId: string | null;
   matchTier: string;
   matcherVersion: string;
   matcherImplementationSha256: string;
@@ -152,6 +176,7 @@ type CanonicalScopeLinkRow = {
 export interface ProductTruthCanonicalCogsReconcileTarget {
   listingKey: string;
   sku: string;
+  materializationMode: CanonicalCogsMaterializationMode;
   sourceCostId: string;
   listingRecipeId: string;
   listingRecipeHash: string;
@@ -162,6 +187,10 @@ export interface ProductTruthCanonicalCogsReconcileTarget {
     sourceCostSha256: string;
     sourceComponentEvidenceSha256: string;
     sourceContentObservationsSha256: string;
+    eligiblePriceObservationsSha256: string;
+    eligiblePriceDecisionsSha256: string;
+    selectedPriceObservationsSha256: string;
+    selectedPriceDecisionsSha256: string;
     otherScopedCostsSha256: string;
     listingRecipeMigrationReceiptSha256: string;
     sourceGraphSha256: string;
@@ -197,7 +226,8 @@ export interface ProductTruthCanonicalCogsReconcilePlan {
     procurementMutations: 0;
     consumerCutover: false;
     mutatesExistingCanonicalEvidence: false;
-    costOutcome: "UNSOURCEABLE_ONLY";
+    costOutcomes: Array<"FACT" | "UNSOURCEABLE">;
+    savedEvidenceOnly: true;
   };
 }
 
@@ -240,6 +270,7 @@ export interface ProductTruthCanonicalCogsReconcileReport {
     listingKeys: string[];
     costIds: string[];
     recipeHashes: string[];
+    costOutcomes: Array<"FACT" | "UNSOURCEABLE">;
     foreignKeyViolations: string[];
     providerCalls: 0;
     paidCalls: 0;
@@ -319,8 +350,20 @@ function integer(value: unknown, label: string): number {
   return parsed;
 }
 
+function positiveNumber(value: unknown, label: string): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    fail("CANONICAL_COGS_SOURCE_INVALID", `${label} must be positive`);
+  }
+  return parsed;
+}
+
 function nullableText(value: unknown): string | null {
   return typeof value === "string" && value.length ? value : null;
+}
+
+function bool(value: unknown): boolean {
+  return value === true || value === 1 || value === "1";
 }
 
 function projection<T extends readonly string[]>(
@@ -381,6 +424,127 @@ function canonicalMatcherTuple(row: Row, label: string): void {
   }
 }
 
+function canonicalRetailer(value: unknown): "walmart" | "target" | "publix" | null {
+  const normalized = String(value ?? "").toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[\s_-]+/g, "")
+    .trim();
+  return normalized === "walmart"
+    || normalized === "target"
+    || normalized === "publix"
+    ? normalized
+    : null;
+}
+
+function eligibleSavedPriceObservation(
+  row: Row,
+  input: {
+    targetCanonicalVariantId: string;
+    planCreatedAt: string;
+  },
+): boolean {
+  const observedAt = Date.parse(String(row.observedAt ?? ""));
+  const planCreatedAt = Date.parse(input.planCreatedAt);
+  const pricePerUnit = Number(row.pricePerUnit);
+  const packSizeSeen = Number(row.packSizeSeen);
+  const decision = evaluatePriceEvidenceEligibility({
+    retailer: nullableText(row.retailer),
+    via: nullableText(row.via),
+    price: Number.isFinite(pricePerUnit) ? pricePerUnit : null,
+    isFirstParty: bool(row.isFirstParty),
+    inStock: bool(row.inStock),
+    zip: nullableText(row.zip),
+    localityEvidence: nullableText(row.localityEvidence),
+    fetchedAt: nullableText(row.observedAt),
+    matchVerdict: "EXACT_IDENTITY",
+  }, {
+    now: input.planCreatedAt,
+    maxAgeMs: PRODUCT_TRUTH_SAVED_PRICE_MAX_AGE_MS,
+  });
+  return (
+    row.canonicalVariantId === input.targetCanonicalVariantId
+    && row.via === "direct"
+    && canonicalRetailer(row.retailer) !== null
+    && decision.eligibility === "FACT"
+    && Number.isFinite(pricePerUnit)
+    && pricePerUnit > 0
+    && Number.isInteger(packSizeSeen)
+    && packSizeSeen === 1
+    && row.currency === "USD"
+    && nullableText(row.productUrl) !== null
+    && nullableText(row.sourceApi) !== null
+    && Number.isFinite(observedAt)
+    && observedAt <= planCreatedAt
+    && planCreatedAt - observedAt <= PRODUCT_TRUTH_SAVED_PRICE_MAX_AGE_MS
+  );
+}
+
+function savedPriceOrder(left: Row, right: Row): number {
+  const priceDelta = positiveNumber(left.pricePerUnit, "left pricePerUnit")
+    - positiveNumber(right.pricePerUnit, "right pricePerUnit");
+  if (Math.abs(priceDelta) > 0.000001) return priceDelta;
+  const retailerOrder = ["walmart", "target", "publix"];
+  const retailerDelta = retailerOrder.indexOf(canonicalRetailer(left.retailer)!)
+    - retailerOrder.indexOf(canonicalRetailer(right.retailer)!);
+  if (retailerDelta !== 0) return retailerDelta;
+  const observedDelta = Date.parse(String(right.observedAt))
+    - Date.parse(String(left.observedAt));
+  if (observedDelta !== 0) return observedDelta;
+  return String(left.id).localeCompare(String(right.id), "en-US");
+}
+
+async function savedPriceCandidates(
+  db: SqlReader,
+  input: {
+    targetCanonicalVariantId: string;
+    planCreatedAt: string;
+  },
+): Promise<{ eligible: Row[]; selected: Row; decisions: Row[] }> {
+  const rows = (await db.execute({
+    sql: `SELECT observation.*
+          FROM DonorOfferObservation observation
+          WHERE observation.canonicalVariantId=?
+            AND observation.observedAt<=?
+          ORDER BY observation.observedAt DESC,observation.id`,
+    args: [input.targetCanonicalVariantId, input.planCreatedAt],
+  })).rows;
+  const latestByOffer = new Map<string, Row>();
+  for (const row of rows) {
+    const offerId = text(row.donorOfferId, "price donorOfferId");
+    if (!latestByOffer.has(offerId)) latestByOffer.set(offerId, row);
+  }
+  const eligible = [...latestByOffer.values()]
+    .filter((row) => eligibleSavedPriceObservation(row, input))
+    .sort(savedPriceOrder);
+  if (!eligible.length) {
+    fail(
+      "CANONICAL_COGS_SAVED_PRICE_MISSING",
+      input.targetCanonicalVariantId,
+    );
+  }
+  const decisions: Row[] = [];
+  for (const row of eligible) {
+    const decision = (await db.execute({
+      sql: `SELECT * FROM DonorProductVariantDecision WHERE id=?`,
+      args: [text(row.variantDecisionId, "price variantDecisionId")],
+    })).rows[0];
+    if (
+      !decision
+      || decision.donorProductId !== row.donorProductId
+      || decision.canonicalVariantId !== input.targetCanonicalVariantId
+      || decision.decisionStatus !== "exact_confirmed"
+    ) {
+      fail(
+        "CANONICAL_COGS_SAVED_PRICE_DECISION_INVALID",
+        String(row.id),
+      );
+    }
+    canonicalMatcherTuple(decision, `price decision ${String(row.id)}`);
+    decisions.push(decision);
+  }
+  return { eligible, selected: eligible[0], decisions };
+}
+
 function sourceCostIdFromRecipeComponents(rows: readonly Row[]): string {
   const ids = rows.map((row, index) => {
     const evidence = jsonObject(
@@ -415,6 +579,7 @@ async function buildTargetFromDatabase(
     listingKey: string;
     manifestSha256: string;
     databaseTargetFingerprint: string;
+    planCreatedAt: string;
   },
 ): Promise<ProductTruthCanonicalCogsReconcileTarget> {
   const scope = (await db.execute({
@@ -478,14 +643,38 @@ async function buildTargetFromDatabase(
   if (structuralHash !== recipe.recipeHash) {
     fail("CANONICAL_COGS_RECIPE_INVALID", `${input.listingKey} structural hash`);
   }
-  const sourceCostId = sourceCostIdFromRecipeComponents(recipeComponents);
-  const sourceCost = (await db.execute({
+  const planCreatedAt = canonicalInstant(input.planCreatedAt, "planCreatedAt");
+  const scopedCosts = (await db.execute({
     sql: `SELECT cost.*
           FROM SkuCostListingScopeLink link
           JOIN SkuCost cost ON cost.id=link.skuCostId
-          WHERE link.listingKey=? AND cost.id=?`,
-    args: [input.listingKey, sourceCostId],
-  })).rows[0];
+          WHERE link.listingKey=? AND cost.createdAt<?
+          ORDER BY cost.effectiveDate DESC,cost.createdAt DESC,cost.id DESC`,
+    args: [input.listingKey, planCreatedAt],
+  })).rows;
+  const currentRecipeCosts = scopedCosts.filter(
+    (row) => row.recipeHash === recipe.recipeHash,
+  );
+  const currentRecipeCost = currentRecipeCosts[0] ?? null;
+  if (
+    currentRecipeCost !== null
+    && currentRecipeCost.evidenceOutcome !== "UNSOURCEABLE"
+  ) {
+    fail(
+      "CANONICAL_COGS_ALREADY_MATERIALIZED",
+      `${input.listingKey} current recipe already has ${String(
+        currentRecipeCost.evidenceOutcome,
+      )}`,
+    );
+  }
+  const materializationMode: CanonicalCogsMaterializationMode =
+    currentRecipeCost === null
+      ? "CANONICALIZE_PRE_RECIPE_UNSOURCEABLE"
+      : "PROMOTE_SAVED_EXACT_PRICE";
+  const sourceCostId = currentRecipeCost === null
+    ? sourceCostIdFromRecipeComponents(recipeComponents)
+    : text(currentRecipeCost.id, "current recipe source cost id");
+  const sourceCost = scopedCosts.find((row) => row.id === sourceCostId);
   if (!sourceCost) {
     fail("CANONICAL_COGS_SOURCE_COST_MISSING", sourceCostId);
   }
@@ -514,11 +703,18 @@ async function buildTargetFromDatabase(
     || sourceCost.productCost !== null
     || sourceCost.totalCost !== null
     || sourceCost.costPerUnit !== null
-    || sourceCost.recipeHash === recipe.recipeHash
+    || (
+      materializationMode === "CANONICALIZE_PRE_RECIPE_UNSOURCEABLE"
+      && sourceCost.recipeHash === recipe.recipeHash
+    )
+    || (
+      materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
+      && sourceCost.recipeHash !== recipe.recipeHash
+    )
   ) {
     fail(
       "CANONICAL_COGS_SOURCE_COST_INVALID",
-      `${input.listingKey} is not a pre-recipe UNSOURCEABLE graph`,
+      `${input.listingKey} is not an eligible UNSOURCEABLE graph`,
     );
   }
   const migrationReceipt = (await db.execute({
@@ -531,11 +727,14 @@ async function buildTargetFromDatabase(
     || migrationReceipt.migrationSha256 !== LISTING_RECIPE_MIGRATION_SHA256
     || migrationReceipt.targetFingerprint !== input.databaseTargetFingerprint
     || migrationReceipt.action !== "applied"
-    || Date.parse(sourceCreatedAt)
-      >= Date.parse(canonicalInstant(
-        migrationReceipt.appliedAt,
-        "listing recipe migration appliedAt",
-      ))
+    || (
+      materializationMode === "CANONICALIZE_PRE_RECIPE_UNSOURCEABLE"
+      && Date.parse(sourceCreatedAt)
+        >= Date.parse(canonicalInstant(
+          migrationReceipt.appliedAt,
+          "listing recipe migration appliedAt",
+        ))
+    )
   ) {
     fail(
       "CANONICAL_COGS_MIGRATION_RECEIPT_INVALID",
@@ -584,7 +783,17 @@ async function buildTargetFromDatabase(
     sourceContentRows.push(contentRows[0]);
   }
 
-  const createdAt = canonicalInstant(recipe.createdAt, "recipe createdAt");
+  const priceSelections = materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
+    ? await Promise.all(recipeComponents.map((row) =>
+      savedPriceCandidates(db, {
+        targetCanonicalVariantId: text(
+          row.targetCanonicalVariantId,
+          "recipe targetCanonicalVariantId",
+        ),
+        planCreatedAt,
+      })))
+    : recipeComponents.map(() => null);
+  const createdAt = planCreatedAt;
   const newComponentEvidence: CanonicalComponentEvidenceRow[] =
     sourceEvidenceRows.map((sourceRow, index) => {
       const recipeComponent = recipeComponents[index];
@@ -617,6 +826,29 @@ async function buildTargetFromDatabase(
           contentObservation.donorProductId,
           `source component ${index} content donor`,
         );
+      const priceSelection = priceSelections[index];
+      const selectedPrice = priceSelection?.selected ?? null;
+      const selectedPriceDecision = selectedPrice === null
+        ? null
+        : priceSelection!.decisions[
+          priceSelection!.eligible.findIndex((row) => row.id === selectedPrice.id)
+        ];
+      const evidenceStatus = selectedPrice === null ? "REJECT" : "FACT";
+      const priceCanonicalVariantId = selectedPrice === null
+        ? null
+        : text(
+          selectedPrice.canonicalVariantId,
+          `selected price ${index} canonicalVariantId`,
+        );
+      const priceObservationId = selectedPrice === null
+        ? null
+        : text(selectedPrice.id, `selected price ${index} id`);
+      const perUnit = selectedPrice === null
+        ? null
+        : positiveNumber(
+          selectedPrice.pricePerUnit,
+          `selected price ${index} pricePerUnit`,
+        );
       if (
         integer(sourceRow.componentIndex, "source componentIndex") !== index
         || sourceRow.evidenceStatus !== "REJECT"
@@ -638,6 +870,13 @@ async function buildTargetFromDatabase(
           && contentCanonicalVariantId !== targetCanonicalVariantId
         )
         || sourceRow.evidenceHash !== sha256Text(String(sourceRow.evidenceJson))
+        || (
+          selectedPrice !== null
+          && (
+            priceCanonicalVariantId !== targetCanonicalVariantId
+            || selectedPriceDecision === null
+          )
+        )
       ) {
         fail(
           "CANONICAL_COGS_SOURCE_COMPONENT_INVALID",
@@ -646,14 +885,27 @@ async function buildTargetFromDatabase(
       }
       const payload = {
         schemaVersion: "product-truth-sku-component-evidence/1.0.0",
-        evidenceStatus: "REJECT",
+        sourceEvidenceSchemaVersion:
+          "product-truth-saved-price-evidence/1.0.0",
+        evidenceStatus,
         targetCanonicalVariantId,
         contentCanonicalVariantId,
-        priceCanonicalVariantId: null,
+        priceCanonicalVariantId,
         contentObservationId,
         contentDonorProductId,
-        priceObservationId: null,
-        matchTier: text(sourceRow.matchTier, "source matchTier"),
+        priceObservationId,
+        priceEvidenceDonorProductId: selectedPrice === null
+          ? null
+          : text(selectedPrice.donorProductId, "price donorProductId"),
+        priceEvidenceOfferId: selectedPrice === null
+          ? null
+          : text(selectedPrice.donorOfferId, "price donorOfferId"),
+        priceVariantDecisionId: selectedPrice === null
+          ? null
+          : text(selectedPrice.variantDecisionId, "price variantDecisionId"),
+        matchTier: selectedPrice === null
+          ? text(sourceRow.matchTier, "source matchTier")
+          : "EXACT_IDENTITY",
         matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
         matcherImplementationSha256:
           CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
@@ -663,15 +915,25 @@ async function buildTargetFromDatabase(
         flavor,
         size,
         qty: quantity,
-        perUnit: null,
-        method: "no-fresh-first-party-price",
+        perUnit,
+        method: selectedPrice === null
+          ? "no-fresh-first-party-price"
+          : "exact",
         targetComparableUnitPrice: null,
-        rejectionReasons: Array.isArray(sourcePayload.rejectionReasons)
-          ? sourcePayload.rejectionReasons
-          : ["NO_ELIGIBLE_PRICE_WITHIN_24_HOURS"],
+        rejectionReasons: selectedPrice === null
+          ? (
+            Array.isArray(sourcePayload.rejectionReasons)
+              ? sourcePayload.rejectionReasons
+              : ["NO_ELIGIBLE_PRICE_WITHIN_24_HOURS"]
+          )
+          : [],
+        selectedPrice: selectedPrice === null
+          ? null
+          : projection(selectedPrice, PRICE_OBSERVATION_COLUMNS),
         materialization: {
           schemaVersion:
-            "product-truth-canonical-cogs-reconcile-source/1.0.0",
+            "product-truth-canonical-cogs-reconcile-source/2.0.0",
+          materializationMode,
           sourceCostId,
           sourceComponentEvidenceId: String(sourceRow.id),
           sourceComponentEvidenceSha256: rowSha(
@@ -680,12 +942,18 @@ async function buildTargetFromDatabase(
           ),
           listingRecipeId: String(recipe.id),
           listingRecipeHash: String(recipe.recipeHash),
+          selectedPriceObservationSha256: selectedPrice === null
+            ? null
+            : rowSha(selectedPrice, PRICE_OBSERVATION_COLUMNS),
+          selectedPriceDecisionSha256: selectedPriceDecision === null
+            ? null
+            : rowSha(selectedPriceDecision, DECISION_COLUMNS),
         },
       };
       const evidenceJson = canonicalJson(payload);
       const evidenceHash = sha256Text(evidenceJson);
       const evidenceKey = productTruthOperationalSha256({
-        schemaVersion: "product-truth-canonical-cogs-component-key/1.0.0",
+        schemaVersion: "product-truth-canonical-cogs-component-key/2.0.0",
         listingKey: input.listingKey,
         sourceCostId,
         listingRecipeId: recipe.id,
@@ -697,13 +965,15 @@ async function buildTargetFromDatabase(
         evidenceKey,
         skuCostId: "",
         componentIndex: index,
-        evidenceStatus: "REJECT",
+        evidenceStatus,
         targetCanonicalVariantId,
         contentCanonicalVariantId,
-        priceCanonicalVariantId: null,
+        priceCanonicalVariantId,
         contentObservationId,
-        priceObservationId: null,
-        matchTier: String(sourceRow.matchTier),
+        priceObservationId,
+        matchTier: selectedPrice === null
+          ? String(sourceRow.matchTier)
+          : "EXACT_IDENTITY",
         matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
         matcherImplementationSha256:
           CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
@@ -723,29 +993,56 @@ async function buildTargetFromDatabase(
       flavor: payload.flavor,
       size: payload.size,
       qty: payload.qty,
-      perUnit: null,
+      perUnit: payload.perUnit,
       method: payload.method,
       targetCanonicalVariantId: row.targetCanonicalVariantId,
       contentCanonicalVariantId: row.contentCanonicalVariantId,
-      priceCanonicalVariantId: null,
+      priceCanonicalVariantId: row.priceCanonicalVariantId,
       contentObservationId: row.contentObservationId,
-      priceEvidenceObservationId: null,
+      priceEvidenceObservationId: row.priceObservationId,
       contentDonorProductId: payload.contentDonorProductId,
-      priceEvidenceDonorProductId: null,
-      priceEvidenceOfferId: null,
-      priceVariantDecisionId: null,
+      priceEvidenceDonorProductId: payload.priceEvidenceDonorProductId,
+      priceEvidenceOfferId: payload.priceEvidenceOfferId,
+      priceVariantDecisionId: payload.priceVariantDecisionId,
       matchTier: row.matchTier,
-      priceEvidenceStatus: "REJECT",
+      priceEvidenceStatus: row.evidenceStatus,
       matcherVersion: row.matcherVersion,
       matcherImplementationSha256: row.matcherImplementationSha256,
       matcherReleaseSha256: row.matcherReleaseSha256,
       pricePolicyVersion: row.pricePolicyVersion,
     };
   });
-  const evaluatedAt = canonicalInstant(
-    sourceCostEvidence.evaluatedAt ?? sourceEffectiveDate,
-    "source cost evaluatedAt",
-  );
+  const evaluatedAt = materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
+    ? canonicalInstant(
+      priceSelections.map((selection) =>
+        String(selection!.selected.observedAt)).sort().at(-1),
+      "saved price evaluatedAt",
+    )
+    : canonicalInstant(
+      sourceCostEvidence.evaluatedAt ?? sourceEffectiveDate,
+      "source cost evaluatedAt",
+    );
+  const costOutcome = materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
+    ? "FACT"
+    : "UNSOURCEABLE";
+  const packSize = costOutcome === "FACT"
+    ? costComponents.reduce(
+      (sum, component) => sum + integer(component.qty, "component qty"),
+      0,
+    )
+    : null;
+  const productCost = costOutcome === "FACT"
+    ? Math.round(costComponents.reduce(
+      (sum, component) =>
+        sum
+        + positiveNumber(component.perUnit, "component perUnit")
+          * integer(component.qty, "component qty"),
+      0,
+    ) * 100) / 100
+    : null;
+  const costPerUnit = productCost === null || packSize === null
+    ? null
+    : Math.round((productCost / packSize) * 100) / 100;
   const costEvidence = {
     schemaVersion: "product-truth-cogs-evidence/1.0.0",
     channel: scope.channel,
@@ -757,41 +1054,59 @@ async function buildTargetFromDatabase(
     matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     evaluatedAt,
     procurementZip: sourceCostEvidence.procurementZip ?? "33765",
-    sourcePolicy: sourceCostEvidence.sourcePolicy ?? {
-      evidence: "existing-catalog-only",
-      maxPriceAgeMs: 86_400_000,
+    sourcePolicy: {
+      policyVersion: "product-truth-cost-source-policy/1.0.0",
+      retailerAllowlist: ["walmart", "target", "publix"],
+      allowClubRetailers: false,
+      evidence: "saved-observations-only",
+      maxPriceAgeMs: PRODUCT_TRUTH_SAVED_PRICE_MAX_AGE_MS,
       paidCalls: 0,
       providerCalls: 0,
     },
-    outcome: "UNSOURCEABLE",
+    outcome: costOutcome,
     recipeHash: String(recipe.recipeHash),
+    ...(costOutcome === "FACT"
+      ? {
+          total: productCost,
+          costPerUnit,
+          packSize,
+          lowIdentityConfidence: false,
+          aboveSale: false,
+        }
+      : {}),
     runId: null,
     approvalId: null,
     components: costComponents,
     materialization: {
-      schemaVersion: "product-truth-canonical-cogs-reconcile-source/1.0.0",
+      schemaVersion: "product-truth-canonical-cogs-reconcile-source/2.0.0",
+      materializationMode,
       sourceCostId,
       sourceObservationKey: sourceCost.observationKey,
       sourceCostSha256: rowSha(sourceCost, COST_COLUMNS),
       listingRecipeId: recipe.id,
       listingRecipeHash: recipe.recipeHash,
-      preservesHistoricalEvaluationAt: true,
+      preservesHistoricalEvaluationAt:
+        materializationMode === "CANONICALIZE_PRE_RECIPE_UNSOURCEABLE",
       providerCalls: 0,
       paidCalls: 0,
     },
   };
   const evidenceJson = canonicalJson(costEvidence);
   const observationKey = productTruthOperationalSha256({
-    schemaVersion: "product-truth-canonical-cogs-observation-key/1.0.0",
+    schemaVersion: "product-truth-canonical-cogs-observation-key/2.0.0",
     listingKey: input.listingKey,
     sourceCostId,
     sourceObservationKey: sourceCost.observationKey,
     listingRecipeId: recipe.id,
     recipeHash: recipe.recipeHash,
-    outcome: "UNSOURCEABLE",
+    outcome: costOutcome,
     evaluatedAt,
+    selectedPriceObservationIds: priceSelections.flatMap(
+      (selection) => selection === null ? [] : [String(selection.selected.id)],
+    ),
   });
-  const costId = `retail:${String(scope.sku)}:recipe:${observationKey.slice(0, 24)}`;
+  const costId =
+    `retail:${String(scope.sku)}:recipe:${observationKey.slice(0, 24)}`;
   for (const row of newComponentEvidence) row.skuCostId = costId;
 
   const cost: CanonicalCostRow = {
@@ -799,25 +1114,28 @@ async function buildTargetFromDatabase(
     observationKey,
     sku: String(scope.sku),
     asin: null,
-    effectiveDate: sourceEffectiveDate,
-    productCost: null,
+    effectiveDate: materializationMode === "PROMOTE_SAVED_EXACT_PRICE"
+      ? createdAt
+      : sourceEffectiveDate,
+    productCost,
     packagingCost: null,
     iceCost: null,
-    totalCost: null,
-    costPerUnit: null,
-    packSize: null,
+    totalCost: productCost,
+    costPerUnit,
+    packSize,
     includesPackaging: 0,
     currency: nullableText(sourceCost.currency) ?? "USD",
     source: "retail:batch",
     confidence: typeof sourceCost.confidence === "number"
       ? sourceCost.confidence
       : null,
-    needsReview: 1,
-    notes:
-      "UNSOURCEABLE: canonical recipe reconciliation of sealed pre-migration evidence",
+    needsReview: costOutcome === "FACT" ? 0 : 1,
+    notes: costOutcome === "FACT"
+      ? "FACT: saved exact local first-party price evidence; zero provider calls"
+      : "UNSOURCEABLE: canonical recipe reconciliation of sealed pre-migration evidence",
     recipeHash: String(recipe.recipeHash),
     evidenceJson,
-    evidenceOutcome: "UNSOURCEABLE",
+    evidenceOutcome: costOutcome,
     matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
     matcherImplementationSha256: CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
     matcherReleaseSha256: CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
@@ -834,20 +1152,7 @@ async function buildTargetFromDatabase(
     createdAt,
   };
 
-  const otherCosts = (await db.execute({
-    sql: `SELECT cost.*
-          FROM SkuCostListingScopeLink link
-          JOIN SkuCost cost ON cost.id=link.skuCostId
-          WHERE link.listingKey=? AND cost.id<>?
-          ORDER BY cost.effectiveDate DESC,cost.createdAt DESC,cost.id DESC`,
-    args: [input.listingKey, costId],
-  })).rows;
-  if (otherCosts.some((row) => row.recipeHash === recipe.recipeHash)) {
-    fail(
-      "CANONICAL_COGS_ALREADY_MATERIALIZED",
-      `${input.listingKey} already has a cost for the current recipe`,
-    );
-  }
+  const otherCosts = scopedCosts;
   const migrationReceiptProjection = projection(migrationReceipt, [
     "migrationId", "migrationSha256", "targetFingerprint", "action", "appliedAt",
   ]);
@@ -868,6 +1173,34 @@ async function buildTargetFromDatabase(
         ? null
         : projection(row, CONTENT_OBSERVATION_COLUMNS)),
     ),
+    eligiblePriceObservationsSha256: productTruthOperationalSha256(
+      priceSelections.map((selection) => selection === null
+        ? []
+        : selection.eligible.map(
+          (row) => projection(row, PRICE_OBSERVATION_COLUMNS),
+        )),
+    ),
+    eligiblePriceDecisionsSha256: productTruthOperationalSha256(
+      priceSelections.map((selection) => selection === null
+        ? []
+        : selection.decisions.map(
+          (row) => projection(row, DECISION_COLUMNS),
+        )),
+    ),
+    selectedPriceObservationsSha256: productTruthOperationalSha256(
+      priceSelections.flatMap((selection) => selection === null
+        ? []
+        : [projection(selection.selected, PRICE_OBSERVATION_COLUMNS)]),
+    ),
+    selectedPriceDecisionsSha256: productTruthOperationalSha256(
+      priceSelections.flatMap((selection) => {
+        if (selection === null) return [];
+        const selectedIndex = selection.eligible.findIndex(
+          (row) => row.id === selection.selected.id,
+        );
+        return [projection(selection.decisions[selectedIndex], DECISION_COLUMNS)];
+      }),
+    ),
     otherScopedCostsSha256: productTruthOperationalSha256(
       otherCosts.map((row) => projection(row, COST_COLUMNS)),
     ),
@@ -875,8 +1208,9 @@ async function buildTargetFromDatabase(
       productTruthOperationalSha256(migrationReceiptProjection),
   };
   const sourceGraphSha256 = productTruthOperationalSha256({
-    schemaVersion: "product-truth-canonical-cogs-source-graph/1.0.0",
+    schemaVersion: "product-truth-canonical-cogs-source-graph/2.0.0",
     listingKey: input.listingKey,
+    materializationMode,
     sourceCostId,
     listingRecipeId: recipe.id,
     ...sourceBindingBase,
@@ -884,6 +1218,7 @@ async function buildTargetFromDatabase(
   return {
     listingKey: input.listingKey,
     sku: String(scope.sku),
+    materializationMode,
     sourceCostId,
     listingRecipeId: String(recipe.id),
     listingRecipeHash: String(recipe.recipeHash),
@@ -935,6 +1270,7 @@ export async function planProductTruthCanonicalCogsReconciliation(input: {
         listingKey,
         manifestSha256,
         databaseTargetFingerprint,
+        planCreatedAt: createdAt,
       }));
     }
     const databaseWrites = expectedDatabaseWrites(targets);
@@ -945,6 +1281,9 @@ export async function planProductTruthCanonicalCogsReconciliation(input: {
       );
     }
     const targetsSha256 = productTruthOperationalSha256(targets);
+    const costOutcomes = [...new Set(
+      targets.map((target) => target.cost.evidenceOutcome),
+    )].sort() as Array<"FACT" | "UNSOURCEABLE">;
     const planId = `ptcc-${productTruthOperationalSha256({
       databaseTargetFingerprint,
       manifestSha256,
@@ -973,7 +1312,8 @@ export async function planProductTruthCanonicalCogsReconciliation(input: {
         procurementMutations: 0,
         consumerCutover: false,
         mutatesExistingCanonicalEvidence: false,
-        costOutcome: "UNSOURCEABLE_ONLY",
+        costOutcomes,
+        savedEvidenceOnly: true,
       },
     };
   } finally {
@@ -1032,7 +1372,10 @@ function validatePlan(
       procurementMutations: 0,
       consumerCutover: false,
       mutatesExistingCanonicalEvidence: false,
-      costOutcome: "UNSOURCEABLE_ONLY",
+      costOutcomes: [...new Set(
+        plan.targets.map((target) => target.cost.evidenceOutcome),
+      )].sort(),
+      savedEvidenceOnly: true,
     })
   ) {
     fail("CANONICAL_COGS_PLAN_INVALID", "plan bytes or invariants differ");
@@ -1057,6 +1400,7 @@ async function assertSourceBinding(
     listingKey: target.listingKey,
     manifestSha256: plan.manifestSha256,
     databaseTargetFingerprint: plan.databaseTargetFingerprint,
+    planCreatedAt: plan.createdAt,
   });
   if (canonicalJson(rebuilt) !== canonicalJson(target)) {
     fail(
@@ -1436,6 +1780,9 @@ export async function applyProductTruthCanonicalCogsReconciliation(input: {
       recipeHashes: input.plan.targets.map(
         (target) => target.listingRecipeHash,
       ),
+      costOutcomes: [...new Set(
+        input.plan.targets.map((target) => target.cost.evidenceOutcome),
+      )].sort() as Array<"FACT" | "UNSOURCEABLE">,
       foreignKeyViolations: [],
       providerCalls: 0,
       paidCalls: 0,
