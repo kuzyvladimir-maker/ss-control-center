@@ -870,7 +870,19 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
       responseZip: "33765",
       trialExhausted: false,
     },
-  }), /TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN/);
+  }), /TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN.*UNEXPLAINED_CANDIDATE_TOKENS\(kids\)/);
+  assert.throws(() => selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        ...exactOffer,
+        title: "RITZ Bits Cheese Sandwich Crackers, 8.8 oz",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  }), /TITLE_TITLE_TARGET_TOKEN_MISSING.*MISSING_TARGET_TOKENS\(lunch\+snacks\)/);
   assert.throws(() => selectExactTargetedWalmartOffer({
     target,
     result: {

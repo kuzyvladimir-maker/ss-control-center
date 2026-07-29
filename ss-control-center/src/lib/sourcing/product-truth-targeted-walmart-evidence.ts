@@ -453,7 +453,17 @@ export function selectExactTargetedWalmartOffer(input: {
     if (!failed.length) {
       matches.push(scored);
     } else {
-      rejectedChecks.push(`${index}:${failed.join(",")}`);
+      const titleDiagnostics = [
+        titleMatch.titleEvidence?.missingTargetTokens.length
+          ? `MISSING_TARGET_TOKENS(${titleMatch.titleEvidence.missingTargetTokens.join("+")})`
+          : null,
+        titleMatch.titleEvidence?.unexplainedCandidateTokens.length
+          ? `UNEXPLAINED_CANDIDATE_TOKENS(${titleMatch.titleEvidence.unexplainedCandidateTokens.join("+")})`
+          : null,
+      ].filter((value): value is string => value !== null);
+      rejectedChecks.push(
+        `${index}:${[...failed, ...titleDiagnostics].join(",")}`,
+      );
     }
   }
   if (matches.length !== 1) {
