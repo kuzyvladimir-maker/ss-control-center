@@ -1442,6 +1442,16 @@ false pass/false bad/technical error = 0. Это не доказывает те�
   `ProductTruthListingRecipeComponent`, а не mutable legacy `SkuComponent`.
   Real read-only Campbell's plan `f302cfb1…e542` прошёл standing eligibility;
   provider calls/DB writes `0`; certification `556/556`.
-- [ ] 🔄 Выполнить bounded Campbell's enrichment из clean release и
-  материализовать результат в canonical recipe/typed COGS, затем продолжать
-  только по доказанным quarantine lanes.
+- [x] ✅ Campbell's lifecycle выполнен один раз и terminalized `AMBIGUOUS` на
+  unexplained candidate token; Pepperidge Farm successor также terminalized
+  `AMBIGUOUS` на out-of-stock + missing title brand. Для каждого: `3.5`
+  provider units, retry/detail/canonical/marketplace writes `0`; replay
+  запрещён.
+- [x] ✅ Targeted adapter теперь сохраняет Oxylabs `general.brand` и допускает
+  его только как exact token-equal comparison evidence при отсутствии бренда в
+  title. Observed title и canonical matcher `1.2.1` не изменены; conflicting
+  brand остаётся reject. Clean release `48788374`, tree `6462f400…4890`,
+  Product Truth `575/575`, TypeScript и clean checkout PASS.
+- [ ] 🔄 Выбрать новый untouched exact Phase 1 target, выполнить один bounded
+  standing-authority lifecycle и при exact success материализовать FACT/content
+  в существующий canonical graph с новым full-denominator postcheck.

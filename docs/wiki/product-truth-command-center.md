@@ -1104,5 +1104,39 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
 - [x] ✅ Fresh quarantine partition SHA `ca7b10a7…0100`: integrity `381`,
   listing identity `708`, component graph `368`, donor link `718`, exact donor
   offer `45`, price proxy `17`, retailer identity research `2944`, other `0`.
-- [ ] 🔄 Continue the remaining no-paid saved-evidence audit before any new
-  provider wave.
+- [x] ✅ Remaining automatically materializable no-paid evidence is exhausted:
+  the fresh bridge still reports `0` automatic write candidates. The unresolved
+  denominator now requires either new exact evidence or independent review; it
+  is not silently converted into truth.
+
+### ✅ Structured Walmart brand evidence hardening — 2026-07-29
+
+- [x] ✅ Campbell's Mushroom and Pepperidge Farm Whole Wheat were each executed
+  once through the bounded standing-authority workflow. Both outcomes are
+  terminal `AMBIGUOUS`, retry `0`, Unwrangle detail calls `0`, canonical writes
+  `0`, marketplace/business mutations `0`. Each lifecycle consumed one
+  `2.5`-unit balance probe plus one `1`-unit Oxylabs query.
+- [x] ✅ Campbell's stopped on
+  `TITLE_UNEXPLAINED_CANDIDATE_TOKEN`; balance evidence SHA
+  `af42eeec…3c4d`, execution report SHA `eef98d4c…48c4`.
+  Pepperidge stopped on explicit out-of-stock evidence plus
+  `TITLE_BRAND_NOT_FOUND`; balance evidence SHA `2809d47f…37b2`, execution
+  report SHA `8ecb6362…cb93`. Neither terminal target is replayable.
+- [x] ✅ Root cause of the Pepperidge title rejection was isolated in the
+  adapter: Oxylabs exposes the retailer's structured `general.brand`
+  independently from `general.title`, while the parser previously discarded
+  the brand field.
+- [x] ✅ The fix preserves the observed title byte-for-byte and permits only an
+  exact token-equal structured brand in a separately versioned comparison
+  title (`walmart-structured-brand-title/1.0.0`). A conflicting brand rejects;
+  size, pack, flavor, form, first-party, locality, stock and unexplained-token
+  gates remain unchanged.
+- [x] ✅ Canonical matcher `1.2.1` and its pinned source SHA
+  `2108b5af…ac8bb` remain unchanged; no migration or matcher-replay contract
+  changed. Release commit `4878837412d9ebe611b67cd5e0e997727eb7cc76`,
+  tree `6462f4000a6d0bfa281be8d5b6bf85a7e2454890`; exact clean checkout passed
+  Product Truth `575/575`, TypeScript and clean-worktree verification.
+- [ ] 🔄 Select a new untouched exact Phase 1 target and run the same
+  one-attempt `doctor → plan → balance-probe → authorize → execute` workflow.
+  Any successful exact FACT evidence must then be propagated through the
+  existing canonical recipe/typed COGS graph; no parallel catalog is created.

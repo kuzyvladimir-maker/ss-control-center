@@ -791,8 +791,20 @@ G7 закончен как диагностический production canary, н�
   automatic candidates`, `804` canonical components. Readiness:
   Bundle Factory/Listing Improvement `100`, Unit Economics
   `10 FACT / 748 UNSOURCEABLE / 5177 MISSING`, Procurement `10`;
-- 🔄 исчерпать remaining no-paid listing-identity/component-graph evidence,
-  затем продолжить только bounded collision-free Phase 1 waves.
+- ✅ remaining automatic no-paid evidence исчерпан: fresh bridge сохраняет
+  `0 automatic candidates`; unresolved rows не повышаются до truth без новых
+  доказательств;
+- ✅ Campbell's и Pepperidge Farm получили по одному bounded provider lifecycle
+  и оба закрыты terminal `AMBIGUOUS`, retry `0`, без detail/canonical/
+  marketplace writes; общий расход каждого lifecycle `3.5` units;
+- ✅ structured Walmart brand parsing исправлен без изменения canonical matcher:
+  observed title остаётся неизменным, exact token-equal `general.brand`
+  используется только в versioned comparison evidence, mismatch fail-closed;
+  clean release `48788374`, tree `6462f400…4890`, Product Truth `575/575`,
+  TypeScript и clean-worktree PASS;
+- 🔄 выполнить следующий untouched one-attempt Phase 1 target через standing
+  authority и при exact success materialize evidence в существующие
+  canonical recipe/typed COGS, затем обновить полный denominator.
 
 Статус 2026-07-28 после исправления:
 
