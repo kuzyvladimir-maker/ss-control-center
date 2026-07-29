@@ -45,6 +45,7 @@
     "walmart:item-v6-absence-probe": "node --env-file=.env --experimental-strip-types scripts/capture-walmart-item-v6-absence-probe.mjs",
     "product-truth": "node --import tsx scripts/product-truth-runner.ts",
     "product-truth:standing-wave": "node --import tsx scripts/product-truth-standing-wave.ts",
+    "product-truth:standing-wave-worker": "node --import tsx scripts/product-truth-standing-wave-worker.ts",
     "product-truth:web-worker": "node --import tsx scripts/product-truth-web-worker.ts",
     "product-truth:census": "node --import tsx scripts/build-phase1-connected-store-census.ts",
     "product-truth:manifest": "node --import tsx scripts/build-phase1-scope-manifest.ts",

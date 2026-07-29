@@ -44,6 +44,9 @@ import {
   CatalogTabs,
   type ProductTruthCatalogView,
 } from "@/components/catalog/CatalogTabs";
+import {
+  ProductTruthStandingWavePanel,
+} from "@/components/catalog/ProductTruthStandingWavePanel";
 import { cn } from "@/lib/utils";
 
 type ApiEnvelope<T> = {
@@ -648,7 +651,9 @@ export function ProductTruthCatalog({
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green/15 bg-green-soft/60 px-3 py-2 text-[12px] text-ink-2">
         <span className="flex items-center gap-2">
           <ShieldCheck size={14} className="text-green-ink" />
-          Canonical read-only surface · no legacy fallback · no paid/provider path
+          {initialView === "runs"
+            ? "Canonical read surface · bounded provider waves use the separate durable worker"
+            : "Canonical read-only surface · no legacy fallback · no paid/provider path"}
         </span>
         <span className="font-mono text-[10.5px] text-ink-4">
           product-truth read-contract/3.2.0
@@ -1657,9 +1662,10 @@ function OperationsView({ data }: { data: OperationsData }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   return (
     <>
+      <ProductTruthStandingWavePanel />
       <Panel>
         <PanelHeader
-          title="Owner-gated operational workflow"
+          title="General owner-gated operational workflow"
           right={<StatusPill>OFF</StatusPill>}
         />
         <PanelBody>
@@ -1681,22 +1687,22 @@ function OperationsView({ data }: { data: OperationsData }) {
             ))}
           </div>
           <div className="mt-3 rounded-lg border border-danger/15 bg-danger-tint px-3 py-2 text-[11px] leading-relaxed text-ink-2">
-            <span className="font-semibold text-danger">Activation blocker:</span>{" "}
-            a durable command queue, immutable artifact custody, and a pinned owner
-            authentication trust root do not yet exist for this web surface. A hash-only
-            or self-asserted Approve button would not authenticate the owner.
+            <span className="font-semibold text-danger">Scope boundary:</span>{" "}
+            standing-policy enrichment is handled by the bounded panel above.
+            Migration apply, arbitrary metered plans, consumer activation and business
+            mutations remain unavailable here and still require their own exact authority.
           </div>
         </PanelBody>
       </Panel>
       <div className="rounded-xl border border-warn/25 bg-warn-tint px-4 py-3">
         <div className="flex items-center gap-2 text-[12.5px] font-semibold text-warn-strong">
           <ShieldCheck size={15} />
-          Read-only operational projection
+          Read-only canonical run projection
         </div>
         <p className="mt-1 text-[11.5px] text-ink-2">
-          This screen exposes sealed plans, queues, budgets, receipts, blockers,
-          and artifact hashes. It intentionally has no Execute, retry, replay, or
-          approval button in this phase.
+          The projection below exposes sealed engine runs, budgets, receipts,
+          blockers and artifact hashes. It does not add retry/replay or marketplace
+          authority; the standing-wave panel admits only its fixed bounded workflow.
         </p>
       </div>
       <Panel>

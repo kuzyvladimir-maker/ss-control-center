@@ -482,6 +482,13 @@ test("Catalog pages and seven UI tabs consume only the canonical Product Truth A
       new URL("src/app/reference-catalog/page.tsx", root),
       "utf8",
     ),
+    standingWavePanel: await readFile(
+      new URL(
+        "src/components/catalog/ProductTruthStandingWavePanel.tsx",
+        root,
+      ),
+      "utf8",
+    ),
   };
   for (const [name, source] of Object.entries(files)) {
     assert.doesNotMatch(
@@ -495,6 +502,13 @@ test("Catalog pages and seven UI tabs consume only the canonical Product Truth A
   assert.match(files.component, /\/api\/catalog\/product-truth\/listings/);
   assert.match(files.component, /\/api\/catalog\/product-truth\/operations/);
   assert.doesNotMatch(files.component, /method:\s*["']POST["']/);
+  assert.match(
+    files.standingWavePanel,
+    /\/api\/catalog\/product-truth\/standing-wave/,
+  );
+  assert.match(files.standingWavePanel, /method:\s*["']POST["']/);
+  assert.match(files.standingWavePanel, /Start next bounded wave/);
+  assert.match(files.standingWavePanel, /Resume safely/);
   for (const label of [
     "Overview",
     "Products",

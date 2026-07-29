@@ -14,7 +14,10 @@ export function proxy(request: NextRequest) {
 
   // Product Truth worker routes use a separate least-privilege credential.
   // They must never inherit the generic admin API tokens accepted below.
-  if (pathname.startsWith("/api/external/product-truth/control/")) {
+  if (
+    pathname.startsWith("/api/external/product-truth/control/")
+    || pathname.startsWith("/api/external/product-truth/standing-wave/")
+  ) {
     const expectedSha =
       process.env.PRODUCT_TRUTH_WEB_CONTROL_WORKER_TOKEN_SHA256;
     const bearer = request.headers
