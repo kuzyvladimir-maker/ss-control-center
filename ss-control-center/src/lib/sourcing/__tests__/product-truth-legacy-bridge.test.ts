@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { createClient } from "@libsql/client";
+
+import {
+  readCanonicalListingComponents,
+} from "../../../../scripts/build-product-truth-legacy-bridge-plan";
 import {
   buildCanonicalProductVariantKey,
 } from "../canonical-product-variant";
@@ -716,6 +721,163 @@ test("current exact listing recipe remains canonical without content evidence", 
   assert.equal(plan.scopes[0].writeEligible, false);
   assert.equal(plan.scopes[0].components[0].disposition, "ALREADY_CANONICAL");
   assert.equal(plan.counts.alreadyCanonicalListings, 1);
+});
+
+test("canonical audit keeps the current recipe when a later FACT cost has independent provenance", async () => {
+  const db = createClient({ url: ":memory:" });
+  const manifestSha256 = "1".repeat(64);
+  const capturedAt = "2026-07-29T09:40:00.000Z";
+  const variantId = `cpv1:${"2".repeat(64)}`;
+  try {
+    await db.batch([
+      `CREATE TABLE ProductTruthListingScope (
+        listingKey TEXT PRIMARY KEY,
+        manifestSha256 TEXT NOT NULL
+      )`,
+      `CREATE TABLE SkuCostListingScopeLink (
+        listingKey TEXT NOT NULL,
+        skuCostId TEXT NOT NULL
+      )`,
+      `CREATE TABLE SkuCost (
+        id TEXT PRIMARY KEY,
+        recipeHash TEXT,
+        runId TEXT,
+        approvalId TEXT,
+        effectiveDate TEXT,
+        createdAt TEXT,
+        source TEXT
+      )`,
+      `CREATE TABLE SkuComponentEvidence (
+        id TEXT PRIMARY KEY,
+        skuCostId TEXT NOT NULL,
+        componentIndex INTEGER NOT NULL,
+        evidenceStatus TEXT NOT NULL,
+        targetCanonicalVariantId TEXT NOT NULL,
+        contentCanonicalVariantId TEXT,
+        contentObservationId TEXT
+      )`,
+      `CREATE TABLE ProductContentObservation (
+        id TEXT PRIMARY KEY,
+        canonicalVariantId TEXT NOT NULL,
+        variantDecisionId TEXT NOT NULL
+      )`,
+      `CREATE TABLE ProductTruthListingRecipe (
+        id TEXT PRIMARY KEY,
+        listingKey TEXT NOT NULL,
+        recipeHash TEXT NOT NULL,
+        manifestSha256 TEXT NOT NULL,
+        runId TEXT,
+        approvalId TEXT,
+        effectiveAt TEXT NOT NULL,
+        createdAt TEXT NOT NULL
+      )`,
+      `CREATE TABLE ProductTruthListingRecipeComponent (
+        listingRecipeId TEXT NOT NULL,
+        componentIndex INTEGER NOT NULL,
+        targetCanonicalVariantId TEXT NOT NULL,
+        donorProductId TEXT NOT NULL,
+        variantDecisionId TEXT NOT NULL,
+        evidenceHash TEXT NOT NULL,
+        evidenceJson TEXT NOT NULL
+      )`,
+      `CREATE TABLE DonorProductVariantDecision (
+        id TEXT PRIMARY KEY,
+        decisionStatus TEXT NOT NULL,
+        canonicalVariantId TEXT NOT NULL
+      )`,
+    ], "write");
+    await db.batch([
+      {
+        sql: `INSERT INTO ProductTruthListingScope
+              (listingKey,manifestSha256) VALUES (?,?)`,
+        args: ["walmart:1:SKU-FACT", manifestSha256],
+      },
+      {
+        sql: `INSERT INTO ProductTruthListingRecipe
+              (id,listingKey,recipeHash,manifestSha256,runId,approvalId,effectiveAt,createdAt)
+              VALUES (?,?,?,?,?,?,?,?)`,
+        args: [
+          "recipe-1",
+          "walmart:1:SKU-FACT",
+          "recipe-hash",
+          manifestSha256,
+          "identity-run",
+          "identity-approval",
+          "2026-07-29T08:00:00.000Z",
+          "2026-07-29T08:00:00.000Z",
+        ],
+      },
+      {
+        sql: `INSERT INTO ProductTruthListingRecipeComponent
+              (listingRecipeId,componentIndex,targetCanonicalVariantId,
+               donorProductId,variantDecisionId,evidenceHash,evidenceJson)
+              VALUES (?,?,?,?,?,?,?)`,
+        args: [
+          "recipe-1",
+          0,
+          variantId,
+          "donor-1",
+          "decision-1",
+          "evidence-hash",
+          "{}",
+        ],
+      },
+      {
+        sql: `INSERT INTO DonorProductVariantDecision
+              (id,decisionStatus,canonicalVariantId) VALUES (?,?,?)`,
+        args: ["decision-1", "exact_confirmed", variantId],
+      },
+      {
+        sql: `INSERT INTO SkuCost
+              (id,recipeHash,runId,approvalId,effectiveDate,createdAt,source)
+              VALUES (?,?,?,?,?,?,?)`,
+        args: [
+          "fact-cost",
+          "recipe-hash",
+          null,
+          null,
+          "2026-07-29T09:28:01.000Z",
+          "2026-07-29T09:28:01.000Z",
+          "retail:batch",
+        ],
+      },
+      {
+        sql: `INSERT INTO SkuCostListingScopeLink
+              (listingKey,skuCostId) VALUES (?,?)`,
+        args: ["walmart:1:SKU-FACT", "fact-cost"],
+      },
+      {
+        sql: `INSERT INTO SkuComponentEvidence
+              (id,skuCostId,componentIndex,evidenceStatus,
+               targetCanonicalVariantId,contentCanonicalVariantId,contentObservationId)
+              VALUES (?,?,?,?,?,?,?)`,
+        args: [
+          "fact-evidence",
+          "fact-cost",
+          0,
+          "FACT",
+          variantId,
+          null,
+          null,
+        ],
+      },
+    ], "write");
+
+    const rows = await readCanonicalListingComponents(
+      db,
+      manifestSha256,
+      capturedAt,
+    );
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].skuCostId, "fact-cost");
+    assert.equal(rows[0].evidenceStatus, "FACT");
+    assert.equal(rows[0].recipeTargetCanonicalVariantId, variantId);
+    assert.equal(rows[0].recipeVariantDecisionId, "decision-1");
+    assert.equal(rows[0].decisionStatus, "exact_confirmed");
+    assert.equal(rows[0].decisionCanonicalVariantId, variantId);
+  } finally {
+    db.close();
+  }
 });
 
 test("field-partition reconciliation remains canonical on the next audit", () => {

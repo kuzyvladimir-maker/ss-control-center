@@ -480,7 +480,7 @@ async function readCanonicalDonorBindings(
   }));
 }
 
-async function readCanonicalListingComponents(
+export async function readCanonicalListingComponents(
   db: Client,
   manifestSha256: string,
   capturedAt: string,
@@ -534,10 +534,22 @@ async function readCanonicalListingComponents(
           LEFT JOIN ProductContentObservation content
             ON content.id=evidence.contentObservationId
           LEFT JOIN ProductTruthListingRecipe recipe
-            ON recipe.listingKey=ranked.listingKey
-           AND recipe.recipeHash=ranked.recipeHash
-           AND recipe.runId IS ranked.runId
-           AND recipe.approvalId IS ranked.approvalId
+            ON recipe.id=(
+              SELECT currentRecipe.id
+              FROM ProductTruthListingRecipe currentRecipe
+              WHERE currentRecipe.listingKey=ranked.listingKey
+                AND currentRecipe.recipeHash=ranked.recipeHash
+                AND currentRecipe.manifestSha256=?
+                AND julianday(currentRecipe.effectiveAt)<=julianday(?)
+                AND julianday(currentRecipe.createdAt)<=julianday(?)
+              ORDER BY
+                julianday(currentRecipe.effectiveAt) DESC,
+                currentRecipe.effectiveAt DESC,
+                julianday(currentRecipe.createdAt) DESC,
+                currentRecipe.createdAt DESC,
+                currentRecipe.id DESC
+              LIMIT 1
+            )
           LEFT JOIN ProductTruthListingRecipeComponent recipeComponent
             ON recipeComponent.listingRecipeId=recipe.id
            AND recipeComponent.componentIndex=evidence.componentIndex
@@ -548,7 +560,14 @@ async function readCanonicalListingComponents(
             )
           WHERE ranked.rank=1
           ORDER BY ranked.listingKey, evidence.componentIndex, evidence.id`,
-    args: [manifestSha256, capturedAt, capturedAt],
+    args: [
+      manifestSha256,
+      capturedAt,
+      capturedAt,
+      manifestSha256,
+      capturedAt,
+      capturedAt,
+    ],
   });
   return result.rows.map((row): ProductTruthLegacyBridgeCanonicalListingComponentRow => ({
     listingKey: text(row.listingKey, "ProductTruthListingScope.listingKey"),
