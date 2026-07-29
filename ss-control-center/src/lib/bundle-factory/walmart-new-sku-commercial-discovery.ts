@@ -54,7 +54,7 @@ export interface WalmartNewSkuCommercialDiscoveryCandidate {
   size: string | null;
   category: string;
   manufacturer_upc: string;
-  pack_count: 2 | 3;
+  pack_count: number;
   source_offer: {
     retailer: string;
     retailer_product_id: string;
@@ -91,7 +91,7 @@ export interface WalmartNewSkuCommercialDiscovery {
   schema_version: typeof WALMART_NEW_SKU_COMMERCIAL_DISCOVERY_SCHEMA;
   authority: typeof WALMART_NEW_SKU_DISCOVERY_AUTHORITY;
   as_of: string;
-  pack_count: 2 | 3;
+  pack_count: number;
   product_source: "PRODUCT_TRUTH_DONOR_CATALOG";
   full_seller_catalog_read: false;
   paid_provider_calls: 0;
@@ -278,12 +278,19 @@ function bestOffer(
 export function buildWalmartNewSkuCommercialDiscovery(input: {
   rows: WalmartNewSkuCommercialDiscoveryRow[];
   asOf: string;
-  packCount: 2 | 3;
+  packCount: number;
   limit?: number;
 }): WalmartNewSkuCommercialDiscovery {
   const asOfMs = Date.parse(input.asOf);
   if (!Number.isFinite(asOfMs) || new Date(asOfMs).toISOString() !== input.asOf) {
     throw new Error("commercial discovery asOf must be canonical ISO UTC");
+  }
+  if (
+    !Number.isInteger(input.packCount) ||
+    input.packCount < 1 ||
+    input.packCount > 500
+  ) {
+    throw new Error("commercial discovery packCount must be a whole number from 1 to 500");
   }
   const limit = Math.max(1, Math.min(20, input.limit ?? 10));
   const grouped = new Map<string, WalmartNewSkuCommercialDiscoveryRow[]>();

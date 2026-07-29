@@ -6,6 +6,7 @@ import {
   WALMART_CANONICAL_OPERATOR_MESSAGE,
 } from "@/lib/bundle-factory/studio-channel-routing";
 import {
+  buildWalmartStudioWorkItems,
   parseWalmartPromptIntent,
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
@@ -40,19 +41,14 @@ test("Russian Campbell's request preserves 5 listings and 8 cans instead of appl
   });
   assert.equal(request.listing_count, 5);
   assert.equal(request.pack_count, 8);
-  assert.deepEqual(
-    request.blockers.map((blocker) => blocker.code),
-    ["LISTING_COUNT_OUTSIDE_PILOT", "PACK_COUNT_OUTSIDE_PILOT"],
-  );
-  assert.deepEqual(
-    request.blockers.map((blocker) => blocker.kind),
-    ["ENGINE_CAPABILITY_GAP", "ENGINE_CAPABILITY_GAP"],
-  );
-  assert.ok(
-    request.blockers.every(
-      (blocker) => blocker.can_data_collection_fix === false,
-    ),
-  );
+  assert.deepEqual(request.blockers, []);
+  assert.deepEqual(buildWalmartStudioWorkItems(request), [
+    { ordinal: 1, listing_count: 1, pack_count: 8 },
+    { ordinal: 2, listing_count: 1, pack_count: 8 },
+    { ordinal: 3, listing_count: 1, pack_count: 8 },
+    { ordinal: 4, listing_count: 1, pack_count: 8 },
+    { ordinal: 5, listing_count: 1, pack_count: 8 },
+  ]);
 });
 
 test("structured Walmart fields must agree with numbers written in the prompt", () => {
@@ -72,7 +68,7 @@ test("structured Walmart fields must agree with numbers written in the prompt", 
   );
 });
 
-test("verified Walmart pilot scope remains accepted and defaults are explicit", () => {
+test("Walmart request defaults remain explicit", () => {
   assert.deepEqual(
     resolveWalmartStudioRequestIntent({
       prompt: "Create Campbell's soup multipacks",

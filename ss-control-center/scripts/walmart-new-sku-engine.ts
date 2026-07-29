@@ -104,7 +104,8 @@ const PILOT_ZIP = "33765";
 const PILOT_MAX_PRICE_AGE_HOURS = 24;
 const PILOT_MAX_CANDIDATES_PER_PLAN = 1;
 const PILOT_DOCTOR_AS_OF_MAX_AGE_MS = 15 * 60_000;
-const PILOT_PACK_COUNTS = new Set([2, 3]);
+const MIN_PACK_COUNT = 1;
+const MAX_PACK_COUNT = 500;
 export const WALMART_NEW_SKU_DOCTOR_DIAGNOSTIC_SCHEMA =
   "walmart-new-sku-doctor-diagnostic/1.0.0";
 const WALMART_DUPLICATE_GUARD_OWNER_DECISION_REF =
@@ -296,9 +297,15 @@ function parseArgs(
   }
   if (
     (command === "doctor" || command === "plan") &&
-    !PILOT_PACK_COUNTS.has(packCount)
+    (
+      !Number.isInteger(packCount) ||
+      packCount < MIN_PACK_COUNT ||
+      packCount > MAX_PACK_COUNT
+    )
   ) {
-    throw new Error("--pack-count must be exactly 2 or 3 for this pilot");
+    throw new Error(
+      `--pack-count must be a whole number from ${MIN_PACK_COUNT} to ${MAX_PACK_COUNT}`,
+    );
   }
   const zip = values.get("zip")?.trim() || PILOT_ZIP;
   if ((command === "doctor" || command === "plan") && zip !== PILOT_ZIP) {
@@ -1406,7 +1413,7 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
           row.fetched_at == null ? null : String(row.fetched_at),
       })),
       asOf: args.asOf.toISOString(),
-      packCount: args.packCount as 2 | 3,
+      packCount: args.packCount,
       limit: 10,
     });
   } catch (error) {
@@ -1541,7 +1548,7 @@ async function runDoctor(args: ParsedArgs): Promise<void> {
         zip: "33765",
         max_price_age_ms: 86_400_000,
         limit: 1,
-        pack_count: args.packCount as 2 | 3,
+        pack_count: args.packCount,
       },
       owner_permit_key_id: ownerPermitTrust.active_key_ids[0]!,
       owner_permit_public_key_spki_sha256:

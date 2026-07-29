@@ -32,6 +32,7 @@ import {
   getWalmartStoreStatus,
 } from "@/lib/walmart";
 import {
+  buildWalmartStudioWorkItems,
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
 
@@ -112,9 +113,9 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
       return NextResponse.json(
         {
           error:
-            "This Walmart request cannot run in the currently verified pilot. " +
+            "The Walmart prompt and structured request fields disagree. " +
             intent.blockers.map((blocker) => blocker.message).join(" "),
-          code: "WALMART_REQUEST_OUTSIDE_VERIFIED_PILOT",
+          code: "WALMART_REQUEST_INPUT_CONFLICT",
           walmart_request: intent,
         },
         { status: 422 },
@@ -192,13 +193,14 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
       );
     }
     const batchRequest = {
-      studio_version: 4,
+      studio_version: 5,
       workflow: "CANONICAL_WALMART_NEW_SKU",
       source: "prompt",
       prompt,
       channel,
       listing_count: intent.listing_count,
       pack_count: intent.pack_count,
+      execution_work_items: buildWalmartStudioWorkItems(intent),
       prompt_intent: {
         listing_count: intent.prompt_listing_count,
         pack_count: intent.prompt_pack_count,

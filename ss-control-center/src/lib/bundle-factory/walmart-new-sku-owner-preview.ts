@@ -34,7 +34,7 @@ export interface WalmartNewSkuOwnerPreviewSource {
   mainImageUrl: string;
   imageUrls: string[];
   packagingArtworkReview: WalmartPackagingArtworkReview;
-  packCounts: Array<2 | 3>;
+  packCounts: number[];
 }
 
 function stableValue(value: unknown): unknown {
@@ -102,9 +102,13 @@ export function buildWalmartNewSkuOwnerPreviewGallery(
   const packCounts = [...new Set(input.packCounts)].sort();
   if (
     packCounts.length === 0 ||
-    packCounts.some((count) => count !== 2 && count !== 3)
+    packCounts.some(
+      (count) => !Number.isInteger(count) || count < 1 || count > 500,
+    )
   ) {
-    throw new Error("preview packCounts must contain only 2 or 3");
+    throw new Error(
+      "preview packCounts must contain whole numbers from 1 to 500",
+    );
   }
   const selectedArtwork = selectCurrentWalmartPackagingArtwork({
     canonicalVariantId: input.canonicalVariantId,

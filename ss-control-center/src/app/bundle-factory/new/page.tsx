@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_RETAILER", label: "Amazon · Retailer Distributor" },
   {
     value: "WALMART",
-    label: "Walmart · canonical new-SKU pilot",
+    label: "Walmart · new SKU",
   },
 ];
 
@@ -935,10 +935,10 @@ export default function StudioStartPage() {
                 Walmart request scope
               </div>
               <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
-                The current verified pilot can prepare 1–2 listings with 2 or
-                3 identical units in each listing. Values written in the
-                prompt are detected automatically and are never silently
-                replaced.
+                Your complete request is preserved. The Walmart branch plans
+                each listing as a separate protected work item, gathers any
+                missing Product Truth data, and never silently changes the
+                requested quantities.
               </p>
 
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -947,7 +947,7 @@ export default function StudioStartPage() {
                   <input
                     type="number"
                     min={1}
-                    max={2}
+                    max={500}
                     value={listingCount}
                     onChange={(e) => {
                       setListingCount(e.target.value);
@@ -966,8 +966,8 @@ export default function StudioStartPage() {
                   Units in each listing
                   <input
                     type="number"
-                    min={2}
-                    max={3}
+                    min={1}
+                    max={500}
                     value={packCount}
                     onChange={(e) => {
                       setPackCount(e.target.value);
@@ -1001,6 +1001,9 @@ export default function StudioStartPage() {
                     {(walmartRequest?.listing_count ?? 2) === 1 ? "" : "s"} ·
                     pack of {walmartRequest?.pack_count ?? 2}
                   </span>
+                  . The engine will process{" "}
+                  {walmartRequest?.listing_count ?? 2} protected work item
+                  {(walmartRequest?.listing_count ?? 2) === 1 ? "" : "s"}.
                 </p>
               )}
             </div>

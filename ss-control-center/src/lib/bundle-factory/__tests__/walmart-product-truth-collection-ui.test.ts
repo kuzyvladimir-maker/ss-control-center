@@ -24,6 +24,10 @@ test("Walmart Studio exposes collection launch, progress, and readiness continua
   assert.match(page, /WALMART_COLLECTION_RECOVERY_KEY/u);
   assert.match(page, /sessionStorage\.setItem/u);
   assert.match(page, /Automatic retry[\s\S]*permanently disabled/u);
+  assert.match(page, /complete request is preserved/u);
+  assert.match(page, /separate protected work item/u);
+  assert.doesNotMatch(page, /current verified pilot can prepare 1–2 listings/u);
+  assert.doesNotMatch(page, /supports only packs of 2 or 3/u);
   assert.doesNotMatch(page, /automatically approve/iu);
 });
 

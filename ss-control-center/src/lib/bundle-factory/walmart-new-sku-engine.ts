@@ -80,7 +80,8 @@ export const WALMART_NEW_SKU_APPLY_RECEIPT_SCHEMA =
 export const WALMART_NEW_SKU_VERIFY_RECEIPT_SCHEMA =
   "walmart-new-sku-verify-receipt/1.2.0" as const;
 export const WALMART_NEW_SKU_PILOT_MAX_APPLY = 2;
-export const WALMART_NEW_SKU_PILOT_PACK_COUNTS = [2, 3] as const;
+export const WALMART_NEW_SKU_MIN_PACK_COUNT = 1;
+export const WALMART_NEW_SKU_MAX_PACK_COUNT = 500;
 export const WALMART_NEW_SKU_DRY_RUN_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_APPROVAL_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_DOCTOR_MAX_AGE_MS = 30 * 60 * 1_000;
@@ -532,7 +533,7 @@ export interface WalmartNewSkuDoctorReceipt {
     zip: "33765";
     max_price_age_ms: 86_400_000;
     limit: 1;
-    pack_count: 2 | 3;
+    pack_count: number;
   };
   owner_permit_key_id: string;
   owner_permit_public_key_spki_sha256: string;
@@ -1316,11 +1317,13 @@ export function buildDeterministicWalmartMultipackContent(input: {
   >;
   packCount: number;
 }): DeterministicWalmartContent {
-  if (!WALMART_NEW_SKU_PILOT_PACK_COUNTS.includes(
-    input.packCount as (typeof WALMART_NEW_SKU_PILOT_PACK_COUNTS)[number],
-  )) {
+  if (
+    !Number.isInteger(input.packCount) ||
+    input.packCount < WALMART_NEW_SKU_MIN_PACK_COUNT ||
+    input.packCount > WALMART_NEW_SKU_MAX_PACK_COUNT
+  ) {
     throw new WalmartNewSkuPlanError([
-      `PILOT_PACK_COUNT_UNSUPPORTED:${input.packCount}`,
+      `PACK_COUNT_INVALID:${input.packCount}`,
     ]);
   }
   if (input.component.qty !== input.packCount) {
@@ -1545,9 +1548,9 @@ export function assertWalmartNewSkuPlanIntegrity(
       ]);
     }
     if (
-      !WALMART_NEW_SKU_PILOT_PACK_COUNTS.includes(
-        candidate.pack_count as (typeof WALMART_NEW_SKU_PILOT_PACK_COUNTS)[number],
-      ) ||
+      !Number.isInteger(candidate.pack_count) ||
+      candidate.pack_count < WALMART_NEW_SKU_MIN_PACK_COUNT ||
+      candidate.pack_count > WALMART_NEW_SKU_MAX_PACK_COUNT ||
       candidate.recipe_input.contractVersion !==
         PRODUCT_TRUTH_READ_CONTRACT_VERSION ||
       component.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
@@ -2694,8 +2697,9 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     receipt.planning_scope?.zip !== "33765" ||
     receipt.planning_scope?.max_price_age_ms !== 86_400_000 ||
     receipt.planning_scope?.limit !== 1 ||
-    (receipt.planning_scope?.pack_count !== 2 &&
-      receipt.planning_scope?.pack_count !== 3) ||
+    !Number.isInteger(receipt.planning_scope?.pack_count) ||
+    receipt.planning_scope.pack_count < WALMART_NEW_SKU_MIN_PACK_COUNT ||
+    receipt.planning_scope.pack_count > WALMART_NEW_SKU_MAX_PACK_COUNT ||
     !receipt.item_spec_version?.trim() ||
     !/^[a-z0-9][a-z0-9._-]{2,127}$/i.test(receipt.owner_permit_key_id ?? "") ||
     ownerTrust.active_key_ids.length !== 1 ||

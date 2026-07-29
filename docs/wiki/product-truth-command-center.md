@@ -759,3 +759,34 @@ direct first-party Walmart offer. `matched_variants=0` означает отде
 demand-expansion campaign. Такой новый donor нельзя незаметно создать тем же
 quote: production campaign registry/runtime всё ещё отсутствует и остаётся
 отдельным blocker, а consumer только показывает честную границу.
+
+### 🔄 Фаза BF-W4 — полный owner request и Pack of 8
+
+- [x] Удалены устаревшие owner-facing лимиты `1–2 listings` и `Pack of 2/3`:
+  Bundle Factory сохраняет точные числа из prompt/structured fields и блокирует
+  только реальное расхождение между ними.
+- [x] Запрос `5 listings × Pack of 8` детерминированно раскладывается на пять
+  независимых one-listing work items. Это orchestration boundary, а не
+  разрешение массового Walmart apply; каждый live POST по-прежнему требует
+  собственные canonical evidence и owner permit.
+- [x] Deterministic Walmart content, commercial discovery, owner preview и
+  exact-pixel compositor принимают Pack of 8. Main image содержит ровно восемь
+  копий exact donor package image после connected-white-background cutout;
+  generative redraw и выдуманный packaging design запрещены.
+- [x] Certification: request/parser, full Walmart new-SKU and Bundle Factory
+  focused suite `108/108`; Product Truth `519/519`; TypeScript, focused ESLint
+  и production build `PASS`. Build сохранил только существующее duplicate-Sharp
+  runtime warning.
+- [x] Production read-only Campbell's proof: `matched_variants=5`,
+  `ready_variants=0`; все пять exact variants имеют единственный gap
+  `FRESH_LOCAL_PRICE` и все `5/5` допустимы для existing one-donor targeted
+  collector. Contract dry proof сохранил `listing_count=5`, `pack_count=8`,
+  создал `5` independent jobs по `3.5` provider units максимум каждый,
+  automatic paid execution `false`, marketplace mutation `false`. Existing
+  owner quote ceiling для такой пятёрки остаётся `20` prepaid provider credits
+  (`2.5` balance reserve + `5 × 3.5`).
+- [ ] Выпустить clean integrated release, обновить production deployment и
+  выполнить no-spend production postcheck.
+
+BF-W4 не меняет live mutation authority: protected execution остаётся
+последовательным, а marketplace publication не следует из размера owner request.

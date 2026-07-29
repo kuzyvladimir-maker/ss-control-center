@@ -404,13 +404,68 @@ test("seller account binding is normalized, store-scoped, and fails closed on cr
   );
 });
 
-test("pilot rejects unsupported large pack waves", () => {
+test("deterministic content supports owner-requested Pack of 8", () => {
+  const output = buildDeterministicWalmartMultipackContent({
+    component: component(8),
+    packCount: 8,
+  });
+  assert.match(output.title, /Pack of 8/);
+  assert.match(output.description, /8 identical retail packages/);
+
   assert.throws(
     () => buildDeterministicWalmartMultipackContent({
-      component: component(15),
-      packCount: 15,
+      component: component(501),
+      packCount: 501,
     }),
-    /PILOT_PACK_COUNT_UNSUPPORTED/,
+    /PACK_COUNT_INVALID/,
+  );
+});
+
+test("five requested Pack-of-8 listings remain five independent one-candidate plans", () => {
+  const plans = Array.from({ length: 5 }, (_, index) => {
+    const donorId = `donor-${index + 1}`;
+    const variantId = `variant-${index + 1}`;
+    const candidateInput = {
+      ...candidate(),
+      donor_product_id: donorId,
+      canonical_variant_id: variantId,
+      content_observation_id: `content-${index + 1}`,
+      price_observation_id: `price-${index + 1}`,
+    };
+    const componentInput = {
+      ...component(8),
+      donor_product_id: donorId,
+      canonical_variant_id: variantId,
+      content_observation_id: `content-${index + 1}`,
+      price_evidence: {
+        ...component(8).price_evidence,
+        observation_id: `price-${index + 1}`,
+      },
+    };
+    return buildWalmartNewSkuPilotPlan({
+      createdAt: new Date("2026-07-18T13:00:00.000Z"),
+      asOf: new Date("2026-07-18T12:00:00.000Z"),
+      storeIndex: 1,
+      sellerId: "fixture-seller-id",
+      doctorBinding: doctorBinding(),
+      zip: "33765",
+      candidates: [{
+        candidate: candidateInput,
+        recipe: {
+          ...recipe(8),
+          components: [componentInput],
+        },
+        packCount: 8,
+      }],
+    });
+  });
+
+  assert.equal(plans.length, 5);
+  assert.ok(plans.every((plan) => plan.candidates.length === 1));
+  assert.ok(plans.every((plan) => plan.candidates[0]?.pack_count === 8));
+  assert.equal(
+    new Set(plans.map((plan) => plan.candidates[0]?.candidate_key)).size,
+    5,
   );
 });
 

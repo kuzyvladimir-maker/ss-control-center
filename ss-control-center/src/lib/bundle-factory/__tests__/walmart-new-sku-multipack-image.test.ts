@@ -113,14 +113,34 @@ test("fills the square canvas without distortion for wide flexible packaging", a
   }
 });
 
-test("rejects unsupported counts and empty sources", async () => {
+test("builds a count-accurate Pack of 8 from the exact source package", async () => {
+  const source = await sourceFixture();
+  const pack8 = await buildDeterministicWalmartMultipackImage({
+    sourceUnitImageBytes: source,
+    packCount: 8,
+  });
+  assert.equal(pack8.represented_unit_count, 8);
+  const foreground = await sharp(pack8.bytes)
+    .trim({ background: "white", threshold: 8 })
+    .metadata();
+  assert.ok(
+    (foreground.width ?? 0) >= 2_050,
+    "Pack of 8 must occupy at least 93% of canvas width",
+  );
+  assert.ok(
+    (foreground.height ?? 0) >= 2_050,
+    "Pack of 8 must occupy at least 93% of canvas height",
+  );
+});
+
+test("rejects invalid counts and empty sources", async () => {
   const source = await sourceFixture();
   await assert.rejects(
     () => buildDeterministicWalmartMultipackImage({
       sourceUnitImageBytes: source,
-      packCount: 4 as 2,
+      packCount: 0,
     }),
-    /supports only Pack of 2 or Pack of 3/,
+    /whole number from 1 to 500/,
   );
   await assert.rejects(
     () => buildDeterministicWalmartMultipackImage({

@@ -119,9 +119,9 @@ export const GET = withErrorHandler(
         data_collection:
           collectionByDonor.get(candidate.donor_product_id) ?? null,
       }));
-      const capabilityGaps = requestIntent.blockers.filter(
-        (blocker) => blocker.kind === "ENGINE_CAPABILITY_GAP",
-      );
+      // Request size is never an owner-facing capability blocker. Protected
+      // one-listing execution is an internal orchestration concern.
+      const capabilityGaps: Array<{ code: string; message: string }> = [];
       const inputConflicts = requestIntent.blockers.filter(
         (blocker) => blocker.kind === "INPUT_CONFLICT",
       );
