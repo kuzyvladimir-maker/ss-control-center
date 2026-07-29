@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "product-truth-standing-wave-production-activation-receipt/1.0.0",
+  "observedAt": "2026-07-29T20:36:43.000Z",
+  "activationPacketSha256": "e15ae772f5eeca7239ab6dcef8d2824a11083c100f4e98315cef7a071cfe1e5d",
+  "predecessorIncidentProofSha256": "817e4f8f3930fcc21668b525eca7fa7c17c1733c22e3492f51b16856357c6fd5",
+  "release": {
+    "releaseId": "product-truth-standing-web-2026-07-29-r3",
+    "commitSha": "699f4353ff8fff3df23d9480c7f0a4d18977b965",
+    "treeSha": "b8f91f629f5311daeac4fa20216fe20a6a0cbed9",
+    "executableTreeSha256": "b010f6e196d0f4496a9c5b44ed5d63bfe5853564b0d783f84562849452c0331e",
+    "cleanCheckout": true
+  },
+  "certification": {
+    "focusedTestsPassed": 6,
+    "productTruthTestsPassed": 594,
+    "productTruthTestsFailed": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "productionBuild": "PASS"
+  },
+  "deployment": {
+    "id": "dpl_98pWm5AUdFokr9wZEb5rdqFp6bsu",
+    "readyState": "READY",
+    "target": "production",
+    "url": "https://ss-control-center-kjy0y04dw-kuzyvladimir-makers-projects.vercel.app",
+    "aliases": [
+      "https://salutemsolutions.info",
+      "https://www.salutemsolutions.info",
+      "https://ss-control-center.vercel.app"
+    ]
+  },
+  "workerProbe": {
+    "endpoint": "/api/external/product-truth/standing-wave/claim",
+    "httpStatus": 200,
+    "claim": null,
+    "activeCommandsBefore": 0,
+    "activeCommandsAfter": 0
+  },
+  "workers": [
+    {
+      "label": "com.salutem.product-truth-worker",
+      "state": "running",
+      "launchdPid": 19154,
+      "workerPid": 19180,
+      "launchdRuns": 7,
+      "lastExitCode": 0,
+      "cwd": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/699f4353f/ss-control-center"
+    },
+    {
+      "label": "com.salutem.product-truth-standing-wave-worker",
+      "state": "running",
+      "launchdPid": 19157,
+      "workerPid": 19181,
+      "launchdRuns": 8,
+      "lastExitCode": 0,
+      "cwd": "/Users/vladimirkuznetsov/Library/Application Support/SSCC Product Truth Worker/releases/699f4353f/ss-control-center"
+    }
+  ],
+  "claims": {
+    "providerCallsDuringActivation": 0,
+    "productTruthBusinessWritesDuringActivation": 0,
+    "marketplaceMutations": 0,
+    "priceOrInventoryChanges": 0,
+    "delistings": 0,
+    "consumerActivations": 0,
+    "procurementActions": 0
+  }
+}

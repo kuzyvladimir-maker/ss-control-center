@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "product-truth-standing-wave-predecessor-incident-proof/1.0.0",
+  "observedAt": "2026-07-29T20:35:07.000Z",
+  "sourceReleaseId": "product-truth-standing-web-2026-07-29-r2",
+  "sourceCommand": {
+    "commandId": "ptswc-46aa48b98bfc910dd36517eee061214b",
+    "runId": "ptsw-web-46aa48b98bfc910dd36517eee061214b-01",
+    "status": "AMBIGUOUS",
+    "outcome": "WORKER_LEASE_EXPIRED_AFTER_BOUNDARY",
+    "errorCode": "STANDING_WAVE_WORKER_LEASE_EXPIRED",
+    "attempts": 1,
+    "executionBoundary": "STANDING_WAVE:d32181b39a4df90c77e1e461342aeedcea1e573cb3475ee16d5e282fa1224296",
+    "executionStartedAt": "2026-07-29T20:13:01.108+00:00",
+    "lastHeartbeatAt": "2026-07-29T20:15:14.167+00:00",
+    "leaseExpiredAt": "2026-07-29T20:30:14.167+00:00",
+    "terminalizedAt": "2026-07-29T20:30:21.825+00:00",
+    "terminalEventSequence": 10,
+    "terminalEventPayloadSha256": "77737db291c4aa87b92b5512b9dca37089faa3161398dac15d1cfb800203b117",
+    "requestArtifactSha256": "d32181b39a4df90c77e1e461342aeedcea1e573cb3475ee16d5e282fa1224296",
+    "resultArtifactId": null
+  },
+  "workspaceEvidence": {
+    "workspaceKey": "ptswc-46aa48b98bfc910dd36517eee061214b",
+    "targetOrdinal": 1,
+    "executionDirectory": "ABSENT",
+    "planSha256": "6dc8b7096c666d108a6b779b4b5a9ea741d09bfcd1c79bb6d6c7d74f40bc5d81",
+    "balanceEvidenceSha256": "0261d9947e54dcd0a9fb7fcd00a4fb96b243ac21325a23b06a52511bca24924c",
+    "authorizationSha256": "52af9d5f5bbb14a13cb7ea52d1880b1391895748c33f1b0703e9e7ae7c0beebe",
+    "sidecarsVerified": true
+  },
+  "meteredEvidence": {
+    "balanceRunId": "ptsw-web-46aa48b98bfc910dd36517eee061214b-01:balance",
+    "provider": "unwrangle",
+    "operation": "target_search",
+    "providerCalls": 1,
+    "actualProviderUnits": 2.5,
+    "budgetId": "mb_99a5a55fd8e9df8247b701ddbf6e6912b4166bdb22af25abc745f29d076f2a71",
+    "receiptId": "mbr_4deafacc45a4dcb66b8b4699eee3245ef2212bd64035e9a2828ea8b4b3bc1231",
+    "receiptStatus": "succeeded",
+    "settlementOutcome": "success",
+    "settledAt": "2026-07-29T20:15:20.892Z",
+    "executionRunProviderBudgets": 0,
+    "executionRunProviderReceipts": 0
+  },
+  "executionRunEffects": {
+    "donorOfferObservations": 0,
+    "productContentObservations": 0,
+    "variantDecisions": 0,
+    "skuCosts": 0,
+    "listingRecipes": 0,
+    "operationalRuns": 0,
+    "operationalItems": 0,
+    "operationalEvents": 0
+  },
+  "conclusion": {
+    "automaticRetryOccurred": false,
+    "productExecutionProvenComplete": false,
+    "safeToReplaySourceCommand": false,
+    "newResumeCommandCreated": false,
+    "marketplaceMutations": 0,
+    "priceOrInventoryChanges": 0,
+    "delistings": 0,
+    "consumerActivations": 0,
+    "procurementActions": 0
+  }
+}
