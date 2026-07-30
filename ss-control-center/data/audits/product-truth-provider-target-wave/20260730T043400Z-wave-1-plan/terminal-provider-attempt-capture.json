@@ -1,0 +1,126 @@
+{
+  "attempts": [
+    {
+      "finishedAt": "2026-07-28T18:53:12.018Z",
+      "itemStatus": "failed",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "planSha256": "bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T175740Z",
+      "stage": "EXECUTION_FAILED",
+      "targetCanonicalVariantIds": []
+    },
+    {
+      "finishedAt": "2026-07-28T18:58:17.276Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1315",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:884643487f06a4e964641e3551d61aafef6558e27dc71756ddb5b5d7bad56598"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T18:59:01.049Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3481",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:5f7018c1aae41349a66c8e96e899a694c8a1748ae3625735ecd4228c8eb83d9d"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T18:59:43.796Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3499",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:77ac684ddb29fe03a00709531d1fe15917ae67ac89f31b20703fe4bc7c64616a"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T19:00:30.135Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-2195",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T19:01:31.159Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T03:50:03.420Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1719",
+      "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "ptca-20260730t034800z-natures-own-brioche",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:9e28289ee973484b436fa93abc8dcd348e135a6e3bfad4c9b39c9d44b42662e4"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:01:14.325Z",
+      "itemStatus": "failed",
+      "listingKey": "walmart:1:FaisalX-380",
+      "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t035200z-natures-own-multigrain",
+      "stage": "EXECUTION_FAILED",
+      "targetCanonicalVariantIds": []
+    },
+    {
+      "finishedAt": "2026-07-30T04:07:46.945Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1716",
+      "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t040600z-natures-own-butterbread",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:202a4f9adfb0257189a99a446008695db79d019b3496c720929e350914e4ff87"
+      ]
+    }
+  ],
+  "capturedAt": "2026-07-30T04:33:23.758Z",
+  "claims": {
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "schemaVersion": "product-truth-provider-attempt-capture/1.0.0"
+}

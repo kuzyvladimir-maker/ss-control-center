@@ -1,0 +1,83 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99495,
+        "evidenceSha256": "28202821adadd26d6436e11d75eb9e127f6bba56514917488e8743a3e01d11ef",
+        "observedAt": "2026-07-30T06:02:41.117Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-30T06:12:52.322Z",
+    "issuedAt": "2026-07-30T06:02:52.322Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-30T06:12:52.322Z",
+      "issuedAt": "2026-07-30T06:02:52.322Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 5,
+          "maxUnits": 5,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 10,
+          "maxUnits": 25,
+          "operations": [
+            "detail",
+            "search"
+          ]
+        }
+      },
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "version": 1
+    },
+    "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+    "runId": "ptca-20260730t055717z-calibrated-r17",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+  "approvalSha256": "ef01fb855f650e1af15433085b604e7ea15d8029c0467ca1c1c9c13952ebab1b",
+  "balanceEvidenceSha256": "28202821adadd26d6436e11d75eb9e127f6bba56514917488e8743a3e01d11ef",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c:pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+  "expiresAt": "2026-07-30T06:12:52.322Z",
+  "issuedAt": "2026-07-30T06:02:52.322Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/plan/plan.sha256",
+    "--manifest",
+    "/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c:pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/plan/plan.sha256' '--manifest' '/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c:pt-standing:d6db5ab64a63cd074f67:28202821adadd26d' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-provider-target-wave/20260730T055717Z-calibrated-r17-plan/execution'",
+  "ownerActionRequired": false,
+  "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+  "policyId": "pt-standing-provider-enrichment-20260730-v2",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

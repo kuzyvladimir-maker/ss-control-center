@@ -25,6 +25,11 @@ import {
   renderProductTruthSearchQueryCalibration,
   type ProductTruthSearchQueryCalibration,
 } from "../product-truth-search-query-calibration";
+import {
+  PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+  renderProductTruthSourceDetailAdmission,
+  type ProductTruthSourceDetailAdmission,
+} from "../product-truth-source-detail-admission";
 
 const FINGERPRINT = "f".repeat(64);
 const MANIFEST_SHA = "e".repeat(64);
@@ -465,6 +470,131 @@ function calibration(
   };
 }
 
+function sourceDetailAdmission(
+  componentScope: ProductTruthComponentAcquisitionScope,
+  componentScopeSha256: string,
+  searchQueryCalibration: ProductTruthSearchQueryCalibration,
+  searchQueryCalibrationSha256: string,
+  excludedTargetIds: readonly string[] = [],
+): ProductTruthSourceDetailAdmission {
+  const excluded = new Set(excludedTargetIds);
+  const providerTargets = componentScope.targets.filter(
+    (item) =>
+      item.acquisitionLane === "PROVIDER_IDENTITY_ACQUISITION"
+      && searchQueryCalibration.admittedProviderTargets.some(
+        (target) =>
+          target.canonicalVariantId === item.canonicalVariantId
+          && target.canonicalIdentityHash === item.canonicalIdentityHash,
+      )
+      && !excluded.has(item.canonicalVariantId),
+  );
+  return {
+    schemaVersion: PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+    generatedAt: "2026-07-30T04:59:00.000Z",
+    databaseTargetFingerprint: FINGERPRINT,
+    source: {
+      componentAcquisitionScope: {
+        schemaVersion: PRODUCT_TRUTH_COMPONENT_ACQUISITION_SCOPE_VERSION,
+        sha256: componentScopeSha256,
+        generatedAt: componentScope.generatedAt,
+      },
+      bridgeSnapshot: {
+        schemaVersion: "product-truth-legacy-bridge-snapshot/1.10.0",
+        sha256: componentScope.source.bridgeSnapshot.sha256,
+        capturedAt: componentScope.source.bridgeSnapshot.capturedAt,
+      },
+      searchQueryCalibration: {
+        schemaVersion: PRODUCT_TRUTH_SEARCH_QUERY_CALIBRATION_VERSION,
+        sha256: searchQueryCalibrationSha256,
+        generatedAt: searchQueryCalibration.generatedAt,
+      },
+    },
+    admissionContract: {
+      schemaVersion:
+        "retailer-source-detail-escalation-admission/1.1.0",
+      purpose:
+        "BOUND_PAID_DETAIL_TO_FREE_SEARCH_EVIDENCE_WITH_EXACT_SIZE_PACK_AND_VARIANT",
+    },
+    selectionPolicy: {
+      retailers: ["walmart", "target"],
+      firstPartyDirectOnly: true,
+      exactBaseUnitSizeBeforePaidDetail: true,
+      exactOuterPackOneBeforePaidDetail: true,
+      candidateRule:
+        "EXACTLY_ONE_RETAILER_ITEM_PER_TARGET_AND_ONE_TARGET_PER_RETAILER_ITEM",
+      canonicalBindingConflict: "EXCLUDE",
+      ranking: [
+        "IMMEDIATE_CLOSABLE_LISTINGS_DESC",
+        "KNOWN_GMV_30D_DESC",
+        "DEPENDENT_LISTINGS_DESC",
+        "KNOWN_ORDERS_30D_DESC",
+        "KNOWN_UNITS_30D_DESC",
+        "ACQUISITION_PRIORITY_ASC",
+        "CANONICAL_VARIANT_ID_ASC",
+      ],
+    },
+    counts: {
+      providerTargets: componentScope.targets.length,
+      calibrationAdmittedTargets:
+        searchQueryCalibration.admittedProviderTargets.length,
+      evaluatedSearchObservations: providerTargets.length,
+      admittedSearchObservations: providerTargets.length,
+      targetsWithNoCandidate: excluded.size,
+      targetsWithMultipleCandidateItems: 0,
+      crossTargetItemConflicts: 0,
+      admittedTargets: providerTargets.length,
+      admittedDependentListings: new Set(
+        providerTargets.flatMap((target) =>
+          target.dependencies.map((dependency) => dependency.listingKey)),
+      ).size,
+      admittedImmediateClosures: providerTargets.reduce(
+        (sum, target) =>
+          sum + target.impact.immediateClosableListings,
+        0,
+      ),
+    },
+    exclusionCounts: [],
+    targets: providerTargets.map((target, ordinal) => {
+      const retailerProductId = String(1000 + ordinal);
+      return {
+        ordinal,
+        acquisitionPriority: target.acquisitionPriority,
+        canonicalVariantId: target.canonicalVariantId,
+        canonicalIdentityHash: target.canonicalIdentityHash,
+        targetIdentity: target.targetIdentity,
+        impact: target.impact,
+        candidate: {
+          retailer: "target",
+          retailerProductId,
+          productUrl:
+            `https://www.target.com/p/product/-/A-${retailerProductId}`,
+          donorProductIds: [`donor-${ordinal}`],
+          offerIds: [`offer-${ordinal}`],
+          observedTitles: [
+            [
+              target.targetIdentity.brand,
+              target.targetIdentity.productLine,
+              target.targetIdentity.flavor,
+              target.targetIdentity.size,
+            ].filter(Boolean).join(" "),
+          ],
+          admissionReasons: ["MISSING_FORM_ONLY"],
+        },
+      };
+    }),
+    claims: {
+      readOnlyInputs: true,
+      databaseWrites: 0,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerFetches: 0,
+      marketplaceMutations: 0,
+      authorizesExecution: false,
+      predictsProviderResults: false,
+    },
+  };
+}
+
 function compile() {
   const componentScope = scope();
   const componentScopeJson =
@@ -476,6 +606,16 @@ function compile() {
   );
   const searchQueryCalibrationJson =
     renderProductTruthSearchQueryCalibration(searchQueryCalibration);
+  const searchQueryCalibrationSha256 =
+    sha256(searchQueryCalibrationJson);
+  const admission = sourceDetailAdmission(
+    componentScope,
+    componentScopeSha256,
+    searchQueryCalibration,
+    searchQueryCalibrationSha256,
+  );
+  const admissionJson =
+    renderProductTruthSourceDetailAdmission(admission);
   const attemptCapture = capture();
   const attemptCaptureJson =
     renderProductTruthProviderAttemptCapture(attemptCapture);
@@ -490,7 +630,10 @@ function compile() {
     componentScopeSha256,
     searchQueryCalibration,
     searchQueryCalibrationJson,
-    searchQueryCalibrationSha256: sha256(searchQueryCalibrationJson),
+    searchQueryCalibrationSha256,
+    sourceDetailAdmission: admission,
+    sourceDetailAdmissionJson: admissionJson,
+    sourceDetailAdmissionSha256: sha256(admissionJson),
     attemptCapture,
     attemptCaptureJson,
     attemptCaptureSha256: sha256(attemptCaptureJson),
@@ -588,6 +731,16 @@ test("only exact targets admitted by the bound calibration can enter a wave", ()
     searchQueryCalibration.admittedProviderTargets.length;
   const searchQueryCalibrationJson =
     renderProductTruthSearchQueryCalibration(searchQueryCalibration);
+  const searchQueryCalibrationSha256 =
+    sha256(searchQueryCalibrationJson);
+  const admission = sourceDetailAdmission(
+    componentScope,
+    componentScopeSha256,
+    searchQueryCalibration,
+    searchQueryCalibrationSha256,
+  );
+  const admissionJson =
+    renderProductTruthSourceDetailAdmission(admission);
   const attemptCapture = capture();
   const attemptCaptureJson =
     renderProductTruthProviderAttemptCapture(attemptCapture);
@@ -602,7 +755,10 @@ test("only exact targets admitted by the bound calibration can enter a wave", ()
     componentScopeSha256,
     searchQueryCalibration,
     searchQueryCalibrationJson,
-    searchQueryCalibrationSha256: sha256(searchQueryCalibrationJson),
+    searchQueryCalibrationSha256,
+    sourceDetailAdmission: admission,
+    sourceDetailAdmissionJson: admissionJson,
+    sourceDetailAdmissionSha256: sha256(admissionJson),
     attemptCapture,
     attemptCaptureJson,
     attemptCaptureSha256: sha256(attemptCaptureJson),
@@ -615,6 +771,65 @@ test("only exact targets admitted by the bound calibration can enter a wave", ()
   assert.equal(wave.counts.providerTargets, 5);
   assert.equal(wave.counts.calibrationAdmittedProviderTargets, 4);
   assert.equal(wave.counts.calibrationExcludedProviderTargets, 1);
+});
+
+test("bound source-detail admission excludes calibrated targets before wave selection", () => {
+  const componentScope = scope();
+  const componentScopeJson =
+    renderProductTruthComponentAcquisitionScope(componentScope);
+  const componentScopeSha256 = sha256(componentScopeJson);
+  const searchQueryCalibration = calibration(
+    componentScope,
+    componentScopeSha256,
+  );
+  const searchQueryCalibrationJson =
+    renderProductTruthSearchQueryCalibration(searchQueryCalibration);
+  const searchQueryCalibrationSha256 =
+    sha256(searchQueryCalibrationJson);
+  const admission = sourceDetailAdmission(
+    componentScope,
+    componentScopeSha256,
+    searchQueryCalibration,
+    searchQueryCalibrationSha256,
+    [variant("e")],
+  );
+  const admissionJson =
+    renderProductTruthSourceDetailAdmission(admission);
+  const attemptCapture = capture();
+  const attemptCaptureJson =
+    renderProductTruthProviderAttemptCapture(attemptCapture);
+  const wave = compileProductTruthProviderTargetWave({
+    waveId: "ptcw-20260730t050000z-admitted",
+    generatedAt: GENERATED_AT,
+    expiresAt: EXPIRES_AT,
+    databaseTargetFingerprint: FINGERPRINT,
+    authoritativeManifestSha256: MANIFEST_SHA,
+    componentScope,
+    componentScopeJson,
+    componentScopeSha256,
+    searchQueryCalibration,
+    searchQueryCalibrationJson,
+    searchQueryCalibrationSha256,
+    sourceDetailAdmission: admission,
+    sourceDetailAdmissionJson: admissionJson,
+    sourceDetailAdmissionSha256: sha256(admissionJson),
+    attemptCapture,
+    attemptCaptureJson,
+    attemptCaptureSha256: sha256(attemptCaptureJson),
+    maximumTargets: 2,
+  });
+
+  assert.deepEqual(
+    wave.targets.map((item) => item.canonicalVariantId),
+    [variant("b")],
+  );
+  assert.equal(wave.counts.calibrationAdmittedProviderTargets, 5);
+  assert.equal(wave.counts.sourceDetailAdmittedProviderTargets, 4);
+  assert.equal(wave.counts.sourceDetailExcludedCalibratedTargets, 1);
+  assert.equal(
+    wave.source.sourceDetailAdmission.sha256,
+    sha256(admissionJson),
+  );
 });
 
 test("wave and request bytes are deterministic and fail closed on source drift", () => {
@@ -635,6 +850,16 @@ test("wave and request bytes are deterministic and fail closed on source drift",
   );
   const searchQueryCalibrationJson =
     renderProductTruthSearchQueryCalibration(searchQueryCalibration);
+  const searchQueryCalibrationSha256 =
+    sha256(searchQueryCalibrationJson);
+  const admission = sourceDetailAdmission(
+    componentScope,
+    componentScopeSha256,
+    searchQueryCalibration,
+    searchQueryCalibrationSha256,
+  );
+  const admissionJson =
+    renderProductTruthSourceDetailAdmission(admission);
   const attemptCapture = capture();
   const attemptCaptureJson =
     renderProductTruthProviderAttemptCapture(attemptCapture);
@@ -650,7 +875,10 @@ test("wave and request bytes are deterministic and fail closed on source drift",
       componentScopeSha256,
       searchQueryCalibration,
       searchQueryCalibrationJson,
-      searchQueryCalibrationSha256: sha256(searchQueryCalibrationJson),
+      searchQueryCalibrationSha256,
+      sourceDetailAdmission: admission,
+      sourceDetailAdmissionJson: admissionJson,
+      sourceDetailAdmissionSha256: sha256(admissionJson),
       attemptCapture,
       attemptCaptureJson,
       attemptCaptureSha256: "0".repeat(64),
@@ -668,6 +896,15 @@ test("wave and request bytes are deterministic and fail closed on source drift",
   );
   const mismatchedCalibrationJson =
     renderProductTruthSearchQueryCalibration(mismatchedCalibration);
+  const mismatchedCalibrationSha256 = sha256(mismatchedCalibrationJson);
+  const mismatchedAdmission = sourceDetailAdmission(
+    componentScope,
+    componentScopeSha256,
+    mismatchedCalibration,
+    mismatchedCalibrationSha256,
+  );
+  const mismatchedAdmissionJson =
+    renderProductTruthSourceDetailAdmission(mismatchedAdmission);
   assert.throws(
     () => compileProductTruthProviderTargetWave({
       waveId: "ptcw-20260730t050000z",
@@ -680,7 +917,10 @@ test("wave and request bytes are deterministic and fail closed on source drift",
       componentScopeSha256,
       searchQueryCalibration: mismatchedCalibration,
       searchQueryCalibrationJson: mismatchedCalibrationJson,
-      searchQueryCalibrationSha256: sha256(mismatchedCalibrationJson),
+      searchQueryCalibrationSha256: mismatchedCalibrationSha256,
+      sourceDetailAdmission: mismatchedAdmission,
+      sourceDetailAdmissionJson: mismatchedAdmissionJson,
+      sourceDetailAdmissionSha256: sha256(mismatchedAdmissionJson),
       attemptCapture,
       attemptCaptureJson,
       attemptCaptureSha256: sha256(attemptCaptureJson),

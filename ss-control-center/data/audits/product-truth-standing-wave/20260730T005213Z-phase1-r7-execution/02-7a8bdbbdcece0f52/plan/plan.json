@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-30T00:56:57.790Z",
+  "engineReleaseSha256": "35722246178b923c55ee5ba3cdddeef3db4785423dea05ff2fa8eb698a32f429",
+  "expiresAt": "2026-07-30T02:56:57.369Z",
+  "manifest": {
+    "asOf": "2026-07-30T00:56:57.790Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "145d66bf15c6378d37385c866588b6f58c1162a8f366e793b291968f5ec858d7"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptsw-20260730t005213z-02",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "02188584fbb429b236b05cb8a1934a88105c4d9a13b447fd774be3666dfa4af3",
+  "targets": [
+    {
+      "canonicalIdentityHash": "4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"rosarita\",\"productLine\":\"beans refried vegetarian\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":453.59237,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "60eb7ea2dde5bec736d9c9bbb0952392fccad24061cf2774fe7e11d43d62cb84",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb\",\n  \"donorProductId\": \"3163ae1e-5ee7-4b40-a695-4fe3b021bf81\",\n  \"donorTitle\": \"Rosarita Vegetarian Refried Beans - 16oz\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"34fba7df98cd83955633d8207c90010c3a42b3e835b09b4695ed82694d1e251e\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"a354f9e8c980ef9b2cad71fe9c662390e621b5c4514d845a5051e424a271f900\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"22036ec7562db4f7b2f1b2f4134ac81d9893f646e320146516b1d4e8c40bd93e\",\n    \"donorProductSha256\": \"7946265f8aec4c51a372a7b1c46275da9e2e1eb107eaab965e5a8e205670ae84\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Rosarita\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"vegetarian refried beans\",\n    \"size\": \"16 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:10313262",
+      "donorProductId": "3163ae1e-5ee7-4b40-a695-4fe3b021bf81",
+      "donorSnapshotSha256": "145d66bf15c6378d37385c866588b6f58c1162a8f366e793b291968f5ec858d7",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "3163ae1e-5ee7-4b40-a695-4fe3b021bf81",
+        "listingKey": "walmart:1:RizwanX-3087",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-4dd1b1db0f05b6e19e811b53\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:38.145Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:38.145Z\",\n  \"evidenceHash\": \"161aeaea8a0c80a9cf53eb37ef305fe0623d558dc47c0596299b40ec0c9593a5\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"950c6c985f57032d4e427b017666541e29a921892c7a1c1240dfeb3f07815522\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"3163ae1e-5ee7-4b40-a695-4fe3b021bf81\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"vegetarian refried beans\\\",\\n      \\\"quantity\\\": 8,\\n      \\\"size\\\": \\\"16 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:225dfd25d2c1c650861ace4ed823a9f91cedd06eb85538208f03c2ba8ddf5b4a\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:38.145Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3087\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"fd2589f0844a5c925485f6de8ee276ea696d8eae458405587bb4599f4bab2749\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"3a599bb48ba3bfce90ed0554f5c71608a3a3f33dc7c3e9d2b9cd1118a6ca7e7a\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:24f047849ed3cd1b762bd7d88b32432c7a80bfaaf3751ed5ea3e6654a76d5d2a\",\n  \"listingKey\": \"walmart:1:RizwanX-3087\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"fd2589f0844a5c925485f6de8ee276ea696d8eae458405587bb4599f4bab2749\",\n  \"recipeKey\": \"24f047849ed3cd1b762bd7d88b32432c7a80bfaaf3751ed5ea3e6654a76d5d2a\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-4dd1b1db0f05b6e19e811b53\",\n  \"sourceArtifactSha256\": \"3a599bb48ba3bfce90ed0554f5c71608a3a3f33dc7c3e9d2b9cd1118a6ca7e7a\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3087\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3087\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"9f9d8d38a81718b10398f77029ce7d4fc533cedb12b202b1134c4e8a956de6d8\",\n  \"createdAt\": \"2026-07-29T11:24:38.145Z\",\n  \"donorProductId\": \"3163ae1e-5ee7-4b40-a695-4fe3b021bf81\",\n  \"evidenceHash\": \"950c6c985f57032d4e427b017666541e29a921892c7a1c1240dfeb3f07815522\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"3163ae1e-5ee7-4b40-a695-4fe3b021bf81\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3087\\\",\\n  \\\"product\\\": \\\"vegetarian refried beans\\\",\\n  \\\"quantity\\\": 8,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"16 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"34fba7df98cd83955633d8207c90010c3a42b3e835b09b4695ed82694d1e251e\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"1a940425528d54e025c0531589e8e6ec3e444b109b739e7ee2628c4d39311754\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"a354f9e8c980ef9b2cad71fe9c662390e621b5c4514d845a5051e424a271f900\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"22036ec7562db4f7b2f1b2f4134ac81d9893f646e320146516b1d4e8c40bd93e\\\",\\n      \\\"donorProductSha256\\\": \\\"7946265f8aec4c51a372a7b1c46275da9e2e1eb107eaab965e5a8e205670ae84\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"0f6952b019c7605ad116642f6ffd856a017cfea5fda1f447eed9a2b930aa37a2\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"4ef807c7d76669f7faf4b53221e1d7cabbc3feef7e09f4770b685d7e60bd2ba3\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:225dfd25d2c1c650861ace4ed823a9f91cedd06eb85538208f03c2ba8ddf5b4a\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:9f9d8d38a81718b10398f77029ce7d4fc533cedb12b202b1134c4e8a956de6d8\",\n  \"listingRecipeId\": \"ptr:24f047849ed3cd1b762bd7d88b32432c7a80bfaaf3751ed5ea3e6654a76d5d2a\",\n  \"product\": \"vegetarian refried beans\",\n  \"quantity\": 8,\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb\",\n  \"variantDecisionId\": \"dpvd:225dfd25d2c1c650861ace4ed823a9f91cedd06eb85538208f03c2ba8ddf5b4a\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "bb943b2fa6dc50ae16de33425144ccb70a3bc9d2c37aab43ac36affe2755dcef",
+        "sku": "RizwanX-3087",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:225dfd25d2c1c650861ace4ed823a9f91cedd06eb85538208f03c2ba8ddf5b4a"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10313262",
+      "ordinal": 0,
+      "query": "Rosarita Vegetarian Refried Beans - 16oz",
+      "retailer": "walmart",
+      "retailerProductId": "10313262",
+      "variantDecisionId": "dpvd:225dfd25d2c1c650861ace4ed823a9f91cedd06eb85538208f03c2ba8ddf5b4a",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

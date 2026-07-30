@@ -1,0 +1,80 @@
+{
+  "createdAt": "2026-07-30T01:35:25.306Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"muellers\",\"productLine\":\"corkscrews\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":453.59237,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": "1e17d3d900a4259e51b8024a014641440a4314ac05481faed56fbfdcb0a83fe2",
+    "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715\",\n  \"donorProductId\": \"e59fdb3b-48f0-4421-9412-17b438598f51\",\n  \"donorTitle\": \"Mueller's Corkscrews, 16 oz\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"af3b5b5ff6a9a39453a55035d57d5defe999a9103203774de7dec8d268ffcf74\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"4485600b571121ea67badb25e2779c6620f970cf2e470c0b7a0560a3deaaf43c\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"c2588a895673c0b6cb0f0fdc559994cdb8968756f3aa846b4a31166e7b6dfb77\",\n    \"donorProductSha256\": \"ed32a0c0db1a127ae793f212749d7a42612b230daaf8ab792f9df2cb352bb1f7\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Mueller'S\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"corkscrews\",\n    \"size\": \"16 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+    "decisionStatus": "exact_confirmed",
+    "donorIdentityStatus": "exact_confirmed",
+    "donorOfferId": "do:walmart:206549025",
+    "donorProductId": "e59fdb3b-48f0-4421-9412-17b438598f51",
+    "identityDerivationVersion": null,
+    "identityMode": "EXISTING_EXACT",
+    "isFirstParty": true,
+    "legacySnapshot": null,
+    "listingBinding": {
+      "canonicalVariantId": "cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715",
+      "channel": "walmart",
+      "componentIndex": 0,
+      "donorProductId": "e59fdb3b-48f0-4421-9412-17b438598f51",
+      "listingKey": "walmart:1:RizwanX-2433",
+      "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-a891ea34a2314827cc164407\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:55.048Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:55.048Z\",\n  \"evidenceHash\": \"557bf18636ba856d7281851f2f825c083bfa35b58111a4f1929c2bf94fdf9c8a\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"93b8b2734cf65834905b1d0eeb0786b1ec29968262fd32665610a85c436ba729\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"e59fdb3b-48f0-4421-9412-17b438598f51\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"corkscrews\\\",\\n      \\\"quantity\\\": 8,\\n      \\\"size\\\": \\\"16 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:02e0da7608447f62d07250df846466cb7b32d2118359e673f7f030def825f8d4\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:55.048Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-2433\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"56db190c9384cefeaf7f24bbb1fa9212b3e9d0799601fb5cd54595aa39bf73aa\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"11417bcc6a4ab29bd6b1603074b758eea9c50071e76f2ed2e3c068b9acb242b8\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:83d5dd771522fbd845d91cdbaf847edf071b97f72a8afeeb8881884d3fe7c907\",\n  \"listingKey\": \"walmart:1:RizwanX-2433\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"56db190c9384cefeaf7f24bbb1fa9212b3e9d0799601fb5cd54595aa39bf73aa\",\n  \"recipeKey\": \"83d5dd771522fbd845d91cdbaf847edf071b97f72a8afeeb8881884d3fe7c907\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-a891ea34a2314827cc164407\",\n  \"sourceArtifactSha256\": \"11417bcc6a4ab29bd6b1603074b758eea9c50071e76f2ed2e3c068b9acb242b8\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+      "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-2433\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-2433\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+      "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"b84ce15d9b980ed81a6a76ed81d0958641d065e58d90b710b41ceb0e32937505\",\n  \"createdAt\": \"2026-07-29T11:24:55.048Z\",\n  \"donorProductId\": \"e59fdb3b-48f0-4421-9412-17b438598f51\",\n  \"evidenceHash\": \"93b8b2734cf65834905b1d0eeb0786b1ec29968262fd32665610a85c436ba729\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"e59fdb3b-48f0-4421-9412-17b438598f51\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-2433\\\",\\n  \\\"product\\\": \\\"corkscrews\\\",\\n  \\\"quantity\\\": 8,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"16 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"af3b5b5ff6a9a39453a55035d57d5defe999a9103203774de7dec8d268ffcf74\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"3a8f37a9a921e604f6adc5dda1c3d47087cbb3067263a94d15a49aead3b0a56d\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"4485600b571121ea67badb25e2779c6620f970cf2e470c0b7a0560a3deaaf43c\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"c2588a895673c0b6cb0f0fdc559994cdb8968756f3aa846b4a31166e7b6dfb77\\\",\\n      \\\"donorProductSha256\\\": \\\"ed32a0c0db1a127ae793f212749d7a42612b230daaf8ab792f9df2cb352bb1f7\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"01a63dcea523dba14c5afe54c3ee3ae6d521da193bdbf1dc8d919342ade8c712\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"4f8eb8ea970fe393d8c9c7c90337a3461ce78ab023faa1c6bde07d598262faa8\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:02e0da7608447f62d07250df846466cb7b32d2118359e673f7f030def825f8d4\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:b84ce15d9b980ed81a6a76ed81d0958641d065e58d90b710b41ceb0e32937505\",\n  \"listingRecipeId\": \"ptr:83d5dd771522fbd845d91cdbaf847edf071b97f72a8afeeb8881884d3fe7c907\",\n  \"product\": \"corkscrews\",\n  \"quantity\": 8,\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:d3ddea588123a05210857314ba24b5eef64ee00105a6eba7109a3ad44adb7715\",\n  \"variantDecisionId\": \"dpvd:02e0da7608447f62d07250df846466cb7b32d2118359e673f7f030def825f8d4\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+      "sha256": "199d874c4ddcb5e83a77193c812435ea00d732c596eb9c06dad9ebb903b4c56d",
+      "sku": "RizwanX-2433",
+      "storeIndex": 1,
+      "variantDecisionId": "dpvd:02e0da7608447f62d07250df846466cb7b32d2118359e673f7f030def825f8d4"
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/206549025",
+    "retailer": "walmart",
+    "retailerProductId": "206549025",
+    "variantDecisionId": "dpvd:02e0da7608447f62d07250df846466cb7b32d2118359e673f7f030def825f8d4",
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "774f77dcff8b13be18906caa18fef2dabfda1cf36636810fe68c17042ddb8e6e",
+  "engineReleaseSha256": "911063c0a3099000ec51fbd7f5c6a3bcb6fa3e5e9d541492a04c415d7fbfe5ba",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T03:35:24.921Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Mueller's Corkscrews, 16 oz",
+  "runId": "ptsw-20260730t012519z-02",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.6.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

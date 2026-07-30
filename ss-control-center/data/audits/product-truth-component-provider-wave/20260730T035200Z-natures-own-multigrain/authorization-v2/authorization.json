@@ -1,0 +1,83 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99535,
+        "evidenceSha256": "600e1e7ffca1aca72210dd549bf0a1efded745a2bcc22b7bfd0bef9fe81de6a6",
+        "observedAt": "2026-07-30T03:59:34.073Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-30T04:10:02.739Z",
+    "issuedAt": "2026-07-30T04:00:02.739Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-30T04:10:02.739Z",
+      "issuedAt": "2026-07-30T04:00:02.739Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 2,
+          "maxUnits": 5,
+          "operations": [
+            "detail",
+            "search"
+          ]
+        }
+      },
+      "runId": "ptca-20260730t035200z-natures-own-multigrain",
+      "version": 1
+    },
+    "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+    "runId": "ptca-20260730t035200z-natures-own-multigrain",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+  "approvalSha256": "e9a733b28986da2a1dd7b9e3b2a3a3314ae6471a3fc9207ad37821e23ba6b160",
+  "balanceEvidenceSha256": "600e1e7ffca1aca72210dd549bf0a1efded745a2bcc22b7bfd0bef9fe81de6a6",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef:pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+  "expiresAt": "2026-07-30T04:10:02.739Z",
+  "issuedAt": "2026-07-30T04:00:02.739Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/plan/plan.sha256",
+    "--manifest",
+    "/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/authorization-v2/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef:pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/execution-v2"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/plan/plan.sha256' '--manifest' '/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/authorization-v2/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef:pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T035200Z-natures-own-multigrain/execution-v2'",
+  "ownerActionRequired": false,
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "policyId": "pt-standing-provider-enrichment-20260730-v2",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

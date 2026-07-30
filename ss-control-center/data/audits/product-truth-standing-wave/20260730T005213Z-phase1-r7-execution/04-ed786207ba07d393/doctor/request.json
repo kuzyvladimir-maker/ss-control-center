@@ -1,0 +1,80 @@
+{
+  "createdAt": "2026-07-30T01:03:41.342Z",
+  "donorSnapshot": {
+    "canonicalIdentityHash": "0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b",
+    "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"vigo\",\"productLine\":\"allergens canned contained hearts imported not palm whole\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":396.89332375,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+    "canonicalVariantId": "cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b",
+    "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+    "decisionEvidenceHash": "be40c33f5ae99ccbc63ad45b85c3804bb0ff0c57b1ac6c725993b71e09f6ce3a",
+    "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b\",\n  \"donorProductId\": \"2af3796d-2333-40e6-9923-3aa3604ec36e\",\n  \"donorTitle\": \"Vigo Imported Canned Whole Hearts of Palm, 14 oz, Allergens Not Contained\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"fc9545e6a29d76836947e5fd4ee50fdf28742845ac0e88fdcc7db5439fc60f68\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"71a377deca87754acf3e60e52ffd4064aff8dd2b61871320c0e7786837549552\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"075646c629d221686e6993d9bafad6b4ce15fcebe179fdf9dc58a6216b2911b3\",\n    \"donorProductSha256\": \"b2619912f57f63e5a240df2fcba95bd4d28012f68226639f5bc3492769c9bd06\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Vigo\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"imported canned whole hearts palm allergens not contained\",\n    \"size\": \"14 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+    "decisionStatus": "exact_confirmed",
+    "donorIdentityStatus": "exact_confirmed",
+    "donorOfferId": "do:walmart:10450077",
+    "donorProductId": "2af3796d-2333-40e6-9923-3aa3604ec36e",
+    "identityDerivationVersion": null,
+    "identityMode": "EXISTING_EXACT",
+    "isFirstParty": true,
+    "legacySnapshot": null,
+    "listingBinding": {
+      "canonicalVariantId": "cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b",
+      "channel": "walmart",
+      "componentIndex": 0,
+      "donorProductId": "2af3796d-2333-40e6-9923-3aa3604ec36e",
+      "listingKey": "walmart:1:RizwanX-3059",
+      "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-3394b60aae0557ff4e974fec\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:37.403Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:37.403Z\",\n  \"evidenceHash\": \"599801214bb2d32655bf5f9f6dbdf739e260757f9e410d564f2ba26088c8fc0d\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"fc38aa4c0271d4afc9bd4481e34a60d121a306473e3c54f64cf8c62f3d235d88\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"2af3796d-2333-40e6-9923-3aa3604ec36e\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"imported canned whole hearts palm allergens not contained\\\",\\n      \\\"quantity\\\": 4,\\n      \\\"size\\\": \\\"14 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:1af5d3451ad4f2c16740db94c54109c9494d00d204d85b9c02daf9a92da1a53f\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:37.403Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3059\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"6aee101b77226b0fbe39dd946f993db2137effe04a8671deba2fd7f36f6b53a1\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"0874bde8c2d9e8908b43a51289d7246429299b23f8f9a24272dde46f85a1907a\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:d15d1cb1cc8735791cf69c8d59379e8a8b17991e97ef936c3bbf68c5bf4c39a2\",\n  \"listingKey\": \"walmart:1:RizwanX-3059\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"6aee101b77226b0fbe39dd946f993db2137effe04a8671deba2fd7f36f6b53a1\",\n  \"recipeKey\": \"d15d1cb1cc8735791cf69c8d59379e8a8b17991e97ef936c3bbf68c5bf4c39a2\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-3394b60aae0557ff4e974fec\",\n  \"sourceArtifactSha256\": \"0874bde8c2d9e8908b43a51289d7246429299b23f8f9a24272dde46f85a1907a\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+      "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3059\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3059\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+      "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"5c218d609524f347950b5945afe4c6c916da795bfef3f7a2b7312de6e87c3a0e\",\n  \"createdAt\": \"2026-07-29T11:24:37.403Z\",\n  \"donorProductId\": \"2af3796d-2333-40e6-9923-3aa3604ec36e\",\n  \"evidenceHash\": \"fc38aa4c0271d4afc9bd4481e34a60d121a306473e3c54f64cf8c62f3d235d88\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"2af3796d-2333-40e6-9923-3aa3604ec36e\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3059\\\",\\n  \\\"product\\\": \\\"imported canned whole hearts palm allergens not contained\\\",\\n  \\\"quantity\\\": 4,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"14 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"fc9545e6a29d76836947e5fd4ee50fdf28742845ac0e88fdcc7db5439fc60f68\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"5e19e2225a6a98abfd47802dfe767b8d2384eb801e3fd4c0de1994f768d4fa28\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"71a377deca87754acf3e60e52ffd4064aff8dd2b61871320c0e7786837549552\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"075646c629d221686e6993d9bafad6b4ce15fcebe179fdf9dc58a6216b2911b3\\\",\\n      \\\"donorProductSha256\\\": \\\"b2619912f57f63e5a240df2fcba95bd4d28012f68226639f5bc3492769c9bd06\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"f7802c3c00acdb45f91c9ec0b990e9d6a625364cdf27f879d4b4af18704c9c69\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"d6e245cd6ffdb38f7fb8c00ce8f68e9aeade23179663cc2acba321ae2f50075f\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:1af5d3451ad4f2c16740db94c54109c9494d00d204d85b9c02daf9a92da1a53f\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:5c218d609524f347950b5945afe4c6c916da795bfef3f7a2b7312de6e87c3a0e\",\n  \"listingRecipeId\": \"ptr:d15d1cb1cc8735791cf69c8d59379e8a8b17991e97ef936c3bbf68c5bf4c39a2\",\n  \"product\": \"imported canned whole hearts palm allergens not contained\",\n  \"quantity\": 4,\n  \"size\": \"14 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:0b877b7a61589b12f79c8075257f1be8b3b27907ef9d009f4c644fa65dc5e28b\",\n  \"variantDecisionId\": \"dpvd:1af5d3451ad4f2c16740db94c54109c9494d00d204d85b9c02daf9a92da1a53f\"\n}\n",
+      "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+      "sha256": "03f98597f815828e9c535ce85ec3560ff7a10e6825c49b148f2fb54c18d26a48",
+      "sku": "RizwanX-3059",
+      "storeIndex": 1,
+      "variantDecisionId": "dpvd:1af5d3451ad4f2c16740db94c54109c9494d00d204d85b9c02daf9a92da1a53f"
+    },
+    "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "matcherVersion": "canonical-product-match/1.2.1",
+    "normalizedProductUrl": "https://www.walmart.com/ip/10450077",
+    "retailer": "walmart",
+    "retailerProductId": "10450077",
+    "variantDecisionId": "dpvd:1af5d3451ad4f2c16740db94c54109c9494d00d204d85b9c02daf9a92da1a53f",
+    "via": "direct"
+  },
+  "donorSnapshotSha256": "77942d4c229ad0830f389d5dc448bad42afbf32219708f578867d7718e437043",
+  "engineReleaseSha256": "35722246178b923c55ee5ba3cdddeef3db4785423dea05ff2fa8eb698a32f429",
+  "expectedTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T03:03:40.839Z",
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "query": "Vigo Imported Canned Whole Hearts of Palm, 14 oz, Allergens Not Contained",
+  "runId": "ptsw-20260730t005213z-04",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-request/1.6.0",
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

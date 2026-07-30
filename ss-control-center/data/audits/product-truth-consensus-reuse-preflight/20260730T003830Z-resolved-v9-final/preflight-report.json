@@ -1,0 +1,558 @@
+{
+  "blockers": [
+    {
+      "code": "DONOR_SIZE_DRIFT",
+      "donorProductId": "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+      "listingKey": null,
+      "message": "current donor size differs from frozen review evidence",
+      "scope": "DONOR"
+    },
+    {
+      "code": "DONOR_SIZE_DRIFT",
+      "donorProductId": "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+      "listingKey": null,
+      "message": "current donor size differs from frozen review evidence",
+      "scope": "DONOR"
+    },
+    {
+      "code": "DONOR_SIZE_DRIFT",
+      "donorProductId": "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+      "listingKey": null,
+      "message": "current donor size differs from frozen review evidence",
+      "scope": "DONOR"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1017d0ca-8031-4364-8bff-0eb139e95352",
+      "listingKey": "walmart:1:RizwanX-3721",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1017d0ca-8031-4364-8bff-0eb139e95352",
+      "listingKey": "walmart:1:RizwanX-3722",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1017d0ca-8031-4364-8bff-0eb139e95352",
+      "listingKey": "walmart:1:RizwanX-3723",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1b32d704-4a32-4dd1-964b-e88538de410e",
+      "listingKey": "walmart:1:RizwanX-401",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1de121ce-8979-4a92-9d45-da01395e4c0f",
+      "listingKey": "walmart:1:RizwanX-3032",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+      "listingKey": "walmart:1:FaisalX-1806",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+      "listingKey": "walmart:1:FaisalX-5316",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+      "listingKey": "walmart:1:RizwanX-353",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "4a900723-ec9f-4832-8c1a-41340164a5ef",
+      "listingKey": "walmart:1:FaisalX-5268",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "4a900723-ec9f-4832-8c1a-41340164a5ef",
+      "listingKey": "walmart:1:FaisalX-5269",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "4a900723-ec9f-4832-8c1a-41340164a5ef",
+      "listingKey": "walmart:1:FaisalX-5270",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+      "listingKey": "walmart:1:FaisalX-1666",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "6b310b15-8439-4e62-b1e8-b72817322fbc",
+      "listingKey": "walmart:1:RizwanX-499",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "6b310b15-8439-4e62-b1e8-b72817322fbc",
+      "listingKey": "walmart:1:RizwanX-501",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+      "listingKey": "walmart:1:FaisalX-5104",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+      "listingKey": "walmart:1:FaisalX-4889",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "8291e846-459a-44d5-97f1-066d25f9253e",
+      "listingKey": "walmart:1:FaisalX-1189",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+      "listingKey": "walmart:1:RizwanX-63",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "aa9e1278-33d6-4127-9ecd-47448da93c74",
+      "listingKey": "walmart:1:RizwanX-2359",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ac17fbfe-56bb-4a74-bb08-1680cde830b3",
+      "listingKey": "walmart:1:RizwanX-581",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ac17fbfe-56bb-4a74-bb08-1680cde830b3",
+      "listingKey": "walmart:1:RizwanX-582",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ac813142-da60-410d-a416-d8113d12b65b",
+      "listingKey": "walmart:1:RizwanX-3728",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "c41c1846-8d84-48df-8eae-ab68245a06e8",
+      "listingKey": "walmart:1:RizwanX-277",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "c41c1846-8d84-48df-8eae-ab68245a06e8",
+      "listingKey": "walmart:1:RizwanX-278",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "c41c1846-8d84-48df-8eae-ab68245a06e8",
+      "listingKey": "walmart:1:RizwanX-279",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "c9d3581f-7493-4aeb-8949-839d72406db1",
+      "listingKey": "walmart:1:RizwanX-458",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "cd6622b4-1b42-4fe1-a883-f5c4d744d286",
+      "listingKey": "walmart:1:FaisalX-5200",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "cd6622b4-1b42-4fe1-a883-f5c4d744d286",
+      "listingKey": "walmart:1:FaisalX-5201",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+      "listingKey": "walmart:1:FaisalX-4443",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+      "listingKey": "walmart:1:FaisalX-4444",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+      "listingKey": "walmart:1:FaisalX-206",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "eb133ccd-9f3e-4187-8111-660ab7a1570a",
+      "listingKey": "walmart:1:FaisalX-3417",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+      "listingKey": "walmart:1:RizwanX-513",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "fe290f2d-3251-49dd-a75f-4446aa5adf04",
+      "listingKey": "walmart:1:RizwanX-502",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+      "listingKey": "walmart:1:RizwanX-3442",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+      "listingKey": "walmart:1:RizwanX-3443",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+      "listingKey": "walmart:1:RizwanX-3444",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ff62bc23-cb15-419a-8a8e-9c27259b3fc7",
+      "listingKey": "walmart:1:FaisalX-1192",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ffe807fb-8c8e-4eb5-886a-537d956d5dc2",
+      "listingKey": "walmart:1:RizwanX-3839",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    },
+    {
+      "code": "LISTING_RECIPE_ALREADY_EXISTS",
+      "donorProductId": "ffe807fb-8c8e-4eb5-886a-537d956d5dc2",
+      "listingKey": "walmart:1:RizwanX-3840",
+      "message": "append-only listing recipe is already present",
+      "scope": "LISTING"
+    }
+  ],
+  "checkedAt": "2026-07-30T00:38:30.000Z",
+  "claims": {
+    "authorizesExecution": false,
+    "completeDonorGroupsOnly": true,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "maxListingsPerWave": 5,
+    "maxRowsPerWave": 100,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "blockedDonors": 27,
+    "blockedListings": 40,
+    "canonicalVariantCreates": 4,
+    "canonicalVariantReuses": 1,
+    "decisionCreates": 4,
+    "decisionReuses": 1,
+    "directCandidates": 51,
+    "directDonors": 32,
+    "donorTransitions": 4,
+    "existingRecipes": 40,
+    "readyDonors": 5,
+    "readyListings": 11,
+    "recommendedWaves": 3,
+    "reconciliationCandidatesQuarantined": 0,
+    "selectedCandidates": 51
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "readyDonorProductIds": [
+    "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+    "2df3caf6-a0a5-49f2-9486-968c899408cb",
+    "454665a9-fd6d-4d69-84ee-78715fea2f80",
+    "489db9ee-4a83-4016-ae11-9c30e87bb701",
+    "bd21db92-b685-4cd5-b822-9a1b16ab402e"
+  ],
+  "readyDonorStates": [
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "2df3caf6-a0a5-49f2-9486-968c899408cb",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-233",
+        "walmart:1:RizwanX-234"
+      ],
+      "proposedCanonicalVariantId": "cpv1:a79193ca90826ea62c337e9c4b843d8974d0d9115ef8fc719343d8f0adc43503",
+      "sourceIdentity": {
+        "brand": "Cheerios",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cheerios|general|mills|honey|nut|breakfast|cereal|18 8 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "18.8 oz"
+      },
+      "sourceIdentitySha256": "4d30919430c64537fd0c0d53be2097ff40f1e1f19172c029bbe0b32471337b7f",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "REUSE",
+      "donorProductId": "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+      "donorTransitionRequired": false,
+      "existingDecision": {
+        "decidedAt": "2026-07-29T12:09:50.985Z",
+        "id": "dpvd:4cfb563632ff2da8ca05846cf5edb611cbd192150bfa04c2b982d6f267670b0d"
+      },
+      "listingKeys": [
+        "walmart:1:RizwanX-3035",
+        "walmart:1:RizwanX-3036"
+      ],
+      "proposedCanonicalVariantId": "cpv1:66a15f356a99a30d94d507b6fb1f1cdf6d158694df277393dba886158ea018c4",
+      "sourceIdentity": {
+        "brand": "Muir Glen",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "muir|glen|organic|gluten|free|crushed|fire|14 5 oz",
+        "identityStatus": "exact_confirmed",
+        "productLine": "organic gluten free crushed fire roasted tomatoes",
+        "size": "14.5 oz"
+      },
+      "sourceIdentitySha256": "6ea02f4343f4cf38588260eedda540e50ca9ac5324ff544cc5668118dfe43ea6",
+      "variantState": "REUSE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "bd21db92-b685-4cd5-b822-9a1b16ab402e",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-314",
+        "walmart:1:RizwanX-315"
+      ],
+      "proposedCanonicalVariantId": "cpv1:16618d00a1413090a51d0c21a04b7687a76427c8d9b4bcaf8080a4a29cfd285c",
+      "sourceIdentity": {
+        "brand": "Post",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "post|marshmallow|fruity|pebbles|breakfast|cereal|gluten|30 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "30 oz"
+      },
+      "sourceIdentitySha256": "e8a5ae7c9be270466445a53168ac661f7accb2d965c684fa6a52196216b82dc3",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "489db9ee-4a83-4016-ae11-9c30e87bb701",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-574",
+        "walmart:1:RizwanX-575",
+        "walmart:1:RizwanX-576"
+      ],
+      "proposedCanonicalVariantId": "cpv1:d13b7335c77e2a21242962c72cda1d75912ef237f8888df669ca395eca2c7d5d",
+      "sourceIdentity": {
+        "brand": "General",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "general|total|whole|grain|cereal|16oz|mills|16 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "16 oz"
+      },
+      "sourceIdentitySha256": "0b3d15e228d0f0901c8aa7fab278ee104cadf2ada4407d385dde8bdaea8dca28",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "454665a9-fd6d-4d69-84ee-78715fea2f80",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-599",
+        "walmart:1:RizwanX-600"
+      ],
+      "proposedCanonicalVariantId": "cpv1:d9d9b457a29c43805aafc3de3540bb18f639a10c6820b2510b3cc06de5e8960e",
+      "sourceIdentity": {
+        "brand": "Kellogg'S",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "kellogg s|cracklin|oat|bran|original|breakfast|cereal|16 5 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "16.5 oz"
+      },
+      "sourceIdentitySha256": "76ab72b833cd1ffd9db7e61a2e8468bc48568d6dc56e883a808cef7c758efe6a",
+      "variantState": "CREATE"
+    }
+  ],
+  "readyListingKeys": [
+    "walmart:1:RizwanX-233",
+    "walmart:1:RizwanX-234",
+    "walmart:1:RizwanX-3035",
+    "walmart:1:RizwanX-3036",
+    "walmart:1:RizwanX-314",
+    "walmart:1:RizwanX-315",
+    "walmart:1:RizwanX-574",
+    "walmart:1:RizwanX-575",
+    "walmart:1:RizwanX-576",
+    "walmart:1:RizwanX-599",
+    "walmart:1:RizwanX-600"
+  ],
+  "schemaVersion": "product-truth-consensus-reuse-preflight/1.0.0",
+  "source": {
+    "consensusReuseScopeGeneratedAt": "2026-07-30T00:27:15.000Z",
+    "consensusReuseScopeSha256": "354a54439ba739aca63eb727393bbba3626df322cb0f8d67c664e8b0c7dba38c",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "status": "PARTIALLY_READY",
+  "waves": [
+    {
+      "canonicalVariantCreates": 1,
+      "canonicalVariantReuses": 1,
+      "contentObservationCreates": 2,
+      "decisionCreates": 1,
+      "decisionReuses": 1,
+      "donorProductIds": [
+        "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+        "2df3caf6-a0a5-49f2-9486-968c899408cb"
+      ],
+      "donorTransitions": 1,
+      "listingKeys": [
+        "walmart:1:RizwanX-233",
+        "walmart:1:RizwanX-234",
+        "walmart:1:RizwanX-3035",
+        "walmart:1:RizwanX-3036"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 26,
+      "ordinal": 0,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "82d2e0a2d28466afb54422409bf2e5a33d8e7896ea1c9e4859c00278c40051fd"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "489db9ee-4a83-4016-ae11-9c30e87bb701",
+        "bd21db92-b685-4cd5-b822-9a1b16ab402e"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:RizwanX-314",
+        "walmart:1:RizwanX-315",
+        "walmart:1:RizwanX-574",
+        "walmart:1:RizwanX-575",
+        "walmart:1:RizwanX-576"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 33,
+      "ordinal": 1,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "c7fa20341bc5e0e11393460455fea78b161da25a689f3f8c1ed7886955674068"
+    },
+    {
+      "canonicalVariantCreates": 1,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 1,
+      "decisionCreates": 1,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "454665a9-fd6d-4d69-84ee-78715fea2f80"
+      ],
+      "donorTransitions": 1,
+      "listingKeys": [
+        "walmart:1:RizwanX-599",
+        "walmart:1:RizwanX-600"
+      ],
+      "listingRecipeComponentCreates": 2,
+      "listingRecipeCreates": 2,
+      "maximumRows": 14,
+      "ordinal": 2,
+      "skuComponentEvidenceCreates": 2,
+      "skuCostCreates": 2,
+      "skuCostLinkCreates": 2,
+      "waveKey": "15872ea8d453c61fe2e9a6c8a1dc58e0783a65e4df7f3a0418cab6dabf919c9d"
+    }
+  ]
+}

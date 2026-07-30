@@ -1,0 +1,53 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-report.json",
+      "role": "consensus_reuse_apply_report",
+      "sha256": "9206d5f9abffef186f4c3dfd847e4b7403b0a38d55a6dd1c68a65dea1a030576"
+    }
+  ],
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "historicalPricePromoted": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingCatalog": true
+  },
+  "command": "apply",
+  "completedAt": "2026-07-29T23:58:11.840Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "insertedRows": 37,
+    "targets": 5
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-wave-7870faa7b2c8d26f15df1551",
+  "schemaVersion": "product-truth-consensus-reuse-wave-artifact-index/1.0.0",
+  "startedAt": "2026-07-29T23:57:30.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "walmart:1:RizwanX-3032",
+      "walmart:1:RizwanX-3442",
+      "walmart:1:RizwanX-3443",
+      "walmart:1:RizwanX-3444",
+      "walmart:1:RizwanX-353"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 5
+  }
+}

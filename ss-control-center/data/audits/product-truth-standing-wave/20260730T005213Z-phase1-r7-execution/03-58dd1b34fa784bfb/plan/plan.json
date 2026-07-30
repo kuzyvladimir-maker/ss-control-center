@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-30T00:59:40.471Z",
+  "engineReleaseSha256": "35722246178b923c55ee5ba3cdddeef3db4785423dea05ff2fa8eb698a32f429",
+  "expiresAt": "2026-07-30T02:59:40.027Z",
+  "manifest": {
+    "asOf": "2026-07-30T00:59:40.471Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "59dc8874e0eb9df5a57d3f790c02e9c94f56f6195e3942481080e5587d56338e"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptsw-20260730t005213z-03",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "66e7cf670dbaa84415758ad19d2037ab84bd60ec4ee891089b32a71a9aad487c",
+  "targets": [
+    {
+      "canonicalIdentityHash": "a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"contadina\",\"productLine\":\"added no salt sauce tomato\",\"flavor\":null,\"modifiers\":[\"no_salt_added\"],\"form\":\"can\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":226.796185,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "35636f1e33b72ad0975616802c0fb1790e691870789d0d21b95e143e165854fb",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"42a9c4812018ae2089386e1e7eb52d9f9d5e42089387c3aca4c9ed5ecfba8a5c\",\n  \"canonicalVariantId\": \"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\",\n  \"donorProductId\": \"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\",\n  \"donorTitle\": \"Contadina Tomato Sauce, No Salt Added, 8 oz Can\",\n  \"identityProof\": \"STRICT_TITLE_MATCH\",\n  \"identityReconciliation\": {\n    \"canonicalListingKey\": \"walmart:1:RizwanX-3004\",\n    \"canonicalTargetIdentity\": {\n      \"brand\": \"Contadina\",\n      \"flavor\": null,\n      \"form\": \"can\",\n      \"outerPackCount\": 1,\n      \"productLine\": \"Tomato Sauce No Salt Added\",\n      \"size\": \"8 oz\"\n    },\n    \"canonicalTargetVariant\": {\n      \"canonicalVariantId\": \"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\",\n      \"identityHash\": \"a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\",\n      \"identityJson\": \"{\\\"schemaVersion\\\":\\\"canonical-product-variant-identity/1.0.0\\\",\\\"brand\\\":\\\"contadina\\\",\\\"productLine\\\":\\\"added no salt sauce tomato\\\",\\\"flavor\\\":null,\\\"modifiers\\\":[\\\"no_salt_added\\\"],\\\"form\\\":\\\"can\\\",\\\"size\\\":{\\\"dimension\\\":\\\"MASS\\\",\\\"baseAmount\\\":226.796185,\\\"baseUnit\\\":\\\"g\\\"},\\\"outerPackCount\\\":1}\",\n      \"keyVersion\": \"canonical-product-variant-key/1.0.0\",\n      \"variantKey\": \"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\"\n    },\n    \"donorProductId\": \"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\",\n    \"mode\": \"LEXICALLY_EQUIVALENT_DONOR_GRAPH\",\n    \"physicalIdentitySha256\": \"9b9d5619987506b7b3eecdab6df125f80f60881c3fc92763d51f65d22fa1a459\",\n    \"schemaVersion\": \"product-truth-legacy-bridge-field-partition-reconciliation/1.0.0\",\n    \"sourceTargets\": [\n      {\n        \"listingKey\": \"walmart:1:RizwanX-3004\",\n        \"originalCanonicalVariantId\": \"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\",\n        \"originalTargetIdentitySha256\": \"b3be68d3720d586b521905c8452633aa35cabce801c6fb53c207403c7907f106\",\n        \"overlappingProductFlavorTokens\": 0\n      },\n      {\n        \"listingKey\": \"walmart:1:RizwanX-3005\",\n        \"originalCanonicalVariantId\": \"cpv1:633ac02550828abc5df015b8001fec5a4087dbac6add71e48bfd9a90da52bcab\",\n        \"originalTargetIdentitySha256\": \"db051ab9cb99e12d98f9109e032973c739a963758dd13cfc8590fcb47db91701\",\n        \"overlappingProductFlavorTokens\": 0\n      },\n      {\n        \"listingKey\": \"walmart:1:RizwanX-3006\",\n        \"originalCanonicalVariantId\": \"cpv1:633ac02550828abc5df015b8001fec5a4087dbac6add71e48bfd9a90da52bcab\",\n        \"originalTargetIdentitySha256\": \"db051ab9cb99e12d98f9109e032973c739a963758dd13cfc8590fcb47db91701\",\n        \"overlappingProductFlavorTokens\": 0\n      }\n    ],\n    \"sourceTargetsSha256\": \"f55c899b19144b912a9ffd421b71aa250d7ef7d3df3bdd66156e46381973b5b0\"\n  },\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.0.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"742ddf9bc1fa3650a7537a5a93c1f512736f42b7b380000c4186e220cc0f76ea\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"2c9f52ef9e3a4fccd42be93b6ecf9924361ed0995b0bee923452d5b02a05da1d\",\n    \"donorProductSha256\": \"e3de570e740bbfa3fbc0e5203d80077d3c7440b2af65bef7ef8eb273f36f71b7\"\n  },\n  \"sourceSnapshotSha256\": \"3c87c9a8dd9d0005f6ab6677dce11147254ba65bfcb8e758f54293a086cf7f0d\",\n  \"targetIdentity\": {\n    \"brand\": \"Contadina\",\n    \"flavor\": null,\n    \"form\": \"can\",\n    \"outerPackCount\": 1,\n    \"productLine\": \"Tomato Sauce No Salt Added\",\n    \"size\": \"8 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:143062618",
+      "donorProductId": "0dab6f79-aceb-42ca-91ee-7a9f393ed61e",
+      "donorSnapshotSha256": "59dc8874e0eb9df5a57d3f790c02e9c94f56f6195e3942481080e5587d56338e",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "0dab6f79-aceb-42ca-91ee-7a9f393ed61e",
+        "listingKey": "walmart:1:RizwanX-3006",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-cd0d8f75340e64ae0a438d68\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T08:27:23.000Z\",\n  \"effectiveAt\": \"2026-07-29T08:27:23.000Z\",\n  \"evidenceHash\": \"cc61f5032657de993c0f4c5ca4be41d91ca8743bd495492ca52d63ca6a75506e\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"e72208bd753616e9650e7e13dfacdfda478bee889eacc2246f2ee2b4e66c94ad\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\\\",\\n      \\\"flavor\\\": \\\"No Salt Added\\\",\\n      \\\"product\\\": \\\"Tomato Sauce\\\",\\n      \\\"quantity\\\": 8,\\n      \\\"size\\\": \\\"8 oz\\\",\\n      \\\"sourceComponentId\\\": \\\"comp:RizwanX-3006:0\\\",\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:502bb6ef6db7be8492690864e0b6266c8bf2f185fb788152cbec6482143e18d0\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T08:27:23.000Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3006\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"c0439a1212e4cc7088874b06bf2573a3e91991db057f05207a1238b4f8359f1f\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"62f0db2ebfd28ab6da50f78728cc32d93651ccfa7ccee1db9ed553020939e925\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:7da4c365e20dcde14e28185a6ac8797374e5e301dcf3513b2515e5de54eb8f48\",\n  \"listingKey\": \"walmart:1:RizwanX-3006\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"c0439a1212e4cc7088874b06bf2573a3e91991db057f05207a1238b4f8359f1f\",\n  \"recipeKey\": \"7da4c365e20dcde14e28185a6ac8797374e5e301dcf3513b2515e5de54eb8f48\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-cd0d8f75340e64ae0a438d68\",\n  \"sourceArtifactSha256\": \"62f0db2ebfd28ab6da50f78728cc32d93651ccfa7ccee1db9ed553020939e925\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3006\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3006\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"a40f431a336ae55ac090d48568764d22dbee2acc9d2091ea7304d188cd7351ba\",\n  \"createdAt\": \"2026-07-29T08:27:23.000Z\",\n  \"donorProductId\": \"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\",\n  \"evidenceHash\": \"e72208bd753616e9650e7e13dfacdfda478bee889eacc2246f2ee2b4e66c94ad\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\\\",\\n  \\\"flavor\\\": \\\"No Salt Added\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3006\\\",\\n  \\\"product\\\": \\\"Tomato Sauce\\\",\\n  \\\"quantity\\\": 8,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"8 oz\\\",\\n  \\\"sourceComponentId\\\": \\\"comp:RizwanX-3006:0\\\",\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"42a9c4812018ae2089386e1e7eb52d9f9d5e42089387c3aca4c9ed5ecfba8a5c\\\",\\n    \\\"identityProof\\\": \\\"STRICT_TITLE_MATCH\\\",\\n    \\\"identityReconciliation\\\": {\\n      \\\"canonicalListingKey\\\": \\\"walmart:1:RizwanX-3004\\\",\\n      \\\"canonicalTargetIdentity\\\": {\\n        \\\"brand\\\": \\\"Contadina\\\",\\n        \\\"flavor\\\": null,\\n        \\\"form\\\": \\\"can\\\",\\n        \\\"outerPackCount\\\": 1,\\n        \\\"productLine\\\": \\\"Tomato Sauce No Salt Added\\\",\\n        \\\"size\\\": \\\"8 oz\\\"\\n      },\\n      \\\"canonicalTargetVariant\\\": {\\n        \\\"canonicalVariantId\\\": \\\"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\",\\n        \\\"identityHash\\\": \\\"a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\",\\n        \\\"identityJson\\\": \\\"{\\\\\\\"schemaVersion\\\\\\\":\\\\\\\"canonical-product-variant-identity/1.0.0\\\\\\\",\\\\\\\"brand\\\\\\\":\\\\\\\"contadina\\\\\\\",\\\\\\\"productLine\\\\\\\":\\\\\\\"added no salt sauce tomato\\\\\\\",\\\\\\\"flavor\\\\\\\":null,\\\\\\\"modifiers\\\\\\\":[\\\\\\\"no_salt_added\\\\\\\"],\\\\\\\"form\\\\\\\":\\\\\\\"can\\\\\\\",\\\\\\\"size\\\\\\\":{\\\\\\\"dimension\\\\\\\":\\\\\\\"MASS\\\\\\\",\\\\\\\"baseAmount\\\\\\\":226.796185,\\\\\\\"baseUnit\\\\\\\":\\\\\\\"g\\\\\\\"},\\\\\\\"outerPackCount\\\\\\\":1}\\\",\\n        \\\"keyVersion\\\": \\\"canonical-product-variant-key/1.0.0\\\",\\n        \\\"variantKey\\\": \\\"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\"\\n      },\\n      \\\"donorProductId\\\": \\\"0dab6f79-aceb-42ca-91ee-7a9f393ed61e\\\",\\n      \\\"mode\\\": \\\"LEXICALLY_EQUIVALENT_DONOR_GRAPH\\\",\\n      \\\"physicalIdentitySha256\\\": \\\"9b9d5619987506b7b3eecdab6df125f80f60881c3fc92763d51f65d22fa1a459\\\",\\n      \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-field-partition-reconciliation/1.0.0\\\",\\n      \\\"sourceTargets\\\": [\\n        {\\n          \\\"listingKey\\\": \\\"walmart:1:RizwanX-3004\\\",\\n          \\\"originalCanonicalVariantId\\\": \\\"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\",\\n          \\\"originalTargetIdentitySha256\\\": \\\"b3be68d3720d586b521905c8452633aa35cabce801c6fb53c207403c7907f106\\\",\\n          \\\"overlappingProductFlavorTokens\\\": 0\\n        },\\n        {\\n          \\\"listingKey\\\": \\\"walmart:1:RizwanX-3005\\\",\\n          \\\"originalCanonicalVariantId\\\": \\\"cpv1:633ac02550828abc5df015b8001fec5a4087dbac6add71e48bfd9a90da52bcab\\\",\\n          \\\"originalTargetIdentitySha256\\\": \\\"db051ab9cb99e12d98f9109e032973c739a963758dd13cfc8590fcb47db91701\\\",\\n          \\\"overlappingProductFlavorTokens\\\": 0\\n        },\\n        {\\n          \\\"listingKey\\\": \\\"walmart:1:RizwanX-3006\\\",\\n          \\\"originalCanonicalVariantId\\\": \\\"cpv1:633ac02550828abc5df015b8001fec5a4087dbac6add71e48bfd9a90da52bcab\\\",\\n          \\\"originalTargetIdentitySha256\\\": \\\"db051ab9cb99e12d98f9109e032973c739a963758dd13cfc8590fcb47db91701\\\",\\n          \\\"overlappingProductFlavorTokens\\\": 0\\n        }\\n      ],\\n      \\\"sourceTargetsSha256\\\": \\\"f55c899b19144b912a9ffd421b71aa250d7ef7d3df3bdd66156e46381973b5b0\\\"\\n    },\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"742ddf9bc1fa3650a7537a5a93c1f512736f42b7b380000c4186e220cc0f76ea\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"2c9f52ef9e3a4fccd42be93b6ecf9924361ed0995b0bee923452d5b02a05da1d\\\",\\n      \\\"donorProductSha256\\\": \\\"e3de570e740bbfa3fbc0e5203d80077d3c7440b2af65bef7ef8eb273f36f71b7\\\",\\n      \\\"legacyComponentSha256\\\": \\\"2adeb81e2eb5701e9b48cb338cd0d612b1e12583b2fc0de4721d343f27d37ca7\\\",\\n      \\\"listingSha256\\\": \\\"295d74076802a77c39eb00ea1e1a2fc726c00f0075ff929b6d386c1a98a101a8\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"3c87c9a8dd9d0005f6ab6677dce11147254ba65bfcb8e758f54293a086cf7f0d\\\"\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"30777b8d3c42ba3a713a0893e10276f8a358f9f15884eb58b25dfb24146b11b2\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:502bb6ef6db7be8492690864e0b6266c8bf2f185fb788152cbec6482143e18d0\\\"\\n}\\n\",\n  \"flavor\": \"No Salt Added\",\n  \"id\": \"ptrc:a40f431a336ae55ac090d48568764d22dbee2acc9d2091ea7304d188cd7351ba\",\n  \"listingRecipeId\": \"ptr:7da4c365e20dcde14e28185a6ac8797374e5e301dcf3513b2515e5de54eb8f48\",\n  \"product\": \"Tomato Sauce\",\n  \"quantity\": 8,\n  \"size\": \"8 oz\",\n  \"sourceComponentId\": \"comp:RizwanX-3006:0\",\n  \"targetCanonicalVariantId\": \"cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c\",\n  \"variantDecisionId\": \"dpvd:502bb6ef6db7be8492690864e0b6266c8bf2f185fb788152cbec6482143e18d0\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "e2a04a1f2d52f648c0b7acae542fdf05b78703443744f8ab7c98c9484388a36b",
+        "sku": "RizwanX-3006",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:502bb6ef6db7be8492690864e0b6266c8bf2f185fb788152cbec6482143e18d0"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/143062618",
+      "ordinal": 0,
+      "query": "Contadina Tomato Sauce, No Salt Added, 8 oz Can",
+      "retailer": "walmart",
+      "retailerProductId": "143062618",
+      "variantDecisionId": "dpvd:502bb6ef6db7be8492690864e0b6266c8bf2f185fb788152cbec6482143e18d0",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

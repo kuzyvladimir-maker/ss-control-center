@@ -1,0 +1,46 @@
+{
+  "createdAt": "2026-07-30T03:48:00.000Z",
+  "expiresAt": "2026-07-30T04:30:00.000Z",
+  "listingKeys": [
+    "walmart:1:FaisalX-1719"
+  ],
+  "maxWallClockMs": 360000,
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "schemaVersion": "product-truth-operational-plan-request/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

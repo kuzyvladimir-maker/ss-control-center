@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99537.5,
+      "evidenceSha256": "47ad61ed5aef162996e5c181e783245babf37b591dc72ed909fb6b31ec5eaae6",
+      "observedAt": "2026-07-30T03:48:32.691Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-30T03:58:55.158Z",
+  "issuedAt": "2026-07-30T03:48:55.158Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-30T03:58:55.158Z",
+    "issuedAt": "2026-07-30T03:48:55.158Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "ptca-20260730t034800z-natures-own-brioche",
+    "version": 1
+  },
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

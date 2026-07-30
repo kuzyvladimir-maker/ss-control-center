@@ -21,11 +21,17 @@ import {
   validateBoundProductTruthSearchQueryCalibration,
   type ProductTruthSearchQueryCalibration,
 } from "./product-truth-search-query-calibration";
+import {
+  PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+  renderProductTruthSourceDetailAdmission,
+  type ProductTruthSourceDetailAdmission,
+  type ProductTruthSourceDetailAdmissionCandidate,
+} from "./product-truth-source-detail-admission";
 
 export const PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION =
   "product-truth-provider-attempt-capture/1.0.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_VERSION =
-  "product-truth-provider-target-wave/1.1.0" as const;
+  "product-truth-provider-target-wave/1.2.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS = 16;
 
 const TERMINAL_ITEM_STATUSES = [
@@ -72,6 +78,7 @@ export interface ProductTruthProviderTargetWaveTarget {
   queryVersion:
     ProductTruthSearchQueryCalibration["queryContracts"]["candidate"];
   query: string;
+  sourceDetailCandidate: ProductTruthSourceDetailAdmissionCandidate;
   targetIdentity: ProductTruthComponentAcquisitionTarget["targetIdentity"];
   representative: {
     listingKey: string;
@@ -108,6 +115,13 @@ export interface ProductTruthProviderTargetWave {
       admittedForms: string[];
       admittedProviderTargets: number;
     };
+    sourceDetailAdmission: {
+      schemaVersion:
+        typeof PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION;
+      sha256: string;
+      generatedAt: string;
+      admittedTargets: number;
+    };
     terminalAttemptCapture: {
       schemaVersion:
         typeof PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION;
@@ -124,6 +138,8 @@ export interface ProductTruthProviderTargetWave {
       "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT";
     queryAdmission:
       "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION";
+    sourceDetailAdmission:
+      "EXACT_TARGET_AND_RETAILER_ITEM_MUST_BE_ADMITTED_BY_BOUND_FAIL_CLOSED_ARTIFACT";
     retailers: readonly ["walmart", "target", "publix"];
     procurementZip: "33765";
     maximumTargets: number;
@@ -136,6 +152,8 @@ export interface ProductTruthProviderTargetWave {
     providerTargets: number;
     calibrationAdmittedProviderTargets: number;
     calibrationExcludedProviderTargets: number;
+    sourceDetailAdmittedProviderTargets: number;
+    sourceDetailExcludedCalibratedTargets: number;
     terminalAttemptTargets: number;
     noSingleTargetRepresentative: number;
     eligibleTargets: number;
@@ -380,6 +398,9 @@ export function compileProductTruthProviderTargetWave(input: {
   searchQueryCalibration: ProductTruthSearchQueryCalibration;
   searchQueryCalibrationJson: string;
   searchQueryCalibrationSha256: string;
+  sourceDetailAdmission: ProductTruthSourceDetailAdmission;
+  sourceDetailAdmissionJson: string;
+  sourceDetailAdmissionSha256: string;
   attemptCapture: ProductTruthProviderAttemptCapture;
   attemptCaptureJson: string;
   attemptCaptureSha256: string;
@@ -468,6 +489,45 @@ export function compileProductTruthProviderTargetWave(input: {
       (target) => [target.canonicalVariantId, target],
     ),
   );
+  const sourceDetailAdmissionSha256 = exactSha(
+    input.sourceDetailAdmissionSha256,
+    "source detail admission SHA-256",
+  );
+  if (
+    input.sourceDetailAdmission.schemaVersion
+      !== PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION
+    || sha256Text(input.sourceDetailAdmissionJson)
+      !== sourceDetailAdmissionSha256
+    || renderProductTruthSourceDetailAdmission(
+      input.sourceDetailAdmission,
+    ) !== input.sourceDetailAdmissionJson
+  ) {
+    fail(
+      "PROVIDER_TARGET_WAVE_SOURCE_DETAIL_ADMISSION_MISMATCH",
+      "source detail admission bytes changed or are not canonical",
+    );
+  }
+  if (
+    input.sourceDetailAdmission.databaseTargetFingerprint
+      !== databaseTargetFingerprint
+    || input.sourceDetailAdmission.source.componentAcquisitionScope.sha256
+      !== componentScopeSha256
+    || input.sourceDetailAdmission.source.searchQueryCalibration.sha256
+      !== input.searchQueryCalibrationSha256
+    || input.sourceDetailAdmission.claims.authorizesExecution !== false
+    || input.sourceDetailAdmission.claims.providerCalls !== 0
+    || input.sourceDetailAdmission.claims.paidCalls !== 0
+  ) {
+    fail(
+      "PROVIDER_TARGET_WAVE_SOURCE_DETAIL_ADMISSION_MISMATCH",
+      "source detail admission is not bound to this exact target/calibration/database set",
+    );
+  }
+  const sourceDetailAdmissionByTarget = new Map(
+    input.sourceDetailAdmission.targets.map(
+      (target) => [target.canonicalVariantId, target],
+    ),
+  );
   const attemptCapture = validateAttemptCapture(
     input.attemptCapture,
     input.attemptCaptureJson,
@@ -484,7 +544,7 @@ export function compileProductTruthProviderTargetWave(input: {
     .filter((target) =>
       target.acquisitionLane === "PROVIDER_IDENTITY_ACQUISITION")
     .sort(targetCompare);
-  const providerTargets = allProviderTargets.filter((target) => {
+  const calibratedProviderTargets = allProviderTargets.filter((target) => {
     const calibrated = calibratedTargetById.get(target.canonicalVariantId);
     if (
       !calibrated
@@ -502,6 +562,18 @@ export function compileProductTruthProviderTargetWave(input: {
       && compiledQuery.query === calibrated.calibratedQuery
       && calibrated.currentQuery !== calibrated.calibratedQuery;
   });
+  const providerTargets = calibratedProviderTargets
+    .filter((target) => {
+      const admitted = sourceDetailAdmissionByTarget.get(
+        target.canonicalVariantId,
+      );
+      return admitted?.canonicalIdentityHash
+        === target.canonicalIdentityHash;
+    })
+    .sort((left, right) => (
+      sourceDetailAdmissionByTarget.get(left.canonicalVariantId)!.ordinal
+      - sourceDetailAdmissionByTarget.get(right.canonicalVariantId)!.ordinal
+    ));
   const listingTargetIds = new Map<string, Set<string>>();
   for (const target of input.componentScope.targets) {
     for (const dependency of target.dependencies) {
@@ -576,6 +648,9 @@ export function compileProductTruthProviderTargetWave(input: {
       queryVersion: searchQueryCalibration.queryContracts.candidate,
       query: calibratedTargetById.get(target.canonicalVariantId)!
         .calibratedQuery,
+      sourceDetailCandidate:
+        sourceDetailAdmissionByTarget.get(target.canonicalVariantId)!
+          .candidate,
       targetIdentity: target.targetIdentity,
       representative: {
         listingKey: representative.listingKey,
@@ -685,6 +760,13 @@ export function compileProductTruthProviderTargetWave(input: {
         admittedProviderTargets:
           searchQueryCalibration.counts.admittedProviderTargets,
       },
+      sourceDetailAdmission: {
+        schemaVersion: PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+        sha256: sourceDetailAdmissionSha256,
+        generatedAt: input.sourceDetailAdmission.generatedAt,
+        admittedTargets:
+          input.sourceDetailAdmission.counts.admittedTargets,
+      },
       terminalAttemptCapture: {
         schemaVersion: PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION,
         sha256: exactSha(
@@ -703,6 +785,8 @@ export function compileProductTruthProviderTargetWave(input: {
         "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT",
       queryAdmission:
         "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
+      sourceDetailAdmission:
+        "EXACT_TARGET_AND_RETAILER_ITEM_MUST_BE_ADMITTED_BY_BOUND_FAIL_CLOSED_ARTIFACT",
       retailers: ["walmart", "target", "publix"],
       procurementZip: "33765",
       maximumTargets: input.maximumTargets,
@@ -713,9 +797,13 @@ export function compileProductTruthProviderTargetWave(input: {
     },
     counts: {
       providerTargets: allProviderTargets.length,
-      calibrationAdmittedProviderTargets: providerTargets.length,
+      calibrationAdmittedProviderTargets:
+        calibratedProviderTargets.length,
       calibrationExcludedProviderTargets:
-        allProviderTargets.length - providerTargets.length,
+        allProviderTargets.length - calibratedProviderTargets.length,
+      sourceDetailAdmittedProviderTargets: providerTargets.length,
+      sourceDetailExcludedCalibratedTargets:
+        calibratedProviderTargets.length - providerTargets.length,
       terminalAttemptTargets: terminalAttemptTargets.length,
       noSingleTargetRepresentative:
         targetsWithoutSingleTargetRepresentative.length,

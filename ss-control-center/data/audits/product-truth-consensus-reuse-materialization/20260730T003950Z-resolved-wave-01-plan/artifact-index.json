@@ -1,0 +1,80 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-plan.json",
+      "role": "consensus_reuse_materialization_plan",
+      "sha256": "a879ef501ab1269877c5e1851868bce73dce6b2f169c946389a64a913c02b4fa"
+    }
+  ],
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "historicalPricePromoted": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingCatalog": true
+  },
+  "command": "plan",
+  "createdAt": "2026-07-30T00:39:50.000Z",
+  "databaseWrites": {
+    "canonicalProductVariants": 2,
+    "donorIdentityTransitions": 2,
+    "donorVariantDecisions": 2,
+    "maximumRows": 33,
+    "productContentObservations": 2,
+    "productTruthListingRecipeComponents": 5,
+    "productTruthListingRecipes": 5,
+    "skuComponentEvidence": 5,
+    "skuCostListingScopeLinks": 5,
+    "skuCosts": 5
+  },
+  "expiresAt": "2026-07-30T01:09:50.000Z",
+  "planId": "ptcr-wave-c8122170d9a43f755385f877",
+  "schemaVersion": "product-truth-consensus-reuse-wave-artifact-index/1.0.0",
+  "source": {
+    "blindTaskSchemaVersion": "product-truth-matcher-blinded-evidence-task/2.1.0",
+    "blindTaskSha256": "0d53e57921abc26d08b7d334bebd67920062166c6db29b5365e47587054c1b45",
+    "consensusReuseScopeSchemaVersion": "product-truth-consensus-reuse-scope/1.0.0",
+    "consensusReuseScopeSha256": "354a54439ba739aca63eb727393bbba3626df322cb0f8d67c664e8b0c7dba38c",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "selectionPreflightSchemaVersion": "product-truth-consensus-reuse-preflight/1.0.0",
+    "selectionPreflightSha256": "ab490c97621c2d73a693089529ae8934d40249007267b22bd1fedafff74ae63f",
+    "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+    "standingPolicySchemaVersion": "product-truth-legacy-bridge-standing-policy/1.0.0",
+    "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "wave": {
+    "canonicalVariantCreates": 2,
+    "canonicalVariantReuses": 0,
+    "contentObservationCreates": 2,
+    "decisionCreates": 2,
+    "decisionReuses": 0,
+    "donorProductIds": [
+      "489db9ee-4a83-4016-ae11-9c30e87bb701",
+      "bd21db92-b685-4cd5-b822-9a1b16ab402e"
+    ],
+    "donorTransitions": 2,
+    "listingKeys": [
+      "walmart:1:RizwanX-314",
+      "walmart:1:RizwanX-315",
+      "walmart:1:RizwanX-574",
+      "walmart:1:RizwanX-575",
+      "walmart:1:RizwanX-576"
+    ],
+    "listingRecipeComponentCreates": 5,
+    "listingRecipeCreates": 5,
+    "maximumRows": 33,
+    "ordinal": 1,
+    "skuComponentEvidenceCreates": 5,
+    "skuCostCreates": 5,
+    "skuCostLinkCreates": 5,
+    "waveKey": "c7fa20341bc5e0e11393460455fea78b161da25a689f3f8c1ed7886955674068"
+  }
+}

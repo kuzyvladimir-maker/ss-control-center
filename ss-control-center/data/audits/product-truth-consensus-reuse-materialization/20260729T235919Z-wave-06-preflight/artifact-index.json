@@ -1,0 +1,38 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-preflight.json",
+      "role": "consensus_reuse_apply_preflight",
+      "sha256": "fa61b5d4a0f8fee9d367d9790f88b17e26d84147894e880b5a3ec93d80d9269e"
+    }
+  ],
+  "checkedAt": "2026-07-29T23:59:19.000Z",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "historicalPricePromoted": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingCatalog": true
+  },
+  "command": "preflight",
+  "counts": {
+    "absentRows": 32,
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitionsRequired": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "maximumRows": 32,
+    "targets": 4
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-wave-261d6124e890017fbe27e473",
+  "schemaVersion": "product-truth-consensus-reuse-wave-artifact-index/1.0.0",
+  "status": "READY_TO_APPLY"
+}

@@ -1,0 +1,47 @@
+{
+  "authorizationMode": "PINNED_STANDING_OWNER_POLICY",
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:650d6a360f2fb672742c28620f5cc0df5364789e8998fccf87d997efa4f049d0:<AUTOMATIC_STANDING_APPROVAL_ID>",
+  "mode": "WAVE",
+  "ownerActionRequired": false,
+  "planExpiresAt": "2026-07-30T03:03:40.839Z",
+  "planSha256": "650d6a360f2fb672742c28620f5cc0df5364789e8998fccf87d997efa4f049d0",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "ptsw-20260730t005213z-04",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "warning": "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the exact two-provider permit and confirmation automatically; no chat approval is required. This plan permits one Oxylabs Walmart query and one Unwrangle Walmart detail call only; no OFF, clubs, fanout, publish, delist, reprice, purchase, or replay."
+}

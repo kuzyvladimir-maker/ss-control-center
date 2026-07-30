@@ -1,0 +1,952 @@
+{
+  "blockers": [
+    {
+      "code": "DONOR_EXACT_DECISION_COLLISION",
+      "donorProductId": "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+      "listingKey": null,
+      "message": "existing cpv1:66a15f356a99a30d94d507b6fb1f1cdf6d158694df277393dba886158ea018c4 != proposed cpv1:6fab88af18ac82610ea70920e2cf86f8da3d494c0d828ad7b994a0b6c0b93721",
+      "scope": "DONOR"
+    }
+  ],
+  "checkedAt": "2026-07-29T23:36:31.000Z",
+  "claims": {
+    "authorizesExecution": false,
+    "completeDonorGroupsOnly": true,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "maxListingsPerWave": 5,
+    "maxRowsPerWave": 100,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "blockedDonors": 1,
+    "blockedListings": 2,
+    "canonicalVariantCreates": 27,
+    "canonicalVariantReuses": 0,
+    "decisionCreates": 27,
+    "decisionReuses": 0,
+    "directCandidates": 42,
+    "directDonors": 28,
+    "donorTransitions": 27,
+    "existingRecipes": 0,
+    "readyDonors": 27,
+    "readyListings": 40,
+    "recommendedWaves": 9,
+    "reconciliationCandidatesQuarantined": 9,
+    "selectedCandidates": 51
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "readyDonorProductIds": [
+    "1017d0ca-8031-4364-8bff-0eb139e95352",
+    "1b32d704-4a32-4dd1-964b-e88538de410e",
+    "1de121ce-8979-4a92-9d45-da01395e4c0f",
+    "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+    "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+    "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+    "4a900723-ec9f-4832-8c1a-41340164a5ef",
+    "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+    "6b310b15-8439-4e62-b1e8-b72817322fbc",
+    "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+    "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+    "8291e846-459a-44d5-97f1-066d25f9253e",
+    "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+    "aa9e1278-33d6-4127-9ecd-47448da93c74",
+    "ac17fbfe-56bb-4a74-bb08-1680cde830b3",
+    "ac813142-da60-410d-a416-d8113d12b65b",
+    "c41c1846-8d84-48df-8eae-ab68245a06e8",
+    "c9d3581f-7493-4aeb-8949-839d72406db1",
+    "cd6622b4-1b42-4fe1-a883-f5c4d744d286",
+    "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+    "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+    "eb133ccd-9f3e-4187-8111-660ab7a1570a",
+    "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+    "fe290f2d-3251-49dd-a75f-4446aa5adf04",
+    "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+    "ff62bc23-cb15-419a-8a8e-9c27259b3fc7",
+    "ffe807fb-8c8e-4eb5-886a-537d956d5dc2"
+  ],
+  "readyDonorStates": [
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "8291e846-459a-44d5-97f1-066d25f9253e",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-1189"
+      ],
+      "proposedCanonicalVariantId": "cpv1:6749d6ba18959d70f2c680b3d82a9657d2e35a052edf7b178f711705f718017e",
+      "sourceIdentity": {
+        "brand": "Sara Lee",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "sara lee|delightful|white|whole|grain|15oz|15 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "15 oz"
+      },
+      "sourceIdentitySha256": "031da36b9b3d781a2aac8b1df766a42a9ad5ecb86998b361f727dbc0e6fb0ecc",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "ff62bc23-cb15-419a-8a8e-9c27259b3fc7",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-1192"
+      ],
+      "proposedCanonicalVariantId": "cpv1:f06183a5a4e611dff8ef100d72b2f15760a4d0d03694ff6e3b4d58d7754b60a1",
+      "sourceIdentity": {
+        "brand": "Sara Lee",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "sara lee|honey|whole|wheat|bread|20oz|20 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "20 oz"
+      },
+      "sourceIdentitySha256": "70930c920560c7aa0777c32c466e26cf9d76fee07f3d26d4a1f9554a5aee37f1",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-1666"
+      ],
+      "proposedCanonicalVariantId": "cpv1:71d5ff754dce71430126d25a821a262d709198ddb87db03d68f25182fe4dd1b0",
+      "sourceIdentity": {
+        "brand": "Dave's Killer Bread",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "dave s killer bread|plain|awesome|organic|bagels|75oz|16 75 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "16.75 oz"
+      },
+      "sourceIdentitySha256": "1031a9f0380ebfcd0962139304c495e41dfab3a290dc3061c4ceec4fff09f59b",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-1806"
+      ],
+      "proposedCanonicalVariantId": "cpv1:8bc165bb3071115be2018ca37f5ef890e749f611d726488d43d48e8ea3737268",
+      "sourceIdentity": {
+        "brand": "Sprite",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "sprite|zero|sugar|lemon|lime|caffeine|free",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": null
+      },
+      "sourceIdentitySha256": "d50056ba4f7287b73ffb5cfae15032b42f023b73e573ebd163f94e2c86c8bdfd",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-206"
+      ],
+      "proposedCanonicalVariantId": "cpv1:58ec82f521b118c404bbd17c0034ad6861e398ae7738bdb8bcaea26bea5efc8d",
+      "sourceIdentity": {
+        "brand": "Wonder",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "wonder|round|top|white|sliced|bread|20oz|20 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "20 oz"
+      },
+      "sourceIdentitySha256": "8d86dc2f227218d675ee5c498c5ec215e6eab449c29a27f7f267fbab70c4b9e7",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "eb133ccd-9f3e-4187-8111-660ab7a1570a",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-3417"
+      ],
+      "proposedCanonicalVariantId": "cpv1:1980442622a9be1d9cb503fba0a03aaa05dc29e42183564dc3883d97a3f26da5",
+      "sourceIdentity": {
+        "brand": "Nissin",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "nissin|foods|top|ramen|original|ramen|noodle|3 28 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "3.28 oz"
+      },
+      "sourceIdentitySha256": "cfe1adbc5c6b913ca84ee02ff9588aa30896ca146e2570a9df92a91e24ac76ed",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-4443",
+        "walmart:1:FaisalX-4444"
+      ],
+      "proposedCanonicalVariantId": "cpv1:c3c91e93eaf52d5a6a6f77344de9cdf22b2d5ae472930be59384e1c33ad66e6b",
+      "sourceIdentity": {
+        "brand": "Lance",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "lance|limited|edition|toastchee|peanut|butter|sandwich|10 count",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "10 Count"
+      },
+      "sourceIdentitySha256": "66ec6301b29b240263039ebfbf4ee91cf4eeb47c62b6df6136589913c925ef3f",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-4889"
+      ],
+      "proposedCanonicalVariantId": "cpv1:a00621faed621bcca0bc986602fe81865d92234216df6f4b23fb3d3ed2150f3b",
+      "sourceIdentity": {
+        "brand": "Lipton",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "lipton|black|tea|bags|decaffeinated|50 count",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "50 Count"
+      },
+      "sourceIdentitySha256": "8c1578d7a8efd3e5687d0d6ceeb4a560d505543ad3186321e5f67674d5369000",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-5104"
+      ],
+      "proposedCanonicalVariantId": "cpv1:0644b3348e3bd85ce4222191810fa4249be72c39a2487fd473abee053a770e6a",
+      "sourceIdentity": {
+        "brand": "Twinings",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "twinings|london|lemon|ginger|herbal|tea|bags|20 ct",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "20 Ct"
+      },
+      "sourceIdentitySha256": "b08da6f1fb7f0924d9002a094bc8e93cf1f74644baa97294458511b64f86a6be",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "cd6622b4-1b42-4fe1-a883-f5c4d744d286",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-5200",
+        "walmart:1:FaisalX-5201"
+      ],
+      "proposedCanonicalVariantId": "cpv1:49d42205ee66f34218b88d76a84bd547fd3922776a28ae6d21dc7033231e83dd",
+      "sourceIdentity": {
+        "brand": "Tootsie",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "tootsie|roll|fruit|chews|assorted|fruit|flavors|14 37 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "14.37 oz"
+      },
+      "sourceIdentitySha256": "b5dc202848a62d239d34a1d52ed5a5428bcc0802ca413537e44c3ead0eb87742",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "4a900723-ec9f-4832-8c1a-41340164a5ef",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-5268",
+        "walmart:1:FaisalX-5269",
+        "walmart:1:FaisalX-5270"
+      ],
+      "proposedCanonicalVariantId": "cpv1:807ebb971467faa0bc374619a0d9709facfee5d02d84cbc455cda1e005d5538c",
+      "sourceIdentity": {
+        "brand": "Albanese",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "albanese|world|best|flavor|gummi|bears|5oz|7 5 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "7.5 oz"
+      },
+      "sourceIdentitySha256": "0b67b732120ae45e598cf85ceb6fda65ceec64c100a153a294b9b6ef2e2de40e",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:FaisalX-5316"
+      ],
+      "proposedCanonicalVariantId": "cpv1:17c03acf1fd701e6f1c6889b44a2f78228cbbb1bf7c179adf543235f2a56421a",
+      "sourceIdentity": {
+        "brand": "Tootsie",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "tootsie|roll|original|chocolate|midgees|peanut|free|15 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "15 oz"
+      },
+      "sourceIdentitySha256": "161d2c8497788e2d32472e67cfa0c9eeaa4c7e52e468a18ca27e57dbfb81e254",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "aa9e1278-33d6-4127-9ecd-47448da93c74",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-2359"
+      ],
+      "proposedCanonicalVariantId": "cpv1:48620ec34cb90dd46a1e2318aca8ddd641dacd40d275d0ef12b29ffdaedd5e7f",
+      "sourceIdentity": {
+        "brand": "Barilla",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "barilla|classic|non|gmo|kosher|certified|rotini|16 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "16 oz"
+      },
+      "sourceIdentitySha256": "446c19f714c386cfc5340ac7e72490a90c7d74820b5e8618529a4b8521df0cb8",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "c41c1846-8d84-48df-8eae-ab68245a06e8",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-277",
+        "walmart:1:RizwanX-278",
+        "walmart:1:RizwanX-279"
+      ],
+      "proposedCanonicalVariantId": "cpv1:061136c0b3bc619ece4a86dd635861189c271f64ebaec3fc3d1c848b3fb9015e",
+      "sourceIdentity": {
+        "brand": "Cheerios",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cheerios|general|mills|honey|nut|breakfast|cereal|10 8 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "10.8 oz"
+      },
+      "sourceIdentitySha256": "48284958e1410fe426eab8f9b13259df76a2125b9dcff8c48240fec49e4dcf50",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "1de121ce-8979-4a92-9d45-da01395e4c0f",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-3032"
+      ],
+      "proposedCanonicalVariantId": "cpv1:3c05db34d7a76883327b34e5f59ac0750e57bcc6eb04048cfaacc746ee689885",
+      "sourceIdentity": {
+        "brand": "Muir",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "muir|glen|organic|fire|roasted|diced|tomatoes|14 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "14 oz"
+      },
+      "sourceIdentitySha256": "6ac46d0e6de5dd8335032037295ffc3d6d6d372afd399d437bebd2d2d1d08dac",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-3442",
+        "walmart:1:RizwanX-3443",
+        "walmart:1:RizwanX-3444"
+      ],
+      "proposedCanonicalVariantId": "cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582",
+      "sourceIdentity": {
+        "brand": "Joan",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "joan|arc|spicy|chili|beans|gluten|free|15 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "15 oz"
+      },
+      "sourceIdentitySha256": "a79e9ca9432582c3bda1896fd6fde5c0941ad114ecdfa7224b44bef2559c0add",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-353"
+      ],
+      "proposedCanonicalVariantId": "cpv1:2f19e8527096c949e40cdddfdcd6c8e7aa6481d9c158ee2e3905134f03af6243",
+      "sourceIdentity": {
+        "brand": "Kellogg'S",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "kellogg s|frosted|flakes|cereal|12oz|12 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "12 oz"
+      },
+      "sourceIdentitySha256": "31188ebd6005c967315bfdf516917f81b023f7f589523a1607ae762b75ae4841",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "1017d0ca-8031-4364-8bff-0eb139e95352",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-3721",
+        "walmart:1:RizwanX-3722",
+        "walmart:1:RizwanX-3723"
+      ],
+      "proposedCanonicalVariantId": "cpv1:25604c35aed9d133f7e0dcf4160d8bdda1526a839545dc4d2ff2b557424b5087",
+      "sourceIdentity": {
+        "brand": "Cocoa Classics",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cocoa|classics|arctic|white|mix|hot|chocolate|1 25 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "1.25 oz"
+      },
+      "sourceIdentitySha256": "15a7e48396e91a5985a090b20b5fd34a964e59b3d6821b9d7a9400cf35217fbb",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "ac813142-da60-410d-a416-d8113d12b65b",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-3728"
+      ],
+      "proposedCanonicalVariantId": "cpv1:83a75a3e20a1e517a3ee6a0b2049982feb3fe2132b1f09e14b28a181a7e599e6",
+      "sourceIdentity": {
+        "brand": "Cocoa Classics",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cocoa|classics|chocolate|supreme|mix|hot|chocolate|1 25 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "1.25 oz"
+      },
+      "sourceIdentitySha256": "d58da70d2e5f472f9ddec1bdaefbb4d9a66afc47788c7d279a3e0dceeb0524e5",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "ffe807fb-8c8e-4eb5-886a-537d956d5dc2",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-3839",
+        "walmart:1:RizwanX-3840"
+      ],
+      "proposedCanonicalVariantId": "cpv1:fa628c6030f530eeb4097e74e0e14c3e02d0f5956007c16e785bf605a09debe3",
+      "sourceIdentity": {
+        "brand": "La",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "la|guerrero|white|corn|tortillas|25oz|30ct|25 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "25 oz"
+      },
+      "sourceIdentitySha256": "e805465f8efdbe550cb7473c208b9b4598a3909214abfef860b7cfa56c59e558",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "1b32d704-4a32-4dd1-964b-e88538de410e",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-401"
+      ],
+      "proposedCanonicalVariantId": "cpv1:c0b4ba526e040475ec643eacd8f242215ece387a0f163d61d347f38eb6cedaa2",
+      "sourceIdentity": {
+        "brand": "Chex",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "chex|honey|nut|cereal|gluten|free|breakfast|19 6 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "19.6 oz"
+      },
+      "sourceIdentitySha256": "b4eb42f7d0b4b75f7b40103a7b6f48918e0023265aaedf408c2e1b5ddc463478",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "c9d3581f-7493-4aeb-8949-839d72406db1",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-458"
+      ],
+      "proposedCanonicalVariantId": "cpv1:b4fb70b1de5d7aebdd899b6e2b6f1d7bef793108b8da1675557657c95a14dc71",
+      "sourceIdentity": {
+        "brand": "General",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "general|mills|cheerios|honey|nut|breakfast|cereal|27 2 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "27.2 oz"
+      },
+      "sourceIdentitySha256": "86983978798d3d2ce1d8614c776ec4ee0ec340be29b26199663a88e08c7f6caf",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "6b310b15-8439-4e62-b1e8-b72817322fbc",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-499",
+        "walmart:1:RizwanX-501"
+      ],
+      "proposedCanonicalVariantId": "cpv1:2d24394afed4c515a00d3685e095c167b1730c61ce71af2580fe2f7ca4965fe1",
+      "sourceIdentity": {
+        "brand": "Cheerios",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cheerios|oat|crunch|almond|breakfast|cereal|made|24 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "24 oz"
+      },
+      "sourceIdentitySha256": "cb1a63ae3a2da1d6c11f7e91cf4509a6ae18f7512eae90ea135002526d61409c",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "fe290f2d-3251-49dd-a75f-4446aa5adf04",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-502"
+      ],
+      "proposedCanonicalVariantId": "cpv1:14c69fad3a2d5ae6b288cd73004a9d656362a4c78869c9b19f140cc33c664921",
+      "sourceIdentity": {
+        "brand": "Cheerios",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "cheerios|breakfast|cereal|9oz|general|mills|8 9 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "8.9 oz"
+      },
+      "sourceIdentitySha256": "91d9b67bb44c2a3328d6359f67f2bce770d78f6a9004387bfbe1c9def153a796",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-513"
+      ],
+      "proposedCanonicalVariantId": "cpv1:1cbcf0268f3eee5696328f42d65ee04525b341e031262962edfa61485ac79029",
+      "sourceIdentity": {
+        "brand": "Post",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "post|cocoa|pebbles|chocolate|breakfast|cereal|gluten|11 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "11 oz"
+      },
+      "sourceIdentitySha256": "1e8cdbebd9683b30f748b290f3314b2fc6e835c6235f54d78b8e2cee774f3acf",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "ac17fbfe-56bb-4a74-bb08-1680cde830b3",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-581",
+        "walmart:1:RizwanX-582"
+      ],
+      "proposedCanonicalVariantId": "cpv1:c8b89337e40cd3d2d1c1b1ab50b10ba62d289b6bbe118db2c8124e700a3fe345",
+      "sourceIdentity": {
+        "brand": "Post",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "post|fruity|pebbles|breakfast|cereal|gluten|free|2 oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "2 oz"
+      },
+      "sourceIdentitySha256": "190fff9ad48dd7df67ce40f6cf95217a4c1fc1646af6108cd1d2d06e4970b314",
+      "variantState": "CREATE"
+    },
+    {
+      "decisionState": "CREATE",
+      "donorProductId": "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+      "donorTransitionRequired": true,
+      "existingDecision": null,
+      "listingKeys": [
+        "walmart:1:RizwanX-63"
+      ],
+      "proposedCanonicalVariantId": "cpv1:b2bc69dcdc6dc410da94f5d01d70e0d1b1753b2b22af054cf064c51c030d4aef",
+      "sourceIdentity": {
+        "brand": "Hidden Valley",
+        "containerType": null,
+        "flavor": null,
+        "identityKey": "hidden|valley|ranch|cool|zesty|burger|secret|12 fl oz",
+        "identityStatus": "legacy_unverified",
+        "productLine": null,
+        "size": "12 fl oz"
+      },
+      "sourceIdentitySha256": "ca96f096c75b3a9eb5cebb2a7b0e7aeb86eebd2331bd2f4a1afd06ed569ec446",
+      "variantState": "CREATE"
+    }
+  ],
+  "readyListingKeys": [
+    "walmart:1:FaisalX-1189",
+    "walmart:1:FaisalX-1192",
+    "walmart:1:FaisalX-1666",
+    "walmart:1:FaisalX-1806",
+    "walmart:1:FaisalX-206",
+    "walmart:1:FaisalX-3417",
+    "walmart:1:FaisalX-4443",
+    "walmart:1:FaisalX-4444",
+    "walmart:1:FaisalX-4889",
+    "walmart:1:FaisalX-5104",
+    "walmart:1:FaisalX-5200",
+    "walmart:1:FaisalX-5201",
+    "walmart:1:FaisalX-5268",
+    "walmart:1:FaisalX-5269",
+    "walmart:1:FaisalX-5270",
+    "walmart:1:FaisalX-5316",
+    "walmart:1:RizwanX-2359",
+    "walmart:1:RizwanX-277",
+    "walmart:1:RizwanX-278",
+    "walmart:1:RizwanX-279",
+    "walmart:1:RizwanX-3032",
+    "walmart:1:RizwanX-3442",
+    "walmart:1:RizwanX-3443",
+    "walmart:1:RizwanX-3444",
+    "walmart:1:RizwanX-353",
+    "walmart:1:RizwanX-3721",
+    "walmart:1:RizwanX-3722",
+    "walmart:1:RizwanX-3723",
+    "walmart:1:RizwanX-3728",
+    "walmart:1:RizwanX-3839",
+    "walmart:1:RizwanX-3840",
+    "walmart:1:RizwanX-401",
+    "walmart:1:RizwanX-458",
+    "walmart:1:RizwanX-499",
+    "walmart:1:RizwanX-501",
+    "walmart:1:RizwanX-502",
+    "walmart:1:RizwanX-513",
+    "walmart:1:RizwanX-581",
+    "walmart:1:RizwanX-582",
+    "walmart:1:RizwanX-63"
+  ],
+  "schemaVersion": "product-truth-consensus-reuse-preflight/1.0.0",
+  "source": {
+    "consensusReuseScopeGeneratedAt": "2026-07-29T23:26:31.000Z",
+    "consensusReuseScopeSha256": "b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "status": "PARTIALLY_READY",
+  "waves": [
+    {
+      "canonicalVariantCreates": 5,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 5,
+      "decisionCreates": 5,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+        "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+        "8291e846-459a-44d5-97f1-066d25f9253e",
+        "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+        "ff62bc23-cb15-419a-8a8e-9c27259b3fc7"
+      ],
+      "donorTransitions": 5,
+      "listingKeys": [
+        "walmart:1:FaisalX-1189",
+        "walmart:1:FaisalX-1192",
+        "walmart:1:FaisalX-1666",
+        "walmart:1:FaisalX-1806",
+        "walmart:1:FaisalX-206"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 45,
+      "ordinal": 0,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "adb249512910db8ea8ca76b46ca706a2772e17b74400ff3a7cd9dfd1cfc847c3"
+    },
+    {
+      "canonicalVariantCreates": 4,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 4,
+      "decisionCreates": 4,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+        "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+        "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+        "eb133ccd-9f3e-4187-8111-660ab7a1570a"
+      ],
+      "donorTransitions": 4,
+      "listingKeys": [
+        "walmart:1:FaisalX-3417",
+        "walmart:1:FaisalX-4443",
+        "walmart:1:FaisalX-4444",
+        "walmart:1:FaisalX-4889",
+        "walmart:1:FaisalX-5104"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 41,
+      "ordinal": 1,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "c4f1a53ebd21bfeaa0a27c25279f91193ede58afa4858aa4664fb587e57d0be5"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "4a900723-ec9f-4832-8c1a-41340164a5ef",
+        "cd6622b4-1b42-4fe1-a883-f5c4d744d286"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:FaisalX-5200",
+        "walmart:1:FaisalX-5201",
+        "walmart:1:FaisalX-5268",
+        "walmart:1:FaisalX-5269",
+        "walmart:1:FaisalX-5270"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 33,
+      "ordinal": 2,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "70c92300c6fbd1d38a37a17e9a0972c6d7e39bf0bd5dce36919973696c59f9cd"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+        "aa9e1278-33d6-4127-9ecd-47448da93c74",
+        "c41c1846-8d84-48df-8eae-ab68245a06e8"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:FaisalX-5316",
+        "walmart:1:RizwanX-2359",
+        "walmart:1:RizwanX-277",
+        "walmart:1:RizwanX-278",
+        "walmart:1:RizwanX-279"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 37,
+      "ordinal": 3,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "e0b1421c5f930f129f2aa6b87050fe8561b648214bf05c3eb1ace48fbb331b05"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1de121ce-8979-4a92-9d45-da01395e4c0f",
+        "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+        "fe2eef61-0ade-4f07-b67c-5c3d8b251696"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-3032",
+        "walmart:1:RizwanX-3442",
+        "walmart:1:RizwanX-3443",
+        "walmart:1:RizwanX-3444",
+        "walmart:1:RizwanX-353"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 37,
+      "ordinal": 4,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "cfd1dabdc2ab7b3c481d40501bbba2130f6d7814a67199da78da526045c46c74"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1017d0ca-8031-4364-8bff-0eb139e95352",
+        "ac813142-da60-410d-a416-d8113d12b65b"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:RizwanX-3721",
+        "walmart:1:RizwanX-3722",
+        "walmart:1:RizwanX-3723",
+        "walmart:1:RizwanX-3728"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 28,
+      "ordinal": 5,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "aea4230b2d50d6ca9d9eb5426c1d793dc9c2967e8be2d8e42b357d7589a971e8"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1b32d704-4a32-4dd1-964b-e88538de410e",
+        "c9d3581f-7493-4aeb-8949-839d72406db1",
+        "ffe807fb-8c8e-4eb5-886a-537d956d5dc2"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-3839",
+        "walmart:1:RizwanX-3840",
+        "walmart:1:RizwanX-401",
+        "walmart:1:RizwanX-458"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 32,
+      "ordinal": 6,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "a9152a699634cc33d13014df8f5a6a215e298b5e16113d2a17ab31ddc0114f7c"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "6b310b15-8439-4e62-b1e8-b72817322fbc",
+        "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+        "fe290f2d-3251-49dd-a75f-4446aa5adf04"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-499",
+        "walmart:1:RizwanX-501",
+        "walmart:1:RizwanX-502",
+        "walmart:1:RizwanX-513"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 32,
+      "ordinal": 7,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "e999797c5acc340ca70580a50d4fedd3db54b0a3190fb30a92dc9c4fb258b054"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+        "ac17fbfe-56bb-4a74-bb08-1680cde830b3"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:RizwanX-581",
+        "walmart:1:RizwanX-582",
+        "walmart:1:RizwanX-63"
+      ],
+      "listingRecipeComponentCreates": 3,
+      "listingRecipeCreates": 3,
+      "maximumRows": 23,
+      "ordinal": 8,
+      "skuComponentEvidenceCreates": 3,
+      "skuCostCreates": 3,
+      "skuCostLinkCreates": 3,
+      "waveKey": "a35b9e8b43811219043604af7a1ef6ba4e54b22188cb5507328913ac04442a33"
+    }
+  ]
+}

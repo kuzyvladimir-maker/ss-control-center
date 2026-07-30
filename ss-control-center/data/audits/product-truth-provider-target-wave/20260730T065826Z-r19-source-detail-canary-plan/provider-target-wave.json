@@ -1,0 +1,589 @@
+{
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "claims": {
+    "authorizesExecution": false,
+    "consumerActivation": false,
+    "createsParallelCatalog": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0
+  },
+  "counts": {
+    "calibrationAdmittedProviderTargets": 1013,
+    "calibrationExcludedProviderTargets": 2114,
+    "eligibleTargets": 999,
+    "noSingleTargetRepresentative": 0,
+    "providerTargets": 3127,
+    "selectedDependentListings": 18,
+    "selectedImmediateClosures": 18,
+    "selectedTargets": 5,
+    "terminalAttemptTargets": 14
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T07:58:26.030Z",
+  "generatedAt": "2026-07-30T06:58:26.030Z",
+  "operationalRequest": {
+    "createdAt": "2026-07-30T06:58:26.030Z",
+    "expiresAt": "2026-07-30T07:58:26.030Z",
+    "listingKeys": [
+      "amazon:1:742259729584",
+      "amazon:1:743269734438",
+      "amazon:1:742259729683",
+      "walmart:1:FaisalX-1208",
+      "walmart:1:RizwanX-192"
+    ],
+    "maxWallClockMs": 1800000,
+    "mode": "WAVE",
+    "providerAcquisitionTargets": [
+      {
+        "canonicalIdentityHash": "98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+        "canonicalVariantId": "cpv1:98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+        "listingKey": "amazon:1:742259729584",
+        "query": "Birds Eye Steamfresh Super Sweet Corn bag 10 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      },
+      {
+        "canonicalIdentityHash": "d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+        "canonicalVariantId": "cpv1:d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+        "listingKey": "amazon:1:743269734438",
+        "query": "Thomas' English Muffins Original bag 13 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      },
+      {
+        "canonicalIdentityHash": "f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+        "canonicalVariantId": "cpv1:f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+        "listingKey": "amazon:1:742259729683",
+        "query": "Birds Eye Steamfresh Mixed Vegetables bag 10 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      },
+      {
+        "canonicalIdentityHash": "7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+        "canonicalVariantId": "cpv1:7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+        "listingKey": "walmart:1:FaisalX-1208",
+        "query": "Sara Lee Artesano White bag 19 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      },
+      {
+        "canonicalIdentityHash": "37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+        "canonicalVariantId": "cpv1:37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+        "listingKey": "walmart:1:RizwanX-192",
+        "query": "Del Monte Stewed Tomatoes Original Recipe can 14.5 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      }
+    ],
+    "providerCeilings": [
+      {
+        "maxCalls": 5,
+        "maxUnits": 5,
+        "operations": [
+          "query"
+        ],
+        "provider": "oxylabs",
+        "reserveFloor": null
+      },
+      {
+        "maxCalls": 10,
+        "maxUnits": 25,
+        "operations": [
+          "detail",
+          "search"
+        ],
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "runId": "ptca-20260730t065826z-r19-source-detail-canary",
+    "schemaVersion": "product-truth-operational-plan-request/1.1.0",
+    "sourcePolicy": {
+      "allowBjs": false,
+      "allowClubs": false,
+      "componentConcurrency": 1,
+      "listingConcurrency": 1,
+      "maxAttemptsPerListing": 1,
+      "procurementZip": "33765",
+      "retailers": [
+        "walmart",
+        "target",
+        "publix"
+      ]
+    },
+    "verificationPolicy": {
+      "maxPriceAgeMs": 172800000,
+      "minGalleryImages": 5
+    }
+  },
+  "schemaVersion": "product-truth-provider-target-wave/1.1.0",
+  "selectionPolicy": {
+    "bjsAllowed": false,
+    "clubsAllowed": false,
+    "maximumProviderUnits": 30,
+    "maximumTargets": 5,
+    "procurementZip": "33765",
+    "queryAdmission": "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
+    "representative": "ONE_VALID_SINGLE_TARGET_LISTING_HIGHEST_SALES_THEN_WALMART_THEN_REPAIR_PRIORITY",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ],
+    "retryAllowed": false,
+    "terminalAttemptPolicy": "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT",
+    "unitOfWork": "UNIQUE_CANONICAL_COMPONENT_TARGET"
+  },
+  "source": {
+    "componentAcquisitionScope": {
+      "generatedAt": "2026-07-30T05:22:00.000Z",
+      "schemaVersion": "product-truth-component-acquisition-scope/1.4.0",
+      "sha256": "8b87b1ae48c6661cfb19b36f1b0dda34198a0686ab54892282f0fc6ce87d4d56"
+    },
+    "searchQueryCalibration": {
+      "admittedForms": [
+        "bag",
+        "bottle",
+        "can"
+      ],
+      "admittedProviderTargets": 1013,
+      "generatedAt": "2026-07-30T05:51:54.000Z",
+      "schemaVersion": "product-truth-search-query-calibration/1.0.0",
+      "sha256": "e12e33f8242c51f899cedc2a2354f5a1f75da88fbb13039b738708da7ac0e68f"
+    },
+    "terminalAttemptCapture": {
+      "attemptCount": 29,
+      "capturedAt": "2026-07-30T06:59:49.722Z",
+      "schemaVersion": "product-truth-provider-attempt-capture/1.0.0",
+      "sha256": "baf5fad72216b16cad64287179791995c3273faabeac4fb4bfa159af28fe6c11"
+    }
+  },
+  "targets": [
+    {
+      "acquisitionPriority": 56,
+      "canonicalIdentityHash": "98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+      "canonicalVariantId": "cpv1:98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+      "dependentListingKeys": [
+        "amazon:1:742259729584",
+        "amazon:1:742259729591",
+        "amazon:3:1C1H-3ID6-0YUK",
+        "amazon:3:1C1H-3ID6-10CR"
+      ],
+      "impact": {
+        "amazonListings": 4,
+        "componentUses": 4,
+        "dependentListings": 4,
+        "immediateClosableListings": 4,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 0
+      },
+      "ordinal": 0,
+      "query": "Birds Eye Steamfresh Super Sweet Corn bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "amazon",
+        "componentIndex": 0,
+        "listingKey": "amazon:1:742259729584",
+        "priority": {
+          "gmv30d": null,
+          "orders30d": null,
+          "repairPriority": 3375,
+          "units30d": null
+        },
+        "quantity": 10,
+        "sku": "742259729584",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Birds Eye",
+        "flavor": "Super Sweet Corn",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Steamfresh",
+        "size": "10 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 67,
+      "canonicalIdentityHash": "d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+      "canonicalVariantId": "cpv1:d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+      "dependentListingKeys": [
+        "amazon:1:743269734438",
+        "amazon:3:1C3Y-BRWN-ZTY5",
+        "amazon:3:1C3Y-BRWN-ZTYA",
+        "amazon:3:1C3Y-BRWO-0KT2"
+      ],
+      "impact": {
+        "amazonListings": 4,
+        "componentUses": 4,
+        "dependentListings": 4,
+        "immediateClosableListings": 4,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 0
+      },
+      "ordinal": 1,
+      "query": "Thomas' English Muffins Original bag 13 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "amazon",
+        "componentIndex": 0,
+        "listingKey": "amazon:1:743269734438",
+        "priority": {
+          "gmv30d": null,
+          "orders30d": null,
+          "repairPriority": 3550,
+          "units30d": null
+        },
+        "quantity": 9,
+        "sku": "743269734438",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Thomas'",
+        "flavor": "Original",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "English Muffins",
+        "size": "13 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 73,
+      "canonicalIdentityHash": "f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+      "canonicalVariantId": "cpv1:f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+      "dependentListingKeys": [
+        "amazon:1:742259729683",
+        "amazon:1:742259729690",
+        "amazon:3:1C1H-3IDA-5DZ3",
+        "amazon:3:1C1H-3IDA-6MAS"
+      ],
+      "impact": {
+        "amazonListings": 4,
+        "componentUses": 4,
+        "dependentListings": 4,
+        "immediateClosableListings": 4,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 0
+      },
+      "ordinal": 2,
+      "query": "Birds Eye Steamfresh Mixed Vegetables bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "amazon",
+        "componentIndex": 0,
+        "listingKey": "amazon:1:742259729683",
+        "priority": {
+          "gmv30d": null,
+          "orders30d": null,
+          "repairPriority": 3384,
+          "units30d": null
+        },
+        "quantity": 10,
+        "sku": "742259729683",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Birds Eye",
+        "flavor": "Mixed Vegetables",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Steamfresh",
+        "size": "10 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 74,
+      "canonicalIdentityHash": "7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+      "canonicalVariantId": "cpv1:7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+      "dependentListingKeys": [
+        "walmart:1:FaisalX-1208",
+        "walmart:1:FaisalX-1209",
+        "walmart:1:FaisalX-1641"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 10,
+        "knownUnits30d": 6,
+        "walmartListings": 3
+      },
+      "ordinal": 3,
+      "query": "Sara Lee Artesano White bag 19 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:FaisalX-1208",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": 10,
+          "repairPriority": 2,
+          "units30d": 6
+        },
+        "quantity": 2,
+        "sku": "FaisalX-1208",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Sara Lee",
+        "flavor": "White",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Artesano",
+        "size": "19 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 76,
+      "canonicalIdentityHash": "37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+      "canonicalVariantId": "cpv1:37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+      "dependentListingKeys": [
+        "walmart:1:RizwanX-190",
+        "walmart:1:RizwanX-191",
+        "walmart:1:RizwanX-192"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 5,
+        "knownUnits30d": 4,
+        "walmartListings": 3
+      },
+      "ordinal": 4,
+      "query": "Del Monte Stewed Tomatoes Original Recipe can 14.5 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:RizwanX-192",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": 5,
+          "repairPriority": 8,
+          "units30d": 4
+        },
+        "quantity": 8,
+        "sku": "RizwanX-192",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Del Monte",
+        "flavor": "Original Recipe",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Stewed Tomatoes",
+        "size": "14.5 oz"
+      }
+    }
+  ],
+  "targetsWithoutSingleTargetRepresentative": [],
+  "terminalAttemptTargets": [
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:08:19.860Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "amazon:1:742259729669",
+          "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t055717z-calibrated-r17"
+        }
+      ],
+      "canonicalVariantId": "cpv1:05eea8098ab969535a4bf2af5429891596cab47e883c44b3478e9b00cbef7538"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:04:23.135Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-165",
+          "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t055717z-calibrated-r17"
+        }
+      ],
+      "canonicalVariantId": "cpv1:072d3bd33514ea68d0f9d1236de3edb1129b2692d5b30ad8fc07cb5698fdf089"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:09:31.995Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "amazon:1:742259729997",
+          "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t055717z-calibrated-r17"
+        }
+      ],
+      "canonicalVariantId": "cpv1:08f13ed5b2d8694d0ddf588020eec61ba6f3f9458f508b18d6b3d4f023aad456"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:05:44.442Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-1211",
+          "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t055717z-calibrated-r17"
+        }
+      ],
+      "canonicalVariantId": "cpv1:23d3b0f2995cb82b29c1a1296af9c3130799f0201088cf5a254b317533d146cd"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:28:25.362Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "amazon:1:743269736821",
+          "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t062450z-sealed-query-canary"
+        }
+      ],
+      "canonicalVariantId": "cpv1:2938938168b85824519c8ae8e127bf6caac2a3b88b4a07af7d31f0a57f9e6023"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:29:26.526Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "amazon:1:742259729850",
+          "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t062450z-sealed-query-canary"
+        }
+      ],
+      "canonicalVariantId": "cpv1:2c8083ac641ebc18473f06e8b3022d08e671c78a0516f1529c0151fc1a9af6f4"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:30:28.754Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-808",
+          "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t062450z-sealed-query-canary"
+        }
+      ],
+      "canonicalVariantId": "cpv1:4fbed83868c67fd52ab0e681ea101666ebe1a6fc149707b1e34042b41acc792f"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:31:57.371Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-336",
+          "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t062450z-sealed-query-canary"
+        }
+      ],
+      "canonicalVariantId": "cpv1:727d8db52aeb070aa59e101f68fae4684bd0c053b582161133ea4d6ed729da8a"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:33:00.848Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "amazon:1:742259729959",
+          "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t062450z-sealed-query-canary"
+        }
+      ],
+      "canonicalVariantId": "cpv1:8a91db3429a65c1d73127dcbb998a93de6b0bd8e416ffb0bbe514bfd140fb7ce"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:38:27.283Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-219",
+          "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t043400z-target-wave-1"
+        }
+      ],
+      "canonicalVariantId": "cpv1:9605ba981d666ff9610bad59703c111c252df9a14d4c43c3bea669555d9119c0"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:39:47.683Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-315",
+          "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t043400z-target-wave-1"
+        }
+      ],
+      "canonicalVariantId": "cpv1:9afdd53d474c3ad6e19ba4a5c4da22d32f2d695946d4c681cf2c21226c9bf38d"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T06:06:59.436Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-317",
+          "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t055717z-calibrated-r17"
+        }
+      ],
+      "canonicalVariantId": "cpv1:9ff3db8e16998f3e9d8d445a62e546f8b665ab2a59464a0dbf6be32bb661ad92"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:50:05.129Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-3991",
+          "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t044630z-target-wave-2"
+        }
+      ],
+      "canonicalVariantId": "cpv1:ac54437392586aa955952791a6c1c4b1453ecd83740efbbcf9a356eab8715408"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:53:16.531Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-294",
+          "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t044630z-target-wave-2"
+        }
+      ],
+      "canonicalVariantId": "cpv1:b6db8bcd438b8f6c59f07a5628144d10567f862bdaf7773d73ad7b0c84ee676d"
+    }
+  ],
+  "waveId": "ptca-20260730t065826z-r19-source-detail-canary"
+}

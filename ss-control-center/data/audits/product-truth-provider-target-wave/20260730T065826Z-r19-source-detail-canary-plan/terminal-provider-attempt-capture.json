@@ -1,0 +1,386 @@
+{
+  "attempts": [
+    {
+      "finishedAt": "2026-07-28T18:53:12.018Z",
+      "itemStatus": "failed",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "planSha256": "bca2decb19297a5aac96d39965c3988303f19cdffbb5d23a0e3b821be846413c",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T175740Z",
+      "stage": "EXECUTION_FAILED",
+      "targetCanonicalVariantIds": []
+    },
+    {
+      "finishedAt": "2026-07-28T18:58:17.276Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1315",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:884643487f06a4e964641e3551d61aafef6558e27dc71756ddb5b5d7bad56598"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T18:59:01.049Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3481",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:5f7018c1aae41349a66c8e96e899a694c8a1748ae3625735ecd4228c8eb83d9d"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T18:59:43.796Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3499",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:77ac684ddb29fe03a00709531d1fe15917ae67ac89f31b20703fe4bc7c64616a"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T19:00:30.135Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-2195",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:5ef8e14021501026f8af30f7ba2dff037754487642e280cead23065b21391dc7"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-28T19:01:31.159Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-3237",
+      "planSha256": "06d4f6187819fd573542bcebcdada10d6c7c233ceb304ab09fa30fe79f2b5fae",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "pt-g7-canary-20260728T185508Z",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:f4baf55a826f323c66b745b2b5e2bfee033da2627fe6ee6ffd2e9be306c1d9ce"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T03:50:03.420Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1719",
+      "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+      "providerCalls": 1,
+      "providerUnits": 1,
+      "runId": "ptca-20260730t034800z-natures-own-brioche",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:9e28289ee973484b436fa93abc8dcd348e135a6e3bfad4c9b39c9d44b42662e4"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:01:14.325Z",
+      "itemStatus": "failed",
+      "listingKey": "walmart:1:FaisalX-380",
+      "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t035200z-natures-own-multigrain",
+      "stage": "EXECUTION_FAILED",
+      "targetCanonicalVariantIds": []
+    },
+    {
+      "finishedAt": "2026-07-30T04:07:46.945Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1716",
+      "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t040600z-natures-own-butterbread",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:202a4f9adfb0257189a99a446008695db79d019b3496c720929e350914e4ff87"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:38:27.283Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-219",
+      "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t043400z-target-wave-1",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:9605ba981d666ff9610bad59703c111c252df9a14d4c43c3bea669555d9119c0"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:39:47.683Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-315",
+      "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t043400z-target-wave-1",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:9afdd53d474c3ad6e19ba4a5c4da22d32f2d695946d4c681cf2c21226c9bf38d"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:40:56.694Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259728648",
+      "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t043400z-target-wave-1",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:43a3745b43f25db13b4113864fd27697ffc7d1baff1e01270e42d48cd7481a5b"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:42:20.260Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:RizwanX-4526",
+      "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t043400z-target-wave-1",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:4ea0c54bdfaa890bc5314c555d33ad6eb51ad379596bb160f7f40c6d5b0f8785"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:43:48.042Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:AY-AS5F-JEY9",
+      "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t043400z-target-wave-1",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:77b26686eab14af707e255830d084a2373a76fd3e58e3ae85c9da8d1ac99e5a6"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:48:36.684Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259732010",
+      "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t044630z-target-wave-2",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:799942953e6cce32c948f9712407011266af6d6db165fb47e9f17895d561183e"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:50:05.129Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-3991",
+      "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t044630z-target-wave-2",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:ac54437392586aa955952791a6c1c4b1453ecd83740efbbcf9a356eab8715408"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:51:20.380Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-242",
+      "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t044630z-target-wave-2",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:d65baa01a9a47a7599efd38f3ecbabf865bf29342cfa89c3e2199a679effdee2"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:52:15.061Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-363",
+      "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t044630z-target-wave-2",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:d02ea5a05ad85b589c7c385d0b962bf85e714ee46788390c07d13b480db09ac1"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T04:53:16.531Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-294",
+      "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t044630z-target-wave-2",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:b6db8bcd438b8f6c59f07a5628144d10567f862bdaf7773d73ad7b0c84ee676d"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:04:23.135Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-165",
+      "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:072d3bd33514ea68d0f9d1236de3edb1129b2692d5b30ad8fc07cb5698fdf089"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:05:44.442Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-1211",
+      "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:23d3b0f2995cb82b29c1a1296af9c3130799f0201088cf5a254b317533d146cd"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:06:59.436Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-317",
+      "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:9ff3db8e16998f3e9d8d445a62e546f8b665ab2a59464a0dbf6be32bb661ad92"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:08:19.860Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259729669",
+      "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:05eea8098ab969535a4bf2af5429891596cab47e883c44b3478e9b00cbef7538"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:09:31.995Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259729997",
+      "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t055717z-calibrated-r17",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:08f13ed5b2d8694d0ddf588020eec61ba6f3f9458f508b18d6b3d4f023aad456"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:28:25.362Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:743269736821",
+      "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t062450z-sealed-query-canary",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:2938938168b85824519c8ae8e127bf6caac2a3b88b4a07af7d31f0a57f9e6023"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:29:26.526Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259729850",
+      "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t062450z-sealed-query-canary",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:2c8083ac641ebc18473f06e8b3022d08e671c78a0516f1529c0151fc1a9af6f4"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:30:28.754Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-808",
+      "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t062450z-sealed-query-canary",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:4fbed83868c67fd52ab0e681ea101666ebe1a6fc149707b1e34042b41acc792f"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:31:57.371Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "walmart:1:FaisalX-336",
+      "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t062450z-sealed-query-canary",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:727d8db52aeb070aa59e101f68fae4684bd0c053b582161133ea4d6ed729da8a"
+      ]
+    },
+    {
+      "finishedAt": "2026-07-30T06:33:00.848Z",
+      "itemStatus": "terminal_gap",
+      "listingKey": "amazon:1:742259729959",
+      "planSha256": "a8e197aa71a5a25a0f4f464872826705036252d84b2012ea954a3c05a7311eb1",
+      "providerCalls": 2,
+      "providerUnits": 3.5,
+      "runId": "ptca-20260730t062450z-sealed-query-canary",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "targetCanonicalVariantIds": [
+        "cpv1:8a91db3429a65c1d73127dcbb998a93de6b0bd8e416ffb0bbe514bfd140fb7ce"
+      ]
+    }
+  ],
+  "capturedAt": "2026-07-30T06:59:49.722Z",
+  "claims": {
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "schemaVersion": "product-truth-provider-attempt-capture/1.0.0"
+}

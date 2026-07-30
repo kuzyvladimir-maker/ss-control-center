@@ -1,0 +1,85 @@
+{
+  "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "counts": {
+    "failed": 1
+  },
+  "environment": "production",
+  "generatedAt": "2026-07-30T04:01:14.325Z",
+  "items": [
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T04:01:14.325Z",
+      "lastError": "SOURCE_COVERAGE_INCOMPLETE unwrangle:target:content_only",
+      "listingKey": "walmart:1:FaisalX-380",
+      "ordinal": 0,
+      "queueJobId": "4ccbc56b-236b-47e7-8a15-45b03a864069",
+      "resultSha256": "300cab2696b39696d499ac78740f073bfc07736fee230ac3746ba0b08f4ebaa1",
+      "stage": "EXECUTION_FAILED",
+      "status": "failed"
+    }
+  ],
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_5509ccd0661f8af66ba96dd30d8711854925a6177a924dba6e629f7114ca43d8",
+        "createdAt": "2026-07-30T04:00:48.545Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_f24b3c8093374f7e3b7a10a5a76f0043f525fe71c254410b9786dc393fe0ecab",
+        "reservationKey": "mpr_v1_b008dbc3386587b4623a62149e0a9a5776f167f25d786d6c5bf726b57e0ee0ce",
+        "reservedAt": "2026-07-30T04:00:48.545Z",
+        "settledAt": "2026-07-30T04:01:06.091Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_a08d2dc106f98ca7ba8f9a15b9307f8ace16ec3d413416d0c1c8a7eacee9490e",
+        "createdAt": "2026-07-30T04:01:06.694Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_856f2ba953b37d7f494d081e5df8a757623495cd8a941c2c13590d470da0fcb5",
+        "reservationKey": "mpr_v1_5decbf40aa7a875285061c6becd521b07d71f0012c1d376a726c070f8d7dea45",
+        "reservedAt": "2026-07-30T04:01:06.694Z",
+        "settledAt": "2026-07-30T04:01:13.561Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "ptca-20260730t035200z-natures-own-multigrain",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "mode": "WAVE",
+  "outcome": "FAILED",
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "resultContractVersion": "product-truth-operational-result/1.0.0",
+  "runId": "ptca-20260730t035200z-natures-own-multigrain",
+  "runnerVersion": "product-truth-operational-runner/1.0.0",
+  "schemaVersion": "product-truth-operational-report/1.0.0",
+  "targetSetSha256": "a7aec24e8512d610d96da4957550ab1e093937b8de0cda06b145fbcd207f02c6"
+}

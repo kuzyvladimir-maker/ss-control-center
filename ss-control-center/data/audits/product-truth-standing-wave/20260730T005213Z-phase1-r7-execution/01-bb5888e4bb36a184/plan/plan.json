@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-30T00:54:21.904Z",
+  "engineReleaseSha256": "35722246178b923c55ee5ba3cdddeef3db4785423dea05ff2fa8eb698a32f429",
+  "expiresAt": "2026-07-30T02:54:21.485Z",
+  "manifest": {
+    "asOf": "2026-07-30T00:54:21.904Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "feff51964c24c0a0b4e778e16ee075189632f778395dd94d073aa8b480d5f273"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptsw-20260730t005213z-01",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "04b8c80673c380795f1a82c5aeeb93baa611345161d56c98b940796a48c4af55",
+  "targets": [
+    {
+      "canonicalIdentityHash": "afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"arc joan of\",\"productLine\":\"beans chili\",\"flavor\":\"spicy\",\"modifiers\":[],\"form\":\"can\",\"size\":{\"dimension\":\"MASS\",\"baseAmount\":425.242846875,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "cf08dc2194945e645ff0f8a67348ee9ea4b8ea46d0e4298a66b406417774e3ea",
+      "decisionEvidenceJson": "{\n  \"canonicalVariantId\": \"cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582\",\n  \"cases\": [\n    {\n      \"caseId\": \"quarantine:RizwanX-3442\",\n      \"consensusCandidateIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"consensusTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"currentTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"can\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"immutableEvidence\": {\n        \"acceptanceReviewACaseSha256\": \"a8f6726d9d54888612c3ae764eb285669efc7aff984b0406ba88ec8a807f4f71\",\n        \"acceptanceReviewBCaseSha256\": \"a8f6726d9d54888612c3ae764eb285669efc7aff984b0406ba88ec8a807f4f71\",\n        \"caseId\": \"quarantine:RizwanX-3442\",\n        \"corpusCaseSha256\": \"e2d0d9d338ddb668567e08656f8dc4542ac8cdcb9999b1526db4a3ac0b648bb0\",\n        \"frozenReviewACaseSha256\": \"2f4fd18fd40843415e156e0fd6c2994e47b843189b4e1ff51e2187fa95550fa4\",\n        \"frozenReviewBCaseSha256\": \"e6f8776fbe9ad1b909bda44aaa8334487116d688ea9956aeca6c41b299c1f8ae\",\n        \"reconciliationCaseSha256\": \"27ed0947c5c55c42d2f9147e9f101f9ca991595c09b56cdac731afe9e7eb7d5a\",\n        \"repairScopeEntrySha256\": \"435cec7cb4b5ca16767f250b2e971d44f909632257258cebc7438d5d4a8644aa\",\n        \"sourceRowSha256\": \"710d9713fbca5e4e2fc786d2d0e2e8ec45a3668c1f7ab8e4618602fcb540ab12\",\n        \"taskCaseSha256\": \"55f936ec5334ebdac6707683913d491a68e211f73a5e3f83530d00e288e4c30a\",\n        \"taskDonorProductRowSha256\": \"b9ab2dcb26484a5ef3006c11f885207bf54071b660ce5079da4fcd891bc8f12d\",\n        \"taskFirstPartyOfferRowSha256s\": [\n          \"2f08001bec86e26a579f14e24dded3c3bfaf61b8749f7b3b601e6ba617a77e82\"\n        ]\n      },\n      \"listingKey\": \"walmart:1:RizwanX-3442\",\n      \"representationTransition\": {\n        \"consensusSemanticForm\": \"canned vegetables\",\n        \"currentContainerForm\": \"can\",\n        \"modifiersPreservedFromConsensus\": []\n      }\n    },\n    {\n      \"caseId\": \"quarantine:RizwanX-3443\",\n      \"consensusCandidateIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"consensusTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"currentTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"can\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"immutableEvidence\": {\n        \"acceptanceReviewACaseSha256\": \"4de50dbe462869db359561439d9e93234c72e0003ef406c0c277ce876c6c0920\",\n        \"acceptanceReviewBCaseSha256\": \"4de50dbe462869db359561439d9e93234c72e0003ef406c0c277ce876c6c0920\",\n        \"caseId\": \"quarantine:RizwanX-3443\",\n        \"corpusCaseSha256\": \"7bde3d7ceef05ad332d624735009b8c1dd2ed21c9ccf10f340894bf2ccaa54fc\",\n        \"frozenReviewACaseSha256\": \"b0388ecdc263e0d90bab97266b45d8671887d1d26947046552e0db8eedf16750\",\n        \"frozenReviewBCaseSha256\": \"65ecf31a3fa668d59d3243038984e6cb6e566c2be5fa58f9b39780833b23ab92\",\n        \"reconciliationCaseSha256\": \"7e68c1d0371d78c32708009321eb8fa050131f656639be58cfff789c8c3d7e6e\",\n        \"repairScopeEntrySha256\": \"dc8e72b0a2b0ea54bbc7db2f41c7c01ff1f1cd460e417c7e7fc43e3247342c48\",\n        \"sourceRowSha256\": \"718c09481cdc8cbcf1b3c6d9c9ea089d677f13f95a05d350f0aedfb1b5ec4083\",\n        \"taskCaseSha256\": \"5aa745592dd0195053e608d0d4dd4bf0e544c6f42bca6504c8a52994c435873f\",\n        \"taskDonorProductRowSha256\": \"b9ab2dcb26484a5ef3006c11f885207bf54071b660ce5079da4fcd891bc8f12d\",\n        \"taskFirstPartyOfferRowSha256s\": [\n          \"2f08001bec86e26a579f14e24dded3c3bfaf61b8749f7b3b601e6ba617a77e82\"\n        ]\n      },\n      \"listingKey\": \"walmart:1:RizwanX-3443\",\n      \"representationTransition\": {\n        \"consensusSemanticForm\": \"canned vegetables\",\n        \"currentContainerForm\": \"can\",\n        \"modifiersPreservedFromConsensus\": []\n      }\n    },\n    {\n      \"caseId\": \"quarantine:RizwanX-3444\",\n      \"consensusCandidateIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"consensusTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"Canned Vegetables\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"currentTargetIdentity\": {\n        \"brand\": \"Joan of Arc\",\n        \"flavor\": \"Spicy\",\n        \"form\": \"can\",\n        \"modifiers\": [],\n        \"outerPackCount\": 1,\n        \"productLine\": \"Chili Beans\",\n        \"size\": \"15 oz\",\n        \"title\": null\n      },\n      \"immutableEvidence\": {\n        \"acceptanceReviewACaseSha256\": \"a8e12071730c39503108caf6f9c8bf05cc5c681a354a074564575b9d45d24814\",\n        \"acceptanceReviewBCaseSha256\": \"a8e12071730c39503108caf6f9c8bf05cc5c681a354a074564575b9d45d24814\",\n        \"caseId\": \"quarantine:RizwanX-3444\",\n        \"corpusCaseSha256\": \"090ae18c6f231cd327bfb476379f415bd3540dca56bdfb5ea115ea6378ccf286\",\n        \"frozenReviewACaseSha256\": \"a531eb05f975b67c9f524af67bc2a3e4e6293651e6dca8f97546475fb43b0c95\",\n        \"frozenReviewBCaseSha256\": \"4e88ef8d8843d0605349ec2069643e29da0b3aa6d26e1ab868d0711d18d523de\",\n        \"reconciliationCaseSha256\": \"966416028363a5e70cda737270412e1a95161f05bd2025515d37953a019dcf69\",\n        \"repairScopeEntrySha256\": \"e3e7c78b5c33b4e1a0d9cdf7d96eba0cc419f273429fd386005c2eb627ba65e6\",\n        \"sourceRowSha256\": \"dc75af330cd5e55cb3235bede0414ef6efc8bf1e28ebc7c807b44933450c0800\",\n        \"taskCaseSha256\": \"55bffe6c1a5a209dcc72b1047a9339be4f122c8767248278788afadb6dedcd93\",\n        \"taskDonorProductRowSha256\": \"b9ab2dcb26484a5ef3006c11f885207bf54071b660ce5079da4fcd891bc8f12d\",\n        \"taskFirstPartyOfferRowSha256s\": [\n          \"2f08001bec86e26a579f14e24dded3c3bfaf61b8749f7b3b601e6ba617a77e82\"\n        ]\n      },\n      \"listingKey\": \"walmart:1:RizwanX-3444\",\n      \"representationTransition\": {\n        \"consensusSemanticForm\": \"canned vegetables\",\n        \"currentContainerForm\": \"can\",\n        \"modifiersPreservedFromConsensus\": []\n      }\n    }\n  ],\n  \"donorProductId\": \"fe2eef61-0ade-4f07-b67c-5c3d8b251696\",\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"method\": \"POST_BLIND_RECONCILED_CONSENSUS_CURRENT_VERSION_REBIND\",\n  \"schemaVersion\": \"product-truth-consensus-reuse-decision-evidence/1.0.0\",\n  \"source\": {\n    \"blindTaskSchemaVersion\": \"product-truth-matcher-blinded-evidence-task/2.1.0\",\n    \"blindTaskSha256\": \"0d53e57921abc26d08b7d334bebd67920062166c6db29b5365e47587054c1b45\",\n    \"consensusReuseScopeSchemaVersion\": \"product-truth-consensus-reuse-scope/1.0.0\",\n    \"consensusReuseScopeSha256\": \"b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412\",\n    \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n    \"selectionPreflightSchemaVersion\": \"product-truth-consensus-reuse-preflight/1.0.0\",\n    \"selectionPreflightSha256\": \"ecfcebd7ed711b36a3bc0388237dea14f93e9398845f9ffbf16388572564135f\",\n    \"standingPolicyId\": \"pt-standing-no-paid-wave-20260727-v1\",\n    \"standingPolicySchemaVersion\": \"product-truth-legacy-bridge-standing-policy/1.0.0\",\n    \"standingPolicySha256\": \"0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696\",\n    \"targetFingerprint\": \"57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:10308361",
+      "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+      "donorSnapshotSha256": "feff51964c24c0a0b4e778e16ee075189632f778395dd94d073aa8b480d5f273",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+        "listingKey": "walmart:1:RizwanX-3442",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"pt-standing-no-paid-wave-20260727-v1\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T23:57:09.000Z\",\n  \"effectiveAt\": \"2026-07-29T23:57:09.000Z\",\n  \"evidenceHash\": \"5f20c861128e1ab83a8d9abacc7ed26b6ac9f71253c8e89fc1467ab0248d219b\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"6ada90317ac9820b31c7ae9f0b2b9047895090b8232a4ee60677d84eb41b2a4d\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"fe2eef61-0ade-4f07-b67c-5c3d8b251696\\\",\\n      \\\"flavor\\\": \\\"Spicy\\\",\\n      \\\"product\\\": \\\"Chili Beans\\\",\\n      \\\"quantity\\\": 4,\\n      \\\"size\\\": \\\"15 oz\\\",\\n      \\\"sourceComponentId\\\": \\\"comp:RizwanX-3442:0\\\",\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:48aa2359cd1592eaccffe815e46c91bd0a4705ca925c07ce7c0f0abe226075c6\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T23:57:09.000Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3442\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"2887b2e14d33eba4d5c195644db755740a7f9209e8c13ad8cdcc2a83fc007215\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"7bd5f397cbac9df086daa8b65e048b6d5946c7c4b65cd5cdf69ded8fef4c9844\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:63cba40b6e63f9b08c3ef64326cf28c367afd34f3f341a55706001a4761d14cd\",\n  \"listingKey\": \"walmart:1:RizwanX-3442\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"2887b2e14d33eba4d5c195644db755740a7f9209e8c13ad8cdcc2a83fc007215\",\n  \"recipeKey\": \"63cba40b6e63f9b08c3ef64326cf28c367afd34f3f341a55706001a4761d14cd\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptcr-wave-7870faa7b2c8d26f15df1551\",\n  \"sourceArtifactSha256\": \"7bd5f397cbac9df086daa8b65e048b6d5946c7c4b65cd5cdf69ded8fef4c9844\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-3442\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-3442\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"cfa6f2b6b3c0740bcd998c52f824d8134c3d271846f12a7fdcf06eb61b8060d7\",\n  \"createdAt\": \"2026-07-29T23:57:09.000Z\",\n  \"donorProductId\": \"fe2eef61-0ade-4f07-b67c-5c3d8b251696\",\n  \"evidenceHash\": \"6ada90317ac9820b31c7ae9f0b2b9047895090b8232a4ee60677d84eb41b2a4d\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"fe2eef61-0ade-4f07-b67c-5c3d8b251696\\\",\\n  \\\"flavor\\\": \\\"Spicy\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-3442\\\",\\n  \\\"product\\\": \\\"Chili Beans\\\",\\n  \\\"quantity\\\": 4,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"15 oz\\\",\\n  \\\"sourceComponentId\\\": \\\"comp:RizwanX-3442:0\\\",\\n  \\\"sourceEvidence\\\": {\\n    \\\"caseId\\\": \\\"quarantine:RizwanX-3442\\\",\\n    \\\"donorProductRowSha256\\\": \\\"b9ab2dcb26484a5ef3006c11f885207bf54071b660ce5079da4fcd891bc8f12d\\\",\\n    \\\"immutableEvidence\\\": {\\n      \\\"acceptanceReviewACaseSha256\\\": \\\"a8f6726d9d54888612c3ae764eb285669efc7aff984b0406ba88ec8a807f4f71\\\",\\n      \\\"acceptanceReviewBCaseSha256\\\": \\\"a8f6726d9d54888612c3ae764eb285669efc7aff984b0406ba88ec8a807f4f71\\\",\\n      \\\"caseId\\\": \\\"quarantine:RizwanX-3442\\\",\\n      \\\"corpusCaseSha256\\\": \\\"e2d0d9d338ddb668567e08656f8dc4542ac8cdcb9999b1526db4a3ac0b648bb0\\\",\\n      \\\"frozenReviewACaseSha256\\\": \\\"2f4fd18fd40843415e156e0fd6c2994e47b843189b4e1ff51e2187fa95550fa4\\\",\\n      \\\"frozenReviewBCaseSha256\\\": \\\"e6f8776fbe9ad1b909bda44aaa8334487116d688ea9956aeca6c41b299c1f8ae\\\",\\n      \\\"reconciliationCaseSha256\\\": \\\"27ed0947c5c55c42d2f9147e9f101f9ca991595c09b56cdac731afe9e7eb7d5a\\\",\\n      \\\"repairScopeEntrySha256\\\": \\\"435cec7cb4b5ca16767f250b2e971d44f909632257258cebc7438d5d4a8644aa\\\",\\n      \\\"sourceRowSha256\\\": \\\"710d9713fbca5e4e2fc786d2d0e2e8ec45a3668c1f7ab8e4618602fcb540ab12\\\",\\n      \\\"taskCaseSha256\\\": \\\"55f936ec5334ebdac6707683913d491a68e211f73a5e3f83530d00e288e4c30a\\\",\\n      \\\"taskDonorProductRowSha256\\\": \\\"b9ab2dcb26484a5ef3006c11f885207bf54071b660ce5079da4fcd891bc8f12d\\\",\\n      \\\"taskFirstPartyOfferRowSha256s\\\": [\\n        \\\"2f08001bec86e26a579f14e24dded3c3bfaf61b8749f7b3b601e6ba617a77e82\\\"\\n      ]\\n    },\\n    \\\"method\\\": \\\"POST_BLIND_RECONCILED_CONSENSUS_CURRENT_VERSION_REBIND\\\",\\n    \\\"representationTransition\\\": {\\n      \\\"consensusSemanticForm\\\": \\\"canned vegetables\\\",\\n      \\\"currentContainerForm\\\": \\\"can\\\",\\n      \\\"modifiersPreservedFromConsensus\\\": []\\n    },\\n    \\\"schemaVersion\\\": \\\"product-truth-consensus-reuse-recipe-source/1.0.0\\\",\\n    \\\"selectedOfferRowSha256\\\": \\\"2f08001bec86e26a579f14e24dded3c3bfaf61b8749f7b3b601e6ba617a77e82\\\",\\n    \\\"source\\\": {\\n      \\\"blindTaskSchemaVersion\\\": \\\"product-truth-matcher-blinded-evidence-task/2.1.0\\\",\\n      \\\"blindTaskSha256\\\": \\\"0d53e57921abc26d08b7d334bebd67920062166c6db29b5365e47587054c1b45\\\",\\n      \\\"consensusReuseScopeSchemaVersion\\\": \\\"product-truth-consensus-reuse-scope/1.0.0\\\",\\n      \\\"consensusReuseScopeSha256\\\": \\\"b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412\\\",\\n      \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n      \\\"selectionPreflightSchemaVersion\\\": \\\"product-truth-consensus-reuse-preflight/1.0.0\\\",\\n      \\\"selectionPreflightSha256\\\": \\\"ecfcebd7ed711b36a3bc0388237dea14f93e9398845f9ffbf16388572564135f\\\",\\n      \\\"standingPolicyId\\\": \\\"pt-standing-no-paid-wave-20260727-v1\\\",\\n      \\\"standingPolicySchemaVersion\\\": \\\"product-truth-legacy-bridge-standing-policy/1.0.0\\\",\\n      \\\"standingPolicySha256\\\": \\\"0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696\\\",\\n      \\\"targetFingerprint\\\": \\\"57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003\\\"\\n    },\\n    \\\"sourceComponentRowSha256\\\": \\\"c49f016966247cea083df38885dbede1d0bc45459569febcba95f8b8a04955c7\\\"\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"b1e31be2ffe2ebbc2ebcfa1139cd2a252c06988c59b241377568b4d66168d8c8\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:48aa2359cd1592eaccffe815e46c91bd0a4705ca925c07ce7c0f0abe226075c6\\\"\\n}\\n\",\n  \"flavor\": \"Spicy\",\n  \"id\": \"ptrc:cfa6f2b6b3c0740bcd998c52f824d8134c3d271846f12a7fdcf06eb61b8060d7\",\n  \"listingRecipeId\": \"ptr:63cba40b6e63f9b08c3ef64326cf28c367afd34f3f341a55706001a4761d14cd\",\n  \"product\": \"Chili Beans\",\n  \"quantity\": 4,\n  \"size\": \"15 oz\",\n  \"sourceComponentId\": \"comp:RizwanX-3442:0\",\n  \"targetCanonicalVariantId\": \"cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582\",\n  \"variantDecisionId\": \"dpvd:48aa2359cd1592eaccffe815e46c91bd0a4705ca925c07ce7c0f0abe226075c6\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "ac48ae93efee7f73e54cf09420bf018453ff63dcee648c0c437f3f4d369e2a03",
+        "sku": "RizwanX-3442",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:48aa2359cd1592eaccffe815e46c91bd0a4705ca925c07ce7c0f0abe226075c6"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10308361",
+      "ordinal": 0,
+      "query": "Joan of Arc Spicy Chili Beans, Gluten-Free, 15 oz Can",
+      "retailer": "walmart",
+      "retailerProductId": "10308361",
+      "variantDecisionId": "dpvd:48aa2359cd1592eaccffe815e46c91bd0a4705ca925c07ce7c0f0abe226075c6",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "createdAt": "2026-07-30T01:38:07.070Z",
+  "engineReleaseSha256": "911063c0a3099000ec51fbd7f5c6a3bcb6fa3e5e9d541492a04c415d7fbfe5ba",
+  "expiresAt": "2026-07-30T03:38:06.558Z",
+  "manifest": {
+    "asOf": "2026-07-30T01:38:07.070Z",
+    "donorCount": 1,
+    "schemaVersion": "product-truth-targeted-walmart-evidence-scope/1.0.0",
+    "sha256": "b34a95d192be0c1fec928e8e0a677bf29d92df86d91c21cab8b4fb6ca4e66d5b"
+  },
+  "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+  "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+  "matcherVersion": "canonical-product-match/1.2.1",
+  "maxWallClockMs": 360000,
+  "migrationSetSha256": "e993ae50b70888fe06640bb41f33fd8700bb940cd214a30631f31bafa61214e4",
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 1,
+      "maxUnits": 2.5,
+      "operations": [
+        "detail"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptsw-20260730t012519z-03",
+  "schemaFingerprintSha256": "451facdc22e90c2cda066192e733958a56d14b40b7d360ea743a3a03ec424aad",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-plan/1.6.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "allowOpenFoodFactsSupplement": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "67aeda295558b60985b29f12a33e196838c920ad634e9250060e4cb3aa2cd91d",
+  "targets": [
+    {
+      "canonicalIdentityHash": "c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20",
+      "canonicalIdentityJson": "{\"schemaVersion\":\"canonical-product-variant-identity/1.0.0\",\"brand\":\"ronzoni\",\"productLine\":\"cheese elbows gmo mac macaroni non pasta\",\"flavor\":null,\"modifiers\":[],\"form\":null,\"size\":{\"dimension\":\"MASS\",\"baseAmount\":453.59237,\"baseUnit\":\"g\"},\"outerPackCount\":1}",
+      "canonicalVariantId": "cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20",
+      "canonicalVariantKeyVersion": "canonical-product-variant-key/1.0.0",
+      "decisionEvidenceHash": "9d2beea5b09e918b709e5114c4cb7c5843091a04e0865a13184c138b65f8df28",
+      "decisionEvidenceJson": "{\n  \"bridgePlanSha256\": \"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\",\n  \"canonicalVariantId\": \"cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20\",\n  \"donorProductId\": \"49614823-06d9-4ff5-ba5d-5dd945230add\",\n  \"donorTitle\": \"Ronzoni Elbows, 16 oz, Non-GMO Macaroni Pasta for Mac and Cheese\",\n  \"identityProof\": \"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\",\n  \"identityReconciliation\": null,\n  \"matcherImplementationSha256\": \"2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb\",\n  \"matcherReasonCodes\": [\n    \"IDENTITY_EXACT\",\n    \"SIZE_EXACT\",\n    \"TITLE_FALLBACK_IDENTITY_PROVEN\"\n  ],\n  \"matcherReleaseSha256\": \"027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2\",\n  \"matcherVersion\": \"canonical-product-match/1.2.1\",\n  \"policyVersion\": \"product-truth-legacy-bridge-policy/1.3.0\",\n  \"schemaVersion\": \"product-truth-legacy-bridge-variant-decision-evidence/2.0.0\",\n  \"sourceBinding\": {\n    \"authoritativeWalmartDonorTitleProofSha256\": \"3011f10aa7c8d6725fe4af717f637cee34535fca1ef39ff8b548195a9ca55bad\",\n    \"componentBarcodeEvidenceSha256\": null,\n    \"contentSourceOfferSha256\": \"fa4eb1c9247ba0d38cabfd594f99aa91eeba06f861234bc12f1d2c37d6eed7f1\",\n    \"directTargetContentEvidenceSha256\": null,\n    \"donorContentSha256\": \"c4c16b3e18e4f47ec5c4a53c16556d40413b8d6c6efc03e1a38fa03826ed1564\",\n    \"donorProductSha256\": \"6cdc52a410616abacd33f91b4c08c52dc656f9d9e1ad867bcd829916f1b1f263\"\n  },\n  \"sourceSnapshotSha256\": \"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\",\n  \"targetIdentity\": {\n    \"brand\": \"Ronzoni\",\n    \"flavor\": null,\n    \"form\": null,\n    \"modifiers\": [],\n    \"outerPackCount\": 1,\n    \"productLine\": \"elbows non gmo macaroni pasta mac cheese\",\n    \"size\": \"16 oz\"\n  },\n  \"verdict\": \"EXACT_IDENTITY\"\n}\n",
+      "decisionStatus": "exact_confirmed",
+      "donorIdentityStatus": "exact_confirmed",
+      "donorOfferId": "do:walmart:10293408",
+      "donorProductId": "49614823-06d9-4ff5-ba5d-5dd945230add",
+      "donorSnapshotSha256": "b34a95d192be0c1fec928e8e0a677bf29d92df86d91c21cab8b4fb6ca4e66d5b",
+      "identityDerivationVersion": null,
+      "identityMode": "EXISTING_EXACT",
+      "isFirstParty": true,
+      "legacySnapshot": null,
+      "listingBinding": {
+        "canonicalVariantId": "cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20",
+        "channel": "walmart",
+        "componentIndex": 0,
+        "donorProductId": "49614823-06d9-4ff5-ba5d-5dd945230add",
+        "listingKey": "walmart:1:RizwanX-2397",
+        "listingRecipeRowJson": "{\n  \"approvalId\": \"owner-ptlb-wave-192ea2d2d1f55041bcf02031\",\n  \"componentCount\": 1,\n  \"createdAt\": \"2026-07-29T11:24:41.134Z\",\n  \"effectiveAt\": \"2026-07-29T11:24:41.134Z\",\n  \"evidenceHash\": \"a1b178e3740582cda7c0e97358308c4af61e71f51bc1984a45920b664ceaa7b3\",\n  \"evidenceJson\": \"{\\n  \\\"components\\\": [\\n    {\\n      \\\"componentEvidenceHash\\\": \\\"65e0cf6cd31b381f769ca29a855bbc2eec3bc2381dfcf7336df067289a845f16\\\",\\n      \\\"componentIndex\\\": 0,\\n      \\\"donorProductId\\\": \\\"49614823-06d9-4ff5-ba5d-5dd945230add\\\",\\n      \\\"flavor\\\": null,\\n      \\\"product\\\": \\\"elbows non gmo macaroni pasta mac cheese\\\",\\n      \\\"quantity\\\": 8,\\n      \\\"size\\\": \\\"16 oz\\\",\\n      \\\"sourceComponentId\\\": null,\\n      \\\"targetCanonicalVariantId\\\": \\\"cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20\\\",\\n      \\\"variantDecisionId\\\": \\\"dpvd:656c1aa35d4f2526de044b608bd6a1dbfdd4b4cf12567c1ebf7a3dfa81dbcf5f\\\"\\n    }\\n  ],\\n  \\\"effectiveAt\\\": \\\"2026-07-29T11:24:41.134Z\\\",\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-2397\\\",\\n  \\\"manifestSha256\\\": \\\"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\\\",\\n  \\\"recipeHash\\\": \\\"518637d44fd9301a200ded4a4d6e687a3e43f3224856119a2bfcd4fb8277d2a3\\\",\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe/1.0.0\\\",\\n  \\\"sourceArtifactSha256\\\": \\\"b807b28404a1f28d80c611d4558ac244f920d575a916e95260ddb00c4a8677a3\\\",\\n  \\\"sourceKind\\\": \\\"LEGACY_BRIDGE\\\"\\n}\\n\",\n  \"id\": \"ptr:ffb700bac87813504fefef9e3f5fda5bc7cd8485aa8d7f5bce8bbada77a492bf\",\n  \"listingKey\": \"walmart:1:RizwanX-2397\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"recipeHash\": \"518637d44fd9301a200ded4a4d6e687a3e43f3224856119a2bfcd4fb8277d2a3\",\n  \"recipeKey\": \"ffb700bac87813504fefef9e3f5fda5bc7cd8485aa8d7f5bce8bbada77a492bf\",\n  \"recipeVersion\": \"product-truth-listing-recipe/1.0.0\",\n  \"runId\": \"ptlb-wave-192ea2d2d1f55041bcf02031\",\n  \"sourceArtifactSha256\": \"b807b28404a1f28d80c611d4558ac244f920d575a916e95260ddb00c4a8677a3\",\n  \"sourceKind\": \"LEGACY_BRIDGE\"\n}\n",
+        "listingScopeRowJson": "{\n  \"channel\": \"walmart\",\n  \"createdAt\": \"2026-07-26T18:39:24.652Z\",\n  \"keyVersion\": \"product-truth-listing-key/1.0.0\",\n  \"listingKey\": \"walmart:1:RizwanX-2397\",\n  \"manifestAsOf\": \"2026-07-26T18:05:57.000Z\",\n  \"manifestSchemaVersion\": \"phase1-authoritative-scope-manifest/v3\",\n  \"manifestSha256\": \"94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c\",\n  \"ownerDecisionId\": \"owner-phase1-store-disposition-20260726T142613Z-g3-v1\",\n  \"registrationKind\": \"AUTHORITATIVE_PHASE1_MANIFEST\",\n  \"sku\": \"RizwanX-2397\",\n  \"sourceCapturedAt\": \"2026-07-26T17:56:42.033Z\",\n  \"sourceContentSha256\": \"07de74f3302ae80970d8f31be9d9ff716d91d379ddddfdbffe5706b44acfefb1\",\n  \"sourceReportId\": \"019f9f34-9bad-7390-b236-341290db319a\",\n  \"storeIndex\": 1\n}\n",
+        "recipeComponentRowJson": "{\n  \"componentIndex\": 0,\n  \"componentKey\": \"9f0abc06a7f1f16153069cda7e47e68a31ff595d40bd2545ca5e83116287884e\",\n  \"createdAt\": \"2026-07-29T11:24:41.134Z\",\n  \"donorProductId\": \"49614823-06d9-4ff5-ba5d-5dd945230add\",\n  \"evidenceHash\": \"65e0cf6cd31b381f769ca29a855bbc2eec3bc2381dfcf7336df067289a845f16\",\n  \"evidenceJson\": \"{\\n  \\\"componentIndex\\\": 0,\\n  \\\"donorProductId\\\": \\\"49614823-06d9-4ff5-ba5d-5dd945230add\\\",\\n  \\\"flavor\\\": null,\\n  \\\"listingKey\\\": \\\"walmart:1:RizwanX-2397\\\",\\n  \\\"product\\\": \\\"elbows non gmo macaroni pasta mac cheese\\\",\\n  \\\"quantity\\\": 8,\\n  \\\"schemaVersion\\\": \\\"product-truth-listing-recipe-component-evidence/1.0.0\\\",\\n  \\\"size\\\": \\\"16 oz\\\",\\n  \\\"sourceComponentId\\\": null,\\n  \\\"sourceEvidence\\\": {\\n    \\\"bridgePlanSha256\\\": \\\"992a9498cfa4929683ad45fd3700ccec8ecf4535fb99f8eb7bb69598354d8dc4\\\",\\n    \\\"identityProof\\\": \\\"EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE\\\",\\n    \\\"identityReconciliation\\\": null,\\n    \\\"matcherReasonCodes\\\": [\\n      \\\"IDENTITY_EXACT\\\",\\n      \\\"SIZE_EXACT\\\",\\n      \\\"TITLE_FALLBACK_IDENTITY_PROVEN\\\"\\n    ],\\n    \\\"schemaVersion\\\": \\\"product-truth-legacy-bridge-recipe-component-source/1.0.0\\\",\\n    \\\"sourceBinding\\\": {\\n      \\\"authoritativeWalmartDonorTitleProofSha256\\\": \\\"3011f10aa7c8d6725fe4af717f637cee34535fca1ef39ff8b548195a9ca55bad\\\",\\n      \\\"authoritativeWalmartItemReportEvidenceSha256\\\": \\\"fb4b696c0ee50a2dfe9a4cd834ad97633349d9af6b015f394cbc72933c54970f\\\",\\n      \\\"componentBarcodeEvidenceSha256\\\": null,\\n      \\\"contentSourceOfferSha256\\\": \\\"fa4eb1c9247ba0d38cabfd594f99aa91eeba06f861234bc12f1d2c37d6eed7f1\\\",\\n      \\\"directTargetContentEvidenceSha256\\\": null,\\n      \\\"donorContentSha256\\\": \\\"c4c16b3e18e4f47ec5c4a53c16556d40413b8d6c6efc03e1a38fa03826ed1564\\\",\\n      \\\"donorProductSha256\\\": \\\"6cdc52a410616abacd33f91b4c08c52dc656f9d9e1ad867bcd829916f1b1f263\\\",\\n      \\\"legacyComponentSha256\\\": null,\\n      \\\"listingSha256\\\": \\\"976329a604b52c44406e3ae2dd692203bbac1b8d82c53db4f6e77c1e8c8908dc\\\"\\n    },\\n    \\\"sourceSnapshotSha256\\\": \\\"de5e9e5cdb10d6c0a65ad98328ac0c277c95d10ab97320f99aaf2e7996f716ae\\\",\\n    \\\"supersedesInvalidCanonicalCostIds\\\": []\\n  },\\n  \\\"sourceEvidenceSha256\\\": \\\"7ea2117a6aee582b7f2e2016ba4d8643908f6eed72ecf0dfc1c8606fac62a5e8\\\",\\n  \\\"targetCanonicalVariantId\\\": \\\"cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20\\\",\\n  \\\"variantDecisionId\\\": \\\"dpvd:656c1aa35d4f2526de044b608bd6a1dbfdd4b4cf12567c1ebf7a3dfa81dbcf5f\\\"\\n}\\n\",\n  \"flavor\": null,\n  \"id\": \"ptrc:9f0abc06a7f1f16153069cda7e47e68a31ff595d40bd2545ca5e83116287884e\",\n  \"listingRecipeId\": \"ptr:ffb700bac87813504fefef9e3f5fda5bc7cd8485aa8d7f5bce8bbada77a492bf\",\n  \"product\": \"elbows non gmo macaroni pasta mac cheese\",\n  \"quantity\": 8,\n  \"size\": \"16 oz\",\n  \"sourceComponentId\": null,\n  \"targetCanonicalVariantId\": \"cpv1:c3856ccf0066a7337e77494bd216e6bb841d95a03d8c6aa97929ae84c4108e20\",\n  \"variantDecisionId\": \"dpvd:656c1aa35d4f2526de044b608bd6a1dbfdd4b4cf12567c1ebf7a3dfa81dbcf5f\"\n}\n",
+        "schemaVersion": "product-truth-targeted-walmart-canonical-recipe-binding/1.0.0",
+        "sha256": "2030f8b986c444c7e962e5f1ae7a2472272ceec170b3048a7685ad5173219774",
+        "sku": "RizwanX-2397",
+        "storeIndex": 1,
+        "variantDecisionId": "dpvd:656c1aa35d4f2526de044b608bd6a1dbfdd4b4cf12567c1ebf7a3dfa81dbcf5f"
+      },
+      "matcherImplementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+      "matcherReleaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+      "matcherVersion": "canonical-product-match/1.2.1",
+      "normalizedProductUrl": "https://www.walmart.com/ip/10293408",
+      "ordinal": 0,
+      "query": "Ronzoni Elbows, 16 oz, Non-GMO Macaroni Pasta for Mac and Cheese",
+      "retailer": "walmart",
+      "retailerProductId": "10293408",
+      "variantDecisionId": "dpvd:656c1aa35d4f2526de044b608bd6a1dbfdd4b4cf12567c1ebf7a3dfa81dbcf5f",
+      "via": "direct"
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 86400000,
+    "minGalleryImages": 2,
+    "procurementZip": "33765"
+  }
+}

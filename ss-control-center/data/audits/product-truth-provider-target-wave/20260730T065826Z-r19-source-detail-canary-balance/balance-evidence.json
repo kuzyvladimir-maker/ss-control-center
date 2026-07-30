@@ -1,0 +1,32 @@
+{
+  "actualCreditsUsed": 2.5,
+  "balanceUnits": 99465,
+  "budgetViolation": false,
+  "httpStatus": 200,
+  "meteredApprovalId": "pt-standing-balance:3cd947d8be37ca91ed79d7ef",
+  "meteredReceiptId": "mbr_056e483aaecca9341824cb91ef05b3825965b051ad1a910478e53d5df425a4ad",
+  "meteredReservationKey": "mpr_v1_6e4fc3e02b144b80bdf4ea56dc99b8fb83d892fd85e061f976d933d27a38e69e",
+  "observedAt": "2026-07-30T07:01:31.575Z",
+  "planSha256": "3cd947d8be37ca91ed79d7eff7ff8e1461e27bc9fc63201d61277dc262b6fb5d",
+  "probeId": "ptbal-standing-3cd947d8be37ca91-20260730070131",
+  "provider": "unwrangle",
+  "providerCalls": 1,
+  "rawResponseBytes": 47314,
+  "rawResponseSha256": "807c073d61172681451a791e1655170efc4c5a015ffeb3f4d356220363010db9",
+  "requestedAt": "2026-07-30T07:01:24.962Z",
+  "reserveFloor": 15000,
+  "resultCount": 30,
+  "retryCount": 0,
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-unwrangle-balance-evidence/1.2.0",
+  "standingPolicySha256": "cfd78218cf028174a473d508d0f6947e7a5d4dd722be9b5983d06e0ea29751e0",
+  "success": true,
+  "terminalDisposition": "BALANCE_CONFIRMED"
+}

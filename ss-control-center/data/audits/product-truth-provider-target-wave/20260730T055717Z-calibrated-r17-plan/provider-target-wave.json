@@ -1,0 +1,417 @@
+{
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "claims": {
+    "authorizesExecution": false,
+    "consumerActivation": false,
+    "createsParallelCatalog": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0
+  },
+  "counts": {
+    "calibrationAdmittedProviderTargets": 1013,
+    "calibrationExcludedProviderTargets": 2114,
+    "eligibleTargets": 1009,
+    "noSingleTargetRepresentative": 0,
+    "providerTargets": 3127,
+    "selectedDependentListings": 23,
+    "selectedImmediateClosures": 23,
+    "selectedTargets": 5,
+    "terminalAttemptTargets": 4
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T06:57:17.000Z",
+  "generatedAt": "2026-07-30T05:57:17.000Z",
+  "operationalRequest": {
+    "createdAt": "2026-07-30T05:57:17.000Z",
+    "expiresAt": "2026-07-30T06:57:17.000Z",
+    "listingKeys": [
+      "walmart:1:FaisalX-165",
+      "walmart:1:FaisalX-1211",
+      "walmart:1:FaisalX-317",
+      "amazon:1:742259729669",
+      "amazon:1:742259729997"
+    ],
+    "maxWallClockMs": 1800000,
+    "mode": "WAVE",
+    "providerCeilings": [
+      {
+        "maxCalls": 5,
+        "maxUnits": 5,
+        "operations": [
+          "query"
+        ],
+        "provider": "oxylabs",
+        "reserveFloor": null
+      },
+      {
+        "maxCalls": 10,
+        "maxUnits": 25,
+        "operations": [
+          "detail",
+          "search"
+        ],
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "runId": "ptca-20260730t055717z-calibrated-r17",
+    "schemaVersion": "product-truth-operational-plan-request/1.0.0",
+    "sourcePolicy": {
+      "allowBjs": false,
+      "allowClubs": false,
+      "componentConcurrency": 1,
+      "listingConcurrency": 1,
+      "maxAttemptsPerListing": 1,
+      "procurementZip": "33765",
+      "retailers": [
+        "walmart",
+        "target",
+        "publix"
+      ]
+    },
+    "verificationPolicy": {
+      "maxPriceAgeMs": 172800000,
+      "minGalleryImages": 5
+    }
+  },
+  "schemaVersion": "product-truth-provider-target-wave/1.1.0",
+  "selectionPolicy": {
+    "bjsAllowed": false,
+    "clubsAllowed": false,
+    "maximumProviderUnits": 30,
+    "maximumTargets": 5,
+    "procurementZip": "33765",
+    "queryAdmission": "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
+    "representative": "ONE_VALID_SINGLE_TARGET_LISTING_HIGHEST_SALES_THEN_WALMART_THEN_REPAIR_PRIORITY",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ],
+    "retryAllowed": false,
+    "terminalAttemptPolicy": "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT",
+    "unitOfWork": "UNIQUE_CANONICAL_COMPONENT_TARGET"
+  },
+  "source": {
+    "componentAcquisitionScope": {
+      "generatedAt": "2026-07-30T05:22:00.000Z",
+      "schemaVersion": "product-truth-component-acquisition-scope/1.4.0",
+      "sha256": "8b87b1ae48c6661cfb19b36f1b0dda34198a0686ab54892282f0fc6ce87d4d56"
+    },
+    "searchQueryCalibration": {
+      "admittedForms": [
+        "bag",
+        "bottle",
+        "can"
+      ],
+      "admittedProviderTargets": 1013,
+      "generatedAt": "2026-07-30T05:51:54.000Z",
+      "schemaVersion": "product-truth-search-query-calibration/1.0.0",
+      "sha256": "e12e33f8242c51f899cedc2a2354f5a1f75da88fbb13039b738708da7ac0e68f"
+    },
+    "terminalAttemptCapture": {
+      "attemptCount": 19,
+      "capturedAt": "2026-07-30T05:57:42.843Z",
+      "schemaVersion": "product-truth-provider-attempt-capture/1.0.0",
+      "sha256": "a19c1b341fb734f843cd0819d5387c26b3364ba4468731fcc5c1f03dfb55c93e"
+    }
+  },
+  "targets": [
+    {
+      "acquisitionPriority": 15,
+      "canonicalIdentityHash": "072d3bd33514ea68d0f9d1236de3edb1129b2692d5b30ad8fc07cb5698fdf089",
+      "canonicalVariantId": "cpv1:072d3bd33514ea68d0f9d1236de3edb1129b2692d5b30ad8fc07cb5698fdf089",
+      "dependentListingKeys": [
+        "walmart:1:FaisalX-164",
+        "walmart:1:FaisalX-165",
+        "walmart:1:FaisalX-166",
+        "walmart:1:FaisalX-169",
+        "walmart:1:FaisalX-171"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 5,
+        "dependentListings": 5,
+        "immediateClosableListings": 5,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 5
+      },
+      "ordinal": 0,
+      "query": "Thomas' Bagels Everything bag 20 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:FaisalX-165",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": null,
+          "repairPriority": 402,
+          "units30d": null
+        },
+        "quantity": 4,
+        "sku": "FaisalX-165",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Thomas'",
+        "flavor": "Everything",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Bagels",
+        "size": "20 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 21,
+      "canonicalIdentityHash": "23d3b0f2995cb82b29c1a1296af9c3130799f0201088cf5a254b317533d146cd",
+      "canonicalVariantId": "cpv1:23d3b0f2995cb82b29c1a1296af9c3130799f0201088cf5a254b317533d146cd",
+      "dependentListingKeys": [
+        "walmart:1:FaisalX-1211",
+        "walmart:1:FaisalX-1212",
+        "walmart:1:FaisalX-1213",
+        "walmart:1:FaisalX-1643",
+        "walmart:1:FaisalX-1645"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 5,
+        "dependentListings": 5,
+        "immediateClosableListings": 5,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 5
+      },
+      "ordinal": 1,
+      "query": "Sara Lee Artesano Smooth Multigrain bag 20 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:FaisalX-1211",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": null,
+          "repairPriority": 346,
+          "units30d": null
+        },
+        "quantity": 2,
+        "sku": "FaisalX-1211",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Sara Lee",
+        "flavor": "Smooth Multigrain",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Artesano",
+        "size": "20 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 26,
+      "canonicalIdentityHash": "9ff3db8e16998f3e9d8d445a62e546f8b665ab2a59464a0dbf6be32bb661ad92",
+      "canonicalVariantId": "cpv1:9ff3db8e16998f3e9d8d445a62e546f8b665ab2a59464a0dbf6be32bb661ad92",
+      "dependentListingKeys": [
+        "walmart:1:FaisalX-317",
+        "walmart:1:FaisalX-318",
+        "walmart:1:FaisalX-320",
+        "walmart:1:FaisalX-326",
+        "walmart:1:FaisalX-327"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 5,
+        "dependentListings": 5,
+        "immediateClosableListings": 5,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 5
+      },
+      "ordinal": 2,
+      "query": "Nature's Own Butter Buns White bag 16 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:FaisalX-317",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": null,
+          "repairPriority": 656,
+          "units30d": null
+        },
+        "quantity": 2,
+        "sku": "FaisalX-317",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Nature's Own",
+        "flavor": "White",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Butter Buns",
+        "size": "16 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 31,
+      "canonicalIdentityHash": "05eea8098ab969535a4bf2af5429891596cab47e883c44b3478e9b00cbef7538",
+      "canonicalVariantId": "cpv1:05eea8098ab969535a4bf2af5429891596cab47e883c44b3478e9b00cbef7538",
+      "dependentListingKeys": [
+        "amazon:1:742259729669",
+        "amazon:1:742259729676",
+        "amazon:3:1C1H-3IDA-5JIJ",
+        "amazon:3:1C1H-3IDA-64C0"
+      ],
+      "impact": {
+        "amazonListings": 4,
+        "componentUses": 4,
+        "dependentListings": 4,
+        "immediateClosableListings": 4,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 0
+      },
+      "ordinal": 3,
+      "query": "Birds Eye Steamfresh Sweet Peas bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "amazon",
+        "componentIndex": 0,
+        "listingKey": "amazon:1:742259729669",
+        "priority": {
+          "gmv30d": null,
+          "orders30d": null,
+          "repairPriority": 3382,
+          "units30d": null
+        },
+        "quantity": 10,
+        "sku": "742259729669",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Birds Eye",
+        "flavor": "Sweet Peas",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Steamfresh",
+        "size": "10 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 32,
+      "canonicalIdentityHash": "08f13ed5b2d8694d0ddf588020eec61ba6f3f9458f508b18d6b3d4f023aad456",
+      "canonicalVariantId": "cpv1:08f13ed5b2d8694d0ddf588020eec61ba6f3f9458f508b18d6b3d4f023aad456",
+      "dependentListingKeys": [
+        "amazon:1:742259729997",
+        "amazon:1:742259730009",
+        "amazon:3:1C1H-3IDN-SXKC",
+        "amazon:3:1C1H-3IDN-TA22"
+      ],
+      "impact": {
+        "amazonListings": 4,
+        "componentUses": 4,
+        "dependentListings": 4,
+        "immediateClosableListings": 4,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 0
+      },
+      "ordinal": 4,
+      "query": "Birds Eye Steamfresh Cut Green Beans bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "amazon",
+        "componentIndex": 0,
+        "listingKey": "amazon:1:742259729997",
+        "priority": {
+          "gmv30d": null,
+          "orders30d": null,
+          "repairPriority": 3407,
+          "units30d": null
+        },
+        "quantity": 10,
+        "sku": "742259729997",
+        "storeIndex": 1
+      },
+      "targetIdentity": {
+        "brand": "Birds Eye",
+        "flavor": "Cut Green Beans",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Steamfresh",
+        "size": "10 oz"
+      }
+    }
+  ],
+  "targetsWithoutSingleTargetRepresentative": [],
+  "terminalAttemptTargets": [
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:38:27.283Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-219",
+          "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t043400z-target-wave-1"
+        }
+      ],
+      "canonicalVariantId": "cpv1:9605ba981d666ff9610bad59703c111c252df9a14d4c43c3bea669555d9119c0"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:39:47.683Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-315",
+          "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t043400z-target-wave-1"
+        }
+      ],
+      "canonicalVariantId": "cpv1:9afdd53d474c3ad6e19ba4a5c4da22d32f2d695946d4c681cf2c21226c9bf38d"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:50:05.129Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-3991",
+          "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t044630z-target-wave-2"
+        }
+      ],
+      "canonicalVariantId": "cpv1:ac54437392586aa955952791a6c1c4b1453ecd83740efbbcf9a356eab8715408"
+    },
+    {
+      "attempts": [
+        {
+          "finishedAt": "2026-07-30T04:53:16.531Z",
+          "itemStatus": "terminal_gap",
+          "listingKey": "walmart:1:FaisalX-294",
+          "planSha256": "14e1773ee42eb7f7dafb9fc9663fa8e296c5cedeaa18185ab861e39ffa5020dc",
+          "providerCalls": 2,
+          "providerUnits": 3.5,
+          "runId": "ptca-20260730t044630z-target-wave-2"
+        }
+      ],
+      "canonicalVariantId": "cpv1:b6db8bcd438b8f6c59f07a5628144d10567f862bdaf7773d73ad7b0c84ee676d"
+    }
+  ],
+  "waveId": "ptca-20260730t055717z-calibrated-r17"
+}

@@ -1,0 +1,40 @@
+{
+  "claims": {
+    "allTargetsCollisionFree": true,
+    "consumerActivation": false,
+    "createsAdditionalCatalog": false,
+    "exactContentPackagePolicyEnforced": true,
+    "listingRecipesMaterialized": 0,
+    "listingRecipesRequireAllComponents": true,
+    "marketplaceMutations": 0,
+    "noPaidExistingCatalogLaneOnly": true,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "skuCostsMaterialized": 0
+  },
+  "completedAt": "2026-07-30T03:02:09.588Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 19,
+    "exactExistingRows": 0,
+    "insertedRows": 76,
+    "targets": 19
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-free-468edb7c30bae1554af4e53f",
+  "planSha256": "62990d362add4190d6ef0e70c899f708abec1013dc6e982b030b4312af5367fd",
+  "preflightReportSha256": "329c3935dc0b06b8f233dfce8c23ec55f1ea63be49ed0a7510b99271566b4dfd",
+  "schemaVersion": "product-truth-component-resolution-materialization-apply-report/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-30T03:00:28.997Z",
+  "status": "APPLIED",
+  "verification": {
+    "exactTargets": 19,
+    "foreignKeyViolations": [],
+    "listingRecipesMaterialized": 0,
+    "skuCostsMaterialized": 0
+  }
+}

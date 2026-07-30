@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-30T01:08:29.963Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "f58ad51b3ae1492ad4e462c7ff678437a0a9908b0d88634e91824d15d252ac61"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "6b7d1b74bd4abf55d2e105c55980a1862a5838b260bf4f9613ea4ce9a96abce2"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:aa03397f5651d28bcd1f6500",
+  "meteredReceiptId": "mbr_55b6438883265fffb1566034d709ab11c355c042a59d42b4781f6c506406fd00",
+  "meteredReservationKey": "mpr_v1_93df5fe23d4808737edac216c4789e6552e88133221290d026ca8cf326d93089",
+  "planSha256": "aa03397f5651d28bcd1f65003d28c5bb9e6424aaacf57a139a3f53be195f339f",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "ptsw-20260730t005213z-05",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

@@ -1,0 +1,203 @@
+{
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "claims": {
+    "authorizesExecution": false,
+    "consumerActivation": false,
+    "createsParallelCatalog": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0
+  },
+  "counts": {
+    "calibrationAdmittedProviderTargets": 1013,
+    "calibrationExcludedProviderTargets": 2114,
+    "eligibleTargets": 52,
+    "noSingleTargetRepresentative": 0,
+    "providerTargets": 3127,
+    "selectedDependentListings": 3,
+    "selectedImmediateClosures": 3,
+    "selectedTargets": 1,
+    "sourceDetailAdmittedProviderTargets": 52,
+    "sourceDetailExcludedCalibratedTargets": 961,
+    "terminalAttemptTargets": 0
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": "2026-07-30T19:57:00.000Z",
+  "generatedAt": "2026-07-30T07:57:00.000Z",
+  "operationalRequest": {
+    "createdAt": "2026-07-30T07:57:00.000Z",
+    "expiresAt": "2026-07-30T19:57:00.000Z",
+    "listingKeys": [
+      "walmart:1:RizwanX-138"
+    ],
+    "maxWallClockMs": 360000,
+    "mode": "WAVE",
+    "providerAcquisitionTargets": [
+      {
+        "canonicalIdentityHash": "b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+        "canonicalVariantId": "cpv1:b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+        "listingKey": "walmart:1:RizwanX-138",
+        "query": "Margaret Holmes Seasoned Cabbage can 15 oz",
+        "queryVersion": "product-truth-provider-query/form-augmented-v1"
+      }
+    ],
+    "providerCeilings": [
+      {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ],
+        "provider": "oxylabs",
+        "reserveFloor": null
+      },
+      {
+        "maxCalls": 2,
+        "maxUnits": 5,
+        "operations": [
+          "detail",
+          "search"
+        ],
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "runId": "ptca-20260730t075700z-r21-admission-bound-canary",
+    "schemaVersion": "product-truth-operational-plan-request/1.1.0",
+    "sourcePolicy": {
+      "allowBjs": false,
+      "allowClubs": false,
+      "componentConcurrency": 1,
+      "listingConcurrency": 1,
+      "maxAttemptsPerListing": 1,
+      "procurementZip": "33765",
+      "retailers": [
+        "walmart",
+        "target",
+        "publix"
+      ]
+    },
+    "verificationPolicy": {
+      "maxPriceAgeMs": 172800000,
+      "minGalleryImages": 5
+    }
+  },
+  "schemaVersion": "product-truth-provider-target-wave/1.2.0",
+  "selectionPolicy": {
+    "bjsAllowed": false,
+    "clubsAllowed": false,
+    "maximumProviderUnits": 6,
+    "maximumTargets": 1,
+    "procurementZip": "33765",
+    "queryAdmission": "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
+    "representative": "ONE_VALID_SINGLE_TARGET_LISTING_HIGHEST_SALES_THEN_WALMART_THEN_REPAIR_PRIORITY",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ],
+    "retryAllowed": false,
+    "sourceDetailAdmission": "EXACT_TARGET_AND_RETAILER_ITEM_MUST_BE_ADMITTED_BY_BOUND_FAIL_CLOSED_ARTIFACT",
+    "terminalAttemptPolicy": "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT",
+    "unitOfWork": "UNIQUE_CANONICAL_COMPONENT_TARGET"
+  },
+  "source": {
+    "componentAcquisitionScope": {
+      "generatedAt": "2026-07-30T07:23:14.000Z",
+      "schemaVersion": "product-truth-component-acquisition-scope/1.4.0",
+      "sha256": "157bcd9434d0af599454e45720a2ca7079dc83121f7cbd876957f528f2fdaa96"
+    },
+    "searchQueryCalibration": {
+      "admittedForms": [
+        "bag",
+        "bottle",
+        "can"
+      ],
+      "admittedProviderTargets": 1013,
+      "generatedAt": "2026-07-30T07:45:00.000Z",
+      "schemaVersion": "product-truth-search-query-calibration/1.0.0",
+      "sha256": "4a9e0517a3fa9e955fbc0c5c198d2f79dabc22acc1ad17f4da10e1739af245df"
+    },
+    "sourceDetailAdmission": {
+      "admittedTargets": 52,
+      "generatedAt": "2026-07-30T07:55:00.000Z",
+      "schemaVersion": "product-truth-source-detail-admission/1.1.0",
+      "sha256": "6584e603fab11b69eeb2a067d57bc82052dc628e35c42b8618322a37880b13f3"
+    },
+    "terminalAttemptCapture": {
+      "attemptCount": 33,
+      "capturedAt": "2026-07-30T07:55:14.303Z",
+      "schemaVersion": "product-truth-provider-attempt-capture/1.0.0",
+      "sha256": "a7a2e6d0b7ecf557941592b688ddc0afb9c5654be08d09dc5516f217c9ef09a4"
+    }
+  },
+  "targets": [
+    {
+      "acquisitionPriority": 79,
+      "canonicalIdentityHash": "b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "canonicalVariantId": "cpv1:b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "dependentListingKeys": [
+        "walmart:1:RizwanX-136",
+        "walmart:1:RizwanX-137",
+        "walmart:1:RizwanX-138"
+      ],
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 2,
+        "knownUnits30d": 2,
+        "walmartListings": 3
+      },
+      "ordinal": 0,
+      "query": "Margaret Holmes Seasoned Cabbage can 15 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1",
+      "representative": {
+        "channel": "walmart",
+        "componentIndex": 0,
+        "listingKey": "walmart:1:RizwanX-138",
+        "priority": {
+          "gmv30d": 0,
+          "orders30d": 2,
+          "repairPriority": 29,
+          "units30d": 2
+        },
+        "quantity": 8,
+        "sku": "RizwanX-138",
+        "storeIndex": 1
+      },
+      "sourceDetailCandidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c92c9e5e-cdb3-42c2-aab4-e21d8103c94a"
+        ],
+        "observedTitles": [
+          "Margaret Holmes Seasoned Cabbage, Canned Vegetables, 15 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10451768"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Margaret-Holmes-Seasoned-Cabbage-Canned-Vegetables-15-oz/10451768?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10451768"
+      },
+      "targetIdentity": {
+        "brand": "Margaret Holmes",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Seasoned Cabbage",
+        "size": "15 oz"
+      }
+    }
+  ],
+  "targetsWithoutSingleTargetRepresentative": [],
+  "terminalAttemptTargets": [],
+  "waveId": "ptca-20260730t075700z-r21-admission-bound-canary"
+}

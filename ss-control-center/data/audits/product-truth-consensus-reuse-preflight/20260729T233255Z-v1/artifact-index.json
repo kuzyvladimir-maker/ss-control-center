@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    {
+      "file": "preflight-report.json",
+      "role": "consensus_reuse_preflight",
+      "sha256": "86ce64992d0aa7804cf0dc30d128c7185972c8391c11104d03188bce63189f88"
+    }
+  ],
+  "checkedAt": "2026-07-29T23:32:55.000Z",
+  "claims": {
+    "authorizesExecution": false,
+    "completeDonorGroupsOnly": true,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "maxListingsPerWave": 5,
+    "maxRowsPerWave": 100,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "blockedDonors": 1,
+    "blockedListings": 2,
+    "canonicalVariantCreates": 27,
+    "canonicalVariantReuses": 0,
+    "decisionCreates": 27,
+    "decisionReuses": 0,
+    "directCandidates": 42,
+    "directDonors": 28,
+    "donorTransitions": 27,
+    "existingRecipes": 0,
+    "readyDonors": 27,
+    "readyListings": 40,
+    "recommendedWaves": 9,
+    "reconciliationCandidatesQuarantined": 9,
+    "selectedCandidates": 51
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "schemaVersion": "product-truth-consensus-reuse-preflight-artifact-index/1.0.0",
+  "source": {
+    "consensusReuseScopeGeneratedAt": "2026-07-29T23:26:31.000Z",
+    "consensusReuseScopeSha256": "b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "status": "PARTIALLY_READY"
+}

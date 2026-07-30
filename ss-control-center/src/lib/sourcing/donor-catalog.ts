@@ -22,6 +22,7 @@ import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
   matchCanonicalProductTitle,
   normalizeIdentityTokens,
+  parseCanonicalSize,
   type CanonicalProductIdentity,
   type CanonicalProductMatchResult,
   type NormalizedCanonicalProduct,
@@ -485,6 +486,8 @@ export const RETAILER_SOURCE_DETAIL_IDENTITY_VERSION =
   "retailer-source-detail-identity/1.0.0" as const;
 export const RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION =
   "retailer-source-detail-copy/1.0.0" as const;
+export const RETAILER_SOURCE_DETAIL_ESCALATION_ADMISSION_VERSION =
+  "retailer-source-detail-escalation-admission/1.1.0" as const;
 
 export interface RetailerSourceDetailIdentityResult {
   ok: boolean;
@@ -494,6 +497,17 @@ export interface RetailerSourceDetailIdentityResult {
   identityEvidenceNormalization: string | null;
   structuredForm: { name: string; value: string } | null;
   identityMatch: CanonicalProductMatchResult | null;
+}
+
+export interface RetailerSourceDetailEscalationAdmission {
+  admitted: boolean;
+  schemaVersion:
+    typeof RETAILER_SOURCE_DETAIL_ESCALATION_ADMISSION_VERSION;
+  blockers: string[];
+  reason:
+    | "MISSING_FORM_ONLY"
+    | "BOUNDED_COPY_ONLY"
+    | null;
 }
 
 function canonicalSourceDetailTarget(
@@ -574,6 +588,198 @@ function normalizeSourceDetailCopy(
     .replace(/,\s*$/g, "")
     .trim();
   return { title: normalized, rules };
+}
+
+const SOURCE_DETAIL_CONTAINER_TOKEN_GROUPS = [
+  ["bag", "pouch", "sachet"],
+  ["bottle", "jug"],
+  ["bowl"],
+  ["box", "carton"],
+  ["can", "canned", "tin"],
+  ["canister", "tube"],
+  ["cup"],
+  ["jar"],
+  ["packet"],
+  ["tray"],
+  ["tub"],
+] as const;
+
+function sourceDetailContainerGroup(tokens: readonly string[]): number | null {
+  for (const [index, group] of SOURCE_DETAIL_CONTAINER_TOKEN_GROUPS.entries()) {
+    if (group.some((token) => tokens.includes(token))) return index;
+  }
+  return null;
+}
+
+function sourceDetailUrlSize(value: string | null | undefined) {
+  const url = exactHttpsUrl(value);
+  if (!url) return null;
+  const slug = decodeURIComponent(new URL(url).pathname)
+    .replace(
+      /(\d+)-(\d+)-(fl-?oz|oz|lb|g|kg|ml|l|ct|count)\b/gi,
+      "$1.$2 $3",
+    )
+    .replace(
+      /(\d+)-(\d+)(?=(?:fl-?oz|oz|lb|g|kg|ml|l|ct|count)\b)/gi,
+      "$1.$2",
+    )
+    .replaceAll("-", " ");
+  return parseCanonicalSize(slug);
+}
+
+/**
+ * Fail-closed paid-detail admission. Retailer detail is allowed to prove only
+ * an omitted physical form (or remove one exact bounded copy phrase). Brand,
+ * variant, exact base-unit size and outer pack must already be proven by the
+ * free search observation before a 2.5-unit detail reservation is created.
+ */
+export function evaluateRetailerSourceDetailEscalation(input: {
+  target: CanonicalProduct | CanonicalProductIdentity;
+  offer: Pick<
+    ScoredOffer,
+    | "retailer"
+    | "retailerProductId"
+    | "productUrl"
+    | "title"
+    | "brand"
+    | "isMarketplaceItem"
+    | "sellerName"
+    | "via"
+    | "packSizeSeen"
+    | "identityMatch"
+  >;
+}): RetailerSourceDetailEscalationAdmission {
+  const { offer } = input;
+  const blockers: string[] = [];
+  const retailer = offer.retailer.trim().toLowerCase();
+  const retailerProductId = offer.retailerProductId.trim();
+  if (!["walmart", "target"].includes(retailer)) {
+    blockers.push("SOURCE_DETAIL_SEARCH_RETAILER_UNSUPPORTED");
+  }
+  if (offer.isMarketplaceItem !== false) {
+    blockers.push("SOURCE_DETAIL_SEARCH_NOT_FIRST_PARTY");
+  }
+  if ((offer.via ?? "direct") !== "direct") {
+    blockers.push("SOURCE_DETAIL_SEARCH_NOT_DIRECT");
+  }
+  if ((offer.packSizeSeen ?? 1) !== 1) {
+    blockers.push("SOURCE_DETAIL_SEARCH_NOT_BASE_UNIT");
+  }
+  if (!retailerProductId) {
+    blockers.push("SOURCE_DETAIL_SEARCH_ITEM_ID_REQUIRED");
+  }
+  if (
+    !retailerItemUrlMatches(
+      retailer,
+      exactHttpsUrl(offer.productUrl),
+      retailerProductId,
+    )
+  ) {
+    blockers.push("SOURCE_DETAIL_SEARCH_URL_ITEM_MISMATCH");
+  }
+  if (retailer === "walmart" && offer.sellerName !== "Walmart.com") {
+    blockers.push("SOURCE_DETAIL_SEARCH_WALMART_SELLER_UNPROVEN");
+  }
+
+  const match = offer.identityMatch;
+  if (
+    match?.verdict !== "REJECT"
+    || match.reasonCodes.length !== 1
+  ) {
+    blockers.push("SOURCE_DETAIL_SEARCH_REJECTION_NOT_NARROW");
+  }
+
+  const target = canonicalSourceDetailTarget(input.target);
+  const targetFormTokens = normalizeIdentityTokens(target.form);
+  const reasonCode = match?.reasonCodes[0] ?? null;
+  let reason: RetailerSourceDetailEscalationAdmission["reason"] = null;
+  let identityBasisMatch = match;
+  if (reasonCode === "TITLE_TARGET_TOKEN_MISSING") {
+    const missing = match?.titleEvidence?.missingTargetTokens ?? [];
+    if (
+      missing.length > 0
+      && targetFormTokens.length > 0
+      && missing.every((token) => targetFormTokens.includes(token))
+    ) {
+      reason = "MISSING_FORM_ONLY";
+      const targetContainerGroup = sourceDetailContainerGroup(
+        targetFormTokens,
+      );
+      const candidateContainerGroup = sourceDetailContainerGroup(
+        normalizeIdentityTokens(offer.title),
+      );
+      if (
+        targetContainerGroup !== null
+        && candidateContainerGroup !== null
+        && targetContainerGroup !== candidateContainerGroup
+      ) {
+        blockers.push("SOURCE_DETAIL_SEARCH_CONTAINER_CONTRADICTION");
+      }
+    } else {
+      blockers.push("SOURCE_DETAIL_SEARCH_MISSING_TOKENS_NOT_FORM_ONLY");
+    }
+  } else if (reasonCode === "TITLE_UNEXPLAINED_CANDIDATE_TOKEN") {
+    const title = offer.title?.trim() ?? "";
+    const normalizedCopy = normalizeSourceDetailCopy(title);
+    const normalizedMatch = normalizedCopy.rules.length
+      ? matchCanonicalProductTitle(target, {
+        title: normalizedCopy.title,
+        brand: offer.brand ?? null,
+      })
+      : null;
+    if (normalizedMatch?.verdict === "EXACT_IDENTITY") {
+      reason = "BOUNDED_COPY_ONLY";
+      identityBasisMatch = normalizedMatch;
+    } else {
+      blockers.push("SOURCE_DETAIL_SEARCH_COPY_NOT_BOUNDED_EXACT_PHRASE");
+    }
+  } else {
+    blockers.push("SOURCE_DETAIL_SEARCH_REASON_NOT_ADMITTED");
+  }
+
+  const targetSize = identityBasisMatch?.normalized.target.size ?? null;
+  const candidateSize = identityBasisMatch?.normalized.candidate.size ?? null;
+  const exactSize = (
+    identityBasisMatch?.normalized.target.sizeStatus === "PARSED"
+    && identityBasisMatch.normalized.candidate.sizeStatus === "PARSED"
+    && targetSize !== null
+    && candidateSize !== null
+    && targetSize.dimension === candidateSize.dimension
+    && targetSize.baseUnit === candidateSize.baseUnit
+    && Math.abs(targetSize.baseAmount - candidateSize.baseAmount)
+      <= Math.max(1e-6, Math.abs(targetSize.baseAmount) * 1e-9)
+  );
+  if (!exactSize) {
+    blockers.push("SOURCE_DETAIL_SEARCH_SIZE_NOT_EXACT");
+  }
+  const urlSize = sourceDetailUrlSize(offer.productUrl);
+  if (
+    targetSize
+    && urlSize
+    && (
+      targetSize.dimension !== urlSize.dimension
+      || targetSize.baseUnit !== urlSize.baseUnit
+      || Math.abs(targetSize.baseAmount - urlSize.baseAmount)
+        > Math.max(1e-6, Math.abs(targetSize.baseAmount) * 1e-9)
+    )
+  ) {
+    blockers.push("SOURCE_DETAIL_SEARCH_URL_SIZE_CONTRADICTION");
+  }
+  if (
+    identityBasisMatch?.normalized.target.outerPackCount !== 1
+    || identityBasisMatch.normalized.candidate.outerPackCount !== 1
+  ) {
+    blockers.push("SOURCE_DETAIL_SEARCH_OUTER_PACK_NOT_EXACT_BASE_UNIT");
+  }
+
+  return {
+    admitted: blockers.length === 0 && reason !== null,
+    schemaVersion: RETAILER_SOURCE_DETAIL_ESCALATION_ADMISSION_VERSION,
+    blockers: [...new Set(blockers)].sort((left, right) =>
+      left.localeCompare(right, "en-US"),
+    ),
+    reason,
+  };
 }
 
 /**
@@ -3315,43 +3521,13 @@ export async function enrichTarget(
   // though the exact first-party item detail exposes it as a structured fact.
   // Consume at most one pre-planned detail call for one narrowly admissible
   // candidate. Adjacent flavors/sizes never reach the paid detail boundary.
-  const targetFormTokens = normalizeIdentityTokens(cp.container_type ?? cp.base_unit);
   const detailCandidates = batches
     .flatMap((batch) => batch.offers)
-    .filter((offer) => {
-      if (
-        !["walmart", "target"].includes(offer.retailer)
-        || offer.isMarketplaceItem !== false
-        || (offer.via ?? "direct") !== "direct"
-        || (offer.packSizeSeen ?? 1) !== 1
-        || !offer.retailerProductId
-        || !retailerItemUrlMatches(
-          offer.retailer,
-          exactHttpsUrl(offer.productUrl),
-          offer.retailerProductId,
-        )
-        || offer.identityMatch?.verdict !== "REJECT"
-        || offer.identityMatch.reasonCodes.length !== 1
-      ) return false;
-      if (offer.retailer === "walmart" && offer.sellerName !== "Walmart.com") {
-        return false;
-      }
-      const reason = offer.identityMatch.reasonCodes[0];
-      if (reason === "TITLE_TARGET_TOKEN_MISSING") {
-        const missing = offer.identityMatch.titleEvidence?.missingTargetTokens ?? [];
-        return missing.length > 0
-          && targetFormTokens.length > 0
-          && missing.every((token) => targetFormTokens.includes(token));
-      }
-      if (reason === "TITLE_UNEXPLAINED_CANDIDATE_TOKEN") {
-        const boundedCopyTokens = new Set(["fiber", "frozen", "serving", "vegetables"]);
-        const unexplained =
-          offer.identityMatch.titleEvidence?.unexplainedCandidateTokens ?? [];
-        return unexplained.length > 0
-          && unexplained.every((token) => boundedCopyTokens.has(token));
-      }
-      return false;
-    })
+    .filter((offer) =>
+      evaluateRetailerSourceDetailEscalation({
+        target: cp,
+        offer,
+      }).admitted)
     .sort((left, right) => (
       Number(typeof right.price === "number" && right.price > 0)
         - Number(typeof left.price === "number" && left.price > 0)

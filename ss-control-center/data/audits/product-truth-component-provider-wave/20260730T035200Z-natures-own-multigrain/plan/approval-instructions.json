@@ -1,0 +1,48 @@
+{
+  "authorizationMode": "PINNED_STANDING_OWNER_POLICY",
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef:<AUTOMATIC_STANDING_APPROVAL_ID>",
+  "mode": "WAVE",
+  "ownerActionRequired": false,
+  "planExpiresAt": "2026-07-30T04:35:00.000Z",
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 2,
+      "maxUnits": 5,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "ptca-20260730t035200z-natures-own-multigrain",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target"
+    ]
+  },
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "warning": "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the plan-bound permit and confirmation automatically; no chat approval is required and no publish, delist, reprice, or purchase is authorized."
+}

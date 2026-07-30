@@ -22,6 +22,9 @@ import {
 import type {
   ProductTruthSearchQueryCalibration,
 } from "../src/lib/sourcing/product-truth-search-query-calibration";
+import type {
+  ProductTruthSourceDetailAdmission,
+} from "../src/lib/sourcing/product-truth-source-detail-admission";
 import {
   compileProductTruthProviderTargetWave,
   PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION,
@@ -41,6 +44,8 @@ type Options = {
   componentScopeShaPath: string;
   searchQueryCalibrationPath: string;
   searchQueryCalibrationShaPath: string;
+  sourceDetailAdmissionPath: string;
+  sourceDetailAdmissionShaPath: string;
   authoritativeManifestSha256: string;
   url: string;
   allowRemote: boolean;
@@ -67,6 +72,7 @@ function usage(): string {
     `    --max-targets INTEGER  # 1-${PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS}`,
     "    --component-scope ABS_JSON --component-scope-sha ABS_SHA_FILE",
     "    --search-calibration ABS_JSON --search-calibration-sha ABS_SHA_FILE",
+    "    --source-detail-admission ABS_JSON --source-detail-admission-sha ABS_SHA_FILE",
     "    --manifest-sha256 SHA",
     "    (--url URL | --url-env ENV) [--allow-remote --auth-token-env ENV]",
     "    --out ABS_NEW_DIR",
@@ -110,6 +116,8 @@ function parseOptions(argv: readonly string[]): Options {
     "--component-scope-sha",
     "--search-calibration",
     "--search-calibration-sha",
+    "--source-detail-admission",
+    "--source-detail-admission-sha",
     "--manifest-sha256",
     "--url",
     "--url-env",
@@ -186,6 +194,14 @@ function parseOptions(argv: readonly string[]): Options {
     searchQueryCalibrationShaPath: absolutePath(
       values.get("--search-calibration-sha"),
       "--search-calibration-sha",
+    ),
+    sourceDetailAdmissionPath: absolutePath(
+      values.get("--source-detail-admission"),
+      "--source-detail-admission",
+    ),
+    sourceDetailAdmissionShaPath: absolutePath(
+      values.get("--source-detail-admission-sha"),
+      "--source-detail-admission-sha",
     ),
     authoritativeManifestSha256: exactSha(
       values.get("--manifest-sha256"),
@@ -428,7 +444,11 @@ async function writeNew(path: string, content: string): Promise<void> {
 }
 
 async function run(options: Options): Promise<void> {
-  const [componentScope, searchQueryCalibration] = await Promise.all([
+  const [
+    componentScope,
+    searchQueryCalibration,
+    sourceDetailAdmission,
+  ] = await Promise.all([
     readBoundJson(
       options.componentScopePath,
       options.componentScopeShaPath,
@@ -436,6 +456,10 @@ async function run(options: Options): Promise<void> {
     readBoundJson(
       options.searchQueryCalibrationPath,
       options.searchQueryCalibrationShaPath,
+    ),
+    readBoundJson(
+      options.sourceDetailAdmissionPath,
+      options.sourceDetailAdmissionShaPath,
     ),
   ]);
   const capture = await captureTerminalProviderAttempts(options);
@@ -456,6 +480,10 @@ async function run(options: Options): Promise<void> {
       searchQueryCalibration.value as ProductTruthSearchQueryCalibration,
     searchQueryCalibrationJson: searchQueryCalibration.json,
     searchQueryCalibrationSha256: searchQueryCalibration.sha256,
+    sourceDetailAdmission:
+      sourceDetailAdmission.value as ProductTruthSourceDetailAdmission,
+    sourceDetailAdmissionJson: sourceDetailAdmission.json,
+    sourceDetailAdmissionSha256: sourceDetailAdmission.sha256,
     attemptCapture: capture,
     attemptCaptureJson: captureJson,
     attemptCaptureSha256: captureSha256,
@@ -469,7 +497,7 @@ async function run(options: Options): Promise<void> {
   const requestSha256 = sha256(requestJson);
   const indexJson = renderProductTruthOperationalJson({
     schemaVersion:
-      "product-truth-provider-target-wave-artifact-index/1.1.0",
+      "product-truth-provider-target-wave-artifact-index/1.2.0",
     generatedAt: wave.generatedAt,
     waveId: wave.waveId,
     databaseTargetFingerprint: wave.databaseTargetFingerprint,
@@ -481,6 +509,11 @@ async function run(options: Options): Promise<void> {
         role: "search_query_calibration",
         file: "search-query-calibration.json",
         sha256: searchQueryCalibration.sha256,
+      },
+      {
+        role: "source_detail_admission",
+        file: "source-detail-admission.json",
+        sha256: sourceDetailAdmission.sha256,
       },
       {
         role: "terminal_provider_attempt_capture",
@@ -510,6 +543,14 @@ async function run(options: Options): Promise<void> {
     writeNew(
       resolve(options.outDir, "search-query-calibration.sha256"),
       `${searchQueryCalibration.sha256}\n`,
+    ),
+    writeNew(
+      resolve(options.outDir, "source-detail-admission.json"),
+      sourceDetailAdmission.json,
+    ),
+    writeNew(
+      resolve(options.outDir, "source-detail-admission.sha256"),
+      `${sourceDetailAdmission.sha256}\n`,
     ),
     writeNew(
       resolve(options.outDir, "terminal-provider-attempt-capture.json"),

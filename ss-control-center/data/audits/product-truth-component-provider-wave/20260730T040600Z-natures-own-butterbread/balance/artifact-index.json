@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-30T04:06:23.356Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "2ed8b8545c9a81eee642a222966db143cf2f947b832ec84970e4b41856a02cce"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "0e2c620f1d0cfef519a543857314083539392194b5c5ec5e7cfd5b71e29451ff"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:49e6e6ad9dbd6e380770545a",
+  "meteredReceiptId": "mbr_ba50990147700956d690d4bd48a5f7a3afae83b0190b21e2ee8008aae46c0c2d",
+  "meteredReservationKey": "mpr_v1_68b0e0fb7df8dda8577cfbf5b0b393eeb294d36a68376a3c81cf2166eb227b53",
+  "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "ptca-20260730t040600z-natures-own-butterbread",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

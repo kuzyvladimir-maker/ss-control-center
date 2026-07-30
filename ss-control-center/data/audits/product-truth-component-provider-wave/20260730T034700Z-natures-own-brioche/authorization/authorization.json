@@ -1,0 +1,82 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99537.5,
+        "evidenceSha256": "47ad61ed5aef162996e5c181e783245babf37b591dc72ed909fb6b31ec5eaae6",
+        "observedAt": "2026-07-30T03:48:32.691Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-30T03:58:55.158Z",
+    "issuedAt": "2026-07-30T03:48:55.158Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-30T03:58:55.158Z",
+      "issuedAt": "2026-07-30T03:48:55.158Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 1,
+          "maxUnits": 2.5,
+          "operations": [
+            "detail"
+          ]
+        }
+      },
+      "runId": "ptca-20260730t034800z-natures-own-brioche",
+      "version": 1
+    },
+    "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+    "runId": "ptca-20260730t034800z-natures-own-brioche",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+  "approvalSha256": "4cf37de578f08b379703ab8a19b6500e8514734319462672aa3b4670c0e3dfa2",
+  "balanceEvidenceSha256": "47ad61ed5aef162996e5c181e783245babf37b591dc72ed909fb6b31ec5eaae6",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c:pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+  "expiresAt": "2026-07-30T03:58:55.158Z",
+  "issuedAt": "2026-07-30T03:48:55.158Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/plan/plan.sha256",
+    "--manifest",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c:pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/plan/plan.sha256' '--manifest' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c:pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T034700Z-natures-own-brioche/execution'",
+  "ownerActionRequired": false,
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "policyId": "pt-standing-provider-enrichment-20260728-v1",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

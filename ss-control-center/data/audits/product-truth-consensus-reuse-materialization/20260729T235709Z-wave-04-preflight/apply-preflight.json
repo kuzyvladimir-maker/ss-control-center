@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-07-29T23:57:09.000Z",
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "historicalPricePromoted": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingCatalog": true
+  },
+  "counts": {
+    "absentRows": 37,
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitionsRequired": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "maximumRows": 37,
+    "targets": 5
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "listingKeys": [
+    "walmart:1:RizwanX-3032",
+    "walmart:1:RizwanX-3442",
+    "walmart:1:RizwanX-3443",
+    "walmart:1:RizwanX-3444",
+    "walmart:1:RizwanX-353"
+  ],
+  "planId": "ptcr-wave-7870faa7b2c8d26f15df1551",
+  "planSha256": "8bf8b3033c3dc979fc51aaabf4df198f3c46c16dacd03480e96c83c686622244",
+  "schemaVersion": "product-truth-consensus-reuse-apply-preflight/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "status": "READY_TO_APPLY"
+}

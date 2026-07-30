@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-preflight.json",
+      "role": "all_components_recipe_materialization_preflight",
+      "sha256": "719d3a5ac5b97783f359bdd27e9aab45978ca45508e86acb89202fad446f71fe"
+    }
+  ],
+  "checkedAt": "2026-07-30T03:28:40.000Z",
+  "command": "preflight",
+  "counts": {
+    "absentRows": 30,
+    "exactExistingRows": 0,
+    "maximumRows": 30,
+    "targets": 6
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptacr-d368cf974571b5d776472409",
+  "schemaVersion": "product-truth-all-components-recipe-wave-artifact-index/1.0.0",
+  "status": "READY_TO_APPLY"
+}

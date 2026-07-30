@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "product-truth-standing-wave-no-spend-ambiguous-proof/1.0.0",
+  "verifiedAt": "2026-07-29T20:12:26.948Z",
+  "commandId": "ptswc-4d2c6f8f7803ba8a18d514321db8319d",
+  "runId": "ptsw-web-4d2c6f8f7803ba8a18d514321db8319d-01",
+  "command": {
+    "status": "AMBIGUOUS",
+    "outcome": "AMBIGUOUS",
+    "errorCode": "STANDING_WAVE_CLI_EXIT_1",
+    "attempts": 1,
+    "executionBoundary": "STANDING_WAVE:655d3d5d5b9c3492bf2e3105d5dc205d7fb044158078ba6ce4607d4bdfb47b61",
+    "resultArtifactId": "pta-4d2c6f8f7803ba8a18d514321db8319d-result-b807a59f"
+  },
+  "runIdTableCounts": {
+    "DonorHarvestState": 0,
+    "DonorOfferObservation": 0,
+    "DonorProductVariantDecision": 0,
+    "EnrichmentJob": 0,
+    "FundAllocation": 0,
+    "FundEntry": 0,
+    "MeteredProviderBudget": 0,
+    "ProductContentObservation": 0,
+    "ProductTruthControlCommand": 0,
+    "ProductTruthListingRecipe": 0,
+    "ProductTruthMigrationReceipt": 0,
+    "ProductTruthOperationalEvent": 0,
+    "ProductTruthOperationalRun": 0,
+    "ProductTruthOperationalRunItem": 0,
+    "SkuCost": 0
+  },
+  "meteredReservationReceiptCount": 0,
+  "workspaceFiles": [
+    "plan/artifact-index.json",
+    "plan/artifact-index.sha256",
+    "plan/wave-plan.json",
+    "plan/wave-plan.sha256"
+  ],
+  "doctorArtifactsPresent": false,
+  "npmResolution": {
+    "launchdDefaultPath": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "npmPresentOnLaunchdDefaultPath": false,
+    "correctedPath": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "npmResolvedPath": "/opt/homebrew/bin/npm"
+  },
+  "conclusion": "ZERO_PROVIDER_AND_ZERO_BUSINESS_WRITE_PROVEN"
+}

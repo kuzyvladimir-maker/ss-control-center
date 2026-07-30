@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:ad5f00549dd474b832ce:ea8d8182525e441f",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:afc1e7dd314bad8abc9e507b4df67773880fc0bab1d0db15806e99b7d574d582",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:10308361",
+  "donorProductId": "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+  "generatedAt": "2026-07-30T00:56:55.387Z",
+  "job": {
+    "approvalId": "pt-standing:ad5f00549dd474b832ce:ea8d8182525e441f",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT",
+    "id": "ptej_a120265d944e7d8df156aa9aeb126df910694d7b1846e2d75b71790e25cf565f",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT"
+    },
+    "runId": "ptsw-20260730t005213z-01",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_0bfbb00712bbdad18e9eb336a47d4f5e509e3b72715f05689193704d70304e66",
+        "createdAt": "2026-07-30T00:56:45.507Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_648340f76bc9811af8127d0bb636adb9b63b77856a37fc386a97c82353bdfa4e",
+        "reservationKey": "mpr_v1_f57c408e108c65898a4d3a39b0cfaca0d690f73b6e9ce9afda72173cb2eab3f0",
+        "reservedAt": "2026-07-30T00:56:45.507Z",
+        "settledAt": "2026-07-30T00:56:55.068Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "ptsw-20260730t005213z-01",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "ad5f00549dd474b832ce586907e7538f9d030f53ca1a3ab09683d175a54f170b",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_PREFIX_NOT_ALLOWED,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_PREFIX_NOT_ALLOWED,CANONICAL_VARIANT",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10308361",
+  "runId": "ptsw-20260730t005213z-01",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

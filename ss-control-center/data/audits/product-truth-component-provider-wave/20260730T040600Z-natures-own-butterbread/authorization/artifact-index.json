@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "4be741dd5bb29999fa805a2e76df8a8a42a31f656399324860408257a1adc8fc",
+  "authorizationSha256": "1f293308aa11c8240ba79dbfab3b90d65d6eb1f3298bada214869054aa8ef3c3",
+  "balanceEvidenceSha256": "2ed8b8545c9a81eee642a222966db143cf2f947b832ec84970e4b41856a02cce",
+  "createdAt": "2026-07-30T04:06:34.893Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "4be741dd5bb29999fa805a2e76df8a8a42a31f656399324860408257a1adc8fc"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "1f293308aa11c8240ba79dbfab3b90d65d6eb1f3298bada214869054aa8ef3c3"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+  "runId": "ptca-20260730t040600z-natures-own-butterbread",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

@@ -1,0 +1,62 @@
+{
+  "completedAt": "2026-07-30T07:26:13.414Z",
+  "counts": {
+    "componentEvidence": 13,
+    "exactExistingRows": 0,
+    "insertedRows": 65,
+    "listingRecipeComponents": 13,
+    "listingRecipes": 13,
+    "listingScopeLinks": 13,
+    "skuCosts": 13,
+    "targets": 13
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptacr-2e07a95f9726d5c8d794ef8a",
+  "planSha256": "6e485b4ceff68cb48cfd572f27fb1f8417d8ce9b65a5df65031471c22ddcafb5",
+  "preflightSha256": "200439139f97eb722873fcce5a16750bdf75772634b3256395c3d6ccd79c2ba6",
+  "schemaVersion": "product-truth-all-components-recipe-materialization-report/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-30T07:25:54.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "consumerCutoverChanged": false,
+    "costOutcomes": [
+      "UNSOURCEABLE"
+    ],
+    "foreignKeyViolations": [],
+    "listingKeys": [
+      "amazon:1:4F-211R-JY0C",
+      "walmart:1:Athar-164",
+      "walmart:1:Comm-03",
+      "walmart:1:Comm-04",
+      "walmart:1:FaisalX-1130",
+      "walmart:1:FaisalX-1131",
+      "walmart:1:FaisalX-1132",
+      "walmart:1:FaisalX-1161",
+      "walmart:1:FaisalX-1162",
+      "walmart:1:RizwanX-3073",
+      "walmart:1:RizwanX-3074",
+      "walmart:1:RizwanX-3075",
+      "walmart:1:RizwanX-825"
+    ],
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "recipeHashes": [
+      "e87e2b564f8c6bdd5eaf0daf6571fb98c5c863be132bafeec79ec6d5792174c3",
+      "395afda9d9c50d3c75854735b4302da84908d3136dee4331cb613dbd4ad9114f",
+      "62c60ef7d01f90f9d4870b81659604e31b7905379233b5cea9eab449cdca2350",
+      "01eae3e59167a1095eab1349d23db5b4db2a7737a73b648264dc103e8fbbbf8c",
+      "2ace5af90f60eb3af4f827d9f6b6226c109e89bc57d86826ed5c8b9998a69e64",
+      "8f1785f923c7397382625757662a360a11bffe61093644df4b3887452d56a17a",
+      "6da2b54da836d8bdc33d503af9fc80c43c4ca268129ecf2f0474769b863a31b3",
+      "c89cfb684d107c0ec015cfa616303d8206250d508420fa7813f14305a6f7d8f9",
+      "e773fd678164c7198d26071a73657dc825964fed09bf94afbe8bf276a6c7faf6",
+      "9975733d8aa9b4846f0b13a546adbbee4c6dc01c6f763a642c49b5466ffb2d8d",
+      "803f30e8204d08ed08cf62438c412aa29312318c51c57d2ebf47276a15c85b83",
+      "92462e6defe8ced356c2fba256207b37fffe487ba8db3991540fda7eb6b56cea",
+      "78157437f291c999f3a021811bf2b57007dc7ea1788a20ba75c3c9b0c346efac"
+    ]
+  }
+}

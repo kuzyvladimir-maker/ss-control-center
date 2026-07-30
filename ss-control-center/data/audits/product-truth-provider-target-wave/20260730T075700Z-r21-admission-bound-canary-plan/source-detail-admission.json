@@ -1,0 +1,2240 @@
+{
+  "admissionContract": {
+    "purpose": "BOUND_PAID_DETAIL_TO_FREE_SEARCH_EVIDENCE_WITH_EXACT_SIZE_PACK_AND_VARIANT",
+    "schemaVersion": "retailer-source-detail-escalation-admission/1.1.0"
+  },
+  "claims": {
+    "authorizesExecution": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "predictsProviderResults": false,
+    "providerCalls": 0,
+    "readOnlyInputs": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "admittedDependentListings": 68,
+    "admittedImmediateClosures": 68,
+    "admittedSearchObservations": 202,
+    "admittedTargets": 52,
+    "calibrationAdmittedTargets": 1013,
+    "crossTargetItemConflicts": 19,
+    "evaluatedSearchObservations": 35505,
+    "providerTargets": 3127,
+    "targetsWithMultipleCandidateItems": 60,
+    "targetsWithNoCandidate": 882
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "exclusionCounts": [
+    {
+      "code": "SOURCE_DETAIL_SEARCH_SIZE_NOT_EXACT",
+      "count": 29856
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_MISSING_TOKENS_NOT_FORM_ONLY",
+      "count": 26171
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_URL_SIZE_CONTRADICTION",
+      "count": 25384
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_REASON_NOT_ADMITTED",
+      "count": 8225
+    },
+    {
+      "code": "CANONICAL_DONOR_VARIANT_CONFLICT",
+      "count": 5541
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_COPY_NOT_BOUNDED_EXACT_PHRASE",
+      "count": 288
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_OUTER_PACK_NOT_EXACT_BASE_UNIT",
+      "count": 130
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_CONTAINER_CONTRADICTION",
+      "count": 110
+    },
+    {
+      "code": "SOURCE_DETAIL_SEARCH_REJECTION_NOT_NARROW",
+      "count": 12
+    }
+  ],
+  "generatedAt": "2026-07-30T07:55:00.000Z",
+  "schemaVersion": "product-truth-source-detail-admission/1.1.0",
+  "selectionPolicy": {
+    "candidateRule": "EXACTLY_ONE_RETAILER_ITEM_PER_TARGET_AND_ONE_TARGET_PER_RETAILER_ITEM",
+    "canonicalBindingConflict": "EXCLUDE",
+    "exactBaseUnitSizeBeforePaidDetail": true,
+    "exactOuterPackOneBeforePaidDetail": true,
+    "firstPartyDirectOnly": true,
+    "ranking": [
+      "IMMEDIATE_CLOSABLE_LISTINGS_DESC",
+      "KNOWN_GMV_30D_DESC",
+      "DEPENDENT_LISTINGS_DESC",
+      "KNOWN_ORDERS_30D_DESC",
+      "KNOWN_UNITS_30D_DESC",
+      "ACQUISITION_PRIORITY_ASC",
+      "CANONICAL_VARIANT_ID_ASC"
+    ],
+    "retailers": [
+      "walmart",
+      "target"
+    ]
+  },
+  "source": {
+    "bridgeSnapshot": {
+      "capturedAt": "2026-07-30T07:22:35.000Z",
+      "schemaVersion": "product-truth-legacy-bridge-snapshot/1.10.0",
+      "sha256": "e2221c746f73dee5343286939a5c5cfcb8ed3c338c070648e27842acba52c832"
+    },
+    "componentAcquisitionScope": {
+      "generatedAt": "2026-07-30T07:23:14.000Z",
+      "schemaVersion": "product-truth-component-acquisition-scope/1.4.0",
+      "sha256": "157bcd9434d0af599454e45720a2ca7079dc83121f7cbd876957f528f2fdaa96"
+    },
+    "searchQueryCalibration": {
+      "generatedAt": "2026-07-30T07:45:00.000Z",
+      "schemaVersion": "product-truth-search-query-calibration/1.0.0",
+      "sha256": "4a9e0517a3fa9e955fbc0c5c198d2f79dabc22acc1ad17f4da10e1739af245df"
+    }
+  },
+  "targets": [
+    {
+      "acquisitionPriority": 79,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c92c9e5e-cdb3-42c2-aab4-e21d8103c94a"
+        ],
+        "observedTitles": [
+          "Margaret Holmes Seasoned Cabbage, Canned Vegetables, 15 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10451768"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Margaret-Holmes-Seasoned-Cabbage-Canned-Vegetables-15-oz/10451768?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10451768"
+      },
+      "canonicalIdentityHash": "b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "canonicalVariantId": "cpv1:b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 2,
+        "knownUnits30d": 2,
+        "walmartListings": 3
+      },
+      "ordinal": 0,
+      "targetIdentity": {
+        "brand": "Margaret Holmes",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Seasoned Cabbage",
+        "size": "15 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 128,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "3c896ed0-7807-43b5-a4de-2ce788050ede"
+        ],
+        "observedTitles": [
+          "Green Giant Cut Green Beans - 14.50oz"
+        ],
+        "offerIds": [
+          "do:target:94992030"
+        ],
+        "productUrl": "https://www.target.com/p/green-giant-cut-green-beans-14-50oz/-/A-94992030",
+        "retailer": "target",
+        "retailerProductId": "94992030"
+      },
+      "canonicalIdentityHash": "2d0efa9b4f1d762b9addd4058cc7319691b8a891cac18d2f031ad382e11cae1b",
+      "canonicalVariantId": "cpv1:2d0efa9b4f1d762b9addd4058cc7319691b8a891cac18d2f031ad382e11cae1b",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 3
+      },
+      "ordinal": 1,
+      "targetIdentity": {
+        "brand": "Green Giant",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Cut Green Beans",
+        "size": "14.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 151,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "ffb98ad6-b916-484d-8ab0-5b3f547d71f9"
+        ],
+        "observedTitles": [
+          "Progresso Light, Chicken Pot Pie Style Canned Soup, 18.5 oz"
+        ],
+        "offerIds": [
+          "do:walmart:23598003"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Progresso-Light-Chicken-Pot-Pie-Style-Canned-Soup-18-5-oz/23598003?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "23598003"
+      },
+      "canonicalIdentityHash": "562580c84fd906f1613f0b0e2ac313498c8cd2784f1a6b34f5758db0d340027c",
+      "canonicalVariantId": "cpv1:562580c84fd906f1613f0b0e2ac313498c8cd2784f1a6b34f5758db0d340027c",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 3
+      },
+      "ordinal": 2,
+      "targetIdentity": {
+        "brand": "Progresso",
+        "flavor": "Chicken Pot Pie Style",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Light",
+        "size": "18.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 152,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "81f97f26-c706-4b8d-9c60-51b57d5b9467"
+        ],
+        "observedTitles": [
+          "Cheez-It Snap'd Double Cheese Cheesy Baked Chips, Lunch Snacks, 12 oz"
+        ],
+        "offerIds": [
+          "do:walmart:588972715"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Cheez-It-Snap-d-Double-Cheese-Cracker-Chips-Thin-Crisps-12-oz/588972715?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "588972715"
+      },
+      "canonicalIdentityHash": "56dd178d59bc0c372fc1230deb4efaaf565663173f7c512c9f0ebcd723bb2ec7",
+      "canonicalVariantId": "cpv1:56dd178d59bc0c372fc1230deb4efaaf565663173f7c512c9f0ebcd723bb2ec7",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 3
+      },
+      "ordinal": 3,
+      "targetIdentity": {
+        "brand": "Cheez-It",
+        "flavor": "Double Cheese",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Snap'd",
+        "size": "12 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 158,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "38949d8c-947f-4cf2-a451-6bb65645662d"
+        ],
+        "observedTitles": [
+          "Malt-O-Meal Tootie Fruities Breakfast Cereal, Colorful Fruity Cereal Rings, 33 oz"
+        ],
+        "offerIds": [
+          "do:walmart:22210561"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Malt-O-Meal-Tootie-Fruities-Cereal-Fruity-Breakfast-Cereal-Crunchy-33-oz-Resealable-Bag/22210561?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "22210561"
+      },
+      "canonicalIdentityHash": "60d25b3cd2c8099cedb593450ed1914d8924373cd35ded697928ed4729b984d7",
+      "canonicalVariantId": "cpv1:60d25b3cd2c8099cedb593450ed1914d8924373cd35ded697928ed4729b984d7",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 3,
+        "dependentListings": 3,
+        "immediateClosableListings": 3,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 3
+      },
+      "ordinal": 4,
+      "targetIdentity": {
+        "brand": "Malt-O-Meal",
+        "flavor": "Fruity",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Tootie Fruities",
+        "size": "33 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 285,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "75ffd38d-5a9a-4ad4-9a89-90838287a9bc"
+        ],
+        "observedTitles": [
+          "Margaret Holmes Seasoned Collard Greens, Canned Vegetables, 27 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10451761"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Margaret-Holmes-Canned-Seasoned-Collard-Greens-27-oz/10451761?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10451761"
+      },
+      "canonicalIdentityHash": "a431df77cc4e877405bc573b6c5e4abbda6ecfa91c293105d86cf1ffbf01bd6c",
+      "canonicalVariantId": "cpv1:a431df77cc4e877405bc573b6c5e4abbda6ecfa91c293105d86cf1ffbf01bd6c",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 4,
+        "knownUnits30d": 5,
+        "walmartListings": 2
+      },
+      "ordinal": 5,
+      "targetIdentity": {
+        "brand": "Margaret Holmes",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Seasoned Collard Greens",
+        "size": "27 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 434,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "51333fb6-ee25-4408-ba2d-c97c4c0b8a48"
+        ],
+        "observedTitles": [
+          "Green Giant Sweet Peas - 15oz"
+        ],
+        "offerIds": [
+          "do:target:94992028"
+        ],
+        "productUrl": "https://www.target.com/p/green-giant-sweet-peas-15oz/-/A-94992028",
+        "retailer": "target",
+        "retailerProductId": "94992028"
+      },
+      "canonicalIdentityHash": "468a7fa87dd3d74471f32c98379cf635a06a4e4264cdd6d6ac83abc8d050f0eb",
+      "canonicalVariantId": "cpv1:468a7fa87dd3d74471f32c98379cf635a06a4e4264cdd6d6ac83abc8d050f0eb",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 2
+      },
+      "ordinal": 6,
+      "targetIdentity": {
+        "brand": "Green Giant",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Sweet Peas",
+        "size": "15 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 453,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "73849f27-74e2-48c9-a891-c626bad7334d"
+        ],
+        "observedTitles": [
+          "Cheetos Crunchy Flamin' Hot Limón Cheese Flavored Snacks - 8.5oz"
+        ],
+        "offerIds": [
+          "do:target:14930856"
+        ],
+        "productUrl": "https://www.target.com/p/cheetos-crunchy-flamin-hot-lim-243-n-cheese-flavored-snacks-8-5oz/-/A-14930856",
+        "retailer": "target",
+        "retailerProductId": "14930856"
+      },
+      "canonicalIdentityHash": "50181dabd233251d264cc1d72f5a053f26968eab3821a8c14291becd4511c280",
+      "canonicalVariantId": "cpv1:50181dabd233251d264cc1d72f5a053f26968eab3821a8c14291becd4511c280",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 2
+      },
+      "ordinal": 7,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "Flamin' Hot Limon",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Crunchy Flamin' Hot Limon",
+        "size": "8.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 512,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "71508a1e-5434-49a1-80cf-c7ac702875fe"
+        ],
+        "observedTitles": [
+          "Fritos Honey BBQ Twists Corn Chips - 9.25oz"
+        ],
+        "offerIds": [
+          "do:target:14930862"
+        ],
+        "productUrl": "https://www.target.com/p/fritos-honey-bbq-twists-9-25oz/-/A-14930862",
+        "retailer": "target",
+        "retailerProductId": "14930862"
+      },
+      "canonicalIdentityHash": "7498c20ab1206e16150ae8a903183239ac426c18ddaba14d78798b77b903be2e",
+      "canonicalVariantId": "cpv1:7498c20ab1206e16150ae8a903183239ac426c18ddaba14d78798b77b903be2e",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 2
+      },
+      "ordinal": 8,
+      "targetIdentity": {
+        "brand": "Fritos",
+        "flavor": "Honey BBQ",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Flavor Twists",
+        "size": "9.25 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 625,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c3c0e7b9-9709-4b20-9cc5-a59a844ac73c"
+        ],
+        "observedTitles": [
+          "Malt-O-Meal S'mores Breakfast Cereal - 30oz"
+        ],
+        "offerIds": [
+          "do:target:92782650"
+        ],
+        "productUrl": "https://www.target.com/p/malt-o-meal-s-39-mores-cereal-30oz/-/A-92782650",
+        "retailer": "target",
+        "retailerProductId": "92782650"
+      },
+      "canonicalIdentityHash": "b8b893405c78ee266536766976524ee7c4ac6ea06f0397b581f43bec34107aed",
+      "canonicalVariantId": "cpv1:b8b893405c78ee266536766976524ee7c4ac6ea06f0397b581f43bec34107aed",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 2
+      },
+      "ordinal": 9,
+      "targetIdentity": {
+        "brand": "Malt-O-Meal",
+        "flavor": "S'mores",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "S'mores Breakfast Cereal",
+        "size": "30 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 694,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c2356838-10f1-4616-9bd6-9d6fd9a140b2"
+        ],
+        "observedTitles": [
+          "Hunt's 100% Natural Tomato Sauce - 8oz"
+        ],
+        "offerIds": [
+          "do:target:12935747"
+        ],
+        "productUrl": "https://www.target.com/p/hunt-39-s-100-natural-tomato-sauce-8oz/-/A-12935747",
+        "retailer": "target",
+        "retailerProductId": "12935747"
+      },
+      "canonicalIdentityHash": "dc8ee7c2f6980704318a21eeaba5774a8a9d225414ac25bc7d202d4a56d9baa9",
+      "canonicalVariantId": "cpv1:dc8ee7c2f6980704318a21eeaba5774a8a9d225414ac25bc7d202d4a56d9baa9",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 2,
+        "dependentListings": 2,
+        "immediateClosableListings": 2,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 2
+      },
+      "ordinal": 10,
+      "targetIdentity": {
+        "brand": "Hunt's",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Tomato Sauce",
+        "size": "8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 758,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "62ebacb5-8e77-4a5d-833c-2e5d70082595"
+        ],
+        "observedTitles": [
+          "Pepperidge Farm Jewish Pumpernickel Dark Pump Bread, 16 oz. Loaf"
+        ],
+        "offerIds": [
+          "do:walmart:10452830"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Pumpernickel-Dark-Pump-Bread-16-oz-Loaf/10452830?classType=REGULAR",
+        "retailer": "walmart",
+        "retailerProductId": "10452830"
+      },
+      "canonicalIdentityHash": "185c97b7d1372a82bfc5313b4ef599b451bbc01979828752c6ceb757a9e9cd65",
+      "canonicalVariantId": "cpv1:185c97b7d1372a82bfc5313b4ef599b451bbc01979828752c6ceb757a9e9cd65",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 3,
+        "knownUnits30d": 4,
+        "walmartListings": 1
+      },
+      "ordinal": 11,
+      "targetIdentity": {
+        "brand": "Pepperidge Farm",
+        "flavor": "Jewish Pumpernickel",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Jewish Pumpernickel Dark Pump Bread",
+        "size": "16 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 819,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "dc97ab80-62ac-4fea-90b8-d60093c7d334"
+        ],
+        "observedTitles": [
+          "Campbell's Condensed 98% Fat Free Cream of Chicken Soup - 10.5oz"
+        ],
+        "offerIds": [
+          "do:target:13518821"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-condensed-98-fat-free-cream-of-chicken-soup-10-5oz/-/A-13518821",
+        "retailer": "target",
+        "retailerProductId": "13518821"
+      },
+      "canonicalIdentityHash": "e7e4171cd3a7a5d0537b0a9178388ab04784a660d2df7cbfe3ce253a548ec3d6",
+      "canonicalVariantId": "cpv1:e7e4171cd3a7a5d0537b0a9178388ab04784a660d2df7cbfe3ce253a548ec3d6",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 1,
+        "knownUnits30d": 1,
+        "walmartListings": 1
+      },
+      "ordinal": 12,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "98% Fat Free Cream of Chicken",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Condensed Soup",
+        "size": "10.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 884,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "cb705d06-f2df-4d5d-b430-fd1a9ebae902"
+        ],
+        "observedTitles": [
+          "Progresso Light Canned Soup, Chicken and Dumpling Soup, 18.5 oz"
+        ],
+        "offerIds": [
+          "do:walmart:15240722"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Progresso-Light-Canned-Soup-Chicken-and-Dumpling-Soup-18-5-oz/15240722?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "15240722"
+      },
+      "canonicalIdentityHash": "0541115438f3c65ba4df181648498add82b06412a0179e84ca852c3d0ed11f9a",
+      "canonicalVariantId": "cpv1:0541115438f3c65ba4df181648498add82b06412a0179e84ca852c3d0ed11f9a",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 13,
+      "targetIdentity": {
+        "brand": "Progresso",
+        "flavor": "Chicken & Dumpling",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Light",
+        "size": "18.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 897,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "0c1ddcb8-dc0a-46ed-a1ab-85d19b7fa3c7"
+        ],
+        "observedTitles": [
+          "Pepperidge Farm Vegan Jewish Rye Seeded Bread - 16oz"
+        ],
+        "offerIds": [
+          "do:target:14716257"
+        ],
+        "productUrl": "https://www.target.com/p/pepperidge-farm-jewish-rye-seeded-bread-16oz/-/A-14716257",
+        "retailer": "target",
+        "retailerProductId": "14716257"
+      },
+      "canonicalIdentityHash": "07918c22760b94b369938f63ee00fd1c498682741f51fce9d1a205bebfc8e41f",
+      "canonicalVariantId": "cpv1:07918c22760b94b369938f63ee00fd1c498682741f51fce9d1a205bebfc8e41f",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 14,
+      "targetIdentity": {
+        "brand": "Pepperidge Farm",
+        "flavor": "Seeded",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Jewish Rye",
+        "size": "16 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 913,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "db4a5a2a-6419-437a-bac9-29232f6a4b48"
+        ],
+        "observedTitles": [
+          "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)"
+        ],
+        "offerIds": [
+          "do:walmart:49909697"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Cheetos-Flamin-Hot-Puffs-Cheese-Flavored-Snacks-8-oz/49909697?classType=REGULAR&athbdg=L1300",
+        "retailer": "walmart",
+        "retailerProductId": "49909697"
+      },
+      "canonicalIdentityHash": "0b7100ee0deabf799dd8399f868eaaf00f019f3159b49d03907ba06ad973c925",
+      "canonicalVariantId": "cpv1:0b7100ee0deabf799dd8399f868eaaf00f019f3159b49d03907ba06ad973c925",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 15,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "Flamin' Hot Cheese",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Puffs Flamin' Hot",
+        "size": "8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 917,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "ad4a6368-d175-49b3-a80d-0eecf086e675"
+        ],
+        "observedTitles": [
+          "Cape Cod Potato Chips, Sea Salt & Vinegar Kettle Chips, 13 oz"
+        ],
+        "offerIds": [
+          "do:walmart:202509746"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Cape-Cod-Potato-Chips-Sea-Salt-Vinegar-Kettle-Chips-13-oz-Party-Size/202509746?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "202509746"
+      },
+      "canonicalIdentityHash": "0bfe775e24b2212f6cdd04c35321e200054ba2a20fc05780a72a89875f46638d",
+      "canonicalVariantId": "cpv1:0bfe775e24b2212f6cdd04c35321e200054ba2a20fc05780a72a89875f46638d",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 16,
+      "targetIdentity": {
+        "brand": "Cape Cod",
+        "flavor": "Sea Salt & Vinegar",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Kettle Chips",
+        "size": "13 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 930,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "eb34fa19-744d-4df1-b991-bf216833beb6"
+        ],
+        "observedTitles": [
+          "Chef Boyardee Spaghetti & Meatballs - 14.5oz"
+        ],
+        "offerIds": [
+          "do:target:13130177"
+        ],
+        "productUrl": "https://www.target.com/p/chef-boyardee-spaghetti-38-meatballs-14-5oz/-/A-13130177",
+        "retailer": "target",
+        "retailerProductId": "13130177"
+      },
+      "canonicalIdentityHash": "0da33e16c67d824388dd143d7d061c94d8aca9ae5b95b2919b354d3050e597c2",
+      "canonicalVariantId": "cpv1:0da33e16c67d824388dd143d7d061c94d8aca9ae5b95b2919b354d3050e597c2",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 17,
+      "targetIdentity": {
+        "brand": "Chef Boyardee",
+        "flavor": "Spaghetti and Meatballs",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Spaghetti and Meatballs",
+        "size": "14.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 970,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c62d1efa-d19e-448f-b588-b7f58f1593ae"
+        ],
+        "observedTitles": [
+          "OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz"
+        ],
+        "offerIds": [
+          "do:walmart:1808102185"
+        ],
+        "productUrl": "https://www.walmart.com/ip/OREO-Double-Stuf-Golden-Sandwich-Cookies-Family-Size-18-71-oz/1808102185?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "1808102185"
+      },
+      "canonicalIdentityHash": "13165ca4369cf905ecbab7cc5969327bd618b53ae282cd4d8bb7592e9d1d2226",
+      "canonicalVariantId": "cpv1:13165ca4369cf905ecbab7cc5969327bd618b53ae282cd4d8bb7592e9d1d2226",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 18,
+      "targetIdentity": {
+        "brand": "OREO",
+        "flavor": "Golden",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Golden Double Stuf Sandwich Cookies",
+        "size": "18.71 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1053,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "89876c8a-c56c-484a-93db-7fe326a0fca5"
+        ],
+        "observedTitles": [
+          "ROTEL Chili Fixin's Diced Tomatoes & Green Chilies, 10 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10308564"
+        ],
+        "productUrl": "https://www.walmart.com/ip/ROTEL-Chili-Fixin-s-Diced-Tomatoes-Green-Chilies-10-oz/10308564?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10308564"
+      },
+      "canonicalIdentityHash": "213da677a57f67ca9198cb15d97ce726f839ce0d16db4402ba2bb67ed8ecb2ce",
+      "canonicalVariantId": "cpv1:213da677a57f67ca9198cb15d97ce726f839ce0d16db4402ba2bb67ed8ecb2ce",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 19,
+      "targetIdentity": {
+        "brand": "ROTEL",
+        "flavor": "Diced Tomatoes & Green Chilies",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chili Fixin's",
+        "size": "10 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1113,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "c3c25c98-0af0-49bc-8dc8-fca3b7569e7c"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Beef with Country Vegetables Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:11853100"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-beef-with-country-vegetables-soup-18-8oz/-/A-11853100",
+        "retailer": "target",
+        "retailerProductId": "11853100"
+      },
+      "canonicalIdentityHash": "2baf45f5e32689a1bcd0f20d52c9daa037fa1fb8bf01458e99a21340d166ba72",
+      "canonicalVariantId": "cpv1:2baf45f5e32689a1bcd0f20d52c9daa037fa1fb8bf01458e99a21340d166ba72",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 20,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Beef with Country Vegetables",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky Soup",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1124,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "406e933c-ab82-42ae-b325-df76804de236"
+        ],
+        "observedTitles": [
+          "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup - 10.5oz"
+        ],
+        "offerIds": [
+          "do:target:14847349"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-condensed-25-less-sodium-cream-of-mushroom-soup-10-5oz/-/A-14847349",
+        "retailer": "target",
+        "retailerProductId": "14847349"
+      },
+      "canonicalIdentityHash": "2d8d38aa84dc93be065a3b9aa9dace506a899db217d691de098f582693e55948",
+      "canonicalVariantId": "cpv1:2d8d38aa84dc93be065a3b9aa9dace506a899db217d691de098f582693e55948",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 21,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Cream of Mushroom",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Condensed 25% Less Sodium",
+        "size": "10.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1145,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "b609f021-afaa-45da-b6fc-b9320cad955f"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Chili Mac Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:51107684"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-chili-mac-soup-18-8oz/-/A-51107684",
+        "retailer": "target",
+        "retailerProductId": "51107684"
+      },
+      "canonicalIdentityHash": "3082b965dbf1349cb5a425c2fd6c24018d091f304ec933d68709686e4131a3f2",
+      "canonicalVariantId": "cpv1:3082b965dbf1349cb5a425c2fd6c24018d091f304ec933d68709686e4131a3f2",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 22,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Chili Mac",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky Soup",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1147,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "4ff9682b-88b5-43e7-be53-a632bfecae75"
+        ],
+        "observedTitles": [
+          "Oreo Lemon Creme Sandwich Cookies Family Size - 18.71oz"
+        ],
+        "offerIds": [
+          "do:target:87471685"
+        ],
+        "productUrl": "https://www.target.com/p/oreo-lemon-family-size-18-71oz/-/A-87471685",
+        "retailer": "target",
+        "retailerProductId": "87471685"
+      },
+      "canonicalIdentityHash": "30c7d39db5af1c4eab78e7bc2a188f44988eb6268b99d744e25eca36884b76e5",
+      "canonicalVariantId": "cpv1:30c7d39db5af1c4eab78e7bc2a188f44988eb6268b99d744e25eca36884b76e5",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 23,
+      "targetIdentity": {
+        "brand": "OREO",
+        "flavor": "Lemon Creme",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Lemon Creme Sandwich Cookies",
+        "size": "18.71 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1154,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "9f93facc-0da3-4185-b1e1-4a37cccea15a"
+        ],
+        "observedTitles": [
+          "RITZ Bits Flavor Charged Cheese Pizza Sandwich Crackers, Lunch Snacks, 8.8 oz"
+        ],
+        "offerIds": [
+          "do:walmart:16988907303"
+        ],
+        "productUrl": "https://www.walmart.com/ip/NABISCO-RITZ-BITS-PIZZA-CRACKER-SANDWICHES-8-8-OZ/16988907303?classType=REGULAR",
+        "retailer": "walmart",
+        "retailerProductId": "16988907303"
+      },
+      "canonicalIdentityHash": "316abff6f7a8b9e90ea94429099bdc0eee33e4d3106ec86bfdf7b1999c8d6704",
+      "canonicalVariantId": "cpv1:316abff6f7a8b9e90ea94429099bdc0eee33e4d3106ec86bfdf7b1999c8d6704",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 24,
+      "targetIdentity": {
+        "brand": "RITZ",
+        "flavor": "Cheese Sandwich",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Bits",
+        "size": "8.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1182,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "729e01e0-b373-4c20-9ffd-7517acb0a03a"
+        ],
+        "observedTitles": [
+          "Campbell's Condensed Family Size Cream of Mushroom Soup - 22.6oz"
+        ],
+        "offerIds": [
+          "do:target:14767607"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-condensed-family-size-cream-of-mushroom-soup-22-6oz/-/A-14767607",
+        "retailer": "target",
+        "retailerProductId": "14767607"
+      },
+      "canonicalIdentityHash": "356859bbad3fda918452d59f7f9b7bf78085264cb889669efd727b0e452d99e2",
+      "canonicalVariantId": "cpv1:356859bbad3fda918452d59f7f9b7bf78085264cb889669efd727b0e452d99e2",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 25,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Cream of Mushroom",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Condensed Cream of Mushroom Soup",
+        "size": "22.6 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1196,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "e3532f32-1387-46a0-b82f-bcace2fb75fb"
+        ],
+        "observedTitles": [
+          "Swanson 100% Natural Gluten Free 50% Less Sodium Beef Broth - 14.5oz"
+        ],
+        "offerIds": [
+          "do:target:14845440"
+        ],
+        "productUrl": "https://www.target.com/p/swanson-100-natural-gluten-free-50-less-sodium-beef-broth-14-5oz/-/A-14845440",
+        "retailer": "target",
+        "retailerProductId": "14845440"
+      },
+      "canonicalIdentityHash": "376cf7db81411e528992421020d565d05c9601c32bc0d8e8c493d4abb0b3ee28",
+      "canonicalVariantId": "cpv1:376cf7db81411e528992421020d565d05c9601c32bc0d8e8c493d4abb0b3ee28",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 26,
+      "targetIdentity": {
+        "brand": "Swanson",
+        "flavor": "Beef",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "100% Natural Gluten Free Beef Broth",
+        "size": "14.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1275,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "ed0fdf29-a18d-49d1-8ac0-ab0926d12cc7"
+        ],
+        "observedTitles": [
+          "Lay's Classic Party Size Potato Chips - 13oz"
+        ],
+        "offerIds": [
+          "do:target:13335441"
+        ],
+        "productUrl": "https://www.target.com/p/lay-39-s-classic-potato-chips-13oz/-/A-13335441",
+        "retailer": "target",
+        "retailerProductId": "13335441"
+      },
+      "canonicalIdentityHash": "46bf18ca21cbcdc13823d76f062e6e8db2521e8bb748e839fac73658b2801db0",
+      "canonicalVariantId": "cpv1:46bf18ca21cbcdc13823d76f062e6e8db2521e8bb748e839fac73658b2801db0",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 27,
+      "targetIdentity": {
+        "brand": "Lay's",
+        "flavor": "Classic",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Classic Potato Chips",
+        "size": "13 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1285,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "b4df5766-74cf-436e-9880-e3e8426d0204"
+        ],
+        "observedTitles": [
+          "Green Giant Whole Kernel Sweet Corn - 15.25oz"
+        ],
+        "offerIds": [
+          "do:target:94992031"
+        ],
+        "productUrl": "https://www.target.com/p/green-giant-whole-kernel-sweet-corn-15-25oz/-/A-94992031",
+        "retailer": "target",
+        "retailerProductId": "94992031"
+      },
+      "canonicalIdentityHash": "48067cb89d5531525da1d9a6ac5b94a9ce50d6d0f8e82f6680924c04c9a7b6a0",
+      "canonicalVariantId": "cpv1:48067cb89d5531525da1d9a6ac5b94a9ce50d6d0f8e82f6680924c04c9a7b6a0",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 28,
+      "targetIdentity": {
+        "brand": "Green Giant",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Sweet Corn Whole Kernel",
+        "size": "15.25 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1347,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "31529e42-eb1c-4fb2-a855-fd8c2dc5cf79"
+        ],
+        "observedTitles": [
+          "Cheetos XXTRA Flamin' Hot Crunchy Cheese Flavored Snacks - 8.5oz"
+        ],
+        "offerIds": [
+          "do:target:47085484"
+        ],
+        "productUrl": "https://www.target.com/p/cheetos-xxtra-flamin-hot-crunchy-cheese-flavored-snacks-8-5oz/-/A-47085484",
+        "retailer": "target",
+        "retailerProductId": "47085484"
+      },
+      "canonicalIdentityHash": "517683b1b0bfcaf43e339452f938d1faa0357cec78331b4623503eaf4d59da54",
+      "canonicalVariantId": "cpv1:517683b1b0bfcaf43e339452f938d1faa0357cec78331b4623503eaf4d59da54",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 29,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "XXTRA Flamin' Hot",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Crunchy XXTRA Flamin' Hot",
+        "size": "8.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1374,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "d54e22cd-d922-418d-ba49-933cf8efafe6"
+        ],
+        "observedTitles": [
+          "Hunt's Fire Roasted Tomato Sauce, 100% Natural Canned Tomato Sauce, 15 oz."
+        ],
+        "offerIds": [
+          "do:walmart:14359004585"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Hunt-s-Fire-Roasted-Tomato-Sauce-100-Natural-Canned-Tomato-Sauce-15-oz/14359004585?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "14359004585"
+      },
+      "canonicalIdentityHash": "5686091053630f870745b3c231b018848a4fa7d7f7315468190b80a6a92463d8",
+      "canonicalVariantId": "cpv1:5686091053630f870745b3c231b018848a4fa7d7f7315468190b80a6a92463d8",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 30,
+      "targetIdentity": {
+        "brand": "Hunt's",
+        "flavor": "Tomato",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Tomato Sauce",
+        "size": "15 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1439,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "19284768-6cd8-435f-8b8e-e14db13909ed"
+        ],
+        "observedTitles": [
+          "Ole Xtreme Wellness Gluten Free Soft Taco - 9.5oz"
+        ],
+        "offerIds": [
+          "do:target:91945924"
+        ],
+        "productUrl": "https://www.target.com/p/ole-xtreme-wellness-gluten-free-soft-taco-9-5oz/-/A-91945924",
+        "retailer": "target",
+        "retailerProductId": "91945924"
+      },
+      "canonicalIdentityHash": "62fcf7ea32e4d0bdf7df5e2a42d902bc435a0d394d516aa0fb64bf0013314b33",
+      "canonicalVariantId": "cpv1:62fcf7ea32e4d0bdf7df5e2a42d902bc435a0d394d516aa0fb64bf0013314b33",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 31,
+      "targetIdentity": {
+        "brand": "Olé",
+        "flavor": "Gluten Free",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Xtreme Wellness",
+        "size": "9.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1588,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "fe22f46a-fb79-4138-a305-a7f21088e837"
+        ],
+        "observedTitles": [
+          "Cheetos Crunchy Cheese Flavored Party Size Snacks - 15oz"
+        ],
+        "offerIds": [
+          "do:target:13326809"
+        ],
+        "productUrl": "https://www.target.com/p/cheetos-crunchy-cheese-flavored-snack-15oz/-/A-13326809",
+        "retailer": "target",
+        "retailerProductId": "13326809"
+      },
+      "canonicalIdentityHash": "7b8b154d99f00ef099bfd3b9fc58afb83a525eca8fe01f714f0991b38224b9c3",
+      "canonicalVariantId": "cpv1:7b8b154d99f00ef099bfd3b9fc58afb83a525eca8fe01f714f0991b38224b9c3",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 32,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "Cheese",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Crunchy",
+        "size": "15 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1638,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "3dccd842-4f03-4801-b3e9-5670f91e9191"
+        ],
+        "observedTitles": [
+          "Green Giant Steam Crisp Whole Kernel Vacuum Packed White Shoepeg Corn 11 oz"
+        ],
+        "offerIds": [
+          "do:walmart:6821100724"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Green-Giant-Steam-Crisp-Whole-Kernel-Vacuum-Packed-White-Shoepeg-Corn-11-oz/6821100724?classType=VARIANT&athbdg=L1600",
+        "retailer": "walmart",
+        "retailerProductId": "6821100724"
+      },
+      "canonicalIdentityHash": "856b87b0517cde43af75dee6382290f687293487a351c0bdd03f4b8356cbe53f",
+      "canonicalVariantId": "cpv1:856b87b0517cde43af75dee6382290f687293487a351c0bdd03f4b8356cbe53f",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 33,
+      "targetIdentity": {
+        "brand": "Green Giant",
+        "flavor": "White Shoepeg Whole Kernel Corn",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Steam Crisp",
+        "size": "11 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1642,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "2f520f26-0b2f-4728-9ef9-0892c2add446"
+        ],
+        "observedTitles": [
+          "Swanson Natural Goodness Gluten Free 33% Less Sodium Chicken Broth - 14.5oz"
+        ],
+        "offerIds": [
+          "do:target:14836493"
+        ],
+        "productUrl": "https://www.target.com/p/swanson-natural-goodness-gluten-free-33-less-sodium-chicken-broth-14-5oz/-/A-14836493",
+        "retailer": "target",
+        "retailerProductId": "14836493"
+      },
+      "canonicalIdentityHash": "85adc0baf94d82719014d4181b9f71b01547ad8dfa6104b56414b4d161541591",
+      "canonicalVariantId": "cpv1:85adc0baf94d82719014d4181b9f71b01547ad8dfa6104b56414b4d161541591",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 34,
+      "targetIdentity": {
+        "brand": "Swanson",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "100% Natural Gluten-Free Chicken Broth",
+        "size": "14.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1665,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "73aca4f9-09bf-4966-98e1-1a13e6cdd082"
+        ],
+        "observedTitles": [
+          "RAGU Chunky Tomato Garlic and Onion Pasta Sauce, 45 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10291075"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Ragu-Chunky-Tomato-Pasta-Sauce-with-Garlic-and-Onion-45-oz/10291075?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10291075"
+      },
+      "canonicalIdentityHash": "88f4a3f769ed0196780b0dab282698a752867912a5d03e811665c9bed871d9d8",
+      "canonicalVariantId": "cpv1:88f4a3f769ed0196780b0dab282698a752867912a5d03e811665c9bed871d9d8",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 35,
+      "targetIdentity": {
+        "brand": "Ragu",
+        "flavor": "Tomato, Garlic & Onion",
+        "form": "bottle",
+        "outerPackCount": 1,
+        "productLine": "Chunky",
+        "size": "45 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1773,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "4a5fec12-c23f-48c0-a2c0-1b041eb43261"
+        ],
+        "observedTitles": [
+          "Del Monte Fruit Cocktail in 100% Real Juice - 15oz"
+        ],
+        "offerIds": [
+          "do:target:13010406"
+        ],
+        "productUrl": "https://www.target.com/p/del-monte-fruit-cocktail-in-100-real-juice-15oz/-/A-13010406",
+        "retailer": "target",
+        "retailerProductId": "13010406"
+      },
+      "canonicalIdentityHash": "9cd577fa017f68de524707525eec95ad1ec42c1c9635c81d955dae8d7616da57",
+      "canonicalVariantId": "cpv1:9cd577fa017f68de524707525eec95ad1ec42c1c9635c81d955dae8d7616da57",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 36,
+      "targetIdentity": {
+        "brand": "Del Monte",
+        "flavor": "100% Juice",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Fruit Cocktail",
+        "size": "15 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1785,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "412a4055-d7d2-4ee4-9358-93a09a705e67"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Savory Pot Roast Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:48515240"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-savory-pot-roast-soup-18-8oz/-/A-48515240",
+        "retailer": "target",
+        "retailerProductId": "48515240"
+      },
+      "canonicalIdentityHash": "9f6c55c90bed18a793c59c268dbcd37fb100c63aa3800b5939e19f3bdc37984b",
+      "canonicalVariantId": "cpv1:9f6c55c90bed18a793c59c268dbcd37fb100c63aa3800b5939e19f3bdc37984b",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 37,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Savory Pot Roast",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky Soup",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1797,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "40dc2e2b-e066-457f-b66c-7a87219cbf63"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Creamy Chicken Noodle Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:51107698"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-creamy-chicken-noodle-soup-18-8oz/-/A-51107698",
+        "retailer": "target",
+        "retailerProductId": "51107698"
+      },
+      "canonicalIdentityHash": "a1c56c1d0b994b7f21c84cbd37debeb0eed61624403c5b989639411222e10d76",
+      "canonicalVariantId": "cpv1:a1c56c1d0b994b7f21c84cbd37debeb0eed61624403c5b989639411222e10d76",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 38,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Creamy Chicken Noodle",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky Soup",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1823,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "d2add9f2-fe43-4c25-a78b-22d7f71a340d"
+        ],
+        "observedTitles": [
+          "Knorr Pasta Sides Cheesy Cheddar Rotini Pasta Made with No Artificial Flavors, 4.3 Oz Pouch"
+        ],
+        "offerIds": [
+          "do:walmart:169746072"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Knorr-No-Artificial-Flavors-Cheesy-Cheddar-Rotini-Cooks-in-10-Minutes-4-3-oz-Regular/169746072?classType=VARIANT&athbdg=L1600",
+        "retailer": "walmart",
+        "retailerProductId": "169746072"
+      },
+      "canonicalIdentityHash": "a7a3d5ab91219c7390d9f41782b18cdf18208130ad4c277138fd8e48f99c0617",
+      "canonicalVariantId": "cpv1:a7a3d5ab91219c7390d9f41782b18cdf18208130ad4c277138fd8e48f99c0617",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 39,
+      "targetIdentity": {
+        "brand": "Knorr",
+        "flavor": "Cheesy Cheddar Rotini",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Pasta Sides",
+        "size": "4.3 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1892,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "aed61bc6-748b-4e52-9bca-91b53c939a73"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Sirloin Steak With Hearty Vegetables Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:91370181"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-sirloin-steak-with-hearty-vegetables-soup-18-8oz/-/A-91370181",
+        "retailer": "target",
+        "retailerProductId": "91370181"
+      },
+      "canonicalIdentityHash": "b2fc237d3d9812d3140c213dc623b7079ee392f4442a59ccafa6b35775260b74",
+      "canonicalVariantId": "cpv1:b2fc237d3d9812d3140c213dc623b7079ee392f4442a59ccafa6b35775260b74",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 40,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Sirloin Steak with Hearty Vegetables",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1895,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "3740524e-1dea-47b3-9fef-19b3306abd05"
+        ],
+        "observedTitles": [
+          "Cheetos Baked Crunchy Cheese Flavored Snack - 7.625oz"
+        ],
+        "offerIds": [
+          "do:target:14770737"
+        ],
+        "productUrl": "https://www.target.com/p/cheetos-crunchy-cheese-flavored-snack-7-625oz/-/A-14770737",
+        "retailer": "target",
+        "retailerProductId": "14770737"
+      },
+      "canonicalIdentityHash": "b3396e61e0f3d766c78c23dafaf447cf9c7f924720f3ecc9a01cdd620892bb2a",
+      "canonicalVariantId": "cpv1:b3396e61e0f3d766c78c23dafaf447cf9c7f924720f3ecc9a01cdd620892bb2a",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 41,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "Crunchy Cheese",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Baked",
+        "size": "7.625 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1915,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "bd203c45-4f6e-4724-8624-94d553b607c7"
+        ],
+        "observedTitles": [
+          "Snack Factory Pretzel Crisps Gluten Free, Original Flavor, 5 oz"
+        ],
+        "offerIds": [
+          "do:walmart:50069159"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Snack-Factory-Pretzel-Crisps-Gluten-Free-Original-Flavor-5-oz/50069159?classType=VARIANT&athbdg=L1600",
+        "retailer": "walmart",
+        "retailerProductId": "50069159"
+      },
+      "canonicalIdentityHash": "b67d59686c0764e6bf1fdbe7f157848549bdd561cae4915dfb67cb1a6f3a2344",
+      "canonicalVariantId": "cpv1:b67d59686c0764e6bf1fdbe7f157848549bdd561cae4915dfb67cb1a6f3a2344",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 42,
+      "targetIdentity": {
+        "brand": "Snack Factory",
+        "flavor": "Gluten Free Original",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Pretzel Crisps",
+        "size": "5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1943,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "bc589e75-f979-4058-bb3f-618b57a831f4"
+        ],
+        "observedTitles": [
+          "Cento Peeled Tomatoes, Italian Style, 28 Oz"
+        ],
+        "offerIds": [
+          "do:walmart:30992507"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Cento-Peeled-Tomatoes-Italian-Style-28-Oz/30992507?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "30992507"
+      },
+      "canonicalIdentityHash": "bbd7df5c883472fc1493250dfedb60ea4a8aaf4ffda677319e19b4e8ac005951",
+      "canonicalVariantId": "cpv1:bbd7df5c883472fc1493250dfedb60ea4a8aaf4ffda677319e19b4e8ac005951",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 43,
+      "targetIdentity": {
+        "brand": "Cento",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Italian Style Peeled Tomatoes",
+        "size": "28 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1948,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "3d1e5989-3d54-4c5c-a2e6-7f95f735ada3"
+        ],
+        "observedTitles": [
+          "Goya Red Kidney Beans 15.5oz"
+        ],
+        "offerIds": [
+          "do:target:14771989"
+        ],
+        "productUrl": "https://www.target.com/p/goya-red-kidney-beans-15-5oz/-/A-14771989",
+        "retailer": "target",
+        "retailerProductId": "14771989"
+      },
+      "canonicalIdentityHash": "bd6b9df7efd4280ea34c2a8245e2ef8665b14de1128faeaf427182ca90fa0c2a",
+      "canonicalVariantId": "cpv1:bd6b9df7efd4280ea34c2a8245e2ef8665b14de1128faeaf427182ca90fa0c2a",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 44,
+      "targetIdentity": {
+        "brand": "Goya",
+        "flavor": null,
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Red Kidney Beans",
+        "size": "15.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 1989,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "ec290d29-a667-4acc-80a2-cb7358ba6f28"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Sirloin Burger with Country Vegetables Soup - 18.8oz"
+        ],
+        "offerIds": [
+          "do:target:14770129"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-sirloin-burger-with-country-vegetables-soup-18-8oz/-/A-14770129",
+        "retailer": "target",
+        "retailerProductId": "14770129"
+      },
+      "canonicalIdentityHash": "c445f8e238f34679753d1f9343f3d3d4b80f9d8e1625dd5925b3788ec14f9016",
+      "canonicalVariantId": "cpv1:c445f8e238f34679753d1f9343f3d3d4b80f9d8e1625dd5925b3788ec14f9016",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 45,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Sirloin Burger with Country Vegetables",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky",
+        "size": "18.8 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2044,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "db1ae2ba-07a0-4682-b0fa-7082e558e57c"
+        ],
+        "observedTitles": [
+          "Progresso Chickarina Soup, Traditional Canned Soup, 19 oz"
+        ],
+        "offerIds": [
+          "do:walmart:10320597"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Progresso-Chickarina-Soup-Traditional-Canned-Soup-19-oz/10320597?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "10320597"
+      },
+      "canonicalIdentityHash": "cb7a1ee1031177df366ab764a17c254d5570e7507922b481f37685ec50febb08",
+      "canonicalVariantId": "cpv1:cb7a1ee1031177df366ab764a17c254d5570e7507922b481f37685ec50febb08",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 46,
+      "targetIdentity": {
+        "brand": "Progresso",
+        "flavor": "Chickarina",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Traditional",
+        "size": "19 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2090,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "83f1bdda-b20e-4a4f-8831-b9dc0e59c19b"
+        ],
+        "observedTitles": [
+          "Campbell's Chunky Jazzy Jambalaya with Chicken, Sausage & Ham Soup - 18.6oz"
+        ],
+        "offerIds": [
+          "do:target:15346583"
+        ],
+        "productUrl": "https://www.target.com/p/campbell-39-s-chunky-jazzy-jambalaya-with-chicken-sausage-38-ham-soup-18-6oz/-/A-15346583",
+        "retailer": "target",
+        "retailerProductId": "15346583"
+      },
+      "canonicalIdentityHash": "d240bbeebe7cca6725c57dd066d4fe5bd4caee8ee6330fd7c6339f6948b2ed95",
+      "canonicalVariantId": "cpv1:d240bbeebe7cca6725c57dd066d4fe5bd4caee8ee6330fd7c6339f6948b2ed95",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 47,
+      "targetIdentity": {
+        "brand": "Campbell's",
+        "flavor": "Jazzy Jambalaya with Chicken, Sausage and Ham",
+        "form": "can",
+        "outerPackCount": 1,
+        "productLine": "Chunky Soup",
+        "size": "18.6 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2168,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "3759896a-d498-4e1e-9da7-e3a2138a7e33"
+        ],
+        "observedTitles": [
+          "Mueller's Ridged Jumbo Elbows, 16 oz"
+        ],
+        "offerIds": [
+          "do:walmart:40838732"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Mueller-s-Ridged-Jumbo-Elbows-16-oz/40838732?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "40838732"
+      },
+      "canonicalIdentityHash": "e14c1f0d4de8ad7d4fc6f5108a33ccfef2443e1bac81ae6c72f655dc5571c0db",
+      "canonicalVariantId": "cpv1:e14c1f0d4de8ad7d4fc6f5108a33ccfef2443e1bac81ae6c72f655dc5571c0db",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 48,
+      "targetIdentity": {
+        "brand": "Mueller's",
+        "flavor": null,
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Elbows Ridged Jumbo",
+        "size": "16 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2218,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "edee70fd-3b33-4f8b-ad87-e08348cca104"
+        ],
+        "observedTitles": [
+          "Cheetos Crunchy Buffalo Flavored Snacks - 8.5oz"
+        ],
+        "offerIds": [
+          "do:target:89996756"
+        ],
+        "productUrl": "https://www.target.com/p/cheetos-crunchy-buffalo-8-5oz/-/A-89996756",
+        "retailer": "target",
+        "retailerProductId": "89996756"
+      },
+      "canonicalIdentityHash": "e914144d5f059616853154325b953987d95724f5acaa7340f60731b2963c3ae3",
+      "canonicalVariantId": "cpv1:e914144d5f059616853154325b953987d95724f5acaa7340f60731b2963c3ae3",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 49,
+      "targetIdentity": {
+        "brand": "Cheetos",
+        "flavor": "Buffalo",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Crunchy",
+        "size": "8.5 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2225,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "4475e7c0-d2f3-4847-802d-77cc49d5bf43"
+        ],
+        "observedTitles": [
+          "RITZ Toasted Chips Cheddar Crackers, Party Snacks, 8.1 oz"
+        ],
+        "offerIds": [
+          "do:walmart:161389864"
+        ],
+        "productUrl": "https://www.walmart.com/ip/RITZ-Toasted-Chips-Cheddar-Crackers-8-1-oz/161389864?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "161389864"
+      },
+      "canonicalIdentityHash": "eac9c1acb00e405248ce283a97db376c5b719826ab3c1e5decb7756ea8a72370",
+      "canonicalVariantId": "cpv1:eac9c1acb00e405248ce283a97db376c5b719826ab3c1e5decb7756ea8a72370",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 50,
+      "targetIdentity": {
+        "brand": "RITZ",
+        "flavor": "Cheddar",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Toasted Chips",
+        "size": "8.1 oz"
+      }
+    },
+    {
+      "acquisitionPriority": 2313,
+      "candidate": {
+        "admissionReasons": [
+          "MISSING_FORM_ONLY"
+        ],
+        "donorProductIds": [
+          "64cd5141-e319-4495-b86c-360198c3e28d"
+        ],
+        "observedTitles": [
+          "Malt-O-Meal Honey and Oat Blenders with Almonds Breakfast Cereal, 30 oz Resealable"
+        ],
+        "offerIds": [
+          "do:walmart:409430261"
+        ],
+        "productUrl": "https://www.walmart.com/ip/Malt-O-Meal-Honey-Oat-Blenders-with-Almonds-Breakfast-Cereal-Family-Size-Bag-Crunchy-30oz-Bag/409430261?classType=VARIANT",
+        "retailer": "walmart",
+        "retailerProductId": "409430261"
+      },
+      "canonicalIdentityHash": "f685e6b995c313f857e3c2b7e0ea856e44e872ed2ed56d3c0c0838fecea64ffd",
+      "canonicalVariantId": "cpv1:f685e6b995c313f857e3c2b7e0ea856e44e872ed2ed56d3c0c0838fecea64ffd",
+      "impact": {
+        "amazonListings": 0,
+        "componentUses": 1,
+        "dependentListings": 1,
+        "immediateClosableListings": 1,
+        "knownGmv30d": 0,
+        "knownOrders30d": 0,
+        "knownUnits30d": 0,
+        "walmartListings": 1
+      },
+      "ordinal": 51,
+      "targetIdentity": {
+        "brand": "Malt-O-Meal",
+        "flavor": "Honey & Oat with Almonds",
+        "form": "bag",
+        "outerPackCount": 1,
+        "productLine": "Honey & Oat Blenders with Almonds",
+        "size": "30 oz"
+      }
+    }
+  ]
+}

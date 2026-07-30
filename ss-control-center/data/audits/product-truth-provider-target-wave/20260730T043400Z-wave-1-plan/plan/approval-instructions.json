@@ -1,0 +1,49 @@
+{
+  "authorizationMode": "PINNED_STANDING_OWNER_POLICY",
+  "executionConfirmationFormat": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34:<AUTOMATIC_STANDING_APPROVAL_ID>",
+  "mode": "WAVE",
+  "ownerActionRequired": false,
+  "planExpiresAt": "2026-07-30T05:34:00.000Z",
+  "planSha256": "fb041ff2389206c4a076b5470cf64117f2e51c3188408aa293d7b79d7428cf34",
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 10,
+      "maxUnits": 25,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "requiredAction": "EXECUTE_WAVE",
+  "requiredApprovalSchemaVersion": "product-truth-operational-approval/1.0.0",
+  "runId": "ptca-20260730t043400z-target-wave-1",
+  "schemaVersion": "product-truth-operational-approval-instructions/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "warning": "Run balance-probe then authorize under the pinned standing owner policy. The engine creates the plan-bound permit and confirmation automatically; no chat approval is required and no publish, delist, reprice, or purchase is authorized."
+}

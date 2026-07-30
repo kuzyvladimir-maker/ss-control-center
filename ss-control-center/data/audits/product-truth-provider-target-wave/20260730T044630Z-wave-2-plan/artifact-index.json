@@ -1,0 +1,43 @@
+{
+  "artifacts": [
+    {
+      "file": "terminal-provider-attempt-capture.json",
+      "role": "terminal_provider_attempt_capture",
+      "sha256": "b21bddda9a0106cec0304aa77eb1312ae87b35096c73c67454eccede62103f11"
+    },
+    {
+      "file": "provider-target-wave.json",
+      "role": "provider_target_wave",
+      "sha256": "55ff54b85142029fd90250028ed61ca1080f1971d6005da378636e293f1dc39c"
+    },
+    {
+      "file": "operational-request.json",
+      "role": "operational_request",
+      "sha256": "a1485237c9c610a1633a5d91641d8ec9952221aa25a2c4dedf899c95f538551f"
+    }
+  ],
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "claims": {
+    "authorizesExecution": false,
+    "consumerActivation": false,
+    "createsParallelCatalog": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0
+  },
+  "counts": {
+    "eligibleTargets": 2353,
+    "noSingleTargetRepresentative": 779,
+    "providerTargets": 3140,
+    "selectedDependentListings": 28,
+    "selectedImmediateClosures": 28,
+    "selectedTargets": 5,
+    "terminalAttemptTargets": 8
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "generatedAt": "2026-07-30T04:46:30.000Z",
+  "schemaVersion": "product-truth-provider-target-wave-artifact-index/1.0.0",
+  "waveId": "ptca-20260730t044630z-target-wave-2"
+}

@@ -1,0 +1,47 @@
+{
+  "artifacts": [
+    {
+      "file": "plan.json",
+      "role": "all_components_recipe_materialization_plan",
+      "sha256": "193a185ab68a5ca3a884f53f015d3afe92dc3a193722100ef3a60cca4506832f"
+    }
+  ],
+  "claims": {
+    "consumerCutover": false,
+    "delisting": 0,
+    "everyComponentIndependentlyExact": true,
+    "existingCatalogReused": true,
+    "initialCostOutcome": "UNSOURCEABLE",
+    "inventoryChanges": 0,
+    "legacyDonorLinksIgnored": true,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "priceChanges": 0,
+    "priceEvidenceNotPromoted": true,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0
+  },
+  "command": "plan",
+  "createdAt": "2026-07-30T03:28:04.000Z",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "databaseWrites": {
+    "componentEvidence": 6,
+    "listingRecipeComponents": 6,
+    "listingRecipes": 6,
+    "listingScopeLinks": 6,
+    "maximumRows": 30,
+    "skuCosts": 6
+  },
+  "expiresAt": "2026-07-30T03:38:04.000Z",
+  "planId": "ptacr-d368cf974571b5d776472409",
+  "schemaVersion": "product-truth-all-components-recipe-wave-artifact-index/1.0.0",
+  "selectedListingKeys": [
+    "walmart:1:FaisalX-3335",
+    "walmart:1:FaisalX-3336",
+    "walmart:1:FaisalX-3361",
+    "walmart:1:FaisalX-3362",
+    "walmart:1:FaisalX-3363",
+    "walmart:1:FaisalX-5317"
+  ]
+}

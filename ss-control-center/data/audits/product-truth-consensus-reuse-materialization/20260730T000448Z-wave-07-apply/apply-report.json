@@ -1,0 +1,48 @@
+{
+  "claims": {
+    "canonicalContentOnly": true,
+    "consumerCutover": false,
+    "costOutcome": "UNSOURCEABLE",
+    "createsAdditionalCatalog": false,
+    "historicalPricePromoted": false,
+    "marketplaceMutations": 0,
+    "mutatesLegacyContentFields": false,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "reusesExistingCatalog": true
+  },
+  "completedAt": "2026-07-30T00:08:44.900Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 3,
+    "donorVariantDecisionReuses": 0,
+    "exactExistingRows": 0,
+    "insertedRows": 32,
+    "targets": 4
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-wave-4d3a1aa41c1fd85515079e40",
+  "planSha256": "f1d0b82408bea9bcce9a9af296b23112cdc785fe12e9b337259da55bf72da9f8",
+  "preflightReportSha256": "669ca9e5bb60895126420f2137bc143b1ade995a9e19ef9b1b17bbf4c514226a",
+  "schemaVersion": "product-truth-consensus-reuse-apply-report/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-30T00:04:48.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "bundleFactoryReady": 0,
+    "consumerCutoverChanged": false,
+    "foreignKeyViolations": [],
+    "listingImprovementReady": 0,
+    "listingKeys": [
+      "walmart:1:RizwanX-499",
+      "walmart:1:RizwanX-501",
+      "walmart:1:RizwanX-502",
+      "walmart:1:RizwanX-513"
+    ],
+    "procurementReady": 0,
+    "unitEconomicsUnsourceable": 4
+  }
+}

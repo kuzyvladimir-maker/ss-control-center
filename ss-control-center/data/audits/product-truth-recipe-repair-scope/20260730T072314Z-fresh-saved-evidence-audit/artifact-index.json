@@ -1,0 +1,145 @@
+{
+  "artifacts": [
+    {
+      "file": "recipe-repair-scope.json",
+      "role": "recipe_repair_scope",
+      "sha256": "456021381e7029f6275092a715aeff88d22400c3a64214541b4830884d5bb4fb"
+    }
+  ],
+  "claims": {
+    "authorizesExecution": false,
+    "createsAdditionalCatalog": false,
+    "databaseWrites": 0,
+    "historicalStateIsIdentityProof": false,
+    "historicalStatusAuthorizesRecipe": false,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlySources": true,
+    "repairLaneIsPriorityNotTruthMutation": true,
+    "retailerFetches": 0,
+    "variantMismatchAutoPromoted": false
+  },
+  "counts": {
+    "channelCounts": [
+      {
+        "channel": "amazon",
+        "currentRecipeMissing": 2027,
+        "currentRecipePresent": 17,
+        "denominator": 2044,
+        "historicalStateAvailable": 0
+      },
+      {
+        "channel": "walmart",
+        "currentRecipeMissing": 3090,
+        "currentRecipePresent": 801,
+        "denominator": 3891,
+        "historicalStateAvailable": 2712
+      }
+    ],
+    "currentCogs": {
+      "estimate": 3,
+      "fact": 60,
+      "invalid": 0,
+      "missing": 5091,
+      "unsourceable": 781
+    },
+    "currentRecipeMissing": 5117,
+    "currentRecipeMissingEvidenceProfile": {
+      "allComponentsExactIdentityOnly": 0,
+      "allComponentsHaveCandidateDonor": 3427,
+      "allComponentsHaveTargetIdentity": 4288,
+      "noComponents": 708,
+      "withCandidateDonor": 3507,
+      "withExactIdentityOnlyComponent": 84,
+      "withRejectedComponent": 4407,
+      "withTargetIdentity": 4351
+    },
+    "currentRecipeMissingWithHistoricalState": 2054,
+    "currentRecipeMissingWithoutHistoricalState": 3063,
+    "currentRecipePresent": 818,
+    "denominator": 5935,
+    "historicalState": {
+      "ambiguousAuthoritativeMatches": 0,
+      "currentRecipeMissing": 2054,
+      "currentRecipePresent": 658,
+      "mappedToAuthoritativeWalmartScope": 2712,
+      "outsideAuthoritativeScope": 51,
+      "totalEntries": 2763
+    }
+  },
+  "generatedAt": "2026-07-30T07:23:14.000Z",
+  "laneCounts": [
+    {
+      "count": 818,
+      "lane": "CURRENT_RECIPE_PRESENT"
+    },
+    {
+      "count": 0,
+      "lane": "SAFE_LEGACY_MATERIALIZATION_CANDIDATE"
+    },
+    {
+      "count": 452,
+      "lane": "CANONICAL_INTEGRITY_CONFLICT"
+    },
+    {
+      "count": 708,
+      "lane": "LISTING_IDENTITY_RECOVERY"
+    },
+    {
+      "count": 368,
+      "lane": "COMPONENT_GRAPH_RECOVERY"
+    },
+    {
+      "count": 718,
+      "lane": "DONOR_LINK_RECOVERY"
+    },
+    {
+      "count": 42,
+      "lane": "EXACT_DONOR_OFFER_ENRICHMENT"
+    },
+    {
+      "count": 17,
+      "lane": "PRICE_ONLY_PROXY_RESEARCH"
+    },
+    {
+      "count": 2812,
+      "lane": "RETAILER_IDENTITY_RESEARCH"
+    },
+    {
+      "count": 0,
+      "lane": "OTHER_QUARANTINE"
+    }
+  ],
+  "schemaVersion": "product-truth-recipe-repair-scope-artifact-index/1.0.0",
+  "source": {
+    "bridgePlan": {
+      "generatedAt": "2026-07-30T07:22:35.000Z",
+      "schemaVersion": "product-truth-legacy-bridge-plan/1.10.0",
+      "sha256": "69bfc7a0e146769bb5b5efebd4f4eb884ca0de29a530535ed67d6c9a890b9929"
+    },
+    "bridgeSnapshot": {
+      "capturedAt": "2026-07-30T07:22:35.000Z",
+      "schemaVersion": "product-truth-legacy-bridge-snapshot/1.10.0",
+      "sha256": "e2221c746f73dee5343286939a5c5cfcb8ed3c338c070648e27842acba52c832"
+    },
+    "legacyImageState": {
+      "entryCount": 2763,
+      "sha256": "5a48cae7ff211170dc19a261b9a9418d463b7b2c4a62855ee2b85c40185c5484"
+    },
+    "manifest": {
+      "asOf": "2026-07-26T18:05:57.000Z",
+      "listingCount": 5935,
+      "schemaVersion": "phase1-authoritative-scope-manifest/v3",
+      "sha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c"
+    },
+    "readiness": {
+      "asOf": "2026-07-30T07:17:11.000Z",
+      "capturedAt": "2026-07-30T07:17:11.910Z",
+      "payloadSha256": "7c02741e46fa01457fb95e2061fbded912758e6fe6ca30439cb6633c93d1bf1e",
+      "schemaVersion": "product-truth-consumer-readiness/1.0.0",
+      "sha256": "894eed7a75f6a3a7b211016551c2f3f8dad096105caf30e6cb466c4f9e6b82e1"
+    },
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  }
+}

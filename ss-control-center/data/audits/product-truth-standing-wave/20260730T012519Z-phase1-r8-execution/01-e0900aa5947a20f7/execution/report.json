@@ -1,0 +1,120 @@
+{
+  "approvalId": "pt-standing:6714d819caa59dad1c3a:3ef4b5de4d85fad7",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:a5613bc7af7d32f68cf0c84d4d679c99f0d129e10eef2b4f97f6aceb189db5c8",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": {
+    "capture": "exact_field_snapshot_v2",
+    "contentObservationId": "pco:8ed00ff5ffad54b7120087a123cd589624c188dd6a2862c60f654f3588da50e1",
+    "imageCount": 6,
+    "missingFields": [
+      "allergens",
+      "storageTemp"
+    ]
+  },
+  "donorOfferId": "do:walmart:24553278",
+  "donorProductId": "4366946b-fc30-4949-9d8b-3d77626b0094",
+  "generatedAt": "2026-07-30T01:34:59.568Z",
+  "job": {
+    "approvalId": "pt-standing:6714d819caa59dad1c3a:3ef4b5de4d85fad7",
+    "attempts": 1,
+    "checkpoint": {
+      "contentObservationId": "pco:8ed00ff5ffad54b7120087a123cd589624c188dd6a2862c60f654f3588da50e1",
+      "detailReceiptId": "mbr_21e983a81696c1449549c9eebe8056300a78711180055654003849cc7499ba95",
+      "identityMode": "EXISTING_EXACT",
+      "planSha256": "6714d819caa59dad1c3a7775812a9e5512e40c84fdddb625a9a5ffa9f90077d5",
+      "priceObservationId": "doo:e75979a6e3b9c63bc49a439d79fba2c2a69f675ce3e6e1c65cbf71078b0d7395",
+      "schemaVersion": "product-truth-targeted-evidence-checkpoint/1.0.0",
+      "searchReceiptId": "mbr_117a75b205f89d653326f5f9f67357a51404cdd71b9cc0eb061becd73e9d50de",
+      "stage": "EXACT_CONTENT_RECONCILED",
+      "variantDecisionId": "dpvd:8ecfd80f3e58701a2670c1b25015cad05dd355d4195239815c79c6061e0dc091"
+    },
+    "error": null,
+    "id": "ptej_f9149d2ae1a466777c3ebc9c5c0c0401b18df48ac0f4524eaa012dbd9c59930b",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "COMPLETED",
+      "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+    },
+    "runId": "ptsw-20260730t012519z-01",
+    "status": "done",
+    "terminalReason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_565361c6479602668bf0b3da47423eb0e715dbd6a2b7b07c71e7ae09e396f347",
+        "createdAt": "2026-07-30T01:31:29.432Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_117a75b205f89d653326f5f9f67357a51404cdd71b9cc0eb061becd73e9d50de",
+        "reservationKey": "mpr_v1_4f684506b4e53d445c02d8f08ab2761bfb461d403b8690ba73c76879a6d01845",
+        "reservedAt": "2026-07-30T01:31:29.432Z",
+        "settledAt": "2026-07-30T01:31:53.911Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_b93531eff6ca164f7152ac0c2301fda0a18d4893ca6b71b1117eefea2a9f868e",
+        "createdAt": "2026-07-30T01:33:54.386Z",
+        "failureCode": null,
+        "operation": "detail",
+        "provider": "unwrangle",
+        "receiptId": "mbr_21e983a81696c1449549c9eebe8056300a78711180055654003849cc7499ba95",
+        "reservationKey": "mpr_v1_5887a91b3d1672db91a4b825ddaf67fd22852f817ece6b1f5c487c794da5da79",
+        "reservedAt": "2026-07-30T01:33:54.386Z",
+        "settledAt": "2026-07-30T01:34:12.777Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "ptsw-20260730t012519z-01",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        },
+        "unwrangle": {
+          "calls": 1,
+          "units": 2.5
+        }
+      },
+      "calls": 2,
+      "units": 3.5
+    }
+  },
+  "next_command": null,
+  "outcome": "COMPLETED",
+  "planSha256": "6714d819caa59dad1c3a7775812a9e5512e40c84fdddb625a9a5ffa9f90077d5",
+  "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "24553278",
+  "runId": "ptsw-20260730t012519z-01",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

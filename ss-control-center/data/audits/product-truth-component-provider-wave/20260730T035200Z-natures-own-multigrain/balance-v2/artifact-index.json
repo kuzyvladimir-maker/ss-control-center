@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-30T03:59:34.073Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "600e1e7ffca1aca72210dd549bf0a1efded745a2bcc22b7bfd0bef9fe81de6a6"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "29fac27aeef9d660234905974892e6da53367fc313fae62ac0586a5f4e5b248f"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:3679743b5bf04c3da1e455f8",
+  "meteredReceiptId": "mbr_a8c3a096c9859031e2adb137b51077b9c1cb9a71956ea9644d11187956b68d54",
+  "meteredReservationKey": "mpr_v1_98dadddcd196ef5c8e2647747656875b561c6bf869c7ea315f04840b8b15a135",
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "ptca-20260730t035200z-natures-own-multigrain",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

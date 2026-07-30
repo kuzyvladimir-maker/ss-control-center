@@ -1,0 +1,241 @@
+{
+  "approvalId": "pt-standing:d6db5ab64a63cd074f67:28202821adadd26d",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "counts": {
+    "terminal_gap": 5
+  },
+  "environment": "production",
+  "generatedAt": "2026-07-30T06:09:31.995Z",
+  "items": [
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T06:04:23.135Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-165",
+      "ordinal": 0,
+      "queueJobId": "e0284168-df26-4994-beec-28ccb51a9a4e",
+      "resultSha256": "3ed43a0d990b4134b96e5b4c59eb99d315ea48a1a339a486e9decfe8ce94bab6",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T06:05:44.442Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-1211",
+      "ordinal": 1,
+      "queueJobId": "95057b06-4183-4d03-aedc-982621cdbbb8",
+      "resultSha256": "61548c6583b674080100bb4eabedeb1e62787f1939adc6abb530fa61ef34ce00",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T06:06:59.436Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-317",
+      "ordinal": 2,
+      "queueJobId": "1384fe55-fa95-4b62-a84f-47d70dc3906f",
+      "resultSha256": "6f6e95cfc6144a54101a5c36d0416d9f0a0d38254a96fb4696745684b04c6025",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T06:08:19.860Z",
+      "lastError": null,
+      "listingKey": "amazon:1:742259729669",
+      "ordinal": 3,
+      "queueJobId": "b0fef59a-ccad-44b6-93fb-dfd8182cc3ab",
+      "resultSha256": "c4d507cdcca77fcc31938ea2c159430003b1a1c7b939939fc9856638fc1d6aba",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    },
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T06:09:31.995Z",
+      "lastError": null,
+      "listingKey": "amazon:1:742259729997",
+      "ordinal": 4,
+      "queueJobId": "9ce53f77-a0d2-443c-b6d7-ca6924da0d0a",
+      "resultSha256": "b730df38e0ca3c0039f969d8538983503588def17907885e07f88289dff1145a",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    }
+  ],
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_0fd8627576847901faff2ee6a9463a4e9e1d10d35b98c505a48f9ffb6ee69a42",
+        "createdAt": "2026-07-30T06:03:32.150Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_cfbc833e584c8520e39035ed167a83b4571ba5ebc0e527dd255c494836075874",
+        "reservationKey": "mpr_v1_035f98e3d1fe660b8a0766990da443ca092957254bd21c212bd354e40db35edb",
+        "reservedAt": "2026-07-30T06:03:32.150Z",
+        "settledAt": "2026-07-30T06:03:48.977Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_38041a086341bd632555bc9cb02678b145757d3cff07f8da557276d2d38958cb",
+        "createdAt": "2026-07-30T06:03:49.505Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_72a9341f06530af76ca5d8fe8f81829170c72a7f5b71bbee7397488c83fa6abd",
+        "reservationKey": "mpr_v1_b83d0873fc598edbbbd96957787c2a556fa50a6a8f388b45d724fe804f336f1e",
+        "reservedAt": "2026-07-30T06:03:49.505Z",
+        "settledAt": "2026-07-30T06:03:56.377Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      },
+      {
+        "budgetId": "mb_0fd8627576847901faff2ee6a9463a4e9e1d10d35b98c505a48f9ffb6ee69a42",
+        "createdAt": "2026-07-30T06:04:48.407Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_5a90c4a2153fa153ee93b1ad2526a18714695b4de2fbcb20e771367ee8c4e415",
+        "reservationKey": "mpr_v1_96e23b23ae03459196f6c5f6d63939c87d37c537dacbf196174d5b57f38b90ac",
+        "reservedAt": "2026-07-30T06:04:48.407Z",
+        "settledAt": "2026-07-30T06:05:07.684Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_38041a086341bd632555bc9cb02678b145757d3cff07f8da557276d2d38958cb",
+        "createdAt": "2026-07-30T06:05:08.236Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_27b230f9115db3101b0fbaa617e31250eed2800109fe8a5d1a8d7206b1376a86",
+        "reservationKey": "mpr_v1_7f5e3020ec3408bc7c3058607665f27c637fc49d95d337866d338debb6a45e63",
+        "reservedAt": "2026-07-30T06:05:08.236Z",
+        "settledAt": "2026-07-30T06:05:14.884Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      },
+      {
+        "budgetId": "mb_0fd8627576847901faff2ee6a9463a4e9e1d10d35b98c505a48f9ffb6ee69a42",
+        "createdAt": "2026-07-30T06:06:07.717Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_bf9d4372f7d915782235884c023152e05b370b49ea2c24f8e8bb59a6780f8022",
+        "reservationKey": "mpr_v1_0f596dd3f8cead5fa491a82feeed01875cbd26ddbd24226bad0b6305bd63d781",
+        "reservedAt": "2026-07-30T06:06:07.717Z",
+        "settledAt": "2026-07-30T06:06:18.415Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_38041a086341bd632555bc9cb02678b145757d3cff07f8da557276d2d38958cb",
+        "createdAt": "2026-07-30T06:06:18.933Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_589851c6e4b332c2d136e17565482e054c15a5dc9fe6f94be9499a430ee35f1f",
+        "reservationKey": "mpr_v1_352a7bedd584f982286a046cdf018b3ae31b1bfd85a885117b2e9397b60a91f9",
+        "reservedAt": "2026-07-30T06:06:18.933Z",
+        "settledAt": "2026-07-30T06:06:33.730Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      },
+      {
+        "budgetId": "mb_0fd8627576847901faff2ee6a9463a4e9e1d10d35b98c505a48f9ffb6ee69a42",
+        "createdAt": "2026-07-30T06:07:22.528Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_7c9a10116cc06f1445d6cde341b77a05a21a57b3132111392cc833cad5541f3f",
+        "reservationKey": "mpr_v1_6a1011d09aa93489938c88146903f07e8b8483a13fb9c69d034594694dc44409",
+        "reservedAt": "2026-07-30T06:07:22.528Z",
+        "settledAt": "2026-07-30T06:07:43.431Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_38041a086341bd632555bc9cb02678b145757d3cff07f8da557276d2d38958cb",
+        "createdAt": "2026-07-30T06:07:44.089Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_a84d2c6bf98cfd853179af142ef37858498f3ed6ebd495ddcf5e93a8d88201e5",
+        "reservationKey": "mpr_v1_59493786c58af92f46e24acfb58ce07d5074485dc117701d5f9adcefe5362f64",
+        "reservedAt": "2026-07-30T06:07:44.089Z",
+        "settledAt": "2026-07-30T06:07:52.251Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      },
+      {
+        "budgetId": "mb_0fd8627576847901faff2ee6a9463a4e9e1d10d35b98c505a48f9ffb6ee69a42",
+        "createdAt": "2026-07-30T06:08:42.630Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_21b02b2216039aceab8f6c3cfe030d5f22787a35dbb9def0578baa7fde50d16f",
+        "reservationKey": "mpr_v1_fc7843d47b3b659da4ce66d2d913f17a3990038ba6fa2339b8e50e164486badb",
+        "reservedAt": "2026-07-30T06:08:42.630Z",
+        "settledAt": "2026-07-30T06:08:53.789Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      },
+      {
+        "budgetId": "mb_38041a086341bd632555bc9cb02678b145757d3cff07f8da557276d2d38958cb",
+        "createdAt": "2026-07-30T06:08:54.312Z",
+        "failureCode": null,
+        "operation": "search",
+        "provider": "unwrangle",
+        "receiptId": "mbr_f376e9e0f73247dace34636e029fe6a0fe663796820caaf291b2c3c4737c783b",
+        "reservationKey": "mpr_v1_47d0ba4d057fd12cdddeba02a394b5e51b84f6ac1446c58584fcce1c6e83da5c",
+        "reservedAt": "2026-07-30T06:08:54.312Z",
+        "settledAt": "2026-07-30T06:09:05.959Z",
+        "status": "succeeded",
+        "units": 2.5,
+        "unitsMicros": 2500000
+      }
+    ],
+    "runId": "ptca-20260730t055717z-calibrated-r17",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 5,
+          "units": 5
+        },
+        "unwrangle": {
+          "calls": 5,
+          "units": 12.5
+        }
+      },
+      "calls": 10,
+      "units": 17.5
+    }
+  },
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "mode": "WAVE",
+  "outcome": "COMPLETED_WITH_GAPS",
+  "planSha256": "d6db5ab64a63cd074f6719b6146efa01526a1c344acd2c82a8a305cdfc15793c",
+  "resultContractVersion": "product-truth-operational-result/1.1.0",
+  "runId": "ptca-20260730t055717z-calibrated-r17",
+  "runnerVersion": "product-truth-operational-runner/1.1.0",
+  "schemaVersion": "product-truth-operational-report/1.0.0",
+  "targetSetSha256": "1ade12f8797dd7cf3eef2814f691a9836702bec8be09c96196ca0b3596e0be98"
+}

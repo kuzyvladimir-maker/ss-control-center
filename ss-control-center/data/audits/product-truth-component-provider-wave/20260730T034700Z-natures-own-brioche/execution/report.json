@@ -1,0 +1,67 @@
+{
+  "approvalId": "pt-standing:15a6f9f8bd399bbb4496:47ad61ed5aef1629",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "counts": {
+    "terminal_gap": 1
+  },
+  "environment": "production",
+  "generatedAt": "2026-07-30T03:50:03.420Z",
+  "items": [
+    {
+      "attempts": 1,
+      "finishedAt": "2026-07-30T03:50:03.420Z",
+      "lastError": null,
+      "listingKey": "walmart:1:FaisalX-1719",
+      "ordinal": 0,
+      "queueJobId": "c99c9cc8-53a4-4676-8a0a-77c54f0b9b77",
+      "resultSha256": "149cbf6f22b69dbd6e871b60501589f5f4655dbbdaa1cb65bb337c2bf1ea2a1e",
+      "stage": "PRODUCT_TRUTH_TERMINAL_GAP",
+      "status": "terminal_gap"
+    }
+  ],
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_43c5cb00a64b798a8b1710b265b2a5b68fc3308742cde11072b338b62e55adaf",
+        "createdAt": "2026-07-30T03:49:32.493Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_2404172a6b392f11ec405ed9481f0a79b85eb6683972d53bc20bef3ec446ad17",
+        "reservationKey": "mpr_v1_ac865185a0194a4b702101a73789b8a30c6e36a279ffad27d2d492ba728c8c4d",
+        "reservedAt": "2026-07-30T03:49:32.493Z",
+        "settledAt": "2026-07-30T03:49:49.308Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "ptca-20260730t034800z-natures-own-brioche",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "mode": "WAVE",
+  "outcome": "COMPLETED_WITH_GAPS",
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "resultContractVersion": "product-truth-operational-result/1.0.0",
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "runnerVersion": "product-truth-operational-runner/1.0.0",
+  "schemaVersion": "product-truth-operational-report/1.0.0",
+  "targetSetSha256": "d84392807fe3ce41e02702ecbfeb76ad1884e434c93b42e52e74bbac348c315f"
+}

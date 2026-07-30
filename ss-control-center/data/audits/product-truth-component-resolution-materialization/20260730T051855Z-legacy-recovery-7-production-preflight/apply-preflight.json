@@ -1,0 +1,91 @@
+{
+  "checkedAt": "2026-07-30T05:18:55.000Z",
+  "claims": {
+    "allTargetsCollisionFree": true,
+    "consumerActivation": false,
+    "createsAdditionalCatalog": false,
+    "exactContentPackagePolicyEnforced": true,
+    "listingRecipesMaterialized": 0,
+    "listingRecipesRequireAllComponents": true,
+    "marketplaceMutations": 0,
+    "noPaidExistingCatalogLaneOnly": true,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "skuCostsMaterialized": 0
+  },
+  "counts": {
+    "absentRows": 28,
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitionsRequired": 7,
+    "exactExistingRows": 0,
+    "maximumRows": 28,
+    "targets": 7
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-free-7c3a089299b58a08d7dfb821",
+  "planSha256": "d4632b31b23b309127848cc3246088d24a9f015ddec897c49a8c7eae293c4e33",
+  "schemaVersion": "product-truth-component-resolution-materialization-preflight/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "status": "READY_TO_APPLY",
+  "targetStates": [
+    {
+      "canonicalVariantId": "cpv1:e8d1f07ba8b7537e2428a97f20c030350d2eccdb113f0802e6cf626a30626f09",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "1d20280b-3fd7-4eff-8ce1-97fe2b00b6b7",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:a874e59b7c686ae99d178ca5d2861d8e6bb171eff4199b9aae9299f0bf9db6cf",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "9e3119c5-b5dc-4021-8d15-b59694607fdd",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:5951bf0f1fc14ad38a2079ad10c17f081c3188a4baf8bcd08cda8f32541c3bfd",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "35f43665-6bc6-4b71-b427-43704d927727",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:af1a00be4dcfc57b41909b5b9b9990a9c04f7098e0fb1a53caece95827349c05",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "1d99496a-3371-4d3c-bfbd-941d53a837dc",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:354229a59527b5531bb9516192c0c73fcf5d4dbc10f3781abd68157be1e72f77",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "65c6cec1-296e-47c1-bb26-f6dc14b0079b",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:894f8e4404d87c9052c84a089dda5c9655373e84cddb654c637fa895053eb22b",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "d9b2e88c-1268-4eae-93d8-25b2a2c561a1",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:e1e7c5a06c929ed4c1121d2a0535bf39f15774194ed07b435adf4d6083765092",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "f414af31-e75a-4982-a65a-ff431f0793ca",
+      "variant": "ABSENT"
+    }
+  ]
+}

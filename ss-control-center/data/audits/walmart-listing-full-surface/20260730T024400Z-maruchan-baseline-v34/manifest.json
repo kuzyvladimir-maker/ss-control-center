@@ -1,0 +1,384 @@
+{
+  "schema_version": "walmart-listing-full-surface-baseline/v1",
+  "captured_at": "2026-07-30T02:44:19.264Z",
+  "store_index": 1,
+  "exact_skus": [
+    "FaisalX-1433",
+    "FaisalX-1434",
+    "FaisalX-1435"
+  ],
+  "seller_account_fingerprint_sha256": "a135315771d89961b51864ae27a80fc5e1f72c27ce9cbe1a4bf4ba7f93505127",
+  "product_type": "Prepared & Packaged Soups",
+  "variant_group_id": "SPRCMAR00121QTY",
+  "recommended_mp_maintenance_spec_version": "5.0.20260501-19_21_29-api",
+  "exchanges": [
+    {
+      "sequence": 1,
+      "semantic": "item-FaisalX-1433",
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1433",
+      "query": {},
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "8f9642eb1dd4f8313233ab1322cf8943184dd012bfb77f1d9308d2ad9ed35619",
+      "response_payload_sha256": "8f3d50649dc8b8717988f6133d2febc301787b6a389c7663920ff6867864ddb1",
+      "response_byte_length": 618,
+      "response_file": "01-item-FaisalX-1433.response.bin",
+      "correlation_id_sha256": "2f58e352dec1563bffb224ed180bc0aaa53d4dd1895176a8f872c74c394874be",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 2,
+      "semantic": "item-FaisalX-1434",
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1434",
+      "query": {},
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "16780aea835b6a0949072eacc65df398f7ee14204e49d4a308c0a14580906900",
+      "response_payload_sha256": "291d08ee13e4659ab55ac89c4cdfdeee807c2f3c12acd1bdb91e450fd3b2b0bd",
+      "response_byte_length": 611,
+      "response_file": "02-item-FaisalX-1434.response.bin",
+      "correlation_id_sha256": "a0e637f918d0d86616d4a02d19f04b34c21496668f93ef6fdbc247d9972d24b1",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 3,
+      "semantic": "item-FaisalX-1435",
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1435",
+      "query": {},
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "c9ccebc4ee8c31f1527e371781469a948fb422d2cae250af163ff2105ac07f72",
+      "response_payload_sha256": "e43199dd680c845f5fc565b48038c1d5402c382a286c7452096b5d037e7c1777",
+      "response_byte_length": 647,
+      "response_file": "03-item-FaisalX-1435.response.bin",
+      "correlation_id_sha256": "9aed98315bf3703561ee15c0d0f25c8a1deb40059a7b5f387731d040fff4266e",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 4,
+      "semantic": "variant-group",
+      "method": "GET",
+      "path": "/v3/items",
+      "query": {
+        "variantGroupId": "SPRCMAR00121QTY",
+        "limit": "200",
+        "offset": "0"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "f9cc0ec2a8f541f6da638722a7a7640aa3d948885db874b0aaa72774e4fd4ed9",
+      "response_payload_sha256": "0c777e2822c226564e2656dbbc0fef60eda651f3da9b6b285b97063cc31e5a6c",
+      "response_byte_length": 1946,
+      "response_file": "04-variant-group.response.bin",
+      "correlation_id_sha256": "55a71a12a343b25543634d5a1de55f8438f85c5c1a1b1a662b40da9020109c5f",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 5,
+      "semantic": "item-spec",
+      "method": "POST",
+      "path": "/v3/items/spec",
+      "query": {},
+      "request_content_type": "application/json",
+      "request_payload_sha256": "1121b74cc781ba8c3eee6ecd31a655b02e1b7d80d8b076190f5dc2b0da251b87",
+      "request_byte_length": 112,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "940a617179f48cedaf9e31fe07bb583861ebee3edf13e258621a715110e3e31d",
+      "response_payload_sha256": "ef93c331a5d0921ca4261e4e17b95715792d2622d1fa2303e8fb7d0b98fe0070",
+      "response_byte_length": 82797,
+      "response_file": "05-item-spec.response.bin",
+      "correlation_id_sha256": "2032ef9c7bed1a65780ec763d16ac3c434e63874c5a13355ec0a9b415ea6572e",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 6,
+      "semantic": "item-associations",
+      "method": "POST",
+      "path": "/v3/items/associations",
+      "query": {},
+      "request_content_type": "application/json",
+      "request_payload_sha256": "dbf625cabedc3244f48c46fe915f97e7f32f8a519794230ff9483ce7fa75e64f",
+      "request_byte_length": 80,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "f21a3ad3c75f5bf73bf81332d26f784a1830ecec9157c29b30e17b8832f46fde",
+      "response_payload_sha256": "38e00ef24e95e467012a6fa43a6f9aba06d1b9f6e9fbe5424843dfd45897a147",
+      "response_byte_length": 572,
+      "response_file": "06-item-associations.response.bin",
+      "correlation_id_sha256": "ee54662117ac434432ef05130dd8682086791398efdde7a30e4c85c56d4779c4",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 7,
+      "semantic": "inventory-FaisalX-1433",
+      "method": "GET",
+      "path": "/v3/inventory",
+      "query": {
+        "sku": "FaisalX-1433"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "61ceeea3d10ebe29380e4ad99d6da875aa14fadf02d810ae44c9cd859cf4af6a",
+      "response_payload_sha256": "5392ab4d5d95cb22e5334cad98ebf2b8356e1be85eec93268d77367767c87481",
+      "response_byte_length": 60,
+      "response_file": "07-inventory-FaisalX-1433.response.bin",
+      "correlation_id_sha256": "f02805a02886d3eb716f9b097960982eade59eb2641767575504ab83687d82db",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 8,
+      "semantic": "inventory-FaisalX-1434",
+      "method": "GET",
+      "path": "/v3/inventory",
+      "query": {
+        "sku": "FaisalX-1434"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "61ceeea3d10ebe29380e4ad99d6da875aa14fadf02d810ae44c9cd859cf4af6a",
+      "response_payload_sha256": "42d2a76e220021f964dd6885d82986fbc84784489e731e97ded8dd2fe7e32709",
+      "response_byte_length": 60,
+      "response_file": "08-inventory-FaisalX-1434.response.bin",
+      "correlation_id_sha256": "ce1b40bf6012bbe847a0dece599cd7903fde5f8d44ca80db18578f19ccdd855c",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 9,
+      "semantic": "inventory-FaisalX-1435",
+      "method": "GET",
+      "path": "/v3/inventory",
+      "query": {
+        "sku": "FaisalX-1435"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "61ceeea3d10ebe29380e4ad99d6da875aa14fadf02d810ae44c9cd859cf4af6a",
+      "response_payload_sha256": "7c8786b81526c2282f0b59ca9b4281d468ef839a56f323936c71159bb4274c7c",
+      "response_byte_length": 60,
+      "response_file": "09-inventory-FaisalX-1435.response.bin",
+      "correlation_id_sha256": "2c1d843fe8d620444d481444492e4d43423c8ac5f6567aadefab3e644585059e",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 10,
+      "semantic": "lagtime-FaisalX-1433",
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "query": {
+        "sku": "FaisalX-1433"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "34d61e268e04975af4fbbc78de24e49b9db9ba99cc25b685a53cc03684013b93",
+      "response_payload_sha256": "3efba9602dbcdebf17c4c689d6b028bfee0c5c2d7b24f82165183d6f6aa76be6",
+      "response_byte_length": 45,
+      "response_file": "10-lagtime-FaisalX-1433.response.bin",
+      "correlation_id_sha256": "c668cc4578012de6f1892190b5854ce3e489c72aa6288659be9855e85cd4d465",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 11,
+      "semantic": "lagtime-FaisalX-1434",
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "query": {
+        "sku": "FaisalX-1434"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "34d61e268e04975af4fbbc78de24e49b9db9ba99cc25b685a53cc03684013b93",
+      "response_payload_sha256": "b3df92be86f9f063523b4b2388f024fd077f1d0da27f8a484b041b74ca804383",
+      "response_byte_length": 45,
+      "response_file": "11-lagtime-FaisalX-1434.response.bin",
+      "correlation_id_sha256": "c4353353f3a28633c7098a05c631bd602d0ecda3c807a97014a6c105370b1ba4",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 12,
+      "semantic": "lagtime-FaisalX-1435",
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "query": {
+        "sku": "FaisalX-1435"
+      },
+      "request_content_type": null,
+      "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_byte_length": 0,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "34d61e268e04975af4fbbc78de24e49b9db9ba99cc25b685a53cc03684013b93",
+      "response_payload_sha256": "f454f669adf3664679a7ec095fc2eae64904aa7a0fabe438e5e04a2ff53748ba",
+      "response_byte_length": 45,
+      "response_file": "12-lagtime-FaisalX-1435.response.bin",
+      "correlation_id_sha256": "f6218de157fc5fed7a50bd2afe18c22dc49b8421e6bbe64e316164af29c4a5b9",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    },
+    {
+      "sequence": 13,
+      "semantic": "pricing-insights",
+      "method": "POST",
+      "path": "/v3/price/getPricingInsights",
+      "query": {},
+      "request_content_type": "application/json",
+      "request_payload_sha256": "9b7827913d2e8eb5c3438d95415426f94a9d40296a4fd77a1ddd33f1059fd035",
+      "request_byte_length": 116,
+      "response_http_status": 200,
+      "response_content_type": "application/json",
+      "response_headers_sha256": "e14b0baa2532da206bee4606e235b944e19acbb894f7ac2ef2b1919513454c7c",
+      "response_payload_sha256": "03916c1ff1650e221d5b94b129fef585bbac14d4de28a4b474edbe54b5943865",
+      "response_byte_length": 2385,
+      "response_file": "13-pricing-insights.response.bin",
+      "correlation_id_sha256": "1a61bb91c8215680c1f3e78d93992e04f4c5a797e990db3e6adda233a8cc6c70",
+      "attempted_once": true,
+      "retries": 0,
+      "redirects": 0
+    }
+  ],
+  "scope_receipt": {
+    "item-FaisalX-1433": {
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1433",
+      "http_status": 200,
+      "response_payload_sha256": "8f3d50649dc8b8717988f6133d2febc301787b6a389c7663920ff6867864ddb1"
+    },
+    "item-FaisalX-1434": {
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1434",
+      "http_status": 200,
+      "response_payload_sha256": "291d08ee13e4659ab55ac89c4cdfdeee807c2f3c12acd1bdb91e450fd3b2b0bd"
+    },
+    "item-FaisalX-1435": {
+      "method": "GET",
+      "path": "/v3/items/FaisalX-1435",
+      "http_status": 200,
+      "response_payload_sha256": "e43199dd680c845f5fc565b48038c1d5402c382a286c7452096b5d037e7c1777"
+    },
+    "variant-group": {
+      "method": "GET",
+      "path": "/v3/items",
+      "http_status": 200,
+      "response_payload_sha256": "0c777e2822c226564e2656dbbc0fef60eda651f3da9b6b285b97063cc31e5a6c"
+    },
+    "item-spec": {
+      "method": "POST",
+      "path": "/v3/items/spec",
+      "http_status": 200,
+      "response_payload_sha256": "ef93c331a5d0921ca4261e4e17b95715792d2622d1fa2303e8fb7d0b98fe0070"
+    },
+    "item-associations": {
+      "method": "POST",
+      "path": "/v3/items/associations",
+      "http_status": 200,
+      "response_payload_sha256": "38e00ef24e95e467012a6fa43a6f9aba06d1b9f6e9fbe5424843dfd45897a147"
+    },
+    "inventory-FaisalX-1433": {
+      "method": "GET",
+      "path": "/v3/inventory",
+      "http_status": 200,
+      "response_payload_sha256": "5392ab4d5d95cb22e5334cad98ebf2b8356e1be85eec93268d77367767c87481"
+    },
+    "inventory-FaisalX-1434": {
+      "method": "GET",
+      "path": "/v3/inventory",
+      "http_status": 200,
+      "response_payload_sha256": "42d2a76e220021f964dd6885d82986fbc84784489e731e97ded8dd2fe7e32709"
+    },
+    "inventory-FaisalX-1435": {
+      "method": "GET",
+      "path": "/v3/inventory",
+      "http_status": 200,
+      "response_payload_sha256": "7c8786b81526c2282f0b59ca9b4281d468ef839a56f323936c71159bb4274c7c"
+    },
+    "lagtime-FaisalX-1433": {
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "http_status": 200,
+      "response_payload_sha256": "3efba9602dbcdebf17c4c689d6b028bfee0c5c2d7b24f82165183d6f6aa76be6"
+    },
+    "lagtime-FaisalX-1434": {
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "http_status": 200,
+      "response_payload_sha256": "b3df92be86f9f063523b4b2388f024fd077f1d0da27f8a484b041b74ca804383"
+    },
+    "lagtime-FaisalX-1435": {
+      "method": "GET",
+      "path": "/v3/lagtime",
+      "http_status": 200,
+      "response_payload_sha256": "f454f669adf3664679a7ec095fc2eae64904aa7a0fabe438e5e04a2ff53748ba"
+    },
+    "pricing-insights": {
+      "method": "POST",
+      "path": "/v3/price/getPricingInsights",
+      "http_status": 200,
+      "response_payload_sha256": "03916c1ff1650e221d5b94b129fef585bbac14d4de28a4b474edbe54b5943865"
+    }
+  },
+  "effects": {
+    "oauth_token_calls": 1,
+    "read_semantic_get_calls": 10,
+    "read_semantic_post_calls": 3,
+    "walmart_mutation_calls": 0,
+    "retries": 0,
+    "redirects": 0,
+    "database_reads": 0,
+    "database_writes": 0,
+    "model_calls": 0
+  },
+  "body_sha256": "c92be9cd1fabb1fbb9c47824ea965ac010be611d5801e91c050ac43cd591d535"
+}

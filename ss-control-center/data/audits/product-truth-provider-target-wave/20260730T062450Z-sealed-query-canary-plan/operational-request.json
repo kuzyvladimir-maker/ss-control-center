@@ -1,0 +1,90 @@
+{
+  "createdAt": "2026-07-30T06:24:50.411Z",
+  "expiresAt": "2026-07-30T07:24:50.411Z",
+  "listingKeys": [
+    "amazon:1:743269736821",
+    "amazon:1:742259729850",
+    "walmart:1:FaisalX-808",
+    "walmart:1:FaisalX-336",
+    "amazon:1:742259729959"
+  ],
+  "maxWallClockMs": 1800000,
+  "mode": "WAVE",
+  "providerAcquisitionTargets": [
+    {
+      "canonicalIdentityHash": "2938938168b85824519c8ae8e127bf6caac2a3b88b4a07af7d31f0a57f9e6023",
+      "canonicalVariantId": "cpv1:2938938168b85824519c8ae8e127bf6caac2a3b88b4a07af7d31f0a57f9e6023",
+      "listingKey": "amazon:1:743269736821",
+      "query": "El Monterey Chimichangas Beef, Bean & Cheese Flavor bag 30.4 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "2c8083ac641ebc18473f06e8b3022d08e671c78a0516f1529c0151fc1a9af6f4",
+      "canonicalVariantId": "cpv1:2c8083ac641ebc18473f06e8b3022d08e671c78a0516f1529c0151fc1a9af6f4",
+      "listingKey": "amazon:1:742259729850",
+      "query": "Birds Eye Steamfresh Sauced Cheesy Broccoli bag 10.8 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "4fbed83868c67fd52ab0e681ea101666ebe1a6fc149707b1e34042b41acc792f",
+      "canonicalVariantId": "cpv1:4fbed83868c67fd52ab0e681ea101666ebe1a6fc149707b1e34042b41acc792f",
+      "listingKey": "walmart:1:FaisalX-808",
+      "query": "Lay's Kettle Cooked Jalapeño bag 12.5 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "727d8db52aeb070aa59e101f68fae4684bd0c053b582161133ea4d6ed729da8a",
+      "canonicalVariantId": "cpv1:727d8db52aeb070aa59e101f68fae4684bd0c053b582161133ea4d6ed729da8a",
+      "listingKey": "walmart:1:FaisalX-336",
+      "query": "Nature's Own Butter Buns bag 15 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "8a91db3429a65c1d73127dcbb998a93de6b0bd8e416ffb0bbe514bfd140fb7ce",
+      "canonicalVariantId": "cpv1:8a91db3429a65c1d73127dcbb998a93de6b0bd8e416ffb0bbe514bfd140fb7ce",
+      "listingKey": "amazon:1:742259729959",
+      "query": "Birds Eye Fire Roasted Corn bag 12 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    }
+  ],
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 10,
+      "maxUnits": 25,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t062450z-sealed-query-canary",
+  "schemaVersion": "product-truth-operational-plan-request/1.1.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

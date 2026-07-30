@@ -1,0 +1,20 @@
+{
+  "actualProviderUnits": 22.5,
+  "artifacts": [
+    {
+      "file": "wave-report.json",
+      "role": "wave_report",
+      "sha256": "f68c0f84587d6fc9aa91fe037c218b204d8a1eb12d7fac898afa9c069991f822"
+    }
+  ],
+  "generatedAt": "2026-07-30T01:54:21.091Z",
+  "marketplaceMutations": 0,
+  "planSha256": "c64dfd996fd1a18119cb73ae35cc46ebadcbb348e1b0a5261a2eedfc7c9c9396",
+  "readinessReportSha256": "af96a3824b16dbe5c5182ce1015fb9220efc09fef3dd66db9a62176480f627d7",
+  "reportSha256": "f68c0f84587d6fc9aa91fe037c218b204d8a1eb12d7fac898afa9c069991f822",
+  "retries": 0,
+  "schemaVersion": "product-truth-standing-wave-artifact-index/1.0.0",
+  "status": "COMPLETED",
+  "targetCount": 5,
+  "waveId": "ptsw-20260730t012519z"
+}

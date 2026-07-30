@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3820,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "eab0406867ec303e0195e8c0e85d101a6e6182b390f2481e9ef8f58276e66c8a"
+    }
+  ],
+  "manifestSha256": "feff51964c24c0a0b4e778e16ee075189632f778395dd94d073aa8b480d5f273",
+  "planSha256": "ad5f00549dd474b832ce586907e7538f9d030f53ca1a3ab09683d175a54f170b",
+  "runId": "ptsw-20260730t005213z-01",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

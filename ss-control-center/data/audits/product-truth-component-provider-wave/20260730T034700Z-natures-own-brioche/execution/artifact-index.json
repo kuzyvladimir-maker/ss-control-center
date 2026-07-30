@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 2284,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "84d1023610816ecfaa229612e375c3ba8538fd531865b48f3a060922dccb2bc9"
+    }
+  ],
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

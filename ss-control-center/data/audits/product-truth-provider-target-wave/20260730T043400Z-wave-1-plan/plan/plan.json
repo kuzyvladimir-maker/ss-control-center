@@ -1,0 +1,133 @@
+{
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReprice": false,
+    "defaultDryRun": true
+  },
+  "createdAt": "2026-07-30T04:34:00.000Z",
+  "expiresAt": "2026-07-30T05:34:00.000Z",
+  "manifest": {
+    "asOf": "2026-07-26T18:05:57.000Z",
+    "liveListings": 5935,
+    "schemaVersion": "phase1-authoritative-scope-manifest/v3",
+    "sha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c"
+  },
+  "maxWallClockMs": 1800000,
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 10,
+      "maxUnits": 25,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t043400z-target-wave-1",
+  "schemaVersion": "product-truth-operational-plan/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "targetSetSha256": "b56e6e61c88f974113f6b15b1a956048c41bc9855b9a1d17d90d154a0c419f3e",
+  "targets": [
+    {
+      "channel": "walmart",
+      "listingKey": "walmart:1:FaisalX-219",
+      "listingKeyVersion": "product-truth-listing-key/1.0.0",
+      "ordinal": 0,
+      "requestedFields": [
+        "identity",
+        "offers",
+        "content",
+        "cogs"
+      ],
+      "sku": "FaisalX-219",
+      "storeIndex": 1
+    },
+    {
+      "channel": "walmart",
+      "listingKey": "walmart:1:FaisalX-315",
+      "listingKeyVersion": "product-truth-listing-key/1.0.0",
+      "ordinal": 1,
+      "requestedFields": [
+        "identity",
+        "offers",
+        "content",
+        "cogs"
+      ],
+      "sku": "FaisalX-315",
+      "storeIndex": 1
+    },
+    {
+      "channel": "amazon",
+      "listingKey": "amazon:1:742259728648",
+      "listingKeyVersion": "product-truth-listing-key/1.0.0",
+      "ordinal": 2,
+      "requestedFields": [
+        "identity",
+        "offers",
+        "content",
+        "cogs"
+      ],
+      "sku": "742259728648",
+      "storeIndex": 1
+    },
+    {
+      "channel": "walmart",
+      "listingKey": "walmart:1:RizwanX-4526",
+      "listingKeyVersion": "product-truth-listing-key/1.0.0",
+      "ordinal": 3,
+      "requestedFields": [
+        "identity",
+        "offers",
+        "content",
+        "cogs"
+      ],
+      "sku": "RizwanX-4526",
+      "storeIndex": 1
+    },
+    {
+      "channel": "amazon",
+      "listingKey": "amazon:1:AY-AS5F-JEY9",
+      "listingKeyVersion": "product-truth-listing-key/1.0.0",
+      "ordinal": 4,
+      "requestedFields": [
+        "identity",
+        "offers",
+        "content",
+        "cogs"
+      ],
+      "sku": "AY-AS5F-JEY9",
+      "storeIndex": 1
+    }
+  ],
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

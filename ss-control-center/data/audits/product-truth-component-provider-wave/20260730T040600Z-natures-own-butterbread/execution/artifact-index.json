@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3000,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "5460b654a9c1ecdda4226feb3f3275dffb9c5dd90a099c0112153f941c3f1d6f"
+    }
+  ],
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+  "runId": "ptca-20260730t040600z-natures-own-butterbread",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

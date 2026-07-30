@@ -1,0 +1,90 @@
+{
+  "createdAt": "2026-07-30T06:58:26.030Z",
+  "expiresAt": "2026-07-30T07:58:26.030Z",
+  "listingKeys": [
+    "amazon:1:742259729584",
+    "amazon:1:743269734438",
+    "amazon:1:742259729683",
+    "walmart:1:FaisalX-1208",
+    "walmart:1:RizwanX-192"
+  ],
+  "maxWallClockMs": 1800000,
+  "mode": "WAVE",
+  "providerAcquisitionTargets": [
+    {
+      "canonicalIdentityHash": "98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+      "canonicalVariantId": "cpv1:98931ef1480719ac4a2611c998f94ff42363b649c531ea3eb5c4744be4daf923",
+      "listingKey": "amazon:1:742259729584",
+      "query": "Birds Eye Steamfresh Super Sweet Corn bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+      "canonicalVariantId": "cpv1:d57190a210b992109e4b7ee2fdaf8295969bbff4df591be1b37844f941c28681",
+      "listingKey": "amazon:1:743269734438",
+      "query": "Thomas' English Muffins Original bag 13 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+      "canonicalVariantId": "cpv1:f24d28a0af72b489777aed6fc657bd5ac35a68433ca02edc7b163d915b663569",
+      "listingKey": "amazon:1:742259729683",
+      "query": "Birds Eye Steamfresh Mixed Vegetables bag 10 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+      "canonicalVariantId": "cpv1:7733e66992511770a3e6de042f6d7afc85b5ec733840e44b4a8f693857a4eb2e",
+      "listingKey": "walmart:1:FaisalX-1208",
+      "query": "Sara Lee Artesano White bag 19 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    },
+    {
+      "canonicalIdentityHash": "37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+      "canonicalVariantId": "cpv1:37faeaa2acbcedaddd4162cc18a9a319dadf3cb854cb76fdab479ea2b6c11d68",
+      "listingKey": "walmart:1:RizwanX-192",
+      "query": "Del Monte Stewed Tomatoes Original Recipe can 14.5 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    }
+  ],
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 10,
+      "maxUnits": 25,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t065826z-r19-source-detail-canary",
+  "schemaVersion": "product-truth-operational-plan-request/1.1.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-07-30T07:25:15.000Z",
+  "counts": {
+    "absentRows": 65,
+    "exactExistingRows": 0,
+    "maximumRows": 65,
+    "targets": 13
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "foreignKeyViolations": [],
+  "planId": "ptacr-2e07a95f9726d5c8d794ef8a",
+  "planSha256": "6e485b4ceff68cb48cfd572f27fb1f8417d8ce9b65a5df65031471c22ddcafb5",
+  "schemaVersion": "product-truth-all-components-recipe-materialization-preflight/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "status": "READY_TO_APPLY",
+  "targetStates": [
+    {
+      "listingKey": "amazon:1:4F-211R-JY0C",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:Athar-164",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:Comm-03",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:Comm-04",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1130",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1131",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1132",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1161",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:FaisalX-1162",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3073",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3074",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-3075",
+      "state": "ABSENT"
+    },
+    {
+      "listingKey": "walmart:1:RizwanX-825",
+      "state": "ABSENT"
+    }
+  ]
+}

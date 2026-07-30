@@ -1,0 +1,136 @@
+{
+  "artifacts": [
+    {
+      "file": "consensus-reuse-scope.json",
+      "role": "consensus_reuse_scope",
+      "sha256": "b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412"
+    }
+  ],
+  "claims": {
+    "authorizesExecution": false,
+    "createsAdditionalCatalog": false,
+    "currentVersionDecisionRequired": true,
+    "databaseWrites": 0,
+    "legacyStatusUsedAsIdentityProof": false,
+    "marketplaceMutations": 0,
+    "oldDecisionIdsReused": false,
+    "paidCalls": 0,
+    "postBlindConsensusUsedAsBoundEvidence": true,
+    "providerCalls": 0,
+    "readOnlySources": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "currentRecipeMissing": 319,
+    "currentScopeMatches": 380,
+    "directDonors": 28,
+    "directSingleVariant": 42,
+    "exactCurrentTitlesAndQuantity": 58,
+    "fieldPartitionReconciliationRequired": 9,
+    "identityCoreCompatible": 56,
+    "rawQuarantine": 386,
+    "reconciliationDonors": 4,
+    "resolvedSingleExact": 63,
+    "selected": 51,
+    "selectedDonors": 32
+  },
+  "exclusionCounts": [
+    {
+      "count": 174,
+      "reason": "CONSENSUS_NOT_SINGLE_EXACT"
+    },
+    {
+      "count": 77,
+      "reason": "CONSENSUS_UNRESOLVED"
+    },
+    {
+      "count": 61,
+      "reason": "CURRENT_RECIPE_PRESENT"
+    },
+    {
+      "count": 6,
+      "reason": "CURRENT_SCOPE_MISSING"
+    },
+    {
+      "count": 5,
+      "reason": "CURRENT_COMPONENT_SET_NOT_SINGLE"
+    },
+    {
+      "count": 5,
+      "reason": "CURRENT_DONOR_TITLE_DRIFT"
+    },
+    {
+      "count": 3,
+      "reason": "FORM_REPRESENTATION_NOT_ALLOWED"
+    },
+    {
+      "count": 2,
+      "reason": "CURRENT_DONOR_SIZE_CONFLICT"
+    },
+    {
+      "count": 2,
+      "reason": "CURRENT_TARGET_IDENTITY_DRIFT"
+    }
+  ],
+  "generatedAt": "2026-07-29T23:26:31.000Z",
+  "schemaVersion": "product-truth-consensus-reuse-scope-artifact-index/1.0.0",
+  "selectionPolicy": {
+    "adjudicationStatus": "RESOLVED",
+    "currentComponentCount": 1,
+    "currentRecipeStatus": "MISSING",
+    "donorCollisionPolicy": "ONE_DONOR_ONE_VARIANT_OR_EXPLICIT_FIELD_PARTITION_RECONCILIATION",
+    "donorSizePolicy": "NULL_ALLOWED_NON_NULL_MUST_EQUAL_NORMALIZED_TARGET_SIZE",
+    "formPolicy": "EXPLICIT_SEMANTIC_TO_CONTAINER_TRANSITION_ALLOWLIST",
+    "identityCore": "NORMALIZED_BRAND_PRODUCT_LINE_FLAVOR_SIZE_OUTER_PACK_EQUAL",
+    "modifierPolicy": "PRESERVE_CONSENSUS_MODIFIERS_IN_PROPOSED_CURRENT_VARIANT",
+    "requiredIndependentAcceptances": 2,
+    "requiredVerdict": "EXACT_IDENTITY",
+    "sourceStatus": "VARIANT_MISMATCH"
+  },
+  "source": {
+    "acceptanceReviewA": {
+      "reviewerId": "codex-review-a",
+      "schemaVersion": "product-truth-matcher-post-blind-consensus-acceptance/2.2.0",
+      "sha256": "5d0cdc78006e4b72dee7067f041d8b6e6f960ac2c287fbe73110f4bbb9a701eb"
+    },
+    "acceptanceReviewB": {
+      "reviewerId": "codex-review-b",
+      "schemaVersion": "product-truth-matcher-post-blind-consensus-acceptance/2.2.0",
+      "sha256": "e2c1d781c47f53fc86f71a060a33c251f199887329c29b226ce412cef0670384"
+    },
+    "blindTask": {
+      "schemaVersion": "product-truth-matcher-blinded-evidence-task/2.1.0",
+      "sha256": "0d53e57921abc26d08b7d334bebd67920062166c6db29b5365e47587054c1b45"
+    },
+    "corpus": {
+      "corpusId": "product-truth-variant-mismatch-386-golden2-final-v21-2026-07-19-post-blind-consensus-v22",
+      "schemaVersion": "product-truth-matcher-replay-corpus/2.2.0",
+      "sha256": "a1310fce60fcfe3e463cc853181fb155b9a200bc45ddaa5bda6ee8b79827e06f"
+    },
+    "frozenReviewA": {
+      "reviewerId": "codex-review-a",
+      "schemaVersion": "product-truth-matcher-blinded-decision/2.1.0",
+      "sha256": "d436565bb9c1e373928be655a94c6f292c51b7919393bbfd6e2ac47bad1ecec2"
+    },
+    "frozenReviewB": {
+      "reviewerId": "codex-review-b",
+      "schemaVersion": "product-truth-matcher-blinded-decision/2.1.0",
+      "sha256": "2445384e15a02052f3bdf464cbb1ca989e23ac92823c5082fc4a0526d26f2507"
+    },
+    "rawSource": {
+      "quarantineCount": 386,
+      "sha256": "5a48cae7ff211170dc19a261b9a9418d463b7b2c4a62855ee2b85c40185c5484"
+    },
+    "recipeRepairScope": {
+      "denominator": 5935,
+      "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+      "schemaVersion": "product-truth-recipe-repair-scope/1.0.0",
+      "sha256": "8dde89640db64d5158e75595a678e427ddf3bc7ad3781670a95db0f7208a3b67",
+      "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+    },
+    "reconciliationMap": {
+      "schemaVersion": "product-truth-matcher-post-blind-reconciliation-map/1.0.0",
+      "sha256": "bc23dc7cbcfc1bdca774044733a814b6090d850b5bcf27262fd29ed8a1591601"
+    }
+  }
+}

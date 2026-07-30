@@ -1,0 +1,44 @@
+{
+  "artifacts": [
+    {
+      "file": "apply-report.json",
+      "role": "component_resolution_materialization_apply_report",
+      "sha256": "7d6b8541ba847a3d383c79302c8be659320d0721ae8fe04fc8018fd720b58616"
+    }
+  ],
+  "claims": {
+    "allTargetsCollisionFree": true,
+    "consumerActivation": false,
+    "createsAdditionalCatalog": false,
+    "exactContentPackagePolicyEnforced": true,
+    "listingRecipesMaterialized": 0,
+    "listingRecipesRequireAllComponents": true,
+    "marketplaceMutations": 0,
+    "noPaidExistingCatalogLaneOnly": true,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "skuCostsMaterialized": 0
+  },
+  "command": "apply",
+  "completedAt": "2026-07-30T05:19:42.728Z",
+  "counts": {
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitions": 7,
+    "exactExistingRows": 0,
+    "insertedRows": 28,
+    "targets": 7
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-free-7c3a089299b58a08d7dfb821",
+  "schemaVersion": "product-truth-component-resolution-wave-artifact-index/1.0.0",
+  "startedAt": "2026-07-30T05:19:13.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "exactTargets": 7,
+    "foreignKeyViolations": [],
+    "listingRecipesMaterialized": 0,
+    "skuCostsMaterialized": 0
+  }
+}

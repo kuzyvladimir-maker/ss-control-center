@@ -1,0 +1,58 @@
+{
+  "createdAt": "2026-07-30T07:57:00.000Z",
+  "expiresAt": "2026-07-30T19:57:00.000Z",
+  "listingKeys": [
+    "walmart:1:RizwanX-138"
+  ],
+  "maxWallClockMs": 360000,
+  "mode": "WAVE",
+  "providerAcquisitionTargets": [
+    {
+      "canonicalIdentityHash": "b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "canonicalVariantId": "cpv1:b2a75e7913cd76321acd4b016b68afd22f4097d4f49797181911de6482a87f93",
+      "listingKey": "walmart:1:RizwanX-138",
+      "query": "Margaret Holmes Seasoned Cabbage can 15 oz",
+      "queryVersion": "product-truth-provider-query/form-augmented-v1"
+    }
+  ],
+  "providerCeilings": [
+    {
+      "maxCalls": 1,
+      "maxUnits": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 2,
+      "maxUnits": 5,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t075700z-r21-admission-bound-canary",
+  "schemaVersion": "product-truth-operational-plan-request/1.1.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

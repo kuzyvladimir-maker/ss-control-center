@@ -1,0 +1,45 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99535,
+      "evidenceSha256": "600e1e7ffca1aca72210dd549bf0a1efded745a2bcc22b7bfd0bef9fe81de6a6",
+      "observedAt": "2026-07-30T03:59:34.073Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-30T04:10:02.739Z",
+  "issuedAt": "2026-07-30T04:00:02.739Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:3679743b5bf04c3da1e4:600e1e7ffca1aca7",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-30T04:10:02.739Z",
+    "issuedAt": "2026-07-30T04:00:02.739Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 2,
+        "maxUnits": 5,
+        "operations": [
+          "detail",
+          "search"
+        ]
+      }
+    },
+    "runId": "ptca-20260730t035200z-natures-own-multigrain",
+    "version": 1
+  },
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "runId": "ptca-20260730t035200z-natures-own-multigrain",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

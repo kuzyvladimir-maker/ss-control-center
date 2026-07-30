@@ -1,0 +1,187 @@
+{
+  "checkedAt": "2026-07-30T03:00:00.579Z",
+  "claims": {
+    "allTargetsCollisionFree": true,
+    "consumerActivation": false,
+    "createsAdditionalCatalog": false,
+    "exactContentPackagePolicyEnforced": true,
+    "listingRecipesMaterialized": 0,
+    "listingRecipesRequireAllComponents": true,
+    "marketplaceMutations": 0,
+    "noPaidExistingCatalogLaneOnly": true,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "skuCostsMaterialized": 0
+  },
+  "counts": {
+    "absentRows": 76,
+    "canonicalVariantReuses": 0,
+    "donorIdentityTransitionsRequired": 19,
+    "exactExistingRows": 0,
+    "maximumRows": 76,
+    "targets": 19
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcr-free-468edb7c30bae1554af4e53f",
+  "planSha256": "62990d362add4190d6ef0e70c899f708abec1013dc6e982b030b4312af5367fd",
+  "schemaVersion": "product-truth-component-resolution-materialization-preflight/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "status": "READY_TO_APPLY",
+  "targetStates": [
+    {
+      "canonicalVariantId": "cpv1:14c4272c214d613a9803b2a356a4097217a0bc3c5687a087f6db7d5f96e27938",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "138be39c-7cfd-4aea-a9fc-76d8a9689eb6",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:b11254fd871f5c9e2dd16732081c5b61b8881d76f651a470edb5e2c9bfd11884",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "98025940-4588-4003-898d-42f89dc482d3",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:077f340864a71ba5a7c2dd1189fc6c65daaaf86f0f18f1911fce7554fd479d11",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "8bdd4430-2015-4ee1-91e3-279e8cac987c",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:19298bea920dffcc28b3779a9c7e732ca1b717f165fd4c3dd893e82e981dc1b3",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "03588033-4798-4bb2-bb30-4814a741f8af",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:8d2e7b9541de16bcf295c6a0f1c9479a44ebceb46f65a07ecfabcc36dc52883d",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "c1cee760-e085-4f30-8bed-0e53e9d584d2",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:ff1ca7da8c1f357b12533c7cc72db4f58cb51e01016c4a4205ff1e19149db2cb",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "1f9e3955-6bf0-4128-9ca1-364a5b281686",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:2178baaf0b94688b3715e10d7091784a07e5f2c90cfdb5671bd84dca0cea8cbc",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "5b9e437d-86f7-4b51-9b46-790df5ac30cc",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:b86aa052b6333f6a99d2b6f68d5aadea1547b33aaa78439d266c0f503206ebda",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "c269bfcc-c079-467c-9c02-cd6581a0803c",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:090071dad4c39246d42aaecd6fc27cce8ccfd7e8e72456be8f55d16d64c95b3e",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "eb8abd32-57ec-464e-8a7d-ce0ec05e115d",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:32ebd2941fa8e373b144ca1ac33830667e01d8fd153b7917a5fcce4537028a1e",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "9518a499-a994-4a21-800c-719f1cb10a53",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:34784d58ea7d128e28eadbb47b0645d2271c6df67502232d1c6c1bfbfa4fbc62",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "9a5d0d30-71bf-411f-b3b2-0895ace5cfea",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:4709c6da0a992f25acb29824304522837591dc5476d76419d5349a2f364133d0",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "abae12ff-9fc6-4479-a346-1f9ffd8944a8",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:7aaa3238c67de596991e8e835167b542ee422794bcb390411f525300cf8ce1bf",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "9ce63576-cb6f-4bd3-9e91-c22ce91c6683",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:fe18287a42f40dc8b50b44d27fa42ad696b2308b9e7f42f30da27534d4728712",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "e9eee91b-0799-4cce-9dbf-9ddac1070866",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:fea7567d2f24cf9fb24bbfbc034a12e5a70179b9843762c1917170701eca2b1b",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "ea32d05e-1fb5-4e43-8518-484d693d24d9",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:19bb0206795071e239024cd4ee3e1b641cfe2faa16633c688b63cbad90777fcb",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "f4622fb0-1f78-47b9-967a-12dae2528d69",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:1d3171df982894565a259acfb50f1d60bbf2c24c800ab14c48ba9d7dfb6835e6",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "d25ea5ac-b84a-4a74-8a87-dfd88ea6474c",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:7c5669f3a37be6268d25ad1230f0eba30b6649892ab0631d7874a6d96402ad70",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "a4f051c1-36ed-40db-afcf-bd3ae7a500b7",
+      "variant": "ABSENT"
+    },
+    {
+      "canonicalVariantId": "cpv1:90f39c4214c7c7cb659d2f060e3dec9eac4b830859fa10e04cd2687ba46a2d1f",
+      "content": "ABSENT",
+      "decision": "ABSENT",
+      "donorIdentity": "SOURCE",
+      "donorProductId": "182871fe-04c7-4b57-82ac-9283f15c7e99",
+      "variant": "ABSENT"
+    }
+  ]
+}

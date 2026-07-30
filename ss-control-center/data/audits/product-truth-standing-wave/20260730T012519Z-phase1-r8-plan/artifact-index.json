@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "file": "wave-plan.json",
+      "role": "wave_plan",
+      "sha256": "c64dfd996fd1a18119cb73ae35cc46ebadcbb348e1b0a5261a2eedfc7c9c9396"
+    }
+  ],
+  "claims": {
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0
+  },
+  "generatedAt": "2026-07-30T01:25:19.734Z",
+  "maximumProviderUnits": 30,
+  "ownerActionRequired": false,
+  "planSha256": "c64dfd996fd1a18119cb73ae35cc46ebadcbb348e1b0a5261a2eedfc7c9c9396",
+  "schemaVersion": "product-truth-standing-wave-artifact-index/1.0.0",
+  "status": "PLANNED",
+  "targetCount": 5,
+  "waveId": "ptsw-20260730t012519z"
+}

@@ -1,0 +1,46 @@
+{
+  "completedAt": "2026-07-30T01:49:29.208Z",
+  "counts": {
+    "componentEvidence": 3,
+    "exactExistingRows": 0,
+    "insertedRows": 9,
+    "listingScopeLinks": 3,
+    "skuCosts": 3,
+    "targets": 3
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptcc-3567faa31dd195d9f444d3a2",
+  "planSha256": "51abf8f9803cbb33b02bdf710845868608519ef0e235806e95a77d44da44899f",
+  "preflightReportSha256": "8e4423ad3d7b2fcd5735f6fb8cff58db6195c9d6f788e09e55c05bf7a4576e5f",
+  "schemaVersion": "product-truth-canonical-cogs-reconcile-report/2.1.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-30T01:49:21.350Z",
+  "status": "APPLIED",
+  "verification": {
+    "consumerCutoverChanged": false,
+    "costIds": [
+      "retail:FaisalX-3712:recipe:1ee47ae4e1eb57e29e099c3f",
+      "retail:FaisalX-3713:recipe:c1f635849b366af3c021176a",
+      "retail:FaisalX-3714:recipe:f72d23d727faad3e7dcc9d7a"
+    ],
+    "costOutcomes": [
+      "FACT"
+    ],
+    "foreignKeyViolations": [],
+    "integrityScope": "SEALED_TARGET_GRAPH",
+    "listingKeys": [
+      "walmart:1:FaisalX-3712",
+      "walmart:1:FaisalX-3713",
+      "walmart:1:FaisalX-3714"
+    ],
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "recipeHashes": [
+      "499207c0daa61bf024cd91169e55203c4387bf2c60e59319c613f3ad7edc3542",
+      "515b30e0bc12012f9307a2d0edcc71ebd0282f6e46c91ec12a360ff708ee968e",
+      "f2551bc7727f682d8be160b1945b1cf5d69c62def37b0e902cc77ebdcf971b2f"
+    ]
+  }
+}

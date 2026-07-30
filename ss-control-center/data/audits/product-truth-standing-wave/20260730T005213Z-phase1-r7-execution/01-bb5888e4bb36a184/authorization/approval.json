@@ -1,0 +1,44 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:ad5f00549dd474b832ce:ea8d8182525e441f",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99567.5,
+      "evidenceSha256": "ea8d8182525e441f888fa647a31c984f9ace559dcd628632b28f6c22b4bfdf34",
+      "observedAt": "2026-07-30T00:55:59.662Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-30T01:06:00.810Z",
+  "issuedAt": "2026-07-30T00:56:00.810Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:ad5f00549dd474b832ce:ea8d8182525e441f",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-30T01:06:00.810Z",
+    "issuedAt": "2026-07-30T00:56:00.810Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 1,
+        "maxUnits": 1,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 1,
+        "maxUnits": 2.5,
+        "operations": [
+          "detail"
+        ]
+      }
+    },
+    "runId": "ptsw-20260730t005213z-01",
+    "version": 1
+  },
+  "planSha256": "ad5f00549dd474b832ce586907e7538f9d030f53ca1a3ab09683d175a54f170b",
+  "runId": "ptsw-20260730t005213z-01",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

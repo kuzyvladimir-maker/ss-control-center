@@ -1,0 +1,370 @@
+{
+  "blockers": [
+    {
+      "code": "DONOR_EXACT_DECISION_COLLISION",
+      "donorProductId": "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+      "listingKey": null,
+      "message": "existing cpv1:66a15f356a99a30d94d507b6fb1f1cdf6d158694df277393dba886158ea018c4 != proposed cpv1:6fab88af18ac82610ea70920e2cf86f8da3d494c0d828ad7b994a0b6c0b93721",
+      "scope": "DONOR"
+    }
+  ],
+  "checkedAt": "2026-07-29T23:32:55.000Z",
+  "claims": {
+    "authorizesExecution": false,
+    "completeDonorGroupsOnly": true,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "maxListingsPerWave": 5,
+    "maxRowsPerWave": 100,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlyDatabase": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "blockedDonors": 1,
+    "blockedListings": 2,
+    "canonicalVariantCreates": 27,
+    "canonicalVariantReuses": 0,
+    "decisionCreates": 27,
+    "decisionReuses": 0,
+    "directCandidates": 42,
+    "directDonors": 28,
+    "donorTransitions": 27,
+    "existingRecipes": 0,
+    "readyDonors": 27,
+    "readyListings": 40,
+    "recommendedWaves": 9,
+    "reconciliationCandidatesQuarantined": 9,
+    "selectedCandidates": 51
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "readyDonorProductIds": [
+    "1017d0ca-8031-4364-8bff-0eb139e95352",
+    "1b32d704-4a32-4dd1-964b-e88538de410e",
+    "1de121ce-8979-4a92-9d45-da01395e4c0f",
+    "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+    "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+    "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+    "4a900723-ec9f-4832-8c1a-41340164a5ef",
+    "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+    "6b310b15-8439-4e62-b1e8-b72817322fbc",
+    "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+    "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+    "8291e846-459a-44d5-97f1-066d25f9253e",
+    "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+    "aa9e1278-33d6-4127-9ecd-47448da93c74",
+    "ac17fbfe-56bb-4a74-bb08-1680cde830b3",
+    "ac813142-da60-410d-a416-d8113d12b65b",
+    "c41c1846-8d84-48df-8eae-ab68245a06e8",
+    "c9d3581f-7493-4aeb-8949-839d72406db1",
+    "cd6622b4-1b42-4fe1-a883-f5c4d744d286",
+    "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+    "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+    "eb133ccd-9f3e-4187-8111-660ab7a1570a",
+    "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+    "fe290f2d-3251-49dd-a75f-4446aa5adf04",
+    "fe2eef61-0ade-4f07-b67c-5c3d8b251696",
+    "ff62bc23-cb15-419a-8a8e-9c27259b3fc7",
+    "ffe807fb-8c8e-4eb5-886a-537d956d5dc2"
+  ],
+  "readyListingKeys": [
+    "walmart:1:FaisalX-1189",
+    "walmart:1:FaisalX-1192",
+    "walmart:1:FaisalX-1666",
+    "walmart:1:FaisalX-1806",
+    "walmart:1:FaisalX-206",
+    "walmart:1:FaisalX-3417",
+    "walmart:1:FaisalX-4443",
+    "walmart:1:FaisalX-4444",
+    "walmart:1:FaisalX-4889",
+    "walmart:1:FaisalX-5104",
+    "walmart:1:FaisalX-5200",
+    "walmart:1:FaisalX-5201",
+    "walmart:1:FaisalX-5268",
+    "walmart:1:FaisalX-5269",
+    "walmart:1:FaisalX-5270",
+    "walmart:1:FaisalX-5316",
+    "walmart:1:RizwanX-2359",
+    "walmart:1:RizwanX-277",
+    "walmart:1:RizwanX-278",
+    "walmart:1:RizwanX-279",
+    "walmart:1:RizwanX-3032",
+    "walmart:1:RizwanX-3442",
+    "walmart:1:RizwanX-3443",
+    "walmart:1:RizwanX-3444",
+    "walmart:1:RizwanX-353",
+    "walmart:1:RizwanX-3721",
+    "walmart:1:RizwanX-3722",
+    "walmart:1:RizwanX-3723",
+    "walmart:1:RizwanX-3728",
+    "walmart:1:RizwanX-3839",
+    "walmart:1:RizwanX-3840",
+    "walmart:1:RizwanX-401",
+    "walmart:1:RizwanX-458",
+    "walmart:1:RizwanX-499",
+    "walmart:1:RizwanX-501",
+    "walmart:1:RizwanX-502",
+    "walmart:1:RizwanX-513",
+    "walmart:1:RizwanX-581",
+    "walmart:1:RizwanX-582",
+    "walmart:1:RizwanX-63"
+  ],
+  "schemaVersion": "product-truth-consensus-reuse-preflight/1.0.0",
+  "source": {
+    "consensusReuseScopeGeneratedAt": "2026-07-29T23:26:31.000Z",
+    "consensusReuseScopeSha256": "b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412",
+    "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "status": "PARTIALLY_READY",
+  "waves": [
+    {
+      "canonicalVariantCreates": 5,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 5,
+      "decisionCreates": 5,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1f98fd6d-ffda-4b2a-9cb3-5b9685aca2eb",
+        "66f47a64-8db4-4de8-94f5-097a32c3c9b1",
+        "8291e846-459a-44d5-97f1-066d25f9253e",
+        "e10b8068-ad59-4637-8fff-e96f421ef5c5",
+        "ff62bc23-cb15-419a-8a8e-9c27259b3fc7"
+      ],
+      "donorTransitions": 5,
+      "listingKeys": [
+        "walmart:1:FaisalX-1189",
+        "walmart:1:FaisalX-1192",
+        "walmart:1:FaisalX-1666",
+        "walmart:1:FaisalX-1806",
+        "walmart:1:FaisalX-206"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 45,
+      "ordinal": 0,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "adb249512910db8ea8ca76b46ca706a2772e17b74400ff3a7cd9dfd1cfc847c3"
+    },
+    {
+      "canonicalVariantCreates": 4,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 4,
+      "decisionCreates": 4,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "72182abb-2fc9-4216-b70d-1b16f7737fa5",
+        "7417e6bf-4eac-4fc9-9741-e8e1eaff1641",
+        "d969dccc-4ddc-4555-a55f-5e8dc2021d34",
+        "eb133ccd-9f3e-4187-8111-660ab7a1570a"
+      ],
+      "donorTransitions": 4,
+      "listingKeys": [
+        "walmart:1:FaisalX-3417",
+        "walmart:1:FaisalX-4443",
+        "walmart:1:FaisalX-4444",
+        "walmart:1:FaisalX-4889",
+        "walmart:1:FaisalX-5104"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 41,
+      "ordinal": 1,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "c4f1a53ebd21bfeaa0a27c25279f91193ede58afa4858aa4664fb587e57d0be5"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "4a900723-ec9f-4832-8c1a-41340164a5ef",
+        "cd6622b4-1b42-4fe1-a883-f5c4d744d286"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:FaisalX-5200",
+        "walmart:1:FaisalX-5201",
+        "walmart:1:FaisalX-5268",
+        "walmart:1:FaisalX-5269",
+        "walmart:1:FaisalX-5270"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 33,
+      "ordinal": 2,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "70c92300c6fbd1d38a37a17e9a0972c6d7e39bf0bd5dce36919973696c59f9cd"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "21ce133c-fc8c-4b4f-b4aa-c5bc2acefcf6",
+        "aa9e1278-33d6-4127-9ecd-47448da93c74",
+        "c41c1846-8d84-48df-8eae-ab68245a06e8"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:FaisalX-5316",
+        "walmart:1:RizwanX-2359",
+        "walmart:1:RizwanX-277",
+        "walmart:1:RizwanX-278",
+        "walmart:1:RizwanX-279"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 37,
+      "ordinal": 3,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "e0b1421c5f930f129f2aa6b87050fe8561b648214bf05c3eb1ace48fbb331b05"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1de121ce-8979-4a92-9d45-da01395e4c0f",
+        "28ea2f56-8d24-411e-8d40-a30ba0aace05",
+        "fe2eef61-0ade-4f07-b67c-5c3d8b251696"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-3032",
+        "walmart:1:RizwanX-3442",
+        "walmart:1:RizwanX-3443",
+        "walmart:1:RizwanX-3444",
+        "walmart:1:RizwanX-353"
+      ],
+      "listingRecipeComponentCreates": 5,
+      "listingRecipeCreates": 5,
+      "maximumRows": 37,
+      "ordinal": 4,
+      "skuComponentEvidenceCreates": 5,
+      "skuCostCreates": 5,
+      "skuCostLinkCreates": 5,
+      "waveKey": "cfd1dabdc2ab7b3c481d40501bbba2130f6d7814a67199da78da526045c46c74"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1017d0ca-8031-4364-8bff-0eb139e95352",
+        "ac813142-da60-410d-a416-d8113d12b65b"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:RizwanX-3721",
+        "walmart:1:RizwanX-3722",
+        "walmart:1:RizwanX-3723",
+        "walmart:1:RizwanX-3728"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 28,
+      "ordinal": 5,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "aea4230b2d50d6ca9d9eb5426c1d793dc9c2967e8be2d8e42b357d7589a971e8"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "1b32d704-4a32-4dd1-964b-e88538de410e",
+        "c9d3581f-7493-4aeb-8949-839d72406db1",
+        "ffe807fb-8c8e-4eb5-886a-537d956d5dc2"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-3839",
+        "walmart:1:RizwanX-3840",
+        "walmart:1:RizwanX-401",
+        "walmart:1:RizwanX-458"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 32,
+      "ordinal": 6,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "a9152a699634cc33d13014df8f5a6a215e298b5e16113d2a17ab31ddc0114f7c"
+    },
+    {
+      "canonicalVariantCreates": 3,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 3,
+      "decisionCreates": 3,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "6b310b15-8439-4e62-b1e8-b72817322fbc",
+        "f8d3da7a-610a-4c31-9091-5c68e3fe5a78",
+        "fe290f2d-3251-49dd-a75f-4446aa5adf04"
+      ],
+      "donorTransitions": 3,
+      "listingKeys": [
+        "walmart:1:RizwanX-499",
+        "walmart:1:RizwanX-501",
+        "walmart:1:RizwanX-502",
+        "walmart:1:RizwanX-513"
+      ],
+      "listingRecipeComponentCreates": 4,
+      "listingRecipeCreates": 4,
+      "maximumRows": 32,
+      "ordinal": 7,
+      "skuComponentEvidenceCreates": 4,
+      "skuCostCreates": 4,
+      "skuCostLinkCreates": 4,
+      "waveKey": "e999797c5acc340ca70580a50d4fedd3db54b0a3190fb30a92dc9c4fb258b054"
+    },
+    {
+      "canonicalVariantCreates": 2,
+      "canonicalVariantReuses": 0,
+      "contentObservationCreates": 2,
+      "decisionCreates": 2,
+      "decisionReuses": 0,
+      "donorProductIds": [
+        "87e5230c-7d17-4bca-93ea-bdf862ceee02",
+        "ac17fbfe-56bb-4a74-bb08-1680cde830b3"
+      ],
+      "donorTransitions": 2,
+      "listingKeys": [
+        "walmart:1:RizwanX-581",
+        "walmart:1:RizwanX-582",
+        "walmart:1:RizwanX-63"
+      ],
+      "listingRecipeComponentCreates": 3,
+      "listingRecipeCreates": 3,
+      "maximumRows": 23,
+      "ordinal": 8,
+      "skuComponentEvidenceCreates": 3,
+      "skuCostCreates": 3,
+      "skuCostLinkCreates": 3,
+      "waveKey": "a35b9e8b43811219043604af7a1ef6ba4e54b22188cb5507328913ac04442a33"
+    }
+  ]
+}

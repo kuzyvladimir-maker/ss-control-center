@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 10329,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "1947f7c5a58034699025ccfc10bcf0d53009c578289e0de7e9a88d2329ec114d"
+    }
+  ],
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planSha256": "3cd947d8be37ca91ed79d7eff7ff8e1461e27bc9fc63201d61277dc262b6fb5d",
+  "runId": "ptca-20260730t065826z-r19-source-detail-canary",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

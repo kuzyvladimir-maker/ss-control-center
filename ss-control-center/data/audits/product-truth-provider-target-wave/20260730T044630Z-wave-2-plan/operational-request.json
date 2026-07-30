@@ -1,0 +1,53 @@
+{
+  "createdAt": "2026-07-30T04:46:30.000Z",
+  "expiresAt": "2026-07-30T05:46:30.000Z",
+  "listingKeys": [
+    "amazon:1:742259732010",
+    "walmart:1:FaisalX-3991",
+    "walmart:1:FaisalX-242",
+    "walmart:1:FaisalX-363",
+    "walmart:1:FaisalX-294"
+  ],
+  "maxWallClockMs": 1800000,
+  "mode": "WAVE",
+  "providerCeilings": [
+    {
+      "maxCalls": 5,
+      "maxUnits": 5,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs",
+      "reserveFloor": null
+    },
+    {
+      "maxCalls": 10,
+      "maxUnits": 25,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "runId": "ptca-20260730t044630z-target-wave-2",
+  "schemaVersion": "product-truth-operational-plan-request/1.0.0",
+  "sourcePolicy": {
+    "allowBjs": false,
+    "allowClubs": false,
+    "componentConcurrency": 1,
+    "listingConcurrency": 1,
+    "maxAttemptsPerListing": 1,
+    "procurementZip": "33765",
+    "retailers": [
+      "walmart",
+      "target",
+      "publix"
+    ]
+  },
+  "verificationPolicy": {
+    "maxPriceAgeMs": 172800000,
+    "minGalleryImages": 5
+  }
+}

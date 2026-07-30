@@ -1,0 +1,83 @@
+{
+  "approval": {
+    "action": "EXECUTE_WAVE",
+    "approvalId": "pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee",
+    "approvedBy": "owner",
+    "balanceEvidence": [
+      {
+        "balanceUnits": 99530,
+        "evidenceSha256": "2ed8b8545c9a81eee642a222966db143cf2f947b832ec84970e4b41856a02cce",
+        "observedAt": "2026-07-30T04:06:23.356Z",
+        "provider": "unwrangle",
+        "reserveFloor": 15000
+      }
+    ],
+    "expiresAt": "2026-07-30T04:16:34.893Z",
+    "issuedAt": "2026-07-30T04:06:34.893Z",
+    "meteredPermit": {
+      "approvalId": "pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee",
+      "approvedBy": "owner",
+      "expiresAt": "2026-07-30T04:16:34.893Z",
+      "issuedAt": "2026-07-30T04:06:34.893Z",
+      "providers": {
+        "oxylabs": {
+          "maxCalls": 1,
+          "maxUnits": 1,
+          "operations": [
+            "query"
+          ]
+        },
+        "unwrangle": {
+          "maxCalls": 2,
+          "maxUnits": 5,
+          "operations": [
+            "detail",
+            "search"
+          ]
+        }
+      },
+      "runId": "ptca-20260730t040600z-natures-own-butterbread",
+      "version": 1
+    },
+    "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+    "runId": "ptca-20260730t040600z-natures-own-butterbread",
+    "schemaVersion": "product-truth-operational-approval/1.0.0",
+    "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+  },
+  "approvalId": "pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee",
+  "approvalSha256": "4be741dd5bb29999fa805a2e76df8a8a42a31f656399324860408257a1adc8fc",
+  "balanceEvidenceSha256": "2ed8b8545c9a81eee642a222966db143cf2f947b832ec84970e4b41856a02cce",
+  "executionConfirmation": "EXECUTE_PRODUCT_TRUTH_PLAN_V1:49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734:pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee",
+  "expiresAt": "2026-07-30T04:16:34.893Z",
+  "issuedAt": "2026-07-30T04:06:34.893Z",
+  "next_argv": [
+    "npm",
+    "run",
+    "product-truth",
+    "--",
+    "execute",
+    "--plan",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/plan/plan.json",
+    "--plan-sha",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/plan/plan.sha256",
+    "--manifest",
+    "/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
+    "--approval",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/authorization/approval.json",
+    "--confirm",
+    "EXECUTE_PRODUCT_TRUTH_PLAN_V1:49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734:pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee",
+    "--url",
+    "libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io",
+    "--allow-remote",
+    "--auth-token-env",
+    "TURSO_AUTH_TOKEN",
+    "--out",
+    "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/execution"
+  ],
+  "next_command": "'npm' 'run' 'product-truth' '--' 'execute' '--plan' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/plan/plan.json' '--plan-sha' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/plan/plan.sha256' '--manifest' '/private/tmp/product-truth-component-provider-v2/ss-control-center/data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json' '--approval' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/authorization/approval.json' '--confirm' 'EXECUTE_PRODUCT_TRUTH_PLAN_V1:49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734:pt-standing:49e6e6ad9dbd6e380770:2ed8b8545c9a81ee' '--url' 'libsql://ss-control-center-kuzyvladimir-maker.aws-us-east-1.turso.io' '--allow-remote' '--auth-token-env' 'TURSO_AUTH_TOKEN' '--out' '/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-component-provider-wave/20260730T040600Z-natures-own-butterbread/execution'",
+  "ownerActionRequired": false,
+  "planSha256": "49e6e6ad9dbd6e380770545a1f00b67fa8516ceecdbae7b858a021ebae917734",
+  "policyId": "pt-standing-provider-enrichment-20260730-v2",
+  "schemaVersion": "product-truth-standing-authorization/1.0.0",
+  "standingPolicySha256": "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4"
+}

@@ -1,0 +1,102 @@
+{
+  "claims": {
+    "ambiguousNeverReplay": true,
+    "authoritativePhase1Only": true,
+    "contentAndPriceAxesIndependent": true,
+    "exactCurrentRecipeBinding": true,
+    "noBjs": true,
+    "noClubs": true,
+    "noConsumerActivation": true,
+    "noDelisting": true,
+    "noImplicitScope": true,
+    "noMarketplaceMutation": true,
+    "noParallelCatalog": true,
+    "noPriceOrInventoryChange": true,
+    "noProcurement": true,
+    "oneDonorPerTarget": true
+  },
+  "completedAt": "2026-07-30T01:54:21.091Z",
+  "planSha256": "c64dfd996fd1a18119cb73ae35cc46ebadcbb348e1b0a5261a2eedfc7c9c9396",
+  "readiness": {
+    "reportPath": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-wave/20260730T012519Z-phase1-r8-execution/readiness/readiness-report.json",
+    "reportSha256": "af96a3824b16dbe5c5182ce1015fb9220efc09fef3dd66db9a62176480f627d7"
+  },
+  "schemaVersion": "product-truth-standing-wave-report/1.0.0",
+  "status": "COMPLETED",
+  "targetReports": [
+    {
+      "actualProviderUnits": 6,
+      "cogsApplyReports": [
+        "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-wave/20260730T012519Z-phase1-r8-execution/01-e0900aa5947a20f7/cogs-01-apply/apply-report.json"
+      ],
+      "donorProductId": "4366946b-fc30-4949-9d8b-3d77626b0094",
+      "linkedListingCount": 3,
+      "listingKey": "walmart:1:FaisalX-4494",
+      "ordinal": 0,
+      "outcome": "COMPLETED",
+      "priceObservationId": "doo:e75979a6e3b9c63bc49a439d79fba2c2a69f675ce3e6e1c65cbf71078b0d7395",
+      "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+      "runId": "ptsw-20260730t012519z-01"
+    },
+    {
+      "actualProviderUnits": 3.5,
+      "cogsApplyReports": [],
+      "donorProductId": "e59fdb3b-48f0-4421-9412-17b438598f51",
+      "linkedListingCount": 3,
+      "listingKey": "walmart:1:RizwanX-2433",
+      "ordinal": 1,
+      "outcome": "AMBIGUOUS",
+      "priceObservationId": null,
+      "reason": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765; responseZip=MISSING; localityProven=false; trialExhausted=false; providerRows=0",
+      "runId": "ptsw-20260730t012519z-02"
+    },
+    {
+      "actualProviderUnits": 3.5,
+      "cogsApplyReports": [],
+      "donorProductId": "49614823-06d9-4ff5-ba5d-5dd945230add",
+      "linkedListingCount": 3,
+      "listingKey": "walmart:1:RizwanX-2397",
+      "ordinal": 2,
+      "outcome": "AMBIGUOUS",
+      "priceObservationId": null,
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:SELLER,FIRST_PARTY,PRICE,TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_MISSING,CANONICAL_VARIANT,UNEXPLAINED_CANDIDATE_TOKENS(shelf+stable),OBSERVED_TITLE_SHA256(3396ea5b089c49a91cea8e200af96d10cc28d667540677ef7742143d99b2ea9a)",
+      "runId": "ptsw-20260730t012519z-03"
+    },
+    {
+      "actualProviderUnits": 3.5,
+      "cogsApplyReports": [],
+      "donorProductId": "a09eafbb-e574-4ba5-8907-39439e0e8fc5",
+      "linkedListingCount": 3,
+      "listingKey": "walmart:1:FaisalX-3492",
+      "ordinal": 3,
+      "outcome": "AMBIGUOUS",
+      "priceObservationId": null,
+      "reason": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765; responseZip=MISSING; localityProven=false; trialExhausted=false; providerRows=0",
+      "runId": "ptsw-20260730t012519z-04"
+    },
+    {
+      "actualProviderUnits": 6,
+      "cogsApplyReports": [
+        "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/product-truth-standing-wave/20260730T012519Z-phase1-r8-execution/05-e4cec0e8670badd4/cogs-01-apply/apply-report.json"
+      ],
+      "donorProductId": "28d79438-421f-4abd-9e74-69efdc6e4b88",
+      "linkedListingCount": 3,
+      "listingKey": "walmart:1:FaisalX-3713",
+      "ordinal": 4,
+      "outcome": "COMPLETED",
+      "priceObservationId": "doo:a9235500a2a7644ea00d319a90f4468d73e2414891833173bfabb18c0e0517aa",
+      "reason": "EXACT_FIELD_SNAPSHOT_CAPTURED_WITH_KNOWN_GAPS",
+      "runId": "ptsw-20260730t012519z-05"
+    }
+  ],
+  "totals": {
+    "actualProviderUnits": 22.5,
+    "cogsApplyReports": 2,
+    "marketplaceMutations": 0,
+    "maximumProviderUnits": 30,
+    "priceObservations": 2,
+    "retries": 0,
+    "targets": 5
+  },
+  "waveId": "ptsw-20260730t012519z"
+}

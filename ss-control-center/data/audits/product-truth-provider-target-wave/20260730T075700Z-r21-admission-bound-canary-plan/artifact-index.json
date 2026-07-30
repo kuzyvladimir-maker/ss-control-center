@@ -1,0 +1,57 @@
+{
+  "artifacts": [
+    {
+      "file": "search-query-calibration.json",
+      "role": "search_query_calibration",
+      "sha256": "4a9e0517a3fa9e955fbc0c5c198d2f79dabc22acc1ad17f4da10e1739af245df"
+    },
+    {
+      "file": "source-detail-admission.json",
+      "role": "source_detail_admission",
+      "sha256": "6584e603fab11b69eeb2a067d57bc82052dc628e35c42b8618322a37880b13f3"
+    },
+    {
+      "file": "terminal-provider-attempt-capture.json",
+      "role": "terminal_provider_attempt_capture",
+      "sha256": "a7a2e6d0b7ecf557941592b688ddc0afb9c5654be08d09dc5516f217c9ef09a4"
+    },
+    {
+      "file": "provider-target-wave.json",
+      "role": "provider_target_wave",
+      "sha256": "f426171c2aa369923e92cc5a86716a9da75685b0f0d11cd417d2381e3cff9777"
+    },
+    {
+      "file": "operational-request.json",
+      "role": "operational_request",
+      "sha256": "ba462146ca20037f786ef120b268734e2d938b473018623ae025c062311de76d"
+    }
+  ],
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "claims": {
+    "authorizesExecution": false,
+    "consumerActivation": false,
+    "createsParallelCatalog": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "procurementMutations": 0,
+    "providerCalls": 0
+  },
+  "counts": {
+    "calibrationAdmittedProviderTargets": 1013,
+    "calibrationExcludedProviderTargets": 2114,
+    "eligibleTargets": 52,
+    "noSingleTargetRepresentative": 0,
+    "providerTargets": 3127,
+    "selectedDependentListings": 3,
+    "selectedImmediateClosures": 3,
+    "selectedTargets": 1,
+    "sourceDetailAdmittedProviderTargets": 52,
+    "sourceDetailExcludedCalibratedTargets": 961,
+    "terminalAttemptTargets": 0
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "generatedAt": "2026-07-30T07:57:00.000Z",
+  "schemaVersion": "product-truth-provider-target-wave-artifact-index/1.2.0",
+  "waveId": "ptca-20260730t075700z-r21-admission-bound-canary"
+}

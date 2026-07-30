@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 3016,
+      "mediaType": "application/json",
+      "path": "report.json",
+      "sha256": "209efed6d74e45ecf8211f11ac5381b4aa62530966d9c5986d72156bc00ab73c"
+    }
+  ],
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "planSha256": "3679743b5bf04c3da1e455f880913a8e7895871c698e596a517177c1d92ce7ef",
+  "runId": "ptca-20260730t035200z-natures-own-multigrain",
+  "schemaVersion": "product-truth-operational-artifact-index/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

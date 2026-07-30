@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:84ebcf8010826a2a533d:37ab3ae0516aed45",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:a8816ea83cbc5e6fb0685f6c94dbc100fa097177c8efefecb49efe38b903ad2c",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:143062618",
+  "donorProductId": "0dab6f79-aceb-42ca-91ee-7a9f393ed61e",
+  "generatedAt": "2026-07-30T01:03:38.297Z",
+  "job": {
+    "approvalId": "pt-standing:84ebcf8010826a2a533d:37ab3ae0516aed45",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765",
+    "id": "ptej_a7cf1f3dd57571e1c8683f1710c3299861dddace312b4218dd032443203411ee",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765"
+    },
+    "runId": "ptsw-20260730t005213z-03",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_d81bfcb028d919059ecdcb2db2282cb6f010c3ec0462422538bfe9c3b4672661",
+        "createdAt": "2026-07-30T01:02:37.967Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_cd4b873da52be0935f676888dd6c7b8542e05d7aa0b5726d088f310e1c4f0492",
+        "reservationKey": "mpr_v1_5707f098567f5b518c30d416ddf11ead9b8741faa1525acaf11f9b7564ae1c16",
+        "reservedAt": "2026-07-30T01:02:37.967Z",
+        "settledAt": "2026-07-30T01:03:37.931Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "ptsw-20260730t005213z-03",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "84ebcf8010826a2a533d1cf8353f1f36ed18f4404a5c4f13cb98de6f837e2e7b",
+  "reason": "TARGETED_WALMART_LOCALITY_UNPROVEN: Oxylabs did not prove Walmart ZIP 33765",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "143062618",
+  "runId": "ptsw-20260730t005213z-03",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

@@ -1,0 +1,28 @@
+{
+  "claims": {
+    "authorizesExecution": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "predictsProviderResults": false,
+    "providerCalls": 0,
+    "readOnlyInputs": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "admittedDependentListings": 1451,
+    "admittedImmediateClosures": 1451,
+    "admittedProviderTargets": 1013,
+    "providerTargets": 3127
+  },
+  "generatedAt": "2026-07-30T07:45:00.000Z",
+  "paidWaveAdmission": "CALIBRATED_FORM_QUERY_TARGETS_AVAILABLE",
+  "reportSchemaVersion": "product-truth-search-query-calibration/1.0.0",
+  "reportSha256": "4a9e0517a3fa9e955fbc0c5c198d2f79dabc22acc1ad17f4da10e1739af245df",
+  "schemaVersion": "product-truth-search-query-calibration-artifact-index/1.0.0",
+  "sourceSha256": {
+    "bridgePlan": "69bfc7a0e146769bb5b5efebd4f4eb884ca0de29a530535ed67d6c9a890b9929",
+    "bridgeSnapshot": "e2221c746f73dee5343286939a5c5cfcb8ed3c338c070648e27842acba52c832",
+    "componentScope": "157bcd9434d0af599454e45720a2ca7079dc83121f7cbd876957f528f2fdaa96"
+  }
+}

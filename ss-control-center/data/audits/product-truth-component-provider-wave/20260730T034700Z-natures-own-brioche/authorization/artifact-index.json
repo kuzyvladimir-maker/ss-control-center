@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "4cf37de578f08b379703ab8a19b6500e8514734319462672aa3b4670c0e3dfa2",
+  "authorizationSha256": "8900ed741dc1b57e3dd63160c6715204858acc1a620b2e0e6a07202282dc7493",
+  "balanceEvidenceSha256": "47ad61ed5aef162996e5c181e783245babf37b591dc72ed909fb6b31ec5eaae6",
+  "createdAt": "2026-07-30T03:48:55.158Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "4cf37de578f08b379703ab8a19b6500e8514734319462672aa3b4670c0e3dfa2"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "8900ed741dc1b57e3dd63160c6715204858acc1a620b2e0e6a07202282dc7493"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

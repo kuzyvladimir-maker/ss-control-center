@@ -1,0 +1,84 @@
+{
+  "approvalId": "pt-standing:93b9cadcc9076468c773:99b3cc67375f1aef",
+  "candidate": null,
+  "canonicalVariantId": "cpv1:4e2d6df57f0739c5b5fb188806069d4ca64bcf3c615cfc7db53e7be9dc12aebb",
+  "claims": {
+    "automaticDelist": false,
+    "automaticPublish": false,
+    "automaticPurchase": false,
+    "automaticReplay": false,
+    "automaticReprice": false,
+    "bjsCalls": false,
+    "canonicalVariantWritesMax": 0,
+    "clubCalls": false,
+    "exactOneExistingDirectFirstPartyWalmartOffer": true,
+    "exactOneExistingDonor": true,
+    "identityMode": "EXISTING_EXACT",
+    "initialDetailHarvestStateAbsent": true,
+    "openFoodFactsCalls": false,
+    "targetProductProjectionMayChange": false,
+    "unrelatedOfferWrites": false,
+    "unrelatedProductWrites": false,
+    "variantDecisionWritesMax": 0
+  },
+  "contentEvidence": null,
+  "donorOfferId": "do:walmart:10313262",
+  "donorProductId": "3163ae1e-5ee7-4b40-a695-4fe3b021bf81",
+  "generatedAt": "2026-07-30T00:59:38.068Z",
+  "job": {
+    "approvalId": "pt-standing:93b9cadcc9076468c773:99b3cc67375f1aef",
+    "attempts": 1,
+    "checkpoint": null,
+    "error": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT,UNEXPLAINED_CANDIDATE_TOKENS(canned)",
+    "id": "ptej_7e6dd217b02111962404716c18e59a800ed9d90cfbc85d9bd5a59493a6ab68ec",
+    "leaseExpiresAt": null,
+    "leaseOwner": null,
+    "leaseToken": null,
+    "result": {
+      "outcome": "AMBIGUOUS",
+      "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT,UNEXPLAINED_CANDIDATE_TOKENS(canned)"
+    },
+    "runId": "ptsw-20260730t005213z-02",
+    "status": "error",
+    "terminalReason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT,UNEXPLAINED_CANDIDATE_TOKENS(canned)"
+  },
+  "ledger": {
+    "receipts": [
+      {
+        "budgetId": "mb_befb00d922edacea0c1ffd7852287797a8d14e487dd547737fc0cd6a915be25d",
+        "createdAt": "2026-07-30T00:59:13.138Z",
+        "failureCode": null,
+        "operation": "query",
+        "provider": "oxylabs",
+        "receiptId": "mbr_26a6b760a5525f8eb82b5dc4c5e2d254725f8469a94d048882ae81b3b86e468a",
+        "reservationKey": "mpr_v1_fed34f9b6ec50de34616738f0e5843a54017df83118683769b852fa5bfb53d3b",
+        "reservedAt": "2026-07-30T00:59:13.138Z",
+        "settledAt": "2026-07-30T00:59:37.762Z",
+        "status": "succeeded",
+        "units": 1,
+        "unitsMicros": 1000000
+      }
+    ],
+    "runId": "ptsw-20260730t005213z-02",
+    "schemaVersion": "product-truth-operational-ledger/1.0.0",
+    "totals": {
+      "byProvider": {
+        "oxylabs": {
+          "calls": 1,
+          "units": 1
+        }
+      },
+      "calls": 1,
+      "units": 1
+    }
+  },
+  "next_command": null,
+  "outcome": "AMBIGUOUS",
+  "planSha256": "93b9cadcc9076468c77328bb593f3f33bc4160e8601cd98499a6607f13eb5c68",
+  "reason": "TARGETED_WALMART_EXACT_OFFER_MISSING: expected exactly one exact Walmart item; found 0; provider rows 1; rejected checks 0:TITLE_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,SCORE_ACCEPTED,SCORE_BASE_UNIT,SCORE_IDENTITY_TITLE_UNEXPLAINED_CANDIDATE_TOKEN,CANONICAL_VARIANT,UNEXPLAINED_CANDIDATE_TOKENS(canned)",
+  "resultContractVersion": "product-truth-targeted-walmart-evidence-result/1.1.0",
+  "retailerProductId": "10313262",
+  "runId": "ptsw-20260730t005213z-02",
+  "schemaVersion": "product-truth-targeted-walmart-evidence-report/1.1.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

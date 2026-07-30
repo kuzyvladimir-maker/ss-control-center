@@ -1,0 +1,48 @@
+{
+  "completedAt": "2026-07-30T03:29:36.701Z",
+  "counts": {
+    "componentEvidence": 6,
+    "exactExistingRows": 0,
+    "insertedRows": 30,
+    "listingRecipeComponents": 6,
+    "listingRecipes": 6,
+    "listingScopeLinks": 6,
+    "skuCosts": 6,
+    "targets": 6
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "planId": "ptacr-d368cf974571b5d776472409",
+  "planSha256": "193a185ab68a5ca3a884f53f015d3afe92dc3a193722100ef3a60cca4506832f",
+  "preflightSha256": "719d3a5ac5b97783f359bdd27e9aab45978ca45508e86acb89202fad446f71fe",
+  "schemaVersion": "product-truth-all-components-recipe-materialization-report/1.0.0",
+  "standingPolicyId": "pt-standing-no-paid-wave-20260727-v1",
+  "standingPolicySha256": "0ede5d62c3c28c70b5c9d1f97fc711d652ef3a1d91a4d0da50623a460ffe2696",
+  "startedAt": "2026-07-30T03:29:14.000Z",
+  "status": "APPLIED",
+  "verification": {
+    "consumerCutoverChanged": false,
+    "costOutcomes": [
+      "UNSOURCEABLE"
+    ],
+    "foreignKeyViolations": [],
+    "listingKeys": [
+      "walmart:1:FaisalX-3335",
+      "walmart:1:FaisalX-3336",
+      "walmart:1:FaisalX-3361",
+      "walmart:1:FaisalX-3362",
+      "walmart:1:FaisalX-3363",
+      "walmart:1:FaisalX-5317"
+    ],
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "recipeHashes": [
+      "85e4590b76be2c86ccfd3fba0f08bf933e16dcd57f58770492f57f8c84dcb1b5",
+      "7dedcc88a75e35b48b7c49bb15974e3e960cdfebc99bfe3d2b01cbd772f0117f",
+      "042516b28abdeefce2509c21bba6c93e218f7d0646d8780aa272055aa689f847",
+      "c1debb8cf3886e377c1c491b19a94c6acb24c4301723643aaa36f7eb93ae4848",
+      "c281e04b8746de762f3a381b3c3272371b96a61df6b4bee8adfe25f738f6b3e9",
+      "06a790ad70ac294bc3122e7e446dea7593f0f5964f54b68f9f482b83937cc405"
+    ]
+  }
+}

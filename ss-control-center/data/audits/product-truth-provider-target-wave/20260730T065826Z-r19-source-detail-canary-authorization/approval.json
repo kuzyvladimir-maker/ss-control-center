@@ -1,0 +1,45 @@
+{
+  "action": "EXECUTE_WAVE",
+  "approvalId": "pt-standing:3cd947d8be37ca91ed79:cf9276b0156c0577",
+  "approvedBy": "owner",
+  "balanceEvidence": [
+    {
+      "balanceUnits": 99465,
+      "evidenceSha256": "cf9276b0156c0577a0790ef27801a97a2065efd8d71eee171ef0cfaae0ea8855",
+      "observedAt": "2026-07-30T07:01:31.575Z",
+      "provider": "unwrangle",
+      "reserveFloor": 15000
+    }
+  ],
+  "expiresAt": "2026-07-30T07:11:46.512Z",
+  "issuedAt": "2026-07-30T07:01:46.512Z",
+  "meteredPermit": {
+    "approvalId": "pt-standing:3cd947d8be37ca91ed79:cf9276b0156c0577",
+    "approvedBy": "owner",
+    "expiresAt": "2026-07-30T07:11:46.512Z",
+    "issuedAt": "2026-07-30T07:01:46.512Z",
+    "providers": {
+      "oxylabs": {
+        "maxCalls": 5,
+        "maxUnits": 5,
+        "operations": [
+          "query"
+        ]
+      },
+      "unwrangle": {
+        "maxCalls": 10,
+        "maxUnits": 25,
+        "operations": [
+          "detail",
+          "search"
+        ]
+      }
+    },
+    "runId": "ptca-20260730t065826z-r19-source-detail-canary",
+    "version": 1
+  },
+  "planSha256": "3cd947d8be37ca91ed79d7eff7ff8e1461e27bc9fc63201d61277dc262b6fb5d",
+  "runId": "ptca-20260730t065826z-r19-source-detail-canary",
+  "schemaVersion": "product-truth-operational-approval/1.0.0",
+  "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+}

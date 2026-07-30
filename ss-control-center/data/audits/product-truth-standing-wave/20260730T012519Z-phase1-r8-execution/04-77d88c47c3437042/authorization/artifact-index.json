@@ -1,0 +1,21 @@
+{
+  "approvalSha256": "1cc7d362cfaa0263816689c4020848926a436dccb27f82c0557098a24924c8ef",
+  "authorizationSha256": "4ac192933a75b1fc7ab996491022e6b06450868ef183f59c2be4bd061be187f1",
+  "balanceEvidenceSha256": "3f8132bcb677bacf896861ea8b04b939fbeff7ccb3d56e79220f8849bb4c1065",
+  "createdAt": "2026-07-30T01:42:06.242Z",
+  "files": {
+    "approval": {
+      "name": "approval.json",
+      "sha256": "1cc7d362cfaa0263816689c4020848926a436dccb27f82c0557098a24924c8ef"
+    },
+    "authorization": {
+      "name": "authorization.json",
+      "sha256": "4ac192933a75b1fc7ab996491022e6b06450868ef183f59c2be4bd061be187f1"
+    }
+  },
+  "ownerActionRequired": false,
+  "planSha256": "c05c60217ad830ab1fa2285ffbc6db7de0150078f59fe4e8c6c2274294b5f3f0",
+  "runId": "ptsw-20260730t012519z-04",
+  "schemaVersion": "product-truth-standing-authorization-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

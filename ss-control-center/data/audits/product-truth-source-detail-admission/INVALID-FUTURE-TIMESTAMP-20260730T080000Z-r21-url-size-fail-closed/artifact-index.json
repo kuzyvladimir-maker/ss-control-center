@@ -1,0 +1,51 @@
+{
+  "artifacts": [
+    {
+      "file": "source-detail-admission.json",
+      "role": "source_detail_admission",
+      "sha256": "0cb484a2bc8f1b5f87679a3cb4269eef8f37f3c034ca8330b8a849a6b98f6d1a"
+    }
+  ],
+  "claims": {
+    "authorizesExecution": false,
+    "databaseWrites": 0,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "predictsProviderResults": false,
+    "providerCalls": 0,
+    "readOnlyInputs": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "admittedDependentListings": 68,
+    "admittedImmediateClosures": 68,
+    "admittedSearchObservations": 202,
+    "admittedTargets": 52,
+    "calibrationAdmittedTargets": 1013,
+    "crossTargetItemConflicts": 19,
+    "evaluatedSearchObservations": 35505,
+    "providerTargets": 3127,
+    "targetsWithMultipleCandidateItems": 60,
+    "targetsWithNoCandidate": 882
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "generatedAt": "2026-07-30T08:00:00.000Z",
+  "schemaVersion": "product-truth-source-detail-admission-artifact-index/1.1.0",
+  "source": {
+    "bridgeSnapshot": {
+      "capturedAt": "2026-07-30T07:22:35.000Z",
+      "schemaVersion": "product-truth-legacy-bridge-snapshot/1.10.0",
+      "sha256": "e2221c746f73dee5343286939a5c5cfcb8ed3c338c070648e27842acba52c832"
+    },
+    "componentAcquisitionScope": {
+      "generatedAt": "2026-07-30T07:23:14.000Z",
+      "schemaVersion": "product-truth-component-acquisition-scope/1.4.0",
+      "sha256": "157bcd9434d0af599454e45720a2ca7079dc83121f7cbd876957f528f2fdaa96"
+    },
+    "searchQueryCalibration": {
+      "generatedAt": "2026-07-30T07:45:00.000Z",
+      "schemaVersion": "product-truth-search-query-calibration/1.0.0",
+      "sha256": "4a9e0517a3fa9e955fbc0c5c198d2f79dabc22acc1ad17f4da10e1739af245df"
+    }
+  }
+}

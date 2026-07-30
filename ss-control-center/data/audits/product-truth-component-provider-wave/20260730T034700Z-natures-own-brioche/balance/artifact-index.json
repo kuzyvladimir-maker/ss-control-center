@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-07-30T03:48:32.691Z",
+  "files": {
+    "balanceEvidence": {
+      "name": "balance-evidence.json",
+      "sha256": "47ad61ed5aef162996e5c181e783245babf37b591dc72ed909fb6b31ec5eaae6"
+    },
+    "rawResponse": {
+      "name": "raw-response.json",
+      "sha256": "7d9e1e6f046465e68fcc5ca06520504654d6901e832750a9817234b1bab65770"
+    }
+  },
+  "meteredApprovalId": "pt-standing-balance:15a6f9f8bd399bbb4496c92e",
+  "meteredReceiptId": "mbr_40647b537a43986f2b7cfa67ac5110c47474f6b214d5f4d862b0aa6e3db7abe2",
+  "meteredReservationKey": "mpr_v1_e8800e716a8b74d959cdd2487856d1cf4d63b331c0a1ef258af384fb10dbe3fb",
+  "planSha256": "15a6f9f8bd399bbb4496c92e568f241dff74b69517971b8995c484a099bdf64c",
+  "providerCalls": 1,
+  "providerUnits": 2.5,
+  "retryCount": 0,
+  "runId": "ptca-20260730t034800z-natures-own-brioche",
+  "safety": {
+    "canonicalWrites": 0,
+    "consumerActivation": 0,
+    "delisting": 0,
+    "marketplaceWrites": 0,
+    "priceOrInventoryWrites": 0,
+    "procurementActions": 0
+  },
+  "schemaVersion": "product-truth-standing-balance-artifact-index/1.0.0",
+  "standingPolicySha256": "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0"
+}

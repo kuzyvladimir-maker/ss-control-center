@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    {
+      "file": "component-acquisition-scope.json",
+      "role": "component_acquisition_scope",
+      "sha256": "9eee9c8dd3db95ba9f78bdea8ac97c518e5a44d10a796889ceb55a3f9ddedfec"
+    }
+  ],
+  "claims": {
+    "authorizesExecution": false,
+    "createsAdditionalCatalog": false,
+    "databaseWrites": 0,
+    "existingCatalogScannedGlobally": true,
+    "legacyDonorLinkIsNotIdentityProof": true,
+    "marketplaceMutations": 0,
+    "oneResolvedComponentMayServeManyListings": true,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "readOnlySources": true,
+    "retailerFetches": 0
+  },
+  "counts": {
+    "acquisitionLaneCounts": [
+      {
+        "count": 7,
+        "lane": "EXISTING_CANONICAL_BINDING"
+      },
+      {
+        "count": 28,
+        "lane": "EXISTING_CATALOG_EXACT_CANDIDATE"
+      },
+      {
+        "count": 3142,
+        "lane": "PROVIDER_IDENTITY_ACQUISITION"
+      },
+      {
+        "count": 6,
+        "lane": "EXISTING_CATALOG_AMBIGUOUS"
+      },
+      {
+        "count": 5,
+        "lane": "CANONICAL_DONOR_CONFLICT"
+      },
+      {
+        "count": 203,
+        "lane": "TARGET_IDENTITY_RECOVERY_REQUIRED"
+      }
+    ],
+    "canonicalComponentUses": 5341,
+    "componentUses": 5878,
+    "denominatorListings": 5935,
+    "invalidComponentUses": 537,
+    "missingListings": 5123,
+    "missingListingsWithAllCanonicalTargets": 4043,
+    "missingListingsWithInvalidComponentGraph": 372,
+    "missingListingsWithoutComponents": 708,
+    "uniqueCanonicalTargets": 3391
+  },
+  "generatedAt": "2026-07-30T02:22:23.000Z",
+  "matcher": {
+    "implementationSha256": "2108b5af839ca1182191305f99196a3a3f1516211e0363691d36f30fae4ac8bb",
+    "releaseSha256": "027b3a089e6100f9f6ecb212e67e7f6931093f7c30be6aa73c6a0d3dbf6563c2",
+    "version": "canonical-product-match/1.2.1"
+  },
+  "projectedClosures": [
+    {
+      "fullyCoveredListings": 20,
+      "topTargets": 1
+    },
+    {
+      "fullyCoveredListings": 55,
+      "topTargets": 5
+    },
+    {
+      "fullyCoveredListings": 88,
+      "topTargets": 10
+    },
+    {
+      "fullyCoveredListings": 165,
+      "topTargets": 25
+    },
+    {
+      "fullyCoveredListings": 271,
+      "topTargets": 50
+    },
+    {
+      "fullyCoveredListings": 447,
+      "topTargets": 100
+    },
+    {
+      "fullyCoveredListings": 897,
+      "topTargets": 250
+    },
+    {
+      "fullyCoveredListings": 1436,
+      "topTargets": 500
+    },
+    {
+      "fullyCoveredListings": 2202,
+      "topTargets": 1000
+    },
+    {
+      "fullyCoveredListings": 2702,
+      "topTargets": 1500
+    },
+    {
+      "fullyCoveredListings": 4043,
+      "topTargets": 3391
+    }
+  ],
+  "schemaVersion": "product-truth-component-acquisition-scope-artifact-index/1.1.0",
+  "source": {
+    "bridgeSnapshot": {
+      "canonicalBindingCount": 379,
+      "capturedAt": "2026-07-29T15:14:01.000Z",
+      "donorCount": 8544,
+      "offerCount": 9287,
+      "schemaVersion": "product-truth-legacy-bridge-snapshot/1.10.0",
+      "sha256": "7c844d09a8d073b4e167bc1de1aae7c7b7ef048d87fc687b6f195e3546b71b6a",
+      "targetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003"
+    },
+    "recipeRepairScope": {
+      "generatedAt": "2026-07-30T00:48:04.000Z",
+      "missingListings": 5123,
+      "schemaVersion": "product-truth-recipe-repair-scope/1.0.0",
+      "sha256": "a672a84dca4bc4ae487b9551472c0f6fe094a507daf5d40ff0175399e18a7bfc"
+    }
+  }
+}

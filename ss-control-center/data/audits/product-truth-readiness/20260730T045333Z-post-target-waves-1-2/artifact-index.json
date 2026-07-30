@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    {
+      "byteLength": 7515315,
+      "mediaType": "application/json",
+      "path": "readiness-report.json",
+      "sha256": "af4677c1cee6d01cba4010a5d359817228e1a35de1878df5d4d248df504f5893"
+    }
+  ],
+  "authoritativeManifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "readinessPayloadSha256": "d287bfbeb22a53aa543d3f9583a3d91df015b2231abe817e66e1359656a9666e",
+  "schemaVersion": "product-truth-consumer-readiness-artifact-index/1.0.0"
+}

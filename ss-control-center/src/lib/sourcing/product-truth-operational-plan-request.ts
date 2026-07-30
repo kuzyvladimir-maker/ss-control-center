@@ -8,6 +8,8 @@ import {
 import type { Phase1ScopeManifest } from "./phase1-scope-manifest";
 
 export const PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_VERSION =
+  "product-truth-operational-plan-request/1.2.0" as const;
+export const PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_PREVIOUS_VERSION =
   "product-truth-operational-plan-request/1.1.0" as const;
 export const PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION =
   "product-truth-operational-plan-request/1.0.0" as const;
@@ -18,11 +20,18 @@ export interface ProductTruthOperationalProviderAcquisitionRequest {
   canonicalIdentityHash: string;
   queryVersion: string;
   query: string;
+  sourceDetailAdmissionSha256?: string;
+  sourceDetailCandidate?: {
+    retailer: "walmart" | "target";
+    retailerProductId: string;
+    productUrl: string;
+  };
 }
 
 export interface ProductTruthOperationalPlanRequest {
   schemaVersion:
     | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_VERSION
+    | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_PREVIOUS_VERSION
     | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION;
   runId: string;
   mode: ProductTruthOperationalMode;
@@ -75,12 +84,21 @@ function integer(value: unknown, label: string): number {
   return Number(value);
 }
 
+function sha256(value: unknown, label: string): string {
+  const result = text(value, label);
+  if (!/^[a-f0-9]{64}$/.test(result)) fail(`${label} must be SHA-256`);
+  return result;
+}
+
 export function parseProductTruthOperationalPlanRequest(
   value: unknown,
 ): ProductTruthOperationalPlanRequest {
   const input = record(value, "request");
   const isCurrent =
     input.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_VERSION;
+  const isPrevious =
+    input.schemaVersion
+      === PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_PREVIOUS_VERSION;
   const isLegacy =
     input.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION;
   exactKeys(input, [
@@ -90,15 +108,16 @@ export function parseProductTruthOperationalPlanRequest(
     "createdAt",
     "expiresAt",
     "listingKeys",
-    ...(isCurrent ? ["providerAcquisitionTargets"] : []),
+    ...(isCurrent || isPrevious ? ["providerAcquisitionTargets"] : []),
     "sourcePolicy",
     "providerCeilings",
     "verificationPolicy",
     "maxWallClockMs",
   ], "request");
-  if (!isCurrent && !isLegacy) {
+  if (!isCurrent && !isPrevious && !isLegacy) {
     fail(
       `schemaVersion must be ${PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_VERSION}`
+      + `, ${PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_PREVIOUS_VERSION}`
       + ` or ${PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION}`,
     );
   }
@@ -107,10 +126,13 @@ export function parseProductTruthOperationalPlanRequest(
     fail("listingKeys must be a string array");
   }
   if (!Array.isArray(input.providerCeilings)) fail("providerCeilings must be an array");
-  if (isCurrent && !Array.isArray(input.providerAcquisitionTargets)) {
+  if (
+    (isCurrent || isPrevious)
+    && !Array.isArray(input.providerAcquisitionTargets)
+  ) {
     fail("providerAcquisitionTargets must be an array");
   }
-  const providerAcquisitionTargets = isCurrent
+  const providerAcquisitionTargets = isCurrent || isPrevious
     ? (input.providerAcquisitionTargets as unknown[]).map((raw, index) => {
         const target = record(raw, `providerAcquisitionTargets[${index}]`);
         exactKeys(target, [
@@ -119,7 +141,34 @@ export function parseProductTruthOperationalPlanRequest(
           "canonicalIdentityHash",
           "queryVersion",
           "query",
+          ...(isCurrent
+            ? [
+              "sourceDetailAdmissionSha256",
+              "sourceDetailCandidate",
+            ]
+            : []),
         ], `providerAcquisitionTargets[${index}]`);
+        const sourceDetailCandidate = isCurrent
+          ? record(
+            target.sourceDetailCandidate,
+            `providerAcquisitionTargets[${index}].sourceDetailCandidate`,
+          )
+          : null;
+        if (sourceDetailCandidate) {
+          exactKeys(sourceDetailCandidate, [
+            "retailer",
+            "retailerProductId",
+            "productUrl",
+          ], `providerAcquisitionTargets[${index}].sourceDetailCandidate`);
+          if (
+            sourceDetailCandidate.retailer !== "walmart"
+            && sourceDetailCandidate.retailer !== "target"
+          ) {
+            fail(
+              `providerAcquisitionTargets[${index}].sourceDetailCandidate.retailer must be walmart or target`,
+            );
+          }
+        }
         return {
           listingKey: text(target.listingKey, `providerAcquisitionTargets[${index}].listingKey`),
           canonicalVariantId: text(
@@ -135,6 +184,27 @@ export function parseProductTruthOperationalPlanRequest(
             `providerAcquisitionTargets[${index}].queryVersion`,
           ),
           query: text(target.query, `providerAcquisitionTargets[${index}].query`),
+          ...(sourceDetailCandidate
+            ? {
+              sourceDetailAdmissionSha256: sha256(
+                target.sourceDetailAdmissionSha256,
+                `providerAcquisitionTargets[${index}].sourceDetailAdmissionSha256`,
+              ),
+              sourceDetailCandidate: {
+                retailer: sourceDetailCandidate.retailer as
+                  | "walmart"
+                  | "target",
+                retailerProductId: text(
+                  sourceDetailCandidate.retailerProductId,
+                  `providerAcquisitionTargets[${index}].sourceDetailCandidate.retailerProductId`,
+                ),
+                productUrl: text(
+                  sourceDetailCandidate.productUrl,
+                  `providerAcquisitionTargets[${index}].sourceDetailCandidate.productUrl`,
+                ),
+              },
+            }
+            : {}),
         };
       })
     : undefined;
@@ -144,7 +214,9 @@ export function parseProductTruthOperationalPlanRequest(
   return {
     schemaVersion: isCurrent
       ? PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_VERSION
-      : PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION,
+      : isPrevious
+        ? PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_PREVIOUS_VERSION
+        : PRODUCT_TRUTH_OPERATIONAL_PLAN_REQUEST_LEGACY_VERSION,
     runId: text(input.runId, "runId"),
     mode: input.mode,
     createdAt: text(input.createdAt, "createdAt"),
