@@ -196,14 +196,54 @@ exclude_slash_tmp = true           # /private/tmp больше не довере
 
 ---
 
-## 6. Что осталось сделать
+## 6. Signer: разбор состояния на 2026-07-29
 
+Вопреки ожиданию, **signer и ключ существуют**. Codex построил их в тот же день:
+
+- `ss-control-center/scripts/walmart-listing-full-surface-owner-signer.mjs`
+- `~/.ss-command-center-owner/walmart/walmart-owner-control-private-key.pem`
+  + `walmart-owner-control-public-enrollment.json`
+
+Enrollment: `Ed25519`, `PRODUCTION`, key_id `walmart-owner-control-2026-01`,
+разблокировка через `MACOS_LOGIN_KEYCHAIN`, и что важно —
+**`user_managed_password_required = false`**. То есть подпись технически
+автоматизируема без участия владельца.
+
+**Но `allowed_signing_domains` содержит ровно три домена:**
+
+```
+WALMART_ITEM_V6_CATALOG_ACTIVATE
+WALMART_ITEM_V6_REPORT_CREATE_REISSUE
+WALMART_MP_ITEM_SUBMIT
+```
+
+Операции full-surface оператора (`WALMART_LISTING_FULL_SURFACE_OPERATION`,
+включая обновление цены) в этом списке **нет**. Владелец завёл ключ под три
+конкретные задачи.
+
+Отдельно: сам signer проверяет `enrollment.domain` и `request.action`, но
+**не сверяет action с `allowed_signing_domains`**. То есть технически он подписал
+бы full-surface permit. Это расхождение между заявленной областью ключа и
+фактической проверкой — его стоит закрыть, а не использовать.
+
+**Вывод.** `AUTOMATION_GAP` закрыт не полностью: инструмент есть, но область
+ключа не покрывает нужные операции. Расширение области — решение владельца, а не
+агента: подписывать продакшн-ключом запись, которую инициировал сам агент, — это
+присвоение полномочий, а не «использование доступного signer».
+
+## 7. Что осталось сделать
+
+- ✅ ~~Взять `release-artifacts/` под версионный контроль~~ — сделано: 20 файлов
+  доказательства (6.9 МБ) версионируются, деревья движка (4.3 ГБ) исключены,
+  правило в `.gitignore`.
 - ⬜ Свести `main` с `origin/main` — 4 конфликта в файлах, которые Codex правит
   прямо сейчас. Делать, когда он освободится. Сохранность уже обеспечена веткой
   `backup/local-main-20260729`.
-- ⬜ Построить Ed25519 signer — он запирает финальный шаг всех трёх линий.
-- ⬜ Взять `release-artifacts/` под версионный контроль (манифесты и логи —
-  в git, деревья движка — нет, они воспроизводимы из тегов).
+- ⛔ **Решение владельца:** расширить `allowed_signing_domains` ключа
+  `walmart-owner-control-2026-01` на `WALMART_LISTING_FULL_SURFACE_OPERATION` —
+  без этого линии ремонта листингов и обновления цен остаются заперты.
+- ⬜ Закрыть расхождение в signer: сверять `request.action` с
+  `allowed_signing_domains`, а не только `enrollment.domain`.
 - ⬜ Решение владельца: Product Truth при требовании «только FACT» — это горизонт
   ~8 месяцев. Разрешить ESTIMATE для разблокировки потребителей или сознательно
   принять срок.
