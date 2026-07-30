@@ -131,7 +131,7 @@ function matcherCodes(scope: ProductTruthLegacyBridgeScopePlan): Set<string> {
   );
 }
 
-function primaryLane(
+export function classifyProductTruthQuarantineLane(
   scope: ProductTruthLegacyBridgeScopePlan,
 ): ProductTruthQuarantineLane {
   const blockers = blockerCodes(scope);
@@ -271,7 +271,7 @@ export function buildProductTruthQuarantinePartition(input: {
     PRODUCT_TRUTH_QUARANTINE_LANES.map((lane) => [lane, []]),
   );
   for (const scope of quarantined) {
-    laneMap.get(primaryLane(scope))!.push(scope.listingKey);
+    laneMap.get(classifyProductTruthQuarantineLane(scope))!.push(scope.listingKey);
   }
   const lanes = PRODUCT_TRUTH_QUARANTINE_LANES.map((lane): LaneRow => ({
     lane,
