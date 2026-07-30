@@ -24,7 +24,7 @@ export const PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION =
 export const PRODUCT_TRUTH_OPERATIONAL_APPROVAL_VERSION =
   "product-truth-operational-approval/1.0.0" as const;
 export const PRODUCT_TRUTH_OPERATIONAL_RESULT_VERSION =
-  "product-truth-operational-result/1.0.0" as const;
+  "product-truth-operational-result/1.1.0" as const;
 
 export const PRODUCT_TRUTH_OPERATIONAL_FIELDS = [
   "identity",

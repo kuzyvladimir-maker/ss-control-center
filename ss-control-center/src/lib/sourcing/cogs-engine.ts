@@ -64,6 +64,10 @@ import {
 import {
   productTruthOperationalSha256,
 } from "@/lib/sourcing/product-truth-operational-run-contract";
+import {
+  providerYieldDiagnosticsFromError,
+  type ProductTruthProviderYieldDiagnostics,
+} from "@/lib/sourcing/product-truth-provider-yield-diagnostics";
 import { isExactProductContentCapture } from "@/lib/sourcing/product-content-capture";
 import {
   currentMeteredRunPermit,
@@ -785,6 +789,8 @@ export type CostResult = {
   logs: string[]; // human-readable per-SKU trace (CLI prints; cron ignores)
   identity?: any;
   parts?: any[];
+  /** Bounded, secret-free evidence from provider calls made by this attempt. */
+  acquisitionDiagnostics?: ProductTruthProviderYieldDiagnostics[];
 };
 
 export const COST_SOURCE_POLICY_VERSION =
@@ -955,6 +961,7 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
   }
   const MIN_CONF = opts.minConf ?? 0.7;
   const logs: string[] = [];
+  const acquisitionDiagnostics: ProductTruthProviderYieldDiagnostics[] = [];
   const log = (s: string) => logs.push(s);
   let listingScopeEvidence: {
     manifestSha256: string;
@@ -1189,16 +1196,19 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       );
       let res: Awaited<ReturnType<typeof enrichTarget>> | null = null;
       if (!lookup.hit) {
-        res = await enrichOnce(db, {
-          target: t.query,
-          brand: t.brandTok || null,
-          zip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
-          matchSpec: { brandToks: t.brandToks?.length ? t.brandToks : (t.brandTok ? [t.brandTok] : []), tokens: t.tokens, sizeAmount: t.sizeAmount },
-          canonicalProduct: t.canonicalProduct,
-          unwrangleRetailers: [...sourcePolicy.unwrangleRetailers],
-          openClawRetailers: [...sourcePolicy.openClawRetailers],
-          allowNonGrocery: true,
-        });
+        const enrichmentResult: Awaited<ReturnType<typeof enrichTarget>> =
+          await enrichOnce(db, {
+            target: t.query,
+            brand: t.brandTok || null,
+            zip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
+            matchSpec: { brandToks: t.brandToks?.length ? t.brandToks : (t.brandTok ? [t.brandTok] : []), tokens: t.tokens, sizeAmount: t.sizeAmount },
+            canonicalProduct: t.canonicalProduct,
+            unwrangleRetailers: [...sourcePolicy.unwrangleRetailers],
+            openClawRetailers: [...sourcePolicy.openClawRetailers],
+            allowNonGrocery: true,
+          });
+        res = enrichmentResult;
+        acquisitionDiagnostics.push(enrichmentResult.diagnostics);
         lookup = await cheapestCostForTarget(
           db,
           costTarget,
@@ -1499,7 +1509,21 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         ],
       };
       log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyEstimate ? "  [typed estimate]" : ""}${needsReview ? "  [needsReview]" : ""}`);
-      result = { sku, status: "costed", cached, total, perUnit: perUnitStore, packSize, needsReview: !!needsReview, methods: Array.from(new Set(parts.map((p) => p.method))), note: noteParts, logs, identity, parts };
+      result = {
+        sku,
+        status: "costed",
+        cached,
+        total,
+        perUnit: perUnitStore,
+        packSize,
+        needsReview: !!needsReview,
+        methods: Array.from(new Set(parts.map((p) => p.method))),
+        note: noteParts,
+        logs,
+        identity,
+        parts,
+        acquisitionDiagnostics,
+      };
     } else {
       log(`  → UNSOURCEABLE: no eligible fresh local first-party evidence — review before any delist decision`);
       const costEvidence = {
@@ -1556,7 +1580,15 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           runProvenance?.approvalId ?? null, now, now,
         ],
       };
-      result = { sku, status: "no-price", cached, logs, identity, parts };
+      result = {
+        sku,
+        status: "no-price",
+        cached,
+        logs,
+        identity,
+        parts,
+        acquisitionDiagnostics,
+      };
     }
 
     const authoritativeEvidence = parts.map((part) => {
@@ -1738,6 +1770,21 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
     // misses. Preserve them so callers cannot fall through to another paid
     // source or mark a budget-denied job complete.
     if (isMeteredProviderControlError(e)) throw e;
-    return { sku, status: "error", error: String(e?.message).slice(0, 200), logs: [`💥 ${sku}: ${String(e?.message).slice(0, 120)}`] };
+    const failureDiagnostics = providerYieldDiagnosticsFromError(e);
+    if (
+      failureDiagnostics
+      && !acquisitionDiagnostics.some(
+        (diagnostic) => diagnostic.diagnosticsSha256 === failureDiagnostics.diagnosticsSha256,
+      )
+    ) {
+      acquisitionDiagnostics.push(failureDiagnostics);
+    }
+    return {
+      sku,
+      status: "error",
+      error: String(e?.message).slice(0, 200),
+      logs: [`💥 ${sku}: ${String(e?.message).slice(0, 120)}`],
+      acquisitionDiagnostics,
+    };
   }
 }

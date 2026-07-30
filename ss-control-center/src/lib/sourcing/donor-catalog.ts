@@ -46,6 +46,12 @@ import {
   EXACT_COMPLETE_CONTENT_CAPTURE,
   EXACT_FIELD_SNAPSHOT_CAPTURE,
 } from "./product-content-capture";
+import {
+  buildProductTruthProviderYieldDiagnostics,
+  ProductTruthProviderYieldPersistenceError,
+  type ProductTruthProviderAdmissionDecision,
+  type ProductTruthProviderYieldDiagnostics,
+} from "./product-truth-provider-yield-diagnostics";
 
 type SqlExecutor = Pick<Client, "execute">;
 
@@ -2711,6 +2717,7 @@ export interface EnrichTargetResult {
     status: "completed" | "content_only" | "unavailable" | "failed";
     detail?: string;
   }[];
+  diagnostics: ProductTruthProviderYieldDiagnostics;
 }
 
 // Enrich the catalog for one target (brand or free-text query). Searches only the
@@ -2763,6 +2770,19 @@ export async function enrichTarget(
   const retailersHit: string[] = [];
   const createdProductIds: string[] = [];
   const sourceAttempts: EnrichTargetResult["sourceAttempts"] = [];
+  const diagnosticSources: Array<{
+    source: string;
+    status: EnrichTargetResult["sourceAttempts"][number]["status"];
+    detail?: string;
+    offers: ScoredOffer[];
+  }> = [];
+  const recordSourceAttempt = (
+    attempt: EnrichTargetResult["sourceAttempts"][number],
+    offers: ScoredOffer[] = [],
+  ) => {
+    sourceAttempts.push(attempt);
+    diagnosticSources.push({ ...attempt, offers });
+  };
   let productsCreated = 0, offersUpserted = 0, rejected = 0;
   let creditsRemaining: number | null = null;
 
@@ -2777,25 +2797,28 @@ export async function enrichTarget(
   let walmartCovered = false;
   try {
     const ox = await oxylabsWalmartSearch(opts.target);
+    const scored = ox.offers.map((o) => scoreOffer(o, cp));
     if (ox.trialExhausted) {
-      sourceAttempts.push({ source: "oxylabs:walmart", status: "unavailable", detail: "trial exhausted" });
+      recordSourceAttempt(
+        { source: "oxylabs:walmart", status: "unavailable", detail: "trial exhausted" },
+        scored,
+      );
     } else if (ox.localityProven) {
-      sourceAttempts.push({
+      recordSourceAttempt({
         source: "oxylabs:walmart",
         status: "completed",
         detail: `ZIP_SCOPED:${ox.responseZip}`,
-      });
+      }, scored);
     } else {
-      sourceAttempts.push({
+      recordSourceAttempt({
         source: "oxylabs:walmart",
         status: "content_only",
         detail: ox.responseZip
           ? `LOCALITY_PROOF_MISMATCH: requested 33765, response ${ox.responseZip}`
           : "LOCALITY_PROOF_UNAVAILABLE: response did not confirm ZIP 33765",
-      });
+      }, scored);
     }
-    if (!ox.trialExhausted && ox.offers.length) {
-      const scored = ox.offers.map((o) => scoreOffer(o, cp));
+    if (!ox.trialExhausted && scored.length) {
       retailersHit.push("walmart");
       batches.push({ offers: scored });
       // Covered ONLY if Walmart returned a TIGHTLY-MATCHING accepted 1P offer. A 3P-only
@@ -2805,7 +2828,11 @@ export async function enrichTarget(
     }
   } catch (error) {
     throwIfMeteredProviderControlError(error);
-    sourceAttempts.push({ source: "oxylabs:walmart", status: "failed", detail: String(error).slice(0, 160) });
+    recordSourceAttempt({
+      source: "oxylabs:walmart",
+      status: "failed",
+      detail: String(error).slice(0, 160),
+    });
     /* Oxylabs unavailable — escalation below */
   }
   // ESCALATION — only when Walmart 1P MISSED (cheapest-first, stop-on-hit). This is
@@ -2819,17 +2846,20 @@ export async function enrichTarget(
     const runUnwrangle = async (r: "target" | "samsclub" | "costco") => {
       try {
         const uw = await unwrangleSearch(r, opts.target);
+        const scored = uw.offers.map((o) => scoreOffer(o, cp));
         if (uw.trialExhausted) {
-          sourceAttempts.push({ source: `unwrangle:${r}`, status: "unavailable", detail: "trial exhausted" });
+          recordSourceAttempt(
+            { source: `unwrangle:${r}`, status: "unavailable", detail: "trial exhausted" },
+            scored,
+          );
         } else {
-          sourceAttempts.push({
+          recordSourceAttempt({
             source: `unwrangle:${r}`,
             status: "content_only",
             detail: "LOCALITY_PROOF_UNAVAILABLE: retailer search is not ZIP/store scoped",
-          });
+          }, scored);
           if (uw.creditsRemaining != null) creditsRemaining = uw.creditsRemaining;
-          if (uw.offers.length) {
-            const scored = uw.offers.map((o) => scoreOffer(o, cp));
+          if (scored.length) {
             if (!retailersHit.includes(r)) retailersHit.push(r);
             batches.push({ offers: scored });
             if (strictHit(scored)) escalationHit = true;
@@ -2837,7 +2867,11 @@ export async function enrichTarget(
         }
       } catch (error) {
         throwIfMeteredProviderControlError(error);
-        sourceAttempts.push({ source: `unwrangle:${r}`, status: "failed", detail: String(error).slice(0, 160) });
+        recordSourceAttempt({
+          source: `unwrangle:${r}`,
+          status: "failed",
+          detail: String(error).slice(0, 160),
+        });
         /* skip this retailer on source error */
       }
     };
@@ -2849,18 +2883,37 @@ export async function enrichTarget(
       for (const r of opts.openClawRetailers ?? []) {
         try {
           const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
-          if (oc.trialExhausted) sourceAttempts.push({ source: `openclaw:${r}`, status: "unavailable", detail: "source unavailable" });
-          else sourceAttempts.push({ source: `openclaw:${r}`, status: "completed" });
-          if (!oc.trialExhausted && oc.offers.length) { const scored = oc.offers.map((o) => scoreOffer(o, cp)); if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: scored }); if (strictHit(scored)) escalationHit = true; }
+          const scored = oc.offers.map((o) => scoreOffer(o, cp));
+          if (oc.trialExhausted) {
+            recordSourceAttempt(
+              { source: `openclaw:${r}`, status: "unavailable", detail: "source unavailable" },
+              scored,
+            );
+          } else {
+            recordSourceAttempt({ source: `openclaw:${r}`, status: "completed" }, scored);
+          }
+          if (!oc.trialExhausted && scored.length) {
+            if (!retailersHit.includes(r)) retailersHit.push(r);
+            batches.push({ offers: scored });
+            if (strictHit(scored)) escalationHit = true;
+          }
         } catch (error) {
           throwIfMeteredProviderControlError(error);
-          sourceAttempts.push({ source: `openclaw:${r}`, status: "failed", detail: String(error).slice(0, 160) });
+          recordSourceAttempt({
+            source: `openclaw:${r}`,
+            status: "failed",
+            detail: String(error).slice(0, 160),
+          });
           /* skip this source on error */
         }
       }
     } else if (!escalationHit) {
       for (const r of opts.openClawRetailers ?? []) {
-        sourceAttempts.push({ source: `openclaw:${r}`, status: "unavailable", detail: "source disabled" });
+        recordSourceAttempt({
+          source: `openclaw:${r}`,
+          status: "unavailable",
+          detail: "source disabled",
+        });
       }
     }
     // Tier 4: Sam's / Costco (Unwrangle, 10 credits EACH) — only if nothing cheaper hit.
@@ -2870,22 +2923,40 @@ export async function enrichTarget(
       for (const r of opts.oxylabsRetailers ?? []) {
         try {
           const ox = await oxylabsSearch(r, opts.target);
-          if (ox.trialExhausted) sourceAttempts.push({ source: `oxylabs:${r}`, status: "unavailable", detail: "trial exhausted" });
-          else sourceAttempts.push({
-            source: `oxylabs:${r}`,
-            status: "content_only",
-            detail: "LOCALITY_PROOF_UNAVAILABLE: retailer search is not ZIP/store scoped",
-          });
-          if (!ox.trialExhausted && ox.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); }
+          const scored = ox.offers.map((o) => scoreOffer(o, cp));
+          if (ox.trialExhausted) {
+            recordSourceAttempt(
+              { source: `oxylabs:${r}`, status: "unavailable", detail: "trial exhausted" },
+              scored,
+            );
+          } else {
+            recordSourceAttempt({
+              source: `oxylabs:${r}`,
+              status: "content_only",
+              detail: "LOCALITY_PROOF_UNAVAILABLE: retailer search is not ZIP/store scoped",
+            }, scored);
+          }
+          if (!ox.trialExhausted && scored.length) {
+            if (!retailersHit.includes(r)) retailersHit.push(r);
+            batches.push({ offers: scored });
+          }
         } catch (error) {
           throwIfMeteredProviderControlError(error);
-          sourceAttempts.push({ source: `oxylabs:${r}`, status: "failed", detail: String(error).slice(0, 160) });
+          recordSourceAttempt({
+            source: `oxylabs:${r}`,
+            status: "failed",
+            detail: String(error).slice(0, 160),
+          });
           /* skip this source on error */
         }
       }
     } else if (!escalationHit && (opts.oxylabsRetailers ?? []).length) {
       for (const r of opts.oxylabsRetailers ?? []) {
-        sourceAttempts.push({ source: `oxylabs:${r}`, status: "unavailable", detail: "source disabled" });
+        recordSourceAttempt({
+          source: `oxylabs:${r}`,
+          status: "unavailable",
+          detail: "source disabled",
+        });
       }
     }
   }
@@ -2894,15 +2965,43 @@ export async function enrichTarget(
   // tier-2 batched LLM grocery judge (1 cheap Haiku call). Only survivors are
   // written — keeps books / batteries / laundry out of the catalog.
   const candidates: ScoredOffer[] = [];
+  const admissionDecisions = new Map<
+    ScoredOffer,
+    ProductTruthProviderAdmissionDecision
+  >();
   for (const b of batches) for (const o of b.offers) {
-    if (!o.accepted) { rejected++; continue; }
-    if (!o.retailerProductId) continue;
+    if (!o.accepted) {
+      admissionDecisions.set(o, { verdict: "REJECT", reasonCode: "SCORE_REJECTED" });
+      rejected++;
+      continue;
+    }
+    if (!o.retailerProductId) {
+      admissionDecisions.set(o, {
+        verdict: "REJECT",
+        reasonCode: "RETAILER_PRODUCT_ID_MISSING",
+      });
+      continue;
+    }
     // Supermarkets (Walmart/Target): single retail unit only — no 2/4/6-pack bundles.
     // Warehouse clubs (Costco/Sam's/BJ's/Restaurant Depot): their native bulk format
     // IS a valid purchase unit (a 12-count box, a #10 can) and a real sourcing lever,
     // so we keep it even when packSizeSeen > 1.
-    if (!o.isBaseUnit && !CLUB_RETAILERS.has(o.retailer)) { rejected++; continue; }
-    if (!opts.allowNonGrocery && looksNonGrocery(o.title)) { rejected++; continue; }
+    if (!o.isBaseUnit && !CLUB_RETAILERS.has(o.retailer)) {
+      admissionDecisions.set(o, {
+        verdict: "REJECT",
+        reasonCode: "NON_BASE_UNIT_NON_CLUB",
+      });
+      rejected++;
+      continue;
+    }
+    if (!opts.allowNonGrocery && looksNonGrocery(o.title)) {
+      admissionDecisions.set(o, {
+        verdict: "REJECT",
+        reasonCode: "NON_GROCERY_DETERMINISTIC",
+      });
+      rejected++;
+      continue;
+    }
     candidates.push(o);
   }
   // Non-grocery allowed (household/cleaning resale niche) → skip the grocery judge; the
@@ -2911,24 +3010,74 @@ export async function enrichTarget(
   if (!opts.allowNonGrocery) {
     const verdicts = await classifyGroceryTitles(candidates.map((o) => o.title || ""));
     survivors = candidates.filter((_, i) => verdicts[i]);
+    candidates.forEach((candidate, index) => {
+      admissionDecisions.set(candidate, verdicts[index]
+        ? { verdict: "ADMIT", reasonCode: "ADMITTED" }
+        : { verdict: "REJECT", reasonCode: "NON_GROCERY_CLASSIFIER" });
+    });
+  } else {
+    candidates.forEach((candidate) => {
+      admissionDecisions.set(candidate, { verdict: "ADMIT", reasonCode: "ADMITTED" });
+    });
   }
   rejected += candidates.length - survivors.length;
 
-  for (const o of survivors) {
-    if (["unwrangle", "bluecart", "oxylabs", "oxylabs-google"].includes(o.sourceApi)) {
-      if (!o.meteredReceiptId || !o.meteredRunId || !o.meteredApprovalId) {
-        throw new Error(`METERED_SOURCE_RECEIPT_REQUIRED: ${o.sourceApi}`);
+  const diagnostics = buildProductTruthProviderYieldDiagnostics({
+    query: opts.target,
+    evaluatedAt: evaluationNow,
+    target: cp,
+    sources: diagnosticSources.map((source) => ({
+      source: source.source,
+      status: source.status,
+      detail: source.detail,
+      candidates: source.offers.map((offer) => {
+        const admission = admissionDecisions.get(offer)
+          ?? (
+            source.status === "unavailable" || source.status === "failed"
+              ? { verdict: "REJECT" as const, reasonCode: "SOURCE_UNAVAILABLE" as const }
+              : null
+          );
+        if (!admission) {
+          throw new Error(`PROVIDER_YIELD_DIAGNOSTIC_ADMISSION_MISSING:${source.source}`);
+        }
+        return { offer, admission };
+      }),
+    })),
+  });
+
+  try {
+    for (const o of survivors) {
+      if (["unwrangle", "bluecart", "oxylabs", "oxylabs-google"].includes(o.sourceApi)) {
+        if (!o.meteredReceiptId || !o.meteredRunId || !o.meteredApprovalId) {
+          throw new Error(`METERED_SOURCE_RECEIPT_REQUIRED: ${o.sourceApi}`);
+        }
       }
+      const persisted = await persistScoredDonorOffer(db, o, cp, now);
+      if (persisted.productCreated) {
+        productsCreated++;
+        createdProductIds.push(persisted.donorProductId);
+      }
+      offersUpserted++;
     }
-    const persisted = await persistScoredDonorOffer(db, o, cp, now);
-    if (persisted.productCreated) {
-      productsCreated++;
-      createdProductIds.push(persisted.donorProductId);
-    }
-    offersUpserted++;
+  } catch (error) {
+    throw new ProductTruthProviderYieldPersistenceError(
+      "PROVIDER_YIELD_PERSISTENCE_FAILED",
+      diagnostics,
+      error,
+    );
   }
 
-  return { query: opts.target, retailersHit, productsCreated, offersUpserted, rejected, creditsRemaining, createdProductIds, sourceAttempts };
+  return {
+    query: opts.target,
+    retailersHit,
+    productsCreated,
+    offersUpserted,
+    rejected,
+    creditsRemaining,
+    createdProductIds,
+    sourceAttempts,
+    diagnostics,
+  };
 }
 
 // Roll the cheapest CLEAN first-party DIRECT offer up to the product (bestPrice +

@@ -43,6 +43,9 @@ import {
 import type { ProductTruthSnapshot } from "../product-truth-read-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "../product-truth-read-contract-version";
 import {
+  buildProductTruthProviderYieldDiagnostics,
+} from "../product-truth-provider-yield-diagnostics";
+import {
   CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   CANONICAL_PRODUCT_MATCHER_VERSION,
@@ -494,6 +497,20 @@ function costResult(target: ProductTruthOperationalTarget): CostResult {
     needsReview: false,
     methods: ["exact"],
     logs: ["offline fake adapter"],
+    acquisitionDiagnostics: [buildProductTruthProviderYieldDiagnostics({
+      query: target.sku,
+      evaluatedAt: NOW,
+      target: {
+        brand: "Offline",
+        product_line: "Fixture",
+        size: "1 count",
+      },
+      sources: [{
+        source: "offline:fixture",
+        status: "completed",
+        candidates: [],
+      }],
+    })],
   };
 }
 
@@ -688,6 +705,7 @@ test("incomplete targets execute sequentially and atomically close exactly one a
     const terminal = await db.execute(
       `SELECT item."listingKey", item."status" AS itemStatus,
               item."attempts" AS itemAttempts, item."leaseToken" AS itemLease,
+              item."resultJson" AS resultJson,
               job."status" AS queueStatus, job."attempts" AS queueAttempts,
               job."leaseToken" AS queueLease
        FROM "ProductTruthOperationalRunItem" item
@@ -703,6 +721,13 @@ test("incomplete targets execute sequentially and atomically close exactly one a
       assert.equal(row.queueStatus, "done");
       assert.equal(Number(row.queueAttempts), 1);
       assert.equal(row.queueLease, null);
+      const itemResult = JSON.parse(String(row.resultJson));
+      assert.equal(itemResult.schemaVersion, "product-truth-operational-item-result/1.1.0");
+      assert.equal(itemResult.providerYieldDiagnostics.length, 1);
+      assert.match(
+        itemResult.providerYieldDiagnostics[0].diagnosticsSha256,
+        /^[a-f0-9]{64}$/,
+      );
     }
   } finally {
     await db.close();

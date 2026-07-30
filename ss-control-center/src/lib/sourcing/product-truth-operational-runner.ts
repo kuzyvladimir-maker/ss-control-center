@@ -65,9 +65,13 @@ import {
   MeteredProviderReplayError,
   MeteredProviderSettlementFailureError,
 } from "./metered-provider-call";
+import {
+  assertProductTruthProviderYieldDiagnostics,
+  type ProductTruthProviderYieldDiagnostics,
+} from "./product-truth-provider-yield-diagnostics";
 
 export const PRODUCT_TRUTH_OPERATIONAL_RUNNER_VERSION =
-  "product-truth-operational-runner/1.0.0" as const;
+  "product-truth-operational-runner/1.1.0" as const;
 export const PRODUCT_TRUTH_OPERATIONAL_REPORT_VERSION =
   "product-truth-operational-report/1.0.0" as const;
 
@@ -110,7 +114,7 @@ export interface ProductTruthOperationalExecutionAdapter {
 }
 
 export interface ProductTruthOperationalItemResult {
-  schemaVersion: "product-truth-operational-item-result/1.0.0";
+  schemaVersion: "product-truth-operational-item-result/1.1.0";
   listingKey: string;
   target: {
     channel: "amazon" | "walmart";
@@ -139,6 +143,7 @@ export interface ProductTruthOperationalItemResult {
     stateStatus: string | null;
     reason: string;
   }>;
+  providerYieldDiagnostics: ProductTruthProviderYieldDiagnostics[];
   metered: ProductTruthOperationalLedgerSnapshot;
 }
 
@@ -260,6 +265,21 @@ function donorResults(
   }));
 }
 
+function safeProviderYieldDiagnostics(
+  cost: CostResult | null,
+): ProductTruthProviderYieldDiagnostics[] {
+  const diagnostics = cost?.acquisitionDiagnostics ?? [];
+  const seen = new Set<string>();
+  const result: ProductTruthProviderYieldDiagnostics[] = [];
+  for (const diagnostic of diagnostics) {
+    const validated = assertProductTruthProviderYieldDiagnostics(diagnostic);
+    if (seen.has(validated.diagnosticsSha256)) continue;
+    seen.add(validated.diagnosticsSha256);
+    result.push(validated);
+  }
+  return result;
+}
+
 function buildItemResult(input: {
   target: ProductTruthOperationalTarget;
   assessment?: ProductTruthOperationalTruthAssessment | null;
@@ -272,7 +292,7 @@ function buildItemResult(input: {
 }): ProductTruthOperationalItemResult {
   const assessment = input.assessment ?? null;
   return {
-    schemaVersion: "product-truth-operational-item-result/1.0.0",
+    schemaVersion: "product-truth-operational-item-result/1.1.0",
     listingKey: input.target.listingKey,
     target: {
       channel: input.target.channel,
@@ -290,6 +310,7 @@ function buildItemResult(input: {
       ...(input.extraBlockers ?? []),
     ].filter(Boolean))].sort(),
     donors: donorResults(input.harvestOutcomes ?? []),
+    providerYieldDiagnostics: safeProviderYieldDiagnostics(input.cost ?? null),
     metered: input.ledger,
   };
 }
