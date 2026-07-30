@@ -320,7 +320,10 @@ async function captureTerminalProviderAttempts(
           ON receipt."budgetId"=budget."id"
          AND receipt."createdAt">=item."startedAt"
          AND receipt."createdAt"<=item."finishedAt"
-        WHERE run."planSchemaVersion"='product-truth-operational-plan/1.0.0'
+        WHERE run."planSchemaVersion" IN (
+          'product-truth-operational-plan/1.0.0',
+          'product-truth-operational-plan/1.1.0'
+        )
           AND item."attempts">0
           AND item."status" IN (
             'done','terminal_gap','blocked','ambiguous','failed'
