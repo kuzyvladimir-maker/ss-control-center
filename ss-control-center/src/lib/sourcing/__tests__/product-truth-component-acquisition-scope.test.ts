@@ -396,6 +396,40 @@ test("same-unit package-size drift cannot become an exact content donor", () => 
   );
 });
 
+test("global catalog scan recovers bad source brand metadata only from exact title proof", () => {
+  const raw = fixture();
+  raw.snapshot.donors[0] = {
+    ...raw.snapshot.donors[0]!,
+    brand: "Crunch",
+  };
+  const input = rebindFixtureSources(raw);
+  const report = compileFixture(input);
+  const target = report.targets.find(
+    (value) => value.canonicalVariantId === barbecue.canonicalVariantId,
+  );
+  assert.equal(
+    target?.acquisitionLane,
+    "EXISTING_CATALOG_EXACT_CANDIDATE",
+  );
+  assert.equal(
+    target?.exactCatalogCandidates[0]?.identityDecision.method,
+    "TARGET_BRAND_PROVEN_IN_TITLE",
+  );
+
+  raw.snapshot.donors[0] = {
+    ...raw.snapshot.donors[0]!,
+    title: "Crunch Barbecue 8 oz bag",
+  };
+  const missingBrandInput = rebindFixtureSources(raw);
+  const missingBrandReport = compileFixture(missingBrandInput);
+  assert.equal(
+    missingBrandReport.targets.find(
+      (value) => value.canonicalVariantId === barbecue.canonicalVariantId,
+    )?.acquisitionLane,
+    "PROVIDER_IDENTITY_ACQUISITION",
+  );
+});
+
 test("one legacy donor proposed for two canonical variants is quarantined before planning", () => {
   const raw = fixture();
   const aliasIdentity = {

@@ -14,8 +14,12 @@ import {
 } from "./canonical-product-match-provenance";
 import {
   EXACT_CONTENT_IDENTITY_POLICY_VERSION,
-  evaluateExactContentTitleIdentity,
 } from "./exact-content-identity-policy";
+import {
+  LEGACY_CATALOG_RECOVERY_IDENTITY_POLICY_VERSION,
+  evaluateLegacyCatalogRecoveryIdentity,
+  type LegacyCatalogRecoveryIdentityDecision,
+} from "./legacy-catalog-recovery-identity";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   renderProductTruthLegacyBridgeSnapshot,
@@ -36,7 +40,7 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_COMPONENT_ACQUISITION_SCOPE_VERSION =
-  "product-truth-component-acquisition-scope/1.3.0" as const;
+  "product-truth-component-acquisition-scope/1.4.0" as const;
 
 export type ProductTruthComponentAcquisitionLane =
   | "EXISTING_CANONICAL_BINDING"
@@ -82,6 +86,7 @@ export interface ProductTruthComponentAcquisitionCandidate {
     productUrl: string;
   }>;
   canonicalBindings: ProductTruthLegacyBridgeCanonicalDonorBindingRow[];
+  identityDecision: LegacyCatalogRecoveryIdentityDecision;
 }
 
 export interface ProductTruthComponentAcquisitionTarget {
@@ -138,9 +143,11 @@ export interface ProductTruthComponentAcquisitionScope {
   selectionPolicy: {
     unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT";
     catalogSearch:
-      "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH";
+      "ALL_EXISTING_DONORS_TARGET_BRAND_PHRASE_STRICT_RECOVERY_AND_EXACT_CONTENT_PACKAGE_MATCH";
     contentIdentityPolicyVersion:
       typeof EXACT_CONTENT_IDENTITY_POLICY_VERSION;
+    legacyCatalogRecoveryIdentityPolicyVersion:
+      typeof LEGACY_CATALOG_RECOVERY_IDENTITY_POLICY_VERSION;
     identityQuality:
       "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS";
     ordinaryRetailersOnly: true;
@@ -283,10 +290,6 @@ function uniqueSorted(values: readonly string[]): string[] {
   );
 }
 
-function brandKey(value: string | null | undefined): string {
-  return normalizeIdentityTokens(value).join("|");
-}
-
 function finiteOrZero(value: number | null): number {
   return typeof value === "number" && Number.isFinite(value) && value > 0
     ? value
@@ -335,6 +338,7 @@ function ordinaryOffers(
 
 function catalogCandidate(input: {
   donor: ProductTruthLegacyBridgeDonorRow;
+  identityDecision: LegacyCatalogRecoveryIdentityDecision;
   offersByDonor: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow[]>;
   bindingsByDonor: ReadonlyMap<
     string,
@@ -364,26 +368,8 @@ function catalogCandidate(input: {
           right.canonicalVariantId,
           "en-US",
         )),
+    identityDecision: input.identityDecision,
   };
-}
-
-/**
- * Content identity is stricter than price comparability. The canonical matcher
- * intentionally permits a one-percent label-conversion tolerance so 1 lb and
- * 454 g can remain the same package. That tolerance must not turn two distinct
- * same-unit labels (for example 18.5 oz and 18.6 oz) into one content donor.
- */
-function isExactContentTitleMatch(input: {
-  target: CanonicalProductIdentity;
-  donor: ProductTruthLegacyBridgeDonorRow;
-}): boolean {
-  return evaluateExactContentTitleIdentity({
-    target: input.target,
-    candidate: {
-      title: input.donor.title,
-      brand: input.donor.brand,
-    },
-  }).eligible;
 }
 
 function classifyAcquisitionLane(input: {
@@ -578,15 +564,28 @@ export function compileProductTruthComponentAcquisitionScope(input: {
     (donor) => donor.id,
     "donor",
   );
-  const donorsByBrand = new Map<string, ProductTruthLegacyBridgeDonorRow[]>();
+  type CatalogIdentityDonor = ProductTruthLegacyBridgeDonorRow & {
+    title: string;
+    brand: string;
+  };
+  const donorTitleTokensById = new Map<string, Set<string>>();
+  const donorsByTitleToken = new Map<string, CatalogIdentityDonor[]>();
   for (const donor of donorById.values()) {
-    const key = brandKey(donor.brand);
-    if (!key) continue;
-    const donors = donorsByBrand.get(key) ?? [];
-    donors.push(donor);
-    donorsByBrand.set(key, donors);
+    if (!donor.title || !donor.brand) continue;
+    const identityDonor: CatalogIdentityDonor = {
+      ...donor,
+      title: donor.title,
+      brand: donor.brand,
+    };
+    const titleTokens = new Set(normalizeIdentityTokens(identityDonor.title));
+    donorTitleTokensById.set(identityDonor.id, titleTokens);
+    for (const token of titleTokens) {
+      const donors = donorsByTitleToken.get(token) ?? [];
+      donors.push(identityDonor);
+      donorsByTitleToken.set(token, donors);
+    }
   }
-  for (const donors of donorsByBrand.values()) {
+  for (const donors of donorsByTitleToken.values()) {
     donors.sort((left, right) => left.id.localeCompare(right.id, "en-US"));
   }
 
@@ -737,16 +736,32 @@ export function compileProductTruthComponentAcquisitionScope(input: {
     value.dependencies.sort((left, right) =>
       dependencyKey(left).localeCompare(dependencyKey(right), "en-US"),
     );
+    const targetBrandTokens = normalizeIdentityTokens(
+      value.targetIdentity.brand,
+    );
+    const titleIndexedDonors = targetBrandTokens.length
+      ? [...targetBrandTokens]
+        .map((token) => donorsByTitleToken.get(token) ?? [])
+        .sort((left, right) => left.length - right.length)[0]!
+        .filter((donor) => {
+          const titleTokens = donorTitleTokensById.get(donor.id);
+          return targetBrandTokens.every((token) => titleTokens?.has(token));
+        })
+      : [];
     const exactCatalogCandidates =
-      (donorsByBrand.get(brandKey(value.targetIdentity.brand)) ?? [])
-        .filter((donor) =>
-          isExactContentTitleMatch({
+      titleIndexedDonors
+        .map((donor) => ({
+          donor,
+          identityDecision: evaluateLegacyCatalogRecoveryIdentity({
             target: value.targetIdentity,
             donor,
-          }))
-        .map((donor) =>
+          }),
+        }))
+        .filter(({ identityDecision }) => identityDecision.eligible)
+        .map(({ donor, identityDecision }) =>
           catalogCandidate({
             donor,
+            identityDecision,
             offersByDonor,
             bindingsByDonor,
           }))
@@ -940,9 +955,11 @@ export function compileProductTruthComponentAcquisitionScope(input: {
     selectionPolicy: {
       unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT",
       catalogSearch:
-        "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH",
+        "ALL_EXISTING_DONORS_TARGET_BRAND_PHRASE_STRICT_RECOVERY_AND_EXACT_CONTENT_PACKAGE_MATCH",
       contentIdentityPolicyVersion:
         EXACT_CONTENT_IDENTITY_POLICY_VERSION,
+      legacyCatalogRecoveryIdentityPolicyVersion:
+        LEGACY_CATALOG_RECOVERY_IDENTITY_POLICY_VERSION,
       identityQuality:
         "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS",
       ordinaryRetailersOnly: true,

@@ -216,9 +216,11 @@ function scope(): ProductTruthComponentAcquisitionScope {
     selectionPolicy: {
       unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT",
       catalogSearch:
-        "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH",
+        "ALL_EXISTING_DONORS_TARGET_BRAND_PHRASE_STRICT_RECOVERY_AND_EXACT_CONTENT_PACKAGE_MATCH",
       contentIdentityPolicyVersion:
-        "product-truth-exact-content-identity-policy/1.0.0",
+        "exact-content-identity-policy/1.0.0",
+      legacyCatalogRecoveryIdentityPolicyVersion:
+        "legacy-catalog-recovery-identity/1.0.0",
       identityQuality:
         "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS",
       ordinaryRetailersOnly: true,

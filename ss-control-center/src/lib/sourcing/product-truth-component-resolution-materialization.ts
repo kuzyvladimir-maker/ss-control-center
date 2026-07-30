@@ -12,8 +12,11 @@ import {
 } from "./canonical-product-variant";
 import {
   EXACT_CONTENT_IDENTITY_POLICY_VERSION,
-  evaluateExactContentTitleIdentity,
 } from "./exact-content-identity-policy";
+import {
+  LEGACY_CATALOG_RECOVERY_IDENTITY_POLICY_VERSION,
+  evaluateLegacyCatalogRecoveryIdentity,
+} from "./legacy-catalog-recovery-identity";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION,
@@ -52,7 +55,7 @@ export const PRODUCT_TRUTH_COMPONENT_RESOLUTION_PLAN_VERSION =
 export const PRODUCT_TRUTH_COMPONENT_RESOLUTION_METHOD =
   "EXISTING_CATALOG_EXACT_CONTENT_TARGET_RESOLUTION" as const;
 export const PRODUCT_TRUTH_COMPONENT_RESOLUTION_DECISION_EVIDENCE_VERSION =
-  "product-truth-component-resolution-decision-evidence/1.0.0" as const;
+  "product-truth-component-resolution-decision-evidence/1.1.0" as const;
 export const PRODUCT_TRUTH_COMPONENT_RESOLUTION_CONTENT_SOURCE_VERSION =
   "product-truth-component-resolution-content-source/1.0.0" as const;
 export const PRODUCT_TRUTH_COMPONENT_RESOLUTION_PREFLIGHT_VERSION =
@@ -424,14 +427,31 @@ function compileTarget(input: {
   createdAt: string;
   ordinal: number;
 }): ProductTruthComponentResolutionMaterializationTarget {
-  const identityDecision = evaluateExactContentTitleIdentity({
+  const scopeCandidate = input.target.exactCatalogCandidates[0];
+  if (!scopeCandidate || scopeCandidate.donorProductId !== input.donor.id) {
+    fail(
+      "COMPONENT_RESOLUTION_SOURCE_BINDING_INVALID",
+      `${input.target.canonicalVariantId}: candidate donor drift`,
+    );
+  }
+  if (!input.donor.title || !input.donor.brand) {
+    fail(
+      "COMPONENT_RESOLUTION_SOURCE_BINDING_INVALID",
+      `${input.target.canonicalVariantId}: candidate donor lacks title or brand`,
+    );
+  }
+  const identityDecision = evaluateLegacyCatalogRecoveryIdentity({
     target: input.target.targetIdentity,
-    candidate: {
+    donor: {
       title: input.donor.title,
       brand: input.donor.brand,
     },
   });
-  if (!identityDecision.eligible) {
+  if (
+    !identityDecision.eligible
+    || canonicalJson(identityDecision)
+      !== canonicalJson(scopeCandidate.identityDecision)
+  ) {
     fail(
       "COMPONENT_RESOLUTION_CONTENT_IDENTITY_REJECTED",
       `${input.target.canonicalVariantId}: ${identityDecision.blockers.join(",")}`,
@@ -463,7 +483,10 @@ function compileTarget(input: {
       CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
     contentIdentityPolicyVersion:
       EXACT_CONTENT_IDENTITY_POLICY_VERSION,
-    contentIdentityDecision: identityDecision,
+    legacyCatalogRecoveryIdentityPolicyVersion:
+      LEGACY_CATALOG_RECOVERY_IDENTITY_POLICY_VERSION,
+    legacyCatalogRecoveryIdentityDecision: identityDecision,
+    contentIdentityDecision: identityDecision.contentIdentityDecision,
     componentAcquisitionScopeSha256:
       input.sources.componentScopeSha256,
     bridgeSnapshotSha256: input.sources.bridgeSnapshotSha256,

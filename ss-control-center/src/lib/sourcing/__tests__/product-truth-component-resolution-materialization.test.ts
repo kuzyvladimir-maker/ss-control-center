@@ -11,6 +11,9 @@ import {
   buildCanonicalProductVariantKey,
 } from "../canonical-product-variant";
 import {
+  evaluateLegacyCatalogRecoveryIdentity,
+} from "../legacy-catalog-recovery-identity";
+import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_STANDING_POLICY_VERSION,
   renderProductTruthLegacyBridgeStandingPolicy,
   type ProductTruthLegacyBridgeStandingPolicy,
@@ -151,6 +154,13 @@ function acquisitionTarget(
         productUrl: "https://www.walmart.com/ip/acme-barbecue/1",
       }],
       canonicalBindings: [],
+      identityDecision: evaluateLegacyCatalogRecoveryIdentity({
+        target: identity,
+        donor: {
+          title: "Acme Crunch Barbecue 8 oz bag",
+          brand: "Acme",
+        },
+      }),
     }],
     impact: {
       componentUses: 1,
@@ -242,9 +252,11 @@ function fixture(input: {
     selectionPolicy: {
       unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT",
       catalogSearch:
-        "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH",
+        "ALL_EXISTING_DONORS_TARGET_BRAND_PHRASE_STRICT_RECOVERY_AND_EXACT_CONTENT_PACKAGE_MATCH",
       contentIdentityPolicyVersion:
         "exact-content-identity-policy/1.0.0",
+      legacyCatalogRecoveryIdentityPolicyVersion:
+        "legacy-catalog-recovery-identity/1.0.0",
       identityQuality:
         "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS",
       ordinaryRetailersOnly: true,
