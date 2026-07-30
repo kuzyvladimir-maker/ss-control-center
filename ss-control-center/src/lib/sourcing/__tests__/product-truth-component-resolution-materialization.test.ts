@@ -37,6 +37,19 @@ import {
   renderProductTruthComponentResolutionMaterializationPlan,
   type ProductTruthComponentResolutionMaterializationSources,
 } from "../product-truth-component-resolution-materialization";
+import {
+  applyProductTruthAllComponentsRecipeMaterialization,
+  planProductTruthAllComponentsRecipeMaterialization,
+  preflightProductTruthAllComponentsRecipeMaterialization,
+  renderProductTruthAllComponentsRecipePlan,
+  renderProductTruthAllComponentsRecipePreflight,
+  type ProductTruthAllComponentsRecipeSources,
+} from "../product-truth-all-components-recipe-materialization";
+import {
+  PRODUCT_TRUTH_RECIPE_REPAIR_SCOPE_VERSION,
+  renderProductTruthRecipeRepairScope,
+  type ProductTruthRecipeRepairScope,
+} from "../product-truth-recipe-repair-scope";
 
 const CAPTURED_AT = "2026-07-30T01:00:00.000Z";
 const CREATED_AT = "2026-07-30T02:00:00.000Z";
@@ -331,6 +344,187 @@ function fixture(input: {
   };
 }
 
+function allComponentsRecipeFixture(input: {
+  componentPlan: ReturnType<
+    typeof compileProductTruthComponentResolutionMaterializationPlan
+  >;
+}): ProductTruthAllComponentsRecipeSources {
+  const base = fixture();
+  const resolved = input.componentPlan.targets[0]!;
+  const binding = {
+    donorProductId: resolved.donorProductId,
+    canonicalVariantId: resolved.canonicalVariantId,
+    decisionId: resolved.decision.id,
+    decisionStatus: "exact_confirmed",
+    canonicalIdentityJson: resolved.variant.identityJson,
+    decidedAt: resolved.decision.decidedAt,
+  } as const;
+  const snapshot = {
+    ...base.bridgeSnapshot,
+    canonicalDonorBindings: [binding],
+  } satisfies ProductTruthLegacyBridgeSnapshot;
+  const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
+  const snapshotSha256 = sha256(snapshotJson);
+  const repairScope = {
+    schemaVersion: PRODUCT_TRUTH_RECIPE_REPAIR_SCOPE_VERSION,
+    generatedAt: CAPTURED_AT,
+    source: {
+      manifest: {
+        schemaVersion: snapshot.manifest.schemaVersion,
+        sha256: snapshot.manifest.sha256,
+        asOf: snapshot.manifest.asOf,
+        listingCount: 1,
+      },
+      legacyImageState: {
+        sha256: "d".repeat(64),
+        entryCount: 1,
+      },
+      bridgeSnapshot: {
+        schemaVersion: snapshot.schemaVersion,
+        sha256: snapshotSha256,
+        capturedAt: snapshot.capturedAt,
+      },
+      bridgePlan: {
+        schemaVersion: "product-truth-legacy-bridge-plan/1.10.0",
+        sha256: "e".repeat(64),
+        generatedAt: CAPTURED_AT,
+      },
+      readiness: {
+        schemaVersion: "product-truth-consumer-readiness/1.0.0",
+        sha256: "f".repeat(64),
+        payloadSha256: "1".repeat(64),
+        capturedAt: CAPTURED_AT,
+        asOf: CAPTURED_AT,
+      },
+      targetFingerprint: FINGERPRINT,
+    },
+    rankingPolicy:
+      "GMV_ORDERS_UNITS_THEN_EXISTING_EVIDENCE_THEN_LISTING_KEY",
+    counts: {
+      denominator: 1,
+      recipesPresent: 0,
+      recipesMissing: 1,
+      missingWithoutComponents: 0,
+      missingWithAnyTargetIdentity: 1,
+      missingWithAllTargetIdentities: 1,
+      missingWithAnyCandidateDonor: 1,
+      missingWithAllCandidateDonors: 1,
+      missingWithAnyExactIdentity: 0,
+      missingWithAllExactIdentities: 0,
+      historicalEntries: 0,
+      historicalMappedEntries: 0,
+      historicalOrphanedEntries: 0,
+    },
+    laneCounts: [],
+    bridgeBlockerCounts: [],
+    matcherReasonCounts: [],
+    historicalStatusCounts: [],
+    recipeMissingHistoricalStatusCounts: [],
+    entries: [{
+      ordinal: 0,
+      repairPriority: 1,
+      listingKey: "walmart:1:ACME-1",
+      channel: "walmart",
+      storeIndex: 1,
+      sku: "ACME-1",
+      listingId: "fixture-item",
+      listingTitle: "Acme Crunch Barbecue 8 oz bag (Pack of 2)",
+      priorityGmv30d: 10,
+      priorityOrders30d: 1,
+      priorityUnits30d: 1,
+      recipeStatus: "MISSING",
+      cogsOutcome: "MISSING",
+      repairLane: "RETAILER_IDENTITY_RESEARCH",
+      bridgeDisposition: "QUARANTINE",
+      bridgeBlockerCodes: ["DONOR_TITLE_MATCH_REJECTED"],
+      matcherReasonCodes: ["TITLE_UNEXPLAINED_CANDIDATE_TOKEN"],
+      historicalEvidence: null,
+      components: [{
+        componentIndex: 0,
+        quantity: 2,
+        disposition: "QUARANTINE",
+        identityProof: "NONE",
+        targetIdentity: identity,
+        targetCanonicalVariantId: resolved.canonicalVariantId,
+        legacyComponentId: "legacy-wrong-component",
+        legacyDonorProductId: "legacy-wrong-flavor-donor",
+        candidateDonorProductId: "legacy-wrong-flavor-donor",
+        matcherVerdict: "REJECT",
+        matcherReasonCodes: ["TITLE_UNEXPLAINED_CANDIDATE_TOKEN"],
+        blockerCodes: ["DONOR_TITLE_MATCH_REJECTED"],
+        candidateDonor: null,
+      }],
+    }],
+    orphanedHistoricalState: [],
+    claims: {
+      readOnlySources: true,
+      databaseWrites: 0,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerFetches: 0,
+      marketplaceMutations: 0,
+      authorizesExecution: false,
+      historicalStatusIsNotIdentityProof: true,
+      createsAdditionalCatalog: false,
+    },
+  } as unknown as ProductTruthRecipeRepairScope;
+  const recipeRepairScopeJson =
+    renderProductTruthRecipeRepairScope(repairScope);
+  const recipeRepairScopeSha256 = sha256(recipeRepairScopeJson);
+  const existingTarget = acquisitionTarget({
+    acquisitionLane: "EXISTING_CANONICAL_BINDING",
+    exactCatalogCandidates: [],
+  });
+  const componentScope = {
+    ...base.componentScope,
+    source: {
+      recipeRepairScope: {
+        schemaVersion: repairScope.schemaVersion,
+        sha256: recipeRepairScopeSha256,
+        generatedAt: repairScope.generatedAt,
+        missingListings: 1,
+      },
+      bridgeSnapshot: {
+        schemaVersion: snapshot.schemaVersion,
+        sha256: snapshotSha256,
+        capturedAt: snapshot.capturedAt,
+        targetFingerprint: snapshot.targetFingerprint,
+        donorCount: snapshot.donors.length,
+        offerCount: snapshot.offers.length,
+        canonicalBindingCount: 1,
+      },
+    },
+    counts: {
+      ...base.componentScope.counts,
+      acquisitionLaneCounts: [
+        { lane: "EXISTING_CANONICAL_BINDING", count: 1 },
+        { lane: "EXISTING_CATALOG_EXACT_CANDIDATE", count: 0 },
+        { lane: "PROVIDER_IDENTITY_ACQUISITION", count: 0 },
+        { lane: "EXISTING_CATALOG_AMBIGUOUS", count: 0 },
+        { lane: "CANONICAL_DONOR_CONFLICT", count: 0 },
+        { lane: "TARGET_IDENTITY_RECOVERY_REQUIRED", count: 0 },
+      ],
+    },
+    targets: [existingTarget],
+  } satisfies ProductTruthComponentAcquisitionScope;
+  const componentScopeJson =
+    renderProductTruthComponentAcquisitionScope(componentScope);
+  return {
+    recipeRepairScope: repairScope,
+    recipeRepairScopeJson,
+    recipeRepairScopeSha256,
+    componentScope,
+    componentScopeJson,
+    componentScopeSha256: sha256(componentScopeJson),
+    bridgeSnapshot: snapshot,
+    bridgeSnapshotJson: snapshotJson,
+    bridgeSnapshotSha256: snapshotSha256,
+    standingPolicy: base.standingPolicy,
+    standingPolicyJson: base.standingPolicyJson,
+    standingPolicySha256: base.standingPolicySha256,
+  };
+}
+
 const MIGRATION_IDS = [
   "20260718230000_product_truth_queue_v2",
   "20260718233000_donor_harvest_lifecycle",
@@ -615,3 +809,160 @@ test("component resolution applies atomically and becomes idempotent", async (t)
     db.close();
   }
 });
+
+test("all-components recipe wave ignores a wrong legacy donor and writes typed COGS atomically", async (t) => {
+  const componentSources = fixture();
+  const componentPlan =
+    compileProductTruthComponentResolutionMaterializationPlan({
+      sources: componentSources,
+      createdAt: CREATED_AT,
+      expiresAt: EXPIRES_AT,
+    });
+  const componentPlanJson =
+    renderProductTruthComponentResolutionMaterializationPlan(componentPlan);
+  const componentPlanSha256 = sha256(componentPlanJson);
+  const directory = await mkdtemp(join(tmpdir(), "pt-all-components-recipe-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const db = createClient({
+    url: `file:${join(directory, "fixture.sqlite")}`,
+    concurrency: 1,
+  });
+  try {
+    await createBaseSchema(db);
+    await applyMigrations(db);
+    await seedSources(db, componentSources);
+    const componentPreflight =
+      await preflightProductTruthComponentResolutionMaterialization({
+        db,
+        databaseTargetFingerprint: componentPlan.databaseTargetFingerprint,
+        plan: componentPlan,
+        planJson: componentPlanJson,
+        planSha256: componentPlanSha256,
+        sources: componentSources,
+        checkedAt: "2026-07-30T02:01:00.000Z",
+      });
+    const componentPreflightJson =
+      renderProductTruthComponentResolutionPreflightReport(componentPreflight);
+    await applyProductTruthComponentResolutionMaterialization({
+      db,
+      databaseTargetFingerprint: componentPlan.databaseTargetFingerprint,
+      plan: componentPlan,
+      planJson: componentPlanJson,
+      planSha256: componentPlanSha256,
+      sources: componentSources,
+      preflightReport: componentPreflight,
+      preflightReportJson: componentPreflightJson,
+      preflightReportSha256: sha256(componentPreflightJson),
+      startedAt: "2026-07-30T02:02:00.000Z",
+    });
+    await db.execute({
+      sql: `INSERT INTO ProductTruthListingScope (
+        listingKey,keyVersion,channel,storeIndex,sku,registrationKind,
+        manifestSchemaVersion,manifestSha256,manifestAsOf,ownerDecisionId,
+        sourceReportId,sourceContentSha256,sourceCapturedAt,createdAt
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        "walmart:1:ACME-1",
+        "product-truth-listing-key/1.0.0",
+        "walmart",
+        1,
+        "ACME-1",
+        "AUTHORITATIVE_PHASE1_MANIFEST",
+        "phase1-authoritative-scope-manifest/v3",
+        MANIFEST_SHA,
+        CAPTURED_AT,
+        "owner-fixture",
+        "report-fixture",
+        "2".repeat(64),
+        CAPTURED_AT,
+        CAPTURED_AT,
+      ],
+    });
+    const recipeSources = allComponentsRecipeFixture({ componentPlan });
+    const plan = await planProductTruthAllComponentsRecipeMaterialization({
+      db,
+      sources: recipeSources,
+      listingKeys: ["walmart:1:ACME-1"],
+      createdAt: "2026-07-30T02:03:00.000Z",
+      expiresAt: "2026-07-30T02:08:00.000Z",
+    });
+    assert.equal(plan.targets.length, 1);
+    assert.equal(plan.databaseWrites.maximumRows, 5);
+    assert.equal(plan.claims.legacyDonorLinksIgnored, true);
+    assert.equal(
+      plan.targets[0]?.listingRecipeComponents[0]?.donorProductId,
+      resolvedDonor(componentPlan),
+    );
+    assert.equal(
+      plan.targets[0]?.listingRecipeComponents[0]?.sourceComponentId,
+      null,
+    );
+    const planJson = renderProductTruthAllComponentsRecipePlan(plan);
+    const planSha256 = sha256(planJson);
+    const preflight =
+      await preflightProductTruthAllComponentsRecipeMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources: recipeSources,
+        checkedAt: "2026-07-30T02:04:00.000Z",
+      });
+    assert.equal(preflight.status, "READY_TO_APPLY");
+    const preflightJson =
+      renderProductTruthAllComponentsRecipePreflight(preflight);
+    const report =
+      await applyProductTruthAllComponentsRecipeMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources: recipeSources,
+        preflight,
+        preflightJson,
+        preflightSha256: sha256(preflightJson),
+        startedAt: "2026-07-30T02:05:00.000Z",
+      });
+    assert.equal(report.status, "APPLIED");
+    assert.equal(report.counts.insertedRows, 5);
+    const recipeComponent = (await db.execute(
+      "SELECT donorProductId,sourceComponentId,evidenceJson FROM ProductTruthListingRecipeComponent",
+    )).rows[0]!;
+    assert.equal(recipeComponent.donorProductId, resolvedDonor(componentPlan));
+    assert.equal(recipeComponent.sourceComponentId, null);
+    assert.equal(
+      JSON.parse(String(recipeComponent.evidenceJson))
+        .sourceEvidence.legacyDonorLinkIgnored,
+      true,
+    );
+    assert.equal(
+      (await db.execute(
+        "SELECT evidenceOutcome FROM SkuCost",
+      )).rows[0]?.evidenceOutcome,
+      "UNSOURCEABLE",
+    );
+    const post =
+      await preflightProductTruthAllComponentsRecipeMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources: recipeSources,
+        checkedAt: "2026-07-30T02:06:00.000Z",
+      });
+    assert.equal(post.status, "ALREADY_APPLIED");
+  } finally {
+    db.close();
+  }
+});
+
+function resolvedDonor(
+  plan: ReturnType<
+    typeof compileProductTruthComponentResolutionMaterializationPlan
+  >,
+): string {
+  return plan.targets[0]!.donorProductId;
+}
