@@ -33,7 +33,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, openSync, closeSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, openSync, closeSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -192,6 +192,90 @@ function cmdRelease() {
   console.log(`✅ полосы агента ${me} освобождены`);
 }
 
+/**
+ * Ротация чекаутов — политика вместо ручной чистки.
+ *
+ * Критерий удаления НЕ возраст и НЕ количество само по себе, а совокупность:
+ *   1) рабочее дерево чисто (нет незакоммиченной работы);
+ *   2) HEAD-коммит доказуемо существует в основном репозитории;
+ *   3) ничего не менялось последние 2 часа (чекаут не в работе);
+ *   4) это не N новейших в своей группе (нужен откат).
+ *
+ * Пункт 2 критичен: 2026-07-29 внутри «чистых» чекаутов нашлось 9 коммитов,
+ * которых не было больше нигде. Чистка по списку каталогов их бы уничтожила.
+ */
+function cmdPrune(argv) {
+  const keep = Math.max(1, +(argv.find((a) => a.startsWith('--keep='))?.split('=')[1] || 2));
+  const dry = argv.includes('--dry-run');
+
+  const rows = git(['worktree', 'list', '--porcelain']).split('\n\n')
+    .map((block) => {
+      const path = (block.match(/^worktree (.+)$/m) || [])[1];
+      const head = (block.match(/^HEAD (.+)$/m) || [])[1];
+      return path && head ? { path, head } : null;
+    })
+    .filter(Boolean)
+    .filter((r) => r.path !== REPO);                        // основное дерево — никогда
+
+  // Группируем: релизы воркера, tmp-чекауты, release-artifacts
+  const groupOf = (p) =>
+    p.includes('Application Support') ? 'worker-releases'
+      : p.startsWith('/private/tmp') ? 'tmp'
+        : p.includes('release-artifacts') ? 'release-artifacts' : 'other';
+
+  const groups = new Map();
+  for (const r of rows) {
+    r.group = groupOf(r.path);
+    try { r.mtime = statSync(r.path).mtimeMs; } catch { r.mtime = 0; }
+    if (!groups.has(r.group)) groups.set(r.group, []);
+    groups.get(r.group).push(r);
+  }
+
+  let removed = 0, kept = 0, skipped = 0;
+  for (const [group, list] of groups) {
+    list.sort((a, b) => b.mtime - a.mtime);                 // новейшие первыми
+    console.log(`\n[${group}] ${list.length} чекаут(ов), оставляю ${keep} новейших`);
+    for (let i = 0; i < list.length; i++) {
+      const r = list[i];
+      const name = r.path.replace(/^.*\//, '');
+      if (i < keep) { console.log(`  KEEP    ${name} (новейший #${i + 1})`); kept++; continue; }
+
+      // (1) чисто?
+      let dirty = 'ERR';
+      try { dirty = git(['-C', r.path, 'status', '--porcelain']).split('\n').filter(Boolean).length; } catch { dirty = 'ERR'; }
+      if (dirty !== 0) { console.log(`  SKIP    ${name} — незакоммичено: ${dirty}`); skipped++; continue; }
+
+      // (2) коммит существует в основном репозитории?
+      let preserved = false;
+      try { git(['cat-file', '-e', r.head]); preserved = true; } catch { preserved = false; }
+      if (!preserved) {
+        console.log(`  SKIP    ${name} — !!! УНИКАЛЬНЫЙ КОММИТ ${r.head.slice(0, 9)} — сначала:`);
+        console.log(`          git -C "${r.path}" push "${REPO}" HEAD:refs/tags/salvage/${name}`);
+        skipped++; continue;
+      }
+
+      // (3) не в работе?
+      let recent = false;
+      try {
+        const out = execFileSync('find', [r.path, '-maxdepth', '2', '-newermt', '-120 minutes', '-print', '-quit'], { encoding: 'utf8' });
+        recent = out.trim().length > 0;
+      } catch { recent = false; }
+      if (recent) { console.log(`  SKIP    ${name} — активность за последние 2 часа`); skipped++; continue; }
+
+      if (dry) { console.log(`  WOULD   ${name}`); removed++; continue; }
+      try {
+        execFileSync('git', ['worktree', 'remove', '--force', r.path], { cwd: REPO, stdio: ['ignore', 'ignore', 'ignore'] });
+        console.log(`  REMOVE  ${name}`); removed++;
+      } catch { console.log(`  FAIL    ${name} — git отказался снять`); skipped++; }
+    }
+  }
+  if (!dry) { try { git(['worktree', 'prune']); } catch { /* ignore */ } }
+  console.log(`\nитого: удалено ${removed}, оставлено ${kept}, пропущено ${skipped}${dry ? '  (dry-run)' : ''}`);
+  try {
+    console.log(`свободно на диске: ${execFileSync('df', ['-h', '/'], { encoding: 'utf8' }).split('\n')[1].split(/\s+/)[3]}`);
+  } catch { /* ignore */ }
+}
+
 /** Проверка здоровья: то, что реально ломалось в июле. */
 function cmdDoctor() {
   const problems = [];
@@ -205,7 +289,10 @@ function cmdDoctor() {
   if (gsize > 1_000_000) warn(`в .git ${(gsize / 1024 / 1024).toFixed(1)} ГБ мусора — запусти: git prune-packed && git gc`);
 
   const wts = git(['worktree', 'list']).split('\n').filter(Boolean);
-  if (wts.length > 3) warn(`${wts.length} worktree зарегистрировано — брошенные чекауты забивают диск (норма ≤3)`);
+  if (wts.length > 3) {
+    warn(`${wts.length} worktree зарегистрировано (норма ≤3) — ротация: `
+      + `node scripts/agent-sync.mjs prune --keep=2 --dry-run`);
+  }
 
   try {
     const free = execFileSync('df', ['-k', '/'], { encoding: 'utf8' }).split('\n')[1].split(/\s+/)[3];
@@ -232,6 +319,7 @@ try {
     case 'status': cmdStatus(); break;
     case 'sync': cmdSync(rest[0], rest.slice(1)); break;
     case 'release': cmdRelease(); break;
+    case 'prune': cmdPrune(rest); break;
     case 'doctor': cmdDoctor(); break;
     default:
       console.log('agent-sync — координация Claude Code и Codex\n');
@@ -239,6 +327,7 @@ try {
       console.log('  status                  кто что делает + расхождение с origin');
       console.log('  sync "<msg>" <path>...  commit+rebase+push под эксклюзивным локом (пути ЯВНЫЕ)');
       console.log('  release                 освободить свои полосы');
+      console.log('  prune [--keep=N] [--dry-run]   ротация чекаутов (по умолчанию keep=2)');
       console.log('  doctor                  проверка на проблемы июля 2026');
       process.exitCode = 1;
   }
