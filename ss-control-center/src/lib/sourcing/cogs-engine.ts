@@ -1245,11 +1245,15 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           });
         res = enrichmentResult;
         acquisitionDiagnostics.push(enrichmentResult.diagnostics);
+        // Live provider observations are stamped after the HTTP response. Read
+        // them back against a post-response clock, not the pre-enrichment
+        // evaluation boundary used for the free reuse check.
+        const postEnrichmentEvaluationNow = new Date().toISOString();
         lookup = await cheapestCostForTarget(
           db,
           costTarget,
           targetVariant.canonicalVariantId,
-          evaluationNow,
+          postEnrichmentEvaluationNow,
           sourcePolicy,
         );
       }

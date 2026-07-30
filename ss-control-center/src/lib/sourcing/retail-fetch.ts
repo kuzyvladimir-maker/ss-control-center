@@ -43,6 +43,25 @@ export type RetailOffer = {
    */
   identityEvidenceTitle?: string | null;
   identityEvidenceNormalization?: string | null;
+  /**
+   * Immutable same-item retailer-detail proof used to construct the comparison
+   * title above. Raw search/detail titles remain unchanged.
+   */
+  identityEvidenceProvenance?: {
+    schemaVersion: "retailer-source-detail-identity/1.0.0";
+    retailer: string;
+    retailerProductId: string;
+    productUrl: string;
+    detailTitle: string;
+    structuredForm: {
+      name: string;
+      value: string;
+    } | null;
+    observedAt: string;
+    meteredReceiptId: string;
+    meteredRunId: string;
+    meteredApprovalId: string;
+  } | null;
   description: string | null;
   keyFeatures: string[];
   imageUrls: string[];
@@ -440,12 +459,24 @@ export async function unwrangleSearch(
 // gate verdicts; the orchestrator decides which to keep as the COGS source.
 export type ScoredOffer = RetailOffer & {
   accepted: boolean;
+  /**
+   * Exact identity/content admission proven by a same-item retailer detail
+   * response. Price can remain unusable and is evaluated independently.
+   */
+  contentIdentityAccepted?: boolean;
   rejectReason: string | null;
   isBaseUnit: boolean;
   identityMatch: CanonicalProductMatchResult | null;
 };
 export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffer {
-  const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false, identityMatch: null as CanonicalProductMatchResult | null };
+  const base = {
+    ...offer,
+    accepted: false,
+    contentIdentityAccepted: false,
+    rejectReason: null as string | null,
+    isBaseUnit: false,
+    identityMatch: null as CanonicalProductMatchResult | null,
+  };
   if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
   if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
   const tg = tokenGate(
@@ -454,8 +485,15 @@ export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffe
     offer.brand,
   );
   if (!tg.ok) return { ...base, rejectReason: tg.reason, identityMatch: tg.identityMatch };
-  if (offer.price === null) return { ...base, rejectReason: "no price" };
   const isBase = (offer.packSizeSeen ?? 1) === 1;
+  if (offer.price === null) {
+    return {
+      ...base,
+      isBaseUnit: isBase,
+      rejectReason: "no price",
+      identityMatch: tg.identityMatch,
+    };
+  }
   if (priceSuspect(offer.price, `${offer.title} ${cp.base_unit || ""}`))
     return { ...base, isBaseUnit: isBase, rejectReason: `price suspect ($${offer.price})`, identityMatch: tg.identityMatch };
   return { ...base, accepted: true, rejectReason: null, isBaseUnit: isBase, identityMatch: tg.identityMatch };

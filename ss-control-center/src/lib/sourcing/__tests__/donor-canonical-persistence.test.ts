@@ -815,6 +815,53 @@ test("paid search receipt is sealed into price and content observations", async 
   });
 });
 
+test("detail-certified content donor persists without manufacturing price evidence", async () => {
+  await withScratchDb(async (db) => {
+    const raw: RetailOffer = {
+      retailer: "walmart",
+      retailerProductId: "wm-content-only-8",
+      price: null,
+      currency: "USD",
+      inStock: true,
+      productUrl: "https://walmart.example.test/item/wm-content-only-8",
+      zip: "33765",
+      localityEvidence: "zip_scoped",
+      observedAt: "2026-07-18T20:00:00.000Z",
+      title: "Acme Potato Chips Original, 8 oz",
+      identityEvidenceTitle: "Acme Potato Chips Original, 8 oz Bag",
+      description: null,
+      keyFeatures: [],
+      imageUrls: [],
+      packSizeSeen: 1,
+      isMarketplaceItem: false,
+      sellerName: "Walmart.com",
+      sourceApi: "scratch-test",
+      via: "direct",
+    };
+    const scored = {
+      ...scoreOffer(raw, EIGHT_OZ),
+      contentIdentityAccepted: true,
+    };
+    assert.equal(scored.accepted, false);
+    assert.equal(scored.identityMatch?.verdict, "EXACT_IDENTITY");
+    await assert.rejects(
+      persistScoredDonorOffer(db, scored, EIGHT_OZ, NOW),
+      /DONOR_SOURCE_OFFER_NOT_ACCEPTED/,
+    );
+
+    const persisted = await persistScoredDonorOffer(db, scored, EIGHT_OZ, NOW, {
+      allowContentOnly: true,
+    });
+    assert.ok(persisted.canonicalVariantId);
+    const stored = (await db.execute({
+      sql: `SELECT price,pricePerUnit FROM DonorOffer WHERE id=?`,
+      args: [persisted.donorOfferId],
+    })).rows[0];
+    assert.equal(stored.price, null);
+    assert.equal(stored.pricePerUnit, null);
+  });
+});
+
 test("production writers create one complete exact snapshot consumed by the Walmart candidate view", async () => {
   await withScratchDb(async (db) => {
     const networkFetch = globalThis.fetch;

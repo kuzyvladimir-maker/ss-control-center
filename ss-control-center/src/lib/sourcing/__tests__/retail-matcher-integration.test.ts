@@ -71,9 +71,10 @@ test("retailer escalation uses matcher verdict plus locality/freshness policy", 
   const project = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
   const source = readFileSync(resolve(project, "src/lib/sourcing/donor-catalog.ts"), "utf8");
   const start = source.indexOf("const strictHit");
-  const end = source.indexOf("const now = evaluationNow", start);
+  const end = source.indexOf("const retailersHit", start);
   const strictHit = source.slice(start, end);
   assert.match(strictHit, /o\.identityMatch/);
   assert.match(strictHit, /evaluatePriceEvidenceEligibility/);
+  assert.match(strictHit, /const evaluatedAt = new Date\(\)\.toISOString\(\)/);
   assert.doesNotMatch(strictHit, /\.includes\(b\)|\.includes\(k\)/);
 });

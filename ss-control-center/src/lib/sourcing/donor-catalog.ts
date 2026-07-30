@@ -21,7 +21,9 @@ import {
 import {
   CANONICAL_PRODUCT_MATCHER_VERSION,
   matchCanonicalProductTitle,
+  normalizeIdentityTokens,
   type CanonicalProductIdentity,
+  type CanonicalProductMatchResult,
   type NormalizedCanonicalProduct,
 } from "./canonical-product-match";
 import {
@@ -52,6 +54,12 @@ import {
   type ProductTruthProviderAdmissionDecision,
   type ProductTruthProviderYieldDiagnostics,
 } from "./product-truth-provider-yield-diagnostics";
+import { DONOR_HARVEST_BOOTSTRAP_FIELDS } from "./donor-harvest-seed-plan";
+import {
+  claimDonorHarvestState,
+  persistDonorHarvestTransition,
+  seedDonorHarvestState,
+} from "./donor-harvest-store";
 
 type SqlExecutor = Pick<Client, "execute">;
 
@@ -473,6 +481,207 @@ export function parseUnwrangleDetailPayload(json: unknown): DetailContent | null
   };
 }
 
+export const RETAILER_SOURCE_DETAIL_IDENTITY_VERSION =
+  "retailer-source-detail-identity/1.0.0" as const;
+export const RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION =
+  "retailer-source-detail-copy/1.0.0" as const;
+
+export interface RetailerSourceDetailIdentityResult {
+  ok: boolean;
+  blockers: string[];
+  observedTitle: string | null;
+  identityEvidenceTitle: string | null;
+  identityEvidenceNormalization: string | null;
+  structuredForm: { name: string; value: string } | null;
+  identityMatch: CanonicalProductMatchResult | null;
+}
+
+function canonicalSourceDetailTarget(
+  target: CanonicalProduct | CanonicalProductIdentity,
+): CanonicalProductIdentity {
+  const legacy = target as CanonicalProduct;
+  const canonical = target as CanonicalProductIdentity;
+  return {
+    brand: canonical.brand ?? legacy.brand ?? null,
+    productLine: canonical.productLine ?? legacy.product_line ?? null,
+    flavor: canonical.flavor ?? legacy.flavor ?? null,
+    modifiers: canonical.modifiers ?? legacy.modifiers ?? null,
+    form: canonical.form ?? legacy.container_type ?? legacy.base_unit ?? null,
+    size: canonical.size ?? legacy.size ?? null,
+    outerPackCount: canonical.outerPackCount ?? legacy.outer_pack_count ?? 1,
+  };
+}
+
+function exactStructuredContainerType(
+  specifications: unknown,
+): { name: string; value: string } | null {
+  if (!Array.isArray(specifications)) return null;
+  for (const item of specifications) {
+    if (!isUnknownRecord(item)) continue;
+    const name = nonEmptyText(
+      item.name ?? item.label ?? item.key ?? item.attribute_name ?? item.display_name,
+    );
+    if (!name || !/^(?:container|package)\s+type$/i.test(name)) continue;
+    const raw = item.value ?? item.values ?? item.text ?? item.attribute_value;
+    const scalar = Array.isArray(raw) && raw.length === 1 ? raw[0] : raw;
+    const value = nonEmptyText(scalar);
+    if (value) return { name, value };
+  }
+  return null;
+}
+
+function retailerItemUrlMatches(
+  retailer: string,
+  url: string | null,
+  retailerProductId: string,
+): boolean {
+  if (!url) return false;
+  if (retailer === "walmart") {
+    return exactWalmartItemIdFromUrl(url) === retailerProductId;
+  }
+  if (retailer === "target") {
+    return exactTargetItemIdFromUrl(url) === retailerProductId;
+  }
+  return false;
+}
+
+function normalizeSourceDetailCopy(
+  title: string,
+): { title: string; rules: string[] } {
+  let normalized = title;
+  const rules: string[] = [];
+  const removeOnce = (pattern: RegExp, rule: string) => {
+    const next = normalized.replace(pattern, " ");
+    if (next !== normalized) {
+      normalized = next;
+      rules.push(rule);
+    }
+  };
+  // Full nutrition/category phrases only. Individual words such as "fiber",
+  // "frozen" or "vegetables" are never globally ignored by the matcher.
+  removeOnce(
+    /\b\d+(?:\.\d+)?\s*g\s+of\s+fiber\s+per\s+serving\b/gi,
+    "full-fiber-per-serving-claim",
+  );
+  removeOnce(
+    /\s*(?:,|\()\s*frozen\s+vegetables\s*\)?\s*(?=,|$)/gi,
+    "terminal-frozen-vegetables-category",
+  );
+  normalized = normalized
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*,+/g, ",")
+    .replace(/,\s*$/g, "")
+    .trim();
+  return { title: normalized, rules };
+}
+
+/**
+ * Pure fail-closed bridge for retailer search titles that omit only the
+ * package form. It requires the exact same Walmart/Target item plus a strict
+ * structured Container/Package type from the detail response. It never
+ * changes brand, flavor, size or pack count.
+ */
+export function verifyRetailerSourceDetailIdentity(input: {
+  retailer: string;
+  retailerProductId: string;
+  productUrl: string | null;
+  target: CanonicalProduct | CanonicalProductIdentity;
+  detail: Pick<DetailContent, "title" | "retailerProductId" | "productUrl" | "specifications">;
+}): RetailerSourceDetailIdentityResult {
+  const retailer = input.retailer.trim().toLowerCase();
+  const retailerProductId = input.retailerProductId.trim();
+  const sourceUrl = exactHttpsUrl(input.productUrl);
+  const detailTitle = nonEmptyText(input.detail.title);
+  const detailProductId = detailIdentifier(input.detail.retailerProductId);
+  const detailUrl = input.detail.productUrl == null
+    ? null
+    : exactHttpsUrl(input.detail.productUrl);
+  const blockers: string[] = [];
+  if (!["walmart", "target"].includes(retailer)) {
+    blockers.push("SOURCE_DETAIL_RETAILER_UNSUPPORTED");
+  }
+  if (!retailerProductId) blockers.push("SOURCE_DETAIL_ITEM_ID_REQUIRED");
+  if (!sourceUrl || !retailerItemUrlMatches(retailer, sourceUrl, retailerProductId)) {
+    blockers.push("SOURCE_DETAIL_SEARCH_URL_ITEM_MISMATCH");
+  }
+  if (!detailTitle) blockers.push("SOURCE_DETAIL_TITLE_REQUIRED");
+  if (!detailProductId && !detailUrl) {
+    blockers.push("SOURCE_DETAIL_RESPONSE_ITEM_BINDING_REQUIRED");
+  }
+  if (detailProductId && detailProductId !== retailerProductId) {
+    blockers.push("SOURCE_DETAIL_RESPONSE_ITEM_ID_MISMATCH");
+  }
+  if (detailUrl && !retailerItemUrlMatches(retailer, detailUrl, retailerProductId)) {
+    blockers.push("SOURCE_DETAIL_RESPONSE_URL_MISMATCH");
+  }
+
+  const target = canonicalSourceDetailTarget(input.target);
+  const structuredForm = exactStructuredContainerType(input.detail.specifications);
+  const targetFormTokens = normalizeIdentityTokens(target.form);
+  const structuredFormTokens = normalizeIdentityTokens(structuredForm?.value);
+  if (
+    targetFormTokens.length
+    && structuredForm
+    && (
+      targetFormTokens.length !== structuredFormTokens.length
+      || targetFormTokens.some((token, index) => token !== structuredFormTokens[index])
+    )
+  ) {
+    blockers.push("SOURCE_DETAIL_STRUCTURED_FORM_MISMATCH");
+  }
+
+  let identityEvidenceTitle = detailTitle;
+  const normalizationRules: string[] = [];
+  if (retailer === "walmart" && identityEvidenceTitle) {
+    const walmart = walmartIdentityEvidenceTitle(identityEvidenceTitle);
+    identityEvidenceTitle = walmart.identityEvidenceTitle;
+    if (walmart.identityEvidenceNormalization) {
+      normalizationRules.push(walmart.identityEvidenceNormalization);
+    }
+  }
+  if (identityEvidenceTitle) {
+    const normalizedCopy = normalizeSourceDetailCopy(identityEvidenceTitle);
+    identityEvidenceTitle = normalizedCopy.title;
+    normalizationRules.push(...normalizedCopy.rules);
+  }
+  let identityMatch = identityEvidenceTitle
+    ? matchCanonicalProductTitle(target, { title: identityEvidenceTitle })
+    : null;
+  const missing = new Set(identityMatch?.titleEvidence?.missingTargetTokens ?? []);
+  const missingOnlyForm = missing.size > 0
+    && [...missing].every((token) => targetFormTokens.includes(token));
+  if (
+    identityMatch?.verdict === "REJECT"
+    && identityMatch.reasonCodes.length === 1
+    && identityMatch.reasonCodes[0] === "TITLE_TARGET_TOKEN_MISSING"
+    && missingOnlyForm
+    && structuredForm
+    && !blockers.includes("SOURCE_DETAIL_STRUCTURED_FORM_MISMATCH")
+  ) {
+    identityEvidenceTitle = `${identityEvidenceTitle} ${structuredForm.value}`.trim();
+    normalizationRules.push("append-exact-structured-container-type");
+    identityMatch = matchCanonicalProductTitle(target, { title: identityEvidenceTitle });
+  }
+  if (identityMatch?.verdict !== "EXACT_IDENTITY") {
+    blockers.push("SOURCE_DETAIL_IDENTITY_NOT_EXACT");
+  }
+
+  return {
+    ok: blockers.length === 0,
+    blockers: [...new Set(blockers)].sort((left, right) =>
+      left.localeCompare(right, "en-US"),
+    ),
+    observedTitle: detailTitle,
+    identityEvidenceTitle,
+    identityEvidenceNormalization: normalizationRules.length
+      ? `${RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION}:${normalizationRules.join("+")}`
+      : null,
+    structuredForm,
+    identityMatch,
+  };
+}
+
 async function fetchUnwrangleDetail(
   key: string,
   url: string,
@@ -766,6 +975,7 @@ export async function harvestDonorDetail(
         title: c.title ?? "",
         retailerProductId: c.retailerProductId,
         productUrl: c.productUrl,
+        specifications: c.specifications,
       },
       content: {
         description: c.description,
@@ -1108,6 +1318,7 @@ function sourceIdentityEvidence(input: {
       title: input.offer.title ?? null,
       identityEvidenceTitle: input.offer.identityEvidenceTitle ?? null,
       identityEvidenceNormalization: input.offer.identityEvidenceNormalization ?? null,
+      identityEvidenceProvenance: input.offer.identityEvidenceProvenance ?? null,
       productUrl: exactHttpUrl(input.offer.productUrl),
       sourceApi: input.offer.sourceApi,
       observedAt: input.offer.observedAt,
@@ -1516,6 +1727,8 @@ export interface PersistCompleteExactContentObservationInput {
     title: string;
     retailerProductId: string | null;
     productUrl: string | null;
+    /** Raw retailer-detail specifications used only by the strict verifier. */
+    specifications?: unknown[] | null;
   };
   /**
    * The normal provider path binds the detail title to an earlier exact-item
@@ -1941,13 +2154,38 @@ export async function persistCompleteExactContentObservation(
     );
     const identityPath = input.identityPath ?? "SEARCH_BOUND_DETAIL";
     const directTargetIdentity = identityPath === "DIRECT_TARGET_EXACT_GTIN";
-    const detailIdentityEvidence = retailer === "walmart"
-      ? walmartIdentityEvidenceTitle(detailTitle)
-      : {
-          observedTitle: detailTitle,
-          identityEvidenceTitle: detailTitle,
-          identityEvidenceNormalization: null,
-        };
+    const sourceDetailVerification = (
+      canonicalIdentity
+      && input.detailIdentity.specifications !== undefined
+      && (retailer === "walmart" || retailer === "target")
+    )
+      ? verifyRetailerSourceDetailIdentity({
+          retailer,
+          retailerProductId: retailerProductId!,
+          productUrl: storedSourceUrl,
+          target: canonicalIdentity,
+          detail: {
+            title: detailTitle,
+            retailerProductId: detailRetailerProductId,
+            productUrl: detailProductUrl,
+            specifications: input.detailIdentity.specifications ?? null,
+          },
+        })
+      : null;
+    const detailIdentityEvidence = sourceDetailVerification
+      ? {
+          observedTitle: sourceDetailVerification.observedTitle,
+          identityEvidenceTitle: sourceDetailVerification.identityEvidenceTitle,
+          identityEvidenceNormalization:
+            sourceDetailVerification.identityEvidenceNormalization,
+        }
+      : retailer === "walmart"
+        ? walmartIdentityEvidenceTitle(detailTitle)
+        : {
+            observedTitle: detailTitle,
+            identityEvidenceTitle: detailTitle,
+            identityEvidenceNormalization: null,
+          };
     const detailIdentityBlockers: string[] = [];
     if (
       directTargetIdentity
@@ -1968,6 +2206,8 @@ export async function persistCompleteExactContentObservation(
     }
     if (!canonicalIdentity) {
       detailIdentityBlockers.push("CANONICAL_VARIANT_IDENTITY_INVALID");
+    } else if (sourceDetailVerification && !sourceDetailVerification.ok) {
+      detailIdentityBlockers.push(...sourceDetailVerification.blockers);
     } else if (
       matchCanonicalProductTitle(canonicalIdentity, {
         title: detailIdentityEvidence.identityEvidenceTitle,
@@ -1982,6 +2222,8 @@ export async function persistCompleteExactContentObservation(
     if (detailProductUrl) {
       const responseUrlMatches = retailer === "walmart"
         ? exactWalmartItemIdFromUrl(detailProductUrl) === retailerProductId
+        : retailer === "target"
+          ? exactTargetItemIdFromUrl(detailProductUrl) === retailerProductId
         : detailProductUrl === storedSourceUrl;
       if (!responseUrlMatches) detailIdentityBlockers.push("DETAIL_RESPONSE_URL_MISMATCH");
     }
@@ -2049,6 +2291,10 @@ export async function persistCompleteExactContentObservation(
         identityEvidenceTitle: detailIdentityEvidence.identityEvidenceTitle,
         identityEvidenceNormalization:
           detailIdentityEvidence.identityEvidenceNormalization,
+        sourceDetailIdentityVersion: sourceDetailVerification
+          ? RETAILER_SOURCE_DETAIL_IDENTITY_VERSION
+          : null,
+        structuredForm: sourceDetailVerification?.structuredForm ?? null,
         retailerProductId: detailRetailerProductId,
         productUrl: detailProductUrl,
         matcherVersion: CANONICAL_PRODUCT_MATCHER_VERSION,
@@ -2237,6 +2483,11 @@ export interface PersistScoredDonorOfferExactScope {
 
 export interface PersistScoredDonorOfferOptions {
   exactScope?: PersistScoredDonorOfferExactScope;
+  /**
+   * Allows a same-item detail-certified content donor whose price is unusable.
+   * It never changes price eligibility or COGS selection.
+   */
+  allowContentOnly?: boolean;
 }
 
 /** Offline-testable persistence boundary; performs no provider/network calls. */
@@ -2247,7 +2498,10 @@ export async function persistScoredDonorOffer(
   processingNow = new Date().toISOString(),
   options: PersistScoredDonorOfferOptions = {},
 ): Promise<PersistScoredDonorOfferResult> {
-  if (!offer.accepted || !offer.retailerProductId) {
+  const contentOnlyAccepted = options.allowContentOnly === true
+    && offer.contentIdentityAccepted === true
+    && offer.identityMatch?.verdict === "EXACT_IDENTITY";
+  if ((!offer.accepted && !contentOnlyAccepted) || !offer.retailerProductId) {
     throw new Error("DONOR_SOURCE_OFFER_NOT_ACCEPTED");
   }
   const observedAt = offer.observedAt || processingNow;
@@ -2720,6 +2974,94 @@ export interface EnrichTargetResult {
   diagnostics: ProductTruthProviderYieldDiagnostics;
 }
 
+function sourceDetailCompletedHarvestFields(content: DetailContent): string[] {
+  return [
+    ...(content.title ? ["title"] : []),
+    ...(content.description ? ["description"] : []),
+    ...(content.bullets.length ? ["bullets"] : []),
+    ...(Array.isArray(content.specifications) && content.specifications.length
+      ? ["attributes"]
+      : []),
+    ...(nonEmptyText(content.ingredients) ? ["ingredients"] : []),
+    ...(contentEvidencePresent(content.nutritionFacts) ? ["nutrition"] : []),
+    ...(content.images.length >= 5 ? ["gallery"] : []),
+    ...(normalizedManufacturerCode(content.upc) ? ["upc"] : []),
+  ].sort((left, right) => left.localeCompare(right, "en-US"));
+}
+
+async function beginPrefetchedSourceDetailLifecycle(
+  db: Client,
+  input: {
+    donorProductId: string;
+    retailer: "walmart" | "target";
+    retailerProductId: string;
+    authorization: MeteredProviderAuthorization;
+    at: string;
+  },
+) {
+  const seeded = await seedDonorHarvestState(db, {
+    donorProductId: input.donorProductId,
+    source: `unwrangle:${input.retailer}`,
+    retailerProductId: input.retailerProductId,
+    requestedFields: DONOR_HARVEST_BOOTSTRAP_FIELDS,
+    maxAttempts: 1,
+    now: input.at,
+  });
+  if (!seeded.created) {
+    throw new Error("SOURCE_DETAIL_HARVEST_STATE_ALREADY_EXISTS");
+  }
+  const claimed = await claimDonorHarvestState(db, seeded.state, {
+    type: "claim",
+    at: input.at,
+    runId: input.authorization.runId,
+    approvalId: input.authorization.approvalId,
+    leaseOwner: "product-truth-source-detail-identity",
+    leaseToken: crypto.randomUUID(),
+    leaseExpiresAt: new Date(Date.parse(input.at) + 60_000).toISOString(),
+  });
+  if (!claimed) throw new Error("SOURCE_DETAIL_HARVEST_CLAIM_CAS_LOST");
+  const attempted = await persistDonorHarvestTransition(db, claimed, {
+    type: "source_attempt_started",
+    at: input.at,
+  });
+  if (!attempted) throw new Error("SOURCE_DETAIL_HARVEST_ATTEMPT_CAS_LOST");
+  return attempted;
+}
+
+async function finishPrefetchedSourceDetailLifecycle(
+  db: Client,
+  state: Awaited<ReturnType<typeof beginPrefetchedSourceDetailLifecycle>>,
+  content: DetailContent,
+  at: string,
+): Promise<void> {
+  const completedFields = sourceDetailCompletedHarvestFields(content);
+  const completed = new Set(completedFields);
+  const finished = await persistDonorHarvestTransition(db, state, {
+    type: "source_result",
+    at,
+    completedFields,
+    unavailableFields: DONOR_HARVEST_BOOTSTRAP_FIELDS.filter(
+      (field) => !completed.has(field),
+    ),
+  });
+  if (!finished) throw new Error("SOURCE_DETAIL_HARVEST_RESULT_CAS_LOST");
+}
+
+async function failPrefetchedSourceDetailLifecycle(
+  db: Client,
+  state: Awaited<ReturnType<typeof beginPrefetchedSourceDetailLifecycle>>,
+  error: unknown,
+  at: string,
+): Promise<void> {
+  const failed = await persistDonorHarvestTransition(db, state, {
+    type: "permanent_failure",
+    at,
+    reason: "SOURCE_DETAIL_CANONICAL_PERSISTENCE_FAILED",
+    error: String(error instanceof Error ? error.message : error).slice(0, 500),
+  });
+  if (!failed) throw new Error("SOURCE_DETAIL_HARVEST_FAILURE_CAS_LOST");
+}
+
 // Enrich the catalog for one target (brand or free-text query). Searches only the
 // explicitly routed live sources, gates each offer, and upserts the survivors.
 // BlueCart is unavailable and has no route here; Unwrangle retailers run only when
@@ -2735,7 +3077,6 @@ export async function enrichTarget(
   const cp: CanonicalProduct = opts.canonicalProduct || {
     brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined,
   };
-  const evaluationNow = new Date().toISOString();
 
   // A tier "hits" ONLY when it returns an offer that TIGHTLY matches the product —
   // the same brand+variant test the cost readback (cheapestCostForTarget) applies.
@@ -2750,6 +3091,11 @@ export async function enrichTarget(
   // within the cross-size band (0.25x–4x). Frozen was the biggest victim: a same-brand
   // Walmart near-miss stopped the walk before Publix (which stocks it).
   const strictHit = (scored: ScoredOffer[]): boolean => {
+    // Provider adapters stamp observations only after their HTTP response. The
+    // eligibility clock must therefore be sampled after that response as well;
+    // a function-entry timestamp would classify every newly fetched offer as
+    // FETCHED_AT_IN_FUTURE.
+    const evaluatedAt = new Date().toISOString();
     return scored.some((o) => {
       if (!o.accepted) return false;
       if (!o.identityMatch || o.identityMatch.verdict === "REJECT") return false;
@@ -2763,13 +3109,17 @@ export async function enrichTarget(
         localityEvidence: o.localityEvidence,
         fetchedAt: o.observedAt,
         matchVerdict: o.identityMatch.verdict,
-      }, { now: evaluationNow, maxAgeMs: 48 * 60 * 60 * 1000 }).eligibility !== "REJECT";
+      }, { now: evaluatedAt, maxAgeMs: 48 * 60 * 60 * 1000 }).eligibility !== "REJECT";
     });
   };
-  const now = evaluationNow;
   const retailersHit: string[] = [];
   const createdProductIds: string[] = [];
   const sourceAttempts: EnrichTargetResult["sourceAttempts"] = [];
+  const sourceDetailCaptures = new Map<ScoredOffer, {
+    content: DetailContent;
+    authorization: MeteredProviderAuthorization;
+    observedAt: string;
+  }>();
   const diagnosticSources: Array<{
     source: string;
     status: EnrichTargetResult["sourceAttempts"][number]["status"];
@@ -2961,6 +3311,120 @@ export async function enrichTarget(
     }
   }
 
+  // Retailer search cards sometimes omit only the physical package form even
+  // though the exact first-party item detail exposes it as a structured fact.
+  // Consume at most one pre-planned detail call for one narrowly admissible
+  // candidate. Adjacent flavors/sizes never reach the paid detail boundary.
+  const targetFormTokens = normalizeIdentityTokens(cp.container_type ?? cp.base_unit);
+  const detailCandidates = batches
+    .flatMap((batch) => batch.offers)
+    .filter((offer) => {
+      if (
+        !["walmart", "target"].includes(offer.retailer)
+        || offer.isMarketplaceItem !== false
+        || (offer.via ?? "direct") !== "direct"
+        || (offer.packSizeSeen ?? 1) !== 1
+        || !offer.retailerProductId
+        || !retailerItemUrlMatches(
+          offer.retailer,
+          exactHttpsUrl(offer.productUrl),
+          offer.retailerProductId,
+        )
+        || offer.identityMatch?.verdict !== "REJECT"
+        || offer.identityMatch.reasonCodes.length !== 1
+      ) return false;
+      if (offer.retailer === "walmart" && offer.sellerName !== "Walmart.com") {
+        return false;
+      }
+      const reason = offer.identityMatch.reasonCodes[0];
+      if (reason === "TITLE_TARGET_TOKEN_MISSING") {
+        const missing = offer.identityMatch.titleEvidence?.missingTargetTokens ?? [];
+        return missing.length > 0
+          && targetFormTokens.length > 0
+          && missing.every((token) => targetFormTokens.includes(token));
+      }
+      if (reason === "TITLE_UNEXPLAINED_CANDIDATE_TOKEN") {
+        const boundedCopyTokens = new Set(["fiber", "frozen", "serving", "vegetables"]);
+        const unexplained =
+          offer.identityMatch.titleEvidence?.unexplainedCandidateTokens ?? [];
+        return unexplained.length > 0
+          && unexplained.every((token) => boundedCopyTokens.has(token));
+      }
+      return false;
+    })
+    .sort((left, right) => (
+      Number(typeof right.price === "number" && right.price > 0)
+        - Number(typeof left.price === "number" && left.price > 0)
+      || (left.retailer === "walmart" ? 0 : 1) - (right.retailer === "walmart" ? 0 : 1)
+      || left.retailerProductId.localeCompare(right.retailerProductId, "en-US")
+    ));
+  const sourceDetailCandidate = detailCandidates[0] ?? null;
+  const unwrangleKey = process.env.UNWRANGLE_API_KEY;
+  if (sourceDetailCandidate && unwrangleKey) {
+    let authorization: MeteredProviderAuthorization | null = null;
+    const detail = await fetchUnwrangleDetail(
+      unwrangleKey,
+      sourceDetailCandidate.productUrl!,
+      sourceDetailCandidate.retailer,
+      async (value) => { authorization = value; },
+    );
+    const detailObservedAt = new Date().toISOString();
+    const capturedAuthorization = authorization as MeteredProviderAuthorization | null;
+    if (detail && capturedAuthorization) {
+      const verified = verifyRetailerSourceDetailIdentity({
+        retailer: sourceDetailCandidate.retailer,
+        retailerProductId: sourceDetailCandidate.retailerProductId,
+        productUrl: sourceDetailCandidate.productUrl,
+        target: cp,
+        detail,
+      });
+      if (verified.ok && verified.identityMatch?.verdict === "EXACT_IDENTITY") {
+        const rescored = scoreOffer({
+          ...sourceDetailCandidate,
+          identityEvidenceTitle: verified.identityEvidenceTitle,
+          identityEvidenceNormalization: verified.identityEvidenceNormalization,
+          identityEvidenceProvenance: {
+            schemaVersion: RETAILER_SOURCE_DETAIL_IDENTITY_VERSION,
+            retailer: sourceDetailCandidate.retailer,
+            retailerProductId: sourceDetailCandidate.retailerProductId,
+            productUrl: exactHttpsUrl(sourceDetailCandidate.productUrl)!,
+            detailTitle: verified.observedTitle!,
+            structuredForm: verified.structuredForm,
+            observedAt: detailObservedAt,
+            meteredReceiptId: capturedAuthorization.receiptId,
+            meteredRunId: capturedAuthorization.runId,
+            meteredApprovalId: capturedAuthorization.approvalId,
+          },
+        }, cp);
+        Object.assign(sourceDetailCandidate, rescored, {
+          contentIdentityAccepted: true,
+        });
+        sourceDetailCaptures.set(sourceDetailCandidate, {
+          content: detail,
+          authorization: capturedAuthorization,
+          observedAt: detailObservedAt,
+        });
+        recordSourceAttempt({
+          source: `unwrangle:${sourceDetailCandidate.retailer}:detail-identity`,
+          status: "content_only",
+          detail: "SOURCE_DETAIL_IDENTITY_EXACT",
+        });
+      } else {
+        recordSourceAttempt({
+          source: `unwrangle:${sourceDetailCandidate.retailer}:detail-identity`,
+          status: "content_only",
+          detail: `SOURCE_DETAIL_IDENTITY_REJECTED:${verified.blockers.join(",")}`,
+        });
+      }
+    } else {
+      recordSourceAttempt({
+        source: `unwrangle:${sourceDetailCandidate.retailer}:detail-identity`,
+        status: "content_only",
+        detail: "SOURCE_DETAIL_UNAVAILABLE_AFTER_SINGLE_ATTEMPT",
+      });
+    }
+  }
+
   // QA "qualification dept": tier-1 deterministic non-grocery reject (free) +
   // tier-2 batched LLM grocery judge (1 cheap Haiku call). Only survivors are
   // written — keeps books / batteries / laundry out of the catalog.
@@ -2970,7 +3434,7 @@ export async function enrichTarget(
     ProductTruthProviderAdmissionDecision
   >();
   for (const b of batches) for (const o of b.offers) {
-    if (!o.accepted) {
+    if (!o.accepted && !o.contentIdentityAccepted) {
       admissionDecisions.set(o, { verdict: "REJECT", reasonCode: "SCORE_REJECTED" });
       rejected++;
       continue;
@@ -3022,9 +3486,14 @@ export async function enrichTarget(
   }
   rejected += candidates.length - survivors.length;
 
+  // This timestamp is both the diagnostic evaluation boundary and the
+  // processing clock for the immutable writes below. Every source observation
+  // has already returned, so observedAt can never be rejected merely because
+  // the plan/function started before the provider response completed.
+  const now = new Date().toISOString();
   const diagnostics = buildProductTruthProviderYieldDiagnostics({
     query: opts.target,
-    evaluatedAt: evaluationNow,
+    evaluatedAt: now,
     target: cp,
     sources: diagnosticSources.map((source) => ({
       source: source.source,
@@ -3052,7 +3521,68 @@ export async function enrichTarget(
           throw new Error(`METERED_SOURCE_RECEIPT_REQUIRED: ${o.sourceApi}`);
         }
       }
-      const persisted = await persistScoredDonorOffer(db, o, cp, now);
+      const persisted = await persistScoredDonorOffer(db, o, cp, now, {
+        allowContentOnly: o.contentIdentityAccepted === true,
+      });
+      const sourceDetailCapture = sourceDetailCaptures.get(o);
+      if (sourceDetailCapture) {
+        const detailLifecycle = await beginPrefetchedSourceDetailLifecycle(db, {
+          donorProductId: persisted.donorProductId,
+          retailer: o.retailer as "walmart" | "target",
+          retailerProductId: o.retailerProductId,
+          authorization: sourceDetailCapture.authorization,
+          at: now,
+        });
+        try {
+          await persistCompleteExactContentObservation(db, {
+            donorProductId: persisted.donorProductId,
+            retailer: o.retailer,
+            retailerProductId: o.retailerProductId,
+            sourceUrl: exactHttpsUrl(o.productUrl)!,
+            sourceApi: sourceDetailCapture.content.source,
+            observedAt: sourceDetailCapture.observedAt,
+            processingNow: now,
+            provenance: {
+              runId: sourceDetailCapture.authorization.runId,
+              approvalId: sourceDetailCapture.authorization.approvalId,
+              meteredReceiptId: sourceDetailCapture.authorization.receiptId,
+            },
+            detailIdentity: {
+              title: sourceDetailCapture.content.title ?? "",
+              retailerProductId: sourceDetailCapture.content.retailerProductId,
+              productUrl: sourceDetailCapture.content.productUrl,
+              specifications: sourceDetailCapture.content.specifications,
+            },
+            content: {
+              description: sourceDetailCapture.content.description,
+              bullets: sourceDetailCapture.content.bullets,
+              attributes: {
+                specifications: sourceDetailCapture.content.specifications ?? [],
+              },
+              nutritionFacts: sourceDetailCapture.content.nutritionFacts,
+              ingredients: sourceDetailCapture.content.ingredients,
+              allergens: sourceDetailCapture.content.allergens,
+              mainImageUrl: sourceDetailCapture.content.images[0] ?? null,
+              imageUrls: sourceDetailCapture.content.images,
+              upc: sourceDetailCapture.content.upc,
+              category: sourceDetailCapture.content.category,
+              storage: sourceDetailCapture.content.storage,
+            },
+            requireBaseUnit: true,
+            upcConflictPolicy: "block",
+            allowExactFieldSnapshot: true,
+          });
+          await finishPrefetchedSourceDetailLifecycle(
+            db,
+            detailLifecycle,
+            sourceDetailCapture.content,
+            now,
+          );
+        } catch (error) {
+          await failPrefetchedSourceDetailLifecycle(db, detailLifecycle, error, now);
+          throw error;
+        }
+      }
       if (persisted.productCreated) {
         productsCreated++;
         createdProductIds.push(persisted.donorProductId);
