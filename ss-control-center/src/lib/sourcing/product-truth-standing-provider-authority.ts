@@ -26,7 +26,7 @@ import {
 } from "./product-truth-targeted-walmart-evidence-contract";
 
 export const PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_VERSION =
-  "product-truth-standing-provider-policy/1.0.0" as const;
+  "product-truth-standing-provider-policy/1.1.0" as const;
 export const PRODUCT_TRUTH_UNWRANGLE_BALANCE_EVIDENCE_VERSION =
   "product-truth-unwrangle-balance-evidence/1.2.0" as const;
 export const PRODUCT_TRUTH_STANDING_AUTHORIZATION_VERSION =
@@ -37,7 +37,7 @@ export const PRODUCT_TRUTH_STANDING_AUTHORIZATION_VERSION =
  * prevents a modified worktree policy from silently expanding provider authority.
  */
 export const PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256 =
-  "7b7bcc997e340e46c97482c8c9f29f64cefdc8e46eadbd13d459d5953ed03eb0" as const;
+  "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4" as const;
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
@@ -327,7 +327,10 @@ function parseProviderRule(
   if (
     JSON.stringify(operations) !== JSON.stringify(value.operations)
     || (value.provider === "oxylabs" && JSON.stringify(operations) !== '["query"]')
-    || (value.provider === "unwrangle" && JSON.stringify(operations) !== '["detail"]')
+    || (
+      value.provider === "unwrangle"
+      && JSON.stringify(operations) !== '["detail","search"]'
+    )
   ) {
     fail(
       "STANDING_AUTHORITY_POLICY_INVALID",

@@ -1,0 +1,61 @@
+{
+  "allowAutomaticProviderEnrichment": true,
+  "allowBjs": false,
+  "allowCanonicalProductTruthWrites": true,
+  "allowClubs": false,
+  "allowConsumerActivation": false,
+  "allowDelisting": false,
+  "allowHarvestCronActivation": false,
+  "allowInventoryChanges": false,
+  "allowMarketplaceListingWrites": false,
+  "allowPriceChanges": false,
+  "allowProcurement": false,
+  "allowedPlanSchemaVersions": [
+    "product-truth-operational-plan/1.0.0",
+    "product-truth-targeted-walmart-evidence-plan/1.6.0"
+  ],
+  "approvedBy": "owner",
+  "balanceProbe": {
+    "maxCallsPerPlan": 1,
+    "maxUnitsPerCall": 2.5,
+    "operation": "target_search",
+    "provider": "unwrangle",
+    "query": "water"
+  },
+  "databaseTargetFingerprint": "57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003",
+  "expiresAt": null,
+  "issuedAt": "2026-07-30T03:52:00.000Z",
+  "manifestSha256": "94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c",
+  "maximumApprovalLifetimeMs": 600000,
+  "maximumBalanceEvidenceAgeMs": 600000,
+  "maximumListingsPerPlan": 100,
+  "maximumProviderUnitsPerPlan": 100,
+  "ownerStatement": "Codex autonomously performs normal Product Truth provider enrichment without chat approval strings; Unwrangle search and detail are each tariff-bound to 2.5 units, while retries, clubs, BJ's and business mutations remain forbidden.",
+  "policyId": "pt-standing-provider-enrichment-20260730-v2",
+  "providerRules": [
+    {
+      "maximumUnitsPerCall": 1,
+      "operations": [
+        "query"
+      ],
+      "provider": "oxylabs"
+    },
+    {
+      "maximumUnitsPerCall": 2.5,
+      "operations": [
+        "detail",
+        "search"
+      ],
+      "provider": "unwrangle"
+    }
+  ],
+  "requiresAuthoritativePhase1Scope": true,
+  "requiresExactFirstPartyEvidence": true,
+  "requiresFreshBalanceEvidence": true,
+  "requiresNoAutomaticReplay": true,
+  "requiresNoRetry": true,
+  "requiresSingleConcurrency": true,
+  "revocationRequiresOwnerDecision": true,
+  "schemaVersion": "product-truth-standing-provider-policy/1.1.0",
+  "unwrangleReserveFloorMinimum": 15000
+}

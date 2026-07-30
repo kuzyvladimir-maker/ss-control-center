@@ -15,6 +15,7 @@ import {
   validateProductTruthStandingProviderPolicy,
 } from "../product-truth-standing-provider-authority";
 import {
+  buildProductTruthOperationalPlan,
   productTruthOperationalSha256,
   renderProductTruthOperationalJson,
 } from "../product-truth-operational-run-contract";
@@ -38,7 +39,11 @@ import { parseProductTruthRunnerArguments } from "../../../../scripts/product-tr
 
 const POLICY_PATH = join(
   process.cwd(),
-  "data/audits/product-truth-standing-authority/standing-provider-policy-20260728-v1.json",
+  "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v2.json",
+);
+const MANIFEST_PATH = join(
+  process.cwd(),
+  "data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
 );
 const PLAN_PATH = join(
   process.cwd(),
@@ -144,6 +149,60 @@ test("pinned standing policy replaces chat approval without weakening exact plan
     executionConfirmation: authorization.executionConfirmation,
     now: NOW,
   }));
+});
+
+test("standing policy admits ordinary Target search plus exact detail in one bounded attempt", async () => {
+  const { policy } = await fixture();
+  const manifestJson = await readFile(MANIFEST_PATH, "utf8");
+  const manifest = JSON.parse(manifestJson) as unknown;
+  const plan = buildProductTruthOperationalPlan({
+    runId: "pt-standing-target-search-test",
+    mode: "WAVE",
+    createdAt: NOW,
+    expiresAt: "2026-07-29T00:10:00.000Z",
+    targetFingerprint: policy.databaseTargetFingerprint,
+    manifest,
+    manifestSha256: createHash("sha256").update(manifestJson).digest("hex"),
+    listingKeys: ["walmart:1:FaisalX-380"],
+    sourcePolicy: {
+      procurementZip: "33765",
+      retailers: ["walmart", "target"],
+      allowClubs: false,
+      allowBjs: false,
+      listingConcurrency: 1,
+      componentConcurrency: 1,
+      maxAttemptsPerListing: 1,
+    },
+    providerCeilings: [
+      {
+        provider: "oxylabs",
+        operations: ["query"],
+        maxCalls: 1,
+        maxUnits: 1,
+        reserveFloor: null,
+      },
+      {
+        provider: "unwrangle",
+        operations: ["detail", "search"],
+        maxCalls: 2,
+        maxUnits: 5,
+        reserveFloor: 15_000,
+      },
+    ],
+    verificationPolicy: {
+      maxPriceAgeMs: 172_800_000,
+      minGalleryImages: 5,
+    },
+    maxWallClockMs: 360_000,
+  });
+  assert.doesNotThrow(() =>
+    assertProductTruthPlanEligibleForStandingAuthority({
+      plan,
+      planSha256: productTruthOperationalSha256(plan),
+      policy,
+      now: NOW,
+    }),
+  );
 });
 
 test("standing authority accepts an exact donor only when it carries a sealed Phase 1 listing binding", async () => {
