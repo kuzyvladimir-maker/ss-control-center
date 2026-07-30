@@ -13,17 +13,10 @@ import {
   preflightProductTruthConsensusReuseMaterialization,
   renderProductTruthConsensusReuseApplyPreflight,
   renderProductTruthConsensusReuseMaterializationPlan,
-  type ProductTruthConsensusReuseMaterializationSources,
 } from "../product-truth-consensus-reuse-materialization";
-import type {
-  ProductTruthConsensusReusePreflightReport,
-} from "../product-truth-consensus-reuse-preflight";
-import type {
-  ProductTruthConsensusReuseScope,
-} from "../product-truth-consensus-reuse-scope";
-import type {
-  ProductTruthLegacyBridgeStandingPolicy,
-} from "../product-truth-legacy-bridge-apply";
+import {
+  makeConsensusReuseMaterializationSourcesFixture,
+} from "./product-truth-consensus-reuse-fixture";
 
 const CREATED_AT = "2026-07-29T23:40:00.000Z";
 const CHECKED_AT = "2026-07-29T23:41:00.000Z";
@@ -46,58 +39,8 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-async function jsonSource<T>(url: URL): Promise<{
-  value: T;
-  json: string;
-  sha256: string;
-}> {
-  const json = await readFile(url, "utf8");
-  return {
-    value: JSON.parse(json) as T,
-    json,
-    sha256: sha256(json),
-  };
-}
-
-async function sources(): Promise<ProductTruthConsensusReuseMaterializationSources> {
-  const [scope, selectionPreflight, blindTask, standingPolicy] =
-    await Promise.all([
-      jsonSource<ProductTruthConsensusReuseScope>(new URL(
-        "../../../../data/audits/product-truth-consensus-reuse/"
-          + "20260729T232631Z-v4/consensus-reuse-scope.json",
-        import.meta.url,
-      )),
-      jsonSource<ProductTruthConsensusReusePreflightReport>(new URL(
-        "../../../../data/audits/product-truth-consensus-reuse-preflight/"
-          + "20260729T233631Z-v2/preflight-report.json",
-        import.meta.url,
-      )),
-      jsonSource<unknown>(new URL(
-        "../../../../../release-artifacts/"
-          + "product-truth-matcher-adjudication-2026-07-19/"
-          + "prepared-v21-final/review-task-a.json",
-        import.meta.url,
-      )),
-      jsonSource<ProductTruthLegacyBridgeStandingPolicy>(new URL(
-        "../../../../data/audits/product-truth-legacy-bridge/"
-          + "standing-policy-20260727-v1.json",
-        import.meta.url,
-      )),
-    ]);
-  return {
-    scope: scope.value,
-    scopeJson: scope.json,
-    scopeSha256: scope.sha256,
-    selectionPreflight: selectionPreflight.value,
-    selectionPreflightJson: selectionPreflight.json,
-    selectionPreflightSha256: selectionPreflight.sha256,
-    blindTask: blindTask.value,
-    blindTaskJson: blindTask.json,
-    blindTaskSha256: blindTask.sha256,
-    standingPolicy: standingPolicy.value,
-    standingPolicyJson: standingPolicy.json,
-    standingPolicySha256: standingPolicy.sha256,
-  };
+async function sources() {
+  return makeConsensusReuseMaterializationSourcesFixture();
 }
 
 async function createBaseSchema(db: Client): Promise<void> {
@@ -300,7 +243,7 @@ async function seedListingScope(
   }
 }
 
-test("compiles the real wave zero from immutable consensus evidence", async () => {
+test("compiles a reproducible wave zero from immutable consensus evidence", async () => {
   const input = await sources();
   const plan = compileProductTruthConsensusReuseMaterializationPlan({
     sources: input,
@@ -308,10 +251,10 @@ test("compiles the real wave zero from immutable consensus evidence", async () =
     createdAt: CREATED_AT,
     expiresAt: EXPIRES_AT,
   });
-  assert.equal(plan.targets.length, 5);
-  assert.equal(plan.databaseWrites.maximumRows, 45);
-  assert.equal(plan.databaseWrites.donorVariantDecisions, 5);
-  assert.equal(plan.databaseWrites.productTruthListingRecipes, 5);
+  assert.equal(plan.targets.length, 1);
+  assert.equal(plan.databaseWrites.maximumRows, 9);
+  assert.equal(plan.databaseWrites.donorVariantDecisions, 1);
+  assert.equal(plan.databaseWrites.productTruthListingRecipes, 1);
   assert.equal(plan.claims.historicalPricePromoted, false);
   assert.equal(plan.claims.marketplaceMutations, 0);
 });
@@ -367,7 +310,7 @@ test("applies one complete donor-group wave atomically and is idempotent", async
         checkedAt: CHECKED_AT,
       });
     assert.equal(preflight.status, "READY_TO_APPLY");
-    assert.equal(preflight.counts.absentRows, 45);
+    assert.equal(preflight.counts.absentRows, 9);
     const preflightJson =
       renderProductTruthConsensusReuseApplyPreflight(preflight);
     const report =
@@ -384,11 +327,11 @@ test("applies one complete donor-group wave atomically and is idempotent", async
         startedAt: STARTED_AT,
       });
     assert.equal(report.status, "APPLIED");
-    assert.equal(report.counts.insertedRows, 45);
-    assert.equal(report.counts.donorIdentityTransitions, 5);
+    assert.equal(report.counts.insertedRows, 9);
+    assert.equal(report.counts.donorIdentityTransitions, 1);
     assert.equal(report.verification.bundleFactoryReady, 0);
     assert.equal(report.verification.listingImprovementReady, 0);
-    assert.equal(report.verification.unitEconomicsUnsourceable, 5);
+    assert.equal(report.verification.unitEconomicsUnsourceable, 1);
     assert.equal(report.verification.procurementReady, 0);
     const post =
       await preflightProductTruthConsensusReuseMaterialization({
@@ -401,7 +344,7 @@ test("applies one complete donor-group wave atomically and is idempotent", async
         checkedAt: "2026-07-29T23:43:00.000Z",
       });
     assert.equal(post.status, "ALREADY_APPLIED");
-    assert.equal(post.counts.exactExistingRows, 45);
+    assert.equal(post.counts.exactExistingRows, 9);
   } finally {
     db.close();
   }

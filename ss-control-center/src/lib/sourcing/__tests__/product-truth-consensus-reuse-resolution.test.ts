@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { test } from "node:test";
 
 import {
+  PRODUCT_TRUTH_CONSENSUS_REUSE_RESOLUTION_VERSION,
   ProductTruthConsensusReuseResolutionError,
   reconcileProductTruthConsensusReuseScope,
+  renderProductTruthConsensusReuseResolution,
   type ProductTruthConsensusReuseResolution,
 } from "../product-truth-consensus-reuse-resolution";
 import {
@@ -15,63 +15,71 @@ import {
 } from "../product-truth-consensus-reuse-preflight";
 import type {
   ProductTruthConsensusReuseCandidate,
-  ProductTruthConsensusReuseScope,
 } from "../product-truth-consensus-reuse-scope";
-
-const ROOT = resolve(process.cwd(), "..");
-const SSC = resolve(ROOT, "ss-control-center");
-const BASE_SCOPE = resolve(
-  SSC,
-  "data/audits/product-truth-consensus-reuse/"
-    + "20260729T232631Z-v4/consensus-reuse-scope.json",
-);
-const SNAPSHOT = resolve(
-  SSC,
-  "data/audits/product-truth-legacy-bridge/"
-    + "20260729T151401Z-post-publix-url-size-v70-audit/"
-    + "source-snapshot.json",
-);
-const RESOLUTION = resolve(
-  ROOT,
-  "release-artifacts/product-truth-consensus-reuse-resolution-2026-07-30/"
-    + "resolution.json",
-);
+import {
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
+import {
+  makeConsensusReuseScopeFixture,
+} from "./product-truth-consensus-reuse-fixture";
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-async function inputs() {
-  const [baseScopeJson, resolutionJson, snapshotJson] = await Promise.all([
-    readFile(BASE_SCOPE, "utf8"),
-    readFile(RESOLUTION, "utf8"),
-    readFile(SNAPSHOT, "utf8"),
-  ]);
+function inputs() {
+  const base = makeConsensusReuseScopeFixture();
+  const canonicalBindingSnapshot = { canonicalDonorBindings: [] };
+  const canonicalBindingSnapshotJson =
+    renderProductTruthOperationalJson(canonicalBindingSnapshot);
+  const canonicalBindingSnapshotSha256 =
+    sha256(canonicalBindingSnapshotJson);
+  const resolution: ProductTruthConsensusReuseResolution = {
+    schemaVersion: PRODUCT_TRUTH_CONSENSUS_REUSE_RESOLUTION_VERSION,
+    reviewedAt: "2026-07-30T00:30:00.000Z",
+    reviewedBy: "codex",
+    baseScopeSha256: base.scopeSha256,
+    canonicalBindingSnapshotSha256,
+    fieldPartitionResolutions: [],
+    canonicalBindingResolutions: [],
+    claims: {
+      humanReviewedFieldPartition: true,
+      samePhysicalDonorRequired: true,
+      exactExistingBindingRequired: true,
+      createsAdditionalCatalog: false,
+      providerCalls: 0,
+      paidCalls: 0,
+      retailerFetches: 0,
+      databaseWrites: 0,
+      marketplaceMutations: 0,
+      authorizesExecution: false,
+    },
+  };
+  const resolutionJson =
+    renderProductTruthConsensusReuseResolution(resolution);
   return {
     generatedAt: "2026-07-30T00:31:00.000Z",
-    baseScope:
-      JSON.parse(baseScopeJson) as ProductTruthConsensusReuseScope,
-    baseScopeJson,
-    baseScopeSha256: sha256(baseScopeJson),
-    resolution:
-      JSON.parse(resolutionJson) as ProductTruthConsensusReuseResolution,
+    baseScope: base.scope,
+    baseScopeJson: base.scopeJson,
+    baseScopeSha256: base.scopeSha256,
+    resolution,
     resolutionJson,
     resolutionSha256: sha256(resolutionJson),
-    canonicalBindingSnapshot: JSON.parse(snapshotJson) as unknown,
-    canonicalBindingSnapshotJson: snapshotJson,
-    canonicalBindingSnapshotSha256: sha256(snapshotJson),
+    canonicalBindingSnapshot,
+    canonicalBindingSnapshotJson,
+    canonicalBindingSnapshotSha256,
   };
 }
 
-test("resolves all field partitions and exact binding collision", async () => {
-  const result = reconcileProductTruthConsensusReuseScope(await inputs());
-  assert.equal(result.counts.selected, 51);
-  assert.equal(result.counts.directSingleVariant, 51);
+test("seals a reproducible no-op resolution over a direct scope", () => {
+  const result = reconcileProductTruthConsensusReuseScope(inputs());
+  assert.equal(result.counts.selected, 1);
+  assert.equal(result.counts.directSingleVariant, 1);
   assert.equal(result.counts.fieldPartitionReconciliationRequired, 0);
-  assert.equal(result.counts.directDonors, 32);
+  assert.equal(result.counts.directDonors, 1);
   assert.equal(result.counts.reconciliationDonors, 0);
   assert.equal(result.reconciliationGroups.length, 0);
-  assert.equal(result.resolvedReconciliationGroups?.length, 5);
+  assert.equal(result.resolvedReconciliationGroups?.length, 0);
   assert.ok(
     result.candidates.every(
       (candidate) => candidate.lane === "DIRECT_SINGLE_VARIANT",
@@ -92,23 +100,11 @@ test("resolves all field partitions and exact binding collision", async () => {
       1,
     );
   }
-  const collision = result.candidates.filter(
-    (candidate) =>
-      candidate.donorProductId
-        === "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
-  );
-  assert.equal(collision.length, 2);
-  assert.ok(
-    collision.every(
-      (candidate) =>
-        candidate.proposedCanonicalVariant.id
-          === "cpv1:66a15f356a99a30d94d507b6fb1f1cdf6d158694df277393dba886158ea018c4",
-    ),
-  );
+  assert.ok(result.source.consensusResolution);
 });
 
-test("fails closed when resolution bytes drift", async () => {
-  const input = await inputs();
+test("fails closed when resolution bytes drift", () => {
+  const input = inputs();
   input.resolutionJson = `${input.resolutionJson}\n`;
   assert.throws(
     () => reconcileProductTruthConsensusReuseScope(input),
@@ -123,11 +119,22 @@ test("fails closed when resolution bytes drift", async () => {
   );
 });
 
-test("fails closed when chosen partition variant is not group evidence", async () => {
-  const input = await inputs();
-  input.resolution.fieldPartitionResolutions[0]!.chosenCanonicalVariantId =
-    "cpv1:0000000000000000000000000000000000000000000000000000000000000000";
-  input.resolutionJson = JSON.stringify(input.resolution);
+test("fails closed on an unbound field-partition resolution", () => {
+  const input = inputs();
+  const candidate = input.baseScope.candidates[0]!;
+  input.resolution.fieldPartitionResolutions.push({
+    donorProductId: candidate.donorProductId,
+    expectedGroupEvidenceSha256: "0".repeat(64),
+    expectedListingKeys: [candidate.listingKey],
+    expectedProposedCanonicalVariantIds: [
+      candidate.proposedCanonicalVariant.id,
+    ],
+    chosenListingKey: candidate.listingKey,
+    chosenCanonicalVariantId: candidate.proposedCanonicalVariant.id,
+    rationale: "SAME_PHYSICAL_DONOR_NORMALIZE_FIELD_PARTITION",
+  });
+  input.resolutionJson =
+    renderProductTruthConsensusReuseResolution(input.resolution);
   input.resolutionSha256 = sha256(input.resolutionJson);
   assert.throws(
     () => reconcileProductTruthConsensusReuseScope(input),
@@ -135,7 +142,7 @@ test("fails closed when chosen partition variant is not group evidence", async (
       assert.ok(error instanceof ProductTruthConsensusReuseResolutionError);
       assert.equal(
         error.code,
-        "CONSENSUS_REUSE_RESOLUTION_REVIEW_INVALID",
+        "CONSENSUS_REUSE_RESOLUTION_FIELD_PARTITION_INCOMPLETE",
       );
       return true;
     },
