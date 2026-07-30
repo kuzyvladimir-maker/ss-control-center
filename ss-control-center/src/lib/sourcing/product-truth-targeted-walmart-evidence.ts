@@ -319,6 +319,73 @@ function canonicalProductFromTarget(target: ProductTruthTargetedWalmartEvidenceT
 
 export const WALMART_STRUCTURED_BRAND_TITLE_NORMALIZATION =
   "walmart-structured-brand-title/1.0.0" as const;
+export const WALMART_EXACT_ITEM_PACKAGING_TITLE_NORMALIZATION =
+  "walmart-exact-item-packaging-title/1.0.0" as const;
+const WALMART_EXACT_ITEM_CANNED_PACKAGING_WORD = /\bcanned\b/gi;
+
+function appendIdentityEvidenceNormalization(
+  current: string | null | undefined,
+  next: string,
+): string {
+  return [current, next].filter(Boolean).join("+");
+}
+
+function canonicalIdentityContainsToken(
+  identity: CanonicalProductIdentity,
+  token: string,
+): boolean {
+  const modifiers = Array.isArray(identity.modifiers)
+    ? identity.modifiers
+    : identity.modifiers
+      ? [identity.modifiers]
+      : [];
+  return [
+    identity.brand,
+    identity.productLine,
+    identity.flavor,
+    ...modifiers,
+    identity.form,
+    identity.size,
+    identity.title,
+  ].some((value) => normalizeIdentityTokens(value).includes(token));
+}
+
+function withExactItemPackagingIdentityEvidenceTitle(
+  offer: RetailOffer,
+  canonicalIdentity: CanonicalProductIdentity,
+  target: ProductTruthTargetedWalmartEvidenceTarget,
+): RetailOffer {
+  if (
+    target.identityMode !== "EXISTING_EXACT"
+    || canonicalIdentityContainsToken(canonicalIdentity, "canned")
+  ) {
+    return offer;
+  }
+  const comparisonTitle = offer.identityEvidenceTitle ?? offer.title;
+  if (!comparisonTitle) return offer;
+  const occurrences = comparisonTitle.match(
+    WALMART_EXACT_ITEM_CANNED_PACKAGING_WORD,
+  );
+  if (occurrences?.length !== 1) return offer;
+  const identityEvidenceTitle = comparisonTitle
+    .replace(WALMART_EXACT_ITEM_CANNED_PACKAGING_WORD, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*,+/g, ",")
+    .replace(/^,\s*|\s*,$/g, "")
+    .trim();
+  if (!identityEvidenceTitle || identityEvidenceTitle === comparisonTitle) {
+    return offer;
+  }
+  return {
+    ...offer,
+    identityEvidenceTitle,
+    identityEvidenceNormalization: appendIdentityEvidenceNormalization(
+      offer.identityEvidenceNormalization,
+      WALMART_EXACT_ITEM_PACKAGING_TITLE_NORMALIZATION,
+    ),
+  };
+}
 
 /**
  * Walmart currently inserts the inclusive merchandising phrase
@@ -332,19 +399,31 @@ export const WALMART_STRUCTURED_BRAND_TITLE_NORMALIZATION =
  * repeated brand text. Only an exact token-equal structured brand may supply
  * that omitted prefix in the comparison title; the observed title is retained
  * unchanged and every other identity/size/pack/unexplained-token gate still runs.
+ *
+ * An already proven EXISTING_EXACT Walmart item may also receive the packaging
+ * adjective "canned" in current retailer copy even when the sealed canonical
+ * identity omits that redundant word. The exact item/URL and canonical variant
+ * gates remain independent and mandatory. Bootstrap identities never receive
+ * this normalization, so "canned" cannot bootstrap a new content truth.
  */
 function withTargetedWalmartIdentityEvidenceTitle(
   offer: RetailOffer,
   canonicalIdentity: CanonicalProductIdentity,
+  target: ProductTruthTargetedWalmartEvidenceTarget,
 ): RetailOffer {
   const audience = walmartIdentityEvidenceTitle(offer.title);
-  const normalizedOffer = audience.identityEvidenceNormalization
+  const audienceNormalizedOffer = audience.identityEvidenceNormalization
     ? {
       ...offer,
       identityEvidenceTitle: audience.identityEvidenceTitle,
       identityEvidenceNormalization: audience.identityEvidenceNormalization,
     }
     : offer;
+  const normalizedOffer = withExactItemPackagingIdentityEvidenceTitle(
+    audienceNormalizedOffer,
+    canonicalIdentity,
+    target,
+  );
   const comparisonTitle =
     normalizedOffer.identityEvidenceTitle ?? normalizedOffer.title;
   const targetBrand = canonicalIdentity.brand?.trim() ?? "";
@@ -369,10 +448,10 @@ function withTargetedWalmartIdentityEvidenceTitle(
   return {
     ...normalizedOffer,
     identityEvidenceTitle: `${observedBrand} ${comparisonTitle}`,
-    identityEvidenceNormalization: [
+    identityEvidenceNormalization: appendIdentityEvidenceNormalization(
       normalizedOffer.identityEvidenceNormalization,
       WALMART_STRUCTURED_BRAND_TITLE_NORMALIZATION,
-    ].filter(Boolean).join("+"),
+    ),
   };
 }
 
@@ -386,7 +465,14 @@ export function selectExactTargetedWalmartOffer(input: {
     || !input.result.localityProven
     || input.result.responseZip !== "33765"
   ) {
-    fail("TARGETED_WALMART_LOCALITY_UNPROVEN", "Oxylabs did not prove Walmart ZIP 33765");
+    fail(
+      "TARGETED_WALMART_LOCALITY_UNPROVEN",
+      "Oxylabs did not prove Walmart ZIP 33765; "
+        + `responseZip=${input.result.responseZip ?? "MISSING"}; `
+        + `localityProven=${input.result.localityProven}; `
+        + `trialExhausted=${input.result.trialExhausted}; `
+        + `providerRows=${input.result.offers.length}`,
+    );
   }
   const canonicalIdentity: CanonicalProductIdentity =
     canonicalMatchIdentityFromTarget(input.target);
@@ -397,6 +483,7 @@ export function selectExactTargetedWalmartOffer(input: {
     const offer = withTargetedWalmartIdentityEvidenceTitle(
       observedOffer,
       canonicalIdentity,
+      input.target,
     );
     let normalizedUrl: string;
     try {
@@ -456,12 +543,16 @@ export function selectExactTargetedWalmartOffer(input: {
       matches.push(scored);
     } else {
       const titleDiagnostics = [
+        titleMatch.titleEvidence?.prefixTokens.length
+          ? `PREFIX_TOKENS(${titleMatch.titleEvidence.prefixTokens.join("+")})`
+          : null,
         titleMatch.titleEvidence?.missingTargetTokens.length
           ? `MISSING_TARGET_TOKENS(${titleMatch.titleEvidence.missingTargetTokens.join("+")})`
           : null,
         titleMatch.titleEvidence?.unexplainedCandidateTokens.length
           ? `UNEXPLAINED_CANDIDATE_TOKENS(${titleMatch.titleEvidence.unexplainedCandidateTokens.join("+")})`
           : null,
+        `OBSERVED_TITLE_SHA256(${sha256(observedOffer.title ?? "")})`,
       ].filter((value): value is string => value !== null);
       rejectedChecks.push(
         `${index}:${[...failed, ...titleDiagnostics].join(",")}`,

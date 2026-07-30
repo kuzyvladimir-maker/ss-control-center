@@ -31,6 +31,7 @@ import {
   decideProductTruthTargetedResume,
   PRODUCT_TRUTH_TARGETED_WALMART_RUN_LEASE_MS,
   selectExactTargetedWalmartOffer,
+  WALMART_EXACT_ITEM_PACKAGING_TITLE_NORMALIZATION,
 } from "../product-truth-targeted-walmart-evidence";
 import type { RetailOffer } from "../retail-fetch";
 
@@ -1064,6 +1065,158 @@ test("exact-one Walmart filter rejects fanout and accepts one local 1P row", () 
       trialExhausted: false,
     },
   }), /TARGETED_WALMART_EXACT_OFFER_MISSING/);
+});
+
+test("exact Walmart item normalizes one packaging-only canned word without changing source title", () => {
+  const target = planFor(exactSnapshot()).targets[0];
+  const observedTitle = "Acme Canned Potato Chips Original Bag 8 oz";
+  const selected = selectExactTargetedWalmartOffer({
+    target,
+    result: {
+      offers: [{
+        retailer: "walmart",
+        retailerProductId: target.retailerProductId,
+        title: observedTitle,
+        description: null,
+        keyFeatures: [],
+        imageUrls: [],
+        price: 2.99,
+        currency: "USD",
+        inStock: true,
+        productUrl: "https://www.walmart.com/ip/acme/123456789",
+        zip: "33765",
+        localityEvidence: "zip_scoped",
+        observedAt: "2026-07-19T12:01:00.000Z",
+        packSizeSeen: 1,
+        isMarketplaceItem: false,
+        sellerName: "Walmart.com",
+        sourceApi: "oxylabs",
+        via: "direct",
+        meteredReceiptId: "receipt-canned-1",
+        meteredRunId: "targeted-run-1",
+        meteredApprovalId: "approval-1",
+      }],
+      localityProven: true,
+      responseZip: "33765",
+      trialExhausted: false,
+    },
+  });
+  assert.equal(selected.title, observedTitle);
+  assert.equal(
+    selected.identityEvidenceTitle,
+    "Acme Potato Chips Original Bag 8 oz",
+  );
+  assert.equal(
+    selected.identityEvidenceNormalization,
+    WALMART_EXACT_ITEM_PACKAGING_TITLE_NORMALIZATION,
+  );
+});
+
+test("Walmart canned normalization stays closed for bootstrap identities and variant words", () => {
+  const exactTarget = planFor(exactSnapshot()).targets[0];
+  const bootstrapTarget = planFor(listingBoundBootstrapSnapshot()).targets[0];
+  const offer = {
+    retailer: "walmart",
+    retailerProductId: exactTarget.retailerProductId,
+    title: "Acme Canned Potato Chips Original Bag 8 oz",
+    description: null,
+    keyFeatures: [],
+    imageUrls: [],
+    price: 4.99,
+    currency: "USD",
+    inStock: true,
+    productUrl: "https://www.walmart.com/ip/acme/123456789",
+    zip: "33765",
+    localityEvidence: "zip_scoped",
+    observedAt: "2026-07-19T12:01:00.000Z",
+    packSizeSeen: 1,
+    isMarketplaceItem: false,
+    sellerName: "Walmart.com",
+    sourceApi: "oxylabs",
+    via: "direct",
+    meteredReceiptId: "receipt-reject-1",
+    meteredRunId: "targeted-run-1",
+    meteredApprovalId: "approval-1",
+  } satisfies RetailOffer;
+  assert.throws(
+    () => selectExactTargetedWalmartOffer({
+      target: bootstrapTarget,
+      result: {
+        offers: [offer],
+        localityProven: true,
+        responseZip: "33765",
+        trialExhausted: false,
+      },
+    }),
+    /UNEXPLAINED_CANDIDATE_TOKENS\(canned\)/,
+  );
+  assert.throws(
+    () => selectExactTargetedWalmartOffer({
+      target: exactTarget,
+      result: {
+        offers: [{ ...offer, title: "Acme Potato Chips Original Spicy Bag 8 oz" }],
+        localityProven: true,
+        responseZip: "33765",
+        trialExhausted: false,
+      },
+    }),
+    /UNEXPLAINED_CANDIDATE_TOKENS\(spicy\)/,
+  );
+});
+
+test("Walmart selector diagnostics bind prefix title and locality evidence", () => {
+  const target = planFor(exactSnapshot()).targets[0];
+  const prefixTitle = "Great Value Acme Potato Chips Original Bag 8 oz";
+  const prefixHash = createHash("sha256").update(prefixTitle).digest("hex");
+  const offer = {
+    retailer: "walmart",
+    retailerProductId: target.retailerProductId,
+    title: prefixTitle,
+    description: null,
+    keyFeatures: [],
+    imageUrls: [],
+    price: 4.99,
+    currency: "USD",
+    inStock: true,
+    productUrl: "https://www.walmart.com/ip/acme/123456789",
+    zip: "33765",
+    localityEvidence: "zip_scoped",
+    observedAt: "2026-07-19T12:01:00.000Z",
+    packSizeSeen: 1,
+    isMarketplaceItem: false,
+    sellerName: "Walmart.com",
+    sourceApi: "oxylabs",
+    via: "direct",
+    meteredReceiptId: "receipt-prefix-1",
+    meteredRunId: "targeted-run-1",
+    meteredApprovalId: "approval-1",
+  } satisfies RetailOffer;
+  assert.throws(
+    () => selectExactTargetedWalmartOffer({
+      target,
+      result: {
+        offers: [offer],
+        localityProven: true,
+        responseZip: "33765",
+        trialExhausted: false,
+      },
+    }),
+    new RegExp(
+      `PREFIX_TOKENS\\(great\\+value\\).*OBSERVED_TITLE_SHA256\\(${prefixHash}\\)`,
+    ),
+  );
+  assert.throws(
+    () => selectExactTargetedWalmartOffer({
+      target,
+      result: {
+        offers: [],
+        localityProven: false,
+        responseZip: null,
+        trialExhausted: true,
+      },
+    }),
+    /responseZip=MISSING; localityProven=false; trialExhausted=true; providerRows=0/,
+  );
 });
 
 test("Walmart exact selector preserves known and token modifiers into source variant ID", () => {
