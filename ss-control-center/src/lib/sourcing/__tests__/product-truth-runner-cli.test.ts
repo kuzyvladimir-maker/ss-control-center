@@ -123,6 +123,7 @@ function request(listingKeys: string[]): ProductTruthOperationalPlanRequest {
     createdAt: CREATED_AT,
     expiresAt: EXPIRES_AT,
     listingKeys,
+    providerAcquisitionTargets: [],
     sourcePolicy: {
       procurementZip: "33765",
       retailers: ["walmart", "target", "publix"],

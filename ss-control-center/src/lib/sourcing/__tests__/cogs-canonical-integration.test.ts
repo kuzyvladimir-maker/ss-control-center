@@ -12,6 +12,7 @@ import {
   costOneSku,
   costSourcePolicyAllowsRetailer,
   resolveCostSourcePolicy,
+  resolveSealedProviderAcquisitionQuery,
   runCostComponentsSequentially,
   type CostRetailer,
 } from "../cogs-engine";
@@ -29,6 +30,55 @@ import { readProductTruthSnapshot } from "../product-truth-read-contract";
 
 const HASH_A = "a".repeat(64);
 const HASH_B = "b".repeat(64);
+
+test("sealed provider acquisition delivers only its byte-bound query to the exact runtime variant", () => {
+  const variant = buildCanonicalProductVariantKey({
+    brand: "Birds Eye",
+    productLine: "Steamfresh Sweet Peas",
+    form: "bag",
+    size: "10 oz",
+    outerPackCount: 1,
+  });
+  const sealed = {
+    canonicalVariantId: variant.canonicalVariantId,
+    canonicalIdentityHash: variant.identityHash,
+    queryVersion: "product-truth-provider-query/form-augmented-v1",
+    query: "Birds Eye Steamfresh Sweet Peas bag 10 oz",
+  };
+  assert.equal(
+    resolveSealedProviderAcquisitionQuery({
+      defaultQuery: "Birds Eye Steamfresh Sweet Peas 10 oz",
+      targetVariant: variant,
+      componentCount: 1,
+      componentIndex: 0,
+      sealedProviderAcquisition: sealed,
+    }),
+    sealed.query,
+  );
+  assert.throws(
+    () => resolveSealedProviderAcquisitionQuery({
+      defaultQuery: "old query",
+      targetVariant: variant,
+      componentCount: 1,
+      componentIndex: 0,
+      sealedProviderAcquisition: {
+        ...sealed,
+        canonicalIdentityHash: HASH_A,
+      },
+    }),
+    /SEALED_PROVIDER_ACQUISITION_IDENTITY_MISMATCH/u,
+  );
+  assert.throws(
+    () => resolveSealedProviderAcquisitionQuery({
+      defaultQuery: "old query",
+      targetVariant: variant,
+      componentCount: 2,
+      componentIndex: 0,
+      sealedProviderAcquisition: sealed,
+    }),
+    /SEALED_PROVIDER_ACQUISITION_REQUIRES_ONE_EXACT_COMPONENT/u,
+  );
+});
 
 test("content-only truth does not block an honest UNSOURCEABLE COGS outcome", () => {
   assert.deepEqual(

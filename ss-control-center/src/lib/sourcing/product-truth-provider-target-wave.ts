@@ -602,6 +602,13 @@ export function compileProductTruthProviderTargetWave(input: {
     listingKeys: targets.map(
       (target) => target.representative.listingKey,
     ),
+    providerAcquisitionTargets: targets.map((target) => ({
+      listingKey: target.representative.listingKey,
+      canonicalVariantId: target.canonicalVariantId,
+      canonicalIdentityHash: target.canonicalIdentityHash,
+      queryVersion: target.queryVersion,
+      query: target.query,
+    })),
     sourcePolicy: {
       procurementZip: "33765",
       retailers: ["walmart", "target", "publix"],

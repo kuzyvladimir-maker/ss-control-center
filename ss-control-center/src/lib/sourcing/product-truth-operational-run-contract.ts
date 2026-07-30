@@ -20,6 +20,8 @@ import {
 } from "./product-truth-listing-scope";
 
 export const PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION =
+  "product-truth-operational-plan/1.1.0" as const;
+export const PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION =
   "product-truth-operational-plan/1.0.0" as const;
 export const PRODUCT_TRUTH_OPERATIONAL_APPROVAL_VERSION =
   "product-truth-operational-approval/1.0.0" as const;
@@ -63,10 +65,18 @@ export interface ProductTruthOperationalTarget {
   storeIndex: number;
   sku: string;
   requestedFields: readonly ProductTruthOperationalField[];
+  providerAcquisition?: {
+    canonicalVariantId: string;
+    canonicalIdentityHash: string;
+    queryVersion: string;
+    query: string;
+  } | null;
 }
 
 export interface ProductTruthOperationalPlan {
-  schemaVersion: typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION;
+  schemaVersion:
+    | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION
+    | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION;
   runId: string;
   mode: ProductTruthOperationalMode;
   createdAt: string;
@@ -423,6 +433,13 @@ export interface BuildProductTruthOperationalPlanInput {
   manifest: unknown;
   manifestSha256: string;
   listingKeys: readonly string[];
+  providerAcquisitionTargets?: readonly {
+    listingKey: string;
+    canonicalVariantId: string;
+    canonicalIdentityHash: string;
+    queryVersion: string;
+    query: string;
+  }[];
   sourcePolicy: ProductTruthSourcePolicy;
   providerCeilings: readonly ProductTruthProviderCeiling[];
   verificationPolicy: {
@@ -465,6 +482,74 @@ export function buildProductTruthOperationalPlan(
   if (new Set(input.listingKeys).size !== input.listingKeys.length) {
     fail("OPERATIONAL_SCOPE_INVALID", "listingKeys must not contain duplicates");
   }
+  const providerAcquisitionByListing = new Map<string, {
+    canonicalVariantId: string;
+    canonicalIdentityHash: string;
+    queryVersion: string;
+    query: string;
+  }>();
+  for (const [index, raw] of (input.providerAcquisitionTargets ?? []).entries()) {
+    if (!isRecord(raw)) {
+      fail("OPERATIONAL_INPUT_INVALID", `providerAcquisitionTargets[${index}] must be an object`);
+    }
+    assertExactKeys(raw as unknown as Record<string, unknown>, [
+      "listingKey",
+      "canonicalVariantId",
+      "canonicalIdentityHash",
+      "queryVersion",
+      "query",
+    ], `providerAcquisitionTargets[${index}]`);
+    const listingKey = exactText(raw.listingKey, `providerAcquisitionTargets[${index}].listingKey`, 500);
+    const canonicalIdentityHash = sha256(
+      raw.canonicalIdentityHash,
+      `providerAcquisitionTargets[${index}].canonicalIdentityHash`,
+    );
+    const canonicalVariantId = exactText(
+      raw.canonicalVariantId,
+      `providerAcquisitionTargets[${index}].canonicalVariantId`,
+      80,
+    );
+    if (canonicalVariantId !== `cpv1:${canonicalIdentityHash}`) {
+      fail(
+        "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+        `providerAcquisitionTargets[${index}] variant ID does not bind its identity hash`,
+      );
+    }
+    const queryVersion = exactText(
+      raw.queryVersion,
+      `providerAcquisitionTargets[${index}].queryVersion`,
+      120,
+    );
+    if (queryVersion !== "product-truth-provider-query/form-augmented-v1") {
+      fail(
+        "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+        `providerAcquisitionTargets[${index}] uses an unapproved query contract`,
+      );
+    }
+    const query = exactText(raw.query, `providerAcquisitionTargets[${index}].query`, 500);
+    if (providerAcquisitionByListing.has(listingKey)) {
+      fail(
+        "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+        `providerAcquisitionTargets contains duplicate listing ${listingKey}`,
+      );
+    }
+    providerAcquisitionByListing.set(listingKey, {
+      canonicalVariantId,
+      canonicalIdentityHash,
+      queryVersion,
+      query,
+    });
+  }
+  if (
+    [...providerAcquisitionByListing.keys()].some(
+      (listingKey) => !input.listingKeys.includes(listingKey),
+    )
+  ) {
+    fail(
+      "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+      "providerAcquisitionTargets must be a subset of the sealed listing scope",
+    );
+  }
   const byKey = new Map(manifest.listings.map((listing) => [listing.listingKey, listing]));
   const targets = input.listingKeys.map((listingKey, ordinal): ProductTruthOperationalTarget => {
     exactText(listingKey, `listingKeys[${ordinal}]`, 500);
@@ -489,6 +574,8 @@ export function buildProductTruthOperationalPlan(
       storeIndex: scope.storeIndex,
       sku: scope.sku,
       requestedFields: [...PRODUCT_TRUTH_OPERATIONAL_FIELDS],
+      providerAcquisition:
+        providerAcquisitionByListing.get(scope.listingKey) ?? null,
     };
   });
   const sourcePolicy = validateSourcePolicy(input.sourcePolicy);
@@ -568,8 +655,14 @@ export function parseProductTruthOperationalPlan(
     "maxWallClockMs",
     "claims",
   ], "plan");
-  if (value.schemaVersion !== PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION) {
-    fail("PLAN_INVALID", `plan must use ${PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION}`);
+  const isCurrent = value.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION;
+  const isLegacy = value.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION;
+  if (!isCurrent && !isLegacy) {
+    fail(
+      "PLAN_INVALID",
+      `plan must use ${PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION}`
+      + ` or ${PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION}`,
+    );
   }
   const runId = safeIdentifier(value.runId, "plan.runId");
   if (value.mode !== "CANARY" && value.mode !== "WAVE") {
@@ -617,6 +710,7 @@ export function parseProductTruthOperationalPlan(
       "storeIndex",
       "sku",
       "requestedFields",
+      ...(isCurrent ? ["providerAcquisition"] : []),
     ], `plan.targets[${ordinal}]`);
     if (raw.ordinal !== ordinal) {
       fail("OPERATIONAL_SCOPE_INVALID", "target ordinals must be contiguous and ordered");
@@ -642,6 +736,58 @@ export function parseProductTruthOperationalPlan(
     ) {
       fail("OPERATIONAL_SCOPE_INVALID", `target ${ordinal} must request the complete v1 field set`);
     }
+    let providerAcquisition: ProductTruthOperationalTarget["providerAcquisition"];
+    if (isCurrent) {
+      if (raw.providerAcquisition === null) {
+        providerAcquisition = null;
+      } else {
+        if (!isRecord(raw.providerAcquisition)) {
+          fail("PLAN_INVALID", `target ${ordinal}.providerAcquisition must be an object or null`);
+        }
+        assertExactKeys(raw.providerAcquisition, [
+          "canonicalVariantId",
+          "canonicalIdentityHash",
+          "queryVersion",
+          "query",
+        ], `target ${ordinal}.providerAcquisition`);
+        const canonicalIdentityHash = sha256(
+          raw.providerAcquisition.canonicalIdentityHash,
+          `target ${ordinal}.providerAcquisition.canonicalIdentityHash`,
+        );
+        const canonicalVariantId = exactText(
+          raw.providerAcquisition.canonicalVariantId,
+          `target ${ordinal}.providerAcquisition.canonicalVariantId`,
+          80,
+        );
+        if (canonicalVariantId !== `cpv1:${canonicalIdentityHash}`) {
+          fail(
+            "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+            `target ${ordinal} variant ID does not bind its identity hash`,
+          );
+        }
+        const queryVersion = exactText(
+          raw.providerAcquisition.queryVersion,
+          `target ${ordinal}.providerAcquisition.queryVersion`,
+          120,
+        );
+        if (queryVersion !== "product-truth-provider-query/form-augmented-v1") {
+          fail(
+            "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+            `target ${ordinal} uses an unapproved query contract`,
+          );
+        }
+        providerAcquisition = {
+          canonicalVariantId,
+          canonicalIdentityHash,
+          queryVersion,
+          query: exactText(
+            raw.providerAcquisition.query,
+            `target ${ordinal}.providerAcquisition.query`,
+            500,
+          ),
+        };
+      }
+    }
     return {
       ordinal,
       listingKey: scope.listingKey,
@@ -650,6 +796,7 @@ export function parseProductTruthOperationalPlan(
       storeIndex: scope.storeIndex,
       sku: scope.sku,
       requestedFields: [...PRODUCT_TRUTH_OPERATIONAL_FIELDS],
+      ...(isCurrent ? { providerAcquisition: providerAcquisition ?? null } : {}),
     };
   });
   if (new Set(targets.map((target) => target.listingKey)).size !== targets.length) {
@@ -713,7 +860,9 @@ export function parseProductTruthOperationalPlan(
   }
 
   return {
-    schemaVersion: PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION,
+    schemaVersion: isCurrent
+      ? PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION
+      : PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION,
     runId,
     mode,
     createdAt,

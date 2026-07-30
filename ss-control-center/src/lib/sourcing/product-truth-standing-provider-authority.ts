@@ -10,6 +10,7 @@ import {
 } from "./metered-call-guard";
 import {
   PRODUCT_TRUTH_OPERATIONAL_APPROVAL_VERSION,
+  PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION,
   PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION,
   expectedProductTruthExecutionConfirmation,
   productTruthOperationalSha256,
@@ -37,7 +38,7 @@ export const PRODUCT_TRUTH_STANDING_AUTHORIZATION_VERSION =
  * prevents a modified worktree policy from silently expanding provider authority.
  */
 export const PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256 =
-  "07bb436f4ad2541d7dbb45dfdd1995042d479baa748721c4a28d0678bc8393f4" as const;
+  "cfd78218cf028174a473d508d0f6947e7a5d4dd722be9b5983d06e0ea29751e0" as const;
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
@@ -600,7 +601,10 @@ function asRecord(value: unknown, label: string): Record<string, unknown> {
 function planManifestSha256(
   plan: SupportedPlan,
 ): string {
-  if (plan.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION) {
+  if (
+    plan.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION
+    || plan.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION
+  ) {
     return exactSha(plan.manifest.sha256, "plan.manifest.sha256");
   }
   const manifestShas = new Set<string>();
@@ -724,7 +728,8 @@ export function assertProductTruthPlanEligibleForStandingAuthority(input: {
     fail("STANDING_AUTHORITY_PLAN_NOT_CURRENT", "sealed plan is not current");
   }
   if (
-    !input.policy.allowedPlanSchemaVersions.includes(input.plan.schemaVersion)
+    !(input.policy.allowedPlanSchemaVersions as readonly string[])
+      .includes(input.plan.schemaVersion)
   ) {
     fail(
       "STANDING_AUTHORITY_PLAN_INELIGIBLE",

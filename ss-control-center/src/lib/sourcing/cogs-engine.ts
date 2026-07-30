@@ -940,7 +940,36 @@ export type CostOptions = {
   openclaw?: boolean;
   reidentify?: boolean;
   dry?: boolean;
+  sealedProviderAcquisition?: {
+    canonicalVariantId: string;
+    canonicalIdentityHash: string;
+    queryVersion: string;
+    query: string;
+  } | null;
 };
+
+export function resolveSealedProviderAcquisitionQuery(input: {
+  defaultQuery: string;
+  targetVariant: CanonicalProductVariantKey;
+  componentCount: number;
+  componentIndex: number;
+  sealedProviderAcquisition?: CostOptions["sealedProviderAcquisition"];
+}): string {
+  const sealed = input.sealedProviderAcquisition;
+  if (!sealed) return input.defaultQuery;
+  if (input.componentCount !== 1 || input.componentIndex !== 0) {
+    throw new Error("SEALED_PROVIDER_ACQUISITION_REQUIRES_ONE_EXACT_COMPONENT");
+  }
+  if (
+    sealed.queryVersion !== "product-truth-provider-query/form-augmented-v1"
+    || sealed.canonicalVariantId !== input.targetVariant.canonicalVariantId
+    || sealed.canonicalIdentityHash !== input.targetVariant.identityHash
+    || sealed.canonicalVariantId !== `cpv1:${sealed.canonicalIdentityHash}`
+  ) {
+    throw new Error("SEALED_PROVIDER_ACQUISITION_IDENTITY_MISMATCH");
+  }
+  return sealed.query;
+}
 
 export async function costOneSku(db: Client, opts: CostOptions): Promise<CostResult> {
   const sourcePolicy = resolveCostSourcePolicy(opts.sourcePolicy);
@@ -1147,6 +1176,13 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       // third-party products never receive this fallback.
       if (ob && !costTarget.size) costTarget.size = "1 count";
       const targetVariant = buildCanonicalProductVariantKey(costTarget);
+      t.query = resolveSealedProviderAcquisitionQuery({
+        defaultQuery: t.query,
+        targetVariant,
+        componentCount: targets.length,
+        componentIndex: t.idx,
+        sealedProviderAcquisition: opts.sealedProviderAcquisition,
+      });
       if (ob) {
         parts.push({
           ...base,

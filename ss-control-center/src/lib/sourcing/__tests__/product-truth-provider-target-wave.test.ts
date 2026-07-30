@@ -523,6 +523,16 @@ test("compiler selects one listing per unique target and excludes metered termin
     ["walmart:1:B1", "amazon:1:E1"],
   );
   assert.deepEqual(
+    wave.operationalRequest.providerAcquisitionTargets,
+    wave.targets.map((target) => ({
+      listingKey: target.representative.listingKey,
+      canonicalVariantId: target.canonicalVariantId,
+      canonicalIdentityHash: target.canonicalIdentityHash,
+      queryVersion: target.queryVersion,
+      query: target.query,
+    })),
+  );
+  assert.deepEqual(
     wave.operationalRequest.sourcePolicy.retailers,
     ["walmart", "target", "publix"],
   );

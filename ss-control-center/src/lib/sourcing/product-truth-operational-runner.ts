@@ -345,6 +345,7 @@ export const PRODUCT_TRUTH_OPERATIONAL_PRODUCTION_ADAPTER: ProductTruthOperation
       channel: target.channel,
       storeIndex: target.storeIndex,
       sourcePolicy: sourcePolicy(plan),
+      sealedProviderAcquisition: target.providerAcquisition ?? null,
       dry: false,
     });
   },

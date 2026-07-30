@@ -415,7 +415,7 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
     "data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
   );
   const providerPolicyPath = resolve(
-    "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v2.json",
+    "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v3.json",
   );
   const noPaidPolicyPath = resolve(
     "data/audits/product-truth-legacy-bridge/standing-policy-20260727-v1.json",
