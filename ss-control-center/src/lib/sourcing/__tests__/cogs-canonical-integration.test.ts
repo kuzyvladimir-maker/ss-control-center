@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { createClient } from "@libsql/client";
 
 import {
+  blockingCostSourceAttempts,
   COGS_COMPONENT_CONCURRENCY,
   DEFAULT_COST_SOURCE_POLICY,
   costOneSku,
@@ -28,6 +29,35 @@ import { readProductTruthSnapshot } from "../product-truth-read-contract";
 
 const HASH_A = "a".repeat(64);
 const HASH_B = "b".repeat(64);
+
+test("content-only truth does not block an honest UNSOURCEABLE COGS outcome", () => {
+  assert.deepEqual(
+    blockingCostSourceAttempts([
+      {
+        source: "oxylabs:walmart",
+        status: "completed",
+        detail: "ZIP_SCOPED:33765",
+      },
+      {
+        source: "unwrangle:target",
+        status: "content_only",
+        detail: "LOCALITY_PROOF_UNAVAILABLE",
+      },
+    ]),
+    [],
+  );
+  assert.deepEqual(
+    blockingCostSourceAttempts([
+      { source: "oxylabs:walmart", status: "failed" },
+      { source: "unwrangle:target", status: "unavailable" },
+      { source: "unwrangle:target", status: "content_only" },
+    ]).map((attempt) => `${attempt.source}:${attempt.status}`),
+    [
+      "oxylabs:walmart:failed",
+      "unwrangle:target:unavailable",
+    ],
+  );
+});
 
 function hashKey(value: string): string {
   return createHash("sha256").update(value).digest("hex");

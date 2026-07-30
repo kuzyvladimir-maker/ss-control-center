@@ -907,6 +907,23 @@ export async function runCostComponentsSequentially<T>(
   for (const component of components) await run(component);
 }
 
+export function blockingCostSourceAttempts(
+  attempts: readonly {
+    source: string;
+    status: "completed" | "content_only" | "unavailable" | "failed";
+    detail?: string;
+  }[],
+) {
+  // `content_only` is a successful provider observation whose price/locality
+  // evidence is deliberately ineligible for COGS. It may still contribute an
+  // exact content donor, and a missing eligible price must become the honest
+  // typed UNSOURCEABLE outcome instead of failing the whole listing. Transport
+  // failure or a source that could not be queried remains an execution blocker.
+  return attempts.filter((attempt) => (
+    attempt.status === "failed" || attempt.status === "unavailable"
+  ));
+}
+
 export type CostOptions = {
   sku: string;
   channel: string; // walmart | amazon
@@ -1191,10 +1208,10 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         );
       }
       const cost = lookup.hit;
-      const incompleteSources = (res?.sourceAttempts ?? []).filter((attempt) => attempt.status !== "completed");
-      if (!cost && incompleteSources.length) {
+      const blockingSources = blockingCostSourceAttempts(res?.sourceAttempts ?? []);
+      if (!cost && blockingSources.length) {
         throw new Error(
-          `SOURCE_COVERAGE_INCOMPLETE ${incompleteSources.map((attempt) => `${attempt.source}:${attempt.status}`).join(",")}`,
+          `SOURCE_COVERAGE_INCOMPLETE ${blockingSources.map((attempt) => `${attempt.source}:${attempt.status}`).join(",")}`,
         );
       }
       if (cost == null) {
