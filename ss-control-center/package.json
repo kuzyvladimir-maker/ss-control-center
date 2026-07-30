@@ -60,6 +60,7 @@
     "product-truth:consensus-reuse-wave": "node --import tsx scripts/product-truth-consensus-reuse-wave.ts",
     "product-truth:component-acquisition-scope": "node --import tsx scripts/build-product-truth-component-acquisition-scope.ts",
     "product-truth:provider-target-wave": "node --import tsx scripts/build-product-truth-provider-target-wave.ts",
+    "product-truth:search-query-calibration": "node --import tsx scripts/build-product-truth-search-query-calibration.ts",
     "product-truth:component-resolution-plan": "node --import tsx scripts/build-product-truth-component-resolution-materialization-plan.ts",
     "product-truth:component-resolution-wave": "node --import tsx scripts/product-truth-component-resolution-wave.ts",
     "product-truth:all-components-recipe-wave": "node --import tsx scripts/product-truth-all-components-recipe-wave.ts",

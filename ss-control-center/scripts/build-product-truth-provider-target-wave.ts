@@ -19,6 +19,9 @@ import {
 import {
   renderProductTruthOperationalJson,
 } from "../src/lib/sourcing/product-truth-operational-run-contract";
+import type {
+  ProductTruthSearchQueryCalibration,
+} from "../src/lib/sourcing/product-truth-search-query-calibration";
 import {
   compileProductTruthProviderTargetWave,
   PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION,
@@ -36,6 +39,8 @@ type Options = {
   maximumTargets: number;
   componentScopePath: string;
   componentScopeShaPath: string;
+  searchQueryCalibrationPath: string;
+  searchQueryCalibrationShaPath: string;
   authoritativeManifestSha256: string;
   url: string;
   allowRemote: boolean;
@@ -61,6 +66,7 @@ function usage(): string {
     "    --generated-at ISO --expires-at ISO --wave-id ID",
     `    --max-targets INTEGER  # 1-${PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS}`,
     "    --component-scope ABS_JSON --component-scope-sha ABS_SHA_FILE",
+    "    --search-calibration ABS_JSON --search-calibration-sha ABS_SHA_FILE",
     "    --manifest-sha256 SHA",
     "    (--url URL | --url-env ENV) [--allow-remote --auth-token-env ENV]",
     "    --out ABS_NEW_DIR",
@@ -102,6 +108,8 @@ function parseOptions(argv: readonly string[]): Options {
     "--max-targets",
     "--component-scope",
     "--component-scope-sha",
+    "--search-calibration",
+    "--search-calibration-sha",
     "--manifest-sha256",
     "--url",
     "--url-env",
@@ -170,6 +178,14 @@ function parseOptions(argv: readonly string[]): Options {
     componentScopeShaPath: absolutePath(
       values.get("--component-scope-sha"),
       "--component-scope-sha",
+    ),
+    searchQueryCalibrationPath: absolutePath(
+      values.get("--search-calibration"),
+      "--search-calibration",
+    ),
+    searchQueryCalibrationShaPath: absolutePath(
+      values.get("--search-calibration-sha"),
+      "--search-calibration-sha",
     ),
     authoritativeManifestSha256: exactSha(
       values.get("--manifest-sha256"),
@@ -409,10 +425,16 @@ async function writeNew(path: string, content: string): Promise<void> {
 }
 
 async function run(options: Options): Promise<void> {
-  const componentScope = await readBoundJson(
-    options.componentScopePath,
-    options.componentScopeShaPath,
-  );
+  const [componentScope, searchQueryCalibration] = await Promise.all([
+    readBoundJson(
+      options.componentScopePath,
+      options.componentScopeShaPath,
+    ),
+    readBoundJson(
+      options.searchQueryCalibrationPath,
+      options.searchQueryCalibrationShaPath,
+    ),
+  ]);
   const capture = await captureTerminalProviderAttempts(options);
   const captureJson = renderProductTruthProviderAttemptCapture(capture);
   const captureSha256 = sha256(captureJson);
@@ -427,6 +449,10 @@ async function run(options: Options): Promise<void> {
       componentScope.value as ProductTruthComponentAcquisitionScope,
     componentScopeJson: componentScope.json,
     componentScopeSha256: componentScope.sha256,
+    searchQueryCalibration:
+      searchQueryCalibration.value as ProductTruthSearchQueryCalibration,
+    searchQueryCalibrationJson: searchQueryCalibration.json,
+    searchQueryCalibrationSha256: searchQueryCalibration.sha256,
     attemptCapture: capture,
     attemptCaptureJson: captureJson,
     attemptCaptureSha256: captureSha256,
@@ -440,7 +466,7 @@ async function run(options: Options): Promise<void> {
   const requestSha256 = sha256(requestJson);
   const indexJson = renderProductTruthOperationalJson({
     schemaVersion:
-      "product-truth-provider-target-wave-artifact-index/1.0.0",
+      "product-truth-provider-target-wave-artifact-index/1.1.0",
     generatedAt: wave.generatedAt,
     waveId: wave.waveId,
     databaseTargetFingerprint: wave.databaseTargetFingerprint,
@@ -448,6 +474,11 @@ async function run(options: Options): Promise<void> {
     counts: wave.counts,
     claims: wave.claims,
     artifacts: [
+      {
+        role: "search_query_calibration",
+        file: "search-query-calibration.json",
+        sha256: searchQueryCalibration.sha256,
+      },
       {
         role: "terminal_provider_attempt_capture",
         file: "terminal-provider-attempt-capture.json",
@@ -469,6 +500,14 @@ async function run(options: Options): Promise<void> {
   await mkdir(dirname(options.outDir), { recursive: true, mode: 0o700 });
   await mkdir(options.outDir, { recursive: false, mode: 0o700 });
   await Promise.all([
+    writeNew(
+      resolve(options.outDir, "search-query-calibration.json"),
+      searchQueryCalibration.json,
+    ),
+    writeNew(
+      resolve(options.outDir, "search-query-calibration.sha256"),
+      `${searchQueryCalibration.sha256}\n`,
+    ),
     writeNew(
       resolve(options.outDir, "terminal-provider-attempt-capture.json"),
       captureJson,

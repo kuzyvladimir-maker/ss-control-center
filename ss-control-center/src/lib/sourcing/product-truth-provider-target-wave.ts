@@ -15,11 +15,17 @@ import {
 import {
   renderProductTruthOperationalJson,
 } from "./product-truth-operational-run-contract";
+import {
+  calibratedProductTruthProviderQuery,
+  PRODUCT_TRUTH_SEARCH_QUERY_CALIBRATION_VERSION,
+  validateBoundProductTruthSearchQueryCalibration,
+  type ProductTruthSearchQueryCalibration,
+} from "./product-truth-search-query-calibration";
 
 export const PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION =
   "product-truth-provider-attempt-capture/1.0.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_VERSION =
-  "product-truth-provider-target-wave/1.0.0" as const;
+  "product-truth-provider-target-wave/1.1.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS = 16;
 
 const TERMINAL_ITEM_STATUSES = [
@@ -63,6 +69,8 @@ export interface ProductTruthProviderTargetWaveTarget {
   acquisitionPriority: number;
   canonicalVariantId: string;
   canonicalIdentityHash: string;
+  queryVersion:
+    ProductTruthSearchQueryCalibration["queryContracts"]["candidate"];
   query: string;
   targetIdentity: ProductTruthComponentAcquisitionTarget["targetIdentity"];
   representative: {
@@ -92,6 +100,14 @@ export interface ProductTruthProviderTargetWave {
       sha256: string;
       generatedAt: string;
     };
+    searchQueryCalibration: {
+      schemaVersion:
+        typeof PRODUCT_TRUTH_SEARCH_QUERY_CALIBRATION_VERSION;
+      sha256: string;
+      generatedAt: string;
+      admittedForms: string[];
+      admittedProviderTargets: number;
+    };
     terminalAttemptCapture: {
       schemaVersion:
         typeof PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION;
@@ -106,6 +122,8 @@ export interface ProductTruthProviderTargetWave {
       "ONE_VALID_SINGLE_TARGET_LISTING_HIGHEST_SALES_THEN_WALMART_THEN_REPAIR_PRIORITY";
     terminalAttemptPolicy:
       "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT";
+    queryAdmission:
+      "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION";
     retailers: readonly ["walmart", "target", "publix"];
     procurementZip: "33765";
     maximumTargets: number;
@@ -116,6 +134,8 @@ export interface ProductTruthProviderTargetWave {
   };
   counts: {
     providerTargets: number;
+    calibrationAdmittedProviderTargets: number;
+    calibrationExcludedProviderTargets: number;
     terminalAttemptTargets: number;
     noSingleTargetRepresentative: number;
     eligibleTargets: number;
@@ -337,21 +357,6 @@ function representativeCompare(
     || left.componentIndex - right.componentIndex;
 }
 
-function targetQuery(
-  target: ProductTruthComponentAcquisitionTarget,
-): string {
-  const identity = target.targetIdentity;
-  const values = [
-    identity.brand,
-    identity.productLine,
-    identity.flavor,
-    identity.size,
-  ].flatMap((value) => (
-    typeof value === "string" && value.trim() ? [value.trim()] : []
-  ));
-  return [...new Set(values)].join(" ");
-}
-
 function targetCompare(
   left: ProductTruthComponentAcquisitionTarget,
   right: ProductTruthComponentAcquisitionTarget,
@@ -372,6 +377,9 @@ export function compileProductTruthProviderTargetWave(input: {
   componentScope: ProductTruthComponentAcquisitionScope;
   componentScopeJson: string;
   componentScopeSha256: string;
+  searchQueryCalibration: ProductTruthSearchQueryCalibration;
+  searchQueryCalibrationJson: string;
+  searchQueryCalibrationSha256: string;
   attemptCapture: ProductTruthProviderAttemptCapture;
   attemptCaptureJson: string;
   attemptCaptureSha256: string;
@@ -436,6 +444,30 @@ export function compileProductTruthProviderTargetWave(input: {
       "component scope belongs to another database target",
     );
   }
+  const searchQueryCalibration =
+    validateBoundProductTruthSearchQueryCalibration({
+      calibration: input.searchQueryCalibration,
+      json: input.searchQueryCalibrationJson,
+      sha256: input.searchQueryCalibrationSha256,
+    });
+  if (
+    searchQueryCalibration.source.componentScope.sha256
+      !== componentScopeSha256
+    || searchQueryCalibration.source.componentScope.schemaVersion
+      !== PRODUCT_TRUTH_COMPONENT_ACQUISITION_SCOPE_VERSION
+    || searchQueryCalibration.paidWaveAdmission
+      !== "CALIBRATED_FORM_QUERY_TARGETS_AVAILABLE"
+  ) {
+    fail(
+      "PROVIDER_TARGET_WAVE_CALIBRATION_MISMATCH",
+      "search calibration is not admitted for this exact component scope",
+    );
+  }
+  const calibratedTargetById = new Map(
+    searchQueryCalibration.admittedProviderTargets.map(
+      (target) => [target.canonicalVariantId, target],
+    ),
+  );
   const attemptCapture = validateAttemptCapture(
     input.attemptCapture,
     input.attemptCaptureJson,
@@ -448,10 +480,28 @@ export function compileProductTruthProviderTargetWave(input: {
     );
   }
 
-  const providerTargets = input.componentScope.targets
+  const allProviderTargets = input.componentScope.targets
     .filter((target) =>
       target.acquisitionLane === "PROVIDER_IDENTITY_ACQUISITION")
     .sort(targetCompare);
+  const providerTargets = allProviderTargets.filter((target) => {
+    const calibrated = calibratedTargetById.get(target.canonicalVariantId);
+    if (
+      !calibrated
+      || calibrated.canonicalIdentityHash !== target.canonicalIdentityHash
+    ) {
+      return false;
+    }
+    const compiledQuery = calibratedProductTruthProviderQuery({
+      identity: target.targetIdentity,
+      admittedForms: searchQueryCalibration.admittedForms,
+    });
+    return compiledQuery.calibrated
+      && compiledQuery.queryVersion
+        === searchQueryCalibration.queryContracts.candidate
+      && compiledQuery.query === calibrated.calibratedQuery
+      && calibrated.currentQuery !== calibrated.calibratedQuery;
+  });
   const listingTargetIds = new Map<string, Set<string>>();
   for (const target of input.componentScope.targets) {
     for (const dependency of target.dependencies) {
@@ -523,7 +573,9 @@ export function compileProductTruthProviderTargetWave(input: {
       acquisitionPriority: target.acquisitionPriority,
       canonicalVariantId: target.canonicalVariantId,
       canonicalIdentityHash: target.canonicalIdentityHash,
-      query: targetQuery(target),
+      queryVersion: searchQueryCalibration.queryContracts.candidate,
+      query: calibratedTargetById.get(target.canonicalVariantId)!
+        .calibratedQuery,
       targetIdentity: target.targetIdentity,
       representative: {
         listingKey: representative.listingKey,
@@ -615,6 +667,17 @@ export function compileProductTruthProviderTargetWave(input: {
         sha256: componentScopeSha256,
         generatedAt: input.componentScope.generatedAt,
       },
+      searchQueryCalibration: {
+        schemaVersion: PRODUCT_TRUTH_SEARCH_QUERY_CALIBRATION_VERSION,
+        sha256: exactSha(
+          input.searchQueryCalibrationSha256,
+          "search calibration SHA-256",
+        ),
+        generatedAt: searchQueryCalibration.generatedAt,
+        admittedForms: searchQueryCalibration.admittedForms,
+        admittedProviderTargets:
+          searchQueryCalibration.counts.admittedProviderTargets,
+      },
       terminalAttemptCapture: {
         schemaVersion: PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION,
         sha256: exactSha(
@@ -631,6 +694,8 @@ export function compileProductTruthProviderTargetWave(input: {
         "ONE_VALID_SINGLE_TARGET_LISTING_HIGHEST_SALES_THEN_WALMART_THEN_REPAIR_PRIORITY",
       terminalAttemptPolicy:
         "EXCLUDE_EXPLICIT_TARGET_OR_SINGLE_TARGET_LISTING_AFTER_METERED_TERMINAL_ATTEMPT",
+      queryAdmission:
+        "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
       retailers: ["walmart", "target", "publix"],
       procurementZip: "33765",
       maximumTargets: input.maximumTargets,
@@ -640,7 +705,10 @@ export function compileProductTruthProviderTargetWave(input: {
       bjsAllowed: false,
     },
     counts: {
-      providerTargets: providerTargets.length,
+      providerTargets: allProviderTargets.length,
+      calibrationAdmittedProviderTargets: providerTargets.length,
+      calibrationExcludedProviderTargets:
+        allProviderTargets.length - providerTargets.length,
       terminalAttemptTargets: terminalAttemptTargets.length,
       noSingleTargetRepresentative:
         targetsWithoutSingleTargetRepresentative.length,
