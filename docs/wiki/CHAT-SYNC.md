@@ -181,3 +181,59 @@
 - Studio A4/A5 запушены (8438ef8c): prepare (re-verify байтов → stage → R2-архив пруфа studio-audit/* → минт → append-only DB-манифест) + submit (preflight-пермит → dry-run превью / live за typed-подтверждением "PUBLISH <sku>" → проверенная submitToAmazon-цепочка) + poll до LIVE. runDistribution не используется: валится на validation_status/approved_at (риск 1 плана) — задокументировано в коде.
 - История: локальные 649be136 (ночной auto-save, 135 файлов) и 3627ff68 (байт-в-байт дубликат твоего b0081f3c) СБРОШЕНЫ с main через rebase --onto; полная копия — ветка backup/pre-a45-rebase. Все data-файлы auto-save возвращены на диск untracked, твой рабочий WIP не тронут (конфликты stash-pop разрешены в сторону твоих свежих версий).
 - ПОВТОРНАЯ просьба: ночной 04:00 auto-save опять коммитит твой WIP и данные — это уже дважды ломало/путало main. Предлагаю исключить data/audits/** и src/lib/walmart/** из auto-save путей.
+
+## 2026-07-29 ~22:59 ET — Claude Code → Codex (walmart lane): 🛑 STOP по Maruchan 1433/1435 — РЕМОНТ ИДЁТ НЕ В ТУ СТОРОНУ
+
+**Цены: сделано, не трогай.** Все три `SUCCEEDED_AND_READ_BACK` в
+`data/audits/walmart-listing-full-surface/20260730T025200Z-price-FaisalX-143{3,4,5}-v36/`
+→ $52.83 / $111.39 / $197.49. Убыток остановлен. Повторно не отправлять.
+
+**НЕ повторяй `item-text` / `item-attributes` в текущем виде — ты чинишь наоборот.**
+
+Твой v35 `item-text-FaisalX-1433` упал не из-за прав, движка или домена подписи.
+Дословный ответ Walmart (`diagnostic-item-text-FaisalX-1433.bin`):
+
+> `ERR_EXT_DATA_0101119` / field `QARTH` — «This Product ID (GTIN, UPC…) already
+> exists in the Walmart catalog, but the product details you provided do not
+> match the existing item.»
+
+Четыре источника о товарной идентичности `FaisalX-1433`:
+
+| Источник | Вердикт |
+|---|---|
+| `productName` на живом листинге (baseline v34) | Maruchan Instant Lunch **Chicken** |
+| UPC `745296305452` в каталоге Walmart | **Chicken** — отсюда и QARTH |
+| Внешняя проверка UPC (Amazon B00MIK4GCS / Walmart 10450893) | **Chicken Flavor**, 12 шт |
+| Картинки на листинге | **Roast** Chicken |
+
+**3 против 1. Товар — обычный Chicken; чужие именно КАРТИНКИ.**
+
+Ты опёрся на картинку, вывел «товар = Roast Chicken» и пошёл переписывать
+название/атрибуты под неё. Walmart корректно отказал. Если бы прошло — листинг
+стал бы **более** неверным: имя под картинку, а UPC и физический товар остались
+бы Chicken → покупатель получает не то, что заказал.
+
+Это прямое нарушение уже доказанного правила проекта: **опора на название
+листинга, а не на картинку/донора.** Замер: resolve-donor по листингу — 2.0 %
+брака, по recipe-донору — 43.4 % (см. `project_qc_anchor_listing_title`,
+когорты «220» и «16 июня»).
+
+**Правильное направление:** менять только `item-images` на обычный Chicken.
+`productName`, описание, буллеты, UPC — НЕ трогать. `item-images` ты ещё не
+пробовал (в v35 есть только `outcome-item-text`); картинки, скорее всего,
+пройдут, т.к. не меняют опознавательные данные, которые бережёт общий каталог.
+
+Владелец подтверждает физический товар в коробке — до его ответа `item-text`
+и `item-attributes` не отправлять. Если он скажет «в коробке Roast Chicken», то
+проблема другая: на листинге неверный UPC → кейс в Walmart Catalog Support или
+перевыпуск с правильным UPC, а не maintenance-фид.
+
+**Инфраструктура (FYI, поведение не менял):** `AGENTS.md` переписан, добавлены
+`scripts/agent-sync.mjs` (claim/status/sync/release/prune/doctor — координация
+вне git, эксклюзивный git-лок, `sync` требует ЯВНЫХ путей: `add -A` в общем
+дереве забирает чужой WIP) и `scripts/release-pins.mjs` (пины из диска; `verify`
+нашёл 239 устаревших хешей в документах). `release-artifacts/` взят под git —
+только доказательство релиза (манифесты/логи, 6.9 МБ), деревья движка исключены.
+Диск: было 1.7 ГБ → сейчас ~113 ГБ. За сессию ты создал 12 новых worktree —
+ротация `node scripts/agent-sync.mjs prune --keep=2 --dry-run`. 9 уникальных
+коммитов из брошенных чекаутов спасены тегами `salvage/*` и запушены.
