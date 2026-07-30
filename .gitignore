@@ -33,3 +33,21 @@ docs/wiki/.brain-graph.json
 # >100MB local DB artifacts (GitHub hard limit) — keep local only
 ss-control-center/data/walmart-new-sku-engine/rehearsals/
 ss-control-center/data/walmart-new-sku-engine/activation/backups/
+
+# release-artifacts (правило от 2026-07-29) ----------------------------------
+# ДО этой даты весь каталог был вне git. Следствие: шесть обязательных
+# командных путей, на которые ссылались действующие ранбуки как на
+# «единственно допустимую команду», физически исчезли вместе с запиненным
+# коммитом 78e06649… — целые линии стали неисполнимы.
+#
+# Разделение: ДОКАЗАТЕЛЬСТВО релиза (манифест + SHA + сертификат + логи, ~7 МБ)
+# версионируется. РАБОЧИЕ ДЕРЕВЬЯ движка (4+ ГБ) — нет: они воспроизводятся
+# побайтово из запиненного коммита через `git worktree add`.
+release-artifacts/**
+!release-artifacts/*/
+!release-artifacts/*.md
+!release-artifacts/*/release-manifest.json
+!release-artifacts/*/release-manifest.sha256
+!release-artifacts/*/release-certificate.json
+!release-artifacts/*/resolution.json
+!release-artifacts/*/*.log

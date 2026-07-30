@@ -1,0 +1,96 @@
+{
+  "baseScopeSha256": "b536d131297609f66feeecaa10746e7d2eceed48a844fb8a1f5d6df319a6b412",
+  "canonicalBindingResolutions": [
+    {
+      "donorProductId": "0ee386db-cf57-48c0-aecf-7364c0dbbce2",
+      "existingCanonicalVariantId": "cpv1:66a15f356a99a30d94d507b6fb1f1cdf6d158694df277393dba886158ea018c4",
+      "existingDecisionId": "dpvd:4cfb563632ff2da8ca05846cf5edb611cbd192150bfa04c2b982d6f267670b0d",
+      "expectedBindingRowSha256": "960039dc71dac0ee863a83fcde243a68d6c980d94389052098a98b9cb741d92c",
+      "expectedListingKeys": [
+        "walmart:1:RizwanX-3035",
+        "walmart:1:RizwanX-3036"
+      ],
+      "expectedProposedCanonicalVariantId": "cpv1:6fab88af18ac82610ea70920e2cf86f8da3d494c0d828ad7b994a0b6c0b93721",
+      "rationale": "REUSE_EXISTING_EXACT_CANONICAL_BINDING"
+    }
+  ],
+  "canonicalBindingSnapshotSha256": "7c844d09a8d073b4e167bc1de1aae7c7b7ef048d87fc687b6f195e3546b71b6a",
+  "claims": {
+    "authorizesExecution": false,
+    "createsAdditionalCatalog": false,
+    "databaseWrites": 0,
+    "exactExistingBindingRequired": true,
+    "humanReviewedFieldPartition": true,
+    "marketplaceMutations": 0,
+    "paidCalls": 0,
+    "providerCalls": 0,
+    "retailerFetches": 0,
+    "samePhysicalDonorRequired": true
+  },
+  "fieldPartitionResolutions": [
+    {
+      "chosenCanonicalVariantId": "cpv1:a79193ca90826ea62c337e9c4b843d8974d0d9115ef8fc719343d8f0adc43503",
+      "chosenListingKey": "walmart:1:RizwanX-233",
+      "donorProductId": "2df3caf6-a0a5-49f2-9486-968c899408cb",
+      "expectedGroupEvidenceSha256": "6172078f747ad445e92f836964cbabbf42ad2037f3e04a41a4f5d91a83a965cd",
+      "expectedListingKeys": [
+        "walmart:1:RizwanX-233",
+        "walmart:1:RizwanX-234"
+      ],
+      "expectedProposedCanonicalVariantIds": [
+        "cpv1:a79193ca90826ea62c337e9c4b843d8974d0d9115ef8fc719343d8f0adc43503",
+        "cpv1:e338bdda4fe302f3f136fb6b0b969adf4a42adfe4eb0b449ea0ff6822f970b42"
+      ],
+      "rationale": "SAME_PHYSICAL_DONOR_NORMALIZE_FIELD_PARTITION"
+    },
+    {
+      "chosenCanonicalVariantId": "cpv1:d9d9b457a29c43805aafc3de3540bb18f639a10c6820b2510b3cc06de5e8960e",
+      "chosenListingKey": "walmart:1:RizwanX-599",
+      "donorProductId": "454665a9-fd6d-4d69-84ee-78715fea2f80",
+      "expectedGroupEvidenceSha256": "b122724e4b93bdd6bf1470d75f4ab0e6f91bef123c2d96ffad340650feb5e0ae",
+      "expectedListingKeys": [
+        "walmart:1:RizwanX-599",
+        "walmart:1:RizwanX-600"
+      ],
+      "expectedProposedCanonicalVariantIds": [
+        "cpv1:8de918ae72bbabe1d304e63c681802ad496b3e78ae66a28fa2861a28116724b6",
+        "cpv1:d9d9b457a29c43805aafc3de3540bb18f639a10c6820b2510b3cc06de5e8960e"
+      ],
+      "rationale": "SAME_PHYSICAL_DONOR_NORMALIZE_FIELD_PARTITION"
+    },
+    {
+      "chosenCanonicalVariantId": "cpv1:d13b7335c77e2a21242962c72cda1d75912ef237f8888df669ca395eca2c7d5d",
+      "chosenListingKey": "walmart:1:RizwanX-574",
+      "donorProductId": "489db9ee-4a83-4016-ae11-9c30e87bb701",
+      "expectedGroupEvidenceSha256": "9af9b4bf6ce556f270e75491fdcbb3f517d2d4941c7f42e7d6aedd0f701ebdd9",
+      "expectedListingKeys": [
+        "walmart:1:RizwanX-574",
+        "walmart:1:RizwanX-575",
+        "walmart:1:RizwanX-576"
+      ],
+      "expectedProposedCanonicalVariantIds": [
+        "cpv1:d13b7335c77e2a21242962c72cda1d75912ef237f8888df669ca395eca2c7d5d",
+        "cpv1:eb8376d3c3d257f203740075b04032a72cb01d564a858768fe7a37720f8ffb95"
+      ],
+      "rationale": "SAME_PHYSICAL_DONOR_NORMALIZE_FIELD_PARTITION"
+    },
+    {
+      "chosenCanonicalVariantId": "cpv1:16618d00a1413090a51d0c21a04b7687a76427c8d9b4bcaf8080a4a29cfd285c",
+      "chosenListingKey": "walmart:1:RizwanX-314",
+      "donorProductId": "bd21db92-b685-4cd5-b822-9a1b16ab402e",
+      "expectedGroupEvidenceSha256": "452a9f2dccf975515ac464909bb374eef5220f06d636ba3ebd0e5224d40e19bc",
+      "expectedListingKeys": [
+        "walmart:1:RizwanX-314",
+        "walmart:1:RizwanX-315"
+      ],
+      "expectedProposedCanonicalVariantIds": [
+        "cpv1:16618d00a1413090a51d0c21a04b7687a76427c8d9b4bcaf8080a4a29cfd285c",
+        "cpv1:883901c9fd8aafe46bc29b7e0f95ef06d01738b0ba15921aadbb7aca76016044"
+      ],
+      "rationale": "SAME_PHYSICAL_DONOR_NORMALIZE_FIELD_PARTITION"
+    }
+  ],
+  "reviewedAt": "2026-07-30T00:27:00.000Z",
+  "reviewedBy": "codex",
+  "schemaVersion": "product-truth-consensus-reuse-resolution/1.0.0"
+}

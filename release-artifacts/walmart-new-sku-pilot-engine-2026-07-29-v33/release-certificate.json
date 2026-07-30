@@ -1,0 +1,44 @@
+{
+  "schema_version": "walmart-new-sku-release-certificate/1.0.0",
+  "release_id": "walmart-new-sku-pilot-engine-2026-07-29-v33",
+  "certified_at": "2026-07-29T16:45:00.000Z",
+  "source_commit": "b00aaf6ae84ab888bb04be0db54c85be2570e22a",
+  "engine_release_sha256": "fe76e6378a48c024f464d44a71ca7ebb88a7ffa1fb61c7f24eca1fcf37872946",
+  "manifest_sha256": "2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f",
+  "source_certification": {
+    "walmart_and_bundle_factory_tests": {
+      "command": "node --import tsx --test src/lib/bundle-factory/__tests__/walmart-new-sku-*.test.ts src/lib/bundle-factory/__tests__/studio-channel-routing.test.ts src/lib/bundle-factory/__tests__/walmart-product-truth-collection-ui.test.ts",
+      "passed": 108,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "product_truth_tests": {
+      "command": "npm run test:product-truth-certification",
+      "passed": 519,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "production_build": {
+      "command": "npm run build",
+      "exit_code": 0
+    }
+  },
+  "frozen_release_certification": {
+    "release_verify_exit_code": 0,
+    "walmart_and_bundle_factory_tests_passed": 108,
+    "product_truth_tests_passed": 519,
+    "post_test_release_verify_exit_code": 0
+  },
+  "claims": {
+    "provider_calls": 0,
+    "database_mutated": false,
+    "marketplace_mutated": false,
+    "listing_published": false,
+    "pack_of_8_supported": true,
+    "owner_request_is_split_into_independent_one_listing_work_items": true
+  }
+}
