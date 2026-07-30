@@ -286,9 +286,32 @@ function fixture() {
   };
 }
 
-test("component acquisition scope deduplicates variants and ranks downstream closure", () => {
-  const input = fixture();
-  const report = compileProductTruthComponentAcquisitionScope({
+function rebindFixtureSources(input: ReturnType<typeof fixture>) {
+  const snapshotJson = renderProductTruthLegacyBridgeSnapshot(input.snapshot);
+  const snapshotSha256 = sha256(snapshotJson);
+  const scope = {
+    ...input.scope,
+    source: {
+      ...input.scope.source,
+      bridgeSnapshot: {
+        ...input.scope.source.bridgeSnapshot,
+        sha256: snapshotSha256,
+      },
+    },
+  };
+  const scopeJson = renderProductTruthRecipeRepairScope(scope);
+  return {
+    ...input,
+    scope,
+    scopeJson,
+    scopeSha256: sha256(scopeJson),
+    snapshotJson,
+    snapshotSha256,
+  };
+}
+
+function compileFixture(input: ReturnType<typeof fixture>) {
+  return compileProductTruthComponentAcquisitionScope({
     generatedAt: GENERATED_AT,
     recipeRepairScope: input.scope,
     recipeRepairScopeJson: input.scopeJson,
@@ -297,6 +320,11 @@ test("component acquisition scope deduplicates variants and ranks downstream clo
     bridgeSnapshotJson: input.snapshotJson,
     bridgeSnapshotSha256: input.snapshotSha256,
   });
+}
+
+test("component acquisition scope deduplicates variants and ranks downstream closure", () => {
+  const input = fixture();
+  const report = compileFixture(input);
   assert.equal(report.counts.denominatorListings, 9);
   assert.equal(report.counts.missingListings, 9);
   assert.equal(report.counts.missingListingsWithoutComponents, 1);
@@ -348,6 +376,58 @@ test("component acquisition scope deduplicates variants and ranks downstream clo
   assert.equal(
     renderProductTruthComponentAcquisitionScope(report),
     renderProductTruthComponentAcquisitionScope(report),
+  );
+});
+
+test("same-unit package-size drift cannot become an exact content donor", () => {
+  const raw = fixture();
+  raw.snapshot.donors[0] = {
+    ...raw.snapshot.donors[0]!,
+    size: "8.05 oz",
+    title: "Acme Crunch Barbecue 8.05 oz bag",
+  };
+  const input = rebindFixtureSources(raw);
+  const report = compileFixture(input);
+  assert.equal(
+    report.targets.find(
+      (value) => value.canonicalVariantId === barbecue.canonicalVariantId,
+    )?.acquisitionLane,
+    "PROVIDER_IDENTITY_ACQUISITION",
+  );
+});
+
+test("one legacy donor proposed for two canonical variants is quarantined before planning", () => {
+  const raw = fixture();
+  const aliasIdentity = {
+    ...barbecue.identity,
+    productLine: "Crunch Barbecue",
+  };
+  const aliasVariant =
+    buildCanonicalProductVariantKey(aliasIdentity).canonicalVariantId;
+  raw.scope.entries.push({
+    ...entry({
+      sku: "BBQ-ALIAS",
+      target: {
+        identity: aliasIdentity,
+        canonicalVariantId: aliasVariant,
+      },
+    }),
+    ordinal: raw.scope.entries.length,
+  });
+  raw.scope.counts.denominator += 1;
+  const input = rebindFixtureSources(raw);
+  const report = compileFixture(input);
+  assert.equal(
+    report.targets.find(
+      (value) => value.canonicalVariantId === barbecue.canonicalVariantId,
+    )?.acquisitionLane,
+    "CANONICAL_DONOR_CONFLICT",
+  );
+  assert.equal(
+    report.targets.find(
+      (value) => value.canonicalVariantId === aliasVariant,
+    )?.acquisitionLane,
+    "CANONICAL_DONOR_CONFLICT",
   );
 });
 

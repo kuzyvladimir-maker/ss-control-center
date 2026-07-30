@@ -4,7 +4,6 @@ import {
   buildCanonicalProductVariantKey,
 } from "./canonical-product-variant";
 import {
-  matchCanonicalProductTitle,
   normalizeIdentityTokens,
   type CanonicalProductIdentity,
 } from "./canonical-product-match";
@@ -13,6 +12,10 @@ import {
   CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   CANONICAL_PRODUCT_MATCHER_VERSION,
 } from "./canonical-product-match-provenance";
+import {
+  EXACT_CONTENT_IDENTITY_POLICY_VERSION,
+  evaluateExactContentTitleIdentity,
+} from "./exact-content-identity-policy";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   renderProductTruthLegacyBridgeSnapshot,
@@ -33,7 +36,7 @@ import {
 } from "./product-truth-operational-run-contract";
 
 export const PRODUCT_TRUTH_COMPONENT_ACQUISITION_SCOPE_VERSION =
-  "product-truth-component-acquisition-scope/1.2.0" as const;
+  "product-truth-component-acquisition-scope/1.3.0" as const;
 
 export type ProductTruthComponentAcquisitionLane =
   | "EXISTING_CANONICAL_BINDING"
@@ -135,7 +138,9 @@ export interface ProductTruthComponentAcquisitionScope {
   selectionPolicy: {
     unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT";
     catalogSearch:
-      "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_MATCH";
+      "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH";
+    contentIdentityPolicyVersion:
+      typeof EXACT_CONTENT_IDENTITY_POLICY_VERSION;
     identityQuality:
       "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS";
     ordinaryRetailersOnly: true;
@@ -360,6 +365,25 @@ function catalogCandidate(input: {
           "en-US",
         )),
   };
+}
+
+/**
+ * Content identity is stricter than price comparability. The canonical matcher
+ * intentionally permits a one-percent label-conversion tolerance so 1 lb and
+ * 454 g can remain the same package. That tolerance must not turn two distinct
+ * same-unit labels (for example 18.5 oz and 18.6 oz) into one content donor.
+ */
+function isExactContentTitleMatch(input: {
+  target: CanonicalProductIdentity;
+  donor: ProductTruthLegacyBridgeDonorRow;
+}): boolean {
+  return evaluateExactContentTitleIdentity({
+    target: input.target,
+    candidate: {
+      title: input.donor.title,
+      brand: input.donor.brand,
+    },
+  }).eligible;
 }
 
 function classifyAcquisitionLane(input: {
@@ -716,10 +740,10 @@ export function compileProductTruthComponentAcquisitionScope(input: {
     const exactCatalogCandidates =
       (donorsByBrand.get(brandKey(value.targetIdentity.brand)) ?? [])
         .filter((donor) =>
-          matchCanonicalProductTitle(value.targetIdentity, {
-            title: donor.title,
-            brand: donor.brand,
-          }).verdict === "EXACT_IDENTITY")
+          isExactContentTitleMatch({
+            target: value.targetIdentity,
+            donor,
+          }))
         .map((donor) =>
           catalogCandidate({
             donor,
@@ -803,6 +827,36 @@ export function compileProductTruthComponentAcquisitionScope(input: {
       dependencies: value.dependencies,
     });
   }
+
+  // One DonorProduct may prove only one exact canonical variant. A per-target
+  // scan can otherwise select the same legacy donor for two near-duplicate
+  // target identities and defer the collision until the database unique index.
+  // Classify the entire donor group as a conflict before any plan can be built.
+  const proposedTargetsByDonor = new Map<
+    string,
+    ProductTruthComponentAcquisitionTarget[]
+  >();
+  for (const target of targets) {
+    if (
+      target.acquisitionLane !== "EXISTING_CATALOG_EXACT_CANDIDATE"
+      || target.exactCatalogCandidates.length !== 1
+    ) continue;
+    const donorProductId =
+      target.exactCatalogCandidates[0]!.donorProductId;
+    const donorTargets = proposedTargetsByDonor.get(donorProductId) ?? [];
+    donorTargets.push(target);
+    proposedTargetsByDonor.set(donorProductId, donorTargets);
+  }
+  for (const donorTargets of proposedTargetsByDonor.values()) {
+    if (
+      new Set(donorTargets.map((target) => target.canonicalVariantId)).size
+      <= 1
+    ) continue;
+    for (const target of donorTargets) {
+      target.acquisitionLane = "CANONICAL_DONOR_CONFLICT";
+    }
+  }
+
   targets.sort(compareTargetPriority);
   targets.forEach((target, index) => {
     target.ordinal = index;
@@ -886,7 +940,9 @@ export function compileProductTruthComponentAcquisitionScope(input: {
     selectionPolicy: {
       unitOfWork: "UNIQUE_CANONICAL_COMPONENT_VARIANT",
       catalogSearch:
-        "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_MATCH",
+        "ALL_EXISTING_DONORS_SAME_EXACT_NORMALIZED_BRAND_STRICT_TITLE_AND_EXACT_CONTENT_PACKAGE_MATCH",
+      contentIdentityPolicyVersion:
+        EXACT_CONTENT_IDENTITY_POLICY_VERSION,
       identityQuality:
         "REJECT_EXPLICIT_UNCERTAINTY_AMBIGUOUS_SIZE_AND_INDIVIDUAL_VARIETY_PLACEHOLDERS",
       ordinaryRetailersOnly: true,

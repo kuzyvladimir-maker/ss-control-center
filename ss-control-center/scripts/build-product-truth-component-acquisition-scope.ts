@@ -195,7 +195,7 @@ async function run(options: Options): Promise<void> {
   const reportSha256 = sha256(reportJson);
   const indexJson = renderProductTruthOperationalJson({
     schemaVersion:
-      "product-truth-component-acquisition-scope-artifact-index/1.2.0",
+      "product-truth-component-acquisition-scope-artifact-index/1.3.0",
     generatedAt: report.generatedAt,
     source: report.source,
     matcher: report.matcher,
