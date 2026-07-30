@@ -182,10 +182,12 @@ async function insertContent(
     decisionId: string;
     observedAt: string;
     title: string;
+    capture?: "exact_complete_v1" | "exact_field_snapshot_v2";
+    contentOverrides?: Record<string, unknown>;
   },
 ): Promise<void> {
   const content = {
-    _capture: "exact_complete_v1",
+    _capture: input.capture ?? "exact_complete_v1",
     title: input.title,
     description: `${input.title} exact description`,
     bullets: ["Crispy", "Source backed"],
@@ -202,6 +204,7 @@ async function insertContent(
       `https://images.example.test/${input.id}-main.jpg`,
       `https://images.example.test/${input.id}-nutrition.jpg`,
     ],
+    ...input.contentOverrides,
   };
   await db.execute({
     sql: `INSERT INTO ProductContentObservation (
@@ -646,7 +649,7 @@ test("one canonical snapshot serves four views and permits different exact conte
       asOf: AS_OF, maxPriceAgeMs: MAX_AGE_MS,
     });
     assert.equal(snapshot.contractVersion, PRODUCT_TRUTH_READ_CONTRACT_VERSION);
-    assert.equal(snapshot.contractVersion, "product-truth-read-contract/4.0.0");
+    assert.equal(snapshot.contractVersion, "product-truth-read-contract/4.0.1");
     assert.equal(snapshot.snapshot.skuCostId, "cost-current");
     assert.equal(snapshot.views.bundleFactory.ready, true);
     assert.equal(snapshot.views.listingImprovement.ready, true);
@@ -720,6 +723,94 @@ test("one canonical snapshot serves four views and permits different exact conte
     assert.equal(networkCalls, 0);
   } finally {
     globalThis.fetch = originalFetch;
+    await db.close();
+  }
+});
+
+test("a newer exact field snapshot cannot hide a richer immutable exact content observation", async () => {
+  const db = createClient({ url: "file::memory:" });
+  try {
+    await createBaseSchema(db);
+    await applyCanonicalMigration(db);
+    await insertVariant(db, {
+      id: "variant-content-history",
+      brand: "Acme",
+      productLine: "Crunch Chips",
+      flavor: "Barbecue",
+    });
+    await insertExactSource(db, {
+      donorProductId: "dp-content-history",
+      decisionId: "decision-content-history",
+      variantId: "variant-content-history",
+      flavor: "Barbecue",
+    });
+    await insertContent(db, {
+      id: "content-complete-old",
+      donorProductId: "dp-content-history",
+      variantId: "variant-content-history",
+      decisionId: "decision-content-history",
+      observedAt: "2026-07-18T18:00:00.000Z",
+      title: "Acme Crunch Chips Barbecue 8 oz",
+    });
+    await insertContent(db, {
+      id: "content-field-snapshot-new",
+      donorProductId: "dp-content-history",
+      variantId: "variant-content-history",
+      decisionId: "decision-content-history",
+      observedAt: "2026-07-18T19:00:00.000Z",
+      title: "Acme Crunch Chips Barbecue 8 oz",
+      capture: "exact_field_snapshot_v2",
+      contentOverrides: {
+        allergens: null,
+        storage: null,
+        normalizedGtin14: null,
+        upc: null,
+        _missingFields: ["allergens", "storageTemp", "upc"],
+      },
+    });
+    await insertPrice(db, {
+      id: "price-content-history",
+      offerId: "offer-content-history",
+      donorProductId: "dp-content-history",
+      variantId: "variant-content-history",
+      decisionId: "decision-content-history",
+      retailer: "Walmart",
+      retailerProductId: "walmart-content-history",
+      price: 4.99,
+      observedAt: "2026-07-18T19:10:00.000Z",
+    });
+    await insertCanonicalCost(db, {
+      id: "cost-content-history",
+      sku: "SKU-CONTENT-HISTORY",
+      channel: "walmart",
+      outcome: "FACT",
+      totalCost: 4.99,
+      effectiveDate: "2026-07-18T19:11:00.000Z",
+      createdAt: "2026-07-18T19:11:00.000Z",
+      components: [exactComponent({
+        variantId: "variant-content-history",
+        contentObservationId: "content-complete-old",
+        priceObservationId: "price-content-history",
+      })],
+    });
+
+    const snapshot = await readProductTruthSnapshot(db, {
+      sku: "SKU-CONTENT-HISTORY",
+      channel: "walmart",
+      storeIndex: 1,
+      asOf: AS_OF,
+      maxPriceAgeMs: MAX_AGE_MS,
+    });
+    assert.equal(snapshot.views.bundleFactory.ready, true);
+    assert.equal(snapshot.views.listingImprovement.ready, true);
+    assert.equal(
+      snapshot.views.bundleFactory.components[0].content
+        ?.provenance.contentObservationId,
+      "content-complete-old",
+    );
+    assert.equal(snapshot.views.unitEconomics.status, "FACT");
+    assert.equal(snapshot.views.procurement.ready, true);
+  } finally {
     await db.close();
   }
 });

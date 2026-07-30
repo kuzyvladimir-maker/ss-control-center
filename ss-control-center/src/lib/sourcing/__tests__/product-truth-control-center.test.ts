@@ -167,7 +167,7 @@ function snapshot(input: {
   costStatus: ProductTruthSnapshot["views"]["unitEconomics"]["status"];
 }): ProductTruthSnapshot {
   return {
-    contractVersion: "product-truth-read-contract/4.0.0",
+    contractVersion: "product-truth-read-contract/4.0.1",
     snapshot: {
       sku: input.sku,
       channel: "walmart",

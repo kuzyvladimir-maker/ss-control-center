@@ -608,23 +608,106 @@ async function readCurrentContentRows(
         AND julianday(content.createdAt)<=julianday(?)
         AND json_extract(content.contentJson,'$._capture')
           IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
-        AND content.id=(
-          SELECT latest.id FROM ProductContentObservation latest
-          WHERE latest.canonicalVariantId=content.canonicalVariantId
-            AND julianday(latest.observedAt)<=julianday(?)
-            AND julianday(latest.createdAt)<=julianday(?)
-            AND json_extract(latest.contentJson,'$._capture')
-              IN ('exact_complete_v1','exact_field_snapshot_v2','legacy_materialized_bridge')
-          ORDER BY julianday(latest.observedAt) DESC, latest.observedAt DESC,
-            julianday(latest.createdAt) DESC, latest.createdAt DESC, latest.id DESC
-          LIMIT 1
-        )
-      ORDER BY content.canonicalVariantId ASC`,
-      args: [...variantChunk, asOf, asOf, asOf, asOf],
+      ORDER BY content.canonicalVariantId ASC,
+        julianday(content.observedAt) DESC, content.observedAt DESC,
+        julianday(content.createdAt) DESC, content.createdAt DESC,
+        content.id DESC`,
+      args: [...variantChunk, asOf, asOf],
     })).rows);
   }
-  return rows.sort((left, right) =>
-    String(left.canonicalVariantId).localeCompare(String(right.canonicalVariantId)));
+  const asOfMs = Date.parse(asOf);
+  const ranked = rows.sort((left, right) => {
+    const leftValid = contentObservationSelectionValid(left, asOfMs);
+    const rightValid = contentObservationSelectionValid(right, asOfMs);
+    const validityDifference = Number(rightValid) - Number(leftValid);
+    if (validityDifference) return validityDifference;
+    const completenessDifference =
+      contentObservationCompleteness(right)
+      - contentObservationCompleteness(left);
+    if (completenessDifference) return completenessDifference;
+    const observedDifference =
+      (timeMs(right.observedAt) ?? -Infinity)
+      - (timeMs(left.observedAt) ?? -Infinity);
+    if (observedDifference) return observedDifference;
+    const createdDifference =
+      (timeMs(right.createdAt) ?? -Infinity)
+      - (timeMs(left.createdAt) ?? -Infinity);
+    return createdDifference
+      || String(right.id).localeCompare(String(left.id), "en-US");
+  });
+  const selected = new Map<string, Row>();
+  for (const row of ranked) {
+    const variantId = String(row.canonicalVariantId);
+    if (!selected.has(variantId)) selected.set(variantId, row);
+  }
+  return [...selected.values()].sort((left, right) =>
+    String(left.canonicalVariantId).localeCompare(
+      String(right.canonicalVariantId),
+      "en-US",
+    ));
+}
+
+function contentObservationCompleteness(row: Row): number {
+  const content = jsonObject(row.contentJson);
+  if (!content || exactProductContentCapture(content) === null) return -1;
+  const mainImageUrl = textValue(content.mainImageUrl);
+  const imageUrls = stringArray(content.imageUrls);
+  const galleryComplete = imageUrls.length > 0
+    && imageUrls.every((url) => url.startsWith("https://"))
+    && !!mainImageUrl
+    && imageUrls.includes(mainImageUrl);
+  return [
+    !!textValue(content.title),
+    !!textValue(content.description),
+    !!textValue(content.ingredients),
+    content.nutritionFacts != null,
+    !!textValue(content.category),
+    content.storage != null,
+    content.allergens != null,
+    /^\d{14}$/.test(textValue(content.normalizedGtin14) ?? ""),
+    !!mainImageUrl?.startsWith("https://"),
+    galleryComplete,
+  ].filter(Boolean).length;
+}
+
+function contentObservationSelectionValid(row: Row, asOfMs: number): boolean {
+  const content = jsonObject(row.contentJson);
+  const fieldHashes = jsonObject(row.fieldHashesJson);
+  if (!content || !fieldHashes || exactProductContentCapture(content) === null) {
+    return false;
+  }
+  if (
+    row.canonicalVariantId !== row.decisionCanonicalVariantId
+    || row.donorProductId !== row.decisionDonorProductId
+    || row.decisionStatus !== "exact_confirmed"
+    || !isCurrentMatcherProvenance({
+      matcherVersion: row.decisionMatcherVersion,
+      matcherImplementationSha256: row.decisionMatcherImplementationSha256,
+      matcherReleaseSha256: row.decisionMatcherReleaseSha256,
+    })
+    || (timeMs(row.observedAt) ?? Infinity) > asOfMs
+    || (timeMs(row.createdAt) ?? Infinity) > asOfMs
+    || textValue(row.contentHash)?.length !== 64
+    || textValue(row.decisionEvidenceHash)?.length !== 64
+    || !textValue(row.sourceUrl)
+    || !textValue(row.sourceApi)
+  ) {
+    return false;
+  }
+  const contentJsonRaw = textValue(row.contentJson);
+  const decisionJsonRaw = textValue(row.decisionEvidenceJson);
+  const decisionEvidence = jsonObject(decisionJsonRaw);
+  return !!contentJsonRaw
+    && row.contentHash === sha256Text(contentJsonRaw)
+    && !!decisionJsonRaw
+    && row.decisionEvidenceHash === sha256Text(decisionJsonRaw)
+    && !!decisionEvidence
+    && isCurrentMatcherProvenance({
+      matcherVersion: decisionEvidence.matcherVersion,
+      matcherImplementationSha256:
+        decisionEvidence.matcherImplementationSha256,
+      matcherReleaseSha256: decisionEvidence.matcherReleaseSha256,
+    });
 }
 
 type ObservationContext = { row: Row; isLatest: boolean };

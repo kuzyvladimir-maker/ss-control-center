@@ -20,7 +20,7 @@ import {
 test("canonical Product Truth boundary exports the exact new-SKU compiler", () => {
   assert.equal(
     PRODUCT_TRUTH_READ_CONTRACT_VERSION,
-    "product-truth-read-contract/4.0.0",
+    "product-truth-read-contract/4.0.1",
   );
   const component = buildProductTruthNewSkuRecipeComponentFromRows({
     identity,
