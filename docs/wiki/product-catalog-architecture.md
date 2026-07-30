@@ -152,13 +152,16 @@ Amazon, Walmart, eBay, TikTok Shop, собственный сайт и буду�
 
 Единая программная граница чтения для четырёх потребителей —
 `src/lib/sourcing/product-truth-read-contract.ts`, contract
-`product-truth-read-contract/3.2.0`. Он требует точный scope
+`product-truth-read-contract/4.0.1`. Он требует точный scope
 `(channel, positive storeIndex, raw SKU)` и не имеет fallback на голый SKU.
 Потребитель не должен самостоятельно собирать
 «правду» из legacy `DonorProduct`, `SkuComponent` или последнего ненулевого `SkuCost`.
 Read-contract выбирает состояние на `asOf`, не возвращает estimate как content truth,
 не поднимает старую положительную цену поверх нового `UNSOURCEABLE` и отделяет
-accounting manual cost от retailer buy options. Exact identity/content/cost evidence
+accounting manual cost от retailer buy options. Для exact content он сначала требует
+валидную immutable provenance, затем выбирает наиболее полный snapshot и только при
+равной полноте — самый свежий; поэтому более новая частичная карточка не может скрыть
+ранее доказанные exact-поля того же варианта. Exact identity/content/cost evidence
 дополнительно обязано нести полный matcher provenance tuple: version, SHA точных
 implementation bytes и SHA matcher release manifest; неполный или устаревший tuple
 fail-closed отклоняется.
