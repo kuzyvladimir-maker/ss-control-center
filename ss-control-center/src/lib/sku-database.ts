@@ -55,11 +55,53 @@ function toSkuRow(row: DbRow): SkuRow {
   };
 }
 
+// Whole-table snapshot, cached for the lifetime of the function instance.
+//
+// Measured 2026-07-30 against production Turso: this table is 5,919 rows /
+// ~6.8 MB and takes ~3.9s to pull. Both the shipping plan and the manual
+// rate picker awaited that pull on every single call — to read the weight and
+// box of ONE SKU. That was several seconds of dead time on every page load and
+// on every open of the Carrier dialog.
+//
+// The table only changes when the operator edits SKU dimensions, and every
+// writer calls `invalidateSkuDatabaseCache()`, so a short TTL is belt-and-
+// braces against a write we didn't route through this module rather than the
+// primary correctness mechanism.
+const SKU_CACHE_TTL_MS = 60_000;
+let skuCache: { rows: SkuRow[]; fetchedAt: number } | null = null;
+// Shared in-flight pull, so concurrent callers on a cold instance await one
+// query instead of each dragging their own copy of the table across the wire.
+let skuCacheInFlight: Promise<SkuRow[]> | null = null;
+
+/**
+ * Drop the cached snapshot. MUST be called by anything that writes
+ * SkuShippingData, otherwise a freshly edited weight/box would keep quoting at
+ * the old dimensions until the TTL expired.
+ */
+export function invalidateSkuDatabaseCache(): void {
+  skuCache = null;
+  skuCacheInFlight = null;
+}
+
 export async function fetchSkuDatabase(): Promise<SkuRow[]> {
-  const rows = await prisma.skuShippingData.findMany({
-    orderBy: { sku: "asc" },
-  });
-  return rows.map(toSkuRow);
+  if (skuCache && Date.now() - skuCache.fetchedAt < SKU_CACHE_TTL_MS) {
+    return skuCache.rows;
+  }
+  if (skuCacheInFlight) return skuCacheInFlight;
+
+  skuCacheInFlight = (async () => {
+    const rows = await prisma.skuShippingData.findMany({
+      orderBy: { sku: "asc" },
+    });
+    const mapped = rows.map(toSkuRow);
+    skuCache = { rows: mapped, fetchedAt: Date.now() };
+    return mapped;
+  })();
+  try {
+    return await skuCacheInFlight;
+  } finally {
+    skuCacheInFlight = null;
+  }
 }
 
 export async function lookupSku(sku: string): Promise<SkuRow | null> {
@@ -111,5 +153,8 @@ export async function appendSkuRow(data: {
       weightFedex: data.weightFedex,
     },
   });
+  // The snapshot now describes stale dimensions — drop it so the next quote
+  // uses what the operator just saved.
+  invalidateSkuDatabaseCache();
   return true;
 }

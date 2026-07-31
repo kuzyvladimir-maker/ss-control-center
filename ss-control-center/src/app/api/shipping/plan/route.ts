@@ -20,6 +20,13 @@ import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
 
+// Planning quotes carriers for every ready order (pooled, but still several
+// seconds each) — on a busy morning that is a long invocation by nature. Make
+// the ceiling explicit rather than inheriting a platform default that could
+// truncate the plan halfway and leave the page showing rates for only some
+// rows.
+export const maxDuration = 300;
+
 // ── Veeqo rate shape (actual API fields) ──
 interface VeeqoRate {
   carrier: string; // "amazon_shipping_v2"

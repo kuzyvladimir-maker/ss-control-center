@@ -27,6 +27,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateAllocationPackage } from "@/lib/veeqo/client";
+import { invalidateSkuDatabaseCache } from "@/lib/sku-database";
 
 interface Body {
   sku?: string;
@@ -198,6 +199,9 @@ export async function POST(request: NextRequest) {
         height: body.height ?? existing.height,
       },
     });
+    // The cached SKU snapshot still holds the old weight/box — drop it so the
+    // re-quote that fires right after this save uses what was just entered.
+    invalidateSkuDatabaseCache();
     const veeqo = await maybePushVeeqo({
       allocationId: body.allocationId,
       L: body.length ?? existing.length,
@@ -240,6 +244,8 @@ export async function POST(request: NextRequest) {
       source: "manual",
     },
   });
+  // New SKU row — the cached snapshot doesn't know about it yet.
+  invalidateSkuDatabaseCache();
   const veeqo = await maybePushVeeqo({
     allocationId: body.allocationId,
     L: body.length,

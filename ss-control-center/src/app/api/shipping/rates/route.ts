@@ -18,8 +18,13 @@ import {
   updateOrderDispatchDate,
 } from "@/lib/veeqo";
 import { prisma } from "@/lib/prisma";
-import { fetchSkuDatabase } from "@/lib/sku-database";
+import { lookupSku } from "@/lib/sku-database";
 import { resolveOrderParcel } from "@/lib/shipping/order-parcel";
+
+// Quoting carriers is a multi-second round trip and the operator is sitting in
+// front of the dialog waiting for it; never let the platform default cut it off
+// mid-quote.
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get("orderId");
@@ -70,8 +75,22 @@ export async function GET(request: NextRequest) {
     if (shipDate && isAmazon) {
       let parcel;
       try {
-        const skuDatabase = await fetchSkuDatabase();
-        parcel = await resolveOrderParcel(order, prisma, skuDatabase);
+        // resolveOrderParcel only ever reads the FIRST line's SKU out of this
+        // list (multi-item orders resolve through PackingProfile instead), so
+        // fetch that one row rather than the whole table. The full snapshot is
+        // ~6.8 MB / ~3.9s against production Turso — that pull was the single
+        // biggest cost of opening this dialog, paid on every open and again on
+        // every ship-date change, to read one weight and one box size.
+        const firstSku =
+          order.line_items?.[0]?.sellable?.sku_code ||
+          order.line_items?.[0]?.sellable?.sku ||
+          "";
+        const skuRow = firstSku ? await lookupSku(firstSku) : null;
+        parcel = await resolveOrderParcel(
+          order,
+          prisma,
+          skuRow ? [skuRow] : [],
+        );
       } catch (e) {
         console.warn(
           `[rates] parcel resolve failed for order ${orderId}, quoting without it:`,

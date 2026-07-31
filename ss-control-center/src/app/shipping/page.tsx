@@ -1970,22 +1970,59 @@ export default function ShippingLabelsPage() {
 
       // ── Amazon leg (existing plan + buy flow) ─────────────────────
       if (amazonIds.length > 0) {
-        setBuyMsg(`Generating plan for ${amazonIds.length} Amazon order(s)…`);
-        const ids = amazonIds.join(",");
-        const planRes = await fetch(`/api/shipping/plan?orderIds=${ids}`);
-        const planJson = await planRes.json();
-        if (!planRes.ok)
-          throw new Error(planJson?.error || "Failed to plan labels");
-        const planId: string = planJson.planId;
-        const itemIds: string[] = (planJson.orders ?? [])
-          .filter((o: { status: string }) => o.status === "pending")
-          .map((o: { id: string }) => o.id);
-        if (itemIds.length > 0) {
+        // Reuse the plan the page already loaded whenever it covers the whole
+        // selection. Re-planning re-quotes EVERY selected order at Veeqo (a
+        // multi-second round trip each, doubled for Frozen rows by the Monday
+        // re-quote) — and then /buy re-quotes them a second time before
+        // purchase. That unconditional re-plan is why buying five orders
+        // together took minutes while buying the same five one at a time was
+        // far quicker: the single-row Buy has always reused the loaded plan.
+        //
+        // Staleness is safe here: /buy re-quotes live against the current
+        // allocation package before it purchases and refuses outright if the
+        // chosen service no longer matches, so a stale plan item can only
+        // produce a refused buy the operator retries — never a wrong label.
+        const orderIdByNumber = new Map<string, string>();
+        for (const id of amazonIds) {
+          const o = orderById.get(id);
+          if (o) orderIdByNumber.set(o.orderNumber, id);
+        }
+        // Same buyability rule the single-row Buy uses: normally "pending",
+        // plus an algorithm-stopped row rescued by a manual rate override.
+        const isBuyable = (p: { orderNumber: string; status: string }) => {
+          const oid = orderIdByNumber.get(p.orderNumber);
+          if (!oid) return false;
+          return (
+            p.status === "pending" ||
+            (!!rateOverrides[oid] && p.status === "stop")
+          );
+        };
+
+        let planId: string | null = plan?.planId ?? null;
+        let planOrders = (plan?.orders ?? []).filter(isBuyable);
+        // Only pay for a fresh plan when the loaded one doesn't cover
+        // everything selected (e.g. a row that just left need_attention).
+        if (!planId || planOrders.length < orderIdByNumber.size) {
+          setBuyMsg(`Generating plan for ${amazonIds.length} Amazon order(s)…`);
+          const ids = amazonIds.join(",");
+          const planRes = await fetch(`/api/shipping/plan?orderIds=${ids}`);
+          const planJson = await planRes.json();
+          if (!planRes.ok)
+            throw new Error(planJson?.error || "Failed to plan labels");
+          planId = planJson.planId as string;
+          planOrders = ((planJson.orders ?? []) as PlanItem[]).filter(
+            isBuyable,
+          );
+        }
+
+        const itemIds: string[] = planOrders.map((p) => p.id);
+        if (planId && itemIds.length > 0) {
           setBuyMsg(`Buying ${itemIds.length} Amazon label(s)…`);
-          // Map orderId → itemId for any per-row rate overrides.
+          // Map plan item → the row's manual rate override, if any.
           const overridesByItemId: Record<string, RateOverride> = {};
-          for (const planOrder of planJson.orders ?? []) {
-            const ov = rateOverrides[planOrder.orderId];
+          for (const planOrder of planOrders) {
+            const oid = orderIdByNumber.get(planOrder.orderNumber);
+            const ov = oid ? rateOverrides[oid] : undefined;
             if (ov) overridesByItemId[planOrder.id] = ov;
           }
           const buyRes = await fetch("/api/shipping/buy", {
