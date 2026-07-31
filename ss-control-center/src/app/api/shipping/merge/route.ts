@@ -27,6 +27,12 @@ interface VeeqoOrderLite {
   id?: number | string;
   number?: string;
   status?: string;
+  // When the buyer placed it. The earliest order in a group carries the real
+  // label; see the primary-selection note below.
+  created_at?: string | null;
+  // Veeqo's dispatch deadline, used to warn when a LATER order in the group
+  // is actually the tighter one.
+  dispatch_date?: string | null;
   tags?: Array<{ name?: string }> | null;
   channel?: { type_code?: string | null; name?: string | null } | null;
   allocations?: Array<{ id?: number | string }> | null;
@@ -163,13 +169,17 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
+    // Deliberately NOT gated on store. One buyer can order from Salutem and
+    // from AMZ Commerce to the same address, and the owner merges those: one
+    // box, one label bought on one account, the tracking copied to the other
+    // (owner's decision, 2026-07-31). Channel still can't be crossed — the
+    // label source and the marketplace protections differ per channel.
+    //
+    // Worth knowing when this first runs: none of the 16 merges in this
+    // account's recent history actually spanned stores, so the cross-store
+    // path is new ground for our code and is the one to watch in the pilot.
     const stores = new Set(picked.map((o) => o.channel?.name ?? ""));
-    if (stores.size !== 1) {
-      return NextResponse.json(
-        { error: `A group can't span stores (${[...stores].join(", ")})` },
-        { status: 409 },
-      );
-    }
+    const spansStores = stores.size > 1;
 
     // ── Gate 3: same destination. Veeqo's own address fingerprint is the
     // key — matching their grouping by construction rather than by imitating
@@ -206,16 +216,45 @@ export async function POST(request: NextRequest) {
     }
 
     const channelKind = [...kinds][0];
+
+    // Order the members oldest-first so the primary is unambiguous.
+    const placedAt = (o: VeeqoOrderLite) => {
+      const t = o.created_at ? new Date(o.created_at).getTime() : NaN;
+      return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
+    };
+    const byAge = [...picked].sort((a, b) => placedAt(a) - placedAt(b));
+    const primaryId = String(byAge[0].id ?? "");
+
+    // The primary is the earliest ORDER, but the binding deadline is the
+    // earliest DISPATCH DATE — usually the same row, not always (an expedited
+    // later order can be due sooner). Flag the mismatch rather than silently
+    // re-anchoring, so the operator decides with the facts in front of them.
+    const dispatchAt = (o: VeeqoOrderLite) => {
+      const t = o.dispatch_date ? new Date(o.dispatch_date).getTime() : NaN;
+      return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
+    };
+    const tightest = [...picked].sort((a, b) => dispatchAt(a) - dispatchAt(b))[0];
+    const deadlineWarning =
+      String(tightest.id ?? "") !== primaryId
+        ? `Heads up: ${tightest.number} is due to ship before the earliest order ` +
+          `${byAge[0].number}. The group must meet ${tightest.number}'s deadline.`
+        : null;
+
     const group = await prisma.mergeGroup.create({
       data: {
         checksum: [...sums][0],
         channelKind,
-        storeName: [...stores][0] || null,
-        // The first selected order carries the real label; the rest are
-        // ship-confirmed with its tracking.
-        primaryOrderId: orderIds[0],
+        // The store the LABEL is bought under. With a cross-store group the
+        // members differ, and this is the one that actually pays for and owns
+        // the shipment.
+        storeName: byAge[0].channel?.name ?? null,
+        // The EARLIEST order carries the real label; the later ones are
+        // ship-confirmed with its tracking (owner's rule, 2026-07-31). The
+        // earliest order also has the tightest dispatch deadline in the normal
+        // case, so buying against it is what keeps every member on time.
+        primaryOrderId: primaryId,
         members: {
-          create: picked.map((o) => ({
+          create: byAge.map((o) => ({
             orderId: String(o.id ?? ""),
             orderNumber: o.number ?? String(o.id ?? ""),
             allocationId: o.allocations?.[0]?.id
@@ -228,7 +267,7 @@ export async function POST(request: NextRequest) {
       include: { members: true },
     });
 
-    return NextResponse.json({ group });
+    return NextResponse.json({ group, deadlineWarning, spansStores });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     console.error("[shipping/merge] POST failed:", reason);
