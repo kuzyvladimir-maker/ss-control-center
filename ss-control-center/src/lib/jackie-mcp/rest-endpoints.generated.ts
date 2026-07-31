@@ -665,7 +665,68 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/bundle-factory/studio/flavors",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/bundle-factory/studio/generate",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]/approve",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]/prepare",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]/reject",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]/rerender",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/candidates/[candidateId]/submit",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/runs",
+    "methods": [
+      "POST",
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/runs/[runId]",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/uncrustables/runs/[runId]/tick",
     "methods": [
       "POST"
     ]
@@ -678,9 +739,47 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/bundle-factory/walmart/accounts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/walmart/data-collection",
+    "methods": [
+      "POST",
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/walmart/readiness",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/walmart/shipping-templates",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/catalog-status",
     "methods": [
       "GET"
+    ]
+  },
+  {
+    "path": "/api/catalog/product-truth/[view]",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/catalog/product-truth/standing-wave",
+    "methods": [
+      "GET",
+      "POST"
     ]
   },
   {
@@ -1077,6 +1176,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/economics/product-truth-shadow",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/economics/skus",
     "methods": [
       "GET"
@@ -1092,6 +1197,54 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     "path": "/api/external/orders",
     "methods": [
       "GET"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/control/[commandId]/complete",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/control/[commandId]/heartbeat",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/control/[commandId]/start",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/control/claim",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/standing-wave/[commandId]/complete",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/standing-wave/[commandId]/heartbeat",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/standing-wave/[commandId]/start",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/external/product-truth/standing-wave/claim",
+    "methods": [
+      "POST"
     ]
   },
   {
@@ -1324,6 +1477,16 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     "methods": [
       "POST",
       "GET"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/canary-artifacts/[digest]",
+    "methods": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE"
     ]
   },
   {
@@ -1670,9 +1833,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
-    "path": "/api/shipping/mergeable",
+    "path": "/api/shipping/merge",
     "methods": [
-      "GET"
+      "GET",
+      "POST",
+      "PATCH",
+      "DELETE"
     ]
   },
   {
@@ -1804,6 +1970,26 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/walmart/growth/listing-integrity",
+    "methods": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/walmart/growth/listing-integrity/gallery/[sku]",
+    "methods": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE"
+    ]
+  },
+  {
     "path": "/api/walmart/growth/listing-quality",
     "methods": [
       "GET"
@@ -1867,4 +2053,4 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   }
 ];
 
-export const REST_ENDPOINTS_COUNT = 296;
+export const REST_ENDPOINTS_COUNT = 324;
