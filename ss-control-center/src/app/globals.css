@@ -303,3 +303,26 @@ a,
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* ── Shipping Labels type scale ──────────────────────────────────────────
+   The order list and the post-buy card are read all day, at a desk, at a
+   glance — the original sizes were tuned for density and were too small for
+   that. Every size the operator actually reads is declared here so the whole
+   module can be re-tuned from one place instead of chasing ~160 hardcoded
+   values through the markup.
+
+   `--ship-date` is deliberately its own knob, a step above the meta text it
+   sits in: dates are the field the operator scans for most and they read
+   worse than everything else at the same size. */
+.shipping-scale {
+  --ship-row: 15px; /* row body / default text inside a row */
+  --ship-order-no: 16px; /* the order number itself */
+  --ship-meta: 14px; /* store, channel, secondary row text */
+  --ship-date: 16px; /* every rendered date — own knob, item 2 */
+  --ship-product: 22px; /* product title: the thing being shipped */
+  --ship-cell-label: 11px; /* small caps column labels */
+  --ship-cell-value: 16px; /* the number/date under a column label */
+  --ship-sub: 12.5px; /* sub-line under a cell value */
+  --ship-badge: 13px; /* status pills */
+  --ship-button: 13px; /* inline row buttons */
+}
