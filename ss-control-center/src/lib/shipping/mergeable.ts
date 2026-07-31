@@ -1,11 +1,19 @@
-// Merge Orders detection — Path A (deep-link to Veeqo for the actual
-// merge click). We compute a normalised "delivery signature" per order
-// and any two orders within the same channel + store with the same
-// signature are flagged as mergeable. We don't try to invent fuzzy
-// address matching; if Veeqo flags more pairs than us, we tighten the
-// normalisation later to match.
+// Merge Orders detection — finds orders heading to the same address that can
+// ship in one box on one label.
 //
-// See docs/wiki/merge-orders-design.md for the full design rationale.
+// Grouping key is Veeqo's OWN address fingerprint (`mergable_checksum`), so our
+// candidate list matches theirs by construction rather than by imitating their
+// address normalisation. Validated against this account's history: 16 of 16
+// merges actually performed in Veeqo are reproduced by this rule, zero
+// mismatches.
+//
+// The merge itself now happens HERE, not in Veeqo. Merging there bypasses the
+// Placed gate — a label could be bought for an order whose goods were never
+// procured, the order then dropped out of Procurement, and nobody saw the
+// shortfall. That is why the flow moved into the Command Center.
+//
+// Mechanics, evidence and the label-saving numbers:
+//   docs/wiki/merge-orders-veeqo-mechanics.md
 
 // Loose Veeqo order shape we depend on. We accept whatever shape Veeqo
 // returns and only read the fields we need — the rest can vary.
@@ -115,9 +123,15 @@ function normaliseChannelKind(typeCode: string | null | undefined): string {
 // FALLBACK: the normalised address below, for any order where Veeqo didn't
 // supply a checksum.
 //
-// Either way the channel and store are prefixed, because a merge must stay
-// inside one channel and one store (owner's 2026-05-17 decision, and every one
-// of the 16 merges this account has actually performed obeyed it).
+// The channel is prefixed because a merge must stay inside one channel — the
+// label source and the marketplace protections differ per channel.
+//
+// The STORE deliberately is not. One buyer can order from Salutem and from
+// AMZ Commerce to the same address, and the owner merges exactly that: one box,
+// one label bought on one account, the tracking copied to the other (owner's
+// decision, 2026-07-31, superseding the same-store rule from 2026-05-17).
+// Keeping the store in the key would have hidden those pairs from the operator
+// entirely.
 export function deliverySignature(order: VeeqoOrderForMerge): string | null {
   // An order already merged into a combined order is done — it must never be
   // offered as a candidate again, or the operator would be invited to merge a
@@ -129,8 +143,7 @@ export function deliverySignature(order: VeeqoOrderForMerge): string | null {
   const checksum = (order.mergable_checksum ?? "").trim();
   if (checksum) {
     const channelKind = normaliseChannelKind(order.channel?.type_code);
-    const storeName = lower(order.store?.name ?? order.channel?.name ?? "");
-    return [channelKind, storeName, "sum", checksum].join("|");
+    return [channelKind, "sum", checksum].join("|");
   }
 
   const d = order.deliver_to;
@@ -142,9 +155,8 @@ export function deliverySignature(order: VeeqoOrderForMerge): string | null {
   const zip = lower(d.zip ?? d.postcode).split("-")[0];
   if (!name || !addr1 || !zip) return null; // not enough to group on
   const channelKind = normaliseChannelKind(order.channel?.type_code);
-  const storeName = lower(order.store?.name ?? order.channel?.name ?? "");
   const addr2 = normaliseLine(d.address2 ?? d.address_line_2);
-  return [channelKind, storeName, name, addr1, addr2, city, state, zip].join("|");
+  return [channelKind, name, addr1, addr2, city, state, zip].join("|");
 }
 
 export function findMergeableGroups(
