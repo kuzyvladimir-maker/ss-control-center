@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -544,7 +545,27 @@ export default function ShippingLabelsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
+  // Defaults to Today: that's the day being worked, and landing on "All"
+  // meant scrolling past later-day rows before reaching any of them. Overdue
+  // and Need-Attention rows from OTHER days are not hidden by this — they are
+  // pinned above the filtered list (see `filteredOrders`), because a filter
+  // silently swallowing something urgent is exactly the failure this page
+  // can't afford.
+  const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(
+    "today",
+  );
+
+  // Orders bought during THIS session, with the state they had immediately
+  // before the purchase.
+  //
+  // Item 4: after printing, the row must stay exactly where it was — the
+  // operator loses their place otherwise. Two things used to move it: the
+  // state flips to `bought`, which sorts last, and for Walmart the row also
+  // becomes "awaiting ship-confirm" and leaves the tab entirely. Ranking a
+  // just-bought row by its PRE-buy state keeps every sort input unchanged, so
+  // it simply stays put and picks up a "Printed" mark instead. Cleared by a
+  // full reload, which is when the row is allowed to move on.
+  const [justBought, setJustBought] = useState<Record<string, State>>({});
   // "Ships later" — narrow the list to orders whose label prints today but
   // whose package physically leaves on a later business day (Ship Date Trick).
   const [deferredOnly, setDeferredOnly] = useState(false);
@@ -906,6 +927,9 @@ export default function ShippingLabelsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    // A deliberate refresh is when just-bought rows are allowed to settle into
+    // their real state (bought / awaiting ship-confirm) and move.
+    setJustBought({});
     try {
       // Two-pass load:
       //   1. /api/shipping/dashboard — state, $ fields, time buckets. Cheap.
@@ -1255,11 +1279,16 @@ export default function ShippingLabelsPage() {
   const isAwaitingShipConfirm = useCallback(
     (o: DashboardOrder) => {
       if (!o.isWalmart) return false;
+      // A Walmart label bought in this session flips the order to "awaiting
+      // ship-confirm", which would move the row out of the tab the operator is
+      // working in the instant they printed it. Hold it in place until the next
+      // reload — item 4 is precisely about not losing that context.
+      if (o.orderId in justBought) return false;
       const ws = walmartStatus[o.orderNumber];
       if (!ws) return false;
       return ws.alreadyBought === true && ws.orderStatus !== "Shipped";
     },
-    [walmartStatus],
+    [walmartStatus, justBought],
   );
 
   const awaitingShipConfirmCount = useMemo(
@@ -1420,6 +1449,39 @@ export default function ShippingLabelsPage() {
     [scopedOrders, deferredShipNums],
   );
 
+  // The state a row is RANKED by. A row bought in this session keeps the state
+  // it had a moment before the purchase, so every sort input stays identical
+  // and printing cannot move the row (item 4).
+  const rankState = useCallback(
+    (o: DashboardOrder): State => justBought[o.orderId] ?? o.state,
+    [justBought],
+  );
+
+  // Rows that sit above everything else regardless of the day filter and
+  // regardless of the sort the operator picked (items 7 + 8).
+  //
+  // Owner's rule, 2026-07-30: overdue outranks need-attention. A missed ship-by
+  // is already costing account metrics, whereas a need-attention row can't be
+  // bought until it's resolved no matter where it sits.
+  //
+  //   0 = overdue AND needs attention   1 = overdue
+  //   2 = needs attention               3 = ordinary row
+  //
+  // Just-printed rows are ranked on their pre-buy state, so they hold their
+  // exact position — including a pinned one — rather than sliding away the
+  // moment the label comes out of the printer.
+  const pinRank = useCallback(
+    (o: DashboardOrder): number => {
+      const overdue = o.timeBucket === "overdue";
+      const attention = rankState(o) === "need_attention";
+      if (overdue && attention) return 0;
+      if (overdue) return 1;
+      if (attention) return 2;
+      return 3;
+    },
+    [rankState],
+  );
+
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
     // → bought. Inside each state, sort by time bucket (overdue first) so the
@@ -1467,7 +1529,11 @@ export default function ShippingLabelsPage() {
             bucketFilter === "today"
               ? o.timeBucket === "today" || o.timeBucket === "overdue"
               : o.timeBucket === bucketFilter;
-          if (!inBucket) return false;
+          // Urgent rows survive the day filter and are pinned above the list.
+          // The page now opens on Today by default, and a day filter that can
+          // hide an overdue or blocked order is how those get missed — the
+          // filter narrows the ordinary work, never the exceptions.
+          if (!inBucket && pinRank(o) === 3) return false;
         }
         if (deferredOnly && !deferredShipNums.has(o.orderNumber)) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
@@ -1510,7 +1576,11 @@ export default function ShippingLabelsPage() {
       })
       .slice()
       .sort((a, b) => {
-        const ds = stateRank[a.state] - stateRank[b.state];
+        // Urgency block first (overdue+attention → overdue → attention), then
+        // the ordinary actionability order inside each block.
+        const dp = pinRank(a) - pinRank(b);
+        if (dp !== 0) return dp;
+        const ds = stateRank[rankState(a)] - stateRank[rankState(b)];
         if (ds !== 0) return ds;
         const ab = a.timeBucket ? bucketRank[a.timeBucket] : 99;
         const bb = b.timeBucket ? bucketRank[b.timeBucket] : 99;
@@ -1527,7 +1597,17 @@ export default function ShippingLabelsPage() {
     viewScope,
     isAwaitingShipConfirm,
     searchQuery,
+    pinRank,
+    rankState,
   ]);
+
+  // How many of the leading rows are pinned by urgency — the render inserts a
+  // separator after them so the operator can see where the exceptions end and
+  // the day's ordinary work begins.
+  const pinnedCount = useMemo(
+    () => filteredOrders.filter((o) => pinRank(o) < 3).length,
+    [filteredOrders, pinRank],
+  );
 
   const selectableIds = useMemo(
     () =>
@@ -1588,6 +1668,12 @@ export default function ShippingLabelsPage() {
       return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
     };
     rows.sort((a, b) => {
+      // Item 8: the urgency block stays on top under EVERY sort. Sorting by
+      // cost or EDD used to scatter overdue and need-attention rows through
+      // the list, which is where they got missed. The chosen sort orders the
+      // ordinary rows below them.
+      const dp = pinRank(a) - pinRank(b);
+      if (dp !== 0) return dp;
       if (sortBy === "cost") {
         return (
           num(planByOrderNumber.get(a.orderNumber)?.price) -
@@ -1612,7 +1698,7 @@ export default function ShippingLabelsPage() {
       return time(a.deliverBy) - time(b.deliverBy);
     });
     return rows;
-  }, [filteredOrders, sortBy, planByOrderNumber]);
+  }, [filteredOrders, sortBy, planByOrderNumber, pinRank]);
 
   // Sum of the label cost across selected orders (Veeqo plan price + Walmart
   // quote price both live in planByOrderNumber). Shown in the Buy-selected
@@ -1793,6 +1879,20 @@ export default function ShippingLabelsPage() {
       const boughtByNumber = new Map(
         boughtList.map((b) => [b.orderNumber, b]),
       );
+
+      // Remember what each row was BEFORE the purchase, so it keeps ranking
+      // (and therefore its position) exactly as it did a moment ago.
+      setData((prev) => {
+        if (!prev) return prev;
+        const preStates: Record<string, State> = {};
+        for (const o of prev.orders) {
+          if (boughtByNumber.has(o.orderNumber)) preStates[o.orderId] = o.state;
+        }
+        if (Object.keys(preStates).length > 0) {
+          setJustBought((p) => ({ ...p, ...preStates }));
+        }
+        return prev;
+      });
 
       setData((prev) => {
         if (!prev) return prev;
@@ -2457,7 +2557,10 @@ export default function ShippingLabelsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    // `shipping-scale` carries the module's type scale (see globals.css). Every
+    // operator-facing size below reads from those variables rather than a
+    // hardcoded px value, so the density of the whole page is one edit.
+    <div className="shipping-scale space-y-5">
       <PageHead
         title="Shipping labels"
         subtitle={
@@ -2997,10 +3100,31 @@ export default function ShippingLabelsPage() {
               : "No orders match the current filter."}
           </div>
         ) : (
-          displayedOrders.map((o) => (
-            <OrderRow
-              key={o.orderId}
+          displayedOrders.map((o, idx) => (
+            <Fragment key={o.orderId}>
+              {/* Boundary between the pinned urgency block and the day's
+                  ordinary work. Only drawn when there is something on both
+                  sides of it. */}
+              {idx === pinnedCount &&
+                pinnedCount > 0 &&
+                idx < displayedOrders.length && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="h-px flex-1 bg-rule" />
+                    <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
+                      {bucketFilter === "today"
+                        ? "Today"
+                        : bucketFilter
+                          ? BUCKET_TABS.find((t) => t.id === bucketFilter)
+                              ?.label
+                          : "All orders"}
+                    </span>
+                    <div className="h-px flex-1 bg-rule" />
+                  </div>
+                )}
+              <OrderRow
               order={o}
+              overdue={o.timeBucket === "overdue"}
+              printedInSession={o.orderId in justBought}
               plan={planByOrderNumber.get(o.orderNumber) ?? null}
               planLoading={planLoading}
               selected={selected.has(o.orderId)}
@@ -3038,7 +3162,8 @@ export default function ShippingLabelsPage() {
                 });
               }}
               onBuy={() => buyOne(o)}
-            />
+              />
+            </Fragment>
           ))
         )}
       </div>
@@ -3083,6 +3208,7 @@ export default function ShippingLabelsPage() {
         <BuyReportDialog
           report={buyReport}
           orders={orders}
+          plans={planByOrderNumber}
           onClose={() => setBuyReport(null)}
         />
       )}
@@ -3387,6 +3513,8 @@ function AwaitingSplitCard({
 
 function OrderRow({
   order,
+  overdue,
+  printedInSession,
   plan,
   planLoading,
   selected,
@@ -3420,6 +3548,12 @@ function OrderRow({
   onShipDateChange,
 }: {
   order: DashboardOrder;
+  /** Ship-by already passed. Item 7: these carry a red fill so they read as
+   *  exceptions at a glance, not just as another row near the top. */
+  overdue: boolean;
+  /** A label was bought for this row during this session. Item 4: the row
+   *  holds its position and is marked, instead of jumping or disappearing. */
+  printedInSession: boolean;
   plan: PlanItem | null;
   planLoading: boolean;
   selected: boolean;
@@ -3546,14 +3680,24 @@ function OrderRow({
   return (
     <div
       className={cn(
-        "rounded-md border bg-surface p-3 text-[13px]",
-        isAttn
-          ? "border-warn-strong/40 bg-warn-tint/30"
-          : isWaiting
-            ? "border-rule opacity-70"
-            : isBought
-              ? "border-green/40 bg-green-soft/30"
-              : "border-rule"
+        "rounded-md border bg-surface p-3 text-[length:var(--ship-row)]",
+        // Order matters. A row printed in this session reads as DONE above
+        // everything else — otherwise a just-printed overdue order keeps
+        // shouting red and the operator prints it twice. Overdue is next,
+        // because a missed ship-by outranks "needs attention" (owner's rule,
+        // 2026-07-30) and must be visible as an exception, not just as a row
+        // that happens to sit near the top.
+        printedInSession
+          ? "border-green bg-green-soft/60"
+          : overdue
+            ? "border-danger bg-danger-tint/40"
+            : isAttn
+              ? "border-warn-strong/40 bg-warn-tint/30"
+              : isWaiting
+                ? "border-rule opacity-70"
+                : isBought
+                  ? "border-green/40 bg-green-soft/30"
+                  : "border-rule"
       )}
     >
       {lightboxImageUrl && (
@@ -3655,15 +3799,29 @@ function OrderRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-mono text-[13px] text-ink">
+            <span className="font-mono text-[length:var(--ship-order-no)] text-ink">
               {order.orderNumber}
             </span>
             <CopyOrderNumber value={order.orderNumber} />
-            <span className="text-[12px] text-ink-3">
+            {/* Item 4: the row stays exactly where it was after printing, so it
+                needs to say plainly that it's done — otherwise a row sitting in
+                its old place looks like work still to do. */}
+            {printedInSession && (
+              <span className="inline-flex items-center gap-1 rounded bg-green px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
+                <CheckCircle size={12} />
+                Printed
+              </span>
+            )}
+            {overdue && !printedInSession && (
+              <span className="rounded bg-danger px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
+                Overdue
+              </span>
+            )}
+            <span className="text-[length:var(--ship-meta)] text-ink-3">
               · {order.storeName}
             </span>
             {order.shipBy && (
-              <span className="text-[12px] text-ink-3">
+              <span className="text-[length:var(--ship-date)] text-ink-3">
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
@@ -3671,7 +3829,7 @@ function OrderRow({
                 sanity-check the destination on the row without opening Veeqo.
                 Compact chip; full address still lives in Veeqo. */}
             {(order.customerName || order.city || order.shipToState) && (
-              <span className="inline-flex items-center gap-1 rounded bg-bg-elev px-1.5 py-0.5 text-[11.5px] text-ink-2">
+              <span className="inline-flex items-center gap-1 rounded bg-bg-elev px-1.5 py-0.5 text-[length:var(--ship-button)] text-ink-2">
                 <User size={10} className="text-ink-3" />
                 {order.customerName ?? "—"}
                 {(order.city || order.shipToState) && (
@@ -3689,7 +3847,7 @@ function OrderRow({
                 per-order date highlights in blue. */}
             {isReady &&
               (order.isWalmart ? !wmBought && !wmShipped : true) && (
-                <span className="inline-flex items-center gap-1 text-[12px] text-ink-3">
+                <span className="inline-flex items-center gap-1 text-[length:var(--ship-meta)] text-ink-3">
                   · Ship
                   <input
                     type="date"
@@ -3704,7 +3862,7 @@ function OrderRow({
                       // Ship date is the thing the operator scans for on every
                       // row — keep it a notch bigger and bolder than the rest
                       // of the meta line.
-                      "rounded border bg-surface px-1.5 py-0.5 text-[13.5px] font-medium leading-none focus:border-[#0071dc] focus:outline-none",
+                      "rounded border bg-surface px-1.5 py-0.5 text-[length:var(--ship-date)] font-medium leading-none focus:border-[#0071dc] focus:outline-none",
                       shipDateOverridden
                         ? "border-[#0071dc] text-[#0071dc]"
                         : "border-rule text-ink",
@@ -3754,7 +3912,7 @@ function OrderRow({
               if (!trickApplied) {
                 return (
                   <span
-                    className="text-[13.5px] font-medium text-ink-2"
+                    className="text-[length:var(--ship-date)] font-medium text-ink-2"
                     title="Label date and physical ship date are the same"
                   >
                     · 📦 Ship {fmtDate(physicalShipDate ?? labelDate ?? "")}
@@ -3765,13 +3923,13 @@ function OrderRow({
               return (
                 <>
                   <span
-                    className="text-[13.5px] font-medium text-ink-2"
+                    className="text-[length:var(--ship-date)] font-medium text-ink-2"
                     title="Date Amazon sees on the label (drives Late Shipment Rate)"
                   >
                     · Label {fmtDate(labelDate ?? "")}
                   </span>
                   <span
-                    className="rounded bg-warn-tint px-1.5 py-px text-[13.5px] font-semibold text-warn-strong"
+                    className="rounded bg-warn-tint px-1.5 py-px text-[length:var(--ship-date)] font-semibold text-warn-strong"
                     title="Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
                   >
                     · 📦 Physical {fmtDate(physicalShipDate ?? "")}
@@ -3789,12 +3947,12 @@ function OrderRow({
             {order.items.map((i) => (
               <li key={i.sku} className="text-ink-2">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                  <span className="text-[19px] font-bold leading-snug text-ink">
+                  <span className="text-[length:var(--ship-product)] font-bold leading-snug text-ink">
                     {i.productTitle}
                   </span>
                   <QtyBadge qty={i.quantity} big />
                 </div>
-                <div className="mt-0.5 font-mono text-[11px] text-ink-3">
+                <div className="mt-0.5 font-mono text-[length:var(--ship-sub)] text-ink-3">
                   {i.sku}
                 </div>
               </li>
@@ -3839,7 +3997,7 @@ function OrderRow({
           a rate for the order (ready_to_buy and just-bought rows). The
           marketplace deadline (Amazon / Walmart deliver-by) sits in its own
           cell so the operator can eyeball whether the carrier's EDD beats it. */}
-      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-6 text-[12.5px]">
+      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-6 text-[length:var(--ship-row)]">
         <Cell label="Order total" value={fmt$(order.orderTotal)} />
         <Cell
           label="Customer paid shipping"
@@ -3882,7 +4040,7 @@ function OrderRow({
             title="Edit weight and box size — saves to SKU database and recomputes rate"
             className="rounded bg-surface-tint px-2 py-1.5 text-left hover:bg-bg-elev hover:ring-1 hover:ring-rule transition-colors"
           >
-            <div className="flex items-center justify-between gap-1 text-[10px] font-mono uppercase tracking-wider text-ink-3">
+            <div className="flex items-center justify-between gap-1 text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
               <span>Package</span>
               <Pencil size={9} className="text-ink-3" />
             </div>
@@ -3890,7 +4048,7 @@ function OrderRow({
               {isRequoting ? (
                 <span className="inline-flex items-center gap-1 text-ink-3">
                   <Loader2 size={12} className="animate-spin" />
-                  <span className="text-[11px] font-normal">updating…</span>
+                  <span className="text-[length:var(--ship-badge)] font-normal">updating…</span>
                 </span>
               ) : plan?.weight != null ? (
                 `${plan.weight} lbs`
@@ -3900,7 +4058,7 @@ function OrderRow({
                 // No saved weight/dims for this SKU. The cell is clickable —
                 // make the dash an explicit call to action instead of a bare
                 // "—" that looks like missing data with nothing to do.
-                <span className="text-[12px] font-medium text-warn-strong">
+                <span className="text-[length:var(--ship-meta)] font-medium text-warn-strong">
                   Set weight/size
                 </span>
               ) : (
@@ -3908,7 +4066,7 @@ function OrderRow({
               )}
             </div>
             {!isRequoting && plan?.boxSize && (
-              <div className="truncate text-[10.5px] text-ink-3">
+              <div className="truncate text-[length:var(--ship-sub)] text-ink-3">
                 {plan.boxSize}
               </div>
             )}
@@ -3921,7 +4079,7 @@ function OrderRow({
               isRequoting ? (
                 <span className="inline-flex items-center gap-1 text-ink-3">
                   <Loader2 size={12} className="animate-spin" />
-                  <span className="text-[11px] font-normal">recalculating…</span>
+                  <span className="text-[length:var(--ship-badge)] font-normal">recalculating…</span>
                 </span>
               ) : planLoading && !plan ? (
                 "loading…"
@@ -3966,7 +4124,7 @@ function OrderRow({
               !isReady && "cursor-default",
             )}
           >
-            <div className="flex items-center justify-between gap-1 text-[10px] font-mono uppercase tracking-wider text-ink-3">
+            <div className="flex items-center justify-between gap-1 text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
               <span>Carrier</span>
               {isReady && (
                 <Pencil
@@ -3984,7 +4142,7 @@ function OrderRow({
               {isRequoting ? (
                 <span className="inline-flex items-center gap-1 text-ink-3">
                   <Loader2 size={12} className="animate-spin" />
-                  <span className="text-[11px] font-normal">re-quoting…</span>
+                  <span className="text-[length:var(--ship-badge)] font-normal">re-quoting…</span>
                 </span>
               ) : rateOverride ? (
                 rateOverride.service ?? rateOverride.carrier ?? "—"
@@ -3998,7 +4156,7 @@ function OrderRow({
                 "—"
               )}
             </div>
-            <div className="flex items-center justify-between gap-1 text-[10.5px] text-ink-3">
+            <div className="flex items-center justify-between gap-1 text-[length:var(--ship-sub)] text-ink-3">
               <span>
                 {(() => {
                   const edd = rateOverride?.edd ?? plan?.edd ?? null;
@@ -4048,7 +4206,7 @@ function OrderRow({
                     e.stopPropagation();
                     onClearOverride();
                   }}
-                  className="text-[10px] text-ink-3 hover:text-danger underline"
+                  className="text-[length:var(--ship-cell-label)] text-ink-3 hover:text-danger underline"
                   title="Clear override and revert to the algorithm's pick"
                 >
                   clear
@@ -4066,7 +4224,7 @@ function OrderRow({
           "Vika showed UPS Ground at $39.93" and assumes the agent is
           wrong. */}
       {isReady && plan?.productType === "Frozen" && (
-        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[11px] text-info">
+        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[length:var(--ship-badge)] text-info">
           Frozen — the agent keeps the cheapest rate that meets two
           conditions: it delivers on/before the marketplace deadline, and
           within the food-safety window (3 calendar days, tightened to 2 when
@@ -4081,7 +4239,7 @@ function OrderRow({
       {/* Action area per state */}
       {isAttn && (
         <div className="mt-2 ml-6 flex flex-wrap items-center gap-2">
-          <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+          <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong">
             {order.needAttentionReason
               ? ATTENTION_LABELS[order.needAttentionReason]
               : "Needs review"}
@@ -4091,7 +4249,7 @@ function OrderRow({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 text-[11.5px]"
+                className="h-7 text-[length:var(--ship-button)]"
                 onClick={onClassify}
               >
                 <Sparkles size={12} className="mr-1" /> Classify with AI
@@ -4099,7 +4257,7 @@ function OrderRow({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 text-[11.5px]"
+                className="h-7 text-[length:var(--ship-button)]"
                 onClick={onManual}
               >
                 Set manually
@@ -4110,7 +4268,7 @@ function OrderRow({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-[11.5px]"
+              className="h-7 text-[length:var(--ship-button)]"
               onClick={onPacking}
             >
               <Package size={12} className="mr-1" /> Set packing profile
@@ -4120,27 +4278,27 @@ function OrderRow({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-[11.5px]"
+              className="h-7 text-[length:var(--ship-button)]"
               onClick={onSku}
             >
               <Package size={12} className="mr-1" /> Add SKU data
             </Button>
           )}
           {order.needAttentionReason === "mixed_order" && (
-            <span className="text-[11px] text-ink-3">
+            <span className="text-[length:var(--ship-badge)] text-ink-3">
               Split the order in Veeqo (Frozen + Dry on one label isn&apos;t
               supported).
             </span>
           )}
           {order.needAttentionReason === "frozen_walmart" && (
-            <span className="text-[11px] text-ink-3">
+            <span className="text-[length:var(--ship-badge)] text-ink-3">
               Frozen items can&apos;t ship via Walmart — cancel or switch
               channel.
             </span>
           )}
           {(order.needAttentionReason === "budget" ||
             order.needAttentionReason === "no_service") && (
-            <span className="text-[11px] text-ink-3">
+            <span className="text-[length:var(--ship-badge)] text-ink-3">
               No carrier rate fits — review manually in Veeqo.
             </span>
           )}
@@ -4153,7 +4311,7 @@ function OrderRow({
           once the package moves). */}
       {wmBought && (
         <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] text-green-ink">
+          <span className="text-[length:var(--ship-badge)] text-green-ink">
             Label bought — {walmartStatus?.existingLabel?.carrierName}{" "}
             <span className="font-mono">
               {walmartStatus?.existingLabel?.trackingNumber}
@@ -4168,7 +4326,7 @@ function OrderRow({
             variant="outline"
             onClick={onMarkShipped}
             disabled={markingShipped || rollingBack || discardingLabel}
-            className="h-7 text-[11.5px]"
+            className="h-7 text-[length:var(--ship-button)]"
           >
             {markingShipped ? (
               <>
@@ -4182,7 +4340,7 @@ function OrderRow({
         </div>
       )}
       {wmShipped && (
-        <div className="mt-1 ml-6 text-[11px] text-green-ink">
+        <div className="mt-1 ml-6 text-[length:var(--ship-badge)] text-green-ink">
           Shipped ✓ (confirmed to Walmart).
         </div>
       )}
@@ -4194,18 +4352,18 @@ function OrderRow({
             // but the operator manually picked a rate — let them buy it and
             // just warn that it may ship late. The override is the operator
             // taking responsibility for the deadline miss.
-            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong">
               Manual override — no on-time rate found, this label may ship
               late. {plan?.notes}
             </span>
           ) : planStop ? (
-            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
+            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-danger">
               {plan?.notes}
             </span>
           ) : buyError ? (
             // Show the last buy failure inline so the operator doesn't
             // think the spinner-then-active-button cycle meant success.
-            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
+            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-danger">
               Buy failed — {buyError}
             </span>
           ) : walmartRateError && !planPending ? (
@@ -4213,7 +4371,7 @@ function OrderRow({
             // for the qty-specific signature on a Walmart split). Surface
             // the exact reason so the operator can fix it instead of
             // staring at a perpetual "Awaiting rate".
-            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong">
               Rate error — {walmartRateError}
             </span>
           ) : walmartStatus?.labelLookupFailed ? (
@@ -4221,13 +4379,13 @@ function OrderRow({
             // can't prove the order doesn't already have a label, so Buy
             // is disabled until a re-quote succeeds. Without this guard a
             // 429 was the source of double-paid labels.
-            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[length:var(--ship-badge)] font-medium text-warn-strong">
               Can&apos;t verify if label already bought —{" "}
               {walmartStatus.labelLookupError ?? "Walmart lookup failed"}.
               Re-quote (Refresh) before buying.
             </span>
           ) : (
-            <span className="text-[11px] text-ink-3">
+            <span className="text-[length:var(--ship-badge)] text-ink-3">
               {planPending
                 ? "Rate ready — confirm to buy"
                 : planLoading
@@ -4252,7 +4410,7 @@ function OrderRow({
                   ? "Buy your manually-picked rate even though no rate meets the deadline (may ship late)."
                   : undefined
             }
-            className="h-7 text-[11.5px]"
+            className="h-7 text-[length:var(--ship-button)]"
           >
             {buying ? (
               <>
@@ -4275,7 +4433,7 @@ function OrderRow({
 
       {isWaiting && (
         <div className="mt-1 ml-6 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] text-ink-3">
+          <span className="text-[length:var(--ship-badge)] text-ink-3">
             Waiting for procurement (no <code>Placed</code> tag yet).
           </span>
           <Button
@@ -4284,7 +4442,7 @@ function OrderRow({
             onClick={onMarkPlaced}
             disabled={markingPlaced}
             title="Add the Placed tag in Veeqo so this order advances to Ready to buy without going through /procurement"
-            className="h-7 text-[11.5px]"
+            className="h-7 text-[length:var(--ship-button)]"
           >
             {markingPlaced ? (
               <>
@@ -4297,7 +4455,7 @@ function OrderRow({
         </div>
       )}
       {isBought && (
-        <div className="mt-1 ml-6 text-[11px] text-green-ink">
+        <div className="mt-1 ml-6 text-[length:var(--ship-badge)] text-green-ink">
           Label already purchased.
         </div>
       )}
@@ -4314,7 +4472,7 @@ function OrderRow({
           onClick={onRollback}
           disabled={rollingBack || markingShipped || discardingLabel}
           title="Push the order back to Procurement (keeps the bought label)"
-          className="h-7 text-[11.5px]"
+          className="h-7 text-[length:var(--ship-button)]"
         >
           {rollingBack ? (
             <>
@@ -4331,7 +4489,7 @@ function OrderRow({
           onClick={onDiscardLabel}
           disabled={discardingLabel || markingShipped || rollingBack}
           title="Cancel the bought label (FedEx/Walmart refund, ~24-72h). Order stays in Shipping Labels."
-          className="h-7 text-[11.5px]"
+          className="h-7 text-[length:var(--ship-button)]"
         >
           {discardingLabel ? (
             <>
@@ -4652,19 +4810,26 @@ function Cell({
 }) {
   return (
     <div className="rounded bg-surface-tint px-2 py-1.5">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
+      <div className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
         {label}
       </div>
       <div
         className={cn(
-          "mt-0.5 truncate font-semibold tabular",
+          // The value is what the operator actually reads — it used to inherit
+          // the grid's size and came out the same as its own caption.
+          "mt-0.5 truncate text-[length:var(--ship-cell-value)] font-semibold tabular",
           valueClass || "text-ink"
         )}
       >
         {value}
       </div>
       {sub && (
-        <div className={cn("truncate text-[10.5px]", subClass || "text-ink-3")}>
+        <div
+          className={cn(
+            "truncate text-[length:var(--ship-sub)]",
+            subClass || "text-ink-3"
+          )}
+        >
           {sub}
         </div>
       )}
@@ -5144,7 +5309,7 @@ function PackingProfileDialog({
             Order #{order.orderNumber}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 text-[12.5px]">
+        <div className="space-y-3 text-[length:var(--ship-row)]">
           <div>
             <div className="font-medium text-ink mb-1">Composition</div>
             <ul className="rounded border border-rule bg-surface-tint p-2 text-ink-2 space-y-0.5">
@@ -5447,13 +5612,52 @@ function SkuDataDialog({
 // so a missed label can't slip through unnoticed (the cost of one
 // unshipped order is hours of CS work plus marketplace penalty).
 // ─────────────────────────────────────────────────────────────────────────
+/** One labelled field on the post-buy confirmation card. `big` bumps the value
+ *  a step for the field the operator scans hardest (the delivery estimate). */
+function ReceiptField({
+  label,
+  value,
+  sub,
+  big = false,
+}: {
+  label: string;
+  value: ReactNode;
+  sub?: string;
+  big?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "break-words font-semibold text-ink",
+          big
+            ? "text-[length:var(--ship-cell-value)]"
+            : "text-[length:var(--ship-meta)]",
+        )}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div className="text-[length:var(--ship-sub)] text-ink-3">{sub}</div>
+      )}
+    </div>
+  );
+}
+
 function BuyReportDialog({
   report,
   orders,
+  plans,
   onClose,
 }: {
   report: BuyReport;
   orders: DashboardOrder[];
+  /** orderNumber → plan item, the source of package dims, weight and EDD.
+   *  Covers Amazon (Veeqo plan) and Walmart (its own quote) alike. */
+  plans: Map<string, PlanItem>;
   onClose: () => void;
 }) {
   // orderNumber → its line items, so each purchased row can show WHAT was in
@@ -5462,6 +5666,12 @@ function BuyReportDialog({
   const itemsByOrder = useMemo(() => {
     const m = new Map<string, DashboardItem[]>();
     for (const o of orders) m.set(o.orderNumber, o.items);
+    return m;
+  }, [orders]);
+  // orderNumber → the order itself, for recipient and destination state.
+  const orderByNumber = useMemo(() => {
+    const m = new Map<string, DashboardOrder>();
+    for (const o of orders) m.set(o.orderNumber, o);
     return m;
   }, [orders]);
   const okCount = report.bought.length;
@@ -5483,7 +5693,7 @@ function BuyReportDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="shipping-scale sm:max-w-[620px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -5570,34 +5780,62 @@ function BuyReportDialog({
           )}
 
           {report.bought.length > 0 && (
-            <div>
-              <div className="font-medium text-ink mb-1">Purchased</div>
-              <ul className="rounded border border-rule bg-surface-tint p-2 space-y-1 max-h-[180px] overflow-y-auto">
-                {report.bought.map((b) => (
-                  <li key={b.itemId} className="flex items-start gap-2">
-                    <CheckCircle
-                      size={13}
-                      className="mt-0.5 shrink-0 text-green-ink"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-mono text-[12px]">
-                        {b.orderNumber}
-                      </div>
-                      {(() => {
-                        // What was in this order — so the operator remembers
-                        // what the label was bought for.
-                        const items = itemsByOrder.get(b.orderNumber) ?? [];
-                        if (items.length === 0) return null;
-                        return (
-                          <ul className="mt-0.5 mb-1 min-w-0 space-y-px border-l-2 border-rule pl-2">
+            <div className="space-y-2">
+              <div className="font-medium text-ink">Printed</div>
+              {report.bought.map((b) => {
+                // Everything the operator wants to confirm at a glance: what
+                // was printed, how big it is, who it goes to, by whom, and
+                // when it lands — without leaving this window (item 3).
+                const order = orderByNumber.get(b.orderNumber) ?? null;
+                const items = itemsByOrder.get(b.orderNumber) ?? [];
+                const plan = plans.get(b.orderNumber) ?? null;
+                const hero = items.find((i) => i.imageUrl) ?? items[0] ?? null;
+                const destination = [order?.customerName, order?.shipToState]
+                  .filter(Boolean)
+                  .join(" · ");
+                const parcel = [
+                  plan?.boxSize,
+                  plan?.weight != null ? `${plan.weight} lb` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <div
+                    key={b.itemId}
+                    className="rounded border border-green/50 bg-green-soft/25 p-3"
+                  >
+                    <div className="flex items-start gap-3">
+                      {hero?.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={hero.imageUrl}
+                          alt=""
+                          className="h-20 w-20 shrink-0 rounded border border-rule bg-surface object-contain"
+                        />
+                      ) : (
+                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded border border-rule bg-surface-tint">
+                          <Package size={22} className="text-ink-3" />
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        {/* Product name is the biggest thing on the card —
+                            it's the one field that answers "what did I just
+                            print". */}
+                        <div className="text-[length:var(--ship-product)] font-bold leading-snug text-ink break-words">
+                          {items.length > 1 && (
+                            <span className="text-ink-2">
+                              {items.length} items ·{" "}
+                            </span>
+                          )}
+                          {hero?.productTitle ?? b.orderNumber}
+                        </div>
+                        {items.length > 1 && (
+                          <ul className="mt-1 space-y-px border-l-2 border-rule pl-2">
                             {items.map((it, idx) => (
                               <li
                                 key={idx}
-                                // Wrap long titles instead of forcing one nowrap
-                                // line — a single-line truncate was pushing the
-                                // row past the modal's right edge.
-                                className="text-[11px] text-ink-2 break-words"
-                                title={it.productTitle}
+                                className="text-[length:var(--ship-meta)] text-ink-2 break-words"
                               >
                                 <span className="font-medium text-ink">
                                   {it.quantity}×
@@ -5606,69 +5844,97 @@ function BuyReportDialog({
                               </li>
                             ))}
                           </ul>
-                        );
-                      })()}
-                      <div className="text-[11px] text-ink-2">
-                        {b.service ?? b.carrier ?? ""}
-                        {b.price != null && (
-                          <span className="text-ink-3">
-                            {" · $"}
-                            {b.price.toFixed(2)}
-                          </span>
                         )}
-                      </div>
-                      <div className="text-[11px] text-ink-3">
-                        Tracking:{" "}
-                        <span className="font-mono text-ink-2">
-                          {b.tracking}
-                        </span>
-                      </div>
-                      {b.pdfSaved && b.labelPath ? (
-                        <a
-                          href={b.labelPath}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[11px] text-info underline"
-                        >
-                          Open PDF
-                        </a>
-                      ) : (
-                        <div className="text-[11px] text-warn-strong">
-                          ⚠ PDF not saved locally — re-download from Veeqo
+
+                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                          <ReceiptField
+                            label="Package"
+                            value={parcel || "—"}
+                          />
+                          <ReceiptField
+                            label="Ship to"
+                            value={destination || "—"}
+                          />
+                          <ReceiptField
+                            label="Carrier"
+                            value={b.service ?? b.carrier ?? "—"}
+                            sub={
+                              b.price != null
+                                ? `$${b.price.toFixed(2)}`
+                                : undefined
+                            }
+                          />
+                          <ReceiptField
+                            label="Arrives (EDD)"
+                            value={plan?.edd ? fmtDate(plan.edd) : "—"}
+                            big
+                          />
                         </div>
-                      )}
-                      <div className="text-[11px] mt-0.5">
-                        PDF:{" "}
-                        <span
-                          className={cn(
-                            "font-medium",
-                            b.pdfSource === "drive"
-                              ? "text-green-ink"
-                              : b.pdfSource === "proxy"
-                                ? "text-warn-strong"
-                                : b.pdfSource === "disk"
-                                  ? "text-info"
-                                  : "text-danger",
-                          )}
-                        >
-                          {b.pdfSource === "drive"
-                            ? "✓ on Drive"
-                            : b.pdfSource === "proxy"
-                              ? "via Veeqo proxy (not on Drive)"
-                              : b.pdfSource === "disk"
-                                ? "local disk only"
-                                : "missing"}
-                        </span>
-                        {b.driveError && (
-                          <span className="ml-1 text-[10.5px] text-ink-3 font-mono">
-                            · {b.driveError}
-                          </span>
-                        )}
                       </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
+
+                    {/* Everything below is the operational trail — order
+                        number, tracking, and where the PDF actually landed.
+                        Kept intact: a silent Drive failure once looked like a
+                        success here and the labels existed only on Veeqo. */}
+                    <div className="mt-2 border-t border-rule pt-2 text-[length:var(--ship-meta)]">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span className="font-mono text-ink-2">
+                          {b.orderNumber}
+                        </span>
+                        <span className="text-ink-3">
+                          Tracking:{" "}
+                          <span className="font-mono text-ink-2">
+                            {b.tracking}
+                          </span>
+                        </span>
+                        {b.pdfSaved && b.labelPath ? (
+                          <a
+                            href={b.labelPath}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-info underline"
+                          >
+                            Open PDF
+                          </a>
+                        ) : (
+                          <span className="text-warn-strong">
+                            ⚠ PDF not saved locally — re-download from Veeqo
+                          </span>
+                        )}
+                        <span>
+                          PDF:{" "}
+                          <span
+                            className={cn(
+                              "font-medium",
+                              b.pdfSource === "drive"
+                                ? "text-green-ink"
+                                : b.pdfSource === "proxy"
+                                  ? "text-warn-strong"
+                                  : b.pdfSource === "disk"
+                                    ? "text-info"
+                                    : "text-danger",
+                            )}
+                          >
+                            {b.pdfSource === "drive"
+                              ? "✓ on Drive"
+                              : b.pdfSource === "proxy"
+                                ? "via Veeqo proxy (not on Drive)"
+                                : b.pdfSource === "disk"
+                                  ? "local disk only"
+                                  : "missing"}
+                          </span>
+                        </span>
+                      </div>
+                      {b.driveError && (
+                        <div className="mt-0.5 font-mono text-[length:var(--ship-sub)] text-ink-3">
+                          {b.driveError}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
