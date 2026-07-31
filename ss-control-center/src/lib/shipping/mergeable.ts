@@ -202,11 +202,3 @@ export function findMergeableGroups(
   });
   return groups;
 }
-
-// Deep-link to Veeqo's Mergeable view. Veeqo doesn't expose a way to
-// pre-select specific order IDs, so we just open their full Mergeable
-// list — the operator finds the pair by recipient/address (which we
-// also show in our UI for cross-reference).
-export function veeqoMergeableUrl(): string {
-  return "https://app.veeqo.com/orders?status=awaiting_fulfillment&mergeable=true&pick_status=unpicked";
-}

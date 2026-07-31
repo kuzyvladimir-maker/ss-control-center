@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoxPresetPicker } from "./components/BoxPresetPicker";
+import { MergeGroupCard } from "./components/MergeGroupCard";
 import { WeightInput, toLbs, type WeightUnit } from "./components/WeightInput";
 import {
   Btn,
@@ -201,6 +202,60 @@ interface RateOverride {
   // Physical ship day the operator forced when picking this rate (inline
   // picker / rate modal). Drives the buy's dispatch-date dance.
   physicalShipDate?: string | null;
+}
+
+// One group of same-address orders the operator could merge, as returned by
+// GET /api/shipping/merge. `mergeable` is false when a member hasn't been
+// marked Placed — those are shown rather than hidden, because "these two would
+// ship together once the goods are bought" is a procurement signal.
+interface MergeCandidate {
+  signature: string;
+  channelKind: string;
+  storeName: string | null;
+  recipient: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  orders: Array<{ id: string; orderNumber: string; storeName: string | null }>;
+  mergeable: boolean;
+  blockedOrderNumbers: string[];
+}
+
+// A group the operator has already merged. It owns the combined package and,
+// once bought, the single tracking number mirrored onto every member.
+export interface MergeGroup {
+  id: string;
+  checksum: string;
+  channelKind: string;
+  storeName: string | null;
+  primaryOrderId: string;
+  productType: string | null;
+  boxSize: string | null;
+  weight: number | null;
+  status: string;
+  trackingNumber: string | null;
+  carrier: string | null;
+  service: string | null;
+  price: number | null;
+  labelPdfUrl: string | null;
+  members: Array<{
+    id: string;
+    orderId: string;
+    orderNumber: string;
+    allocationId: string | null;
+    walmartPurchaseOrderId: string | null;
+    shipmentSyncedAt: string | null;
+    shipmentSyncError: string | null;
+  }>;
+}
+
+interface MergeState {
+  groupCount: number;
+  orderCount: number;
+  readyCount: number;
+  candidates: MergeCandidate[];
+  groups: MergeGroup[];
 }
 
 interface StoreTotals {
@@ -652,28 +707,18 @@ export default function ShippingLabelsPage() {
   // Cheap query — typically dozens of rows at most.
   const [frozenAlerts, setFrozenAlerts] = useState<ShippingFrozenAlert[]>([]);
 
-  // Merge Orders banner — groups of awaiting orders that share a delivery
-  // signature (same channel/store + recipient + address). Veeqo's public
-  // API has no merge endpoint, so the actual merge happens in Veeqo UI
-  // via the deep-link in the banner; the banner just makes them visible.
-  // See docs/wiki/merge-orders-design.md.
-  const [mergeable, setMergeable] = useState<{
-    groupCount: number;
-    orderCount: number;
-    veeqoUrl: string;
-    groups: Array<{
-      signature: string;
-      channelKind: string;
-      storeName: string | null;
-      recipient: string;
-      address: string;
-      city: string;
-      state: string;
-      zip: string;
-      orders: Array<{ id: string; orderNumber: string; storeName: string | null }>;
-    }>;
-  } | null>(null);
-  const [mergeableExpanded, setMergeableExpanded] = useState(false);
+  // Merge Orders — orders heading to the SAME address that can ship in one box
+  // on one label. The merge happens here, not in Veeqo: merging there bypasses
+  // the Placed gate, so a label could be bought for goods that were never
+  // procured and the order would silently leave the Procurement queue.
+  // See docs/wiki/merge-orders-veeqo-mechanics.md.
+  const [merge, setMerge] = useState<MergeState | null>(null);
+  // Merge mode narrows the list to just the candidates and turns the bulk
+  // action into "Merge selected" — the operator's flow is: see the banner,
+  // open it, tick the orders, merge.
+  const [mergeMode, setMergeMode] = useState(false);
+  const [merging, setMerging] = useState(false);
+  const [mergeMsg, setMergeMsg] = useState<string | null>(null);
 
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
@@ -1036,19 +1081,19 @@ export default function ShippingLabelsPage() {
 
   // Mergeable groups scan — non-blocking, runs in parallel with the
   // main dashboard load. Failure is silent (banner just doesn't show).
-  const loadMergeable = useCallback(async () => {
+  const loadMerge = useCallback(async () => {
     try {
-      const res = await fetch("/api/shipping/mergeable");
+      const res = await fetch("/api/shipping/merge");
       if (!res.ok) return;
-      const json = await res.json();
-      setMergeable(json);
+      const json = (await res.json()) as MergeState;
+      setMerge(json);
     } catch {
-      /* non-fatal — page works fine without the banner */
+      /* non-fatal — the rest of the page works without merge information */
     }
   }, []);
   useEffect(() => {
-    loadMergeable();
-  }, [loadMergeable]);
+    loadMerge();
+  }, [loadMerge]);
 
   // Index alerts by orderNumber for O(1) row lookup. Multiple ship dates for
   // the same order are exceedingly rare in this flow; if it happens, pick
@@ -1449,6 +1494,26 @@ export default function ShippingLabelsPage() {
     [scopedOrders, deferredShipNums],
   );
 
+  // Ids of every order that is a merge candidate right now. Drives both the
+  // merge-mode filter and which checkboxes are offered.
+  const mergeCandidateIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const c of merge?.candidates ?? []) {
+      for (const o of c.orders) set.add(o.id);
+    }
+    return set;
+  }, [merge]);
+
+  // Orders already inside an open group — they render under the group card,
+  // not as loose rows, so the operator can't act on half a shipment.
+  const groupedOrderIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of merge?.groups ?? []) {
+      for (const m of g.members) set.add(m.orderId);
+    }
+    return set;
+  }, [merge]);
+
   // The state a row is RANKED by. A row bought in this session keeps the state
   // it had a moment before the purchase, so every sort input stays identical
   // and printing cannot move the row (item 4).
@@ -1535,6 +1600,11 @@ export default function ShippingLabelsPage() {
           // filter narrows the ordinary work, never the exceptions.
           if (!inBucket && pinRank(o) === 3) return false;
         }
+        // Orders inside an open group live under their group card. Showing
+        // them loose as well would let someone buy half a shipment.
+        if (groupedOrderIds.has(o.orderId)) return false;
+        // Merge mode: only the candidates, so ticking is unambiguous.
+        if (mergeMode && !mergeCandidateIds.has(o.orderId)) return false;
         if (deferredOnly && !deferredShipNums.has(o.orderNumber)) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
         if (stateFilter !== "all" && o.state !== stateFilter) return false;
@@ -1599,6 +1669,9 @@ export default function ShippingLabelsPage() {
     searchQuery,
     pinRank,
     rankState,
+    mergeMode,
+    mergeCandidateIds,
+    groupedOrderIds,
   ]);
 
   // How many of the leading rows are pinned by urgency — the render inserts a
@@ -1614,6 +1687,12 @@ export default function ShippingLabelsPage() {
       new Set(
         filteredOrders
           .filter((o) => {
+            // Merge mode repurposes the checkbox column: the target is every
+            // merge candidate, not just what's buyable. A candidate whose goods
+            // aren't purchased yet is still tickable — the API refuses the
+            // merge and says which order is blocking, which is more useful than
+            // a checkbox that silently won't tick.
+            if (mergeMode) return mergeCandidateIds.has(o.orderId);
             // In the awaiting-ship-confirm tab, selectable = bought Walmart
             // rows waiting to be flipped to Shipped (the bulk Mark-shipped
             // target). Everywhere else, selectable = ready_to_buy (the
@@ -1624,7 +1703,13 @@ export default function ShippingLabelsPage() {
           })
           .map((o) => o.orderId)
       ),
-    [filteredOrders, viewScope, isAwaitingShipConfirm]
+    [
+      filteredOrders,
+      viewScope,
+      isAwaitingShipConfirm,
+      mergeMode,
+      mergeCandidateIds,
+    ]
   );
 
   // KPI tiles — derived from `scopedOrders` so the math on the page is
@@ -1933,6 +2018,63 @@ export default function ShippingLabelsPage() {
     },
     [],
   );
+
+  async function mergeSelected() {
+    if (selected.size < 2) {
+      setMergeMsg("Tick at least two orders to merge");
+      return;
+    }
+    setMerging(true);
+    setMergeMsg(null);
+    try {
+      const res = await fetch("/api/shipping/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderIds: [...selected] }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+      setSelected(new Set());
+      // A merged group changes what the list should show, so refresh both the
+      // groups and the orders behind them.
+      await Promise.all([loadMerge(), load()]);
+      setMergeMode(false);
+      setMergeMsg(
+        json.deadlineWarning ??
+          (json.spansStores
+            ? "Merged — note this group spans two seller accounts."
+            : "Merged. Set the type, weight and box on the group, then buy."),
+      );
+    } catch (e) {
+      setMergeMsg(errMsg(e));
+    } finally {
+      setMerging(false);
+    }
+  }
+
+  async function updateMergeGroup(
+    groupId: string,
+    patch: Record<string, unknown>,
+  ) {
+    const res = await fetch("/api/shipping/merge", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId, ...patch }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+    await loadMerge();
+  }
+
+  async function dissolveMergeGroup(groupId: string) {
+    const res = await fetch(
+      `/api/shipping/merge?groupId=${encodeURIComponent(groupId)}`,
+      { method: "DELETE" },
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+    await Promise.all([loadMerge(), load()]);
+  }
 
   async function buySelected() {
     if (selected.size === 0) return;
@@ -2585,12 +2727,42 @@ export default function ShippingLabelsPage() {
         </div>
       )}
 
-      {mergeable && mergeable.groupCount > 0 && (
-        <MergeableBanner
-          mergeable={mergeable}
-          expanded={mergeableExpanded}
-          onToggle={() => setMergeableExpanded((v) => !v)}
+      {/* Merge Orders. The banner is the entry point the owner asked for:
+          a line at the top saying orders could ship together, which opens a
+          filtered view where they're ticked and merged. */}
+      {merge && merge.groupCount > 0 && (
+        <MergeBanner
+          merge={merge}
+          active={mergeMode}
+          onToggle={() => {
+            setMergeMode((v) => !v);
+            setSelected(new Set());
+            setMergeMsg(null);
+          }}
         />
+      )}
+
+      {mergeMsg && (
+        <div className="rounded border border-rule bg-surface-tint px-3 py-2 text-[length:var(--ship-meta)] text-ink-2">
+          {mergeMsg}
+        </div>
+      )}
+
+      {/* Groups already merged and waiting for their package + label. */}
+      {(merge?.groups.length ?? 0) > 0 && (
+        <div className="space-y-2">
+          {merge!.groups.map((g) => (
+            <MergeGroupCard
+              key={g.id}
+              group={g}
+              orders={orders}
+              onUpdate={(patch: Record<string, unknown>) =>
+                updateMergeGroup(g.id, patch)
+              }
+              onDissolve={() => dissolveMergeGroup(g.id)}
+            />
+          ))}
+        </div>
       )}
 
       {/* Channel scope — one chip per channel kind present in today's
@@ -3041,6 +3213,16 @@ export default function ShippingLabelsPage() {
               {buying
                 ? "Marking shipped…"
                 : `Mark shipped (${selected.size})`}
+            </Btn>
+          ) : mergeMode ? (
+            <Btn
+              variant="primary"
+              icon={<Package size={13} />}
+              onClick={mergeSelected}
+              loading={merging}
+              disabled={selected.size < 2}
+            >
+              {merging ? "Merging…" : `Merge (${selected.size})`}
             </Btn>
           ) : (
             <Btn
@@ -4510,108 +4692,72 @@ function OrderRow({
   );
 }
 
-// Banner that surfaces mergeable awaiting orders so the operator can
-// combine them in Veeqo before buying labels (Veeqo's public API has no
-// merge endpoint — see docs/wiki/merge-orders-design.md). Collapsed,
-// it's a single warn-tint strip with the counts; expanded, it lists
-// every group with recipient + address + order numbers for cross-
-// reference against Veeqo's own Mergeable view.
-function MergeableBanner({
-  mergeable,
-  expanded,
+// Merge Orders entry point: a line at the top of the page saying some orders
+// are heading to the same address and could ship in one box. Clicking it turns
+// on merge mode, which narrows the list to exactly those orders so they can be
+// ticked and merged — the flow the owner described.
+//
+// Candidates whose goods aren't bought yet are counted separately rather than
+// hidden: "these two would ship together once purchased" is worth seeing.
+function MergeBanner({
+  merge,
+  active,
   onToggle,
 }: {
-  mergeable: {
-    groupCount: number;
-    orderCount: number;
-    veeqoUrl: string;
-    groups: Array<{
-      signature: string;
-      channelKind: string;
-      storeName: string | null;
-      recipient: string;
-      address: string;
-      city: string;
-      state: string;
-      zip: string;
-      orders: Array<{
-        id: string;
-        orderNumber: string;
-        storeName: string | null;
-      }>;
-    }>;
-  };
-  expanded: boolean;
+  merge: MergeState;
+  active: boolean;
   onToggle: () => void;
 }) {
-  const pairWord = mergeable.groupCount === 1 ? "group" : "groups";
+  const blocked = merge.groupCount - merge.readyCount;
+  const groupWord = merge.groupCount === 1 ? "group" : "groups";
   return (
-    <div className="rounded-md border border-warn/40 bg-warn-tint">
-      <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex items-center gap-2 text-left text-[12.5px] text-ink hover:text-ink-strong"
-        >
-          <Package size={14} className="text-warn-strong" />
-          <span className="font-medium">
-            {mergeable.groupCount} mergeable {pairWord}
-          </span>
-          <span className="text-ink-3">
-            ({mergeable.orderCount} orders) — same address across multiple
-            orders, combine in Veeqo to buy one label
-          </span>
-          <span className="text-ink-3">{expanded ? "▴" : "▾"}</span>
-        </button>
-        <a
-          href={mergeable.veeqoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 rounded border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:border-silver-line"
-        >
-          Open Veeqo Mergeable ↗
-        </a>
-      </div>
-      {expanded && (
-        <div className="border-t border-warn/30 px-4 py-3">
-          <ul className="space-y-2.5 text-[12px]">
-            {mergeable.groups.map((g) => (
-              <li key={g.signature} className="flex flex-col gap-0.5">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-medium capitalize text-ink">
-                    {g.recipient || "—"}
-                  </span>
-                  <span className="text-ink-3">·</span>
-                  <span className="text-ink-2">
-                    {g.address}, {g.city}, {g.state} {g.zip}
-                  </span>
-                  <span className="text-ink-3">·</span>
-                  <span className="text-ink-3">
-                    {g.channelKind}
-                    {g.storeName ? ` / ${g.storeName}` : ""}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-x-2 gap-y-0.5 font-mono text-[11.5px] text-ink-2">
-                  {g.orders.map((o) => (
-                    <span key={o.id}>{o.orderNumber}</span>
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors",
+        active
+          ? "border-info bg-info-tint"
+          : "border-warn-strong bg-warn-tint hover:bg-warn-tint/70",
       )}
-    </div>
+    >
+      <Package
+        size={16}
+        className={cn("shrink-0", active ? "text-info" : "text-warn-strong")}
+      />
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            "text-[length:var(--ship-row)] font-semibold",
+            active ? "text-info" : "text-warn-strong",
+          )}
+        >
+          {merge.groupCount} {groupWord} ({merge.orderCount} orders) going to
+          the same address
+        </div>
+        <div className="text-[length:var(--ship-meta)] text-ink-2">
+          {merge.readyCount > 0
+            ? `${merge.readyCount} ready to merge — one box, one label.`
+            : "None ready to merge yet."}
+          {blocked > 0 &&
+            ` ${blocked} waiting on goods to be purchased first.`}
+        </div>
+      </div>
+      <span
+        className={cn(
+          "shrink-0 rounded border px-2 py-1 text-[length:var(--ship-button)] font-medium",
+          active
+            ? "border-info text-info"
+            : "border-warn-strong text-warn-strong",
+        )}
+      >
+        {active ? "Close" : "Show orders"}
+      </span>
+    </button>
   );
 }
 
-/**
- * Quantity indicator next to a line item. qty=1 fades in (this is the norm);
- * qty>=2 pops in amber, qty>=4 amber+ring, qty>=10 red — matches the visual
- * cue Veeqo uses ("more than one of the same listing is unusual and the
- * operator must spot it before packing"). Vladimir asked for parity with
- * Veeqo's grey/yellow circle so the multi-qty cases jump out of the row.
- */
+
 function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
   if (!Number.isFinite(qty) || qty <= 0) return null;
   if (qty === 1) {
