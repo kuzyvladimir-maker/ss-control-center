@@ -3216,6 +3216,7 @@ export default function ShippingLabelsPage() {
         <EditPackageDialog
           order={editPackageModal}
           plan={planByOrderNumber.get(editPackageModal.orderNumber) ?? null}
+          planLoading={planLoading}
           onClose={(refresh) => {
             const ord = editPackageModal;
             const num = ord.orderNumber;
@@ -5258,6 +5259,7 @@ function PackingProfileDialog({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+
   const description = order.items
     .map((i) => `${i.productTitle} × ${i.quantity}`)
     .join(" + ");
@@ -5983,10 +5985,14 @@ function BuyReportDialog({
 function EditPackageDialog({
   order,
   plan,
+  planLoading,
   onClose,
 }: {
   order: DashboardOrder;
   plan: PlanItem | null;
+  /** The page is still fetching rates. Distinguishes "values are on their way"
+   *  from "this order genuinely has no package on file". */
+  planLoading: boolean;
   onClose: (refresh: boolean) => void;
 }) {
   const isMulti =
@@ -6030,6 +6036,37 @@ function EditPackageDialog({
   const [weightUnit, setWeightUnit] = useState<WeightUnit>("lbs");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Seed the fields if the plan lands AFTER the dialog was opened.
+  //
+  // The state above is initialised once, at mount. Opening this dialog before
+  // the page finished loading rates therefore left every field blank FOREVER —
+  // the plan arrived, the props updated, and the inputs never noticed. That is
+  // the "I click Package, wait a minute, close it, open it again and it's
+  // instant" the owner reported: the wait was the page's plan load, and
+  // reopening was the only thing that re-seeded the fields.
+  //
+  // Guarded on all four fields still being empty, which is only true when the
+  // operator hasn't typed anything — so this can never overwrite input.
+  useEffect(() => {
+    if (!plan) return;
+    if (length !== "" || width !== "" || height !== "" || weight !== "") return;
+    const box = parseBox(plan.boxSize);
+    if (box.l || box.w || box.h) {
+      setLength(box.l);
+      setWidth(box.w);
+      setHeight(box.h);
+      setBoxLabel(
+        BOX_PRESETS.some((pr) => pr.label === plan.boxSize)
+          ? (plan.boxSize as string)
+          : "custom",
+      );
+    }
+    if (plan.weight != null) setWeight(String(plan.weight));
+    // `parseBox` is a stable pure local; the field values are read as a
+    // "has the operator started typing" guard, not as inputs to re-run on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan]);
 
   async function save() {
     setErr(null);
@@ -6168,7 +6205,18 @@ function EditPackageDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 text-[12.5px]">
+        {/* Say plainly that the current values haven't arrived yet. Blank
+            fields used to be indistinguishable from "this SKU has no package
+            on file", so the operator sat waiting at a dialog that had nothing
+            left to load. */}
+        {!plan && planLoading && (
+          <div className="flex items-center gap-2 rounded border border-rule bg-surface-tint px-3 py-2 text-[length:var(--ship-meta)] text-ink-2">
+            <Loader2 size={14} className="animate-spin text-ink-3" />
+            Loading the current weight and box for this order…
+          </div>
+        )}
+
+        <div className="space-y-3 text-[length:var(--ship-row)]">
           {/* Box preset picker — clicking a chip fills the L/W/H fields
               below. Typing a new size in "Свой размер" auto-saves it as
               a new preset AND fills the inputs in one step. */}
