@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   buyShippingLabel,
@@ -15,6 +15,49 @@ import { todayNY } from "@/lib/shipping/dates";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
+
+// A bulk buy runs one label purchase per selected order. Even parallelised
+// each order is several seconds of carrier round-trip, so the invocation must
+// be allowed to outlive the platform default — every other long route in this
+// codebase sets this explicitly and buy was the one that never did. Without
+// it a bulk buy can be killed AFTER labels are purchased and money spent,
+// surfacing as a failure on a purchase that actually succeeded.
+export const maxDuration = 300;
+
+// How many orders we buy at once. Orders are independent (each mutates only
+// its own allocation + dispatch date), so parallelising is safe — but Veeqo
+// rate-limits bursts, and a 429 on the purchase POST is deliberately NOT
+// retried, so a wide pool would trade wall-clock for spurious failures the
+// operator has to redo. Four keeps the pool well inside the burst budget the
+// plan route already proved workable at five for reads.
+const BUY_CONCURRENCY = 4;
+
+// Flipped by the first request this function instance serves. A cold start
+// pays for runtime boot plus module init before any of the code below runs,
+// which is what makes the same click feel instant one minute and slow the
+// next — so we record which one it was instead of guessing.
+let instanceWarm = false;
+
+// Run `fn` over `items` with at most `poolSize` concurrent executions. Each
+// worker pulls the next index until the list is drained. Mirrors the helper
+// in /api/shipping/plan.
+async function mapPool<T>(
+  items: T[],
+  poolSize: number,
+  fn: (item: T) => Promise<void>,
+): Promise<void> {
+  let idx = 0;
+  const workers = Array.from(
+    { length: Math.min(Math.max(poolSize, 1), items.length) },
+    async () => {
+      while (idx < items.length) {
+        const i = idx++;
+        await fn(items[i]);
+      }
+    },
+  );
+  await Promise.all(workers);
+}
 
 // Append a single JSON line per /api/shipping/buy call. The file lives
 // outside `public/` so it's never served to the browser. Used as a
@@ -96,7 +139,34 @@ interface BuyOverride {
   physicalShipDate?: string | null;
 }
 
+// Wall-clock of one awaited stage, recorded into `into` under `key`. Stage
+// timings are what tell us where a slow buy actually went — the operator can't
+// read Vercel logs, and guessing from the outside is how we ended up
+// optimising the wrong things.
+async function stage<T>(
+  into: Record<string, number>,
+  key: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const t0 = Date.now();
+  try {
+    return await fn();
+  } finally {
+    into[key] = (into[key] ?? 0) + (Date.now() - t0);
+  }
+}
+
 export async function POST(request: NextRequest) {
+  const requestStartedAt = Date.now();
+  // True only on the first request an instance ever serves — i.e. the one that
+  // paid the cold start. Reported so a "why was that click slow" question can
+  // be answered with a fact instead of a theory.
+  const wasColdStart = !instanceWarm;
+  instanceWarm = true;
+  // Summed across orders, so with a parallel pool these deliberately add up to
+  // more than the wall clock — the ratio between them is exactly what tells us
+  // whether the pool is doing its job.
+  const stageTotals: Record<string, number> = {};
   try {
     const body = await request.json();
     const { planId, itemIds } = body;
@@ -176,7 +246,14 @@ export async function POST(request: NextRequest) {
       total: itemsToBuy.length,
     };
 
-    for (const rawItem of itemsToBuy) {
+    // Buy the selected orders concurrently. This used to be a plain
+    // sequential loop, so a five-label bulk buy cost the SUM of five ~10-15s
+    // purchase chains; now it costs roughly the slowest one. Each order only
+    // ever touches its own allocation and its own dispatch date, and the two
+    // shared sinks below (`results.bought` / `results.errors`) are plain array
+    // pushes on a single-threaded runtime, so there is no cross-order state to
+    // race on. The one-POST-per-order, no-retry rule is untouched.
+    await mapPool(itemsToBuy, BUY_CONCURRENCY, async (rawItem) => {
       // Hard guard: never buy a Walmart-channel order through Veeqo unless the
       // operator explicitly opted in via the Walmart buy-source toggle. The UI
       // already routes Walmart→Walmart by default; this is the server-side
@@ -193,7 +270,7 @@ export async function POST(request: NextRequest) {
             "Walmart order — labels are bought via Walmart, not Veeqo. Switch the Walmart buy source to Veeqo if you intend to buy this one through Veeqo.",
           itemId: rawItem.id,
         });
-        continue;
+        return;
       }
       // Apply per-item override BEFORE the required-fields check so an
       // override carrying every needed identifier can rescue an item the
@@ -235,7 +312,7 @@ export async function POST(request: NextRequest) {
           !item.totalNetCharge || !item.baseRate
         ) {
           results.errors.push({ orderNumber: item.orderNumber, error: "Missing shipping data", itemId: item.id });
-          continue;
+          return;
         }
 
         // ── Set OUR package dims in Veeqo BEFORE quoting/buying ─────────
@@ -272,12 +349,14 @@ export async function POST(request: NextRequest) {
         const boxDims = parseBoxSize(item.boxSize);
         if (pushWeightLbs != null && boxDims) {
           try {
-            await updateAllocationPackage(item.allocationId, {
-              weightLbs: pushWeightLbs,
-              lengthIn: boxDims.l,
-              widthIn: boxDims.w,
-              heightIn: boxDims.h,
-            });
+            await stage(stageTotals, "veeqoPackagePush", () =>
+              updateAllocationPackage(item.allocationId!, {
+                weightLbs: pushWeightLbs,
+                lengthIn: boxDims.l,
+                widthIn: boxDims.w,
+                heightIn: boxDims.h,
+              }),
+            );
           } catch (pkgErr) {
             const reason =
               pkgErr instanceof Error ? pkgErr.message : String(pkgErr);
@@ -358,7 +437,9 @@ export async function POST(request: NextRequest) {
         // straight through the UI for one-shot debugging.
         let rateDiagnostic = "";
         try {
-          const liveResp = await getShippingRates(item.allocationId);
+          const liveResp = await stage(stageTotals, "veeqoRateRequote", () =>
+            getShippingRates(item.allocationId!),
+          );
           const liveRates: Record<string, unknown>[] =
             (liveResp?.available as Record<string, unknown>[]) || [];
           // CRITICAL: match by `name` (= the per-service UUID), NOT by
@@ -499,17 +580,19 @@ export async function POST(request: NextRequest) {
         // need any per-carrier branching or retry-with-alternates here.
         let shipment: Awaited<ReturnType<typeof buyShippingLabel>>;
         try {
-          shipment = await buyShippingLabel({
-            allocationId: item.allocationId,
-            carrierId: buyCarrierId,
-            remoteShipmentId: buyRemoteShipmentId,
-            serviceType: buyServiceType,
-            subCarrierId: buySubCarrierId,
-            serviceCarrier: buyServiceCarrier,
-            totalNetCharge: buyTotalNetCharge,
-            baseRate: buyBaseRate,
-            vas: liveVas,
-          });
+          shipment = await stage(stageTotals, "carrierLabelPurchase", () =>
+            buyShippingLabel({
+              allocationId: item.allocationId!,
+              carrierId: buyCarrierId,
+              remoteShipmentId: buyRemoteShipmentId,
+              serviceType: buyServiceType,
+              subCarrierId: buySubCarrierId,
+              serviceCarrier: buyServiceCarrier,
+              totalNetCharge: buyTotalNetCharge,
+              baseRate: buyBaseRate,
+              vas: liveVas,
+            }),
+          );
         } catch (buyErr) {
           const baseMsg =
             buyErr instanceof Error ? buyErr.message : String(buyErr);
@@ -569,7 +652,9 @@ export async function POST(request: NextRequest) {
 
         if (veeqoLabelUrl) {
           try {
-            const pdfRes = await fetch(veeqoLabelUrl, veeqoLabelFetchOpts);
+              const pdfRes = await stage(stageTotals, "veeqoLabelPdf", () =>
+              fetch(veeqoLabelUrl, veeqoLabelFetchOpts),
+            );
             if (!pdfRes.ok) {
               console.error(
                 `[buy] PDF download from Veeqo failed: HTTP ${pdfRes.status}`
@@ -597,11 +682,13 @@ export async function POST(request: NextRequest) {
               pdfBase64 = pdfBuf.toString("base64");
 
               // ── Drive upload (preferred) ────────────────────────────
-              const drive = await uploadLabelPdf({
-                folderSegments: folderPath.split("/"),
-                filename,
-                pdf: pdfBuf,
-              });
+              const drive = await stage(stageTotals, "driveUpload", () =>
+                uploadLabelPdf({
+                  folderSegments: folderPath.split("/"),
+                  filename,
+                  pdf: pdfBuf,
+                }),
+              );
               if (drive.ok) {
                 labelPath = drive.result.webViewLink;
                 driveFileId = drive.result.fileId;
@@ -661,10 +748,23 @@ export async function POST(request: NextRequest) {
         const shipDayNote = trickApplies
           ? ` | Label: ${labelDate} · 📅 SHIP ON ${physicalShipDate}`
           : ` | Ship: ${labelDate}`;
-        await addEmployeeNote(
-          parseInt(item.orderId),
-          `✅ Label Purchased: ${item.carrier} ${boughtService} $${boughtPrice ?? "?"} | Tracking: ${tracking}${shipDayNote}`
-        );
+        // Written AFTER the response goes out. The label is already bought by
+        // this point, so making the operator wait on a warehouse note is pure
+        // dead time — and worse, a Veeqo hiccup here used to fall into the
+        // catch below and report a SUCCESSFUL purchase as failed. Its own
+        // try/catch keeps it that way permanently: a note that doesn't land is
+        // a log line, never a failed buy.
+        const noteText = `✅ Label Purchased: ${item.carrier} ${boughtService} $${boughtPrice ?? "?"} | Tracking: ${tracking}${shipDayNote}`;
+        after(async () => {
+          try {
+            await addEmployeeNote(parseInt(item.orderId), noteText);
+          } catch (noteErr) {
+            console.warn(
+              `[buy] employee note failed for ${item.orderNumber} (label IS bought):`,
+              noteErr instanceof Error ? noteErr.message : noteErr,
+            );
+          }
+        });
 
         // Update DB. Persist the carrier/service/price ACTUALLY bought (from
         // the fresh rate) so the row keeps showing the purchased service —
@@ -708,18 +808,29 @@ export async function POST(request: NextRequest) {
           console.error("DB update error:", dbErr);
         }
       }
-    }
-
-    // Update plan status if all bought
-    const remaining = await prisma.shippingPlanItem.count({
-      where: { planId, status: "pending" },
     });
-    if (remaining === 0) {
-      await prisma.shippingPlan.update({
-        where: { id: planId },
-        data: { status: "completed" },
-      });
-    }
+
+    // Mark the plan completed once nothing is left pending. Bookkeeping only —
+    // nothing in the response depends on it, so it runs after the operator
+    // already has their tracking numbers.
+    after(async () => {
+      try {
+        const remaining = await prisma.shippingPlanItem.count({
+          where: { planId, status: "pending" },
+        });
+        if (remaining === 0) {
+          await prisma.shippingPlan.update({
+            where: { id: planId },
+            data: { status: "completed" },
+          });
+        }
+      } catch (e) {
+        console.warn(
+          "[buy] plan completion bookkeeping failed:",
+          e instanceof Error ? e.message : e,
+        );
+      }
+    });
 
     // Telegram summary OFF by default (Vladimir 2026-06-08 — redundant with the
     // Shipping UI, which already shows bought labels + errors). Flip
@@ -734,6 +845,13 @@ export async function POST(request: NextRequest) {
       ].filter(Boolean).join("\n");
       await sendTelegramMessage(summary);
     }
+
+    const timing = {
+      totalMs: Date.now() - requestStartedAt,
+      orders: itemsToBuy.length,
+      concurrency: Math.min(BUY_CONCURRENCY, itemsToBuy.length),
+      coldStart: wasColdStart,
+    };
 
     appendBuyLog({
       planId,
@@ -757,9 +875,32 @@ export async function POST(request: NextRequest) {
         orderNumber: e.orderNumber,
         error: e.error,
       })),
+      timing,
     });
 
-    return NextResponse.json(results);
+    // One structured line per buy — this is what turns "it felt slow" into a
+    // number we can act on. `stages` sums across orders, `totalMs` is the real
+    // wall clock, so stages ≫ total is the parallel pool working as intended.
+    console.log(
+      `[buy] timing ${JSON.stringify({ ...timing, stages: stageTotals })}`,
+    );
+
+    return NextResponse.json(
+      { ...results, timing: { ...timing, stages: stageTotals } },
+      {
+        headers: {
+          // Visible in the browser's network panel without any log access, so
+          // a slow click can be diagnosed from the operator's own machine.
+          "Server-Timing": [
+            `total;dur=${timing.totalMs}`,
+            ...Object.entries(stageTotals).map(
+              ([k, v]) => `${k};dur=${v}`,
+            ),
+            wasColdStart ? "cold;dur=0" : "warm;dur=0",
+          ].join(", "),
+        },
+      },
+    );
   } catch (error) {
     console.error("Buy labels error:", error);
     return NextResponse.json(

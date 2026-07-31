@@ -42,9 +42,12 @@
 - **Используется в:** [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md)
 - **Связанные модули:** [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Amazon Notifications Map](amazon-notifications-map.md) (FBA Inbound Problems, Merchant Order backup alerts)
 - **Алгоритмы:** [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Правила carrier](carrier-selection-rules.md)
-- **См. также:** [Walmart ограничения](walmart-restrictions.md), [Формат имени PDF](label-filename-format.md)
+- **См. также:** [Walmart ограничения](walmart-restrictions.md), [Формат имени PDF](label-filename-format.md), [Производительность модуля](shipping-labels-performance-2026-07-30.md)
 
 ## История
+- 2026-07-30: Разбор скорости модуля — замеры, найденные причины и первый слой
+  правок (параллельная покупка, переиспользование плана, кэши, `maxDuration`):
+  [shipping-labels-performance-2026-07-30](shipping-labels-performance-2026-07-30.md)
 - 2026-04-10: Wiki-статья создана при полной индексации проекта
 - 2026-05-12: SKU migration Google Sheets → внутренняя БД (см. [sku-database-migration](sku-database-migration.md))
 - 2026-05-14: Sprint покупки этикеток в продакшене
