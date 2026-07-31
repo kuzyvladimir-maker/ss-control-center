@@ -12,6 +12,18 @@
 interface VeeqoOrderForMerge {
   id?: number | string;
   number?: string;
+  // Veeqo's OWN address fingerprint (64-hex). Note the spelling: their field
+  // is `mergable_checksum`, missing the second "e". Two orders Veeqo considers
+  // mergeable carry an identical checksum — verified 2026-07-31 on merged
+  // order #P-1988529619, where the merged parent and both originals all shared
+  // `a65dd118…153d90`.
+  mergable_checksum?: string | null;
+  // Set on an original order once it has been merged: the id of the combined
+  // order that now owns its fulfilment. Non-null means "already merged".
+  merged_to_id?: number | string | null;
+  // True on the combined order itself (channel `direct` / "Merged Orders",
+  // numbered `#P-<id>`).
+  merged_order?: boolean | null;
   channel?: {
     name?: string | null;
     type_code?: string | null;
@@ -91,10 +103,36 @@ function normaliseChannelKind(typeCode: string | null | undefined): string {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-// Address signature for grouping. Includes channelKind + storeName so
-// cross-channel and cross-store mergers aren't suggested (Vladimir's
-// 2026-05-17 decision).
+// Address signature for grouping.
+//
+// PREFERRED: Veeqo's own `mergable_checksum`. It is the exact key their
+// Mergeable view groups on, so using it makes our list agree with theirs by
+// construction instead of by imitation — the whole reason the hand-rolled
+// normalisation below carried a "tighten this if Veeqo flags pairs we miss"
+// caveat. Verified 2026-07-31 against a real merge (see
+// docs/wiki/merge-orders-veeqo-mechanics.md).
+//
+// FALLBACK: the normalised address below, for any order where Veeqo didn't
+// supply a checksum.
+//
+// Either way the channel and store are prefixed, because a merge must stay
+// inside one channel and one store (owner's 2026-05-17 decision, and every one
+// of the 16 merges this account has actually performed obeyed it).
 export function deliverySignature(order: VeeqoOrderForMerge): string | null {
+  // An order already merged into a combined order is done — it must never be
+  // offered as a candidate again, or the operator would be invited to merge a
+  // shipment that has already shipped.
+  if (order.merged_to_id != null) return null;
+  // The combined order itself isn't a merge candidate either.
+  if (order.merged_order === true) return null;
+
+  const checksum = (order.mergable_checksum ?? "").trim();
+  if (checksum) {
+    const channelKind = normaliseChannelKind(order.channel?.type_code);
+    const storeName = lower(order.store?.name ?? order.channel?.name ?? "");
+    return [channelKind, storeName, "sum", checksum].join("|");
+  }
+
   const d = order.deliver_to;
   if (!d) return null;
   const name = fullName(order);
