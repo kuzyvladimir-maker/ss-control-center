@@ -35,3 +35,8 @@ We intentionally do NOT do fuzzy abbreviation matching (`St` vs `Street`) — Vl
 ## Phase A2 (future)
 
 If Vladimir asks Veeqo support and they expose a merge API endpoint (or hands one we can replay from our backend), swap the deep-link in [`mergeable.ts → veeqoMergeableUrl()`](../../ss-control-center/src/lib/shipping/mergeable.ts) for a real "Merge" button that POSTs to Veeqo and refreshes the page. The grouping logic stays exactly the same.
+
+## Связано с
+- [Как merge устроен у Veeqo — разбор на живых данных](merge-orders-veeqo-mechanics.md)
+  — механика объединения, зеркальные отгрузки с трек-номером, и почему
+  группировка теперь идёт по `mergable_checksum` самого Veeqo.

@@ -89,5 +89,9 @@ We start with strict matching (lowercase + trim only). If Veeqo's `mergeable=tru
 - Merge undo (Veeqo's responsibility)
 
 ## Связано с
+- [Как merge устроен у Veeqo — разбор на живых данных](merge-orders-veeqo-mechanics.md)
+  — 2026-07-31: Veeqo отдаёт собственную чек-сумму адреса и рабочий фильтр
+  `mergeable=true`; имитировать их сопоставление адресов не нужно. Этот
+  документ в той части устарел.
 - [Merge Orders — Phase A1](merge-orders.md) — реализация по этому дизайну
 - [Shipping Labels — Модуль](shipping-labels.md) — где появляется фильтр mergeable и покупка лейбла
