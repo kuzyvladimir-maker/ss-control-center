@@ -161,6 +161,80 @@ model ShippingPlanItem {
   @@index([orderId])
 }
 
+// ── Merge Orders ────────────────────────────────────────────────────────
+//
+// Two orders going to the SAME address can ship in one box on one label.
+// Veeqo has this feature, but merging there bypasses our Placed gate: the
+// operator could buy a label for an order whose goods were never procured,
+// the order then left the Procurement queue, and nobody saw it needed buying.
+// That happened several times, so the whole flow lives here instead.
+//
+// A group is OUR record — Veeqo's public API has no merge endpoint. We buy a
+// single label against the primary member and then mirror that tracking onto
+// every other member through the channel's own API, which is exactly what
+// Veeqo does internally (verified 2026-07-31: children get zero-cost mirror
+// shipments carrying the parent's tracking).
+//
+// Full mechanics + evidence: docs/wiki/merge-orders-veeqo-mechanics.md
+model MergeGroup {
+  id             String    @id @default(cuid())
+  // Veeqo's own 64-hex address fingerprint the group was formed on, so a
+  // group can be re-validated against fresh Veeqo data later.
+  checksum       String
+  // Merges never cross a channel or a store — each marketplace's protections
+  // and label source are its own.
+  channelKind    String
+  storeName      String?
+  // The member the single real label is bought against. Every other member is
+  // ship-confirmed with that label's tracking.
+  primaryOrderId String
+  // Operator's explicit call, not a guess: it drives the whole rate strategy.
+  // Frozen stays Amazon-only, same as everywhere else.
+  productType    String? // Frozen | Dry
+  // Package of the COMBINED box, entered by the operator after merging —
+  // never inherited from one member.
+  boxSize        String?
+  weight         Float?
+  status         String    @default("open") // open | bought | dissolved
+  // Filled once the group's label is purchased.
+  trackingNumber String?
+  carrier        String?
+  service        String?
+  price          Float?
+  labelPdfUrl    String?
+  boughtAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  members MergeGroupMember[]
+
+  @@index([status])
+  @@index([checksum])
+}
+
+model MergeGroupMember {
+  id                     String     @id @default(cuid())
+  groupId                String
+  group                  MergeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // Veeqo order id + human number.
+  orderId                String
+  orderNumber            String
+  // Veeqo allocation, needed to register a mirror shipment against this order.
+  allocationId           String?
+  // Walmart purchase order id when this member is a Walmart order — its
+  // ship-confirm goes through Walmart's own API, not Veeqo's.
+  walmartPurchaseOrderId String?
+
+  // Tracking fan-out state, per member. Recorded so a partial failure is
+  // visible and resumable one order at a time: an unknown outcome is NEVER
+  // blindly re-sent, it is read back first.
+  shipmentSyncedAt  DateTime?
+  shipmentSyncError String?
+
+  @@unique([groupId, orderId])
+  @@index([orderId])
+}
+
 model Store {
   id         String   @id @default(cuid())
   name       String
