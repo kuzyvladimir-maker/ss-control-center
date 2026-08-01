@@ -14,8 +14,8 @@
 // carries the tightest dispatch deadline in the normal case. Every other member
 // is ship-confirmed with that label's tracking.
 
-import { useState } from "react";
-import { Loader2, Package, Trash2, Check } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Loader2, Package, Trash2, Check, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BoxPresetPicker } from "./BoxPresetPicker";
 import { WeightInput, type WeightUnit, toLbs } from "./WeightInput";
@@ -53,6 +53,38 @@ interface OrderLite {
   city?: string | null;
   shipToState?: string | null;
   items: Array<{ sku: string; productTitle: string; quantity: number }>;
+}
+
+// One quoted option. The two channels name their fields differently, so the
+// card keeps both shapes and hands back whichever the buy endpoint needs.
+interface GroupRate {
+  // Veeqo
+  name?: string;
+  title?: string;
+  sub_carrier_id?: string;
+  total_net_charge?: string;
+  delivery_promise_date?: string;
+  // Walmart
+  serviceType?: string;
+  displayName?: string;
+  carrierName?: string;
+  amount?: number | null;
+  deliveryDate?: string | null;
+  deliveryPromiseFulfilled?: boolean;
+}
+
+// Price and delivery estimate read from whichever channel's field is present.
+function rateAmount(r: GroupRate): number {
+  if (typeof r.amount === "number") return r.amount;
+  const n = parseFloat(r.total_net_charge ?? "");
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
+function rateEdd(r: GroupRate): string {
+  const raw = r.deliveryDate ?? r.delivery_promise_date;
+  if (!raw) return "";
+  const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${parseInt(m[2], 10)}/${parseInt(m[3], 10)}` : "";
 }
 
 export function MergeGroupCard({
@@ -98,6 +130,12 @@ export function MergeGroupCard({
   const [dissolving, setDissolving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const [rates, setRates] = useState<GroupRate[] | null>(null);
+  const [ratesLoading, setRatesLoading] = useState(false);
+  const [ratesError, setRatesError] = useState<string | null>(null);
+  const [buying, setBuying] = useState(false);
+  const [buyResult, setBuyResult] = useState<string | null>(null);
+
   const isBought = group.status === "bought";
   // Frozen ships on Amazon only — a frozen parcel behind a Walmart order is the
   // wrong product, and Walmart has no frozen lane.
@@ -133,6 +171,77 @@ export function MergeGroupCard({
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
       setSaving(false);
+    }
+  }
+
+  const loadRates = useCallback(async () => {
+    setRatesLoading(true);
+    setRatesError(null);
+    try {
+      const r = await fetch(
+        `/api/shipping/merge/rates?groupId=${encodeURIComponent(group.id)}`,
+      );
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error || `HTTP ${r.status}`);
+      setRates(j.rates ?? []);
+    } catch (e) {
+      setRatesError(e instanceof Error ? e.message : String(e));
+      setRates(null);
+    } finally {
+      setRatesLoading(false);
+    }
+  }, [group.id]);
+
+  // Quote as soon as the package is complete, and re-quote whenever it changes
+  // — the whole point of entering a combined box is that the price follows it.
+  useEffect(() => {
+    if (isBought) return;
+    if (group.weight == null || !group.boxSize || !group.productType) {
+      setRates(null);
+      return;
+    }
+    void loadRates();
+  }, [
+    isBought,
+    group.weight,
+    group.boxSize,
+    group.productType,
+    loadRates,
+  ]);
+
+  async function buy(rate: GroupRate) {
+    setBuying(true);
+    setBuyResult(null);
+    setErr(null);
+    try {
+      const res = await fetch("/api/shipping/merge/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId: group.id,
+          rate: {
+            // Veeqo identifiers
+            serviceType: rate.name ?? null,
+            subCarrierId: rate.sub_carrier_id ?? null,
+            carrier: rate.title ?? null,
+            // Walmart identifiers
+            carrierName: rate.carrierName ?? null,
+            carrierServiceType: rate.serviceType ?? null,
+          },
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || `HTTP ${res.status}`);
+      setBuyResult(
+        j.warning ??
+          `Bought — tracking ${j.tracking} sent to all ${j.members?.length ?? 0} orders.`,
+      );
+      // Refresh the group so its bought state and per-member sync show through.
+      await onUpdate({});
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBuying(false);
     }
   }
 
@@ -352,6 +461,91 @@ export function MergeGroupCard({
               </span>
             )}
           </div>
+
+          {/* Rates for the combined box. One of these buys the single label
+              for the whole group; every other order then receives its
+              tracking. */}
+          {packageReady && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
+                  Rates for the combined box
+                </span>
+                {ratesLoading && (
+                  <Loader2 size={12} className="animate-spin text-ink-3" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => void loadRates()}
+                  disabled={ratesLoading}
+                  className="text-[length:var(--ship-button)] text-info underline disabled:opacity-50"
+                >
+                  Refresh
+                </button>
+                <span className="text-[length:var(--ship-meta)] text-ink-3">
+                  {group.channelKind === "walmart"
+                    ? "via Ship with Walmart"
+                    : "via Veeqo"}
+                </span>
+              </div>
+
+              {ratesError && (
+                <div className="rounded border border-danger bg-danger-tint px-2 py-1 text-[length:var(--ship-meta)] text-danger">
+                  {ratesError}
+                </div>
+              )}
+
+              {rates && rates.length === 0 && !ratesLoading && (
+                <div className="text-[length:var(--ship-meta)] text-warn-strong">
+                  No rates came back for this package.
+                </div>
+              )}
+
+              {rates && rates.length > 0 && (
+                <div className="max-h-[220px] space-y-1 overflow-y-auto">
+                  {[...rates]
+                    .sort((a, b) => rateAmount(a) - rateAmount(b))
+                    .map((r, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 rounded border border-rule bg-surface px-2 py-1.5"
+                      >
+                        <span className="min-w-0 flex-1 truncate text-[length:var(--ship-meta)] text-ink">
+                          {r.displayName ?? r.title ?? r.serviceType ?? r.name}
+                        </span>
+                        <span className="shrink-0 text-[length:var(--ship-meta)] text-ink-3">
+                          {rateEdd(r)}
+                        </span>
+                        <span className="shrink-0 text-[length:var(--ship-cell-value)] font-semibold tabular text-ink">
+                          {Number.isFinite(rateAmount(r))
+                            ? `$${rateAmount(r).toFixed(2)}`
+                            : "—"}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={buying}
+                          onClick={() => void buy(r)}
+                          className="inline-flex shrink-0 items-center gap-1 rounded bg-info px-2 py-1 text-[length:var(--ship-button)] font-medium text-white disabled:opacity-50"
+                        >
+                          {buying ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <ShoppingCart size={12} />
+                          )}
+                          Buy one label
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {buyResult && (
+        <div className="mt-2 rounded border border-info bg-info-tint px-2 py-1 text-[length:var(--ship-meta)] text-ink-2">
+          {buyResult}
         </div>
       )}
 
