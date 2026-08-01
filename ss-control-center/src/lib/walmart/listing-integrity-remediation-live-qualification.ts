@@ -282,6 +282,41 @@ function buyerOuterUnits(spec: Map<string, string>): number | null {
   return Number.isSafeInteger(numeric) && numeric > 0 ? numeric : null;
 }
 
+function explicitOuterQuantityClaims(value: string): number[] {
+  const patterns = [
+    /\bpack\s+of\s+(\d+)\b/giu,
+    /\bquantity\s+of\s+(\d+)\b/giu,
+    /\b(\d+)\s*-\s*count\b/giu,
+    /\bincludes\s+(\d+)\s+(?:[a-z]+\s+){0,4}(?:cups|bags|packs|packages)\b/giu,
+  ];
+  return patterns.flatMap((pattern) => Array.from(value.matchAll(pattern), (match) => (
+    Number(match[1])
+  ))).filter((claim) => Number.isSafeInteger(claim) && claim > 0);
+}
+
+function outerQuantityTextMatches(value: string, outerUnits: number): boolean {
+  if (explicitOuterQuantityClaims(value).includes(outerUnits)) return true;
+  const cartonFactor = value.match(
+    /\b(\d+)\s*\/\s*carton\b[\s\S]{0,80}\bbundle\s+of\s+(\d+)(?:\s+cartons?)?\b/iu,
+  );
+  if (!cartonFactor) return false;
+  const cupsPerCarton = Number(cartonFactor[1]);
+  const cartons = Number(cartonFactor[2]);
+  return Number.isSafeInteger(cupsPerCarton) && cupsPerCarton > 0
+    && Number.isSafeInteger(cartons) && cartons > 0
+    && cupsPerCarton * cartons === outerUnits;
+}
+
+function textDerivedOuterUnits(surface: WalmartListingSurface): number {
+  const claims = [surface.description ?? "", ...surface.bullets]
+    .flatMap(explicitOuterQuantityClaims);
+  const unique = [...new Set(claims)];
+  if (unique.length !== 1) {
+    fail("owner-signed target lacks one exact text-derived outer quantity claim");
+  }
+  return unique[0]!;
+}
+
 function exactChangedFields(
   value: readonly string[],
   expected: readonly string[],
@@ -525,9 +560,13 @@ function contentRepairTarget(input: {
   const outerClaims = targetSurface.attribute_claims.filter((claim) => (
     claim.kind === "outer_units"
   ));
-  if (outerClaims.length !== 1 || outerClaims[0]!.unit !== "count") {
+  if (outerClaims.length > 1
+    || outerClaims.some((claim) => claim.unit !== "count")) {
     fail("owner-signed target lacks one exact outer quantity claim");
   }
+  const outerUnits = outerClaims.length === 1
+    ? outerClaims[0]!.value
+    : textDerivedOuterUnits(targetSurface);
   const mappedAttributesPreserved = targetSurface.attribute_claims.length
       === liveSurface.attribute_claims.length
     && targetSurface.attribute_claims.every((target) => (
@@ -544,7 +583,7 @@ function contentRepairTarget(input: {
     fail("owner-signed target lacks exact product identity claims");
   }
   return {
-    outer_units: outerClaims[0]!.value,
+    outer_units: outerUnits,
     live_surface: liveSurface,
     mapped_attributes_preserved: mappedAttributesPreserved,
     identity_claims_match: identityTargets.every((target) => (
@@ -751,11 +790,6 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
     && galleryUrlsExact
     && (!reviewedImageSet || galleryBytesExact);
   const outerUnits = attributeTarget?.outer_units ?? contentTarget!.outer_units;
-  const outerText = new RegExp(
-    `(?:pack\\s+of\\s+${outerUnits}|quantity\\s+of\\s+${outerUnits}`
-      + `|${outerUnits}\\s+(?:bags|packs|packages))`,
-    "iu",
-  );
   const targetTitle = plan.target.surface.title;
   const targetDescription = plan.target.surface.description ?? "";
   const targetBullets = plan.target.surface.bullets;
@@ -764,17 +798,17 @@ export async function qualifyWalmartListingRepairFreshLive(input: {
     : contentTarget!.identity_claims_match;
   const buyerMultipackQuantity = buyerOuterUnits(spec);
   const sellerGroupingQuantity = sellerOuterUnits(seller);
-  const packCount = buyerMultipackQuantity === outerUnits
-    && outerText.test(buyerTitle) && outerText.test(buyerDescription)
-    && buyerBullets.some((row) => outerText.test(row));
+  const packCount = outerQuantityTextMatches(buyerTitle, outerUnits)
+    && outerQuantityTextMatches(buyerDescription, outerUnits)
+    && buyerBullets.some((row) => outerQuantityTextMatches(row, outerUnits))
+    && (attributeTarget === null || buyerMultipackQuantity === outerUnits);
   const attributes = attributeTarget
     ? attributeTarget.direct_claims_match
       && attributeTarget.opaque_attributes_preserved
       && attributeTarget.count_per_pack_match
       && buyerMultipackQuantity === outerUnits
     : contentTarget!.mapped_attributes_preserved
-      && contentTarget!.opaque_attributes_preserved
-      && buyerMultipackQuantity === outerUnits;
+      && contentTarget!.opaque_attributes_preserved;
   const exactIdentity = seller.sku === plan.listing.sku
     && seller.mart === "WALMART_US"
     && String(product.item_id) === plan.listing.item_id;

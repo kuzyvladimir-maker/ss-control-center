@@ -247,6 +247,25 @@ function planWithoutMappedNetContent(): SealedWalmartListingRepairPlan {
   return value as SealedWalmartListingRepairPlan;
 }
 
+function planWithTextDerivedOuterUnits(): SealedWalmartListingRepairPlan {
+  const value = structuredClone(plan());
+  value.target.surface.title =
+    "Maruchan Instant Lunch Chicken - Cup - 12 / Carton | Bundle of 2 Cartons";
+  value.target.surface.description =
+    "Maruchan Instant Lunch Chicken Flavor comes in 2.25 oz cups. "
+    + "This 24-count listing includes 2 manufacturer cartons with 12 cups in each carton.";
+  value.target.surface.bullets = [
+    "Includes 24 Chicken Flavor cups, 2.25 oz each, 54 oz total",
+    "Packed as 2 manufacturer cartons with 12 cups per carton",
+  ];
+  value.target.surface.attribute_claims = value.target.surface.attribute_claims
+    .filter((claim) => claim.kind !== "outer_units")
+    .map((claim) => claim.kind === "inner_item_count"
+      ? { ...claim, value: 2 }
+      : claim);
+  return value as SealedWalmartListingRepairPlan;
+}
+
 async function fixture(input: {
   terminal_at?: string;
   captured_at?: string;
@@ -265,6 +284,7 @@ async function fixture(input: {
   piece_count?: number;
   product_type?: string;
   omit_mapped_net_content?: boolean;
+  omit_multipack_quantity?: boolean;
 } = {}) {
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "walmart-live-qualification-")),
@@ -292,10 +312,10 @@ async function fixture(input: {
             ?? "Bakery Classics Top Sliced Butter Hot Dog Buns",
         },
         { name: "Flavor", value: input.flavor ?? "Butter" },
-        {
+        ...(input.omit_multipack_quantity ? [] : [{
           name: "Multipack quantity",
           value: String(input.multipack_quantity ?? 6),
-        },
+        }]),
         ...(
           input.omit_mapped_net_content
             ? [] : [{ name: "Net content", value: "14 Ounces" }]
@@ -435,6 +455,30 @@ test("content repair Qualification accepts an exact catalog without a mapped net
   assert.equal(result.verdict, "PASS");
   assert.equal(result.facets.attributes, "PASS");
   assert.equal(result.next_sku_unblocked, true);
+});
+
+test("content repair Qualification derives outer units from exact count text and carton-factor title", async () => {
+  const target = planWithTextDerivedOuterUnits();
+  const fx = await fixture({
+    title: target.target.surface.title,
+    description: target.target.surface.description ?? undefined,
+    bullets: [...target.target.surface.bullets],
+    omit_multipack_quantity: true,
+    count: 2,
+  });
+  const result = await qualifyWalmartListingRepairFreshLive({
+    plan: target,
+    permit_authorization_sha256: H("permit"),
+    ledger_evidence: fx.ledger,
+    artifact_custody_evidence: fx.custody,
+    fresh_capture_directory: fx.root,
+    capture_summary: fx.capture,
+    evaluated_at: new Date("2030-01-01T00:02:00.000Z"),
+  });
+  assert.equal(result.verdict, "PASS", JSON.stringify(result, null, 2));
+  assert.equal(result.quantity_evidence.buyer_multipack_quantity, null);
+  assert.equal(result.facets.pack_count, "PASS");
+  assert.equal(result.facets.attributes, "PASS");
 });
 
 test("content repair Qualification blocks when an unchanged opaque attribute disappears", async () => {
