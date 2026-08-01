@@ -888,3 +888,34 @@ Factory обязан создать demand-expansion request в едином Pro
 Phase 2 запроса остаётся platform gate до доказанного завершения глобальной
 Phase 1, но это не ограничение количества Walmart drafts и не относится к
 Campbell's, где exact donors уже существуют.
+
+### ✅ Фаза BF-W7 — recovery кнопки подготовки enrichment plan
+
+- [x] Production failure `The Product Truth collection control configuration is
+  invalid. No command was created.` локализован до server admission: shared
+  `PRODUCTION_READ_ONLY` runtime конфликтовал с сохранённым полным owner public
+  trust root; prompt, Pack of 8 и Campbell's donor readiness причиной не были.
+- [x] Shared read-only и Walmart paid authority разделены. Base runtime может
+  проверить и удерживать public key, но не получает spend authority. Отдельный
+  exact Walmart confirmation связан с release/commit/tree/executable,
+  database target, manifest и owner public-key fingerprint; partial/stale/wrong
+  binding остаётся fail-closed.
+- [x] Approval API использует только Walmart overlay, worker claim включает
+  `EXECUTE` только при валидном overlay; no-spend doctor/plan продолжает работать
+  от base runtime. Exact quote click и detached local Ed25519 signature остаются
+  единственным money gate.
+- [x] Release `product-truth-web-control-2026-08-01-r8`: commit
+  `4a9e761aabd3f8cf10973d02197068345b7cae54`, tree
+  `143b1f045d8e1cd4c8acbc03700c46903a263d65`, executable
+  `992c55c0a825c4537ebc5b3b171fd8c1156f41277222a8d08559a503f9823d46`;
+  deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY` и production alias
+  обновлён.
+- [x] Pinned worker и owner-agent установлены из exact r8 checkout; оба launchd
+  services `running`, owner loopback preflight `204`, worker token совпадает с
+  production hash и новых worker errors после запуска нет.
+- [x] Certification: Product Truth `521/521`, focused collection UI/contract
+  `8/8`, TypeScript, ESLint, local и Vercel production build = `PASS`.
+- [ ] Authenticated owner Retry остаётся единственным visual smoke: управляемая
+  browser session в Codex runtime отсутствовала. Этот click разрешает только
+  no-spend plan preparation; показанный exact quote требует отдельного owner
+  подтверждения до provider spend.

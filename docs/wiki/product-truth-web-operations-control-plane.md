@@ -486,6 +486,36 @@ Production activation 2026-07-28:
 - smoke claims: provider calls не начаты, metered execution не admitted,
   Product Truth business writes и Walmart mutations `0`.
 
+Production recovery 2026-08-01:
+
+- owner Retry на Campbell's fail-closed до создания command с
+  `WEB_CONTROL_CONFIG_INVALID`: поздняя `PRODUCTION_READ_ONLY` activation
+  сохранила прежние три owner trust-root variables, а общий runtime запрещал
+  даже полностью валидный public key вне общего metered stage;
+- release `product-truth-web-control-2026-08-01-r8`, commit
+  `4a9e761aabd3f8cf10973d02197068345b7cae54`, tree
+  `143b1f045d8e1cd4c8acbc03700c46903a263d65`, executable SHA-256
+  `992c55c0a825c4537ebc5b3b171fd8c1156f41277222a8d08559a503f9823d46`
+  разделяет две authority: shared base остаётся `PRODUCTION_READ_ONLY`, а
+  Walmart paid lane включается только отдельным exact
+  `PRODUCT_TRUTH_WALMART_ENRICHMENT_CONFIRMATION`, привязанным к тем же
+  release/target/manifest и owner public-key SHA;
+- read-only runtime может хранить полный проверенный public trust root, но его
+  `metered_execution=false`; только Walmart overlay возвращает
+  `metered_execution=true`. Partial key, wrong confirmation или любой drift
+  по-прежнему fail-closed;
+- deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY`, aliases включают
+  `salutemsolutions.info`; pinned launchd worker и loopback owner-agent
+  переведены на exact r8 checkout и работают;
+- certification: Product Truth `521/521`, focused Walmart collection `8/8`,
+  TypeScript, ESLint и production build = `PASS`; production env loader доказал
+  base active/read-only, Walmart overlay active/metered и worker overlay
+  active/metered; owner loopback OPTIONS = `204`, worker после запуска не
+  создал новых error log bytes;
+- authenticated browser в текущем runtime отсутствовал, поэтому реальный owner
+  click не заявлен как выполненный. Provider calls, Product Truth business
+  writes и Walmart mutations в recovery-проверке не запускались.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
 r5 сериализует in-flight heartbeat до completion; текущая regression suite

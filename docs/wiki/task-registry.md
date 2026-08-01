@@ -57,6 +57,13 @@
   отдельной Phase 2 demand-expansion campaign, а не скрытым legacy harvest.
   Деталь: [[product-truth-command-center]],
   [[product-truth-web-operations-control-plane]].
+  **Recovery 2026-08-01:** устранён production-конфликт shared
+  `PRODUCTION_READ_ONLY` и сохранённого owner trust root. Release r8 commit
+  `4a9e761a…`, deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` разделяет
+  read-only base и exact Walmart metered overlay; pinned worker и owner-agent
+  работают. Product Truth `521/521`, focused `8/8`, TypeScript/ESLint/build
+  PASS. Authenticated Retry остаётся owner visual smoke; spend и Walmart writes
+  во время recovery не выполнялись.
 - 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-29:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
   донорский справочник. Frozen release v33 выдан в

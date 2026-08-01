@@ -800,3 +800,21 @@ track и больше не обозначается blocker текущего Wal
 глобального Phase 1 proof. Campbell's имеет exact donor variants, поэтому его
 текущий сценарий проходит существующий owner-quoted targeted enrichment и затем
 этот draft engine.
+
+## ✅ BF-W7: production recovery подготовки Product Truth plan — 2026-08-01
+
+- [x] Retry failure происходил до command creation из-за runtime config, а не
+  из-за текста Campbell's request, количества `5`, Pack of `8` или Walmart
+  draft engine.
+- [x] Shared Product Truth control остаётся `PRODUCTION_READ_ONLY`; Walmart
+  enrichment получает отдельный exact activation binding. Наличие public owner
+  key само по себе не разрешает provider spend.
+- [x] Exact quote, local detached Ed25519 signature, sequential one-attempt
+  executor, credit ceiling и `marketplaceMutations=0` сохранены без ослабления.
+- [x] Release r8 commit `4a9e761a…`, deployment
+  `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY`; pinned worker и owner-agent
+  `running`, base/Walmart/worker runtime checks active, owner loopback = `204`.
+- [x] Product Truth `521/521`, focused Walmart collection `8/8`,
+  TypeScript/ESLint/build PASS.
+- [ ] Owner должен обновить `/bundle-factory/new` и нажать Retry один раз для
+  authenticated visual smoke. Это не approval сметы и не публикация Walmart.
