@@ -259,10 +259,14 @@ function planWithTextDerivedOuterUnits(): SealedWalmartListingRepairPlan {
     "Packed as 2 manufacturer cartons with 12 cups per carton",
   ];
   value.target.surface.attribute_claims = value.target.surface.attribute_claims
-    .filter((claim) => claim.kind !== "outer_units")
-    .map((claim) => claim.kind === "inner_item_count"
-      ? { ...claim, value: 2 }
-      : claim);
+    .filter((claim) => claim.kind !== "outer_units" && claim.kind !== "inner_item_count");
+  value.target.surface.unmapped_attributes = [
+    ...value.target.surface.unmapped_attributes,
+    {
+      field_path: "product.specifications[5].Count",
+      value_sha256: walmartListingIntegritySha256("2"),
+    },
+  ];
   return value as SealedWalmartListingRepairPlan;
 }
 

@@ -472,6 +472,49 @@ function normalizedUnmappedExact(
     === walmartListingIntegritySha256(normalize(right));
 }
 
+function contentAttributePreservation(
+  targetSurface: WalmartListingSurface,
+  liveSurface: WalmartListingSurface,
+): { mapped: boolean; opaque: boolean } {
+  const targetClaimsMatch = targetSurface.attribute_claims.every((target) => (
+    liveSurface.attribute_claims.filter((live) => (
+      normalizedAttributePath(live.field_path)
+        === normalizedAttributePath(target.field_path)
+    )).length === 1
+    && liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
+  ));
+  const promotedTargetIndexes = new Set<number>();
+  const extraLiveClaims = liveSurface.attribute_claims.filter((live) => (
+    !targetSurface.attribute_claims.some((target) => (
+      normalizedAttributePath(target.field_path)
+        === normalizedAttributePath(live.field_path)
+    ))
+  ));
+  const promotionsSafe = extraLiveClaims.every((live) => {
+    if (live.kind !== "inner_item_count" || !("value" in live)) return false;
+    const matches = targetSurface.unmapped_attributes
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => (
+        normalizedAttributePath(row.field_path)
+          === normalizedAttributePath(live.field_path)
+        && row.value_sha256 === walmartListingIntegritySha256(String(live.value))
+      ));
+    if (matches.length !== 1 || promotedTargetIndexes.has(matches[0]!.index)) return false;
+    promotedTargetIndexes.add(matches[0]!.index);
+    return true;
+  });
+  const remainingTargetUnmapped = targetSurface.unmapped_attributes.filter((_, index) => (
+    !promotedTargetIndexes.has(index)
+  ));
+  return {
+    mapped: targetClaimsMatch && promotionsSafe,
+    opaque: promotionsSafe && normalizedUnmappedExact(
+      remainingTargetUnmapped,
+      liveSurface.unmapped_attributes,
+    ),
+  };
+}
+
 function attributeOnlyTarget(input: {
   plan: SealedWalmartListingRepairPlan;
   buyer: JsonRecord;
@@ -567,15 +610,7 @@ function contentRepairTarget(input: {
   const outerUnits = outerClaims.length === 1
     ? outerClaims[0]!.value
     : textDerivedOuterUnits(targetSurface);
-  const mappedAttributesPreserved = targetSurface.attribute_claims.length
-      === liveSurface.attribute_claims.length
-    && targetSurface.attribute_claims.every((target) => (
-      liveSurface.attribute_claims.filter((live) => (
-        normalizedAttributePath(live.field_path)
-          === normalizedAttributePath(target.field_path)
-      )).length === 1
-      && liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
-    ));
+  const preservation = contentAttributePreservation(targetSurface, liveSurface);
   const identityTargets = targetSurface.attribute_claims.filter((claim) => (
     claim.kind === "brand" || claim.kind === "product" || claim.kind === "variant"
   ));
@@ -585,14 +620,11 @@ function contentRepairTarget(input: {
   return {
     outer_units: outerUnits,
     live_surface: liveSurface,
-    mapped_attributes_preserved: mappedAttributesPreserved,
+    mapped_attributes_preserved: preservation.mapped,
     identity_claims_match: identityTargets.every((target) => (
       liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
     )),
-    opaque_attributes_preserved: normalizedUnmappedExact(
-      liveSurface.unmapped_attributes,
-      targetSurface.unmapped_attributes,
-    ),
+    opaque_attributes_preserved: preservation.opaque,
   };
 }
 
