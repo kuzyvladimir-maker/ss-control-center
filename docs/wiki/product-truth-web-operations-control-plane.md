@@ -554,6 +554,27 @@ Production reliability recovery 2026-08-01 (r11):
 Это no-spend reliability evidence внутри уже consumed G2b. Оно не заменяет и не
 создаёт approval на exact quote или provider spend.
 
+Production progress/reuse recovery 2026-08-01 (r13):
+
+- release `product-truth-web-control-2026-08-01-r13`, commit
+  `093fc4f151955e69979063aef22194b53e06950c`, tree
+  `43fe5c3056644b707c5f40c69956da7a5a58a391`, executable SHA-256
+  `7dc9941759c5bfa01bfc7e73ba471159ca61859f04ae1c9e3172c03f614dd54d`;
+- production deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf` = `READY`, aliases
+  включают `salutemsolutions.info`; clean pinned worker и loopback owner-agent
+  переведены на exact r13 checkout, оба процесса active, owner OPTIONS = `204`;
+- durable heartbeat progress и cross-channel exact-content reuse активированы
+  вместе: UI показывает item/stage/credits/freshness, а pre-plan exact content
+  всё равно повторно проходит versioned read-contract и не смешивается с price
+  evidence;
+- Product Truth `530/530`, Walmart/Bundle Factory `193/193`, TypeScript,
+  changed-files ESLint, local production build и Vercel production build =
+  `PASS`;
+- rollout и bridge health-check не создавали новый command, provider call,
+  Product Truth business write либо Walmart mutation. Старый terminal
+  `AMBIGUOUS` batch не replay; следующий paid boundary возможен только через
+  новый displayed exact quote и реальный owner click.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
 r5 сериализует in-flight heartbeat до completion; текущая regression suite

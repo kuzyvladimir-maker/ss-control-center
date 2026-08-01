@@ -998,6 +998,14 @@ review и approval exact quote в UI; до него enrichment не старту
 - [x] Локальная certification новой ветки: Product Truth `530/530`, focused
   Walmart/Bundle Factory `193/193`, TypeScript, changed-files ESLint и
   production build `PASS`.
-- [ ] Выпустить exact r13 server/worker release и повторить Campbell's
-  `5 × Pack of 8` через новый exact quote до enrichment и пяти owner-review
-  drafts. Никакой Walmart publication до отдельного SKU-bound gate.
+- [x] Exact r13 server/worker release выпущен: commit
+  `093fc4f151955e69979063aef22194b53e06950c`, tree
+  `43fe5c3056644b707c5f40c69956da7a5a58a391`, executable SHA-256
+  `7dc9941759c5bfa01bfc7e73ba471159ca61859f04ae1c9e3172c03f614dd54d`.
+  Production deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf` = `READY` и
+  назначен на `salutemsolutions.info`; clean pinned launchd worker и loopback
+  owner-agent работают из exact r13 checkout, owner preflight = `204`.
+- [ ] Повторить Campbell's `5 × Pack of 8` через новый exact quote до
+  enrichment и пяти owner-review drafts. Terminal batch
+  `ptbfw-14e44dd192718b33ff8b0bb2` не retry/replay. Никакой Walmart
+  publication до отдельного SKU-bound gate.

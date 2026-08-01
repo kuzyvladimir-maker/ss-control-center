@@ -1337,6 +1337,12 @@ Walmart price завершить товар без Unwrangle detail. Content obs
 пройти ingredients, nutrition, allergens и gallery gates. Price proxy либо
 соседний вариант никогда не становится content truth.
 
+Этот progress/reuse contract активирован production release
+`product-truth-web-control-2026-08-01-r13` (commit `093fc4f151955e69979063aef22194b53e06950c`,
+deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf`). Он не меняет operator boundary:
+старый terminal batch не retry, новый exact quote требует отдельного owner click,
+а Walmart publication остаётся отдельным SKU-bound gate.
+
 Если readiness даёт `matched_variants=0`, BF-W3 exact-product quote неприменим:
 нужна отдельная owner-gated Phase 2 demand-expansion campaign. Нельзя создавать
 параллельный consumer catalog или использовать legacy retailer harvest как
