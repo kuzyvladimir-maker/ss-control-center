@@ -41,8 +41,8 @@ import {
 export const PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION =
   "product-truth-web-control-admission/1.1.0" as const;
 const PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS = {
-  maxWait: 10_000,
-  timeout: 30_000,
+  maxWait: 30_000,
+  timeout: 120_000,
 } as const;
 
 export type ProductTruthNoSpendCommandKind = "DOCTOR" | "RUN_PLAN";

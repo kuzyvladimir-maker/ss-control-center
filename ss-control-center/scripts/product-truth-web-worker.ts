@@ -60,7 +60,7 @@ import {
 
 const POLL_MS = 5_000;
 const HEARTBEAT_MS = 30_000;
-const CONTROL_API_TIMEOUT_MS = 60_000;
+const CONTROL_API_TIMEOUT_MS = 150_000;
 const MAX_GIT_OUTPUT_BYTES = 64 * 1024;
 const RUNNER_PATH = resolve(
   process.cwd(),

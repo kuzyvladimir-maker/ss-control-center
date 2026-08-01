@@ -42,8 +42,8 @@ import {
 
 export const PRODUCT_TRUTH_WEB_WORKER_LEASE_MS = 15 * 60_000;
 const PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS = {
-  maxWait: 10_000,
-  timeout: 30_000,
+  maxWait: 30_000,
+  timeout: 120_000,
 } as const;
 
 export interface ProductTruthWebWorkerClaim {
