@@ -151,6 +151,7 @@ export async function POST(
       const declined = await declineProductTruthWalmartEnrichment({
         batchId,
         requestedByUserId: auth.id,
+        runtime,
       });
       return jsonNoStore({
         ok: true,

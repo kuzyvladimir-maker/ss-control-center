@@ -84,6 +84,21 @@ function prismaBytes(value: Uint8Array): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
+function exactRuntimeCommandWhere(
+  runtime: ProductTruthWebControlRuntimeActive,
+) {
+  return {
+    engineReleaseId: runtime.engine.releaseId,
+    engineCommitSha: runtime.engine.commitSha,
+    engineTreeSha: runtime.engine.treeSha,
+    executableTreeSha256: runtime.engine.executableTreeSha256,
+    environment: runtime.target.environment,
+    databaseTargetFingerprint:
+      runtime.target.databaseTargetFingerprint,
+    manifestSha256: runtime.target.manifestSha256,
+  };
+}
+
 function decodeCanonicalJson(bytes: Uint8Array, label: string): unknown {
   let text: string;
   try {
@@ -132,6 +147,7 @@ function exactArtifact(
 async function collectionEntries(input: {
   batchId: string;
   requestedByUserId?: string;
+  runtime: ProductTruthWebControlRuntimeActive;
 }): Promise<{
   requestedByUserId: string;
   createdAt: string;
@@ -148,6 +164,7 @@ async function collectionEntries(input: {
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
+      ...exactRuntimeCommandWhere(input.runtime),
     },
     include: { artifacts: true },
     orderBy: [{ requestedAt: "asc" }, { commandKind: "asc" }],
@@ -208,6 +225,7 @@ async function collectionEntries(input: {
 export async function readProductTruthWalmartEnrichmentQuote(input: {
   batchId: string;
   requestedByUserId?: string;
+  runtime: ProductTruthWebControlRuntimeActive;
 }): Promise<ProductTruthWalmartEnrichmentQuote> {
   const collected = await collectionEntries(input);
   return buildProductTruthWalmartEnrichmentQuote({
@@ -365,6 +383,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
   const collected = await collectionEntries({
     batchId: input.batchId,
     requestedByUserId: input.requestedByUserId,
+    runtime: input.runtime,
   });
   const quote = buildProductTruthWalmartEnrichmentQuote({
     batchId: input.batchId,
@@ -382,6 +401,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
       runId: input.batchId,
       requestedByUserId: input.requestedByUserId,
       status: { in: ["AWAITING_OWNER", "ADMITTED", "CLAIMED", "RUNNING"] },
+      ...exactRuntimeCommandWhere(input.runtime),
     },
     include: { artifacts: true },
     orderBy: { requestedAt: "desc" },
@@ -588,6 +608,7 @@ export async function authorizeProductTruthWalmartEnrichment(input: {
       requestedByUserId: input.requestedByUserId,
       commandKind: "EXECUTE",
       gateClass: "METERED_EXECUTE",
+      ...exactRuntimeCommandWhere(input.runtime),
     },
     include: { artifacts: true },
   });
@@ -678,6 +699,7 @@ export async function authorizeProductTruthWalmartEnrichment(input: {
 export async function declineProductTruthWalmartEnrichment(input: {
   batchId: string;
   requestedByUserId: string;
+  runtime: ProductTruthWebControlRuntimeActive;
   now?: Date;
 }): Promise<{ status: "CANCELLED"; command_id: string }> {
   const now = input.now ?? new Date();
@@ -687,6 +709,7 @@ export async function declineProductTruthWalmartEnrichment(input: {
       requestedByUserId: input.requestedByUserId,
       commandKind: "EXECUTE",
       status: "AWAITING_OWNER",
+      ...exactRuntimeCommandWhere(input.runtime),
     },
     orderBy: { requestedAt: "desc" },
   });
@@ -719,6 +742,7 @@ export async function declineProductTruthWalmartEnrichment(input: {
 export async function readProductTruthWalmartEnrichmentCommand(input: {
   batchId: string;
   requestedByUserId?: string;
+  runtime: ProductTruthWebControlRuntimeActive;
 }) {
   return prisma.productTruthControlCommand.findFirst({
     where: {
@@ -727,6 +751,7 @@ export async function readProductTruthWalmartEnrichmentCommand(input: {
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
+      ...exactRuntimeCommandWhere(input.runtime),
     },
     orderBy: { requestedAt: "desc" },
     select: {

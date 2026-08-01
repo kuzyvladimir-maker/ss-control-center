@@ -39,7 +39,11 @@ import {
 } from "./product-truth-walmart-enrichment-quote";
 
 export const PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION =
-  "product-truth-web-control-admission/1.0.0" as const;
+  "product-truth-web-control-admission/1.1.0" as const;
+const PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS = {
+  maxWait: 10_000,
+  timeout: 30_000,
+} as const;
 
 export type ProductTruthNoSpendCommandKind = "DOCTOR" | "RUN_PLAN";
 
@@ -157,7 +161,7 @@ function commandSeed(input: {
   commandKind: ProductTruthNoSpendCommandKind;
   runtime: ProductTruthWebControlRuntimeActive;
   runId: string;
-  requestArtifactSha256: string;
+  logicalRequestSha256: string;
 }): string {
   return sha256(
     canonicalBytes({
@@ -165,7 +169,7 @@ function commandSeed(input: {
       engine: input.runtime.engine,
       target: input.runtime.target,
       runId: input.runId,
-      requestArtifactSha256: input.requestArtifactSha256,
+      logicalRequestSha256: input.logicalRequestSha256,
     }),
   );
 }
@@ -231,13 +235,16 @@ function prepareAdmission(input: {
   requestedAt: string;
   runId: string;
   requestBytes: Uint8Array;
+  idempotencyBytes?: Uint8Array;
 }): ProductTruthPreparedAdmission {
-  const preliminaryArtifactSha = sha256(input.requestBytes);
+  const logicalRequestSha256 = sha256(
+    input.idempotencyBytes ?? input.requestBytes,
+  );
   const seed = commandSeed({
     commandKind: input.commandKind,
     runtime: input.runtime,
     runId: input.runId,
-    requestArtifactSha256: preliminaryArtifactSha,
+    logicalRequestSha256,
   });
   const commandId = `ptc-${seed.slice(0, 32)}`;
   const requestArtifact = sealProductTruthControlArtifact({
@@ -315,6 +322,32 @@ function exactJobBytes(job: ProductTruthWalmartCollectionJob): Buffer {
   return canonicalBytes(parsed);
 }
 
+function exactJobIdentityBytes(job: ProductTruthWalmartCollectionJob): Buffer {
+  const parsed = parseProductTruthWalmartCollectionJob(job);
+  return canonicalBytes({
+    schemaVersion: parsed.schemaVersion,
+    batchId: parsed.batchId,
+    runId: parsed.runId,
+    ordinal: parsed.ordinal,
+    target: parsed.target,
+    noSpendSequence: parsed.noSpendSequence,
+    meteredStep: parsed.meteredStep,
+    policy: parsed.policy,
+    claims: parsed.claims,
+  });
+}
+
+function exactRunPlanIdentityBytes(targetedRequest: unknown): Buffer {
+  const parsed = parseProductTruthTargetedWalmartEvidenceRequest(
+    targetedRequest,
+  );
+  return canonicalBytes({
+    ...parsed,
+    createdAt: null,
+    expiresAt: null,
+  });
+}
+
 export function prepareProductTruthWalmartDoctorAdmissions(input: {
   batch: unknown;
   runtime: ProductTruthWebControlRuntimeActive;
@@ -329,6 +362,7 @@ export function prepareProductTruthWalmartDoctorAdmissions(input: {
       requestedAt: batch.requestedAt,
       runId: job.runId,
       requestBytes: exactJobBytes(job),
+      idempotencyBytes: exactJobIdentityBytes(job),
     }),
   );
 }
@@ -353,6 +387,7 @@ export function prepareProductTruthWalmartRunPlanAdmission(input: {
       renderProductTruthOperationalJson(targetedRequest),
       "utf8",
     ),
+    idempotencyBytes: exactRunPlanIdentityBytes(targetedRequest),
   });
 }
 
@@ -362,13 +397,41 @@ async function persistPreparedAdmission(
 ): Promise<void> {
   const existing = await tx.productTruthControlCommand.findUnique({
     where: { idempotencyKey: admission.idempotencyKey },
-    select: { requestSha256: true },
+    select: {
+      commandId: true,
+      commandKind: true,
+      gateClass: true,
+      requestedByUserId: true,
+      runId: true,
+      engineReleaseId: true,
+      engineCommitSha: true,
+      engineTreeSha: true,
+      executableTreeSha256: true,
+      environment: true,
+      databaseTargetFingerprint: true,
+      manifestSha256: true,
+    },
   });
   if (existing) {
-    if (existing.requestSha256 !== admission.requestSha256) {
+    if (
+      existing.commandId !== admission.commandId
+      || existing.commandKind !== admission.commandKind
+      || existing.gateClass !== admission.gateClass
+      || existing.requestedByUserId !== admission.requestedByUserId
+      || existing.runId !== admission.runId
+      || existing.engineReleaseId !== admission.envelope.engine.releaseId
+      || existing.engineCommitSha !== admission.envelope.engine.commitSha
+      || existing.engineTreeSha !== admission.envelope.engine.treeSha
+      || existing.executableTreeSha256
+        !== admission.envelope.engine.executableTreeSha256
+      || existing.environment !== admission.envelope.target.environment
+      || existing.databaseTargetFingerprint
+        !== admission.envelope.target.databaseTargetFingerprint
+      || existing.manifestSha256 !== admission.envelope.target.manifestSha256
+    ) {
       fail(
         "WEB_CONTROL_IDEMPOTENCY_COLLISION",
-        "existing command differs from the exact prepared request",
+        "existing command differs from the exact logical request",
       );
     }
     return;
@@ -483,7 +546,7 @@ export async function admitProductTruthWalmartCollectionBatch(input: {
       for (const admission of admissions) {
         await persistPreparedAdmission(tx, admission);
       }
-    });
+    }, PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS);
   } catch (error) {
     if (error instanceof ProductTruthWebControlAdmissionError) throw error;
     fail(
@@ -495,6 +558,7 @@ export async function admitProductTruthWalmartCollectionBatch(input: {
   return readProductTruthWalmartCollectionStatus({
     batchId: batch.batchId,
     requestedByUserId: batch.requestedByUserId,
+    runtime: input.runtime,
   });
 }
 
@@ -508,7 +572,7 @@ export async function admitProductTruthWalmartRunPlan(input: {
   try {
     await prisma.$transaction(async (tx) => {
       await persistPreparedAdmission(tx, admission);
-    });
+    }, PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS);
   } catch (error) {
     if (error instanceof ProductTruthWebControlAdmissionError) throw error;
     fail(
@@ -575,6 +639,7 @@ function jobPhase(input: {
 export async function readProductTruthWalmartCollectionStatus(input: {
   batchId: string;
   requestedByUserId?: string;
+  runtime: ProductTruthWebControlRuntimeActive;
 }): Promise<ProductTruthWalmartCollectionStatus> {
   const rows = await prisma.productTruthControlCommand.findMany({
     where: {
@@ -582,6 +647,15 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
+      engineReleaseId: input.runtime.engine.releaseId,
+      engineCommitSha: input.runtime.engine.commitSha,
+      engineTreeSha: input.runtime.engine.treeSha,
+      executableTreeSha256:
+        input.runtime.engine.executableTreeSha256,
+      environment: input.runtime.target.environment,
+      databaseTargetFingerprint:
+        input.runtime.target.databaseTargetFingerprint,
+      manifestSha256: input.runtime.target.manifestSha256,
     },
     include: {
       artifacts: {
@@ -645,6 +719,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
+      runtime: input.runtime,
     });
     quote = {
       quote_id: exactQuote.quoteId,
@@ -675,6 +750,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
     ...(input.requestedByUserId
       ? { requestedByUserId: input.requestedByUserId }
       : {}),
+    runtime: input.runtime,
   });
   if (enrichment) {
     if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {

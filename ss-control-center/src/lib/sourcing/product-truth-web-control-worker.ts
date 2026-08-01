@@ -41,6 +41,10 @@ import {
 } from "./product-truth-web-control-worker-contract";
 
 export const PRODUCT_TRUTH_WEB_WORKER_LEASE_MS = 15 * 60_000;
+const PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS = {
+  maxWait: 10_000,
+  timeout: 30_000,
+} as const;
 
 export interface ProductTruthWebWorkerClaim {
   command_id: string;
@@ -409,7 +413,7 @@ export async function claimProductTruthNoSpendCommand(input: {
         },
       });
       return true;
-    });
+    }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
     if (!claimed) continue;
     return {
       command_id: candidate.commandId,
@@ -504,7 +508,7 @@ export async function startProductTruthNoSpendCommand(input: {
       },
     });
     return { status: "RUNNING", execution_boundary: boundary };
-  });
+  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
 }
 
 export async function heartbeatProductTruthNoSpendCommand(input: {
@@ -545,7 +549,7 @@ export async function heartbeatProductTruthNoSpendCommand(input: {
       status: row.status,
       lease_expires_at: leaseExpiresAt.toISOString(),
     };
-  });
+  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
 }
 
 function assertResultBoundToCommand(input: {
@@ -704,7 +708,7 @@ export async function completeProductTruthNoSpendCommand(input: {
           resultArtifactSha256: artifact.sha256,
         },
       });
-    });
+    }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
     return { status: terminalStatus, next: null };
   }
   let result;
@@ -781,7 +785,7 @@ export async function completeProductTruthNoSpendCommand(input: {
         marketplaceMutations: 0,
       },
     });
-  });
+  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
   if (terminalStatus === "FAILED") {
     return { status: "FAILED", next: null };
   }

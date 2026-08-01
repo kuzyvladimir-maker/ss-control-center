@@ -278,6 +278,7 @@ export async function GET(request: NextRequest) {
     const status = await readProductTruthWalmartCollectionStatus({
       batchId,
       ...(auth.isAdmin ? {} : { requestedByUserId: auth.id }),
+      runtime,
     });
     return jsonNoStore({
       ok: true,

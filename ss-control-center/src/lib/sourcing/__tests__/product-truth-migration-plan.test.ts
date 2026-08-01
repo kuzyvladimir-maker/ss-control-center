@@ -44,6 +44,7 @@ const MIGRATION_IDS = [
   "20260719002000_product_truth_listing_scope",
   "20260719003000_product_truth_queue_listing_scope",
   "20260719004000_product_truth_operational_run",
+  "20260729010000_product_truth_listing_recipe",
 ] as const;
 
 const SOURCE_MIGRATIONS_ROOT = fileURLToPath(
@@ -321,7 +322,7 @@ async function assertActivationAbsent(url: string): Promise<void> {
   }
 }
 
-test("canonical release is exactly eight deterministic migrations", async () => {
+test("canonical release is exactly nine deterministic migrations", async () => {
   const first = await loadProductTruthMigrationFiles();
   const second = await loadProductTruthMigrationFiles();
   assert.deepEqual(first.map((file) => file.id), [...MIGRATION_IDS]);

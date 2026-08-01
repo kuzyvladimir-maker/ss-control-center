@@ -45,9 +45,13 @@ const runtime: ProductTruthWebControlRuntimeActive = {
 };
 
 function batch() {
+  return batchAt("2026-07-28T20:00:00.000Z");
+}
+
+function batchAt(requestedAt: string) {
   return buildProductTruthWalmartCollectionBatch({
     requestedByUserId: "owner-0001",
-    requestedAt: "2026-07-28T20:00:00.000Z",
+    requestedAt,
     prompt: "Create two exact Campbell soup listings",
     listingCount: 2,
     packCount: 3,
@@ -70,6 +74,29 @@ function batch() {
     ],
   });
 }
+
+test("retry in one release reuses logical commands despite fresh TTL timestamps", () => {
+  const first = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batchAt("2026-07-28T20:00:00.000Z"),
+    runtime,
+  });
+  const retry = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batchAt("2026-07-28T20:01:00.000Z"),
+    runtime,
+  });
+  assert.deepEqual(
+    retry.map((entry) => entry.commandId),
+    first.map((entry) => entry.commandId),
+  );
+  assert.deepEqual(
+    retry.map((entry) => entry.idempotencyKey),
+    first.map((entry) => entry.idempotencyKey),
+  );
+  assert.notDeepEqual(
+    retry.map((entry) => entry.requestSha256),
+    first.map((entry) => entry.requestSha256),
+  );
+});
 
 test("prepares deterministic independent DOCTOR admissions only", () => {
   const first = prepareProductTruthWalmartDoctorAdmissions({

@@ -517,6 +517,47 @@ const MIGRATION_CONTRACTS: readonly MigrationContract[] = [
       ],
     },
   },
+  {
+    id: "20260729010000_product_truth_listing_recipe",
+    prerequisites: {},
+    requiredTables: [
+      "ProductTruthListingRecipe",
+      "ProductTruthListingRecipeComponent",
+    ],
+    requiredTriggers: [
+      "ProductTruthListingRecipe_duplicate_insert_guard",
+      "ProductTruthListingRecipe_contract_insert",
+      "ProductTruthListingRecipe_component_set_guard",
+      "ProductTruthListingRecipe_update_guard",
+      "ProductTruthListingRecipe_delete_guard",
+      "ProductTruthListingRecipeComponent_duplicate_insert_guard",
+      "ProductTruthListingRecipeComponent_sealed_recipe_guard",
+      "ProductTruthListingRecipeComponent_contract_insert",
+      "ProductTruthListingRecipeComponent_update_guard",
+      "ProductTruthListingRecipeComponent_delete_guard",
+    ],
+    requiredIndexes: [
+      "ProductTruthListingRecipe_current_idx",
+      "ProductTruthListingRecipe_hash_idx",
+      "ProductTruthListingRecipeComponent_recipe_index_key",
+      "ProductTruthListingRecipeComponent_variant_donor_idx",
+      "ProductTruthListingRecipeComponent_decision_idx",
+    ],
+    requiredColumns: {
+      ProductTruthListingRecipe: [
+        "id", "recipeKey", "listingKey", "recipeVersion", "recipeHash",
+        "componentCount", "sourceKind", "sourceArtifactSha256",
+        "manifestSha256", "evidenceHash", "evidenceJson", "effectiveAt",
+        "runId", "approvalId", "createdAt",
+      ],
+      ProductTruthListingRecipeComponent: [
+        "id", "componentKey", "listingRecipeId", "componentIndex", "quantity",
+        "product", "flavor", "size", "targetCanonicalVariantId",
+        "donorProductId", "variantDecisionId", "sourceComponentId",
+        "evidenceHash", "evidenceJson", "createdAt",
+      ],
+    },
+  },
 ] as const;
 
 const REQUIRED_FOREIGN_KEYS = [
@@ -546,6 +587,11 @@ const REQUIRED_FOREIGN_KEYS = [
   ["ProductTruthOperationalRunItem", "queueJobId", "EnrichmentJob", "id", "RESTRICT", "RESTRICT"],
   ["ProductTruthOperationalEvent", "runId", "ProductTruthOperationalRun", "runId", "RESTRICT", "RESTRICT"],
   ["ProductTruthOperationalEvent", "itemId", "ProductTruthOperationalRunItem", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipe", "listingKey", "ProductTruthListingScope", "listingKey", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "listingRecipeId", "ProductTruthListingRecipe", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "targetCanonicalVariantId", "CanonicalProductVariant", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "donorProductId", "DonorProduct", "id", "RESTRICT", "RESTRICT"],
+  ["ProductTruthListingRecipeComponent", "variantDecisionId", "DonorProductVariantDecision", "id", "RESTRICT", "RESTRICT"],
 ] as const;
 
 const RECEIPT_COLUMNS = [
@@ -569,13 +615,84 @@ const PRISMA_RECEIPT_UPDATE_GUARD = "ProductTruthPrismaMigrationReceipt_update_g
 const PRISMA_RECEIPT_DELETE_GUARD = "ProductTruthPrismaMigrationReceipt_delete_guard";
 const PRISMA_RECEIPT_DUPLICATE_GUARD = "ProductTruthPrismaMigrationReceipt_duplicate_guard";
 const PRODUCT_TRUTH_MIGRATION_IDS = MIGRATION_CONTRACTS.map((contract) => contract.id);
+const LEGACY_ATOMIC_RELEASE_V1_IDS = PRODUCT_TRUTH_MIGRATION_IDS.slice(0, 8);
+const LEGACY_ATOMIC_RELEASE_V1_MIGRATION_SET_SHA256 =
+  "2eb39e0cff00a9044c466318f8ca5f1cccc94887514b323d02c4bec31e4f96e0";
+const LEGACY_ATOMIC_RELEASE_V1_ACTIVATION_CONTRACT_SHA256 =
+  "7b8ca99284ffdb229d488474ab9570595fd4829965b7a66d784ab4c83fe8df7e";
+const CURRENT_ACTIVATION_CONTRACT = {
+  contractVersion: "product-truth-migration-activation/3",
+  releaseModel: "ordered-append-only-cohorts",
+  receiptBinding: "migration-cohort",
+  prismaReceiptProtection: "product-truth-receipt-membership",
+  appliedPrefixRequired: true,
+  pendingSuffixAppliedAtomically: true,
+} as const;
 
-function receiptSchemaSql(): string {
-  const protectedMigrationNames = PRODUCT_TRUTH_MIGRATION_IDS
+function legacyPrismaReceiptGuardSql(): string {
+  const protectedMigrationNames = LEGACY_ATOMIC_RELEASE_V1_IDS
     .map((id) => `'${id.replaceAll("'", "''")}'`)
     .join(",");
-  return `
-CREATE TABLE "${RECEIPT_TABLE}" (
+  return `CREATE TRIGGER "${PRISMA_RECEIPT_UPDATE_GUARD}"
+BEFORE UPDATE ON "_prisma_migrations"
+WHEN OLD."migration_name" IN (${protectedMigrationNames})
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+END;
+CREATE TRIGGER "${PRISMA_RECEIPT_DELETE_GUARD}"
+BEFORE DELETE ON "_prisma_migrations"
+WHEN OLD."migration_name" IN (${protectedMigrationNames})
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+END;
+CREATE TRIGGER "${PRISMA_RECEIPT_DUPLICATE_GUARD}"
+BEFORE INSERT ON "_prisma_migrations"
+WHEN NEW."migration_name" IN (${protectedMigrationNames})
+  AND EXISTS (
+    SELECT 1 FROM "_prisma_migrations" existing
+    WHERE existing."migration_name" = NEW."migration_name"
+  )
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_DUPLICATE');
+END;`;
+}
+
+function stablePrismaReceiptGuardSql(): string {
+  return `CREATE TRIGGER "${PRISMA_RECEIPT_UPDATE_GUARD}"
+BEFORE UPDATE ON "_prisma_migrations"
+WHEN EXISTS (
+  SELECT 1 FROM "${RECEIPT_TABLE}" receipt
+  WHERE receipt."migrationId" = OLD."migration_name"
+)
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+END;
+CREATE TRIGGER "${PRISMA_RECEIPT_DELETE_GUARD}"
+BEFORE DELETE ON "_prisma_migrations"
+WHEN EXISTS (
+  SELECT 1 FROM "${RECEIPT_TABLE}" receipt
+  WHERE receipt."migrationId" = OLD."migration_name"
+)
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
+END;
+CREATE TRIGGER "${PRISMA_RECEIPT_DUPLICATE_GUARD}"
+BEFORE INSERT ON "_prisma_migrations"
+WHEN EXISTS (
+  SELECT 1 FROM "${RECEIPT_TABLE}" receipt
+  WHERE receipt."migrationId" = NEW."migration_name"
+)
+  AND EXISTS (
+    SELECT 1 FROM "_prisma_migrations" existing
+    WHERE existing."migration_name" = NEW."migration_name"
+  )
+BEGIN
+  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_DUPLICATE');
+END;`;
+}
+
+function receiptSchemaSql(prismaGuards = stablePrismaReceiptGuardSql()): string {
+  return `CREATE TABLE "${RECEIPT_TABLE}" (
   "migrationId" TEXT NOT NULL PRIMARY KEY,
   "migrationSha256" TEXT NOT NULL CHECK (length("migrationSha256") = 64),
   "migrationSetSha256" TEXT NOT NULL CHECK (length("migrationSetSha256") = 64),
@@ -621,28 +738,7 @@ BEFORE DELETE ON "${ACTIVATION_RECEIPT_TABLE}"
 BEGIN
   SELECT RAISE(ABORT, 'PRODUCT_TRUTH_MIGRATION_ACTIVATION_RECEIPT_IMMUTABLE');
 END;
-CREATE TRIGGER "${PRISMA_RECEIPT_UPDATE_GUARD}"
-BEFORE UPDATE ON "_prisma_migrations"
-WHEN OLD."migration_name" IN (${protectedMigrationNames})
-BEGIN
-  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
-END;
-CREATE TRIGGER "${PRISMA_RECEIPT_DELETE_GUARD}"
-BEFORE DELETE ON "_prisma_migrations"
-WHEN OLD."migration_name" IN (${protectedMigrationNames})
-BEGIN
-  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_IMMUTABLE');
-END;
-CREATE TRIGGER "${PRISMA_RECEIPT_DUPLICATE_GUARD}"
-BEFORE INSERT ON "_prisma_migrations"
-WHEN NEW."migration_name" IN (${protectedMigrationNames})
-  AND EXISTS (
-    SELECT 1 FROM "_prisma_migrations" existing
-    WHERE existing."migration_name" = NEW."migration_name"
-  )
-BEGIN
-  SELECT RAISE(ABORT, 'PRODUCT_TRUTH_PRISMA_MIGRATION_RECEIPT_DUPLICATE');
-END;
+${prismaGuards}
 `;
 }
 
@@ -872,7 +968,7 @@ function sha256(value: string | Buffer): string {
 }
 
 async function readActivationContractSha256(): Promise<string> {
-  return sha256(await readFile(SCRIPT_PATH));
+  return sha256(JSON.stringify(stableValue(CURRENT_ACTIVATION_CONTRACT)));
 }
 
 function stableValue(value: unknown): unknown {
@@ -1388,6 +1484,53 @@ export function migrationSetSha256(files: readonly ProductTruthMigrationFile[]):
   return sha256(files.map((file) => `${file.id}\0${file.sha256}`).join("\n"));
 }
 
+function acceptedMigrationReleaseBindings(
+  file: ProductTruthMigrationFile,
+  files: readonly ProductTruthMigrationFile[],
+  currentActivationContractSha256: string,
+): Array<{
+  migrationSetSha256: string;
+  activationContractSha256: string;
+}> {
+  if (!PRODUCT_TRUTH_MIGRATION_IDS.includes(file.id)) {
+    throw new ProductTruthMigrationPlanError(
+      "MIGRATION_RELEASE_CONTRACT_MISSING",
+      `no append-only release cohort contains ${file.id}`,
+    );
+  }
+  const current = {
+    migrationSetSha256: migrationSetSha256(files),
+    activationContractSha256: currentActivationContractSha256,
+  };
+  if (!LEGACY_ATOMIC_RELEASE_V1_IDS.includes(file.id)) return [current];
+  const legacyFiles = LEGACY_ATOMIC_RELEASE_V1_IDS.map((id) =>
+    files.find((candidate) => candidate.id === id)
+  );
+  if (legacyFiles.some((candidate) => candidate === undefined)) {
+    throw new ProductTruthMigrationPlanError(
+      "MIGRATION_RELEASE_CONTRACT_INCOMPLETE",
+      "legacy atomic release files are incomplete",
+    );
+  }
+  const actualLegacySetSha256 = migrationSetSha256(
+    legacyFiles as ProductTruthMigrationFile[],
+  );
+  if (actualLegacySetSha256 !== LEGACY_ATOMIC_RELEASE_V1_MIGRATION_SET_SHA256) {
+    throw new ProductTruthMigrationPlanError(
+      "MIGRATION_RELEASE_CONTRACT_DRIFT",
+      "legacy atomic release bytes no longer match their immutable receipt binding",
+    );
+  }
+  return [
+    current,
+    {
+      migrationSetSha256: LEGACY_ATOMIC_RELEASE_V1_MIGRATION_SET_SHA256,
+      activationContractSha256:
+        LEGACY_ATOMIC_RELEASE_V1_ACTIVATION_CONTRACT_SHA256,
+    },
+  ];
+}
+
 export function resolveDatabaseTarget(databaseUrl: string, cwd = process.cwd()): DatabaseTarget {
   try {
     return resolveProductTruthDatabaseTarget(databaseUrl, cwd);
@@ -1596,18 +1739,26 @@ function receiptLedgerState(snapshot: SchemaSnapshot): {
     `trigger:${PRISMA_RECEIPT_DELETE_GUARD}`,
     `trigger:${PRISMA_RECEIPT_DUPLICATE_GUARD}`,
   ].filter((artifact) => !artifactPresent(snapshot, artifact));
-  const definitionProblems = schemaDefinitionProblems(
+  const stableDefinitionProblems = schemaDefinitionProblems(
     snapshot,
     extractCreateDefinitions(receiptSchemaSql()),
   );
-  return missing.length === 0 && definitionProblems.length === 0
+  const legacyDefinitionProblems = schemaDefinitionProblems(
+    snapshot,
+    extractCreateDefinitions(receiptSchemaSql(legacyPrismaReceiptGuardSql())),
+  );
+  return missing.length === 0
+    && (
+      stableDefinitionProblems.length === 0
+      || legacyDefinitionProblems.length === 0
+    )
     ? { state: "ready", blockers: [] }
     : {
         state: "invalid",
         blockers: [
           `migration receipt ledger is incomplete: ${[
             ...missing,
-            ...definitionProblems,
+            ...stableDefinitionProblems,
           ].join(", ")}`,
         ],
       };
@@ -1679,12 +1830,18 @@ async function readReceipts(
       rows.set(receipt.migrationId, receipt);
     }
   }
-  const receipts = [...rows.values()];
-  if (receipts.length > 1) {
+  const receiptsByRelease = new Map<string, ReceiptRow[]>();
+  for (const receipt of rows.values()) {
+    const releaseKey =
+      `${receipt.migrationSetSha256}:${receipt.activationContractSha256}`;
+    const releaseRows = receiptsByRelease.get(releaseKey) ?? [];
+    releaseRows.push(receipt);
+    receiptsByRelease.set(releaseKey, releaseRows);
+  }
+  for (const receipts of receiptsByRelease.values()) {
+    if (receipts.length < 2) continue;
     const first = receipts[0]!;
     for (const field of [
-      "migrationSetSha256",
-      "activationContractSha256",
       "runId",
       "approvalId",
       "targetFingerprint",
@@ -1697,7 +1854,9 @@ async function readReceipts(
       "appliedAt",
     ] as const) {
       if (receipts.some((receipt) => receipt[field] !== first[field])) {
-        blockers.push(`migration receipts do not share one atomic ${field} binding`);
+        blockers.push(
+          `migration release receipts do not share one atomic ${field} binding`,
+        );
       }
     }
   }
@@ -1942,12 +2101,18 @@ async function inspectDatabasePlan(input: {
         `ledger SHA mismatch: ProductTruth=${receipt.migrationSha256}, Prisma=${prismaReceipt.checksum}, local=${file.sha256}`,
       );
     } else {
+      const acceptedReleaseBindings = acceptedMigrationReleaseBindings(
+        file,
+        input.files,
+        input.activationContractSha256,
+      );
+      const releaseBindingMatches = acceptedReleaseBindings.some((binding) =>
+        receipt.migrationSetSha256 === binding.migrationSetSha256
+        && receipt.activationContractSha256 === binding.activationContractSha256
+      );
       const receiptBindingProblems = [
-        receipt.migrationSetSha256 !== setHash
-          ? `receipt migration-set SHA ${receipt.migrationSetSha256} differs from ${setHash}`
-          : null,
-        receipt.activationContractSha256 !== input.activationContractSha256
-          ? `receipt activation-contract SHA ${receipt.activationContractSha256} differs from ${input.activationContractSha256}`
+        !releaseBindingMatches
+          ? `receipt release binding ${receipt.migrationSetSha256}:${receipt.activationContractSha256} is not registered for ${file.id}`
           : null,
         receipt.targetFingerprint !== input.target.fingerprint
           ? `receipt target fingerprint ${receipt.targetFingerprint} differs from exact target ${input.target.fingerprint}`
@@ -2033,7 +2198,10 @@ async function inspectDatabasePlan(input: {
     receipts.size === input.files.length
     && input.files.every((file) => receipts.has(file.id))
   ) {
-    const receiptSchemaAfterSha256 = receipts.values().next().value?.schemaAfterSha256;
+    const latestMigrationId = input.files.at(-1)?.id;
+    const receiptSchemaAfterSha256 = latestMigrationId
+      ? receipts.get(latestMigrationId)?.schemaAfterSha256
+      : undefined;
     if (receiptSchemaAfterSha256 !== snapshot.fingerprint.sha256) {
       blockers.push(
         `MIGRATION_RECEIPT_SCHEMA_AFTER_DRIFT: receipt=${
@@ -2077,12 +2245,6 @@ async function inspectDatabasePlan(input: {
       blockers.push(`${migration.id} is applied after an earlier non-applied migration`);
     }
     blockers.push(...migration.blockers.map((blocker) => `${migration.id}: ${blocker}`));
-  }
-  const appliedCount = migrations.filter((migration) => migration.state === "applied").length;
-  if (appliedCount > 0 && appliedCount !== migrations.length) {
-    blockers.push(
-      `MIGRATION_ATOMIC_RELEASE_INCOMPLETE: only ${appliedCount}/${migrations.length} migrations are applied`,
-    );
   }
   const plan: ProductTruthMigrationPlan = {
     contractVersion: PLAN_CONTRACT_VERSION,
@@ -3520,7 +3682,7 @@ export function resolveProductTruthMigrationCliAuthToken(
 
 function usage(): string {
   return [
-    "Product Truth migration activation V2 (canonical eight migrations only)",
+    "Product Truth migration activation V2 (canonical nine migrations only)",
     "",
     "Sealed read-only plan:",
     "  node --import tsx scripts/product-truth-migration-plan.ts plan --url file:/ABS/db.sqlite",
