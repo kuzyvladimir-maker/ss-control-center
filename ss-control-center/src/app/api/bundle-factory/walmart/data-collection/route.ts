@@ -9,6 +9,7 @@ import {
 } from "@/lib/sourcing/product-truth-read-contract";
 import {
   readTargetedWalmartDonorSnapshot,
+  targetedWalmartDetailHarvestStateAbsent,
 } from "@/lib/sourcing/product-truth-targeted-walmart-evidence";
 import {
   ProductTruthWebControlAdmissionError,
@@ -175,10 +176,20 @@ export async function POST(request: NextRequest) {
         continue;
       }
       try {
-        await readTargetedWalmartDonorSnapshot(
+        const snapshot = await readTargetedWalmartDonorSnapshot(
           db,
           candidate.donor_product_id,
         );
+        if (!await targetedWalmartDetailHarvestStateAbsent(
+          db,
+          snapshot.donorProductId,
+          snapshot.retailerProductId,
+        )) {
+          // The sealed collector is first-attempt-only. Keep scanning for an
+          // untouched exact donor instead of admitting a doctor command that
+          // must fail and strand the remaining otherwise valid jobs.
+          continue;
+        }
       } catch {
         continue;
       }

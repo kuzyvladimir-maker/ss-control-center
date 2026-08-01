@@ -1343,6 +1343,12 @@ deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf`). Он не меняет operator 
 старый terminal batch не retry, новый exact quote требует отдельного owner click,
 а Walmart publication остаётся отдельным SKU-bound gate.
 
+Candidate discovery обязана применить тот же first-attempt-only boundary до
+создания doctor commands: exact donor с любым существующим
+`unwrangle:walmart` detail-harvest lifecycle исключается, после чего поиск
+продолжается до следующего untouched exact donor. Такой donor нельзя помещать в
+новый batch даже с новым release/run ID: это было бы скрытым paid replay.
+
 Если readiness даёт `matched_variants=0`, BF-W3 exact-product quote неприменим:
 нужна отдельная owner-gated Phase 2 demand-expansion campaign. Нельзя создавать
 параллельный consumer catalog или использовать legacy retailer harvest как

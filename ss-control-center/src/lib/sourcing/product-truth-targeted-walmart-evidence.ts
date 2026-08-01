@@ -487,6 +487,25 @@ export async function readTargetedWalmartDonorSnapshot(
   });
 }
 
+/**
+ * A targeted Walmart evidence quote is a first-attempt-only workflow. Candidate
+ * discovery must apply the same durable harvest-state boundary as doctor/plan;
+ * otherwise the UI can quote a donor that the sealed runner is required to
+ * reject as a replay. This is read-only and performs no provider call.
+ */
+export async function targetedWalmartDetailHarvestStateAbsent(
+  db: Client,
+  donorProductId: string,
+  retailerProductId: string,
+): Promise<boolean> {
+  const state = await getDonorHarvestState(db, donorHarvestStateId({
+    donorProductId,
+    source: "unwrangle:walmart",
+    retailerProductId,
+  }));
+  return state === null;
+}
+
 function canonicalDbRow(row: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(Object.entries(row).map(([key, value]) => {
     if (typeof value === "bigint") {

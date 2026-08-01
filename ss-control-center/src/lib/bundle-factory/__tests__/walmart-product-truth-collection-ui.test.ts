@@ -90,6 +90,8 @@ test("collection route re-derives exact donors server-side and cannot call provi
   );
   assert.match(route, /diagnoseProductTruthWalmartPilotRequest/u);
   assert.match(route, /readTargetedWalmartDonorSnapshot/u);
+  assert.match(route, /targetedWalmartDetailHarvestStateAbsent/u);
+  assert.match(route, /Keep scanning for an[\s\S]*untouched exact donor/u);
   assert.match(route, /buildProductTruthWalmartCollectionBatch/u);
   assert.match(route, /admitProductTruthWalmartCollectionBatch/u);
   assert.doesNotMatch(

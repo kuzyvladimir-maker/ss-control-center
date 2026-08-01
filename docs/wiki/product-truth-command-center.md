@@ -1009,3 +1009,15 @@ review и approval exact quote в UI; до него enrichment не старту
   enrichment и пяти owner-review drafts. Terminal batch
   `ptbfw-14e44dd192718b33ff8b0bb2` не retry/replay. Никакой Walmart
   publication до отдельного SKU-bound gate.
+- [x] Первый r13 successor batch `ptbfw-e9e9310dcf4fbbcc33585dc3`
+  доказал ещё один no-spend admission defect: четыре exact plans завершились,
+  но первый doctor честно остановился
+  `TARGETED_EVIDENCE_PRIOR_HARVEST_STATE_FORBIDDEN`, потому что candidate
+  discovery повторно выбрал donor с уже существующим detail-harvest lifecycle.
+  Provider calls/spend и marketplace mutations этого doctor равны `0`.
+- [x] Candidate discovery приведён к first-attempt-only runner boundary:
+  до admission он read-only проверяет exact
+  `donorProductId + unwrangle:walmart + retailerProductId`, пропускает любой
+  prior lifecycle и продолжает искать untouched exact donor. Production
+  catalog dry check: `20` matched, использованный donor исключён, следующие
+  `5` кандидатов найдены; provider calls `0`.
