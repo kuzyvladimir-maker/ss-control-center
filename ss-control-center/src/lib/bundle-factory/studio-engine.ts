@@ -31,8 +31,8 @@ import {
 } from "./legacy-recipe-dedup";
 import {
   studioChannelRoute,
-  WALMART_CANONICAL_OPERATOR_MESSAGE,
 } from "./studio-channel-routing";
+import { tickWalmartStudioDraftBatch } from "./walmart-studio-draft-engine";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -549,32 +549,11 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
 
   const state = readState(job.notes, job.bundles_target);
 
-  // Jobs created before the canonical Walmart pilot was introduced must not
-  // fall back to the mutable DonorProduct Studio path when a cron/UI tick sees
-  // them. Terminalize the internal job before sourcing, content generation,
-  // UPC reservation, or marketplace work.
+  // Walmart is a parallel channel-specific engine. It reads only the exact
+  // donor-bound Product Truth work items admitted by the generate route and
+  // creates internal review drafts; it never falls through to legacy Studio.
   if (studioChannelRoute(channel) === "CANONICAL_WALMART_OPERATOR_REQUIRED") {
-    const progress: BatchProgress = {
-      status: "FAILED",
-      phase: "error",
-      step: WALMART_CANONICAL_OPERATOR_MESSAGE,
-      total: job.bundles_target,
-      done: 0,
-      failed: 0,
-      done_flag: true,
-    };
-    if (job.status !== "FAILED") {
-      await prisma.generationJob.update({
-        where: { id: batchId },
-        data: {
-          status: "FAILED",
-          current_stage: "FAILED",
-          completed_at: new Date(),
-          notes: JSON.stringify({ progress }),
-        },
-      });
-    }
-    return progress;
+    return tickWalmartStudioDraftBatch(batchId);
   }
 
   // Terminal — nothing to do.

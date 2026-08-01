@@ -779,7 +779,7 @@ export function DraftDetailClient(props: Props) {
       {rows.length === 0 ? (
         <div className="rounded-[14px] border border-rule bg-surface p-6 text-center text-[12.5px] text-ink-3">
           No content generated yet. Click <strong>Generate content</strong>
-          {" "}above to call Claude Sonnet 4.5 across all channels.
+          {" "}above to use the centrally configured content engine across all channels.
         </div>
       ) : (
         <>

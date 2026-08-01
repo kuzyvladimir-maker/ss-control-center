@@ -70,10 +70,10 @@ export default async function StudioBatchPage({
   return (
     <>
       <PageHead
-        title={isCanonicalWalmart ? "Walmart request prepared" : "Building listings"}
+        title={isCanonicalWalmart ? "Building Walmart drafts" : "Building listings"}
         subtitle={
           isCanonicalWalmart
-            ? <span>Inputs were recorded exactly. Generation has not started and nothing has been published.</span>
+            ? <span>The exact Product Truth variants are becoming internal review drafts. Nothing publishes until you separately approve it.</span>
             : <span>The algorithm is creating your batch. Watch it below — nothing publishes until you approve.</span>
         }
       />
@@ -101,17 +101,17 @@ export default async function StudioBatchPage({
         </div>
 
         {isCanonicalWalmart ? (
-          <div className="rounded-[14px] border border-rule bg-surface p-5">
-            <div className="text-[13.5px] font-semibold text-ink">
-              Request recorded — generation has not started
-            </div>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
-              The Command Center currently records this request for the sealed
-              Walmart workflow; it does not run that workflow automatically.
-              Claude Code must execute the exact operator steps. Nothing has
-              been published.
-            </p>
-            <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
+          <>
+            <div className="rounded-[14px] border border-rule bg-surface p-5">
+              <div className="text-[13.5px] font-semibold text-ink">
+                Exact draft request sealed
+              </div>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
+                Each work item is bound to one exact donor product and Product
+                Truth evidence snapshot. This step does not reserve UPCs and
+                has no authority to send a listing to Walmart.
+              </p>
+              <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
               <div>
                 Requested output:{" "}
                 <span className="font-medium text-ink">
@@ -145,8 +145,13 @@ export default async function StudioBatchPage({
                   {String(req.target_margin_pct ?? 30)}%
                 </span>
               </div>
+              </div>
             </div>
-          </div>
+            <BatchProgress
+              batchId={job.id}
+              reviewHref={`/bundle-factory/new/${job.id}/review`}
+            />
+          </>
         ) : (
           <BatchProgress batchId={job.id} />
         )}

@@ -32,9 +32,23 @@ import {
   getWalmartStoreStatus,
 } from "@/lib/walmart";
 import {
-  buildWalmartStudioWorkItems,
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
+import {
+  WALMART_STUDIO_DRAFT_BRIEF_SCHEMA,
+  WalmartStudioDraftContractError,
+  buildWalmartStudioDraftWorkItems,
+} from "@/lib/bundle-factory/walmart-studio-draft-contract";
+import {
+  WALMART_STUDIO_DEFAULT_PACKAGING_COST_CENTS,
+  WALMART_STUDIO_DEFAULT_SHIPPING_LABEL_CENTS,
+  WALMART_STUDIO_REFERRAL_FEE_BPS,
+} from "@/lib/bundle-factory/walmart-studio-draft-economics";
+import {
+  diagnoseProductTruthWalmartPilotRequest,
+} from "@/lib/sourcing/product-truth-read-contract";
+import { openProductTruthWebReadClient } from
+  "@/lib/sourcing/product-truth-web-read-client";
 
 export const dynamic = "force-dynamic";
 
@@ -183,15 +197,72 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         "The selected Walmart shipping template changed or is no longer active. Re-open it and select again.",
       );
     }
+    const targetMarginBps = Math.round((targetMarginPct ?? 30) * 100);
+    if (
+      !Number.isSafeInteger(targetMarginBps) ||
+      targetMarginBps < 1 ||
+      targetMarginBps > 5_000
+    ) {
+      return badRequest("Walmart target margin must be between 0.01% and 50%.");
+    }
+    const productTruthAsOf = new Date().toISOString();
+    const productTruthDb = openProductTruthWebReadClient();
+    let diagnostic;
+    try {
+      diagnostic = await diagnoseProductTruthWalmartPilotRequest(
+        productTruthDb,
+        {
+          query: prompt,
+          asOf: productTruthAsOf,
+          requireIngredients: true,
+          requireNutrition: true,
+          requireAllergens: true,
+          limit: Math.max(20, Math.min(500, intent.listing_count * 4)),
+        },
+      );
+    } finally {
+      productTruthDb.close();
+    }
+    let executionWorkItems;
+    try {
+      executionWorkItems = buildWalmartStudioDraftWorkItems({
+        candidates: diagnostic.candidates,
+        listingCount: intent.listing_count,
+        packCount: intent.pack_count,
+        storeIndex,
+        shippingTemplateId: template.id,
+        shippingTemplateSha256: template.template_sha256,
+        targetMarginBps,
+        asOf: diagnostic.as_of,
+        priceMaxAgeMs: diagnostic.price_max_age_ms,
+        zip: diagnostic.zip,
+      });
+    } catch (error) {
+      if (
+        error instanceof WalmartStudioDraftContractError &&
+        error.code.startsWith("INSUFFICIENT_")
+      ) {
+        return NextResponse.json(
+          {
+            error: error.message,
+            code: error.code,
+            catalog: diagnostic,
+          },
+          { status: 409 },
+        );
+      }
+      throw error;
+    }
     const batchRequest = {
       studio_version: 5,
       workflow: "CANONICAL_WALMART_NEW_SKU",
+      draft_schema_version: WALMART_STUDIO_DRAFT_BRIEF_SCHEMA,
       source: "prompt",
       prompt,
       channel,
       listing_count: intent.listing_count,
       pack_count: intent.pack_count,
-      execution_work_items: buildWalmartStudioWorkItems(intent),
+      execution_work_items: executionWorkItems,
       prompt_intent: {
         listing_count: intent.prompt_listing_count,
         pack_count: intent.prompt_pack_count,
@@ -204,33 +275,53 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         selected_at: new Date().toISOString(),
         template,
       },
+      product_truth_admission: {
+        as_of: diagnostic.as_of,
+        price_max_age_ms: diagnostic.price_max_age_ms,
+        zip: diagnostic.zip,
+        matched_variants: diagnostic.matched_variants,
+        ready_variants: diagnostic.ready_variants,
+      },
+      pricing_inputs: {
+        packaging_cost_cents: WALMART_STUDIO_DEFAULT_PACKAGING_COST_CENTS,
+        shipping_label_cents: WALMART_STUDIO_DEFAULT_SHIPPING_LABEL_CENTS,
+        referral_fee_bps: WALMART_STUDIO_REFERRAL_FEE_BPS,
+        target_margin_bps: targetMarginBps,
+      },
       operator_contract: {
-        engine: "npm run walmart:new-sku",
+        engine: "walmart-studio-draft-engine",
         marketplace_mutation_authorized: false,
+        upc_reservation_authorized: false,
         next_step:
-          "Generation has not started. Claude Code follows docs/wiki/walmart-new-sku-operator-runbook.md and the engine's exact next_command.",
+          "Create donor-bound internal drafts for owner review. UPC reservation, certification and Walmart publication remain separate gates.",
       },
     };
     const job = await prisma.generationJob.create({
       data: {
         brief: JSON.stringify(batchRequest),
-        current_stage: "WALMART_REQUEST_READY",
+        current_stage: "WALMART_DRAFT_QUEUE",
         status: "PENDING",
         bundles_target: intent.listing_count,
         user_id: "user",
         notes: JSON.stringify({
           progress: {
             status: "PENDING",
-            phase: "walmart-owner-request",
+            phase: "queued",
             step:
-              "Request recorded; generation has not started. " +
-              WALMART_CANONICAL_OPERATOR_MESSAGE,
+              `${intent.listing_count} exact Product Truth variants queued for Walmart draft generation.`,
             total: intent.listing_count,
             done: 0,
             failed: 0,
             done_flag: false,
           },
         }),
+        work_items: {
+          create: executionWorkItems.map((item) => ({
+            spec_index: item.spec_index,
+            spec_json: JSON.stringify(item),
+            fingerprint: item.work_item_sha256,
+          })),
+        },
       },
       select: { id: true },
     });

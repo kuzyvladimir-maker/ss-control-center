@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
       requireIngredients: true,
       requireNutrition: true,
       requireAllergens: true,
-      limit: Math.max(20, Math.min(50, intent.listing_count * 4)),
+      limit: Math.max(20, Math.min(500, intent.listing_count * 4)),
     });
     const missingNeeded = Math.max(
       0,

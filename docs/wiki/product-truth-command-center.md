@@ -835,3 +835,50 @@ BF-W4 не меняет live mutation authority: protected execution остаё�
 BF-W5 не авторизует provider spend или Walmart mutation. No-spend planning
 может стартовать автоматически; paid enrichment начинается только после
 external owner signature точного показанного quote.
+
+### ✅ Фаза BF-W6 — donor-bound Walmart draft runtime и buyer review
+
+- [x] `Generate` после readiness больше не создаёт frozen/manual handoff:
+  route повторно читает Product Truth, фиксирует requested listing/pack count,
+  выбранный Walmart account/template и margin, затем атомарно создаёт
+  `GenerationJob` с отдельным immutable `GenerationWorkItem` для каждого exact
+  canonical variant.
+- [x] Walmart получает собственный channel engine внутри общего Bundle Factory.
+  Он обрабатывает durable queue по одному item, имеет CAS claim, stale-lock
+  recovery, максимум три попытки и recipe-level idempotency. Legacy Amazon
+  Studio, Walmart API client и UPC pool в этой ветке недоступны.
+- [x] Каждый draft перед записью повторно доказывает те же donor product,
+  canonical variant, content observation и price observation. Mutable
+  `DonorProduct` не является content/price truth; template snapshot защищён
+  SHA-256 binding.
+- [x] Economics использует exact unit COGS × pack count + `$1.50` packaging +
+  `$8.78` outbound label, Walmart referral `15%` и owner-selected margin
+  (default `30%`). Item price и buyer shipping рассчитываются по точному live
+  template snapshot так, чтобы один customer landed total сохранял целевую
+  маржу во всех активных rate scenarios.
+- [x] Main image строится только из exact donor package pixels: connected white
+  background удаляется до композиции, artwork не перерисовывается, а число
+  копий равно pack count (включая Campbell's Pack of 8). Image fetch принимает
+  только HTTPS raster assets с approved Walmart/Salsify/Scene7/brand CDN,
+  проверяет каждый redirect и держит жёсткий лимит `25 MiB`.
+- [x] После batch completion владелец получает список всех drafts и отдельную
+  Walmart buyer-page preview для каждого: gallery, title, price, shipping,
+  landed total, bullets, description, ingredients/allergens/nutrition и exact
+  observation evidence. Preview не содержит publish/UPC mutation controls.
+- [x] Request diagnosis теперь допускает до `500` owner-requested drafts и
+  сканирует exact Product Truth catalog постранично; прежняя скрытая отсечка
+  первых `1000` строк удалена.
+- [x] Local certification: focused Walmart/Studio queue, preview, shipping,
+  content and image suite `61/61 PASS`; TypeScript, targeted ESLint и production
+  build `PASS`. Реальные Campbell's content observations используют approved
+  hosts `i5.walmartimages.com`, `images.salsify.com`, `target.scene7.com`.
+- [ ] Production deployment и authenticated visual postcheck выполняются после
+  release commit. Provider spend, UPC reservation и Walmart mutations на этом
+  этапе равны `0`.
+
+BF-W6 закрывает существующие exact donors. Если `matched_variants=0`, Bundle
+Factory обязан создать demand-expansion request в едином Product Truth Platform;
+собственный retailer scraper или второй каталог запрещены. Исполнение такого
+Phase 2 запроса остаётся platform gate до доказанного завершения глобальной
+Phase 1, но это не ограничение количества Walmart drafts и не относится к
+Campbell's, где exact donors уже существуют.

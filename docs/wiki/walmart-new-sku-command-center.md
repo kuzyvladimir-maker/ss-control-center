@@ -757,3 +757,41 @@ track и больше не обозначается blocker текущего Wal
 - [ ] Отдельный Stage F money/permit gate всё ещё требуется для `execute` и
   фактического сбора свежих цен. Provider spend, Product Truth business writes,
   UPC reservation, listing publication и Walmart effects = `0`.
+
+## ✅ BF-W6: internal draft engine из Bundle Factory — 2026-08-01
+
+- [x] Walmart остаётся отдельной параллельной channel-веткой общего Bundle
+  Factory: общий только вход/очередь/Product Truth, а request contract,
+  economics, изображения, поля, review и дальнейший publisher — Walmart-only.
+- [x] После успешной readiness проверки `Generate` атомарно фиксирует по одному
+  immutable work item на каждый requested exact donor variant. Campbell's
+  request сохраняется буквально как `5 listings × Pack of 8`; числа не
+  заменяются pilot defaults.
+- [x] Durable engine создаёт все внутренние drafts автоматически: CAS claim,
+  stale recovery, bounded retry, immutable evidence binding и idempotency
+  проверены на настоящей временной SQLite/Prisma базе.
+- [x] Exact donor image проходит connected-white cutout и count-accurate
+  deterministic composition; продукт занимает почти весь `2200×2200` canvas,
+  белый фон одной упаковки не перекрывает соседнюю, generative redraw запрещён.
+- [x] Pricing binding: exact COGS × quantity + packaging + outbound shipping
+  cost + Walmart commission + selected contribution margin; выбранный account
+  shipping template определяет, какая часть customer total показывается как
+  item price и какая как buyer shipping.
+- [x] Owner review показывает весь batch, затем отдельную Walmart-like PDP для
+  каждого draft со всеми изображениями, content, price/shipping/total и exact
+  evidence. Никаких UPC reservation, feed submit или live publication кнопок
+  на этой поверхности нет.
+- [x] Security: каждый image redirect проверяется до follow, unknown host и
+  non-raster content отклоняются, streamed body ограничен `25 MiB`; production
+  Campbell's hosts входят в pinned allowlist.
+- [x] Certification: focused Walmart/Studio + Product Truth + Pack-of-8 image
+  tests `61/61 PASS`; TypeScript, targeted ESLint и production build `PASS`.
+- [ ] Release commit, production deployment и authenticated owner visual
+  postcheck ещё не зафиксированы. До этого production current truth остаётся
+  BF-W5. Provider calls и Walmart writes в ходе certification: `0`.
+
+`matched_variants=0` не запускает скрытый scraper: это отдельная demand-expansion
+задача единого Product Truth Platform и остаётся blocked platform gate до
+глобального Phase 1 proof. Campbell's имеет exact donor variants, поэтому его
+текущий сценарий проходит существующий owner-quoted targeted enrichment и затем
+этот draft engine.

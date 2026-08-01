@@ -105,7 +105,7 @@ export const GET = withErrorHandler(
         requireIngredients: true,
         requireNutrition: true,
         requireAllergens: true,
-        limit: Math.max(20, Math.min(50, requestIntent.listing_count * 4)),
+        limit: Math.max(20, Math.min(500, requestIntent.listing_count * 4)),
       });
       const collection = await Promise.all(
         diagnostic.candidates.map((candidate) =>

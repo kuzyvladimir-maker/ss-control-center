@@ -1462,9 +1462,17 @@ export async function diagnoseWalmartPilotRequest(
   const maxPriceAgeMs =
     options.maxPriceAgeMs ?? DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS;
   const zip = options.zip?.trim() || DEFAULT_WALMART_PILOT_ZIP;
-  const limit = Math.max(1, Math.min(50, options.limit ?? 20));
-  const rows = await db.execute({
-    sql: `SELECT
+  // Bundle Factory intentionally supports owner-requested waves up to 500
+  // drafts. The diagnostic must be able to return the same number of exact
+  // variants; otherwise a valid large request would be rejected by an
+  // unrelated read-side truncation.
+  const limit = Math.max(1, Math.min(500, options.limit ?? 20));
+  const requestRows: EvidenceRow[] = [];
+  const pageSize = 1_000;
+  let offset = 0;
+  while (true) {
+    const page = await db.execute({
+      sql: `SELECT
         decision.donorProductId,
         decision.canonicalVariantId,
         variant.normalizedBrand,
@@ -1501,22 +1509,28 @@ export async function diagnoseWalmartPilotRequest(
           LIMIT 1
         )
       ORDER BY decision.donorProductId ASC
-      LIMIT 1000`,
-    args: [
-      CANONICAL_PRODUCT_MATCHER_VERSION,
-      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
-      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-    ],
-  });
+      LIMIT ? OFFSET ?`,
+      args: [
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        pageSize,
+        offset,
+      ],
+    });
+    requestRows.push(...page.rows as unknown as EvidenceRow[]);
+    if (page.rows.length < pageSize) break;
+    offset += page.rows.length;
+  }
 
-  const matches = rows.rows
+  const matches = requestRows
     .map((row) => {
       const facts = contentFacts(row);
       const brand = optionalText(row.normalizedBrand) ?? "";
