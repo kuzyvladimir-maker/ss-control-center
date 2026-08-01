@@ -1842,6 +1842,18 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/shipping/merge/buy",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/shipping/merge/rates",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/shipping/packing-profile",
     "methods": [
       "GET",
@@ -2053,4 +2065,4 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   }
 ];
 
-export const REST_ENDPOINTS_COUNT = 324;
+export const REST_ENDPOINTS_COUNT = 326;
