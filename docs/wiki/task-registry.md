@@ -97,14 +97,17 @@
   Канон: [[walmart-new-sku-operator-runbook]] и
   [[walmart-new-sku-command-center]]. Старые v26 current-status записи ниже —
   audit chronology, не operator authority.
-- 🔄 **Bundle Factory Walmart BF-W6 release — 2026-08-01:** локально завершён
+- 🟢 **Bundle Factory Walmart BF-W6 activated — 2026-08-01:** завершён
   donor-bound internal draft runtime: immutable per-variant queue, exact Product
   Truth re-read, selected shipping-template economics, count-accurate exact-pixel
   Pack-of-8 image, batch gallery и отдельная Walmart buyer preview. Walmart/API
   writes и UPC reservation отсутствуют. Focused certification `61/61`,
-  TypeScript, targeted ESLint и production build `PASS`; release/deployment и
-  authenticated visual postcheck ещё не зафиксированы. `matched_variants=0`
-  остаётся отдельным Product Truth Phase 2 gate, а не скрытым retailer harvest.
+  TypeScript, targeted ESLint и production build `PASS`; commit `d8ccc86da…`,
+  production deployment `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, alias
+  `salutemsolutions.info`. No-spend HTTP postcheck подтвердил штатные `307` auth
+  redirects и protected API `401`. Authenticated visual postcheck не заявлен,
+  потому что browser session отсутствовала. `matched_variants=0` остаётся
+  отдельным Product Truth Phase 2 gate, а не скрытым retailer harvest.
 - 🟡 **Product Truth Control Center / permanent productization:** owner 2026-07-19
   подтвердил, что готовый engine должен стать постоянным backend существующего
   модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Reconciled

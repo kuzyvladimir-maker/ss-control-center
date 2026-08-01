@@ -786,9 +786,14 @@ track и больше не обозначается blocker текущего Wal
   Campbell's hosts входят в pinned allowlist.
 - [x] Certification: focused Walmart/Studio + Product Truth + Pack-of-8 image
   tests `61/61 PASS`; TypeScript, targeted ESLint и production build `PASS`.
-- [ ] Release commit, production deployment и authenticated owner visual
-  postcheck ещё не зафиксированы. До этого production current truth остаётся
-  BF-W5. Provider calls и Walmart writes в ходе certification: `0`.
+- [x] Release commit `d8ccc86da…` развёрнут production deployment
+  `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, alias
+  `salutemsolutions.info`. No-spend HTTP postcheck подтвердил auth boundary:
+  `/`, `/bundle-factory/new` и review route = `307 → /login`, protected
+  readiness API = `401`; provider calls и Walmart writes `0`.
+- [ ] Authenticated owner visual postcheck не заявлен из-за отсутствия
+  подключённой browser session; первый owner batch остаётся визуальным
+  acceptance, не live-publication gate.
 
 `matched_variants=0` не запускает скрытый scraper: это отдельная demand-expansion
 задача единого Product Truth Platform и остаётся blocked platform gate до

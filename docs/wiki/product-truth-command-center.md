@@ -872,9 +872,15 @@ external owner signature точного показанного quote.
   content and image suite `61/61 PASS`; TypeScript, targeted ESLint и production
   build `PASS`. Реальные Campbell's content observations используют approved
   hosts `i5.walmartimages.com`, `images.salsify.com`, `target.scene7.com`.
-- [ ] Production deployment и authenticated visual postcheck выполняются после
-  release commit. Provider spend, UPC reservation и Walmart mutations на этом
-  этапе равны `0`.
+- [x] Release commit `d8ccc86da…` развёрнут production deployment
+  `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, aliases включают
+  `salutemsolutions.info`. No-spend HTTP postcheck: `/`,
+  `/bundle-factory/new` и новый review route штатно вернули `307 → /login`,
+  protected readiness API — `401`. Provider spend, UPC reservation и Walmart
+  mutations равны `0`.
+- [ ] Authenticated visual postcheck не заявлен: подключённая browser session в
+  текущем Codex runtime отсутствовала; первый owner run остаётся визуальным
+  acceptance этой поверхности, а не техническим разрешением на publication.
 
 BF-W6 закрывает существующие exact donors. Если `matched_variants=0`, Bundle
 Factory обязан создать demand-expansion request в едином Product Truth Platform;
