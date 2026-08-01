@@ -1322,6 +1322,21 @@ readiness → no-spend doctor → no-spend plan → displayed exact quote
 запускает provider adapter напрямую. При `AMBIGUOUS`, `FAILED` либо
 `next_command: null` автоматического retry нет.
 
+Во время paid execution UI обязан показывать durable progress, а не одно слово
+`ENRICHING`: текущий товар `X/N`, точное название, этап (`balance`, exact Walmart
+price, exact content, Product Truth reconciliation), completed/stopped counts,
+фактически использованные provider credits, timestamp и freshness worker
+heartbeat. Refresh браузера восстанавливает эти данные из append-only control
+events; он не создаёт новый run и не разрешает replay.
+
+Product Truth content является channel-independent. Если current versioned
+read-contract уже выбирает полный exact-variant content, созданный до sealed
+plan (например Target или manufacturer evidence), BF-W3 может после fresh exact
+Walmart price завершить товар без Unwrangle detail. Content observation всё
+равно обязан принадлежать exact donor/canonical variant/variant decision и
+пройти ingredients, nutrition, allergens и gallery gates. Price proxy либо
+соседний вариант никогда не становится content truth.
+
 Если readiness даёт `matched_variants=0`, BF-W3 exact-product quote неприменим:
 нужна отдельная owner-gated Phase 2 demand-expansion campaign. Нельзя создавать
 параллельный consumer catalog или использовать legacy retailer harvest как

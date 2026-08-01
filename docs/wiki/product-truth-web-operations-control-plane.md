@@ -454,13 +454,22 @@ owner decision для каждого показанного quote:
    и только затем переводит `AWAITING_OWNER → ADMITTED`;
 6. pinned worker выполняет один balance probe и максимум один
    Oxylabs-query + один Unwrangle-detail на target, concurrency `1`;
-7. Unwrangle detail response обязан дать fresh next-balance evidence.
+7. Если current read-contract уже выбирает полный exact-variant content,
+   detail call пропускается, а исходное balance evidence остаётся действующим
+   для следующего sequential job в пределах freshness window. Если detail
+   реально вызван, response обязан дать fresh next-balance evidence.
    Missing/stale evidence останавливает следующие jobs без дополнительного
    probe/spend;
 8. `resume` и automatic replay в этом batch отсутствуют. Возможный unknown
    paid outcome становится terminal `AMBIGUOUS`;
 9. результат не разрешает Walmart publication. После success Bundle Factory
    только повторяет canonical readiness и возвращается к обычному Generate.
+
+Каждый worker heartbeat может нести sealed progress schema: batch, item `X/N`,
+current run/title, exact stage, completed/stopped counters, provider calls/units
+и observation timestamp. Server связывает progress с exact `EXECUTE` command и
+сохраняет его в append-only event chain. Owner status читает последний sealed
+event, показывает heartbeat freshness и не создаёт command/retry при refresh.
 
 Owner authority не находится на Vercel и не подменяется паролем, hash-only
 подтверждением либо общим сообщением «разрешаю всё». Реальным money gate является

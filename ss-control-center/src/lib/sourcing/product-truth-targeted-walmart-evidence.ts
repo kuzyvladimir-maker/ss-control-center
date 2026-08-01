@@ -1190,15 +1190,6 @@ function exactCompleteContentRow(row: Record<string, unknown>): boolean {
     ));
 }
 
-function exactCompleteContentImageCount(row: Record<string, unknown>): number {
-  if (!exactCompleteContentRow(row) || typeof row.contentJson !== "string") return 0;
-  const content = JSON.parse(row.contentJson) as Record<string, unknown>;
-  if (!Array.isArray(content.imageUrls)) return 0;
-  return new Set(content.imageUrls.filter((value): value is string => (
-    typeof value === "string" && value.trim().length > 0
-  ))).size;
-}
-
 async function matchingContentObservations(input: {
   db: Client;
   plan: ProductTruthTargetedWalmartEvidencePlan;
@@ -1238,11 +1229,16 @@ async function matchingContentObservations(input: {
 }
 
 /**
- * Existing exact content can satisfy this price-refresh lane without another
- * paid detail call. The observation itself is append-only, predates the sealed
- * plan, belongs to the exact donor/variant/source URL and must still be selected
- * by the current Product Truth read contract. It is never considered after a
- * detail receipt exists.
+ * Existing exact-variant content can satisfy this price-refresh lane without
+ * another paid detail call. Content truth is channel-independent: an exact
+ * Target/manufacturer observation remains valid for the same canonical variant
+ * and must not be discarded merely because the fresh price comes from Walmart.
+ *
+ * The observation is append-only, predates the sealed plan, belongs to the
+ * exact donor/variant decision, and must still be selected by the current
+ * Product Truth read contract. The read contract supplies the completeness,
+ * provenance, ingredient/nutrition/allergen and image gates. It is never
+ * considered after a detail receipt exists.
  */
 async function matchingPreexistingContentObservations(input: {
   db: Client;
@@ -1251,11 +1247,9 @@ async function matchingPreexistingContentObservations(input: {
   const target = input.plan.targets[0];
   if (target.identityMode !== "EXISTING_EXACT") return [];
   const result = await input.db.execute({
-    sql: `SELECT id,sourceUrl,sourceApi,contentHash,fieldHashesJson,contentJson,
-                 observedAt,createdAt
+    sql: `SELECT id,observedAt,createdAt
           FROM "ProductContentObservation"
           WHERE donorProductId=? AND canonicalVariantId=? AND variantDecisionId=?
-            AND sourceApi='unwrangle'
             AND julianday(observedAt)<=julianday(?)
             AND julianday(createdAt)<julianday(?)
           ORDER BY julianday(observedAt) DESC,observedAt DESC,
@@ -1265,19 +1259,7 @@ async function matchingPreexistingContentObservations(input: {
       input.plan.createdAt, input.plan.createdAt,
     ],
   });
-  return result.rows.flatMap((row) => {
-    try {
-      if (
-        normalizeExactWalmartProductUrl(row.sourceUrl, target.retailerProductId)
-          !== target.normalizedProductUrl
-        || exactCompleteContentImageCount(row as Record<string, unknown>)
-          < input.plan.verificationPolicy.minGalleryImages
-      ) return [];
-      return [String(row.id)];
-    } catch {
-      return [];
-    }
-  });
+  return result.rows.map((row) => String(row.id));
 }
 
 export type ProductTruthTargetedResumeDecision =

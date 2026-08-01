@@ -9,6 +9,9 @@ import {
 import {
   heartbeatProductTruthNoSpendCommand,
 } from "@/lib/sourcing/product-truth-web-control-worker";
+import {
+  parseProductTruthWalmartEnrichmentProgress,
+} from "@/lib/sourcing/product-truth-walmart-enrichment-worker-contract";
 
 export const dynamic = "force-dynamic";
 
@@ -20,21 +23,31 @@ export async function POST(
   if (runtime instanceof NextResponse) return runtime;
   const body = await exactWorkerBody(request);
   if (body instanceof NextResponse) return body;
+  const bodyKeys = Object.keys(body).sort();
   if (
-    Object.keys(body).length !== 1
-    || typeof body.lease_token !== "string"
+    typeof body.lease_token !== "string"
+    || !(
+      (bodyKeys.length === 1 && bodyKeys[0] === "lease_token")
+      || (bodyKeys.length === 2
+        && bodyKeys[0] === "lease_token"
+        && bodyKeys[1] === "progress")
+    )
   ) {
     return productTruthWorkerJson({
       ok: false,
       status: "INVALID_REQUEST",
-      message: "lease_token is the only accepted field.",
+      message: "heartbeat accepts lease_token and optional sealed progress.",
     }, { status: 400 });
   }
   const { commandId } = await context.params;
   try {
+    const progress = body.progress === undefined
+      ? null
+      : parseProductTruthWalmartEnrichmentProgress(body.progress);
     const result = await heartbeatProductTruthNoSpendCommand({
       commandId,
       leaseToken: body.lease_token,
+      progress,
     });
     return productTruthWorkerJson({ ok: true, ...result });
   } catch (error) {

@@ -19,7 +19,9 @@ import {
 } from "./product-truth-walmart-enrichment-quote";
 import {
   assertProductTruthWalmartEnrichmentResult,
+  parseProductTruthWalmartEnrichmentProgress,
   renderProductTruthWalmartEnrichmentResult,
+  type ProductTruthWalmartEnrichmentProgress,
   type ProductTruthWalmartEnrichmentResult,
 } from "./product-truth-walmart-enrichment-worker-contract";
 import {
@@ -561,6 +563,7 @@ export async function startProductTruthNoSpendCommand(input: {
 export async function heartbeatProductTruthNoSpendCommand(input: {
   commandId: string;
   leaseToken: string;
+  progress?: ProductTruthWalmartEnrichmentProgress | null;
   now?: Date;
 }): Promise<{ status: "CLAIMED" | "RUNNING"; lease_expires_at: string }> {
   const now = input.now ?? new Date();
@@ -576,6 +579,21 @@ export async function heartbeatProductTruthNoSpendCommand(input: {
     ) {
       fail("WORKER_LEASE_INVALID", "heartbeat lease is invalid");
     }
+    const progress = input.progress === undefined || input.progress === null
+      ? null
+      : parseProductTruthWalmartEnrichmentProgress(input.progress);
+    if (
+      progress !== null
+      && (
+        row.commandKind !== "EXECUTE"
+        || row.runId !== progress.batchId
+      )
+    ) {
+      fail(
+        "WORKER_PROGRESS_BINDING_INVALID",
+        "enrichment progress differs from the exact execute command",
+      );
+    }
     await tx.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
@@ -589,6 +607,7 @@ export async function heartbeatProductTruthNoSpendCommand(input: {
       occurredAt: now.toISOString(),
       payload: {
         leaseExpiresAt: leaseExpiresAt.toISOString(),
+        progress,
         status: row.status,
       },
     });

@@ -37,13 +37,18 @@ import {
 import {
   productTruthWalmartEnrichmentQuoteSha256,
 } from "./product-truth-walmart-enrichment-quote";
+import {
+  parseProductTruthWalmartEnrichmentProgress,
+  type ProductTruthWalmartEnrichmentProgress,
+} from "./product-truth-walmart-enrichment-worker-contract";
 
 export const PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION =
-  "product-truth-web-control-admission/1.1.0" as const;
+  "product-truth-web-control-admission/1.2.0" as const;
 const PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS = {
   maxWait: 30_000,
   timeout: 120_000,
 } as const;
+const PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS = 90_000;
 
 export type ProductTruthNoSpendCommandKind = "DOCTOR" | "RUN_PLAN";
 
@@ -117,6 +122,11 @@ export interface ProductTruthWalmartCollectionStatus {
     authorization_expires_at: string | null;
     execution_started_at: string | null;
     updated_at: string;
+  };
+  progress: ProductTruthWalmartEnrichmentProgress | null;
+  heartbeat: null | {
+    observed_at: string;
+    stale: boolean;
   };
   claims: {
     provider_calls_may_have_started: boolean;
@@ -681,6 +691,84 @@ export function latestProductTruthControlRowsByRun<
   return [...latestByRun.values()];
 }
 
+async function latestWalmartEnrichmentProgress(input: {
+  commandId: string;
+  now: Date;
+}): Promise<{
+  progress: ProductTruthWalmartEnrichmentProgress | null;
+  heartbeat: ProductTruthWalmartCollectionStatus["heartbeat"];
+}> {
+  const events = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: "HEARTBEAT",
+    },
+    orderBy: { sequence: "desc" },
+    take: 100,
+    select: {
+      occurredAt: true,
+      payload: true,
+      payloadSha256: true,
+    },
+  });
+  let latestHeartbeat: Date | null = null;
+  for (const event of events) {
+    if (sha256(event.payload) !== event.payloadSha256) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "worker heartbeat payload failed its immutable seal",
+      );
+    }
+    let decoded: unknown;
+    try {
+      const text = Buffer.from(event.payload).toString("utf8");
+      decoded = JSON.parse(text);
+      if (!canonicalBytes(decoded).equals(Buffer.from(event.payload))) {
+        throw new Error("heartbeat payload is not canonical");
+      }
+    } catch (error) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "worker heartbeat payload is not canonical JSON",
+        error,
+      );
+    }
+    latestHeartbeat ??= event.occurredAt;
+    const progress = decoded && typeof decoded === "object"
+      && !Array.isArray(decoded)
+      && "progress" in decoded
+      && (decoded as { progress?: unknown }).progress !== null
+      && (decoded as { progress?: unknown }).progress !== undefined
+      ? parseProductTruthWalmartEnrichmentProgress(
+          (decoded as { progress: unknown }).progress,
+        )
+      : null;
+    if (progress) {
+      const observedAt = latestHeartbeat ?? event.occurredAt;
+      return {
+        progress,
+        heartbeat: {
+          observed_at: observedAt.toISOString(),
+          stale:
+            input.now.getTime() - observedAt.getTime()
+              > PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS,
+        },
+      };
+    }
+  }
+  return {
+    progress: null,
+    heartbeat: latestHeartbeat
+      ? {
+          observed_at: latestHeartbeat.toISOString(),
+          stale:
+            input.now.getTime() - latestHeartbeat.getTime()
+              > PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS,
+        }
+      : null,
+  };
+}
+
 export async function readProductTruthWalmartCollectionStatus(input: {
   batchId: string;
   requestedByUserId?: string;
@@ -803,6 +891,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       : {}),
     runtime: input.runtime,
   });
+  const now = new Date();
   const preExecutionExpiryCode = enrichment
     ? productTruthWalmartPreExecutionExpiryCode({
         status: enrichment.status,
@@ -811,9 +900,15 @@ export async function readProductTruthWalmartCollectionStatus(input: {
         workerLeaseExpiresAt: enrichment.workerLeaseExpiresAt,
         ownerAuthorizationExpiresAt:
           enrichment.ownerAuthorizationExpiresAt,
-        now: new Date(),
+        now,
       })
     : null;
+  const executionProgress = enrichment
+    ? await latestWalmartEnrichmentProgress({
+        commandId: enrichment.commandId,
+        now,
+      })
+    : { progress: null, heartbeat: null };
   if (enrichment) {
     if (preExecutionExpiryCode) {
       // This is a presentation-level terminal state. The immutable command
@@ -853,6 +948,8 @@ export async function readProductTruthWalmartCollectionStatus(input: {
           updated_at: enrichment.updatedAt.toISOString(),
         }
       : null,
+    progress: executionProgress.progress,
+    heartbeat: executionProgress.heartbeat,
     claims: {
       provider_calls_may_have_started:
         enrichment?.executionStartedAt !== null

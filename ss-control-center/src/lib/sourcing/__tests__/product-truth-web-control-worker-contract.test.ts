@@ -197,6 +197,23 @@ test("worker drains an in-flight heartbeat before completing a runner result", a
   );
 });
 
+test("metered worker reports durable per-product progress and preserves balance when detail was skipped", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(script, /CHECKING_PROVIDER_BALANCE/u);
+  assert.match(script, /CHECKING_EXACT_WALMART_ITEM/u);
+  assert.match(script, /CHECKING_EXACT_PRODUCT_CONTENT/u);
+  assert.match(script, /VERIFYING_EXACT_PRODUCT_DATA/u);
+  assert.match(script, /inspectCurrentEnrichmentStage/u);
+  assert.match(script, /progress: input\.progress/u);
+  assert.match(
+    script,
+    /else if \(!detailCalled\)[\s\S]*current[\s\S]*balance observation[\s\S]*remains/u,
+  );
+});
+
 test("worker reports the structured control API error code without response details", async () => {
   const script = await readFile(
     new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),

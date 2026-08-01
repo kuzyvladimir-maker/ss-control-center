@@ -163,6 +163,33 @@ interface WalmartCollectionState {
     execution_started_at: string | null;
     updated_at: string;
   };
+  progress: null | {
+    schemaVersion: "product-truth-walmart-enrichment-progress/1.0.0";
+    batchId: string;
+    totalJobs: number;
+    currentOrdinal: number | null;
+    currentRunId: string | null;
+    currentTitle: string | null;
+    stage:
+      | "BALANCE_CHECK"
+      | "ITEM_START"
+      | "EXACT_WALMART_SEARCH"
+      | "EXACT_PRODUCT_DETAIL"
+      | "CATALOG_RECONCILIATION"
+      | "ITEM_COMPLETE"
+      | "BATCH_COMPLETE"
+      | "STOPPED";
+    completedJobs: number;
+    stoppedJobs: number;
+    providerCalls: number;
+    providerUnits: number;
+    messageCode: string;
+    observedAt: string;
+  };
+  heartbeat: null | {
+    observed_at: string;
+    stale: boolean;
+  };
 }
 
 const WALMART_GAP_LABELS: Record<string, string> = {
@@ -179,6 +206,52 @@ const WALMART_GAP_LABELS: Record<string, string> = {
   CURRENT_MATCHER_PROVENANCE: "current exact-identity proof",
   POLICY_ELIGIBILITY: "Walmart pilot eligibility evidence",
 };
+
+const WALMART_ENRICHMENT_STAGE_LABELS: Record<
+  NonNullable<WalmartCollectionState["progress"]>["stage"],
+  string
+> = {
+  BALANCE_CHECK: "Checking available provider credits",
+  ITEM_START: "Preparing the exact product",
+  EXACT_WALMART_SEARCH: "Checking the exact Walmart item and current price",
+  EXACT_PRODUCT_DETAIL: "Checking exact product content",
+  CATALOG_RECONCILIATION: "Validating and saving Product Truth evidence",
+  ITEM_COMPLETE: "Exact product is ready",
+  BATCH_COMPLETE: "All requested products are ready",
+  STOPPED: "Stopped safely",
+};
+
+const WALMART_ENRICHMENT_REASON_LABELS: Record<string, string> = {
+  UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE:
+    "The product source did not return enough exact content to complete this item. It was not retried.",
+  TARGETED_EVIDENCE_WALL_CLOCK_EXHAUSTED_SAFE_TO_RESUME:
+    "The protected time window ended. No automatic retry was made.",
+  FRESH_BALANCE_EVIDENCE_REQUIRED_NO_EXTRA_PROBE_AUTHORIZED:
+    "The balance check became stale before the next product. No extra paid check was started.",
+  DETAIL_RESPONSE_OMITTED_BALANCE_EVIDENCE_NO_EXTRA_PROBE_AUTHORIZED:
+    "The source omitted the next balance reading. The batch stopped before another paid action.",
+  ALL_EXACT_TARGETS_ENRICHED: "All exact products passed Product Truth validation.",
+};
+
+function walmartEnrichmentProgressPercent(
+  progress: NonNullable<WalmartCollectionState["progress"]>,
+): number {
+  if (progress.stage === "BATCH_COMPLETE") return 100;
+  const stageFraction = {
+    BALANCE_CHECK: 0,
+    ITEM_START: 0.1,
+    EXACT_WALMART_SEARCH: 0.35,
+    EXACT_PRODUCT_DETAIL: 0.65,
+    CATALOG_RECONCILIATION: 0.85,
+    // ITEM_COMPLETE already includes the current item in completedJobs.
+    ITEM_COMPLETE: 0,
+    STOPPED: 0,
+    BATCH_COMPLETE: 1,
+  }[progress.stage];
+  return Math.max(0, Math.min(100, Math.round(
+    ((progress.completedJobs + stageFraction) / progress.totalJobs) * 100,
+  )));
+}
 
 export default function StudioStartPage() {
   const router = useRouter();
@@ -1207,32 +1280,118 @@ export default function StudioStartPage() {
                                     : walmartCollection.status}
                             </span>
                           </div>
-                          {walmartCollection.jobs.map((job) => (
-                            <div
-                              key={job.run_id}
-                              className="border-t border-rule pt-2 first:border-t-0 first:pt-0"
-                            >
+                          {walmartCollection.progress && (
+                            <div className="rounded-[8px] border border-silver-line bg-bg-elev px-2.5 py-2.5">
                               <div className="flex items-start justify-between gap-3">
-                                <span className="min-w-0 text-[11.5px] text-ink-2">
-                                  {job.title}
-                                </span>
-                                <span className="shrink-0 text-[10.5px] font-medium text-ink-3">
-                                  {job.phase === "QUEUED_NO_SPEND"
-                                    ? "queued"
-                                    : job.phase === "RUNNING_NO_SPEND"
-                                      ? "preparing"
-                                      : job.phase === "AWAITING_OWNER"
-                                        ? "plan ready"
-                                        : job.phase.toLowerCase()}
+                                <div className="min-w-0">
+                                  <p className="text-[11.5px] font-semibold text-ink">
+                                    {walmartCollection.progress.currentOrdinal
+                                      ? `Product ${walmartCollection.progress.currentOrdinal} of ${walmartCollection.progress.totalJobs}`
+                                      : `${walmartCollection.progress.completedJobs} of ${walmartCollection.progress.totalJobs} products complete`}
+                                  </p>
+                                  {walmartCollection.progress.currentTitle && (
+                                    <p className="mt-0.5 truncate text-[10.5px] text-ink-3">
+                                      {walmartCollection.progress.currentTitle}
+                                    </p>
+                                  )}
+                                </div>
+                                <span className="shrink-0 text-[12px] font-semibold text-ink-2">
+                                  {walmartEnrichmentProgressPercent(walmartCollection.progress)}%
                                 </span>
                               </div>
-                              {job.error_code && (
-                                <p className="mt-1 text-[10.5px] leading-snug text-danger">
-                                  {job.error_code}
-                                </p>
-                              )}
+                              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-rule">
+                                <div
+                                  className={cn(
+                                    "h-full rounded-full transition-[width] duration-500",
+                                    walmartCollection.progress.stage === "STOPPED"
+                                      ? "bg-danger"
+                                      : "bg-green",
+                                  )}
+                                  style={{
+                                    width: `${walmartEnrichmentProgressPercent(walmartCollection.progress)}%`,
+                                  }}
+                                />
+                              </div>
+                              <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10.5px]">
+                                <span className="font-medium text-ink-2">
+                                  {WALMART_ENRICHMENT_STAGE_LABELS[walmartCollection.progress.stage]}
+                                </span>
+                                <span
+                                  className={cn(
+                                    walmartCollection.heartbeat?.stale
+                                      ? "text-danger"
+                                      : "text-green",
+                                  )}
+                                >
+                                  {walmartCollection.heartbeat?.stale
+                                    ? "No recent worker signal"
+                                    : "Worker signal is live"}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-[10px] leading-relaxed text-ink-3">
+                                {WALMART_ENRICHMENT_REASON_LABELS[
+                                  walmartCollection.progress.messageCode
+                                ] ?? walmartCollection.progress.messageCode
+                                }{" · "}
+                                {walmartCollection.progress.completedJobs} completed
+                                {walmartCollection.progress.stoppedJobs > 0
+                                  ? ` · ${walmartCollection.progress.stoppedJobs} stopped`
+                                  : ""}
+                                {" · "}
+                                {walmartCollection.progress.providerUnits.toFixed(1)} provider credits used
+                              </p>
+                              <p className="mt-1 text-[9.5px] text-ink-4">
+                                Last update: {walmartCollection.progress.observedAt}
+                              </p>
                             </div>
-                          ))}
+                          )}
+                          {walmartCollection.jobs.map((job, index) => {
+                            const ordinal = index + 1;
+                            const progress = walmartCollection.progress;
+                            const liveLabel = progress
+                              ? ordinal <= progress.completedJobs
+                                ? "complete"
+                                : ordinal === progress.currentOrdinal
+                                  ? progress.stage === "STOPPED"
+                                    ? "stopped"
+                                    : "in progress"
+                                  : "waiting"
+                              : null;
+                            return (
+                              <div
+                                key={job.run_id}
+                                className="border-t border-rule pt-2 first:border-t-0 first:pt-0"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <span className="min-w-0 text-[11.5px] text-ink-2">
+                                    {ordinal}. {job.title}
+                                  </span>
+                                  <span className={cn(
+                                    "shrink-0 text-[10.5px] font-medium",
+                                    liveLabel === "complete"
+                                      ? "text-green"
+                                      : liveLabel === "stopped"
+                                        ? "text-danger"
+                                        : "text-ink-3",
+                                  )}>
+                                    {liveLabel
+                                      ?? (job.phase === "QUEUED_NO_SPEND"
+                                        ? "queued"
+                                        : job.phase === "RUNNING_NO_SPEND"
+                                          ? "preparing"
+                                          : job.phase === "AWAITING_OWNER"
+                                            ? "plan ready"
+                                            : job.phase.toLowerCase())}
+                                  </span>
+                                </div>
+                                {job.error_code && (
+                                  <p className="mt-1 text-[10.5px] leading-snug text-danger">
+                                    {job.error_code}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
                           {walmartCollection.status === "AWAITING_OWNER" && (
                             <div className="space-y-2 border-t border-rule pt-2">
                               <p className="text-[11px] text-ink-3">

@@ -39,8 +39,12 @@ import {
   parseProductTruthWalmartEnrichmentQuote,
 } from "../src/lib/sourcing/product-truth-walmart-enrichment-quote";
 import {
+  PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION,
   PRODUCT_TRUTH_WALMART_ENRICHMENT_RESULT_VERSION,
   assertProductTruthWalmartEnrichmentResult,
+  parseProductTruthWalmartEnrichmentProgress,
+  type ProductTruthWalmartEnrichmentProgress,
+  type ProductTruthWalmartEnrichmentStage,
   type ProductTruthWalmartEnrichmentResult,
 } from "../src/lib/sourcing/product-truth-walmart-enrichment-worker-contract";
 import {
@@ -665,6 +669,150 @@ async function readLedger(
   }
 }
 
+function enrichmentProgress(input: {
+  batchId: string;
+  totalJobs: number;
+  currentOrdinal: number | null;
+  currentRunId: string | null;
+  currentTitle: string | null;
+  stage: ProductTruthWalmartEnrichmentStage;
+  completedJobs: number;
+  stoppedJobs: number;
+  providerCalls: number;
+  providerUnits: number;
+  messageCode: string;
+}): ProductTruthWalmartEnrichmentProgress {
+  return parseProductTruthWalmartEnrichmentProgress({
+    schemaVersion: PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION,
+    ...input,
+    observedAt: new Date().toISOString(),
+  });
+}
+
+async function sendEnrichmentProgress(input: {
+  runtime: WorkerRuntime;
+  claim: ProductTruthWebWorkerClaim & {
+    spec: Extract<ProductTruthWebWorkerClaim["spec"], { kind: "EXECUTE" }>;
+  };
+  progress: ProductTruthWalmartEnrichmentProgress;
+}): Promise<void> {
+  await api(
+    input.runtime,
+    `/api/external/product-truth/control/${input.claim.command_id}/heartbeat`,
+    {
+      lease_token: input.claim.lease_token,
+      progress: input.progress,
+    },
+  );
+}
+
+async function inspectCurrentEnrichmentStage(input: {
+  runtime: WorkerRuntime;
+  runId: string;
+}): Promise<{
+  stage: ProductTruthWalmartEnrichmentStage;
+  messageCode: string;
+  providerCalls: number;
+  providerUnits: number;
+}> {
+  const authToken = input.runtime.authTokenEnv
+    ? process.env[input.runtime.authTokenEnv]
+    : undefined;
+  const db = createClient({
+    url: input.runtime.databaseUrl,
+    ...(authToken ? { authToken } : {}),
+  });
+  try {
+    const [jobResult, ledger] = await Promise.all([
+      db.execute({
+        sql: `SELECT status,checkpoint,terminalReason,error
+              FROM "EnrichmentJob" WHERE runId=?
+              ORDER BY createdAt DESC,id DESC LIMIT 1`,
+        args: [input.runId],
+      }),
+      readProductTruthOperationalLedger(db, input.runId),
+    ]);
+    const job = jobResult.rows[0] as Record<string, unknown> | undefined;
+    const status = typeof job?.status === "string" ? job.status : null;
+    if (status === "done") {
+      return {
+        stage: "ITEM_COMPLETE",
+        messageCode: "EXACT_PRODUCT_READY",
+        providerCalls: ledger.totals.calls,
+        providerUnits: ledger.totals.units,
+      };
+    }
+    if (
+      status !== null
+      && ["error", "cancelled", "source_unavailable"].includes(status)
+    ) {
+      const reason = typeof job?.terminalReason === "string"
+        ? job.terminalReason
+        : typeof job?.error === "string"
+          ? job.error
+          : "PRODUCT_ENRICHMENT_STOPPED";
+      return {
+        stage: "STOPPED",
+        messageCode: /^[A-Z0-9_]{1,120}$/u.test(reason)
+          ? reason
+          : "PRODUCT_ENRICHMENT_STOPPED",
+        providerCalls: ledger.totals.calls,
+        providerUnits: ledger.totals.units,
+      };
+    }
+    let checkpointStage: string | null = null;
+    if (typeof job?.checkpoint === "string") {
+      try {
+        const checkpoint = JSON.parse(job.checkpoint) as unknown;
+        if (
+          checkpoint
+          && typeof checkpoint === "object"
+          && !Array.isArray(checkpoint)
+          && typeof (checkpoint as { stage?: unknown }).stage === "string"
+        ) {
+          checkpointStage = (checkpoint as { stage: string }).stage;
+        }
+      } catch {
+        checkpointStage = null;
+      }
+    }
+    const hasDetail = ledger.receipts.some(
+      (receipt) => receipt.provider === "unwrangle"
+        && receipt.operation === "detail",
+    );
+    const hasSearch = ledger.receipts.some(
+      (receipt) => receipt.provider === "oxylabs"
+        && receipt.operation === "query",
+    );
+    if (checkpointStage === "EXACT_CANDIDATE_RECONCILED" || hasDetail) {
+      return {
+        stage: "CATALOG_RECONCILIATION",
+        messageCode: "VERIFYING_EXACT_PRODUCT_DATA",
+        providerCalls: ledger.totals.calls,
+        providerUnits: ledger.totals.units,
+      };
+    }
+    if (checkpointStage === "SEARCH_PERSISTED" || hasSearch) {
+      return {
+        stage: "EXACT_PRODUCT_DETAIL",
+        messageCode: "CHECKING_EXACT_PRODUCT_CONTENT",
+        providerCalls: ledger.totals.calls,
+        providerUnits: ledger.totals.units,
+      };
+    }
+    return {
+      stage: status === null ? "ITEM_START" : "EXACT_WALMART_SEARCH",
+      messageCode: status === null
+        ? "PREPARING_EXACT_PRODUCT"
+        : "CHECKING_EXACT_WALMART_ITEM",
+      providerCalls: ledger.totals.calls,
+      providerUnits: ledger.totals.units,
+    };
+  } finally {
+    await db.close();
+  }
+}
+
 async function executeEnrichmentBatch(
   runtime: WorkerRuntime,
   claim: ProductTruthWebWorkerClaim & {
@@ -721,6 +869,23 @@ async function executeEnrichmentBatch(
   let terminal:
     ProductTruthWalmartEnrichmentResult["status"] = "COMPLETED";
   let terminalReason = "ALL_EXACT_TARGETS_ENRICHED";
+  await sendEnrichmentProgress({
+    runtime,
+    claim,
+    progress: enrichmentProgress({
+      batchId: quote.batchId,
+      totalJobs: plans.length,
+      currentOrdinal: null,
+      currentRunId: null,
+      currentTitle: null,
+      stage: "BALANCE_CHECK",
+      completedJobs: 0,
+      stoppedJobs: 0,
+      providerCalls: 0,
+      providerUnits: 0,
+      messageCode: "CHECKING_PROVIDER_BALANCE",
+    }),
+  });
   try {
     initialBalanceEvidence = await initialUnwrangleBalanceEvidence({
       runtime,
@@ -741,6 +906,10 @@ async function executeEnrichmentBatch(
         ? error.message.slice(0, 500)
         : "BALANCE_PROBE_FAILED";
   }
+  const balanceLedgerAfterProbe = await readLedger(
+    runtime,
+    `${claim.spec.batch_id}-balance-probe`,
+  );
 
   for (const [index, entry] of plans.entries()) {
     if (terminal !== "COMPLETED" || !currentBalance) {
@@ -776,6 +945,29 @@ async function executeEnrichmentBatch(
       });
       continue;
     }
+    await sendEnrichmentProgress({
+      runtime,
+      claim,
+      progress: enrichmentProgress({
+        batchId: quote.batchId,
+        totalJobs: plans.length,
+        currentOrdinal: index + 1,
+        currentRunId: entry.plan.runId,
+        currentTitle: quote.actions.jobs[index]!.title,
+        stage: "ITEM_START",
+        completedJobs: jobs.filter((job) => job.status === "COMPLETED").length,
+        stoppedJobs: jobs.filter((job) => (
+          job.status !== "COMPLETED" && job.status !== "NOT_STARTED"
+        )).length,
+        providerCalls:
+          balanceLedgerAfterProbe.totals.calls
+          + jobs.reduce((sum, job) => sum + job.providerCalls, 0),
+        providerUnits:
+          balanceLedgerAfterProbe.totals.units
+          + jobs.reduce((sum, job) => sum + job.providerUnits, 0),
+        messageCode: "PREPARING_EXACT_PRODUCT",
+      }),
+    });
     const root = await realpath(
       await mkdtemp(join(tmpdir(), "sscc-product-truth-execute-")),
     );
@@ -784,6 +976,7 @@ async function executeEnrichmentBatch(
     let status:
       ProductTruthWalmartEnrichmentResult["jobs"][number]["status"] = "FAILED";
     let reason = "TARGETED_EXECUTION_FAILED";
+    let detailCalled = false;
     try {
       const planPath = join(root, "plan.json");
       const planShaPath = join(root, "plan.sha256");
@@ -825,11 +1018,37 @@ async function executeEnrichmentBatch(
           outputDirectory,
         ],
         heartbeat: async () => {
-          await api(
+          const current = await inspectCurrentEnrichmentStage({
             runtime,
-            `/api/external/product-truth/control/${claim.command_id}/heartbeat`,
-            { lease_token: claim.lease_token },
-          );
+            runId: entry.plan.runId,
+          });
+          await sendEnrichmentProgress({
+            runtime,
+            claim,
+            progress: enrichmentProgress({
+              batchId: quote.batchId,
+              totalJobs: plans.length,
+              currentOrdinal: index + 1,
+              currentRunId: entry.plan.runId,
+              currentTitle: quote.actions.jobs[index]!.title,
+              stage: current.stage,
+              completedJobs: jobs.filter(
+                (job) => job.status === "COMPLETED",
+              ).length,
+              stoppedJobs: jobs.filter((job) => (
+                job.status !== "COMPLETED" && job.status !== "NOT_STARTED"
+              )).length,
+              providerCalls:
+                balanceLedgerAfterProbe.totals.calls
+                + jobs.reduce((sum, job) => sum + job.providerCalls, 0)
+                + current.providerCalls,
+              providerUnits:
+                balanceLedgerAfterProbe.totals.units
+                + jobs.reduce((sum, job) => sum + job.providerUnits, 0)
+                + current.providerUnits,
+              messageCode: current.messageCode,
+            }),
+          });
         },
       });
       const reportBytes = await readFile(join(outputDirectory, "report.json"))
@@ -865,6 +1084,10 @@ async function executeEnrichmentBatch(
           : "TARGETED_EXECUTION_FAILED";
     } finally {
       const ledger = await readLedger(runtime, entry.plan.runId);
+      detailCalled = ledger.receipts.some(
+        (receipt) => receipt.provider === "unwrangle"
+          && receipt.operation === "detail",
+      );
       jobs.push({
         ordinal: index + 1,
         runId: entry.plan.runId,
@@ -878,11 +1101,44 @@ async function executeEnrichmentBatch(
       });
       await rm(root, { recursive: true, force: true });
     }
+    const recorded = jobs.at(-1)!;
+    await sendEnrichmentProgress({
+      runtime,
+      claim,
+      progress: enrichmentProgress({
+        batchId: quote.batchId,
+        totalJobs: plans.length,
+        currentOrdinal: index + 1,
+        currentRunId: entry.plan.runId,
+        currentTitle: quote.actions.jobs[index]!.title,
+        stage: recorded.status === "COMPLETED" ? "ITEM_COMPLETE" : "STOPPED",
+        completedJobs: jobs.filter((job) => job.status === "COMPLETED").length,
+        stoppedJobs: jobs.filter((job) => (
+          job.status !== "COMPLETED" && job.status !== "NOT_STARTED"
+        )).length,
+        providerCalls:
+          balanceLedgerAfterProbe.totals.calls
+          + jobs.reduce((sum, job) => sum + job.providerCalls, 0),
+        providerUnits:
+          balanceLedgerAfterProbe.totals.units
+          + jobs.reduce((sum, job) => sum + job.providerUnits, 0),
+        messageCode: recorded.status === "COMPLETED"
+          ? "EXACT_PRODUCT_READY"
+          : /^[A-Z0-9_]{1,120}$/u.test(recorded.reason)
+            ? recorded.reason
+            : "PRODUCT_ENRICHMENT_STOPPED",
+      }),
+    });
     if (status !== "COMPLETED") {
       terminal = status === "AMBIGUOUS" ? "AMBIGUOUS" : "BLOCKED";
       terminalReason = reason;
     } else if (nextBalanceEvidence) {
       currentBalance = nextBalanceEvidence;
+    } else if (!detailCalled) {
+      // A fresh exact Walmart price can complete against already verified
+      // exact-variant content without spending a detail credit. The current
+      // Unwrangle balance observation therefore remains the correct evidence
+      // for the next sequential product while it is still fresh.
     } else if (index < plans.length - 1) {
       terminal = "BLOCKED";
       terminalReason =
@@ -919,6 +1175,37 @@ async function executeEnrichmentBatch(
       marketplaceMutations: 0,
     },
   };
+  const firstStopped = result.jobs.find((job) => (
+    job.status !== "COMPLETED" && job.status !== "NOT_STARTED"
+  ));
+  const firstStoppedAction = firstStopped
+    ? quote.actions.jobs[firstStopped.ordinal - 1]!
+    : null;
+  await sendEnrichmentProgress({
+    runtime,
+    claim,
+    progress: enrichmentProgress({
+      batchId: quote.batchId,
+      totalJobs: plans.length,
+      currentOrdinal: firstStopped?.ordinal ?? null,
+      currentRunId: firstStopped?.runId ?? null,
+      currentTitle: firstStoppedAction?.title ?? null,
+      stage: result.status === "COMPLETED" ? "BATCH_COMPLETE" : "STOPPED",
+      completedJobs: result.jobs.filter(
+        (job) => job.status === "COMPLETED",
+      ).length,
+      stoppedJobs: result.jobs.filter((job) => (
+        job.status !== "COMPLETED" && job.status !== "NOT_STARTED"
+      )).length,
+      providerCalls: result.providerCalls,
+      providerUnits: result.providerUnits,
+      messageCode: result.status === "COMPLETED"
+        ? "ALL_EXACT_TARGETS_ENRICHED"
+        : /^[A-Z0-9_]{1,120}$/u.test(result.reason)
+          ? result.reason
+          : "BATCH_ENRICHMENT_STOPPED",
+    }),
+  });
   return assertProductTruthWalmartEnrichmentResult({
     result,
     quote,

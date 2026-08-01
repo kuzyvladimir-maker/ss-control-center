@@ -7,6 +7,38 @@ import {
 
 export const PRODUCT_TRUTH_WALMART_ENRICHMENT_RESULT_VERSION =
   "product-truth-walmart-enrichment-result/1.0.0" as const;
+export const PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION =
+  "product-truth-walmart-enrichment-progress/1.0.0" as const;
+
+export const PRODUCT_TRUTH_WALMART_ENRICHMENT_STAGES = [
+  "BALANCE_CHECK",
+  "ITEM_START",
+  "EXACT_WALMART_SEARCH",
+  "EXACT_PRODUCT_DETAIL",
+  "CATALOG_RECONCILIATION",
+  "ITEM_COMPLETE",
+  "BATCH_COMPLETE",
+  "STOPPED",
+] as const;
+
+export type ProductTruthWalmartEnrichmentStage =
+  (typeof PRODUCT_TRUTH_WALMART_ENRICHMENT_STAGES)[number];
+
+export interface ProductTruthWalmartEnrichmentProgress {
+  schemaVersion: typeof PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION;
+  batchId: string;
+  totalJobs: number;
+  currentOrdinal: number | null;
+  currentRunId: string | null;
+  currentTitle: string | null;
+  stage: ProductTruthWalmartEnrichmentStage;
+  completedJobs: number;
+  stoppedJobs: number;
+  providerCalls: number;
+  providerUnits: number;
+  messageCode: string;
+  observedAt: string;
+}
 
 export interface ProductTruthWalmartEnrichmentResult {
   schemaVersion: typeof PRODUCT_TRUTH_WALMART_ENRICHMENT_RESULT_VERSION;
@@ -74,6 +106,84 @@ function isCanonicalInstant(value: unknown): value is string {
   if (typeof value !== "string") return false;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) && new Date(parsed).toISOString() === value;
+}
+
+export function parseProductTruthWalmartEnrichmentProgress(
+  value: unknown,
+): ProductTruthWalmartEnrichmentProgress {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    fail("ENRICHMENT_PROGRESS_INVALID", "progress must be an object");
+  }
+  const progress = value as ProductTruthWalmartEnrichmentProgress;
+  const keys = Object.keys(progress).sort();
+  const expectedKeys = [
+    "batchId",
+    "completedJobs",
+    "currentOrdinal",
+    "currentRunId",
+    "currentTitle",
+    "messageCode",
+    "observedAt",
+    "providerCalls",
+    "providerUnits",
+    "schemaVersion",
+    "stage",
+    "stoppedJobs",
+    "totalJobs",
+  ].sort();
+  if (
+    keys.length !== expectedKeys.length
+    || keys.some((key, index) => key !== expectedKeys[index])
+    || progress.schemaVersion
+      !== PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION
+    || !/^ptbfw-[a-f0-9]{24}$/u.test(progress.batchId)
+    || !Number.isInteger(progress.totalJobs)
+    || progress.totalJobs < 1
+    || progress.totalJobs > 500
+    || !PRODUCT_TRUTH_WALMART_ENRICHMENT_STAGES.includes(progress.stage)
+    || !Number.isInteger(progress.completedJobs)
+    || progress.completedJobs < 0
+    || progress.completedJobs > progress.totalJobs
+    || !Number.isInteger(progress.stoppedJobs)
+    || progress.stoppedJobs < 0
+    || progress.completedJobs + progress.stoppedJobs > progress.totalJobs
+    || !Number.isInteger(progress.providerCalls)
+    || progress.providerCalls < 0
+    || progress.providerCalls > 1 + progress.totalJobs * 2
+    || !Number.isFinite(progress.providerUnits)
+    || progress.providerUnits < 0
+    || progress.providerUnits > 2.5 + progress.totalJobs * 3.5
+    || typeof progress.messageCode !== "string"
+    || !/^[A-Z0-9_]{1,120}$/u.test(progress.messageCode)
+    || !isCanonicalInstant(progress.observedAt)
+  ) {
+    fail("ENRICHMENT_PROGRESS_INVALID", "progress identity or counters drifted");
+  }
+  const hasCurrent = progress.currentOrdinal !== null;
+  if (
+    hasCurrent !== (progress.currentRunId !== null)
+    || hasCurrent !== (progress.currentTitle !== null)
+    || (progress.currentOrdinal !== null
+      && (!Number.isInteger(progress.currentOrdinal)
+        || progress.currentOrdinal < 1
+        || progress.currentOrdinal > progress.totalJobs))
+    || (progress.currentRunId !== null
+      && !progress.currentRunId.startsWith(`${progress.batchId}-`))
+    || (progress.currentTitle !== null
+      && (progress.currentTitle.length < 1 || progress.currentTitle.length > 500))
+    || (["BALANCE_CHECK", "BATCH_COMPLETE"].includes(progress.stage)
+      && hasCurrent)
+    || ([
+      "ITEM_START",
+      "EXACT_WALMART_SEARCH",
+      "EXACT_PRODUCT_DETAIL",
+      "CATALOG_RECONCILIATION",
+      "ITEM_COMPLETE",
+    ].includes(progress.stage) && !hasCurrent)
+  ) {
+    fail("ENRICHMENT_PROGRESS_INVALID", "progress current-item binding drifted");
+  }
+  return progress;
 }
 
 function isBalanceEvidence(

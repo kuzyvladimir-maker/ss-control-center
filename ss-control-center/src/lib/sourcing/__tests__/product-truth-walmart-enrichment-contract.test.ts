@@ -24,8 +24,10 @@ import {
   productTruthWalmartEnrichmentQuoteSha256,
 } from "../product-truth-walmart-enrichment-quote";
 import {
+  PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION,
   PRODUCT_TRUTH_WALMART_ENRICHMENT_RESULT_VERSION,
   assertProductTruthWalmartEnrichmentResult,
+  parseProductTruthWalmartEnrichmentProgress,
   type ProductTruthWalmartEnrichmentResult,
 } from "../product-truth-walmart-enrichment-worker-contract";
 
@@ -214,6 +216,44 @@ test("one owner click quotes each exact target and the exact maximum credits", (
   assert.equal(
     parseProductTruthWalmartEnrichmentQuote(quote).quoteId,
     quote.quoteId,
+  );
+});
+
+test("live enrichment progress is exact-batch bound and rejects counter drift", () => {
+  const { batch } = fixture(5);
+  const progress = {
+    schemaVersion: PRODUCT_TRUTH_WALMART_ENRICHMENT_PROGRESS_VERSION,
+    batchId: batch.batchId,
+    totalJobs: 5,
+    currentOrdinal: 2,
+    currentRunId: `${batch.batchId}-02`,
+    currentTitle: "Campbell's Chicken Noodle Soup 10.5 oz",
+    stage: "EXACT_PRODUCT_DETAIL" as const,
+    completedJobs: 1,
+    stoppedJobs: 0,
+    providerCalls: 3,
+    providerUnits: 4.5,
+    messageCode: "CHECKING_EXACT_PRODUCT_CONTENT",
+    observedAt: "2026-07-28T12:10:00.000Z",
+  };
+  assert.deepEqual(
+    parseProductTruthWalmartEnrichmentProgress(progress),
+    progress,
+  );
+  assert.throws(
+    () => parseProductTruthWalmartEnrichmentProgress({
+      ...progress,
+      completedJobs: 5,
+      stoppedJobs: 1,
+    }),
+    /ENRICHMENT_PROGRESS_INVALID/u,
+  );
+  assert.throws(
+    () => parseProductTruthWalmartEnrichmentProgress({
+      ...progress,
+      currentRunId: "another-batch-02",
+    }),
+    /ENRICHMENT_PROGRESS_INVALID/u,
   );
 });
 

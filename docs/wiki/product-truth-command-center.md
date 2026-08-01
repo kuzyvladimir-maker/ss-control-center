@@ -971,6 +971,33 @@ review и approval exact quote в UI; до него enrichment не старту
 - [x] Исправленная ветка прошла Product Truth `527/527`, Walmart
   unit/contract `41/41`, native owner/report `27/27`, frozen fake-live `3/3`,
   TypeScript, ESLint и production build.
-- [ ] Выпустить exact server/worker release и повторить Campbell's
-  `5 × Pack of 8` до нового exact quote, enrichment и пяти owner-review
+- [x] Exact r12 server/worker release активирован; Campbell's owner-approved
+  execution выполнил initial balance probe и первый exact Walmart price query.
+  Protected wall-clock потребовал safe resume только distinct not-started
+  detail boundary; повторного Oxylabs query не было.
+- [x] Первый товар завершён terminal `AMBIGUOUS` с
+  `UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`: Unwrangle detail был
+  успешен как provider call, но content snapshot честно заблокирован на
+  `ALLERGENS_MISSING; STORAGE_MISSING`. Ledger: первый item `3.5` credits,
+  initial balance probe `2.5`, total `6.0`; candidate/business projection и
+  Walmart mutations `0`. `next_command=null`, retry этого run запрещён.
+- [x] Root cause: existing exact Campbell's content уже был выбран из Target
+  legacy bridge и readiness не хватало только `FRESH_LOCAL_PRICE`, но targeted
+  reuse ошибочно ограничивался old `sourceApi='unwrangle'` с exact Walmart URL.
+  Контракт исправлен: pre-plan content любого channel разрешён только для того
+  же exact donor/canonical variant/variant decision и только если current
+  versioned read-contract повторно выбирает его с ingredients, nutrition,
+  allergens и gallery gates. Price proxy/content mixing по-прежнему запрещены.
+- [x] Worker сохраняет исходное fresh balance evidence, когда item завершён
+  exact price + preexisting content без detail call; следующие sequential jobs
+  не блокируются ложной ошибкой missing next-detail balance.
+- [x] Добавлен durable owner progress: product `X/N`, title, exact stage,
+  percentage, completed/stopped, provider credits, heartbeat freshness,
+  timestamp и human terminal reason. Progress связан с exact `EXECUTE` command,
+  пишется в append-only events и восстанавливается после browser refresh.
+- [x] Локальная certification новой ветки: Product Truth `530/530`, focused
+  Walmart/Bundle Factory `193/193`, TypeScript, changed-files ESLint и
+  production build `PASS`.
+- [ ] Выпустить exact r13 server/worker release и повторить Campbell's
+  `5 × Pack of 8` через новый exact quote до enrichment и пяти owner-review
   drafts. Никакой Walmart publication до отдельного SKU-bound gate.
