@@ -190,6 +190,11 @@ test("worker drains an in-flight heartbeat before completing a runner result", a
   assert.ok(resolveAt > awaitAt);
   assert.match(script, /if \(heartbeatInFlight !== null\) return/u);
   assert.match(script, /heartbeatError = error[\s\S]*child\.kill\("SIGTERM"\)/u);
+  assert.match(script, /CONTROL_API_TIMEOUT_MS = 60_000/u);
+  assert.match(
+    script,
+    /heartbeatError === undefined[\s\S]*exitCode[\s\S]*heartbeatFailure/u,
+  );
 });
 
 test("worker reports the structured control API error code without response details", async () => {

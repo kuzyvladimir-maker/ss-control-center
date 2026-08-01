@@ -60,6 +60,7 @@ import {
 
 const POLL_MS = 5_000;
 const HEARTBEAT_MS = 30_000;
+const CONTROL_API_TIMEOUT_MS = 60_000;
 const MAX_GIT_OUTPUT_BYTES = 64 * 1024;
 const RUNNER_PATH = resolve(
   process.cwd(),
@@ -235,7 +236,7 @@ async function api(
       "content-type": "application/json",
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(CONTROL_API_TIMEOUT_MS),
   });
   const value = await response.json() as unknown;
   if (
@@ -406,14 +407,24 @@ async function spawnRunner(input: {
       clearInterval(timer);
       const pendingHeartbeat = heartbeatInFlight;
       if (pendingHeartbeat !== null) await pendingHeartbeat;
-      if (heartbeatError !== undefined) {
-        rejectPromise(heartbeatError);
-        return;
-      }
+      const heartbeatFailure = heartbeatError === undefined
+        ? Buffer.alloc(0)
+        : Buffer.from(
+            `Control heartbeat failed: ${
+              heartbeatError instanceof Error
+                ? heartbeatError.message
+                : String(heartbeatError)
+            }\n`,
+            "utf8",
+          );
       resolvePromise({
-        exitCode: typeof code === "number" && code >= 0 ? code : 1,
+        exitCode: heartbeatError === undefined
+          && typeof code === "number"
+          && code >= 0
+          ? code
+          : 1,
         stdout: Buffer.concat(stdout),
-        stderr: Buffer.concat(stderr),
+        stderr: Buffer.concat([...stderr, heartbeatFailure]),
       });
     });
   });
