@@ -201,6 +201,22 @@ paid spend или marketplace actions.
 - provider calls, metered execution, Product Truth business writes и
   Walmart/marketplace actions = `0`.
 
+### Successor reliability evidence 2026-08-01
+
+- exact r11 release: commit `97ffabce993256c8eb8012abb5154a09419ba94d`,
+  tree `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+- clean production batch `ptbfw-14e44dd192718b33ff8b0bb2` завершил
+  `5/5 DOCTOR` и `5/5 RUN_PLAN`, status `AWAITING_OWNER`;
+- exact quote `ptq-b32ff65d283f474ba4ffaf7ccbd2a352` показывает максимум
+  `20` prepaid provider credits для пяти independent actions;
+- `EXECUTE=0`, provider spend, Product Truth business writes и Walmart actions
+  `0`.
+
+Это successor evidence consumed no-spend gate G2b, а не новый owner gate и не
+разрешение расхода. Paid enrichment по-прежнему требует review и отдельное
+подтверждение exact quote в UI.
+
 Калибровочные releases r1–r4 выявили и закрыли canonical temp-path,
 operational-JSON и heartbeat/event-chain races. Их незавершённые control
 commands сохранены как immutable evidence, не replay и не переносятся в r5.

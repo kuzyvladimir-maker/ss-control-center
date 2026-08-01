@@ -62,8 +62,14 @@
   `4a9e761a…`, deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` разделяет
   read-only base и exact Walmart metered overlay; pinned worker и owner-agent
   работают. Product Truth `521/521`, focused `8/8`, TypeScript/ESLint/build
-  PASS. Authenticated Retry остаётся owner visual smoke; spend и Walmart writes
-  во время recovery не выполнялись.
+  PASS. Successor reliability release r11 commit `97ffabce9…`, deployment
+  `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` устранил duplicate admission,
+  cross-release status mixing и короткий remote heartbeat. Clean production
+  batch `ptbfw-14e44dd192718b33ff8b0bb2` завершил `5/5 DOCTOR` и
+  `5/5 RUN_PLAN`, status `AWAITING_OWNER`; exact quote
+  `ptq-b32ff65d283f474ba4ffaf7ccbd2a352` = максимум `20` credits. Product Truth
+  `524/524`, focused `11/11`, TypeScript/ESLint/build PASS; `EXECUTE`, provider
+  spend и Walmart writes во время recovery равны `0`.
 - 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-29:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
   донорский справочник. Frozen release v33 выдан в

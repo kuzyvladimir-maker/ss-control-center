@@ -516,6 +516,35 @@ Production recovery 2026-08-01:
   click не заявлен как выполненный. Provider calls, Product Truth business
   writes и Walmart mutations в recovery-проверке не запускались.
 
+Production reliability recovery 2026-08-01 (r11):
+
+- r8/r9 evidence подтвердил три независимых дефекта control-plane: volatile
+  timestamp входил в command identity и допускал duplicate admission; status
+  смешивал rows разных releases; стандартный remote transaction/API heartbeat
+  был короче честного production doctor/plan;
+- r11 привязал idempotency к logical batch/job, ввёл exact-release read boundary
+  и bounded remote transaction/heartbeat window. При потере heartbeat worker
+  выполняет terminal complete path и не оставляет вечный `RUNNING`; retry/replay
+  автоматически не запускается;
+- production ledger уже содержал девять canonical append-only migrations, их
+  bytes совпали с release; schema apply и business-data backfill не выполнялись;
+- exact release `product-truth-web-control-2026-08-01-r11`, commit
+  `97ffabce993256c8eb8012abb5154a09419ba94d`, tree
+  `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+  deployment `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` = `READY` и назначен на
+  `salutemsolutions.info`;
+- clean production batch `ptbfw-14e44dd192718b33ff8b0bb2`: `5/5 DOCTOR` и
+  `5/5 RUN_PLAN` succeeded, `AWAITING_OWNER`, exact quote
+  `ptq-b32ff65d283f474ba4ffaf7ccbd2a352`, ceiling `20` prepaid provider credits,
+  five actions. `EXECUTE=0`, provider spend, Product Truth business writes и
+  Walmart mutations `0`;
+- certification: Product Truth `524/524`, focused Walmart collection `11/11`,
+  TypeScript, focused ESLint и production build `PASS`.
+
+Это no-spend reliability evidence внутри уже consumed G2b. Оно не заменяет и не
+создаёт approval на exact quote или provider spend.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
 r5 сериализует in-flight heartbeat до completion; текущая regression suite

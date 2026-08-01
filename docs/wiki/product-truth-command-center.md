@@ -919,3 +919,36 @@ Campbell's, где exact donors уже существуют.
   browser session в Codex runtime отсутствовала. Этот click разрешает только
   no-spend plan preparation; показанный exact quote требует отдельного owner
   подтверждения до provider spend.
+
+### ✅ Фаза BF-W8 — production reliability recovery collection batch
+
+- [x] Повторный owner click больше не создаёт дубли: command identity и
+  idempotency привязаны к logical batch/job, а не к изменяемому timestamp.
+  Read/status path фильтрует команды по exact current release, поэтому
+  незавершённые r8/r9 rows остаются immutable audit evidence и не меняют статус
+  successor batch.
+- [x] Runtime приведён к уже применённой production control-ledger schema:
+  append-only migration history из девяти записей совпадает byte-for-byte;
+  новая migration и Product Truth business-data mutation не потребовались.
+- [x] Remote transaction/heartbeat window расширен только для bounded control
+  operations. Потеря heartbeat теперь переводит текущую команду в явный
+  terminal failure через complete path, а не оставляет вечный `RUNNING` и не
+  вызывает автоматический replay.
+- [x] Release `product-truth-web-control-2026-08-01-r11`: commit
+  `97ffabce993256c8eb8012abb5154a09419ba94d`, tree
+  `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+  deployment `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` = `READY`, production alias
+  `salutemsolutions.info`, pinned launchd worker и owner-agent работают из
+  exact sparse checkout.
+- [x] Чистый Campbell's batch `ptbfw-14e44dd192718b33ff8b0bb2` доказал ровно
+  `5/5 DOCTOR SUCCEEDED` и `5/5 RUN_PLAN SUCCEEDED`, общий status
+  `AWAITING_OWNER`; quote `ptq-b32ff65d283f474ba4ffaf7ccbd2a352`
+  имеет ceiling `20` prepaid provider credits и `5` independent actions.
+  `EXECUTE=0`, provider spend, Product Truth business writes и Walmart
+  mutations `0`.
+- [x] Certification: Product Truth `524/524`, focused Walmart collection
+  `11/11`, TypeScript, focused ESLint и production build = `PASS`.
+
+BF-W8 не является денежным approval. Следующий допустимый owner action — только
+review и approval exact quote в UI; до него enrichment не стартует.
