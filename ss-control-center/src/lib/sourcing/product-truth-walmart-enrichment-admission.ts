@@ -761,6 +761,8 @@ export async function readProductTruthWalmartEnrichmentCommand(input: {
       errorCode: true,
       ownerAuthorizedAt: true,
       ownerAuthorizationExpiresAt: true,
+      workerLeaseExpiresAt: true,
+      attempts: true,
       executionStartedAt: true,
       updatedAt: true,
     },

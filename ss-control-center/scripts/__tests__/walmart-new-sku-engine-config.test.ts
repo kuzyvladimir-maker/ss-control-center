@@ -106,6 +106,7 @@ async function runDoctor(
     injectExpectedRelease?: boolean;
     injectAsOf?: boolean;
     injectReleaseManifest?: boolean;
+    injectCatalogSource?: boolean;
   } = {},
 ): Promise<{ code: number; stdout: string; stderr: string }> {
   const commandParts = Array.isArray(commandInput) ? commandInput : [commandInput];
@@ -139,6 +140,18 @@ async function runDoctor(
     commandArgs.push(
       "--release-manifest", frozenRuntime.manifestPath,
       "--release-manifest-sha", frozenRuntime.manifestShaPath,
+    );
+  }
+  if (
+    commandParts[0] === "doctor" &&
+    options.injectCatalogSource !== false &&
+    !commandParts.includes("--item-report-catalog-source")
+  ) {
+    commandArgs.push(
+      "--item-report-catalog-source",
+      path.join(frozenRuntime.outputRoot, "catalog-source.json"),
+      "--expected-item-report-catalog-source-sha256",
+      "1".repeat(64),
     );
   }
   return new Promise((resolve, reject) => {
@@ -221,7 +234,7 @@ test("operator CLI rejects irrelevant flags and every out-of-pilot scope", async
     [["plan", "--limit", "2"], /--limit must be exactly 1/],
     [["doctor", "--store-index", "2"], /--store-index must be exactly 1/],
     [["doctor", "--zip", "90210"], /--zip must be exactly 33765/],
-    [["doctor", "--pack-count", "4"], /--pack-count must be exactly 2 or 3/],
+    [["doctor", "--pack-count", "501"], /--pack-count must be a whole number from 1 to 500/],
     [["doctor", "--max-price-age-hours", "23"],
       /--max-price-age-hours must be exactly 24/],
     [["stage", "--plan", "/tmp/plan", "--doctor-receipt", "/tmp/doctor",
@@ -261,12 +274,15 @@ test("doctor requires and checks the frozen release SHA before DB or Walmart", a
   assert.equal(missingManifest.code, 1);
   assert.match(missingManifest.stderr, /requires absolute --release-manifest/);
 
-  const forbiddenCatalogSource = await runDoctor({}, [
+  const catalogSourceWithoutSha = await runDoctor({}, [
     "doctor",
     "--item-report-catalog-source", "/tmp/catalog-source.json",
   ]);
-  assert.equal(forbiddenCatalogSource.code, 1);
-  assert.match(forbiddenCatalogSource.stderr, /does not accept --item-report-catalog-source/);
+  assert.equal(catalogSourceWithoutSha.code, 1);
+  assert.match(
+    catalogSourceWithoutSha.stderr,
+    /requires --expected-item-report-catalog-source-sha256/,
+  );
 
   const relativeManifest = await runDoctor({}, [
     "doctor",

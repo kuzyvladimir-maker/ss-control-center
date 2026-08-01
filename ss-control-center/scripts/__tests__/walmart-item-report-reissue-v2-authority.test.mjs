@@ -6,6 +6,7 @@ import {
 } from "node:crypto";
 import {
   chmod,
+  mkdir,
   mkdtemp,
   readFile,
   realpath,
@@ -25,13 +26,10 @@ import {
   createWalmartItemReportReissueReplacementPlanV2,
 } from "../walmart-item-report-reissue-v2-authority.mjs";
 import {
-  buildWalmartItemReportReissueSourceEvidenceV2,
-  serializeWalmartItemReportReissueSourceEvidenceV2,
-} from "../../src/lib/walmart/item-report-reissue-source-evidence-v2.ts";
-import { canonicalWalmartItemReportJson } from "../../src/lib/walmart/item-report-published-source.ts";
+  canonicalWalmartItemReportJson,
+} from "../../src/lib/walmart/item-report-published-source.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "../..");
-const INCIDENT_SESSION = "item-v6-store1-20260718-codex-v1";
 const ACCOUNT_FINGERPRINT =
   "a135315771d89961b51864ae27a80fc5e1f72c27ce9cbe1a4bf4ba7f93505127";
 
@@ -80,18 +78,33 @@ function ledgerBinding() {
 test("renewal authoring embeds exact R4 and fresh probe bytes with zero effects", async (t) => {
   const root = await privateTemp(t);
   const out = path.join(root, "renewal-evidence.json");
-  const probeRoot = path.join(
+  const probeSource = path.join(
     PROJECT_ROOT,
     "data/audits/walmart-source-intake/item-v6-absence-probe-store1-20260722-codex-v2",
   );
+  const probeRoot = path.join(root, "probe");
+  await mkdir(probeRoot, { mode: 0o700 });
+  await chmod(probeRoot, 0o700);
+  for (const name of [
+    "00-probe-authority.json",
+    "10-get-reserved.json",
+    "20-response-raw.bytes",
+    "21-response-http.json",
+    "22-exchange-seal.json",
+    "30-result.json",
+  ]) {
+    await writePrivate(
+      path.join(probeRoot, name),
+      await readFile(path.join(probeSource, name)),
+    );
+  }
   const result = await authorWalmartItemReportReissueRenewalEvidenceV1({
     baseline_source_evidence: path.resolve(
       PROJECT_ROOT,
-      "../release-artifacts/walmart-item-report-reissue-v2-private-20260719",
-      "evidence-release-r4-final-candidate/source-evidence-release.json",
+      "data/audits/walmart-source-intake/item-v6-reissue-renewal-store1-20260722-codex-v1/source-evidence-renewal.json",
     ),
     fresh_probe_root: probeRoot,
-    probe_id: path.basename(probeRoot),
+    probe_id: path.basename(probeSource),
     release_id: "walmart-item-v6-reissue-source-renewal-store1-20260722-authority-test",
     reviewed_at: "2026-07-22T06:40:00.000Z",
     out,
@@ -110,17 +123,11 @@ test("renewal authoring embeds exact R4 and fresh probe bytes with zero effects"
 });
 
 async function sourceEvidenceBytes() {
-  const release = await buildWalmartItemReportReissueSourceEvidenceV2({
-    evidence_root: path.join(
-      PROJECT_ROOT,
-      "data/audits/walmart-source-intake/item-v6-disposition-probe-store1-20260719-claude-v1",
-    ),
-    capture_root: path.join(PROJECT_ROOT, "data/audits/walmart-source-captures"),
-    prior_session_name: INCIDENT_SESSION,
-    release_id: "walmart-item-v6-reissue-source-evidence-store1-20260719-v2",
-    reviewed_at: "2026-07-19T23:26:39.000Z",
-  });
-  return serializeWalmartItemReportReissueSourceEvidenceV2(release);
+  const renewal = JSON.parse(await readFile(path.join(
+    PROJECT_ROOT,
+    "data/audits/walmart-source-intake/item-v6-reissue-renewal-store1-20260722-codex-v1/source-evidence-renewal.json",
+  ), "utf8"));
+  return Buffer.from(renewal.body.baseline.canonical_bytes_base64, "base64");
 }
 
 test("replacement authoring writes one immutable canonical plan with distinct correlations", async (t) => {

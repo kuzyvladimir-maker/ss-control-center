@@ -177,9 +177,10 @@ Owner-only preview/readiness gallery version 9:
   authoritative cross-channel Phase 1 manifest и full business-data backfill ещё не
   выполнены, но являются отдельным Product Truth Platform track, а не blocker одного
   Walmart pilot candidate при использовании sealed `TARGETED_WALMART_EVIDENCE`;
-- полный all-status ITEM v6 source и mirror существующих seller listings **не являются
-  входом или blocker нового SKU**. Товар, контент и допустимый вариант берутся только
-  из Product Truth. Перед certification движок делает point-in-time проверки только
+- полный свежий all-status ITEM catalog и точное mirror-соответствие являются
+  обязательным duplicate/recipe/SKU/UPC guard нового SKU. Они не являются product
+  donor: товар, контент и допустимый вариант по-прежнему берутся только из Product
+  Truth. Перед certification движок дополнительно делает point-in-time проверки
   exact staged seller SKU и выделенного UPC;
 - post-Product-Truth lifecycle v3 применён schema-only в production:
   `MarketplaceSubmissionAttempt`, `WalmartBuyerPublicationEvidence`, duplicate
@@ -241,9 +242,9 @@ seller-account fingerprint. UPC исключается или переводит
    `9cd66451c701e8d6fac49cf89de1656b367bc5cb27bd6ea97668676a485e94d1`.
    Apply сам проверил обязательные schema objects, Prisma history и immutable receipt
    до commit. Backfill, provider/Walmart calls и listing publication = `0`.
-3. ✅ Owner decision
+3. ⛔ Исторический owner decision
    `owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight`
-   отменил обязательный полный ITEM v6 seller-catalog gate. Product source — только
+   отменял обязательный полный ITEM v6 seller-catalog gate. Product source — только
    Product Truth/донорский справочник. Doctor запечатывает point guard текущего
    business seller account; certification обязана получить authenticated exact SKU
    `404` и exact UPC `SPEC` search для staged bytes. Полный seller catalog, recipe
@@ -254,8 +255,11 @@ seller-account fingerprint. UPC исключается или переводит
    Release v12 дополнительно удалил ручной canonical identity input:
    `EVIDENCE_VERIFIED_BOOTSTRAP` выводит conservative identity из sealed donor bytes
    и требует fresh exact Walmart proof до canonical write.
-   Подготовленный one-shot ITEM v6 executor остаётся только audit evidence и не
-   исполняется.
+   Старый one-shot ITEM v6 executor остаётся только audit evidence и не исполняется.
+   **Этот пункт superseded текущей основной целью чата:** successor reissue-v2 может
+   выполнить ровно один externally authorized report-create POST; full all-status
+   seller catalog снова обязателен как отдельный duplicate guard, но никогда не как
+   донорский источник товара или контента.
 
 Все activation-контуры используют свой fresh sealed plan, отдельный внешний approval,
 exact target/schema/source/migration SHA, drift/preflight checks, транзакционный
@@ -359,6 +363,13 @@ item payload, shipping-template association payload, fulfillment center, store �
   изменённый request/hash и любой расширенный scope;
 - выдаёт только 64-byte detached signature, которую owner/Codex-only assembly заново
   проверяет против pinned public key и всех engine artifacts.
+
+Тот же signer принимает отдельный domain
+`WALMART_ITEM_V6_CATALOG_ACTIVATE`. В этом режиме он независимо разрешает только
+атомарную store-scoped замену `WalmartCatalogItem` и diagnostic `WalmartReport` из
+exact sealed all-status source. Он fail-closed отклоняет любые Walmart/provider
+calls, listing publish/delist, reprice или purchase. Catalog approval не может быть
+использован как publication permit, и наоборот.
 
 Одноразовая инициализация уже выполнена автоматически owner/Codex release lane:
 
@@ -590,25 +601,29 @@ Certificate decision:
 npm run walmart:new-sku -- doctor \
   --store-index 1 \
   --limit 1 \
-  --pack-count <EXACT_PACK_COUNT_2_OR_3> \
+  --pack-count <EXACT_PACK_COUNT_1_TO_500> \
   --zip 33765 \
   --as-of <EXACT_ISO_UTC_TIMESTAMP> \
   --max-price-age-hours 24 \
   --expected-engine-release-sha <EXACT_ENGINE_RELEASE_SHA256> \
   --release-manifest /ABSOLUTE/RELEASE/release-manifest.json \
   --release-manifest-sha /ABSOLUTE/RELEASE/release-manifest.sha256 \
+  --item-report-catalog-source /ABSOLUTE/PATH/FRESH-all-status-catalog.json \
+  --expected-item-report-catalog-source-sha256 <EXACT_FILE_SHA256> \
   --out /ABSOLUTE/NEW/PATH/doctor.json
 ```
 
 `--as-of` обязателен, должен быть canonical ISO UTC, не находиться в будущем и на
-момент запуска быть не старше 15 минут. Для первой проверки `--limit` всегда `1`;
-значения `2` и `3` разрешены только для `--pack-count`.
+момент запуска быть не старше 15 минут. Для первого publish pilot `--limit` всегда
+`1`; `--pack-count` принимает точное целое количество от `1` до `500`, включая
+owner-requested Pack of 8.
 
-Doctor принимает абсолютные пути только к `release-manifest.json` и его SHA sidecar.
-Флаги `--item-report-catalog-source` и
-`--expected-item-report-catalog-source-sha256` запрещены. Doctor сверяет release до
-DB/Walmart access, читает Product Truth и запечатывает seller-scoped point guard.
-Receipt schema — `walmart-new-sku-doctor-receipt/1.7.0`.
+Doctor принимает абсолютные пути к `release-manifest.json`, его SHA sidecar и к
+свежему byte-pinned all-status seller catalog source. Оба catalog-флага обязательны;
+source, DB mirror, account/credential scope и связанный `WalmartReport` должны точно
+совпасть и быть не старше 24 часов. Doctor сверяет release до DB/Walmart access,
+читает Product Truth и запечатывает полный catalog guard плюс staged SKU/UPC
+point guard. Receipt schema — `walmart-new-sku-doctor-receipt/1.8.0`.
 
 Продолжать разрешено только когда одновременно:
 
@@ -620,8 +635,9 @@ Receipt schema — `walmart-new-sku-doctor-receipt/1.7.0`.
 - `store.configured: true`;
 - `product_truth.schema_ready: true`;
 - `publish_lifecycle.canonical_schema_ready: true`;
-- `duplicate_guard.mode: "EXACT_SKU_AND_UPC_PREFLIGHT_ONLY"`,
-  `full_seller_catalog_required: false` и непустые `binding_id`, `body_sha256`;
+- `duplicate_guard.mode: "FULL_ALL_STATUS_CATALOG_AND_EXACT_IDENTIFIER_PREFLIGHT"`,
+  `full_seller_catalog_required: true`, `all_statuses_included: true` и непустые
+  `binding_id`, `body_sha256`;
 - `upc_pool.available > 0`,
   `available_with_legacy_checksum_flag_and_provenance > 0` и
   `duplicate_draft_reservations: 0`;
@@ -696,8 +712,8 @@ npm run walmart:new-sku -- plan \
 меняет Walmart. Он исключает candidate keys, уже staged прежней wave. Проверить
 `candidate_count`, `rejected`, `plan_sha256`, `wave_id` и exact candidate scope.
 
-Plan обязан иметь schema `walmart-new-sku-plan/1.7.0`, быть связан с exact fresh doctor
-receipt `1.7.0`, тем же seller-scoped exact-identifier guard и содержать ровно одного
+Plan обязан иметь schema `walmart-new-sku-plan/1.8.0`, быть связан с exact fresh doctor
+receipt `1.8.0`, тем же full all-status seller-catalog authority и содержать ровно одного
 candidate. Иная schema или попытка увеличить
 `--limit` блокирует workflow; второй release slot не делает один plan двухкандидатным.
 
@@ -789,11 +805,11 @@ npm run walmart:new-sku -- certify \
 SKU, UPC, store, plan/stage hashes и обязательные policy source/domain IDs не меняются.
 Версии этого контракта: certification input
 `walmart-new-sku-certification-input/1.8.0`, certification
-`walmart-new-sku-certification/1.11.0`, structured policy evidence
+`walmart-new-sku-certification/1.12.0`, structured policy evidence
 `walmart-new-sku-policy-review-evidence/1.2.0`, policy snapshot
 `walmart-us-prepublication/2026-07-26.1`, а embedded prepublication contract —
 `walmart-prepublication-evidence/1.2.0`. Doctor receipt и plan имеют версии
-`walmart-new-sku-doctor-receipt/1.7.0` и `walmart-new-sku-plan/1.7.0`; внешний permit
+`walmart-new-sku-doctor-receipt/1.8.0` и `walmart-new-sku-plan/1.8.0`; внешний permit
 — `walmart-new-sku-owner-permit/3.0.0`.
 
 Каждый image row дополнительно содержит exact output/source/unit SHA-256,

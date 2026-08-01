@@ -355,16 +355,20 @@ export async function claimProductTruthNoSpendCommand(input: {
     const candidate = await prisma.productTruthControlCommand.findFirst({
       where: {
         status: "ADMITTED",
-        commandKind: {
-          in: input.runtime.claims.meteredExecutionAdmission
-            ? ["DOCTOR", "RUN_PLAN", "EXECUTE"]
-            : ["DOCTOR", "RUN_PLAN"],
-        },
-        gateClass: {
-          in: input.runtime.claims.meteredExecutionAdmission
-            ? ["READ_ONLY", "ARTIFACT_PLAN", "METERED_EXECUTE"]
-            : ["READ_ONLY", "ARTIFACT_PLAN"],
-        },
+        OR: [
+          { commandKind: "DOCTOR", gateClass: "READ_ONLY" },
+          { commandKind: "RUN_PLAN", gateClass: "ARTIFACT_PLAN" },
+          ...(input.runtime.claims.meteredExecutionAdmission
+            ? [{
+                commandKind: "EXECUTE",
+                gateClass: "METERED_EXECUTE",
+                // An approval is deliberately short-lived. Never claim an
+                // EXECUTE command after it expires: start would reject it and
+                // the UI would otherwise look busy until the lease timed out.
+                ownerAuthorizationExpiresAt: { gt: now },
+              }]
+            : []),
+        ],
         environment: input.runtime.target.environment,
         databaseTargetFingerprint:
           input.runtime.target.databaseTargetFingerprint,
@@ -459,33 +463,73 @@ export async function startProductTruthNoSpendCommand(input: {
   now?: Date;
 }): Promise<{ status: "RUNNING"; execution_boundary: string }> {
   const now = input.now ?? new Date();
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.productTruthControlCommand.findUnique({
-      where: { commandId: input.commandId },
-    });
-    if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
-      fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
-    }
-    if (
-      row.commandKind === "EXECUTE"
-      && (
-        row.gateClass !== "METERED_EXECUTE"
-        || !row.ownerKeyId
-        || !row.ownerSignatureSha256
-        || !row.ownerAuthorizationExpiresAt
-        || row.ownerAuthorizationExpiresAt.getTime() <= now.getTime()
-      )
-    ) {
-      fail(
-        "WORKER_OWNER_AUTHORITY_INVALID",
-        "metered execution lacks a current verified owner authority",
-      );
-    }
-    const boundary =
-      row.commandKind === "EXECUTE"
-        ? `METERED_EXECUTE:${row.requestSha256}`
-        : `NO_SPEND:${row.requestSha256}`;
-    await tx.productTruthControlCommand.update({
+  const row = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  const boundary = row
+    ? row.commandKind === "EXECUTE"
+      ? `METERED_EXECUTE:${row.requestSha256}`
+      : `NO_SPEND:${row.requestSha256}`
+    : "";
+  if (
+    row
+    && row.status === "RUNNING"
+    && row.executionBoundary === boundary
+    && leaseMatches(row, input.leaseToken, now)
+  ) {
+    return { status: "RUNNING", execution_boundary: boundary };
+  }
+  if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
+    fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
+  }
+  if (
+    row.commandKind === "EXECUTE"
+    && (
+      row.gateClass !== "METERED_EXECUTE"
+      || !row.ownerKeyId
+      || !row.ownerSignatureSha256
+      || !row.ownerAuthorizationExpiresAt
+      || row.ownerAuthorizationExpiresAt.getTime() <= now.getTime()
+    )
+  ) {
+    fail(
+      "WORKER_OWNER_AUTHORITY_INVALID",
+      "metered execution lacks a current verified owner authority",
+    );
+  }
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: row.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const eventPayload = canonicalBytes({
+    executionBoundary: boundary,
+    attempt: 1,
+    shell: false,
+    providerCalls: row.commandKind === "EXECUTE" ? "OWNER_QUOTE_BOUND" : 0,
+    marketplaceMutations: 0,
+  });
+  const sequence = previous.sequence + 1;
+  const event = sealProductTruthControlEvent({
+    eventId:
+      `ptce-${row.commandId.slice(4)}-${sequence}-${sha256(eventPayload).slice(0, 8)}`,
+    commandId: row.commandId,
+    sequence,
+    eventType: "EXECUTION_BOUNDARY",
+    source: "WORKER",
+    occurredAt: now.toISOString(),
+    payload: eventPayload,
+    previousEventHash: previous.eventHash,
+  });
+  // A sequential/batch transaction is used deliberately. Remote libSQL can
+  // abort interactive callback transactions before their configured timeout;
+  // the database transition and append-only event must nevertheless commit as
+  // one atomic boundary before any provider call is allowed.
+  await prisma.$transaction([
+    prisma.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
         status: "RUNNING",
@@ -494,21 +538,24 @@ export async function startProductTruthNoSpendCommand(input: {
         executionStartedAt: now,
         workerHeartbeatAt: now,
       },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: row.commandId,
-      eventType: "EXECUTION_BOUNDARY",
-      occurredAt: now.toISOString(),
-      payload: {
-        executionBoundary: boundary,
-        attempt: 1,
-        shell: false,
-        providerCalls: row.commandKind === "EXECUTE" ? "OWNER_QUOTE_BOUND" : 0,
-        marketplaceMutations: 0,
+    }),
+    prisma.productTruthControlEvent.create({
+      data: {
+        eventId: event.eventId,
+        commandId: event.commandId,
+        schemaVersion: event.schemaVersion,
+        sequence: event.sequence,
+        eventType: event.eventType,
+        source: event.source,
+        occurredAt: new Date(event.occurredAt),
+        payload: prismaBytes(event.payload),
+        payloadSha256: event.payloadSha256,
+        previousEventHash: event.previousEventHash,
+        eventHash: event.eventHash,
       },
-    });
-    return { status: "RUNNING", execution_boundary: boundary };
-  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
+    }),
+  ]);
+  return { status: "RUNNING", execution_boundary: boundary };
 }
 
 export async function heartbeatProductTruthNoSpendCommand(input: {

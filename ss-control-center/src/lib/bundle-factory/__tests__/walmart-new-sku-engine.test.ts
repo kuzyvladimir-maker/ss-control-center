@@ -43,8 +43,13 @@ import {
   sealWalmartNewSkuUpcRotationReceipt,
 } from "../walmart-new-sku-engine";
 import {
+  WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
+  WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
+  WALMART_SELLER_CATALOG_MIRROR_SKEW_MAX_MS,
   buildWalmartExactIdentifierDuplicateGuardBinding,
-  type SealedWalmartExactIdentifierDuplicateGuardBinding,
+  verifyWalmartSellerCatalogAuthorityBinding,
+  type SealedWalmartAllStatusSellerCatalogAuthorityBinding,
+  type WalmartSellerCatalogAuthorityBindingBody,
 } from "../walmart-new-sku-catalog-authority";
 import {
   WALMART_NEW_SKU_REQUIRED_POLICY_REVIEW_DOMAIN_IDS,
@@ -58,6 +63,10 @@ import type {
 } from "@/lib/sourcing/product-truth-read-contract";
 import type { ProductTruthNewSkuRecipeComponentEvidence } from "@/lib/sourcing/product-truth-read-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "@/lib/sourcing/product-truth-read-contract";
+import {
+  WALMART_ITEM_REPORT_CATALOG_SOURCE_SCHEMA,
+  walmartItemReportSha256,
+} from "@/lib/walmart/item-report-published-source";
 import { buildWalmartSkuTemplateMapContract } from
   "../walmart-shipping-template-association";
 
@@ -185,16 +194,84 @@ function candidate(): WalmartPilotCandidate {
 }
 
 function sellerCatalogAuthority(
-  ownerDecisionRef = "owner-chat:fixture:product-truth-donor-only",
-): SealedWalmartExactIdentifierDuplicateGuardBinding {
-  return buildWalmartExactIdentifierDuplicateGuardBinding({
-    storeIndex: 1,
-    businessSellerAccountFingerprintSha256:
-      fingerprintWalmartSellerAccount({
-        storeIndex: 1,
-        sellerId: "fixture-seller-id",
-      }),
-    ownerDecisionRef,
+  fileSha256 = "1".repeat(64),
+): SealedWalmartAllStatusSellerCatalogAuthorityBinding {
+  const sourceBodySha256 = "6".repeat(64);
+  const publishedBodySha256 = "7".repeat(64);
+  const captureFingerprintSha256 = "8".repeat(64);
+  const reportRequestSha256 = "9".repeat(64);
+  const projectionSha256 = "0".repeat(64);
+  const body: WalmartSellerCatalogAuthorityBindingBody = {
+    schema_version: WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
+    account_scope: {
+      channel: "WALMART_US",
+      store_index: 1,
+      business_seller_account_fingerprint_sha256:
+        fingerprintWalmartSellerAccount({
+          storeIndex: 1,
+          sellerId: "fixture-seller-id",
+        }),
+      capture_credential_scope_fingerprint_sha256:
+        captureFingerprintSha256,
+    },
+    source_artifact: {
+      absolute_path: "/tmp/walmart-item-report-catalog-source-fixture.json",
+      file_sha256: fileSha256,
+      file_byte_length: 1_024,
+      schema_version: WALMART_ITEM_REPORT_CATALOG_SOURCE_SCHEMA,
+      source_id: `walmart-item-report-catalog-${sourceBodySha256.slice(0, 16)}`,
+      body_sha256: sourceBodySha256,
+      artifact_account_fingerprint_sha256: captureFingerprintSha256,
+      published_source_id:
+        `walmart-item-report-published-${publishedBodySha256.slice(0, 16)}`,
+      published_source_body_sha256: publishedBodySha256,
+      report_request_id_sha256: reportRequestSha256,
+      requested_at: "2026-07-18T11:55:00.000Z",
+      cutoff_at: "2026-07-18T12:02:00.000Z",
+      downloaded_at: "2026-07-18T12:03:00.000Z",
+      raw_transport_sha256: "2".repeat(64),
+      decoded_report_sha256: "3".repeat(64),
+      row_count: 1,
+      rows_sha256: "4".repeat(64),
+      published_row_count: 1,
+      published_rows_sha256: "5".repeat(64),
+      status_counts_sha256: "a".repeat(64),
+    },
+    mirror_reconciliation: {
+      projection_schema_version:
+        "walmart-catalog-item-exact-mirror-projection/v1",
+      synced_at: "2026-07-18T12:04:00.000Z",
+      row_count: 1,
+      source_projection_sha256: projectionSha256,
+      database_projection_sha256: projectionSha256,
+      exact_match: true,
+    },
+    walmart_report_diagnostic: {
+      report_type: "ITEM_CATALOG",
+      status: "DOWNLOADED",
+      request_id_sha256: reportRequestSha256,
+      row_count: 1,
+      downloaded_at: "2026-07-18T12:03:30.000Z",
+      source_download_skew_ms: 30_000,
+      mirror_sync_skew_ms: 30_000,
+      exact_match: true,
+    },
+    freshness_policy: {
+      source_cutoff_and_download_max_age_ms:
+        WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
+      mirror_and_report_max_age_ms:
+        WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
+      mirror_source_skew_max_ms:
+        WALMART_SELLER_CATALOG_MIRROR_SKEW_MAX_MS,
+      future_tolerance_ms: 0,
+    },
+  };
+  const bodySha256 = walmartItemReportSha256(body);
+  return verifyWalmartSellerCatalogAuthorityBinding({
+    ...body,
+    binding_id:
+      `walmart-seller-catalog-authority-${bodySha256.slice(0, 16)}`,
+    body_sha256: bodySha256,
   });
 }
 
@@ -220,7 +297,7 @@ test("owner permit requires the exact certified catalog authority binding", () =
         {
           ...common,
           seller_catalog_authority:
-            sellerCatalogAuthority("owner-chat:fixture:different-decision"),
+            sellerCatalogAuthority("b".repeat(64)),
         },
         { ...common, seller_catalog_authority: certifiedAuthority },
       ),
@@ -268,10 +345,10 @@ test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", ()
     candidates: [{ candidate: candidate(), recipe: recipe(), packCount: 2 }],
   });
   assert.equal(plan.candidates.length, 1);
-  assert.equal(plan.schema_version, "walmart-new-sku-plan/1.7.0");
+  assert.equal(plan.schema_version, "walmart-new-sku-plan/1.8.0");
   assert.equal(
     WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA,
-    "walmart-new-sku-doctor-receipt/1.7.0",
+    "walmart-new-sku-doctor-receipt/1.8.0",
   );
   assert.equal(plan.max_live_submissions, 1);
   assert.equal(plan.marketplace_mutation_allowed, false);
@@ -328,7 +405,7 @@ test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", ()
   );
 });
 
-test("active pilot rejects every legacy full-seller-catalog authority artifact", () => {
+test("active pilot rejects an exact-identifier-only authority artifact", () => {
   const binding = doctorBinding();
   assert.throws(
     () => buildWalmartNewSkuPilotPlan({
@@ -338,9 +415,15 @@ test("active pilot rejects every legacy full-seller-catalog authority artifact",
       sellerId: "fixture-seller-id",
       doctorBinding: {
         ...binding,
-        sellerCatalogAuthority: {
-          schema_version: "walmart-seller-catalog-authority-binding/v1",
-        } as never,
+        sellerCatalogAuthority: buildWalmartExactIdentifierDuplicateGuardBinding({
+          storeIndex: 1,
+          businessSellerAccountFingerprintSha256:
+            fingerprintWalmartSellerAccount({
+              storeIndex: 1,
+              sellerId: "fixture-seller-id",
+            }),
+          ownerDecisionRef: "owner-chat:fixture:exact-only",
+        }) as never,
       },
       zip: "33765",
       candidates: [{ candidate: candidate(), recipe: recipe(), packCount: 2 }],

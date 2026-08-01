@@ -636,6 +636,51 @@ function jobPhase(input: {
   return "QUEUED_NO_SPEND";
 }
 
+export function productTruthWalmartPreExecutionExpiryCode(input: {
+  status: string;
+  attempts: number;
+  executionStartedAt: Date | null;
+  workerLeaseExpiresAt: Date | null;
+  ownerAuthorizationExpiresAt: Date | null;
+  now: Date;
+}):
+  | "WORKER_START_NOT_CONFIRMED_ZERO_ATTEMPT"
+  | "OWNER_AUTHORIZATION_EXPIRED_BEFORE_EXECUTION"
+  | null {
+  if (input.attempts !== 0 || input.executionStartedAt !== null) return null;
+  if (
+    input.status === "CLAIMED"
+    && input.workerLeaseExpiresAt !== null
+    && input.workerLeaseExpiresAt.getTime() <= input.now.getTime()
+  ) {
+    return "WORKER_START_NOT_CONFIRMED_ZERO_ATTEMPT";
+  }
+  if (
+    input.status === "ADMITTED"
+    && input.ownerAuthorizationExpiresAt !== null
+    && input.ownerAuthorizationExpiresAt.getTime() <= input.now.getTime()
+  ) {
+    return "OWNER_AUTHORIZATION_EXPIRED_BEFORE_EXECUTION";
+  }
+  return null;
+}
+
+export function latestProductTruthControlRowsByRun<
+  T extends { runId: string | null },
+>(rows: readonly T[]): T[] {
+  const latestByRun = new Map<string, T>();
+  for (const row of rows) {
+    if (!row.runId) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "control command is missing its logical run binding",
+      );
+    }
+    latestByRun.set(row.runId, row);
+  }
+  return [...latestByRun.values()];
+}
+
 export async function readProductTruthWalmartCollectionStatus(input: {
   batchId: string;
   requestedByUserId?: string;
@@ -669,12 +714,18 @@ export async function readProductTruthWalmartCollectionStatus(input: {
   if (doctorRows.length < 1) {
     fail("WEB_CONTROL_BATCH_NOT_FOUND", "collection batch does not exist");
   }
+  // Retrying preparation creates a new immutable DOCTOR command for the same
+  // logical run. Preserve every attempt in the audit ledger, but present only
+  // the newest attempt per run in the owner-facing batch status. Without this
+  // reduction, one five-product request grows to ten visible rows after one
+  // retry even though it still contains only five logical products.
+  const latestDoctorRows = latestProductTruthControlRowsByRun(doctorRows);
   const planByRun = new Map(
     rows
       .filter((row) => row.commandKind === "RUN_PLAN" && row.runId)
       .map((row) => [row.runId as string, row]),
   );
-  const jobs = doctorRows.map((doctor) => {
+  const jobs = latestDoctorRows.map((doctor) => {
     const artifact = doctor.artifacts[0];
     if (!artifact || sha256(artifact.content) !== artifact.sha256) {
       fail(
@@ -752,8 +803,24 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       : {}),
     runtime: input.runtime,
   });
+  const preExecutionExpiryCode = enrichment
+    ? productTruthWalmartPreExecutionExpiryCode({
+        status: enrichment.status,
+        attempts: enrichment.attempts,
+        executionStartedAt: enrichment.executionStartedAt,
+        workerLeaseExpiresAt: enrichment.workerLeaseExpiresAt,
+        ownerAuthorizationExpiresAt:
+          enrichment.ownerAuthorizationExpiresAt,
+        now: new Date(),
+      })
+    : null;
   if (enrichment) {
-    if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {
+    if (preExecutionExpiryCode) {
+      // This is a presentation-level terminal state. The immutable command
+      // remains available for audit, but it is not eligible for worker claim
+      // and must never look like paid work is still running.
+      status = "FAILED";
+    } else if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {
       status = "RUNNING_ENRICHMENT";
     } else if (enrichment.status === "SUCCEEDED") {
       status = "SUCCEEDED";
@@ -776,7 +843,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
           command_id: enrichment.commandId,
           status: enrichment.status,
           outcome: enrichment.outcome,
-          error_code: enrichment.errorCode,
+          error_code: preExecutionExpiryCode ?? enrichment.errorCode,
           authorized_at:
             enrichment.ownerAuthorizedAt?.toISOString() ?? null,
           authorization_expires_at:
@@ -792,6 +859,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
         && enrichment?.executionStartedAt !== undefined,
       metered_execution_admitted:
         enrichment !== null
+        && preExecutionExpiryCode === null
         && ["ADMITTED", "CLAIMED", "RUNNING", "SUCCEEDED"].includes(
           enrichment.status,
         ),

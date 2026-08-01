@@ -162,8 +162,8 @@ function exactTargetIdentity(
   if (identity.outerPackCount !== 1) {
     throw new Error("Walmart pilot novelty requires a base-unit canonical variant");
   }
-  if (!Number.isInteger(component.qty) || ![2, 3].includes(component.qty)) {
-    throw new Error("Walmart pilot novelty supports only pack counts 2 or 3");
+  if (!Number.isInteger(component.qty) || component.qty < 1 || component.qty > 500) {
+    throw new Error("Walmart pilot novelty supports whole-number pack counts from 1 to 500");
   }
   const modifiers = identity.modifiers.map((modifier) => {
     if (typeof modifier !== "string" || !modifier.trim()) {

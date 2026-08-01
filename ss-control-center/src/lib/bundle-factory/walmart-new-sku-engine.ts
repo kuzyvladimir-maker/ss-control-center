@@ -26,8 +26,10 @@ import {
   type WalmartOwnerPermit,
 } from "./walmart-owner-permit";
 import {
-  verifyWalmartExactIdentifierDuplicateGuardBinding,
-  type SealedWalmartExactIdentifierDuplicateGuardBinding,
+  WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
+  WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS,
+  verifyWalmartSellerCatalogAuthorityBinding,
+  type SealedWalmartAllStatusSellerCatalogAuthorityBinding,
 } from "./walmart-new-sku-catalog-authority";
 import {
   WALMART_NEW_SKU_POLICY_REVIEW_EVIDENCE_SCHEMA,
@@ -57,9 +59,9 @@ export {
 } from "./walmart-new-sku-economics";
 
 export const WALMART_NEW_SKU_PLAN_SCHEMA =
-  "walmart-new-sku-plan/1.7.0" as const;
+  "walmart-new-sku-plan/1.8.0" as const;
 export const WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA =
-  "walmart-new-sku-doctor-receipt/1.7.0" as const;
+  "walmart-new-sku-doctor-receipt/1.8.0" as const;
 export const WALMART_NEW_SKU_STAGE_SCHEMA =
   "walmart-new-sku-stage/1.1.0" as const;
 export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
@@ -67,7 +69,7 @@ export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
 export const WALMART_NEW_SKU_CERTIFICATION_INPUT_SCHEMA =
   "walmart-new-sku-certification-input/1.8.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_SCHEMA =
-  "walmart-new-sku-certification/1.11.0" as const;
+  "walmart-new-sku-certification/1.12.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_RECEIPT_SCHEMA =
   "walmart-new-sku-certification-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_DRY_RUN_RECEIPT_SCHEMA =
@@ -90,6 +92,7 @@ export type WalmartNewSkuPlanBlocker =
   | "RIGHTS_CLEARED_SECONDARY_IMAGE"
   | "OPERATOR_VERIFIED_PACKAGE_MEASUREMENTS"
   | "EXACT_UPC_CATALOG_SEARCH"
+  | "SELLER_CATALOG_RECIPE_NOVELTY"
   | "CURRENT_WALMART_GET_SPEC"
   | "SELLER_ACCOUNT_HEALTH_AND_PUBLISH_ELIGIBILITY"
   | "SELLER_FULFILLMENT_POLICY_COMPLIANCE"
@@ -128,7 +131,7 @@ export interface WalmartNewSkuPlan {
   as_of: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+  seller_catalog_authority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   doctor_receipt_sha256: string;
   engine_release_sha256: string;
   release_manifest_sha256: string;
@@ -472,7 +475,7 @@ export interface WalmartNewSkuCertificationArtifact {
   candidate_key: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+  seller_catalog_authority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   bundle_draft_id: string;
   master_bundle_id: string;
   channel_sku_id: string;
@@ -520,7 +523,7 @@ export interface WalmartNewSkuDoctorReceipt {
   expires_at: string;
   store_index: number;
   seller_account_fingerprint_sha256: string;
-  seller_catalog_authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+  seller_catalog_authority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   database_target_fingerprint_sha256: string;
   database_schema_sha256: string;
   engine_release_sha256: string;
@@ -1403,6 +1406,7 @@ const REQUIRED_BEFORE_CERTIFICATION: WalmartNewSkuPlanBlocker[] = [
   "RIGHTS_CLEARED_SECONDARY_IMAGE",
   "OPERATOR_VERIFIED_PACKAGE_MEASUREMENTS",
   "EXACT_UPC_CATALOG_SEARCH",
+  "SELLER_CATALOG_RECIPE_NOVELTY",
   "CURRENT_WALMART_GET_SPEC",
   "SELLER_ACCOUNT_HEALTH_AND_PUBLISH_ELIGIBILITY",
   "SELLER_FULFILLMENT_POLICY_COMPLIANCE",
@@ -1426,10 +1430,19 @@ function assertCatalogAuthorityScope(input: {
   storeIndex: number;
   businessSellerFingerprintSha256: string;
   label: string;
-}): SealedWalmartExactIdentifierDuplicateGuardBinding {
-  let authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+}): SealedWalmartAllStatusSellerCatalogAuthorityBinding {
+  let authority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   try {
-    authority = verifyWalmartExactIdentifierDuplicateGuardBinding(input.authority);
+    const verified = verifyWalmartSellerCatalogAuthorityBinding(input.authority);
+    if (
+      verified.schema_version !==
+        WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA
+    ) {
+      throw new Error(
+        "the full all-status seller catalog authority is required",
+      );
+    }
+    authority = verified;
   } catch (error) {
     throw new WalmartNewSkuPlanError([
       `${input.label}_CATALOG_AUTHORITY_INVALID:${
@@ -2675,13 +2688,19 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     env,
     walmartOwnerPermitRuntimeEnvironment(env),
   );
-  assertCatalogAuthorityScope({
+  const catalogAuthority = assertCatalogAuthorityScope({
     authority: receipt.seller_catalog_authority,
     storeIndex: receipt.store_index,
     businessSellerFingerprintSha256:
       receipt.seller_account_fingerprint_sha256,
     label: "DOCTOR",
   });
+  const catalogFreshnessInstants = [
+    catalogAuthority.source_artifact.cutoff_at,
+    catalogAuthority.source_artifact.downloaded_at,
+    catalogAuthority.mirror_reconciliation.synced_at,
+    catalogAuthority.walmart_report_diagnostic.downloaded_at,
+  ].map((value) => Date.parse(value));
   if (
     receipt.schema_version !== WALMART_NEW_SKU_DOCTOR_RECEIPT_SCHEMA ||
     actual !== expected ||
@@ -2712,6 +2731,11 @@ export function assertWalmartNewSkuDoctorReceiptIntegrity(
     expiresAt - checkedAt > WALMART_NEW_SKU_DOCTOR_MAX_AGE_MS ||
     checkedAt > nowMs + 5 * 60_000 ||
     nowMs > expiresAt ||
+    catalogFreshnessInstants.some((instant) =>
+      !Number.isFinite(instant) ||
+      instant > nowMs ||
+      nowMs - instant > WALMART_SELLER_CATALOG_AUTHORITY_MAX_AGE_MS
+    ) ||
     receipt.walmart_api_probe?.method !== "GET" ||
     receipt.walmart_api_probe?.path !== "/v3/items/walmart/search" ||
     receipt.walmart_api_probe?.response_format !== "SPEC" ||
@@ -4073,7 +4097,7 @@ export function buildWalmartNewSkuPilotPlan(input: {
     databaseTargetFingerprintSha256: string;
     databaseSchemaSha256: string;
     itemSpecVersion: string;
-    sellerCatalogAuthority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+    sellerCatalogAuthority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   };
   zip: string;
   maxLiveSubmissions?: number;

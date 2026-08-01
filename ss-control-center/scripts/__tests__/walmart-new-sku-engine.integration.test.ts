@@ -63,6 +63,22 @@ import {
 import {
   PRODUCT_TRUTH_READ_CONTRACT_VERSION,
 } from "@/lib/sourcing/product-truth-read-contract-version";
+import {
+  buildWalmartItemReportDownloadLocatorRequestManifest,
+  buildWalmartItemReportFileRequestManifest,
+  buildWalmartItemReportReadyRequestManifest,
+  buildWalmartItemReportV6CreateRequestManifest,
+  canonicalWalmartItemReportJson,
+  compileWalmartItemReportCatalogSource,
+  walmartItemReportTrustedExchangeSha256,
+  walmartItemReportUtf8Sha256,
+  type HttpResponseCaptureMetadata,
+  type WalmartItemReportCaptureEvidence,
+  type WalmartItemReportCompileContext,
+} from "@/lib/walmart/item-report-published-source";
+import {
+  computeWalmartSellerAccountFingerprint,
+} from "@/lib/walmart/item-report-capture-session";
 
 const APP_ROOT = process.cwd();
 const MIGRATIONS_ROOT = path.join(APP_ROOT, "prisma", "migrations");
@@ -285,6 +301,219 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function isoOffset(value: string, offsetMs: number): string {
+  return new Date(Date.parse(value) + offsetMs).toISOString();
+}
+
+function itemReportBytes(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+
+function itemReportHttp(
+  responseBytes: Uint8Array,
+  correlationSha256: string | null,
+  requestIdSha256: string | null,
+  contentType = "application/json",
+): HttpResponseCaptureMetadata {
+  return {
+    status: 200,
+    content_type: contentType,
+    content_length: responseBytes.byteLength,
+    echoed_correlation_id_sha256: correlationSha256,
+    echoed_report_request_id_sha256: requestIdSha256,
+  };
+}
+
+async function writeSellerCatalogAuthorityFixture(
+  root: string,
+  observedAt: string,
+): Promise<{ path: string; sha256: string }> {
+  const captureFingerprint = computeWalmartSellerAccountFingerprint({
+    store_index: 1,
+    client_id: FIXTURE_WALMART_CLIENT_ID,
+    seller_id: FIXTURE_WALMART_SELLER_ID,
+  });
+  const accountScope = {
+    channel: "WALMART_US" as const,
+    store_index: 1,
+    seller_account_fingerprint_sha256: captureFingerprint,
+  };
+  const correlations = {
+    create_sha256: walmartItemReportUtf8Sha256("fixture-item-report-create"),
+    ready_status_sha256: walmartItemReportUtf8Sha256("fixture-item-report-ready"),
+    download_locator_sha256:
+      walmartItemReportUtf8Sha256("fixture-item-report-locator"),
+    report_file_sha256: walmartItemReportUtf8Sha256("fixture-item-report-file"),
+  };
+  const binding = (requestCorrelationSha256: string) => ({
+    account_scope: accountScope,
+    request_correlation_id_sha256: requestCorrelationSha256,
+  });
+  const requestedAt = isoOffset(observedAt, -10 * 60_000);
+  const generatedAt = isoOffset(observedAt, -4 * 60_000);
+  const readyAt = isoOffset(observedAt, -3 * 60_000);
+  const downloadLocatorAt = isoOffset(observedAt, -2 * 60_000);
+  const reportFileRequestedAt = isoOffset(observedAt, -60_000);
+  const downloadUrl =
+    "https://walmart-reports.s3.amazonaws.com/reports/fixture-item-v6.csv?X-Amz-Signature=fixture";
+  const createRequest = itemReportBytes(JSON.stringify(
+    buildWalmartItemReportV6CreateRequestManifest(
+      binding(correlations.create_sha256),
+    ),
+  ));
+  const createResponse = itemReportBytes(JSON.stringify({
+    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
+    requestSubmissionDate: requestedAt,
+    reportType: "ITEM",
+    reportVersion: "v6",
+  }));
+  const readyRequest = itemReportBytes(JSON.stringify(
+    buildWalmartItemReportReadyRequestManifest(
+      FIXTURE_ITEM_REPORT_REQUEST_ID,
+      binding(correlations.ready_status_sha256),
+    ),
+  ));
+  const readyResponse = itemReportBytes(JSON.stringify({
+    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
+    requestStatus: "READY",
+    reportType: "ITEM",
+    reportVersion: "v6",
+    createdTime: requestedAt,
+    reportGenerationDate: generatedAt,
+  }));
+  const locatorRequest = itemReportBytes(JSON.stringify(
+    buildWalmartItemReportDownloadLocatorRequestManifest(
+      FIXTURE_ITEM_REPORT_REQUEST_ID,
+      binding(correlations.download_locator_sha256),
+    ),
+  ));
+  const locatorResponse = itemReportBytes(JSON.stringify({
+    requestId: FIXTURE_ITEM_REPORT_REQUEST_ID,
+    requestSubmissionDate: requestedAt,
+    reportGenerationDate: generatedAt,
+    downloadURL: downloadUrl,
+    downloadURLExpirationTime: isoOffset(observedAt, 60 * 60_000),
+  }));
+  const fileRequest = itemReportBytes(JSON.stringify(
+    buildWalmartItemReportFileRequestManifest({
+      ...binding(correlations.report_file_sha256),
+      locator_url: downloadUrl,
+    }),
+  ));
+  const reportBody = itemReportBytes([
+    "SKU,ProductName,ProductId,ProductIdType,PublishedStatus,ProductCondition,Brand,LifecycleStatus,Item ID",
+    "EXISTING-UNRELATED-1,Different Brand Tomato Soup 15 oz,012345678905,UPC,PUBLISHED,New,Different Brand,ACTIVE,fixture-item-existing",
+    "",
+  ].join("\r\n"));
+  const requestIdSha256 = walmartItemReportUtf8Sha256(
+    FIXTURE_ITEM_REPORT_REQUEST_ID,
+  );
+  const capture: WalmartItemReportCaptureEvidence = {
+    create_request_manifest_bytes: createRequest,
+    create_response_payload_bytes: createResponse,
+    ready_status_request_manifest_bytes: readyRequest,
+    ready_status_payload_bytes: readyResponse,
+    download_locator_request_manifest_bytes: locatorRequest,
+    download_locator_response_payload_bytes: locatorResponse,
+    report_file_request_manifest_bytes: fileRequest,
+    downloaded_body_bytes: reportBody,
+    http: {
+      create_response: itemReportHttp(
+        createResponse,
+        correlations.create_sha256,
+        requestIdSha256,
+      ),
+      ready_status_response: itemReportHttp(
+        readyResponse,
+        correlations.ready_status_sha256,
+        requestIdSha256,
+      ),
+      download_locator_response: itemReportHttp(
+        locatorResponse,
+        correlations.download_locator_sha256,
+        requestIdSha256,
+      ),
+      download_response: itemReportHttp(
+        reportBody,
+        null,
+        null,
+        "application/octet-stream",
+      ),
+    },
+  };
+  const trustedSeal = (
+    requestBytes: Uint8Array,
+    correlationSha256: string,
+    responseBytes: Uint8Array,
+    responseHttp: HttpResponseCaptureMetadata,
+  ) => walmartItemReportTrustedExchangeSha256({
+    request_manifest_bytes: requestBytes,
+    request_correlation_id_sha256: correlationSha256,
+    response_payload_bytes: responseBytes,
+    http: responseHttp,
+  });
+  const context: WalmartItemReportCompileContext = {
+    account_scope: accountScope,
+    request_correlations: correlations,
+    ready_at: readyAt,
+    download_locator_at: downloadLocatorAt,
+    report_file_requested_at: reportFileRequestedAt,
+    downloaded_at: observedAt,
+    trusted_exchange_seals: {
+      create_response_sha256: trustedSeal(
+        createRequest,
+        correlations.create_sha256,
+        createResponse,
+        capture.http.create_response,
+      ),
+      ready_status_response_sha256: trustedSeal(
+        readyRequest,
+        correlations.ready_status_sha256,
+        readyResponse,
+        capture.http.ready_status_response,
+      ),
+      download_locator_response_sha256: trustedSeal(
+        locatorRequest,
+        correlations.download_locator_sha256,
+        locatorResponse,
+        capture.http.download_locator_response,
+      ),
+      download_response_sha256: trustedSeal(
+        fileRequest,
+        correlations.report_file_sha256,
+        reportBody,
+        capture.http.download_response,
+      ),
+    },
+  };
+  const source = compileWalmartItemReportCatalogSource(capture, context);
+  assert.equal(source.catalog_population_complete, true);
+  assert.equal(source.rows.length, 1);
+  assert.deepEqual(source.rows.map((row) => ({
+    sku: row.sku,
+    item_id: row.reported_legacy_item_identifier_opaque,
+    title: row.reported_product_name,
+    lifecycle_status: row.reported_lifecycle_status,
+    published_status: row.published_status,
+  })), [{
+    sku: "EXISTING-UNRELATED-1",
+    item_id: "fixture-item-existing",
+    title: "Different Brand Tomato Soup 15 oz",
+    lifecycle_status: "ACTIVE",
+    published_status: "PUBLISHED",
+  }]);
+  const canonicalBytes = Buffer.from(
+    canonicalWalmartItemReportJson(source),
+    "utf8",
+  );
+  const sourcePath = path.join(root, "fixture-item-report-catalog-source.json");
+  await writeFile(sourcePath, canonicalBytes, { flag: "wx" });
+  return {
+    path: sourcePath,
+    sha256: createHash("sha256").update(canonicalBytes).digest("hex"),
+  };
+}
+
 function renderPosixArg(value: string): string {
   if (/^[A-Za-z0-9_@%+=:,./-]+$/.test(value)) return value;
   return `'${value.replaceAll("'", `'"'"'`)}'`;
@@ -308,6 +537,7 @@ function assertNextCommandContract(result: Record<string, unknown>): void {
 async function seedCanonicalPilotFixture(
   db: Client,
   observedAt: string,
+  sellerCatalogDownloadedAt: string,
 ): Promise<void> {
   const donorProductId = "fixture-donor-1";
   const donorOfferId = "fixture-offer-1";
@@ -535,7 +765,7 @@ async function seedCanonicalPilotFixture(
       'fixture-existing-catalog-row',1,'EXISTING-UNRELATED-1','fixture-item-existing',
       'Different Brand Tomato Soup 15 oz','ACTIVE','PUBLISHED',?
     )`,
-    args: [observedAt],
+    args: [sellerCatalogDownloadedAt],
   });
   await db.execute({
     sql: `INSERT INTO SkuShippingData
@@ -565,10 +795,10 @@ async function seedCanonicalPilotFixture(
     )`,
     args: [
       FIXTURE_ITEM_REPORT_REQUEST_ID,
-      observedAt,
-      observedAt,
-      observedAt,
-      observedAt,
+      sellerCatalogDownloadedAt,
+      sellerCatalogDownloadedAt,
+      sellerCatalogDownloadedAt,
+      sellerCatalogDownloadedAt,
     ],
   });
 
@@ -847,6 +1077,10 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
 
   const observedAt = new Date(Date.now() - 10 * 60_000).toISOString();
   const asOf = new Date(Date.now() - 5 * 60_000).toISOString();
+  const sellerCatalogSource = await writeSellerCatalogAuthorityFixture(
+    root,
+    asOf,
+  );
   const ownerKeys = generateKeyPairSync("ed25519");
   const ownerPublicDer = ownerKeys.publicKey.export({
     format: "der",
@@ -854,7 +1088,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   }) as Buffer;
   const seedDb = createClient({ url: `file:${databasePath}` });
   await buildFreshCurrentSchema(seedDb);
-  await seedCanonicalPilotFixture(seedDb, observedAt);
+  await seedCanonicalPilotFixture(seedDb, observedAt, asOf);
   const { readWalmartPilotCandidate } = await import(
     "../../src/lib/sourcing/product-truth-new-sku-view"
   );
@@ -1000,6 +1234,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--expected-engine-release-sha", expectedEngineReleaseSha256,
     "--release-manifest", frozen.manifest_path,
     "--release-manifest-sha", frozen.manifest_sha256_path,
+    "--item-report-catalog-source", sellerCatalogSource.path,
+    "--expected-item-report-catalog-source-sha256", sellerCatalogSource.sha256,
     "--limit", "1",
     "--as-of", asOf,
     "--out", doctorPath,
@@ -1051,7 +1287,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   assert.equal(planned.marketplace_mutated, false);
   assert.equal(planned.candidate_count, 1);
   const plan = JSON.parse(await readFile(planPath, "utf8")) as Record<string, unknown>;
-  assert.equal(WALMART_NEW_SKU_PLAN_SCHEMA, "walmart-new-sku-plan/1.7.0");
+  assert.equal(WALMART_NEW_SKU_PLAN_SCHEMA, "walmart-new-sku-plan/1.8.0");
   assert.equal(plan.schema_version, WALMART_NEW_SKU_PLAN_SCHEMA);
   assert.equal(plan.doctor_receipt_sha256, doctor.doctor_receipt_sha256);
   assert.equal(plan.engine_release_sha256, expectedEngineReleaseSha256);
@@ -1092,7 +1328,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuDoctorReceipt;
   assert.equal(
     doctorArtifactForStage.schema_version,
-    "walmart-new-sku-doctor-receipt/1.7.0",
+    "walmart-new-sku-doctor-receipt/1.8.0",
   );
   assert.equal(
     doctorArtifactForStage.release_manifest_sha256,
@@ -2656,8 +2892,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     "--actor", "fixture-owner",
     "--confirm", ownerPermit.permit_sha256,
   ];
-  // An unrelated row in the seller mirror is not a Product Truth input and
-  // cannot invalidate the exact staged SKU/UPC guard.
+  // The all-status seller mirror is a mandatory duplicate/recipe guard. Any
+  // post-certification drift fails closed before a submission attempt exists.
   const catalogDriftDb = createClient({ url: `file:${databasePath}` });
   await catalogDriftDb.execute(
     `UPDATE WalmartCatalogItem
@@ -2665,22 +2901,24 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
      WHERE id='fixture-existing-catalog-row'`,
   );
   await catalogDriftDb.close();
-  const previewAfterUnrelatedCatalogDrift = await runCli([
-    "apply",
-    "--certification", certificationPath,
-    "--certification-receipt", certificationReceiptPath,
-    "--dry-run-receipt", dryRunPath,
-    "--approval", approvalPath,
-    "--mode", "preview",
-    "--out", applyPreviewAfterUnrelatedCatalogDriftPath,
-  ], env);
-  assert.equal(
-    previewAfterUnrelatedCatalogDrift.marketplace_mutation_requested,
-    false,
+  const deniedCatalogDrift = await runProcess(
+    process.execPath,
+    [
+      "--import", "tsx", "--import", FAKE_FETCH, CLI,
+      "apply",
+      "--certification", certificationPath,
+      "--certification-receipt", certificationReceiptPath,
+      "--dry-run-receipt", dryRunPath,
+      "--approval", approvalPath,
+      "--mode", "preview",
+      "--out", applyPreviewAfterUnrelatedCatalogDriftPath,
+    ],
+    { env },
   );
-  assert.equal(
-    (previewAfterUnrelatedCatalogDrift.distribution as Record<string, unknown>).ok,
-    true,
+  assert.equal(deniedCatalogDrift.code, 1);
+  assert.match(
+    deniedCatalogDrift.stderr,
+    /CATALOG_MIRROR_RECONCILIATION_MISMATCH|CATALOG_AUTHORITY_BINDING_DRIFT/,
   );
   const driftInspectionDb = createClient({ url: `file:${databasePath}` });
   const attemptRowsAfterCatalogDrift = await driftInspectionDb.execute(
@@ -3275,6 +3513,8 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       "--expected-engine-release-sha", expectedEngineReleaseSha256,
       "--release-manifest", frozen.manifest_path,
       "--release-manifest-sha", frozen.manifest_sha256_path,
+      "--item-report-catalog-source", sellerCatalogSource.path,
+      "--expected-item-report-catalog-source-sha256", sellerCatalogSource.sha256,
       "--limit", "1",
       "--as-of", new Date().toISOString(),
       "--out", blockedDoctorRequestedPath,

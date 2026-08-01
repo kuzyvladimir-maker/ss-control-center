@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-28.
+> **Статус:** живой decision ledger, сверено 2026-08-01.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -30,6 +30,7 @@
 | G2b. Bundle Factory no-spend web bridge | `CONSUMED_2026-07-28` | Bounded production `doctor → plan` активирован; metered execution остаётся закрыт |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
+| G4b. Fresh Walmart duplicate-guard catalog | `CONSUMED_2026-08-01` | Successor report `READY`; 5 235 all-status rows owner-signed и атомарно active |
 | G5a. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified |
 | G5b. No-paid legacy bridge canary | `CONSUMED_2026-07-26` | Exact five-listing plan applied: `35/35` rows, no paid/provider/marketplace actions |
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
@@ -388,6 +389,29 @@ Quarantined session и старые permit/authorization bytes повторно 
 - authoritative manifest v3: `5935` live listings, `6` required scopes,
   `3` exact reports, `0` blockers; canonical JSON SHA-256
   `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`.
+
+### G4b consumed evidence — fresh Walmart new-SKU duplicate guard 2026-08-01
+
+- successor absence probe + reissue-v2 выполнили ровно один report-create
+  POST; request ID `019fbe92-be8d-73b6-8008-6f4fba3a191a`, request-ID SHA
+  `0de3828ef67568ab11569aa8935d8b36e9f21c0d799509e2f54c12bbf460856c`;
+- exact download/offline compile: `5 235` rows, из них
+  `3 877 PUBLISHED`, `624 UNPUBLISHED`, `734 SYSTEM_PROBLEM`; source file SHA
+  `433f09d30f07d38bf3fb63c7036bfd79e54c155dc7da19957a7ea0748c89aa77`;
+- owner approval подписан отдельным domain
+  `WALMART_ITEM_V6_CATALOG_ACTIVATE`, approval SHA
+  `3f9de938cc85866c9c168cf30434136c5880b41c6b776949cf6bbaa4e52bb611`;
+- atomic apply receipt `ACTIVE`, `row_count=5235`, postcondition
+  `b745752257ebb06d204e2f7ba5d6e5625c9254768388c9e78e03d82878206086`;
+  repeat read-only plan = `NOOP_ALREADY_ACTIVE`;
+- разрешённый DB scope только
+  `WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)`. Walmart/provider calls,
+  publication, delist, reprice, inventory purchase и Product Truth donor/content
+  writes равны `0`.
+
+G4b не является publication permit и не разрешает paid enrichment.
+Seller catalog используется только как duplicate guard; Product Truth остаётся
+единственным donor/content source.
 
 ## Что происходит после закрытия G3 + G4
 

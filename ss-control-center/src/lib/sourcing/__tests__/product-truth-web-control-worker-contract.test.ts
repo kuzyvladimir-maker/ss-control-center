@@ -240,6 +240,28 @@ test("metered completion preserves an ambiguous paid outcome as terminal ambiguo
   );
 });
 
+test("worker start commits the execution boundary with a remote-safe atomic batch", async () => {
+  const server = await readFile(
+    new URL("../product-truth-web-control-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const startAt = server.indexOf(
+    "export async function startProductTruthNoSpendCommand",
+  );
+  const heartbeatAt = server.indexOf(
+    "export async function heartbeatProductTruthNoSpendCommand",
+    startAt,
+  );
+  assert.ok(startAt >= 0);
+  assert.ok(heartbeatAt > startAt);
+  const start = server.slice(startAt, heartbeatAt);
+  assert.match(start, /await prisma\.\$transaction\(\[/u);
+  assert.match(start, /productTruthControlCommand\.update/u);
+  assert.match(start, /productTruthControlEvent\.create/u);
+  assert.doesNotMatch(start, /\$transaction\(async/u);
+  assert.match(start, /row\.status === "RUNNING"/u);
+});
+
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {
   const proxy = await readFile(
     new URL("../../../proxy.ts", import.meta.url),

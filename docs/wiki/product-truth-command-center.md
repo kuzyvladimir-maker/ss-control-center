@@ -952,3 +952,25 @@ Campbell's, где exact donors уже существуют.
 
 BF-W8 не является денежным approval. Следующий допустимый owner action — только
 review и approval exact quote в UI; до него enrichment не стартует.
+
+### 🔄 Фаза BF-W9 — Campbell's execution recovery и Walmart duplicate guard
+
+- [x] После owner approval exact quote production `EXECUTE` был claimed, но
+  old worker получил `/start HTTP 409 (P2028)` до execution boundary.
+  `attempts=0`, `executionStartedAt=null`; provider spend, canonical business writes
+  и Walmart mutations равны `0`.
+- [x] `startProductTruthNoSpendCommand` переведён на remote-safe atomic batch
+  transaction; start идемпотентен, expired zero-attempt command не claimable
+  и отображается terminal. Status группирует immutable retries по logical
+  run и показывает exact error владельцу.
+- [x] Fresh successor ITEM v6 source дал `5 235` rows во всех seller statuses.
+  Owner-signed activation атомарно заменила `WalmartCatalogItem(store)`
+  и связанный diagnostic `WalmartReport`; receipt `ACTIVE`, `row_count=5235`,
+  повторный plan = `NOOP_ALREADY_ACTIVE`. Это duplicate guard, не новый
+  donor catalog.
+- [x] Исправленная ветка прошла Product Truth `527/527`, Walmart
+  unit/contract `41/41`, native owner/report `27/27`, frozen fake-live `3/3`,
+  TypeScript, ESLint и production build.
+- [ ] Выпустить exact server/worker release и повторить Campbell's
+  `5 × Pack of 8` до нового exact quote, enrichment и пяти owner-review
+  drafts. Никакой Walmart publication до отдельного SKU-bound gate.

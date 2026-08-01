@@ -70,6 +70,21 @@
   `ptq-b32ff65d283f474ba4ffaf7ccbd2a352` = максимум `20` credits. Product Truth
   `524/524`, focused `11/11`, TypeScript/ESLint/build PASS; `EXECUTE`, provider
   spend и Walmart writes во время recovery равны `0`.
+- 🟡 **Bundle Factory Walmart BF-W8 recovery — 2026-08-01:** production
+  `EXECUTE` не начинал enrichment: old worker claimed command, но
+  `/start` вернул `HTTP 409 (P2028)` до execution boundary;
+  `attempts=0`, provider spend/Product Truth business writes/Walmart mutations
+  `0`. Remote interactive start заменён atomic batch transaction, expired
+  zero-attempt state terminalized, UI показывает только последнюю
+  immutable attempt и exact error. Fresh successor ITEM v6 source содержит
+  `5 235` all-status rows (`3 877 PUBLISHED`, `624 UNPUBLISHED`,
+  `734 SYSTEM_PROBLEM`) и owner-signed atomic activation подтверждена
+  `ACTIVE` receipt/postcheck `NOOP_ALREADY_ACTIVE`. Catalog — только
+  duplicate guard; Product Truth — единственный donor/content source.
+  Рабочая ветка прошла Product Truth `527/527`, Walmart
+  unit/contract `41/41`, owner/report `27/27`, frozen fake-live `3/3`,
+  TypeScript/ESLint/build. Текущий шаг: exact web/worker deployment,
+  затем новый Campbell's `5 × Pack of 8` run до owner-review drafts.
 - 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-29:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
   донорский справочник. Frozen release v33 выдан в

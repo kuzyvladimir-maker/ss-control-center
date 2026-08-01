@@ -1210,20 +1210,27 @@ export default function StudioStartPage() {
                           {walmartCollection.jobs.map((job) => (
                             <div
                               key={job.run_id}
-                              className="flex items-start justify-between gap-3 border-t border-rule pt-2 first:border-t-0 first:pt-0"
+                              className="border-t border-rule pt-2 first:border-t-0 first:pt-0"
                             >
-                              <span className="min-w-0 text-[11.5px] text-ink-2">
-                                {job.title}
-                              </span>
-                              <span className="shrink-0 text-[10.5px] font-medium text-ink-3">
-                                {job.phase === "QUEUED_NO_SPEND"
-                                  ? "queued"
-                                  : job.phase === "RUNNING_NO_SPEND"
-                                    ? "preparing"
-                                    : job.phase === "AWAITING_OWNER"
-                                      ? "plan ready"
-                                      : job.phase.toLowerCase()}
-                              </span>
+                              <div className="flex items-start justify-between gap-3">
+                                <span className="min-w-0 text-[11.5px] text-ink-2">
+                                  {job.title}
+                                </span>
+                                <span className="shrink-0 text-[10.5px] font-medium text-ink-3">
+                                  {job.phase === "QUEUED_NO_SPEND"
+                                    ? "queued"
+                                    : job.phase === "RUNNING_NO_SPEND"
+                                      ? "preparing"
+                                      : job.phase === "AWAITING_OWNER"
+                                        ? "plan ready"
+                                        : job.phase.toLowerCase()}
+                                </span>
+                              </div>
+                              {job.error_code && (
+                                <p className="mt-1 text-[10.5px] leading-snug text-danger">
+                                  {job.error_code}
+                                </p>
+                              )}
                             </div>
                           ))}
                           {walmartCollection.status === "AWAITING_OWNER" && (
