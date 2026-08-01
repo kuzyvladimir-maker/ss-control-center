@@ -499,6 +499,55 @@ export async function buyShippingLabel(payload: {
   });
 }
 
+/**
+ * Record a shipment that already exists, without buying a label.
+ *
+ * This is Veeqo's documented `POST /shipments`: "records a fulfilment in Veeqo
+ * — including orders shipped outside of Veeqo — without purchasing a label".
+ * We hand it a tracking number we already own and it pushes the fulfilment to
+ * the integrated store (`update_remote_order`), through the same channel
+ * integration that ships every order today.
+ *
+ * This is how a merged group's tracking reaches the sibling orders. It mirrors
+ * exactly what Veeqo does internally when you merge in their UI: verified
+ * 2026-07-31 on order #P-1988529619, where the paid parent shipment carried a
+ * $10.30 charge and each original order got a zero-cost shipment with the SAME
+ * tracking number half a second later.
+ *
+ * `carrierId` defaults to Veeqo's built-in "Other" (3) for a carrier they
+ * aren't integrated with. Pass the real carrier id when we have it — their own
+ * merge mirrors use the real one, not "Other".
+ *
+ * NOT retried on an unknown outcome. A second call here would mark the same
+ * order shipped twice and could push a duplicate fulfilment to the marketplace;
+ * the caller reads state back instead.
+ */
+export async function createManualShipment(payload: {
+  orderId: number | string;
+  allocationId: number | string;
+  trackingNumber: string;
+  carrierId?: number;
+  /** Push the fulfilment to the marketplace (Amazon/Walmart/etc). */
+  updateRemoteOrder: boolean;
+  notifyCustomer?: boolean;
+}) {
+  return veeqoFetch("/shipments", {
+    method: "POST",
+    body: JSON.stringify({
+      shipment: {
+        tracking_number_attributes: {
+          tracking_number: payload.trackingNumber,
+        },
+        carrier_id: payload.carrierId ?? 3,
+        notify_customer: payload.notifyCustomer ?? false,
+        update_remote_order: payload.updateRemoteOrder,
+      },
+      allocation_id: Number(payload.allocationId),
+      order_id: Number(payload.orderId),
+    }),
+  });
+}
+
 // Strip a phone number down to a carrier-safe "+digits" form. Amazon Shipping
 // rejects phones carrying an extension or letters (e.g. "+1 763-225-9463 ext.
 // 71791") as part of an invalid-ShipTo error. We keep a leading "+" and the
