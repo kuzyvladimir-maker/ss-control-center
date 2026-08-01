@@ -32,6 +32,10 @@ export const PRODUCT_TRUTH_WEB_CONTROL_ENV = Object.freeze({
     "PRODUCT_TRUTH_WEB_CONTROL_OWNER_PUBLIC_KEY_SPKI_SHA256",
 } as const);
 
+export const PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV = Object.freeze({
+  confirmation: "PRODUCT_TRUTH_WALMART_ENRICHMENT_CONFIRMATION",
+} as const);
+
 export type ProductTruthWebControlActiveStage =
   | "ADMISSION_ONLY"
   | "LOCAL_NO_SPEND"
@@ -334,20 +338,32 @@ export function loadProductTruthWebControlRuntime(input: {
     env[PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64],
     env[PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256],
   ];
-  if (meteredEnabled && ownerKeyEnv.some((value) => value === undefined)) {
+  const ownerKeyConfigured = ownerKeyEnv.some((value) => value !== undefined);
+  const ownerKeyComplete = ownerKeyEnv.every((value) => value !== undefined);
+  if (meteredEnabled && !ownerKeyComplete) {
     fail(
       "WEB_CONTROL_CONFIG_INCOMPLETE",
       "owner Ed25519 public trust root is required for the metered stage",
     );
   }
-  if (!meteredEnabled && ownerKeyEnv.some((value) => value !== undefined)) {
+  if (ownerKeyConfigured && !ownerKeyComplete) {
+    fail(
+      "WEB_CONTROL_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root must be configured completely",
+    );
+  }
+  if (
+    ownerKeyConfigured
+    && !meteredEnabled
+    && stage !== "PRODUCTION_READ_ONLY"
+  ) {
     fail(
       "WEB_CONTROL_CONFIG_INVALID",
-      "owner trust root is permitted only in the owner-gated metered stage",
+      "owner trust root is permitted only in production worker stages",
     );
   }
   let ownerTrustedKey: ProductTruthControlTrustedKey | null = null;
-  if (meteredEnabled) {
+  if (ownerKeyComplete) {
     const keyId = exactToken(
       exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId),
       PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId,
@@ -424,6 +440,92 @@ export function loadProductTruthWebControlRuntime(input: {
       meteredExecutionAdmission: meteredEnabled,
     },
   };
+}
+
+export function expectedProductTruthWalmartEnrichmentConfirmation(input: {
+  runtime: ProductTruthWebControlRuntimeActive;
+}): string {
+  const ownerKey = input.runtime.ownerTrustedKey;
+  if (ownerKey === null) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root is required",
+    );
+  }
+  return [
+    "ENABLE_PRODUCT_TRUTH_WALMART_ENRICHMENT",
+    exactToken(input.runtime.engine.releaseId, "releaseId"),
+    exactGitSha(input.runtime.engine.commitSha, "commitSha"),
+    exactGitSha(input.runtime.engine.treeSha, "treeSha"),
+    exactSha(
+      input.runtime.engine.executableTreeSha256,
+      "executableTreeSha256",
+    ),
+    exactSha(
+      input.runtime.target.databaseTargetFingerprint,
+      "databaseTargetFingerprint",
+    ),
+    exactSha(input.runtime.target.manifestSha256, "manifestSha256"),
+    exactSha(ownerKey.publicKeySpkiSha256, "ownerPublicKeySpkiSha256"),
+  ].join(":");
+}
+
+export function loadProductTruthWalmartEnrichmentRuntime(input: {
+  env?: RuntimeEnvironment;
+} = {}): ProductTruthWebControlRuntime {
+  const env = input.env ?? process.env;
+  const runtime = loadProductTruthWebControlRuntime({ env });
+  if (runtime.status === "OFF") return runtime;
+  if (runtime.stage === "PRODUCTION_OWNER_GATED_METERED") return runtime;
+  if (
+    runtime.stage !== "PRODUCTION_READ_ONLY"
+    || runtime.target.environment !== "PRODUCTION"
+  ) {
+    fail(
+      "WALMART_ENRICHMENT_STAGE_DISABLED",
+      "Walmart enrichment requires a production worker stage",
+    );
+  }
+  if (runtime.ownerTrustedKey === null) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root is required",
+    );
+  }
+  const expected = expectedProductTruthWalmartEnrichmentConfirmation({
+    runtime,
+  });
+  if (
+    exactEnv(env, PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation)
+      !== expected
+  ) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIRMATION_INVALID",
+      "Walmart enrichment confirmation is not bound to the exact release, target, manifest, and owner key",
+    );
+  }
+  return {
+    ...runtime,
+    claims: {
+      ...runtime.claims,
+      meteredExecutionAdmission: true,
+    },
+  };
+}
+
+export function loadProductTruthWebWorkerRuntime(input: {
+  env?: RuntimeEnvironment;
+} = {}): ProductTruthWebControlRuntime {
+  const env = input.env ?? process.env;
+  const runtime = loadProductTruthWebControlRuntime({ env });
+  if (
+    runtime.status === "ACTIVE"
+    && runtime.stage === "PRODUCTION_READ_ONLY"
+    && env[PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation] !== undefined
+  ) {
+    return loadProductTruthWalmartEnrichmentRuntime({ env });
+  }
+  return runtime;
 }
 
 export function productTruthWebControlPublicStatus(

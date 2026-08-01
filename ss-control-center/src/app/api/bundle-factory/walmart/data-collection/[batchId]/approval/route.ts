@@ -9,7 +9,7 @@ import {
 } from "@/lib/sourcing/product-truth-walmart-enrichment-admission";
 import {
   ProductTruthWebControlRuntimeError,
-  loadProductTruthWebControlRuntime,
+  loadProductTruthWalmartEnrichmentRuntime,
   productTruthWebControlPublicStatus,
 } from "@/lib/sourcing/product-truth-web-control-runtime";
 
@@ -78,7 +78,7 @@ export async function POST(
   }
   let runtime;
   try {
-    runtime = loadProductTruthWebControlRuntime();
+    runtime = loadProductTruthWalmartEnrichmentRuntime();
   } catch (error) {
     return jsonNoStore({
       ok: false,

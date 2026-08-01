@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   ProductTruthWebControlRuntimeError,
-  loadProductTruthWebControlRuntime,
+  loadProductTruthWebWorkerRuntime,
   type ProductTruthWebControlRuntimeActive,
 } from "./product-truth-web-control-runtime";
 import {
@@ -45,7 +45,7 @@ export function authenticateProductTruthWorker(
 ): ProductTruthWebControlRuntimeActive | NextResponse {
   let runtime;
   try {
-    runtime = loadProductTruthWebControlRuntime();
+    runtime = loadProductTruthWebWorkerRuntime();
   } catch (error) {
     return productTruthWorkerJson({
       ok: false,
