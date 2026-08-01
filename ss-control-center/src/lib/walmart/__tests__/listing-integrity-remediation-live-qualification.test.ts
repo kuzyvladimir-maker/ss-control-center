@@ -7,6 +7,7 @@ import test from "node:test";
 import sharp from "sharp";
 
 import {
+  walmartListingIntegrityGalleryHasExplicitOuterQuantity,
   walmartListingIntegrityGalleryQuantityTarget,
 } from "../../../../scripts/build-walmart-listing-integrity-live-gallery.mjs";
 import {
@@ -22,7 +23,7 @@ import type {
 
 const H = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const CURRENT_RELEASE =
-  "e28d8ddb846adfb79510cb2f0c3689ab24f98d50ddf64239c484391e0e04b369";
+  "0c17c88411b10f4301fea5bd08d5594eb0c1748716a719d3c980e8529e004ccc";
 const URLS = [
   "https://i5.walmartimages.com/main.png",
   "https://i5.walmartimages.com/gallery-1.jpg",
@@ -588,6 +589,37 @@ test("factual gallery accepts Walmart Total count for the exact synthetic count 
     total_count_match: true,
     count_per_pack_match: true,
   });
+});
+
+test("factual gallery accepts explicit pack quantity in product-first SEO copy", () => {
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "Arnold Country Potato Sandwich Buns, 8 Count (Pack of 6). This listing includes six bags.",
+      6,
+    ),
+    true,
+  );
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "PACK OF 6: Includes six 24 oz bags.",
+      6,
+    ),
+    true,
+  );
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "Arnold Country Potato Sandwich Buns, 8 Count (Pack of 60).",
+      6,
+    ),
+    false,
+  );
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "This listing includes six bags.",
+      6,
+    ),
+    false,
+  );
 });
 
 test("factual gallery accepts implicit Count per pack 1 when exact Total count is visible", () => {

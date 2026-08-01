@@ -106,7 +106,8 @@ export interface WalmartListingRepairOwnerPackageReport {
     | ["description", "bullets"]
     | ["description", "bullets", "main"]
     | ["description", "bullets", "main", "gallery"]
-    | ["attributes"];
+    | ["attributes"]
+    | ["title"];
   product_type: string;
   artifacts: Record<string, string>;
   hashes: Record<string, string>;
@@ -124,7 +125,7 @@ export interface WalmartListingRepairOwnerPackageReport {
     exact_listing_count: 1;
     signed_one_sku_permit: true;
     package_is_not_executed: true;
-    title_unchanged: true;
+    title_unchanged: boolean;
     images_unchanged: boolean;
     price_unchanged: true;
     inventory_unchanged: true;
@@ -896,7 +897,7 @@ export async function executeWalmartListingRepairOwnerPackage(
       exact_listing_count: 1 as const,
       signed_one_sku_permit: true as const,
       package_is_not_executed: true as const,
-      title_unchanged: true as const,
+      title_unchanged: !request.repair.changed_fields.includes("title"),
       images_unchanged: !request.repair.changed_fields.includes("main")
         && !request.repair.changed_fields.includes("gallery"),
       price_unchanged: true as const,

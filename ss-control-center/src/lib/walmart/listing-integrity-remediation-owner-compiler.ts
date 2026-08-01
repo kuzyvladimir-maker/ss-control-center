@@ -87,6 +87,8 @@ export const WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA =
   "walmart-listing-single-repair-compilation-request/v3" as const;
 export const WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA =
   "walmart-listing-single-repair-compilation-request/v4" as const;
+export const WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA =
+  "walmart-listing-single-repair-compilation-request/v5" as const;
 export const WALMART_LISTING_REPAIR_REVIEWED_TRUTH_SCHEMA =
   "walmart-listing-repair-reviewed-one-sku-truth/v1" as const;
 
@@ -106,7 +108,8 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
     | typeof WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA
     | typeof WALMART_LISTING_REPAIR_MAIN_COMPILATION_REQUEST_SCHEMA
     | typeof WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA
-    | typeof WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA;
+    | typeof WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA
+    | typeof WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA;
   created_at: string;
   status: "READY_FOR_CONNECTED_MATERIALS";
   listing: WalmartListingRepairListingIdentity & {
@@ -143,7 +146,8 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
       | ["description", "bullets"]
       | ["description", "bullets", "main"]
       | ["description", "bullets", "main", "gallery"]
-      | ["attributes"];
+      | ["attributes"]
+      | ["title"];
     unchanged_image_bytes: boolean;
     changed_main_evidence?: {
       product_truth: ImmutableCompilationArtifactReference;
@@ -414,7 +418,8 @@ export function verifyWalmartListingRepairCompilationRequest(
   if ((requestSchema !== WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA
       && requestSchema !== WALMART_LISTING_REPAIR_MAIN_COMPILATION_REQUEST_SCHEMA
       && requestSchema !== WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA
-      && requestSchema !== WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA)
+      && requestSchema !== WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA
+      && requestSchema !== WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA)
     || raw.status !== "READY_FOR_CONNECTED_MATERIALS") {
     fail("compilation request schema/status is unsupported");
   }
@@ -459,6 +464,10 @@ export function verifyWalmartListingRepairCompilationRequest(
     description: targetSurface.description,
     bullets: targetSurface.bullets,
   }) === walmartListingIntegritySha256(targetSurface);
+  const titleOnlySurfaceMatches = walmartListingIntegritySha256({
+    ...baselineSurface,
+    title: targetSurface.title,
+  }) === walmartListingIntegritySha256(targetSurface);
   const textOnly = requestSchema === WALMART_LISTING_REPAIR_COMPILATION_REQUEST_SCHEMA;
   const mainRepair =
     requestSchema === WALMART_LISTING_REPAIR_MAIN_COMPILATION_REQUEST_SCHEMA;
@@ -466,6 +475,8 @@ export function verifyWalmartListingRepairCompilationRequest(
     requestSchema === WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA;
   const imageSetRepair =
     requestSchema === WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA;
+  const titleOnly =
+    requestSchema === WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA;
   const attributeOnlySurfaceMatches = walmartListingIntegritySha256({
     ...baselineSurface,
     attribute_claims: targetSurface.attribute_claims,
@@ -487,6 +498,19 @@ export function verifyWalmartListingRepairCompilationRequest(
       || Object.hasOwn(repair, "changed_main_evidence")
       || Object.hasOwn(repair, "changed_image_set_evidence")) {
       fail("v1 repair is not an exact description/bullets-only diff");
+    }
+  } else if (titleOnly) {
+    if (!titleOnlySurfaceMatches) {
+      fail("v5 repair changes a field outside title");
+    }
+    if (walmartListingIntegritySha256(baselineImages)
+        !== walmartListingIntegritySha256(targetImages)
+      || walmartListingIntegritySha256(repair.changed_fields)
+        !== walmartListingIntegritySha256(["title"])
+      || repair.unchanged_image_bytes !== true
+      || Object.hasOwn(repair, "changed_main_evidence")
+      || Object.hasOwn(repair, "changed_image_set_evidence")) {
+      fail("v5 repair is not an exact title-only diff");
     }
   } else if (mainRepair) {
     if (!textOnlySurfaceMatches) {
@@ -715,7 +739,7 @@ export function verifyWalmartListingRepairCompilationRequest(
   const candidateSha = digest(truth.candidate_sha256, "candidate_sha256");
   const expectedSha = digest(truth.expected_sha256, "expected_sha256");
   const outerUnits = positiveInteger(truth.outer_units, "outer_units");
-  const expected = textOnly
+  const expected = textOnly || titleOnly
     ? undefined
     : exactExpected(
       truth.expected,
@@ -759,6 +783,8 @@ export function verifyWalmartListingRepairCompilationRequest(
       target_images: targetImages,
       changed_fields: textOnly
         ? ["description", "bullets"]
+        : titleOnly
+          ? ["title"]
         : mainRepair
           ? ["description", "bullets", "main"]
           : imageSetRepair
@@ -1156,7 +1182,8 @@ export interface WalmartListingRepairOwnerCompilerDraft {
       | ["description", "bullets"]
       | ["description", "bullets", "main"]
       | ["description", "bullets", "main", "gallery"]
-      | ["attributes"];
+      | ["attributes"]
+      | ["title"];
     current_walmart_write_authorized: false;
     mass_apply_allowed: false;
     network_calls: 0;

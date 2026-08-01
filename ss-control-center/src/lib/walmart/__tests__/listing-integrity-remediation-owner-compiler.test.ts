@@ -197,6 +197,24 @@ function compilationRequest() {
   };
 }
 
+function titleCompilationRequest() {
+  const request = structuredClone(compilationRequest()) as ReturnType<
+    typeof compilationRequest
+  > & Record<string, unknown>;
+  request.schema_version =
+    "walmart-listing-single-repair-compilation-request/v5";
+  request.repair.target_surface = structuredClone(
+    request.repair.baseline_surface,
+  );
+  request.repair.target_surface.title =
+    "Pepperidge Farm Hot Dog Buns, 14 oz Each, 6 Pack";
+  request.repair.changed_fields = ["title"];
+  const body = structuredClone(request) as Record<string, unknown>;
+  delete body.body_sha256;
+  request.body_sha256 = walmartListingIntegritySha256(body);
+  return request;
+}
+
 function mainCompilationRequest() {
   const textOnly = compilationRequest();
   const body = structuredClone(textOnly) as Record<string, unknown>
@@ -431,6 +449,31 @@ test("owner compiler accepts only an exact reviewed description/bullets/MAIN dif
   assert.throws(
     () => verifyWalmartListingRepairCompilationRequest(changedGallery),
     /unchanged gallery/u,
+  );
+});
+
+test("owner compiler accepts only an exact v5 title-only diff", () => {
+  const request = titleCompilationRequest();
+  const verified = verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(verified.repair.changed_fields, ["title"]);
+  assert.equal(verified.repair.unchanged_image_bytes, true);
+  assert.equal(
+    verified.repair.target_surface.description,
+    verified.repair.baseline_surface.description,
+  );
+
+  const changedDescription = structuredClone(request);
+  changedDescription.repair.target_surface.description =
+    "Unexpected description change";
+  const changedBody = structuredClone(changedDescription) as Record<
+    string,
+    unknown
+  >;
+  delete changedBody.body_sha256;
+  changedDescription.body_sha256 = walmartListingIntegritySha256(changedBody);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(changedDescription),
+    /outside title/u,
   );
 });
 

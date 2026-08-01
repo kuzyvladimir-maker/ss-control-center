@@ -463,6 +463,99 @@ test("builds one canonical native MP_MAINTENANCE request and never writes the fu
   );
 });
 
+test("description and bullets maintenance omits every unchanged identity field", () => {
+  const claims: ListingAttributeClaim[] = [{
+    field_path: "product.specifications[0].Flavor",
+    kind: "variant",
+    text: "Chicken",
+  }];
+  const images = [
+    image("main", "same-main", "1"),
+    image("gallery-1", "same-gallery", "2"),
+  ];
+  const planData = planFixture({
+    baselineSurface: surface({
+      title: "Maruchan Instant Lunch Chicken, Bundle of 2 Cartons",
+      description: "Legacy description",
+      bullets: ["Legacy feature"],
+      claims,
+    }),
+    targetSurface: surface({
+      title: "Maruchan Instant Lunch Chicken, Bundle of 2 Cartons",
+      description: "Chicken Flavor ramen noodle soup, 24 cups total.",
+      bullets: ["Includes 24 Chicken Flavor cups"],
+      claims,
+    }),
+    baselineImages: images,
+    targetImages: images,
+    changedFields: ["description", "bullets"],
+  });
+  const result = build(fixture({
+    planData,
+    contractMutator: (body) => { body.attribute_mappings = []; },
+  }));
+  const item = (result.payload.MPItem as Array<Record<string, unknown>>)[0]!;
+  const visible = (item.Visible as Record<string, Record<string, unknown>>)[PRODUCT_TYPE]!;
+
+  assert.deepEqual(visible, {
+    keyFeatures: ["Includes 24 Chicken Flavor cups"],
+    shortDescription: "Chicken Flavor ramen noodle soup, 24 cups total.",
+  });
+  for (const forbidden of [
+    "productName",
+    "brand",
+    "flavor",
+    "mainImageUrl",
+    "productSecondaryImageURL",
+    "multipackQuantity",
+  ]) {
+    assert.equal(Object.hasOwn(visible, forbidden), false, forbidden);
+  }
+  assert.deepEqual(result.validation.changed_fields, ["description", "bullets"]);
+  assert.deepEqual(result.request_manifest.visible_fields, ["keyFeatures", "shortDescription"]);
+});
+
+test("title-only maintenance emits productName and no unrelated field", () => {
+  const claims: ListingAttributeClaim[] = [{
+    field_path: "product.specifications[0].Flavor",
+    kind: "variant",
+    text: "Chicken",
+  }];
+  const images = [
+    image("main", "same-main", "1"),
+    image("gallery-1", "same-gallery", "2"),
+  ];
+  const baseline = surface({
+    title: "Maruchan Instant Lunch Roast Chicken, Bundle of 10 Cartons",
+    description: "Exact unchanged description",
+    bullets: ["Exact unchanged feature"],
+    claims,
+  });
+  const target = structuredClone(baseline);
+  target.title =
+    "Maruchan Instant Lunch Chicken Flavor Ramen Noodle Soup, 120 Count";
+  const planData = planFixture({
+    baselineSurface: baseline,
+    targetSurface: target,
+    baselineImages: images,
+    targetImages: images,
+    changedFields: ["title"],
+  });
+  const result = build(fixture({
+    planData,
+    contractMutator: (body) => { body.attribute_mappings = []; },
+  }));
+  const item = (result.payload.MPItem as Array<Record<string, unknown>>)[0]!;
+  const visible = (item.Visible as Record<string, Record<string, unknown>>)[PRODUCT_TYPE]!;
+
+  assert.deepEqual(visible, {
+    productName:
+      "Maruchan Instant Lunch Chicken Flavor Ramen Noodle Soup, 120 Count",
+  });
+  assert.deepEqual(result.validation.changed_fields, ["title"]);
+  assert.deepEqual(result.request_manifest.visible_fields, ["productName"]);
+});
+
 test("manifest freezes pre-sign timing, raw spec, identifier, and exact transport semantics", () => {
   const result = build();
   const manifest = result.request_manifest;
