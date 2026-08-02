@@ -31,7 +31,7 @@ import {
 export const PRODUCT_TRUTH_PROVIDER_ATTEMPT_CAPTURE_VERSION =
   "product-truth-provider-attempt-capture/1.0.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_VERSION =
-  "product-truth-provider-target-wave/1.2.0" as const;
+  "product-truth-provider-target-wave/1.3.0" as const;
 export const PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS = 16;
 
 const TERMINAL_ITEM_STATUSES = [
@@ -140,9 +140,10 @@ export interface ProductTruthProviderTargetWave {
       "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION";
     sourceDetailAdmission:
       "EXACT_TARGET_AND_RETAILER_ITEM_MUST_BE_ADMITTED_BY_BOUND_FAIL_CLOSED_ARTIFACT";
-    retailers: readonly ["walmart", "target", "publix"];
+    retailers: readonly ["walmart", "target"];
     procurementZip: "33765";
     maximumTargets: number;
+    exactCanonicalVariantIds: string[];
     maximumProviderUnits: number;
     retryAllowed: false;
     clubsAllowed: false;
@@ -405,6 +406,7 @@ export function compileProductTruthProviderTargetWave(input: {
   attemptCaptureJson: string;
   attemptCaptureSha256: string;
   maximumTargets: number;
+  exactCanonicalVariantIds?: readonly string[];
 }): ProductTruthProviderTargetWave {
   const waveId = exactText(input.waveId, "waveId", 200);
   const generatedAt = canonicalInstant(input.generatedAt, "generatedAt");
@@ -416,6 +418,18 @@ export function compileProductTruthProviderTargetWave(input: {
     fail(
       "PROVIDER_TARGET_WAVE_INPUT_INVALID",
       "wave lifetime must be positive and at most 24 hours",
+    );
+  }
+  const requestedExactTargetIds = (input.exactCanonicalVariantIds ?? [])
+    .map((value, index) =>
+      canonicalVariantId(value, `exactCanonicalVariantIds[${index}]`));
+  if (
+    new Set(requestedExactTargetIds).size !== requestedExactTargetIds.length
+    || requestedExactTargetIds.length > input.maximumTargets
+  ) {
+    fail(
+      "PROVIDER_TARGET_WAVE_INPUT_INVALID",
+      "exact target selectors must be unique and fit maximumTargets",
     );
   }
   const databaseTargetFingerprint = exactSha(
@@ -631,7 +645,24 @@ export function compileProductTruthProviderTargetWave(input: {
     }
     eligible.push({ target, representative: candidates[0]! });
   }
-  const selected = eligible.slice(0, input.maximumTargets);
+  const selected = requestedExactTargetIds.length
+    ? eligible.filter(({ target }) =>
+      requestedExactTargetIds.includes(target.canonicalVariantId))
+    : eligible.slice(0, input.maximumTargets);
+  if (
+    requestedExactTargetIds.length
+    && (
+      selected.length !== requestedExactTargetIds.length
+      || requestedExactTargetIds.some((targetId) =>
+        !selected.some(({ target }) =>
+          target.canonicalVariantId === targetId))
+    )
+  ) {
+    fail(
+      "PROVIDER_TARGET_WAVE_EXACT_TARGET_UNAVAILABLE",
+      "an exact selected target is absent, terminal, inadmissible, or has no representative",
+    );
+  }
   if (!selected.length) {
     fail(
       "PROVIDER_TARGET_WAVE_EMPTY",
@@ -683,10 +714,18 @@ export function compileProductTruthProviderTargetWave(input: {
       canonicalIdentityHash: target.canonicalIdentityHash,
       queryVersion: target.queryVersion,
       query: target.query,
+      sourceDetailAdmissionSha256:
+        sourceDetailAdmissionSha256,
+      sourceDetailCandidate: {
+        retailer: target.sourceDetailCandidate.retailer,
+        retailerProductId:
+          target.sourceDetailCandidate.retailerProductId,
+        productUrl: target.sourceDetailCandidate.productUrl,
+      },
     })),
     sourcePolicy: {
       procurementZip: "33765",
-      retailers: ["walmart", "target", "publix"],
+      retailers: ["walmart", "target"],
       allowClubs: false,
       allowBjs: false,
       listingConcurrency: 1,
@@ -787,9 +826,10 @@ export function compileProductTruthProviderTargetWave(input: {
         "EXACT_TARGET_AND_QUERY_MUST_BE_ADMITTED_BY_BOUND_NONREGRESSING_CALIBRATION",
       sourceDetailAdmission:
         "EXACT_TARGET_AND_RETAILER_ITEM_MUST_BE_ADMITTED_BY_BOUND_FAIL_CLOSED_ARTIFACT",
-      retailers: ["walmart", "target", "publix"],
+      retailers: ["walmart", "target"],
       procurementZip: "33765",
       maximumTargets: input.maximumTargets,
+      exactCanonicalVariantIds: [...requestedExactTargetIds],
       maximumProviderUnits,
       retryAllowed: false,
       clubsAllowed: false,

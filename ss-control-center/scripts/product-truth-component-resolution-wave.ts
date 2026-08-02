@@ -31,9 +31,22 @@ import type {
 import type {
   ProductTruthComponentAcquisitionScope,
 } from "../src/lib/sourcing/product-truth-component-acquisition-scope";
+import type {
+  ProductTruthDirectRetailerIdentityEvidence,
+} from "../src/lib/sourcing/product-truth-direct-retailer-identity-evidence";
+import type {
+  ProductTruthListingRetailerIdentityBridge,
+} from "../src/lib/sourcing/product-truth-listing-retailer-identity-bridge";
 import {
   renderProductTruthOperationalJson,
 } from "../src/lib/sourcing/product-truth-operational-run-contract";
+import type {
+  ProductTruthSourceDetailAdmission,
+} from "../src/lib/sourcing/product-truth-source-detail-admission";
+import type {
+  ProductTruthTargetIdentityResolution,
+  ProductTruthTargetIdentityResolutionEvidenceInput,
+} from "../src/lib/sourcing/product-truth-target-identity-resolution";
 
 type Command = "preflight" | "apply";
 
@@ -45,6 +58,13 @@ type CommonOptions = {
   bridgeSnapshotSha256: string;
   standingPolicyPath: string;
   standingPolicySha256: string;
+  identityBridgePath: string | null;
+  identityBridgeSha256: string | null;
+  sourceDetailAdmissionPath: string | null;
+  sourceDetailAdmissionSha256: string | null;
+  targetIdentityResolutionPath: string | null;
+  targetIdentityResolutionSha256: string | null;
+  directEvidencePaths: string[];
   planPath: string;
   planSha256: string;
   url: string;
@@ -78,6 +98,12 @@ function usage(): string {
     "    --component-scope ABS_JSON --component-scope-sha256 SHA256",
     "    --bridge-snapshot ABS_JSON --bridge-snapshot-sha256 SHA256",
     "    --standing-policy ABS_JSON --standing-policy-sha256 SHA256",
+    "    [--identity-bridge ABS_JSON --identity-bridge-sha256 SHA256",
+    "     --source-detail-admission ABS_JSON",
+    "     --source-detail-admission-sha256 SHA256]",
+    "    [--target-identity-resolution ABS_JSON",
+    "     --target-identity-resolution-sha256 SHA256",
+    "     --direct-evidence ABS_EVIDENCE_JSON (repeatable)]",
     "    --plan ABS_JSON --plan-sha256 SHA256",
     "    (--url URL | --url-env ENV) [--allow-remote --auth-token-env ENV]",
     "    --checked-at UTC --out ABS_NEW_DIR",
@@ -123,6 +149,13 @@ function parseOptions(argv: readonly string[]): Options {
     "--bridge-snapshot-sha256",
     "--standing-policy",
     "--standing-policy-sha256",
+    "--identity-bridge",
+    "--identity-bridge-sha256",
+    "--source-detail-admission",
+    "--source-detail-admission-sha256",
+    "--target-identity-resolution",
+    "--target-identity-resolution-sha256",
+    "--direct-evidence",
     "--plan",
     "--plan-sha256",
     "--url",
@@ -135,6 +168,7 @@ function parseOptions(argv: readonly string[]): Options {
     "--out",
   ]);
   const values = new Map<string, string>();
+  const directEvidencePaths: string[] = [];
   let allowRemote = false;
   for (let index = 1; index < argv.length; index += 1) {
     const flag = argv[index]!;
@@ -148,8 +182,12 @@ function parseOptions(argv: readonly string[]): Options {
     if (!value || value.startsWith("--")) {
       fail("CLI_ARGUMENT_VALUE_REQUIRED", flag);
     }
-    if (values.has(flag)) fail("CLI_ARGUMENT_DUPLICATE", flag);
-    values.set(flag, value);
+    if (flag === "--direct-evidence") {
+      directEvidencePaths.push(value);
+    } else {
+      if (values.has(flag)) fail("CLI_ARGUMENT_DUPLICATE", flag);
+      values.set(flag, value);
+    }
     index += 1;
   }
   const required = (flag: string): string => {
@@ -191,6 +229,42 @@ function parseOptions(argv: readonly string[]): Options {
       required("--standing-policy-sha256"),
       "--standing-policy-sha256",
     ),
+    identityBridgePath: values.has("--identity-bridge")
+      ? absolute("--identity-bridge")
+      : null,
+    identityBridgeSha256: values.has("--identity-bridge-sha256")
+      ? exactSha(
+        required("--identity-bridge-sha256"),
+        "--identity-bridge-sha256",
+      )
+      : null,
+    sourceDetailAdmissionPath: values.has("--source-detail-admission")
+      ? absolute("--source-detail-admission")
+      : null,
+    sourceDetailAdmissionSha256:
+      values.has("--source-detail-admission-sha256")
+        ? exactSha(
+          required("--source-detail-admission-sha256"),
+          "--source-detail-admission-sha256",
+        )
+        : null,
+    targetIdentityResolutionPath:
+      values.has("--target-identity-resolution")
+        ? absolute("--target-identity-resolution")
+        : null,
+    targetIdentityResolutionSha256:
+      values.has("--target-identity-resolution-sha256")
+        ? exactSha(
+          required("--target-identity-resolution-sha256"),
+          "--target-identity-resolution-sha256",
+        )
+        : null,
+    directEvidencePaths: directEvidencePaths.map((path) => {
+      if (!isAbsolute(path) || resolve(path) !== path) {
+        fail("ABSOLUTE_PATH_REQUIRED", "--direct-evidence");
+      }
+      return path;
+    }),
     planPath: absolute("--plan"),
     planSha256: exactSha(
       required("--plan-sha256"),
@@ -201,6 +275,35 @@ function parseOptions(argv: readonly string[]): Options {
     allowRemote,
     outDir: absolute("--out"),
   };
+  const identityInputs = [
+    common.identityBridgePath,
+    common.identityBridgeSha256,
+    common.sourceDetailAdmissionPath,
+    common.sourceDetailAdmissionSha256,
+  ].filter(Boolean).length;
+  if (![0, 4].includes(identityInputs)) {
+    fail(
+      "CLI_ARGUMENT_GROUP_INCOMPLETE",
+      "all four listing retailer identity inputs are required together",
+    );
+  }
+  const targetIdentityInputs = [
+    common.targetIdentityResolutionPath,
+    common.targetIdentityResolutionSha256,
+  ].filter(Boolean).length;
+  if (
+    ![
+      targetIdentityInputs === 0 && common.directEvidencePaths.length === 0,
+      targetIdentityInputs === 2
+        && common.directEvidencePaths.length > 0
+        && identityInputs === 4,
+    ].includes(true)
+  ) {
+    fail(
+      "CLI_ARGUMENT_GROUP_INCOMPLETE",
+      "target resolution requires resolution, direct evidence, and listing bridge inputs",
+    );
+  }
   if (command === "preflight") {
     return {
       ...common,
@@ -242,6 +345,29 @@ async function readJson<T>(path: string): Promise<{
   }
 }
 
+async function readDirectEvidence(
+  path: string,
+): Promise<ProductTruthTargetIdentityResolutionEvidenceInput> {
+  const resolvedPath = await realpath(path);
+  const json = await readFile(resolvedPath, "utf8");
+  let evidence: ProductTruthDirectRetailerIdentityEvidence;
+  try {
+    evidence = JSON.parse(json) as ProductTruthDirectRetailerIdentityEvidence;
+  } catch {
+    fail("SOURCE_JSON_INVALID", resolvedPath);
+  }
+  const htmlFile = evidence.retailerContent?.htmlFile;
+  if (!htmlFile || htmlFile !== htmlFile.split(/[\\/]/u).at(-1)) {
+    fail("DIRECT_EVIDENCE_CONTRACT_INVALID", resolvedPath);
+  }
+  return {
+    evidence,
+    evidenceJson: json,
+    evidenceSha256: sha256(json),
+    htmlBytes: await readFile(resolve(dirname(resolvedPath), htmlFile)),
+  };
+}
+
 async function loadSources(
   options: CommonOptions,
 ): Promise<ProductTruthComponentResolutionMaterializationSources> {
@@ -256,6 +382,24 @@ async function loadSources(
       options.standingPolicyPath,
     ),
   ]);
+  const identityInputs = options.identityBridgePath
+    ? await Promise.all([
+      readJson<ProductTruthListingRetailerIdentityBridge>(
+        options.identityBridgePath,
+      ),
+      readJson<ProductTruthSourceDetailAdmission>(
+        options.sourceDetailAdmissionPath!,
+      ),
+    ])
+    : null;
+  const targetResolutionInput = options.targetIdentityResolutionPath
+    ? await readJson<ProductTruthTargetIdentityResolution>(
+      options.targetIdentityResolutionPath,
+    )
+    : null;
+  const directEvidence = await Promise.all(
+    options.directEvidencePaths.map(readDirectEvidence),
+  );
   return {
     componentScope: scope.value,
     componentScopeJson: scope.json,
@@ -266,6 +410,29 @@ async function loadSources(
     standingPolicy: policy.value,
     standingPolicyJson: policy.json,
     standingPolicySha256: options.standingPolicySha256,
+    ...(identityInputs
+      ? {
+        listingRetailerIdentityEvidence: {
+          bridge: identityInputs[0].value,
+          bridgeJson: identityInputs[0].json,
+          bridgeSha256: options.identityBridgeSha256!,
+          sourceDetailAdmission: identityInputs[1].value,
+          sourceDetailAdmissionJson: identityInputs[1].json,
+          sourceDetailAdmissionSha256:
+            options.sourceDetailAdmissionSha256!,
+        },
+      }
+      : {}),
+    ...(targetResolutionInput
+      ? {
+        targetIdentityResolutionEvidence: {
+          resolution: targetResolutionInput.value,
+          resolutionJson: targetResolutionInput.json,
+          resolutionSha256: options.targetIdentityResolutionSha256!,
+          directEvidence,
+        },
+      }
+      : {}),
   };
 }
 

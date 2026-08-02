@@ -13,6 +13,7 @@ import {
 import { makeTestConnectedStoreCensus } from "./phase1-connected-store-census-fixture";
 import {
   PRODUCT_TRUTH_OPERATIONAL_APPROVAL_VERSION,
+  PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION,
   ProductTruthOperationalContractError,
   buildProductTruthOperationalPlan,
   expectedProductTruthExecutionConfirmation,
@@ -189,6 +190,76 @@ test("seals five exact listing scopes without merging a cross-channel raw SKU", 
   assert.deepEqual(plan.targets[0].requestedFields, ["identity", "offers", "content", "cogs"]);
   assert.match(productTruthOperationalSha256(plan), /^[a-f0-9]{64}$/);
   assert.equal(productTruthOperationalSha256(plan), productTruthOperationalSha256(buildPlan()));
+});
+
+test("provider acquisition seals the exact admitted retailer item through plan parsing", () => {
+  const scope = manifest();
+  const listingKey = scope.listings[0]!.listingKey;
+  const identityHash = "3".repeat(64);
+  const plan = buildPlan({
+    providerAcquisitionTargets: [{
+      listingKey,
+      canonicalVariantId: `cpv1:${identityHash}`,
+      canonicalIdentityHash: identityHash,
+      queryVersion:
+        "product-truth-provider-query/form-augmented-v1",
+      query: "Acme One box 12 oz",
+      sourceDetailAdmissionSha256: "4".repeat(64),
+      sourceDetailCandidate: {
+        retailer: "walmart",
+        retailerProductId: "123456789",
+        productUrl:
+          "https://www.walmart.com/ip/Acme-One-box-12-oz/123456789?classType=VARIANT",
+      },
+    }],
+  });
+  const parsed = parseProductTruthOperationalPlan(
+    JSON.parse(JSON.stringify(plan)),
+  );
+  assert.deepEqual(
+    parsed.targets.find((target) => target.listingKey === listingKey)
+      ?.providerAcquisition?.sourceDetailCandidate,
+    {
+      retailer: "walmart",
+      retailerProductId: "123456789",
+      productUrl:
+        "https://www.walmart.com/ip/Acme-One-box-12-oz/123456789?classType=VARIANT",
+    },
+  );
+  assert.throws(
+    () => buildPlan({
+      providerAcquisitionTargets: [{
+        listingKey,
+        canonicalVariantId: `cpv1:${identityHash}`,
+        canonicalIdentityHash: identityHash,
+        queryVersion:
+          "product-truth-provider-query/form-augmented-v1",
+        query: "Acme One box 12 oz",
+        sourceDetailAdmissionSha256: "4".repeat(64),
+        sourceDetailCandidate: {
+          retailer: "walmart",
+          retailerProductId: "987654321",
+          productUrl:
+            "https://www.walmart.com/ip/Acme-One-box-12-oz/123456789",
+        },
+      }],
+    }),
+    (error) => code(error) === "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+  );
+});
+
+test("previous 1.1 plans remain readable but do not gain a source-detail pin", () => {
+  const current = buildPlan();
+  const previous = {
+    ...current,
+    schemaVersion: PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION,
+  };
+  const parsed = parseProductTruthOperationalPlan(previous);
+  assert.equal(
+    parsed.schemaVersion,
+    PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION,
+  );
+  assert.equal(parsed.targets[0]?.providerAcquisition, null);
 });
 
 test("rejects an incomplete canary, a non-authoritative manifest, and manifest tampering", () => {

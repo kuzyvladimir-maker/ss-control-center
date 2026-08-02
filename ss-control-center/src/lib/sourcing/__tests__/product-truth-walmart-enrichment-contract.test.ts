@@ -123,6 +123,7 @@ function fixture(count = 2) {
       via: "direct",
       isFirstParty: true,
       legacySnapshot: null,
+      listingBinding: null,
     });
     const request = buildProductTruthTargetedWalmartEvidenceRequest({
       runId: job.runId,

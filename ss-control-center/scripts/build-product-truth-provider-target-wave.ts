@@ -40,6 +40,7 @@ type Options = {
   expiresAt: string;
   waveId: string;
   maximumTargets: number;
+  exactCanonicalVariantId: string | null;
   componentScopePath: string;
   componentScopeShaPath: string;
   searchQueryCalibrationPath: string;
@@ -70,6 +71,7 @@ function usage(): string {
     "  node --import tsx scripts/build-product-truth-provider-target-wave.ts",
     "    --generated-at ISO --expires-at ISO --wave-id ID",
     `    --max-targets INTEGER  # 1-${PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS}`,
+    "    [--exact-canonical-variant-id cpv1:SHA256]",
     "    --component-scope ABS_JSON --component-scope-sha ABS_SHA_FILE",
     "    --search-calibration ABS_JSON --search-calibration-sha ABS_SHA_FILE",
     "    --source-detail-admission ABS_JSON --source-detail-admission-sha ABS_SHA_FILE",
@@ -112,6 +114,7 @@ function parseOptions(argv: readonly string[]): Options {
     "--expires-at",
     "--wave-id",
     "--max-targets",
+    "--exact-canonical-variant-id",
     "--component-scope",
     "--component-scope-sha",
     "--search-calibration",
@@ -171,6 +174,17 @@ function parseOptions(argv: readonly string[]): Options {
       `--max-targets must be 1-${PRODUCT_TRUTH_PROVIDER_TARGET_WAVE_MAX_TARGETS}`,
     );
   }
+  const exactCanonicalVariantId =
+    values.get("--exact-canonical-variant-id")?.trim() ?? null;
+  if (
+    exactCanonicalVariantId !== null
+    && !/^cpv1:[a-f0-9]{64}$/.test(exactCanonicalVariantId)
+  ) {
+    fail(
+      "CLI_ARGUMENT_INVALID",
+      "--exact-canonical-variant-id must be cpv1:SHA256",
+    );
+  }
   return {
     generatedAt: canonicalInstant(
       required("--generated-at"),
@@ -179,6 +193,7 @@ function parseOptions(argv: readonly string[]): Options {
     expiresAt: canonicalInstant(required("--expires-at"), "--expires-at"),
     waveId: required("--wave-id"),
     maximumTargets,
+    exactCanonicalVariantId,
     componentScopePath: absolutePath(
       values.get("--component-scope"),
       "--component-scope",
@@ -338,7 +353,8 @@ async function captureTerminalProviderAttempts(
          AND receipt."createdAt"<=item."finishedAt"
         WHERE run."planSchemaVersion" IN (
           'product-truth-operational-plan/1.0.0',
-          'product-truth-operational-plan/1.1.0'
+          'product-truth-operational-plan/1.1.0',
+          'product-truth-operational-plan/1.2.0'
         )
           AND item."attempts">0
           AND item."status" IN (
@@ -488,6 +504,9 @@ async function run(options: Options): Promise<void> {
     attemptCaptureJson: captureJson,
     attemptCaptureSha256: captureSha256,
     maximumTargets: options.maximumTargets,
+    exactCanonicalVariantIds: options.exactCanonicalVariantId
+      ? [options.exactCanonicalVariantId]
+      : [],
   });
   const waveJson = renderProductTruthProviderTargetWave(wave);
   const waveSha256 = sha256(waveJson);
@@ -497,7 +516,7 @@ async function run(options: Options): Promise<void> {
   const requestSha256 = sha256(requestJson);
   const indexJson = renderProductTruthOperationalJson({
     schemaVersion:
-      "product-truth-provider-target-wave-artifact-index/1.2.0",
+      "product-truth-provider-target-wave-artifact-index/1.3.0",
     generatedAt: wave.generatedAt,
     waveId: wave.waveId,
     databaseTargetFingerprint: wave.databaseTargetFingerprint,

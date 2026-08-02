@@ -20,6 +20,8 @@ import {
 } from "./product-truth-listing-scope";
 
 export const PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION =
+  "product-truth-operational-plan/1.2.0" as const;
+export const PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION =
   "product-truth-operational-plan/1.1.0" as const;
 export const PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION =
   "product-truth-operational-plan/1.0.0" as const;
@@ -70,12 +72,19 @@ export interface ProductTruthOperationalTarget {
     canonicalIdentityHash: string;
     queryVersion: string;
     query: string;
+    sourceDetailAdmissionSha256?: string;
+    sourceDetailCandidate?: {
+      retailer: "walmart" | "target";
+      retailerProductId: string;
+      productUrl: string;
+    };
   } | null;
 }
 
 export interface ProductTruthOperationalPlan {
   schemaVersion:
     | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION
+    | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION
     | typeof PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION;
   runId: string;
   mode: ProductTruthOperationalMode;
@@ -424,6 +433,74 @@ function validateSourcePolicy(value: ProductTruthSourcePolicy): ProductTruthSour
   };
 }
 
+function canonicalSourceDetailCandidate(
+  value: unknown,
+  label: string,
+): {
+  retailer: "walmart" | "target";
+  retailerProductId: string;
+  productUrl: string;
+} {
+  if (!isRecord(value)) {
+    fail("OPERATIONAL_ACQUISITION_TARGET_INVALID", `${label} must be an object`);
+  }
+  assertExactKeys(
+    value,
+    ["retailer", "retailerProductId", "productUrl"],
+    label,
+  );
+  if (value.retailer !== "walmart" && value.retailer !== "target") {
+    fail(
+      "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+      `${label}.retailer must be walmart or target`,
+    );
+  }
+  const retailer = value.retailer;
+  const retailerProductId = exactText(
+    value.retailerProductId,
+    `${label}.retailerProductId`,
+    120,
+  );
+  const productUrl = exactText(value.productUrl, `${label}.productUrl`, 1_500);
+  let parsed: URL;
+  try {
+    parsed = new URL(productUrl);
+  } catch {
+    fail(
+      "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+      `${label}.productUrl must be an absolute URL`,
+    );
+  }
+  if (
+    parsed.protocol !== "https:"
+    || parsed.username
+    || parsed.password
+    || parsed.hash
+  ) {
+    fail(
+      "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+      `${label}.productUrl must be credential-free HTTPS without a fragment`,
+    );
+  }
+  const hostname = parsed.hostname.toLowerCase();
+  const pathParts = parsed.pathname.split("/").filter(Boolean);
+  const walmartBound = retailer === "walmart"
+    && (hostname === "walmart.com" || hostname === "www.walmart.com")
+    && pathParts.some((part) => part.toLowerCase() === "ip")
+    && pathParts.at(-1) === retailerProductId;
+  const targetBound = retailer === "target"
+    && (hostname === "target.com" || hostname === "www.target.com")
+    && new RegExp(`(?:^|/)A-${retailerProductId}(?:/|$)`, "u")
+      .test(parsed.pathname);
+  if (!walmartBound && !targetBound) {
+    fail(
+      "OPERATIONAL_ACQUISITION_TARGET_INVALID",
+      `${label}.productUrl does not bind its retailer and item ID`,
+    );
+  }
+  return { retailer, retailerProductId, productUrl };
+}
+
 export interface BuildProductTruthOperationalPlanInput {
   runId: string;
   mode: ProductTruthOperationalMode;
@@ -439,6 +516,12 @@ export interface BuildProductTruthOperationalPlanInput {
     canonicalIdentityHash: string;
     queryVersion: string;
     query: string;
+    sourceDetailAdmissionSha256?: string;
+    sourceDetailCandidate?: {
+      retailer: "walmart" | "target";
+      retailerProductId: string;
+      productUrl: string;
+    };
   }[];
   sourcePolicy: ProductTruthSourcePolicy;
   providerCeilings: readonly ProductTruthProviderCeiling[];
@@ -487,6 +570,12 @@ export function buildProductTruthOperationalPlan(
     canonicalIdentityHash: string;
     queryVersion: string;
     query: string;
+    sourceDetailAdmissionSha256: string;
+    sourceDetailCandidate: {
+      retailer: "walmart" | "target";
+      retailerProductId: string;
+      productUrl: string;
+    };
   }>();
   for (const [index, raw] of (input.providerAcquisitionTargets ?? []).entries()) {
     if (!isRecord(raw)) {
@@ -498,6 +587,8 @@ export function buildProductTruthOperationalPlan(
       "canonicalIdentityHash",
       "queryVersion",
       "query",
+      "sourceDetailAdmissionSha256",
+      "sourceDetailCandidate",
     ], `providerAcquisitionTargets[${index}]`);
     const listingKey = exactText(raw.listingKey, `providerAcquisitionTargets[${index}].listingKey`, 500);
     const canonicalIdentityHash = sha256(
@@ -527,6 +618,14 @@ export function buildProductTruthOperationalPlan(
       );
     }
     const query = exactText(raw.query, `providerAcquisitionTargets[${index}].query`, 500);
+    const sourceDetailAdmissionSha256 = sha256(
+      raw.sourceDetailAdmissionSha256,
+      `providerAcquisitionTargets[${index}].sourceDetailAdmissionSha256`,
+    );
+    const sourceDetailCandidate = canonicalSourceDetailCandidate(
+      raw.sourceDetailCandidate,
+      `providerAcquisitionTargets[${index}].sourceDetailCandidate`,
+    );
     if (providerAcquisitionByListing.has(listingKey)) {
       fail(
         "OPERATIONAL_ACQUISITION_TARGET_INVALID",
@@ -538,6 +637,8 @@ export function buildProductTruthOperationalPlan(
       canonicalIdentityHash,
       queryVersion,
       query,
+      sourceDetailAdmissionSha256,
+      sourceDetailCandidate,
     });
   }
   if (
@@ -656,11 +757,14 @@ export function parseProductTruthOperationalPlan(
     "claims",
   ], "plan");
   const isCurrent = value.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION;
+  const isPrevious =
+    value.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION;
   const isLegacy = value.schemaVersion === PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION;
-  if (!isCurrent && !isLegacy) {
+  if (!isCurrent && !isPrevious && !isLegacy) {
     fail(
       "PLAN_INVALID",
       `plan must use ${PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION}`
+      + `, ${PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION}`
       + ` or ${PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION}`,
     );
   }
@@ -710,7 +814,7 @@ export function parseProductTruthOperationalPlan(
       "storeIndex",
       "sku",
       "requestedFields",
-      ...(isCurrent ? ["providerAcquisition"] : []),
+      ...(isCurrent || isPrevious ? ["providerAcquisition"] : []),
     ], `plan.targets[${ordinal}]`);
     if (raw.ordinal !== ordinal) {
       fail("OPERATIONAL_SCOPE_INVALID", "target ordinals must be contiguous and ordered");
@@ -737,7 +841,7 @@ export function parseProductTruthOperationalPlan(
       fail("OPERATIONAL_SCOPE_INVALID", `target ${ordinal} must request the complete v1 field set`);
     }
     let providerAcquisition: ProductTruthOperationalTarget["providerAcquisition"];
-    if (isCurrent) {
+    if (isCurrent || isPrevious) {
       if (raw.providerAcquisition === null) {
         providerAcquisition = null;
       } else {
@@ -749,6 +853,12 @@ export function parseProductTruthOperationalPlan(
           "canonicalIdentityHash",
           "queryVersion",
           "query",
+          ...(isCurrent
+            ? [
+              "sourceDetailAdmissionSha256",
+              "sourceDetailCandidate",
+            ]
+            : []),
         ], `target ${ordinal}.providerAcquisition`);
         const canonicalIdentityHash = sha256(
           raw.providerAcquisition.canonicalIdentityHash,
@@ -785,6 +895,18 @@ export function parseProductTruthOperationalPlan(
             `target ${ordinal}.providerAcquisition.query`,
             500,
           ),
+          ...(isCurrent
+            ? {
+              sourceDetailAdmissionSha256: sha256(
+                raw.providerAcquisition.sourceDetailAdmissionSha256,
+                `target ${ordinal}.providerAcquisition.sourceDetailAdmissionSha256`,
+              ),
+              sourceDetailCandidate: canonicalSourceDetailCandidate(
+                raw.providerAcquisition.sourceDetailCandidate,
+                `target ${ordinal}.providerAcquisition.sourceDetailCandidate`,
+              ),
+            }
+            : {}),
         };
       }
     }
@@ -796,7 +918,9 @@ export function parseProductTruthOperationalPlan(
       storeIndex: scope.storeIndex,
       sku: scope.sku,
       requestedFields: [...PRODUCT_TRUTH_OPERATIONAL_FIELDS],
-      ...(isCurrent ? { providerAcquisition: providerAcquisition ?? null } : {}),
+      ...(isCurrent || isPrevious
+        ? { providerAcquisition: providerAcquisition ?? null }
+        : {}),
     };
   });
   if (new Set(targets.map((target) => target.listingKey)).size !== targets.length) {
@@ -862,7 +986,9 @@ export function parseProductTruthOperationalPlan(
   return {
     schemaVersion: isCurrent
       ? PRODUCT_TRUTH_OPERATIONAL_PLAN_VERSION
-      : PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION,
+      : isPrevious
+        ? PRODUCT_TRUTH_OPERATIONAL_PLAN_PREVIOUS_VERSION
+        : PRODUCT_TRUTH_OPERATIONAL_PLAN_LEGACY_VERSION,
     runId,
     mode,
     createdAt,

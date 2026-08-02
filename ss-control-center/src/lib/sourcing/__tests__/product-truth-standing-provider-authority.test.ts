@@ -39,7 +39,7 @@ import { parseProductTruthRunnerArguments } from "../../../../scripts/product-tr
 
 const POLICY_PATH = join(
   process.cwd(),
-  "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v3.json",
+  "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v4.json",
 );
 const MANIFEST_PATH = join(
   process.cwd(),

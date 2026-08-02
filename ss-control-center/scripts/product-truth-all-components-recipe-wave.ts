@@ -35,6 +35,9 @@ import {
 import type {
   ProductTruthRecipeRepairScope,
 } from "../src/lib/sourcing/product-truth-recipe-repair-scope";
+import type {
+  ProductTruthTargetIdentityResolution,
+} from "../src/lib/sourcing/product-truth-target-identity-resolution";
 import {
   renderProductTruthOperationalJson,
 } from "../src/lib/sourcing/product-truth-operational-run-contract";
@@ -52,6 +55,8 @@ type Options = {
   bridgeSnapshotSha256: string;
   standingPolicyPath: string;
   standingPolicySha256: string;
+  targetIdentityResolutionPath: string | null;
+  targetIdentityResolutionSha256: string | null;
   url: string;
   authTokenEnv: string | null;
   allowRemote: boolean;
@@ -79,6 +84,7 @@ function usage(): string {
     "    --component-scope ABS_JSON --component-scope-sha256 SHA",
     "    --bridge-snapshot ABS_JSON --bridge-snapshot-sha256 SHA",
     "    --standing-policy ABS_JSON --standing-policy-sha256 SHA",
+    "    [--target-identity-resolution ABS_JSON --target-identity-resolution-sha256 SHA]",
     "    (--url URL | --url-env ENV) [--allow-remote --auth-token-env ENV]",
     "    --listing-key KEY (repeatable, explicit 1-50)",
     "    --created-at UTC --expires-at UTC --out ABS_NEW_DIR",
@@ -142,6 +148,8 @@ function parseOptions(argv: readonly string[]): Options {
     "--bridge-snapshot-sha256",
     "--standing-policy",
     "--standing-policy-sha256",
+    "--target-identity-resolution",
+    "--target-identity-resolution-sha256",
     "--url",
     "--url-env",
     "--auth-token-env",
@@ -221,6 +229,19 @@ function parseOptions(argv: readonly string[]): Options {
       values.get("--standing-policy-sha256"),
       "--standing-policy-sha256",
     ),
+    targetIdentityResolutionPath: values.has("--target-identity-resolution")
+      ? exactPath(
+        values.get("--target-identity-resolution"),
+        "--target-identity-resolution",
+      )
+      : null,
+    targetIdentityResolutionSha256:
+      values.has("--target-identity-resolution-sha256")
+        ? exactSha(
+          values.get("--target-identity-resolution-sha256"),
+          "--target-identity-resolution-sha256",
+        )
+        : null,
     url,
     authTokenEnv: values.get("--auth-token-env")?.trim() || null,
     allowRemote,
@@ -235,6 +256,15 @@ function parseOptions(argv: readonly string[]): Options {
     preflightSha256: null,
     startedAt: null,
   };
+  if (
+    Boolean(options.targetIdentityResolutionPath)
+      !== Boolean(options.targetIdentityResolutionSha256)
+  ) {
+    fail(
+      "CLI_ARGUMENT_PAIR_REQUIRED",
+      "target identity resolution path and SHA-256 must be supplied together",
+    );
+  }
   if (command === "plan") {
     if (!listingKeys.length) fail("CLI_ARGUMENT_REQUIRED", "--listing-key");
     options.listingKeys = [...listingKeys].sort((left, right) =>
@@ -296,13 +326,18 @@ async function readJson<T>(path: string): Promise<{
 async function loadSources(
   options: Options,
 ): Promise<ProductTruthAllComponentsRecipeSources> {
-  const [recipe, component, snapshot, policy] = await Promise.all([
+  const [recipe, component, snapshot, policy, resolution] = await Promise.all([
     readJson<ProductTruthRecipeRepairScope>(options.recipeRepairScopePath),
     readJson<ProductTruthComponentAcquisitionScope>(options.componentScopePath),
     readJson<ProductTruthLegacyBridgeSnapshot>(options.bridgeSnapshotPath),
     readJson<ProductTruthLegacyBridgeStandingPolicy>(
       options.standingPolicyPath,
     ),
+    options.targetIdentityResolutionPath
+      ? readJson<ProductTruthTargetIdentityResolution>(
+        options.targetIdentityResolutionPath,
+      )
+      : Promise.resolve(null),
   ]);
   return {
     recipeRepairScope: recipe.value,
@@ -317,6 +352,10 @@ async function loadSources(
     standingPolicy: policy.value,
     standingPolicyJson: policy.json,
     standingPolicySha256: options.standingPolicySha256,
+    targetIdentityResolution: resolution?.value ?? null,
+    targetIdentityResolutionJson: resolution?.json ?? null,
+    targetIdentityResolutionSha256:
+      options.targetIdentityResolutionSha256,
   };
 }
 

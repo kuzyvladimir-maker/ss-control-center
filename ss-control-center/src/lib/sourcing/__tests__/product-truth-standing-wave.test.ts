@@ -415,7 +415,7 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
     "data/audits/product-truth-phase1-scope/20260726T180513Z-g4-manifest-inputs-v1/manifest-authoritative-v3/phase1-scope-manifest.json",
   );
   const providerPolicyPath = resolve(
-    "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v3.json",
+    "data/audits/product-truth-standing-authority/standing-provider-policy-20260730-v4.json",
   );
   const noPaidPolicyPath = resolve(
     "data/audits/product-truth-legacy-bridge/standing-policy-20260727-v1.json",
@@ -433,10 +433,17 @@ test("orchestrator accepts terminal exit 2, materializes saved price, and resume
     ["walmart:1:sku-orchestrated"],
     100,
   );
+  // This integration test exercises the live expiry guard. Bind its sealed
+  // window to the test invocation instead of a calendar date that eventually
+  // makes an otherwise valid fixture fail before the behavior under test.
+  const orchestratorCreatedAt = new Date(Date.now() - 60_000);
+  const orchestratorExpiresAt = new Date(
+    orchestratorCreatedAt.getTime() + 24 * 60 * 60 * 1_000,
+  );
   const sealed = sealProductTruthStandingWavePlan({
     waveId: "ptsw-orchestrated-test",
-    createdAt: "2026-07-29T18:00:00.000Z",
-    expiresAt: "2026-07-30T18:00:00.000Z",
+    createdAt: orchestratorCreatedAt.toISOString(),
+    expiresAt: orchestratorExpiresAt.toISOString(),
     databaseTargetFingerprint:
       resolveProductTruthDatabaseTarget(dbUrl).fingerprint,
     manifestSha256,

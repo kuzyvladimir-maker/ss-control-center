@@ -38,7 +38,7 @@ export const PRODUCT_TRUTH_STANDING_AUTHORIZATION_VERSION =
  * prevents a modified worktree policy from silently expanding provider authority.
  */
 export const PRODUCT_TRUTH_STANDING_PROVIDER_POLICY_SHA256 =
-  "cfd78218cf028174a473d508d0f6947e7a5d4dd722be9b5983d06e0ea29751e0" as const;
+  "bbf132b5f2f6e39f1b9492dcf604d8a983aebfe46744256dbfaded860e37c6f1" as const;
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;

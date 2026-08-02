@@ -47,6 +47,7 @@ import { readWalmartPilotCandidate } from "../product-truth-new-sku-view";
 import {
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_PLAN_VERSION,
   PRODUCT_TRUTH_TARGETED_WALMART_EVIDENCE_REQUEST_VERSION,
+  TARGETED_WALMART_MAX_WALL_CLOCK_MS,
   buildProductTruthTargetedWalmartEvidencePlan,
   buildProductTruthTargetedWalmartEvidenceRequest,
   validateProductTruthTargetedWalmartEvidenceApproval,
@@ -750,7 +751,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
         executionInput(fixture, "execute", {
           monotonicNow: () => {
             monotonicReads += 1;
-            return monotonicReads >= 8 ? 180_000 : 0;
+            return monotonicReads >= 8 ? TARGETED_WALMART_MAX_WALL_CLOCK_MS : 0;
           },
         }),
       );
@@ -970,7 +971,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
           executionInput(fixture, "execute", {
             monotonicNow: () => {
               monotonicReads += 1;
-              return monotonicReads >= 8 ? 180_000 : 0;
+              return monotonicReads >= 8 ? TARGETED_WALMART_MAX_WALL_CLOCK_MS : 0;
             },
           }),
         );

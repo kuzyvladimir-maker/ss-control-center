@@ -43,7 +43,10 @@ export const TARGETED_WALMART_MIN_IMAGES = 2 as const;
 // Canonical targeted lane: one exact product, one provider call at a time, and
 // a hard three-minute wall-clock fence. A crossed boundary stops before more
 // provider work and relies only on durable reconciliation.
-export const TARGETED_WALMART_MAX_WALL_CLOCK_MS = 180_000 as const;
+// 360s, raised from 180s: a real production search+detail pass was observed to
+// exceed 3 minutes (TARGETED_EVIDENCE_WALL_CLOCK_EXHAUSTED_SAFE_TO_RESUME,
+// 2026-08-01). Both branches learned this independently; keep the larger bound.
+export const TARGETED_WALMART_MAX_WALL_CLOCK_MS = 360_000 as const;
 
 export const PRODUCT_TRUTH_TARGETED_WALMART_LEGACY_SNAPSHOT_VERSION =
   "product-truth-targeted-walmart-legacy-snapshot/1.0.0" as const;

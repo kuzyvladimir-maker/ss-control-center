@@ -595,7 +595,10 @@ function sourceDetailAdmission(
   };
 }
 
-function compile() {
+function compile(overrides: {
+  exactCanonicalVariantIds?: string[];
+  maximumTargets?: number;
+} = {}) {
   const componentScope = scope();
   const componentScopeJson =
     renderProductTruthComponentAcquisitionScope(componentScope);
@@ -637,7 +640,9 @@ function compile() {
     attemptCapture,
     attemptCaptureJson,
     attemptCaptureSha256: sha256(attemptCaptureJson),
-    maximumTargets: 2,
+    maximumTargets: overrides.maximumTargets ?? 2,
+    exactCanonicalVariantIds:
+      overrides.exactCanonicalVariantIds ?? [],
   });
 }
 
@@ -673,11 +678,19 @@ test("compiler selects one listing per unique target and excludes metered termin
       canonicalIdentityHash: target.canonicalIdentityHash,
       queryVersion: target.queryVersion,
       query: target.query,
+      sourceDetailAdmissionSha256:
+        wave.source.sourceDetailAdmission.sha256,
+      sourceDetailCandidate: {
+        retailer: target.sourceDetailCandidate.retailer,
+        retailerProductId:
+          target.sourceDetailCandidate.retailerProductId,
+        productUrl: target.sourceDetailCandidate.productUrl,
+      },
     })),
   );
   assert.deepEqual(
     wave.operationalRequest.sourcePolicy.retailers,
-    ["walmart", "target", "publix"],
+    ["walmart", "target"],
   );
   assert.deepEqual(wave.operationalRequest.providerCeilings, [
     {
@@ -698,6 +711,33 @@ test("compiler selects one listing per unique target and excludes metered termin
   assert.equal(wave.operationalRequest.maxWallClockMs, 720000);
   assert.equal(wave.claims.authorizesExecution, false);
   assert.equal(wave.claims.providerCalls, 0);
+});
+
+test("exact target selector narrows only to an admitted unattempted target", () => {
+  const wave = compile({
+    maximumTargets: 1,
+    exactCanonicalVariantIds: [variant("e")],
+  });
+  assert.deepEqual(
+    wave.targets.map((item) => item.canonicalVariantId),
+    [variant("e")],
+  );
+  assert.deepEqual(
+    wave.selectionPolicy.exactCanonicalVariantIds,
+    [variant("e")],
+  );
+  assert.equal(wave.counts.eligibleTargets, 2);
+  assert.equal(wave.counts.selectedTargets, 1);
+  assert.throws(
+    () => compile({
+      maximumTargets: 1,
+      exactCanonicalVariantIds: [variant("a")],
+    }),
+    (error: unknown) => (
+      error instanceof ProductTruthProviderTargetWaveError
+      && error.code === "PROVIDER_TARGET_WAVE_EXACT_TARGET_UNAVAILABLE"
+    ),
+  );
 });
 
 test("multi-target listing attempts are not guessed onto either component", () => {

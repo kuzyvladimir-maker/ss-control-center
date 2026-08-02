@@ -189,8 +189,17 @@ test("worker drains an in-flight heartbeat before completing a runner result", a
   assert.ok(awaitAt > closeAt);
   assert.ok(resolveAt > awaitAt);
   assert.match(script, /if \(heartbeatInFlight !== null\) return/u);
-  assert.match(script, /heartbeatError = error[\s\S]*child\.kill\("SIGTERM"\)/u);
-  assert.match(script, /CONTROL_API_TIMEOUT_MS = 150_000/u);
+  // Heartbeat failures terminate the child only via the lease-aware policy:
+  // transient control-plane errors are retried, and termination goes through
+  // terminateTree() so the whole runner process tree dies together.
+  assert.match(
+    script,
+    /productTruthHeartbeatFailureRequiresTermination\(\{[\s\S]*heartbeatError = error;[\s\S]*terminateTree\(\)/u,
+  );
+  assert.match(
+    script,
+    /PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS,?\n\s*\)/u,
+  );
   assert.match(
     script,
     /heartbeatError === undefined[\s\S]*exitCode[\s\S]*heartbeatFailure/u,
@@ -219,7 +228,10 @@ test("worker reports the structured control API error code without response deta
     new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
     "utf8",
   );
-  assert.match(script, /returned HTTP \$\{response\.status\}\$\{code\}/u);
+  assert.match(
+    script,
+    /returned HTTP \$\{response\.status\}\$\{\n?\s*code \? ` \(\$\{code\}\)` : ""\n?\s*\}/u,
+  );
   assert.doesNotMatch(script, /JSON\.stringify\(value\)/u);
 });
 
