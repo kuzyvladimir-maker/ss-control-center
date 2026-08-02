@@ -226,10 +226,29 @@ export async function POST(request: NextRequest) {
       unwrangleReserveFloor: runtime.unwrangleReserveFloor,
       candidates,
     });
-    const status = await admitProductTruthWalmartCollectionBatch({
-      batch,
-      runtime,
-    });
+    // The batch identity deliberately ignores its fresh TTL timestamp. A
+    // browser refresh or a repeated Prepare click must reconnect to the same
+    // immutable work instead of trying to insert duplicate commands or
+    // starting another collection cycle.
+    let status;
+    try {
+      status = await readProductTruthWalmartCollectionStatus({
+        batchId: batch.batchId,
+        requestedByUserId: auth.id,
+        runtime,
+      });
+    } catch (error) {
+      if (
+        !(error instanceof ProductTruthWebControlAdmissionError)
+        || error.code !== "WEB_CONTROL_BATCH_NOT_FOUND"
+      ) {
+        throw error;
+      }
+      status = await admitProductTruthWalmartCollectionBatch({
+        batch,
+        runtime,
+      });
+    }
     return jsonNoStore({
       ok: true,
       status: status.status,

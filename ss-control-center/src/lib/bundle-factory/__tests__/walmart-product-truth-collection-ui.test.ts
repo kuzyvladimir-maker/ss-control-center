@@ -94,6 +94,12 @@ test("collection route re-derives exact donors server-side and cannot call provi
   assert.match(route, /Keep scanning for an[\s\S]*untouched exact donor/u);
   assert.match(route, /buildProductTruthWalmartCollectionBatch/u);
   assert.match(route, /admitProductTruthWalmartCollectionBatch/u);
+  assert.match(
+    route,
+    /readProductTruthWalmartCollectionStatus\(\{[\s\S]*batchId: batch\.batchId/u,
+  );
+  assert.match(route, /WEB_CONTROL_BATCH_NOT_FOUND/u);
+  assert.match(route, /reconnect to the same[\s\S]*immutable work/u);
   assert.doesNotMatch(
     route,
     /child_process|spawn\(|exec\(|MP_ITEM|SKU_TEMPLATE_MAP|WalmartClient/u,
