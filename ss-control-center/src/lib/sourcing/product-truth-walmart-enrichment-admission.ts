@@ -177,8 +177,21 @@ async function collectionEntries(input: {
     include: { artifacts: true },
     orderBy: [{ requestedAt: "asc" }, { commandKind: "asc" }],
   });
-  const doctors = rows.filter((row) => row.commandKind === "DOCTOR");
-  const plans = rows.filter((row) => row.commandKind === "RUN_PLAN");
+  // Retried preparation (including a retry under a newer engine release)
+  // appends fresh immutable command rows for the same logical run. The quote
+  // is built from the NEWEST attempt per run only; earlier failed attempts
+  // stay in the ledger as audit history. Rows arrive ordered by requestedAt
+  // ascending, so the last row per run wins.
+  const latestByRun = (kind: "DOCTOR" | "RUN_PLAN") => {
+    const map = new Map<string, (typeof rows)[number]>();
+    for (const row of rows) {
+      if (row.commandKind !== kind || !row.runId) continue;
+      map.set(row.runId, row);
+    }
+    return [...map.values()];
+  };
+  const doctors = latestByRun("DOCTOR");
+  const plans = latestByRun("RUN_PLAN");
   if (
     doctors.length < 1
     || doctors.length !== plans.length
