@@ -76,12 +76,45 @@ export async function POST(
     requestedByUserId: job.user_id ?? undefined,
     runtime,
   });
-  if (collection.status !== "SUCCEEDED" && collection.status !== "FAILED") {
+  // `ambiguous never replays` stays absolute for the AUTOMATIC path: a paid
+  // attempt whose outcome is unknown is never re-run by the engine itself.
+  // But the owner must still have a way forward, and an owner deciding to
+  // start a NEW attempt (new batch identity, new exact quote, new signature)
+  // is a decision, not a replay. It requires an explicit acknowledgement of
+  // the ambiguous attempt, which the UI collects before sending this flag.
+  let ownerAcknowledgedAmbiguous = false;
+  if (collection.status === "AMBIGUOUS") {
+    const body = await request.json().catch(() => null) as
+      | Record<string, unknown>
+      | null;
+    ownerAcknowledgedAmbiguous =
+      body?.owner_acknowledged_ambiguous_attempt === true;
+    if (!ownerAcknowledgedAmbiguous) {
+      return NextResponse.json(
+        {
+          error:
+            "Product Truth has an ambiguous provider outcome; automatic replacement is forbidden",
+          code: "AMBIGUOUS_ATTEMPT_REQUIRES_OWNER_ACKNOWLEDGEMENT",
+          collection_status: collection.status,
+          ambiguous_attempt: {
+            command_id: collection.approval?.command_id ?? null,
+            error_code: collection.approval?.error_code ?? null,
+            provider_units_used:
+              collection.progress?.provider_units_used ?? null,
+          },
+        },
+        { status: 409 },
+      );
+    }
+  }
+  if (
+    collection.status !== "SUCCEEDED"
+    && collection.status !== "FAILED"
+    && !ownerAcknowledgedAmbiguous
+  ) {
     return NextResponse.json(
       {
-        error: collection.status === "AMBIGUOUS"
-          ? "Product Truth has an ambiguous provider outcome; automatic replacement is forbidden"
-          : "Product Truth collection is not complete",
+        error: "Product Truth collection is not complete",
         collection_status: collection.status,
       },
       { status: 409 },
@@ -194,10 +227,16 @@ export async function POST(
         prompt: brief.prompt,
         listingCount: brief.listing_count,
         packCount: brief.pack_count,
+        // After an acknowledged ambiguous attempt the owner wants the SAME
+        // products retried, so its donors are not excluded here. They are not
+        // silently reused either: the doctor gate independently rejects any
+        // donor that already owns a detail-harvest lifecycle, which is the
+        // real protection against paying twice for one product.
         excludedDonorProductIds:
-          brief.product_truth_collection.attempts.flatMap(
-            (attempt) => attempt.donor_product_ids,
-          ),
+          (ownerAcknowledgedAmbiguous
+            ? brief.product_truth_collection.attempts.slice(0, -1)
+            : brief.product_truth_collection.attempts
+          ).flatMap((attempt) => attempt.donor_product_ids),
         attempt: brief.product_truth_collection.attempts.length + 1,
       });
     } catch (replacementError) {

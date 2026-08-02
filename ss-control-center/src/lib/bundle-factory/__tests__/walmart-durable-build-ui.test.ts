@@ -192,3 +192,39 @@ test("durable build page owns Product Truth approval and atomically continues th
   assert.match(finalize, /PRODUCT_TRUTH_REPLACEMENT/u);
   assert.match(finalize, /attempts\.length >= 5/u);
 });
+
+test("an ambiguous paid attempt needs an explicit owner decision, never an auto-retry", async () => {
+  const route = await readFile(
+    new URL(
+      "../../../app/api/bundle-factory/walmart/builds/[id]/finalize/route.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  // The server refuses to replace an ambiguous attempt unless the owner
+  // explicitly acknowledged it, and it reports what that attempt spent.
+  assert.match(route, /AMBIGUOUS_ATTEMPT_REQUIRES_OWNER_ACKNOWLEDGEMENT/u);
+  assert.match(route, /owner_acknowledged_ambiguous_attempt === true/u);
+  assert.match(route, /provider_units_used/u);
+  // The acknowledged retry keeps the same products: only earlier attempts are
+  // excluded, and the doctor harvest-state gate remains the paid-once guard.
+  assert.match(
+    route,
+    /ownerAcknowledgedAmbiguous[\s\S]*attempts\.slice\(0, -1\)/u,
+  );
+
+  const component = await readFile(
+    new URL(
+      "../../../components/bundle-factory/WalmartDurableBuildProgress.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  // The owner sees the decision instead of a dead end, and the acknowledgement
+  // travels only on that explicit click.
+  assert.match(component, /Start a new attempt/u);
+  assert.match(
+    component,
+    /finalizeBuild\(\{ ownerAcknowledgedAmbiguousAttempt: true \}\)/u,
+  );
+});

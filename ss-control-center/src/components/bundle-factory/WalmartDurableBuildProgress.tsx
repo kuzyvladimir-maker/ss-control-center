@@ -53,6 +53,11 @@ export function WalmartDurableBuildProgress({
   const [error, setError] = useState<string | null>(null);
   const [approving, setApproving] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [ambiguousAttempt, setAmbiguousAttempt] = useState<null | {
+    command_id?: string | null;
+    error_code?: string | null;
+    provider_units_used?: number | null;
+  }>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalizingRef = useRef(false);
 
@@ -60,17 +65,34 @@ export function WalmartDurableBuildProgress({
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  async function finalizeBuild() {
+  async function finalizeBuild(
+    options: { ownerAcknowledgedAmbiguousAttempt?: boolean } = {},
+  ) {
     if (finalizingRef.current) return;
     finalizingRef.current = true;
     setFinalizing(true);
     try {
       const response = await fetch(
         `/api/bundle-factory/walmart/builds/${encodeURIComponent(buildId)}/finalize`,
-        { method: "POST" },
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            owner_acknowledged_ambiguous_attempt:
+              options.ownerAcknowledgedAmbiguousAttempt === true,
+          }),
+        },
       );
       const result = await response.json();
       if (!response.ok) {
+        // An ambiguous paid attempt never restarts by itself. Surface it as
+        // an explicit owner decision instead of a dead end.
+        if (result?.code === "AMBIGUOUS_ATTEMPT_REQUIRES_OWNER_ACKNOWLEDGEMENT") {
+          setAmbiguousAttempt(result.ambiguous_attempt ?? {});
+          finalizingRef.current = false;
+          setFinalizing(false);
+          return;
+        }
         throw new Error(result?.error ?? "Walmart build finalization failed");
       }
       window.location.reload();
@@ -254,6 +276,33 @@ export function WalmartDurableBuildProgress({
           </p>
           <Btn className="mt-3" variant="primary" size="md" onClick={approveExactQuote} disabled={approving}>
             {approving ? "Approving…" : "Approve exact quote"}
+          </Btn>
+        </div>
+      )}
+
+      {ambiguousAttempt && (
+        <div className="mt-4 rounded-[10px] border border-warn/30 bg-warn-tint p-3">
+          <div className="text-[12.5px] font-semibold text-ink">
+            The previous paid attempt ended with an unknown result
+          </div>
+          <p className="mt-1 text-[12px] text-ink-3">
+            The data collector stopped after
+            {" "}{ambiguousAttempt.provider_units_used ?? 0} provider credits and
+            could not prove what it completed, so it is never retried
+            automatically. Starting a new attempt creates a new exact quote that
+            you approve separately; already-harvested products are skipped.
+          </p>
+          <Btn
+            className="mt-3"
+            variant="primary"
+            size="md"
+            disabled={finalizing}
+            onClick={() => {
+              setAmbiguousAttempt(null);
+              void finalizeBuild({ ownerAcknowledgedAmbiguousAttempt: true });
+            }}
+          >
+            Start a new attempt
           </Btn>
         </div>
       )}
