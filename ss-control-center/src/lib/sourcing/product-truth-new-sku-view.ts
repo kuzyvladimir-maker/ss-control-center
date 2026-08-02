@@ -35,6 +35,24 @@ import { exactProductContentCapture } from "./product-content-capture";
 export const DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1_000;
 export const DEFAULT_WALMART_PILOT_ZIP = "33765";
 
+/**
+ * Locality classes accepted as PRICE evidence.
+ *
+ * `zip_scoped` is a provider response that proved the ZIP itself. Owner
+ * decision 2026-08-02 adds `catalog_recorded_zip`: a price the donor catalogue
+ * already holds for the procurement ZIP, harvested before the sealed-observation
+ * contract existed. It is deliberately a SEPARATE class, never relabelled as
+ * `zip_scoped`, so every consumer can tell how the price was proven. Refusing it
+ * meant re-buying prices we already own on every build, which is what kept the
+ * factory at 0-2 ready products per category.
+ *
+ * This concerns PRICE only. Content truth keeps its own independent rules.
+ */
+export const PRODUCT_TRUTH_PRICE_LOCALITY_CLASSES = Object.freeze([
+  "zip_scoped",
+  "catalog_recorded_zip",
+] as const);
+
 export interface ProductTruthNewSkuPriceEvidence {
   role: "PRICE";
   observation_id: string;
@@ -609,7 +627,7 @@ async function readExactLocalPrices(
       AND julianday(observation.observedAt)<=julianday(?)
       AND julianday(observation.observedAt)>=julianday(?)
       AND julianday(observation.createdAt)<=julianday(?)
-      AND observation.localityEvidence='zip_scoped'
+      AND observation.localityEvidence IN ('zip_scoped','catalog_recorded_zip')
       AND observation.zip=?
     ORDER BY observation.pricePerUnit ASC, julianday(observation.observedAt) DESC,
       observation.observedAt DESC, observation.id ASC`,
@@ -908,7 +926,8 @@ export function buildProductTruthRecipeComponentFromRows(input: {
   const locality = optionalText(price.localityEvidence);
   const priceZip = optionalText(price.zip);
   if (
-    locality !== "zip_scoped" ||
+    !(PRODUCT_TRUTH_PRICE_LOCALITY_CLASSES as readonly string[])
+      .includes(locality ?? "") ||
     !/^\d{5}(?:-\d{4})?$/.test(priceZip ?? "") ||
     priceZip !== input.options.zip
   ) {
