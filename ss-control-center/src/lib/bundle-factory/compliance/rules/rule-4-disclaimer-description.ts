@@ -9,6 +9,7 @@
 
 import {
   DISCLAIMER_DESCRIPTION,
+  MULTIPACK_DISCLAIMER_DESCRIPTION,
   hasDisclaimerText,
 } from "@/lib/bundle-factory/remediation/disclaimer-text";
 import type { ComplianceInput, ComplianceOptions, RuleResult } from "../types";
@@ -23,6 +24,12 @@ export function ruleDisclaimerDescription(
     return { rule_id: "rule-4-disclaimer-description", passed: true };
   }
 
+  // Walmart multipacks get the multipack wording; see Rule 3.
+  const disclaimerParagraph =
+    (input.channel ?? "").toUpperCase() === "WALMART"
+      ? MULTIPACK_DISCLAIMER_DESCRIPTION
+      : DISCLAIMER_DESCRIPTION;
+
   const description = typeof input.description === "string"
     ? input.description
     : "";
@@ -34,13 +41,13 @@ export function ruleDisclaimerDescription(
 
   if (options.autoFix) {
     const sep = description.length > 0 ? "\n\n" : "";
-    input.description = `${description}${sep}${DISCLAIMER_DESCRIPTION}`;
+    input.description = `${description}${sep}${disclaimerParagraph}`;
     return {
       rule_id: "rule-4-disclaimer-description",
       passed: true,
       auto_fix_attempted: true,
       auto_fix_applied: true,
-      details: { appended_paragraph: DISCLAIMER_DESCRIPTION },
+      details: { appended_paragraph: disclaimerParagraph },
     };
   }
 

@@ -431,10 +431,21 @@ async function buildOneDraft(input: {
       // packshot, already proven by the composer; the vision re-check adds
       // provider cost without adding evidence.
       skip_image_check: true,
+      // Walmart policy differs from Amazon's: the brand field carries the
+      // original manufacturer, and the assembler disclaimer uses the
+      // multipack wording rather than the gift-basket sentence.
+      channel: "WALMART",
     },
-    { actor: "walmart-studio-draft-engine" },
+    // autoFix appends the required assembler disclaimer to the bullets and
+    // description. It is a fixed, owner-approved sentence — not generated
+    // copy — so applying it here is deterministic.
+    { actor: "walmart-studio-draft-engine", autoFix: true },
   );
   const contentComplianceStatus = complianceDecision.decision;
+  // autoFix may append the assembler disclaimer, so persist the text the gate
+  // actually approved rather than the pre-gate draft.
+  const approvedBullets = complianceDecision.final_bullets;
+  const approvedDescription = complianceDecision.final_description;
 
   const created = await prisma.$transaction(async (tx) => {
     const raced = await tx.bundleDraft.findUnique({
@@ -452,8 +463,8 @@ async function buildOneDraft(input: {
         pack_count: input.item.pack_count,
         draft_components: JSON.stringify(snapshot),
         draft_title: content.title,
-        draft_bullets: JSON.stringify(content.bullets),
-        draft_description: content.description,
+        draft_bullets: JSON.stringify(approvedBullets),
+        draft_description: approvedDescription,
         draft_main_image_url: mainImageUrl,
         draft_secondary_images: JSON.stringify(secondaryImages),
         image_generated_at: new Date(),
@@ -476,8 +487,8 @@ async function buildOneDraft(input: {
             channel: "WALMART",
             template: "walmart-deterministic-product-truth-draft",
             title: content.title,
-            bullets_json: JSON.stringify(content.bullets),
-            description: content.description,
+            bullets_json: JSON.stringify(approvedBullets),
+            description: approvedDescription,
             compliance_status: contentComplianceStatus,
             main_image_url: mainImageUrl,
             image_generated_at: new Date(),

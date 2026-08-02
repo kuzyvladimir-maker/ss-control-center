@@ -1,4 +1,5 @@
-// Rule 2 — Amazon brand field must be one of the allowed values.
+// Rule 2 — brand field policy. Amazon: one of our allowed values.
+// Walmart: the original manufacturer brand (see the channel carve-out below).
 //
 // The brand field is the Amazon-displayed manufacturer name on the PDP.
 // Setting it to a foreign brand (Kraft, Tyson, …) is how some sellers
@@ -29,6 +30,14 @@ export function ruleBrandField(input: ComplianceInput): RuleResult {
   // brand, so the donor brand IS a legitimate brand-field value — the allowed-
   // list (Salutem Vita / Starfit / Generic) only applies to gift-set listings.
   if (input.own_brand) {
+    return { rule_id: "rule-2-brand-field", passed: true };
+  }
+  // Walmart is the opposite policy to Amazon (owner decision 2026-08-02): the
+  // brand field must carry the ORIGINAL manufacturer brand of the item being
+  // listed, never one of our own. This rule's allow-list exists to stop a
+  // foreign brand being borrowed for Amazon search ranking; on Walmart naming
+  // the true manufacturer is the correct and required behaviour.
+  if ((input.channel ?? "").toUpperCase() === "WALMART") {
     return { rule_id: "rule-2-brand-field", passed: true };
   }
   if (!ALLOWED_LOWER.has(brand.toLowerCase())) {

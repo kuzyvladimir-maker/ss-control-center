@@ -89,8 +89,11 @@ async function main(): Promise<void> {
         // The main image is a deterministic composite of the exact donor
         // packshot, already proven by the composer.
         skip_image_check: true,
+        channel: "WALMART",
       },
-      { actor: "walmart-draft-compliance-backfill" },
+      // autoFix appends the owner-approved multipack disclaimer; the corrected
+      // copy is persisted below so the stored draft matches what was approved.
+      { actor: "walmart-draft-compliance-backfill", autoFix: true },
     );
     const failed = decision.rules
       .filter((rule) => !rule.passed)
@@ -102,7 +105,18 @@ async function main(): Promise<void> {
     if (!apply) continue;
     await prisma.generatedContent.update({
       where: { id: row.id },
-      data: { compliance_status: decision.decision },
+      data: {
+        compliance_status: decision.decision,
+        bullets_json: JSON.stringify(decision.final_bullets),
+        description: decision.final_description,
+      },
+    });
+    await prisma.bundleDraft.update({
+      where: { id: row.bundle_draft_id },
+      data: {
+        draft_bullets: JSON.stringify(decision.final_bullets),
+        draft_description: decision.final_description,
+      },
     });
   }
 }

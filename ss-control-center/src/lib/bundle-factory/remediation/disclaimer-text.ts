@@ -33,6 +33,22 @@ export const DISCLAIMER_DESCRIPTION =
   "The included items are packaged by their original manufacturers.";
 
 /**
+ * Walmart multipack wording (owner decision 2026-08-02).
+ *
+ * A Pack-of-N of one identical item is not a gift basket, so the gift-basket
+ * sentence would be an untrue description of the product. Same legal purpose —
+ * we state that Salutem Solutions assembled it and that the goods stay in the
+ * manufacturer's own packaging — in wording that matches what is actually
+ * shipped.
+ */
+export const MULTIPACK_DISCLAIMER_BULLET =
+  "Assembled and packed by Salutem Solutions LLC as a multipack.";
+
+export const MULTIPACK_DISCLAIMER_DESCRIPTION =
+  "This multipack is assembled and packed by Salutem Solutions LLC. " +
+  "The included items are packaged by their original manufacturers.";
+
+/**
  * Detection substrings used by plan + verify scripts to recognise that
  * a listing already carries the disclaimer (so re-runs are idempotent).
  * Includes the Phase 2.6.1 legacy wording so the 1 listing that landed
@@ -44,6 +60,7 @@ export const DISCLAIMER_DESCRIPTION =
 export const DISCLAIMER_DETECTION_SUBSTRINGS = [
   "curated and assembled by salutem solutions", // Phase 2.6.2 wording
   "curated and packaged by salutem solutions",  // Phase 2.6.1 legacy
+  "assembled and packed by salutem solutions",  // Walmart multipack wording
 ] as const;
 
 /** Back-compat alias — the legacy single-string export. New code should

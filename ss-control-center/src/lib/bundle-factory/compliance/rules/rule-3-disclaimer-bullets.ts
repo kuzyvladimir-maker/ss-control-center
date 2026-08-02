@@ -13,6 +13,7 @@
 
 import {
   DISCLAIMER_BULLET,
+  MULTIPACK_DISCLAIMER_BULLET,
   hasDisclaimerText,
 } from "@/lib/bundle-factory/remediation/disclaimer-text";
 import type { ComplianceInput, ComplianceOptions, RuleResult } from "../types";
@@ -29,6 +30,14 @@ export function ruleDisclaimerBullets(
     return { rule_id: "rule-3-disclaimer-bullets", passed: true };
   }
 
+  // A Walmart Pack-of-N of one identical item is not a gift basket, so the
+  // gift-basket sentence would describe the product untruthfully. Same legal
+  // statement, wording that matches what actually ships.
+  const disclaimerBullet =
+    (input.channel ?? "").toUpperCase() === "WALMART"
+      ? MULTIPACK_DISCLAIMER_BULLET
+      : DISCLAIMER_BULLET;
+
   const bullets = Array.isArray(input.bullets) ? input.bullets : [];
   const present = hasDisclaimerText(...bullets);
 
@@ -37,14 +46,14 @@ export function ruleDisclaimerBullets(
   }
 
   if (options.autoFix) {
-    bullets.push(DISCLAIMER_BULLET);
+    bullets.push(disclaimerBullet);
     input.bullets = bullets;
     return {
       rule_id: "rule-3-disclaimer-bullets",
       passed: true,
       auto_fix_attempted: true,
       auto_fix_applied: true,
-      details: { injected_bullet: DISCLAIMER_BULLET },
+      details: { injected_bullet: disclaimerBullet },
     };
   }
 

@@ -37,6 +37,13 @@ export interface ComplianceInput {
   browse_node?: string | null;
   main_image_url?: string | null;
 
+  /**
+   * Sales channel this content will publish to. Brand-field and disclaimer
+   * policy differ per marketplace, so the gate must know where it is going
+   * instead of applying Amazon's rules everywhere.
+   */
+  channel?: string | null;
+
   bundle_components: BundleComponentInput[];
 
   /** When true, Rule 6 is bypassed (used for unit smoke runs without
