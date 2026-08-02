@@ -261,6 +261,18 @@ function walmartEnrichmentProgressPercent(
  * of that away. Anything genuinely unexpected still surfaces its detail rather
  * than the bare words "Internal server error".
  */
+interface RequestInterpretation {
+  search_query: string;
+  brand: string | null;
+  product: string | null;
+  listing_count: number | null;
+  pack_count: number | null;
+  target_margin_pct: number | null;
+  readback: string;
+  assumptions: string[];
+  unsupported: string[];
+}
+
 function describeBuildFailure(data: unknown): string {
   const body = (data ?? {}) as {
     error?: unknown;
@@ -306,6 +318,10 @@ export default function StudioStartPage() {
   const router = useRouter();
 
   const [prompt, setPrompt] = useState("");
+  const [interpreting, setInterpreting] = useState(false);
+  const [interpretation, setInterpretation] =
+    useState<RequestInterpretation | null>(null);
+  const [interpretError, setInterpretError] = useState<string | null>(null);
   const [channel, setChannel] = useState("AMAZON_SALUTEM");
   const [walmartShipping, setWalmartShipping] =
     useState<WalmartShippingSelection | null>(null);
@@ -478,6 +494,45 @@ export default function StudioStartPage() {
     walmartShippingReady &&
     walmartFieldsValid &&
     !submitting;
+
+  /**
+   * Read the request the way it was written and show back what it means.
+   *
+   * The catalogue indexes the manufacturer's Latin wording, so a request typed
+   * as "Прогрессо" found nothing while the same request typed "Progresso"
+   * worked. This resolves the brand, the listing count and the pack size once,
+   * up front, and asks for confirmation before anything is searched or built.
+   */
+  async function interpretRequest() {
+    setInterpreting(true);
+    setInterpretError(null);
+    setInterpretation(null);
+    try {
+      const res = await fetch("/api/bundle-factory/studio/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(describeBuildFailure(data));
+      setInterpretation(data.interpretation as RequestInterpretation);
+    } catch (e) {
+      setInterpretError(e instanceof Error ? e.message : "Could not read the request");
+    } finally {
+      setInterpreting(false);
+    }
+  }
+
+  /** Accept the reading: it becomes the prompt and the numeric scope. */
+  function applyInterpretation(value: RequestInterpretation) {
+    setPrompt(value.search_query);
+    if (value.listing_count) setListingCount(String(value.listing_count));
+    if (value.pack_count) setPackCount(String(value.pack_count));
+    if (value.target_margin_pct) setTargetMargin(String(value.target_margin_pct));
+    setWalmartReadiness(null);
+    clearWalmartCollection();
+    setInterpretation(null);
+  }
 
   async function submitStudioGeneration() {
     const res = await fetch("/api/bundle-factory/studio/generate", {
@@ -859,6 +914,86 @@ export default function StudioStartPage() {
               </button>
             ))}
           </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Btn
+              variant="outline"
+              size="sm"
+              onClick={() => void interpretRequest()}
+              disabled={prompt.trim().length < 3 || interpreting}
+            >
+              {interpreting ? "Reading…" : "Interpret request"}
+            </Btn>
+            <span className="text-[11.5px] text-ink-3">
+              Write it however you like — Russian is fine. This resolves the
+              brand spelling and the counts before anything is searched.
+            </span>
+          </div>
+
+          {interpretError && (
+            <div className="mt-2 whitespace-pre-line rounded-[10px] border border-danger/20 bg-danger-tint px-3 py-2 text-[12px] text-danger">
+              {interpretError}
+            </div>
+          )}
+
+          {interpretation && (
+            <div className="mt-2 rounded-[12px] border border-rule bg-surface-tint/50 px-3.5 py-3">
+              <div className="text-[12.5px] font-semibold text-ink">
+                Here is what I understood
+              </div>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink">
+                {interpretation.readback}
+              </p>
+              <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[12px] text-ink-2 sm:grid-cols-4">
+                <div>
+                  <dt className="text-ink-3">Search</dt>
+                  <dd className="font-mono">{interpretation.search_query}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-3">Listings</dt>
+                  <dd className="font-mono">{interpretation.listing_count ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-3">Units per listing</dt>
+                  <dd className="font-mono">{interpretation.pack_count ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-3">Target margin</dt>
+                  <dd className="font-mono">
+                    {interpretation.target_margin_pct
+                      ? `${interpretation.target_margin_pct}%`
+                      : "—"}
+                  </dd>
+                </div>
+              </dl>
+              {interpretation.assumptions.length > 0 && (
+                <p className="mt-2 text-[11.5px] text-warn-strong">
+                  Assumed: {interpretation.assumptions.join("; ")}
+                </p>
+              )}
+              {interpretation.unsupported.length > 0 && (
+                <p className="mt-1 text-[11.5px] text-danger">
+                  This lane cannot do: {interpretation.unsupported.join("; ")}
+                </p>
+              )}
+              <div className="mt-3 flex items-center gap-2">
+                <Btn
+                  variant="primary"
+                  size="sm"
+                  onClick={() => applyInterpretation(interpretation)}
+                >
+                  Use this
+                </Btn>
+                <Btn
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setInterpretation(null)}
+                >
+                  Dismiss
+                </Btn>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* FLAVORS — real catalog flavors for the typed theme; pick exactly
