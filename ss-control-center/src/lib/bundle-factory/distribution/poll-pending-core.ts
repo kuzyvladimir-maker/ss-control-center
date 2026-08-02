@@ -16,6 +16,10 @@ import {
 } from "./status-poller";
 import { healUpcConflict, isUpcConflictIssue } from "./upc-burn";
 import { channelTarget } from "./account-map";
+import {
+  syncWalmartDeclaredInventory,
+  type WalmartDeclaredInventoryReport,
+} from "./walmart-declared-inventory";
 import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 import {
   getActiveWalmartSubmissionAttempt,
@@ -30,6 +34,8 @@ export interface PollPendingResultRow {
   sku: string;
   channel: string;
   new_listing_status: string;
+  /** Present when a LIVE Walmart listing pushed its declared availability. */
+  declared_inventory?: WalmartDeclaredInventoryReport;
   issues_count: number;
   healed?: { old_upc?: string; new_upc?: string; republished: boolean; reason?: string };
 }
@@ -121,12 +127,37 @@ export async function runPollPending(opts: {
       }
 
       await persistPollResult(r);
+      // A live Walmart listing from this factory publishes its declared
+      // availability to EVERY ship node. The item feed only ever carried the
+      // one fulfillment center named in offer_handoff, so without this the
+      // other warehouses would show zero. Best-effort: a failure here is
+      // reported, never allowed to break the poll loop or the LIVE state that
+      // was just persisted.
+      let declaredInventory: WalmartDeclaredInventoryReport | undefined;
+      if (r.new_listing_status === "LIVE" && target.kind === "walmart") {
+        try {
+          declaredInventory = await syncWalmartDeclaredInventory(
+            { sku: sku.sku, attributes: sku.attributes },
+            typeof target.storeIndex === "number"
+              ? { storeIndex: target.storeIndex }
+              : {},
+          );
+        } catch (inventoryError) {
+          console.error(
+            `[poll-pending] declared inventory failed for ${sku.sku}:`,
+            inventoryError instanceof Error
+              ? inventoryError.message
+              : inventoryError,
+          );
+        }
+      }
       results.push({
         sku_id: sku.id,
         sku: sku.sku,
         channel: sku.channel,
         new_listing_status: r.new_listing_status,
         issues_count: r.issues.length,
+        ...(declaredInventory ? { declared_inventory: declaredInventory } : {}),
       });
     } catch (e) {
       results.push({
