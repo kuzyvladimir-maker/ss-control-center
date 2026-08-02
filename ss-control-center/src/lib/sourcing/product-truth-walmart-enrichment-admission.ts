@@ -401,9 +401,14 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
     );
   }
   const now = input.now ?? new Date();
+  // The approval route is admin-only. The batch has exactly one recorded
+  // owner (enforced below by collectionEntries), and that owner may be a
+  // service identity while a human administrator approves the spend — the
+  // authority record is the detached Ed25519 owner signature, not the web
+  // session. So the read is batch-scoped, and every persisted identity field
+  // uses the batch owner rather than the approving session.
   const collected = await collectionEntries({
     batchId: input.batchId,
-    requestedByUserId: input.requestedByUserId,
     runtime: input.runtime,
   });
   const quote = buildProductTruthWalmartEnrichmentQuote({
@@ -420,7 +425,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
     where: {
       commandKind: "EXECUTE",
       runId: input.batchId,
-      requestedByUserId: input.requestedByUserId,
+      requestedByUserId: collected.requestedByUserId,
       status: { in: ["AWAITING_OWNER", "ADMITTED", "CLAIMED", "RUNNING"] },
       ...exactRuntimeCommandWhere(input.runtime),
     },
@@ -459,7 +464,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
     mediaType: "application/json",
     content: Buffer.from(renderProductTruthWalmartEnrichmentQuote(quote), "utf8"),
     createdAt: issuedAt,
-    createdByPrincipal: input.requestedByUserId,
+    createdByPrincipal: collected.requestedByUserId,
   });
   const planArtifacts = collected.entries.map(({ planBytes }, index) =>
     sealProductTruthControlArtifact({
@@ -469,7 +474,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
       mediaType: "application/json",
       content: planBytes,
       createdAt: issuedAt,
-      createdByPrincipal: input.requestedByUserId,
+      createdByPrincipal: collected.requestedByUserId,
     }));
   const references = [quoteArtifact, ...planArtifacts]
     .map(artifactReference)
@@ -521,7 +526,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
     mediaType: "application/json",
     content: envelopeBytes,
     createdAt: issuedAt,
-    createdByPrincipal: input.requestedByUserId,
+    createdByPrincipal: collected.requestedByUserId,
   });
   const requestSha256 = productTruthControlRequestSha256(envelope);
   await prisma.$transaction(async (tx) => {
@@ -534,7 +539,7 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
         status: "DRAFT",
         idempotencyKey: `product-truth-enrichment:${seed}`,
         requestSha256,
-        requestedByUserId: input.requestedByUserId,
+        requestedByUserId: collected.requestedByUserId,
         requestedAt: now,
         engineReleaseId: input.runtime.engine.releaseId,
         engineCommitSha: input.runtime.engine.commitSha,
@@ -623,10 +628,12 @@ export async function authorizeProductTruthWalmartEnrichment(input: {
     fail("ENRICHMENT_METERED_STAGE_OFF", "metered execution is not active");
   }
   const now = input.now ?? new Date();
+  // Admin-only route; the command id is exact and the detached Ed25519
+  // signature is the authority. The batch owner may be a service identity
+  // while a human administrator approves, so no session-user filter here.
   const command = await prisma.productTruthControlCommand.findFirst({
     where: {
       commandId: input.commandId,
-      requestedByUserId: input.requestedByUserId,
       commandKind: "EXECUTE",
       gateClass: "METERED_EXECUTE",
       ...exactRuntimeCommandWhere(input.runtime),
@@ -724,10 +731,10 @@ export async function declineProductTruthWalmartEnrichment(input: {
   now?: Date;
 }): Promise<{ status: "CANCELLED"; command_id: string }> {
   const now = input.now ?? new Date();
+  // Admin-only route; same batch-owner semantics as prepare/authorize.
   const command = await prisma.productTruthControlCommand.findFirst({
     where: {
       runId: input.batchId,
-      requestedByUserId: input.requestedByUserId,
       commandKind: "EXECUTE",
       status: "AWAITING_OWNER",
       ...exactRuntimeCommandWhere(input.runtime),
