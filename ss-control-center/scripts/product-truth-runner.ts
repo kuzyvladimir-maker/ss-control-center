@@ -548,21 +548,26 @@ export function parseProductTruthRunnerArguments(
         "listing binding is valid only for targeted doctor",
       );
     }
-    if (targetedCount === targetedValues.length && listingKey === undefined) {
-      usageError(
-        "CLI_TARGETED_DOCTOR_LISTING_BINDING_REQUIRED",
-        "targeted doctor requires --listing-key and --component-index so standing authority binds one current Phase 1 recipe component",
-      );
-    }
+    // A targeted doctor WITHOUT a listing binding is a valid canonical-donor
+    // lane (Walmart NEW-SKU preparation: the listing does not exist yet, and
+    // the donor snapshot legitimately carries listingBinding: null). The
+    // stricter rules still hold downstream: execution requires the binding
+    // for non-canonical donors, and standing authority rejects unbound
+    // snapshots fail-closed. Requiring the flags unconditionally here broke
+    // every new-SKU DOCTOR with CLI_EXIT_64 (2026-08-02).
     return targetedCount === 0 ? { ...common, command } : {
       ...common,
       command,
       donorProductId: exactValue(targetedValues[0], "--donor-product-id"),
-      listingKey: exactValue(listingKey, "--listing-key"),
-      componentIndex: exactNonNegativeIntegerFlag(
-        componentIndex,
-        "--component-index",
-      ),
+      ...(listingKey !== undefined
+        ? {
+            listingKey: exactValue(listingKey, "--listing-key"),
+            componentIndex: exactNonNegativeIntegerFlag(
+              componentIndex,
+              "--component-index",
+            ),
+          }
+        : {}),
       query: exactValue(targetedValues[1], "--query"),
       runId: exactValue(targetedValues[2], "--run-id"),
       expiresAt: exactValue(targetedValues[3], "--expires-at"),

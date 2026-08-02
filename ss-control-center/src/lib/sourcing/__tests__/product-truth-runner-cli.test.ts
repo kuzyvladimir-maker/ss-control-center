@@ -296,11 +296,13 @@ test("targeted doctor retires external identity files and emitted handoff argv i
     "--url", "file:/tmp/test.sqlite",
     "--out", "/tmp/targeted output",
   ];
-  assert.throws(
-    () => parseProductTruthRunnerArguments(targetedWithoutBinding),
-    (error: unknown) => error instanceof ProductTruthRunnerCliError
-      && error.code === "CLI_TARGETED_DOCTOR_LISTING_BINDING_REQUIRED",
-  );
+  // Unbound targeted doctor is the canonical-donor NEW-SKU lane: the listing
+  // does not exist yet, so no listing binding can be required at the CLI.
+  const unbound = parseProductTruthRunnerArguments(targetedWithoutBinding);
+  assert.equal(unbound.command, "doctor");
+  if (unbound.command !== "doctor") assert.fail("doctor parser narrowed incorrectly");
+  assert.equal(unbound.listingKey, undefined);
+  assert.equal(unbound.componentIndex, undefined);
   const parsed = parseProductTruthRunnerArguments([
     ...targetedWithoutBinding,
     "--listing-key", "walmart:1:SKU-1",
