@@ -2,36 +2,35 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("Walmart Studio automatically prepares collection, exposes approval, and resumes readiness", async () => {
-  const page = await readFile(
-    new URL(
-      "../../../app/bundle-factory/new/page.tsx",
-      import.meta.url,
+test("Walmart Studio hands the complete request to one durable server build", async () => {
+  const [page, progress] = await Promise.all([
+    readFile(
+      new URL(
+        "../../../app/bundle-factory/new/page.tsx",
+        import.meta.url,
+      ),
+      "utf8",
     ),
-    "utf8",
+    readFile(
+      new URL(
+        "../../../components/bundle-factory/WalmartDurableBuildProgress.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  const generate = page.slice(
+    page.indexOf("async function onGenerate()"),
+    page.indexOf("return (", page.indexOf("async function onGenerate()")),
   );
-  assert.match(page, /await startWalmartDataCollection\(\)/u);
-  assert.match(page, /Preparing the exact no-spend collection plan/u);
-  assert.match(page, /Approve exact quote/u);
-  assert.match(page, /\/api\/bundle-factory\/walmart\/data-collection/u);
-  assert.match(page, /pollWalmartCollection/u);
-  assert.match(page, /continueAfterCollection/u);
-  assert.match(page, /checkWalmartReadiness/u);
-  assert.match(page, /collection\.status === "SUCCEEDED"/u);
-  assert.match(page, /readiness\.diagnosis\.capability_gaps\.length > 0/u);
-  assert.match(page, /Approve exact quote/u);
-  assert.match(page, /PREPARE_OWNER_AUTHORIZATION/u);
-  assert.match(page, /signed\.signature_base64/u);
-  assert.match(page, /submitStudioGeneration/u);
-  assert.match(page, /WALMART_COLLECTION_RECOVERY_KEY/u);
-  assert.match(page, /sessionStorage\.setItem/u);
-  assert.match(page, /Automatic retry[\s\S]*permanently disabled/u);
-  assert.match(page, /Product \$\{walmartCollection\.progress\.currentOrdinal\} of/u);
-  assert.match(page, /Worker signal is live/u);
-  assert.match(page, /No recent worker signal/u);
-  assert.match(page, /provider credits used/u);
-  assert.match(page, /WALMART_ENRICHMENT_STAGE_LABELS/u);
-  assert.match(page, /walmartEnrichmentProgressPercent/u);
+  assert.match(generate, /channel === "WALMART"[\s\S]*await submitStudioGeneration\(\)/u);
+  assert.doesNotMatch(generate, /startWalmartDataCollection|checkWalmartReadiness/u);
+  assert.match(progress, /Approve exact quote/u);
+  assert.match(progress, /\/api\/bundle-factory\/walmart\/data-collection/u);
+  assert.match(progress, /PREPARE_OWNER_AUTHORIZATION/u);
+  assert.match(progress, /signed\.signature_base64/u);
+  assert.match(progress, /provider credits used/u);
+  assert.doesNotMatch(progress, /sessionStorage/u);
   assert.match(page, /complete request is preserved/u);
   assert.match(page, /separate protected work item/u);
   assert.doesNotMatch(page, /current verified pilot can prepare 1–2 listings/u);

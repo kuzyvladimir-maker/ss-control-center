@@ -15,7 +15,9 @@
  *   Returns: { batch_id }
  */
 
-import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { requireModuleAccess } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { badRequest, readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
@@ -49,6 +51,15 @@ import {
 } from "@/lib/sourcing/product-truth-read-contract";
 import { openProductTruthWebReadClient } from
   "@/lib/sourcing/product-truth-web-read-client";
+import {
+  loadProductTruthWebControlRuntime,
+} from "@/lib/sourcing/product-truth-web-control-runtime";
+import {
+  prepareWalmartDurableBuildCollection,
+  parseWalmartDurableBuildPreparationBrief,
+  WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
+  WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+} from "@/lib/bundle-factory/walmart-durable-build";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +70,9 @@ const IMAGE_QUALITIES = ["cheaper", "best"] as const;
 // the individual flavor-coloured sandwich wrappers. Vladimir wants both.
 const UNCRUSTABLES_IMAGE_MODES = ["retail_boxes", "individual_wraps"] as const;
 
-export const POST = withErrorHandler("studio-generate", async (request: Request) => {
+export const POST = withErrorHandler("studio-generate", async (request: NextRequest) => {
+  const auth = await requireModuleAccess(request, "bundle-factory");
+  if (auth instanceof NextResponse) return auth;
   const body = (await readJson<Record<string, unknown>>(request)) ?? {};
 
   const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
@@ -242,19 +255,139 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         error instanceof WalmartStudioDraftContractError &&
         error.code.startsWith("INSUFFICIENT_")
       ) {
+        const runtime = loadProductTruthWebControlRuntime();
+        if (runtime.status === "OFF" || !runtime.claims.workerClaims) {
+          return NextResponse.json(
+            {
+              error:
+                "Product Truth collection is not active for this Walmart build.",
+              code: "WALMART_PRODUCT_TRUTH_CONTROL_OFF",
+            },
+            { status: 503 },
+          );
+        }
+        const requestedAt = new Date().toISOString();
+        const collectionDb = openProductTruthWebReadClient();
+        let prepared;
+        try {
+          prepared = await prepareWalmartDurableBuildCollection({
+            db: collectionDb,
+            diagnostic,
+            runtime,
+            requestedByUserId: auth.id,
+            requestedAt,
+            prompt,
+            listingCount: intent.listing_count,
+            packCount: intent.pack_count,
+          });
+        } finally {
+          collectionDb.close();
+        }
+        const buildId = `wbf-${prepared.batch.batchId}`;
+        const preparationBrief = {
+          studio_version: 6,
+          workflow: WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+          build_schema_version: WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
+          source: "prompt",
+          prompt,
+          channel: "WALMART",
+          listing_count: intent.listing_count,
+          pack_count: intent.pack_count,
+          target_margin_pct: targetMarginPct ?? 30,
+          photo_strategy: "reuse-donor",
+          walmart_shipping: {
+            store_index: storeIndex,
+            account_name: account.storeName,
+            selected_at: requestedAt,
+            template,
+          },
+          product_truth_collection: {
+            batch_id: prepared.batch.batchId,
+            requested_at: requestedAt,
+            admitted_jobs: prepared.status.jobs.length,
+            attempts: [{
+              batch_id: prepared.batch.batchId,
+              requested_at: requestedAt,
+              admitted_jobs: prepared.status.jobs.length,
+              donor_product_ids: prepared.batch.jobs.map(
+                (job) => job.target.donorProductId,
+              ),
+            }],
+          },
+          operator_contract: {
+            marketplace_mutation_authorized: false,
+            upc_reservation_authorized: false,
+            paid_execution_requires_exact_owner_click: true,
+          },
+        } as const;
+        const existing = await prisma.generationJob.findUnique({
+          where: { id: buildId },
+          select: { id: true, brief: true, user_id: true },
+        });
+        if (existing) {
+          let sameRequest = false;
+          try {
+            const prior = parseWalmartDurableBuildPreparationBrief(
+              JSON.parse(existing.brief),
+            );
+            sameRequest =
+              prior.prompt === prompt
+              && prior.listing_count === intent.listing_count
+              && prior.pack_count === intent.pack_count
+              && prior.walmart_shipping.store_index === storeIndex
+              && prior.walmart_shipping.template.id === template.id
+              && prior.walmart_shipping.template.template_sha256
+                === template.template_sha256;
+          } catch {
+            const prior = JSON.parse(existing.brief) as Record<string, unknown>;
+            sameRequest =
+              prior.workflow === "CANONICAL_WALMART_NEW_SKU"
+              && prior.prompt === prompt
+              && prior.listing_count === intent.listing_count
+              && prior.pack_count === intent.pack_count;
+          }
+          if (existing.user_id !== auth.id || !sameRequest) {
+            throw new Error(
+              "Durable Walmart build identity collided with different request bytes",
+            );
+          }
+        } else {
+          await prisma.generationJob.create({
+            data: {
+              id: buildId,
+              brief: JSON.stringify(preparationBrief),
+              current_stage: "WALMART_PRODUCT_TRUTH",
+              status: "PENDING",
+              bundles_target: intent.listing_count,
+              user_id: auth.id,
+              notes: JSON.stringify({
+                progress: {
+                  status: "PENDING",
+                  phase: "product_truth",
+                  step:
+                    `${prepared.status.jobs.length} missing exact products are being prepared inside this durable build.`,
+                  total: intent.listing_count,
+                  done: diagnostic.ready_variants,
+                  failed: 0,
+                  done_flag: false,
+                },
+              }),
+            },
+          });
+        }
         return NextResponse.json(
           {
-            error: error.message,
-            code: error.code,
-            catalog: diagnostic,
+            batch_id: buildId,
+            workflow: WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+            product_truth_batch_id: prepared.batch.batchId,
           },
-          { status: 409 },
+          { status: existing ? 200 : 201 },
         );
       }
       throw error;
     }
     const batchRequest = {
-      studio_version: 5,
+      studio_version: 6,
       workflow: "CANONICAL_WALMART_NEW_SKU",
       draft_schema_version: WALMART_STUDIO_DRAFT_BRIEF_SCHEMA,
       source: "prompt",
@@ -296,35 +429,63 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
           "Create donor-bound internal drafts for owner review. UPC reservation, certification and Walmart publication remain separate gates.",
       },
     };
-    const job = await prisma.generationJob.create({
-      data: {
-        brief: JSON.stringify(batchRequest),
-        current_stage: "WALMART_DRAFT_QUEUE",
-        status: "PENDING",
-        bundles_target: intent.listing_count,
-        user_id: "user",
-        notes: JSON.stringify({
-          progress: {
-            status: "PENDING",
-            phase: "queued",
-            step:
-              `${intent.listing_count} exact Product Truth variants queued for Walmart draft generation.`,
-            total: intent.listing_count,
-            done: 0,
-            failed: 0,
-            done_flag: false,
-          },
-        }),
-        work_items: {
-          create: executionWorkItems.map((item) => ({
-            spec_index: item.spec_index,
-            spec_json: JSON.stringify(item),
-            fingerprint: item.work_item_sha256,
-          })),
-        },
-      },
-      select: { id: true },
+    const readyBuildSha = createHash("sha256").update(JSON.stringify({
+      requested_by: auth.id,
+      prompt,
+      listing_count: intent.listing_count,
+      pack_count: intent.pack_count,
+      store_index: storeIndex,
+      shipping_template_sha256: template.template_sha256,
+      target_margin_bps: targetMarginBps,
+      work_items: executionWorkItems.map((item) => ({
+        donor_product_id: item.donor_product_id,
+        canonical_variant_id: item.canonical_variant_id,
+        content_observation_id: item.content_observation_id,
+        price_observation_id: item.price_observation_id,
+        pack_count: item.pack_count,
+      })),
+    })).digest("hex");
+    const readyBuildId = `wbf-ready-${readyBuildSha.slice(0, 24)}`;
+    let job = await prisma.generationJob.findUnique({
+      where: { id: readyBuildId },
+      select: { id: true, user_id: true, brief: true },
     });
+    if (job) {
+      if (job.user_id !== auth.id) {
+        throw new Error("Durable ready-build identity collision");
+      }
+    } else {
+      job = await prisma.generationJob.create({
+        data: {
+          id: readyBuildId,
+          brief: JSON.stringify(batchRequest),
+          current_stage: "WALMART_DRAFT_QUEUE",
+          status: "PENDING",
+          bundles_target: intent.listing_count,
+          user_id: auth.id,
+          notes: JSON.stringify({
+            progress: {
+              status: "PENDING",
+              phase: "queued",
+              step:
+                `${intent.listing_count} exact Product Truth variants queued for Walmart draft generation.`,
+              total: intent.listing_count,
+              done: 0,
+              failed: 0,
+              done_flag: false,
+            },
+          }),
+          work_items: {
+            create: executionWorkItems.map((item) => ({
+              spec_index: item.spec_index,
+              spec_json: JSON.stringify(item),
+              fingerprint: item.work_item_sha256,
+            })),
+          },
+        },
+        select: { id: true, user_id: true, brief: true },
+      });
+    }
     return NextResponse.json(
       {
         batch_id: job.id,

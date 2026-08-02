@@ -38,6 +38,16 @@ Claude Code не исполняет owner/Codex-only Product Truth schema apply.
 
 ## 1. Роль Claude Code
 
+Bundle Factory web workflow до этого runbook теперь имеет один durable
+`GenerationJob`: выбранный Product Truth donor, account/shipping template,
+exact quote и internal draft work items сохраняются под одним build ID. Если
+известно, что один source не дал достаточных exact facts, web orchestration
+может подготовить новый no-spend child plan с другим donor внутри того же build;
+changed quote всё равно требует нового owner click, а `AMBIGUOUS` не replay.
+Эта подготовка не является командой frozen Walmart engine, не резервирует UPC и
+не разрешает `apply`. После owner review оператор входит в описанный ниже
+frozen workflow только по engine-emitted exact `next_command`.
+
 Claude Code — **оператор готового движка, а не разработчик**. Единственная разрешённая
 точка входа для этого workflow:
 

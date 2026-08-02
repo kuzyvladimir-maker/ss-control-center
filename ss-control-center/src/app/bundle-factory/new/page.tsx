@@ -283,8 +283,6 @@ export default function StudioStartPage() {
     useState<"APPROVE" | "DECLINE" | null>(null);
   const [walmartCollectionError, setWalmartCollectionError] =
     useState<string | null>(null);
-  const [restoredWalmartCollectionBatchId, setRestoredWalmartCollectionBatchId] =
-    useState<string | null>(null);
   const collectionPollTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -299,66 +297,11 @@ export default function StudioStartPage() {
   }, []);
 
   useEffect(() => {
-    try {
-      const raw = window.sessionStorage.getItem(
-        WALMART_COLLECTION_RECOVERY_KEY,
-      );
-      if (!raw) return;
-      const saved = JSON.parse(raw) as {
-        batchId?: unknown;
-        prompt?: unknown;
-        listingCount?: unknown;
-        packCount?: unknown;
-        walmartShipping?: unknown;
-      };
-      if (
-        typeof saved.batchId !== "string"
-        || !/^ptbfw-[a-f0-9]{24}$/u.test(saved.batchId)
-        || typeof saved.prompt !== "string"
-        || saved.prompt.length < 3
-        || saved.prompt.length > 1_000
-      ) {
-        window.sessionStorage.removeItem(
-          WALMART_COLLECTION_RECOVERY_KEY,
-        );
-        return;
-      }
-      setChannel("WALMART");
-      setPrompt(saved.prompt);
-      setListingCount(
-        typeof saved.listingCount === "number"
-          ? String(saved.listingCount)
-          : "",
-      );
-      setPackCount(
-        typeof saved.packCount === "number"
-          ? String(saved.packCount)
-          : "",
-      );
-      if (
-        saved.walmartShipping !== null
-        && typeof saved.walmartShipping === "object"
-        && !Array.isArray(saved.walmartShipping)
-        && "template_id" in saved.walmartShipping
-        && typeof saved.walmartShipping.template_id === "string"
-      ) {
-        setWalmartShipping(
-          saved.walmartShipping as WalmartShippingSelection,
-        );
-      }
-      setRestoredWalmartCollectionBatchId(saved.batchId);
-    } catch {
-      window.sessionStorage.removeItem(
-        WALMART_COLLECTION_RECOVERY_KEY,
-      );
-    }
+    // Legacy recovery was keyed only by an ephemeral Product Truth batch and
+    // recreated work when the prompt bytes changed. Durable Walmart builds
+    // recover from /bundle-factory/new/<GenerationJob id> instead.
+    window.sessionStorage.removeItem(WALMART_COLLECTION_RECOVERY_KEY);
   }, []);
-
-  useEffect(() => {
-    if (!restoredWalmartCollectionBatchId) return;
-    pollWalmartCollectionRef.current(restoredWalmartCollectionBatchId);
-    setRestoredWalmartCollectionBatchId(null);
-  }, [restoredWalmartCollectionBatchId]);
 
   function clearWalmartCollection() {
     if (collectionPollTimer.current) {
@@ -798,33 +741,12 @@ export default function StudioStartPage() {
     setError(null);
     try {
       if (channel === "WALMART") {
-        const readiness = await checkWalmartReadiness();
-        if (!readiness) {
-          setError(
-            "Generation did not start because product readiness could not be verified.",
-          );
-          setSubmitting(false);
-          return;
-        }
-        if (
-          !readiness.catalog.enough_ready ||
-          readiness.diagnosis.capability_gaps.length > 0
-        ) {
-          if (
-            readiness.diagnosis.capability_gaps.length === 0 &&
-            readiness.fallback.engine === "TARGETED_WALMART_EVIDENCE" &&
-            readiness.fallback.target_donor_product_ids.length > 0
-          ) {
-            await startWalmartDataCollection();
-            setSubmitting(false);
-            return;
-          }
-          setError(
-            "Generation did not start. Review Product data readiness and the recommended next step below.",
-          );
-          setSubmitting(false);
-          return;
-        }
+        // Walmart owns one durable GenerationJob from the first click. The
+        // server decides whether it can seal draft work immediately or must
+        // attach Product Truth preparation. The browser never creates or
+        // reconstructs command batches from prompt or browser-local state.
+        await submitStudioGeneration();
+        return;
       }
       await submitStudioGeneration();
     } catch (e) {
@@ -1092,7 +1014,10 @@ export default function StudioStartPage() {
               )}
             </div>
 
-            <div className="rounded-[12px] border border-rule bg-surface px-3.5 py-3.5">
+            <div
+              className="hidden rounded-[12px] border border-rule bg-surface px-3.5 py-3.5"
+              aria-hidden="true"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-[13px] font-semibold text-ink">

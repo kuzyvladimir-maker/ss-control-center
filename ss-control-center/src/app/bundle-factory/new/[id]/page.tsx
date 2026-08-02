@@ -12,6 +12,11 @@ import { prisma } from "@/lib/prisma";
 import { PageHead } from "@/components/kit";
 import { ArrowLeft } from "lucide-react";
 import { BatchProgress } from "@/components/bundle-factory/BatchProgress";
+import { WalmartDurableBuildProgress } from
+  "@/components/bundle-factory/WalmartDurableBuildProgress";
+import {
+  WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+} from "@/lib/bundle-factory/walmart-durable-build";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +53,10 @@ export default async function StudioBatchPage({
   const channel = typeof req.channel === "string" ? CHANNEL_LABELS[req.channel] ?? req.channel : "—";
   const houseBrand = typeof req.house_brand === "string" ? req.house_brand : "—";
   const photos = req.photo_strategy === "generate" ? "Generated" : "Catalog photos";
+  const isWalmartPreparation =
+    req.workflow === WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW;
   const isCanonicalWalmart =
-    req.workflow === "CANONICAL_WALMART_NEW_SKU";
+    req.workflow === "CANONICAL_WALMART_NEW_SKU" || isWalmartPreparation;
   const walmartShipping =
     req.walmart_shipping &&
       typeof req.walmart_shipping === "object" &&
@@ -66,6 +73,16 @@ export default async function StudioBatchPage({
     typeof req.listing_count === "number" ? req.listing_count : null;
   const packCount =
     typeof req.pack_count === "number" ? req.pack_count : null;
+  const productTruthCollection =
+    req.product_truth_collection &&
+      typeof req.product_truth_collection === "object" &&
+      !Array.isArray(req.product_truth_collection)
+      ? req.product_truth_collection as Record<string, unknown>
+      : null;
+  const productTruthBatchId =
+    typeof productTruthCollection?.batch_id === "string"
+      ? productTruthCollection.batch_id
+      : null;
 
   return (
     <>
@@ -104,12 +121,14 @@ export default async function StudioBatchPage({
           <>
             <div className="rounded-[14px] border border-rule bg-surface p-5">
               <div className="text-[13.5px] font-semibold text-ink">
-                Exact draft request sealed
+                {isWalmartPreparation
+                  ? "Walmart build request saved"
+                  : "Exact draft request sealed"}
               </div>
               <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
-                Each work item is bound to one exact donor product and Product
-                Truth evidence snapshot. This step does not reserve UPCs and
-                has no authority to send a listing to Walmart.
+                {isWalmartPreparation
+                  ? "This build has one permanent ID. Product Truth preparation, exact owner approval and all five draft work items remain children of this build even after refresh or navigation."
+                  : "Each work item is bound to one exact donor product and Product Truth evidence snapshot. This step does not reserve UPCs and has no authority to send a listing to Walmart."}
               </p>
               <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
               <div>
@@ -147,10 +166,18 @@ export default async function StudioBatchPage({
               </div>
               </div>
             </div>
-            <BatchProgress
-              batchId={job.id}
-              reviewHref={`/bundle-factory/new/${job.id}/review`}
-            />
+            {isWalmartPreparation && productTruthBatchId && listingCount ? (
+              <WalmartDurableBuildProgress
+                buildId={job.id}
+                collectionBatchId={productTruthBatchId}
+                listingCount={listingCount}
+              />
+            ) : (
+              <BatchProgress
+                batchId={job.id}
+                reviewHref={`/bundle-factory/new/${job.id}/review`}
+              />
+            )}
           </>
         ) : (
           <BatchProgress batchId={job.id} />

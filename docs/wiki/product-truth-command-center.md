@@ -1021,3 +1021,38 @@ review и approval exact quote в UI; до него enrichment не старту
   prior lifecycle и продолжает искать untouched exact donor. Production
   catalog dry check: `20` matched, использованный donor исключён, следующие
   `5` кандидатов найдены; provider calls `0`.
+
+### 🔄 Фаза BF-W10 — единый durable Walmart Build вместо browser-driven retry
+
+- [x] Root cause повторяющихся Campbell's запусков зафиксирован как
+  orchestration defect: до готовности Product Truth не существовало постоянного
+  `GenerationJob`, а browser state, literal prompt bytes, control batch и worker
+  lifecycle могли расходиться. Refresh/повторный Generate поэтому выглядели как
+  продолжение для владельца, но создавали другую техническую работу.
+- [x] Первый `Prepare Walmart request` теперь передаёт весь request server-side и
+  получает один постоянный `GenerationJob`/URL. Product Truth preparation,
+  exact quote, detached owner approval, enrichment и пять draft work items —
+  последовательные дочерние фазы того же build ID; browser storage больше не
+  является recovery authority.
+- [x] Provisional brief связывает exact prompt, listing/pack count, margin,
+  Walmart account и template SHA, current Product Truth batch, все предыдущие
+  attempts и donor identities. Повторный donor или changed current-attempt
+  binding отклоняется до продолжения.
+- [x] Terminal known failure одного source больше не уничтожает запрос. Server
+  сначала повторно читает общий Product Truth: если пяти exact variants уже
+  достаточно, он атомарно создаёт пять work items; иначе автоматически готовит
+  no-spend replacement attempt внутри того же `GenerationJob`, исключая все
+  уже использованные donors. Новый provider spend по-прежнему требует отдельный
+  exact quote click. `AMBIGUOUS` никогда не заменяется и не replay.
+- [x] Старый owner-facing browser-driven readiness/collection блок убран с
+  активной поверхности. Walmart Advanced остаётся только margin; manufacturer
+  brand, exact donor imagery и выбранный shipping template сохраняются.
+- [x] Local gates: durable/replacement + Walmart draft focused `15/15`, полный
+  Product Truth `535/535`, TypeScript, changed-files ESLint и production build
+  = `PASS`. Проверки не выполняли provider calls, Product Truth business writes,
+  UPC reservation или Walmart mutation.
+- [ ] Выпустить exact successor web/worker release, перевести production alias и
+  clean pinned worker/owner-agent на те же commit/tree/executable bytes.
+- [ ] Production smoke: один новый Campbell's `5 × Pack of 8` build должен
+  сохранить тот же URL через no-spend plan/quote и owner refresh. Paid quote и
+  Walmart publication не входят в smoke без отдельного exact owner action.

@@ -736,6 +736,13 @@ owner agent подписал exact command/quote/plans отдельным Produc
 ключом. `Decline` terminal до spend. Signature не переносится на changed/expired
 quote, другой target, новый donor, retry, wave или marketplace action.
 
+С 2026-08-02 owner request хранится как один durable Bundle Factory
+`GenerationJob`. Известный terminal failure одного exact source может
+автоматически подготовить другой **no-spend** child plan внутри того же build,
+исключив уже использованный donor. Это не переносит BF-W3: новый donor set
+обязательно показывает новый exact quote и требует нового click/signature;
+`AMBIGUOUS` автоматически не заменяется.
+
 Статус 2026-07-28: release
 `product-truth-web-control-2026-07-28-r7` (`2e124192…cf42`) активирован в
 production deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD`; owner public-key

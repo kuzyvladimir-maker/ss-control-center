@@ -575,6 +575,32 @@ Production progress/reuse recovery 2026-08-01 (r13):
   `AMBIGUOUS` batch не replay; следующий paid boundary возможен только через
   новый displayed exact quote и реальный owner click.
 
+### Durable Bundle Factory parent workflow
+
+Product Truth control batch не является пользовательской сущностью Bundle
+Factory и не должен служить URL/recovery key. Для Walmart owner request parent —
+один `GenerationJob`, создаваемый при первом server admission. Его provisional
+brief неизменно связывает request scope, account/template snapshot и ordered
+Product Truth attempts. UI читает current child batch только через этот build.
+
+Terminal handling:
+
+1. `SUCCEEDED` или известный `FAILED` child вызывает server-side readiness
+   recheck общего Product Truth catalog;
+2. если exact variants уже достаточно, те же bytes атомарно становятся
+   donor-bound `GenerationWorkItem` rows;
+3. если данных всё ещё не хватает, server может admit только новый no-spend
+   child plan, исключив donors всех предыдущих attempts, и сохранить его в том
+   же parent build;
+4. changed donor set выпускает новый exact quote и требует нового detached
+   owner approval; прежняя signature не переносится;
+5. `AMBIGUOUS`, unknown provider boundary или возможный replay terminal и не
+   допускает automatic replacement.
+
+Browser storage, literal retyping prompt и refresh не создают command authority.
+Эта orchestration не расширяет Product Truth writer boundary и не разрешает
+provider spend, UPC reservation либо Walmart mutation.
+
 Во время production-калибровки releases r1–r4 fail-closed выявили canonical
 temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
 r5 сериализует in-flight heartbeat до completion; текущая regression suite
