@@ -4,7 +4,7 @@
 **Contract schemas:** `product-truth-listing-manifest/1.2.0`,
 `walmart-mp-item-public/1.0.0`, `walmart-prepublication-evidence/1.2.0`
 **Current recommended SFF new-item spec:** `MP_ITEM 5.0.20260501-19_21_29-api`
-**Verified against current official Walmart documentation:** 2026-07-26
+**Verified against current official Walmart documentation:** 2026-08-01
 
 This document is the runtime prompt companion to the typed contracts in
 `src/lib/bundle-factory/walmart-listing-contract.ts`. It does not authorize a
@@ -50,6 +50,10 @@ override this contract, Seller Center evidence or the current live Get Spec.
   separate future `MATCH_EXISTING` / `MP_ITEM_MATCH` adapter phase.
 - Never create a duplicate product page merely because a new seller SKU is
   desired.
+- Walmart documents that Item Search exposes only currently published catalog
+  items. Therefore the exact UPC `SPEC` lookup cannot replace the separate fresh
+  all-status seller report used to catch the seller's unpublished, restricted,
+  system-problem and otherwise non-live duplicate history.
 
 ### Pilot sellable-unit boundary
 
@@ -78,9 +82,11 @@ override this contract, Seller Center evidence or the current live Get Spec.
   entity to assign it to this sellable unit, and alignment between the registry
   record and the public item brand. Historical use on another listing/account is
   useful operational evidence but cannot replace this check.
-- Before certification, authenticate only the exact staged seller SKU and require a
-  `404`, then search the exact staged UPC with `responseFormat=SPEC`. A full
-  all-status seller-catalog snapshot is not an input or prerequisite. The same
+- Before certification, bind a fresh full all-status seller-catalog snapshot and
+  its exact database mirror, reject any existing recipe/product/UPC/SKU collision
+  across every seller lifecycle status, authenticate the exact staged seller SKU
+  and require a `404`, then search the exact staged UPC with
+  `responseFormat=SPEC`. The same
   sellable variant cannot receive another identifier merely to create a separate
   page. Different pack configurations require different product IDs.
 
@@ -102,6 +108,10 @@ override this contract, Seller Center evidence or the current live Get Spec.
   A generative model must not redraw, reconstruct, restyle or invent package
   artwork. Cropping, resizing, white-canvas placement and deterministic repetition
   are permitted only when the package pixels remain unchanged.
+- Walmart's current image policy forbids generic stock photos and requires actual
+  product images that accurately reflect the sold item. It also requires any
+  AI-generated content to remain accurate, truthful and rights-compliant; the pilot
+  deliberately applies the stricter rule above and never generates package artwork.
 - A homogeneous multipack MAIN must visibly contain exactly `N` complete units,
   where `N` equals the sealed recipe and public multipack quantity. The engine
   binds every rendered unit to a source SHA-256 and rejects missing, extra,
@@ -210,7 +220,8 @@ title keywords:
    public attributes and images comply with the current content rules.
 9. **Product identifier and duplicates:** exact UPC registry/brand/seller authority,
    authenticated absence of the exact staged seller SKU and exact staged UPC
-   `responseFormat=SPEC` result. A full seller-catalog snapshot is not an input.
+   `responseFormat=SPEC` result, plus a fresh full all-status seller-catalog source
+   with exact mirror reconciliation and no recipe/product/UPC/SKU collision.
 10. **Shipping and fulfillment:** owned inventory, bound fulfillment center and lag,
     no retail-arbitrage delivery, competitor packaging or promotional inserts.
 11. **Pricing competitiveness:** fresh exact-variant comparable, normalized pack

@@ -8,14 +8,16 @@
  *   products from the catalog and assembles the listings drains this batch.
  *
  *   Body: {
- *     prompt (required), channel, house_brand,
- *     text_model ("sonnet"|"opus"), photo_strategy ("reuse-donor"|"generate"),
- *     image_quality ("cheaper"|"best"), target_margin_pct?
+ *     prompt (required), channel, target_margin_pct?,
+ *     Amazon only: house_brand, photo_strategy ("reuse-donor"|"generate"), image_quality,
+ *     uncrustables_image_mode
  *   }
  *   Returns: { batch_id }
  */
 
-import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { requireModuleAccess } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { badRequest, readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
@@ -34,18 +36,43 @@ import {
 import {
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
+import {
+  WALMART_STUDIO_DRAFT_BRIEF_SCHEMA,
+  WalmartStudioDraftContractError,
+  buildWalmartStudioDraftWorkItems,
+} from "@/lib/bundle-factory/walmart-studio-draft-contract";
+import {
+  WALMART_STUDIO_DEFAULT_PACKAGING_COST_CENTS,
+  WALMART_STUDIO_DEFAULT_SHIPPING_LABEL_CENTS,
+  WALMART_STUDIO_REFERRAL_FEE_BPS,
+} from "@/lib/bundle-factory/walmart-studio-draft-economics";
+import {
+  diagnoseProductTruthWalmartPilotRequest,
+} from "@/lib/sourcing/product-truth-read-contract";
+import { openProductTruthWebReadClient } from
+  "@/lib/sourcing/product-truth-web-read-client";
+import {
+  loadProductTruthWebControlRuntime,
+} from "@/lib/sourcing/product-truth-web-control-runtime";
+import {
+  prepareWalmartDurableBuildCollection,
+  parseWalmartDurableBuildPreparationBrief,
+  WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
+  WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+} from "@/lib/bundle-factory/walmart-durable-build";
 
 export const dynamic = "force-dynamic";
 
 const HOUSE_BRANDS = ["Salutem Vita", "Starfit"] as const;
-const TEXT_MODELS = ["sonnet", "opus"] as const;
 const PHOTO_STRATEGIES = ["reuse-donor", "generate"] as const;
 const IMAGE_QUALITIES = ["cheaper", "best"] as const;
 // Own-brand (Uncrustables) main-image style: count-accurate retail cartons, or
 // the individual flavor-coloured sandwich wrappers. Vladimir wants both.
 const UNCRUSTABLES_IMAGE_MODES = ["retail_boxes", "individual_wraps"] as const;
 
-export const POST = withErrorHandler("studio-generate", async (request: Request) => {
+export const POST = withErrorHandler("studio-generate", async (request: NextRequest) => {
+  const auth = await requireModuleAccess(request, "bundle-factory");
+  if (auth instanceof NextResponse) return auth;
   const body = (await readJson<Record<string, unknown>>(request)) ?? {};
 
   const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
@@ -58,14 +85,6 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
     return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
   }
-  const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
-  const textModel = isOneOf(TEXT_MODELS, body.text_model) ? body.text_model : "opus";
-  const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
-  const imageQuality = isOneOf(IMAGE_QUALITIES, body.image_quality) ? body.image_quality : "cheaper";
-  const uncrustablesImageMode = isOneOf(UNCRUSTABLES_IMAGE_MODES, body.uncrustables_image_mode)
-    ? body.uncrustables_image_mode
-    : "retail_boxes";
-
   const rawMargin = Number(body.target_margin_pct);
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
 
@@ -112,9 +131,9 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
       return NextResponse.json(
         {
           error:
-            "This Walmart request cannot run in the currently verified pilot. " +
+            "The Walmart prompt and structured request fields disagree. " +
             intent.blockers.map((blocker) => blocker.message).join(" "),
-          code: "WALMART_REQUEST_OUTSIDE_VERIFIED_PILOT",
+          code: "WALMART_REQUEST_INPUT_CONFLICT",
           walmart_request: intent,
         },
         { status: 422 },
@@ -191,14 +210,192 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         "The selected Walmart shipping template changed or is no longer active. Re-open it and select again.",
       );
     }
+    const targetMarginBps = Math.round((targetMarginPct ?? 30) * 100);
+    if (
+      !Number.isSafeInteger(targetMarginBps) ||
+      targetMarginBps < 1 ||
+      targetMarginBps > 5_000
+    ) {
+      return badRequest("Walmart target margin must be between 0.01% and 50%.");
+    }
+    const productTruthAsOf = new Date().toISOString();
+    const productTruthDb = openProductTruthWebReadClient();
+    let diagnostic;
+    try {
+      diagnostic = await diagnoseProductTruthWalmartPilotRequest(
+        productTruthDb,
+        {
+          query: prompt,
+          asOf: productTruthAsOf,
+          requireIngredients: true,
+          requireNutrition: true,
+          requireAllergens: true,
+          limit: Math.max(20, Math.min(500, intent.listing_count * 4)),
+        },
+      );
+    } finally {
+      productTruthDb.close();
+    }
+    let executionWorkItems;
+    try {
+      executionWorkItems = buildWalmartStudioDraftWorkItems({
+        candidates: diagnostic.candidates,
+        listingCount: intent.listing_count,
+        packCount: intent.pack_count,
+        storeIndex,
+        shippingTemplateId: template.id,
+        shippingTemplateSha256: template.template_sha256,
+        targetMarginBps,
+        asOf: diagnostic.as_of,
+        priceMaxAgeMs: diagnostic.price_max_age_ms,
+        zip: diagnostic.zip,
+      });
+    } catch (error) {
+      if (
+        error instanceof WalmartStudioDraftContractError &&
+        error.code.startsWith("INSUFFICIENT_")
+      ) {
+        const runtime = loadProductTruthWebControlRuntime();
+        if (runtime.status === "OFF" || !runtime.claims.workerClaims) {
+          return NextResponse.json(
+            {
+              error:
+                "Product Truth collection is not active for this Walmart build.",
+              code: "WALMART_PRODUCT_TRUTH_CONTROL_OFF",
+            },
+            { status: 503 },
+          );
+        }
+        const requestedAt = new Date().toISOString();
+        const collectionDb = openProductTruthWebReadClient();
+        let prepared;
+        try {
+          prepared = await prepareWalmartDurableBuildCollection({
+            db: collectionDb,
+            diagnostic,
+            runtime,
+            requestedByUserId: auth.id,
+            requestedAt,
+            prompt,
+            listingCount: intent.listing_count,
+            packCount: intent.pack_count,
+          });
+        } finally {
+          collectionDb.close();
+        }
+        const buildId = `wbf-${prepared.batch.batchId}`;
+        const preparationBrief = {
+          studio_version: 6,
+          workflow: WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+          build_schema_version: WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
+          source: "prompt",
+          prompt,
+          channel: "WALMART",
+          listing_count: intent.listing_count,
+          pack_count: intent.pack_count,
+          target_margin_pct: targetMarginPct ?? 30,
+          photo_strategy: "reuse-donor",
+          walmart_shipping: {
+            store_index: storeIndex,
+            account_name: account.storeName,
+            selected_at: requestedAt,
+            template,
+          },
+          product_truth_collection: {
+            batch_id: prepared.batch.batchId,
+            requested_at: requestedAt,
+            admitted_jobs: prepared.status.jobs.length,
+            attempts: [{
+              batch_id: prepared.batch.batchId,
+              requested_at: requestedAt,
+              admitted_jobs: prepared.status.jobs.length,
+              donor_product_ids: prepared.batch.jobs.map(
+                (job) => job.target.donorProductId,
+              ),
+            }],
+          },
+          operator_contract: {
+            marketplace_mutation_authorized: false,
+            upc_reservation_authorized: false,
+            paid_execution_requires_exact_owner_click: true,
+          },
+        } as const;
+        const existing = await prisma.generationJob.findUnique({
+          where: { id: buildId },
+          select: { id: true, brief: true, user_id: true },
+        });
+        if (existing) {
+          let sameRequest = false;
+          try {
+            const prior = parseWalmartDurableBuildPreparationBrief(
+              JSON.parse(existing.brief),
+            );
+            sameRequest =
+              prior.prompt === prompt
+              && prior.listing_count === intent.listing_count
+              && prior.pack_count === intent.pack_count
+              && prior.walmart_shipping.store_index === storeIndex
+              && prior.walmart_shipping.template.id === template.id
+              && prior.walmart_shipping.template.template_sha256
+                === template.template_sha256;
+          } catch {
+            const prior = JSON.parse(existing.brief) as Record<string, unknown>;
+            sameRequest =
+              prior.workflow === "CANONICAL_WALMART_NEW_SKU"
+              && prior.prompt === prompt
+              && prior.listing_count === intent.listing_count
+              && prior.pack_count === intent.pack_count;
+          }
+          if (existing.user_id !== auth.id || !sameRequest) {
+            throw new Error(
+              "Durable Walmart build identity collided with different request bytes",
+            );
+          }
+        } else {
+          await prisma.generationJob.create({
+            data: {
+              id: buildId,
+              brief: JSON.stringify(preparationBrief),
+              current_stage: "WALMART_PRODUCT_TRUTH",
+              status: "PENDING",
+              bundles_target: intent.listing_count,
+              user_id: auth.id,
+              notes: JSON.stringify({
+                progress: {
+                  status: "PENDING",
+                  phase: "product_truth",
+                  step:
+                    `${prepared.status.jobs.length} missing exact products are being prepared inside this durable build.`,
+                  total: intent.listing_count,
+                  done: diagnostic.ready_variants,
+                  failed: 0,
+                  done_flag: false,
+                },
+              }),
+            },
+          });
+        }
+        return NextResponse.json(
+          {
+            batch_id: buildId,
+            workflow: WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+            product_truth_batch_id: prepared.batch.batchId,
+          },
+          { status: existing ? 200 : 201 },
+        );
+      }
+      throw error;
+    }
     const batchRequest = {
-      studio_version: 4,
+      studio_version: 6,
       workflow: "CANONICAL_WALMART_NEW_SKU",
+      draft_schema_version: WALMART_STUDIO_DRAFT_BRIEF_SCHEMA,
       source: "prompt",
       prompt,
       channel,
       listing_count: intent.listing_count,
       pack_count: intent.pack_count,
+      execution_work_items: executionWorkItems,
       prompt_intent: {
         listing_count: intent.prompt_listing_count,
         pack_count: intent.prompt_pack_count,
@@ -211,36 +408,84 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
         selected_at: new Date().toISOString(),
         template,
       },
+      product_truth_admission: {
+        as_of: diagnostic.as_of,
+        price_max_age_ms: diagnostic.price_max_age_ms,
+        zip: diagnostic.zip,
+        matched_variants: diagnostic.matched_variants,
+        ready_variants: diagnostic.ready_variants,
+      },
+      pricing_inputs: {
+        packaging_cost_cents: WALMART_STUDIO_DEFAULT_PACKAGING_COST_CENTS,
+        shipping_label_cents: WALMART_STUDIO_DEFAULT_SHIPPING_LABEL_CENTS,
+        referral_fee_bps: WALMART_STUDIO_REFERRAL_FEE_BPS,
+        target_margin_bps: targetMarginBps,
+      },
       operator_contract: {
-        engine: "npm run walmart:new-sku",
+        engine: "walmart-studio-draft-engine",
         marketplace_mutation_authorized: false,
+        upc_reservation_authorized: false,
         next_step:
-          "Generation has not started. Claude Code follows docs/wiki/walmart-new-sku-operator-runbook.md and the engine's exact next_command.",
+          "Create donor-bound internal drafts for owner review. UPC reservation, certification and Walmart publication remain separate gates.",
       },
     };
-    const job = await prisma.generationJob.create({
-      data: {
-        brief: JSON.stringify(batchRequest),
-        current_stage: "WALMART_REQUEST_READY",
-        status: "PENDING",
-        bundles_target: intent.listing_count,
-        user_id: "user",
-        notes: JSON.stringify({
-          progress: {
-            status: "PENDING",
-            phase: "walmart-owner-request",
-            step:
-              "Request recorded; generation has not started. " +
-              WALMART_CANONICAL_OPERATOR_MESSAGE,
-            total: intent.listing_count,
-            done: 0,
-            failed: 0,
-            done_flag: false,
-          },
-        }),
-      },
-      select: { id: true },
+    const readyBuildSha = createHash("sha256").update(JSON.stringify({
+      requested_by: auth.id,
+      prompt,
+      listing_count: intent.listing_count,
+      pack_count: intent.pack_count,
+      store_index: storeIndex,
+      shipping_template_sha256: template.template_sha256,
+      target_margin_bps: targetMarginBps,
+      work_items: executionWorkItems.map((item) => ({
+        donor_product_id: item.donor_product_id,
+        canonical_variant_id: item.canonical_variant_id,
+        content_observation_id: item.content_observation_id,
+        price_observation_id: item.price_observation_id,
+        pack_count: item.pack_count,
+      })),
+    })).digest("hex");
+    const readyBuildId = `wbf-ready-${readyBuildSha.slice(0, 24)}`;
+    let job = await prisma.generationJob.findUnique({
+      where: { id: readyBuildId },
+      select: { id: true, user_id: true, brief: true },
     });
+    if (job) {
+      if (job.user_id !== auth.id) {
+        throw new Error("Durable ready-build identity collision");
+      }
+    } else {
+      job = await prisma.generationJob.create({
+        data: {
+          id: readyBuildId,
+          brief: JSON.stringify(batchRequest),
+          current_stage: "WALMART_DRAFT_QUEUE",
+          status: "PENDING",
+          bundles_target: intent.listing_count,
+          user_id: auth.id,
+          notes: JSON.stringify({
+            progress: {
+              status: "PENDING",
+              phase: "queued",
+              step:
+                `${intent.listing_count} exact Product Truth variants queued for Walmart draft generation.`,
+              total: intent.listing_count,
+              done: 0,
+              failed: 0,
+              done_flag: false,
+            },
+          }),
+          work_items: {
+            create: executionWorkItems.map((item) => ({
+              spec_index: item.spec_index,
+              spec_json: JSON.stringify(item),
+              fingerprint: item.work_item_sha256,
+            })),
+          },
+        },
+        select: { id: true, user_id: true, brief: true },
+      });
+    }
     return NextResponse.json(
       {
         batch_id: job.id,
@@ -250,13 +495,22 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
     );
   }
 
+  // These controls belong to the Amazon/own-brand branch only. The Walmart
+  // branch above preserves manufacturer identity and exact donor imagery and
+  // therefore never parses, defaults, or persists them.
+  const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
+  const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
+  const imageQuality = isOneOf(IMAGE_QUALITIES, body.image_quality) ? body.image_quality : "cheaper";
+  const uncrustablesImageMode = isOneOf(UNCRUSTABLES_IMAGE_MODES, body.uncrustables_image_mode)
+    ? body.uncrustables_image_mode
+    : "retail_boxes";
+
   const batchRequest = {
     studio_version: 2,
     source: "prompt",
     prompt,
     channel,
     house_brand: houseBrand,
-    text_model: textModel,
     photo_strategy: photoStrategy,
     image_quality: imageQuality,
     uncrustables_image_mode: uncrustablesImageMode,

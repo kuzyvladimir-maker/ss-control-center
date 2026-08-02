@@ -105,7 +105,7 @@ export const GET = withErrorHandler(
         requireIngredients: true,
         requireNutrition: true,
         requireAllergens: true,
-        limit: Math.max(20, Math.min(50, requestIntent.listing_count * 4)),
+        limit: Math.max(20, Math.min(500, requestIntent.listing_count * 4)),
       });
       const collection = await Promise.all(
         diagnostic.candidates.map((candidate) =>
@@ -119,9 +119,9 @@ export const GET = withErrorHandler(
         data_collection:
           collectionByDonor.get(candidate.donor_product_id) ?? null,
       }));
-      const capabilityGaps = requestIntent.blockers.filter(
-        (blocker) => blocker.kind === "ENGINE_CAPABILITY_GAP",
-      );
+      // Request size is never an owner-facing capability blocker. Protected
+      // one-listing execution is an internal orchestration concern.
+      const capabilityGaps: Array<{ code: string; message: string }> = [];
       const inputConflicts = requestIntent.blockers.filter(
         (blocker) => blocker.kind === "INPUT_CONFLICT",
       );
@@ -192,11 +192,13 @@ export const GET = withErrorHandler(
             webControl.command_admission && webControl.worker_claims,
           automatic_web_execution_reason:
             webControl.command_admission && webControl.worker_claims
-              ? "The no-spend Product Truth worker can prepare exact one-donor plans. Metered execution still requires exact owner authority."
+              ? webControl.metered_execution
+                ? "The Product Truth worker can prepare exact one-donor plans and run the displayed enrichment quote after one-click owner approval."
+                : "The no-spend Product Truth worker can prepare exact one-donor plans, but owner-gated metered execution is not activated."
               : "The Product Truth Web Operations worker is not activated; the Command Center must not pretend that a provider run started.",
           recommendation:
             collectionTargets.length > 0
-              ? "Include the verified compatibility fix in a new frozen Product Truth release, run targeted evidence for the shown exact donors, then repeat this readiness check."
+              ? "Prepare the exact one-product plans now. Review the displayed actions and maximum provider-credit cost, then approve or decline the exact quote. After success, Bundle Factory rechecks Product Truth and continues Generate automatically."
               : noExactMatches
                 ? "Run a bounded Product Truth demand-discovery campaign for this request, then repeat this readiness check."
                 : needsDataCollection

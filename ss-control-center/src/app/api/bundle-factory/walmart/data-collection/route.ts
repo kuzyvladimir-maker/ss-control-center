@@ -9,6 +9,7 @@ import {
 } from "@/lib/sourcing/product-truth-read-contract";
 import {
   readTargetedWalmartDonorSnapshot,
+  targetedWalmartDetailHarvestStateAbsent,
 } from "@/lib/sourcing/product-truth-targeted-walmart-evidence";
 import {
   ProductTruthWebControlAdmissionError,
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
       requireIngredients: true,
       requireNutrition: true,
       requireAllergens: true,
-      limit: Math.max(20, Math.min(50, intent.listing_count * 4)),
+      limit: Math.max(20, Math.min(500, intent.listing_count * 4)),
     });
     const missingNeeded = Math.max(
       0,
@@ -175,10 +176,20 @@ export async function POST(request: NextRequest) {
         continue;
       }
       try {
-        await readTargetedWalmartDonorSnapshot(
+        const snapshot = await readTargetedWalmartDonorSnapshot(
           db,
           candidate.donor_product_id,
         );
+        if (!await targetedWalmartDetailHarvestStateAbsent(
+          db,
+          snapshot.donorProductId,
+          snapshot.retailerProductId,
+        )) {
+          // The sealed collector is first-attempt-only. Keep scanning for an
+          // untouched exact donor instead of admitting a doctor command that
+          // must fail and strand the remaining otherwise valid jobs.
+          continue;
+        }
       } catch {
         continue;
       }
@@ -215,10 +226,29 @@ export async function POST(request: NextRequest) {
       unwrangleReserveFloor: runtime.unwrangleReserveFloor,
       candidates,
     });
-    const status = await admitProductTruthWalmartCollectionBatch({
-      batch,
-      runtime,
-    });
+    // The batch identity deliberately ignores its fresh TTL timestamp. A
+    // browser refresh or a repeated Prepare click must reconnect to the same
+    // immutable work instead of trying to insert duplicate commands or
+    // starting another collection cycle.
+    let status;
+    try {
+      status = await readProductTruthWalmartCollectionStatus({
+        batchId: batch.batchId,
+        requestedByUserId: auth.id,
+        runtime,
+      });
+    } catch (error) {
+      if (
+        !(error instanceof ProductTruthWebControlAdmissionError)
+        || error.code !== "WEB_CONTROL_BATCH_NOT_FOUND"
+      ) {
+        throw error;
+      }
+      status = await admitProductTruthWalmartCollectionBatch({
+        batch,
+        runtime,
+      });
+    }
     return jsonNoStore({
       ok: true,
       status: status.status,
@@ -278,6 +308,7 @@ export async function GET(request: NextRequest) {
     const status = await readProductTruthWalmartCollectionStatus({
       batchId,
       ...(auth.isAdmin ? {} : { requestedByUserId: auth.id }),
+      runtime,
     });
     return jsonNoStore({
       ok: true,

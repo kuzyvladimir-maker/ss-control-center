@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
 import { buildCanonicalProductVariantKey } from "../canonical-product-variant";
@@ -901,6 +902,7 @@ test("RITZ legacy bytes derive a conservative identity and fresh search rejects 
 test("Unwrangle detail preserves independent identity and excludes generated copy", () => {
   const parsed = parseUnwrangleDetailPayload({
     success: true,
+    remaining_credits: 742.5,
     detail: {
       name: "Other Brand Tortilla Chips 12 oz",
       id: "999999999",
@@ -915,6 +917,7 @@ test("Unwrangle detail preserves independent identity and excludes generated cop
   assert.equal(parsed.retailerProductId, "999999999");
   assert.equal(parsed.productUrl, "https://www.walmart.com/ip/999999999");
   assert.equal(parsed.description, null);
+  assert.equal(parsed.providerCreditsRemaining, 742.5);
 
   const scalarSentinels = parseUnwrangleDetailPayload({
     success: true,
@@ -1020,6 +1023,40 @@ test("old exact content skips detail only before any detail receipt", () => {
     searchReceiptId: "search-1",
     detailReceiptId: "detail-1",
   });
+});
+
+test("preexisting exact-variant content is channel-independent and still read-contract gated", async () => {
+  const source = await readFile(
+    new URL("../product-truth-targeted-walmart-evidence.ts", import.meta.url),
+    "utf8",
+  );
+  const start = source.indexOf(
+    "async function matchingPreexistingContentObservations",
+  );
+  const end = source.indexOf(
+    "export type ProductTruthTargetedResumeDecision",
+    start,
+  );
+  assert.ok(start >= 0 && end > start);
+  const selector = source.slice(start, end);
+  assert.match(selector, /canonicalVariantId=\? AND variantDecisionId=\?/u);
+  assert.doesNotMatch(selector, /sourceApi='unwrangle'/u);
+  assert.doesNotMatch(selector, /normalizeExactWalmartProductUrl/u);
+  const reconciliation = source.slice(
+    source.indexOf("async function reconciliationState"),
+    source.indexOf("async function reapExpiredTargetedRunFromEvidence"),
+  );
+  assert.match(
+    reconciliation,
+    /preexistingContentObservationIds[\s\S]*candidateOrNull/u,
+  );
+  assert.match(
+    source.slice(
+      source.indexOf("async function candidateOrNull"),
+      source.indexOf("async function reconciliationState"),
+    ),
+    /requireIngredients: true[\s\S]*requireNutrition: true[\s\S]*requireAllergens: true/u,
+  );
 });
 
 test("exact-one Walmart filter rejects fanout and accepts one local 1P row", () => {

@@ -1,6 +1,6 @@
 # Walmart New SKU — execution board
 
-> **Статус:** active implementation board, обновлено 2026-07-28.
+> **Статус:** active implementation board, обновлено 2026-08-01.
 >
 > **Канон:** [[product-catalog-architecture]]. Операторский workflow:
 > [[walmart-new-sku-operator-runbook]]. Product Truth prerequisites:
@@ -24,10 +24,10 @@ job/draft/approval primitives, но Amazon, Walmart и будущие канал
 channel-ветки со своими content, attributes, images, compliance, payload, publish и
 verify lifecycle. Walmart-ветка использует Product Truth / донорский справочный
 каталог как единственный источник товарной идентичности, фактов, изображений,
-закупочных offers и evidence. Полный каталог наших существующих Walmart-листингов не
-является входом или prerequisite нового SKU. Непосредственно перед certification
-движок проверяет только два exact идентификатора будущего листинга: staged seller SKU
-должен отсутствовать, а выделенный UPC не должен быть занят в Walmart catalog.
+закупочных offers и evidence. Свежий полный all-status каталог наших Walmart-листингов
+обязателен как отдельная защита от дублей recipe/product/UPC/SKU во всех seller
+statuses; он не является донором товарного контента. Перед certification движок
+дополнительно проверяет exact staged seller SKU и выделенный UPC в Walmart catalog.
 
 Knowledge Base конкретного канала переводится в versioned executable validators,
 candidate-bound policy evidence и live marketplace spec; markdown сам по себе не
@@ -35,9 +35,10 @@ candidate-bound policy evidence и live marketplace spec; markdown сам по �
 15–20 и затем расписание проектируются как отдельные releases с новыми owner gates,
 лимитами, stop conditions и мониторингом. Текущий pilot release этого не разрешает.
 
-Текущий release намеренно поддерживает только один exact shelf-stable товарный
-вариант в multipack `2` или `3`, один candidate на plan и максимум два pilot SKU.
-Mixed/variety/frozen и партии 15–20 не входят в этот release.
+Текущая ветка поддерживает exact homogeneous shelf-stable multipack от `1` до `500`
+единиц. Один engine-plan по-прежнему содержит ровно один candidate, а Bundle Factory
+для owner-requested batch создаёт до пяти независимых plans. Mixed/variety/frozen
+и автоматические волны 15–20 в эту release-границу не входят.
 
 Уточнение владельца от 2026-07-23: целевая contribution margin равна `30%` после
 goods, packaging materials, seller shipping label и Walmart referral fee. Walmart
@@ -54,13 +55,14 @@ default — free shipping. Paid shipping допускается только к�
 реально более быстрый service либо экономически необходимое исключение. Полный канон:
 [[walmart-new-sku-shipping-price-strategy]].
 
-## Текущий итоговый срез — 2026-07-27
+## Текущий итоговый срез — 2026-07-29
 
-- ✅ **Выполнение: движок.** Frozen operator release v32:
-  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`; engine SHA
-  `cc086942…89898`, manifest SHA `efa8e8cd…135b`, certificate SHA
-  `17bfde04…050c`. Product Truth `472/472`, focused Walmart `21/21`, fake-live
-  `3/3`, TypeScript PASS. V31 и старше — только audit history.
+- ✅ **Выполнение: движок.** Frozen operator release v33:
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`; engine SHA
+  `fe76e637…72946`, manifest SHA `2593cd46…127f`, certificate SHA
+  `806c75a6…6f1f`. Product Truth `519/519`, focused Walmart/Bundle Factory
+  `108/108`, source TypeScript и production build PASS. V32 и старше — только
+  audit history.
 - ✅ **Выполнение: Product Truth.** Exact Target content активирован для RITZ Bits
   Cheese 8.8 oz, donor `75422f18-e3d2-4c62-ae62-7287aaa75119`, canonical variant
   `cpv1:ba797…194a9`, observation `pco:68af…d59e`, activation receipt SHA
@@ -94,7 +96,7 @@ default — free shipping. Paid shipping допускается только к�
 
 UPC reservations текущих staged artifacts истекают
 `2026-07-28T13:52:56.990Z` / `2026-07-28T13:55:59.720Z`. После expiry оператор не
-правит JSON и не выбирает UPC вручную; он запускает новый v32 doctor и следует exact
+правит JSON и не выбирает UPC вручную; он запускает новый v33 doctor и следует exact
 recovery `next_command`. `rotate-upc` разрешён только после доказанного
 `MP_ITEM_MATCH`.
 
@@ -129,14 +131,14 @@ recovery `next_command`. `rotate-upc` разрешён только после �
   Cream of Chicken, Golden Mushroom, Heart Healthy Cream of Mushroom и Chunky
   Chicken Pot Pie. Но у всех пяти отсутствуют свежие append-only
   `DonorOfferObservation` с canonical variant binding; текущие materialized offers
-  датированы 2026-07-10/11 и не являются свежим 24-hour price evidence. Frozen v32
+  датированы 2026-07-10/11 и не являются свежим 24-hour price evidence. Frozen v33
   также разрешает только pack 2/3 и максимум два SKU. Legacy `bestPrice` не может
   быть подменён под current FACT.
 - ⬜ **Следующая отдельная реализация.** Для реального Campbell's `5 × 8` нужен новый
   post-pilot release: targeted fresh price evidence по пяти exact variants,
   arbitrary homogeneous pack count `8`, bounded five-candidate plan, пять
   count-accurate image previews, новый regression/frozen release и затем обычные
-  certification/owner gates. Это расширение не включено молча в v32 и не выполняет
+  certification/owner gates. Это расширение не включено молча в v33 и не выполняет
   Walmart write.
 
 ## Правило статусов
@@ -363,7 +365,12 @@ track и больше не обозначается blocker текущего Wal
   report executor с закреплённым production trust root; старый executor с пустым
   trust root оставить только как `NO-GO` audit evidence.
 
-### ✅ Фаза 5 — Product source и exact duplicate guard
+### 🔄 Фаза 5 — Product source и полный duplicate guard
+
+> Текущая основная цель supersedes старое решение об exact-only point guard.
+> Product Truth остаётся единственным donor/content source. Отдельный свежий полный
+> all-status Walmart seller catalog снова обязателен только для поиска дублей по
+> recipe/product/UPC/SKU и всем seller statuses.
 
 - [x] Исторический pre-enrollment one-shot report-request executor доказал safety:
   manifest SHA
@@ -387,11 +394,11 @@ track и больше не обозначается blocker текущего Wal
 - [x] Решением владельца
   `owner-chat:2026-07-23:product-truth-donor-only-exact-sku-upc-preflight`
   Product Truth закреплён как единственный product source.
-- [x] Удалить обязательные ITEM v6 source/DB mirror/`WalmartReport` inputs из doctor,
-  plan и runtime; полный seller-catalog scan не выполнять.
-- [x] Закрыть legacy compatibility path: active plan/doctor/certification/runtime
-  release v11 принимает только exact-identifier point guard и отклоняет старый
-  full-seller-catalog binding.
+- [x] Исторически обязательные ITEM v6 source/DB mirror/`WalmartReport` inputs были
+  удалены из release v11; это решение теперь superseded.
+- [x] В рабочей ветке восстановить обязательный byte-pinned all-status source,
+  точное DB mirror/`WalmartReport` reconciliation и recipe/product/UPC/SKU scan.
+- [x] Отклонять exact-identifier-only binding в plan/doctor/certification/runtime.
 - [x] Удалить ручной canonical identity input: release v12 впервые использовал
   `EVIDENCE_VERIFIED_BOOTSTRAP`, выводит conservative identity из sealed donor
   brand/title/size и требует fresh exact Walmart proof до canonical write.
@@ -721,19 +728,20 @@ track и больше не обозначается blocker текущего Wal
   три database-authoritative guard probes. Затем та же exact migration была
   применена одной production transaction; товарные данные и marketplace state не
   изменялись.
-- Frozen ITEM v6 executors, sessions и empty ledgers сохранены только как safety/audit
-  evidence. По текущему owner contract их нельзя исполнять; fresh full source,
-  mirror activation и `WalmartReport` не требуются.
+- Исторические ITEM v6 executors и пустые ledgers сохранены только как audit
+  evidence. Successor reissue-v2 release выполнил ровно один owner-authorized
+  report-create POST; fresh full source, mirror activation и `WalmartReport`
+  теперь обязательны только как all-status duplicate guard.
 - Общий offline owner-control signer реализован; production key автоматически
   создан без пользовательского пароля, реальный doctor вернул
   `OWNER_CONTROL_READY`, public key pinned. Раздельный regression после enrollment:
   `92/92 PASS`; старые frozen releases всё ещё намеренно не принимают permit до
   выпуска замены.
-- Full all-status Walmart ITEM catalog source отсутствует и для new-SKU workflow не
-  требуется.
+- Fresh full all-status Walmart ITEM catalog source обязателен перед новым doctor;
+  он является duplicate guard, а не donor/content source.
 - Live Walmart new SKU создано: `0`.
 
-## 🔄 Bundle Factory Product Truth fallback — 2026-07-28
+## ✅ Bundle Factory Product Truth no-spend fallback — 2026-07-28
 
 - [x] Зафиксирован boundary: Walmart Studio использует только общий Product Truth;
   один exact donor = один independent targeted-evidence workflow, максимум пять
@@ -744,9 +752,114 @@ track и больше не обозначается blocker текущего Wal
   Stage A custody.
 - [x] Добавить в Walmart Studio кнопку запуска, прогресс и повторную readiness
   проверку; Generate продолжается только если data gaps и capability gaps закрыты.
-- [x] Сертифицировать default-OFF/local no-spend release: Product Truth
-  `506/506`, targeted integration/safety `51/51`, UI route `2/2`,
-  TypeScript/ESLint/production build = `PASS`; provider, production DB и
-  Walmart effects = `0`.
-- [ ] Отдельно решить
-  production admission/worker/metered activation gates.
+- [x] Сертифицирован и активирован bounded production no-spend release
+  `product-truth-web-control-2026-07-28-r6`, commit
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`: Product Truth `512/512`,
+  Bundle Factory UI `3/3`, TypeScript/ESLint/production build = `PASS`.
+- [x] Production E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
+  `AWAITING_OWNER`; worker active, postcheck `claim:null`.
+- [x] Финальный r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`.
+- [ ] Отдельный Stage F money/permit gate всё ещё требуется для `execute` и
+  фактического сбора свежих цен. Provider spend, Product Truth business writes,
+  UPC reservation, listing publication и Walmart effects = `0`.
+
+## ✅ BF-W6: internal draft engine из Bundle Factory — 2026-08-01
+
+- [x] Walmart остаётся отдельной параллельной channel-веткой общего Bundle
+  Factory: общий только вход/очередь/Product Truth, а request contract,
+  economics, изображения, поля, review и дальнейший publisher — Walmart-only.
+- [x] После успешной readiness проверки `Generate` атомарно фиксирует по одному
+  immutable work item на каждый requested exact donor variant. Campbell's
+  request сохраняется буквально как `5 listings × Pack of 8`; числа не
+  заменяются pilot defaults.
+- [x] Durable engine создаёт все внутренние drafts автоматически: CAS claim,
+  stale recovery, bounded retry, immutable evidence binding и idempotency
+  проверены на настоящей временной SQLite/Prisma базе.
+- [x] Exact donor image проходит connected-white cutout и count-accurate
+  deterministic composition; продукт занимает почти весь `2200×2200` canvas,
+  белый фон одной упаковки не перекрывает соседнюю, generative redraw запрещён.
+- [x] Pricing binding: exact COGS × quantity + packaging + outbound shipping
+  cost + Walmart commission + selected contribution margin; выбранный account
+  shipping template определяет, какая часть customer total показывается как
+  item price и какая как buyer shipping.
+- [x] Owner review показывает весь batch, затем отдельную Walmart-like PDP для
+  каждого draft со всеми изображениями, content, price/shipping/total и exact
+  evidence. Никаких UPC reservation, feed submit или live publication кнопок
+  на этой поверхности нет.
+- [x] Security: каждый image redirect проверяется до follow, unknown host и
+  non-raster content отклоняются, streamed body ограничен `25 MiB`; production
+  Campbell's hosts входят в pinned allowlist.
+- [x] Certification: focused Walmart/Studio + Product Truth + Pack-of-8 image
+  tests `61/61 PASS`; TypeScript, targeted ESLint и production build `PASS`.
+- [x] Release commit `d8ccc86da…` развёрнут production deployment
+  `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, alias
+  `salutemsolutions.info`. No-spend HTTP postcheck подтвердил auth boundary:
+  `/`, `/bundle-factory/new` и review route = `307 → /login`, protected
+  readiness API = `401`; provider calls и Walmart writes `0`.
+- [ ] Authenticated owner visual postcheck не заявлен из-за отсутствия
+  подключённой browser session; первый owner batch остаётся визуальным
+  acceptance, не live-publication gate.
+
+`matched_variants=0` не запускает скрытый scraper: это отдельная demand-expansion
+задача единого Product Truth Platform и остаётся blocked platform gate до
+глобального Phase 1 proof. Campbell's имеет exact donor variants, поэтому его
+текущий сценарий проходит существующий owner-quoted targeted enrichment и затем
+этот draft engine.
+
+## ✅ BF-W7: production recovery подготовки Product Truth plan — 2026-08-01
+
+- [x] Retry failure происходил до command creation из-за runtime config, а не
+  из-за текста Campbell's request, количества `5`, Pack of `8` или Walmart
+  draft engine.
+- [x] Shared Product Truth control остаётся `PRODUCTION_READ_ONLY`; Walmart
+  enrichment получает отдельный exact activation binding. Наличие public owner
+  key само по себе не разрешает provider spend.
+- [x] Exact quote, local detached Ed25519 signature, sequential one-attempt
+  executor, credit ceiling и `marketplaceMutations=0` сохранены без ослабления.
+- [x] Release r8 commit `4a9e761a…`, deployment
+  `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY`; pinned worker и owner-agent
+  `running`, base/Walmart/worker runtime checks active, owner loopback = `204`.
+- [x] Product Truth `521/521`, focused Walmart collection `8/8`,
+  TypeScript/ESLint/build PASS.
+- [ ] Owner должен обновить `/bundle-factory/new` и нажать Retry один раз для
+  authenticated visual smoke. Это не approval сметы и не публикация Walmart.
+
+## 🔄 BF-W8: all-status catalog и Campbell's production recovery — 2026-08-01
+
+- [x] Точная причина показанного UI `FAILED` подтверждена production-логом:
+  `EXECUTE` был claimed, но `/start` вернул `HTTP 409 (P2028)` до execution
+  boundary. `attempts=0`, `executionStartedAt=null`; provider spend, Product
+  Truth business writes, UPC reservation и Walmart mutations равны `0`.
+- [x] `startProductTruthNoSpendCommand` переведён с remote interactive transaction
+  на атомарную batch transaction; повторный start идемпотентен. Expired zero-attempt
+  execution больше не выглядит running и не может быть повторно claimed.
+- [x] Owner UI показывает только последнюю immutable попытку каждого logical run,
+  поэтому один request на пять товаров не превращается визуально в десять строк
+  после Retry; точный `error_code` виден у конкретной позиции.
+- [x] Product Truth production audit доказал, что все девять canonical migrations,
+  включая `ProductTruthListingRecipe` и его components/guards, уже applied и все
+  обязательные artifacts присутствуют. SQL apply не нужен. Read-only plan SHA
+  `6e33af82451bc7f59f65d8ca9183c9db4d78ac29563b4075f1497c14a4a61e96`;
+  единственный diagnostic blocker — старый full-schema fingerprint receipt до
+  последующих additive SSCC migrations.
+- [x] Fresh ITEM v6 absence probe и owner-delegated reissue-v2 выполнили ровно один
+  report-create POST. Walmart request ID
+  `019fbe92-be8d-73b6-8008-6f4fba3a191a`; повторный POST запрещён.
+- [x] Offline owner-control signer расширен отдельным
+  `WALMART_ITEM_V6_CATALOG_ACTIVATE` parser: разрешена только атомарная замена
+  `WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)`; Walmart/provider calls,
+  публикация, delist, reprice и purchase равны `0`. Тот же production public key
+  fingerprint `ca74a213…83a`; doctor = `OWNER_CONTROL_READY`.
+- [x] Walmart report перешёл в `READY`, exact download и offline compile дали
+  `5 235` all-status rows: `3 877 PUBLISHED`, `624 UNPUBLISHED`,
+  `734 SYSTEM_PROBLEM`. Source file SHA
+  `433f09d30f07d38bf3fb63c7036bfd79e54c155dc7da19957a7ea0748c89aa77`.
+- [x] Exact owner-signed catalog plan атомарно активирован в
+  production. Receipt `ACTIVE`, `row_count=5235`, postcondition
+  `b745752257ebb06d204e2f7ba5d6e5625c9254768388c9e78e03d82878206086`;
+  повторный read-only plan = `NOOP_ALREADY_ACTIVE`. Эта база
+  используется только как duplicate guard и не подменяет Product Truth.
+- [ ] Развернуть один exact server/worker release, повторить Campbell's
+  `5 listings × Pack of 8` и довести readiness до пяти owner-review drafts.

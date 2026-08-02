@@ -15,6 +15,7 @@ test("direct Walmart product request binds exact Clearwater store and ZIP", () =
     parse: true,
     delivery_zip: "33765",
     store_id: "2081",
+    fulfillment_type: "shipping",
   });
   assert.throws(
     () => buildOxylabsWalmartProductQuery("34312392?other=1"),

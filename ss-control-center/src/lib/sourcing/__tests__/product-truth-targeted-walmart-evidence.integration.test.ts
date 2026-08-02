@@ -750,7 +750,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
         executionInput(fixture, "execute", {
           monotonicNow: () => {
             monotonicReads += 1;
-            return monotonicReads >= 8 ? 360_000 : 0;
+            return monotonicReads >= 8 ? 180_000 : 0;
           },
         }),
       );
@@ -970,7 +970,7 @@ describe("targeted Walmart evidence executor integration", { concurrency: false 
           executionInput(fixture, "execute", {
             monotonicNow: () => {
               monotonicReads += 1;
-              return monotonicReads >= 8 ? 360_000 : 0;
+              return monotonicReads >= 8 ? 180_000 : 0;
             },
           }),
         );

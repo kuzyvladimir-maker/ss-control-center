@@ -537,6 +537,49 @@ export function parseWalmartShippingTemplateDetails(
   };
 }
 
+/** Re-validates the hash on a canonical template snapshot persisted by the
+ * Command Center. It intentionally does not accept Walmart's raw API shape;
+ * raw responses must first pass parseWalmartShippingTemplateDetails(). */
+export function assertWalmartShippingTemplateDetailsIntegrity(
+  value: unknown,
+): WalmartShippingTemplateDetails {
+  const raw = record(value);
+  if (!raw) {
+    throw new WalmartShippingTemplateContractError([
+      "persisted shipping template must be an object",
+    ]);
+  }
+  const templateSha256 = raw.template_sha256;
+  if (
+    typeof templateSha256 !== "string" ||
+    !/^[a-f0-9]{64}$/.test(templateSha256)
+  ) {
+    throw new WalmartShippingTemplateContractError([
+      "persisted shipping template hash is missing or malformed",
+    ]);
+  }
+  const withoutHash = { ...raw };
+  delete withoutHash.template_sha256;
+  if (sha256(withoutHash) !== templateSha256) {
+    throw new WalmartShippingTemplateContractError([
+      "persisted shipping template changed after selection",
+    ]);
+  }
+  if (
+    typeof raw.id !== "string" ||
+    typeof raw.name !== "string" ||
+    raw.status !== "ACTIVE" ||
+    typeof raw.is_free_shipping !== "boolean" ||
+    !Array.isArray(raw.configurations) ||
+    raw.configurations.length === 0
+  ) {
+    throw new WalmartShippingTemplateContractError([
+      "persisted shipping template has an invalid canonical shape",
+    ]);
+  }
+  return raw as unknown as WalmartShippingTemplateDetails;
+}
+
 function positiveSafeInteger(value: number, label: string): number {
   if (!Number.isSafeInteger(value) || value <= 0) {
     throw new WalmartShippingTemplateContractError([

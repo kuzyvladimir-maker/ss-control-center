@@ -37,6 +37,8 @@ import {
 } from "../src/lib/walmart/item-report-reissue-absence-probe-evidence.ts";
 import {
   buildWalmartItemReportReissueSourceEvidenceRenewalV1,
+  parseWalmartItemReportReissueSourceEvidenceRenewalV1Bytes,
+  WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_RENEWAL_V1_SCHEMA,
 } from "../src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts";
 import {
   canonicalWalmartItemReportJson,
@@ -306,7 +308,27 @@ export async function authorWalmartItemReportReissueRenewalEvidenceV1(input) {
     || (probeInfo.mode & 0o500) !== 0o500 || await realpath(probeRoot) !== probeRoot) {
     fail("UNSAFE_ARTIFACT", "fresh probe root must be a private real directory (0700)");
   }
-  const baselineBytes = await readStableFile(baselinePath, "baseline source evidence");
+  const baselineInputBytes = await readStableFile(
+    baselinePath,
+    "baseline source evidence",
+  );
+  // Renewal releases are intentionally self-contained. Accepting the prior
+  // renewal as the next renewal's baseline lets the operator rotate fresh GET
+  // evidence without depending on a vanished private R4 staging directory;
+  // the embedded original source bytes are fully verified before extraction.
+  const baselineInput = parseCanonicalJson(
+    baselineInputBytes,
+    "baseline source evidence",
+  );
+  const baselineBytes = baselineInput.schema_version
+      === WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_RENEWAL_V1_SCHEMA
+    ? Buffer.from(
+        parseWalmartItemReportReissueSourceEvidenceRenewalV1Bytes(
+          baselineInputBytes,
+        ).body.baseline.canonical_bytes_base64,
+        "base64",
+      )
+    : baselineInputBytes;
   const freshProbeArtifacts = {};
   for (const name of WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES) {
     freshProbeArtifacts[name] = await readStableFile(

@@ -167,6 +167,13 @@ export interface ProductTruthTargetedWalmartEvidenceReport {
     missingFields: string[];
     imageCount: number;
   };
+  nextBalanceEvidence: null | {
+    provider: "unwrangle";
+    observedAt: string;
+    balanceUnits: number;
+    reserveFloor: number;
+    evidenceSha256: string;
+  };
   job: ProductTruthTargetedEvidenceJobInspection | null;
   ledger: ProductTruthOperationalLedgerSnapshot;
   claims: ProductTruthTargetedWalmartEvidencePlan["claims"];
@@ -661,6 +668,25 @@ export async function readTargetedWalmartDonorSnapshot(
     legacySnapshot: null,
     listingBinding,
   });
+}
+
+/**
+ * A targeted Walmart evidence quote is a first-attempt-only workflow. Candidate
+ * discovery must apply the same durable harvest-state boundary as doctor/plan;
+ * otherwise the UI can quote a donor that the sealed runner is required to
+ * reject as a replay. This is read-only and performs no provider call.
+ */
+export async function targetedWalmartDetailHarvestStateAbsent(
+  db: Client,
+  donorProductId: string,
+  retailerProductId: string,
+): Promise<boolean> {
+  const state = await getDonorHarvestState(db, donorHarvestStateId({
+    donorProductId,
+    source: "unwrangle:walmart",
+    retailerProductId,
+  }));
+  return state === null;
 }
 
 function canonicalDbRow(row: Record<string, unknown>): Record<string, unknown> {
@@ -1693,6 +1719,7 @@ function exactContentEvidenceImageCount(row: Record<string, unknown>): number {
   ))).size;
 }
 
+
 async function matchingContentObservations(input: {
   db: Client;
   plan: ProductTruthTargetedWalmartEvidencePlan;
@@ -1749,11 +1776,16 @@ async function matchingContentObservations(input: {
 }
 
 /**
- * Existing exact content can satisfy this price-refresh lane without another
- * paid detail call. The observation itself is append-only, predates the sealed
- * plan, belongs to the exact donor/variant/source URL and must still be selected
- * by the current Product Truth read contract. It is never considered after a
- * detail receipt exists.
+ * Existing exact-variant content can satisfy this price-refresh lane without
+ * another paid detail call. Content truth is channel-independent: an exact
+ * Target/manufacturer observation remains valid for the same canonical variant
+ * and must not be discarded merely because the fresh price comes from Walmart.
+ *
+ * The observation is append-only, predates the sealed plan, belongs to the
+ * exact donor/variant decision, and must still be selected by the current
+ * Product Truth read contract. The read contract supplies the completeness,
+ * provenance, ingredient/nutrition/allergen and image gates. It is never
+ * considered after a detail receipt exists.
  */
 async function matchingPreexistingContentObservations(input: {
   db: Client;
@@ -1762,11 +1794,9 @@ async function matchingPreexistingContentObservations(input: {
   const target = input.plan.targets[0];
   if (target.identityMode !== "EXISTING_EXACT") return [];
   const result = await input.db.execute({
-    sql: `SELECT id,sourceUrl,sourceApi,contentHash,fieldHashesJson,contentJson,
-                 observedAt,createdAt
+    sql: `SELECT id,observedAt,createdAt
           FROM "ProductContentObservation"
           WHERE donorProductId=? AND canonicalVariantId=? AND variantDecisionId=?
-            AND sourceApi='unwrangle'
             AND julianday(observedAt)<=julianday(?)
             AND julianday(createdAt)<julianday(?)
           ORDER BY julianday(observedAt) DESC,observedAt DESC,
@@ -1776,19 +1806,13 @@ async function matchingPreexistingContentObservations(input: {
       input.plan.createdAt, input.plan.createdAt,
     ],
   });
-  return result.rows.flatMap((row) => {
-    try {
-      if (
-        normalizeExactWalmartProductUrl(row.sourceUrl, target.retailerProductId)
-          !== target.normalizedProductUrl
-        || exactContentEvidenceImageCount(row as Record<string, unknown>)
-          < input.plan.verificationPolicy.minGalleryImages
-      ) return [];
-      return [String(row.id)];
-    } catch {
-      return [];
-    }
-  });
+  // Content truth is channel-independent (owner canon: exact VARIANT, not
+  // exact retailer). An exact Target/manufacturer observation for the same
+  // canonical variant must not be discarded because the fresh price comes
+  // from Walmart — that mistake forced a paid detail call and produced the
+  // 2026-08-02 AMBIGUOUS loop. Completeness, provenance and image gates are
+  // enforced by the Product Truth read contract downstream.
+  return result.rows.map((row) => String(row.id));
 }
 
 export type ProductTruthTargetedResumeDecision =
@@ -2351,6 +2375,8 @@ export async function executeProductTruthTargetedWalmartEvidence(
       missingFields: string[];
       imageCount: number;
     } | null = null;
+    let nextBalanceEvidence:
+      ProductTruthTargetedWalmartEvidenceReport["nextBalanceEvidence"] = null;
     let job: ProductTruthTargetedEvidenceJobInspection | null = null;
     let jobLeaseToken: string | null = null;
     try {
@@ -2586,6 +2612,15 @@ export async function executeProductTruthTargetedWalmartEvidence(
             return assertExecutionDeadline("before content observation write");
           },
         });
+        if (harvestResult.harvest?.providerBalanceEvidence) {
+          nextBalanceEvidence = {
+            ...harvestResult.harvest.providerBalanceEvidence,
+            reserveFloor:
+              plan.providerCeilings.find(
+                (ceiling) => ceiling.provider === "unwrangle",
+              )?.reserveFloor ?? 0,
+          };
+        }
         assertExecutionDeadline("after detail writer");
         state = await reconciliationState({
           db, plan, approvalId: raw.validatedApproval.approval.approvalId,
@@ -2813,6 +2848,7 @@ export async function executeProductTruthTargetedWalmartEvidence(
         missingFields: contentEvidence.missingFields,
         imageCount: contentEvidence.imageCount,
       } : null,
+      nextBalanceEvidence,
       job,
       ledger,
       claims: plan.claims,

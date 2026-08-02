@@ -23,7 +23,13 @@ interface Progress {
   done_flag: boolean;
 }
 
-export function BatchProgress({ batchId }: { batchId: string }) {
+export function BatchProgress({
+  batchId,
+  reviewHref = "/bundle-factory/drafts",
+}: {
+  batchId: string;
+  reviewHref?: string;
+}) {
   const [progress, setProgress] = useState<Progress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const startedRef = useRef(false);
@@ -107,7 +113,7 @@ export function BatchProgress({ batchId }: { batchId: string }) {
       {/* When done — go review the listings */}
       {isDone && (
         <div className="mt-5 flex items-center gap-3 border-t border-rule pt-4">
-          <Link href="/bundle-factory/drafts">
+          <Link href={reviewHref}>
             <Btn variant="primary" size="md">
               Review {done} listings
               <ArrowRight size={16} strokeWidth={2} />

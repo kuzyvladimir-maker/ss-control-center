@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
 
 import {
+  PRODUCT_TRUTH_CONTROL_ALGORITHM,
   PRODUCT_TRUTH_CONTROL_COMMAND_SCHEMA,
+  PRODUCT_TRUTH_CONTROL_KEY_FAMILY,
+  type ProductTruthControlTrustedKey,
   type ProductTruthControlEnvironment,
 } from "./product-truth-control-plane";
 
@@ -22,12 +25,22 @@ export const PRODUCT_TRUTH_WEB_CONTROL_ENV = Object.freeze({
   unwrangleReserveFloor:
     "PRODUCT_TRUTH_WEB_CONTROL_UNWRANGLE_RESERVE_FLOOR",
   workerTokenSha256: "PRODUCT_TRUTH_WEB_CONTROL_WORKER_TOKEN_SHA256",
+  ownerKeyId: "PRODUCT_TRUTH_WEB_CONTROL_OWNER_KEY_ID",
+  ownerPublicKeySpkiDerBase64:
+    "PRODUCT_TRUTH_WEB_CONTROL_OWNER_PUBLIC_KEY_SPKI_DER_BASE64",
+  ownerPublicKeySpkiSha256:
+    "PRODUCT_TRUTH_WEB_CONTROL_OWNER_PUBLIC_KEY_SPKI_SHA256",
+} as const);
+
+export const PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV = Object.freeze({
+  confirmation: "PRODUCT_TRUTH_WALMART_ENRICHMENT_CONFIRMATION",
 } as const);
 
 export type ProductTruthWebControlActiveStage =
   | "ADMISSION_ONLY"
   | "LOCAL_NO_SPEND"
-  | "PRODUCTION_READ_ONLY";
+  | "PRODUCTION_READ_ONLY"
+  | "PRODUCTION_OWNER_GATED_METERED";
 
 type RuntimeEnvironment = Record<string, string | undefined>;
 
@@ -63,6 +76,7 @@ export interface ProductTruthWebControlRuntimeActive {
   };
   unwrangleReserveFloor: number;
   workerTokenSha256: string | null;
+  ownerTrustedKey: ProductTruthControlTrustedKey | null;
   claims: {
     commandAdmission: true;
     controlDatabaseWrites: true;
@@ -70,7 +84,7 @@ export interface ProductTruthWebControlRuntimeActive {
     processSpawnInWebRuntime: false;
     providerCallsInWebRuntime: false;
     marketplaceMutations: false;
-    meteredExecutionAdmission: false;
+    meteredExecutionAdmission: boolean;
   };
 }
 
@@ -142,6 +156,22 @@ function exactReserveFloor(value: string): number {
   return parsed;
 }
 
+function canonicalBase64(value: string, name: string): string {
+  if (!value || /\s/u.test(value)) {
+    fail("WEB_CONTROL_CONFIG_INVALID", `${name} must be canonical base64`);
+  }
+  let bytes: Buffer;
+  try {
+    bytes = Buffer.from(value, "base64");
+  } catch {
+    fail("WEB_CONTROL_CONFIG_INVALID", `${name} must be canonical base64`);
+  }
+  if (bytes.length < 1 || bytes.toString("base64") !== value) {
+    fail("WEB_CONTROL_CONFIG_INVALID", `${name} must be canonical base64`);
+  }
+  return value;
+}
+
 function configuredKeys(env: RuntimeEnvironment): string[] {
   return Object.values(PRODUCT_TRUTH_WEB_CONTROL_ENV).filter(
     (name) => env[name] !== undefined,
@@ -200,10 +230,11 @@ export function loadProductTruthWebControlRuntime(input: {
     stage !== "ADMISSION_ONLY"
     && stage !== "LOCAL_NO_SPEND"
     && stage !== "PRODUCTION_READ_ONLY"
+    && stage !== "PRODUCTION_OWNER_GATED_METERED"
   ) {
     fail(
       "WEB_CONTROL_STAGE_INVALID",
-      "stage must be ADMISSION_ONLY, LOCAL_NO_SPEND, or PRODUCTION_READ_ONLY",
+      "stage must be ADMISSION_ONLY, LOCAL_NO_SPEND, PRODUCTION_READ_ONLY, or PRODUCTION_OWNER_GATED_METERED",
     );
   }
   const environment = exactEnv(
@@ -219,10 +250,14 @@ export function loadProductTruthWebControlRuntime(input: {
       "LOCAL_NO_SPEND is restricted to a LOCAL target",
     );
   }
-  if (stage === "PRODUCTION_READ_ONLY" && environment !== "PRODUCTION") {
+  if (
+    (stage === "PRODUCTION_READ_ONLY"
+      || stage === "PRODUCTION_OWNER_GATED_METERED")
+    && environment !== "PRODUCTION"
+  ) {
     fail(
       "WEB_CONTROL_STAGE_TARGET_MISMATCH",
-      "PRODUCTION_READ_ONLY requires a PRODUCTION target",
+      "production stages require a PRODUCTION target",
     );
   }
 
@@ -279,7 +314,10 @@ export function loadProductTruthWebControlRuntime(input: {
   }
 
   const workerEnabled =
-    stage === "LOCAL_NO_SPEND" || stage === "PRODUCTION_READ_ONLY";
+    stage === "LOCAL_NO_SPEND"
+    || stage === "PRODUCTION_READ_ONLY"
+    || stage === "PRODUCTION_OWNER_GATED_METERED";
+  const meteredEnabled = stage === "PRODUCTION_OWNER_GATED_METERED";
   const workerTokenSha256 = env[
     PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256
   ];
@@ -294,6 +332,75 @@ export function loadProductTruthWebControlRuntime(input: {
       "WEB_CONTROL_CONFIG_INVALID",
       "ADMISSION_ONLY must not configure a worker credential",
     );
+  }
+  const ownerKeyEnv = [
+    env[PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId],
+    env[PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64],
+    env[PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256],
+  ];
+  const ownerKeyConfigured = ownerKeyEnv.some((value) => value !== undefined);
+  const ownerKeyComplete = ownerKeyEnv.every((value) => value !== undefined);
+  if (meteredEnabled && !ownerKeyComplete) {
+    fail(
+      "WEB_CONTROL_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root is required for the metered stage",
+    );
+  }
+  if (ownerKeyConfigured && !ownerKeyComplete) {
+    fail(
+      "WEB_CONTROL_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root must be configured completely",
+    );
+  }
+  if (
+    ownerKeyConfigured
+    && !meteredEnabled
+    && stage !== "PRODUCTION_READ_ONLY"
+  ) {
+    fail(
+      "WEB_CONTROL_CONFIG_INVALID",
+      "owner trust root is permitted only in production worker stages",
+    );
+  }
+  let ownerTrustedKey: ProductTruthControlTrustedKey | null = null;
+  if (ownerKeyComplete) {
+    const keyId = exactToken(
+      exactEnv(env, PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId),
+      PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId,
+    );
+    const publicKeySpkiDerBase64 = canonicalBase64(
+      exactEnv(
+        env,
+        PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64,
+      ),
+      PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64,
+    );
+    const publicKeySpkiSha256 = exactSha(
+      exactEnv(
+        env,
+        PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256,
+      ),
+      PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256,
+    );
+    if (
+      createHash("sha256")
+        .update(Buffer.from(publicKeySpkiDerBase64, "base64"))
+        .digest("hex") !== publicKeySpkiSha256
+    ) {
+      fail(
+        "WEB_CONTROL_CONFIG_INVALID",
+        "owner public-key fingerprint does not match the enrolled SPKI bytes",
+      );
+    }
+    ownerTrustedKey = {
+      keyId,
+      keyFamily: PRODUCT_TRUTH_CONTROL_KEY_FAMILY,
+      algorithm: PRODUCT_TRUTH_CONTROL_ALGORITHM,
+      environment: environment as ProductTruthControlEnvironment,
+      publicKeySpkiDerBase64,
+      publicKeySpkiSha256,
+      status: "ACTIVE",
+    };
   }
 
   return {
@@ -322,6 +429,7 @@ export function loadProductTruthWebControlRuntime(input: {
             workerTokenSha256,
             PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256,
           ),
+    ownerTrustedKey,
     claims: {
       commandAdmission: true,
       controlDatabaseWrites: true,
@@ -329,9 +437,95 @@ export function loadProductTruthWebControlRuntime(input: {
       processSpawnInWebRuntime: false,
       providerCallsInWebRuntime: false,
       marketplaceMutations: false,
-      meteredExecutionAdmission: false,
+      meteredExecutionAdmission: meteredEnabled,
     },
   };
+}
+
+export function expectedProductTruthWalmartEnrichmentConfirmation(input: {
+  runtime: ProductTruthWebControlRuntimeActive;
+}): string {
+  const ownerKey = input.runtime.ownerTrustedKey;
+  if (ownerKey === null) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root is required",
+    );
+  }
+  return [
+    "ENABLE_PRODUCT_TRUTH_WALMART_ENRICHMENT",
+    exactToken(input.runtime.engine.releaseId, "releaseId"),
+    exactGitSha(input.runtime.engine.commitSha, "commitSha"),
+    exactGitSha(input.runtime.engine.treeSha, "treeSha"),
+    exactSha(
+      input.runtime.engine.executableTreeSha256,
+      "executableTreeSha256",
+    ),
+    exactSha(
+      input.runtime.target.databaseTargetFingerprint,
+      "databaseTargetFingerprint",
+    ),
+    exactSha(input.runtime.target.manifestSha256, "manifestSha256"),
+    exactSha(ownerKey.publicKeySpkiSha256, "ownerPublicKeySpkiSha256"),
+  ].join(":");
+}
+
+export function loadProductTruthWalmartEnrichmentRuntime(input: {
+  env?: RuntimeEnvironment;
+} = {}): ProductTruthWebControlRuntime {
+  const env = input.env ?? process.env;
+  const runtime = loadProductTruthWebControlRuntime({ env });
+  if (runtime.status === "OFF") return runtime;
+  if (runtime.stage === "PRODUCTION_OWNER_GATED_METERED") return runtime;
+  if (
+    runtime.stage !== "PRODUCTION_READ_ONLY"
+    || runtime.target.environment !== "PRODUCTION"
+  ) {
+    fail(
+      "WALMART_ENRICHMENT_STAGE_DISABLED",
+      "Walmart enrichment requires a production worker stage",
+    );
+  }
+  if (runtime.ownerTrustedKey === null) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIG_INCOMPLETE",
+      "owner Ed25519 public trust root is required",
+    );
+  }
+  const expected = expectedProductTruthWalmartEnrichmentConfirmation({
+    runtime,
+  });
+  if (
+    exactEnv(env, PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation)
+      !== expected
+  ) {
+    fail(
+      "WALMART_ENRICHMENT_CONFIRMATION_INVALID",
+      "Walmart enrichment confirmation is not bound to the exact release, target, manifest, and owner key",
+    );
+  }
+  return {
+    ...runtime,
+    claims: {
+      ...runtime.claims,
+      meteredExecutionAdmission: true,
+    },
+  };
+}
+
+export function loadProductTruthWebWorkerRuntime(input: {
+  env?: RuntimeEnvironment;
+} = {}): ProductTruthWebControlRuntime {
+  const env = input.env ?? process.env;
+  const runtime = loadProductTruthWebControlRuntime({ env });
+  if (
+    runtime.status === "ACTIVE"
+    && runtime.stage === "PRODUCTION_READ_ONLY"
+    && env[PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation] !== undefined
+  ) {
+    return loadProductTruthWalmartEnrichmentRuntime({ env });
+  }
+  return runtime;
 }
 
 export function productTruthWebControlPublicStatus(
@@ -341,7 +535,7 @@ export function productTruthWebControlPublicStatus(
   stage: "OFF" | ProductTruthWebControlActiveStage;
   command_admission: boolean;
   worker_claims: boolean;
-  metered_execution: false;
+  metered_execution: boolean;
   provider_calls_from_web: false;
   marketplace_mutations: false;
 } {
@@ -360,7 +554,7 @@ export function productTruthWebControlPublicStatus(
         stage: runtime.stage,
         command_admission: true,
         worker_claims: runtime.claims.workerClaims,
-        metered_execution: false,
+        metered_execution: runtime.claims.meteredExecutionAdmission,
         provider_calls_from_web: false,
         marketplace_mutations: false,
       };

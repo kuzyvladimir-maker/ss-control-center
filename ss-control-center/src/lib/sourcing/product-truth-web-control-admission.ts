@@ -16,6 +16,9 @@ import {
   type ProductTruthControlSealedEvent,
 } from "./product-truth-control-plane";
 import {
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
+import {
   parseProductTruthTargetedWalmartEvidenceRequest,
 } from "./product-truth-targeted-walmart-evidence-contract";
 import {
@@ -27,9 +30,25 @@ import {
 import type {
   ProductTruthWebControlRuntimeActive,
 } from "./product-truth-web-control-runtime";
+import {
+  readProductTruthWalmartEnrichmentCommand,
+  readProductTruthWalmartEnrichmentQuote,
+} from "./product-truth-walmart-enrichment-admission";
+import {
+  productTruthWalmartEnrichmentQuoteSha256,
+} from "./product-truth-walmart-enrichment-quote";
+import {
+  parseProductTruthWalmartEnrichmentProgress,
+  type ProductTruthWalmartEnrichmentProgress,
+} from "./product-truth-walmart-enrichment-worker-contract";
 
 export const PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION =
-  "product-truth-web-control-admission/1.0.0" as const;
+  "product-truth-web-control-admission/1.2.0" as const;
+const PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS = {
+  maxWait: 30_000,
+  timeout: 120_000,
+} as const;
+const PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS = 90_000;
 
 export type ProductTruthNoSpendCommandKind = "DOCTOR" | "RUN_PLAN";
 
@@ -54,6 +73,8 @@ export interface ProductTruthWalmartCollectionStatus {
     | "QUEUED_NO_SPEND"
     | "RUNNING_NO_SPEND"
     | "AWAITING_OWNER"
+    | "RUNNING_ENRICHMENT"
+    | "DECLINED"
     | "FAILED"
     | "AMBIGUOUS"
     | "SUCCEEDED";
@@ -73,9 +94,43 @@ export interface ProductTruthWalmartCollectionStatus {
       | "SUCCEEDED";
     error_code: string | null;
   }[];
+  quote: null | {
+    quote_id: string;
+    quote_sha256: string;
+    expires_at: string;
+    cost_unit: "PREPAID_PROVIDER_CREDITS";
+    usd_equivalent: null;
+    balance_probe_maximum_units: number;
+    job_maximum_units: number;
+    maximum_provider_units: number;
+    actions: readonly {
+      ordinal: number;
+      run_id: string;
+      title: string;
+      missing_fields: readonly string[];
+      oxylabs_query_maximum_units: number;
+      unwrangle_detail_maximum_units: number;
+      maximum_provider_units: number;
+    }[];
+  };
+  approval: null | {
+    command_id: string;
+    status: string;
+    outcome: string | null;
+    error_code: string | null;
+    authorized_at: string | null;
+    authorization_expires_at: string | null;
+    execution_started_at: string | null;
+    updated_at: string;
+  };
+  progress: ProductTruthWalmartEnrichmentProgress | null;
+  heartbeat: null | {
+    observed_at: string;
+    stale: boolean;
+  };
   claims: {
-    provider_calls_started: false;
-    metered_execution_admitted: false;
+    provider_calls_may_have_started: boolean;
+    metered_execution_admitted: boolean;
     marketplace_mutations: false;
   };
 }
@@ -116,7 +171,7 @@ function commandSeed(input: {
   commandKind: ProductTruthNoSpendCommandKind;
   runtime: ProductTruthWebControlRuntimeActive;
   runId: string;
-  requestArtifactSha256: string;
+  logicalRequestSha256: string;
 }): string {
   return sha256(
     canonicalBytes({
@@ -124,7 +179,7 @@ function commandSeed(input: {
       engine: input.runtime.engine,
       target: input.runtime.target,
       runId: input.runId,
-      requestArtifactSha256: input.requestArtifactSha256,
+      logicalRequestSha256: input.logicalRequestSha256,
     }),
   );
 }
@@ -190,13 +245,16 @@ function prepareAdmission(input: {
   requestedAt: string;
   runId: string;
   requestBytes: Uint8Array;
+  idempotencyBytes?: Uint8Array;
 }): ProductTruthPreparedAdmission {
-  const preliminaryArtifactSha = sha256(input.requestBytes);
+  const logicalRequestSha256 = sha256(
+    input.idempotencyBytes ?? input.requestBytes,
+  );
   const seed = commandSeed({
     commandKind: input.commandKind,
     runtime: input.runtime,
     runId: input.runId,
-    requestArtifactSha256: preliminaryArtifactSha,
+    logicalRequestSha256,
   });
   const commandId = `ptc-${seed.slice(0, 32)}`;
   const requestArtifact = sealProductTruthControlArtifact({
@@ -274,6 +332,32 @@ function exactJobBytes(job: ProductTruthWalmartCollectionJob): Buffer {
   return canonicalBytes(parsed);
 }
 
+function exactJobIdentityBytes(job: ProductTruthWalmartCollectionJob): Buffer {
+  const parsed = parseProductTruthWalmartCollectionJob(job);
+  return canonicalBytes({
+    schemaVersion: parsed.schemaVersion,
+    batchId: parsed.batchId,
+    runId: parsed.runId,
+    ordinal: parsed.ordinal,
+    target: parsed.target,
+    noSpendSequence: parsed.noSpendSequence,
+    meteredStep: parsed.meteredStep,
+    policy: parsed.policy,
+    claims: parsed.claims,
+  });
+}
+
+function exactRunPlanIdentityBytes(targetedRequest: unknown): Buffer {
+  const parsed = parseProductTruthTargetedWalmartEvidenceRequest(
+    targetedRequest,
+  );
+  return canonicalBytes({
+    ...parsed,
+    createdAt: null,
+    expiresAt: null,
+  });
+}
+
 export function prepareProductTruthWalmartDoctorAdmissions(input: {
   batch: unknown;
   runtime: ProductTruthWebControlRuntimeActive;
@@ -288,6 +372,7 @@ export function prepareProductTruthWalmartDoctorAdmissions(input: {
       requestedAt: batch.requestedAt,
       runId: job.runId,
       requestBytes: exactJobBytes(job),
+      idempotencyBytes: exactJobIdentityBytes(job),
     }),
   );
 }
@@ -308,7 +393,11 @@ export function prepareProductTruthWalmartRunPlanAdmission(input: {
     requestedByUserId: input.requestedByUserId,
     requestedAt: input.requestedAt,
     runId: targetedRequest.runId,
-    requestBytes: canonicalBytes(targetedRequest),
+    requestBytes: Buffer.from(
+      renderProductTruthOperationalJson(targetedRequest),
+      "utf8",
+    ),
+    idempotencyBytes: exactRunPlanIdentityBytes(targetedRequest),
   });
 }
 
@@ -318,13 +407,41 @@ async function persistPreparedAdmission(
 ): Promise<void> {
   const existing = await tx.productTruthControlCommand.findUnique({
     where: { idempotencyKey: admission.idempotencyKey },
-    select: { requestSha256: true },
+    select: {
+      commandId: true,
+      commandKind: true,
+      gateClass: true,
+      requestedByUserId: true,
+      runId: true,
+      engineReleaseId: true,
+      engineCommitSha: true,
+      engineTreeSha: true,
+      executableTreeSha256: true,
+      environment: true,
+      databaseTargetFingerprint: true,
+      manifestSha256: true,
+    },
   });
   if (existing) {
-    if (existing.requestSha256 !== admission.requestSha256) {
+    if (
+      existing.commandId !== admission.commandId
+      || existing.commandKind !== admission.commandKind
+      || existing.gateClass !== admission.gateClass
+      || existing.requestedByUserId !== admission.requestedByUserId
+      || existing.runId !== admission.runId
+      || existing.engineReleaseId !== admission.envelope.engine.releaseId
+      || existing.engineCommitSha !== admission.envelope.engine.commitSha
+      || existing.engineTreeSha !== admission.envelope.engine.treeSha
+      || existing.executableTreeSha256
+        !== admission.envelope.engine.executableTreeSha256
+      || existing.environment !== admission.envelope.target.environment
+      || existing.databaseTargetFingerprint
+        !== admission.envelope.target.databaseTargetFingerprint
+      || existing.manifestSha256 !== admission.envelope.target.manifestSha256
+    ) {
       fail(
         "WEB_CONTROL_IDEMPOTENCY_COLLISION",
-        "existing command differs from the exact prepared request",
+        "existing command differs from the exact logical request",
       );
     }
     return;
@@ -439,7 +556,7 @@ export async function admitProductTruthWalmartCollectionBatch(input: {
       for (const admission of admissions) {
         await persistPreparedAdmission(tx, admission);
       }
-    });
+    }, PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS);
   } catch (error) {
     if (error instanceof ProductTruthWebControlAdmissionError) throw error;
     fail(
@@ -451,6 +568,7 @@ export async function admitProductTruthWalmartCollectionBatch(input: {
   return readProductTruthWalmartCollectionStatus({
     batchId: batch.batchId,
     requestedByUserId: batch.requestedByUserId,
+    runtime: input.runtime,
   });
 }
 
@@ -464,7 +582,7 @@ export async function admitProductTruthWalmartRunPlan(input: {
   try {
     await prisma.$transaction(async (tx) => {
       await persistPreparedAdmission(tx, admission);
-    });
+    }, PRODUCT_TRUTH_WEB_CONTROL_TRANSACTION_OPTIONS);
   } catch (error) {
     if (error instanceof ProductTruthWebControlAdmissionError) throw error;
     fail(
@@ -528,9 +646,133 @@ function jobPhase(input: {
   return "QUEUED_NO_SPEND";
 }
 
+export function productTruthWalmartPreExecutionExpiryCode(input: {
+  status: string;
+  attempts: number;
+  executionStartedAt: Date | null;
+  workerLeaseExpiresAt: Date | null;
+  ownerAuthorizationExpiresAt: Date | null;
+  now: Date;
+}):
+  | "WORKER_START_NOT_CONFIRMED_ZERO_ATTEMPT"
+  | "OWNER_AUTHORIZATION_EXPIRED_BEFORE_EXECUTION"
+  | null {
+  if (input.attempts !== 0 || input.executionStartedAt !== null) return null;
+  if (
+    input.status === "CLAIMED"
+    && input.workerLeaseExpiresAt !== null
+    && input.workerLeaseExpiresAt.getTime() <= input.now.getTime()
+  ) {
+    return "WORKER_START_NOT_CONFIRMED_ZERO_ATTEMPT";
+  }
+  if (
+    input.status === "ADMITTED"
+    && input.ownerAuthorizationExpiresAt !== null
+    && input.ownerAuthorizationExpiresAt.getTime() <= input.now.getTime()
+  ) {
+    return "OWNER_AUTHORIZATION_EXPIRED_BEFORE_EXECUTION";
+  }
+  return null;
+}
+
+export function latestProductTruthControlRowsByRun<
+  T extends { runId: string | null },
+>(rows: readonly T[]): T[] {
+  const latestByRun = new Map<string, T>();
+  for (const row of rows) {
+    if (!row.runId) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "control command is missing its logical run binding",
+      );
+    }
+    latestByRun.set(row.runId, row);
+  }
+  return [...latestByRun.values()];
+}
+
+async function latestWalmartEnrichmentProgress(input: {
+  commandId: string;
+  now: Date;
+}): Promise<{
+  progress: ProductTruthWalmartEnrichmentProgress | null;
+  heartbeat: ProductTruthWalmartCollectionStatus["heartbeat"];
+}> {
+  const events = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: "HEARTBEAT",
+    },
+    orderBy: { sequence: "desc" },
+    take: 100,
+    select: {
+      occurredAt: true,
+      payload: true,
+      payloadSha256: true,
+    },
+  });
+  let latestHeartbeat: Date | null = null;
+  for (const event of events) {
+    if (sha256(event.payload) !== event.payloadSha256) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "worker heartbeat payload failed its immutable seal",
+      );
+    }
+    let decoded: unknown;
+    try {
+      const text = Buffer.from(event.payload).toString("utf8");
+      decoded = JSON.parse(text);
+      if (!canonicalBytes(decoded).equals(Buffer.from(event.payload))) {
+        throw new Error("heartbeat payload is not canonical");
+      }
+    } catch (error) {
+      fail(
+        "WEB_CONTROL_ARTIFACT_INTEGRITY_MISMATCH",
+        "worker heartbeat payload is not canonical JSON",
+        error,
+      );
+    }
+    latestHeartbeat ??= event.occurredAt;
+    const progress = decoded && typeof decoded === "object"
+      && !Array.isArray(decoded)
+      && "progress" in decoded
+      && (decoded as { progress?: unknown }).progress !== null
+      && (decoded as { progress?: unknown }).progress !== undefined
+      ? parseProductTruthWalmartEnrichmentProgress(
+          (decoded as { progress: unknown }).progress,
+        )
+      : null;
+    if (progress) {
+      const observedAt = latestHeartbeat ?? event.occurredAt;
+      return {
+        progress,
+        heartbeat: {
+          observed_at: observedAt.toISOString(),
+          stale:
+            input.now.getTime() - observedAt.getTime()
+              > PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS,
+        },
+      };
+    }
+  }
+  return {
+    progress: null,
+    heartbeat: latestHeartbeat
+      ? {
+          observed_at: latestHeartbeat.toISOString(),
+          stale:
+            input.now.getTime() - latestHeartbeat.getTime()
+              > PRODUCT_TRUTH_WEB_WORKER_HEARTBEAT_STALE_MS,
+        }
+      : null,
+  };
+}
+
 export async function readProductTruthWalmartCollectionStatus(input: {
   batchId: string;
   requestedByUserId?: string;
+  runtime: ProductTruthWebControlRuntimeActive;
 }): Promise<ProductTruthWalmartCollectionStatus> {
   const rows = await prisma.productTruthControlCommand.findMany({
     where: {
@@ -538,6 +780,15 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
+      engineReleaseId: input.runtime.engine.releaseId,
+      engineCommitSha: input.runtime.engine.commitSha,
+      engineTreeSha: input.runtime.engine.treeSha,
+      executableTreeSha256:
+        input.runtime.engine.executableTreeSha256,
+      environment: input.runtime.target.environment,
+      databaseTargetFingerprint:
+        input.runtime.target.databaseTargetFingerprint,
+      manifestSha256: input.runtime.target.manifestSha256,
     },
     include: {
       artifacts: {
@@ -551,12 +802,18 @@ export async function readProductTruthWalmartCollectionStatus(input: {
   if (doctorRows.length < 1) {
     fail("WEB_CONTROL_BATCH_NOT_FOUND", "collection batch does not exist");
   }
+  // Retrying preparation creates a new immutable DOCTOR command for the same
+  // logical run. Preserve every attempt in the audit ledger, but present only
+  // the newest attempt per run in the owner-facing batch status. Without this
+  // reduction, one five-product request grows to ten visible rows after one
+  // retry even though it still contains only five logical products.
+  const latestDoctorRows = latestProductTruthControlRowsByRun(doctorRows);
   const planByRun = new Map(
     rows
       .filter((row) => row.commandKind === "RUN_PLAN" && row.runId)
       .map((row) => [row.runId as string, row]),
   );
-  const jobs = doctorRows.map((doctor) => {
+  const jobs = latestDoctorRows.map((doctor) => {
     const artifact = doctor.artifacts[0];
     if (!artifact || sha256(artifact.content) !== artifact.sha256) {
       fail(
@@ -582,7 +839,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
     };
   });
   const phases = new Set(jobs.map((job) => job.phase));
-  const status: ProductTruthWalmartCollectionStatus["status"] =
+  let status: ProductTruthWalmartCollectionStatus["status"] =
     phases.has("AMBIGUOUS")
       ? "AMBIGUOUS"
       : phases.has("FAILED")
@@ -594,14 +851,115 @@ export async function readProductTruthWalmartCollectionStatus(input: {
             : phases.has("RUNNING_NO_SPEND")
               ? "RUNNING_NO_SPEND"
               : "QUEUED_NO_SPEND";
+  let quote: ProductTruthWalmartCollectionStatus["quote"] = null;
+  if ([...phases].every((phase) => phase === "AWAITING_OWNER")) {
+    const exactQuote = await readProductTruthWalmartEnrichmentQuote({
+      batchId: input.batchId,
+      ...(input.requestedByUserId
+        ? { requestedByUserId: input.requestedByUserId }
+        : {}),
+      runtime: input.runtime,
+    });
+    quote = {
+      quote_id: exactQuote.quoteId,
+      quote_sha256:
+        productTruthWalmartEnrichmentQuoteSha256(exactQuote),
+      expires_at: exactQuote.expiresAt,
+      cost_unit: "PREPAID_PROVIDER_CREDITS",
+      usd_equivalent: null,
+      balance_probe_maximum_units:
+        exactQuote.totals.balanceProbeMaximumUnits,
+      job_maximum_units: 3.5,
+      maximum_provider_units:
+        exactQuote.totals.maximumProviderUnits,
+      actions: exactQuote.actions.jobs.map((job) => ({
+        ordinal: job.ordinal,
+        run_id: job.runId,
+        title: job.title,
+        missing_fields: job.missingFields,
+        oxylabs_query_maximum_units: job.oxylabs.maximumProviderUnits,
+        unwrangle_detail_maximum_units:
+          job.unwrangle.maximumProviderUnits,
+        maximum_provider_units: job.maximumProviderUnits,
+      })),
+    };
+  }
+  const enrichment = await readProductTruthWalmartEnrichmentCommand({
+    batchId: input.batchId,
+    ...(input.requestedByUserId
+      ? { requestedByUserId: input.requestedByUserId }
+      : {}),
+    runtime: input.runtime,
+  });
+  const now = new Date();
+  const preExecutionExpiryCode = enrichment
+    ? productTruthWalmartPreExecutionExpiryCode({
+        status: enrichment.status,
+        attempts: enrichment.attempts,
+        executionStartedAt: enrichment.executionStartedAt,
+        workerLeaseExpiresAt: enrichment.workerLeaseExpiresAt,
+        ownerAuthorizationExpiresAt:
+          enrichment.ownerAuthorizationExpiresAt,
+        now,
+      })
+    : null;
+  const executionProgress = enrichment
+    ? await latestWalmartEnrichmentProgress({
+        commandId: enrichment.commandId,
+        now,
+      })
+    : { progress: null, heartbeat: null };
+  if (enrichment) {
+    if (preExecutionExpiryCode) {
+      // This is a presentation-level terminal state. The immutable command
+      // remains available for audit, but it is not eligible for worker claim
+      // and must never look like paid work is still running.
+      status = "FAILED";
+    } else if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {
+      status = "RUNNING_ENRICHMENT";
+    } else if (enrichment.status === "SUCCEEDED") {
+      status = "SUCCEEDED";
+    } else if (enrichment.status === "CANCELLED") {
+      status = "DECLINED";
+    } else if (enrichment.status === "AMBIGUOUS") {
+      status = "AMBIGUOUS";
+    } else if (["BLOCKED", "FAILED"].includes(enrichment.status)) {
+      status = "FAILED";
+    }
+  }
   return {
     schemaVersion: PRODUCT_TRUTH_WEB_CONTROL_ADMISSION_VERSION,
     batchId: input.batchId,
     status,
     jobs,
+    quote,
+    approval: enrichment
+      ? {
+          command_id: enrichment.commandId,
+          status: enrichment.status,
+          outcome: enrichment.outcome,
+          error_code: preExecutionExpiryCode ?? enrichment.errorCode,
+          authorized_at:
+            enrichment.ownerAuthorizedAt?.toISOString() ?? null,
+          authorization_expires_at:
+            enrichment.ownerAuthorizationExpiresAt?.toISOString() ?? null,
+          execution_started_at:
+            enrichment.executionStartedAt?.toISOString() ?? null,
+          updated_at: enrichment.updatedAt.toISOString(),
+        }
+      : null,
+    progress: executionProgress.progress,
+    heartbeat: executionProgress.heartbeat,
     claims: {
-      provider_calls_started: false,
-      metered_execution_admitted: false,
+      provider_calls_may_have_started:
+        enrichment?.executionStartedAt !== null
+        && enrichment?.executionStartedAt !== undefined,
+      metered_execution_admitted:
+        enrichment !== null
+        && preExecutionExpiryCode === null
+        && ["ADMITTED", "CLAIMED", "RUNNING", "SUCCEEDED"].includes(
+          enrichment.status,
+        ),
       marketplace_mutations: false,
     },
   };

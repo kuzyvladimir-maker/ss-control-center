@@ -125,6 +125,9 @@ export default async function DraftDetailPage({ params }: PageProps) {
     };
   }
 
+  const channels = safeParse<string[]>(draft.target_channels) ?? [];
+  const isWalmartDraft = channels.length === 1 && channels[0] === "WALMART";
+
   // Auto retail price — the full cost-buildup calculator (goods + cooler/ice/box
   // + marketplace fees, solved for the target margin). Same math promote-draft
   // uses to set the published price, so the preview shows the REAL number.
@@ -148,9 +151,14 @@ export default async function DraftDetailPage({ params }: PageProps) {
     },
     pricingModel,
   );
-  const previewPriceCents = priceCalc.selling_price_cents;
+  // Canonical Walmart drafts already carry the item-price/share produced from
+  // their exact selected shipping-template snapshot. Never replace that with
+  // the Amazon/general Bundle Factory calculator on the review page.
+  const previewPriceCents =
+    isWalmartDraft && draft.draft_suggested_price_cents != null
+      ? draft.draft_suggested_price_cents
+      : priceCalc.selling_price_cents;
 
-  const channels = safeParse<string[]>(draft.target_channels) ?? [];
   const variants = draft.variation_matrix
     ? safeParse<Variant[]>(draft.variation_matrix.variants_json) ?? []
     : [];

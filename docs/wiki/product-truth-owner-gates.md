@@ -1,6 +1,6 @@
 # Product Truth — единый реестр owner gates
 
-> **Статус:** живой decision ledger, сверено 2026-07-28.
+> **Статус:** живой decision ledger, сверено 2026-08-01.
 >
 > **Канон:** [[product-catalog-architecture]]. Execution order:
 > [[donor-catalog-execution-roadmap]]. Permanent module:
@@ -29,9 +29,10 @@
 |---|---|---|
 | G1. Import permanent candidate | `CONSUMED_2026-07-26` | Закрыт; evidence ниже |
 | G2. Web Operations Stage A | `CONSUMED_LOCAL_2026-07-26` | Закрыт; runtime hardcoded `OFF`, evidence ниже |
-| G2b. Bundle Factory no-spend web bridge | `AWAITING_EXACT_OWNER_APPROVAL` | Production служебная migration и bounded `doctor → plan` activation |
+| G2b. Bundle Factory no-spend web bridge | `CONSUMED_2026-07-28` | Bounded production `doctor → plan` активирован; metered execution остаётся закрыт |
 | G3. Phase 1 store dispositions | `CONSUMED_SCOPE_2026-07-26` | Census, owner scope receipt и report-bound disposition sealed |
 | G4. Walmart ITEM v6 read-only report | `CONSUMED_2026-07-26` | Existing request READY, exact report скачан и скомпилирован; второй create не выполнялся |
+| G4b. Fresh Walmart duplicate-guard catalog | `CONSUMED_2026-08-01` | Successor report `READY`; 5 235 all-status rows owner-signed и атомарно active |
 | G5a. Scope-only backfill apply | `CONSUMED_SCOPE_ONLY` | `5935/5935` scopes applied and verified |
 | G5b. No-paid legacy bridge canary | `CONSUMED_2026-07-26` | Exact five-listing plan applied: `35/35` rows, no paid/provider/marketplace actions |
 | G5c. Graph-aware no-paid wave | `CONSUMED_2026-07-27` | `14` listings / `70` rows applied; postcheck `ALREADY_APPLIED` |
@@ -178,20 +179,54 @@ paid spend или marketplace actions.
 
 ## G2b — Bundle Factory bounded no-spend web bridge
 
-### Уже доказано
+### Consumed evidence 2026-07-28
 
-- clean release commit `8178f5194c149e473dddcb2ddfa9a2e15282a91f`,
-  tree `f4cc943349e69ba721d989315abf1900506d7d08`, executable SHA-256
-  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+- финальный clean release
+  `product-truth-web-control-2026-07-28-r6`: commit
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`, tree
+  `47a992982ace124611bfab4b40b1cdac0b86dbb8`, executable SHA-256
+  `a4e54535024f4e85a3b6176a775a13ea8c728582cd5253bd1cd8ec3b90dc2b96`;
 - migration SHA-256
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
-- Product Truth `508/508`, Bundle Factory UI/route `2/2`, TypeScript, focused
-  ESLint и production build = `PASS`;
-- Vercel deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` = `Ready`, но runtime
-  `OFF`;
-- read-only production preflight: все три control tables отсутствуют,
-  activation env отсутствует;
-- provider calls, Product Truth business writes и Walmart actions = `0`.
+- Stage A применён к exact production target
+  `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`;
+  control schema содержит command/artifact/event custody, а Product Truth
+  business tables не менялись;
+- authoritative manifest
+  `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`;
+- Product Truth `512/512`, Bundle Factory UI `3/3`, TypeScript, focused ESLint
+  и production build = `PASS`;
+- production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` = `Ready` и
+  назначен на `salutemsolutions.info`;
+- отдельный launchd worker активен из clean pinned checkout; pre/post claim
+  вернул HTTP `200` и `claim:null`;
+- финальный Bundle Factory Campbell's batch
+  `ptbfw-cdc58a911597fd5e37e6afac`: `5/5 DOCTOR SUCCEEDED`,
+  `5/5 RUN_PLAN SUCCEEDED`, общий статус `AWAITING_OWNER`;
+- r6 interface/release postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
+- provider calls, metered execution, Product Truth business writes и
+  Walmart/marketplace actions = `0`.
+
+### Successor reliability evidence 2026-08-01
+
+- exact r11 release: commit `97ffabce993256c8eb8012abb5154a09419ba94d`,
+  tree `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+- clean production batch `ptbfw-14e44dd192718b33ff8b0bb2` завершил
+  `5/5 DOCTOR` и `5/5 RUN_PLAN`, status `AWAITING_OWNER`;
+- exact quote `ptq-b32ff65d283f474ba4ffaf7ccbd2a352` показывает максимум
+  `20` prepaid provider credits для пяти independent actions;
+- `EXECUTE=0`, provider spend, Product Truth business writes и Walmart actions
+  `0`.
+
+Это successor evidence consumed no-spend gate G2b, а не новый owner gate и не
+разрешение расхода. Paid enrichment по-прежнему требует review и отдельное
+подтверждение exact quote в UI.
+
+Калибровочные releases r1–r4 выявили и закрыли canonical temp-path,
+operational-JSON и heartbeat/event-chain races. Их незавершённые control
+commands сохранены как immutable evidence, не replay и не переносятся в r5.
 
 ### Точная граница
 
@@ -360,6 +395,29 @@ Quarantined session и старые permit/authorization bytes повторно 
 - authoritative manifest v3: `5935` live listings, `6` required scopes,
   `3` exact reports, `0` blockers; canonical JSON SHA-256
   `94359db196ec3bc73c964edce7a88df56e5e1942fc0ba9824670034609e9062c`.
+
+### G4b consumed evidence — fresh Walmart new-SKU duplicate guard 2026-08-01
+
+- successor absence probe + reissue-v2 выполнили ровно один report-create
+  POST; request ID `019fbe92-be8d-73b6-8008-6f4fba3a191a`, request-ID SHA
+  `0de3828ef67568ab11569aa8935d8b36e9f21c0d799509e2f54c12bbf460856c`;
+- exact download/offline compile: `5 235` rows, из них
+  `3 877 PUBLISHED`, `624 UNPUBLISHED`, `734 SYSTEM_PROBLEM`; source file SHA
+  `433f09d30f07d38bf3fb63c7036bfd79e54c155dc7da19957a7ea0748c89aa77`;
+- owner approval подписан отдельным domain
+  `WALMART_ITEM_V6_CATALOG_ACTIVATE`, approval SHA
+  `3f9de938cc85866c9c168cf30434136c5880b41c6b776949cf6bbaa4e52bb611`;
+- atomic apply receipt `ACTIVE`, `row_count=5235`, postcondition
+  `b745752257ebb06d204e2f7ba5d6e5625c9254768388c9e78e03d82878206086`;
+  repeat read-only plan = `NOOP_ALREADY_ACTIVE`;
+- разрешённый DB scope только
+  `WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)`. Walmart/provider calls,
+  publication, delist, reprice, inventory purchase и Product Truth donor/content
+  writes равны `0`.
+
+G4b не является publication permit и не разрешает paid enrichment.
+Seller catalog используется только как duplicate guard; Product Truth остаётся
+единственным donor/content source.
 
 ## Что происходит после закрытия G3 + G4
 
@@ -933,3 +991,34 @@ plans блокируются до balance/provider call. Read-only Campbell's re
 provider calls/DB writes `0`; полный Product Truth suite `556/556`. Выполнение
 этого bounded plan остаётся внутри уже активного G7 и не требует новой owner
 approval phrase.
+### BF-W3 — per-quote Walmart donor enrichment authority
+
+Этот gate не является standing approval и не может быть consumed из общего
+сообщения в чате. Для каждого Bundle Factory batch владелец видит:
+
+- exact products и missing fields;
+- один Unwrangle balance probe `≤2.5` credits;
+- на каждый product Oxylabs query `≤1.0` и Unwrangle detail `≤2.5`;
+- общий maximum provider credits;
+- явную границу: Product Truth enrichment only, Walmart mutations `0`.
+
+Gate считается выданным только после клика `Approve exact quote`, когда локальный
+owner agent подписал exact command/quote/plans отдельным Product Truth Ed25519
+ключом. `Decline` terminal до spend. Signature не переносится на changed/expired
+quote, другой target, новый donor, retry, wave или marketplace action.
+
+С 2026-08-02 owner request хранится как один durable Bundle Factory
+`GenerationJob`. Известный terminal failure одного exact source может
+автоматически подготовить другой **no-spend** child plan внутри того же build,
+исключив уже использованный donor. Это не переносит BF-W3: новый donor set
+обязательно показывает новый exact quote и требует нового click/signature;
+`AMBIGUOUS` автоматически не заменяется.
+
+Статус 2026-07-28: release
+`product-truth-web-control-2026-07-28-r7` (`2e124192…cf42`) активирован в
+production deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD`; owner public-key
+SHA-256 `6d410aeb…17b5`, loopback owner-agent и pinned worker active.
+No-spend batch `ptbfw-f464598c22650c76c631c239` подготовил exact quote
+`ptq-6f91025cbbd87e2654e4d2c86dab3619` с maximum `20` prepaid provider credits
+и остановился в `AWAITING_OWNER`. Этот exact paid quote ещё не consumed:
+provider calls не начаты, metered execution не admitted, Walmart mutations `0`.

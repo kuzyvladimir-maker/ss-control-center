@@ -24,6 +24,10 @@ const DOMAIN = Buffer.from(
   "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v3\0",
   "utf8",
 );
+const CATALOG_DOMAIN = Buffer.from(
+  "SS_COMMAND_CENTER\0WALMART_ITEM_V6_CATALOG_ACTIVATE\0v1\0",
+  "utf8",
+);
 const FIXED_RANDOM = Buffer.from("0123456789abcdef0123456789abcdef", "utf8");
 
 function canonicalJson(value) {
@@ -100,6 +104,63 @@ function signingRequest(enrollment, overrides = {}) {
       signature_base64: "TODO_EXTERNAL_OWNER_ED25519_SIGNATURE_BASE64",
       signature_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
       permit_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
+    },
+    message,
+  };
+}
+
+function catalogSigningRequest(enrollment, overrides = {}) {
+  const body = {
+    approval_id: "owner-approval:walmart-catalog:2026-07-23",
+    action: "WALMART_ITEM_V6_CATALOG_ACTIVATE",
+    authority_environment: "PRODUCTION",
+    environment: "production",
+    plan_sha256: "1".repeat(64),
+    source_file_sha256: "2".repeat(64),
+    source_body_sha256: "3".repeat(64),
+    source_rows_sha256: "4".repeat(64),
+    report_request_id_sha256: "5".repeat(64),
+    store_index: 1,
+    business_seller_account_fingerprint_sha256: "6".repeat(64),
+    capture_credential_scope_fingerprint_sha256: "7".repeat(64),
+    database_target_fingerprint_sha256: "8".repeat(64),
+    expected_postcondition_sha256: "9".repeat(64),
+    issued_at: "2026-07-23T03:00:00.000Z",
+    expires_at: "2026-07-23T03:20:00.000Z",
+    approved_by: "owner-vladimir",
+    decision_ref: "urn:ss-command-center:owner-decision:walmart-catalog-activation",
+    claims: {
+      database_write_authorized: true,
+      database_scope: "WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)",
+      all_status_store_scoped_replace: true,
+      walmart_api_calls: 0,
+      provider_calls: 0,
+      marketplace_mutated: false,
+      listing_published: false,
+      listing_delisted: false,
+      repriced: false,
+      inventory_purchased: false,
+    },
+    ...overrides,
+  };
+  const envelope = {
+    schema_version: "walmart-new-sku-catalog-activation-owner-approval/1.0.0",
+    algorithm: "Ed25519",
+    key_id: enrollment.key_id,
+    owner_public_key_spki_sha256: enrollment.public_key_spki_sha256,
+    signed_body: body,
+  };
+  const message = Buffer.concat([
+    CATALOG_DOMAIN,
+    Buffer.from(canonicalJson(envelope), "utf8"),
+  ]);
+  return {
+    request: {
+      ...envelope,
+      signing_message_base64: message.toString("base64"),
+      signature_base64: "TODO_EXTERNAL_OWNER_ED25519_SIGNATURE_BASE64",
+      signature_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
+      approval_sha256: "TODO_AFTER_EXTERNAL_SIGNATURE",
     },
     message,
   };
@@ -228,6 +289,85 @@ test("inspect shows exact one-SKU risk and sign emits one valid raw signature", 
   assert.equal(signed.network_calls, 0);
   assert.equal(signed.walmart_calls, 0);
   assert.equal(signed.database_calls, 0);
+});
+
+test("catalog activation is independently reviewed and signed without marketplace authority", async (t) => {
+  const fx = await fixture(t);
+  const built = catalogSigningRequest(fx.enrollment);
+  const requestPath = path.join(fx.root, "catalog-approval-request.json");
+  await writePrivateJson(requestPath, built.request);
+  const requestSha = sha256(await readFile(requestPath));
+
+  const inspected = await runWalmartNewSkuOwnerSignerCli([
+    "inspect",
+    `--custody-dir=${fx.custody}`,
+    `--request=${requestPath}`,
+    `--expect-request-sha256=${requestSha}`,
+  ], {
+    now: () => new Date("2026-07-23T03:00:30.000Z"),
+  });
+  assert.equal(inspected.summary.action, "WALMART_ITEM_V6_CATALOG_ACTIVATE");
+  assert.equal(inspected.summary.database_scope,
+    "WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)");
+  assert.equal(inspected.summary.all_status_store_scoped_replace, true);
+  assert.equal(inspected.summary.walmart_api_calls, 0);
+  assert.equal(inspected.summary.provider_calls, 0);
+  assert.equal(inspected.summary.listing_published, false);
+
+  const signaturePath = path.join(fx.custody, "catalog-signature.bin");
+  const signed = await runWalmartNewSkuOwnerSignerCli([
+    "sign",
+    `--custody-dir=${fx.custody}`,
+    `--request=${requestPath}`,
+    `--expect-request-sha256=${requestSha}`,
+    `--out=${signaturePath}`,
+    `--confirm=${inspected.required_confirmation}`,
+  ], {
+    read_secret: async (keyId) => Buffer.from(fx.secrets.get(keyId)),
+    now: () => new Date("2026-07-23T03:00:30.000Z"),
+  });
+  const signature = await readFile(signaturePath);
+  const publicKey = createPublicKey({
+    key: Buffer.from(fx.enrollment.public_key_spki_der_base64, "base64"),
+    format: "der",
+    type: "spki",
+  });
+  assert.equal(signed.status, "DETACHED_SIGNATURE_CREATED");
+  assert.equal(signature.byteLength, 64);
+  assert.equal(verify(null, built.message, publicKey, signature), true);
+  assert.equal(signed.network_calls, 0);
+  assert.equal(signed.database_calls, 0);
+});
+
+test("catalog signer rejects any broadened marketplace or listing claim", async (t) => {
+  const fx = await fixture(t);
+  const broadened = catalogSigningRequest(fx.enrollment, {
+    claims: {
+      database_write_authorized: true,
+      database_scope: "WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)",
+      all_status_store_scoped_replace: true,
+      walmart_api_calls: 1,
+      provider_calls: 0,
+      marketplace_mutated: false,
+      listing_published: false,
+      listing_delisted: false,
+      repriced: false,
+      inventory_purchased: false,
+    },
+  });
+  const requestPath = path.join(fx.root, "broadened-catalog-request.json");
+  await writePrivateJson(requestPath, broadened.request);
+  await assert.rejects(
+    runWalmartNewSkuOwnerSignerCli([
+      "inspect",
+      `--custody-dir=${fx.custody}`,
+      `--request=${requestPath}`,
+      `--expect-request-sha256=${sha256(await readFile(requestPath))}`,
+    ], {
+      now: () => new Date("2026-07-23T03:00:30.000Z"),
+    }),
+    /outside the exact Walmart catalog-activation domain/u,
+  );
 });
 
 test("modified scope, wrong request hash and repository custody fail closed", async (t) => {

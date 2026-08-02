@@ -1,4 +1,8 @@
-export const PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS = 30_000;
+// Raised from 30s after the 2026-08-01 incident: production Turso admission
+// of a five-command batch was observed to take ~47s, and the 30s abort was
+// itself creating stuck CLAIMED/RUNNING commands. See
+// docs/wiki/walmart-bundle-factory-independent-diagnostic-handoff.md.
+export const PRODUCT_TRUTH_WORKER_CONTROL_API_TIMEOUT_MS = 150_000;
 export const PRODUCT_TRUTH_WORKER_HEARTBEAT_MS = 30_000;
 export const PRODUCT_TRUTH_WORKER_LEASE_SAFETY_MS = 5_000;
 export const PRODUCT_TRUTH_WORKER_CONTROL_RETRY_MS = 2_000;

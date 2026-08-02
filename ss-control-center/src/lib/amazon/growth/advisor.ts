@@ -6,7 +6,7 @@
  * returns, plus buy-box, conversion, revenue, issues, health) to Claude and gets
  * back a structured, ranked action plan focused on lifting conversion and sales.
  *
- * Model: claude-opus-4-8 (judgment work). Structured output via output_config so
+ * Model: claude-opus-5 (judgment work). Structured output via output_config so
  * the response is a validated plan, not prose we have to parse loosely.
  */
 

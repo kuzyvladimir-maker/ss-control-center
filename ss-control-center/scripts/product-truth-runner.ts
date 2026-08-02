@@ -61,11 +61,8 @@ import {
   inspectProductTruthTargetedWalmartEvidenceRun,
   readTargetedWalmartDonorSnapshot,
   readTargetedWalmartListingBoundDonorSnapshot,
+  targetedWalmartDetailHarvestStateAbsent,
 } from "../src/lib/sourcing/product-truth-targeted-walmart-evidence";
-import {
-  donorHarvestStateId,
-  getDonorHarvestState,
-} from "../src/lib/sourcing/donor-harvest-store";
 import {
   inspectWalmartNewSkuSourceRelease,
 } from "../src/lib/bundle-factory/walmart-new-sku-source-release";
@@ -2806,19 +2803,6 @@ async function inspectTargetedEvidenceRuntime(input: {
   };
 }
 
-async function targetedHarvestStateAbsent(
-  db: Client,
-  donorProductId: string,
-  retailerProductId: string,
-): Promise<boolean> {
-  const state = await getDonorHarvestState(db, donorHarvestStateId({
-    donorProductId,
-    source: "unwrangle:walmart",
-    retailerProductId,
-  }));
-  return state === null;
-}
-
 async function writeConsumerReadinessArtifacts(input: {
   outputDirectory: string;
   report: ProductTruthConsumerReadinessReport;
@@ -3021,7 +3005,7 @@ async function buildTargetedEvidenceRequestArtifacts(input: {
     return exact;
   });
   const output = resolveNewOutputDirectory(input.cwd, input.options.outputDirectory);
-  if (!await withReadOnlyClient(input.resolved, (db) => targetedHarvestStateAbsent(
+  if (!await withReadOnlyClient(input.resolved, (db) => targetedWalmartDetailHarvestStateAbsent(
     db,
     snapshot.donorProductId,
     snapshot.retailerProductId,
@@ -3146,7 +3130,7 @@ async function buildOfflinePlanArtifacts(input: {
           );
       return {
         donor,
-        harvestAbsent: await targetedHarvestStateAbsent(
+        harvestAbsent: await targetedWalmartDetailHarvestStateAbsent(
           db,
           donor.donorProductId,
           donor.retailerProductId,

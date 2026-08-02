@@ -10,6 +10,7 @@ import type { ChannelSKU } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertProductTruthEvidenceSchema } from "@/lib/sourcing/product-truth-schema-gate";
 import { getWalmartClient, getWalmartStoreStatus } from "@/lib/walmart/client";
+import { computeWalmartSellerAccountFingerprint } from "@/lib/walmart/item-report-capture-session";
 import { approveDraftForDistribution } from "./approval";
 import {
   normalizeAllergenDeclaration,
@@ -75,14 +76,17 @@ import {
 import {
   parseAndValidateWalmartNewSkuPolicyReviewEvidence,
 } from "./walmart-new-sku-policy-review-evidence";
+import { assertWalmartSellerCatalogRecipeNovelty } from "./walmart-new-sku-novelty";
 import {
   buildWalmartItemAssociationsRequest,
   buildWalmartSkuTemplateMapContract,
   findExactWalmartShippingAssociation,
 } from "./walmart-shipping-template-association";
 import {
-  verifyWalmartExactIdentifierDuplicateGuardBinding,
-  type SealedWalmartExactIdentifierDuplicateGuardBinding,
+  WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA,
+  recheckWalmartSellerCatalogAuthorityBinding,
+  verifyWalmartSellerCatalogAuthorityBinding,
+  type SealedWalmartAllStatusSellerCatalogAuthorityBinding,
 } from "./walmart-new-sku-catalog-authority";
 import {
   WALMART_NEW_SKU_CERTIFICATION_SCHEMA,
@@ -153,17 +157,27 @@ export function assertCurrentWalmartSellerAccountBinding(input: {
 }
 
 /**
- * Re-resolve the business seller identity for every duplicate-guard mode. The
- * legacy optional all-status mode additionally rechecks its capture credential
- * and source mirror; the pilot's exact-identifier mode does not require them.
+ * Re-resolve both the business seller identity and the credential scope that
+ * captured the full all-status ITEM catalog. Every late gate also rechecks the
+ * sealed source bytes, database mirror, report diagnostic, and freshness.
  */
 export function assertCurrentWalmartSellerCatalogAuthorityScope(
-  input: SealedWalmartExactIdentifierDuplicateGuardBinding,
-): SealedWalmartExactIdentifierDuplicateGuardBinding {
-  const authority = verifyWalmartExactIdentifierDuplicateGuardBinding(input);
+  input: SealedWalmartAllStatusSellerCatalogAuthorityBinding,
+): SealedWalmartAllStatusSellerCatalogAuthorityBinding {
+  const verified = verifyWalmartSellerCatalogAuthorityBinding(input);
+  if (
+    verified.schema_version !==
+      WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "SELLER_CATALOG_FULL_ALL_STATUS_AUTHORITY_REQUIRED",
+    ]);
+  }
+  const authority = verified;
   const storeIndex = authority.account_scope.store_index;
   const status = getWalmartStoreStatus(storeIndex);
-  if (!status.configured || !status.sellerId) {
+  const clientId = process.env[`WALMART_CLIENT_ID_STORE${storeIndex}`];
+  if (!status.configured || !status.sellerId || !clientId) {
     throw new WalmartNewSkuPlanError([
       `SELLER_CATALOG_AUTHORITY_ACCOUNT_NOT_CONFIGURED:STORE_${storeIndex}`,
     ]);
@@ -173,34 +187,44 @@ export function assertCurrentWalmartSellerCatalogAuthorityScope(
     seller_account_fingerprint_sha256:
       authority.account_scope.business_seller_account_fingerprint_sha256,
   });
-  return authority;
-}
-
-async function assertWalmartExactIdentifierDuplicateGuardPlan(input: {
-  component: ProductTruthNewSkuRecipeComponentEvidence;
-}): Promise<void> {
-  if (!input.component.donor_product_id
-    || !input.component.canonical_variant_id
-    || !Number.isInteger(input.component.qty)
-    || input.component.qty < 1) {
-    throw new Error("EXACT_IDENTIFIER_DUPLICATE_GUARD_COMPONENT_INVALID");
+  const currentCaptureFingerprint = computeWalmartSellerAccountFingerprint({
+    store_index: storeIndex,
+    client_id: clientId,
+    seller_id: status.sellerId,
+  });
+  if (
+    currentCaptureFingerprint !==
+      authority.account_scope.capture_credential_scope_fingerprint_sha256
+  ) {
+    throw new WalmartNewSkuPlanError([
+      `SELLER_CATALOG_AUTHORITY_CREDENTIAL_SCOPE_MISMATCH:STORE_${storeIndex}`,
+    ]);
   }
-  // The selected mode does not require an all-status seller-catalog read.
-  // Certification still requires exact staged-SKU absence plus exact staged-
-  // UPC SPEC search before any Walmart publish transport can be prepared.
+  return authority;
 }
 
 export async function assertCurrentWalmartSellerCatalogAuthority(input: {
   db: Client;
-  authority: SealedWalmartExactIdentifierDuplicateGuardBinding;
+  authority: SealedWalmartAllStatusSellerCatalogAuthorityBinding;
   now?: Date;
-}): Promise<SealedWalmartExactIdentifierDuplicateGuardBinding> {
-  void input.db;
-  void input.now;
+}): Promise<SealedWalmartAllStatusSellerCatalogAuthorityBinding> {
   const authority = assertCurrentWalmartSellerCatalogAuthorityScope(
     input.authority,
   );
-  return verifyWalmartExactIdentifierDuplicateGuardBinding(authority);
+  const rechecked = await recheckWalmartSellerCatalogAuthorityBinding({
+    db: input.db,
+    expected: authority,
+    now: input.now ?? new Date(),
+  });
+  if (
+    rechecked.schema_version !==
+      WALMART_SELLER_CATALOG_AUTHORITY_BINDING_SCHEMA
+  ) {
+    throw new WalmartNewSkuPlanError([
+      "SELLER_CATALOG_FULL_ALL_STATUS_AUTHORITY_REQUIRED",
+    ]);
+  }
+  return rechecked;
 }
 
 function isUniqueConstraintError(error: unknown): boolean {
@@ -713,8 +737,11 @@ export async function stageWalmartNewSkuCandidate(input: {
     (item) => item.candidate_key === input.candidateKey,
   );
   if (!candidate) throw new Error(`Candidate ${input.candidateKey} is not in plan`);
-  await assertWalmartExactIdentifierDuplicateGuardPlan({
+  await assertWalmartSellerCatalogRecipeNovelty({
+    db: input.productTruthDb,
+    storeIndex: input.plan.store_index,
     component: candidate.recipe_input.components[0],
+    now,
   });
 
   const preview = buildWalmartNewSkuStagePreview({
@@ -1372,8 +1399,12 @@ export async function certifyWalmartNewSkuCandidate(input: {
     component_key: component.component_key,
   });
 
-  await assertWalmartExactIdentifierDuplicateGuardPlan({
+  await assertWalmartSellerCatalogRecipeNovelty({
+    db: input.productTruthDb,
+    storeIndex: input.plan.store_index,
     component,
+    allowedChannelSkuId: channelSkuId,
+    now,
   });
 
   const [draft, pool] = await Promise.all([
@@ -2113,8 +2144,11 @@ export async function dryRunCertifiedWalmartNewSku(input: {
     db: input.productTruthDb,
     certification: input.certification,
   });
-  await assertWalmartExactIdentifierDuplicateGuardPlan({
+  await assertWalmartSellerCatalogRecipeNovelty({
+    db: input.productTruthDb,
+    storeIndex: input.certification.store_index,
     component,
+    allowedChannelSkuId: input.certification.channel_sku_id,
   });
   const replay = await replayCertifiedWalmartNewSkuLocally(input);
   const client = getWalmartClient(input.certification.store_index);
@@ -2175,8 +2209,12 @@ export async function approveCertifiedWalmartNewSku(input: {
     certification: input.certification,
     now,
   });
-  await assertWalmartExactIdentifierDuplicateGuardPlan({
+  await assertWalmartSellerCatalogRecipeNovelty({
+    db: input.productTruthDb,
+    storeIndex: input.certification.store_index,
     component,
+    allowedChannelSkuId: input.certification.channel_sku_id,
+    now,
   });
 
   // Re-run every deterministic local gate at approval time. The fresh sealed
@@ -2396,8 +2434,13 @@ export async function applyCertifiedWalmartNewSku(input: {
     now,
   });
   if (requiresPrepublicationCatalogAuthority) {
-    await assertWalmartExactIdentifierDuplicateGuardPlan({
+    await assertWalmartSellerCatalogRecipeNovelty({
+      db: input.productTruthDb,
+      storeIndex: input.certification.store_index,
       component: currentComponent,
+      allowedChannelSkuId: input.certification.channel_sku_id,
+      allowedSellerSku: currentAttempt ? input.certification.sku : null,
+      now,
     });
   }
   if (canInitiateWalmartPost) {
@@ -2451,8 +2494,12 @@ export async function applyCertifiedWalmartNewSku(input: {
       ? async () => {
           try {
             assertCurrentWalmartSellerAccountBinding(input.certification);
-            await assertWalmartExactIdentifierDuplicateGuardPlan({
+            await assertWalmartSellerCatalogRecipeNovelty({
+              db: input.productTruthDb,
+              storeIndex: input.certification.store_index,
               component: currentComponent,
+              allowedChannelSkuId: input.certification.channel_sku_id,
+              now: new Date(),
             });
             const sellerSkuResponse = await getWalmartClient(
               input.certification.store_index,

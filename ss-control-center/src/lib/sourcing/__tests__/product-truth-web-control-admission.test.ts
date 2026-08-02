@@ -6,7 +6,9 @@ import {
   parseProductTruthControlEnvelope,
 } from "../product-truth-control-plane";
 import {
+  latestProductTruthControlRowsByRun,
   prepareProductTruthWalmartDoctorAdmissions,
+  productTruthWalmartPreExecutionExpiryCode,
 } from "../product-truth-web-control-admission";
 import {
   buildProductTruthWalmartCollectionBatch,
@@ -45,9 +47,13 @@ const runtime: ProductTruthWebControlRuntimeActive = {
 };
 
 function batch() {
+  return batchAt("2026-07-28T20:00:00.000Z");
+}
+
+function batchAt(requestedAt: string) {
   return buildProductTruthWalmartCollectionBatch({
     requestedByUserId: "owner-0001",
-    requestedAt: "2026-07-28T20:00:00.000Z",
+    requestedAt,
     prompt: "Create two exact Campbell soup listings",
     listingCount: 2,
     packCount: 3,
@@ -70,6 +76,46 @@ function batch() {
     ],
   });
 }
+
+test("retry in one release reuses logical commands despite fresh TTL timestamps", () => {
+  const first = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batchAt("2026-07-28T20:00:00.000Z"),
+    runtime,
+  });
+  const retry = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batchAt("2026-07-28T20:01:00.000Z"),
+    runtime,
+  });
+  assert.deepEqual(
+    retry.map((entry) => entry.commandId),
+    first.map((entry) => entry.commandId),
+  );
+  assert.deepEqual(
+    retry.map((entry) => entry.idempotencyKey),
+    first.map((entry) => entry.idempotencyKey),
+  );
+  assert.notDeepEqual(
+    retry.map((entry) => entry.requestSha256),
+    first.map((entry) => entry.requestSha256),
+  );
+});
+
+test("owner status shows only the latest immutable attempt per logical product", () => {
+  const rows = [
+    { runId: "batch-01", commandId: "old-01" },
+    { runId: "batch-02", commandId: "old-02" },
+    { runId: "batch-01", commandId: "new-01" },
+    { runId: "batch-02", commandId: "new-02" },
+  ];
+  assert.deepEqual(latestProductTruthControlRowsByRun(rows), [
+    { runId: "batch-01", commandId: "new-01" },
+    { runId: "batch-02", commandId: "new-02" },
+  ]);
+  assert.throws(
+    () => latestProductTruthControlRowsByRun([{ runId: null }]),
+    /logical run binding/u,
+  );
+});
 
 test("prepares deterministic independent DOCTOR admissions only", () => {
   const first = prepareProductTruthWalmartDoctorAdmissions({
@@ -104,6 +150,42 @@ test("admission implementation has no provider, process, shell, or Walmart write
   const source = await readFile(sourceUrl, "utf8");
   assert.doesNotMatch(
     source,
-    /child_process|spawn\(|exec\(|fetch\(|oxylabs|unwrangle|WalmartClient|MP_ITEM|SKU_TEMPLATE_MAP/u,
+    /child_process|spawn\(|exec\(|fetch\(|WalmartClient|MP_ITEM|SKU_TEMPLATE_MAP/u,
   );
+  assert.doesNotMatch(
+    source,
+    /from "\.\/(?:donor-catalog|oxylabs-fetch|retail-fetch)"/u,
+  );
+  assert.match(
+    source,
+    /requestBytes:\s*Buffer\.from\(\s*renderProductTruthOperationalJson\(targetedRequest\)/u,
+  );
+});
+
+test("expired pre-execution states stop looking like enrichment is still running", () => {
+  const now = new Date("2026-08-01T18:30:00.000Z");
+  assert.equal(productTruthWalmartPreExecutionExpiryCode({
+    status: "CLAIMED",
+    attempts: 0,
+    executionStartedAt: null,
+    workerLeaseExpiresAt: new Date("2026-08-01T18:29:59.000Z"),
+    ownerAuthorizationExpiresAt: new Date("2026-08-01T18:45:00.000Z"),
+    now,
+  }), "WORKER_START_NOT_CONFIRMED_ZERO_ATTEMPT");
+  assert.equal(productTruthWalmartPreExecutionExpiryCode({
+    status: "ADMITTED",
+    attempts: 0,
+    executionStartedAt: null,
+    workerLeaseExpiresAt: null,
+    ownerAuthorizationExpiresAt: new Date("2026-08-01T18:29:59.000Z"),
+    now,
+  }), "OWNER_AUTHORIZATION_EXPIRED_BEFORE_EXECUTION");
+  assert.equal(productTruthWalmartPreExecutionExpiryCode({
+    status: "RUNNING",
+    attempts: 1,
+    executionStartedAt: new Date("2026-08-01T18:00:00.000Z"),
+    workerLeaseExpiresAt: new Date("2026-08-01T18:45:00.000Z"),
+    ownerAuthorizationExpiresAt: new Date("2026-08-01T18:45:00.000Z"),
+    now,
+  }), null);
 });

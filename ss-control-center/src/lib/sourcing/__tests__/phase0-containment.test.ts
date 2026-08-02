@@ -213,10 +213,12 @@ test("legacy Bundle Factory Studio cannot bypass the canonical Walmart pilot", a
       }),
     }),
   );
-  assert.equal(response.status, 400);
+  // The durable endpoint now authenticates before it parses any request body.
+  // An unauthenticated legacy caller is therefore rejected at the stronger
+  // outer boundary instead of reaching the former 400 channel fence.
+  assert.equal(response.status, 401);
   const body = await response.json() as { error?: string };
-  assert.match(body.error ?? "", /canonical Bundle Factory Walmart pilot workflow/);
-  assert.match(body.error ?? "", /walmart:new-sku/);
+  assert.match(body.error ?? "", /Not authenticated/i);
 });
 
 test("legacy Walmart generated-image apply has no executable feed path", () => {

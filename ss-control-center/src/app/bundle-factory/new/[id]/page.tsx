@@ -12,6 +12,11 @@ import { prisma } from "@/lib/prisma";
 import { PageHead } from "@/components/kit";
 import { ArrowLeft } from "lucide-react";
 import { BatchProgress } from "@/components/bundle-factory/BatchProgress";
+import { WalmartDurableBuildProgress } from
+  "@/components/bundle-factory/WalmartDurableBuildProgress";
+import {
+  WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW,
+} from "@/lib/bundle-factory/walmart-durable-build";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +52,11 @@ export default async function StudioBatchPage({
   const prompt = typeof req.prompt === "string" ? req.prompt : "—";
   const channel = typeof req.channel === "string" ? CHANNEL_LABELS[req.channel] ?? req.channel : "—";
   const houseBrand = typeof req.house_brand === "string" ? req.house_brand : "—";
-  const textModel = req.text_model === "opus" ? "Opus 4.8" : req.text_model === "sonnet" ? "Sonnet 4.6" : "—";
   const photos = req.photo_strategy === "generate" ? "Generated" : "Catalog photos";
+  const isWalmartPreparation =
+    req.workflow === WALMART_DURABLE_BUILD_PREPARATION_WORKFLOW;
   const isCanonicalWalmart =
-    req.workflow === "CANONICAL_WALMART_NEW_SKU";
+    req.workflow === "CANONICAL_WALMART_NEW_SKU" || isWalmartPreparation;
   const walmartShipping =
     req.walmart_shipping &&
       typeof req.walmart_shipping === "object" &&
@@ -67,14 +73,24 @@ export default async function StudioBatchPage({
     typeof req.listing_count === "number" ? req.listing_count : null;
   const packCount =
     typeof req.pack_count === "number" ? req.pack_count : null;
+  const productTruthCollection =
+    req.product_truth_collection &&
+      typeof req.product_truth_collection === "object" &&
+      !Array.isArray(req.product_truth_collection)
+      ? req.product_truth_collection as Record<string, unknown>
+      : null;
+  const productTruthBatchId =
+    typeof productTruthCollection?.batch_id === "string"
+      ? productTruthCollection.batch_id
+      : null;
 
   return (
     <>
       <PageHead
-        title={isCanonicalWalmart ? "Walmart request prepared" : "Building listings"}
+        title={isCanonicalWalmart ? "Building Walmart drafts" : "Building listings"}
         subtitle={
           isCanonicalWalmart
-            ? <span>Inputs were recorded exactly. Generation has not started and nothing has been published.</span>
+            ? <span>The exact Product Truth variants are becoming internal review drafts. Nothing publishes until you separately approve it.</span>
             : <span>The algorithm is creating your batch. Watch it below — nothing publishes until you approve.</span>
         }
       />
@@ -92,24 +108,29 @@ export default async function StudioBatchPage({
           <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{prompt}</p>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-ink-3">
             <span>Sell on: <span className="text-ink-2">{channel}</span></span>
-            <span>Brand: <span className="text-ink-2">{houseBrand}</span></span>
-            <span>Model: <span className="text-ink-2">{textModel}</span></span>
+            {!isCanonicalWalmart && (
+              <>
+                <span>Brand: <span className="text-ink-2">{houseBrand}</span></span>
+              </>
+            )}
             <span>Photos: <span className="text-ink-2">{photos}</span></span>
           </div>
         </div>
 
         {isCanonicalWalmart ? (
-          <div className="rounded-[14px] border border-rule bg-surface p-5">
-            <div className="text-[13.5px] font-semibold text-ink">
-              Request recorded — generation has not started
-            </div>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
-              The Command Center currently records this request for the sealed
-              Walmart workflow; it does not run that workflow automatically.
-              Claude Code must execute the exact operator steps. Nothing has
-              been published.
-            </p>
-            <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
+          <>
+            <div className="rounded-[14px] border border-rule bg-surface p-5">
+              <div className="text-[13.5px] font-semibold text-ink">
+                {isWalmartPreparation
+                  ? "Walmart build request saved"
+                  : "Exact draft request sealed"}
+              </div>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
+                {isWalmartPreparation
+                  ? "This build has one permanent ID. Product Truth preparation, exact owner approval and all five draft work items remain children of this build even after refresh or navigation."
+                  : "Each work item is bound to one exact donor product and Product Truth evidence snapshot. This step does not reserve UPCs and has no authority to send a listing to Walmart."}
+              </p>
+              <div className="mt-4 grid gap-2 rounded-[10px] bg-bg-elev p-3 text-[12px]">
               <div>
                 Requested output:{" "}
                 <span className="font-medium text-ink">
@@ -143,8 +164,21 @@ export default async function StudioBatchPage({
                   {String(req.target_margin_pct ?? 30)}%
                 </span>
               </div>
+              </div>
             </div>
-          </div>
+            {isWalmartPreparation && productTruthBatchId && listingCount ? (
+              <WalmartDurableBuildProgress
+                buildId={job.id}
+                collectionBatchId={productTruthBatchId}
+                listingCount={listingCount}
+              />
+            ) : (
+              <BatchProgress
+                batchId={job.id}
+                reviewHref={`/bundle-factory/new/${job.id}/review`}
+              />
+            )}
+          </>
         ) : (
           <BatchProgress batchId={job.id} />
         )}

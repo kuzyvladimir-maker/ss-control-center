@@ -1,7 +1,8 @@
 /**
  * Phase 2.2 Stage 4 — Per-channel content generation.
  *
- * Wraps Claude Sonnet 4.5 with the marketplace-rules KB cached at every
+ * Wraps the centrally pinned premium Claude model with the marketplace-rules
+ * KB cached at every
  * file breakpoint (kb-loader). Returns `{ title, bullets, description }`
  * for one channel template (`amazon` or `walmart`). The caller orchestrates
  * the per-channel fan-out (5 Amazon accounts share one Claude call; only
@@ -16,9 +17,9 @@
  *     gate's auto-fix runs AFTER our output lands, which keeps the
  *     disclaimer text in a single place (`remediation/disclaimer-text.ts`).
  *
- * Cost: ~$0.012 per Claude call with caching (Sonnet 4.5 pricing). At
- * 1000 bundles × 2 templates = ~$24/month. The 5 Amazon channels reuse
- * the same output so we pay for one Claude call across them.
+ * Subscription worker is tried first; paid API cost is recorded only when the
+ * infrastructure fallback is used. The 5 Amazon channels reuse the same output
+ * so we pay for one Claude call across them.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -38,16 +39,14 @@ import { CLAUDE } from "@/lib/ai-models";
 import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 import { parseTotal } from "@/lib/pricing/cost-model";
 
-const MODEL = CLAUDE.balanced;
+const MODEL = CLAUDE.premium;
 const MAX_TOKENS = 2000;
 
-// Sonnet 5 pricing (dollars per 1M tokens): $3 in / $15 out standard
-// (intro $2 / $10 through 2026-08-31). Kept at the standard rate below so the
-// displayed cost is conservative.
-const PRICE_INPUT_PER_MTOK = 3.0;
-const PRICE_CACHE_READ_PER_MTOK = 0.3;
-const PRICE_CACHE_WRITE_PER_MTOK = 3.75;
-const PRICE_OUTPUT_PER_MTOK = 15.0;
+// Opus 5 pricing (dollars per 1M tokens): $5 in / $25 out standard.
+const PRICE_INPUT_PER_MTOK = 5.0;
+const PRICE_CACHE_READ_PER_MTOK = 0.5;
+const PRICE_CACHE_WRITE_PER_MTOK = 6.25;
+const PRICE_OUTPUT_PER_MTOK = 25.0;
 
 // Per-channel hard limits. Caller validates after generation; if Claude
 // exceeds, we trim+retry once via the feedback loop.
@@ -446,7 +445,7 @@ export async function generateContentWithClient(
     response = await client.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      // Sonnet 5 turns adaptive thinking ON by default; disable it so thinking
+      // Opus 5 turns adaptive thinking ON by default; disable it so thinking
       // tokens don't eat MAX_TOKENS and truncate the JSON (behaviour parity
       // with the pre-Sonnet-5 workhorse).
       thinking: { type: "disabled" },

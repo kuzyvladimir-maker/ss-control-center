@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
+import { resolve } from "node:path";
 
+import { createClient, type InStatement } from "@libsql/client";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -13,6 +15,24 @@ import {
 import {
   parseProductTruthWalmartCollectionJob,
 } from "./product-truth-walmart-collection-contract";
+import {
+  parseProductTruthWalmartEnrichmentQuote,
+  productTruthWalmartEnrichmentQuoteSha256,
+} from "./product-truth-walmart-enrichment-quote";
+import {
+  assertProductTruthWalmartEnrichmentResult,
+  parseProductTruthWalmartEnrichmentProgress,
+  renderProductTruthWalmartEnrichmentResult,
+  type ProductTruthWalmartEnrichmentProgress,
+  type ProductTruthWalmartEnrichmentResult,
+} from "./product-truth-walmart-enrichment-worker-contract";
+import {
+  parseProductTruthTargetedWalmartEvidencePlan,
+} from "./product-truth-targeted-walmart-evidence-contract";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
 import type {
   ProductTruthWebControlRuntimeActive,
 } from "./product-truth-web-control-runtime";
@@ -25,10 +45,14 @@ import {
 } from "./product-truth-web-control-worker-contract";
 
 export const PRODUCT_TRUTH_WEB_WORKER_LEASE_MS = 15 * 60_000;
+const PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS = {
+  maxWait: 30_000,
+  timeout: 120_000,
+} as const;
 
 export interface ProductTruthWebWorkerClaim {
   command_id: string;
-  command_kind: "DOCTOR" | "RUN_PLAN";
+  command_kind: "DOCTOR" | "RUN_PLAN" | "EXECUTE";
   lease_token: string;
   lease_expires_at: string;
   engine: {
@@ -56,6 +80,17 @@ export interface ProductTruthWebWorkerClaim {
         run_id: string;
         request_sha256: string;
         request_content_base64: string;
+      }
+    | {
+        kind: "EXECUTE";
+        batch_id: string;
+        quote_sha256: string;
+        quote_content_base64: string;
+        plans: readonly {
+          run_id: string;
+          plan_sha256: string;
+          plan_content_base64: string;
+        }[];
       };
 }
 
@@ -107,6 +142,7 @@ function exactRequestArtifact(
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -152,7 +188,7 @@ function parseCanonicalJsonBytes(bytes: Uint8Array, label: string): unknown {
 }
 
 async function appendWorkerEvent(
-  tx: Prisma.TransactionClient,
+  tx: Pick<Prisma.TransactionClient, "productTruthControlEvent">,
   input: {
     commandId: string;
     eventType:
@@ -161,7 +197,8 @@ async function appendWorkerEvent(
       | "EXECUTION_BOUNDARY"
       | "ARTIFACT_RECEIVED"
       | "SUCCEEDED"
-      | "FAILED";
+      | "FAILED"
+      | "AMBIGUOUS";
     occurredAt: string;
     payload: unknown;
   },
@@ -204,6 +241,304 @@ async function appendWorkerEvent(
   });
 }
 
+function sealWorkerEventAfter(input: {
+  commandId: string;
+  previous: { sequence: number; eventHash: string };
+  eventType: "ARTIFACT_RECEIVED" | "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
+  occurredAt: string;
+  payload: unknown;
+}) {
+  const payload = canonicalBytes(input.payload);
+  const sequence = input.previous.sequence + 1;
+  return sealProductTruthControlEvent({
+    eventId:
+      `ptce-${input.commandId.slice(4)}-${sequence}-${sha256(payload).slice(0, 8)}`,
+    commandId: input.commandId,
+    sequence,
+    eventType: input.eventType,
+    source: "WORKER",
+    occurredAt: input.occurredAt,
+    payload,
+    previousEventHash: input.previous.eventHash,
+  });
+}
+
+function workerEventCreateData(
+  event: ReturnType<typeof sealWorkerEventAfter>,
+) {
+  return {
+    eventId: event.eventId,
+    commandId: event.commandId,
+    schemaVersion: event.schemaVersion,
+    sequence: event.sequence,
+    eventType: event.eventType,
+    source: event.source,
+    occurredAt: new Date(event.occurredAt),
+    payload: prismaBytes(event.payload),
+    payloadSha256: event.payloadSha256,
+    previousEventHash: event.previousEventHash,
+    eventHash: event.eventHash,
+  };
+}
+
+type ProductTruthWorkerTerminalStatus = "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
+
+function exactBytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  return Buffer.from(left).equals(Buffer.from(right));
+}
+
+function cleanDatabaseEnv(value: string | undefined): string | null {
+  const cleaned = value?.trim().replace(/^['"]|['"]$/g, "") ?? "";
+  return cleaned || null;
+}
+
+function productTruthControlClient() {
+  const tursoUrl = cleanDatabaseEnv(process.env.TURSO_DATABASE_URL);
+  const tursoToken = cleanDatabaseEnv(process.env.TURSO_AUTH_TOKEN);
+  if (tursoUrl && tursoToken) {
+    return createClient({ url: tursoUrl, authToken: tursoToken });
+  }
+  const databaseUrl = cleanDatabaseEnv(process.env.DATABASE_URL);
+  return createClient({
+    url: databaseUrl ?? `file:${resolve(process.cwd(), "dev.db")}`,
+  });
+}
+
+async function verifyWorkerTerminalState(input: {
+  commandId: string;
+  artifact: ReturnType<typeof sealProductTruthControlArtifact>;
+  terminalStatus: ProductTruthWorkerTerminalStatus;
+  exitCode: number;
+  outcome: string;
+  errorCode: string | null;
+  executionBoundary?: string;
+  artifactPayload: unknown;
+  terminalPayload: unknown;
+}): Promise<boolean> {
+  const command = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  if (
+    !command
+    || command.status !== input.terminalStatus
+    || command.resultArtifactId !== input.artifact.artifactId
+    || command.exitCode !== input.exitCode
+    || command.outcome !== input.outcome
+    || command.errorCode !== input.errorCode
+    || (
+      input.executionBoundary !== undefined
+      && command.executionBoundary !== input.executionBoundary
+    )
+  ) {
+    return false;
+  }
+  const artifact = await prisma.productTruthControlArtifact.findUnique({
+    where: { artifactId: input.artifact.artifactId },
+  });
+  if (
+    !artifact
+    || artifact.commandId !== input.artifact.commandId
+    || artifact.schemaVersion !== input.artifact.schemaVersion
+    || artifact.role !== input.artifact.role
+    || artifact.mediaType !== input.artifact.mediaType
+    || artifact.byteSize !== input.artifact.byteSize
+    || artifact.sha256 !== input.artifact.sha256
+    || artifact.locator !== input.artifact.locator
+    || artifact.createdByPrincipal !== input.artifact.createdByPrincipal
+    || !exactBytesEqual(artifact.content, input.artifact.content)
+  ) {
+    fail("WORKER_RESULT_ARTIFACT_CONFLICT", "stored result artifact differs from the exact retry");
+  }
+  const artifactPayload = canonicalBytes(input.artifactPayload);
+  const terminalPayload = canonicalBytes(input.terminalPayload);
+  const artifactEvents = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: "ARTIFACT_RECEIVED",
+      payloadSha256: sha256(artifactPayload),
+    },
+  });
+  const terminalEvents = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: input.terminalStatus,
+      payloadSha256: sha256(terminalPayload),
+    },
+  });
+  if (artifactEvents.length !== 1 || terminalEvents.length !== 1) return false;
+  const artifactEvent = artifactEvents[0]!;
+  const terminalEvent = terminalEvents[0]!;
+  if (
+    !exactBytesEqual(artifactEvent.payload, artifactPayload)
+    || !exactBytesEqual(terminalEvent.payload, terminalPayload)
+    || terminalEvent.sequence !== artifactEvent.sequence + 1
+    || terminalEvent.previousEventHash !== artifactEvent.eventHash
+  ) {
+    fail("WORKER_EVENT_CHAIN_CONFLICT", "terminal evidence differs from the exact retry");
+  }
+  return true;
+}
+
+/**
+ * Persist an already-computed worker result in one direct libSQL write batch.
+ * This avoids Prisma's remote transaction expiry while retaining an atomic
+ * command/artifact/hash-chain transition. Unknown outcomes are verified from
+ * immutable content; a retry can only resubmit this receipt, never a provider
+ * operation.
+ */
+async function persistWorkerTerminalState(input: {
+  commandId: string;
+  leaseToken: string;
+  artifact: ReturnType<typeof sealProductTruthControlArtifact>;
+  terminalStatus: ProductTruthWorkerTerminalStatus;
+  exitCode: number;
+  outcome: string;
+  errorCode: string | null;
+  executionBoundary?: string;
+  terminalPayload: unknown;
+}): Promise<void> {
+  const artifactPayload = {
+    role: input.artifact.role,
+    sha256: input.artifact.sha256,
+    byteSize: input.artifact.byteSize,
+  };
+  const verification = {
+    ...input,
+    artifactPayload,
+  };
+  if (await verifyWorkerTerminalState(verification)) return;
+  const command = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  if (
+    !command
+    || command.status !== "RUNNING"
+    || command.workerLeaseTokenSha256 !== sha256(input.leaseToken)
+  ) {
+    fail("WORKER_TERMINAL_STATE_CONFLICT", "command is not the exact running execution");
+  }
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: input.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const artifactEvent = sealWorkerEventAfter({
+    commandId: input.commandId,
+    previous,
+    eventType: "ARTIFACT_RECEIVED",
+    occurredAt: input.artifact.createdAt,
+    payload: artifactPayload,
+  });
+  const terminalEvent = sealWorkerEventAfter({
+    commandId: input.commandId,
+    previous: artifactEvent,
+    eventType: input.terminalStatus,
+    occurredAt: input.artifact.createdAt,
+    payload: input.terminalPayload,
+  });
+  const terminalBoundarySql = input.executionBoundary === undefined
+    ? ""
+    : `, "executionBoundary" = ?`;
+  const commandArgs = [
+    input.terminalStatus,
+    input.artifact.artifactId,
+    input.exitCode,
+    input.outcome,
+    input.errorCode,
+    ...(input.executionBoundary === undefined ? [] : [input.executionBoundary]),
+    input.artifact.createdAt,
+    input.commandId,
+    sha256(input.leaseToken),
+  ];
+  const statements: InStatement[] = [
+    {
+      sql: `UPDATE "ProductTruthControlCommand"
+            SET "status" = ?, "resultArtifactId" = ?, "exitCode" = ?,
+                "outcome" = ?, "errorCode" = ?${terminalBoundarySql},
+                "updatedAt" = ?
+            WHERE "commandId" = ? AND "status" = 'RUNNING'
+              AND "workerLeaseTokenSha256" = ?`,
+      args: commandArgs,
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlArtifact" (
+              "artifactId", "commandId", "schemaVersion", "role", "mediaType",
+              "content", "byteSize", "sha256", "locator", "createdAt",
+              "createdByPrincipal"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        input.artifact.artifactId,
+        input.artifact.commandId,
+        input.artifact.schemaVersion,
+        input.artifact.role,
+        input.artifact.mediaType,
+        input.artifact.content,
+        input.artifact.byteSize,
+        input.artifact.sha256,
+        input.artifact.locator,
+        input.artifact.createdAt,
+        input.artifact.createdByPrincipal,
+      ],
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlEvent" (
+              "eventId", "commandId", "schemaVersion", "sequence", "eventType",
+              "source", "occurredAt", "payload", "payloadSha256",
+              "previousEventHash", "eventHash"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        artifactEvent.eventId,
+        artifactEvent.commandId,
+        artifactEvent.schemaVersion,
+        artifactEvent.sequence,
+        artifactEvent.eventType,
+        artifactEvent.source,
+        artifactEvent.occurredAt,
+        artifactEvent.payload,
+        artifactEvent.payloadSha256,
+        artifactEvent.previousEventHash,
+        artifactEvent.eventHash,
+      ],
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlEvent" (
+              "eventId", "commandId", "schemaVersion", "sequence", "eventType",
+              "source", "occurredAt", "payload", "payloadSha256",
+              "previousEventHash", "eventHash"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        terminalEvent.eventId,
+        terminalEvent.commandId,
+        terminalEvent.schemaVersion,
+        terminalEvent.sequence,
+        terminalEvent.eventType,
+        terminalEvent.source,
+        terminalEvent.occurredAt,
+        terminalEvent.payload,
+        terminalEvent.payloadSha256,
+        terminalEvent.previousEventHash,
+        terminalEvent.eventHash,
+      ],
+    },
+  ];
+  const client = productTruthControlClient();
+  let batchError: unknown = null;
+  try {
+    await client.batch(statements, "write");
+  } catch (error) {
+    batchError = error;
+  } finally {
+    client.close();
+  }
+  if (!await verifyWorkerTerminalState(verification)) {
+    if (batchError) throw batchError;
+    fail("WORKER_TERMINAL_STATE_CONFLICT", "atomic completion batch did not persist exact evidence");
+  }
+}
+
 function buildClaimSpec(
   command: {
     commandId: string;
@@ -212,6 +547,7 @@ function buildClaimSpec(
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -253,6 +589,56 @@ function buildClaimSpec(
       request_content_base64: Buffer.from(artifact.content).toString("base64"),
     };
   }
+  if (command.commandKind === "EXECUTE") {
+    const quote = parseProductTruthWalmartEnrichmentQuote(
+      parseCanonicalJsonBytes(artifact.content, "enrichment quote"),
+    );
+    if (quote.batchId !== command.runId) {
+      fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute batch binding drifted");
+    }
+    const planArtifacts = command.artifacts
+      .filter((entry) => entry.role === "RUN_PLAN")
+      .sort((left, right) => left.sha256.localeCompare(right.sha256, "en-US"));
+    if (planArtifacts.length !== quote.actions.jobs.length) {
+      fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan count drifted");
+    }
+    const plans = quote.actions.jobs.map((job) => {
+      const planArtifact = planArtifacts.find(
+        (entry) => entry.sha256 === job.planSha256,
+      );
+      if (
+        !planArtifact
+        || planArtifact.content.byteLength !== planArtifact.byteSize
+        || sha256(planArtifact.content) !== planArtifact.sha256
+      ) {
+        fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan seal is invalid");
+      }
+      const plan = parseProductTruthTargetedWalmartEvidencePlan(
+        parseCanonicalJsonBytes(planArtifact.content, "execute plan"),
+      );
+      if (
+        plan.runId !== job.runId
+        || productTruthOperationalSha256(plan) !== job.planSha256
+        || renderProductTruthOperationalJson(plan)
+          !== Buffer.from(planArtifact.content).toString("utf8")
+      ) {
+        fail("WORKER_REQUEST_ARTIFACT_INVALID", "execute plan scope drifted");
+      }
+      return {
+        run_id: job.runId,
+        plan_sha256: job.planSha256,
+        plan_content_base64:
+          Buffer.from(planArtifact.content).toString("base64"),
+      };
+    });
+    return {
+      kind: "EXECUTE",
+      batch_id: quote.batchId,
+      quote_sha256: productTruthWalmartEnrichmentQuoteSha256(quote),
+      quote_content_base64: Buffer.from(artifact.content).toString("base64"),
+      plans,
+    };
+  }
   fail("WORKER_COMMAND_FORBIDDEN", "worker command is not allowlisted");
 }
 
@@ -271,8 +657,20 @@ export async function claimProductTruthNoSpendCommand(input: {
     const candidate = await prisma.productTruthControlCommand.findFirst({
       where: {
         status: "ADMITTED",
-        commandKind: { in: ["DOCTOR", "RUN_PLAN"] },
-        gateClass: { in: ["READ_ONLY", "ARTIFACT_PLAN"] },
+        OR: [
+          { commandKind: "DOCTOR", gateClass: "READ_ONLY" },
+          { commandKind: "RUN_PLAN", gateClass: "ARTIFACT_PLAN" },
+          ...(input.runtime.claims.meteredExecutionAdmission
+            ? [{
+                commandKind: "EXECUTE",
+                gateClass: "METERED_EXECUTE",
+                // An approval is deliberately short-lived. Never claim an
+                // EXECUTE command after it expires: start would reject it and
+                // the UI would otherwise look busy until the lease timed out.
+                ownerAuthorizationExpiresAt: { gt: now },
+              }]
+            : []),
+        ],
         environment: input.runtime.target.environment,
         databaseTargetFingerprint:
           input.runtime.target.databaseTargetFingerprint,
@@ -284,9 +682,7 @@ export async function claimProductTruthNoSpendCommand(input: {
           input.runtime.engine.executableTreeSha256,
       },
       include: {
-        artifacts: {
-          where: { role: "REQUEST" },
-        },
+        artifacts: true,
       },
       orderBy: { requestedAt: "asc" },
     });
@@ -323,11 +719,11 @@ export async function claimProductTruthNoSpendCommand(input: {
         },
       });
       return true;
-    });
+    }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
     if (!claimed) continue;
     return {
       command_id: candidate.commandId,
-      command_kind: candidate.commandKind as "DOCTOR" | "RUN_PLAN",
+      command_kind: candidate.commandKind as "DOCTOR" | "RUN_PLAN" | "EXECUTE",
       lease_token: leaseToken,
       lease_expires_at: leaseExpiresAt.toISOString(),
       engine: {
@@ -376,23 +772,73 @@ export async function startProductTruthNoSpendCommand(input: {
   now?: Date;
 }): Promise<{ status: "RUNNING"; execution_boundary: string }> {
   const now = input.now ?? new Date();
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.productTruthControlCommand.findUnique({
-      where: { commandId: input.commandId },
-    });
-    const boundary = row ? `NO_SPEND:${row.requestSha256}` : "";
-    if (
-      row
-      && row.status === "RUNNING"
-      && row.executionBoundary === boundary
-      && leaseMatches(row, input.leaseToken, now)
-    ) {
-      return { status: "RUNNING" as const, execution_boundary: boundary };
-    }
-    if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
-      fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
-    }
-    await tx.productTruthControlCommand.update({
+  const row = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  const boundary = row
+    ? row.commandKind === "EXECUTE"
+      ? `METERED_EXECUTE:${row.requestSha256}`
+      : `NO_SPEND:${row.requestSha256}`
+    : "";
+  if (
+    row
+    && row.status === "RUNNING"
+    && row.executionBoundary === boundary
+    && leaseMatches(row, input.leaseToken, now)
+  ) {
+    return { status: "RUNNING", execution_boundary: boundary };
+  }
+  if (!row || row.status !== "CLAIMED" || !leaseMatches(row, input.leaseToken, now)) {
+    fail("WORKER_LEASE_INVALID", "claim lease is absent, expired, or mismatched");
+  }
+  if (
+    row.commandKind === "EXECUTE"
+    && (
+      row.gateClass !== "METERED_EXECUTE"
+      || !row.ownerKeyId
+      || !row.ownerSignatureSha256
+      || !row.ownerAuthorizationExpiresAt
+      || row.ownerAuthorizationExpiresAt.getTime() <= now.getTime()
+    )
+  ) {
+    fail(
+      "WORKER_OWNER_AUTHORITY_INVALID",
+      "metered execution lacks a current verified owner authority",
+    );
+  }
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: row.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const eventPayload = canonicalBytes({
+    executionBoundary: boundary,
+    attempt: 1,
+    shell: false,
+    providerCalls: row.commandKind === "EXECUTE" ? "OWNER_QUOTE_BOUND" : 0,
+    marketplaceMutations: 0,
+  });
+  const sequence = previous.sequence + 1;
+  const event = sealProductTruthControlEvent({
+    eventId:
+      `ptce-${row.commandId.slice(4)}-${sequence}-${sha256(eventPayload).slice(0, 8)}`,
+    commandId: row.commandId,
+    sequence,
+    eventType: "EXECUTION_BOUNDARY",
+    source: "WORKER",
+    occurredAt: now.toISOString(),
+    payload: eventPayload,
+    previousEventHash: previous.eventHash,
+  });
+  // A sequential/batch transaction is used deliberately. Remote libSQL can
+  // abort interactive callback transactions before their configured timeout;
+  // the database transition and append-only event must nevertheless commit as
+  // one atomic boundary before any provider call is allowed.
+  await prisma.$transaction([
+    prisma.productTruthControlCommand.update({
       where: { commandId: row.commandId },
       data: {
         status: "RUNNING",
@@ -401,62 +847,94 @@ export async function startProductTruthNoSpendCommand(input: {
         executionStartedAt: now,
         workerHeartbeatAt: now,
       },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: row.commandId,
-      eventType: "EXECUTION_BOUNDARY",
-      occurredAt: now.toISOString(),
-      payload: {
-        executionBoundary: boundary,
-        attempt: 1,
-        shell: false,
-        providerCalls: 0,
-        marketplaceMutations: 0,
+    }),
+    prisma.productTruthControlEvent.create({
+      data: {
+        eventId: event.eventId,
+        commandId: event.commandId,
+        schemaVersion: event.schemaVersion,
+        sequence: event.sequence,
+        eventType: event.eventType,
+        source: event.source,
+        occurredAt: new Date(event.occurredAt),
+        payload: prismaBytes(event.payload),
+        payloadSha256: event.payloadSha256,
+        previousEventHash: event.previousEventHash,
+        eventHash: event.eventHash,
       },
-    });
-    return { status: "RUNNING", execution_boundary: boundary };
-  });
+    }),
+  ]);
+  return { status: "RUNNING", execution_boundary: boundary };
 }
 
 export async function heartbeatProductTruthNoSpendCommand(input: {
   commandId: string;
   leaseToken: string;
+  progress?: ProductTruthWalmartEnrichmentProgress | null;
   now?: Date;
 }): Promise<{ status: "CLAIMED" | "RUNNING"; lease_expires_at: string }> {
   const now = input.now ?? new Date();
   const leaseExpiresAt = new Date(now.getTime() + PRODUCT_TRUTH_WEB_WORKER_LEASE_MS);
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.productTruthControlCommand.findUnique({
-      where: { commandId: input.commandId },
-    });
-    if (
-      !row
-      || (row.status !== "CLAIMED" && row.status !== "RUNNING")
-      || !leaseMatches(row, input.leaseToken, now)
-    ) {
-      fail("WORKER_LEASE_INVALID", "heartbeat lease is invalid");
-    }
-    await tx.productTruthControlCommand.update({
-      where: { commandId: row.commandId },
-      data: {
-        workerHeartbeatAt: now,
-        workerLeaseExpiresAt: leaseExpiresAt,
-      },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: row.commandId,
-      eventType: "HEARTBEAT",
-      occurredAt: now.toISOString(),
-      payload: {
-        leaseExpiresAt: leaseExpiresAt.toISOString(),
-        status: row.status,
-      },
-    });
-    return {
-      status: row.status,
-      lease_expires_at: leaseExpiresAt.toISOString(),
-    };
+  const row = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
   });
+  if (
+    !row
+    || (row.status !== "CLAIMED" && row.status !== "RUNNING")
+    || !leaseMatches(row, input.leaseToken, now)
+  ) {
+    fail("WORKER_LEASE_INVALID", "heartbeat lease is invalid");
+  }
+  const progress = input.progress === undefined || input.progress === null
+    ? null
+    : parseProductTruthWalmartEnrichmentProgress(input.progress);
+  if (
+    progress !== null
+    && (
+      row.commandKind !== "EXECUTE"
+      || row.runId !== progress.batchId
+    )
+  ) {
+    fail(
+      "WORKER_PROGRESS_BINDING_INVALID",
+      "enrichment progress differs from the exact execute command",
+    );
+  }
+  // A heartbeat does not grant authority or cross an execution boundary. Keep
+  // its mutable lease extension to one compare-and-swap statement: Prisma's
+  // remote libSQL transaction API can expire intermittently (P2028) even for
+  // a short array transaction, which used to turn successful doctor/plan work
+  // into CLI_EXIT_1. Any following audit-append failure still fails closed and
+  // the worker records a terminal failure through the normal completion path.
+  const updated = await prisma.productTruthControlCommand.updateMany({
+    where: {
+      commandId: row.commandId,
+      status: row.status,
+      workerLeaseTokenSha256: row.workerLeaseTokenSha256,
+      workerLeaseExpiresAt: row.workerLeaseExpiresAt,
+    },
+    data: {
+      workerHeartbeatAt: now,
+      workerLeaseExpiresAt: leaseExpiresAt,
+    },
+  });
+  if (updated.count !== 1) {
+    fail("WORKER_LEASE_INVALID", "heartbeat lease changed before extension");
+  }
+  await appendWorkerEvent(prisma, {
+    commandId: row.commandId,
+    eventType: "HEARTBEAT",
+    occurredAt: now.toISOString(),
+    payload: {
+      leaseExpiresAt: leaseExpiresAt.toISOString(),
+      progress,
+      status: row.status,
+    },
+  });
+  return {
+    status: row.status,
+    lease_expires_at: leaseExpiresAt.toISOString(),
+  };
 }
 
 function assertResultBoundToCommand(input: {
@@ -467,6 +945,7 @@ function assertResultBoundToCommand(input: {
     requestArtifactId: string | null;
     artifacts: readonly {
       artifactId: string;
+      role: string;
       content: Uint8Array;
       sha256: string;
       byteSize: number;
@@ -514,9 +993,81 @@ export async function completeProductTruthNoSpendCommand(input: {
   result: unknown;
   now?: Date;
 }): Promise<{
-  status: "SUCCEEDED" | "FAILED";
+  status: "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
   next: "RUN_PLAN_ADMITTED" | "AWAITING_OWNER" | null;
 }> {
+  const now = input.now ?? new Date();
+  const command = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+    include: {
+      artifacts: true,
+    },
+  });
+  if (
+    !command
+    || command.workerLeaseTokenSha256 !== sha256(input.leaseToken)
+    || (
+      command.status !== "RUNNING"
+      && command.status !== "SUCCEEDED"
+      && command.status !== "FAILED"
+      && command.status !== "AMBIGUOUS"
+    )
+  ) {
+    fail("WORKER_LEASE_INVALID", "completion lease is invalid");
+  }
+  if (command.commandKind === "EXECUTE") {
+    const quoteArtifact = exactRequestArtifact(command);
+    const quote = parseProductTruthWalmartEnrichmentQuote(
+      parseCanonicalJsonBytes(quoteArtifact.content, "enrichment quote"),
+    );
+    const result = assertProductTruthWalmartEnrichmentResult({
+      result: input.result as ProductTruthWalmartEnrichmentResult,
+      quote,
+      commandId: command.commandId,
+    });
+    const resultBytes = Buffer.from(
+      renderProductTruthWalmartEnrichmentResult(result),
+      "utf8",
+    );
+    const artifact = sealProductTruthControlArtifact({
+      artifactId:
+        `pta-${command.commandId.slice(4)}-result-${sha256(resultBytes).slice(0, 8)}`,
+      commandId: command.commandId,
+      role: "RESULT",
+      mediaType: "application/json",
+      content: resultBytes,
+      createdAt: now.toISOString(),
+      createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
+    });
+    const terminalStatus =
+      result.status === "COMPLETED"
+        ? "SUCCEEDED"
+        : result.status === "AMBIGUOUS"
+          ? "AMBIGUOUS"
+          : "FAILED";
+    await persistWorkerTerminalState({
+      commandId: command.commandId,
+      leaseToken: input.leaseToken,
+      artifact,
+      terminalStatus,
+      exitCode: terminalStatus === "SUCCEEDED" ? 0 : 2,
+      outcome: result.status,
+      errorCode:
+        terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
+      ...(terminalStatus === "AMBIGUOUS"
+        ? { executionBoundary: "UNKNOWN" }
+        : {}),
+      terminalPayload: {
+        outcome: result.status,
+        reason: result.reason,
+        providerCalls: result.providerCalls,
+        providerUnits: result.providerUnits,
+        marketplaceMutations: 0,
+        resultArtifactSha256: artifact.sha256,
+      },
+    });
+    return { status: terminalStatus, next: null };
+  }
   let result;
   try {
     result = parseProductTruthWorkerResult(input.result);
@@ -526,61 +1077,8 @@ export async function completeProductTruthNoSpendCommand(input: {
     }
     throw error;
   }
-  const now = input.now ?? new Date();
-  const command = await prisma.productTruthControlCommand.findUnique({
-    where: { commandId: input.commandId },
-    include: {
-      artifacts: { where: { role: { in: ["REQUEST", "RESULT"] } } },
-    },
-  });
-  if (
-    !command
-  ) {
-    fail("WORKER_RESULT_COMMAND_MISMATCH", "completion command is absent");
-  }
   const verifiedOutput = assertResultBoundToCommand({ command, result });
   const resultBytes = Buffer.from(renderProductTruthWorkerResult(result), "utf8");
-  const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
-  if (
-    (command.status === "SUCCEEDED" || command.status === "FAILED")
-    && command.status === terminalStatus
-    && command.resultArtifactId !== null
-    && leaseTokenMatches(command, input.leaseToken)
-  ) {
-    const existing = command.artifacts.find(
-      (candidate) => candidate.artifactId === command.resultArtifactId,
-    );
-    if (
-      !existing
-      || existing.byteSize !== resultBytes.byteLength
-      || existing.sha256 !== sha256(resultBytes)
-      || !Buffer.from(existing.content).equals(resultBytes)
-    ) {
-      fail(
-        "WORKER_RESULT_COMMAND_MISMATCH",
-        "terminal result differs from the durable artifact",
-      );
-    }
-    if (terminalStatus === "FAILED") {
-      return { status: "FAILED", next: null };
-    }
-    if (command.commandKind === "DOCTOR") {
-      await admitProductTruthWalmartRunPlan({
-        targetedRequest: verifiedOutput,
-        runtime: input.runtime,
-        requestedByUserId: command.requestedByUserId,
-        requestedAt: now.toISOString(),
-      });
-      return { status: "SUCCEEDED", next: "RUN_PLAN_ADMITTED" };
-    }
-    return { status: "SUCCEEDED", next: "AWAITING_OWNER" };
-  }
-  if (
-    command.status !== "RUNNING"
-    || !leaseMatches(command, input.leaseToken, now)
-  ) {
-    fail("WORKER_LEASE_INVALID", "completion lease is invalid");
-  }
   const artifact = sealProductTruthControlArtifact({
     artifactId: `pta-${command.commandId.slice(4)}-result-${sha256(resultBytes).slice(0, 8)}`,
     commandId: command.commandId,
@@ -590,59 +1088,27 @@ export async function completeProductTruthNoSpendCommand(input: {
     createdAt: now.toISOString(),
     createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
   });
-  await prisma.$transaction(async (tx) => {
-    await tx.productTruthControlArtifact.create({
-      data: {
-        artifactId: artifact.artifactId,
-        commandId: artifact.commandId,
-        schemaVersion: artifact.schemaVersion,
-        role: artifact.role,
-        mediaType: artifact.mediaType,
-        content: prismaBytes(artifact.content),
-        byteSize: artifact.byteSize,
-        sha256: artifact.sha256,
-        locator: artifact.locator,
-        createdAt: new Date(artifact.createdAt),
-        createdByPrincipal: artifact.createdByPrincipal,
-      },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: command.commandId,
-      eventType: "ARTIFACT_RECEIVED",
-      occurredAt: now.toISOString(),
-      payload: {
-        role: artifact.role,
-        sha256: artifact.sha256,
-        byteSize: artifact.byteSize,
-      },
-    });
-    await tx.productTruthControlCommand.update({
-      where: { commandId: command.commandId },
-      data: {
-        status: terminalStatus,
-        resultArtifactId: artifact.artifactId,
-        exitCode: result.exitCode,
-        outcome:
-          result.exitCode === 0
-            ? "NO_SPEND_ARTIFACT_CREATED"
-            : "NO_SPEND_COMMAND_FAILED",
-        errorCode:
-          result.exitCode === 0
-            ? null
-            : `CLI_EXIT_${result.exitCode}`,
-      },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: command.commandId,
-      eventType: terminalStatus,
-      occurredAt: now.toISOString(),
-      payload: {
-        exitCode: result.exitCode,
-        resultArtifactSha256: artifact.sha256,
-        providerCalls: 0,
-        marketplaceMutations: 0,
-      },
-    });
+  const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
+  await persistWorkerTerminalState({
+    commandId: command.commandId,
+    leaseToken: input.leaseToken,
+    artifact,
+    terminalStatus,
+    exitCode: result.exitCode,
+    outcome:
+      result.exitCode === 0
+        ? "NO_SPEND_ARTIFACT_CREATED"
+        : "NO_SPEND_COMMAND_FAILED",
+    errorCode:
+      result.exitCode === 0
+        ? null
+        : `CLI_EXIT_${result.exitCode}`,
+    terminalPayload: {
+      exitCode: result.exitCode,
+      resultArtifactSha256: artifact.sha256,
+      providerCalls: 0,
+      marketplaceMutations: 0,
+    },
   });
   if (terminalStatus === "FAILED") {
     return { status: "FAILED", next: null };

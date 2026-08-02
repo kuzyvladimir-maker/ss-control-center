@@ -6,7 +6,7 @@ export interface WalmartDeterministicMultipackImage {
   bytes: Buffer;
   source_asset_sha256: string;
   output_sha256: string;
-  represented_unit_count: 2 | 3;
+  represented_unit_count: number;
   construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK";
   canvas: {
     width: 2200;
@@ -128,10 +128,16 @@ async function exactPackageCutout(source: Buffer): Promise<Buffer> {
 
 export async function buildDeterministicWalmartMultipackImage(input: {
   sourceUnitImageBytes: Buffer;
-  packCount: 2 | 3;
+  packCount: number;
 }): Promise<WalmartDeterministicMultipackImage> {
-  if (input.packCount !== 2 && input.packCount !== 3) {
-    throw new Error("Walmart preview multipack supports only Pack of 2 or Pack of 3");
+  if (
+    !Number.isInteger(input.packCount) ||
+    input.packCount < 1 ||
+    input.packCount > 500
+  ) {
+    throw new Error(
+      "Walmart preview packCount must be a whole number from 1 to 500",
+    );
   }
   if (input.sourceUnitImageBytes.length === 0) {
     throw new Error("sourceUnitImageBytes cannot be empty");
@@ -144,6 +150,145 @@ export async function buildDeterministicWalmartMultipackImage(input: {
     throw new Error("cutout unit image dimensions are unavailable");
   }
   const cutoutAspectRatio = cutoutWidth / cutoutHeight;
+
+  if (input.packCount !== 2 && input.packCount !== 3) {
+    const canvasSize = 2_200;
+    const margin = 35;
+    const innerSize = canvasSize - margin * 2;
+    let best: {
+      columns: number;
+      rows: number;
+      overlapX: number;
+      overlapY: number;
+      unitWidth: number;
+      unitHeight: number;
+      score: number;
+    } | null = null;
+
+    // Search deterministic grid/overlap layouts. Overlap is safe because the
+    // source package has already been cut out to transparency: no white donor
+    // canvas can cover another package. The chosen layout maximizes use of the
+    // square while keeping every requested unit present as an exact-pixel copy.
+    for (let columns = 1; columns <= input.packCount; columns += 1) {
+      const rows = Math.ceil(input.packCount / columns);
+      const emptyCells = columns * rows - input.packCount;
+      for (let overlapXStep = 0; overlapXStep <= 14; overlapXStep += 1) {
+        const overlapX = overlapXStep * 0.05;
+        for (let overlapYStep = 0; overlapYStep <= 14; overlapYStep += 1) {
+          const overlapY = overlapYStep * 0.05;
+          const widthFactor =
+            cutoutAspectRatio *
+            (1 + Math.max(0, columns - 1) * (1 - overlapX));
+          const heightFactor =
+            1 + Math.max(0, rows - 1) * (1 - overlapY);
+          const unitHeight = Math.min(
+            innerSize / widthFactor,
+            innerSize / heightFactor,
+          );
+          const unitWidth = unitHeight * cutoutAspectRatio;
+          const occupiedWidth =
+            unitWidth *
+            (1 + Math.max(0, columns - 1) * (1 - overlapX));
+          const occupiedHeight =
+            unitHeight *
+            (1 + Math.max(0, rows - 1) * (1 - overlapY));
+          const minimumFill = Math.min(
+            occupiedWidth / innerSize,
+            occupiedHeight / innerSize,
+          );
+          const score =
+            minimumFill * 100 +
+            (unitWidth * unitHeight / (innerSize * innerSize)) -
+            emptyCells * 0.02 -
+            (overlapX + overlapY) * 0.01;
+          if (!best || score > best.score) {
+            best = {
+              columns,
+              rows,
+              overlapX,
+              overlapY,
+              unitWidth,
+              unitHeight,
+              score,
+            };
+          }
+        }
+      }
+    }
+    if (!best) {
+      throw new Error("unable to determine deterministic multipack layout");
+    }
+
+    const unit = await sharp(cutout, { failOn: "warning" })
+      .resize({
+        width: Math.max(1, Math.floor(best.unitWidth)),
+        height: Math.max(1, Math.floor(best.unitHeight)),
+        fit: "inside",
+        withoutEnlargement: false,
+      })
+      .png({ compressionLevel: 9, adaptiveFiltering: false })
+      .toBuffer();
+    const unitMetadata = await sharp(unit).metadata();
+    const unitWidth = unitMetadata.width;
+    const unitHeight = unitMetadata.height;
+    if (!unitWidth || !unitHeight) {
+      throw new Error("generic unit image dimensions are unavailable");
+    }
+    const horizontalStep = unitWidth * (1 - best.overlapX);
+    const verticalStep = unitHeight * (1 - best.overlapY);
+    const occupiedHeight =
+      unitHeight + Math.max(0, best.rows - 1) * verticalStep;
+    const startTop = Math.max(
+      0,
+      Math.round((canvasSize - occupiedHeight) / 2),
+    );
+    const composites = Array.from(
+      { length: input.packCount },
+      (_, index) => {
+        const row = Math.floor(index / best.columns);
+        const column = index % best.columns;
+        const unitsInRow = Math.min(
+          best.columns,
+          input.packCount - row * best.columns,
+        );
+        const rowWidth =
+          unitWidth + Math.max(0, unitsInRow - 1) * horizontalStep;
+        const rowStart = Math.max(
+          0,
+          Math.round((canvasSize - rowWidth) / 2),
+        );
+        return {
+          input: unit,
+          left: Math.round(rowStart + column * horizontalStep),
+          top: Math.round(startTop + row * verticalStep),
+        };
+      },
+    );
+    const bytes = await sharp({
+      create: {
+        width: canvasSize,
+        height: canvasSize,
+        channels: 3,
+        background: { r: 255, g: 255, b: 255 },
+      },
+    })
+      .composite(composites)
+      .png({ compressionLevel: 9, adaptiveFiltering: false })
+      .toBuffer();
+
+    return {
+      bytes,
+      source_asset_sha256: sha256(input.sourceUnitImageBytes),
+      output_sha256: sha256(bytes),
+      represented_unit_count: input.packCount,
+      construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+      canvas: {
+        width: 2_200,
+        height: 2_200,
+        background: "WHITE",
+      },
+    };
+  }
 
   if (cutoutAspectRatio >= 1.8) {
     const unitWidth = input.packCount === 2 ? 2_050 : 1_850;

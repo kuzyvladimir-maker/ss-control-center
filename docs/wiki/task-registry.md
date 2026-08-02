@@ -40,12 +40,72 @@
 
 ### Текущее состояние и следующие ветки
 
-- 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-27:** Walmart остаётся
+- 🟢 **Bundle Factory Walmart exact enrichment fallback BF-W3 — activated:**
+  existing exact donor с missing content/price теперь проходит
+  no-spend plan → displayed exact credit quote → one-click local Ed25519 owner
+  approval → sequential paid enrichment → canonical readiness recheck →
+  original Generate. Quote cap = `2.5 + 3.5 × jobs`, jobs ≤5, concurrency/attempts
+  `1`, automatic replay и Walmart mutations `0`; reload recovery и audit UI
+  готовы. Release r7 commit `2e124192…cf42`, Product Truth `519/519`, focused
+  Walmart/Bundle Factory `18/18`, TypeScript/ESLint/build `PASS`; deployment
+  `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` = `Ready`, external Keychain owner key,
+  loopback agent и pinned worker active в
+  `PRODUCTION_OWNER_GATED_METERED`. No-spend Campbell's batch
+  `ptbfw-f464598c22650c76c631c239` завершил `5/5 DOCTOR` и `5/5 RUN_PLAN`,
+  показал exact ceiling `20` credits и остановился в `AWAITING_OWNER` без
+  provider calls или Walmart mutations. `matched_variants=0` остаётся
+  отдельной Phase 2 demand-expansion campaign, а не скрытым legacy harvest.
+  Деталь: [[product-truth-command-center]],
+  [[product-truth-web-operations-control-plane]].
+  **Recovery 2026-08-01:** устранён production-конфликт shared
+  `PRODUCTION_READ_ONLY` и сохранённого owner trust root. Release r8 commit
+  `4a9e761a…`, deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` разделяет
+  read-only base и exact Walmart metered overlay; pinned worker и owner-agent
+  работают. Product Truth `521/521`, focused `8/8`, TypeScript/ESLint/build
+  PASS. Successor reliability release r11 commit `97ffabce9…`, deployment
+  `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` устранил duplicate admission,
+  cross-release status mixing и короткий remote heartbeat. Clean production
+  batch `ptbfw-14e44dd192718b33ff8b0bb2` завершил `5/5 DOCTOR` и
+  `5/5 RUN_PLAN`, status `AWAITING_OWNER`; exact quote
+  `ptq-b32ff65d283f474ba4ffaf7ccbd2a352` = максимум `20` credits. Product Truth
+  `524/524`, focused `11/11`, TypeScript/ESLint/build PASS; `EXECUTE`, provider
+  spend и Walmart writes во время recovery равны `0`.
+- 🟡 **Bundle Factory Walmart BF-W8 recovery — 2026-08-01:** production
+  `EXECUTE` не начинал enrichment: old worker claimed command, но
+  `/start` вернул `HTTP 409 (P2028)` до execution boundary;
+  `attempts=0`, provider spend/Product Truth business writes/Walmart mutations
+  `0`. Remote interactive start заменён atomic batch transaction, expired
+  zero-attempt state terminalized, UI показывает только последнюю
+  immutable attempt и exact error. Fresh successor ITEM v6 source содержит
+  `5 235` all-status rows (`3 877 PUBLISHED`, `624 UNPUBLISHED`,
+  `734 SYSTEM_PROBLEM`) и owner-signed atomic activation подтверждена
+  `ACTIVE` receipt/postcheck `NOOP_ALREADY_ACTIVE`. Catalog — только
+  duplicate guard; Product Truth — единственный donor/content source.
+  Рабочая ветка прошла Product Truth `527/527`, Walmart
+  unit/contract `41/41`, owner/report `27/27`, frozen fake-live `3/3`,
+  TypeScript/ESLint/build. Текущий шаг: exact web/worker deployment,
+  затем новый Campbell's `5 × Pack of 8` run до owner-review drafts.
+- 🟡 **Walmart new-SKU turnkey pilot — current truth 2026-07-29:** Walmart остаётся
   отдельной channel-веткой общего Bundle Factory и читает только Product Truth /
-  донорский справочник. Frozen release v32 выдан в
-  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-27-v32`: engine
-  `cc086942…89898`, manifest `efa8e8cd…135b`, certificate `17bfde04…050c`;
-  Product Truth `472/472`, focused Walmart `21/21`, fake-live `3/3`, TypeScript PASS.
+  донорский справочник. Frozen release v33 выдан в
+  `release-artifacts/walmart-new-sku-pilot-engine-2026-07-29-v33`: engine
+  `fe76e637…72946`, manifest `2593cd46…127f`, certificate `806c75a6…6f1f`;
+  Product Truth `519/519`, focused Walmart/Bundle Factory `108/108`, source
+  TypeScript и production build PASS. Production deployment
+  `dpl_561wp4SR15HHGb7dPN8uB2U3NG43` = `READY`; no-spend HTTP postcheck
+  `salutemsolutions.info` и `/bundle-factory/new` подтвердил штатный
+  authentication redirect `307 → /login`.
+  BF-W5 implementation commit `69e17e55…`: Walmart `Advanced` больше не
+  содержит и не передаёт Amazon house brand, Uncrustables style, generative
+  photos или model selector; остаётся margin и exact donor/manufacturer
+  identity contract. Existing-donor data gap теперь автоматически запускает
+  no-spend plan preparation и переходит прямо к owner quote. Central premium
+  text pin обновлён через live Anthropic Models API до `claude-opus-5`;
+  deterministic Walmart content от LLM не зависит. Regression:
+  Walmart/Studio `194/194`, Product Truth `519/519`, TypeScript/build `PASS`.
+  Production deployment `dpl_3PPs9HP2xMAyQrueV3U1kSKADgky` = `READY`;
+  no-spend HTTP postcheck подтвердил auth boundary (`307 → /login`, protected
+  API `401`) без provider calls или Walmart mutations.
   Exact RITZ Bits Cheese 8.8 oz Target content активирован production receipt
   `bdbfb3b2…e8aa1`. Два независимых pilot draft прошли
   `doctor→plan→stage`: pack-of-2 SKU `WM-5861-AF0E`, UPC `756441906004`,
@@ -81,6 +141,17 @@
   активированы. Walmart/provider/DB writes и paid calls `0`. Канон:
   [[walmart-new-sku-command-center]] и
   [[product-truth-web-operations-control-plane]].
+- 🟢 **Bundle Factory Walmart BF-W6 activated — 2026-08-01:** завершён
+  donor-bound internal draft runtime: immutable per-variant queue, exact Product
+  Truth re-read, selected shipping-template economics, count-accurate exact-pixel
+  Pack-of-8 image, batch gallery и отдельная Walmart buyer preview. Walmart/API
+  writes и UPC reservation отсутствуют. Focused certification `61/61`,
+  TypeScript, targeted ESLint и production build `PASS`; commit `d8ccc86da…`,
+  production deployment `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, alias
+  `salutemsolutions.info`. No-spend HTTP postcheck подтвердил штатные `307` auth
+  redirects и protected API `401`. Authenticated visual postcheck не заявлен,
+  потому что browser session отсутствовала. `matched_variants=0` остаётся
+  отдельным Product Truth Phase 2 gate, а не скрытым retailer harvest.
 - 🟡 **Product Truth Control Center / permanent productization:** owner 2026-07-19
   подтвердил, что готовый engine должен стать постоянным backend существующего
   модуля `Catalog`, а не ручным Claude-run или вкладкой Walmart Growth. Reconciled

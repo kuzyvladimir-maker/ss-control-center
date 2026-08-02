@@ -12,6 +12,9 @@ import {
   evaluatePriceEvidenceEligibility,
 } from "./price-evidence-policy";
 import { assertProductTruthEvidenceSchema } from "./product-truth-schema-gate";
+import {
+  productTruthOperationalSha256,
+} from "./product-truth-operational-run-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 import { exactProductContentCapture } from "./product-content-capture";
 
@@ -254,6 +257,13 @@ function requiredText(value: unknown, label: string): string {
 
 function optionalText(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/** Immutable JSON artifacts are hashed as exact stored bytes. Trimming them
+ * before verification corrupts the hash of the canonical operational renderer,
+ * whose contract intentionally includes a trailing newline. */
+function exactJsonText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 function positiveNumber(value: unknown): number | null {
@@ -663,7 +673,7 @@ function contentProvenanceFromRow(
   blockers: string[],
 ): ProductTruthNewSkuContentProvenance | null {
   const initialBlockerCount = blockers.length;
-  const decisionEvidenceRaw = optionalText(row.decisionEvidenceJson);
+  const decisionEvidenceRaw = exactJsonText(row.decisionEvidenceJson);
   const decisionEvidence = objectValue(parseJson(decisionEvidenceRaw));
   const decisionEvidenceHash = optionalText(row.decisionEvidenceHash);
   if (
@@ -681,7 +691,7 @@ function contentProvenanceFromRow(
     blockers.push("DECISION_MATCHER_PROVENANCE_MISMATCH");
   }
 
-  const contentRaw = optionalText(row.contentJson);
+  const contentRaw = exactJsonText(row.contentJson);
   const content = objectValue(parseJson(contentRaw));
   const contentHash = optionalText(row.contentHash);
   if (!contentRaw || !content || !isSha256(contentHash) || contentHash !== sha256Text(contentRaw)) {
@@ -689,8 +699,29 @@ function contentProvenanceFromRow(
   }
 
   const fieldHashes = objectValue(parseJson(row.fieldHashesJson));
+  const legacyBridgeContent = content?._capture === "legacy_materialized_bridge";
+  // Legacy bridge 1.3 is itself a canonical, append-only Product Truth source.
+  // Its field ledger intentionally covers the twelve owner-reviewed product
+  // facts and uses the operational renderer (pretty JSON + trailing newline),
+  // while newer observations use compact stable JSON for every factual field.
+  const legacyBridgeFields = [
+    "title",
+    "description",
+    "bullets",
+    "attributes",
+    "nutritionFacts",
+    "ingredients",
+    "allergens",
+    "category",
+    "storage",
+    "upc",
+    "mainImageUrl",
+    "imageUrls",
+  ] as const;
   const expectedFields = content
-    ? Object.entries(content).filter(([field]) => !field.startsWith("_"))
+    ? legacyBridgeContent
+      ? legacyBridgeFields.map((field) => [field, content[field]] as const)
+      : Object.entries(content).filter(([field]) => !field.startsWith("_"))
     : [];
   const fieldHashesValid =
     fieldHashes !== null &&
@@ -699,7 +730,11 @@ function contentProvenanceFromRow(
     expectedFields.every(
       ([field, value]) =>
         isSha256(fieldHashes[field]) &&
-        fieldHashes[field] === sha256Text(stableJson(value)),
+        fieldHashes[field] === (
+          legacyBridgeContent
+            ? productTruthOperationalSha256(value)
+            : sha256Text(stableJson(value))
+        ),
     );
   if (!fieldHashesValid) blockers.push("CONTENT_FIELD_HASHES_INVALID");
 
@@ -726,10 +761,12 @@ function contentProvenanceFromRow(
   }
 
   const observationKey = optionalText(row.contentObservationKey);
+  const sourceBinding = content && objectValue(content.sourceBinding);
+  const sourceSnapshotSha256 = optionalText(sourceBinding?.sourceSnapshotSha256);
   const expectedObservationKey =
     contentHash && sourceUrl && sourceApi && observedAt
-      ? sha256Text(
-          stableJson({
+      ? legacyBridgeContent && isSha256(sourceSnapshotSha256)
+        ? productTruthOperationalSha256({
             donorProductId: optionalText(row.donorProductId),
             canonicalVariantId: optionalText(row.canonicalVariantId),
             variantDecisionId: optionalText(row.variantDecisionId),
@@ -737,11 +774,22 @@ function contentProvenanceFromRow(
             sourceApi,
             contentHash,
             observedAt,
-            runId,
-            approvalId,
-            meteredReceiptId,
-          }),
-        )
+            sourceSnapshotSha256,
+          })
+        : sha256Text(
+            stableJson({
+              donorProductId: optionalText(row.donorProductId),
+              canonicalVariantId: optionalText(row.canonicalVariantId),
+              variantDecisionId: optionalText(row.variantDecisionId),
+              sourceUrl,
+              sourceApi,
+              contentHash,
+              observedAt,
+              runId,
+              approvalId,
+              meteredReceiptId,
+            }),
+          )
       : null;
   if (
     !isSha256(observationKey) ||
@@ -1466,9 +1514,17 @@ export async function diagnoseWalmartPilotRequest(
   const maxPriceAgeMs =
     options.maxPriceAgeMs ?? DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS;
   const zip = options.zip?.trim() || DEFAULT_WALMART_PILOT_ZIP;
-  const limit = Math.max(1, Math.min(50, options.limit ?? 20));
-  const rows = await db.execute({
-    sql: `SELECT
+  // Bundle Factory intentionally supports owner-requested waves up to 500
+  // drafts. The diagnostic must be able to return the same number of exact
+  // variants; otherwise a valid large request would be rejected by an
+  // unrelated read-side truncation.
+  const limit = Math.max(1, Math.min(500, options.limit ?? 20));
+  const requestRows: EvidenceRow[] = [];
+  const pageSize = 1_000;
+  let offset = 0;
+  while (true) {
+    const page = await db.execute({
+      sql: `SELECT
         decision.donorProductId,
         decision.canonicalVariantId,
         variant.normalizedBrand,
@@ -1509,22 +1565,28 @@ export async function diagnoseWalmartPilotRequest(
           LIMIT 1
         )
       ORDER BY decision.donorProductId ASC
-      LIMIT 1000`,
-    args: [
-      CANONICAL_PRODUCT_MATCHER_VERSION,
-      CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
-      CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-      asOf,
-    ],
-  });
+      LIMIT ? OFFSET ?`,
+      args: [
+        CANONICAL_PRODUCT_MATCHER_VERSION,
+        CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
+        CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        asOf,
+        pageSize,
+        offset,
+      ],
+    });
+    requestRows.push(...page.rows as unknown as EvidenceRow[]);
+    if (page.rows.length < pageSize) break;
+    offset += page.rows.length;
+  }
 
-  const matches = rows.rows
+  const matches = requestRows
     .map((row) => {
       const facts = contentFacts(row);
       const brand = optionalText(row.normalizedBrand) ?? "";

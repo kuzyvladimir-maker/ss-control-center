@@ -18,10 +18,9 @@ import {
 
 const REPOSITORY_ROOT = path.resolve(import.meta.dirname, "../../../../..");
 const PROJECT_ROOT = path.join(REPOSITORY_ROOT, "ss-control-center");
-const BASELINE_PATH = path.join(
-  REPOSITORY_ROOT,
-  "release-artifacts/walmart-item-report-reissue-v2-private-20260719",
-  "evidence-release-r4-final-candidate/source-evidence-release.json",
+const PRIOR_RENEWAL_PATH = path.join(
+  PROJECT_ROOT,
+  "data/audits/walmart-source-intake/item-v6-reissue-renewal-store1-20260722-codex-v1/source-evidence-renewal.json",
 );
 const PROBE_ROOT = path.join(
   PROJECT_ROOT,
@@ -29,7 +28,11 @@ const PROBE_ROOT = path.join(
 );
 
 async function fixtureBytes() {
-  const baseline = await readFile(BASELINE_PATH);
+  const priorRenewal = JSON.parse(await readFile(PRIOR_RENEWAL_PATH, "utf8"));
+  const baseline = Buffer.from(
+    priorRenewal.body.baseline.canonical_bytes_base64,
+    "base64",
+  );
   const probe = {};
   for (const name of WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES) {
     probe[name] = await readFile(path.join(PROBE_ROOT, name));

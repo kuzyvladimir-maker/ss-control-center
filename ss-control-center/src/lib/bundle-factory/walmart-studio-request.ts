@@ -3,24 +3,21 @@
  *
  * The Studio UI previously accepted a prompt such as "5 listings, 8 cans
  * each", omitted both structured values from the request, and silently stored
- * the pilot defaults (2 listings, pack of 2).  A marketplace request must
- * never be changed that way.  This module keeps prompt-derived and structured
- * intent visible, rejects disagreement, and enforces the exact capabilities
- * of the currently frozen Walmart pilot.
+ * defaults (2 listings, pack of 2). A marketplace request must never be
+ * changed that way. This module keeps prompt-derived and structured intent
+ * visible and rejects disagreement.
+ *
+ * Owner requests are not constrained by the size of one protected marketplace
+ * apply. A request for five listings is preserved as five one-listing work
+ * items; the Walmart branch can execute those work items sequentially without
+ * silently shrinking the requested assortment.
  */
-
-export const WALMART_PILOT_MAX_LISTINGS = 2;
-export const WALMART_PILOT_PACK_COUNTS = [2, 3] as const;
 
 export type WalmartStudioRequestBlockerCode =
   | "LISTING_COUNT_CONFLICT"
-  | "LISTING_COUNT_OUTSIDE_PILOT"
-  | "PACK_COUNT_CONFLICT"
-  | "PACK_COUNT_OUTSIDE_PILOT";
+  | "PACK_COUNT_CONFLICT";
 
-export type WalmartStudioRequestBlockerKind =
-  | "INPUT_CONFLICT"
-  | "ENGINE_CAPABILITY_GAP";
+export type WalmartStudioRequestBlockerKind = "INPUT_CONFLICT";
 
 export interface WalmartStudioRequestBlocker {
   code: WalmartStudioRequestBlockerCode;
@@ -40,6 +37,12 @@ export interface WalmartStudioRequestIntent {
   prompt_listing_count: number | null;
   prompt_pack_count: number | null;
   blockers: WalmartStudioRequestBlocker[];
+}
+
+export interface WalmartStudioWorkItem {
+  ordinal: number;
+  listing_count: 1;
+  pack_count: number;
 }
 
 function firstCapturedInteger(
@@ -98,17 +101,6 @@ export function resolveWalmartStudioRequestIntent(input: {
         `Listings field says ${input.listingCount}. Make them match.`,
     });
   }
-  if (listingCount > WALMART_PILOT_MAX_LISTINGS) {
-    blockers.push({
-      code: "LISTING_COUNT_OUTSIDE_PILOT",
-      kind: "ENGINE_CAPABILITY_GAP",
-      can_data_collection_fix: false,
-      message:
-        `The request asks for ${listingCount} listings. The currently ` +
-        `verified Walmart pilot can prepare only 1–${WALMART_PILOT_MAX_LISTINGS} ` +
-        "listings per request.",
-    });
-  }
   if (
     input.packCount != null &&
     parsed.pack_count != null &&
@@ -123,22 +115,6 @@ export function resolveWalmartStudioRequestIntent(input: {
         `Units field says ${input.packCount}. Make them match.`,
     });
   }
-  if (
-    !WALMART_PILOT_PACK_COUNTS.includes(
-      packCount as (typeof WALMART_PILOT_PACK_COUNTS)[number],
-    )
-  ) {
-    blockers.push({
-      code: "PACK_COUNT_OUTSIDE_PILOT",
-      kind: "ENGINE_CAPABILITY_GAP",
-      can_data_collection_fix: false,
-      message:
-        `The request asks for ${packCount} units per listing. The currently ` +
-        `verified Walmart pilot supports only packs of ` +
-        `${WALMART_PILOT_PACK_COUNTS.join(" or ")}.`,
-    });
-  }
-
   return {
     listing_count: listingCount,
     pack_count: packCount,
@@ -146,4 +122,19 @@ export function resolveWalmartStudioRequestIntent(input: {
     prompt_pack_count: parsed.pack_count,
     blockers,
   };
+}
+
+/**
+ * Split a complete owner request into the one-listing units consumed by the
+ * protected Walmart workflow. This is an execution detail, not an owner-facing
+ * request limit.
+ */
+export function buildWalmartStudioWorkItems(
+  intent: Pick<WalmartStudioRequestIntent, "listing_count" | "pack_count">,
+): WalmartStudioWorkItem[] {
+  return Array.from({ length: intent.listing_count }, (_, index) => ({
+    ordinal: index + 1,
+    listing_count: 1,
+    pack_count: intent.pack_count,
+  }));
 }

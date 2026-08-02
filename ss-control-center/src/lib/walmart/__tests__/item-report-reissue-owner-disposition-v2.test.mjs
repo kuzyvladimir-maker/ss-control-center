@@ -234,12 +234,14 @@ test("assembles and verifies one exact domain-separated Ed25519 disposition", as
 
 test("assembles and verifies against self-contained fresh renewal evidence", async () => {
   const item = await fixture();
-  const repositoryRoot = path.dirname(PROJECT_ROOT);
-  const baselineBytes = await readFile(path.join(
-    repositoryRoot,
-    "release-artifacts/walmart-item-report-reissue-v2-private-20260719",
-    "evidence-release-r4-final-candidate/source-evidence-release.json",
-  ));
+  const priorRenewal = JSON.parse(await readFile(path.join(
+    PROJECT_ROOT,
+    "data/audits/walmart-source-intake/item-v6-reissue-renewal-store1-20260722-codex-v1/source-evidence-renewal.json",
+  ), "utf8"));
+  const baselineBytes = Buffer.from(
+    priorRenewal.body.baseline.canonical_bytes_base64,
+    "base64",
+  );
   const probeRoot = path.join(
     PROJECT_ROOT,
     "data/audits/walmart-source-intake/item-v6-absence-probe-store1-20260722-codex-v2",

@@ -4,6 +4,9 @@ import {
   PRODUCT_TRUTH_CONTROL_MAX_ARTIFACT_BYTES,
 } from "./product-truth-control-plane";
 import {
+  renderProductTruthOperationalJson,
+} from "./product-truth-operational-run-contract";
+import {
   parseProductTruthTargetedWalmartEvidencePlan,
   parseProductTruthTargetedWalmartEvidenceRequest,
 } from "./product-truth-targeted-walmart-evidence-contract";
@@ -239,7 +242,7 @@ export function verifiedProductTruthDoctorRequest(
   const request = parseProductTruthTargetedWalmartEvidenceRequest(
     JSON.parse(text),
   );
-  if (text !== `${JSON.stringify(request)}\n`) {
+  if (text !== renderProductTruthOperationalJson(request)) {
     fail("WORKER_RESULT_INVALID", "request.json differs from canonical bytes");
   }
   return request;
@@ -260,7 +263,7 @@ export function verifiedProductTruthRunPlan(
     fail("WORKER_RESULT_INVALID", "plan.json bytes are not canonical");
   }
   const plan = parseProductTruthTargetedWalmartEvidencePlan(JSON.parse(text));
-  if (text !== `${JSON.stringify(plan)}\n`) {
+  if (text !== renderProductTruthOperationalJson(plan)) {
     fail("WORKER_RESULT_INVALID", "plan.json differs from canonical bytes");
   }
   return plan;

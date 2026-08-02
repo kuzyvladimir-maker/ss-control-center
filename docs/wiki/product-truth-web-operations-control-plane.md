@@ -1,7 +1,7 @@
 # Product Truth Web Operations Control Plane
 
-> **Статус:** `NO_SPEND_BRIDGE_CODE_CERTIFIED / RUNTIME_OFF /
-> PRODUCTION_GATE_REQUIRED`.
+> **Статус:** `NO_SPEND_BRIDGE_PRODUCTION_ACTIVE / METERED_OFF /
+> MARKETPLACE_OFF`.
 >
 > **Дата:** 2026-07-25.
 >
@@ -9,9 +9,9 @@
 > [[product-truth-operator-runbook]]. Implementation board:
 > [[product-truth-command-center]].
 >
-> Этот документ является design/decision packet. Он **не** выдаёт owner approval,
-> не активирует web execution, не создаёт production trust root, не запускает
-> provider, не расходует credits и не изменяет marketplace.
+> Этот документ хранит design/decision packet и consumed production evidence.
+> Активирован только bounded `doctor → plan`; он **не** выдаёт metered authority,
+> не запускает provider, не расходует credits и не изменяет marketplace.
 
 ## 1. Решение в одном абзаце
 
@@ -392,17 +392,19 @@ owner gate.
 - отдельный owner activation;
 - результаты сравниваются с ручным sealed CLI.
 
-### Сертифицированный no-spend bridge candidate — 2026-07-28
+### Активированный production no-spend bridge — 2026-07-28
 
 Bundle Factory Walmart demand fallback реализован только для bounded
 `doctor → plan` участка:
 
+- release:
+  `product-truth-web-control-2026-07-28-r6`;
 - release commit:
-  `8178f5194c149e473dddcb2ddfa9a2e15282a91f`;
+  `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`;
 - Git tree:
-  `f4cc943349e69ba721d989315abf1900506d7d08`;
+  `47a992982ace124611bfab4b40b1cdac0b86dbb8`;
 - executable tree SHA-256:
-  `aa0c3feca72b31733793ea3e48f0ae6558a2e633e4cb4449a61cc9a45679b279`;
+  `a4e54535024f4e85a3b6176a775a13ea8c728582cd5253bd1cd8ec3b90dc2b96`;
 - Stage A migration SHA-256:
   `16ddaf8baa8c00c7a54d7eea5e9680bbba947dc28afe899931f6a345e4db0e0b`;
 - authoritative Phase 1 manifest v3 SHA-256:
@@ -410,24 +412,200 @@ Bundle Factory Walmart demand fallback реализован только для 
 - production Product Truth target fingerprint:
   `57ff2af9adb3e963dbaf944c047130132dcd9cbb2e35ed789d6100b0f7e30003`.
 
-Clean-checkout evidence: Product Truth `508/508`, Bundle Factory UI/route
-`2/2`, TypeScript, focused ESLint и production build = `PASS`. Worker до
+Clean-checkout evidence: Product Truth `512/512`, Bundle Factory UI `3/3`,
+TypeScript, focused ESLint и production build = `PASS`. Worker до
 первого HTTP request доказывает clean checkout, exact commit/tree и производный
 SHA-256 executable tree; activation confirmation связывает stage, release,
 commit, tree, executable digest, target и manifest.
 
-Production deployment `dpl_4twNT8rNHA4pX7Ww5tYyKKSZpCni` имеет статус
-`Ready` и назначен на `salutemsolutions.info`, но runtime остаётся `OFF`.
-Read-only production preflight доказал:
+Production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` имеет статус
+`Ready` и назначен на `salutemsolutions.info`. Runtime активен только как
+`PRODUCTION_READ_ONLY`; отдельный launchd worker читает только allowlisted
+`DOCTOR` и `RUN_PLAN`. Production postcheck доказал:
 
-- `ProductTruthControlCommand`, `ProductTruthControlArtifact` и
-  `ProductTruthControlEvent` в production отсутствуют;
-- activation/release/manifest/worker env отсутствуют;
+- Stage A control custody применён к exact production target;
+- worker pinned к r5 и после полного batch остаётся active;
+- pre/post claim HTTP `200`, `claim:null`;
+- Campbell's batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`,
+  status `AWAITING_OWNER`;
+- финальный r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
 - provider calls, Product Truth business writes и Walmart actions = `0`.
 
-Этот candidate не реализует и не разрешает `execute`, `resume`, provider calls,
+Эта активация не реализует и не разрешает `execute`, `resume`, provider calls,
 paid spend, Product Truth business writes или marketplace actions. Для реального
 сбора данных после `plan` остаётся отдельный Stage F money/permit gate.
+
+### One-click exact Walmart enrichment — BF-W3
+
+BF-W3 реализует Stage F не как общий standing permit, а как отдельный exact
+owner decision для каждого показанного quote:
+
+1. сервер восстанавливает только successful immutable DOCTOR/RUN_PLAN artifacts;
+2. quote перечисляет каждый exact target, missing fields и потолок
+   `2.5 + 3.5 × jobs` prepaid credits;
+3. браузер по клику передаёт exact quote/envelope локальному
+   `127.0.0.1:47321` owner agent;
+4. agent принимает только exact HTTPS origin, release/commit/tree/executable,
+   target/manifest, quote SHA и все plan SHA; private key остаётся encrypted
+   outside repository и открывается Login Keychain;
+5. server проверяет detached Ed25519 signature против pinned public trust root
+   и только затем переводит `AWAITING_OWNER → ADMITTED`;
+6. pinned worker выполняет один balance probe и максимум один
+   Oxylabs-query + один Unwrangle-detail на target, concurrency `1`;
+7. Если current read-contract уже выбирает полный exact-variant content,
+   detail call пропускается, а исходное balance evidence остаётся действующим
+   для следующего sequential job в пределах freshness window. Если detail
+   реально вызван, response обязан дать fresh next-balance evidence.
+   Missing/stale evidence останавливает следующие jobs без дополнительного
+   probe/spend;
+8. `resume` и automatic replay в этом batch отсутствуют. Возможный unknown
+   paid outcome становится terminal `AMBIGUOUS`;
+9. результат не разрешает Walmart publication. После success Bundle Factory
+   только повторяет canonical readiness и возвращается к обычному Generate.
+
+Каждый worker heartbeat может нести sealed progress schema: batch, item `X/N`,
+current run/title, exact stage, completed/stopped counters, provider calls/units
+и observation timestamp. Server связывает progress с exact `EXECUTE` command и
+сохраняет его в append-only event chain. Owner status читает последний sealed
+event, показывает heartbeat freshness и не создаёт command/retry при refresh.
+
+Owner authority не находится на Vercel и не подменяется паролем, hash-only
+подтверждением либо общим сообщением «разрешаю всё». Реальным money gate является
+только click по показанному exact quote и его detached Ed25519 signature.
+
+Production activation 2026-07-28:
+
+- release `product-truth-web-control-2026-07-28-r7`, commit
+  `2e12419221665926aaa44881f2ec5692a2a7cf42`, tree
+  `91cc801e7b3e8c15b64d3af5fb2b898362d6af8f`, executable SHA-256
+  `28360067b9891a61c5c0ea8f7c836e939e0e29cdc53b7041aa7ec6820399d8f7`;
+- deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` = `Ready`,
+  `salutemsolutions.info` назначен production alias;
+- отдельный owner key enrolled вне repository через encrypted PKCS8 и Login
+  Keychain; owner public-key SHA-256
+  `6d410aeb1f4fa947b9f85d9ff5f0adaa77270967e4635019271b8a5d940417b5`;
+- runtime `PRODUCTION_OWNER_GATED_METERED`, loopback owner-agent и clean pinned
+  launchd worker active;
+- no-spend Campbell's batch `ptbfw-f464598c22650c76c631c239` завершил
+  `5/5 DOCTOR` и `5/5 RUN_PLAN`, status `AWAITING_OWNER`; exact quote
+  `ptq-6f91025cbbd87e2654e4d2c86dab3619` имеет ceiling `20` prepaid provider
+  credits;
+- smoke claims: provider calls не начаты, metered execution не admitted,
+  Product Truth business writes и Walmart mutations `0`.
+
+Production recovery 2026-08-01:
+
+- owner Retry на Campbell's fail-closed до создания command с
+  `WEB_CONTROL_CONFIG_INVALID`: поздняя `PRODUCTION_READ_ONLY` activation
+  сохранила прежние три owner trust-root variables, а общий runtime запрещал
+  даже полностью валидный public key вне общего metered stage;
+- release `product-truth-web-control-2026-08-01-r8`, commit
+  `4a9e761aabd3f8cf10973d02197068345b7cae54`, tree
+  `143b1f045d8e1cd4c8acbc03700c46903a263d65`, executable SHA-256
+  `992c55c0a825c4537ebc5b3b171fd8c1156f41277222a8d08559a503f9823d46`
+  разделяет две authority: shared base остаётся `PRODUCTION_READ_ONLY`, а
+  Walmart paid lane включается только отдельным exact
+  `PRODUCT_TRUTH_WALMART_ENRICHMENT_CONFIRMATION`, привязанным к тем же
+  release/target/manifest и owner public-key SHA;
+- read-only runtime может хранить полный проверенный public trust root, но его
+  `metered_execution=false`; только Walmart overlay возвращает
+  `metered_execution=true`. Partial key, wrong confirmation или любой drift
+  по-прежнему fail-closed;
+- deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY`, aliases включают
+  `salutemsolutions.info`; pinned launchd worker и loopback owner-agent
+  переведены на exact r8 checkout и работают;
+- certification: Product Truth `521/521`, focused Walmart collection `8/8`,
+  TypeScript, ESLint и production build = `PASS`; production env loader доказал
+  base active/read-only, Walmart overlay active/metered и worker overlay
+  active/metered; owner loopback OPTIONS = `204`, worker после запуска не
+  создал новых error log bytes;
+- authenticated browser в текущем runtime отсутствовал, поэтому реальный owner
+  click не заявлен как выполненный. Provider calls, Product Truth business
+  writes и Walmart mutations в recovery-проверке не запускались.
+
+Production reliability recovery 2026-08-01 (r11):
+
+- r8/r9 evidence подтвердил три независимых дефекта control-plane: volatile
+  timestamp входил в command identity и допускал duplicate admission; status
+  смешивал rows разных releases; стандартный remote transaction/API heartbeat
+  был короче честного production doctor/plan;
+- r11 привязал idempotency к logical batch/job, ввёл exact-release read boundary
+  и bounded remote transaction/heartbeat window. При потере heartbeat worker
+  выполняет terminal complete path и не оставляет вечный `RUNNING`; retry/replay
+  автоматически не запускается;
+- production ledger уже содержал девять canonical append-only migrations, их
+  bytes совпали с release; schema apply и business-data backfill не выполнялись;
+- exact release `product-truth-web-control-2026-08-01-r11`, commit
+  `97ffabce993256c8eb8012abb5154a09419ba94d`, tree
+  `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+  deployment `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` = `READY` и назначен на
+  `salutemsolutions.info`;
+- clean production batch `ptbfw-14e44dd192718b33ff8b0bb2`: `5/5 DOCTOR` и
+  `5/5 RUN_PLAN` succeeded, `AWAITING_OWNER`, exact quote
+  `ptq-b32ff65d283f474ba4ffaf7ccbd2a352`, ceiling `20` prepaid provider credits,
+  five actions. `EXECUTE=0`, provider spend, Product Truth business writes и
+  Walmart mutations `0`;
+- certification: Product Truth `524/524`, focused Walmart collection `11/11`,
+  TypeScript, focused ESLint и production build `PASS`.
+
+Это no-spend reliability evidence внутри уже consumed G2b. Оно не заменяет и не
+создаёт approval на exact quote или provider spend.
+
+Production progress/reuse recovery 2026-08-01 (r13):
+
+- release `product-truth-web-control-2026-08-01-r13`, commit
+  `093fc4f151955e69979063aef22194b53e06950c`, tree
+  `43fe5c3056644b707c5f40c69956da7a5a58a391`, executable SHA-256
+  `7dc9941759c5bfa01bfc7e73ba471159ca61859f04ae1c9e3172c03f614dd54d`;
+- production deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf` = `READY`, aliases
+  включают `salutemsolutions.info`; clean pinned worker и loopback owner-agent
+  переведены на exact r13 checkout, оба процесса active, owner OPTIONS = `204`;
+- durable heartbeat progress и cross-channel exact-content reuse активированы
+  вместе: UI показывает item/stage/credits/freshness, а pre-plan exact content
+  всё равно повторно проходит versioned read-contract и не смешивается с price
+  evidence;
+- Product Truth `530/530`, Walmart/Bundle Factory `193/193`, TypeScript,
+  changed-files ESLint, local production build и Vercel production build =
+  `PASS`;
+- rollout и bridge health-check не создавали новый command, provider call,
+  Product Truth business write либо Walmart mutation. Старый terminal
+  `AMBIGUOUS` batch не replay; следующий paid boundary возможен только через
+  новый displayed exact quote и реальный owner click.
+
+### Durable Bundle Factory parent workflow
+
+Product Truth control batch не является пользовательской сущностью Bundle
+Factory и не должен служить URL/recovery key. Для Walmart owner request parent —
+один `GenerationJob`, создаваемый при первом server admission. Его provisional
+brief неизменно связывает request scope, account/template snapshot и ordered
+Product Truth attempts. UI читает current child batch только через этот build.
+
+Terminal handling:
+
+1. `SUCCEEDED` или известный `FAILED` child вызывает server-side readiness
+   recheck общего Product Truth catalog;
+2. если exact variants уже достаточно, те же bytes атомарно становятся
+   donor-bound `GenerationWorkItem` rows;
+3. если данных всё ещё не хватает, server может admit только новый no-spend
+   child plan, исключив donors всех предыдущих attempts, и сохранить его в том
+   же parent build;
+4. changed donor set выпускает новый exact quote и требует нового detached
+   owner approval; прежняя signature не переносится;
+5. `AMBIGUOUS`, unknown provider boundary или возможный replay terminal и не
+   допускает automatic replacement.
+
+Browser storage, literal retyping prompt и refresh не создают command authority.
+Эта orchestration не расширяет Product Truth writer boundary и не разрешает
+provider spend, UPC reservation либо Walmart mutation.
+
+Во время production-калибровки releases r1–r4 fail-closed выявили canonical
+temp-path, operational JSON для doctor/plan и concurrent heartbeat completion.
+r5 сериализует in-flight heartbeat до completion; текущая regression suite
+закреплена в `519/519`. Незавершённые calibration commands остаются immutable audit evidence
+и не replay.
 
 ### Exact owner gate для bounded no-spend activation
 
@@ -443,6 +621,9 @@ local no-spend worker и PRODUCTION_READ_ONLY только для doctor и plan
 resume, provider calls, paid spend, Product Truth business writes или любые
 Walmart/marketplace actions.
 ```
+
+Gate consumed 2026-07-28. Exact r5 evidence и остающиеся закрытыми boundaries
+зафиксированы выше и в [[product-truth-owner-gates]].
 
 ### Stage E — owner-gated DB writes
 

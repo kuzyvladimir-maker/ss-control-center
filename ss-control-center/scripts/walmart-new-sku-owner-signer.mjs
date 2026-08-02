@@ -53,6 +53,13 @@ const DOMAIN = Buffer.from(
   "SS_COMMAND_CENTER\0WALMART_NEW_SKU_OWNER_PERMIT\0v3\0",
   "utf8",
 );
+const CATALOG_REQUEST_SCHEMA =
+  "walmart-new-sku-catalog-activation-owner-approval/1.0.0";
+const CATALOG_ACTION = "WALMART_ITEM_V6_CATALOG_ACTIVATE";
+const CATALOG_DOMAIN = Buffer.from(
+  "SS_COMMAND_CENTER\0WALMART_ITEM_V6_CATALOG_ACTIVATE\0v1\0",
+  "utf8",
+);
 const SHA256 = /^[a-f0-9]{64}$/u;
 const IDENTIFIER = /^[-A-Za-z0-9:._/]{3,200}$/u;
 const BODY_KEYS = Object.freeze([
@@ -93,6 +100,51 @@ const CLAIM_KEYS = Object.freeze([
   "schedule",
   "shipping_template_map_submission_max",
 ]);
+const CATALOG_BODY_KEYS = Object.freeze([
+  "action",
+  "approval_id",
+  "approved_by",
+  "authority_environment",
+  "business_seller_account_fingerprint_sha256",
+  "capture_credential_scope_fingerprint_sha256",
+  "claims",
+  "database_target_fingerprint_sha256",
+  "decision_ref",
+  "environment",
+  "expected_postcondition_sha256",
+  "expires_at",
+  "issued_at",
+  "plan_sha256",
+  "report_request_id_sha256",
+  "source_body_sha256",
+  "source_file_sha256",
+  "source_rows_sha256",
+  "store_index",
+]);
+const CATALOG_CLAIM_KEYS = Object.freeze([
+  "all_status_store_scoped_replace",
+  "database_scope",
+  "database_write_authorized",
+  "inventory_purchased",
+  "listing_delisted",
+  "listing_published",
+  "marketplace_mutated",
+  "provider_calls",
+  "repriced",
+  "walmart_api_calls",
+]);
+const CATALOG_CLAIMS = Object.freeze({
+  database_write_authorized: true,
+  database_scope: "WalmartCatalogItem(store)+WalmartReport(ITEM_CATALOG)",
+  all_status_store_scoped_replace: true,
+  walmart_api_calls: 0,
+  provider_calls: 0,
+  marketplace_mutated: false,
+  listing_published: false,
+  listing_delisted: false,
+  repriced: false,
+  inventory_purchased: false,
+});
 
 export class WalmartNewSkuOwnerSignerError extends Error {
   constructor(code, message) {
@@ -512,8 +564,8 @@ function validReference(value) {
   return parsed;
 }
 
-function parseSigningRequest(bytes, enrollment, now = new Date()) {
-  const request = exactKeys(parseJson(bytes, "owner signing request"), [
+function parsePublicationSigningRequest(request, enrollment, now) {
+  exactKeys(request, [
     "algorithm",
     "key_id",
     "owner_public_key_spki_sha256",
@@ -617,6 +669,129 @@ function parseSigningRequest(bytes, enrollment, now = new Date()) {
       schedule: claims.schedule,
     },
   };
+}
+
+function parseCatalogSigningRequest(request, enrollment, now) {
+  exactKeys(request, [
+    "algorithm",
+    "approval_sha256",
+    "key_id",
+    "owner_public_key_spki_sha256",
+    "schema_version",
+    "signature_base64",
+    "signature_sha256",
+    "signed_body",
+    "signing_message_base64",
+  ], "catalog activation signing request");
+  const body = exactKeys(
+    request.signed_body,
+    CATALOG_BODY_KEYS,
+    "catalog activation signed_body",
+  );
+  const claims = exactKeys(
+    body.claims,
+    CATALOG_CLAIM_KEYS,
+    "catalog activation claims",
+  );
+  const digestFields = [
+    "plan_sha256",
+    "source_file_sha256",
+    "source_body_sha256",
+    "source_rows_sha256",
+    "report_request_id_sha256",
+    "business_seller_account_fingerprint_sha256",
+    "capture_credential_scope_fingerprint_sha256",
+    "database_target_fingerprint_sha256",
+    "expected_postcondition_sha256",
+  ];
+  const issuedAt = Date.parse(body.issued_at);
+  const expiresAt = Date.parse(body.expires_at);
+  const nowMs = now.getTime();
+  if (request.schema_version !== CATALOG_REQUEST_SCHEMA
+    || request.algorithm !== "Ed25519"
+    || request.key_id !== enrollment.key_id
+    || request.owner_public_key_spki_sha256 !== enrollment.fingerprint
+    || request.signature_base64 !== "TODO_EXTERNAL_OWNER_ED25519_SIGNATURE_BASE64"
+    || request.signature_sha256 !== "TODO_AFTER_EXTERNAL_SIGNATURE"
+    || request.approval_sha256 !== "TODO_AFTER_EXTERNAL_SIGNATURE"
+    || body.action !== CATALOG_ACTION
+    || body.authority_environment !== "PRODUCTION"
+    || body.environment !== "production"
+    || body.store_index !== 1
+    || digestFields.some((field) => !SHA256.test(String(body[field])))
+    || !IDENTIFIER.test(String(body.approval_id))
+    || canonicalJson(claims) !== canonicalJson(CATALOG_CLAIMS)
+    || typeof body.approved_by !== "string" || !body.approved_by.trim()
+    || !Number.isFinite(issuedAt) || !Number.isFinite(expiresAt)
+    || !Number.isFinite(nowMs)
+    || issuedAt > nowMs + 5 * 60_000
+    || expiresAt <= issuedAt || expiresAt - issuedAt > 30 * 60_000
+    || nowMs > expiresAt) {
+    fail(
+      "INVALID_SIGNING_REQUEST",
+      "signing request is outside the exact Walmart catalog-activation domain",
+    );
+  }
+  validReference(body.decision_ref);
+  const envelope = {
+    schema_version: request.schema_version,
+    algorithm: request.algorithm,
+    key_id: request.key_id,
+    owner_public_key_spki_sha256: request.owner_public_key_spki_sha256,
+    signed_body: body,
+  };
+  const message = Buffer.concat([
+    CATALOG_DOMAIN,
+    Buffer.from(canonicalJson(envelope), "utf8"),
+  ]);
+  if (request.signing_message_base64 !== message.toString("base64")) {
+    fail(
+      "INVALID_SIGNING_REQUEST",
+      "signing_message does not bind the exact catalog activation envelope",
+    );
+  }
+  const messageSha = sha256(message);
+  return {
+    message,
+    message_sha256: messageSha,
+    confirmation: `SIGN_WALMART_CATALOG_${messageSha.slice(0, 16).toUpperCase()}`,
+    summary: {
+      action: body.action,
+      environment: body.environment,
+      approval_id: body.approval_id,
+      approved_by: body.approved_by,
+      decision_ref: body.decision_ref,
+      store_index: body.store_index,
+      plan_sha256: body.plan_sha256,
+      source_file_sha256: body.source_file_sha256,
+      source_rows_sha256: body.source_rows_sha256,
+      report_request_id_sha256: body.report_request_id_sha256,
+      database_target_fingerprint_sha256:
+        body.database_target_fingerprint_sha256,
+      database_scope: claims.database_scope,
+      all_status_store_scoped_replace:
+        claims.all_status_store_scoped_replace,
+      walmart_api_calls: claims.walmart_api_calls,
+      provider_calls: claims.provider_calls,
+      listing_published: claims.listing_published,
+      listing_delisted: claims.listing_delisted,
+      repriced: claims.repriced,
+      inventory_purchased: claims.inventory_purchased,
+      issued_at: body.issued_at,
+      expires_at: body.expires_at,
+    },
+  };
+}
+
+function parseSigningRequest(bytes, enrollment, now = new Date()) {
+  const request = parseJson(bytes, "owner signing request");
+  if (request?.schema_version === CATALOG_REQUEST_SCHEMA) {
+    return parseCatalogSigningRequest(request, enrollment, now);
+  }
+  if (request?.schema_version === REQUEST_SCHEMA) {
+    return parsePublicationSigningRequest(request, enrollment, now);
+  }
+  fail("INVALID_SIGNING_REQUEST", "owner signing request schema is unsupported");
 }
 
 async function loadCustody(custodyDir) {

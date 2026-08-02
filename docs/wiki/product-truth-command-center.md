@@ -1,7 +1,7 @@
 # Product Truth Control Center — план постоянного внедрения
 
 > **Статус:** active implementation board, owner direction 2026-07-19; сверено
-> 2026-07-27.
+> 2026-07-28.
 >
 > **Верхний канон:** [[product-catalog-architecture]]. Порядок бизнес-gates:
 > [[donor-catalog-execution-roadmap]]. Operator safety:
@@ -745,7 +745,7 @@ ancestor и выявила ровно 26 intentional conflict paths. Конфл�
   Product Truth readiness. Продолжение Walmart Generate допустимо только при
   `enough_ready=true` и отсутствии отдельного engine capability gap.
 
-### 🔄 Фаза BF-W2 — Web→worker implementation
+### ✅ Фаза BF-W2 — Web→worker no-spend production activation
 
 - [x] strict batch/job contracts и deterministic idempotency;
 - [x] append-only command/artifact/event admission поверх Stage A custody;
@@ -1261,3 +1261,365 @@ SHA-256 `c73aff010a5db3139f7674acefc52426dd9ca741e656e4866dcd00a16d771a4c`.
   preserve concurrency `1`, one attempt/no retry, immutable per-target
   artifacts, provider ledger/reserve floor, independent content/price axes and
   a separate zero-paid COGS materialization plus full readiness checkpoint.
+- [x] final clean release
+  `product-truth-web-control-2026-07-28-r6`,
+  commit `61501b563dc1dbe8eee0463d9a8271d5a7db04d1`, Product Truth
+  `512/512`, Bundle Factory UI `3/3`, TypeScript, focused ESLint и production
+  build = `PASS`;
+- [x] production deployment `dpl_6CJbXNB7zpBJ754aoXdGBSPS6Lh8` = `Ready`,
+  runtime `PRODUCTION_READ_ONLY`, pinned launchd worker active;
+- [x] Campbell's E2E batch `ptbfw-cdc58a911597fd5e37e6afac`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, итог
+  `AWAITING_OWNER`; provider calls, metered execution, Product Truth business
+  writes и Walmart actions = `0`;
+- [x] r6 postcheck `ptbfw-cf8ea0764938f9754fdbe4fb`:
+  `1/1 DOCTOR SUCCEEDED`, `1/1 RUN_PLAN SUCCEEDED`, final claim `null`;
+- [x] heartbeat/completion race закрыта сериализацией in-flight heartbeat;
+  r1–r4 calibration commands сохранены без replay как immutable evidence.
+
+### ✅ Фаза BF-W3 — one-click exact enrichment quote
+
+- [x] один экран показывает exact products, missing fields, balance-probe,
+  Oxylabs query `≤1.0`, Unwrangle detail `≤2.5` и суммарный ceiling
+  `2.5 + 3.5 × jobs` prepaid provider credits; unsupported USD conversion
+  запрещён;
+- [x] один click может подписать только все отдельно перечисленные exact
+  one-donor targets через отдельный Product Truth Ed25519 trust root;
+- [x] private key хранится вне repository в encrypted PKCS8 и открывается
+  macOS Login Keychain; Vercel/server/worker/browser получают только public key
+  либо detached signature;
+- [x] `Approve` создаёт append-only OWNER_APPROVAL, `Decline` оставляет
+  terminal `CANCELLED` до spend;
+- [x] paid worker выполняет один initial balance probe, затем jobs
+  последовательно; следующая job требует balance evidence из предыдущего
+  detail response; missing/stale evidence останавливает batch без второго
+  probe;
+- [x] `maxAttemptsPerJob=1`, `automaticReplay=false`, `marketplaceMutations=0`;
+  unknown paid outcome сохраняется как terminal `AMBIGUOUS`;
+- [x] успешный batch повторно читает canonical readiness и только при
+  `enough_ready=true` и нулевом capability gap продолжает исходный Walmart
+  Generate;
+- [x] UI восстанавливает batch/request/shipping selection после reload и
+  показывает approval/execution audit;
+- [x] certification: Product Truth `519/519`, Walmart/Bundle Factory focused
+  `18/18`, TypeScript, ESLint и production build = `PASS`;
+- [x] final clean release
+  `product-truth-web-control-2026-07-28-r7`: commit
+  `2e12419221665926aaa44881f2ec5692a2a7cf42`, tree
+  `91cc801e7b3e8c15b64d3af5fb2b898362d6af8f`, executable SHA-256
+  `28360067b9891a61c5c0ea8f7c836e939e0e29cdc53b7041aa7ec6820399d8f7`;
+- [x] external owner key enrolled через encrypted PKCS8 + macOS Login
+  Keychain; public trust root SHA-256
+  `6d410aeb1f4fa947b9f85d9ff5f0adaa77270967e4635019271b8a5d940417b5`;
+- [x] production deployment `dpl_7Qv2gde7DXRmg977gEz8FiC9n7PD` =
+  `Ready`, alias `salutemsolutions.info`, runtime
+  `PRODUCTION_OWNER_GATED_METERED`, pinned owner-agent и worker active;
+- [x] no-spend E2E batch `ptbfw-f464598c22650c76c631c239`:
+  `5/5 DOCTOR SUCCEEDED`, `5/5 RUN_PLAN SUCCEEDED`, status
+  `AWAITING_OWNER`; exact quote
+  `ptq-6f91025cbbd87e2654e4d2c86dab3619`, maximum `20` prepaid provider
+  credits; `provider_calls_may_have_started=false`,
+  `metered_execution_admitted=false`, Walmart mutations `0`.
+
+Граница BF-W3: она обогащает только уже существующий exact `DonorProduct` с
+direct first-party Walmart offer. `matched_variants=0` означает отдельную Phase 2
+demand-expansion campaign. Такой новый donor нельзя незаметно создать тем же
+quote: production campaign registry/runtime всё ещё отсутствует и остаётся
+отдельным blocker, а consumer только показывает честную границу.
+
+### ✅ Фаза BF-W4 — полный owner request и Pack of 8
+
+- [x] Удалены устаревшие owner-facing лимиты `1–2 listings` и `Pack of 2/3`:
+  Bundle Factory сохраняет точные числа из prompt/structured fields и блокирует
+  только реальное расхождение между ними.
+- [x] Запрос `5 listings × Pack of 8` детерминированно раскладывается на пять
+  независимых one-listing work items. Это orchestration boundary, а не
+  разрешение массового Walmart apply; каждый live POST по-прежнему требует
+  собственные canonical evidence и owner permit.
+- [x] Deterministic Walmart content, commercial discovery, owner preview и
+  exact-pixel compositor принимают Pack of 8. Main image содержит ровно восемь
+  копий exact donor package image после connected-white-background cutout;
+  generative redraw и выдуманный packaging design запрещены.
+- [x] Certification: request/parser, full Walmart new-SKU and Bundle Factory
+  focused suite `108/108`; Product Truth `519/519`; TypeScript, focused ESLint
+  и production build `PASS`. Build сохранил только существующее duplicate-Sharp
+  runtime warning.
+- [x] Production read-only Campbell's proof: `matched_variants=5`,
+  `ready_variants=0`; все пять exact variants имеют единственный gap
+  `FRESH_LOCAL_PRICE` и все `5/5` допустимы для existing one-donor targeted
+  collector. Contract dry proof сохранил `listing_count=5`, `pack_count=8`,
+  создал `5` independent jobs по `3.5` provider units максимум каждый,
+  automatic paid execution `false`, marketplace mutation `false`. Existing
+  owner quote ceiling для такой пятёрки остаётся `20` prepaid provider credits
+  (`2.5` balance reserve + `5 × 3.5`).
+- [x] Frozen operator release v33 выпущен из commit
+  `b00aaf6ae84ab888bb04be0db54c85be2570e22a`: engine
+  `fe76e6378a48c024f464d44a71ca7ebb88a7ffa1fb61c7f24eca1fcf37872946`,
+  manifest
+  `2593cd462ee1fdc2a46ab87bfdc4f672a45e6a6a68d7aa8221cd8356ce85127f`,
+  certificate
+  `806c75a69fbab9d05f9e1f38a2e3396ff90592cf4b35f731386af548a84c6f1f`;
+  pre- и post-test self-verify `PASS`.
+- [x] Production deployment `dpl_561wp4SR15HHGb7dPN8uB2U3NG43` =
+  `READY`, alias `salutemsolutions.info`. No-spend HTTP postcheck главной
+  страницы и `/bundle-factory/new` вернул штатный `307 → /login` для
+  неавторизованного запроса; provider calls и Walmart mutations `0`.
+
+BF-W4 не меняет live mutation authority: protected execution остаётся
+последовательным, а marketplace publication не следует из размера owner request.
+
+### ✅ Фаза BF-W5 — channel-specific Advanced и автоматический enrichment quote
+
+- [x] Walmart `Advanced` отделён от Amazon/Uncrustables: house brand,
+  Uncrustables image style, generative photo controls и per-request text-model
+  selector не рендерятся и не отправляются в Walmart request. Server route
+  входит в canonical Walmart branch до parsing/defaulting этих Amazon-only
+  полей, поэтому они не могут повлиять на manufacturer brand или image truth.
+- [x] Walmart `Advanced` оставляет только target margin; blank сохраняет
+  owner default `30%`. UI явно фиксирует exact manufacturer brand и verified
+  donor imagery без generative product redraw.
+- [x] Устаревший, фактически неиспользуемый Bundle Factory model selector
+  удалён. Text model теперь выбирается только центральным
+  `src/lib/ai-models.ts`; live Anthropic Models API 2026-07-29 подтвердил
+  `claude-opus-5`, и premium pin/Bundle Factory content generation переведены
+  на этот ID после проверки migration boundary. Walmart deterministic content
+  от LLM по-прежнему не зависит.
+- [x] При exact existing donor data gap основной Generate автоматически
+  запускает только no-spend preparation пяти независимых targeted collection
+  plans. Лишняя owner-кнопка `Prepare collection plans` удалена; первый
+  обязательный owner action — review и `Approve exact quote`. Retry остаётся
+  только для честной infrastructure failure.
+- [x] Certification: focused fallback/content `19/19`; полная Walmart/Studio
+  regression `194/194`; Product Truth `519/519`; TypeScript, focused ESLint
+  (0 errors, 2 pre-existing A+ warnings) и production build `PASS`.
+- [x] Production deployment `dpl_3PPs9HP2xMAyQrueV3U1kSKADgky` = `READY`,
+  alias `salutemsolutions.info`. No-spend HTTP postcheck:
+  `/bundle-factory/new` штатно вернул unauthenticated `307 → /login`, а
+  protected readiness API — `401`; provider calls и Walmart mutations `0`.
+  Подключённая authenticated browser-сессия отсутствовала, поэтому visual
+  postcheck не был ложно заявлен.
+
+BF-W5 не авторизует provider spend или Walmart mutation. No-spend planning
+может стартовать автоматически; paid enrichment начинается только после
+external owner signature точного показанного quote.
+
+### ✅ Фаза BF-W6 — donor-bound Walmart draft runtime и buyer review
+
+- [x] `Generate` после readiness больше не создаёт frozen/manual handoff:
+  route повторно читает Product Truth, фиксирует requested listing/pack count,
+  выбранный Walmart account/template и margin, затем атомарно создаёт
+  `GenerationJob` с отдельным immutable `GenerationWorkItem` для каждого exact
+  canonical variant.
+- [x] Walmart получает собственный channel engine внутри общего Bundle Factory.
+  Он обрабатывает durable queue по одному item, имеет CAS claim, stale-lock
+  recovery, максимум три попытки и recipe-level idempotency. Legacy Amazon
+  Studio, Walmart API client и UPC pool в этой ветке недоступны.
+- [x] Каждый draft перед записью повторно доказывает те же donor product,
+  canonical variant, content observation и price observation. Mutable
+  `DonorProduct` не является content/price truth; template snapshot защищён
+  SHA-256 binding.
+- [x] Economics использует exact unit COGS × pack count + `$1.50` packaging +
+  `$8.78` outbound label, Walmart referral `15%` и owner-selected margin
+  (default `30%`). Item price и buyer shipping рассчитываются по точному live
+  template snapshot так, чтобы один customer landed total сохранял целевую
+  маржу во всех активных rate scenarios.
+- [x] Main image строится только из exact donor package pixels: connected white
+  background удаляется до композиции, artwork не перерисовывается, а число
+  копий равно pack count (включая Campbell's Pack of 8). Image fetch принимает
+  только HTTPS raster assets с approved Walmart/Salsify/Scene7/brand CDN,
+  проверяет каждый redirect и держит жёсткий лимит `25 MiB`.
+- [x] После batch completion владелец получает список всех drafts и отдельную
+  Walmart buyer-page preview для каждого: gallery, title, price, shipping,
+  landed total, bullets, description, ingredients/allergens/nutrition и exact
+  observation evidence. Preview не содержит publish/UPC mutation controls.
+- [x] Request diagnosis теперь допускает до `500` owner-requested drafts и
+  сканирует exact Product Truth catalog постранично; прежняя скрытая отсечка
+  первых `1000` строк удалена.
+- [x] Local certification: focused Walmart/Studio queue, preview, shipping,
+  content and image suite `61/61 PASS`; TypeScript, targeted ESLint и production
+  build `PASS`. Реальные Campbell's content observations используют approved
+  hosts `i5.walmartimages.com`, `images.salsify.com`, `target.scene7.com`.
+- [x] Release commit `d8ccc86da…` развёрнут production deployment
+  `dpl_9UpAYGAVR4KtjjzYyiFcZnYcesVX` = `READY`, aliases включают
+  `salutemsolutions.info`. No-spend HTTP postcheck: `/`,
+  `/bundle-factory/new` и новый review route штатно вернули `307 → /login`,
+  protected readiness API — `401`. Provider spend, UPC reservation и Walmart
+  mutations равны `0`.
+- [ ] Authenticated visual postcheck не заявлен: подключённая browser session в
+  текущем Codex runtime отсутствовала; первый owner run остаётся визуальным
+  acceptance этой поверхности, а не техническим разрешением на publication.
+
+BF-W6 закрывает существующие exact donors. Если `matched_variants=0`, Bundle
+Factory обязан создать demand-expansion request в едином Product Truth Platform;
+собственный retailer scraper или второй каталог запрещены. Исполнение такого
+Phase 2 запроса остаётся platform gate до доказанного завершения глобальной
+Phase 1, но это не ограничение количества Walmart drafts и не относится к
+Campbell's, где exact donors уже существуют.
+
+### ✅ Фаза BF-W7 — recovery кнопки подготовки enrichment plan
+
+- [x] Production failure `The Product Truth collection control configuration is
+  invalid. No command was created.` локализован до server admission: shared
+  `PRODUCTION_READ_ONLY` runtime конфликтовал с сохранённым полным owner public
+  trust root; prompt, Pack of 8 и Campbell's donor readiness причиной не были.
+- [x] Shared read-only и Walmart paid authority разделены. Base runtime может
+  проверить и удерживать public key, но не получает spend authority. Отдельный
+  exact Walmart confirmation связан с release/commit/tree/executable,
+  database target, manifest и owner public-key fingerprint; partial/stale/wrong
+  binding остаётся fail-closed.
+- [x] Approval API использует только Walmart overlay, worker claim включает
+  `EXECUTE` только при валидном overlay; no-spend doctor/plan продолжает работать
+  от base runtime. Exact quote click и detached local Ed25519 signature остаются
+  единственным money gate.
+- [x] Release `product-truth-web-control-2026-08-01-r8`: commit
+  `4a9e761aabd3f8cf10973d02197068345b7cae54`, tree
+  `143b1f045d8e1cd4c8acbc03700c46903a263d65`, executable
+  `992c55c0a825c4537ebc5b3b171fd8c1156f41277222a8d08559a503f9823d46`;
+  deployment `dpl_7Sf145ugwQhYLErkiizRamBpDC1T` = `READY` и production alias
+  обновлён.
+- [x] Pinned worker и owner-agent установлены из exact r8 checkout; оба launchd
+  services `running`, owner loopback preflight `204`, worker token совпадает с
+  production hash и новых worker errors после запуска нет.
+- [x] Certification: Product Truth `521/521`, focused collection UI/contract
+  `8/8`, TypeScript, ESLint, local и Vercel production build = `PASS`.
+- [ ] Authenticated owner Retry остаётся единственным visual smoke: управляемая
+  browser session в Codex runtime отсутствовала. Этот click разрешает только
+  no-spend plan preparation; показанный exact quote требует отдельного owner
+  подтверждения до provider spend.
+
+### ✅ Фаза BF-W8 — production reliability recovery collection batch
+
+- [x] Повторный owner click больше не создаёт дубли: command identity и
+  idempotency привязаны к logical batch/job, а не к изменяемому timestamp.
+  Read/status path фильтрует команды по exact current release, поэтому
+  незавершённые r8/r9 rows остаются immutable audit evidence и не меняют статус
+  successor batch.
+- [x] Runtime приведён к уже применённой production control-ledger schema:
+  append-only migration history из девяти записей совпадает byte-for-byte;
+  новая migration и Product Truth business-data mutation не потребовались.
+- [x] Remote transaction/heartbeat window расширен только для bounded control
+  operations. Потеря heartbeat теперь переводит текущую команду в явный
+  terminal failure через complete path, а не оставляет вечный `RUNNING` и не
+  вызывает автоматический replay.
+- [x] Release `product-truth-web-control-2026-08-01-r11`: commit
+  `97ffabce993256c8eb8012abb5154a09419ba94d`, tree
+  `35ffa5b8ef127615867e119e32046dcaacec54e9`, executable SHA-256
+  `d8f04ef7ee226e3de55ab49cce5082efce55e7f671c040d9043ca043e71e3223`;
+  deployment `dpl_EFbFw1ddDCAFLLWVoP9yaVSkMWaG` = `READY`, production alias
+  `salutemsolutions.info`, pinned launchd worker и owner-agent работают из
+  exact sparse checkout.
+- [x] Чистый Campbell's batch `ptbfw-14e44dd192718b33ff8b0bb2` доказал ровно
+  `5/5 DOCTOR SUCCEEDED` и `5/5 RUN_PLAN SUCCEEDED`, общий status
+  `AWAITING_OWNER`; quote `ptq-b32ff65d283f474ba4ffaf7ccbd2a352`
+  имеет ceiling `20` prepaid provider credits и `5` independent actions.
+  `EXECUTE=0`, provider spend, Product Truth business writes и Walmart
+  mutations `0`.
+- [x] Certification: Product Truth `524/524`, focused Walmart collection
+  `11/11`, TypeScript, focused ESLint и production build = `PASS`.
+
+BF-W8 не является денежным approval. Следующий допустимый owner action — только
+review и approval exact quote в UI; до него enrichment не стартует.
+
+### 🔄 Фаза BF-W9 — Campbell's execution recovery и Walmart duplicate guard
+
+- [x] После owner approval exact quote production `EXECUTE` был claimed, но
+  old worker получил `/start HTTP 409 (P2028)` до execution boundary.
+  `attempts=0`, `executionStartedAt=null`; provider spend, canonical business writes
+  и Walmart mutations равны `0`.
+- [x] `startProductTruthNoSpendCommand` переведён на remote-safe atomic batch
+  transaction; start идемпотентен, expired zero-attempt command не claimable
+  и отображается terminal. Status группирует immutable retries по logical
+  run и показывает exact error владельцу.
+- [x] Fresh successor ITEM v6 source дал `5 235` rows во всех seller statuses.
+  Owner-signed activation атомарно заменила `WalmartCatalogItem(store)`
+  и связанный diagnostic `WalmartReport`; receipt `ACTIVE`, `row_count=5235`,
+  повторный plan = `NOOP_ALREADY_ACTIVE`. Это duplicate guard, не новый
+  donor catalog.
+- [x] Исправленная ветка прошла Product Truth `527/527`, Walmart
+  unit/contract `41/41`, native owner/report `27/27`, frozen fake-live `3/3`,
+  TypeScript, ESLint и production build.
+- [x] Exact r12 server/worker release активирован; Campbell's owner-approved
+  execution выполнил initial balance probe и первый exact Walmart price query.
+  Protected wall-clock потребовал safe resume только distinct not-started
+  detail boundary; повторного Oxylabs query не было.
+- [x] Первый товар завершён terminal `AMBIGUOUS` с
+  `UNWRANGLE_RECEIPT_WITHOUT_EXACT_COMPLETE_CANDIDATE`: Unwrangle detail был
+  успешен как provider call, но content snapshot честно заблокирован на
+  `ALLERGENS_MISSING; STORAGE_MISSING`. Ledger: первый item `3.5` credits,
+  initial balance probe `2.5`, total `6.0`; candidate/business projection и
+  Walmart mutations `0`. `next_command=null`, retry этого run запрещён.
+- [x] Root cause: existing exact Campbell's content уже был выбран из Target
+  legacy bridge и readiness не хватало только `FRESH_LOCAL_PRICE`, но targeted
+  reuse ошибочно ограничивался old `sourceApi='unwrangle'` с exact Walmart URL.
+  Контракт исправлен: pre-plan content любого channel разрешён только для того
+  же exact donor/canonical variant/variant decision и только если current
+  versioned read-contract повторно выбирает его с ingredients, nutrition,
+  allergens и gallery gates. Price proxy/content mixing по-прежнему запрещены.
+- [x] Worker сохраняет исходное fresh balance evidence, когда item завершён
+  exact price + preexisting content без detail call; следующие sequential jobs
+  не блокируются ложной ошибкой missing next-detail balance.
+- [x] Добавлен durable owner progress: product `X/N`, title, exact stage,
+  percentage, completed/stopped, provider credits, heartbeat freshness,
+  timestamp и human terminal reason. Progress связан с exact `EXECUTE` command,
+  пишется в append-only events и восстанавливается после browser refresh.
+- [x] Локальная certification новой ветки: Product Truth `530/530`, focused
+  Walmart/Bundle Factory `193/193`, TypeScript, changed-files ESLint и
+  production build `PASS`.
+- [x] Exact r13 server/worker release выпущен: commit
+  `093fc4f151955e69979063aef22194b53e06950c`, tree
+  `43fe5c3056644b707c5f40c69956da7a5a58a391`, executable SHA-256
+  `7dc9941759c5bfa01bfc7e73ba471159ca61859f04ae1c9e3172c03f614dd54d`.
+  Production deployment `dpl_5vLPKQMJ77GAbeBDME9SvfPJsJcf` = `READY` и
+  назначен на `salutemsolutions.info`; clean pinned launchd worker и loopback
+  owner-agent работают из exact r13 checkout, owner preflight = `204`.
+- [ ] Повторить Campbell's `5 × Pack of 8` через новый exact quote до
+  enrichment и пяти owner-review drafts. Terminal batch
+  `ptbfw-14e44dd192718b33ff8b0bb2` не retry/replay. Никакой Walmart
+  publication до отдельного SKU-bound gate.
+- [x] Первый r13 successor batch `ptbfw-e9e9310dcf4fbbcc33585dc3`
+  доказал ещё один no-spend admission defect: четыре exact plans завершились,
+  но первый doctor честно остановился
+  `TARGETED_EVIDENCE_PRIOR_HARVEST_STATE_FORBIDDEN`, потому что candidate
+  discovery повторно выбрал donor с уже существующим detail-harvest lifecycle.
+  Provider calls/spend и marketplace mutations этого doctor равны `0`.
+- [x] Candidate discovery приведён к first-attempt-only runner boundary:
+  до admission он read-only проверяет exact
+  `donorProductId + unwrangle:walmart + retailerProductId`, пропускает любой
+  prior lifecycle и продолжает искать untouched exact donor. Production
+  catalog dry check: `20` matched, использованный donor исключён, следующие
+  `5` кандидатов найдены; provider calls `0`.
+
+### 🔄 Фаза BF-W10 — единый durable Walmart Build вместо browser-driven retry
+
+- [x] Root cause повторяющихся Campbell's запусков зафиксирован как
+  orchestration defect: до готовности Product Truth не существовало постоянного
+  `GenerationJob`, а browser state, literal prompt bytes, control batch и worker
+  lifecycle могли расходиться. Refresh/повторный Generate поэтому выглядели как
+  продолжение для владельца, но создавали другую техническую работу.
+- [x] Первый `Prepare Walmart request` теперь передаёт весь request server-side и
+  получает один постоянный `GenerationJob`/URL. Product Truth preparation,
+  exact quote, detached owner approval, enrichment и пять draft work items —
+  последовательные дочерние фазы того же build ID; browser storage больше не
+  является recovery authority.
+- [x] Provisional brief связывает exact prompt, listing/pack count, margin,
+  Walmart account и template SHA, current Product Truth batch, все предыдущие
+  attempts и donor identities. Повторный donor или changed current-attempt
+  binding отклоняется до продолжения.
+- [x] Terminal known failure одного source больше не уничтожает запрос. Server
+  сначала повторно читает общий Product Truth: если пяти exact variants уже
+  достаточно, он атомарно создаёт пять work items; иначе автоматически готовит
+  no-spend replacement attempt внутри того же `GenerationJob`, исключая все
+  уже использованные donors. Новый provider spend по-прежнему требует отдельный
+  exact quote click. `AMBIGUOUS` никогда не заменяется и не replay.
+- [x] Старый owner-facing browser-driven readiness/collection блок убран с
+  активной поверхности. Walmart Advanced остаётся только margin; manufacturer
+  brand, exact donor imagery и выбранный shipping template сохраняются.
+- [x] Local gates: durable/replacement + Walmart draft focused `15/15`, полный
+  Product Truth `535/535`, TypeScript, changed-files ESLint и production build
+  = `PASS`. Проверки не выполняли provider calls, Product Truth business writes,
+  UPC reservation или Walmart mutation.
+- [ ] Выпустить exact successor web/worker release, перевести production alias и
+  clean pinned worker/owner-agent на те же commit/tree/executable bytes.
+- [ ] Production smoke: один новый Campbell's `5 × Pack of 8` build должен
+  сохранить тот же URL через no-spend plan/quote и owner refresh. Paid quote и
+  Walmart publication не входят в smoke без отдельного exact owner action.

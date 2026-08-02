@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import test from "node:test";
 
 import {
   PRODUCT_TRUTH_WEB_CONTROL_ENV,
+  PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV,
   ProductTruthWebControlRuntimeError,
   expectedProductTruthWebControlConfirmation,
+  expectedProductTruthWalmartEnrichmentConfirmation,
   loadProductTruthWebControlRuntime,
+  loadProductTruthWalmartEnrichmentRuntime,
+  loadProductTruthWebWorkerRuntime,
   productTruthExecutableTreeSha256,
   productTruthWebControlPublicStatus,
 } from "../product-truth-web-control-runtime";
@@ -18,7 +23,11 @@ const TREE = "d".repeat(40);
 const EXECUTABLE = productTruthExecutableTreeSha256(TREE);
 
 function activeEnv(
-  stage: "ADMISSION_ONLY" | "LOCAL_NO_SPEND" | "PRODUCTION_READ_ONLY",
+  stage:
+    | "ADMISSION_ONLY"
+    | "LOCAL_NO_SPEND"
+    | "PRODUCTION_READ_ONLY"
+    | "PRODUCTION_OWNER_GATED_METERED",
   environment: "LOCAL" | "STAGING" | "PRODUCTION",
 ) {
   return {
@@ -102,6 +111,122 @@ test("production read-only worker cannot be pointed at a local target", () => {
   assert.throws(
     () => loadProductTruthWebControlRuntime({ env }),
     isRuntimeError("WEB_CONTROL_STAGE_TARGET_MISMATCH"),
+  );
+});
+
+test("owner-gated metered stage requires and pins a separate Ed25519 trust root", () => {
+  const { publicKey } = generateKeyPairSync("ed25519");
+  const publicDer = Buffer.from(
+    publicKey.export({ format: "der", type: "spki" }),
+  );
+  const base = {
+    ...activeEnv("PRODUCTION_OWNER_GATED_METERED", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256]: "f".repeat(64),
+  };
+  assert.throws(
+    () => loadProductTruthWebControlRuntime({ env: base }),
+    isRuntimeError("WEB_CONTROL_CONFIG_INCOMPLETE"),
+  );
+  const runtime = loadProductTruthWebControlRuntime({
+    env: {
+      ...base,
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId]:
+        "product-truth-owner-production-1",
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64]:
+        publicDer.toString("base64"),
+      [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256]:
+        createHash("sha256").update(publicDer).digest("hex"),
+    },
+  });
+  assert.equal(runtime.status, "ACTIVE");
+  if (runtime.status !== "ACTIVE") return;
+  assert.equal(runtime.claims.meteredExecutionAdmission, true);
+  assert.equal(runtime.claims.providerCallsInWebRuntime, false);
+  assert.equal(runtime.claims.marketplaceMutations, false);
+  assert.equal(
+    runtime.ownerTrustedKey?.publicKeySpkiSha256,
+    createHash("sha256").update(publicDer).digest("hex"),
+  );
+  assert.equal(
+    productTruthWebControlPublicStatus(runtime).metered_execution,
+    true,
+  );
+});
+
+test("read-only production tolerates a complete owner key without enabling spend", () => {
+  const { publicKey } = generateKeyPairSync("ed25519");
+  const publicDer = Buffer.from(
+    publicKey.export({ format: "der", type: "spki" }),
+  );
+  const env = {
+    ...activeEnv("PRODUCTION_READ_ONLY", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256]: "f".repeat(64),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId]:
+      "product-truth-owner-production-1",
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64]:
+      publicDer.toString("base64"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256]:
+      createHash("sha256").update(publicDer).digest("hex"),
+  };
+  const runtime = loadProductTruthWebControlRuntime({ env });
+  assert.equal(runtime.status, "ACTIVE");
+  if (runtime.status !== "ACTIVE") return;
+  assert.equal(runtime.ownerTrustedKey?.keyId, "product-truth-owner-production-1");
+  assert.equal(runtime.claims.meteredExecutionAdmission, false);
+  assert.equal(loadProductTruthWebWorkerRuntime({ env }).status, "ACTIVE");
+
+  const confirmation = expectedProductTruthWalmartEnrichmentConfirmation({
+    runtime,
+  });
+  const metered = loadProductTruthWalmartEnrichmentRuntime({
+    env: {
+      ...env,
+      [PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation]: confirmation,
+    },
+  });
+  assert.equal(metered.status, "ACTIVE");
+  if (metered.status !== "ACTIVE") return;
+  assert.equal(metered.stage, "PRODUCTION_READ_ONLY");
+  assert.equal(metered.claims.meteredExecutionAdmission, true);
+  const worker = loadProductTruthWebWorkerRuntime({
+    env: {
+      ...env,
+      [PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation]: confirmation,
+    },
+  });
+  assert.equal(worker.status, "ACTIVE");
+  if (worker.status !== "ACTIVE") return;
+  assert.equal(worker.claims.meteredExecutionAdmission, true);
+});
+
+test("Walmart enrichment overlay fails closed on incomplete or unbound config", () => {
+  const { publicKey } = generateKeyPairSync("ed25519");
+  const publicDer = Buffer.from(
+    publicKey.export({ format: "der", type: "spki" }),
+  );
+  const base = {
+    ...activeEnv("PRODUCTION_READ_ONLY", "PRODUCTION"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.workerTokenSha256]: "f".repeat(64),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerKeyId]:
+      "product-truth-owner-production-1",
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiDerBase64]:
+      publicDer.toString("base64"),
+    [PRODUCT_TRUTH_WEB_CONTROL_ENV.ownerPublicKeySpkiSha256]:
+      createHash("sha256").update(publicDer).digest("hex"),
+  };
+  assert.throws(
+    () => loadProductTruthWalmartEnrichmentRuntime({ env: base }),
+    isRuntimeError("WEB_CONTROL_CONFIG_INCOMPLETE"),
+  );
+  assert.throws(
+    () =>
+      loadProductTruthWalmartEnrichmentRuntime({
+        env: {
+          ...base,
+          [PRODUCT_TRUTH_WALMART_ENRICHMENT_ENV.confirmation]: "wrong",
+        },
+      }),
+    isRuntimeError("WALMART_ENRICHMENT_CONFIRMATION_INVALID"),
   );
 });
 

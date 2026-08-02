@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  assertWalmartShippingTemplateDetailsIntegrity,
   calculateWalmartTemplateShippingScenarios,
   parseWalmartShippingTemplateDetails,
   parseWalmartShippingTemplateList,
@@ -224,5 +225,38 @@ test("unknown or incomplete rate data fails closed", () => {
       }],
     }),
     WalmartShippingTemplateContractError,
+  );
+});
+
+test("persisted template snapshot rejects post-selection mutation", () => {
+  const template = parseWalmartShippingTemplateDetails({
+    id: "free-sealed",
+    name: "Free Standard",
+    type: "CUSTOM",
+    status: "ACTIVE",
+    rateModelType: "PER_SHIPMENT_PRICING",
+    shippingMethods: [{
+      shipMethod: "STANDARD",
+      status: "ACTIVE",
+      configurations: [{
+        regions: [{ regionCode: "C", regionName: "48 State" }],
+        addressTypes: ["STREET"],
+        transitTime: 5,
+        perShippingCharge: {
+          unitOfMeasure: "LB",
+          shippingAndHandling: { amount: 0, currency: "USD" },
+          chargePerWeight: { amount: 0, currency: "USD" },
+          chargePerItem: { amount: 0, currency: "USD" },
+        },
+      }],
+    }],
+  });
+  assert.deepEqual(assertWalmartShippingTemplateDetailsIntegrity(template), template);
+  assert.throws(
+    () => assertWalmartShippingTemplateDetailsIntegrity({
+      ...template,
+      name: "Changed after selection",
+    }),
+    /changed after selection/,
   );
 });
