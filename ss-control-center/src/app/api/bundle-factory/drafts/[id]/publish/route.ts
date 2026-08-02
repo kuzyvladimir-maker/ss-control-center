@@ -91,10 +91,13 @@ export const POST = withErrorHandler(
       select: { master_bundle_id: true },
     });
     if (!draftRow) return badRequest("Draft not found");
-    let promotion: Awaited<ReturnType<typeof promoteDraftToChannelSkus>> | null =
-      null;
-    if (!draftRow.master_bundle_id) {
-      promotion = await promoteDraftToChannelSkus(id);
+    // Always promote: the call is idempotent (it skips channels that already
+    // have a SKU). Keying off master_bundle_id alone was wrong — a draft can
+    // hold a MasterBundle from an earlier attempt whose content had not yet
+    // passed compliance, so no ChannelSKU was ever minted and publishing had
+    // nothing to act on.
+    const promotion = await promoteDraftToChannelSkus(id);
+    {
       if (!promotion.master_bundle_id) {
         return NextResponse.json({
           ok: false,
