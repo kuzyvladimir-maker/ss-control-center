@@ -228,3 +228,22 @@ test("an ambiguous paid attempt needs an explicit owner decision, never an auto-
     /finalizeBuild\(\{ ownerAcknowledgedAmbiguousAttempt: true \}\)/u,
   );
 });
+
+test("a screen left open through a worker death repairs itself", async () => {
+  const component = await readFile(
+    new URL(
+      "../../../components/bundle-factory/WalmartDurableBuildProgress.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  // Terminal statuses must keep a slow poll alive; otherwise a page that was
+  // open while the worker died keeps rendering "Enriching…" forever.
+  assert.match(component, /void poll\(\), 15_000/u);
+  // And the ambiguous decision must come from the authoritative status, not
+  // only from a finalize round-trip that may never happen on a stale screen.
+  assert.match(
+    component,
+    /ambiguousAttempt \|\| collection\?\.status === "AMBIGUOUS"/u,
+  );
+});

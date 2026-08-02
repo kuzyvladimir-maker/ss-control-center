@@ -135,7 +135,12 @@ export function WalmartDurableBuildProgress({
         || next.status === "RUNNING_ENRICHMENT"
       ) {
         timer.current = setTimeout(() => void poll(), 4_000);
+        return;
       }
+      // Terminal states keep a slow poll alive. A screen left open through a
+      // worker death must repair itself instead of showing "Enriching…"
+      // forever, which is exactly how this build looked stuck to its owner.
+      timer.current = setTimeout(() => void poll(), 15_000);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Product Truth status failed");
       timer.current = setTimeout(() => void poll(), 8_000);
@@ -280,14 +285,16 @@ export function WalmartDurableBuildProgress({
         </div>
       )}
 
-      {ambiguousAttempt && (
+      {(ambiguousAttempt || collection?.status === "AMBIGUOUS") && (
         <div className="mt-4 rounded-[10px] border border-warn/30 bg-warn-tint p-3">
           <div className="text-[12.5px] font-semibold text-ink">
             The previous paid attempt ended with an unknown result
           </div>
           <p className="mt-1 text-[12px] text-ink-3">
             The data collector stopped after
-            {" "}{ambiguousAttempt.provider_units_used ?? 0} provider credits and
+            {" "}{ambiguousAttempt?.provider_units_used
+              ?? collection?.progress?.providerUnits
+              ?? 0} provider credits and
             could not prove what it completed, so it is never retried
             automatically. Starting a new attempt creates a new exact quote that
             you approve separately; already-harvested products are skipped.
