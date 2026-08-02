@@ -33,6 +33,7 @@ import {
 } from "../attributes/build-amazon-attributes";
 import {
   amazonAllergensFromStoredDeclarations,
+  allergenDeclarationFromLabelText,
   normalizeAllergenDeclaration,
   serializeAllergenDeclaration,
   type AllergenDeclaration,
@@ -165,7 +166,8 @@ async function ensureMasterBundle(
     unit_price_cents?: number;
     ingredients?: string;
     allergen_declaration?: AllergenDeclaration;
-    allergens?: string[];
+    /** Printed package statement; string for Walmart Product Truth drafts. */
+    allergens?: string[] | string;
     storage_temp?: string;
     donor_image_urls?: string[];
   };
@@ -247,13 +249,26 @@ async function ensureMasterBundle(
     } catch {
       // Snapshot/main image still grounds the recipe when gallery JSON is bad.
     }
-    if (!component.allergen_declaration) {
+    // Drafts built before the structured field existed carry the printed
+    // package statement instead. Parse THAT text rather than refusing a
+    // listing whose manufacturer declaration we already hold. The parser reads
+    // only the explicit "Contains"/"May contain" line and never infers an
+    // allergen from ingredients, so the guarantee behind this gate is intact.
+    const declarationSource = component.allergen_declaration
+      ?? (typeof component.allergens === "string"
+        ? allergenDeclarationFromLabelText(component.allergens)
+        : null);
+    if (
+      !declarationSource
+      || (declarationSource.contains.length === 0
+        && declarationSource.may_contain.length === 0)
+    ) {
       throw new Error(
         `Draft ${draftId} component "${component.product_name}" has no verified manufacturer allergen declaration`,
       );
     }
     const allergenDeclaration = normalizeAllergenDeclaration(
-      component.allergen_declaration,
+      declarationSource,
       `Draft ${draftId} component "${component.product_name}" allergen_declaration`,
     );
     return {
