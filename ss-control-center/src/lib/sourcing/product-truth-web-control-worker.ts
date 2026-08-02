@@ -1054,9 +1054,13 @@ export async function completeProductTruthNoSpendCommand(input: {
       outcome: result.status,
       errorCode:
         terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
-      ...(terminalStatus === "AMBIGUOUS"
-        ? { executionBoundary: "UNKNOWN" }
-        : {}),
+      // executionBoundary is NOT rewritten here. The schema trigger permits
+      // RUNNING → AMBIGUOUS only while the boundary stays exactly as recorded
+      // when execution started; the 'UNKNOWN' boundary belongs to the
+      // CLAIMED → AMBIGUOUS case, where no execution ever began. Overwriting
+      // it made the database abort the whole completion batch
+      // (SQLITE_CONSTRAINT), which is why ambiguous paid attempts stayed
+      // RUNNING forever and looked like live enrichment to the owner.
       terminalPayload: {
         outcome: result.status,
         reason: result.reason,

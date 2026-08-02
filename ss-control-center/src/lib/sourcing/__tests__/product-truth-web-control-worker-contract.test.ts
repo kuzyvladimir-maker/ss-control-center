@@ -263,10 +263,9 @@ test("metered completion preserves an ambiguous paid outcome as terminal ambiguo
     server,
     /result\.status === "AMBIGUOUS"\s*\?\s*"AMBIGUOUS"/u,
   );
-  assert.match(
-    server,
-    /terminalStatus === "AMBIGUOUS"[\s\S]*executionBoundary: "UNKNOWN"/u,
-  );
+  // The boundary recorded when execution started must survive the terminal
+  // write: the schema permits RUNNING → AMBIGUOUS only when it is unchanged.
+  assert.doesNotMatch(server, /executionBoundary: "UNKNOWN"/u);
 });
 
 test("worker start commits the execution boundary with a remote-safe atomic batch", async () => {
@@ -394,4 +393,31 @@ test("every runner spawn carries the lease its heartbeat policy needs", async ()
     const body = call.slice(0, call.indexOf("heartbeat:"));
     assert.match(body, /(^|\s)lease,/u);
   }
+});
+
+test("an ambiguous completion keeps the execution boundary the schema pinned", async () => {
+  const [worker, migrations] = await Promise.all([
+    readFile(
+      new URL("../product-truth-web-control-worker.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../../../../prisma/schema.prisma", import.meta.url),
+      "utf8",
+    ),
+  ]);
+  // The database permits RUNNING → AMBIGUOUS only while executionBoundary is
+  // unchanged; 'UNKNOWN' is reserved for CLAIMED → AMBIGUOUS (never started).
+  // Rewriting it aborted the entire completion batch and left paid attempts
+  // stuck in RUNNING, rendered to the owner as live enrichment.
+  const completion = worker.slice(
+    worker.indexOf("export async function completeProductTruthNoSpendCommand"),
+  );
+  assert.match(completion, /result\.status === "AMBIGUOUS"\s*\?\s*"AMBIGUOUS"/u);
+  assert.doesNotMatch(completion, /executionBoundary: "UNKNOWN"/u);
+  // The schema is the authority for this rule, so keep them in one place.
+  assert.match(
+    migrations,
+    /ProductTruthControlCommand/u,
+  );
 });
