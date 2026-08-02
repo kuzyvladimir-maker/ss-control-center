@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       "./node_modules/@img/sharp-linux-x64/**/*",
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
     ],
+    // libsql resolves its native binding by platform string at runtime, so a
+    // build traced on macOS ships only darwin binaries and every Turso-backed
+    // API route 500s on Vercel ("Cannot find module '@libsql/linux-arm64-gnu'").
+    // Same class as the sharp/libvips gotcha above. The patterns are no-ops
+    // when a platform package is absent locally.
+    "*": [
+      "./node_modules/@libsql/linux-arm64-gnu/**/*",
+      "./node_modules/@libsql/linux-x64-gnu/**/*",
+    ],
   },
   // The repo carries ~3.6GB of local audit/evidence artifacts under data/.
   // listing-integrity-shadow.server reads them via process.cwd() paths, which
