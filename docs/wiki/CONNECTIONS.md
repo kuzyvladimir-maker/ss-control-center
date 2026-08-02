@@ -332,6 +332,13 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 → Telegram (severity CRITICAL/HIGH)
 ⊂ [Database Schema](database-schema.md) — модель `CriticalAlert`
 
+### Walmart Bundle Factory: инцидент и ремонт 2026-08
+
+⊂ [Walmart BF repair 2026-08-02](walmart-bundle-factory-repair-2026-08-02.md)
+← [Diagnostic handoff](walmart-bundle-factory-independent-diagnostic-handoff.md) — вход независимого расследования
+→ [Walmart new-SKU command center](walmart-new-sku-command-center.md)
+→ [Product Truth web operations control plane](product-truth-web-operations-control-plane.md)
+
 ### Иерархия БД
 - `PolicyViolationDetail` ⊂ `PolicyViolationCategory` ⊂ `AccountHealthSnapshot`
 - `WalmartItemCompliance` ⊂ `WalmartPerformanceSnapshot`
