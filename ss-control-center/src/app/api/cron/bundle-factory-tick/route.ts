@@ -37,7 +37,16 @@ export async function GET(request: NextRequest) {
   const deadline = Date.now() + 150_000;
 
   const jobs = await prisma.generationJob.findMany({
-    where: { status: "IN_PROGRESS" },
+    // Walmart draft builds are admitted straight into WALMART_DRAFT_QUEUE with
+    // their exact work items already sealed, so they are runnable while still
+    // PENDING. Selecting only IN_PROGRESS left them queued forever with nothing
+    // reporting why.
+    where: {
+      OR: [
+        { status: "IN_PROGRESS" },
+        { status: "PENDING", current_stage: "WALMART_DRAFT_QUEUE" },
+      ],
+    },
     select: { id: true },
     orderBy: { created_at: "asc" },
     take: 5,
