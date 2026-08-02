@@ -69,6 +69,44 @@ function cleanLabels(values: unknown, label: string): string[] {
   return output;
 }
 
+/**
+ * Parse a manufacturer's printed allergen line into the structured
+ * declaration the channel writers require.
+ *
+ * This reads ONLY the explicit label statement — "Contains: …" and
+ * "May contain: …" — because that text is the manufacturer's own verified
+ * declaration. It never infers an allergen from the ingredient list: that
+ * inference is exactly the guess a food listing must not make. Text with no
+ * explicit statement yields an empty declaration, which the publish gate then
+ * refuses, rather than a fabricated one.
+ */
+export function allergenDeclarationFromLabelText(
+  value: unknown,
+): AllergenDeclaration {
+  const text = typeof value === "string" ? value : "";
+  const read = (pattern: RegExp): string[] => {
+    const match = pattern.exec(text);
+    if (!match?.[1]) return [];
+    const seen = new Set<string>();
+    const labels: string[] = [];
+    for (const raw of match[1].split(/,| and /iu)) {
+      const cleaned = raw.replace(/[.;:*]+/gu, " ").trim();
+      if (!cleaned) continue;
+      const key = cleaned.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      labels.push(cleaned);
+    }
+    return labels;
+  };
+  return {
+    // "May contain" is matched first and excluded from the positive line so a
+    // precautionary statement is never promoted into a positive declaration.
+    contains: read(/(?:^|\n)\s*Contains:?\s*([^\n.]*)/iu),
+    may_contain: read(/May\s+contain:?\s*([^\n.]*)/iu),
+  };
+}
+
 /** Validate and clone an explicit declaration without changing label wording. */
 export function normalizeAllergenDeclaration(
   value: unknown,

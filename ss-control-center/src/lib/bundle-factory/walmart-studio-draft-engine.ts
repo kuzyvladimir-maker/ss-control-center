@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { allergenDeclarationFromLabelText } from "./allergen-declaration";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -352,6 +353,14 @@ async function buildOneDraft(input: {
     unit_price_cents: unitPriceCents,
     ingredients: component.facts.ingredients,
     allergens: component.facts.allergens,
+    // The publish path requires a STRUCTURED declaration, not the free-text
+    // label line, and rightly refuses a food listing without one. Both come
+    // from the same verified manufacturer text on the package; this only
+    // parses it into the shape the Walmart/Amazon writers consume. Nothing is
+    // inferred from the ingredient list.
+    allergen_declaration: allergenDeclarationFromLabelText(
+      component.facts.allergens,
+    ),
     nutrition_facts: component.facts.nutrition_facts,
     storage_temp: "Shelf-stable",
     donor_image_urls: exactImages,
