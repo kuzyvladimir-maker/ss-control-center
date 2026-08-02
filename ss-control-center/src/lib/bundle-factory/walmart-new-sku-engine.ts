@@ -10,7 +10,10 @@ import type {
   ProductTruthNewSkuView as ProductTruthRecipeInput,
   ProductTruthWalmartPilotCandidate as WalmartPilotCandidate,
 } from "@/lib/sourcing/product-truth-read-contract";
-import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "@/lib/sourcing/product-truth-read-contract";
+import {
+  DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS,
+  PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+} from "@/lib/sourcing/product-truth-read-contract";
 import {
   CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256,
   CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
@@ -1570,8 +1573,16 @@ export function assertWalmartNewSkuPlanIntegrity(
       component.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
       component.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256 ||
       !Number.isFinite(candidate.recipe_input.price_max_age_ms) ||
-      candidate.recipe_input.price_max_age_ms !== 24 * 60 * 60 * 1_000 ||
-      component.price_evidence.locality_evidence !== "zip_scoped" ||
+      candidate.recipe_input.price_max_age_ms <= 0 ||
+      // A tighter window than the owner-approved maximum is always fine; a
+      // looser one is not.
+      candidate.recipe_input.price_max_age_ms
+        > DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS ||
+      // A catalogue-held price records no provider ZIP proof and is graded
+      // ESTIMATE upstream; the ZIP itself must still match exactly.
+      !["zip_scoped", null].includes(
+        component.price_evidence.locality_evidence ?? null,
+      ) ||
       component.price_evidence.zip !== value.zip
     ) {
       throw new WalmartNewSkuPlanError([

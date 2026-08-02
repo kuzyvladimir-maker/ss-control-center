@@ -3,6 +3,9 @@ import { createHash } from "node:crypto";
 import type {
   ProductTruthWalmartRequestCandidateDiagnostic,
 } from "@/lib/sourcing/product-truth-read-contract";
+import {
+  DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS,
+} from "@/lib/sourcing/product-truth-read-contract";
 
 export const WALMART_STUDIO_DRAFT_WORK_ITEM_SCHEMA =
   "bundle-factory.walmart-draft-work-item/1.0.0" as const;
@@ -184,10 +187,13 @@ export function parseWalmartStudioDraftWorkItem(
       5_000,
     ),
     as_of: asOf,
+    // Upper bound follows the owner-approved price-evidence window rather than
+    // a second, stricter number kept in a different file (owner decision
+    // 2026-08-02: shelf-stable grocery prices stay usable for 90 days).
     price_max_age_ms: positiveInteger(
       raw.price_max_age_ms,
       "price_max_age_ms",
-      31 * 24 * 60 * 60 * 1_000,
+      DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS,
     ),
     zip: requiredText(raw.zip, "zip"),
     marketplace_mutation_allowed: false,
