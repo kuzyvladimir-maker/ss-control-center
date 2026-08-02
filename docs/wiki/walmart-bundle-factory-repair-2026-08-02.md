@@ -90,3 +90,97 @@ worker и БД из разных миров; release-scoped identity → каж�
 Связанные: [[walmart-new-sku-command-center]],
 [[product-truth-web-operations-control-plane]],
 [[walmart-new-sku-operator-runbook]], [[product-truth-owner-gates]].
+
+---
+
+## Этап 1 закрыт: пять листингов дошли до VALIDATED (2026-08-02, r40)
+
+Все пять черновиков Campbell's Pack-of-8 проходят валидацию целиком. Что
+пришлось починить и почему — каждый пункт был настоящим расхождением, а не
+«отключением проверки».
+
+### Полоса (lane) вместо одного набора проверок для всего
+
+У Walmart в Bundle Factory две разные полосы:
+
+1. **frozen pilot** (`walmart:new-sku`) — набор доказательств собирает и
+   подписывает владелец вне приложения: здоровье аккаунта, одобрения
+   категорий, отзывы (recall), права на бренд, регистрант GS1 за UPC;
+2. **studio lane** — фабрика строит листинг сама из одного точного
+   канонического варианта, владелец смотрит его на экране.
+
+Проверки пилота требовали от studio-полосы бумаг, которые код не может
+произвести честно. Теперь ChannelSKU несёт маркер
+`attributes.listing_lane = "WALMART_STUDIO_DRAFT"`, а
+`validator-walmart-prepublication` для этой полосы возвращает
+`skipped: walmart_studio_lane` (видно в деталях, не молча).
+
+Взамен работает **`validator-walmart-product-truth` в studio-режиме** — он и
+защищает от «чужого товара в живой плитке»: точный canonical variant,
+неизменяемое content observation, актуальный релиз matcher-а, цена с
+observation-id, и MAIN-картинка с SHA-256 исходных байтов, которая обязана
+показывать ровно `pack_count` единиц.
+
+### Бренд и вкус: канонические токены — это ключ хеша, а не текст витрины
+
+`component.flavor` — отсортированный мешок токенов для хеширования. На живых
+черновиках это дало буллет `Exact flavor or variant: chicken pie pot pub style`
+и `Same campbells product`. Настоящее написание производителя лежит в решении
+матчера (`decision_evidence.targetIdentity`): `Pub-Style Chicken Pot Pie`,
+`Campbell's`. Листинг теперь берёт его (`walmartStudioDisplayFlavor` /
+`walmartStudioDisplayBrand`). Где производитель отдельного вкуса не объявляет,
+листинг молчит — точное имя товара в тайтле и так несёт вариант.
+
+Артефакт легаси-моста `Campbell'S` (тайткейс через апостроф) чинится точечно.
+
+### Остатки: 50 единиц, объявленные, а не прочитанные
+
+Решение владельца 2026-08-02: по 50 единиц на позицию во всех складах. Бизнес
+buy-to-order — склада нет, товар покупается в момент продажи, поэтому чтение
+Veeqo описывает склад, с которого этот канал не отгружает. `validator-inventory`
+для Walmart возвращает объявленное количество
+(`WALMART_STUDIO_DECLARED_INVENTORY_UNITS = 50`), Amazon-путь не тронут.
+
+### Аллергены: закрытый enum Amazon не должен ронять листинг Walmart
+
+Часть доноров публикует набор аллергенов списком в европейской номенклатуре
+(`celery`, `molluscs`, `gluten`). Amazon-проекция такие метки отвергает — и это
+правильно для Amazon. Для черновика, у которого канал только WALMART,
+декларация переносится текстом целиком (`declaredAllergenLabelsFromStored`).
+Молча выбросить аллерген из пищевого листинга нельзя ни при каких условиях.
+
+### Вес и габариты: провенанс с честным именем источника
+
+`verified_physical_package` получил второй источник —
+`STUDIO_NET_MASS_ESTIMATE`: вес считается от точной заявленной нетто-массы
+производителя (Product Truth `sizeBaseAmount`) плюс тара и коробка, коробка
+подбирается по объёму из лестницы реальных размеров. Запись прямо говорит, что
+это оценка. Измерения оператора через форму Ship specs перезаписывают её.
+
+Для Campbell's 8×18.8 oz: нетто 150.4 oz → объявлено 179 oz, коробка 12×9×6.
+
+### Цена: на странице и в листинге теперь одно число
+
+При промоушене цена пересчитывалась Amazon-моделью (кулеры, FBA) и выходила
+ниже той, что владелец видел на карточке черновика ($45.04 против $51.58).
+Теперь для studio-черновика берётся цена из его собственной Walmart-экономики —
+той, что посчитана по точному shipping-шаблону и 15% referral.
+
+### Тип товара — из живой таксономии Walmart
+
+`GET /v3/items/taxonomy?feedType=MP_ITEM&version=5.0` (store 1, 2026-08-02):
+Food & Beverage → Soups, Broths & Bouillon → **Prepared & Packaged Soups**.
+Список `WALMART_STUDIO_PRODUCT_TYPES` расширяется только после такой проверки;
+неизвестный товар даёт понятную ошибку, а не выдуманный slug.
+
+### Состояние на конец этапа
+
+| SKU | Товар | Цена | Остаток | Валидация |
+|---|---|---|---|---|
+| AN-WMB4-DL59 | Pub-Style Chicken Pot Pie | $51.58 | 50 | PASSED |
+| JF-WMQ7-TFDW | Baked Potato with Steak and Cheese | $51.58 | 50 | PASSED |
+| UY-WMX5-TKBA | New England Clam Chowder | $54.78 | 50 | PASSED |
+| GR-WM7L-PZ3L | Creamy Chicken and Dumplings | $54.78 | 50 | PASSED |
+| TL-WMQ4-8EHY | Chicken Broccoli Cheese | $54.78 | 50 | PASSED |
+
+Публикация на Walmart остаётся отдельным решением владельца (AGENTS.md §2).

@@ -182,6 +182,7 @@
 - [Legacy Rebrand 2026-05](legacy-rebrand-2026-05.md) — миграция Login/Invite/StoreTabs на Salutem Design System
 
 ## Известные проблемы и грабли
+- [Walmart Bundle Factory — independent diagnostic handoff](walmart-bundle-factory-independent-diagnostic-handoff.md) — нейтральная хронология повторяющегося Campbell's build, raw chat ID/transcript и prompt для независимого аудита
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 - [Veeqo API Quirks §7](veeqo-api-quirks.md) — VAS поле динамическое, читать из `rate.shipping_service_options[]` (USPS Ground Advantage требует `DELIVERY_CONFIRMATION`, не `NO_CONFIRMATION`). Master Prompt §12 устарел. 2026-05-14.
 - [Veeqo API Quirks §8](veeqo-api-quirks.md) — `tracking_number` может быть объектом, не строкой. 2026-05-14.
