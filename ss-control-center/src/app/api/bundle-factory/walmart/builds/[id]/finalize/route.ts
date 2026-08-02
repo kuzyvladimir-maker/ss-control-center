@@ -99,8 +99,7 @@ export async function POST(
           ambiguous_attempt: {
             command_id: collection.approval?.command_id ?? null,
             error_code: collection.approval?.error_code ?? null,
-            provider_units_used:
-              collection.progress?.provider_units_used ?? null,
+            provider_units_used: collection.progress?.providerUnits ?? null,
           },
         },
         { status: 409 },
