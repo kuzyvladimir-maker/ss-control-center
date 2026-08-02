@@ -49,6 +49,15 @@ import {
   parseVerifiedPhysicalPackageSpecs,
   physicalPackageFields,
 } from "../physical-package-specs";
+import {
+  WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+  WALMART_STUDIO_LISTING_ATTRIBUTE_KEY,
+  WALMART_STUDIO_LISTING_LANE,
+  buildWalmartStudioListingEvidence,
+  buildWalmartStudioPublicAttributes,
+  estimateWalmartStudioShippingPackage,
+  resolveWalmartStudioProductType,
+} from "../walmart-studio-listing";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -674,8 +683,19 @@ export async function promoteDraftToChannelSkus(
     }),
   );
   let nutritionImageUrl: string | null = null;
+  let hostedGalleryUrls: string[] = [];
   const snapshotComponents = JSON.parse(draft.draft_components) as Array<{
     research_pool_id?: string;
+    product_truth_component?: Record<string, unknown>;
+    walmart_preview?: {
+      image?: {
+        exact_source_url?: string;
+        source_asset_sha256?: string;
+        output_sha256?: string;
+        represented_unit_count?: number;
+        construction_method?: string;
+      };
+    };
   }>;
   const primaryDonorId = snapshotComponents[0]?.research_pool_id;
   const primaryDonor = primaryDonorId
@@ -727,6 +747,7 @@ export async function promoteDraftToChannelSkus(
     if (galleryUrls.length > 0) {
       const hosted = await mirrorDonorGallery(`draft-${draftId}-gallery`, galleryUrls);
       if (hosted.length > 0) {
+        hostedGalleryUrls = hosted;
         Object.assign(rich, galleryLocatorAttrs(hosted, MARKETPLACE_ID));
         richAttributesJson = JSON.stringify(rich);
       }
@@ -780,6 +801,91 @@ export async function promoteDraftToChannelSkus(
     /* band is best-effort — publish still sets our_price */
   }
 
+  // ---- Walmart studio lane -------------------------------------------------
+  // A studio draft was built from ONE exact canonical variant, and the engine
+  // recorded the whole chain in the draft snapshot. Promotion carries that
+  // chain onto the ChannelSKU so the Walmart validators check evidence rather
+  // than absence, and so a reviewer can read the listing's provenance straight
+  // off the SKU. Nothing is invented here: every value below is either copied
+  // from the snapshot or derived from the manufacturer's declared net mass.
+  // The US marketplace value the whole Bundle Factory already declares for
+  // these listings (see attributes/fill-map.ts). Kept in one place so the
+  // public Walmart block and the ChannelSKU column can never disagree.
+  const STUDIO_COUNTRY_OF_ORIGIN = "US";
+  const studioComponent = snapshotComponents[0]?.product_truth_component ?? null;
+  const studioImage = snapshotComponents[0]?.walmart_preview?.image ?? null;
+  const studioProductType = studioComponent
+    ? resolveWalmartStudioProductType({
+        product_name: String(studioComponent.product_name ?? ""),
+        flavor: typeof studioComponent.flavor === "string" ? studioComponent.flavor : null,
+      })
+    : null;
+  const studioIdentity = studioComponent?.canonical_identity as
+    | { sizeDimension?: string; sizeBaseAmount?: number; sizeBaseUnit?: string }
+    | undefined;
+  const studioEstimate =
+    studioComponent && studioIdentity
+      ? estimateWalmartStudioShippingPackage({
+          sizeDimension: String(studioIdentity.sizeDimension ?? ""),
+          sizeBaseAmount: Number(studioIdentity.sizeBaseAmount),
+          sizeBaseUnit: String(studioIdentity.sizeBaseUnit ?? ""),
+          packCount: draft.pack_count,
+        })
+      : null;
+  // Only the four measurable columns reach the database; `basis` stays in the
+  // estimator's return so callers can see where the numbers came from.
+  const studioPackage = studioEstimate
+    ? {
+        package_weight_oz: studioEstimate.package_weight_oz,
+        package_length_in: studioEstimate.package_length_in,
+        package_width_in: studioEstimate.package_width_in,
+        package_height_in: studioEstimate.package_height_in,
+      }
+    : null;
+
+  /** Per-SKU Walmart attributes; the evidence names its own SKU and image. */
+  function walmartStudioAttributesJson(
+    skuCode: string,
+    mainImageUrl: string,
+  ): string | null {
+    if (!studioComponent || !studioImage || !studioProductType) return null;
+    const base = JSON.parse(richAttributesJson) as Record<string, unknown>;
+    base.listing_lane = WALMART_STUDIO_LISTING_LANE;
+    base.walmart = buildWalmartStudioPublicAttributes({
+      packCount: draft.pack_count,
+      productType: studioProductType,
+      countryOfOrigin: STUDIO_COUNTRY_OF_ORIGIN,
+      secondaryImageUrls: hostedGalleryUrls,
+      // Walmart resolves the ship node from the SKU's shipping-template
+      // association; the studio lane does not pin one at promotion time.
+      fulfillmentCenterId: null,
+      declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+    });
+    base[WALMART_STUDIO_LISTING_ATTRIBUTE_KEY] = buildWalmartStudioListingEvidence({
+      sku: skuCode,
+      storeIndex: 1,
+      packCount: draft.pack_count,
+      verifiedAt: new Date(),
+      component: studioComponent,
+      images: [{
+        role: "MAIN",
+        url: mainImageUrl,
+        output_sha256: String(studioImage.output_sha256 ?? ""),
+        source_asset_sha256s: [String(studioImage.source_asset_sha256 ?? "")],
+        represented_unit_count: Number(studioImage.represented_unit_count),
+        construction_method:
+          studioImage.construction_method === "EXACT_SOURCE_ASSET"
+            ? "EXACT_SOURCE_ASSET"
+            : "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
+        exact_source_url: String(studioImage.exact_source_url ?? ""),
+      }],
+      shippingTemplateId: null,
+      fulfillmentCenterId: null,
+      declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+    });
+    return JSON.stringify(base);
+  }
+
   // Browse node depends on the bundle's brand mix, not the channel.
   // Pull the MasterBundle's BundleComponents once and compute the
   // distinct-brand count so resolveAmazonBrowseNode can decide.
@@ -793,6 +899,7 @@ export async function promoteDraftToChannelSkus(
       where: { master_bundle_id: masterBundleId, channel: row.channel },
       select: {
         id: true,
+        sku: true,
         package_weight_oz: true,
         package_length_in: true,
         package_width_in: true,
@@ -800,16 +907,30 @@ export async function promoteDraftToChannelSkus(
       },
     });
     if (existingSku) {
+      // Measured operator specs always win; the studio estimate only fills a
+      // field nobody has measured yet.
       const verifiedFields = verifiedPhysicalSpecs
         ? physicalPackageFields(verifiedPhysicalSpecs)
-        : null;
+        : row.channel === "WALMART" && studioPackage
+          ? studioPackage
+          : null;
+      const walmartAttributes =
+        row.channel === "WALMART" && row.main_image_url
+          ? walmartStudioAttributesJson(existingSku.sku, row.main_image_url)
+          : null;
       await prisma.channelSKU.update({
         where: { id: existingSku.id },
         data: {
           title: row.title,
           bullets: row.bullets_json,
           description: row.description,
-          attributes: richAttributesJson,
+          attributes: walmartAttributes ?? richAttributesJson,
+          ...(row.channel === "WALMART" && studioProductType
+            ? {
+                item_type: studioProductType,
+                country_of_origin: STUDIO_COUNTRY_OF_ORIGIN,
+              }
+            : {}),
           price_cents: autoPriceCents,
           ...(canonicalBusinessPrice != null
             ? { business_price_cents: canonicalBusinessPrice }
@@ -861,10 +982,21 @@ export async function promoteDraftToChannelSkus(
           title: row.title,
           bullets: row.bullets_json,
           description: row.description,
-          attributes: richAttributesJson,
+          attributes:
+            (row.channel === "WALMART" && row.main_image_url
+              ? walmartStudioAttributesJson(sku, row.main_image_url)
+              : null) ?? richAttributesJson,
+          ...(row.channel === "WALMART" && studioProductType
+            ? {
+                item_type: studioProductType,
+                country_of_origin: STUDIO_COUNTRY_OF_ORIGIN,
+              }
+            : {}),
           ...(verifiedPhysicalSpecs
             ? physicalPackageFields(verifiedPhysicalSpecs)
-            : {}),
+            : row.channel === "WALMART" && studioPackage
+              ? studioPackage
+              : {}),
           channel_browse_node: resolveAmazonBrowseNode({
             channel: row.channel,
             distinct_brands: distinctBrands,

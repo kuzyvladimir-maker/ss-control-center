@@ -9,6 +9,10 @@
  * Non-Walmart channels skip cleanly.
  */
 
+import {
+  WALMART_STUDIO_PRODUCT_TYPES,
+  isWalmartStudioLane,
+} from "../../walmart-studio-listing";
 import type { ValidatorFn } from "../types";
 import {
   WALMART_ITEM_MATCH_SPEC_VERSION,
@@ -58,6 +62,36 @@ export const validatorWalmartItemType: ValidatorFn = async ({ sku }) => {
       message: "Walmart ChannelSKU is missing item_type — required by Walmart taxonomy.",
     };
   }
+  // Studio-lane listings carry a product type taken from Walmart's own live
+  // taxonomy (GET /v3/items/taxonomy), which is stronger evidence than the
+  // legacy snapshot below and does not require a per-SKU Get Spec receipt.
+  if (isWalmartStudioLane(sku.attributes)) {
+    const known = WALMART_STUDIO_PRODUCT_TYPES.find(
+      (entry) => entry.product_type === itemType,
+    );
+    if (!known) {
+      return {
+        validator_id: "validator-walmart-item-type",
+        passed: false,
+        severity: "error",
+        message:
+          `item_type "${itemType}" is not in the taxonomy-verified studio list. `
+          + "Add it to WALMART_STUDIO_PRODUCT_TYPES after confirming the exact "
+          + "productTypeName in GET /v3/items/taxonomy.",
+        details: { item_type: itemType },
+      };
+    }
+    return {
+      validator_id: "validator-walmart-item-type",
+      passed: true,
+      details: {
+        item_type: itemType,
+        source: "walmart_live_taxonomy",
+        category: known.category,
+      },
+    };
+  }
+
   const parsed = parseWalmartAttributes(sku.attributes);
   const spec = parsed.walmart_prepublication?.item_spec;
   const publicContract = parsed.walmart;

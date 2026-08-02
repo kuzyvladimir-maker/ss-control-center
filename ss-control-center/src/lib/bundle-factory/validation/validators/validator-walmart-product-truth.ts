@@ -5,7 +5,15 @@ import {
   CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256,
   CANONICAL_PRODUCT_MATCHER_VERSION,
 } from "@/lib/sourcing/canonical-product-match-provenance";
-import type { ValidatorFn } from "../types";
+import {
+  DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS as WALMART_STUDIO_PRICE_EVIDENCE_MAX_AGE_MS,
+} from "@/lib/sourcing/product-truth-new-sku-view";
+import {
+  WALMART_STUDIO_LISTING_ATTRIBUTE_KEY,
+  WALMART_STUDIO_LISTING_EVIDENCE_SCHEMA,
+  isWalmartStudioLane,
+} from "../../walmart-studio-listing";
+import type { ValidatorFn, ValidatorInput, ValidatorResult } from "../types";
 import {
   PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA,
   WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
@@ -54,6 +62,184 @@ function componentMatches(
   return common && normalized(actual.product_name) === normalized(proof.product_name);
 }
 
+/**
+ * Studio lane: the factory built this listing itself, so the evidence it can
+ * show is exactly what it used — one canonical variant decision, one immutable
+ * content observation, one price observation, and the SHA-256 of the image
+ * bytes it composed from that variant's own packshot. This is the gate that
+ * keeps another product's content from reaching a live tile; it is not the
+ * pilot's owner-signed attestation bundle and does not pretend to be.
+ */
+function validateWalmartStudioListingTruth(input: {
+  sku: ValidatorInput["sku"];
+  master_bundle: ValidatorInput["master_bundle"];
+  bundle_components: ValidatorInput["bundle_components"];
+}): ValidatorResult {
+  const { sku, master_bundle, bundle_components } = input;
+  const failures: string[] = [];
+  let evidence: Record<string, unknown> | null = null;
+  try {
+    const attributes = JSON.parse(sku.attributes) as Record<string, unknown>;
+    const raw = attributes[WALMART_STUDIO_LISTING_ATTRIBUTE_KEY];
+    if (isRecord(raw)) evidence = raw;
+  } catch {
+    failures.push("ChannelSKU.attributes is not readable JSON");
+  }
+  if (!evidence) {
+    return {
+      validator_id: "validator-walmart-product-truth",
+      passed: false,
+      severity: "error",
+      message:
+        "Studio-lane listing carries no walmart_studio_listing evidence; "
+        + "re-run 'Prepare for Walmart publishing' on the draft.",
+      details: { failures },
+    };
+  }
+  if (evidence.schema_version !== WALMART_STUDIO_LISTING_EVIDENCE_SCHEMA) {
+    failures.push(
+      `unsupported studio evidence schema ${String(evidence.schema_version)}`,
+    );
+  }
+  const scope = isRecord(evidence.listing_scope) ? evidence.listing_scope : null;
+  if (!scope) {
+    failures.push("listing_scope is missing");
+  } else {
+    if (scope.channel !== "WALMART") failures.push("listing_scope.channel must be WALMART");
+    if (scope.sku !== sku.sku) failures.push("listing_scope.sku does not match ChannelSKU.sku");
+    if (master_bundle && scope.pack_count !== master_bundle.pack_count) {
+      failures.push(
+        `listing_scope.pack_count ${String(scope.pack_count)} != pack_count ${master_bundle.pack_count}`,
+      );
+    }
+  }
+  if (!isPastIsoDate(evidence.verified_at)) {
+    failures.push("verified_at is missing, invalid, or future-dated");
+  }
+
+  const identity = isRecord(evidence.identity) ? evidence.identity : null;
+  if (
+    !identity ||
+    !hasText(identity.canonical_variant_id) ||
+    !hasText(identity.variant_decision_id) ||
+    !hasText(identity.donor_product_id)
+  ) {
+    failures.push("exact canonical identity is incomplete");
+  } else if (
+    identity.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
+    identity.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
+    identity.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+  ) {
+    failures.push("identity was matched by a superseded matcher release");
+  }
+
+  const content = isRecord(evidence.content) ? evidence.content : null;
+  if (!content || content.role !== "EXACT") {
+    failures.push("content role is not EXACT");
+  } else {
+    if (!hasText(content.observation_id)) {
+      failures.push("content lacks an immutable observation id");
+    }
+    if (!isHttpUrl(content.source_url)) failures.push("content source URL is invalid");
+    if (!isPastIsoDate(content.captured_at)) failures.push("content capture time is invalid");
+  }
+
+  const price = isRecord(evidence.price) ? evidence.price : null;
+  if (!price) {
+    failures.push("no price evidence recorded");
+  } else {
+    if (!hasText(price.observation_id) || !hasText(price.donor_offer_id)) {
+      failures.push("price evidence lacks immutable offer provenance");
+    }
+    if (!isPositiveNumber(price.price_per_unit)) {
+      failures.push("recorded unit price is not positive");
+    }
+    // The owner's decision of 2026-08-02: a catalogue price up to three months
+    // old is usable for listing economics; a few cents of drift does not
+    // justify re-buying the observation.
+    if (!isFreshIsoDate(price.observed_at, WALMART_STUDIO_PRICE_EVIDENCE_MAX_AGE_MS)) {
+      failures.push("price evidence is older than 90 days or invalid");
+    }
+  }
+
+  const images = Array.isArray(evidence.images)
+    ? evidence.images.filter(isRecord)
+    : [];
+  const mainImages = images.filter((image) => image.role === "MAIN");
+  if (mainImages.length !== 1) {
+    failures.push(`exactly one MAIN image is required; found ${mainImages.length}`);
+  }
+  for (const image of images) {
+    const label = String(image.role ?? "image");
+    if (!isSha256(image.output_sha256)) failures.push(`${label} output_sha256 is invalid`);
+    const sources = Array.isArray(image.source_asset_sha256s)
+      ? image.source_asset_sha256s
+      : [];
+    if (sources.length === 0 || sources.some((value) => !isSha256(value))) {
+      failures.push(`${label} exact source asset digests are invalid`);
+    }
+    if (
+      image.generative_model_used !== false ||
+      image.added_graphics_or_text_overlay !== false
+    ) {
+      failures.push(`${label} is not a pure exact-source render`);
+    }
+    if (!isHttpUrl(image.exact_source_url)) {
+      failures.push(`${label} lacks the exact donor source URL`);
+    }
+  }
+  const main = mainImages[0];
+  if (main) {
+    if (main.url !== sku.main_image_url) {
+      failures.push("MAIN evidence URL differs from ChannelSKU.main_image_url");
+    }
+    if (master_bundle && main.represented_unit_count !== master_bundle.pack_count) {
+      failures.push(
+        `MAIN represents ${String(main.represented_unit_count)} units; expected ${master_bundle.pack_count}`,
+      );
+    }
+    if (
+      master_bundle &&
+      master_bundle.pack_count > 1 &&
+      main.construction_method !== "DETERMINISTIC_EXACT_PIXEL_MULTIPACK"
+    ) {
+      failures.push("MAIN multipack image must use deterministic exact-pixel composition");
+    }
+  }
+
+  const recipeTotal = bundle_components.reduce(
+    (sum, component) => sum + component.qty,
+    0,
+  );
+  if (master_bundle && recipeTotal !== master_bundle.pack_count) {
+    failures.push(`recipe total ${recipeTotal} != pack_count ${master_bundle.pack_count}`);
+  }
+  if (bundle_components.some((component) => !hasText(component.ingredients))) {
+    failures.push("a recipe component has no manufacturer ingredient statement");
+  }
+
+  if (failures.length > 0) {
+    return {
+      validator_id: "validator-walmart-product-truth",
+      passed: false,
+      severity: "error",
+      message: `Walmart studio truth gate failed: ${failures.join("; ")}.`,
+      details: { lane: "WALMART_STUDIO_DRAFT", failures },
+    };
+  }
+  return {
+    validator_id: "validator-walmart-product-truth",
+    passed: true,
+    details: {
+      lane: "WALMART_STUDIO_DRAFT",
+      canonical_variant_id: identity?.canonical_variant_id,
+      content_observation_id: content?.observation_id,
+      price_observation_id: price?.observation_id,
+      image_count: images.length,
+    },
+  };
+}
+
 export const validatorWalmartProductTruth: ValidatorFn = async ({
   sku,
   master_bundle,
@@ -65,6 +251,14 @@ export const validatorWalmartProductTruth: ValidatorFn = async ({
       passed: true,
       details: { skipped: true, reason: "non_walmart_channel" },
     };
+  }
+
+  if (isWalmartStudioLane(sku.attributes)) {
+    return validateWalmartStudioListingTruth({
+      sku,
+      master_bundle,
+      bundle_components,
+    });
   }
 
   const parsed = parseWalmartAttributes(sku.attributes);

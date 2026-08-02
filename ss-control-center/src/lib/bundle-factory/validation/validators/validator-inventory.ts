@@ -7,6 +7,10 @@
  * Missing UPC, unreachable Veeqo, or no catalogue match is an ERROR: unknown
  * inventory must never become an invented marketplace quantity.
  *
+ * Walmart is the exception and is handled before any of that: it runs on a
+ * buy-to-order model with no held stock, so it publishes a declared quantity
+ * (see walmart-studio-listing.ts) instead of reading a warehouse.
+ *
  * Veeqo has no native "search by UPC" endpoint in our client. We use
  * /products?query=<upc> which surfaces matching products; on success
  * we read one inventory level per returned product. Veeqo may expose the same
@@ -15,6 +19,9 @@
  */
 
 import { veeqoFetch } from "@/lib/veeqo/client";
+import {
+  WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+} from "../../walmart-studio-listing";
 import type { ValidatorFn } from "../types";
 
 interface VeeqoProductLite {
@@ -126,7 +133,24 @@ export async function deriveBundleInventory(
   };
 }
 
-export const validatorInventory: ValidatorFn = async ({ bundle_components }) => {
+export const validatorInventory: ValidatorFn = async ({ sku, bundle_components }) => {
+  // Walmart is sold buy-to-order: we hold no stock and purchase the goods at
+  // retail when an order arrives, so a Veeqo stock reading describes a
+  // warehouse this channel never ships from. The declared quantity is a
+  // published availability figure, not a claim about shelves — owner decision
+  // 2026-08-02. It is written to every ship node after the item goes live.
+  if (sku.channel === "WALMART") {
+    return {
+      validator_id: "validator-inventory",
+      passed: true,
+      details: {
+        source: "buy_to_order_declared",
+        bundle_available_quantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+        veeqo_checked: false,
+      },
+    };
+  }
+
   if (bundle_components.length === 0) {
     return {
       validator_id: "validator-inventory",

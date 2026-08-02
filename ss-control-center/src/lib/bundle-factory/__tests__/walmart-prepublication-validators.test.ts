@@ -389,17 +389,20 @@ test("Walmart gate rejects unhealthy account or retail-arbitrage fulfillment", a
   assert.match(arbitrageResult.message ?? "", /seller-fulfilled policy/i);
 });
 
-test("Walmart manufacturer brand requires matching truth, recipe and rights", async () => {
+test("Walmart lists the original manufacturer brand, ungated", async () => {
+  // Owner decision 2026-08-02: a Walmart listing carries the brand of the
+  // product being resold, and that field is not validated. Roughly ten
+  // thousand listings have been published this way through several account
+  // reviews. The gate that stays is exact product identity
+  // (validator-walmart-product-truth), not a brand-rights attestation.
   const valid = await validatorBrandField(fixture());
   assert.equal(valid.passed, true);
-  assert.equal(valid.details?.source, "walmart_exact_brand_rights");
+  assert.equal(valid.details?.source, "walmart_manufacturer_brand");
 
-  const mismatch = mutate(fixture(), (root) => {
+  const withoutRightsEvidence = mutate(fixture(), (root) => {
     root.walmart_prepublication!.brand_rights.brand = "Another Brand";
   });
-  const rejected = await validatorBrandField(mismatch);
-  assert.equal(rejected.passed, false);
-  assert.match(rejected.message ?? "", /brand-rights/);
+  assert.equal((await validatorBrandField(withoutRightsEvidence)).passed, true);
 });
 
 test("Walmart recipe gate reads and cross-checks the public quantity trio", async () => {
@@ -507,7 +510,8 @@ test("Walmart gates fail closed when versioned contracts are absent", async () =
   input.sku = { ...input.sku, attributes: "{}" };
   assert.equal((await validatorWalmartProductTruth(input)).passed, false);
   assert.equal((await validatorWalmartPrepublication(input)).passed, false);
-  assert.equal((await validatorBrandField(input)).passed, false);
+  // The brand field is deliberately not part of this fail-closed set — see
+  // "Walmart lists the original manufacturer brand, ungated" above.
 });
 
 test("static policy screening blocks prohibited signals and does not claim approval", async () => {

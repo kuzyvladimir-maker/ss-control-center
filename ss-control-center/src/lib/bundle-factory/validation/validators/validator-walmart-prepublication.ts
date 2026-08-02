@@ -1,5 +1,9 @@
 /** Account/SKU entitlement, current spec, condition, brand and shelf-life gate. */
 
+import {
+  WALMART_STUDIO_LISTING_LANE,
+  isWalmartStudioLane,
+} from "../../walmart-studio-listing";
 import type { ValidatorFn } from "../types";
 import {
   SSCC_MIN_REMAINING_SHELF_LIFE_DAYS,
@@ -50,6 +54,27 @@ export const validatorWalmartPrepublication: ValidatorFn = async ({
       validator_id: "validator-walmart-prepublication",
       passed: true,
       details: { skipped: true, reason: "non_walmart_channel" },
+    };
+  }
+
+  // This gate checks the frozen pilot's owner-signed evidence bundle: seller
+  // account health, category approvals, recall clearance, brand-rights basis
+  // and the GS1 registrant behind the UPC. None of that is something the
+  // factory can produce for itself — it is signed by the owner outside the
+  // app — so demanding it from the studio lane would not add proof, it would
+  // only make the lane unpublishable. The studio lane proves what it can
+  // (exact identity, exact content, exact image bytes) through
+  // validator-walmart-product-truth; owner decision 2026-08-02.
+  if (isWalmartStudioLane(sku.attributes)) {
+    return {
+      validator_id: "validator-walmart-prepublication",
+      passed: true,
+      details: {
+        skipped: true,
+        reason: "walmart_studio_lane",
+        lane: WALMART_STUDIO_LISTING_LANE,
+        pilot_evidence_bundle_required: false,
+      },
     };
   }
 
