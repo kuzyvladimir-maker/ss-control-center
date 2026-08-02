@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install && npm install --no-save --force @libsql/linux-arm64-gnu@0.5.29 @libsql/linux-x64-gnu@0.5.29",
+  "installCommand": "npm install && npm install --no-save --force @libsql/linux-arm64-gnu@0.5.29 @libsql/linux-x64-gnu@0.5.29 @img/sharp-linux-arm64@latest @img/sharp-libvips-linux-arm64@latest @img/sharp-linux-x64@latest @img/sharp-libvips-linux-x64@latest",
   "crons": [
     {
       "path": "/api/cron/walmart",

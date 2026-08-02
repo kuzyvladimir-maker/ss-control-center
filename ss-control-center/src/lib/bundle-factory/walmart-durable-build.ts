@@ -191,16 +191,18 @@ export function parseWalmartDurableBuildPreparationBrief(
   }
   const currentBatchId = text(collection.batch_id, "batch_id");
   const currentAttempt = attempts.at(-1);
-  const allDonorProductIds = attempts.flatMap(
-    (attempt) => attempt.donor_product_ids,
-  );
   if (
     !currentAttempt
     || currentAttempt.batch_id !== currentBatchId
     || currentAttempt.requested_at !== requestedAt
     || currentAttempt.admitted_jobs !== collection.admitted_jobs
+    // Every attempt is its own immutable batch. Attempts may legitimately
+    // target the SAME donors: after an attempt with an unknown paid outcome
+    // the owner explicitly retries those exact products. Cross-attempt donor
+    // uniqueness was therefore the wrong invariant — paying twice for one
+    // product is prevented by the doctor harvest-state gate, which refuses a
+    // donor that already owns a detail-harvest lifecycle.
     || new Set(attempts.map((attempt) => attempt.batch_id)).size !== attempts.length
-    || new Set(allDonorProductIds).size !== allDonorProductIds.length
   ) {
     throw new Error("Durable Walmart build current Product Truth attempt drifted");
   }

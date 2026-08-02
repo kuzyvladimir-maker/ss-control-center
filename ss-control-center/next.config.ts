@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
     "*": [
       "./node_modules/@libsql/linux-arm64-gnu/**/*",
       "./node_modules/@libsql/linux-x64-gnu/**/*",
+      // sharp resolves its native binding by platform at runtime as well, and
+      // Vercel runs arm64 here — a macOS-traced build shipped only darwin and
+      // x64, so every image-touching route 500'd.
+      "./node_modules/@img/sharp-linux-arm64/**/*",
+      "./node_modules/@img/sharp-libvips-linux-arm64/**/*",
     ],
   },
   // The repo carries ~3.6GB of local audit/evidence artifacts under data/.

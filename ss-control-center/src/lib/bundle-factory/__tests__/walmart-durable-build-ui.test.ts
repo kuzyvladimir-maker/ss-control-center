@@ -112,26 +112,41 @@ test("replacement selection excludes attempted donors and prefers the smallest s
   );
 });
 
-test("durable build rejects a replacement attempt that reuses the failed donor", () => {
+test("attempts are distinct batches, and may retry the very same donors", () => {
   const brief = preparationBrief();
+  const withRetry = (batchId: string) => ({
+    ...brief,
+    product_truth_collection: {
+      batch_id: batchId,
+      requested_at: "2026-08-02T04:01:00.000Z",
+      admitted_jobs: 1,
+      attempts: [
+        ...brief.product_truth_collection.attempts,
+        {
+          batch_id: batchId,
+          requested_at: "2026-08-02T04:01:00.000Z",
+          admitted_jobs: 1,
+          donor_product_ids: ["donor-1"],
+        },
+      ],
+    },
+  });
+  // Retrying the SAME donor after an unknown paid outcome is the owner's
+  // explicit choice; paying twice is prevented by the doctor harvest-state
+  // gate, not by this brief.
+  const parsed = parseWalmartDurableBuildPreparationBrief(
+    withRetry("ptbfw-abcdefabcdefabcdefabcdef"),
+  );
+  assert.equal(parsed.product_truth_collection.attempts.length, 2);
+  assert.deepEqual(
+    parsed.product_truth_collection.attempts[1]?.donor_product_ids,
+    ["donor-1"],
+  );
+  // Two attempts sharing one batch identity is still drift.
   assert.throws(
-    () => parseWalmartDurableBuildPreparationBrief({
-      ...brief,
-      product_truth_collection: {
-        batch_id: "ptbfw-abcdefabcdefabcdefabcdef",
-        requested_at: "2026-08-02T04:01:00.000Z",
-        admitted_jobs: 1,
-        attempts: [
-          ...brief.product_truth_collection.attempts,
-          {
-            batch_id: "ptbfw-abcdefabcdefabcdefabcdef",
-            requested_at: "2026-08-02T04:01:00.000Z",
-            admitted_jobs: 1,
-            donor_product_ids: ["donor-1"],
-          },
-        ],
-      },
-    }),
+    () => parseWalmartDurableBuildPreparationBrief(
+      withRetry(brief.product_truth_collection.attempts[0]!.batch_id),
+    ),
     /attempt drifted/u,
   );
 });
