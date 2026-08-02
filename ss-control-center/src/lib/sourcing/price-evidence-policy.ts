@@ -40,6 +40,12 @@ export type PriceEvidenceReasonCode =
   | "LOCAL_ZIP_INVALID"
   | "LOCAL_ZIP_MISMATCH"
   | "LOCALITY_SCOPE_UNPROVEN"
+  /**
+   * The ZIP comes from our own catalogue rather than a provider proof. Not a
+   * disqualifier (owner decision 2026-08-02) but always visible, so a price
+   * proven by a provider is never confused with one we simply hold.
+   */
+  | "LOCALITY_SCOPE_CATALOG_RECORDED"
   | "LOCALITY_EVIDENCE_UNSUPPORTED"
   | "LOCALITY_SCOPE_MISMATCH"
   | "MATCH_REJECTED"
@@ -59,6 +65,11 @@ export interface PriceEvidenceCandidate {
   zip: string | null | undefined;
   /** How the source proved that price and stock apply to this locality. */
   localityEvidence: PriceEvidenceLocalityEvidence | string | null | undefined;
+  /**
+   * Which API produced the row. `catalog-mirror` marks a price materialized
+   * from our own donor catalogue instead of a fresh provider call.
+   */
+  sourceApi?: string | null;
   fetchedAt: string | Date | null | undefined;
   matchVerdict: CanonicalMatchVerdict | string | null | undefined;
 }
@@ -301,7 +312,21 @@ export function evaluatePriceEvidenceEligibility(
   // A ZIP value copied into a row is not proof that the observed price/stock was
   // actually scoped to that ZIP or one of its stores. Scope provenance is a
   // separate mandatory signal for both local and national observations.
-  if (!rawLocalityEvidence) {
+  const catalogMirrorPrice =
+    typeof candidate.sourceApi === "string"
+    && candidate.sourceApi.trim().toLowerCase() === "catalog-mirror";
+  const catalogRecordedLocality = catalogMirrorPrice && !rawLocalityEvidence;
+  if (catalogRecordedLocality) {
+    // Owner decision 2026-08-02. These rows were harvested against the
+    // procurement ZIP but predate the field that records that proof, so the
+    // gap is in provenance recording rather than in the price itself.
+    // Refusing them meant re-buying prices the catalogue already held on every
+    // build, which is what kept the factory at 0-2 ready products per
+    // category. The allowance is deliberately narrow: only rows our own
+    // catalogue produced, and only once the exact-identity, first-party,
+    // in-stock, direct and ZIP-match checks above have already passed.
+    // deliberately not a rejection: handled as an ESTIMATE-grade price below
+  } else if (!rawLocalityEvidence) {
     addReason(reasons, "LOCALITY_SCOPE_UNPROVEN");
   } else if (localityEvidence === null) {
     addReason(reasons, "LOCALITY_EVIDENCE_UNSUPPORTED");
@@ -349,6 +374,11 @@ export function evaluatePriceEvidenceEligibility(
     addReason(estimateReasons, "SIZE_UNKNOWN_ESTIMATE");
   }
   if (via === "instacart") addReason(estimateReasons, "INSTACART_ESTIMATE");
+  // A catalogue-held price is a real observed price, but nothing proves it was
+  // scoped to our ZIP, so it is ESTIMATE grade and never FACT.
+  if (catalogRecordedLocality) {
+    addReason(estimateReasons, "LOCALITY_SCOPE_CATALOG_RECORDED");
+  }
 
   const eligibility: PriceEvidenceEligibility = estimateReasons.length ? "ESTIMATE" : "FACT";
   const reasonCodes = estimateReasons.length

@@ -34,7 +34,7 @@ import {
   DEFAULT_WALMART_PILOT_ZIP,
 } from "../src/lib/sourcing/product-truth-new-sku-view";
 
-const LOCALITY = "catalog_recorded_zip";
+const LOCALITY: string | null = null;
 /**
  * This observation is produced by reading OUR OWN catalogue, not by calling a
  * provider, and it says so. Claiming a paid provider's `sourceApi` without a
@@ -99,6 +99,8 @@ async function readCandidates(db: Client, zip: string, cutoff: string) {
                AND d.decisionStatus = 'exact_confirmed'
                AND d.canonicalVariantId IS NOT NULL
           WHERE o.retailer = 'walmart'
+            AND o.via = 'direct'
+            AND p.identityStatus = 'exact_confirmed'
             AND o.isFirstParty = 1
             AND o.inStock = 1
             AND o.price > 0
@@ -132,7 +134,7 @@ async function readCandidates(db: Client, zip: string, cutoff: string) {
       variantDecisionId,
       retailer: "walmart",
       retailerProductId: String(row.retailerProductId),
-      via: row.via ? String(row.via) : "direct",
+      via: String(row.via),
       title: row.title ? String(row.title) : null,
       price,
       packSizeSeen: 1,
@@ -165,7 +167,7 @@ async function main(): Promise<void> {
       mode: apply ? "APPLY" : "DRY_RUN",
       zip,
       cutoff,
-      locality: LOCALITY,
+      locality: LOCALITY ?? "none_recorded",
       candidates: candidates.length,
       provider_calls: 0,
       marketplace_mutations: 0,
@@ -194,10 +196,10 @@ async function main(): Promise<void> {
         currency: candidate.currency,
         zip: candidate.zip,
         observedAt: candidate.observedAt,
-        locality: LOCALITY,
+        locality: LOCALITY ?? "none_recorded",
       }));
       await db.execute({
-        sql: `INSERT OR IGNORE INTO "DonorOfferObservation"
+        sql: `INSERT INTO "DonorOfferObservation"
                 (id, observationKey, donorOfferId, donorProductId,
                  canonicalVariantId, variantDecisionId, retailer, retailerProductId,
                  via, title, price, packSizeSeen, pricePerUnit, currency, zip,
@@ -216,6 +218,16 @@ async function main(): Promise<void> {
         ],
       });
       written += 1;
+    }
+    const verified = await db.execute(
+      `SELECT COUNT(*) AS total FROM "DonorOfferObservation"
+       WHERE sourceApi = '${SOURCE_API}'`,
+    );
+    const total = Number(verified.rows[0]?.total ?? 0);
+    if (total < written) {
+      throw new Error(
+        `CATALOG_PRICE_OBSERVATION_WRITE_UNVERIFIED: attempted ${written}, present ${total}`,
+      );
     }
     console.log(JSON.stringify({
       status: "APPLIED",

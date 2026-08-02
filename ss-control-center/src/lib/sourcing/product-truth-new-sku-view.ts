@@ -48,10 +48,24 @@ export const DEFAULT_WALMART_PILOT_ZIP = "33765";
  *
  * This concerns PRICE only. Content truth keeps its own independent rules.
  */
-export const PRODUCT_TRUTH_PRICE_LOCALITY_CLASSES = Object.freeze([
-  "zip_scoped",
-  "catalog_recorded_zip",
-] as const);
+export const PRODUCT_TRUTH_CATALOG_PRICE_SOURCE_API = "catalog-mirror" as const;
+
+/**
+ * A catalogue-held price carries NO provider locality proof, so it stores
+ * `localityEvidence = NULL` — the honest value, and the only one the column's
+ * CHECK constraint allows for this case. It is never relabelled `zip_scoped`.
+ * It counts as PRICE evidence only together with `sourceApi = 'catalog-mirror'`,
+ * which exists solely for rows materialized from our own catalogue, so no other
+ * null-locality row is silently trusted.
+ */
+export function priceLocalityAccepted(input: {
+  localityEvidence: string | null;
+  sourceApi: string | null;
+}): boolean {
+  if (input.localityEvidence === "zip_scoped") return true;
+  return input.localityEvidence === null
+    && input.sourceApi === PRODUCT_TRUTH_CATALOG_PRICE_SOURCE_API;
+}
 
 export interface ProductTruthNewSkuPriceEvidence {
   role: "PRICE";
@@ -627,7 +641,10 @@ async function readExactLocalPrices(
       AND julianday(observation.observedAt)<=julianday(?)
       AND julianday(observation.observedAt)>=julianday(?)
       AND julianday(observation.createdAt)<=julianday(?)
-      AND observation.localityEvidence IN ('zip_scoped','catalog_recorded_zip')
+      AND (
+        observation.localityEvidence='zip_scoped'
+        OR (observation.localityEvidence IS NULL AND observation.sourceApi='catalog-mirror')
+      )
       AND observation.zip=?
     ORDER BY observation.pricePerUnit ASC, julianday(observation.observedAt) DESC,
       observation.observedAt DESC, observation.id ASC`,
@@ -926,8 +943,10 @@ export function buildProductTruthRecipeComponentFromRows(input: {
   const locality = optionalText(price.localityEvidence);
   const priceZip = optionalText(price.zip);
   if (
-    !(PRODUCT_TRUTH_PRICE_LOCALITY_CLASSES as readonly string[])
-      .includes(locality ?? "") ||
+    !priceLocalityAccepted({
+      localityEvidence: locality,
+      sourceApi: optionalText(price.sourceApi),
+    }) ||
     !/^\d{5}(?:-\d{4})?$/.test(priceZip ?? "") ||
     priceZip !== input.options.zip
   ) {
@@ -974,11 +993,20 @@ export function buildProductTruthRecipeComponentFromRows(input: {
       localityEvidence: locality,
       fetchedAt: observedAt,
       matchVerdict: "EXACT_IDENTITY",
+      sourceApi,
     },
     { now: input.options.asOf, maxAgeMs: input.options.maxPriceAgeMs },
   );
+  // FACT is the norm. The one accepted exception is a price the catalogue
+  // already holds, whose ONLY shortfall is that no provider proof of the ZIP
+  // was recorded (owner decision 2026-08-02). It stays ESTIMATE-grade for
+  // every downstream consumer; it is merely not a reason to refuse the build.
+  const catalogPricedEstimate =
+    policy.eligibility === "ESTIMATE"
+    && policy.reasonCodes.length === 1
+    && policy.reasonCodes[0] === "LOCALITY_SCOPE_CATALOG_RECORDED";
   if (
-    policy.eligibility !== "FACT" ||
+    (policy.eligibility !== "FACT" && !catalogPricedEstimate) ||
     policy.policyVersion !== PRICE_EVIDENCE_POLICY_VERSION
   ) {
     blockers.push(`PRICE_POLICY_NOT_FACT:${policy.reasonCodes.join(",")}`);
