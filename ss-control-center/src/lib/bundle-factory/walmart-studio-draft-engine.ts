@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { runComplianceGate } from "@/lib/bundle-factory/compliance/gate";
 import { allergenDeclarationFromLabelText } from "./allergen-declaration";
 
 import { prisma } from "@/lib/prisma";
@@ -411,6 +412,30 @@ async function buildOneDraft(input: {
     economics,
   });
 
+  // Content is born checked. The publish path only promotes CAN_PUBLISH
+  // content, so a draft written as PENDING was a listing nobody could ever
+  // publish. The gate runs on exactly the bytes generated above; a failure is
+  // recorded as BLOCKED with its reasons rather than silently passed.
+  const complianceDecision = await runComplianceGate(
+    {
+      title: content.title,
+      brand: component.manufacturer_brand,
+      bullets: content.bullets,
+      description: content.description,
+      main_image_url: mainImageUrl,
+      bundle_components: [{
+        brand: component.manufacturer_brand,
+        product_name: component.product_name,
+      }],
+      // The main image is a deterministic composite of the exact donor
+      // packshot, already proven by the composer; the vision re-check adds
+      // provider cost without adding evidence.
+      skip_image_check: true,
+    },
+    { actor: "walmart-studio-draft-engine" },
+  );
+  const contentComplianceStatus = complianceDecision.decision;
+
   const created = await prisma.$transaction(async (tx) => {
     const raced = await tx.bundleDraft.findUnique({
       where: { recipe_fingerprint: recipeFingerprint },
@@ -453,7 +478,7 @@ async function buildOneDraft(input: {
             title: content.title,
             bullets_json: JSON.stringify(content.bullets),
             description: content.description,
-            compliance_status: "PENDING",
+            compliance_status: contentComplianceStatus,
             main_image_url: mainImageUrl,
             image_generated_at: new Date(),
           },
