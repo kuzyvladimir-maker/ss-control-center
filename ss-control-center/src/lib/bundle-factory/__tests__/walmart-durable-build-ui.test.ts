@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+  WalmartDurableBuildRequestError,
   parseWalmartDurableBuildPreparationBrief,
   rankWalmartDurableCollectionCandidates,
   WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
@@ -261,4 +262,42 @@ test("a screen left open through a worker death repairs itself", async () => {
     component,
     /ambiguousAttempt \|\| collection\?\.status === "AMBIGUOUS"/u,
   );
+});
+
+test("an unservable build request is diagnosed, not reported as a crash", async () => {
+  // "Прогрессо" matches nothing in the catalogue (it indexes the
+  // manufacturer's own Latin wording). That used to reach the browser as
+  // "Internal server error", which tells the operator neither what happened
+  // nor what to do.
+  const unknownProduct = new WalmartDurableBuildRequestError("NO_EXACT_MATCHES", {
+    matched_variants: 0,
+    ready_variants: 0,
+    requested_listings: 5,
+    missing_needed: 5,
+  });
+  assert.match(unknownProduct.message, /no exact product/i);
+  assert.equal(unknownProduct.detail.matched_variants, 0);
+
+  // The other way to get here is different and must read differently: the
+  // catalogue knows the product, but every match has already been collected.
+  const exhausted = new WalmartDurableBuildRequestError("NO_COLLECTIBLE_CANDIDATES", {
+    matched_variants: 20,
+    ready_variants: 2,
+    requested_listings: 5,
+    missing_needed: 3,
+  });
+  assert.match(exhausted.message, /already been through targeted collection/i);
+
+  // The route must map both to a 422 with the diagnosis attached, never to the
+  // generic 500 handler.
+  const route = await readFile(
+    new URL(
+      "../../../app/api/bundle-factory/studio/generate/route.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(route, /instanceof WalmartDurableBuildRequestError/u);
+  assert.match(route, /status: 422/u);
+  assert.match(route, /next_step:/u);
 });

@@ -253,6 +253,55 @@ function walmartEnrichmentProgressPercent(
   )));
 }
 
+/**
+ * Turn a build-API failure into something the operator can act on.
+ *
+ * A request the catalogue cannot serve comes back as a 422 carrying what was
+ * searched, what was found and what to do next; showing only `error` threw all
+ * of that away. Anything genuinely unexpected still surfaces its detail rather
+ * than the bare words "Internal server error".
+ */
+function describeBuildFailure(data: unknown): string {
+  const body = (data ?? {}) as {
+    error?: unknown;
+    detail?: unknown;
+    searched_for?: unknown;
+    matched_variants?: unknown;
+    ready_variants?: unknown;
+    requested_listings?: unknown;
+    next_step?: unknown;
+  };
+  const headline = typeof body.error === "string" && body.error.trim()
+    ? body.error.trim()
+    : "Failed to start the build";
+  const lines = [headline];
+  if (typeof body.searched_for === "string" && body.searched_for.trim()) {
+    lines.push(`Searched for: “${body.searched_for.trim()}”`);
+  }
+  if (typeof body.matched_variants === "number") {
+    const ready = typeof body.ready_variants === "number"
+      ? body.ready_variants
+      : 0;
+    const requested = typeof body.requested_listings === "number"
+      ? body.requested_listings
+      : null;
+    lines.push(
+      `Catalogue: ${body.matched_variants} matching product(s), ${ready} ready`
+      + (requested === null ? "" : ` of ${requested} requested`),
+    );
+  }
+  if (typeof body.next_step === "string" && body.next_step.trim()) {
+    lines.push(body.next_step.trim());
+  } else if (
+    typeof body.detail === "string"
+    && body.detail.trim()
+    && body.detail.trim() !== headline
+  ) {
+    lines.push(body.detail.trim());
+  }
+  return lines.join("\n");
+}
+
 export default function StudioStartPage() {
   const router = useRouter();
 
@@ -480,7 +529,7 @@ export default function StudioStartPage() {
       }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data?.error ?? "Failed to start the build");
+    if (!res.ok) throw new Error(describeBuildFailure(data));
     window.sessionStorage.removeItem(WALMART_COLLECTION_RECOVERY_KEY);
     router.push(`/bundle-factory/new/${data.batch_id}`);
   }
@@ -1586,7 +1635,7 @@ export default function StudioStartPage() {
         </div>
 
         {error && (
-          <div className="rounded-[10px] border border-danger/20 bg-danger-tint px-3 py-2 text-[12.5px] text-danger">
+          <div className="whitespace-pre-line rounded-[10px] border border-danger/20 bg-danger-tint px-3 py-2 text-[12.5px] text-danger">
             {error}
           </div>
         )}

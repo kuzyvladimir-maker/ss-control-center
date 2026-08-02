@@ -176,11 +176,12 @@ export default async function StudioBatchPage({
               <BatchProgress
                 batchId={job.id}
                 reviewHref={`/bundle-factory/new/${job.id}/review`}
+                canRetryFailed={isCanonicalWalmart}
               />
             )}
           </>
         ) : (
-          <BatchProgress batchId={job.id} />
+          <BatchProgress batchId={job.id} canRetryFailed={isCanonicalWalmart} />
         )}
       </div>
     </>

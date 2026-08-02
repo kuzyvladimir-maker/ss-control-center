@@ -55,6 +55,7 @@ import {
   loadProductTruthWebControlRuntime,
 } from "@/lib/sourcing/product-truth-web-control-runtime";
 import {
+  WalmartDurableBuildRequestError,
   prepareWalmartDurableBuildCollection,
   parseWalmartDurableBuildPreparationBrief,
   WALMART_DURABLE_BUILD_PREPARATION_SCHEMA,
@@ -280,6 +281,28 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
             listingCount: intent.listing_count,
             packCount: intent.pack_count,
           });
+        } catch (collectionError) {
+          // A request the catalogue cannot serve is the operator's answer to
+          // read, not a crash to report. Say what was searched, what was
+          // found, and what to do next.
+          if (collectionError instanceof WalmartDurableBuildRequestError) {
+            return NextResponse.json(
+              {
+                error: collectionError.message,
+                code: collectionError.code,
+                searched_for: prompt,
+                ...collectionError.detail,
+                next_step: collectionError.code === "NO_EXACT_MATCHES"
+                  ? "Check the brand spelling as it appears on the retailer's site "
+                    + "(the catalogue matches the manufacturer's own wording, in Latin "
+                    + "letters), or run a discovery campaign for this product first."
+                  : "The matching products need general Product Truth discovery; the "
+                    + "one-donor targeted collector has already run on all of them.",
+              },
+              { status: 422 },
+            );
+          }
+          throw collectionError;
         } finally {
           collectionDb.close();
         }

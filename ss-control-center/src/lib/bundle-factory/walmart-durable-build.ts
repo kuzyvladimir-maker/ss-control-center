@@ -245,6 +245,38 @@ export function parseWalmartDurableBuildPreparationBrief(
   };
 }
 
+export interface WalmartDurableBuildRequestDetail {
+  matched_variants: number;
+  ready_variants: number;
+  requested_listings: number;
+  missing_needed: number;
+}
+
+/**
+ * A build request the catalogue cannot serve — not a server fault.
+ *
+ * The API layer turns this into a 422 that names what was found and what to do
+ * next, instead of the generic 500 the previous bare Error produced.
+ */
+export class WalmartDurableBuildRequestError extends Error {
+  readonly code: "NO_EXACT_MATCHES" | "NO_COLLECTIBLE_CANDIDATES";
+  readonly detail: WalmartDurableBuildRequestDetail;
+
+  constructor(
+    code: "NO_EXACT_MATCHES" | "NO_COLLECTIBLE_CANDIDATES",
+    detail: WalmartDurableBuildRequestDetail,
+  ) {
+    super(
+      code === "NO_EXACT_MATCHES"
+        ? "The donor catalogue has no exact product matching this request."
+        : "Every matching product has already been through targeted collection.",
+    );
+    this.name = "WalmartDurableBuildRequestError";
+    this.code = code;
+    this.detail = detail;
+  }
+}
+
 export async function prepareWalmartDurableBuildCollection(input: {
   db: Client;
   diagnostic: ProductTruthWalmartRequestDiagnostic;
@@ -300,8 +332,22 @@ export async function prepareWalmartDurableBuildCollection(input: {
     });
   }
   if (candidates.length < 1) {
-    throw new Error(
-      "No untouched targeted Walmart candidates can complete this build",
+    // Two very different situations reach this line and the operator has to be
+    // able to tell them apart: the catalogue does not know this product at
+    // all, or it knows it but every match has already been through the
+    // targeted collector. Throwing one bare Error turned both into a browser
+    // page reading "Internal server error", which says nothing and suggests
+    // nothing.
+    throw new WalmartDurableBuildRequestError(
+      input.diagnostic.matched_variants === 0
+        ? "NO_EXACT_MATCHES"
+        : "NO_COLLECTIBLE_CANDIDATES",
+      {
+        matched_variants: input.diagnostic.matched_variants,
+        ready_variants: input.diagnostic.ready_variants,
+        requested_listings: input.listingCount,
+        missing_needed: missingNeeded,
+      },
     );
   }
   const batch = buildProductTruthWalmartCollectionBatch({

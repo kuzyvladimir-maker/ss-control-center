@@ -9,6 +9,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
+import {
+  DraftWalmartPublishCell,
+  type DraftWalmartSkuState,
+} from "@/components/bundle-factory/DraftWalmartPublishCell";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +22,36 @@ export default async function DraftsPage() {
     orderBy: { updated_at: "desc" },
     take: 100,
   });
+
+  // Walmart state per row, so the list shows whether a listing is actually
+  // publishable instead of only where the draft sits in the pipeline.
+  const masterBundleIds = drafts
+    .map((d) => d.master_bundle_id)
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+  const walmartSkus = masterBundleIds.length
+    ? await prisma.channelSKU.findMany({
+        where: { channel: "WALMART", master_bundle_id: { in: masterBundleIds } },
+        select: {
+          master_bundle_id: true,
+          sku: true,
+          validation_status: true,
+          lifecycle_status: true,
+          listing_status: true,
+          live_url: true,
+          price_cents: true,
+        },
+      })
+    : [];
+  const walmartByMaster = new Map<string, DraftWalmartSkuState>(
+    walmartSkus.map((row) => [row.master_bundle_id, {
+      sku: row.sku,
+      validation_status: row.validation_status,
+      lifecycle_status: row.lifecycle_status,
+      listing_status: row.listing_status,
+      live_url: row.live_url,
+      price_cents: row.price_cents,
+    }]),
+  );
 
   // Status tally for the subtitle line.
   const tally = drafts.reduce<Record<string, number>>((acc, d) => {
@@ -57,6 +91,7 @@ export default async function DraftsPage() {
                 <Th>Draft</Th>
                 <Th>Brand</Th>
                 <Th>Status</Th>
+                <Th>Walmart</Th>
                 <Th>Type</Th>
                 <Th className="text-right">Cost (¢)</Th>
                 <Th className="text-right">Price (¢)</Th>
@@ -88,6 +123,16 @@ export default async function DraftsPage() {
                   <Td>{d.brand}</Td>
                   <Td>
                     <StatusPill status={d.status} />
+                  </Td>
+                  <Td>
+                    <DraftWalmartPublishCell
+                      draftId={d.id}
+                      state={
+                        d.master_bundle_id
+                          ? walmartByMaster.get(d.master_bundle_id) ?? null
+                          : null
+                      }
+                    />
                   </Td>
                   <Td className="font-mono text-[11.5px] text-ink-2">
                     {d.composition_type.toLowerCase()}

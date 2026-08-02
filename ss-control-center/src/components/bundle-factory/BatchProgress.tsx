@@ -11,7 +11,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Btn } from "@/components/kit";
-import { Loader2, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowRight,
+  RotateCcw,
+} from "lucide-react";
 
 interface Progress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -26,12 +32,17 @@ interface Progress {
 export function BatchProgress({
   batchId,
   reviewHref = "/bundle-factory/drafts",
+  /** Walmart studio builds can re-queue their failed listings in place. */
+  canRetryFailed = false,
 }: {
   batchId: string;
   reviewHref?: string;
+  canRetryFailed?: boolean;
 }) {
   const [progress, setProgress] = useState<Progress | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [retryNote, setRetryNote] = useState<string | null>(null);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -62,6 +73,64 @@ export function BatchProgress({
       cancelled = true;
     };
   }, [batchId]);
+
+  /**
+   * Put the failed listings of this build back in the queue.
+   *
+   * The engine spends three attempts per listing on its own; after that the
+   * item is FAILED and only a database edit could revive it. This is the same
+   * reset, as a button. It touches nothing outside this build and cannot reach
+   * a marketplace.
+   */
+  async function retryFailed() {
+    setRetrying(true);
+    setRetryNote(null);
+    try {
+      const res = await fetch(
+        `/api/bundle-factory/walmart/builds/${batchId}/retry`,
+        { method: "POST" },
+      );
+      const data = (await res.json()) as {
+        error?: string;
+        requeued?: number;
+        note?: string;
+      };
+      if (!res.ok) throw new Error(data?.error ?? "Could not re-queue");
+      setRetryNote(
+        data.requeued
+          ? `${data.requeued} listing(s) re-queued — building again…`
+          : data.note ?? "Nothing to re-queue.",
+      );
+      if (data.requeued) {
+        // Restart the tick loop the effect owns; it exits on done_flag.
+        setError(null);
+        startedRef.current = false;
+        setProgress(null);
+        void (async () => {
+          while (true) {
+            const tick = await fetch(
+              `/api/bundle-factory/studio/${batchId}/tick`,
+              { method: "POST" },
+            );
+            const next = (await tick.json()) as Progress;
+            if (!tick.ok) {
+              setError(
+                (next as unknown as { error?: string })?.error ?? "Tick failed",
+              );
+              return;
+            }
+            setProgress(next);
+            if (next.done_flag) return;
+            await new Promise((r) => setTimeout(r, 500));
+          }
+        })();
+      }
+    } catch (e) {
+      setRetryNote(e instanceof Error ? e.message : "Could not re-queue");
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   const total = progress?.total ?? 0;
   const done = progress?.done ?? 0;
@@ -123,9 +192,25 @@ export function BatchProgress({
         </div>
       )}
 
-      {isFailed && !error && (
-        <div className="mt-4 border-t border-rule pt-3 text-[12px] text-ink-3">
-          Fix the issue above, then start a new build.
+      {(isFailed || (progress?.failed ?? 0) > 0) && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-rule pt-3 text-[12px] text-ink-3">
+          {canRetryFailed && (progress?.failed ?? 0) > 0 ? (
+            <>
+              <Btn
+                variant="outline"
+                size="sm"
+                onClick={() => void retryFailed()}
+                disabled={retrying}
+              >
+                <RotateCcw size={14} strokeWidth={2} />
+                {retrying ? "Re-queueing…" : `Retry ${progress?.failed} failed`}
+              </Btn>
+              <span>Each retried listing gets a fresh three-attempt budget.</span>
+            </>
+          ) : (
+            <span>Fix the issue above, then start a new build.</span>
+          )}
+          {retryNote && <span className="text-ink-2">{retryNote}</span>}
         </div>
       )}
     </div>
