@@ -286,14 +286,44 @@ async function buildOneDraft(input: {
     packageWeightOz: weight.package_weight_oz,
     template,
   });
-  const sourceMainImageUrl = exactMainImageUrl(
-    component.facts.attributes._exact_main_image_url,
-  );
-  const source = await fetchWalmartStudioExactImage(sourceMainImageUrl);
-  const composed = await buildDeterministicWalmartMultipackImage({
-    sourceUnitImageBytes: source.bytes,
-    packCount: input.item.pack_count,
-  });
+  // The recorded "main" image is not always the packshot: some donors record a
+  // video still or a lifestyle frame, which has no removable white canvas and
+  // cannot become a Pack-of-N composite. Every candidate here is an exact,
+  // verified image of the SAME product from the SAME observation, so trying the
+  // gallery in order is a source choice, never a product substitution — and the
+  // composer itself still proves each candidate is a true packshot.
+  const imageCandidates = [
+    exactMainImageUrl(component.facts.attributes._exact_main_image_url),
+    ...exactStringArray(component.facts.attributes._exact_image_urls),
+  ]
+    .map((url) => assertWalmartStudioExactImageUrl(url).toString())
+    .filter((url, index, all) => all.indexOf(url) === index);
+  let sourceMainImageUrl = imageCandidates[0]!;
+  let sourceFetchedUrl = sourceMainImageUrl;
+  let composed: Awaited<ReturnType<typeof buildDeterministicWalmartMultipackImage>>
+    | null = null;
+  let lastImageError: unknown = null;
+  for (const candidate of imageCandidates) {
+    try {
+      const source = await fetchWalmartStudioExactImage(candidate);
+      composed = await buildDeterministicWalmartMultipackImage({
+        sourceUnitImageBytes: source.bytes,
+        packCount: input.item.pack_count,
+      });
+      sourceMainImageUrl = candidate;
+      sourceFetchedUrl = source.fetched_url;
+      break;
+    } catch (error) {
+      lastImageError = error;
+    }
+  }
+  if (!composed) {
+    throw new Error(
+      `No exact donor image could become a Pack-of-${input.item.pack_count} main image: ${
+        lastImageError instanceof Error ? lastImageError.message : String(lastImageError)
+      }`,
+    );
+  }
   if (composed.represented_unit_count !== input.item.pack_count) {
     throw new Error("The composed main image does not represent the requested count");
   }
@@ -336,7 +366,7 @@ async function buildOneDraft(input: {
       economics,
       image: {
         exact_source_url: sourceMainImageUrl,
-        fetched_url: source.fetched_url,
+        fetched_url: sourceFetchedUrl,
         source_asset_sha256: composed.source_asset_sha256,
         output_sha256: composed.output_sha256,
         represented_unit_count: composed.represented_unit_count,
