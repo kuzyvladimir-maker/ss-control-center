@@ -94,7 +94,16 @@ export function WalmartDurableBuildProgress({
       const next = result.collection as CollectionState;
       setCollection(next);
       setError(null);
-      if (next.status === "SUCCEEDED" || next.status === "FAILED") {
+      if (
+        next.status === "SUCCEEDED"
+        || next.status === "FAILED"
+        // AMBIGUOUS is terminal too: a started paid attempt whose worker died
+        // is never auto-retried, so the build must move to finalization (which
+        // records the attempt and, if products are still missing, prepares a
+        // NEW attempt behind a fresh exact quote).
+        || next.status === "AMBIGUOUS"
+        || next.status === "DECLINED"
+      ) {
         await finalizeBuild();
         return;
       }

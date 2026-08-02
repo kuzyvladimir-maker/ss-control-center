@@ -176,7 +176,12 @@ test("durable build page owns Product Truth approval and atomically continues th
   ]);
   assert.match(component, /collectionBatchId/u);
   assert.match(component, /Approve exact quote/u);
-  assert.match(component, /next\.status === "SUCCEEDED" \|\| next\.status === "FAILED"/u);
+  // Every terminal collection status must hand control to finalization —
+  // including AMBIGUOUS (dead paid attempt, never auto-retried) and DECLINED.
+  assert.match(
+    component,
+    /next\.status === "SUCCEEDED"[\s\S]*next\.status === "FAILED"[\s\S]*next\.status === "AMBIGUOUS"[\s\S]*next\.status === "DECLINED"/u,
+  );
   assert.match(component, /window\.location\.reload\(\)/u);
   assert.doesNotMatch(component, /sessionStorage/u);
   assert.match(finalize, /collection\.status !== "SUCCEEDED"/u);
