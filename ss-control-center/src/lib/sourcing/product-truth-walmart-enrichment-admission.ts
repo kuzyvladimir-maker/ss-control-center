@@ -421,12 +421,44 @@ export async function prepareProductTruthWalmartEnrichmentApproval(input: {
   if (quoteSha256 !== input.expectedQuoteSha256) {
     fail("ENRICHMENT_QUOTE_CHANGED", "displayed quote is no longer current");
   }
+  // A batch that already has a dead started attempt cannot be approved again
+  // under the same identity: its paid outcome is unknown, so the only correct
+  // continuation is a NEW attempt (new batch identity, new quote), which the
+  // owner starts explicitly from the build page.
+  const deadStartedAttempt = await prisma.productTruthControlCommand.findFirst({
+    where: {
+      commandKind: "EXECUTE",
+      runId: input.batchId,
+      status: { in: ["CLAIMED", "RUNNING"] },
+      executionStartedAt: { not: null },
+      workerLeaseExpiresAt: { lte: now },
+      ...exactRuntimeCommandWhere(input.runtime),
+    },
+    select: { commandId: true },
+  });
+  if (deadStartedAttempt) {
+    fail(
+      "ENRICHMENT_AMBIGUOUS_ATTEMPT_BLOCKS_APPROVAL",
+      "this batch has an attempt with an unknown paid outcome; start a new attempt instead of approving this one again",
+    );
+  }
+
+  // An EXECUTE whose worker started and then lost its lease is presented as
+  // terminal AMBIGUOUS even though the row still reads RUNNING. Such a command
+  // must never be handed back as a reusable approval: signing it would produce
+  // an authority the authorize step then rejects, which is how the owner ended
+  // up with a signed-but-unusable approval on 2026-08-02. Its replacement is a
+  // new attempt behind a new quote, chosen explicitly by the owner.
   const reusable = await prisma.productTruthControlCommand.findFirst({
     where: {
       commandKind: "EXECUTE",
       runId: input.batchId,
       requestedByUserId: collected.requestedByUserId,
       status: { in: ["AWAITING_OWNER", "ADMITTED", "CLAIMED", "RUNNING"] },
+      OR: [
+        { executionStartedAt: null },
+        { workerLeaseExpiresAt: { gt: now } },
+      ],
       ...exactRuntimeCommandWhere(input.runtime),
     },
     include: { artifacts: true },
