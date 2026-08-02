@@ -1005,6 +1005,10 @@ async function executeEnrichmentBatch(
   claim: ProductTruthWebWorkerClaim & {
     spec: Extract<ProductTruthWebWorkerClaim["spec"], { kind: "EXECUTE" }>;
   },
+  // The metered lane spawns the runner too, so it must carry the same lease
+  // the no-spend lane uses: spawnRunner's heartbeat policy reads it to decide
+  // whether a control-plane failure may terminate the child process.
+  lease: ProductTruthWorkerLease,
 ): Promise<ProductTruthWalmartEnrichmentResult> {
   const quoteBytes = Buffer.from(
     claim.spec.quote_content_base64,
@@ -1204,6 +1208,7 @@ async function executeEnrichmentBatch(
           "--out",
           outputDirectory,
         ],
+        lease,
         heartbeat: async () => {
           const current = await inspectCurrentEnrichmentStage({
             runtime,
@@ -1421,6 +1426,7 @@ async function executeClaim(
           { kind: "EXECUTE" }
         >;
       },
+      lease,
     );
     await completeClaim(runtime, claim, result);
     return;

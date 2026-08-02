@@ -378,3 +378,20 @@ test("proxy reserves Product Truth control routes for the separate worker token"
   );
   assert.match(proxy, /timingSafeEqual/u);
 });
+
+test("every runner spawn carries the lease its heartbeat policy needs", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  // spawnRunner's heartbeat interval reads input.lease.canContinue(). A call
+  // site that omits `lease` crashes the worker the moment the first heartbeat
+  // fires — which is exactly what killed the first metered enrichment run
+  // (TypeError: Cannot read properties of undefined (reading 'canContinue')).
+  const spawnCalls = script.split("spawnRunner({").slice(1);
+  assert.ok(spawnCalls.length >= 2, "expected both no-spend and metered spawns");
+  for (const call of spawnCalls) {
+    const body = call.slice(0, call.indexOf("heartbeat:"));
+    assert.match(body, /(^|\s)lease,/u);
+  }
+});
