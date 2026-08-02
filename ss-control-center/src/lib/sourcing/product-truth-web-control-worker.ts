@@ -608,54 +608,93 @@ export async function heartbeatProductTruthNoSpendCommand(input: {
 }): Promise<{ status: "CLAIMED" | "RUNNING"; lease_expires_at: string }> {
   const now = input.now ?? new Date();
   const leaseExpiresAt = new Date(now.getTime() + PRODUCT_TRUTH_WEB_WORKER_LEASE_MS);
-  return prisma.$transaction(async (tx) => {
-    const row = await tx.productTruthControlCommand.findUnique({
-      where: { commandId: input.commandId },
-    });
-    if (
-      !row
-      || (row.status !== "CLAIMED" && row.status !== "RUNNING")
-      || !leaseMatches(row, input.leaseToken, now)
-    ) {
-      fail("WORKER_LEASE_INVALID", "heartbeat lease is invalid");
-    }
-    const progress = input.progress === undefined || input.progress === null
-      ? null
-      : parseProductTruthWalmartEnrichmentProgress(input.progress);
-    if (
-      progress !== null
-      && (
-        row.commandKind !== "EXECUTE"
-        || row.runId !== progress.batchId
-      )
-    ) {
-      fail(
-        "WORKER_PROGRESS_BINDING_INVALID",
-        "enrichment progress differs from the exact execute command",
-      );
-    }
-    await tx.productTruthControlCommand.update({
-      where: { commandId: row.commandId },
+  const row = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  if (
+    !row
+    || (row.status !== "CLAIMED" && row.status !== "RUNNING")
+    || !leaseMatches(row, input.leaseToken, now)
+  ) {
+    fail("WORKER_LEASE_INVALID", "heartbeat lease is invalid");
+  }
+  const progress = input.progress === undefined || input.progress === null
+    ? null
+    : parseProductTruthWalmartEnrichmentProgress(input.progress);
+  if (
+    progress !== null
+    && (
+      row.commandKind !== "EXECUTE"
+      || row.runId !== progress.batchId
+    )
+  ) {
+    fail(
+      "WORKER_PROGRESS_BINDING_INVALID",
+      "enrichment progress differs from the exact execute command",
+    );
+  }
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: row.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const eventPayload = canonicalBytes({
+    leaseExpiresAt: leaseExpiresAt.toISOString(),
+    progress,
+    status: row.status,
+  });
+  const sequence = previous.sequence + 1;
+  const event = sealProductTruthControlEvent({
+    eventId:
+      `ptce-${row.commandId.slice(4)}-${sequence}-${sha256(eventPayload).slice(0, 8)}`,
+    commandId: row.commandId,
+    sequence,
+    eventType: "HEARTBEAT",
+    source: "WORKER",
+    occurredAt: now.toISOString(),
+    payload: eventPayload,
+    previousEventHash: previous.eventHash,
+  });
+  // Heartbeats use the same remote-libSQL-safe atomic batch as start and
+  // completion. Interactive callback transactions can expire while a valid
+  // long-running doctor/plan is still executing and must not turn that
+  // successful no-spend work into CLI_EXIT_1.
+  await prisma.$transaction([
+    prisma.productTruthControlCommand.update({
+      where: {
+        commandId: row.commandId,
+        status: row.status,
+        workerLeaseTokenSha256: row.workerLeaseTokenSha256,
+        workerLeaseExpiresAt: row.workerLeaseExpiresAt,
+      },
       data: {
         workerHeartbeatAt: now,
         workerLeaseExpiresAt: leaseExpiresAt,
       },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: row.commandId,
-      eventType: "HEARTBEAT",
-      occurredAt: now.toISOString(),
-      payload: {
-        leaseExpiresAt: leaseExpiresAt.toISOString(),
-        progress,
-        status: row.status,
+    }),
+    prisma.productTruthControlEvent.create({
+      data: {
+        eventId: event.eventId,
+        commandId: event.commandId,
+        schemaVersion: event.schemaVersion,
+        sequence: event.sequence,
+        eventType: event.eventType,
+        source: event.source,
+        occurredAt: new Date(event.occurredAt),
+        payload: prismaBytes(event.payload),
+        payloadSha256: event.payloadSha256,
+        previousEventHash: event.previousEventHash,
+        eventHash: event.eventHash,
       },
-    });
-    return {
-      status: row.status,
-      lease_expires_at: leaseExpiresAt.toISOString(),
-    };
-  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
+    }),
+  ]);
+  return {
+    status: row.status,
+    lease_expires_at: leaseExpiresAt.toISOString(),
+  };
 }
 
 function assertResultBoundToCommand(input: {

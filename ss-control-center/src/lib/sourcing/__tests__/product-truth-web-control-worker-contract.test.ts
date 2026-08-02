@@ -279,6 +279,28 @@ test("worker start commits the execution boundary with a remote-safe atomic batc
   assert.match(start, /row\.status === "RUNNING"/u);
 });
 
+test("worker heartbeat extends its lease with a remote-safe atomic batch", async () => {
+  const server = await readFile(
+    new URL("../product-truth-web-control-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const heartbeatAt = server.indexOf(
+    "export async function heartbeatProductTruthNoSpendCommand",
+  );
+  const completeAt = server.indexOf(
+    "export async function completeProductTruthNoSpendCommand",
+    heartbeatAt,
+  );
+  assert.ok(heartbeatAt >= 0);
+  assert.ok(completeAt > heartbeatAt);
+  const heartbeat = server.slice(heartbeatAt, completeAt);
+  assert.match(heartbeat, /await prisma\.\$transaction\(\[/u);
+  assert.match(heartbeat, /productTruthControlCommand\.update/u);
+  assert.match(heartbeat, /productTruthControlEvent\.create/u);
+  assert.match(heartbeat, /eventType: "HEARTBEAT"/u);
+  assert.doesNotMatch(heartbeat, /\$transaction\(async/u);
+});
+
 test("worker completion commits its chained terminal evidence with a remote-safe atomic batch", async () => {
   const server = await readFile(
     new URL("../product-truth-web-control-worker.ts", import.meta.url),
