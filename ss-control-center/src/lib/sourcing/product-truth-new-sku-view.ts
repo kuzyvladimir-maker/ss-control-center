@@ -18,7 +18,21 @@ import {
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 import { exactProductContentCapture } from "./product-content-capture";
 
-export const DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS = 24 * 60 * 60 * 1_000;
+/**
+ * How old a Walmart price may be and still count as evidence.
+ *
+ * Owner decision 2026-08-02: 24 hours was wrong for this catalogue. Shelf-stable
+ * grocery prices move a few cents over months, and a cents-level drift is
+ * immaterial against a 30% target margin — while re-buying a price the catalogue
+ * already holds costs real provider credits on every build. Dozens of Campbell's
+ * items carried 22-day-old ZIP-scoped first-party prices and were nonetheless
+ * reported as missing, which is what made the request look unfulfillable.
+ *
+ * This bounds PRICE evidence only. Content truth (ingredients, nutrition,
+ * allergens, imagery) keeps its own independent rules — the two axes never
+ * substitute for each other.
+ */
+export const DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1_000;
 export const DEFAULT_WALMART_PILOT_ZIP = "33765";
 
 export interface ProductTruthNewSkuPriceEvidence {

@@ -379,3 +379,17 @@ test("readiness source has no writer, provider, or consumer activation path", as
   assert.match(source, /ownerActivationGranted:\s*false/);
   assert.match(source, /consumerCutoverClaimed:\s*false/);
 });
+
+test("Walmart price evidence stays valid for the owner-approved 90 days", async () => {
+  const { DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS } = await import(
+    "../product-truth-new-sku-view"
+  );
+  // Owner decision 2026-08-02. A 24h window forced a paid re-fetch of prices
+  // the catalogue already held; shelf-stable grocery prices drift by cents
+  // over months, which is immaterial against a 30% target margin.
+  assert.equal(
+    DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS,
+    90 * 24 * 60 * 60 * 1_000,
+  );
+  assert.ok(DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS > 24 * 60 * 60 * 1_000);
+});
