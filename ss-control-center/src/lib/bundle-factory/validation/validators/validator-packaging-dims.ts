@@ -49,7 +49,7 @@ export const validatorPackagingDims: ValidatorFn = async ({ sku, master_bundle }
       passed: false,
       severity: "error",
       message:
-        "Package dimensions have no operator-verified ship-specs provenance.",
+        "Package dimensions have no recorded ship-specs provenance (operator measurement or declared studio estimate).",
     };
   }
   if (

@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { runComplianceGate } from "@/lib/bundle-factory/compliance/gate";
 import { allergenDeclarationFromLabelText } from "./allergen-declaration";
+import {
+  walmartStudioDisplayBrand,
+  walmartStudioDisplayFlavor,
+} from "./walmart-studio-listing";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -253,8 +257,22 @@ async function buildOneDraft(input: {
       "Product Truth identity or evidence changed after this work item was admitted",
     );
   }
+  // The canonical flavor is a sorted token bag built for hashing, not for a
+  // shopper to read. Show the manufacturer's own wording instead; see
+  // walmartStudioDisplayFlavor. The identity the listing claims is unchanged —
+  // only how the same variant is spelled on the page.
+  const displayFlavor = walmartStudioDisplayFlavor(
+    component as unknown as Record<string, unknown>,
+  );
+  const displayBrand = walmartStudioDisplayBrand(
+    component as unknown as Record<string, unknown>,
+  );
   const content = buildDeterministicWalmartMultipackContent({
-    component,
+    component: {
+      ...component,
+      flavor: displayFlavor,
+      manufacturer_brand: displayBrand,
+    },
     packCount: input.item.pack_count,
   });
   const template = assertWalmartShippingTemplateDetailsIntegrity(
@@ -347,8 +365,8 @@ async function buildOneDraft(input: {
   const snapshot = [{
     research_pool_id: component.donor_product_id,
     product_name: component.product_name,
-    brand: component.manufacturer_brand,
-    flavor: component.flavor,
+    brand: displayBrand,
+    flavor: displayFlavor,
     manufacturer_upc: component.manufacturer_upc,
     qty: component.qty,
     unit_price_cents: unitPriceCents,
@@ -391,7 +409,7 @@ async function buildOneDraft(input: {
     composition: [{
       research_pool_id: component.donor_product_id,
       product_name: component.product_name,
-      brand: component.manufacturer_brand,
+      brand: displayBrand,
       qty: component.qty,
       unit_price_cents: unitPriceCents,
     }],
@@ -419,12 +437,12 @@ async function buildOneDraft(input: {
   const complianceDecision = await runComplianceGate(
     {
       title: content.title,
-      brand: component.manufacturer_brand,
+      brand: displayBrand,
       bullets: content.bullets,
       description: content.description,
       main_image_url: mainImageUrl,
       bundle_components: [{
-        brand: component.manufacturer_brand,
+        brand: displayBrand,
         product_name: component.product_name,
       }],
       // The main image is a deterministic composite of the exact donor
@@ -457,7 +475,7 @@ async function buildOneDraft(input: {
       data: {
         generation_job_id: input.jobId,
         draft_name: content.title,
-        brand: component.manufacturer_brand,
+        brand: displayBrand,
         category: "SHELF_STABLE",
         composition_type: "SINGLE_FLAVOR",
         pack_count: input.item.pack_count,

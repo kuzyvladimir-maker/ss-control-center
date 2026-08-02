@@ -75,6 +75,68 @@ export function resolveWalmartStudioProductType(
   return null;
 }
 
+/**
+ * A flavor a shopper can read.
+ *
+ * `component.flavor` is the CANONICAL identity token bag — lower-cased, sorted,
+ * de-duplicated ("and baked cheese potato steak with"). It exists to make two
+ * spellings of the same product hash alike, and it is unusable as prose; a
+ * bullet reading "Exact flavor or variant: chicken pie pot pub style" went out
+ * on the first five drafts. The matcher's variant decision keeps the flavor as
+ * the manufacturer writes it ("Pub-Style Chicken Pot Pie"), so that is what the
+ * listing shows.
+ *
+ * When the decision has no separate flavor — the whole descriptor collapsed
+ * into the product line — this returns null and the content falls back to
+ * saying the pack is homogeneous. The exact product name in the title already
+ * carries the variant; inventing a flavor string would not.
+ */
+export function walmartStudioDisplayFlavor(
+  component: Record<string, unknown>,
+): string | null {
+  const provenance = component.content_provenance as
+    | { decision_evidence?: { targetIdentity?: { flavor?: unknown } } }
+    | undefined;
+  const declared = provenance?.decision_evidence?.targetIdentity?.flavor;
+  if (typeof declared === "string" && declared.trim().length > 0) {
+    return declared.trim();
+  }
+  return null;
+}
+
+/**
+ * The brand as the manufacturer writes it.
+ *
+ * `component.manufacturer_brand` is the canonical lower-cased key ("campbells")
+ * used for identity hashing. A shopper must see "Campbell's" — on the brand
+ * field and inside the copy — so the variant decision's own spelling wins here
+ * for exactly the same reason as walmartStudioDisplayFlavor. Falls back to the
+ * canonical key when the decision recorded nothing better.
+ */
+export function walmartStudioDisplayBrand(
+  component: Record<string, unknown>,
+): string {
+  const provenance = component.content_provenance as
+    | { decision_evidence?: { targetIdentity?: { brand?: unknown } } }
+    | undefined;
+  const declared = provenance?.decision_evidence?.targetIdentity?.brand;
+  if (typeof declared === "string" && declared.trim().length > 0) {
+    return repairPossessiveCasing(declared.trim());
+  }
+  return String(component.manufacturer_brand ?? "").trim();
+}
+
+/**
+ * Undo the one title-casing artifact the legacy bridge leaves behind.
+ *
+ * Word-boundary title casing treats the apostrophe as a boundary, so
+ * "Campbell's" comes back as "Campbell'S" — and some donors carry it that way
+ * while others do not. Nothing else about the recorded brand is touched.
+ */
+function repairPossessiveCasing(brand: string): string {
+  return brand.replace(/'S\b/g, "'s");
+}
+
 export interface WalmartStudioShippingPackage {
   package_weight_oz: number;
   package_length_in: number;

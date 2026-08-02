@@ -10,6 +10,8 @@ import {
   isWalmartStudioLane,
   packageArtworkRevisionId,
   resolveWalmartStudioProductType,
+  walmartStudioDisplayBrand,
+  walmartStudioDisplayFlavor,
 } from "../walmart-studio-listing";
 
 // The exact Campbell's component the factory built the five live drafts from.
@@ -167,4 +169,34 @@ test("packaging artwork revision is stable and digest-derived", () => {
   const second = packageArtworkRevisionId(["b".repeat(64), "a".repeat(64)]);
   assert.match(first, /^par1:[a-f0-9]{64}$/);
   assert.equal(first, second, "order of source assets must not change the id");
+});
+
+test("shows the manufacturer's own brand and flavor, not the hashing tokens", () => {
+  // component.flavor / manufacturer_brand are canonical identity keys built for
+  // hashing. Shipping them as prose produced "Same campbells product" and
+  // "Exact flavor or variant: chicken pie pot pub style" on real drafts.
+  const component = {
+    manufacturer_brand: "campbells",
+    flavor: "chicken pie pot pub style",
+    content_provenance: {
+      decision_evidence: {
+        targetIdentity: { brand: "Campbell'S", flavor: "Pub-Style Chicken Pot Pie" },
+      },
+    },
+  };
+  assert.equal(walmartStudioDisplayFlavor(component), "Pub-Style Chicken Pot Pie");
+  // The legacy bridge title-cases across the apostrophe; that artifact is
+  // repaired, and nothing else about the recorded brand changes.
+  assert.equal(walmartStudioDisplayBrand(component), "Campbell's");
+
+  // With no declared flavor the listing says nothing rather than inventing one
+  // — the exact product name in the title already carries the variant.
+  assert.equal(
+    walmartStudioDisplayFlavor({ flavor: "england clam chowder new" }),
+    null,
+  );
+  assert.equal(
+    walmartStudioDisplayBrand({ manufacturer_brand: "campbells" }),
+    "campbells",
+  );
 });

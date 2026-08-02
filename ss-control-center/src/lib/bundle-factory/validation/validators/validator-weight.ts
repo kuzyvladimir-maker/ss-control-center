@@ -1,8 +1,10 @@
 /**
  * Phase 2.4 Stage 6 — Validator 14: Package weight.
  *
- * Must be filled, positive, and exactly backed by the operator ship-specs
- * provenance. Calculated cooler weights are pricing inputs, not product facts.
+ * Must be filled, positive, and exactly backed by a recorded package
+ * provenance — an operator measurement, or the studio lane's declared estimate
+ * derived from the manufacturer's net mass. A cooler-capacity number is a
+ * pricing input and still counts as neither.
  */
 
 import type { ValidatorFn } from "../types";
@@ -36,7 +38,8 @@ export const validatorWeight: ValidatorFn = async ({ sku, master_bundle }) => {
       passed: false,
       severity: "error",
       message:
-        "Package weight has no operator-verified ship-specs provenance.",
+        "Package weight has no recorded ship-specs provenance "
+        + "(operator measurement or declared studio estimate).",
     };
   }
   if (proof.weight_oz !== weight) {
@@ -51,6 +54,6 @@ export const validatorWeight: ValidatorFn = async ({ sku, master_bundle }) => {
   return {
     validator_id: "validator-weight",
     passed: true,
-    details: { weight_oz: weight },
+    details: { weight_oz: weight, source: proof.source },
   };
 };

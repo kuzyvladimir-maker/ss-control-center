@@ -151,7 +151,14 @@ export const validatorRecipeContent: ValidatorFn = async ({
   for (const component of bundle_components) {
     const flavor = component.flavor?.trim();
     if (!flavor) {
-      failures.push(`component "${component.product_name}" has no canonical flavor`);
+      // A mixed assortment must name every flavor it contains and how many of
+      // each — that is what this check protects. A homogeneous pack of ONE
+      // exact variant is fully identified by the donor's own product name in
+      // the title, and some manufacturers publish no separate flavor field at
+      // all ("New England Clam Chowder" is the product, not a flavor of it).
+      if (bundle_components.length > 1) {
+        failures.push(`component "${component.product_name}" has no canonical flavor`);
+      }
       continue;
     }
     const expectedTokens = tokens(flavor);

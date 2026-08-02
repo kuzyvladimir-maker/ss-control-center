@@ -3,8 +3,18 @@
  *
  * Cooler capacity, carrier pricing weights, and box presets are planning
  * inputs. They are not evidence of the packed item's actual measurements.
- * Marketplace payloads may use physical attributes only after an operator has
- * entered the measured values through the ship-specs workflow.
+ * Marketplace payloads may use physical attributes only when the record says
+ * where the numbers came from, and there are exactly two honest answers:
+ *
+ *   OPERATOR_SHIP_SPECS      — a human measured the packed box. Strongest.
+ *   STUDIO_NET_MASS_ESTIMATE — derived from the manufacturer's declared net
+ *                              mass plus the studio lane's tare and box
+ *                              allowances (walmart-studio-listing.ts). Honest
+ *                              about being an estimate, and the value we
+ *                              actually declare on a buy-to-order multipack.
+ *
+ * Operator measurements always overwrite an estimate; a caller that needs a
+ * human measurement checks `source` rather than merely a non-null result.
  */
 
 import type { ChannelSKU } from "@/generated/prisma/client";
@@ -12,9 +22,18 @@ import type { ChannelSKU } from "@/generated/prisma/client";
 export const VERIFIED_PHYSICAL_PACKAGE_SCHEMA =
   "bundle-factory.verified-physical-package/v1" as const;
 
+export type PhysicalPackageSpecSource =
+  | "OPERATOR_SHIP_SPECS"
+  | "STUDIO_NET_MASS_ESTIMATE";
+
+export const PHYSICAL_PACKAGE_SPEC_SOURCES: readonly PhysicalPackageSpecSource[] = [
+  "OPERATOR_SHIP_SPECS",
+  "STUDIO_NET_MASS_ESTIMATE",
+];
+
 export interface VerifiedPhysicalPackageSpecs {
   schema_version: typeof VERIFIED_PHYSICAL_PACKAGE_SCHEMA;
-  source: "OPERATOR_SHIP_SPECS";
+  source: PhysicalPackageSpecSource;
   verified_at: string;
   weight_oz: number;
   length_in: number;
@@ -60,7 +79,7 @@ export function parseVerifiedPhysicalPackageSpecs(
   if (
     !raw ||
     raw.schema_version !== VERIFIED_PHYSICAL_PACKAGE_SCHEMA ||
-    raw.source !== "OPERATOR_SHIP_SPECS" ||
+    !PHYSICAL_PACKAGE_SPEC_SOURCES.includes(raw.source as PhysicalPackageSpecSource) ||
     typeof raw.verified_at !== "string" ||
     !Number.isFinite(Date.parse(raw.verified_at))
   ) {
@@ -84,7 +103,7 @@ export function parseVerifiedPhysicalPackageSpecs(
   }
   return {
     schema_version: VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
-    source: "OPERATOR_SHIP_SPECS",
+    source: raw.source as PhysicalPackageSpecSource,
     verified_at: raw.verified_at,
     weight_oz: weight,
     length_in: length,
@@ -93,7 +112,8 @@ export function parseVerifiedPhysicalPackageSpecs(
   };
 }
 
-/** Merge a newly measured set without discarding cooler/pricing metadata. */
+/** Merge a newly measured operator set without discarding cooler/pricing
+ *  metadata. */
 export function withVerifiedPhysicalPackageSpecs(
   packagingSpec: string | null | undefined,
   measured: Omit<
@@ -101,6 +121,7 @@ export function withVerifiedPhysicalPackageSpecs(
     "schema_version" | "source" | "verified_at"
   >,
   verifiedAt = new Date(),
+  source: PhysicalPackageSpecSource = "OPERATOR_SHIP_SPECS",
 ): string {
   const values = [
     measured.weight_oz,
@@ -114,7 +135,7 @@ export function withVerifiedPhysicalPackageSpecs(
   const verified: VerifiedPhysicalPackageSpecs = {
     ...measured,
     schema_version: VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
-    source: "OPERATOR_SHIP_SPECS",
+    source,
     verified_at: verifiedAt.toISOString(),
   };
   let prior: Record<string, unknown> = {};

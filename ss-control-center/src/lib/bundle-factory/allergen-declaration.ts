@@ -207,6 +207,38 @@ export function parseStoredAllergenDeclaration(
  * BundleComponent declarations and return the exact union of positive Amazon
  * tokens. Missing/malformed component data fails closed.
  */
+/**
+ * The declared allergen labels exactly as the manufacturer/retailer wrote
+ * them, with no marketplace vocabulary applied.
+ *
+ * Amazon's `allergen_information` is a closed enum, so
+ * amazonAllergensFromStoredDeclarations refuses a label it cannot map — that
+ * refusal is correct for Amazon and wrong everywhere else. Walmart takes the
+ * statement as text, and a retailer that publishes the EU allergen set
+ * ("celery", "molluscs", "gluten") is still publishing the manufacturer's
+ * declaration; silently dropping those labels off a food listing is the one
+ * outcome that must never happen.
+ */
+export function declaredAllergenLabelsFromStored(
+  values: Array<string | null | undefined>,
+): string[] {
+  const output: string[] = [];
+  const seen = new Set<string>();
+  for (const [index, value] of values.entries()) {
+    const declaration = parseStoredAllergenDeclaration(value);
+    if (!declaration) {
+      throw new Error(`component[${index}] has no structured allergen declaration`);
+    }
+    for (const label of declaration.contains) {
+      const key = label.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      output.push(label.trim());
+    }
+  }
+  return output;
+}
+
 export function amazonAllergensFromStoredDeclarations(
   values: Array<string | null | undefined>,
 ): string[] {

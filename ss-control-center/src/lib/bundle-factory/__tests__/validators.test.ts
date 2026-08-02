@@ -544,7 +544,9 @@ test("validator-packaging-dims rejects calculated columns without proof", async 
   input.master_bundle!.packaging_spec = JSON.stringify({ cooler_size: "M" });
   const out = await validatorPackagingDims(input);
   assert.equal(out.passed, false);
-  assert.match(out.message ?? "", /operator-verified/i);
+  // A cooler size is a planning input; it is neither a measurement nor a
+  // declared estimate, so it still proves nothing about the packed box.
+  assert.match(out.message ?? "", /no recorded ship-specs provenance/i);
 });
 
 // ── validator-weight ──────────────────────────────────────────────────

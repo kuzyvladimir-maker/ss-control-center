@@ -34,6 +34,7 @@ import {
 import {
   amazonAllergensFromStoredDeclarations,
   allergenDeclarationFromLabelText,
+  declaredAllergenLabelsFromStored,
   normalizeAllergenDeclaration,
   serializeAllergenDeclaration,
   type AllergenDeclaration,
@@ -48,6 +49,7 @@ import { isOwnBrandPassthrough } from "../own-brand";
 import {
   parseVerifiedPhysicalPackageSpecs,
   physicalPackageFields,
+  withVerifiedPhysicalPackageSpecs,
 } from "../physical-package-specs";
 import {
   WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
@@ -113,6 +115,46 @@ function buildSku(brand: string, channel: string, draftId: string): string {
   const mid = `${cc}${slug}`.padEnd(4, "X").slice(0, 4);
   const tail = pick(SKU_ALNUM, 4);
   return `${head}-${mid}-${tail}`;
+}
+
+/** True when the draft ships to Walmart and nowhere else. */
+function targetsWalmartOnly(targetChannels: string | null | undefined): boolean {
+  if (!targetChannels?.trim()) return false;
+  try {
+    const parsed = JSON.parse(targetChannels) as unknown;
+    return Array.isArray(parsed)
+      && parsed.length > 0
+      && parsed.every((channel) => channel === "WALMART");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The item price the Walmart studio engine solved for this draft, if this is a
+ * studio draft. `approval_notes` carries the sealed economics the draft page
+ * renders; the draft column is the same number and is used as the fallback.
+ */
+function walmartStudioReviewedPriceCents(
+  approvalNotes: string | null | undefined,
+  draftSuggestedPriceCents: number | null,
+): number | null {
+  if (!approvalNotes?.trim()) return null;
+  try {
+    const parsed = JSON.parse(approvalNotes) as {
+      workflow?: unknown;
+      economics?: { item_price_cents?: unknown };
+    };
+    if (parsed.workflow !== "CANONICAL_WALMART_NEW_SKU_DRAFT") return null;
+    const price = Number(parsed.economics?.item_price_cents);
+    if (Number.isSafeInteger(price) && price > 0) return price;
+    return Number.isSafeInteger(draftSuggestedPriceCents) &&
+      (draftSuggestedPriceCents ?? 0) > 0
+      ? draftSuggestedPriceCents
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 async function reserveUpc(draftId: string): Promise<{ id: string; upc: string } | null> {
@@ -266,7 +308,18 @@ async function ensureMasterBundle(
     const declarationSource = component.allergen_declaration
       ?? (typeof component.allergens === "string"
         ? allergenDeclarationFromLabelText(component.allergens)
-        : null);
+        : Array.isArray(component.allergens)
+          // Some retailers publish the manufacturer's allergen set as a
+          // structured list instead of the printed "Contains:" sentence. That
+          // is still a declared allergen field, not something read out of the
+          // ingredient list, so it satisfies the same guarantee.
+          ? {
+              contains: component.allergens
+                .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+                .map((entry) => entry.trim()),
+              may_contain: [],
+            }
+          : null);
     if (
       !declarationSource
       || (declarationSource.contains.length === 0
@@ -555,6 +608,14 @@ export async function promoteDraftToChannelSkus(
       packaging_spec: true,
     },
   });
+  const draftPriceRow = await prisma.bundleDraft.findUnique({
+    where: { id: draftId },
+    select: {
+      approval_notes: true,
+      draft_suggested_price_cents: true,
+      target_channels: true,
+    },
+  });
   const autoPrice = computeListingPrice(
     {
       brand: masterForPrice?.brand ?? null,
@@ -568,7 +629,17 @@ export async function promoteDraftToChannelSkus(
     },
     pricingModel,
   );
-  const autoPriceCents = autoPrice.selling_price_cents;
+  // A Walmart studio draft was already priced by the Walmart economics module
+  // against the exact shipping template and the 15% referral fee, and that is
+  // the number the owner reviewed on the draft page. Re-solving it with the
+  // Amazon cost model (cooler bands, FBA fees) produced a different, lower
+  // price at promotion — the page said one thing and the listing would have
+  // gone live at another. The reviewed price wins.
+  const studioPriceCents = walmartStudioReviewedPriceCents(
+    draftPriceRow?.approval_notes,
+    draftPriceRow?.draft_suggested_price_cents ?? null,
+  );
+  const autoPriceCents = studioPriceCents ?? autoPrice.selling_price_cents;
   const canonicalBusinessPrice = isOwnBrandPassthrough(masterForPrice?.brand)
     ? autoPriceCents
     : null;
@@ -639,6 +710,7 @@ export async function promoteDraftToChannelSkus(
       pack_count: true,
       category: true,
       draft_secondary_images: true,
+      target_channels: true,
     },
   });
 
@@ -671,9 +743,22 @@ export async function promoteDraftToChannelSkus(
     : masterComponents
         .map((component) => `${component.flavor ?? component.manufacturer_brand}: ${component.ingredients}`)
         .join("; ");
-  const authoritativeAllergens = amazonAllergensFromStoredDeclarations(
+  // Amazon's allergen field is a closed enum and refuses a label outside it;
+  // Walmart takes the declaration as text. A Walmart-only draft must therefore
+  // not be blocked because the manufacturer's list uses EU labels such as
+  // "celery" or "molluscs" — the declaration still ships in full.
+  const walmartOnlyDraft = targetsWalmartOnly(draft.target_channels);
+  const declaredAllergenLabels = declaredAllergenLabelsFromStored(
     masterComponents.map((component) => component.allergens),
   );
+  // The attribute builder speaks Amazon's closed enum. A Walmart-only draft
+  // has no Amazon enum to fill, so it fills none and carries the declaration
+  // as the manufacturer's own text below.
+  const authoritativeAllergens = walmartOnlyDraft
+    ? []
+    : amazonAllergensFromStoredDeclarations(
+        masterComponents.map((component) => component.allergens),
+      );
   let richAttributesJson = JSON.stringify(
     buildRichAmazonAttributes({
       ingredients: combinedIngredients,
@@ -682,6 +767,14 @@ export async function promoteDraftToChannelSkus(
       category: draft.category,
     }),
   );
+  if (walmartOnlyDraft && declaredAllergenLabels.length > 0) {
+    const rich = JSON.parse(richAttributesJson) as Record<string, unknown>;
+    rich.allergen_information = [{
+      value: declaredAllergenLabels.join(", "),
+      marketplace_id: MARKETPLACE_ID,
+    }];
+    richAttributesJson = JSON.stringify(rich);
+  }
   let nutritionImageUrl: string | null = null;
   let hostedGalleryUrls: string[] = [];
   const snapshotComponents = JSON.parse(draft.draft_components) as Array<{
@@ -772,7 +865,7 @@ export async function promoteDraftToChannelSkus(
       /* leave attributes as-is if JSON parse fails */
     }
   }
-  const verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(
+  let verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(
     masterForPrice?.packaging_spec,
   );
 
@@ -789,7 +882,15 @@ export async function promoteDraftToChannelSkus(
         marketplace_id: MARKETPLACE_ID,
         currency: "USD",
         minimum_seller_allowed_price: [
-          { schedule: [{ value_with_tax: autoPrice.floor_price_cents / 100 }] },
+          // The floor can only ever be at or below the listed price. When the
+          // Walmart studio price is used, the Amazon-model floor is not a
+          // comparable number, so it is clamped rather than trusted.
+          {
+            schedule: [{
+              value_with_tax:
+                Math.min(autoPrice.floor_price_cents, autoPriceCents) / 100,
+            }],
+          },
         ],
         maximum_seller_allowed_price: [
           { schedule: [{ value_with_tax: autoPriceCents / 100 }] },
@@ -842,6 +943,32 @@ export async function promoteDraftToChannelSkus(
         package_height_in: studioEstimate.package_height_in,
       }
     : null;
+
+  // Record the estimate as the bundle's package provenance when nobody has
+  // measured the box yet. It is stored under its own source name, so the
+  // listing never claims a human weighed it, and the operator's Ship-specs
+  // form overwrites it the moment real measurements exist.
+  if (studioEstimate && !verifiedPhysicalSpecs) {
+    const packagingSpec = withVerifiedPhysicalPackageSpecs(
+      masterForPrice?.packaging_spec,
+      {
+        weight_oz: studioEstimate.package_weight_oz,
+        length_in: studioEstimate.package_length_in,
+        width_in: studioEstimate.package_width_in,
+        height_in: studioEstimate.package_height_in,
+      },
+      new Date(),
+      "STUDIO_NET_MASS_ESTIMATE",
+    );
+    await prisma.masterBundle.update({
+      where: { id: masterBundleId },
+      data: {
+        packaging_spec: packagingSpec,
+        total_weight_oz: studioEstimate.package_weight_oz,
+      },
+    });
+    verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(packagingSpec);
+  }
 
   /** Per-SKU Walmart attributes; the evidence names its own SKU and image. */
   function walmartStudioAttributesJson(
