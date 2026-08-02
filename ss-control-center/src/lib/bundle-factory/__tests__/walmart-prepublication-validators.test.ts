@@ -580,7 +580,12 @@ test("prepublication fails on stale/wrong spec, required attributes and shelf li
     root.walmart_prepublication!.item_spec.version = "4.7";
     root.walmart!.spec_version = "4.7";
   });
-  assert.match((await validatorWalmartPrepublication(oldSpec)).message ?? "", /5\.0\.20260501/);
+  // Pin the CURRENT engine spec version, not a literal: the engine rejects a
+  // stale spec by naming the exact version it requires.
+  assert.match(
+    (await validatorWalmartPrepublication(oldSpec)).message ?? "",
+    /5\.0\.20260608-18_15_07-api/,
+  );
 
   const missing = mutate(fixture(), (root) => {
     root.walmart_prepublication!.item_spec.required_attributes.push("ingredients");
