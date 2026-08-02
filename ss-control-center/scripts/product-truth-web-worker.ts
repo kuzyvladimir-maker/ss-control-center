@@ -419,6 +419,15 @@ async function completeClaim(
       }
     }
   }
+  // The control plane refused the terminal write. The engine's verdict is the
+  // only record of what a PAID attempt actually did, so it must never die with
+  // the request: print it verbatim. On 2026-08-02 two paid attempts stopped
+  // for an unknown reason precisely because this evidence was lost.
+  process.stderr.write(
+    `PRODUCT_TRUTH_UNPERSISTED_TERMINAL_RESULT ${claim.command_id}\n${
+      JSON.stringify(result)
+    }\n`,
+  );
   throw lastError;
 }
 
