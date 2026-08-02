@@ -186,7 +186,7 @@ function parseCanonicalJsonBytes(bytes: Uint8Array, label: string): unknown {
 }
 
 async function appendWorkerEvent(
-  tx: Prisma.TransactionClient,
+  tx: Pick<Prisma.TransactionClient, "productTruthControlEvent">,
   input: {
     commandId: string;
     eventType:
@@ -633,64 +633,37 @@ export async function heartbeatProductTruthNoSpendCommand(input: {
       "enrichment progress differs from the exact execute command",
     );
   }
-  const previous = await prisma.productTruthControlEvent.findFirst({
-    where: { commandId: row.commandId },
-    orderBy: { sequence: "desc" },
-    select: { sequence: true, eventHash: true },
+  // A heartbeat does not grant authority or cross an execution boundary. Keep
+  // its mutable lease extension to one compare-and-swap statement: Prisma's
+  // remote libSQL transaction API can expire intermittently (P2028) even for
+  // a short array transaction, which used to turn successful doctor/plan work
+  // into CLI_EXIT_1. Any following audit-append failure still fails closed and
+  // the worker records a terminal failure through the normal completion path.
+  const updated = await prisma.productTruthControlCommand.updateMany({
+    where: {
+      commandId: row.commandId,
+      status: row.status,
+      workerLeaseTokenSha256: row.workerLeaseTokenSha256,
+      workerLeaseExpiresAt: row.workerLeaseExpiresAt,
+    },
+    data: {
+      workerHeartbeatAt: now,
+      workerLeaseExpiresAt: leaseExpiresAt,
+    },
   });
-  if (!previous) {
-    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  if (updated.count !== 1) {
+    fail("WORKER_LEASE_INVALID", "heartbeat lease changed before extension");
   }
-  const eventPayload = canonicalBytes({
-    leaseExpiresAt: leaseExpiresAt.toISOString(),
-    progress,
-    status: row.status,
-  });
-  const sequence = previous.sequence + 1;
-  const event = sealProductTruthControlEvent({
-    eventId:
-      `ptce-${row.commandId.slice(4)}-${sequence}-${sha256(eventPayload).slice(0, 8)}`,
+  await appendWorkerEvent(prisma, {
     commandId: row.commandId,
-    sequence,
     eventType: "HEARTBEAT",
-    source: "WORKER",
     occurredAt: now.toISOString(),
-    payload: eventPayload,
-    previousEventHash: previous.eventHash,
+    payload: {
+      leaseExpiresAt: leaseExpiresAt.toISOString(),
+      progress,
+      status: row.status,
+    },
   });
-  // Heartbeats use the same remote-libSQL-safe atomic batch as start and
-  // completion. Interactive callback transactions can expire while a valid
-  // long-running doctor/plan is still executing and must not turn that
-  // successful no-spend work into CLI_EXIT_1.
-  await prisma.$transaction([
-    prisma.productTruthControlCommand.update({
-      where: {
-        commandId: row.commandId,
-        status: row.status,
-        workerLeaseTokenSha256: row.workerLeaseTokenSha256,
-        workerLeaseExpiresAt: row.workerLeaseExpiresAt,
-      },
-      data: {
-        workerHeartbeatAt: now,
-        workerLeaseExpiresAt: leaseExpiresAt,
-      },
-    }),
-    prisma.productTruthControlEvent.create({
-      data: {
-        eventId: event.eventId,
-        commandId: event.commandId,
-        schemaVersion: event.schemaVersion,
-        sequence: event.sequence,
-        eventType: event.eventType,
-        source: event.source,
-        occurredAt: new Date(event.occurredAt),
-        payload: prismaBytes(event.payload),
-        payloadSha256: event.payloadSha256,
-        previousEventHash: event.previousEventHash,
-        eventHash: event.eventHash,
-      },
-    }),
-  ]);
   return {
     status: row.status,
     lease_expires_at: leaseExpiresAt.toISOString(),
