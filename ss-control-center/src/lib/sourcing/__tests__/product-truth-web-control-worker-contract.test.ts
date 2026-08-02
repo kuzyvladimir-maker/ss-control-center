@@ -301,7 +301,7 @@ test("worker heartbeat uses a remote-safe lease CAS before its audit append", as
   assert.doesNotMatch(heartbeat, /\$transaction\(/u);
 });
 
-test("worker completion commits its chained terminal evidence with a remote-safe atomic batch", async () => {
+test("worker completion is content-addressed, idempotent, and uses no remote transaction", async () => {
   const server = await readFile(
     new URL("../product-truth-web-control-worker.ts", import.meta.url),
     "utf8",
@@ -311,13 +311,40 @@ test("worker completion commits its chained terminal evidence with a remote-safe
   );
   assert.ok(completeAt >= 0);
   const completion = server.slice(completeAt);
-  assert.match(completion, /const artifactEvent = sealWorkerEventAfter/u);
-  assert.match(completion, /const terminalEvent = sealWorkerEventAfter/u);
-  assert.match(completion, /await prisma\.\$transaction\(\[/u);
-  assert.match(completion, /productTruthControlArtifact\.create/u);
-  assert.match(completion, /productTruthControlCommand\.update/u);
-  assert.match(completion, /productTruthControlEvent\.create/u);
-  assert.doesNotMatch(completion, /\$transaction\(async/u);
+  assert.match(completion, /persistWorkerTerminalState/u);
+  assert.doesNotMatch(completion, /\$transaction\(/u);
+  const persistenceAt = server.indexOf("async function persistWorkerTerminalState");
+  const buildClaimAt = server.indexOf("function buildClaimSpec", persistenceAt);
+  assert.ok(persistenceAt >= 0);
+  assert.ok(buildClaimAt > persistenceAt);
+  const persistence = server.slice(persistenceAt, buildClaimAt);
+  assert.match(persistence, /const statements: InStatement\[\]/u);
+  assert.match(persistence, /UPDATE "ProductTruthControlCommand"/u);
+  assert.match(persistence, /INSERT INTO "ProductTruthControlArtifact"/u);
+  assert.match(persistence, /INSERT INTO "ProductTruthControlEvent"/u);
+  assert.match(persistence, /await client\.batch\(statements, "write"\)/u);
+  assert.match(persistence, /verifyWorkerTerminalState/u);
+  assert.doesNotMatch(persistence, /\$transaction\(/u);
+});
+
+test("worker retries only the immutable completion receipt, never provider execution", async () => {
+  const script = await readFile(
+    new URL("../../../../scripts/product-truth-web-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const completeAt = script.indexOf("async function completeClaim");
+  const parseClaimAt = script.indexOf("function parseClaim", completeAt);
+  assert.ok(completeAt >= 0);
+  assert.ok(parseClaimAt > completeAt);
+  const completion = script.slice(completeAt, parseClaimAt);
+  assert.match(completion, /COMPLETION_ATTEMPTS/u);
+  assert.match(completion, /\/complete`/u);
+  assert.doesNotMatch(completion, /executeEnrichmentBatch|withMeteredProviderCall/u);
+  assert.equal(
+    script.match(/executeEnrichmentBatch\(/gu)?.length,
+    2,
+    "one definition and one execution call are expected",
+  );
 });
 
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {

@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
+import { resolve } from "node:path";
 
+import { createClient, type InStatement } from "@libsql/client";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -277,6 +279,264 @@ function workerEventCreateData(
     previousEventHash: event.previousEventHash,
     eventHash: event.eventHash,
   };
+}
+
+type ProductTruthWorkerTerminalStatus = "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
+
+function exactBytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  return Buffer.from(left).equals(Buffer.from(right));
+}
+
+function cleanDatabaseEnv(value: string | undefined): string | null {
+  const cleaned = value?.trim().replace(/^['"]|['"]$/g, "") ?? "";
+  return cleaned || null;
+}
+
+function productTruthControlClient() {
+  const tursoUrl = cleanDatabaseEnv(process.env.TURSO_DATABASE_URL);
+  const tursoToken = cleanDatabaseEnv(process.env.TURSO_AUTH_TOKEN);
+  if (tursoUrl && tursoToken) {
+    return createClient({ url: tursoUrl, authToken: tursoToken });
+  }
+  const databaseUrl = cleanDatabaseEnv(process.env.DATABASE_URL);
+  return createClient({
+    url: databaseUrl ?? `file:${resolve(process.cwd(), "dev.db")}`,
+  });
+}
+
+async function verifyWorkerTerminalState(input: {
+  commandId: string;
+  artifact: ReturnType<typeof sealProductTruthControlArtifact>;
+  terminalStatus: ProductTruthWorkerTerminalStatus;
+  exitCode: number;
+  outcome: string;
+  errorCode: string | null;
+  executionBoundary?: string;
+  artifactPayload: unknown;
+  terminalPayload: unknown;
+}): Promise<boolean> {
+  const command = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  if (
+    !command
+    || command.status !== input.terminalStatus
+    || command.resultArtifactId !== input.artifact.artifactId
+    || command.exitCode !== input.exitCode
+    || command.outcome !== input.outcome
+    || command.errorCode !== input.errorCode
+    || (
+      input.executionBoundary !== undefined
+      && command.executionBoundary !== input.executionBoundary
+    )
+  ) {
+    return false;
+  }
+  const artifact = await prisma.productTruthControlArtifact.findUnique({
+    where: { artifactId: input.artifact.artifactId },
+  });
+  if (
+    !artifact
+    || artifact.commandId !== input.artifact.commandId
+    || artifact.schemaVersion !== input.artifact.schemaVersion
+    || artifact.role !== input.artifact.role
+    || artifact.mediaType !== input.artifact.mediaType
+    || artifact.byteSize !== input.artifact.byteSize
+    || artifact.sha256 !== input.artifact.sha256
+    || artifact.locator !== input.artifact.locator
+    || artifact.createdByPrincipal !== input.artifact.createdByPrincipal
+    || !exactBytesEqual(artifact.content, input.artifact.content)
+  ) {
+    fail("WORKER_RESULT_ARTIFACT_CONFLICT", "stored result artifact differs from the exact retry");
+  }
+  const artifactPayload = canonicalBytes(input.artifactPayload);
+  const terminalPayload = canonicalBytes(input.terminalPayload);
+  const artifactEvents = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: "ARTIFACT_RECEIVED",
+      payloadSha256: sha256(artifactPayload),
+    },
+  });
+  const terminalEvents = await prisma.productTruthControlEvent.findMany({
+    where: {
+      commandId: input.commandId,
+      eventType: input.terminalStatus,
+      payloadSha256: sha256(terminalPayload),
+    },
+  });
+  if (artifactEvents.length !== 1 || terminalEvents.length !== 1) return false;
+  const artifactEvent = artifactEvents[0]!;
+  const terminalEvent = terminalEvents[0]!;
+  if (
+    !exactBytesEqual(artifactEvent.payload, artifactPayload)
+    || !exactBytesEqual(terminalEvent.payload, terminalPayload)
+    || terminalEvent.sequence !== artifactEvent.sequence + 1
+    || terminalEvent.previousEventHash !== artifactEvent.eventHash
+  ) {
+    fail("WORKER_EVENT_CHAIN_CONFLICT", "terminal evidence differs from the exact retry");
+  }
+  return true;
+}
+
+/**
+ * Persist an already-computed worker result in one direct libSQL write batch.
+ * This avoids Prisma's remote transaction expiry while retaining an atomic
+ * command/artifact/hash-chain transition. Unknown outcomes are verified from
+ * immutable content; a retry can only resubmit this receipt, never a provider
+ * operation.
+ */
+async function persistWorkerTerminalState(input: {
+  commandId: string;
+  leaseToken: string;
+  artifact: ReturnType<typeof sealProductTruthControlArtifact>;
+  terminalStatus: ProductTruthWorkerTerminalStatus;
+  exitCode: number;
+  outcome: string;
+  errorCode: string | null;
+  executionBoundary?: string;
+  terminalPayload: unknown;
+}): Promise<void> {
+  const artifactPayload = {
+    role: input.artifact.role,
+    sha256: input.artifact.sha256,
+    byteSize: input.artifact.byteSize,
+  };
+  const verification = {
+    ...input,
+    artifactPayload,
+  };
+  if (await verifyWorkerTerminalState(verification)) return;
+  const command = await prisma.productTruthControlCommand.findUnique({
+    where: { commandId: input.commandId },
+  });
+  if (
+    !command
+    || command.status !== "RUNNING"
+    || command.workerLeaseTokenSha256 !== sha256(input.leaseToken)
+  ) {
+    fail("WORKER_TERMINAL_STATE_CONFLICT", "command is not the exact running execution");
+  }
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: input.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const artifactEvent = sealWorkerEventAfter({
+    commandId: input.commandId,
+    previous,
+    eventType: "ARTIFACT_RECEIVED",
+    occurredAt: input.artifact.createdAt,
+    payload: artifactPayload,
+  });
+  const terminalEvent = sealWorkerEventAfter({
+    commandId: input.commandId,
+    previous: artifactEvent,
+    eventType: input.terminalStatus,
+    occurredAt: input.artifact.createdAt,
+    payload: input.terminalPayload,
+  });
+  const terminalBoundarySql = input.executionBoundary === undefined
+    ? ""
+    : `, "executionBoundary" = ?`;
+  const commandArgs = [
+    input.terminalStatus,
+    input.artifact.artifactId,
+    input.exitCode,
+    input.outcome,
+    input.errorCode,
+    ...(input.executionBoundary === undefined ? [] : [input.executionBoundary]),
+    input.artifact.createdAt,
+    input.commandId,
+    sha256(input.leaseToken),
+  ];
+  const statements: InStatement[] = [
+    {
+      sql: `UPDATE "ProductTruthControlCommand"
+            SET "status" = ?, "resultArtifactId" = ?, "exitCode" = ?,
+                "outcome" = ?, "errorCode" = ?${terminalBoundarySql},
+                "updatedAt" = ?
+            WHERE "commandId" = ? AND "status" = 'RUNNING'
+              AND "workerLeaseTokenSha256" = ?`,
+      args: commandArgs,
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlArtifact" (
+              "artifactId", "commandId", "schemaVersion", "role", "mediaType",
+              "content", "byteSize", "sha256", "locator", "createdAt",
+              "createdByPrincipal"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        input.artifact.artifactId,
+        input.artifact.commandId,
+        input.artifact.schemaVersion,
+        input.artifact.role,
+        input.artifact.mediaType,
+        input.artifact.content,
+        input.artifact.byteSize,
+        input.artifact.sha256,
+        input.artifact.locator,
+        input.artifact.createdAt,
+        input.artifact.createdByPrincipal,
+      ],
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlEvent" (
+              "eventId", "commandId", "schemaVersion", "sequence", "eventType",
+              "source", "occurredAt", "payload", "payloadSha256",
+              "previousEventHash", "eventHash"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        artifactEvent.eventId,
+        artifactEvent.commandId,
+        artifactEvent.schemaVersion,
+        artifactEvent.sequence,
+        artifactEvent.eventType,
+        artifactEvent.source,
+        artifactEvent.occurredAt,
+        artifactEvent.payload,
+        artifactEvent.payloadSha256,
+        artifactEvent.previousEventHash,
+        artifactEvent.eventHash,
+      ],
+    },
+    {
+      sql: `INSERT INTO "ProductTruthControlEvent" (
+              "eventId", "commandId", "schemaVersion", "sequence", "eventType",
+              "source", "occurredAt", "payload", "payloadSha256",
+              "previousEventHash", "eventHash"
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        terminalEvent.eventId,
+        terminalEvent.commandId,
+        terminalEvent.schemaVersion,
+        terminalEvent.sequence,
+        terminalEvent.eventType,
+        terminalEvent.source,
+        terminalEvent.occurredAt,
+        terminalEvent.payload,
+        terminalEvent.payloadSha256,
+        terminalEvent.previousEventHash,
+        terminalEvent.eventHash,
+      ],
+    },
+  ];
+  const client = productTruthControlClient();
+  let batchError: unknown = null;
+  try {
+    await client.batch(statements, "write");
+  } catch (error) {
+    batchError = error;
+  } finally {
+    client.close();
+  }
+  if (!await verifyWorkerTerminalState(verification)) {
+    if (batchError) throw batchError;
+    fail("WORKER_TERMINAL_STATE_CONFLICT", "atomic completion batch did not persist exact evidence");
+  }
 }
 
 function buildClaimSpec(
@@ -738,8 +998,13 @@ export async function completeProductTruthNoSpendCommand(input: {
   });
   if (
     !command
-    || command.status !== "RUNNING"
-    || !leaseMatches(command, input.leaseToken, now)
+    || command.workerLeaseTokenSha256 !== sha256(input.leaseToken)
+    || (
+      command.status !== "RUNNING"
+      && command.status !== "SUCCEEDED"
+      && command.status !== "FAILED"
+      && command.status !== "AMBIGUOUS"
+    )
   ) {
     fail("WORKER_LEASE_INVALID", "completion lease is invalid");
   }
@@ -773,34 +1038,19 @@ export async function completeProductTruthNoSpendCommand(input: {
         : result.status === "AMBIGUOUS"
           ? "AMBIGUOUS"
           : "FAILED";
-    const previous = await prisma.productTruthControlEvent.findFirst({
-      where: { commandId: command.commandId },
-      orderBy: { sequence: "desc" },
-      select: { sequence: true, eventHash: true },
-    });
-    if (!previous) {
-      fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
-    }
-    const artifactEvent = sealWorkerEventAfter({
+    await persistWorkerTerminalState({
       commandId: command.commandId,
-      previous,
-      eventType: "ARTIFACT_RECEIVED",
-      occurredAt: now.toISOString(),
-      payload: {
-        role: artifact.role,
-        sha256: artifact.sha256,
-        byteSize: artifact.byteSize,
-      },
-    });
-    const terminalEvent = sealWorkerEventAfter({
-      commandId: command.commandId,
-      previous: {
-        sequence: artifactEvent.sequence,
-        eventHash: artifactEvent.eventHash,
-      },
-      eventType: terminalStatus,
-      occurredAt: now.toISOString(),
-      payload: {
+      leaseToken: input.leaseToken,
+      artifact,
+      terminalStatus,
+      exitCode: terminalStatus === "SUCCEEDED" ? 0 : 2,
+      outcome: result.status,
+      errorCode:
+        terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
+      ...(terminalStatus === "AMBIGUOUS"
+        ? { executionBoundary: "UNKNOWN" }
+        : {}),
+      terminalPayload: {
         outcome: result.status,
         reason: result.reason,
         providerCalls: result.providerCalls,
@@ -809,46 +1059,6 @@ export async function completeProductTruthNoSpendCommand(input: {
         resultArtifactSha256: artifact.sha256,
       },
     });
-    // Remote libSQL can abort an interactive callback transaction while it is
-    // waiting between statements. Pre-seal the two chained events and commit
-    // the terminal transition as one atomic batch, exactly like start().
-    await prisma.$transaction([
-      prisma.productTruthControlArtifact.create({
-        data: {
-          artifactId: artifact.artifactId,
-          commandId: artifact.commandId,
-          schemaVersion: artifact.schemaVersion,
-          role: artifact.role,
-          mediaType: artifact.mediaType,
-          content: prismaBytes(artifact.content),
-          byteSize: artifact.byteSize,
-          sha256: artifact.sha256,
-          locator: artifact.locator,
-          createdAt: new Date(artifact.createdAt),
-          createdByPrincipal: artifact.createdByPrincipal,
-        },
-      }),
-      prisma.productTruthControlEvent.create({
-        data: workerEventCreateData(artifactEvent),
-      }),
-      prisma.productTruthControlCommand.update({
-        where: { commandId: command.commandId },
-        data: {
-          status: terminalStatus,
-          resultArtifactId: artifact.artifactId,
-          exitCode: terminalStatus === "SUCCEEDED" ? 0 : 2,
-          outcome: result.status,
-          ...(terminalStatus === "AMBIGUOUS"
-            ? { executionBoundary: "UNKNOWN" }
-            : {}),
-          errorCode:
-            terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
-        },
-      }),
-      prisma.productTruthControlEvent.create({
-        data: workerEventCreateData(terminalEvent),
-      }),
-    ]);
     return { status: terminalStatus, next: null };
   }
   let result;
@@ -872,79 +1082,27 @@ export async function completeProductTruthNoSpendCommand(input: {
     createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
   });
   const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
-  const previous = await prisma.productTruthControlEvent.findFirst({
-    where: { commandId: command.commandId },
-    orderBy: { sequence: "desc" },
-    select: { sequence: true, eventHash: true },
-  });
-  if (!previous) {
-    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
-  }
-  const artifactEvent = sealWorkerEventAfter({
+  await persistWorkerTerminalState({
     commandId: command.commandId,
-    previous,
-    eventType: "ARTIFACT_RECEIVED",
-    occurredAt: now.toISOString(),
-    payload: {
-      role: artifact.role,
-      sha256: artifact.sha256,
-      byteSize: artifact.byteSize,
-    },
-  });
-  const terminalEvent = sealWorkerEventAfter({
-    commandId: command.commandId,
-    previous: {
-      sequence: artifactEvent.sequence,
-      eventHash: artifactEvent.eventHash,
-    },
-    eventType: terminalStatus,
-    occurredAt: now.toISOString(),
-    payload: {
+    leaseToken: input.leaseToken,
+    artifact,
+    terminalStatus,
+    exitCode: result.exitCode,
+    outcome:
+      result.exitCode === 0
+        ? "NO_SPEND_ARTIFACT_CREATED"
+        : "NO_SPEND_COMMAND_FAILED",
+    errorCode:
+      result.exitCode === 0
+        ? null
+        : `CLI_EXIT_${result.exitCode}`,
+    terminalPayload: {
       exitCode: result.exitCode,
       resultArtifactSha256: artifact.sha256,
       providerCalls: 0,
       marketplaceMutations: 0,
     },
   });
-  await prisma.$transaction([
-    prisma.productTruthControlArtifact.create({
-      data: {
-        artifactId: artifact.artifactId,
-        commandId: artifact.commandId,
-        schemaVersion: artifact.schemaVersion,
-        role: artifact.role,
-        mediaType: artifact.mediaType,
-        content: prismaBytes(artifact.content),
-        byteSize: artifact.byteSize,
-        sha256: artifact.sha256,
-        locator: artifact.locator,
-        createdAt: new Date(artifact.createdAt),
-        createdByPrincipal: artifact.createdByPrincipal,
-      },
-    }),
-    prisma.productTruthControlEvent.create({
-      data: workerEventCreateData(artifactEvent),
-    }),
-    prisma.productTruthControlCommand.update({
-      where: { commandId: command.commandId },
-      data: {
-        status: terminalStatus,
-        resultArtifactId: artifact.artifactId,
-        exitCode: result.exitCode,
-        outcome:
-          result.exitCode === 0
-            ? "NO_SPEND_ARTIFACT_CREATED"
-            : "NO_SPEND_COMMAND_FAILED",
-        errorCode:
-          result.exitCode === 0
-            ? null
-            : `CLI_EXIT_${result.exitCode}`,
-      },
-    }),
-    prisma.productTruthControlEvent.create({
-      data: workerEventCreateData(terminalEvent),
-    }),
-  ]);
   if (terminalStatus === "FAILED") {
     return { status: "FAILED", next: null };
   }

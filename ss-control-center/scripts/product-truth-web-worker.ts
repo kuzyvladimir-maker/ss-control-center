@@ -65,6 +65,7 @@ import {
 const POLL_MS = 5_000;
 const HEARTBEAT_MS = 30_000;
 const CONTROL_API_TIMEOUT_MS = 150_000;
+const COMPLETION_ATTEMPTS = 3;
 const MAX_GIT_OUTPUT_BYTES = 64 * 1024;
 const RUNNER_PATH = resolve(
   process.cwd(),
@@ -260,6 +261,41 @@ async function api(
     fail(`control API ${path} returned HTTP ${response.status}${code}`);
   }
   return value as Record<string, unknown>;
+}
+
+/**
+ * Retry only the control-plane acknowledgement with the exact same immutable
+ * result. The paid provider work has already ended before this function is
+ * entered, so a transient remote database failure can never replay a provider
+ * request or advance another enrichment job.
+ */
+async function completeClaim(
+  runtime: WorkerRuntime,
+  claim: ProductTruthWebWorkerClaim,
+  result: unknown,
+): Promise<void> {
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= COMPLETION_ATTEMPTS; attempt += 1) {
+    try {
+      await api(
+        runtime,
+        `/api/external/product-truth/control/${claim.command_id}/complete`,
+        {
+          lease_token: claim.lease_token,
+          result,
+        },
+      );
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < COMPLETION_ATTEMPTS) {
+        await new Promise<void>((resolvePromise) => {
+          setTimeout(resolvePromise, attempt * 250);
+        });
+      }
+    }
+  }
+  throw lastError;
 }
 
 function parseClaim(value: unknown): ProductTruthWebWorkerClaim | null {
@@ -1233,14 +1269,7 @@ async function executeClaim(
         >;
       },
     );
-    await api(
-      runtime,
-      `/api/external/product-truth/control/${claim.command_id}/complete`,
-      {
-        lease_token: claim.lease_token,
-        result,
-      },
-    );
+    await completeClaim(runtime, claim, result);
     return;
   }
   const root = await realpath(
@@ -1276,14 +1305,7 @@ async function executeClaim(
         marketplaceMutations: 0,
       },
     });
-    await api(
-      runtime,
-      `/api/external/product-truth/control/${claim.command_id}/complete`,
-      {
-        lease_token: claim.lease_token,
-        result,
-      },
-    );
+    await completeClaim(runtime, claim, result);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -294,6 +294,7 @@ export function buildOxylabsWalmartProductQuery(
   parse: true;
   delivery_zip: typeof PRODUCT_TRUTH_PROCUREMENT_ZIP;
   store_id: typeof PRODUCT_TRUTH_WALMART_STORE_ID;
+  fulfillment_type: "shipping";
 } {
   if (!/^\d{1,20}$/.test(itemId)) {
     throw new Error("OXYLABS_WALMART_PRODUCT_ID_INVALID");
@@ -304,6 +305,7 @@ export function buildOxylabsWalmartProductQuery(
     parse: true,
     delivery_zip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
     store_id: PRODUCT_TRUTH_WALMART_STORE_ID,
+    fulfillment_type: "shipping",
   };
 }
 
