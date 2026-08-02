@@ -21,6 +21,10 @@
 
 import { createHash } from "node:crypto";
 
+import {
+  WALMART_PUBLIC_CONTRACT_SCHEMA,
+} from "./walmart-listing-contract";
+
 /** Marker written into ChannelSKU.attributes by the studio promote path. */
 export const WALMART_STUDIO_LISTING_LANE = "WALMART_STUDIO_DRAFT" as const;
 
@@ -41,6 +45,13 @@ export const WALMART_STUDIO_LISTING_ATTRIBUTE_KEY = "walmart_studio_listing" as 
  * therefore describes a warehouse we do not use and must not gate publication.
  */
 export const WALMART_STUDIO_DECLARED_INVENTORY_UNITS = 50;
+
+/**
+ * Setting holding the Walmart ship node new studio listings attach their offer
+ * to. The account has several nodes and declared inventory is written to all
+ * of them; the offer still names exactly one, and that choice is the owner's.
+ */
+export const WALMART_DEFAULT_SHIP_NODE_SETTING_KEY = "walmart_default_ship_node";
 
 /** Handling time we promise Walmart for a buy-to-order item (business days). */
 export const WALMART_STUDIO_FULFILLMENT_LAG_DAYS = 2;
@@ -361,9 +372,19 @@ export function buildWalmartStudioPublicAttributes(input: {
   secondaryImageUrls: string[];
   fulfillmentCenterId: string | null;
   declaredQuantity: number;
+  /** Live Get Spec evidence, when the fetch succeeded. */
+  spec?: { version: string; schema_sha256: string; fetched_at: string } | null;
 }): Record<string, unknown> {
   return {
+    contract_version: WALMART_PUBLIC_CONTRACT_SCHEMA,
     lane: WALMART_STUDIO_LISTING_LANE,
+    ...(input.spec
+      ? {
+          spec_version: input.spec.version,
+          spec_schema_hash: input.spec.schema_sha256,
+          spec_fetched_at: input.spec.fetched_at,
+        }
+      : {}),
     product_type: input.productType,
     country_of_origin_substantial_transformation: input.countryOfOrigin,
     secondary_image_urls: input.secondaryImageUrls,

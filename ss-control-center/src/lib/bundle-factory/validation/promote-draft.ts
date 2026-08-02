@@ -51,7 +51,15 @@ import {
   physicalPackageFields,
   withVerifiedPhysicalPackageSpecs,
 } from "../physical-package-specs";
+import { getWalmartClient } from "@/lib/walmart/client";
 import {
+  fetchWalmartItemSpecSchema,
+} from "../distribution/walmart-item-spec";
+import {
+  WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+} from "./walmart-prepublication-policy";
+import {
+  WALMART_DEFAULT_SHIP_NODE_SETTING_KEY,
   WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
   WALMART_STUDIO_LISTING_ATTRIBUTE_KEY,
   WALMART_STUDIO_LISTING_LANE,
@@ -970,6 +978,42 @@ export async function promoteDraftToChannelSkus(
     verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(packagingSpec);
   }
 
+  // Walmart's item contract must name the exact spec the payload was built
+  // against. Fetching it here (once per promotion, cached by the client) means
+  // the listing carries live Get Spec evidence instead of a pinned guess. A
+  // failed fetch is not fatal at this stage: the studio validators do not read
+  // it, and the publish path refuses on its own with a clear contract error.
+  // Walmart attaches the offer to one fulfillment center. The account has
+  // several ship nodes and inventory is written to all of them, so which one
+  // the offer names is the owner's call; it is stored once as a Setting rather
+  // than guessed per listing.
+  const shipNodeSetting = await prisma.setting.findUnique({
+    where: { key: WALMART_DEFAULT_SHIP_NODE_SETTING_KEY },
+  });
+  const studioFulfillmentCenterId = shipNodeSetting?.value?.trim() || null;
+
+  let studioSpec:
+    | { version: string; schema_sha256: string; fetched_at: string }
+    | null = null;
+  if (studioProductType) {
+    try {
+      const fetched = await fetchWalmartItemSpecSchema(getWalmartClient(1), {
+        version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+        productType: studioProductType,
+      });
+      studioSpec = {
+        version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+        schema_sha256: fetched.schema_sha256,
+        fetched_at: fetched.fetched_at,
+      };
+    } catch (error) {
+      console.warn(
+        "[promote-draft] Walmart Get Spec unavailable:",
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
+
   /** Per-SKU Walmart attributes; the evidence names its own SKU and image. */
   function walmartStudioAttributesJson(
     skuCode: string,
@@ -983,9 +1027,8 @@ export async function promoteDraftToChannelSkus(
       productType: studioProductType,
       countryOfOrigin: STUDIO_COUNTRY_OF_ORIGIN,
       secondaryImageUrls: hostedGalleryUrls,
-      // Walmart resolves the ship node from the SKU's shipping-template
-      // association; the studio lane does not pin one at promotion time.
-      fulfillmentCenterId: null,
+      spec: studioSpec,
+      fulfillmentCenterId: studioFulfillmentCenterId,
       declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
     });
     base[WALMART_STUDIO_LISTING_ATTRIBUTE_KEY] = buildWalmartStudioListingEvidence({
@@ -1007,7 +1050,7 @@ export async function promoteDraftToChannelSkus(
         exact_source_url: String(studioImage.exact_source_url ?? ""),
       }],
       shippingTemplateId: null,
-      fulfillmentCenterId: null,
+      fulfillmentCenterId: studioFulfillmentCenterId,
       declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
     });
     return JSON.stringify(base);
