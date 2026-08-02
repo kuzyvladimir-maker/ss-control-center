@@ -198,6 +198,7 @@ export async function POST(
           brief.product_truth_collection.attempts.flatMap(
             (attempt) => attempt.donor_product_ids,
           ),
+        attempt: brief.product_truth_collection.attempts.length + 1,
       });
     } catch (replacementError) {
       return NextResponse.json(

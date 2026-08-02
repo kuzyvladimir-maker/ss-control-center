@@ -253,6 +253,13 @@ export async function prepareWalmartDurableBuildCollection(input: {
   listingCount: number;
   packCount: number;
   excludedDonorProductIds?: readonly string[];
+  /**
+   * 1-based ordinal of this collection attempt inside the durable build.
+   * Attempts after the first get their own batch identity so a fresh
+   * owner-approved quote can never collide with or inherit authority from an
+   * earlier attempt's immutable paid lifecycle.
+   */
+  attempt?: number;
 }) {
   const missingNeeded = Math.max(
     0,
@@ -303,6 +310,7 @@ export async function prepareWalmartDurableBuildCollection(input: {
     packCount: input.packCount,
     unwrangleReserveFloor: input.runtime.unwrangleReserveFloor,
     candidates,
+    ...(input.attempt !== undefined ? { attempt: input.attempt } : {}),
   });
   let status;
   try {

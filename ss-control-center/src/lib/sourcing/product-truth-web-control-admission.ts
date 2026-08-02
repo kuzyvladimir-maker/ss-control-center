@@ -675,6 +675,32 @@ export function productTruthWalmartPreExecutionExpiryCode(input: {
   return null;
 }
 
+/**
+ * Execution started but the worker's lease died and never came back.
+ *
+ * A provider call may or may not have completed, so this is presented as
+ * terminal AMBIGUOUS (never auto-retried, never left looking "running").
+ * During the 2026-08-01/02 incident two paid EXECUTE commands whose terminal
+ * write was rejected by the remote database stayed in RUNNING forever, and the
+ * owner-facing card showed live enrichment for work no process was doing.
+ */
+export function productTruthWalmartStartedExecutionExpiryCode(input: {
+  status: string;
+  executionStartedAt: Date | null;
+  workerLeaseExpiresAt: Date | null;
+  now: Date;
+}): "ENRICHMENT_WORKER_SIGNAL_LOST_AFTER_START" | null {
+  if (
+    ["CLAIMED", "RUNNING"].includes(input.status)
+    && input.executionStartedAt !== null
+    && input.workerLeaseExpiresAt !== null
+    && input.workerLeaseExpiresAt.getTime() <= input.now.getTime()
+  ) {
+    return "ENRICHMENT_WORKER_SIGNAL_LOST_AFTER_START";
+  }
+  return null;
+}
+
 export function latestProductTruthControlRowsByRun<
   T extends { runId: string | null },
 >(rows: readonly T[]): T[] {
@@ -774,21 +800,19 @@ export async function readProductTruthWalmartCollectionStatus(input: {
   requestedByUserId?: string;
   runtime: ProductTruthWebControlRuntimeActive;
 }): Promise<ProductTruthWalmartCollectionStatus> {
+  // Target-scoped read, deliberately NOT release-scoped: the batch must stay
+  // visible across engine deployments (the 2026-08-01 incident: every deploy
+  // orphaned the in-flight batch as WEB_CONTROL_BATCH_NOT_FOUND). Rows keep
+  // their admitting release pins as immutable audit truth.
   const rows = await prisma.productTruthControlCommand.findMany({
     where: {
       runId: { startsWith: `${input.batchId}-` },
       ...(input.requestedByUserId
         ? { requestedByUserId: input.requestedByUserId }
         : {}),
-      engineReleaseId: input.runtime.engine.releaseId,
-      engineCommitSha: input.runtime.engine.commitSha,
-      engineTreeSha: input.runtime.engine.treeSha,
-      executableTreeSha256:
-        input.runtime.engine.executableTreeSha256,
       environment: input.runtime.target.environment,
       databaseTargetFingerprint:
         input.runtime.target.databaseTargetFingerprint,
-      manifestSha256: input.runtime.target.manifestSha256,
     },
     include: {
       artifacts: {
@@ -903,6 +927,14 @@ export async function readProductTruthWalmartCollectionStatus(input: {
         now,
       })
     : null;
+  const startedExecutionExpiryCode = enrichment
+    ? productTruthWalmartStartedExecutionExpiryCode({
+        status: enrichment.status,
+        executionStartedAt: enrichment.executionStartedAt,
+        workerLeaseExpiresAt: enrichment.workerLeaseExpiresAt,
+        now,
+      })
+    : null;
   const executionProgress = enrichment
     ? await latestWalmartEnrichmentProgress({
         commandId: enrichment.commandId,
@@ -915,6 +947,12 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       // remains available for audit, but it is not eligible for worker claim
       // and must never look like paid work is still running.
       status = "FAILED";
+    } else if (startedExecutionExpiryCode) {
+      // Execution had started, the lease is long dead, and no worker will
+      // finish this command. A provider call may have happened, so this is
+      // AMBIGUOUS: never auto-retried, and it must never render as live
+      // enrichment. A new attempt requires a fresh exact quote.
+      status = "AMBIGUOUS";
     } else if (["ADMITTED", "CLAIMED", "RUNNING"].includes(enrichment.status)) {
       status = "RUNNING_ENRICHMENT";
     } else if (enrichment.status === "SUCCEEDED") {
@@ -938,7 +976,10 @@ export async function readProductTruthWalmartCollectionStatus(input: {
           command_id: enrichment.commandId,
           status: enrichment.status,
           outcome: enrichment.outcome,
-          error_code: preExecutionExpiryCode ?? enrichment.errorCode,
+          error_code:
+            preExecutionExpiryCode
+            ?? startedExecutionExpiryCode
+            ?? enrichment.errorCode,
           authorized_at:
             enrichment.ownerAuthorizedAt?.toISOString() ?? null,
           authorization_expires_at:
@@ -957,6 +998,7 @@ export async function readProductTruthWalmartCollectionStatus(input: {
       metered_execution_admitted:
         enrichment !== null
         && preExecutionExpiryCode === null
+        && startedExecutionExpiryCode === null
         && ["ADMITTED", "CLAIMED", "RUNNING", "SUCCEEDED"].includes(
           enrichment.status,
         ),

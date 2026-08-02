@@ -9,6 +9,7 @@ import {
   latestProductTruthControlRowsByRun,
   prepareProductTruthWalmartDoctorAdmissions,
   productTruthWalmartPreExecutionExpiryCode,
+  productTruthWalmartStartedExecutionExpiryCode,
 } from "../product-truth-web-control-admission";
 import {
   buildProductTruthWalmartCollectionBatch,
@@ -188,4 +189,119 @@ test("expired pre-execution states stop looking like enrichment is still running
     ownerAuthorizationExpiresAt: new Date("2026-08-01T18:45:00.000Z"),
     now,
   }), null);
+});
+
+test("a new engine release changes command identity but not batch identity", () => {
+  // Commands are release-scoped audit records; the batch is the owner-facing
+  // durable identity. During the 2026-08-01 incident every deploy hid the
+  // in-flight batch because reads also filtered on the engine pins.
+  const nextRelease: ProductTruthWebControlRuntimeActive = {
+    ...runtime,
+    engine: {
+      ...runtime.engine,
+      releaseId: "product-truth-web-control-test-r2",
+      commitSha: "1".repeat(40),
+      treeSha: "2".repeat(40),
+      executableTreeSha256: "3".repeat(64),
+    },
+  };
+  const first = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batch(),
+    runtime,
+  });
+  const redeployed = prepareProductTruthWalmartDoctorAdmissions({
+    batch: batch(),
+    runtime: nextRelease,
+  });
+  // Same logical run IDs (same batch) — status reads reduce to the newest
+  // attempt per run, so the batch stays one batch across releases.
+  assert.deepEqual(
+    redeployed.map((entry) => entry.runId),
+    first.map((entry) => entry.runId),
+  );
+  // New release admits its own immutable command rows for the audit trail.
+  assert.notDeepEqual(
+    redeployed.map((entry) => entry.commandId),
+    first.map((entry) => entry.commandId),
+  );
+});
+
+test("a second collection attempt gets its own batch identity", () => {
+  const base = batch();
+  const retryFirstAttempt = buildProductTruthWalmartCollectionBatch({
+    requestedByUserId: "owner-0001",
+    requestedAt: "2026-07-28T21:00:00.000Z",
+    prompt: "Create two exact Campbell soup listings",
+    listingCount: 2,
+    packCount: 3,
+    unwrangleReserveFloor: 100,
+    candidates: base.jobs.map((job) => ({
+      donorProductId: job.target.donorProductId,
+      canonicalVariantId: job.target.canonicalVariantId,
+      title: job.target.title,
+      query: job.target.query,
+      missingFields: job.target.missingFields,
+    })),
+    attempt: 1,
+  });
+  const secondAttempt = buildProductTruthWalmartCollectionBatch({
+    requestedByUserId: "owner-0001",
+    requestedAt: "2026-07-28T21:00:00.000Z",
+    prompt: "Create two exact Campbell soup listings",
+    listingCount: 2,
+    packCount: 3,
+    unwrangleReserveFloor: 100,
+    candidates: base.jobs.map((job) => ({
+      donorProductId: job.target.donorProductId,
+      canonicalVariantId: job.target.canonicalVariantId,
+      title: job.target.title,
+      query: job.target.query,
+      missingFields: job.target.missingFields,
+    })),
+    attempt: 2,
+  });
+  // Attempt 1 preserves the exact historical identity.
+  assert.equal(retryFirstAttempt.batchId, base.batchId);
+  // Attempt 2 is a new paid lifecycle: new batch, new run IDs, and therefore
+  // fresh immutable budget rows — never a METERED_BUDGET_PERMIT_CONFLICT and
+  // never inherited authority from the first attempt.
+  assert.notEqual(secondAttempt.batchId, base.batchId);
+  assert.ok(secondAttempt.jobs.every(
+    (job, index) => job.runId !== base.jobs[index]!.runId,
+  ));
+});
+
+test("started execution with a dead lease is terminal ambiguous, never live", () => {
+  const now = new Date("2026-08-02T05:00:00.000Z");
+  // Worker started paid execution, then its lease expired and no terminal
+  // write ever landed (production commands ptc-b183b91c…, ptc-23f38f37…).
+  assert.equal(
+    productTruthWalmartStartedExecutionExpiryCode({
+      status: "RUNNING",
+      executionStartedAt: new Date("2026-08-02T01:25:31.636Z"),
+      workerLeaseExpiresAt: new Date("2026-08-02T01:43:54.526Z"),
+      now,
+    }),
+    "ENRICHMENT_WORKER_SIGNAL_LOST_AFTER_START",
+  );
+  // A live lease keeps the command presented as running.
+  assert.equal(
+    productTruthWalmartStartedExecutionExpiryCode({
+      status: "RUNNING",
+      executionStartedAt: new Date("2026-08-02T01:25:31.636Z"),
+      workerLeaseExpiresAt: new Date("2026-08-02T05:30:00.000Z"),
+      now,
+    }),
+    null,
+  );
+  // Execution that never started stays with the pre-execution disposition.
+  assert.equal(
+    productTruthWalmartStartedExecutionExpiryCode({
+      status: "CLAIMED",
+      executionStartedAt: null,
+      workerLeaseExpiresAt: new Date("2026-08-02T01:43:54.526Z"),
+      now,
+    }),
+    null,
+  );
 });

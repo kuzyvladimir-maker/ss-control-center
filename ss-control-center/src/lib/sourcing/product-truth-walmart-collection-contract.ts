@@ -520,6 +520,19 @@ export function buildProductTruthWalmartCollectionBatch(input: {
   packCount: number;
   unwrangleReserveFloor: number;
   candidates: readonly ProductTruthWalmartCollectionCandidate[];
+  /**
+   * Ordinal of the collection attempt inside one durable owner request.
+   *
+   * A paid lifecycle is bound once and forever to a runId: metered budgets,
+   * reservation receipts, and harvest state are all immutable per
+   * (runId, provider). A legitimate NEW owner-approved attempt for the same
+   * logical request therefore needs a fresh batch identity — reusing the old
+   * one collides with the previous attempt's immutable budget rows
+   * (`METERED_BUDGET_PERMIT_CONFLICT`, observed in production 2026-08-02) and
+   * would let a new approval inherit the previous attempt's authority.
+   * Attempt 1 keeps the historical identity so existing batches stay stable.
+   */
+  attempt?: number;
 }): ProductTruthWalmartCollectionBatch {
   const requestedByUserId = safeToken(
     input.requestedByUserId,
@@ -564,11 +577,17 @@ export function buildProductTruthWalmartCollectionBatch(input: {
       `candidates[${index}]`,
     ),
   );
+  const attempt = input.attempt === undefined
+    ? 1
+    : boundedInteger(input.attempt, "attempt", 1, 5);
   const identityBytes = canonicalJson({
     requestedByUserId,
     request: { prompt, listingCount, packCount },
     targets,
     unwrangleReserveFloor: input.unwrangleReserveFloor,
+    // Included only from the second attempt on, so every batch admitted
+    // before this field existed keeps its exact historical identity.
+    ...(attempt > 1 ? { attempt } : {}),
   });
   const identitySha256 = sha256(identityBytes);
   const batchId = `ptbfw-${identitySha256.slice(0, 24)}`;

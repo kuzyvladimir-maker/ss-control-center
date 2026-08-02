@@ -84,18 +84,26 @@ function prismaBytes(value: Uint8Array): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
+/**
+ * Reads are TARGET-scoped, not release-scoped.
+ *
+ * Every command row still records the exact engine release that admitted it
+ * (audit truth, written once at admission). But an owner's batch must stay
+ * visible across engine deployments: during the 2026-08-01 incident twelve
+ * releases shipped in fourteen hours, and because reads filtered on all seven
+ * release pins, each deploy orphaned the in-flight batch
+ * (`WEB_CONTROL_BATCH_NOT_FOUND`), forcing the owner to restart the same
+ * request from scratch. Only the environment and the database fingerprint are
+ * identity-relevant for reading: they prevent mixing production with local
+ * state. See docs/wiki/walmart-bundle-factory-independent-diagnostic-handoff.md.
+ */
 function exactRuntimeCommandWhere(
   runtime: ProductTruthWebControlRuntimeActive,
 ) {
   return {
-    engineReleaseId: runtime.engine.releaseId,
-    engineCommitSha: runtime.engine.commitSha,
-    engineTreeSha: runtime.engine.treeSha,
-    executableTreeSha256: runtime.engine.executableTreeSha256,
     environment: runtime.target.environment,
     databaseTargetFingerprint:
       runtime.target.databaseTargetFingerprint,
-    manifestSha256: runtime.target.manifestSha256,
   };
 }
 
