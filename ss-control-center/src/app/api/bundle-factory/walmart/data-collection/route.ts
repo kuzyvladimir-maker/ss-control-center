@@ -249,6 +249,19 @@ export async function POST(request: NextRequest) {
         runtime,
       });
     }
+    if (status.status === "FAILED") {
+      // A failed no-spend preparation is retryable: admission is idempotent
+      // inside one release (same logical commands are simply reused), and a
+      // retry after an engine release creates fresh immutable attempt rows
+      // for the same logical runs. Without this, a batch that failed under a
+      // previous release stayed failed forever even though the defect that
+      // failed it was already fixed. AMBIGUOUS is deliberately NOT retried
+      // here — a dead paid attempt never re-runs implicitly.
+      status = await admitProductTruthWalmartCollectionBatch({
+        batch,
+        runtime,
+      });
+    }
     return jsonNoStore({
       ok: true,
       status: status.status,

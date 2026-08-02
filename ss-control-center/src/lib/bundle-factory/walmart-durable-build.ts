@@ -331,5 +331,14 @@ export async function prepareWalmartDurableBuildCollection(input: {
       runtime: input.runtime,
     });
   }
+  if (status.status === "FAILED") {
+    // Same retry semantics as the data-collection route: failed no-spend
+    // preparation re-admits idempotently (fresh attempt rows only when the
+    // engine release changed). AMBIGUOUS never re-runs implicitly.
+    status = await admitProductTruthWalmartCollectionBatch({
+      batch,
+      runtime: input.runtime,
+    });
+  }
   return { batch, status };
 }
