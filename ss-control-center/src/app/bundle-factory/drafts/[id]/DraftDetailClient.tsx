@@ -621,6 +621,17 @@ export function DraftDetailClient(props: Props) {
     Number(lengthIn) > 0 &&
     Number(widthIn) > 0 &&
     Number(heightIn) > 0;
+  // A Walmart draft arrives from the Product Truth engine with its content and
+  // main image already built, but with no ChannelSKU — so every downstream
+  // button (validate, publish) stayed hidden and the listing was a dead end.
+  // This one action promotes it (mints the SKU, reserves a pool UPC for 24h)
+  // and runs a dry run, after which the normal validate/publish buttons apply.
+  const showWalmartPrepareBtn =
+    props.targetChannels.includes("WALMART")
+    && rows.length === 0
+    && (props.draftStatus === "GENERATED"
+      || props.draftStatus === "IMAGE_GENERATED");
+
   const showPublishAllBtn =
     publishPendingCount > 0 &&
     (props.draftStatus === "VALIDATED" ||
@@ -674,6 +685,16 @@ export function DraftDetailClient(props: Props) {
                   >
                     Generate {imagePendingCount} image
                     {imagePendingCount === 1 ? "" : "s"}
+                  </Btn>
+                )}
+                {showWalmartPrepareBtn && (
+                  <Btn
+                    variant="primary"
+                    disabled={busy}
+                    loading={busy}
+                    onClick={() => publishDraft(false)}
+                  >
+                    Prepare for Walmart publishing
                   </Btn>
                 )}
                 {showValidateAllBtn && (

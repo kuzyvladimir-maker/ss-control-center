@@ -23,6 +23,8 @@ import {
 import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-pipeline";
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
 import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
+import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -79,6 +81,30 @@ export const POST = withErrorHandler(
         ? body.actor.trim()
         : "user";
 
+    // Walmart drafts arrive straight from the Product Truth draft engine with
+    // no MasterBundle, so publishing them used to be impossible from the UI.
+    // Promote on demand: this mints the SKU and RESERVES a pool UPC for 24h
+    // (a reservation, not a burn), which is what validation and publishing
+    // both read.
+    const draftRow = await prisma.bundleDraft.findUnique({
+      where: { id },
+      select: { master_bundle_id: true },
+    });
+    if (!draftRow) return badRequest("Draft not found");
+    let promotion: Awaited<ReturnType<typeof promoteDraftToChannelSkus>> | null =
+      null;
+    if (!draftRow.master_bundle_id) {
+      promotion = await promoteDraftToChannelSkus(id);
+      if (!promotion.master_bundle_id) {
+        return NextResponse.json({
+          ok: false,
+          stage: "PROMOTE",
+          error: "This draft could not be promoted into a publishable SKU.",
+          skipped: promotion.skipped,
+        }, { status: 409 });
+      }
+    }
+
     if (apply) {
       if (body.approvalConfirmed !== true) {
         return badRequest(
@@ -99,6 +125,6 @@ export const POST = withErrorHandler(
       batchSize,
       actor,
     });
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, promotion });
   },
 );
