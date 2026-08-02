@@ -279,6 +279,25 @@ test("worker start commits the execution boundary with a remote-safe atomic batc
   assert.match(start, /row\.status === "RUNNING"/u);
 });
 
+test("worker completion commits its chained terminal evidence with a remote-safe atomic batch", async () => {
+  const server = await readFile(
+    new URL("../product-truth-web-control-worker.ts", import.meta.url),
+    "utf8",
+  );
+  const completeAt = server.indexOf(
+    "export async function completeProductTruthNoSpendCommand",
+  );
+  assert.ok(completeAt >= 0);
+  const completion = server.slice(completeAt);
+  assert.match(completion, /const artifactEvent = sealWorkerEventAfter/u);
+  assert.match(completion, /const terminalEvent = sealWorkerEventAfter/u);
+  assert.match(completion, /await prisma\.\$transaction\(\[/u);
+  assert.match(completion, /productTruthControlArtifact\.create/u);
+  assert.match(completion, /productTruthControlCommand\.update/u);
+  assert.match(completion, /productTruthControlEvent\.create/u);
+  assert.doesNotMatch(completion, /\$transaction\(async/u);
+});
+
 test("proxy reserves Product Truth control routes for the separate worker token", async () => {
   const proxy = await readFile(
     new URL("../../../proxy.ts", import.meta.url),

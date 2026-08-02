@@ -12,6 +12,9 @@ import {
   evaluatePriceEvidenceEligibility,
 } from "./price-evidence-policy";
 import { assertProductTruthEvidenceSchema } from "./product-truth-schema-gate";
+import {
+  productTruthOperationalSha256,
+} from "./product-truth-operational-run-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 
 export const DEFAULT_WALMART_PILOT_PRICE_MAX_AGE_MS = 24 * 60 * 60 * 1_000;
@@ -253,6 +256,13 @@ function requiredText(value: unknown, label: string): string {
 
 function optionalText(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/** Immutable JSON artifacts are hashed as exact stored bytes. Trimming them
+ * before verification corrupts the hash of the canonical operational renderer,
+ * whose contract intentionally includes a trailing newline. */
+function exactJsonText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 function positiveNumber(value: unknown): number | null {
@@ -661,7 +671,7 @@ function contentProvenanceFromRow(
   blockers: string[],
 ): ProductTruthNewSkuContentProvenance | null {
   const initialBlockerCount = blockers.length;
-  const decisionEvidenceRaw = optionalText(row.decisionEvidenceJson);
+  const decisionEvidenceRaw = exactJsonText(row.decisionEvidenceJson);
   const decisionEvidence = objectValue(parseJson(decisionEvidenceRaw));
   const decisionEvidenceHash = optionalText(row.decisionEvidenceHash);
   if (
@@ -679,7 +689,7 @@ function contentProvenanceFromRow(
     blockers.push("DECISION_MATCHER_PROVENANCE_MISMATCH");
   }
 
-  const contentRaw = optionalText(row.contentJson);
+  const contentRaw = exactJsonText(row.contentJson);
   const content = objectValue(parseJson(contentRaw));
   const contentHash = optionalText(row.contentHash);
   if (!contentRaw || !content || !isSha256(contentHash) || contentHash !== sha256Text(contentRaw)) {
@@ -687,8 +697,29 @@ function contentProvenanceFromRow(
   }
 
   const fieldHashes = objectValue(parseJson(row.fieldHashesJson));
+  const legacyBridgeContent = content?._capture === "legacy_materialized_bridge";
+  // Legacy bridge 1.3 is itself a canonical, append-only Product Truth source.
+  // Its field ledger intentionally covers the twelve owner-reviewed product
+  // facts and uses the operational renderer (pretty JSON + trailing newline),
+  // while newer observations use compact stable JSON for every factual field.
+  const legacyBridgeFields = [
+    "title",
+    "description",
+    "bullets",
+    "attributes",
+    "nutritionFacts",
+    "ingredients",
+    "allergens",
+    "category",
+    "storage",
+    "upc",
+    "mainImageUrl",
+    "imageUrls",
+  ] as const;
   const expectedFields = content
-    ? Object.entries(content).filter(([field]) => !field.startsWith("_"))
+    ? legacyBridgeContent
+      ? legacyBridgeFields.map((field) => [field, content[field]] as const)
+      : Object.entries(content).filter(([field]) => !field.startsWith("_"))
     : [];
   const fieldHashesValid =
     fieldHashes !== null &&
@@ -697,7 +728,11 @@ function contentProvenanceFromRow(
     expectedFields.every(
       ([field, value]) =>
         isSha256(fieldHashes[field]) &&
-        fieldHashes[field] === sha256Text(stableJson(value)),
+        fieldHashes[field] === (
+          legacyBridgeContent
+            ? productTruthOperationalSha256(value)
+            : sha256Text(stableJson(value))
+        ),
     );
   if (!fieldHashesValid) blockers.push("CONTENT_FIELD_HASHES_INVALID");
 
@@ -724,10 +759,12 @@ function contentProvenanceFromRow(
   }
 
   const observationKey = optionalText(row.contentObservationKey);
+  const sourceBinding = content && objectValue(content.sourceBinding);
+  const sourceSnapshotSha256 = optionalText(sourceBinding?.sourceSnapshotSha256);
   const expectedObservationKey =
     contentHash && sourceUrl && sourceApi && observedAt
-      ? sha256Text(
-          stableJson({
+      ? legacyBridgeContent && isSha256(sourceSnapshotSha256)
+        ? productTruthOperationalSha256({
             donorProductId: optionalText(row.donorProductId),
             canonicalVariantId: optionalText(row.canonicalVariantId),
             variantDecisionId: optionalText(row.variantDecisionId),
@@ -735,11 +772,22 @@ function contentProvenanceFromRow(
             sourceApi,
             contentHash,
             observedAt,
-            runId,
-            approvalId,
-            meteredReceiptId,
-          }),
-        )
+            sourceSnapshotSha256,
+          })
+        : sha256Text(
+            stableJson({
+              donorProductId: optionalText(row.donorProductId),
+              canonicalVariantId: optionalText(row.canonicalVariantId),
+              variantDecisionId: optionalText(row.variantDecisionId),
+              sourceUrl,
+              sourceApi,
+              contentHash,
+              observedAt,
+              runId,
+              approvalId,
+              meteredReceiptId,
+            }),
+          )
       : null;
   if (
     !isSha256(observationKey) ||

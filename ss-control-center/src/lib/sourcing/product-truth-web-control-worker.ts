@@ -239,6 +239,46 @@ async function appendWorkerEvent(
   });
 }
 
+function sealWorkerEventAfter(input: {
+  commandId: string;
+  previous: { sequence: number; eventHash: string };
+  eventType: "ARTIFACT_RECEIVED" | "SUCCEEDED" | "FAILED" | "AMBIGUOUS";
+  occurredAt: string;
+  payload: unknown;
+}) {
+  const payload = canonicalBytes(input.payload);
+  const sequence = input.previous.sequence + 1;
+  return sealProductTruthControlEvent({
+    eventId:
+      `ptce-${input.commandId.slice(4)}-${sequence}-${sha256(payload).slice(0, 8)}`,
+    commandId: input.commandId,
+    sequence,
+    eventType: input.eventType,
+    source: "WORKER",
+    occurredAt: input.occurredAt,
+    payload,
+    previousEventHash: input.previous.eventHash,
+  });
+}
+
+function workerEventCreateData(
+  event: ReturnType<typeof sealWorkerEventAfter>,
+) {
+  return {
+    eventId: event.eventId,
+    commandId: event.commandId,
+    schemaVersion: event.schemaVersion,
+    sequence: event.sequence,
+    eventType: event.eventType,
+    source: event.source,
+    occurredAt: new Date(event.occurredAt),
+    payload: prismaBytes(event.payload),
+    payloadSha256: event.payloadSha256,
+    previousEventHash: event.previousEventHash,
+    eventHash: event.eventHash,
+  };
+}
+
 function buildClaimSpec(
   command: {
     commandId: string;
@@ -721,8 +761,47 @@ export async function completeProductTruthNoSpendCommand(input: {
         : result.status === "AMBIGUOUS"
           ? "AMBIGUOUS"
           : "FAILED";
-    await prisma.$transaction(async (tx) => {
-      await tx.productTruthControlArtifact.create({
+    const previous = await prisma.productTruthControlEvent.findFirst({
+      where: { commandId: command.commandId },
+      orderBy: { sequence: "desc" },
+      select: { sequence: true, eventHash: true },
+    });
+    if (!previous) {
+      fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+    }
+    const artifactEvent = sealWorkerEventAfter({
+      commandId: command.commandId,
+      previous,
+      eventType: "ARTIFACT_RECEIVED",
+      occurredAt: now.toISOString(),
+      payload: {
+        role: artifact.role,
+        sha256: artifact.sha256,
+        byteSize: artifact.byteSize,
+      },
+    });
+    const terminalEvent = sealWorkerEventAfter({
+      commandId: command.commandId,
+      previous: {
+        sequence: artifactEvent.sequence,
+        eventHash: artifactEvent.eventHash,
+      },
+      eventType: terminalStatus,
+      occurredAt: now.toISOString(),
+      payload: {
+        outcome: result.status,
+        reason: result.reason,
+        providerCalls: result.providerCalls,
+        providerUnits: result.providerUnits,
+        marketplaceMutations: 0,
+        resultArtifactSha256: artifact.sha256,
+      },
+    });
+    // Remote libSQL can abort an interactive callback transaction while it is
+    // waiting between statements. Pre-seal the two chained events and commit
+    // the terminal transition as one atomic batch, exactly like start().
+    await prisma.$transaction([
+      prisma.productTruthControlArtifact.create({
         data: {
           artifactId: artifact.artifactId,
           commandId: artifact.commandId,
@@ -736,18 +815,11 @@ export async function completeProductTruthNoSpendCommand(input: {
           createdAt: new Date(artifact.createdAt),
           createdByPrincipal: artifact.createdByPrincipal,
         },
-      });
-      await appendWorkerEvent(tx, {
-        commandId: command.commandId,
-        eventType: "ARTIFACT_RECEIVED",
-        occurredAt: now.toISOString(),
-        payload: {
-          role: artifact.role,
-          sha256: artifact.sha256,
-          byteSize: artifact.byteSize,
-        },
-      });
-      await tx.productTruthControlCommand.update({
+      }),
+      prisma.productTruthControlEvent.create({
+        data: workerEventCreateData(artifactEvent),
+      }),
+      prisma.productTruthControlCommand.update({
         where: { commandId: command.commandId },
         data: {
           status: terminalStatus,
@@ -760,21 +832,11 @@ export async function completeProductTruthNoSpendCommand(input: {
           errorCode:
             terminalStatus === "SUCCEEDED" ? null : result.reason.slice(0, 200),
         },
-      });
-      await appendWorkerEvent(tx, {
-        commandId: command.commandId,
-        eventType: terminalStatus,
-        occurredAt: now.toISOString(),
-        payload: {
-          outcome: result.status,
-          reason: result.reason,
-          providerCalls: result.providerCalls,
-          providerUnits: result.providerUnits,
-          marketplaceMutations: 0,
-          resultArtifactSha256: artifact.sha256,
-        },
-      });
-    }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
+      }),
+      prisma.productTruthControlEvent.create({
+        data: workerEventCreateData(terminalEvent),
+      }),
+    ]);
     return { status: terminalStatus, next: null };
   }
   let result;
@@ -798,8 +860,42 @@ export async function completeProductTruthNoSpendCommand(input: {
     createdByPrincipal: command.workerLeaseOwner ?? "worker-unknown",
   });
   const terminalStatus = result.exitCode === 0 ? "SUCCEEDED" : "FAILED";
-  await prisma.$transaction(async (tx) => {
-    await tx.productTruthControlArtifact.create({
+  const previous = await prisma.productTruthControlEvent.findFirst({
+    where: { commandId: command.commandId },
+    orderBy: { sequence: "desc" },
+    select: { sequence: true, eventHash: true },
+  });
+  if (!previous) {
+    fail("WORKER_EVENT_CHAIN_MISSING", "command has no admission event chain");
+  }
+  const artifactEvent = sealWorkerEventAfter({
+    commandId: command.commandId,
+    previous,
+    eventType: "ARTIFACT_RECEIVED",
+    occurredAt: now.toISOString(),
+    payload: {
+      role: artifact.role,
+      sha256: artifact.sha256,
+      byteSize: artifact.byteSize,
+    },
+  });
+  const terminalEvent = sealWorkerEventAfter({
+    commandId: command.commandId,
+    previous: {
+      sequence: artifactEvent.sequence,
+      eventHash: artifactEvent.eventHash,
+    },
+    eventType: terminalStatus,
+    occurredAt: now.toISOString(),
+    payload: {
+      exitCode: result.exitCode,
+      resultArtifactSha256: artifact.sha256,
+      providerCalls: 0,
+      marketplaceMutations: 0,
+    },
+  });
+  await prisma.$transaction([
+    prisma.productTruthControlArtifact.create({
       data: {
         artifactId: artifact.artifactId,
         commandId: artifact.commandId,
@@ -813,18 +909,11 @@ export async function completeProductTruthNoSpendCommand(input: {
         createdAt: new Date(artifact.createdAt),
         createdByPrincipal: artifact.createdByPrincipal,
       },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: command.commandId,
-      eventType: "ARTIFACT_RECEIVED",
-      occurredAt: now.toISOString(),
-      payload: {
-        role: artifact.role,
-        sha256: artifact.sha256,
-        byteSize: artifact.byteSize,
-      },
-    });
-    await tx.productTruthControlCommand.update({
+    }),
+    prisma.productTruthControlEvent.create({
+      data: workerEventCreateData(artifactEvent),
+    }),
+    prisma.productTruthControlCommand.update({
       where: { commandId: command.commandId },
       data: {
         status: terminalStatus,
@@ -839,19 +928,11 @@ export async function completeProductTruthNoSpendCommand(input: {
             ? null
             : `CLI_EXIT_${result.exitCode}`,
       },
-    });
-    await appendWorkerEvent(tx, {
-      commandId: command.commandId,
-      eventType: terminalStatus,
-      occurredAt: now.toISOString(),
-      payload: {
-        exitCode: result.exitCode,
-        resultArtifactSha256: artifact.sha256,
-        providerCalls: 0,
-        marketplaceMutations: 0,
-      },
-    });
-  }, PRODUCT_TRUTH_WEB_WORKER_TRANSACTION_OPTIONS);
+    }),
+    prisma.productTruthControlEvent.create({
+      data: workerEventCreateData(terminalEvent),
+    }),
+  ]);
   if (terminalStatus === "FAILED") {
     return { status: "FAILED", next: null };
   }

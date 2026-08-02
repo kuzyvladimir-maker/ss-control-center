@@ -11,6 +11,10 @@ import {
 } from "../product-truth-read-contract";
 import { collectWalmartPilotCandidatesPaginated } from "../product-truth-new-sku-view";
 import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
+import {
   newSkuCompilerOptions as options,
   validIdentityRow as identity,
   validIdentityRowWithContent,
@@ -49,6 +53,94 @@ test("canonical Product Truth boundary exports the exact new-SKU compiler", () =
   });
   assert.equal(candidate.storage_classification, "SHELF_STABLE");
   assert.equal(candidate.category, "Snack Foods");
+});
+
+test("new-SKU compiler verifies the canonical legacy bridge hash protocol without weakening it", () => {
+  const sourceSnapshotSha256 = "a".repeat(64);
+  const legacyContent = {
+    _schemaVersion: "product-truth-legacy-bridge-content/1.3.0",
+    _capture: "legacy_materialized_bridge",
+    title: "Example Strawberry Snack 1 oz",
+    description: "Exact manufacturer product description.",
+    bullets: ["Exact product fact"],
+    attributes: { allergens: { contains: [], may_contain: [] } },
+    nutritionFacts: { calories: 100 },
+    ingredients: "Corn, sugar, strawberry powder.",
+    allergens: [],
+    category: "Snack Foods",
+    storage: "Shelf Stable",
+    upc: "012345678905",
+    normalizedGtin14: "00012345678905",
+    mainImageUrl: "https://images.example/main.jpg",
+    imageUrls: [
+      "https://images.example/main.jpg",
+      "https://images.example/nutrition.jpg",
+    ],
+    sourceBinding: {
+      sourceSnapshotSha256,
+      policyVersion: "product-truth-legacy-bridge-policy/1.2.0",
+    },
+  };
+  const legacyFields = [
+    "title",
+    "description",
+    "bullets",
+    "attributes",
+    "nutritionFacts",
+    "ingredients",
+    "allergens",
+    "category",
+    "storage",
+    "upc",
+    "mainImageUrl",
+    "imageUrls",
+  ] as const;
+  const contentJson = renderProductTruthOperationalJson(legacyContent);
+  const contentHash = createHash("sha256").update(contentJson).digest("hex");
+  const contentSourceUrl = "https://manufacturer.example/product-a";
+  const contentSourceApi = "legacy-materialized-bridge";
+  const contentObservationKey = productTruthOperationalSha256({
+    donorProductId: identity.donorProductId,
+    canonicalVariantId: identity.canonicalVariantId,
+    variantDecisionId: identity.variantDecisionId,
+    sourceUrl: contentSourceUrl,
+    sourceApi: contentSourceApi,
+    contentHash,
+    observedAt: identity.contentObservedAt,
+    sourceSnapshotSha256,
+  });
+  const decisionEvidence = JSON.parse(identity.decisionEvidenceJson) as Record<string, unknown>;
+  const decisionEvidenceJson = renderProductTruthOperationalJson(decisionEvidence);
+  const component = buildProductTruthNewSkuRecipeComponentFromRows({
+    identity: {
+      ...identity,
+      decisionEvidenceJson,
+      decisionEvidenceHash:
+        createHash("sha256").update(decisionEvidenceJson).digest("hex"),
+      contentJson,
+      contentHash,
+      contentSourceUrl,
+      contentSourceApi,
+      contentObservationKey,
+      contentMeteredReceiptId: null,
+      fieldHashesJson: renderProductTruthOperationalJson(
+        Object.fromEntries(
+          legacyFields.map((field) => [
+            field,
+            productTruthOperationalSha256(legacyContent[field]),
+          ]),
+        ),
+      ),
+    },
+    price,
+    qty: 2,
+    index: 0,
+    options,
+  });
+  assert.equal(component.content_observation_id, identity.contentObservationId);
+  assert.equal(component.content_provenance.observation_key, contentObservationKey);
+  assert.equal(component.content_provenance.field_hashes.storage,
+    productTruthOperationalSha256("Shelf Stable"));
 });
 
 test("canonical new-SKU compiler preserves ZIP and arithmetic fail-closed gates", () => {
