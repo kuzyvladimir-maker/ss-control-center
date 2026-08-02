@@ -552,7 +552,6 @@ async function spawnRunner(input: {
     });
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];
-    let heartbeatInFlight = false;
     let terminationRequested = false;
     const terminateTree = () => {
       if (terminationRequested) return;
