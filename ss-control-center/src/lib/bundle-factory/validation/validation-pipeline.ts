@@ -33,6 +33,7 @@ import { prisma } from "@/lib/prisma";
 import type { ChannelSKU } from "@/generated/prisma/client";
 
 import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
+import { sha256WalmartJson } from "@/lib/bundle-factory/walmart-listing-contract";
 import type {
   ValidationOutcome,
   ValidatorFn,
@@ -233,12 +234,30 @@ export async function persistValidation(
       ? inventoryQuantity
       : null;
 
+  // Identify the run that produced this status. A Walmart distribution
+  // approval binds to exactly this id, so re-validating a SKU invalidates any
+  // approval taken against the previous run — that is the whole point of the
+  // binding. The pipeline never stamped it, leaving validation_check_id null
+  // forever, and every Walmart publish died at "approval must bind the current
+  // ChannelSKU validation run". Derived from the same tuple the frozen engine
+  // uses, so both lanes speak one language.
+  const validatedAt = new Date();
+  const validationErrors = errorPayload.length
+    ? JSON.stringify(errorPayload)
+    : null;
+  const validationRunId = `wmvalidation-${sha256WalmartJson({
+    channel_sku_id: sku.id,
+    validated_at: validatedAt.toISOString(),
+    validation_errors: validationErrors,
+  }).slice(0, 24)}`;
+
   await prisma.channelSKU.update({
     where: { id: sku.id },
     data: {
       validation_status: outcome.status,
-      validation_errors: errorPayload.length ? JSON.stringify(errorPayload) : null,
-      validated_at: new Date(),
+      validation_errors: validationErrors,
+      validated_at: validatedAt,
+      validation_check_id: validationRunId,
       validation_attempt_count: { increment: 1 },
       available_quantity: availableQuantity,
       inventory_checked_at: new Date(),

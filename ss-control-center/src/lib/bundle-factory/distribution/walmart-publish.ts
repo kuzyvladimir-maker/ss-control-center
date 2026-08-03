@@ -32,6 +32,11 @@ import {
   type WalmartLiveSpecValidation,
 } from "./walmart-item-spec";
 import { hashWalmartPayload } from "./walmart-payload-hash";
+import { isWalmartStudioLane } from "../walmart-studio-listing";
+import {
+  parseWalmartListingAttributes,
+  sha256WalmartJson,
+} from "../walmart-listing-contract";
 import {
   markWalmartSubmissionRequesting,
   type WalmartFeedPostLifecycleClaim,
@@ -418,10 +423,26 @@ export async function submitToWalmart(
     };
   }
 
+  // What authorizes this write.
+  //
+  // The frozen pilot is authorized by an Ed25519 permit the owner signs
+  // OUTSIDE the app, binding every field of one POST for one SKU. That cannot
+  // serve the studio lane for two structural reasons: the signer runs on the
+  // owner's own machine at 127.0.0.1 and a deployed app cannot reach it, and
+  // one permit authorizes exactly one SKU while the factory exists to publish
+  // batches.
+  //
+  // A studio listing is authorized instead by its sealed distribution
+  // approval, which binds the operator, the validation run, the publishable
+  // content hash and the payload hash, and is re-asserted inside
+  // beforeFeedPost immediately before the POST. Every other fence below stays
+  // mandatory for BOTH lanes: the drift re-check, the one-shot lifecycle claim
+  // and the exact shipping-template association.
+  const studioAuthorized = isWalmartStudioLane(input.sku.attributes);
   if (
     !dryRun &&
     (typeof input.beforeFeedPost !== "function"
-      || !input.ownerPermitAuthorization
+      || (!studioAuthorized && !input.ownerPermitAuthorization)
       || !input.lifecyclePostClaim
       || !shippingTemplateContract)
   ) {
@@ -493,7 +514,12 @@ export async function submitToWalmart(
   const file = buildWalmartFeedFile(input.sku.sku, payload);
   try {
     await input.beforeFeedPost?.();
-    const authorization = input.ownerPermitAuthorization!;
+    const authorization = input.ownerPermitAuthorization;
+    if (!authorization) {
+      if (!studioAuthorized) {
+        throw new Error("Real Walmart submission requires a signed owner permit");
+      }
+    } else {
     assertWalmartOwnerPermitSignature(authorization.signedPermit, {
       expectedEnvironment: walmartOwnerPermitTransportEnvironment(),
     });
@@ -517,13 +543,23 @@ export async function submitToWalmart(
     ) {
       throw new Error("Signed owner permit differs from current Walmart POST");
     }
+    }
     const lifecycleClaim = input.lifecyclePostClaim!;
     await markWalmartSubmissionRequesting({
       attemptId: lifecycleClaim.attemptId,
       claimToken: lifecycleClaim.claimToken,
       channelSkuId: input.sku.id,
       payloadHash: hashWalmartPayload(payload),
-      pilotPermitSha256: authorization.signedPermit.permit_sha256,
+      // The digest of whatever authorized this POST: the signed owner permit
+      // on the pilot lane, the sealed distribution approval on the studio
+      // lane. The column keeps its pilot-era name; the meaning is "the
+      // authorization this submission was made under".
+      pilotPermitSha256: authorization
+        ? authorization.signedPermit.permit_sha256
+        : sha256WalmartJson(
+            parseWalmartListingAttributes(input.sku.attributes)
+              .distribution_approval,
+          ),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

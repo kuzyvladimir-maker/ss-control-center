@@ -525,6 +525,59 @@ export function mergeWalmartListingContracts(
   });
 }
 
+/**
+ * The two evidence hashes a Walmart distribution approval binds to, taken from
+ * whichever lane built the listing.
+ *
+ * The frozen pilot carries an owner-signed Product Truth manifest plus a
+ * prepublication evidence bundle. The studio lane carries its own record — the
+ * exact canonical variant, the content observation, the price observation and
+ * the SHA-256 of the image bytes it composed (walmart-studio-listing.ts) —
+ * together with the public Walmart contract block. Both are real evidence of
+ * what the listing claims to be; they are simply different documents.
+ *
+ * Seal and verify both read this one function, so the pair cannot drift into
+ * hashing different things.
+ */
+function walmartApprovalEvidence(root: WalmartListingAttributeRoot): {
+  lane: "WALMART_PILOT" | "WALMART_STUDIO_DRAFT";
+  recipe_hash: string;
+  prepublication_sha256: string;
+} {
+  const raw = root as unknown as Record<string, unknown>;
+  // Compared as a literal to avoid importing walmart-studio-listing.ts, which
+  // already imports this module.
+  if (raw.listing_lane === "WALMART_STUDIO_DRAFT") {
+    const studio = raw.walmart_studio_listing;
+    if (!studio || typeof studio !== "object" || Array.isArray(studio)) {
+      throw new Error("Walmart studio listing evidence is missing or unsupported");
+    }
+    const publicBlock = raw.walmart;
+    if (!publicBlock || typeof publicBlock !== "object" || Array.isArray(publicBlock)) {
+      throw new Error("Walmart public contract block is missing");
+    }
+    return {
+      lane: "WALMART_STUDIO_DRAFT",
+      recipe_hash: sha256WalmartJson(studio),
+      prepublication_sha256: sha256WalmartJson(publicBlock),
+    };
+  }
+  const truth = root.product_truth_manifest;
+  if (truth?.schema_version !== PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA) {
+    throw new Error("Product Truth manifest is missing or unsupported");
+  }
+  assertCurrentProductTruthMatcherProvenance(truth.components);
+  const prepublication = root.walmart_prepublication;
+  if (prepublication?.schema_version !== WALMART_PREPUBLICATION_EVIDENCE_SCHEMA) {
+    throw new Error("Walmart prepublication evidence is missing or unsupported");
+  }
+  return {
+    lane: "WALMART_PILOT",
+    recipe_hash: truth.recipe_hash,
+    prepublication_sha256: sha256WalmartJson(prepublication),
+  };
+}
+
 export function sealWalmartDistributionApproval(input: {
   sku: PublishableWalmartSkuInput;
   approvedAt: Date;
@@ -545,16 +598,11 @@ export function sealWalmartDistributionApproval(input: {
     throw new Error("Walmart marketplace payload SHA-256 is required for approval");
   }
   const root = parseWalmartListingAttributes(input.sku.attributes);
-  const truth = root.product_truth_manifest;
-  const prepublication = root.walmart_prepublication;
-  if (truth?.schema_version !== PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA) {
-    throw new Error("Product Truth manifest is missing or unsupported");
-  }
-  assertCurrentProductTruthMatcherProvenance(truth.components);
-  if (prepublication?.schema_version !== WALMART_PREPUBLICATION_EVIDENCE_SCHEMA) {
-    throw new Error("Walmart prepublication evidence is missing or unsupported");
-  }
-  if (truth.listing_scope.sku !== input.sku.sku) {
+  const evidence = walmartApprovalEvidence(root);
+  if (
+    evidence.lane === "WALMART_PILOT" &&
+    root.product_truth_manifest?.listing_scope.sku !== input.sku.sku
+  ) {
     throw new Error("Product Truth manifest SKU does not match ChannelSKU");
   }
   const approval: MarketplaceDistributionApproval = {
@@ -564,8 +612,8 @@ export function sealWalmartDistributionApproval(input: {
     channel_sku_id: input.sku.id,
     publishable_content_sha256: computePublishableWalmartSkuHash(input.sku),
     marketplace_payload_sha256: input.marketplacePayloadSha256,
-    product_truth_recipe_hash: truth.recipe_hash,
-    walmart_prepublication_sha256: sha256WalmartJson(prepublication),
+    product_truth_recipe_hash: evidence.recipe_hash,
+    walmart_prepublication_sha256: evidence.prepublication_sha256,
     validation_run_id: validationRunId,
   };
   if (!approval.approved_by || !approval.validation_run_id.trim()) {
@@ -582,15 +630,10 @@ export function assertValidWalmartDistributionApproval(
 ): MarketplaceDistributionApproval {
   const root = parseWalmartListingAttributes(sku.attributes);
   const approval = root.distribution_approval;
-  const truth = root.product_truth_manifest;
-  const prepublication = root.walmart_prepublication;
   if (approval?.schema_version !== MARKETPLACE_DISTRIBUTION_APPROVAL_SCHEMA) {
     throw new Error("Walmart distribution approval is missing or unsupported");
   }
-  if (truth?.schema_version !== PRODUCT_TRUTH_LISTING_MANIFEST_SCHEMA) {
-    throw new Error("Product Truth manifest is missing or unsupported");
-  }
-  assertCurrentProductTruthMatcherProvenance(truth.components);
+  const evidence = walmartApprovalEvidence(root);
   if (approval.channel_sku_id !== sku.id) {
     throw new Error("Walmart distribution approval targets another ChannelSKU");
   }
@@ -605,13 +648,10 @@ export function assertValidWalmartDistributionApproval(
       "Walmart distribution approval does not bind the current validation run",
     );
   }
-  if (approval.product_truth_recipe_hash !== truth.recipe_hash) {
+  if (approval.product_truth_recipe_hash !== evidence.recipe_hash) {
     throw new Error("Walmart distribution approval Product Truth hash mismatch");
   }
-  if (
-    !prepublication ||
-    approval.walmart_prepublication_sha256 !== sha256WalmartJson(prepublication)
-  ) {
+  if (approval.walmart_prepublication_sha256 !== evidence.prepublication_sha256) {
     throw new Error("Walmart distribution approval prepublication hash mismatch");
   }
   if (approval.publishable_content_sha256 !== computePublishableWalmartSkuHash(sku)) {

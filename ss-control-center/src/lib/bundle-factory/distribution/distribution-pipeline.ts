@@ -24,6 +24,7 @@ import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
 import { sendTelegramMessage } from "@/lib/telegram";
 
 import { channelTarget } from "./account-map";
+import { isWalmartStudioLane } from "../walmart-studio-listing";
 import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 import {
   submitToAmazon,
@@ -395,20 +396,31 @@ export async function runDistribution(
       `Walmart publish pilot is capped at ${WALMART_PILOT_MAX_APPLY_SKUS} SKU per apply run; requested ${walmartApplyCandidates.length}.`,
     );
   }
+  // The externally signed owner permit governs the FROZEN PILOT lane, where it
+  // authorizes exactly one SKU per signature. Studio listings are authorized by
+  // their sealed distribution approval instead (see walmart-publish.ts) —
+  // the signer lives on the owner's machine and cannot be reached from a
+  // deployed app, and one-signature-per-SKU cannot serve a batch. Every other
+  // fence is unchanged for both lanes.
+  const pilotApplyCandidates = walmartApplyCandidates.filter(
+    (sku) => !isWalmartStudioLane(sku.attributes),
+  );
   if (apply && walmartApplyCandidates.length > 0) {
-    if (!input.walmartPilotPermit) {
-      throw new Error(
-        "Real Walmart distribution requires an external owner pilot permit",
-      );
+    if (pilotApplyCandidates.length > 0) {
+      if (!input.walmartPilotPermit) {
+        throw new Error(
+          "Real Walmart distribution requires an external owner pilot permit",
+        );
+      }
+      if (pilotApplyCandidates.length !== 1) {
+        throw new Error(
+          "One signed Walmart owner permit authorizes exactly one SKU submission",
+        );
+      }
+      assertWalmartOwnerPermitSignature(input.walmartPilotPermit.signedPermit, {
+        expectedEnvironment: walmartOwnerPermitTransportEnvironment(),
+      });
     }
-    if (walmartApplyCandidates.length !== 1) {
-      throw new Error(
-        "One signed Walmart owner permit authorizes exactly one SKU submission",
-      );
-    }
-    assertWalmartOwnerPermitSignature(input.walmartPilotPermit.signedPermit, {
-      expectedEnvironment: walmartOwnerPermitTransportEnvironment(),
-    });
     await assertWalmartPublishLifecycleSchema();
   }
   // Validate every sealed approval before changing the draft to PUBLISHING.
@@ -800,14 +812,18 @@ export async function runDistribution(
                   );
                   await input.beforeWalmartFeedPost?.();
                 },
-                ownerPermitAuthorization: {
-                  signedPermit: input.walmartPilotPermit!.signedPermit,
-                  engineReleaseSha256:
-                    input.walmartPilotPermit!.engineReleaseSha256,
-                  approvalSha256: input.walmartPilotPermit!.approvalSha256,
-                  sellerAccountFingerprintSha256:
-                    input.walmartPilotPermit!.sellerAccountFingerprintSha256,
-                },
+                ...(input.walmartPilotPermit
+                  ? {
+                      ownerPermitAuthorization: {
+                        signedPermit: input.walmartPilotPermit.signedPermit,
+                        engineReleaseSha256:
+                          input.walmartPilotPermit.engineReleaseSha256,
+                        approvalSha256: input.walmartPilotPermit.approvalSha256,
+                        sellerAccountFingerprintSha256:
+                          input.walmartPilotPermit.sellerAccountFingerprintSha256,
+                      },
+                    }
+                  : {}),
                 lifecyclePostClaim: {
                   attemptId: claim.attempt_id,
                   claimToken: claim.claim_token,
