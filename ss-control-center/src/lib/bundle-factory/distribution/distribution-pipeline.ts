@@ -489,8 +489,23 @@ export async function runDistribution(
       }
       preparedWalmartPayloads.set(sku.id, prepared);
     }
-    if (walmartApplyCandidates.length > 0) {
-      const sku = walmartApplyCandidates[0]!;
+    // Pilot lane only. A signed owner permit binds one exact SKU, so this check
+    // proves the signature in hand describes the payload about to be sent.
+    //
+    // It used to run for EVERY Walmart candidate and dereference the permit
+    // unconditionally, so a studio listing — which has no permit and is not
+    // supposed to have one — died here with "Cannot read properties of
+    // undefined (reading 'signedPermit')". The lane split was applied to the
+    // permit assertion above, the durable claim, and the feed post, but this
+    // fourth site was missed.
+    //
+    // The studio lane's equivalent binding is not skipped, it is different and
+    // already enforced a few lines above: the prepared payload's hash must
+    // match marketplace_payload_sha256 in the SKU's sealed distribution
+    // approval, and that approval is re-asserted again immediately before the
+    // POST.
+    if (pilotApplyCandidates.length > 0) {
+      const sku = pilotApplyCandidates[0]!;
       const prepared = preparedWalmartPayloads.get(sku.id)!;
       const target = channelTarget(sku.channel);
       const permit = input.walmartPilotPermit!;
