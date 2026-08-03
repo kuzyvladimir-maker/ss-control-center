@@ -4857,3 +4857,94 @@ model UncrustablesOwnerApprovalManifestRecord {
   captured_at DateTime
   created_at  DateTime @default(now())
 }
+
+// ---------------------------------------------------------------------------
+// Publish queue — batch publishing that survives a closed browser tab.
+//
+// Owner requirement 2026-08-03: "I give a spec to create 200 listings, come
+// back in a few hours, check a few, select the whole batch and press publish
+// once." Walking that selection in the browser meant the batch died whenever
+// the tab was closed, and 200 listings is hours of an open tab.
+//
+// Deliberately mirrors GenerationJob/GenerationWorkItem: same claim-by-lock
+// shape, same tick, so the progress UI and the operator's mental model are the
+// same for building and for publishing.
+// ---------------------------------------------------------------------------
+
+model PublishBatch {
+  id          String @id @default(cuid())
+  marketplace String // "WALMART" — one marketplace per batch, never mixed
+  actor       String
+
+  // The single owner decision this batch stands on. Publishing stays an owner
+  // decision at scale by becoming ONE decision per batch with a stated count,
+  // not by disappearing (AGENTS.md §2).
+  requested_total Int
+  status          String @default("QUEUED") // QUEUED | RUNNING | COMPLETED | PAUSED | CANCELLED
+
+  // The daily cap in force when the batch was created, recorded so the ledger
+  // explains why a batch spilled into the next day instead of looking stalled.
+  daily_cap_at_creation Int
+
+  note String?
+
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  started_at  DateTime?
+  finished_at DateTime?
+
+  items PublishBatchItem[]
+
+  @@index([status])
+  @@index([marketplace, created_at])
+}
+
+model PublishBatchItem {
+  id               String       @id @default(cuid())
+  publish_batch_id String
+  publish_batch    PublishBatch @relation(fields: [publish_batch_id], references: [id], onDelete: Cascade)
+
+  bundle_draft_id String
+  /**
+   * Recorded once known, for a readable ledger after the fact.
+   */
+  sku             String?
+  position        Int
+
+  // PENDING   — waiting its turn
+  // RUNNING    — claimed by a tick
+  // SUCCEEDED  — the marketplace accepted the feed
+  // FAILED     — refused before any POST, or the POST returned a known failure
+  // UNKNOWN    — a POST was made and its result is not known. TERMINAL for the
+  //              queue: it is resolved by reading, never by sending again.
+  // DEFERRED   — held back by the daily cap; picked up on a later day
+  // CANCELLED  — the operator stopped the batch before this item ran
+  status String @default("PENDING")
+
+  /**
+   * Which step refused, when one did: PROMOTE | VALIDATE | APPROVE | DISTRIBUTE.
+   */
+  failed_stage String?
+
+  // Whether a marketplace POST was issued for this item. Once true the item is
+  // never run again by any code path — that is the "one SKU, one POST, zero
+  // retry" rule expressed at the queue level, above the submission ledger that
+  // enforces it at the write.
+  posted Boolean @default(false)
+
+  attempts      Int       @default(0)
+  locked_at     DateTime?
+  submission_id String?
+  last_error    String?
+
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  started_at  DateTime?
+  finished_at DateTime?
+
+  // One draft cannot sit in the same batch twice.
+  @@unique([publish_batch_id, bundle_draft_id])
+  @@index([publish_batch_id, status])
+  @@index([locked_at])
+  @@index([bundle_draft_id])
+}
