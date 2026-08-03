@@ -306,6 +306,71 @@ export async function fetchWalmartItemSpecSchema(
   };
 }
 
+/**
+ * Get Spec, but survivable in a batch.
+ *
+ * Get Spec answers identically for the same (version, productType) — it
+ * describes Walmart's schema, not our listing. Calling it once per draft meant a
+ * 200-listing batch made 200 identical requests, and Walmart throttles. Worse,
+ * `noRetryOn429` makes a throttled call fail outright, so the listing was
+ * written with no spec block at all and only revealed itself much later, at the
+ * POST, as "spec_schema_hash must be a SHA-256 hex digest".
+ *
+ * So: cache the answer for a short window, and retry a failed call before
+ * giving up. The cache TTL is short because a stale schema hash is a real risk —
+ * the mutation path still re-validates against the live spec immediately before
+ * the feed POST, which is where drift must be caught.
+ */
+const SPEC_CACHE_TTL_MS = 10 * 60 * 1000;
+const SPEC_FETCH_ATTEMPTS = 3;
+
+const specCache = new Map<
+  string,
+  { at: number; value: WalmartFetchedItemSpecSchema }
+>();
+
+export async function fetchWalmartItemSpecSchemaCached(
+  client: WalmartItemApiClient,
+  input: { version: string; productType: string; now?: Date },
+): Promise<WalmartFetchedItemSpecSchema> {
+  const key = `${input.version.trim()}::${input.productType.trim()}`;
+  const nowMs = (input.now ?? new Date()).getTime();
+
+  const hit = specCache.get(key);
+  if (hit && nowMs - hit.at < SPEC_CACHE_TTL_MS) return hit.value;
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= SPEC_FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const value = await fetchWalmartItemSpecSchema(client, input);
+      specCache.set(key, { at: nowMs, value });
+      return value;
+    } catch (error) {
+      lastError = error;
+      // A version mismatch or missing product type will never succeed on a
+      // retry; only transport and throttling faults are worth repeating.
+      const code = error instanceof WalmartItemSpecFetchError
+        ? error.issue.code
+        : "";
+      if (
+        code === "WALMART_SPEC_VERSION_NOT_CURRENT"
+        || code === "WALMART_PRODUCT_TYPE_MISSING"
+      ) {
+        throw error;
+      }
+      if (attempt < SPEC_FETCH_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
+      }
+    }
+  }
+  throw lastError;
+}
+
+/** Drop cached schemas. Tests use this; production relies on the TTL. */
+export function clearWalmartItemSpecCache(): void {
+  specCache.clear();
+}
+
 /** Validate a complete MP_ITEM payload against an already fetched schema.
  *
  * This function is deliberately network-free. Certification can fetch Get Spec

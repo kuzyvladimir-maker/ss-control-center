@@ -54,7 +54,7 @@ import {
 } from "../physical-package-specs";
 import { getWalmartClient } from "@/lib/walmart/client";
 import {
-  fetchWalmartItemSpecSchema,
+  fetchWalmartItemSpecSchemaCached,
 } from "../distribution/walmart-item-spec";
 import {
   WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
@@ -997,9 +997,12 @@ export async function promoteDraftToChannelSkus(
   let studioSpec:
     | { version: string; schema_sha256: string; fetched_at: string }
     | null = null;
+  let studioSpecError: string | null = null;
   if (studioProductType) {
     try {
-      const fetched = await fetchWalmartItemSpecSchema(getWalmartClient(1), {
+      // Cached and retried: Get Spec answers identically per product type, and
+      // one call per draft throttles a batch into failures.
+      const fetched = await fetchWalmartItemSpecSchemaCached(getWalmartClient(1), {
         version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
         productType: studioProductType,
       });
@@ -1009,10 +1012,8 @@ export async function promoteDraftToChannelSkus(
         fetched_at: fetched.fetched_at,
       };
     } catch (error) {
-      console.warn(
-        "[promote-draft] Walmart Get Spec unavailable:",
-        error instanceof Error ? error.message : error,
-      );
+      studioSpecError = error instanceof Error ? error.message : String(error);
+      console.warn("[promote-draft] Walmart Get Spec unavailable:", studioSpecError);
     }
   }
 
@@ -1022,6 +1023,19 @@ export async function promoteDraftToChannelSkus(
     mainImageUrl: string,
   ): string | null {
     if (!studioComponent || !studioImage || !studioProductType) return null;
+    // Fail closed. Without the spec trio the listing is unpublishable: the
+    // public item contract requires spec_version, spec_schema_hash and
+    // spec_fetched_at. This used to warn and carry on, so the draft was stored
+    // and marked VALIDATED while being impossible to publish, and the operator
+    // found out at the POST via "spec_schema_hash must be a SHA-256 hex
+    // digest". Refuse here, naming the real cause.
+    if (!studioSpec) {
+      throw new Error(
+        `Walmart Get Spec is unavailable, so this listing cannot be prepared: ${
+          studioSpecError ?? "unknown reason"
+        }`,
+      );
+    }
     const base = JSON.parse(richAttributesJson) as Record<string, unknown>;
     base.listing_lane = WALMART_STUDIO_LISTING_LANE;
     base.walmart = buildWalmartStudioPublicAttributes({
