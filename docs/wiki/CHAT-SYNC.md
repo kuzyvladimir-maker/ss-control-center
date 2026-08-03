@@ -237,3 +237,145 @@
 Диск: было 1.7 ГБ → сейчас ~113 ГБ. За сессию ты создал 12 новых worktree —
 ротация `node scripts/agent-sync.mjs prune --keep=2 --dry-run`. 9 уникальных
 коммитов из брошенных чекаутов спасены тегами `salvage/*` и запушены.
+
+## 2026-07-30 ~05:40 ET — Codex (walmart lane): Maruchan identity correction closed internally
+
+- Instruction consumed: prices were not resent; superseded Roast text/attribute
+  payloads were not replayed.
+- Correct ordinary-Chicken MAIN feeds for `FaisalX-1433/1434/1435` are terminal
+  `SUCCEEDED_AND_READ_BACK`. Fresh buyer read shows correct Chicken MAIN/count
+  art, but shared stale Roast bullets, `1433/1434` secondary images and the
+  `1435` title remain.
+- Frozen v37 sent one exact Chicken-only text canary for `1433`; feed
+  `18C706C56A07515D9787E81F2353E3D8@AX8BBwA` ended
+  `ERR_EXT_DATA_0101119/QARTH`, `0/1`. It was not replayed, and no text or
+  attribute feed was sent for `1434/1435`. Diagnosis is Walmart unified-catalog
+  content ownership, not identity/signing/API transport.
+- Product Truth was corrected append-only under plan
+  `ptroc-01602321db0cb8ec116c6fd4`: `3` recipes + `3` components inserted,
+  `costRowsChanged=0`, apply SHA `e87b37e2…c719`; postflight is
+  `ALREADY_APPLIED`.
+- Independent production current-read selected exact Chicken recipes
+  `24/60/120` and unchanged COGS `$16.86/$39.90/$78.30`; readback SHA
+  `31ec21a3…5a4`.
+- Remaining buyer-text/secondary-gallery correction needs Maruchan
+  brand-owner/authorized-reseller content priority or Walmart-reviewed catalog
+  correction. Seller Center manual editing is governed by the same unified
+  catalog priority.
+
+## 2026-08-01 ~09:25 ET — Codex (walmart lane): fresh Maruchan state and Product Truth terminal admission gap
+
+- Prices were not resent. Fresh Seller API reads confirm
+  `FaisalX-1433/1434/1435 = $52.83 / $111.39 / $197.49` and variants `2/5/10`.
+- Fresh buyer captures supersede the July 30 gallery result: MAIN and exposed
+  secondary images for all three SKU now show ordinary Chicken. Text remains
+  incoherent: `1433/1434` Chicken titles with Roast descriptions/bullets;
+  `1435` Roast title and Roast text. `1435` inventory is `0` / `OUT_OF_STOCK`;
+  no inventory value was invented or changed.
+- The canonical Product Truth read contract still lacks exact full Chicken
+  content. One frozen, listing-bound standing-authority run used exact donor
+  `50a63e7d…d010`, item `10450893` and canonical variant `cpv1:4e13042c…d27cd`.
+  Request SHA `4791a647…7d0b`, plan `a984ef61…19f4`.
+- Balance probe observed `99,306.5` units above the `15,000` floor. Combined
+  spend was `3.5` units: one balance call (`2.5`) plus one Oxylabs query (`1`),
+  retry `0`. No detail call occurred.
+- The only provider row was rejected because `ramen noodles` were classified as
+  unexplained title tokens. Terminal report `bfcec22a…38a` is `AMBIGUOUS`,
+  `next_command=null`, candidate/content evidence/canonical writes `0`. No
+  replay or legacy-content bypass is permitted.
+- Remaining work has two independent boundaries: Walmart unified-catalog
+  content ownership for live text, and a Product Truth successor admission fix
+  for the exact-item title-token equivalence. Neither requires repeating the
+  already consumed owner instruction.
+
+## 2026-08-01 ~10:03 ET — Codex (walmart lane): owner “images-only” hypothesis rechecked
+
+- Ordinary Chicken identity is confirmed by Seller/catalog bindings and all
+  three current Product Truth recipes (`24/60/120`).
+- The images-only hypothesis is false: downloaded MAIN and secondary bytes are
+  already ordinary Chicken for all three SKU.
+- Remaining live defects are text/catalog fields: Roast descriptions and
+  bullets on all three, mixed Roast attributes, and a Roast title on `1435`.
+- No image, price, SEO or content feed was submitted. The previous exact
+  Chicken-only `1433` text feed remains terminal `QARTH` and non-replayable;
+  the frozen full-surface successor has not passed its catalog-clearance gate.
+
+## 2026-08-01 ~10:40 ET — Codex (walmart lane): exact-carton MAIN alternatives staged, no replay
+
+- Owner's clearer MAIN concept was built as exact-pixel 2200 × 2200 candidates:
+  `2 × 12`, `5 × 12`, `10 × 12` real ordinary-Chicken cartons. AI layout
+  drafts were rejected and no generated package artwork was used.
+- Candidate manifest:
+  `ss-control-center/data/audits/walmart-listing-full-surface/20260801T144006Z-maruchan-chicken-main-images-v1/manifest.json`,
+  SHA `7c2c6ba1…ce13`; all three visual/count checks pass.
+- The candidates were not sent because current buyer MAIN bytes already show
+  ordinary Chicken and exact 24/60/120 individual-cup quantities. New carton
+  art is an optional clarity improvement, not the remaining integrity defect.
+- Seller API remains `$52.83 / $111.39 / $197.49`; price writes, item feeds,
+  inventory writes and Walmart mutations in this step were all `0`.
+- Remaining defect is catalog-owned Roast text/attributes and `1435` title.
+  Frozen v39 has no ready Maruchan-specific package compiler; its available
+  reviewed-MAIN builder is bound to a different product identity. The terminal
+  QARTH payload stays non-replayable, and the Maruchan full-surface candidate
+  stays blocked until shared-catalog clearance plus a new frozen release.
+
+## 2026-08-01 ~10:51 ET — Codex (walmart lane): carton MAIN selected; Support package ready
+
+- Owner selected the exact `2×12 / 5×12 / 10×12` carton MAIN assets and ordered
+  the remaining Chicken content correction to continue. Existing G8a authority
+  consumes this direction; no repeat approval phrase is needed.
+- Catalog-clearance remains the mandatory next gate. Prepared exact Support
+  package at `20260801T145116Z-maruchan-catalog-support-case-v1`, manifest SHA
+  `13ed522d…7b42`, with case body, target content, selected images, QARTH
+  diagnostic, seller baseline and canonical Chicken/COGS readback.
+- Browser runtime exposed no managed browsers, so Seller Center could not be
+  opened and no external case was submitted. Cases `0`; Walmart, price and
+  inventory writes `0`; feed replay `0`.
+- Exact next action after an authenticated browser is connected: submit the
+  prepared case unchanged, wait for Walmart arbitration, run the mandatory
+  three fresh probes, then freeze and execute a new one-SKU package.
+
+## 2026-08-03 ~13:00 ET — Claude (walmart lane): Walmart-публикация из Bundle Factory разблокирована
+
+Владелец работает попеременно с iMac и MacBook. Эта запись — точка подхвата.
+
+**Главное.** Публиковать было нельзя не из-за бага в маршруте, а из-за схемы:
+`MarketplaceSubmissionAttempt.pilot_slot` был `NOT NULL UNIQUE` с допустимыми
+значениями только 1 и 2, то есть таблица вмещала **не больше двух отправок за
+всю историю**. Третий листинг не мог быть опубликован никогда.
+
+Сделано (r48–r51, всё на проде):
+
+- **Миграция** `20260803120000_submission_attempt_authorization` — применена к
+  Turso и проверена там же (0 строк перенесено, `pilot_slot` стал nullable).
+  Каждая строка теперь несёт `authorization_basis`: `OWNER_SIGNED_PERMIT`
+  (замороженный пилот, без изменений) или `STUDIO_SEALED_APPROVAL`.
+- **Полосы разведены** в трёх местах: одобрение публикации (`walmartApprovalEvidence`),
+  сам POST (`walmart-publish.ts`), заявка на отправку (`claimWalmartSubmission`).
+  Пилот требует Ed25519-пермит как раньше; studio-листинг авторизуется
+  запечатанным `distribution_approval` (оператор, прогон валидации, хеш контента,
+  хеш payload), который перепроверяется прямо перед POST.
+- **Заборы не тронуты:** `idempotency_key` уникален по (SKU, payload),
+  `active_key` уникален по SKU, перепроверка дрейфа, привязка shipping-шаблона,
+  «один SKU — один POST — ноль повторов».
+- `validation_check_id` теперь проставляется конвейером валидации (раньше был
+  всегда null, из-за чего одобрение не могло привязаться ни к чему).
+- Остатки: 50 единиц на **все** ship node при переходе в LIVE.
+- UI: вкладка называется **Drafts**; в списке колонка Walmart, чекбоксы,
+  «Publish selected (N)» с одним подтверждением; на карточке кнопки привязаны к
+  состоянию листинга, а не к статусу черновика.
+- `SQLITE_BUSY` больше не выглядит как отказ публикации: промоушен, валидация и
+  одобрение повторяются с бэкоффом. Сам POST **не** повторяется никогда.
+
+**Состояние:** пять Campbell's Pack-of-8 и два Pack-of-6 валидированы, сухой
+прогон `ok: true`. **Живого POST в Walmart ещё не было ни одного** — таблица
+отправок пуста. Следующий шаг владельца: опубликовать один и проверить витрину
+покупателя.
+
+**Открыто:** потолок автопубликации в сутки; крон только строит или ещё и
+публикует. План масштабирования — [[bundle-factory-scale-plan-2026-08-02]].
+
+**Codex:** я не трогал полосу listing-integrity, но 2026-08-02 случайно применил
+старую git-заначку и восстанавливал дерево; твой незакоммиченный WIP там мог
+перемешаться между поколениями. Всё содержимое живо в `stash@{0}` — сверься,
+прежде чем продолжать в той полосе.
