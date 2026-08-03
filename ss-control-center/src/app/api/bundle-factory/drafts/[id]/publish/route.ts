@@ -24,6 +24,7 @@ import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
 import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
 import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
+import { runValidationForDraft } from "@/lib/bundle-factory/validation/validation-pipeline";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -108,6 +109,38 @@ export const POST = withErrorHandler(
       }
     }
 
+    // Promotion re-syncs the generated content onto the SKU and therefore
+    // RESETS its validation to PENDING — the content it just copied has not
+    // been checked in that form. Approval, one line below, requires the draft
+    // to be VALIDATED. So pressing Publish destroyed its own precondition and
+    // failed every time with "Draft must be VALIDATED before approval
+    // (current=GENERATED)". Re-validating here closes the loop and makes the
+    // guarantee stronger than it was: what gets published is exactly what
+    // just passed, never a validation from an earlier version of the content.
+    const validation = await runValidationForDraft({
+      bundle_draft_id: id,
+      ...(channels ? { channels } : {}),
+      actor,
+    });
+    const unvalidated = validation.per_sku.filter(
+      (entry) => entry.status !== "PASSED",
+    );
+    if (apply && unvalidated.length > 0) {
+      return NextResponse.json({
+        ok: false,
+        stage: "VALIDATE",
+        error: unvalidated.length === validation.per_sku.length
+          ? "Validation did not pass, so nothing was published."
+          : `${unvalidated.length} of ${validation.per_sku.length} listings did not pass validation; nothing was published.`,
+        failures: unvalidated.map((entry) => ({
+          channel: entry.channel,
+          status: entry.status,
+          failed: entry.failed,
+        })),
+        promotion,
+      }, { status: 422 });
+    }
+
     if (apply) {
       if (body.approvalConfirmed !== true) {
         return badRequest(
@@ -128,6 +161,6 @@ export const POST = withErrorHandler(
       batchSize,
       actor,
     });
-    return NextResponse.json({ ...result, promotion });
+    return NextResponse.json({ ...result, promotion, validation });
   },
 );

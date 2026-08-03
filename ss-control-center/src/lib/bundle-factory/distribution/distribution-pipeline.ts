@@ -328,11 +328,21 @@ export async function runDistribution(
   const verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(
     masterBundle?.packaging_spec,
   );
-  const verifiedAllergens = isFoodBundle
-    ? amazonAllergensFromStoredDeclarations(
-        masterBundle?.components.map((component) => component.allergens) ?? [],
-      )
-    : null;
+  // Amazon's allergen_information is a CLOSED enum and refuses any label
+  // outside it. Computing it up front made a Walmart-only publish die on
+  // "celery" — a label Amazon does not know, in a payload Amazon never sees.
+  // Only submitToAmazon consumes it, so it is resolved there and nowhere else.
+  let verifiedAllergensCache: string[] | null | undefined;
+  const resolveVerifiedAllergens = (): string[] | null => {
+    if (verifiedAllergensCache === undefined) {
+      verifiedAllergensCache = isFoodBundle
+        ? amazonAllergensFromStoredDeclarations(
+            masterBundle?.components.map((component) => component.allergens) ?? [],
+          )
+        : null;
+    }
+    return verifiedAllergensCache;
+  };
   if (isFoodBundle && (masterBundle?.components.length ?? 0) === 0) {
     throw new Error(
       `MasterBundle ${draft.master_bundle_id} has no reviewed component allergen declarations`,
@@ -680,7 +690,7 @@ export async function runDistribution(
           brand: masterBundle?.brand,
           category: masterBundle?.category,
           physicalPackageSpecs: verifiedPhysicalSpecs,
-          verifiedAllergens,
+          verifiedAllergens: resolveVerifiedAllergens(),
           uncrustablesMainPermit: uncrustablesMainPermits.get(sku.id),
           dryRun: !apply,
           // Every real PUT is validation-previewed. submitToAmazon enforces

@@ -58,6 +58,7 @@ import {
 } from "../distribution/walmart-item-spec";
 import {
   WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+  isWalmartPilotImageUrl,
 } from "./walmart-prepublication-policy";
 import {
   WALMART_DEFAULT_SHIP_NODE_SETTING_KEY,
@@ -839,9 +840,18 @@ export async function promoteDraftToChannelSkus(
     );
     if (galleryUrls.length > 0) {
       const hosted = await mirrorDonorGallery(`draft-${draftId}-gallery`, galleryUrls);
-      if (hosted.length > 0) {
-        hostedGalleryUrls = hosted;
-        Object.assign(rich, galleryLocatorAttrs(hosted, MARKETPLACE_ID));
+      // Walmart requires at least one secondary image besides MAIN, so an
+      // unavailable mirror (missing R2 credentials, a CDN refusal) would sink
+      // the whole publish with an obscure contract error. The donor's own
+      // packshot URLs are already exact images of this same product on the
+      // retailer's CDN; those that Walmart will accept as-is — HTTPS, no
+      // query string, .jpg/.png — stand in until the mirror works again.
+      const usable = hosted.length > 0
+        ? hosted
+        : galleryUrls.filter(isWalmartPilotImageUrl);
+      if (usable.length > 0) {
+        hostedGalleryUrls = usable;
+        Object.assign(rich, galleryLocatorAttrs(usable, MARKETPLACE_ID));
         richAttributesJson = JSON.stringify(rich);
       }
     }
