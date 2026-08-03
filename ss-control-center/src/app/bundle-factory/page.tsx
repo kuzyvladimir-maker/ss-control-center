@@ -105,7 +105,7 @@ export default async function BundleFactoryOverviewPage() {
             At a glance
           </span>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-ink-3">
-            <Link href="/bundle-factory/drafts" className="hover:text-ink">In progress</Link>
+            <Link href="/bundle-factory/drafts" className="hover:text-ink">Drafts</Link>
             <span className="text-ink-4">·</span>
             <Link href="/bundle-factory/live" className="hover:text-ink">Published</Link>
             <span className="text-ink-4">·</span>
