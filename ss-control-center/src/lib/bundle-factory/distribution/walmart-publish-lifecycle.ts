@@ -11,6 +11,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import { prisma } from "@/lib/prisma";
+import { withSqliteBusyRetry } from "../sqlite-busy-retry";
 import { hashWalmartPayload } from "./walmart-payload-hash";
 import type { WalmartOwnerPermit } from "../walmart-owner-permit";
 
@@ -346,6 +347,29 @@ export async function assertWalmartPublishLifecycleSchema(): Promise<void> {
   }
 }
 
+/**
+ * Every write in this module is LOCAL database work: it either applies or it
+ * does not, and Turso serialises writers, so a refusal means nothing happened.
+ *
+ * That distinction matters here more than anywhere else. These transactions
+ * bracket the marketplace POST — they claim the one-shot fence, mark the
+ * request, and record the outcome. When one of them lost a race with a cron
+ * tick and was refused with SQLITE_BUSY, publishing died with "database is
+ * locked" AND left the claim stranded in CLAIMED, so the SKU could not be
+ * published again either. The fence outlived the request it was fencing.
+ *
+ * The POST itself is never retried through this or anything else: an unknown
+ * marketplace outcome is resolved by reading (AGENTS.md §7).
+ */
+type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+function busyTx<T>(
+  label: string,
+  run: (tx: PrismaTransaction) => Promise<T>,
+): Promise<T> {
+  return withSqliteBusyRetry(label, () => prisma.$transaction(run));
+}
+
 class ClaimUnavailableError extends Error {}
 
 export interface WalmartSubmissionClaim {
@@ -538,7 +562,7 @@ export async function claimWalmartSubmission(input: {
       } satisfies WalmartSubmissionClaim;
     }
     try {
-      await prisma.$transaction(async (tx) => {
+      await busyTx("walmart:claim-retryable", async (tx) => {
         const attempt = await tx.marketplaceSubmissionAttempt.updateMany({
           where: {
             id: existing.id,
@@ -599,7 +623,7 @@ export async function claimWalmartSubmission(input: {
   };
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await busyTx("walmart:claim", async (tx) => {
       const sku = await tx.channelSKU.updateMany({
         where: {
           id: input.channelSkuId,
@@ -737,7 +761,7 @@ export async function acceptWalmartSubmission(input: {
   now?: Date;
 }): Promise<void> {
   const now = input.now ?? new Date();
-  await prisma.$transaction(async (tx) => {
+  await busyTx("walmart:accept", async (tx) => {
     const attempt = await tx.marketplaceSubmissionAttempt.updateMany({
       where: {
         id: input.attemptId,
@@ -799,7 +823,7 @@ export async function recordWalmartSynchronousFailure(input: {
   listingStatus: "SUBMISSION_UNKNOWN" | "RETRYABLE" | "FAILED";
 }> {
   const now = input.now ?? new Date();
-  return prisma.$transaction(async (tx) => {
+  return busyTx("walmart:record-failure", async (tx) => {
     const current = await tx.marketplaceSubmissionAttempt.findFirst({
       where: {
         id: input.attemptId,
