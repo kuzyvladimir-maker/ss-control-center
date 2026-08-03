@@ -53,6 +53,7 @@ import {
   withVerifiedPhysicalPackageSpecs,
 } from "../physical-package-specs";
 import { getWalmartClient } from "@/lib/walmart/client";
+import { resolveIngredientListImage } from "../walmart-ingredient-list-image";
 import {
   fetchWalmartItemSpecSchemaCached,
 } from "../distribution/walmart-item-spec";
@@ -1020,6 +1021,69 @@ export async function promoteDraftToChannelSkus(
     }
   }
 
+  const masterBundleComponents = await prisma.bundleComponent.findMany({
+    where: { master_bundle_id: masterBundleId },
+    select: { ingredients: true },
+    take: 1,
+  });
+
+  // Walmart requires an image of the ingredient list to CREATE a food item.
+  // Look for a real photograph of the panel among the donor gallery first, and
+  // render the manufacturer's own statement when there is none (owner decision
+  // 2026-08-03). A Nutrition Facts crop is a different panel and is never used.
+  const studioIngredientsText = (() => {
+    const fromComponent = studioComponent?.ingredients;
+    if (typeof fromComponent === "string" && fromComponent.trim()) {
+      return fromComponent.trim();
+    }
+    // The MasterBundle's own component row carries the catalogued statement.
+    const fromBundle = masterBundleComponents[0]?.ingredients;
+    return typeof fromBundle === "string" && fromBundle.trim()
+      ? fromBundle.trim()
+      : null;
+  })();
+
+  let studioIngredientImage: string | null = null;
+  let studioIngredientImageError: string | null = null;
+  if (studioProductType) {
+    try {
+      const resolved = await resolveIngredientListImage({
+        candidateImageUrls: hostedGalleryUrls,
+        ingredientsText: studioIngredientsText,
+        productKey: String(studioComponent?.product_name ?? draftId),
+      });
+      studioIngredientImage = resolved?.url ?? null;
+      if (!resolved) {
+        studioIngredientImageError =
+          "no donor photo of the ingredient list and no manufacturer ingredient text to render";
+      }
+    } catch (error) {
+      studioIngredientImageError =
+        error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  /** Net content of ONE retail unit, from the manufacturer's declared size. */
+  const studioNetContent = (() => {
+    const amount = Number(studioIdentity?.sizeBaseAmount);
+    const unit = String(studioIdentity?.sizeBaseUnit ?? "").trim().toLowerCase();
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    // Walmart's enum spells units out in full.
+    const unitName = unit === "oz" || unit === "ounce" || unit === "ounces"
+      ? "Ounce"
+      : unit === "fl oz" || unit === "fluid ounce" || unit === "fluid ounces"
+        ? "Fluid Ounces"
+        : unit === "lb" || unit === "pound" || unit === "pounds"
+          ? "Pound"
+          : unit === "g" || unit === "gram" || unit === "grams"
+            ? "Gram"
+            : unit === "ml" || unit === "milliliter"
+              ? "Milliliter"
+              : null;
+    if (!unitName) return null;
+    return { unit: unitName, measure: Number(amount.toFixed(3)) };
+  })();
+
   let studioSpec:
     | { version: string; schema_sha256: string; fetched_at: string }
     | null = null;
@@ -1071,6 +1135,18 @@ export async function promoteDraftToChannelSkus(
           + "so it cannot be prepared for publishing.",
       );
     }
+    if (!studioIngredientImage) {
+      throw new Error(
+        "Walmart requires an image of the ingredient list to create a food "
+          + `listing, and none could be produced: ${studioIngredientImageError ?? "unknown reason"}`,
+      );
+    }
+    if (!studioNetContent) {
+      throw new Error(
+        "This listing has no usable manufacturer net content (amount + unit), "
+          + "which Walmart requires to create a food item.",
+      );
+    }
     if (!studioFulfillmentCenterId) {
       throw new Error(
         `No Walmart ship node is configured (Setting ${WALMART_DEFAULT_SHIP_NODE_SETTING_KEY}), `
@@ -1087,6 +1163,12 @@ export async function promoteDraftToChannelSkus(
       spec: studioSpec,
       fulfillmentCenterId: studioFulfillmentCenterId,
       declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+      ingredientListImageUrl: studioIngredientImage!,
+      netContent: studioNetContent!,
+      // Canned soup. Both are facts about the packaging, taken from the
+      // product, and both are required by Walmart to create the item.
+      containerMaterial: ["Metal"],
+      foodCondition: ["Shelf-Stable"],
     });
     base[WALMART_STUDIO_LISTING_ATTRIBUTE_KEY] = buildWalmartStudioListingEvidence({
       sku: skuCode,

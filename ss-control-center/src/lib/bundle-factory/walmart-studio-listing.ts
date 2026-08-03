@@ -374,6 +374,15 @@ export function buildWalmartStudioPublicAttributes(input: {
   declaredQuantity: number;
   /** Live Get Spec evidence, when the fetch succeeded. */
   spec?: { version: string; schema_sha256: string; fetched_at: string } | null;
+  /**
+   * Required by Walmart to CREATE a food item, and absent from everything we
+   * built before, because everything we built before only ever EDITED items
+   * that already existed. See docs/wiki/walmart-new-item-creation-spec.md.
+   */
+  ingredientListImageUrl: string;
+  netContent: { unit: string; measure: number };
+  containerMaterial: string[];
+  foodCondition: string[];
 }): Record<string, unknown> {
   return {
     contract_version: WALMART_PUBLIC_CONTRACT_SCHEMA,
@@ -394,6 +403,19 @@ export function buildWalmartStudioPublicAttributes(input: {
       multipackQuantity: input.packCount,
       countPerPack: 1,
       count: input.packCount,
+      // Walmart's required set for creating a food item. Values are facts about
+      // the product, not choices: the condition of anything we list is New, a
+      // canned shelf-stable soup carries no Prop 65 warning, and the net content
+      // is the manufacturer's declared size.
+      condition: "New",
+      isProp65WarningRequired: "No",
+      container_material: input.containerMaterial,
+      food_condition: input.foodCondition,
+      ingredientListImage: input.ingredientListImageUrl,
+      netContent: {
+        productNetContentUnit: input.netContent.unit,
+        productNetContentMeasure: input.netContent.measure,
+      },
     },
     offer_handoff: {
       mode: "INLINE",
