@@ -207,6 +207,27 @@ function assertQuantityAttributes(
 
 /** Pure MP_ITEM 5.0 builder. It intentionally does not perform network I/O;
  * submitToWalmart owns live schema validation and transport. */
+/**
+ * Walmart's country field is an enum of 250 country NAMES, not ISO codes.
+ *
+ * Our contract stores "US" because that is what the rest of the platform uses,
+ * so it has to be translated at the boundary. Only the codes we actually
+ * produce are mapped; anything else is passed through unchanged so the schema
+ * rejects it loudly rather than this function inventing a country.
+ */
+const WALMART_COUNTRY_NAMES: Record<string, string> = {
+  US: "United States",
+  USA: "United States",
+  GB: "United Kingdom",
+  UK: "United Kingdom",
+  CA: "Canada",
+  MX: "Mexico",
+};
+
+function walmartCountryName(value: string): string {
+  return WALMART_COUNTRY_NAMES[value.trim().toUpperCase()] ?? value;
+}
+
 export function buildWalmartPayload(
   sku: ChannelSKU,
   opts: WalmartPayloadBuildOptions = {},
@@ -241,7 +262,8 @@ export function buildWalmartPayload(
     "ChannelSKU.main_image_url",
   );
   const price = positivePriceDollars(sku.price_cents);
-  const shippingWeight = Number((physical.weight_oz / 16).toFixed(4));
+  // The schema requires a multiple of 0.001; four decimals is not one.
+  const shippingWeight = Number((physical.weight_oz / 16).toFixed(3));
   const publicAttributes = { ...contract.public_attributes };
   assertQuantityAttributes(publicAttributes, packCount);
 
@@ -255,19 +277,23 @@ export function buildWalmartPayload(
     productSecondaryImageURL: contract.secondary_image_urls,
   };
 
+  // Field names and shapes below come from the LIVE Get Spec schema, not from
+  // documentation. Orderable declares additionalProperties:false, so a name in
+  // the wrong case is not a harmless alias — it is a rejected feed. The whole
+  // block used to be camelCase (and carried specProductType, which the schema
+  // does not allow at all), which is why nothing could ever be created.
   const orderable: Record<string, unknown> = {
     sku: requiredText(sku.sku, "ChannelSKU.sku"),
     productIdentifiers: identifier(sku.upc),
-    specProductType: contract.product_type,
     price,
     ShippingWeight: shippingWeight,
-    countryOfOriginSubstantialTransformation:
-      contract.country_of_origin_substantial_transformation,
-    productPackageDimensionsAndWeight: {
-      productPackageDimensionsDepth: physical.length_in,
-      productPackageDimensionsHeight: physical.height_in,
-      productPackageDimensionsWidth: physical.width_in,
-      productPackageWeight: shippingWeight,
+    country_of_origin_substantial_transformation:
+      walmartCountryName(contract.country_of_origin_substantial_transformation),
+    product_package_dimensions_and_weight: {
+      product_package_dimensions_depth: physical.length_in,
+      product_package_dimensions_height: physical.height_in,
+      product_package_dimensions_width: physical.width_in,
+      product_package_weight: shippingWeight,
     },
   };
   if (contract.offer_handoff.mode === "INLINE") {
@@ -280,14 +306,14 @@ export function buildWalmartPayload(
   }
 
   return {
+    // Exactly three fields. The schema allows businessUnit, locale and version
+    // and nothing else, and this is the shape Walmart actually accepted on
+    // 2026-07-30 (see the stored payloads under data/audits/). feedType travels
+    // as the request's query parameter, so repeating it here only broke the feed.
     MPItemFeedHeader: {
-      sellingChannel: "marketplace",
-      feedType: "MP_ITEM",
-      processMode: "REPLACE",
+      businessUnit: "WALMART_US",
       locale: "en",
       version: contract.spec_version,
-      subset: "EXTERNAL",
-      subCategory: "product_content_and_site_exp",
     },
     MPItem: [
       {
