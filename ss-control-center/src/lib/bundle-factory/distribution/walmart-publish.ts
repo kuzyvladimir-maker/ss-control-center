@@ -485,7 +485,16 @@ export async function submitToWalmart(
     return baseFailure({
       payload,
       issues: schemaValidation.issues,
-      error: "Current Walmart Get Spec validation blocked the MP_ITEM feed",
+      // Name what actually refused. The bare sentence read as "Walmart rejected
+      // the payload" when the usual cause is that the schema could not be
+      // fetched at all, and finding that out meant reading the code.
+      error: `Current Walmart Get Spec validation blocked the MP_ITEM feed: ${
+        schemaValidation.issues.length > 0
+          ? schemaValidation.issues
+            .map((issue) => `${issue.code ?? "ISSUE"}: ${issue.message ?? ""}`.trim())
+            .join("; ")
+          : "no issues were reported"
+      }`,
       dryRun,
       contract,
       schemaValidation,

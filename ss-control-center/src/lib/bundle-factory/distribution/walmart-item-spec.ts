@@ -468,10 +468,21 @@ export async function validateWalmartPayloadAgainstLiveSpec(args: {
   const fetchedAt = (args.now ?? new Date()).toISOString();
   let fetched: WalmartFetchedItemSpecSchema;
   try {
-    fetched = await fetchWalmartItemSpecSchema(args.client, {
+    // Cached and retried, like promotion. This is the mutation path, so a
+    // throttled Get Spec here does not merely annoy — it blocks the publish
+    // outright, and reports it as "Get Spec validation blocked the MP_ITEM
+    // feed", which reads like the payload was rejected when nothing was ever
+    // checked. Publishing several listings in a row throttled itself into
+    // exactly that.
+    //
+    // The revalidation this function exists for is not weakened: the schema is
+    // still fetched from Walmart, and the payload is still checked against the
+    // hash pinned in the contract. Sharing one answer with the promotion that
+    // ran seconds earlier makes the two MORE consistent, not less.
+    fetched = await fetchWalmartItemSpecSchemaCached(args.client, {
       version: args.contract.spec_version,
       productType: args.contract.product_type,
-      now: args.now,
+      ...(args.now ? { now: args.now } : {}),
     });
   } catch (error) {
     const issue = error instanceof WalmartItemSpecFetchError
