@@ -214,13 +214,34 @@ export function walmartDispositionQuarantinesUpc(
   );
 }
 
+/**
+ * True when the write was refused because a row with that key already exists.
+ *
+ * Prisma reports this as P2002 — but only when it recognises the driver error.
+ * Against Turso the libSQL adapter surfaces the raw SQLite failure instead
+ * (`SQLITE_CONSTRAINT: UNIQUE constraint failed: ...`), which this used to miss.
+ * The consequence was not a cosmetic one: the caller catches this exact
+ * predicate in order to fall back to re-claiming the existing retryable
+ * attempt, so an unrecognised collision skipped the whole recovery path and
+ * surfaced as a raw 500 to the operator. Same shape as SQLITE_BUSY, which had
+ * to learn the same lesson.
+ */
 function isUniqueConstraintError(error: unknown): boolean {
-  return Boolean(
-    error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error as { code?: unknown }).code === "P2002",
-  );
+  if (!error) return false;
+  if (
+    typeof error === "object"
+    && "code" in error
+    && (error as { code?: unknown }).code === "P2002"
+  ) {
+    return true;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  if (/UNIQUE constraint failed|SQLITE_CONSTRAINT_UNIQUE/i.test(message)) {
+    return true;
+  }
+  const cause = (error as { cause?: unknown }).cause;
+  if (cause && cause !== error) return isUniqueConstraintError(cause);
+  return false;
 }
 
 export interface WalmartPublishLifecycleSchemaReport {
@@ -472,8 +493,23 @@ export async function claimWalmartSubmission(input: {
         existing.certification_sha256 !== permit.certificationSha256 ||
         existing.seller_account_fingerprint_sha256 !==
           permit.sellerAccountFingerprintSha256
+      // The studio lane re-seals its distribution approval on every publish
+      // press — the seal carries its own timestamp, so its SHA-256 is different
+      // every time even when operator, validation run, content and payload are
+      // identical. Requiring the seal to be BYTE-IDENTICAL therefore made a
+      // retry structurally impossible: the row could never be re-claimed, and
+      // a new row could never be inserted either, because the idempotency key
+      // is the same. That is the loop.
+      //
+      // What actually identifies a submission is the payload, and that is
+      // exactly what the idempotency key and payload_hash record. Content drift
+      // cannot slip through here: the pipeline refuses before the claim if the
+      // prepared payload's hash differs from the CURRENT sealed approval, and
+      // asserts the approval again immediately before the POST. So an attempt
+      // carrying this payload hash is the same submission, whichever seal
+      // authorised it, and the lane and seller account must still match.
       : existing.authorization_basis !== "STUDIO_SEALED_APPROVAL" ||
-        existing.authorization_sha256 !== studioApproval!.approvalSha256 ||
+        existing.payload_hash !== payloadHash ||
         existing.seller_account_fingerprint_sha256 !==
           studioApproval!.sellerAccountFingerprintSha256;
     if (boundToADifferentAuthorization) {
