@@ -597,12 +597,12 @@ export function DraftDetailClient(props: Props) {
       r.main_image_url &&
       (r.validation_status === "PENDING" || r.validation_status === "FAILED"),
   ).length;
+  // What the row actually needs next decides which button appears. Keying
+  // these off the DRAFT's lifecycle string instead left studio drafts with no
+  // button at all: they sit at GENERATED, which was in none of the allowlists,
+  // so a finished listing looked like a dead end.
   const showValidateAllBtn =
-    validationPendingCount > 0 &&
-    (props.draftStatus === "IMAGE_GENERATED" ||
-      props.draftStatus === "VALIDATING" ||
-      props.draftStatus === "VALIDATED" ||
-      props.draftStatus === "ERROR");
+    validationPendingCount > 0 && rows.some((r) => r.channel_sku_id !== null);
   // Fail closed: warnings mean a required fact was not proven.
   const isPublishable = (status: string) => status === "PASSED";
   const publishPendingCount = rows.filter(
@@ -626,18 +626,21 @@ export function DraftDetailClient(props: Props) {
   // button (validate, publish) stayed hidden and the listing was a dead end.
   // This one action promotes it (mints the SKU, reserves a pool UPC for 24h)
   // and runs a dry run, after which the normal validate/publish buttons apply.
-  const showWalmartPrepareBtn =
-    props.targetChannels.includes("WALMART")
-    && rows.length === 0
-    && (props.draftStatus === "GENERATED"
-      || props.draftStatus === "IMAGE_GENERATED");
+  // A Walmart draft arrives with content and a main image but no ChannelSKU.
+  // Until it has one there is nothing to validate or publish, so this is the
+  // step being offered. (It used to require rows.length === 0 while rendering
+  // only when rows existed — the button could never appear.)
+  const showWalmartPrepareBtn = rows.some(
+    (r) =>
+      r.channel === "WALMART"
+      && r.channel_sku_id === null
+      && r.compliance_status === "CAN_PUBLISH"
+      && !!r.main_image_url,
+  );
 
-  const showPublishAllBtn =
-    publishPendingCount > 0 &&
-    (props.draftStatus === "VALIDATED" ||
-      props.draftStatus === "PUBLISHING" ||
-      props.draftStatus === "PUBLISHED" ||
-      props.draftStatus === "ERROR");
+  // publishPendingCount already demands a PASSED validation and a listing that
+  // has not gone out yet; the draft's own status adds nothing on top of that.
+  const showPublishAllBtn = publishPendingCount > 0;
 
   return (
     <section className="space-y-4">
@@ -771,12 +774,13 @@ export function DraftDetailClient(props: Props) {
       {canEnterShipSpecs && (
         <div className="rounded-[14px] border border-rule bg-surface p-5">
           <h2 className="text-[13px] font-semibold text-ink">
-            Ship specs — вес и габариты коробки
+            Ship specs — packed weight and box
           </h2>
           <p className="mt-1 text-[12px] text-ink-3">
-            Розничная цена ставится автоматически. Вес и габариты пока вводятся
-            вручную — без них валидаторы не пропускают листинг. Значения
-            применяются ко всем каналам этого драфта.
+            A Walmart draft declares these itself, estimated from the
+            manufacturer&apos;s exact net weight. Enter measured values here to
+            override the estimate — they win everywhere and apply to every
+            channel of this draft.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <SpecInput label="Вес (oz)" value={weightOz} onChange={setWeightOz} />
