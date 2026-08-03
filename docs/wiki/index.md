@@ -151,6 +151,7 @@
 - [Google Drive (PDF этикеток)](google-drive-setup.md) — OAuth refresh-token setup (service account на personal Gmail Drive не работает) — переписано 2026-05-15
 - [Drive Backfill (Layer 2)](drive-backfill.md) — async safety net поверх синхронной Drive загрузки; n8n cron каждые 15 мин + admin retry на `/admin/integrations` — 2026-05-15
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
+- [Создание НОВОГО товара в Walmart (MP_ITEM 5.0)](walmart-new-item-creation-spec.md) — авторитетный набор обязательных полей, снятый с ЖИВОЙ схемы Walmart; чем создание отличается от редактирования (мы всегда делали только второе); ловушка сухого прогона без validateLiveSpec
 - [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, Seller Performance v2 через Insights API (10 per-metric endpoints, 2026-05-15)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
 - [Carrier Tracking APIs](carrier-tracking-apis.md) — UPS Tracking (FedEx/USPS в планах), реальный carrier ETA + события
