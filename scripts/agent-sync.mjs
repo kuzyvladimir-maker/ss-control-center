@@ -35,12 +35,20 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, openSync, closeSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const STATE_DIR = join(homedir(), '.sscc-agent-sync');
 const STATE_FILE = join(STATE_DIR, 'state.json');
 const LOCK_FILE = join(STATE_DIR, 'git.lock');
-const REPO = '/Users/vladimirkuznetsov/SS Command Center';
+
+/**
+ * Корень репозитория выводится из места, где лежит сам скрипт.
+ * Владелец работает попеременно с двух машин с разными путями; захардкоженный
+ * путь одной из них делал `git` недостижимым (spawnSync ENOENT на несуществующем
+ * cwd) и молча отключал координацию агентов на второй машине.
+ */
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Кто мы: Claude Code или Codex — определяем по переменным окружения. */
 function whoAmI() {

@@ -71,6 +71,7 @@
     "product-truth:target-content-activation": "node --import tsx scripts/product-truth-direct-target-content-activation.ts",
     "channelmax:worker": "node --import tsx scripts/channelmax-browser-worker.ts",
     "channelmax:preflight-uncrustables": "node --import tsx scripts/preflight-uncrustables-channelmax-mutation.ts",
+    "test:submission-guards": "node --test src/lib/bundle-factory/distribution/__tests__/submission-attempt-guards.test.mjs",
     "test:channelmax-worker": "node --import tsx --test src/lib/channelmax-agent/__tests__/browser-worker.test.ts",
     "test:channelmax-preflight": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-mutation-preflight.test.ts",
     "test:product-truth-certification": "node --import tsx --test src/lib/sourcing/__tests__/*.test.ts src/lib/sourcing/__tests__/*.test.mjs src/lib/economics/__tests__/product-truth-*.test.ts",
