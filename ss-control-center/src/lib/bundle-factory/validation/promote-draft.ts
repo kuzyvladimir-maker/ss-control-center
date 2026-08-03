@@ -994,6 +994,32 @@ export async function promoteDraftToChannelSkus(
   });
   const studioFulfillmentCenterId = shipNodeSetting?.value?.trim() || null;
 
+  // Which shipping template this listing sells under is not a fresh choice —
+  // the build already sealed one into its work item and PRICED the listing
+  // against it. Carrying that exact id forward is what keeps the price and the
+  // shipping promise describing the same thing. Promotion used to drop it and
+  // write null, so the publish path had no association to assert and refused at
+  // the last fence with "requires ... shippingTemplateAssociation".
+  const studioWorkItem = await prisma.generationWorkItem.findFirst({
+    where: { bundle_draft_id: draftId },
+    orderBy: { created_at: "desc" },
+    select: { spec_json: true },
+  });
+  let studioShippingTemplateId: string | null = null;
+  if (studioWorkItem?.spec_json) {
+    try {
+      const spec = JSON.parse(studioWorkItem.spec_json) as {
+        shipping_template_id?: unknown;
+      };
+      if (typeof spec.shipping_template_id === "string"
+        && spec.shipping_template_id.trim()) {
+        studioShippingTemplateId = spec.shipping_template_id.trim();
+      }
+    } catch {
+      // A malformed work item is treated as no template: fail closed below.
+    }
+  }
+
   let studioSpec:
     | { version: string; schema_sha256: string; fetched_at: string }
     | null = null;
@@ -1036,6 +1062,21 @@ export async function promoteDraftToChannelSkus(
         }`,
       );
     }
+    // Same reasoning: a listing with no shipping template and no ship node
+    // cannot be published, and storing it as if it could only moves the failure
+    // to the marketplace fence, three steps from the cause.
+    if (!studioShippingTemplateId) {
+      throw new Error(
+        "This listing has no sealed Walmart shipping template from its build, "
+          + "so it cannot be prepared for publishing.",
+      );
+    }
+    if (!studioFulfillmentCenterId) {
+      throw new Error(
+        `No Walmart ship node is configured (Setting ${WALMART_DEFAULT_SHIP_NODE_SETTING_KEY}), `
+          + "so this listing cannot be prepared for publishing.",
+      );
+    }
     const base = JSON.parse(richAttributesJson) as Record<string, unknown>;
     base.listing_lane = WALMART_STUDIO_LISTING_LANE;
     base.walmart = buildWalmartStudioPublicAttributes({
@@ -1065,7 +1106,7 @@ export async function promoteDraftToChannelSkus(
             : "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
         exact_source_url: String(studioImage.exact_source_url ?? ""),
       }],
-      shippingTemplateId: null,
+      shippingTemplateId: studioShippingTemplateId,
       fulfillmentCenterId: studioFulfillmentCenterId,
       declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
     });
