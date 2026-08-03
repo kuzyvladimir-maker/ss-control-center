@@ -44,14 +44,16 @@ test("a busy write is retried; any other failure is not", async () => {
 });
 
 test("the retry never wraps the marketplace POST", async () => {
-  const route = await read("../../../app/api/bundle-factory/drafts/[id]/publish/route.ts");
+  // The sequence moved out of the route into publishOneDraft so the single
+  // press and the batch queue cannot drift apart; the guarantee moved with it.
+  const publish = await read("../publish-one-draft.ts");
   // Local database work is retried…
-  assert.match(route, /withSqliteBusyRetry\(\s*"publish:promote"/u);
-  assert.match(route, /withSqliteBusyRetry\(\s*"publish:validate"/u);
-  assert.match(route, /withSqliteBusyRetry\(\s*"publish:approve"/u);
+  assert.match(publish, /withSqliteBusyRetry\(\s*\n?\s*"publish:promote"/u);
+  assert.match(publish, /withSqliteBusyRetry\(\s*\n?\s*"publish:validate"/u);
+  assert.match(publish, /withSqliteBusyRetry\(\s*\n?\s*"publish:approve"/u);
   // …and runDistribution, which can POST to Walmart, is called plainly.
-  assert.match(route, /const result = await runDistribution\(\{/u);
-  assert.doesNotMatch(route, /withSqliteBusyRetry\([^)]*runDistribution/u);
+  assert.match(publish, /const distribution = await runDistribution\(\{/u);
+  assert.doesNotMatch(publish, /withSqliteBusyRetry\([^)]*runDistribution/u);
 });
 
 async function read(relative: string): Promise<string> {

@@ -1,6 +1,7 @@
 /** Explicit human approval gate for real marketplace distribution. */
 
 import { prisma } from "@/lib/prisma";
+import { TURSO_TRANSACTION_OPTIONS } from "./turso-transaction";
 import { logLifecycle } from "./lifecycle-log";
 import { INVENTORY_MAX_AGE_MS } from "./inventory-policy";
 import {
@@ -161,7 +162,7 @@ export async function approveDraftForDistribution(input: {
       firstApproval: true,
       passed,
     };
-  });
+  }, TURSO_TRANSACTION_OPTIONS);
 
   await logLifecycle({
     entity_type: "BundleDraft",

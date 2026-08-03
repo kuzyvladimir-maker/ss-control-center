@@ -26,8 +26,17 @@ export function isSqliteBusyError(error: unknown): boolean {
   return false;
 }
 
-/** Backoff before attempt N (1-based), in milliseconds. */
-const BACKOFF_MS = [150, 400, 900, 1_600];
+/**
+ * Backoff before attempt N (1-based), in milliseconds.
+ *
+ * The first four steps covered about three seconds, which is fine for two
+ * writers meeting by chance and not enough for sustained contention: publishing
+ * one listing while the crons were running exhausted all four and failed. The
+ * tail is longer now — roughly twenty seconds in total — because on the losing
+ * side of a write race, waiting is the correct behaviour and giving up early
+ * only converts a delay into an operator-visible failure.
+ */
+const BACKOFF_MS = [150, 400, 900, 1_600, 2_500, 4_000, 5_000, 5_000];
 
 export interface SqliteBusyRetryOptions {
   attempts?: number;

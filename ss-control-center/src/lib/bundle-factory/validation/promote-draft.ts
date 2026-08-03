@@ -18,6 +18,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { TURSO_TRANSACTION_OPTIONS } from "../turso-transaction";
 import type { Prisma } from "@/generated/prisma/client";
 import {
   countDistinctBrands,
@@ -523,7 +524,7 @@ async function ensureMasterBundle(
           data: { bundles_approved: { decrement: 1 } },
         });
       }
-    });
+    }, TURSO_TRANSACTION_OPTIONS);
     return existingId;
   }
 
@@ -582,7 +583,7 @@ async function ensureMasterBundle(
       });
     }
     return created.id;
-  });
+  }, TURSO_TRANSACTION_OPTIONS);
 }
 
 /**
