@@ -33,7 +33,8 @@ import {
 } from "../attributes/build-amazon-attributes";
 import {
   amazonAllergensFromStoredDeclarations,
-  allergenDeclarationFromLabelText,
+  allergenDeclarationFromLabel,
+  allergenDeclarationIsEmpty,
   declaredAllergenLabelsFromStored,
   normalizeAllergenDeclaration,
   serializeAllergenDeclaration,
@@ -313,26 +314,17 @@ async function ensureMasterBundle(
     // listing whose manufacturer declaration we already hold. The parser reads
     // only the explicit "Contains"/"May contain" line and never infers an
     // allergen from ingredients, so the guarantee behind this gate is intact.
-    const declarationSource = component.allergen_declaration
-      ?? (typeof component.allergens === "string"
-        ? allergenDeclarationFromLabelText(component.allergens)
-        : Array.isArray(component.allergens)
-          // Some retailers publish the manufacturer's allergen set as a
-          // structured list instead of the printed "Contains:" sentence. That
-          // is still a declared allergen field, not something read out of the
-          // ingredient list, so it satisfies the same guarantee.
-          ? {
-              contains: component.allergens
-                .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
-                .map((entry) => entry.trim()),
-              may_contain: [],
-            }
-          : null);
-    if (
-      !declarationSource
-      || (declarationSource.contains.length === 0
-        && declarationSource.may_contain.length === 0)
-    ) {
+    // Prefer the stored declaration, but only if it actually says something:
+    // an engine that parsed a structured list with a text-only parser left an
+    // EMPTY declaration behind, and `??` happily preferred that emptiness over
+    // the usable allergen list sitting next to it.
+    const storedDeclaration = allergenDeclarationFromLabel(
+      component.allergen_declaration,
+    );
+    const declarationSource = allergenDeclarationIsEmpty(storedDeclaration)
+      ? allergenDeclarationFromLabel(component.allergens)
+      : storedDeclaration;
+    if (allergenDeclarationIsEmpty(declarationSource)) {
       throw new Error(
         `Draft ${draftId} component "${component.product_name}" has no verified manufacturer allergen declaration`,
       );

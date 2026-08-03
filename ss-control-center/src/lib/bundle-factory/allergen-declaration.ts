@@ -107,6 +107,53 @@ export function allergenDeclarationFromLabelText(
   };
 }
 
+/**
+ * One reader for every shape a manufacturer declaration arrives in.
+ *
+ * Retailers publish the same fact three ways: the printed sentence
+ * ("Contains: Wheat, Milk, Soy."), a structured list (["celery","fish",…]),
+ * or an already-parsed {contains, may_contain}. Feeding a list to the
+ * text-only parser silently produced an EMPTY declaration, and an empty
+ * declaration then blocked promotion with "no verified manufacturer allergen
+ * declaration" while the allergens sat right there in the snapshot.
+ *
+ * Nothing is inferred from ingredients here either — a shape this does not
+ * recognise yields an empty declaration, and the caller still refuses to
+ * publish a food listing without one.
+ */
+export function allergenDeclarationFromLabel(value: unknown): AllergenDeclaration {
+  if (typeof value === "string") return allergenDeclarationFromLabelText(value);
+  if (Array.isArray(value)) {
+    const contains: string[] = [];
+    const seen = new Set<string>();
+    for (const entry of value) {
+      if (typeof entry !== "string") continue;
+      const label = entry.trim();
+      const key = label.toLowerCase();
+      if (!label || seen.has(key)) continue;
+      seen.add(key);
+      contains.push(label);
+    }
+    return { contains, may_contain: [] };
+  }
+  if (value && typeof value === "object") {
+    try {
+      return normalizeAllergenDeclaration(value);
+    } catch {
+      return { contains: [], may_contain: [] };
+    }
+  }
+  return { contains: [], may_contain: [] };
+}
+
+/** True when a declaration carries nothing at all. */
+export function allergenDeclarationIsEmpty(
+  declaration: AllergenDeclaration | null | undefined,
+): boolean {
+  return !declaration
+    || (declaration.contains.length === 0 && declaration.may_contain.length === 0);
+}
+
 /** Validate and clone an explicit declaration without changing label wording. */
 export function normalizeAllergenDeclaration(
   value: unknown,

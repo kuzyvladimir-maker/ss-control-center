@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { runComplianceGate } from "@/lib/bundle-factory/compliance/gate";
-import { allergenDeclarationFromLabelText } from "./allergen-declaration";
+import { allergenDeclarationFromLabel } from "./allergen-declaration";
 import {
   walmartStudioDisplayBrand,
   walmartStudioDisplayFlavor,
@@ -372,12 +372,11 @@ async function buildOneDraft(input: {
     unit_price_cents: unitPriceCents,
     ingredients: component.facts.ingredients,
     allergens: component.facts.allergens,
-    // The publish path requires a STRUCTURED declaration, not the free-text
-    // label line, and rightly refuses a food listing without one. Both come
-    // from the same verified manufacturer text on the package; this only
-    // parses it into the shape the Walmart/Amazon writers consume. Nothing is
-    // inferred from the ingredient list.
-    allergen_declaration: allergenDeclarationFromLabelText(
+    // The publish path requires a STRUCTURED declaration and rightly refuses a
+    // food listing without one. Donors publish it either as the printed
+    // "Contains:" sentence or as a structured list, so this reads whichever
+    // shape arrived. Nothing is inferred from the ingredient list.
+    allergen_declaration: allergenDeclarationFromLabel(
       component.facts.allergens,
     ),
     nutrition_facts: component.facts.nutrition_facts,

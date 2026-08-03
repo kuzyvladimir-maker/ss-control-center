@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { describeBundleFactoryFailure } from "@/lib/bundle-factory/api-error-text";
 import { Btn } from "@/components/kit";
 
 interface GeneratedContentRow {
@@ -172,7 +173,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setLastSummary({
         total_cost_cents: data.total_cost_cents,
         duration_ms: data.duration_ms,
@@ -203,7 +204,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setLastSummary({
         total_cost_cents: data.total_cost_cents,
         duration_ms: data.duration_ms,
@@ -233,7 +234,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setLastSummary({
         total_cost_cents: data.total_cost_cents,
         duration_ms: data.duration_ms,
@@ -263,7 +264,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setLastSummary({
         total_cost_cents: data.total_cost_cents,
         duration_ms: data.duration_ms,
@@ -293,7 +294,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       // The validation response is a different shape from the
       // content/image summary; we reuse the same "Last run" pill by
       // mapping it onto our local summary shape.
@@ -366,7 +367,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setRows((prev) =>
         prev.map((r2) =>
           r2.channel === channel
@@ -429,7 +430,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       // Re-validate immediately so the weight/dims validators flip to PASSED
       // and the Publish button can appear.
       await validateDraft();
@@ -508,7 +509,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       setLastSummary({
         total_cost_cents: 0,
         duration_ms: data.duration_ms ?? 0,
@@ -551,7 +552,7 @@ export function DraftDetailClient(props: Props) {
         },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       await refreshSkusFromServer();
       router.refresh();
     } catch (e) {
@@ -570,7 +571,7 @@ export function DraftDetailClient(props: Props) {
         { method: "POST" },
       );
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(describeBundleFactoryFailure(data, `HTTP ${r.status}`));
       await refreshSkusFromServer();
       router.refresh();
     } catch (e) {
@@ -1552,7 +1553,7 @@ function PricingModal({
       });
       if (!res.ok) {
         const j = await res.json().catch(() => null);
-        throw new Error(j?.error || `HTTP ${res.status}`);
+        throw new Error(describeBundleFactoryFailure(j, `HTTP ${res.status}`));
       }
       router.refresh();
       onClose();
