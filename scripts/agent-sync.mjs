@@ -179,7 +179,12 @@ function cmdSync(message, paths) {
       } catch { console.log('коммит не создан'); }
     }
     console.log('— забираю origin с rebase…');
-    try { execFileSync('git', ['pull', '--rebase', 'origin', 'main'], { cwd: REPO, stdio: 'inherit' }); }
+    // --autostash: коммитим ЯВНЫМИ путями именно для того, чтобы не трогать
+    // незаконченную работу — свою или соседа. Без autostash тот же rebase
+    // отказывался стартовать из-за неё же и оставлял коммит незапушенным,
+    // то есть правило «каждый коммит немедленно уезжает на origin» ломалось
+    // ровно тем файлом, который мы намеренно не брали.
+    try { execFileSync('git', ['pull', '--rebase', '--autostash', 'origin', 'main'], { cwd: REPO, stdio: 'inherit' }); }
     catch {
       console.error('❌ REBASE CONFLICT. История НЕ отправлена.');
       console.error('   Разреши конфликт, затем: git rebase --continue && node scripts/agent-sync.mjs sync "<msg>"');
