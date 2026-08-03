@@ -131,14 +131,18 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
     "upc" TEXT NOT NULL,
     "reserved_for_id" TEXT
   )`);
-  const migration = await readFile(
-    path.resolve(
-      process.cwd(),
-      "prisma/migrations/20260719003000_walmart_publish_lifecycle_safety/migration.sql",
-    ),
-    "utf8",
-  );
-  await db.executeMultiple(migration);
+  // Replay the real migration chain for this table, in order, so the fixture
+  // exercises the schema production actually runs on.
+  for (const name of [
+    "20260719003000_walmart_publish_lifecycle_safety",
+    "20260803120000_submission_attempt_authorization",
+  ]) {
+    const migration = await readFile(
+      path.resolve(process.cwd(), `prisma/migrations/${name}/migration.sql`),
+      "utf8",
+    );
+    await db.executeMultiple(migration);
+  }
   await db.execute(`CREATE TABLE "ListingLifecycleLog" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "entity_type" TEXT NOT NULL,
@@ -290,17 +294,20 @@ test("Walmart transport consumes one durable claim and rejects replay/forgery", 
   await db.execute({
     sql: `INSERT INTO "MarketplaceSubmissionAttempt" (
       "id", "channel_sku_id", "marketplace", "idempotency_key",
-      "active_key", "pilot_permit_sha256", "pilot_permit_id",
+      "active_key", "authorization_basis", "authorization_sha256",
+      "pilot_permit_sha256", "pilot_permit_id",
       "owner_key_id", "owner_signature_sha256", "pilot_slot",
       "pilot_approval_sha256", "certification_sha256",
       "seller_account_fingerprint_sha256",
       "payload_hash", "claim_token", "state", "claimed_at", "updated_at"
-    ) VALUES (?, ?, 'WALMART', ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, 'CLAIMED', ?, ?)`,
+    ) VALUES (?, ?, 'WALMART', ?, ?, 'OWNER_SIGNED_PERMIT', ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, 'CLAIMED', ?, ?)`,
     args: [
       "attempt-one-shot",
       sku.id,
       `walmart:v1:${createHash("sha256").update(`${sku.id}\n${payloadHash}`).digest("hex")}`,
       sku.id,
+      // On the pilot lane the authorization digest IS the permit digest.
+      signedPermit.permit_sha256,
       signedPermit.permit_sha256,
       signedPermit.signed_body.permit_id,
       signedPermit.key_id,

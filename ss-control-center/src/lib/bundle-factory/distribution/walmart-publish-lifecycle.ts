@@ -88,7 +88,8 @@ export interface WalmartSubmissionAttemptIdentity {
   id: string;
   channel_sku_id: string;
   marketplace: string;
-  certification_sha256: string;
+  /** Pilot-only: a studio submission has no certification to bind. */
+  certification_sha256: string | null;
   payload_hash: string;
   seller_account_fingerprint_sha256: string;
   idempotency_key: string;
@@ -356,13 +357,53 @@ export interface WalmartPilotSubmissionPermit {
   sellerAccountFingerprintSha256: string;
 }
 
+/**
+ * What authorized a submission.
+ *
+ * The frozen pilot is authorized by an Ed25519 permit the owner signs OUTSIDE
+ * the app, binding one SKU per signature. The studio lane is authorized by the
+ * sealed distribution approval already on the SKU — operator, validation run,
+ * publishable content hash, payload hash — which is re-asserted immediately
+ * before the POST.
+ *
+ * What makes a submission one-shot is identical either way and is not part of
+ * this choice: `idempotency_key` is unique per (SKU, payload) and `active_key`
+ * is unique per SKU for as long as the attempt can still have marketplace
+ * side effects.
+ */
+export type WalmartSubmissionAuthorization =
+  | { basis: "OWNER_SIGNED_PERMIT"; permit: WalmartPilotSubmissionPermit }
+  | {
+      basis: "STUDIO_SEALED_APPROVAL";
+      /** SHA-256 of the sealed distribution_approval carried by the SKU. */
+      approvalSha256: string;
+      /** Which seller account this submission goes to. */
+      sellerAccountFingerprintSha256: string;
+    };
+
 export async function claimWalmartSubmission(input: {
   channelSkuId: string;
   payload: Record<string, unknown>;
-  pilotPermit: WalmartPilotSubmissionPermit;
+  /** Pilot lane shorthand; equivalent to an OWNER_SIGNED_PERMIT authorization. */
+  pilotPermit?: WalmartPilotSubmissionPermit;
+  authorization?: WalmartSubmissionAuthorization;
   now?: Date;
   allowLiveRepublish?: boolean;
 }): Promise<WalmartSubmissionClaim> {
+  const authorization: WalmartSubmissionAuthorization | undefined =
+    input.authorization
+    ?? (input.pilotPermit
+      ? { basis: "OWNER_SIGNED_PERMIT" as const, permit: input.pilotPermit }
+      : undefined);
+  if (!authorization) {
+    throw new Error("Walmart submission claim requires an authorization");
+  }
+  const studioApproval = authorization.basis === "STUDIO_SEALED_APPROVAL"
+    ? authorization
+    : null;
+  const permit = authorization.basis === "OWNER_SIGNED_PERMIT"
+    ? authorization.permit
+    : null;
   const now = input.now ?? new Date();
   const payloadHash = hashWalmartPayload(input.payload);
   const idempotencyKey = walmartSubmissionIdempotencyKey(
@@ -371,33 +412,41 @@ export async function claimWalmartSubmission(input: {
   );
   const claimToken = randomUUID();
   const attemptId = randomUUID();
-  const signedBody = input.pilotPermit.signedPermit?.signed_body;
+  if (studioApproval) {
+    if (!/^[a-f0-9]{64}$/.test(studioApproval.approvalSha256)) {
+      throw new Error(
+        "Studio submission claim requires the sealed approval digest",
+      );
+    }
+    if (!/^[a-f0-9]{64}$/.test(studioApproval.sellerAccountFingerprintSha256)) {
+      throw new Error(
+        "Studio submission claim requires the seller account fingerprint",
+      );
+    }
+  }
+  const signedBody = permit?.signedPermit?.signed_body;
   if (
-    !/^[a-f0-9]{64}$/.test(input.pilotPermit.permitSha256) ||
-    !input.pilotPermit.permitId.trim() ||
-    !input.pilotPermit.ownerKeyId.trim() ||
-    !/^[a-f0-9]{64}$/.test(input.pilotPermit.ownerSignatureSha256) ||
-    input.pilotPermit.signedPermit?.permit_sha256 !==
-      input.pilotPermit.permitSha256 ||
-    input.pilotPermit.signedPermit?.key_id !== input.pilotPermit.ownerKeyId ||
-    input.pilotPermit.signedPermit?.signature_sha256 !==
-      input.pilotPermit.ownerSignatureSha256 ||
-    signedBody?.permit_id !== input.pilotPermit.permitId ||
-    signedBody?.engine_release_sha256 !== input.pilotPermit.engineReleaseSha256 ||
-    signedBody?.pilot_slot !== input.pilotPermit.pilotSlot ||
-    signedBody?.approval_sha256 !== input.pilotPermit.approvalSha256 ||
-    signedBody?.certification_sha256 !==
-      input.pilotPermit.certificationSha256 ||
+    permit && (
+    !/^[a-f0-9]{64}$/.test(permit.permitSha256) ||
+    !permit.permitId.trim() ||
+    !permit.ownerKeyId.trim() ||
+    !/^[a-f0-9]{64}$/.test(permit.ownerSignatureSha256) ||
+    permit.signedPermit?.permit_sha256 !== permit.permitSha256 ||
+    permit.signedPermit?.key_id !== permit.ownerKeyId ||
+    permit.signedPermit?.signature_sha256 !== permit.ownerSignatureSha256 ||
+    signedBody?.permit_id !== permit.permitId ||
+    signedBody?.engine_release_sha256 !== permit.engineReleaseSha256 ||
+    signedBody?.pilot_slot !== permit.pilotSlot ||
+    signedBody?.approval_sha256 !== permit.approvalSha256 ||
+    signedBody?.certification_sha256 !== permit.certificationSha256 ||
     signedBody?.channel_sku_id !== input.channelSkuId ||
     signedBody?.payload_sha256 !== payloadHash ||
     signedBody?.seller_account_fingerprint_sha256 !==
-      input.pilotPermit.sellerAccountFingerprintSha256 ||
-    ![1, 2].includes(input.pilotPermit.pilotSlot) ||
-    !/^[a-f0-9]{64}$/.test(input.pilotPermit.approvalSha256) ||
-    !/^[a-f0-9]{64}$/.test(input.pilotPermit.certificationSha256) ||
-    !/^[a-f0-9]{64}$/.test(
-      input.pilotPermit.sellerAccountFingerprintSha256,
-    )
+      permit.sellerAccountFingerprintSha256 ||
+    ![1, 2].includes(permit.pilotSlot) ||
+    !/^[a-f0-9]{64}$/.test(permit.approvalSha256) ||
+    !/^[a-f0-9]{64}$/.test(permit.certificationSha256) ||
+    !/^[a-f0-9]{64}$/.test(permit.sellerAccountFingerprintSha256))
   ) {
     throw new Error("Walmart submission claim requires an exact owner pilot permit");
   }
@@ -410,19 +459,24 @@ export async function claimWalmartSubmission(input: {
       where: { idempotency_key: idempotencyKey },
     });
     if (!existing) return null;
-    if (
-      existing.pilot_permit_sha256 !== input.pilotPermit.permitSha256 ||
-      existing.pilot_permit_id !== input.pilotPermit.permitId ||
-      existing.owner_key_id !== input.pilotPermit.ownerKeyId ||
-      existing.owner_signature_sha256 !==
-        input.pilotPermit.ownerSignatureSha256 ||
-      existing.pilot_slot !== input.pilotPermit.pilotSlot ||
-      existing.pilot_approval_sha256 !== input.pilotPermit.approvalSha256 ||
-      existing.certification_sha256 !==
-        input.pilotPermit.certificationSha256 ||
-      existing.seller_account_fingerprint_sha256 !==
-        input.pilotPermit.sellerAccountFingerprintSha256
-    ) {
+    // A retryable attempt may only be re-claimed under the SAME authorization
+    // it was created with. Anything else means a different decision is trying
+    // to reuse an existing attempt row, which is exactly what must not happen.
+    const boundToADifferentAuthorization = permit
+      ? existing.pilot_permit_sha256 !== permit.permitSha256 ||
+        existing.pilot_permit_id !== permit.permitId ||
+        existing.owner_key_id !== permit.ownerKeyId ||
+        existing.owner_signature_sha256 !== permit.ownerSignatureSha256 ||
+        existing.pilot_slot !== permit.pilotSlot ||
+        existing.pilot_approval_sha256 !== permit.approvalSha256 ||
+        existing.certification_sha256 !== permit.certificationSha256 ||
+        existing.seller_account_fingerprint_sha256 !==
+          permit.sellerAccountFingerprintSha256
+      : existing.authorization_basis !== "STUDIO_SEALED_APPROVAL" ||
+        existing.authorization_sha256 !== studioApproval!.approvalSha256 ||
+        existing.seller_account_fingerprint_sha256 !==
+          studioApproval!.sellerAccountFingerprintSha256;
+    if (boundToADifferentAuthorization) {
       return {
         claimed: false,
         attempt_id: existing.id,
@@ -430,7 +484,7 @@ export async function claimWalmartSubmission(input: {
         idempotency_key: idempotencyKey,
         payload_hash: payloadHash,
         prior_state: existing.state,
-        reason: "same payload attempt is bound to another owner pilot permit",
+        reason: "same payload attempt is bound to another authorization",
       } satisfies WalmartSubmissionClaim;
     }
     if (
@@ -530,15 +584,26 @@ export async function claimWalmartSubmission(input: {
           marketplace: "WALMART",
           idempotency_key: idempotencyKey,
           active_key: input.channelSkuId,
-          pilot_permit_sha256: input.pilotPermit.permitSha256,
-          pilot_permit_id: input.pilotPermit.permitId,
-          owner_key_id: input.pilotPermit.ownerKeyId,
-          owner_signature_sha256: input.pilotPermit.ownerSignatureSha256,
-          pilot_slot: input.pilotPermit.pilotSlot,
-          pilot_approval_sha256: input.pilotPermit.approvalSha256,
-          certification_sha256: input.pilotPermit.certificationSha256,
-          seller_account_fingerprint_sha256:
-            input.pilotPermit.sellerAccountFingerprintSha256,
+          authorization_basis: authorization.basis,
+          authorization_sha256: permit
+            ? permit.permitSha256
+            : studioApproval!.approvalSha256,
+          // Pilot evidence exists only on the pilot lane; a studio row leaves
+          // these NULL rather than inventing signature-shaped values.
+          ...(permit
+            ? {
+                pilot_permit_sha256: permit.permitSha256,
+                pilot_permit_id: permit.permitId,
+                owner_key_id: permit.ownerKeyId,
+                owner_signature_sha256: permit.ownerSignatureSha256,
+                pilot_slot: permit.pilotSlot,
+                pilot_approval_sha256: permit.approvalSha256,
+                certification_sha256: permit.certificationSha256,
+              }
+            : {}),
+          seller_account_fingerprint_sha256: permit
+            ? permit.sellerAccountFingerprintSha256
+            : studioApproval!.sellerAccountFingerprintSha256,
           payload_hash: payloadHash,
           claim_token: claimToken,
           state: "CLAIMED",
@@ -586,6 +651,12 @@ export async function markWalmartSubmissionRequesting(input: {
   claimToken: string;
   channelSkuId: string;
   payloadHash: string;
+  /**
+   * Digest of whatever authorized this POST — the signed permit on the pilot
+   * lane, the sealed distribution approval on the studio lane. It is matched
+   * against the row, so a POST cannot be marked under a different
+   * authorization than the one the attempt was claimed with.
+   */
   pilotPermitSha256: string;
   now?: Date;
 }): Promise<void> {
@@ -603,7 +674,7 @@ export async function markWalmartSubmissionRequesting(input: {
       claim_token: input.claimToken,
       channel_sku_id: input.channelSkuId,
       payload_hash: input.payloadHash,
-      pilot_permit_sha256: input.pilotPermitSha256,
+      authorization_sha256: input.pilotPermitSha256,
       state: "CLAIMED",
       request_count: 0,
     },

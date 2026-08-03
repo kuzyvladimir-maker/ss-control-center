@@ -25,6 +25,34 @@ import { sendTelegramMessage } from "@/lib/telegram";
 
 import { channelTarget } from "./account-map";
 import { isWalmartStudioLane } from "../walmart-studio-listing";
+import {
+  parseWalmartListingAttributes,
+  sha256WalmartJson,
+} from "../walmart-listing-contract";
+import { getWalmartStoreStatus } from "@/lib/walmart/client";
+import {
+  computeWalmartSellerAccountFingerprint,
+} from "@/lib/walmart/item-report-capture-session";
+
+/**
+ * Which Walmart seller account a submission goes to, hashed the same way the
+ * rest of the platform hashes it. Recorded on the attempt row so a submission
+ * can always be traced to the account that made it.
+ */
+function walmartSellerAccountFingerprint(storeIndex: number): string {
+  const status = getWalmartStoreStatus(storeIndex);
+  const clientId = process.env[`WALMART_CLIENT_ID_STORE${storeIndex}`] ?? "";
+  if (!status.sellerId || !clientId) {
+    throw new Error(
+      `Walmart store ${storeIndex} is not configured; cannot identify the seller account`,
+    );
+  }
+  return computeWalmartSellerAccountFingerprint({
+    store_index: storeIndex,
+    client_id: clientId,
+    seller_id: status.sellerId,
+  });
+}
 import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 import {
   submitToAmazon,
@@ -766,7 +794,24 @@ export async function runDistribution(
           const claim = await claimWalmartSubmission({
             channelSkuId: sku.id,
             payload: prepared.payload,
-            pilotPermit: input.walmartPilotPermit!,
+            // The claim is the one-shot fence; what authorizes it differs by
+            // lane. A studio listing binds the sealed distribution approval
+            // already on the SKU, so the fence is identical while the evidence
+            // is the lane's own.
+            authorization: isWalmartStudioLane(sku.attributes)
+              ? {
+                  basis: "STUDIO_SEALED_APPROVAL",
+                  approvalSha256: sha256WalmartJson(
+                    parseWalmartListingAttributes(sku.attributes)
+                      .distribution_approval,
+                  ),
+                  sellerAccountFingerprintSha256:
+                    walmartSellerAccountFingerprint(target.storeIndex ?? 1),
+                }
+              : {
+                  basis: "OWNER_SIGNED_PERMIT",
+                  permit: input.walmartPilotPermit!,
+                },
             allowLiveRepublish: input.republish === true,
           });
           if (!claim.claimed || !claim.attempt_id || !claim.claim_token) {

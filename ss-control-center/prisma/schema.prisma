@@ -2894,6 +2894,106 @@ model ProductTruthControlEvent {
   @@index([commandId, occurredAt], map: "ProductTruthControlEvent_command_occurred_idx")
 }
 
+// Walmart Listing Integrity Stage A control-plane custody. Runtime is
+// deliberately default-OFF; this schema does not activate a worker or grant a
+// marketplace write. The frozen one-SKU operator remains the only writer.
+model WalmartListingIntegrityControlRun {
+  runId String @id
+
+  schemaVersion   String
+  poolBodySha256  String
+  releaseIdSha256 String
+  manifestSha256  String
+  runtimeStage    String   @default("OFF")
+  status          String   @default("ACTIVE")
+  createdAt       DateTime
+  updatedAt       DateTime @updatedAt
+
+  items     WalmartListingIntegrityControlItem[]
+  events    WalmartListingIntegrityControlEvent[]
+  artifacts WalmartListingIntegrityControlArtifact[]
+
+  @@index([status, createdAt], map: "WalmartListingIntegrityControlRun_status_created_idx")
+}
+
+model WalmartListingIntegrityControlItem {
+  itemControlId String                            @id
+  runId         String
+  run           WalmartListingIntegrityControlRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+
+  ordinal    Int
+  listingKey String
+  sku        String
+  itemId     String
+  storeIndex Int
+
+  state                  String   @default("QUEUED")
+  revision               Int      @default(1)
+  stateBodySha256        String
+  previousStateSha256    String?
+  evidenceSha256         String
+  executionPackageSha256 String?
+  ownerPermitSha256      String?
+  feedId                 String?
+  marketplaceWriteCalls  Int      @default(0)
+  automaticRetryAllowed  Boolean  @default(false)
+  automaticReplayAllowed Boolean  @default(false)
+  transitionedAt         DateTime
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  events    WalmartListingIntegrityControlEvent[]
+  artifacts WalmartListingIntegrityControlArtifact[]
+
+  @@unique([runId, ordinal], map: "WalmartListingIntegrityControlItem_run_ordinal_key")
+  @@unique([runId, listingKey], map: "WalmartListingIntegrityControlItem_run_listing_key")
+  @@index([runId, state, ordinal], map: "WalmartListingIntegrityControlItem_claim_idx")
+}
+
+// Immutable hash-chain events. SQL triggers enforce append-only behavior and
+// exact predecessor sequencing per run.
+model WalmartListingIntegrityControlEvent {
+  eventId       String                              @id
+  runId         String
+  run           WalmartListingIntegrityControlRun   @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  itemControlId String?
+  item          WalmartListingIntegrityControlItem? @relation(fields: [itemControlId], references: [itemControlId], onDelete: Restrict, onUpdate: Restrict)
+
+  sequence          Int
+  schemaVersion     String
+  eventType         String
+  occurredAt        DateTime
+  payload           Bytes
+  payloadSha256     String
+  previousEventHash String
+  eventHash         String   @unique
+  createdAt         DateTime @default(now())
+
+  @@unique([runId, sequence], map: "WalmartListingIntegrityControlEvent_run_sequence_key")
+  @@index([runId, occurredAt], map: "WalmartListingIntegrityControlEvent_run_occurred_idx")
+}
+
+// Content-addressed evidence metadata. Exact bytes remain in immutable
+// artifact custody and are never treated as authority merely because a row exists.
+model WalmartListingIntegrityControlArtifact {
+  artifactId    String                              @id
+  runId         String
+  run           WalmartListingIntegrityControlRun   @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  itemControlId String?
+  item          WalmartListingIntegrityControlItem? @relation(fields: [itemControlId], references: [itemControlId], onDelete: Restrict, onUpdate: Restrict)
+
+  role               String
+  mediaType          String
+  byteSize           Int
+  sha256             String
+  locator            String   @unique
+  createdAt          DateTime
+  createdByPrincipal String
+
+  @@unique([runId, role, sha256], map: "WalmartListingIntegrityControlArtifact_run_role_sha_key")
+  @@index([runId, createdAt], map: "WalmartListingIntegrityControlArtifact_run_created_idx")
+}
+
 // Durable command/evidence bridge for the OpenClaw worker that controls the
 // owner's already-authenticated ChannelMAX Chrome profile. Commands are a
 // small, schema-validated allow-list; this is deliberately not a generic
@@ -3415,13 +3515,27 @@ model MarketplaceSubmissionAttempt {
   marketplace                       String
   idempotency_key                   String     @unique
   active_key                        String?    @unique
-  pilot_permit_sha256               String     @unique
-  pilot_permit_id                   String     @unique
-  owner_key_id                      String
-  owner_signature_sha256            String     @unique
-  pilot_slot                        Int        @unique
-  pilot_approval_sha256             String
-  certification_sha256              String
+  // How this submission was authorized. OWNER_SIGNED_PERMIT is the frozen
+  // pilot: an Ed25519 permit the owner signs outside the app, binding one SKU
+  // per signature. STUDIO_SEALED_APPROVAL is the factory lane: the sealed
+  // distribution approval on the SKU, binding operator, validation run,
+  // content hash and payload hash.
+  authorization_basis               String     @default("OWNER_SIGNED_PERMIT")
+  // Digest of whatever authorized this row, in either lane.
+  authorization_sha256              String?
+  // Pilot-only evidence. Nullable because a studio submission has no signed
+  // permit; SQLite treats NULLs as distinct, so the unique indexes still keep
+  // one permit to one attempt while allowing any number of studio rows.
+  // `pilot_slot` was globally unique with only 1 and 2 permitted, which capped
+  // the ENTIRE table at two submissions ever — the reason no third listing
+  // could be published.
+  pilot_permit_sha256               String?    @unique
+  pilot_permit_id                   String?    @unique
+  owner_key_id                      String?
+  owner_signature_sha256            String?    @unique
+  pilot_slot                        Int?       @unique
+  pilot_approval_sha256             String?
+  certification_sha256              String?
   seller_account_fingerprint_sha256 String
   payload_hash                      String
   claim_token                       String     @unique
