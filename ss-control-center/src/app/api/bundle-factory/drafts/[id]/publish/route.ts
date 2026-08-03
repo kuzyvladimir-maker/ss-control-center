@@ -25,6 +25,7 @@ import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
 import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
 import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
 import { runValidationForDraft } from "@/lib/bundle-factory/validation/validation-pipeline";
+import { withSqliteBusyRetry } from "@/lib/bundle-factory/sqlite-busy-retry";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -97,7 +98,13 @@ export const POST = withErrorHandler(
     // hold a MasterBundle from an earlier attempt whose content had not yet
     // passed compliance, so no ChannelSKU was ever minted and publishing had
     // nothing to act on.
-    const promotion = await promoteDraftToChannelSkus(id);
+    // Local database work only — never the marketplace POST. A locked
+    // database is a write that did not happen, so it is retried; an unknown
+    // POST is never repeated.
+    const promotion = await withSqliteBusyRetry(
+      "publish:promote",
+      () => promoteDraftToChannelSkus(id),
+    );
     {
       if (!promotion.master_bundle_id) {
         return NextResponse.json({
@@ -117,11 +124,14 @@ export const POST = withErrorHandler(
     // (current=GENERATED)". Re-validating here closes the loop and makes the
     // guarantee stronger than it was: what gets published is exactly what
     // just passed, never a validation from an earlier version of the content.
-    const validation = await runValidationForDraft({
-      bundle_draft_id: id,
-      ...(channels ? { channels } : {}),
-      actor,
-    });
+    const validation = await withSqliteBusyRetry(
+      "publish:validate",
+      () => runValidationForDraft({
+        bundle_draft_id: id,
+        ...(channels ? { channels } : {}),
+        actor,
+      }),
+    );
     const unvalidated = validation.per_sku.filter(
       (entry) => entry.status !== "PASSED",
     );
@@ -147,11 +157,14 @@ export const POST = withErrorHandler(
           "Real publish requires approvalConfirmed=true from the operator confirmation dialog.",
         );
       }
-      await approveDraftForDistribution({
-        draftId: id,
-        actor,
-        note: typeof body.approvalNote === "string" ? body.approvalNote : undefined,
-      });
+      await withSqliteBusyRetry(
+        "publish:approve",
+        () => approveDraftForDistribution({
+          draftId: id,
+          actor,
+          note: typeof body.approvalNote === "string" ? body.approvalNote : undefined,
+        }),
+      );
     }
 
     const result = await runDistribution({
