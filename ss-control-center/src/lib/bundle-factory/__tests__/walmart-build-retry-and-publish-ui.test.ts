@@ -28,16 +28,21 @@ test("a failed build can be re-queued without touching the database", async () =
   assert.match(progress, /builds\/\$\{batchId\}\/retry/u);
 });
 
-test("the drafts list can publish a validated Walmart listing, but asks first", async () => {
-  const cell = await read(
-    "../../../components/bundle-factory/DraftWalmartPublishCell.tsx",
-  );
+test("the drafts list publishes one row or a whole batch, but asks first", async () => {
+  const cell = await read("../../../components/bundle-factory/DraftsTable.tsx");
   // Publishing is irreversible: the row confirms before it posts.
-  assert.match(cell, /phase === "confirming"/u);
+  assert.match(cell, /confirming \? \(/u);
   assert.match(cell, /approvalConfirmed: true/u);
   assert.match(cell, /dryRun=false/u);
-  // Only a PASSED SKU offers the button at all.
+  // Only a PASSED SKU that has not gone out offers the button at all.
   assert.match(cell, /validation_status === "PASSED"/u);
   // Progress is visible rather than a silent request.
   assert.match(cell, /publishing…/u);
+
+  // Batch: tick a selection, one press, and the confirmation states the count
+  // and that it cannot be undone.
+  assert.match(cell, /Publish selected \(\{selectedPublishable\.length\}\)/u);
+  assert.match(cell, /cannot be undone/u);
+  // Each listing is its own claim and its own POST — never one shared request.
+  assert.match(cell, /for \(const \[index, row\] of selectedPublishable\.entries\(\)\)/u);
 });
