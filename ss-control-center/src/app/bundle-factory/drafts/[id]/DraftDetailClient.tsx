@@ -13,6 +13,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { describeBundleFactoryFailure } from "@/lib/bundle-factory/api-error-text";
+import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
 import { Btn } from "@/components/kit";
 
 interface GeneratedContentRow {
@@ -609,7 +610,7 @@ export function DraftDetailClient(props: Props) {
   const publishPendingCount = rows.filter(
     (r) =>
       isPublishable(r.validation_status) &&
-      (r.listing_status === "PENDING" || r.listing_status === "FAILED"),
+      isPublishableListingStatus(r.listing_status),
   ).length;
   // The ship-specs form is relevant once the draft is promotable/validating —
   // i.e. it has CAN_PUBLISH content with an image. Weight + dims are required

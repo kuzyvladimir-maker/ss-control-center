@@ -18,6 +18,7 @@ import Link from "next/link";
 import { Btn } from "@/components/kit";
 import { Loader2, ExternalLink, CheckCircle2 } from "lucide-react";
 import { describeBundleFactoryFailure } from "@/lib/bundle-factory/api-error-text";
+import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
 
 export interface DraftRow {
   id: string;
@@ -48,7 +49,7 @@ function isPublishable(row: DraftRow): boolean {
   return row.walmart != null
     && row.walmart.validation_status === "PASSED"
     && row.walmart.live_url == null
-    && ["PENDING", "FAILED"].includes(row.walmart.listing_status);
+    && isPublishableListingStatus(row.walmart.listing_status);
 }
 
 export function DraftsTable({ rows }: { rows: DraftRow[] }) {

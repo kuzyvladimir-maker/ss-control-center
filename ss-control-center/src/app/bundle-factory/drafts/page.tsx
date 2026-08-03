@@ -10,6 +10,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
 import { PageHead, Sep } from "@/components/kit";
 import {
   DraftsTable,
@@ -75,7 +76,7 @@ export default async function DraftsPage() {
     (row) =>
       row.walmart?.validation_status === "PASSED"
       && row.walmart.live_url == null
-      && ["PENDING", "FAILED"].includes(row.walmart.listing_status),
+      && isPublishableListingStatus(row.walmart.listing_status),
   ).length;
 
   return (
