@@ -29,8 +29,12 @@ export const dynamic = "force-dynamic";
 
 /** Only these key prefixes are readable through this route. */
 const PUBLIC_PREFIXES = [
-  "walmart-new-sku/",
-  "walmart-ingredients/",
+  "walmart-new-sku/",     // studio main images
+  "walmart-ingredients/", // rendered ingredient panels
+  "walmart-multipack/",   // multipack tiles
+  "sec/",                 // mirrored donor galleries (r2-image-mirror)
+  "prod/",                // published listing images
+  "bf-composite/",        // composite bundle images
   "bundle-factory/",
   "studio-audit/",
 ];

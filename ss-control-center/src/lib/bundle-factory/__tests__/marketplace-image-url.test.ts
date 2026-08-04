@@ -73,3 +73,32 @@ test("a gallery keeps its order and drops nothing", () => {
   assert.equal(result[1], gallery[1]);
   assert.match(result[2]!, /api\/public-image\/walmart-new-sku\/three\.png$/u);
 });
+
+test("every image field is moved, not just the main one", () => {
+  // The second rejection was caused by exactly this gap: mainImageUrl had been
+  // moved to our domain while ingredientListImage, which arrives inside
+  // public_attributes, was still pointing at the R2 development host. Walmart
+  // reported it as "the image cannot be downloaded ... missing a valid
+  // authentication credential" — an error about an image, not about the item.
+  const fields = ["mainImageUrl", "ingredientListImage", "nutritionFactsLabel"];
+  for (const field of fields) {
+    const moved = marketplaceImageUrl(`${R2}/walmart-ingredients/${field}.png`);
+    assert.doesNotMatch(moved, /r2\.dev/u, `${field} must not stay on r2.dev`);
+  }
+});
+
+test("the prefixes the mirror actually writes are all servable", () => {
+  // These are the key prefixes in live use. A prefix missing from the route's
+  // allowlist is not a 404 the operator ever sees — it is a rejected listing.
+  const prefixes = [
+    "walmart-new-sku/", "walmart-ingredients/", "walmart-multipack/",
+    "sec/", "prod/", "bf-composite/",
+  ];
+  for (const prefix of prefixes) {
+    const moved = marketplaceImageUrl(`${R2}/${prefix}x.png`);
+    assert.ok(
+      moved.includes(`/api/public-image/${prefix}`),
+      `${prefix} must survive the rewrite`,
+    );
+  }
+});

@@ -271,6 +271,22 @@ export function buildWalmartPayload(
   const publicAttributes = { ...contract.public_attributes };
   assertQuantityAttributes(publicAttributes, packCount);
 
+  // Every image URL we hand Walmart has to be one it can download — not just the
+  // main one. ingredientListImage arrives inside public_attributes and was left
+  // pointing at the R2 development host, so the item was rejected a second time
+  // with "the image cannot be downloaded ... missing a valid authentication
+  // credential" even after the main image had been moved.
+  if (typeof publicAttributes.ingredientListImage === "string") {
+    publicAttributes.ingredientListImage = marketplaceImageUrl(
+      publicAttributes.ingredientListImage,
+    );
+  }
+  if (typeof publicAttributes.nutritionFactsLabel === "string") {
+    publicAttributes.nutritionFactsLabel = marketplaceImageUrl(
+      publicAttributes.nutritionFactsLabel,
+    );
+  }
+
   const visible: Record<string, unknown> = {
     ...publicAttributes,
     productName: title,
