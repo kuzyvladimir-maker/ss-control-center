@@ -45,6 +45,10 @@
 - **См. также:** [Walmart ограничения](walmart-restrictions.md), [Формат имени PDF](label-filename-format.md), [Производительность модуля](shipping-labels-performance-2026-07-30.md)
 
 ## История
+- 2026-08-04: «Жму Save в Package — ничего не меняется»: пересчёт карточки не
+  обновлял ячейку PACKAGE, снимок SKU-таблицы кэшировался на инстанс, а
+  упавшая котировка Walmart молчала —
+  [shipping-edit-package-save-not-applying](shipping-edit-package-save-not-applying.md)
 - 2026-07-30: Разбор скорости модуля — замеры, найденные причины и первый слой
   правок (параллельная покупка, переиспользование плана, кэши, `maxDuration`):
   [shipping-labels-performance-2026-07-30](shipping-labels-performance-2026-07-30.md)
