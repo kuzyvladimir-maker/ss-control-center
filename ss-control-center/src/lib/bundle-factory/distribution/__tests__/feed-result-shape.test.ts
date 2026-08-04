@@ -37,7 +37,9 @@ const REAL_RESPONSE = {
     itemIngestionStatus: [
       {
         sku: "FN-WM30-XEHS",
+        martId: 0,
         wpid: "3RUAU6HWUWJ9",
+        itemid: "20765921612",
         ingestionStatus: "DATA_ERROR",
         ingestionErrors: {
           ingestionError: [
@@ -89,4 +91,36 @@ test("a rejected item carries its errors, so it can be reported and retried", ()
     assert.ok(error.code, "every error needs a code the operator can act on");
     assert.ok(error.description, "and a description");
   }
+});
+
+test("a created item is identified by wpid, not by martId", () => {
+  // Walmart sends martId as a number and it is legitimately 0 for a successful
+  // item. Testing it for truthiness rejected a genuinely created listing, and
+  // the poller then reported WALMART_FEED_TERMINAL_NOT_SUCCESS with the message
+  // "Exact feed item status is SUCCESS" — a contradiction it printed about
+  // itself while the item was live on Walmart.
+  const success = {
+    sku: "FN-WM30-XEHS",
+    martId: 0,
+    wpid: "3RUAU6HWUWJ9",
+    itemid: "20765921612",
+    ingestionStatus: "SUCCESS",
+  };
+  assert.equal(Boolean(success.martId), false, "martId is falsy on success");
+
+  const resolved = [success.wpid, success.itemid, success.martId]
+    .map((value) => (value == null ? "" : String(value).trim()))
+    .find((value) => value.length > 0 && value !== "0");
+  assert.equal(resolved, "3RUAU6HWUWJ9");
+});
+
+test("the poller resolves the item id without trusting martId alone", () => {
+  const { readFileSync } = require("node:fs") as typeof import("node:fs");
+  const source = readFileSync(POLLER, "utf8");
+  assert.match(source, /item\.wpid/u, "wpid must be consulted");
+  assert.doesNotMatch(
+    source,
+    /SUCCESS" &&\s*\n\s*item\.martId\s*\n/u,
+    "success must not hinge on martId being truthy",
+  );
 });

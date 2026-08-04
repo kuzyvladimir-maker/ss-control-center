@@ -263,17 +263,22 @@ export function evaluateWalmartBuyerLiveGate(input: {
   return { live: true, reason: "BUYER_VERIFIED" };
 }
 
-export function exactWalmartFeedItem(
-  items: Array<{
+export function exactWalmartFeedItem<
+  T extends {
     sku?: string;
     ingestionStatus?: string;
-    martId?: string;
+    // Walmart sends martId as a number (often 0), wpid and itemid as strings.
+    martId?: string | number;
+    itemid?: string;
+    wpid?: string;
     ingestionErrors?: {
       ingestionError?: Array<{ code?: string; description?: string }>;
     };
-  }>,
+  },
+>(
+  items: T[],
   sku: string,
-) {
+): T | null {
   const exact = items.filter((item) => item.sku === sku);
   return exact.length === 1 ? exact[0] : null;
 }
@@ -589,7 +594,8 @@ async function pollWalmart(
   type WalmartFeedItemResult = {
     sku?: string;
     ingestionStatus?: string;
-    martId?: string;
+    martId?: string | number;
+    itemid?: string;
     wpid?: string;
     ingestionErrors?: {
       ingestionError?: Array<{ code?: string; description?: string }>;
@@ -683,15 +689,24 @@ async function pollWalmart(
       raw,
     };
   }
+  // Walmart identifies the created item by `wpid`; `itemid` is its numeric
+  // twin. `martId` is also present and is legitimately 0, so testing it for
+  // truthiness rejected a genuinely successful item — the poller then reported
+  // WALMART_FEED_TERMINAL_NOT_SUCCESS with the message "Exact feed item status
+  // is SUCCESS", which is a contradiction on its face. The listing was live on
+  // Walmart and PENDING_REVIEW here.
+  const createdItemId = [item.wpid, item.itemid, item.martId]
+    .map((value) => (value == null ? "" : String(value).trim()))
+    .find((value) => value.length > 0 && value !== "0");
   if (
     String(item.ingestionStatus ?? "").toUpperCase() === "SUCCESS" &&
-    item.martId
+    createdItemId
   ) {
     return verifyWalmartSellerAndBuyer({
       sku,
       client,
       attempt,
-      expectedItemId: String(item.martId),
+      expectedItemId: createdItemId,
       feedRaw: raw,
     });
   }
