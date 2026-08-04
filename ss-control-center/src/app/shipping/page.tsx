@@ -189,6 +189,21 @@ interface PlanResponse {
   orders: PlanItem[];
 }
 
+/**
+ * The box + weight the operator just saved in the Edit-package dialog.
+ *
+ * Handed to the re-quote so the row can show the new packaging IMMEDIATELY —
+ * before (and even if) the carrier quote comes back. Without it a failed or
+ * rate-limited re-quote left the cell reading "Set weight/size" again, which
+ * is indistinguishable from "my Save did nothing".
+ */
+interface SavedPackage {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
 // Operator's manual rate override — fields that get sent to /api/shipping/buy
 // to override the plan's algorithmic pick at purchase time. Stored in client
 // state keyed by Veeqo order id; lost on page refresh.
@@ -879,7 +894,15 @@ export default function ShippingLabelsPage() {
   // change handlers can all reuse it without re-creating load. Mirrors the
   // PlanItem shape the bulk pass used to build so the row renders identically.
   const quoteWalmartOrder = useCallback(
-    async (o: DashboardOrder, shipByDate: string) => {
+    async (
+      o: DashboardOrder,
+      shipByDate: string,
+      // Set right after the operator saved a new box/weight. Two jobs: it is
+      // sent to Walmart as an explicit package override (so the quote cannot
+      // possibly use the old packaging), and it seeds the row's PACKAGE cell
+      // so the saved values are visible even if the quote itself fails.
+      savedBox?: SavedPackage | null,
+    ) => {
       if (!o.walmartPurchaseOrderId) return;
       // When the operator opted out of Walmart-direct, Walmart-channel
       // orders flow through the same /plan + /buy pipeline as Amazon —
@@ -888,17 +911,55 @@ export default function ShippingLabelsPage() {
       // errors that would block the Buy button.
       if (walmartBuySource !== "api") return;
       setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
-      const dropMaps = () => {
-        setWalmartRates((p) => {
-          const n = { ...p };
-          delete n[o.orderNumber];
-          return n;
-        });
+      // A rate-less placeholder that carries ONLY the package we just saved.
+      // status "stop" with no notes renders as a plain "Awaiting rate" row —
+      // it can never look buyable (Buy is gated on a pending rate + buy info).
+      const packageOnlyRate = (box: SavedPackage): PlanItem => ({
+        id: `wm-${o.orderNumber}`,
+        orderNumber: o.orderNumber,
+        carrier: null,
+        service: null,
+        price: null,
+        edd: null,
+        status: "stop",
+        notes: null,
+        weight: box.weight,
+        boxSize: `${box.length}x${box.width}x${box.height}`,
+        productType: null,
+        labelDate: null,
+        physicalShipDate: null,
+        shipDateTrickApplied: false,
+        datesMatch: true,
+        actualShipDay: null,
+        allocationId: null,
+      });
+      if (savedBox) {
+        setWalmartRates((p) => ({
+          ...p,
+          [o.orderNumber]: packageOnlyRate(savedBox),
+        }));
+      }
+      // Clearing the buy info is never optional on a failure — it is what
+      // keeps the Buy button disabled while we have no verified rate. The
+      // rate entry, on the other hand, is kept when it holds the package the
+      // operator just saved, so the row doesn't fall back to "Set weight/size".
+      const dropBuyInfo = () =>
         setWalmartBuyInfo((p) => {
           const n = { ...p };
           delete n[o.orderNumber];
           return n;
         });
+      const dropMaps = () => {
+        setWalmartRates((p) => {
+          if (savedBox) {
+            // Keep showing the saved package instead of blanking the cell.
+            return { ...p, [o.orderNumber]: packageOnlyRate(savedBox) };
+          }
+          const n = { ...p };
+          delete n[o.orderNumber];
+          return n;
+        });
+        dropBuyInfo();
       };
       const clearError = () =>
         setWalmartRateErrors((p) => {
@@ -914,8 +975,23 @@ export default function ShippingLabelsPage() {
           body: JSON.stringify({
             purchaseOrderId: o.walmartPurchaseOrderId,
             shipByDate,
+            // Quote against exactly what was just saved. Belt-and-braces
+            // against any read-back lag between the save and this call.
+            ...(savedBox
+              ? {
+                  length: savedBox.length,
+                  width: savedBox.width,
+                  height: savedBox.height,
+                  weight: savedBox.weight,
+                  dimUnit: "IN",
+                  weightUnit: "LB",
+                }
+              : {}),
           }),
         });
+        // A gateway timeout / HTML error page makes this throw — handled by
+        // the catch below, which now tells the operator instead of leaving
+        // the row exactly as it was.
         const j = await res.json();
         if (!j?.ok) {
           dropMaps();
@@ -995,6 +1071,19 @@ export default function ShippingLabelsPage() {
         }
         if (!j.selected || !j.box) {
           dropMaps();
+          // Walmart answered, but with no package and no rate — in practice
+          // that's the label-lookup having failed (429 / timeout), which the
+          // route reports via labelLookupFailed. The row already renders that
+          // state, but a re-quote fired right after a Save looked like the
+          // Save was ignored, so say what happened.
+          if (savedBox) {
+            setWalmartRateErrors((p) => ({
+              ...p,
+              [o.orderNumber]:
+                j.labelLookupError ||
+                "Walmart didn't return a rate for this package — press Refresh to try again. The box and weight ARE saved.",
+            }));
+          }
           return;
         }
         const s = j.selected;
@@ -1039,9 +1128,20 @@ export default function ShippingLabelsPage() {
             shipByDate: usedShipDate,
           },
         }));
-      } catch {
-        /* leave existing rate in place — a transient fetch error shouldn't
-           blank the row the operator was looking at */
+      } catch (e) {
+        // Network drop, gateway timeout, HTML error page — anything that
+        // stopped us from getting a JSON answer. The rate the operator was
+        // looking at stays put (a transient error shouldn't blank the row),
+        // but silence here is what made a failed re-quote after Save look
+        // like "I pressed Save and nothing happened". Say it out loud.
+        console.warn("[walmart requote] failed for", o.orderNumber, e);
+        dropBuyInfo();
+        setWalmartRateErrors((p) => ({
+          ...p,
+          [o.orderNumber]: savedBox
+            ? "The box and weight are saved, but Walmart didn't answer the rate request (timeout). Press Refresh to re-quote."
+            : "Walmart didn't answer the rate request (timeout). Press Refresh to re-quote.",
+        }));
       } finally {
         setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
       }
@@ -1270,8 +1370,54 @@ export default function ShippingLabelsPage() {
   // with the ship date — the plan route does the PUT-dispatch→re-quote→restore
   // and returns the recommendation; here we just persist it as the override.
   const requoteAmazonOrder = useCallback(
-    async (o: DashboardOrder, shipDate?: string) => {
+    async (o: DashboardOrder, shipDate?: string, savedBox?: SavedPackage | null) => {
       setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
+      // The row reads its weight / box / rate out of `plan` — the batch
+      // response from the last full load. This per-card re-quote used to
+      // update ONLY rateOverrides, so after saving a new box the PACKAGE cell
+      // kept showing the old value (or "Set weight/size" when there was none),
+      // and the fix only appeared after a full Refresh. That is the "I press
+      // Save, it spins, nothing changes" the owner reported. Merge the freshly
+      // quoted item back into `plan` so the row shows the new packaging.
+      const mergeIntoPlan = (item: PlanItem) =>
+        setPlan((prev) => {
+          if (!prev) return prev;
+          const has = prev.orders.some(
+            (x) => x.orderNumber === item.orderNumber,
+          );
+          return {
+            ...prev,
+            orders: has
+              ? prev.orders.map((x) =>
+                  x.orderNumber === item.orderNumber ? item : x,
+                )
+              : [...prev.orders, item],
+          };
+        });
+      // Fill in the package we just saved when the plan item came back without
+      // one (e.g. the order stopped for another reason) — the operator's edit
+      // did land, and the cell should say so.
+      const withSavedBox = (item: PlanItem): PlanItem =>
+        savedBox
+          ? {
+              ...item,
+              weight: item.weight ?? savedBox.weight,
+              boxSize:
+                item.boxSize ??
+                `${savedBox.length}x${savedBox.width}x${savedBox.height}`,
+            }
+          : item;
+      // Same, but the saved values WIN. Used when we're patching the row we
+      // already had on screen (which by definition still holds the pre-edit
+      // package) rather than a freshly quoted item from the server.
+      const forceSavedBox = (item: PlanItem): PlanItem =>
+        savedBox
+          ? {
+              ...item,
+              weight: savedBox.weight,
+              boxSize: `${savedBox.length}x${savedBox.width}x${savedBox.height}`,
+            }
+          : item;
       try {
         // shipDate present → quote at exactly that forced day (skips the auto
         // Monday-shift; used by the date picker). Absent → let the engine
@@ -1288,6 +1434,9 @@ export default function ShippingLabelsPage() {
         const item = (j.orders ?? []).find(
           (it) => it.orderNumber === o.orderNumber,
         );
+        // Whatever came back — rate or stop — is newer than what the row is
+        // showing, so put it on the row.
+        if (item) mergeIntoPlan(withSavedBox(item));
         if (item && item.status !== "stop" && item.totalNetCharge) {
           // Valid rate → make it the override (the buy applies it over a fresh
           // re-fetch, so carrier/price/EDD + ship day all stay consistent).
@@ -1332,8 +1481,40 @@ export default function ShippingLabelsPage() {
                 : "No on-time rate for this order."),
           }));
         }
+        // The plan didn't return this order at all (it only returns orders in
+        // the "ready" set). The save still happened, so show it rather than
+        // leaving the cell on the old value / "Set weight/size".
+        if (!item && savedBox) {
+          setPlan((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              orders: prev.orders.map((x) =>
+                x.orderNumber === o.orderNumber ? forceSavedBox(x) : x,
+              ),
+            };
+          });
+        }
       } catch (e) {
         console.warn("[requote] failed for", o.orderNumber, e);
+        // Don't leave a package edit looking like it vanished when the
+        // re-quote request itself failed.
+        if (savedBox) {
+          setPlan((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              orders: prev.orders.map((x) =>
+                x.orderNumber === o.orderNumber ? forceSavedBox(x) : x,
+              ),
+            };
+          });
+          setBuyErrors((prev) => ({
+            ...prev,
+            [o.orderId]:
+              "Box and weight are saved, but the re-quote failed (timeout). Press Refresh to get a fresh rate.",
+          }));
+        }
       } finally {
         setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
       }
@@ -3674,7 +3855,7 @@ export default function ShippingLabelsPage() {
           order={editPackageModal}
           plan={planByOrderNumber.get(editPackageModal.orderNumber) ?? null}
           planLoading={planLoading}
-          onClose={(refresh) => {
+          onClose={(refresh, saved) => {
             const ord = editPackageModal;
             const num = ord.orderNumber;
             setEditPackageModal(null);
@@ -3684,15 +3865,22 @@ export default function ShippingLabelsPage() {
               // edit-package, so the plan route re-pushes them and quotes
               // fresh. (Previously this called full load(), re-quoting every
               // ready order — slow when you only touched one.)
+              //
+              // `saved` is what the operator just entered. It's handed down so
+              // the row shows the new package straight away and the quote runs
+              // against exactly those numbers — a slow or failed re-quote can
+              // no longer make a successful Save look like it did nothing.
               if (ord.isWalmart) {
                 setRequoting((p) => ({ ...p, [num]: true }));
-                quoteWalmartOrder(ord, effectiveShipDate(num)).finally(() =>
-                  setRequoting((p) => ({ ...p, [num]: false })),
-                );
+                quoteWalmartOrder(
+                  ord,
+                  effectiveShipDate(num),
+                  saved ?? null,
+                ).finally(() => setRequoting((p) => ({ ...p, [num]: false })));
               } else {
                 // Pass the manually-forced ship date if one is set; otherwise
                 // let the engine decide (incl. the Frozen Monday-shift).
-                void requoteAmazonOrder(ord, shipDateByOrder[num]);
+                void requoteAmazonOrder(ord, shipDateByOrder[num], saved ?? null);
               }
             }
           }}
@@ -6688,7 +6876,9 @@ function EditPackageDialog({
   /** The page is still fetching rates. Distinguishes "values are on their way"
    *  from "this order genuinely has no package on file". */
   planLoading: boolean;
-  onClose: (refresh: boolean) => void;
+  /** `saved` carries the box+weight that was just written, so the row can show
+   *  it immediately and the re-quote can quote against exactly those values. */
+  onClose: (refresh: boolean, saved?: SavedPackage | null) => void;
 }) {
   const isMulti =
     order.items.length > 1 ||
@@ -6816,6 +7006,10 @@ function EditPackageDialog({
           weight: w,
           allocationId,
           channel: order.channel ?? undefined,
+          // Explicit flag beats guessing from the channel NAME: a Walmart
+          // order has no Veeqo package to push, and mis-detecting it made the
+          // API attempt a Veeqo PUT that could fail and block the save.
+          isWalmart: !!order.isWalmart,
         };
       } else {
         // No SKU? Push the package dims straight to Veeqo's allocation
@@ -6837,6 +7031,7 @@ function EditPackageDialog({
             weight: w,
             allocationId,
             channel: order.channel ?? undefined,
+            isWalmart: !!order.isWalmart,
           };
         } else {
           body = {
@@ -6847,6 +7042,7 @@ function EditPackageDialog({
             weight: w,
             allocationId,
             channel: order.channel ?? undefined,
+            isWalmart: !!order.isWalmart,
           };
         }
       }
@@ -6875,7 +7071,7 @@ function EditPackageDialog({
           `Saved to our DB, but Veeqo did NOT update its packaging — rates will still be quoted against the old size/weight.\n\nVeeqo said: ${reason}\n\nFix the packaging in Veeqo directly, then click Refresh on the shipping page.`,
         );
       }
-      onClose(true);
+      onClose(true, { length: L, width: W, height: H, weight: w });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {

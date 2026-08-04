@@ -52,6 +52,12 @@ interface Body {
   // so there's no Veeqo allocation to update — skip the push (and don't
   // surface its absence as a scary error).
   channel?: string;
+  // The dashboard's own Walmart-direct flag. Authoritative — `channel` is a
+  // free-text Veeqo channel NAME, and matching "walmart" inside it is a guess
+  // that fails whenever the channel is named after the store instead. A missed
+  // match sent us down the Veeqo push path for an order Veeqo doesn't ship,
+  // where a failed PUT blocks the dialog even though the save itself worked.
+  isWalmart?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -68,7 +74,9 @@ export async function POST(request: NextRequest) {
   // Walmart orders don't live in Veeqo for shipping — rates/labels come from
   // Walmart's own API — so there's no allocation_package to push. Skip the
   // Veeqo update and report it as a benign skip (not a failure).
-  const skipVeeqo = String(body.channel ?? "").toLowerCase().includes("walmart");
+  const skipVeeqo =
+    body.isWalmart === true ||
+    String(body.channel ?? "").toLowerCase().includes("walmart");
   const maybePushVeeqo = (args: Parameters<typeof pushPackageToVeeqo>[0]) =>
     skipVeeqo
       ? Promise.resolve({
