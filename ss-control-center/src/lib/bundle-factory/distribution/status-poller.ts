@@ -577,17 +577,29 @@ async function pollWalmart(
     return recovered;
   }
 
+  /**
+   * Walmart returns the per-item results under
+   * `itemDetails.itemIngestionStatus`. This read them from
+   * `itemDetails.itemDetails`, which the API does not send, so the exact SKU
+   * result was NEVER found: every terminal feed fell through to
+   * WALMART_FEED_EXACT_SKU_RESULT_MISSING and parked the listing in
+   * PENDING_REVIEW with its fence still held — unpublishable and unexplained.
+   * The alias is kept so an older shape, if one exists, still resolves.
+   */
+  type WalmartFeedItemResult = {
+    sku?: string;
+    ingestionStatus?: string;
+    martId?: string;
+    wpid?: string;
+    ingestionErrors?: {
+      ingestionError?: Array<{ code?: string; description?: string }>;
+    };
+  };
   let raw: {
     feedStatus?: string;
     itemDetails?: {
-      itemDetails?: Array<{
-        sku?: string;
-        ingestionStatus?: string;
-        martId?: string;
-        ingestionErrors?: {
-          ingestionError?: Array<{ code?: string; description?: string }>;
-        };
-      }>;
+      itemIngestionStatus?: WalmartFeedItemResult[];
+      itemDetails?: WalmartFeedItemResult[];
     };
   };
   try {
@@ -626,7 +638,7 @@ async function pollWalmart(
     };
   }
   const item = exactWalmartFeedItem(
-    raw.itemDetails?.itemDetails ?? [],
+    raw.itemDetails?.itemIngestionStatus ?? raw.itemDetails?.itemDetails ?? [],
     sku.sku,
   );
   if (!item) {
