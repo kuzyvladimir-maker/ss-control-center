@@ -145,6 +145,49 @@ function pickImage(li: any): string | null {
   return null;
 }
 
+const textOrNull = (v: unknown): string | null =>
+  typeof v === "string" && v.trim() ? v.trim() : null;
+
+/**
+ * Coerce whatever Veeqo put in a tracking field into a tracking number.
+ *
+ * `tracking_number` is NOT always a string: for Amazon "Buy Shipping"
+ * shipments it comes back as an object (and sometimes an array of them),
+ * which a naive String() turned into the literal "[object Object]" —
+ * rendered as a tracking chip on the archive row, seen in production
+ * 2026-08-04. Walk the plausible shapes and accept only something that
+ * actually looks like a tracking number: no spaces, no punctuation beyond
+ * dot/dash/underscore, at least 6 characters. That last rule is what makes
+ * "[object Object]" unrepresentable here rather than merely unlikely.
+ */
+function trackingString(v: unknown): string | null {
+  if (Array.isArray(v)) {
+    for (const item of v) {
+      const found = trackingString(item);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  if (typeof v === "string") {
+    const s = v.trim();
+    return /^[A-Za-z0-9._-]{6,}$/.test(s) ? s : null;
+  }
+  if (v && typeof v === "object") {
+    for (const key of [
+      "tracking_number",
+      "number",
+      "tracking_no",
+      "code",
+      "value",
+    ]) {
+      const found = trackingString((v as Record<string, unknown>)[key]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 /** Tracking lives on the allocation's shipment; shape varies by carrier. */
 function veeqoTracking(o: any): Tracking[] {
   const out: Tracking[] = [];
@@ -155,21 +198,15 @@ function veeqoTracking(o: any): Tracking[] {
       ...(Array.isArray(alloc?.shipments) ? alloc.shipments : []),
     ].filter(Boolean);
     for (const sh of shipments) {
-      const num = String(
-        sh?.tracking_number ?? sh?.tracking_number_string ?? "",
-      ).trim();
+      const num = trackingString(
+        sh?.tracking_number ?? sh?.tracking_number_string ?? sh?.tracking,
+      );
       if (!num || seen.has(num)) continue;
       seen.add(num);
       out.push({
         number: num,
-        carrier:
-          (sh?.carrier?.name as string | undefined) ??
-          (sh?.carrier_name as string | undefined) ??
-          null,
-        service:
-          (sh?.service_carrier as string | undefined) ??
-          (sh?.shipping_method as string | undefined) ??
-          null,
+        carrier: textOrNull(sh?.carrier?.name ?? sh?.carrier_name),
+        service: textOrNull(sh?.service_carrier ?? sh?.shipping_method),
       });
     }
   }
@@ -244,6 +281,14 @@ function fromVeeqo(o: any): SearchHit {
 function mergeHit(acc: Map<string, SearchHit>, hit: SearchHit) {
   const existing = acc.get(hit.key);
   if (!existing) {
+    // Dedupe on the way IN, not only when merging: a single source can
+    // already carry the same number twice — AmazonOrderShipment stores one
+    // row per (order, SKU), so a two-SKU order shipped on one label yields
+    // the identical tracking number twice.
+    const seen = new Set<string>();
+    hit.tracking = hit.tracking.filter((t) =>
+      seen.has(t.number) ? false : (seen.add(t.number), true),
+    );
     acc.set(hit.key, hit);
     return;
   }

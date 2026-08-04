@@ -3982,123 +3982,253 @@ function Seg({
  * once and nothing is behind an expander.
  */
 function ArchiveRow({ hit }: { hit: ArchiveHit }) {
-  const toneCls =
-    hit.statusTone === "ok"
-      ? "bg-green-soft text-green-ink"
-      : hit.statusTone === "danger"
-        ? "bg-danger-tint text-danger"
-        : hit.statusTone === "warn"
-          ? "bg-warn-tint text-warn-strong"
-          : "bg-bg-elev text-ink-2";
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+
+  // The one word the operator needs before anything else. A search by
+  // product name returns orders in every state at once — some shipped, some
+  // cancelled, some not even bought yet — so "did this one go out?" has to be
+  // answerable from across the room, not by reading a small status chip.
+  // Three outcomes only; the exact marketplace status rides along in smaller
+  // text next to it when it says something more specific.
+  const headline =
+    hit.statusTone === "danger"
+      ? "CANCELLED"
+      : hit.status === "delivered"
+        ? "DELIVERED"
+        : hit.statusTone === "ok"
+          ? "SHIPPED"
+          : "NOT SHIPPED";
+  const headlineCls =
+    hit.statusTone === "danger"
+      ? "bg-danger text-white"
+      : hit.statusTone === "ok"
+        ? "bg-green text-green-cream"
+        : "bg-warn-strong text-white";
+  const cardCls =
+    hit.statusTone === "danger"
+      ? "border-danger/40 bg-danger-tint/30"
+      : hit.statusTone === "ok"
+        ? "border-green/40 bg-green-soft/25"
+        : "border-warn-strong/40 bg-warn-tint/25";
+
+  // Same hero treatment as the live order rows: one big square, or a grid
+  // when a merged order carries several different products. Dedupe by URL,
+  // cap at 4.
+  const heroImages: { url: string; title: string }[] = [];
+  const seenHeroUrls = new Set<string>();
+  for (const it of hit.items) {
+    if (!it.imageUrl || seenHeroUrls.has(it.imageUrl)) continue;
+    seenHeroUrls.add(it.imageUrl);
+    heroImages.push({ url: it.imageUrl, title: it.title });
+    if (heroImages.length >= 4) break;
+  }
+
   const date = hit.orderDate ? new Date(hit.orderDate) : null;
+  const dateLabel =
+    date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString() : null;
+
   return (
-    <div className="rounded-md border border-rule bg-surface px-3 py-2.5">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
-        <span
-          className={cn(
-            "rounded px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide",
-            toneCls,
-          )}
-        >
-          {hit.statusLabel}
-        </span>
-        <span className="font-mono font-medium text-ink">
-          {hit.orderNumber}
-        </span>
-        {hit.channel && <span className="text-ink-3">· {hit.channel}</span>}
-        {date && !Number.isNaN(date.getTime()) && (
-          <span className="text-ink-3">· {date.toLocaleDateString()}</span>
-        )}
-        {typeof hit.total === "number" && hit.total > 0 && (
-          <span className="tabular text-ink-2">· ${hit.total.toFixed(2)}</span>
-        )}
-        {hit.walmartPurchaseOrderId && (
-          <span className="font-mono text-[11px] text-ink-3">
-            · PO {hit.walmartPurchaseOrderId}
-          </span>
-        )}
-        {hit.labelPdfUrl && (
-          <a
-            href={hit.labelPdfUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="ml-auto text-[11.5px] text-[#0071dc] underline-offset-2 hover:underline"
+    <div
+      className={cn(
+        "rounded-md border p-3 text-[length:var(--ship-row)]",
+        cardCls,
+      )}
+    >
+      {lightboxImageUrl && (
+        <PhotoLightbox
+          src={lightboxImageUrl}
+          alt=""
+          onClose={() => setLightboxImageUrl(null)}
+        />
+      )}
+
+      <div className="flex items-stretch gap-4">
+        {heroImages.length === 0 ? (
+          <div className="shrink-0 self-stretch aspect-square min-h-[160px] rounded-lg border border-rule bg-bg-elev" />
+        ) : heroImages.length === 1 ? (
+          <button
+            type="button"
+            onClick={() => setLightboxImageUrl(heroImages[0].url)}
+            aria-label="Open product photo fullscreen"
+            className="relative shrink-0 self-stretch aspect-square min-h-[160px] cursor-zoom-in overflow-hidden rounded-lg border border-rule bg-surface"
           >
-            Этикетка PDF
-          </a>
-        )}
-      </div>
-
-      {(hit.customerName || hit.address) && (
-        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11.5px] text-ink-2">
-          {hit.customerName && (
-            <span className="inline-flex items-center gap-1">
-              <User size={11} className="text-ink-3" />
-              {hit.customerName}
-            </span>
-          )}
-          {hit.address && <span className="text-ink-3">· {hit.address}</span>}
-        </div>
-      )}
-
-      {hit.items.length > 0 && (
-        <div className="mt-1.5 space-y-0.5">
-          {hit.items.slice(0, 4).map((it, i) => (
-            <div
-              key={`${it.sku ?? "no-sku"}-${i}`}
-              className="flex items-center gap-1.5 text-[11.5px] text-ink-2"
-            >
-              {/* Thumbnail — "посмотреть, что это был за товар" is the
-                  whole reason this archive lookup exists, and the picture
-                  answers it faster than the title does. Plain <img>:
-                  Veeqo/Walmart CDN hosts aren't in next.config's allowlist. */}
-              {it.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroImages[0].url}
+              alt=""
+              className="absolute inset-0 h-full w-full object-contain p-2"
+              loading="lazy"
+            />
+          </button>
+        ) : (
+          <div
+            className={cn(
+              "grid shrink-0 self-stretch aspect-square min-h-[160px] gap-px overflow-hidden rounded-lg border border-rule bg-rule",
+              heroImages.length === 2
+                ? "grid-cols-2 grid-rows-1"
+                : "grid-cols-2 grid-rows-2",
+            )}
+          >
+            {heroImages.map((img, idx) => (
+              <button
+                key={img.url}
+                type="button"
+                onClick={() => setLightboxImageUrl(img.url)}
+                aria-label={`Open product photo: ${img.title}`}
+                title={img.title}
+                className={cn(
+                  "relative cursor-zoom-in overflow-hidden bg-surface",
+                  heroImages.length === 3 && idx === 0 ? "col-span-2" : "",
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={it.imageUrl}
+                  src={img.url}
                   alt=""
+                  className="absolute inset-0 h-full w-full object-contain p-1.5"
                   loading="lazy"
-                  className="h-7 w-7 shrink-0 rounded border border-rule bg-surface object-contain"
                 />
-              ) : (
-                <span className="h-7 w-7 shrink-0 rounded border border-rule bg-bg-elev" />
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span
+              className={cn(
+                "rounded px-2 py-1 text-[length:var(--ship-order-no)] font-bold uppercase tracking-wide",
+                headlineCls,
               )}
-              <span className="tabular text-ink-3">×{it.quantity}</span>
-              <span className="min-w-0 truncate">{it.title}</span>
-              {it.sku && (
-                <span className="shrink-0 font-mono text-[10.5px] text-ink-3">
-                  {it.sku}
-                </span>
-              )}
-              {/* Spacer keeps title+SKU together on the left instead of
-                  flinging the SKU to the far edge of a wide screen. */}
-              <span className="flex-1" />
+            >
+              {headline}
+            </span>
+            {/* The precise marketplace status, when it carries more than the
+                headline already did (e.g. "Label bought" under NOT SHIPPED). */}
+            {hit.statusLabel.toUpperCase() !== headline && (
+              <span className="text-[length:var(--ship-meta)] font-medium text-ink-2">
+                {hit.statusLabel}
+              </span>
+            )}
+            <span className="font-mono text-[length:var(--ship-order-no)] text-ink">
+              {hit.orderNumber}
+            </span>
+            <CopyOrderNumber value={hit.orderNumber} />
+            {hit.channel && (
+              <span className="text-[length:var(--ship-meta)] text-ink-3">
+                · {hit.channel}
+              </span>
+            )}
+            {dateLabel && (
+              <span className="text-[length:var(--ship-date)] text-ink-3">
+                · {dateLabel}
+              </span>
+            )}
+            {/* Recipient. Older Amazon rows in our DB have no buyer name —
+                render just the address rather than a lonely em dash that
+                reads like a missing field. */}
+            {(hit.customerName || hit.address) && (
+              <span className="inline-flex items-center gap-1 rounded bg-bg-elev px-1.5 py-0.5 text-[length:var(--ship-button)] text-ink-2">
+                <User size={10} className="text-ink-3" />
+                {hit.customerName && <span>{hit.customerName}</span>}
+                {hit.address && (
+                  <span className="text-ink-3">
+                    {hit.customerName ? "· " : ""}
+                    {hit.address}
+                  </span>
+                )}
+              </span>
+            )}
+            {hit.labelPdfUrl && (
+              <a
+                href={hit.labelPdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="ml-auto text-[length:var(--ship-button)] text-[#0071dc] underline-offset-2 hover:underline"
+              >
+                Этикетка PDF
+              </a>
+            )}
+          </div>
+
+          {hit.items.length > 0 ? (
+            <ul className="mt-1.5 space-y-2">
+              {hit.items.map((i, idx) => (
+                <li key={`${i.sku ?? "no-sku"}-${idx}`} className="text-ink-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    <span className="text-[length:var(--ship-product)] font-bold leading-snug text-ink">
+                      {i.title}
+                    </span>
+                    <QtyBadge qty={i.quantity} big />
+                  </div>
+                  {i.sku && (
+                    <div className="mt-0.5 font-mono text-[length:var(--ship-sub)] text-ink-3">
+                      {i.sku}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="mt-1.5 text-[length:var(--ship-meta)] text-ink-3">
+              Состав заказа не сохранился в нашей базе — открой заказ в Veeqo.
             </div>
-          ))}
-          {hit.items.length > 4 && (
-            <div className="text-[11px] text-ink-3">
-              …и ещё {hit.items.length - 4}
+          )}
+
+          {/* Same cell grid the live rows use, so the eye lands in the same
+              places on both kinds of row. */}
+          <div className="mt-2.5 grid gap-2 text-[length:var(--ship-row)] sm:grid-cols-2 lg:grid-cols-4">
+            <Cell
+              label="Order total"
+              value={
+                typeof hit.total === "number" && hit.total > 0
+                  ? fmt$(hit.total)
+                  : "—"
+              }
+            />
+            <Cell label="Ship by" value={hit.shipBy ? fmtDate(hit.shipBy) : "—"} />
+            <Cell
+              label="Deliver by"
+              value={hit.deliverBy ? fmtDate(hit.deliverBy) : "—"}
+            />
+            {/* Fourth cell earns its place: the Walmart PO when there is one
+                (that's the id used everywhere on Walmart's side), otherwise
+                the precise marketplace status — the channel and date already
+                sit in the header line, so repeating them here would waste it. */}
+            {hit.walmartPurchaseOrderId ? (
+              <Cell
+                label="Walmart PO"
+                value={hit.walmartPurchaseOrderId}
+                valueClass="text-ink font-mono text-[length:var(--ship-sub)]"
+              />
+            ) : (
+              <Cell label="Status" value={hit.statusLabel} />
+            )}
+          </div>
+
+          {hit.tracking.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
+                Tracking
+              </span>
+              {hit.tracking.map((t) => (
+                <span
+                  key={t.number}
+                  className="inline-flex items-center gap-1.5 rounded border border-rule bg-surface px-2 py-1 font-mono text-[length:var(--ship-cell-value)] text-ink"
+                  title={[t.carrier, t.service].filter(Boolean).join(" · ")}
+                >
+                  {t.carrier && (
+                    <span className="font-sans text-[length:var(--ship-sub)] text-ink-3">
+                      {t.carrier}
+                    </span>
+                  )}
+                  {t.number}
+                </span>
+              ))}
             </div>
           )}
         </div>
-      )}
-
-      {hit.tracking.length > 0 && (
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {hit.tracking.map((t) => (
-            <span
-              key={t.number}
-              className="inline-flex items-center gap-1 rounded border border-rule bg-bg-elev px-1.5 py-0.5 font-mono text-[10.5px] text-ink-2"
-              title={[t.carrier, t.service].filter(Boolean).join(" · ")}
-            >
-              {t.carrier && (
-                <span className="font-sans text-ink-3">{t.carrier}</span>
-              )}
-              {t.number}
-            </span>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -4208,12 +4338,6 @@ function OrderRow({
   // Click a product thumbnail to view it fullscreen — same lightbox the
   // Procurement module uses, so the operator can read package text/expiry.
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
-
-  const fmt$ = (v: number) =>
-    `$${v.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
 
   // Label cost recommendation comes from /api/shipping/plan. If plan is
   // still in flight (planLoading) we show a spinner; if plan is in but
@@ -5250,6 +5374,15 @@ function errMsg(e: unknown): string {
 
 /** Compact "5/14" date for dense grid cells. Falls back to the raw value
  *  if parsing fails, so we never blank out useful info. */
+/** Money, always two decimals. Shared by the live rows and the archive rows
+ *  so a dollar amount reads identically wherever it appears. */
+function fmt$(v: number): string {
+  return `$${v.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   // Pull date parts straight from the string head so we never round-
