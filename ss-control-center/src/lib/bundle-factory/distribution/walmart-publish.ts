@@ -34,6 +34,10 @@ import {
 import { hashWalmartPayload } from "./walmart-payload-hash";
 import { isWalmartStudioLane } from "../walmart-studio-listing";
 import {
+  marketplaceImageUrl,
+  marketplaceImageUrls,
+} from "../marketplace-image-url";
+import {
   parseWalmartListingAttributes,
   sha256WalmartJson,
 } from "../walmart-listing-contract";
@@ -273,8 +277,10 @@ export function buildWalmartPayload(
     brand,
     shortDescription: description,
     keyFeatures: parseBullets(sku.bullets),
-    mainImageUrl,
-    productSecondaryImageURL: contract.secondary_image_urls,
+    // Addressed on our own domain: Walmart could not download from the R2
+    // development host. Same object, same bytes — see marketplace-image-url.ts.
+    mainImageUrl: marketplaceImageUrl(mainImageUrl),
+    productSecondaryImageURL: marketplaceImageUrls(contract.secondary_image_urls),
   };
 
   // Field names and shapes below come from the LIVE Get Spec schema, not from
