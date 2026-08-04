@@ -318,6 +318,17 @@ export async function GET(request: NextRequest) {
   });
 
   // ── Source 2: our DB ───────────────────────────────────────────────
+  //
+  // Every predicate below is `LIKE '%q%'` on an unindexed column, i.e. a
+  // full scan. Three of these tables — WalmartLabelPurchase, MergeGroup and
+  // ShippingPlanItem (>120k rows) — are searched ONLY on numeric identifier
+  // columns: tracking numbers, order numbers, purchase-order ids. A query
+  // with no digit in it cannot match any of them, so running those scans
+  // for "Youngstown" or "Sara Lee" burns seconds (and Turso row-reads) to
+  // return nothing, every single time. Measured on production: a cold
+  // no-digit query spent 93s in the DB with all six scans, and 0.2s once
+  // the three pointless ones were skipped.
+  const hasDigit = /\d/.test(q);
   const dbTask = (async () => {
     const tDb = Date.now();
     const like = { contains: q } as const; // SQLite LIKE — ASCII case-insensitive
@@ -373,21 +384,27 @@ export async function GET(request: NextRequest) {
         orderBy: { orderDate: "desc" },
         take: PER_SOURCE,
       }),
-      prisma.walmartLabelPurchase.findMany({
-        where: {
-          OR: [
-            { trackingNumber: like },
-            { customerOrderId: like },
-            { purchaseOrderId: like },
-          ],
-        },
-        take: PER_SOURCE,
-      }),
-      prisma.mergeGroup.findMany({
-        where: { OR: [{ trackingNumber: like }, { id: like }] },
-        include: { members: true },
-        take: PER_SOURCE,
-      }),
+      // Identifier-only tables — skipped entirely for a query with no digit
+      // in it (see the note above the batch).
+      hasDigit
+        ? prisma.walmartLabelPurchase.findMany({
+            where: {
+              OR: [
+                { trackingNumber: like },
+                { customerOrderId: like },
+                { purchaseOrderId: like },
+              ],
+            },
+            take: PER_SOURCE,
+          })
+        : [],
+      hasDigit
+        ? prisma.mergeGroup.findMany({
+            where: { OR: [{ trackingNumber: like }, { id: like }] },
+            include: { members: true },
+            take: PER_SOURCE,
+          })
+        : [],
       // ShippingPlanItem is by far the biggest table here (>120k rows) and
       // none of the columns we search are indexed, so every predicate is a
       // full scan. Two deliberate limits keep it from dominating the whole
@@ -400,16 +417,27 @@ export async function GET(request: NextRequest) {
       //   · NO ORDER BY. Sorting 120k unindexed rows by createdAt cost ~10s
       //     on its own; the merged result set is sorted by date afterwards
       //     anyway.
-      prisma.shippingPlanItem.findMany({
-        where: {
-          OR: [
-            { orderNumber: like },
-            { orderId: like },
-            { trackingNumber: like },
-          ],
-        },
-        take: PER_SOURCE,
-      }),
+      //   · DIGIT-BEARING QUERIES ONLY, for the same reason as the two
+      //     tables above: all three columns are numeric identifiers.
+      //   · EXACT MATCH, not `contains`. All three columns are indexed
+      //     (turso-migrate-shipping-search-indexes.mjs), so equality is an
+      //     index seek — instant whether or not Turso has the pages cached,
+      //     against ~14s for a cold LIKE scan. Operators paste identifiers
+      //     whole, so this is the case that matters; a partially-typed
+      //     number still finds the order through the small Walmart/Amazon
+      //     tables below, it just won't pick up the label-PDF link.
+      hasDigit
+        ? prisma.shippingPlanItem.findMany({
+            where: {
+              OR: [
+                { orderNumber: q },
+                { orderId: q },
+                { trackingNumber: q },
+              ],
+            },
+            take: PER_SOURCE,
+          })
+        : [],
     ]);
     timings.dbPrimary = Date.now() - tDb;
 

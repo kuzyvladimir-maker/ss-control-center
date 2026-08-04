@@ -159,6 +159,12 @@ model ShippingPlanItem {
 
   @@index([planId])
   @@index([orderId])
+  // The Shipping Labels archive search (/api/shipping/search) looks orders
+  // up by the identifier an operator pastes. This table is >120k rows, so
+  // without these an exact lookup was a full scan — ~14s on a cold Turso
+  // cache. Applied by scripts/turso-migrate-shipping-search-indexes.mjs.
+  @@index([orderNumber])
+  @@index([trackingNumber])
 }
 
 // ── Merge Orders ────────────────────────────────────────────────────────
@@ -210,6 +216,9 @@ model MergeGroup {
 
   @@index([status])
   @@index([checksum])
+  // Same reason as WalmartLabelPurchase: one tracking number covers every
+  // member of a merged shipment, and that is what gets pasted into search.
+  @@index([trackingNumber])
 }
 
 model MergeGroupMember {
@@ -1073,6 +1082,9 @@ model WalmartLabelPurchase {
   discardedAt     DateTime?
 
   @@index([customerOrderId])
+  // Archive search looks a bought label up by the tracking number the
+  // operator pastes — see scripts/turso-migrate-shipping-search-indexes.mjs.
+  @@index([trackingNumber])
 }
 
 // Per-row reconciliation report transactions. Each row is one money event.
