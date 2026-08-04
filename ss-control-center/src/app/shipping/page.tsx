@@ -3175,23 +3175,6 @@ export default function ShippingLabelsPage() {
         </div>
       )}
 
-      {/* Groups already merged and waiting for their package + label. */}
-      {(merge?.groups.length ?? 0) > 0 && (
-        <div className="space-y-2">
-          {merge!.groups.map((g) => (
-            <MergeGroupCard
-              key={g.id}
-              group={g}
-              orders={orders}
-              onUpdate={(patch: Record<string, unknown>) =>
-                updateMergeGroup(g.id, patch)
-              }
-              onDissolve={() => dissolveMergeGroup(g.id)}
-            />
-          ))}
-        </div>
-      )}
-
       {/* Channel scope — one chip per channel kind present in today's
           orders. Brand-coloured for known marketplaces (amazon/walmart get
           full wordmark styling; ebay/tiktok/shopify get their brand colour
@@ -3690,11 +3673,30 @@ export default function ShippingLabelsPage() {
       {/* Order list. The search box itself now lives in the pinned command
           bar at the top of the page. */}
       <div className="space-y-2">
+        {/* Merged groups live IN the queue, at the top of it — a merged group
+            is just another parcel waiting for a label, so it belongs with the
+            rows it competes with for the operator's attention, not in a
+            separate zone above the filters. Its member orders are hidden as
+            loose rows (groupedOrderIds), so nobody can buy half a shipment. */}
+        {(merge?.groups.length ?? 0) > 0 &&
+          merge!.groups.map((g) => (
+            <MergeGroupCard
+              key={g.id}
+              group={g}
+              orders={orders}
+              onUpdate={(patch: Record<string, unknown>) =>
+                updateMergeGroup(g.id, patch)
+              }
+              onDissolve={() => dissolveMergeGroup(g.id)}
+            />
+          ))}
+
         {loading && !data ? (
           <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
             Fetching orders from Veeqo…
           </div>
         ) : displayedOrders.length === 0 ? (
+          (merge?.groups.length ?? 0) > 0 ? null : (
           <div className="rounded-md border border-rule bg-surface px-4 py-8 text-center text-[12px] text-ink-3">
             {searchActive
               ? archive.loading
@@ -3704,6 +3706,7 @@ export default function ShippingLabelsPage() {
                   : `Ничего не найдено по «${searchQuery}».`
               : "No orders match the current filter."}
           </div>
+          )
         ) : (
           displayedOrders.map((o, idx) => (
             <Fragment key={o.orderId}>

@@ -126,6 +126,7 @@
 - [Dashboard Refresh Fan-out](dashboard-refresh-fan-out.md) — кнопка Refresh синхронизирует все данные (Amazon, Walmart, Health) параллельно
 - [Sales Overview — Hybrid Channels](sales-overview-hybrid-channels.md) — гибридный источник продаж: Amazon/Walmart из cache, остальные от Veeqo; NaN-health исключена
 - [Merge Orders](merge-orders.md) — сигнализация объединяемых заказов в Veeqo: группировка по адресу, deep-link в Mergeable view
+- [Объединённый заказ сам выбирает тариф (2026-08-04)](merge-orders-auto-rate.md) — общий модуль `rate-selection` для plan и merge; дедлайн = самый ранний в группе, frozen-риск = худший; сдвиг на понедельник + покупка на физический день; карточка группы переехала в общий список заказов
 - [Procurement — Retire From Sale](procurement-retire-from-sale.md) — снятие товара с продажи на Walmart: поиск по каталогу, обнуление инвентаря всех SKU
 - [Procurement — Title Source](procurement-title-source.md) — фикс: заголовок берём из строки заказа (customer), не из устаревшего каталога Veeqo
 - [Procurement — Walmart Cancellation Check](procurement-walmart-cancellation-check.md) — live-проверка флага отмены от покупателя на странице закупок (одноклик)

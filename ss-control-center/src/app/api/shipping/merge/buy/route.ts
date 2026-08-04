@@ -41,7 +41,9 @@ import {
   extractVasFromRate,
   updateAllocationPackage,
   createManualShipment,
+  updateOrderDispatchDate,
 } from "@/lib/veeqo";
+import { todayNY } from "@/lib/shipping/dates";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { buyShippingLabel as buyWalmartLabel } from "@/lib/walmart/shipping";
@@ -58,6 +60,9 @@ interface RateSelection {
   // Walmart path
   carrierName?: string | null;
   carrierServiceType?: string | null;
+  // The physical day the rate was quoted for. Set when the Frozen Monday-shift
+  // picked a later ship day than today — see the dual-date dance below.
+  shipDate?: string | null;
 }
 
 export async function POST(request: NextRequest) {
@@ -183,6 +188,37 @@ export async function POST(request: NextRequest) {
         heightIn: dims.height,
       });
 
+      // ── Dual-date dance (v3.3 §13), same as the single-order buy ────────
+      //
+      //   labelDate         what Amazon sees on the label. Drives the Late
+      //                     Shipment Rate, so it stays today.
+      //   physicalShipDate  the day the box actually leaves. Pushed to Monday
+      //                     when the Frozen rule picked Monday's pool.
+      //
+      // If the two diverge we move dispatch_date to the physical day so Veeqo
+      // regenerates THAT day's rate pool (otherwise the re-quote below can't
+      // find the Monday service we're buying), then move it straight back so
+      // the label still prints with today's date.
+      const labelDate = todayNY();
+      const physicalShipDate = (rate.shipDate ?? "").match(/^\d{4}-\d{2}-\d{2}$/)
+        ? String(rate.shipDate)
+        : labelDate;
+      const trickApplies = physicalShipDate !== labelDate;
+
+      if (trickApplies) {
+        try {
+          await updateOrderDispatchDate(
+            primary.orderId,
+            `${physicalShipDate}T06:59:59.000Z`,
+          );
+        } catch (e) {
+          console.warn(
+            `[merge/buy] Could not pre-shift dispatch_date for ${primary.orderNumber} to ${physicalShipDate}:`,
+            e instanceof Error ? e.message : e,
+          );
+        }
+      }
+
       // Re-quote against the package we just set and buy the matching service.
       // Buying on a stale quote is what produced wrong-dimension labels before.
       const live = await getShippingRates(primary.allocationId);
@@ -196,6 +232,24 @@ export async function POST(request: NextRequest) {
             String(r.title).trim().toLowerCase() ===
               (rate.carrier ?? "").trim().toLowerCase(),
         );
+      // Restore dispatch_date BEFORE the purchase POST — if we left it at
+      // Monday, Veeqo would write the label with that date and Amazon would
+      // count a late shipment. The service picked against Monday's pool stays
+      // valid across the restore (verified 2026-05-15 on the single-order path).
+      if (trickApplies) {
+        try {
+          await updateOrderDispatchDate(
+            primary.orderId,
+            `${labelDate}T06:59:59.000Z`,
+          );
+        } catch (e) {
+          console.warn(
+            `[merge/buy] Could not restore dispatch_date to ${labelDate} for ${primary.orderNumber}:`,
+            e instanceof Error ? e.message : e,
+          );
+        }
+      }
+
       if (!match) {
         return NextResponse.json(
           {

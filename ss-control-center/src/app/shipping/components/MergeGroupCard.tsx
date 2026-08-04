@@ -73,6 +73,39 @@ interface GroupRate {
   deliveryPromiseFulfilled?: boolean;
 }
 
+// The rate the algorithm picked, as returned by GET /api/shipping/merge/rates.
+// It is chosen by the SAME Frozen/Dry rules that pick the carrier for a single
+// order (@/lib/shipping/rate-selection), against the group's tightest deadline
+// and its worst frozen-risk member — so the operator no longer reads a price
+// list and decides by hand.
+interface Recommended {
+  // Veeqo purchase identifiers
+  serviceType?: string | null;
+  subCarrierId?: string | null;
+  carrier?: string | null;
+  // Walmart purchase identifiers
+  carrierName?: string | null;
+  carrierServiceType?: string | null;
+  label: string;
+  price: number | null;
+  edd: string | null;
+  // The physical day the rate was quoted for — differs from today only when
+  // the Frozen rule shifted the shipment to Monday.
+  shipDate: string;
+  reason: string;
+}
+
+// What the buy endpoint needs. Built either from the recommendation or from a
+// hand-picked line in the full list.
+interface BuyPayload {
+  serviceType: string | null;
+  subCarrierId: string | null;
+  carrier: string | null;
+  carrierName: string | null;
+  carrierServiceType: string | null;
+  shipDate: string | null;
+}
+
 // Price and delivery estimate read from whichever channel's field is present.
 function rateAmount(r: GroupRate): number {
   if (typeof r.amount === "number") return r.amount;
@@ -82,9 +115,28 @@ function rateAmount(r: GroupRate): number {
 
 function rateEdd(r: GroupRate): string {
   const raw = r.deliveryDate ?? r.delivery_promise_date;
+  return shortDate(raw);
+}
+
+// "2026-08-07" → "8/7". Same compact form the order rows use.
+function shortDate(raw: string | null | undefined): string {
   if (!raw) return "";
   const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? `${parseInt(m[2], 10)}/${parseInt(m[3], 10)}` : "";
+}
+
+const DAY_RU = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+
+function dayLabel(ymd: string): string {
+  const d = new Date(`${ymd}T12:00:00`);
+  return Number.isNaN(d.getTime()) ? "" : DAY_RU[d.getDay()];
+}
+
+// Today in Eastern — the operator's day, matching the server's todayNY().
+function todayET(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+  }).format(new Date());
 }
 
 export function MergeGroupCard({
@@ -131,8 +183,16 @@ export function MergeGroupCard({
   const [err, setErr] = useState<string | null>(null);
 
   const [rates, setRates] = useState<GroupRate[] | null>(null);
+  const [recommended, setRecommended] = useState<Recommended | null>(null);
+  // Why the algorithm couldn't pick anything (no on-time rate, nothing inside
+  // the frozen window). Shown instead of a recommendation — a merged group with
+  // no safe option is exactly the case the operator must see, not guess at.
+  const [noRecReason, setNoRecReason] = useState<string | null>(null);
   const [ratesLoading, setRatesLoading] = useState(false);
   const [ratesError, setRatesError] = useState<string | null>(null);
+  // The full price list is collapsed by default: the recommendation IS the
+  // answer, the list is there for the rare override.
+  const [showAllRates, setShowAllRates] = useState(false);
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<string | null>(null);
 
@@ -184,9 +244,13 @@ export function MergeGroupCard({
       const j = await r.json();
       if (!r.ok) throw new Error(j?.error || `HTTP ${r.status}`);
       setRates(j.rates ?? []);
+      setRecommended(j.recommended ?? null);
+      setNoRecReason(j.noRecommendationReason ?? null);
     } catch (e) {
       setRatesError(e instanceof Error ? e.message : String(e));
       setRates(null);
+      setRecommended(null);
+      setNoRecReason(null);
     } finally {
       setRatesLoading(false);
     }
@@ -209,7 +273,34 @@ export function MergeGroupCard({
     loadRates,
   ]);
 
-  async function buy(rate: GroupRate) {
+  // A hand-picked line from the full list is always quoted for the day the
+  // list itself was quoted for — which is the recommendation's day when the
+  // Frozen rule shifted it, so an override still buys against the right pool.
+  function payloadFromRate(rate: GroupRate): BuyPayload {
+    return {
+      // Veeqo identifiers
+      serviceType: rate.name ?? null,
+      subCarrierId: rate.sub_carrier_id ?? null,
+      carrier: rate.title ?? null,
+      // Walmart identifiers
+      carrierName: rate.carrierName ?? null,
+      carrierServiceType: rate.serviceType ?? null,
+      shipDate: recommended?.shipDate ?? null,
+    };
+  }
+
+  function payloadFromRecommended(r: Recommended): BuyPayload {
+    return {
+      serviceType: r.serviceType ?? null,
+      subCarrierId: r.subCarrierId ?? null,
+      carrier: r.carrier ?? null,
+      carrierName: r.carrierName ?? null,
+      carrierServiceType: r.carrierServiceType ?? null,
+      shipDate: r.shipDate ?? null,
+    };
+  }
+
+  async function buy(rate: BuyPayload) {
     setBuying(true);
     setBuyResult(null);
     setErr(null);
@@ -217,18 +308,7 @@ export function MergeGroupCard({
       const res = await fetch("/api/shipping/merge/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          groupId: group.id,
-          rate: {
-            // Veeqo identifiers
-            serviceType: rate.name ?? null,
-            subCarrierId: rate.sub_carrier_id ?? null,
-            carrier: rate.title ?? null,
-            // Walmart identifiers
-            carrierName: rate.carrierName ?? null,
-            carrierServiceType: rate.serviceType ?? null,
-          },
-        }),
+        body: JSON.stringify({ groupId: group.id, rate }),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || `HTTP ${res.status}`);
@@ -462,14 +542,15 @@ export function MergeGroupCard({
             )}
           </div>
 
-          {/* Rates for the combined box. One of these buys the single label
-              for the whole group; every other order then receives its
-              tracking. */}
+          {/* The chosen rate for the combined box. The algorithm picks it —
+              same Frozen/Dry rules as any single order, against the group's
+              tightest deadline — so the operator's job is one click. Buying it
+              buys ONE label; every other member then receives its tracking. */}
           {packageReady && (
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
-                  Rates for the combined box
+                  Rate for the combined box
                 </span>
                 {ratesLoading && (
                   <Loader2 size={12} className="animate-spin text-ink-3" />
@@ -501,41 +582,112 @@ export function MergeGroupCard({
                 </div>
               )}
 
+              {/* The recommendation, laid out like a ready-to-buy order row:
+                  carrier · EDD · price · one button. */}
+              {recommended && (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-info bg-surface px-2 py-2">
+                  <span className="rounded bg-info px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
+                    Выбрано алгоритмом
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[length:var(--ship-row)] font-medium text-ink">
+                    {recommended.label}
+                  </span>
+                  {recommended.edd && (
+                    <span className="shrink-0 text-[length:var(--ship-meta)] text-ink-3">
+                      доставка {shortDate(recommended.edd)}
+                    </span>
+                  )}
+                  <span className="shrink-0 text-[length:var(--ship-cell-value)] font-semibold tabular text-ink">
+                    {recommended.price != null
+                      ? `$${recommended.price.toFixed(2)}`
+                      : "—"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={buying}
+                    onClick={() => void buy(payloadFromRecommended(recommended))}
+                    className="inline-flex shrink-0 items-center gap-1 rounded bg-info px-3 py-1.5 text-[length:var(--ship-button)] font-semibold text-white disabled:opacity-50"
+                  >
+                    {buying ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <ShoppingCart size={12} />
+                    )}
+                    Купить этикетку
+                  </button>
+                  <div className="w-full text-[length:var(--ship-meta)] text-ink-3">
+                    {recommended.reason}
+                  </div>
+                  {/* The Frozen Monday-shift moved the physical ship day. Say
+                      it out loud: the label still prints today's date (Amazon's
+                      Late Shipment Rate), but the box must NOT leave before the
+                      day quoted, or the food travels longer than planned. */}
+                  {recommended.shipDate !== todayET() && (
+                    <div className="w-full rounded bg-warn-tint px-2 py-1 text-[length:var(--ship-meta)] font-medium text-warn-strong">
+                      Отправить {dayLabel(recommended.shipDate)}{" "}
+                      {shortDate(recommended.shipDate)} — этикетка печатается
+                      сегодняшней датой, коробка уезжает в этот день.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* No safe option. Never silently fall back to "cheapest" — for a
+                  frozen box that is a food-safety decision, not a UI default. */}
+              {!recommended && noRecReason && !ratesLoading && (
+                <div className="rounded border border-warn bg-warn-tint px-2 py-1.5 text-[length:var(--ship-meta)] text-warn-strong">
+                  Алгоритм не смог выбрать тариф: {noRecReason}
+                </div>
+              )}
+
               {rates && rates.length > 0 && (
-                <div className="max-h-[220px] space-y-1 overflow-y-auto">
-                  {[...rates]
-                    .sort((a, b) => rateAmount(a) - rateAmount(b))
-                    .map((r, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-2 rounded border border-rule bg-surface px-2 py-1.5"
-                      >
-                        <span className="min-w-0 flex-1 truncate text-[length:var(--ship-meta)] text-ink">
-                          {r.displayName ?? r.title ?? r.serviceType ?? r.name}
-                        </span>
-                        <span className="shrink-0 text-[length:var(--ship-meta)] text-ink-3">
-                          {rateEdd(r)}
-                        </span>
-                        <span className="shrink-0 text-[length:var(--ship-cell-value)] font-semibold tabular text-ink">
-                          {Number.isFinite(rateAmount(r))
-                            ? `$${rateAmount(r).toFixed(2)}`
-                            : "—"}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={buying}
-                          onClick={() => void buy(r)}
-                          className="inline-flex shrink-0 items-center gap-1 rounded bg-info px-2 py-1 text-[length:var(--ship-button)] font-medium text-white disabled:opacity-50"
-                        >
-                          {buying ? (
-                            <Loader2 size={12} className="animate-spin" />
-                          ) : (
-                            <ShoppingCart size={12} />
-                          )}
-                          Buy one label
-                        </button>
-                      </div>
-                    ))}
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllRates((v) => !v)}
+                    className="text-[length:var(--ship-button)] text-info underline"
+                  >
+                    {showAllRates
+                      ? "Скрыть остальные тарифы"
+                      : `Другие тарифы (${rates.length})`}
+                  </button>
+                  {showAllRates && (
+                    <div className="max-h-[220px] space-y-1 overflow-y-auto">
+                      {[...rates]
+                        .sort((a, b) => rateAmount(a) - rateAmount(b))
+                        .map((r, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 rounded border border-rule bg-surface px-2 py-1.5"
+                          >
+                            <span className="min-w-0 flex-1 truncate text-[length:var(--ship-meta)] text-ink">
+                              {r.displayName ?? r.title ?? r.serviceType ?? r.name}
+                            </span>
+                            <span className="shrink-0 text-[length:var(--ship-meta)] text-ink-3">
+                              {rateEdd(r)}
+                            </span>
+                            <span className="shrink-0 text-[length:var(--ship-cell-value)] font-semibold tabular text-ink">
+                              {Number.isFinite(rateAmount(r))
+                                ? `$${rateAmount(r).toFixed(2)}`
+                                : "—"}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={buying}
+                              onClick={() => void buy(payloadFromRate(r))}
+                              className="inline-flex shrink-0 items-center gap-1 rounded border border-rule px-2 py-1 text-[length:var(--ship-button)] font-medium text-ink-2 hover:border-info hover:text-info disabled:opacity-50"
+                            >
+                              {buying ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <ShoppingCart size={12} />
+                              )}
+                              Купить этот
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
