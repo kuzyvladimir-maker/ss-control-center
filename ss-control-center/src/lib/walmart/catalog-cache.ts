@@ -129,7 +129,7 @@ export interface CatalogMatch extends WalmartItemSummary {
    *  - "primary"   — the product itself + its pack / multipack / bundle
    *                  variations (shares the distinctive brand+flavour words).
    *  - "secondary" — a different flavour/line of the SAME brand anchor
-   *                  (shown collapsed behind "Показать похожие").
+   *                  (shown collapsed behind "Similar products from this brand").
    */
   tier: "primary" | "secondary";
 }
@@ -184,8 +184,8 @@ const SECONDARY_MIN = 0.25;
  *
  * WHY (the "100 loosely-similar results" bug): the old query matched any item
  * sharing ANY query token, so generic food words ("snacks", "crackers",
- * "cheese", "baked") pulled in every vaguely-similar product — and "Снять все
- * найденные" would then zero-out all of them. Here every query word is weighted
+ * "cheese", "baked") pulled in every vaguely-similar product — and "Retire
+ * everything found" would then zero-out all of them. Here every query word is weighted
  * by how RARE it is across the whole catalog (classic IDF): brand/flavour words
  * ("cheez", "cheddar") are rare → high weight and drive the match; filler words
  * appear everywhere → ~0 weight and no longer create false positives. Items are

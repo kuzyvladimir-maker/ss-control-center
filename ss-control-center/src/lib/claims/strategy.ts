@@ -23,7 +23,7 @@ export function determineDefenseStrategy(data: EvidenceData): DefenseStrategy {
     return {
       type: "BUY_SHIPPING_PROTECTION",
       confidence: "HIGH",
-      note: "Amazon должен финансировать этот claim. Если списал — апеллировать.",
+      note: "Amazon should fund this claim. If they charged us, appeal.",
       autoRespond: true,
     };
   }
@@ -33,7 +33,7 @@ export function determineDefenseStrategy(data: EvidenceData): DefenseStrategy {
     return {
       type: "PROOF_OF_DELIVERY",
       confidence: "HIGH",
-      note: "Доставка подтверждена перевозчиком.",
+      note: "Delivery confirmed by the carrier.",
       autoRespond: true,
     };
   }
@@ -43,7 +43,7 @@ export function determineDefenseStrategy(data: EvidenceData): DefenseStrategy {
     return {
       type: "INR_DEFENSE",
       confidence: "MEDIUM",
-      note: "Tracking показывает доставку. Возможно мошенничество или неверный адрес.",
+      note: "Tracking shows it delivered. Possible fraud or a wrong address.",
       autoRespond: true,
     };
   }
@@ -53,7 +53,7 @@ export function determineDefenseStrategy(data: EvidenceData): DefenseStrategy {
     return {
       type: "CARRIER_DELAY_DEFENSE",
       confidence: claimsProtected ? "HIGH" : "MEDIUM",
-      note: "Мы отправили вовремя, задержал перевозчик.",
+      note: "We shipped on time, the carrier was late.",
       autoRespond: false,
     };
   }
@@ -61,7 +61,7 @@ export function determineDefenseStrategy(data: EvidenceData): DefenseStrategy {
   return {
     type: "MANUAL_REVIEW",
     confidence: "LOW",
-    note: "Недостаточно данных — требуется проверка Владимира.",
+    note: "Not enough data — Vladimir has to look at it.",
     autoRespond: false,
   };
 }

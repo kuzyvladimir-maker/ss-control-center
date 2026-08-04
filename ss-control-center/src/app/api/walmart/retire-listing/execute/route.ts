@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
         perNode: after.nodes,
         writes,
         retirementId: retirement.id,
-        error: `Walmart accepted PUT amount=0 on ${writes.length} ship node(s) but stock is still ${verifiedQty} (${stillStocked}). Возможно SKU управляется отдельным feed-ом — обнули вручную в Seller Center.`,
+        error: `Walmart accepted PUT amount=0 on ${writes.length} ship node(s) but stock is still ${verifiedQty} (${stillStocked}). The SKU may be driven by a separate feed — zero it by hand in Seller Center.`,
       });
       continue;
     }

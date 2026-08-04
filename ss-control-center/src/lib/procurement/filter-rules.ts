@@ -17,7 +17,7 @@ import { isFulfillmentOnlyStore } from "./excluded-stores";
  *     These USED to be hidden, which dropped them into a blind spot: invisible
  *     in Procurement yet still "Waiting for procurement" on Shipping Labels
  *     (which only looks at the `Placed` tag). They now stay in the list,
- *     flagged `fromMike` so the UI paints them with a bright "от Майка" badge
+ *     flagged `fromMike` so the UI paints them with a bright "From Mike" badge
  *     and keeps them OUT of the buy pool — see `fromMike` on ProcurementCard.
  *   - Need More          → "still buying, partially completed", which is
  *     exactly what Procurement shows.

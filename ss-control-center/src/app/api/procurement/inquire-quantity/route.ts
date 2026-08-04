@@ -4,7 +4,7 @@
  * Sends a polite "did you mean this quantity?" email to a Walmart buyer
  * through their per-order relay address, from the registered Sirius CS mailbox
  * (info.siriustrading@gmail.com), and records a WalmartCustomerInquiry row so
- * the procurement card can show "Спросили · ждём ответ" and the poll cron can
+ * the procurement card can show "Customer asked · waiting for a reply" and the poll cron can
  * later surface the reply.
  *
  * Body:

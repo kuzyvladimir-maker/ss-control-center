@@ -49,25 +49,25 @@ async function sendInviteEmail(opts: {
       return { sent: false, error: "no Gmail account is connected" };
     }
 
-    const expiryStr = opts.expiresAt.toLocaleDateString("ru-RU", {
+    const expiryStr = opts.expiresAt.toLocaleDateString("en-US", {
       day: "2-digit",
       month: "long",
       year: "numeric",
     });
-    const body = `Здравствуйте!
+    const body = `Hello!
 
-${opts.inviterName} приглашает вас в Salutem Command Center.
-Роль: ${opts.roleLabel}.
+${opts.inviterName} is inviting you to the Salutem Command Center.
+Role: ${opts.roleLabel}.
 
-Чтобы создать пароль и войти, перейдите по ссылке:
+To set a password and sign in, follow this link:
 ${opts.link}
 
-Ссылка действительна до ${expiryStr}.
-Если вы не ожидали это приглашение, просто проигнорируйте письмо.`;
+The link is valid until ${expiryStr}.
+If you were not expecting this invitation, just ignore this email.`;
 
     await sendGmailMessage(sender.refreshToken, {
       to: opts.to,
-      subject: "Приглашение в Salutem Command Center",
+      subject: "Invitation to the Salutem Command Center",
       body,
       fromEmail: sender.email,
     });

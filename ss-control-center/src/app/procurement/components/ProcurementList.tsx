@@ -326,7 +326,7 @@ export function ProcurementList({
                 <>
                   <span className="text-ink-4">·</span>
                   <span className="font-medium text-ink-2">
-                    {items.length} товаров в заказе
+                    {items.length} items in the order
                   </span>
                 </>
               )}

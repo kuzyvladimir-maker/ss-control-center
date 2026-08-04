@@ -41,7 +41,7 @@ export interface ProcurementCard {
   // True when the order carries the "Заказано у Майка" Veeqo tag — i.e. Jackie
   // SMS'd Mike (Publix) and ordered it through him instead of online. Such
   // orders are shown for visibility but kept OUT of the buy pool (no checkbox,
-  // no "Купил всё") so Vladimir doesn't re-purchase what Mike already has.
+  // no "Bought everything") so Vladimir doesn't re-purchase what Mike already has.
   fromMike: boolean;
 
   // Deadlines (ISO strings as Veeqo returns them)
@@ -345,7 +345,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         const lineSize = parsePackSize(lineTitle)?.size ?? null;
         const masterSize = parsePackSize(masterTitle)?.size ?? null;
         if (lineSize !== null && masterSize !== null && lineSize !== masterSize) {
-          packSizeWarning = `Veeqo каталог: ${masterSize}-pack, заказ: ${lineSize}-pack — берём заказ (${lineSize}). Проверьте кол-во.`;
+          packSizeWarning = `Veeqo catalog says ${masterSize}-pack, the order line says ${lineSize}-pack — we follow the order (${lineSize}). Check the quantity.`;
         }
       }
 

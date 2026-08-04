@@ -44,7 +44,7 @@ export function getInternalNotes(
 
 /**
  * Overwrite the internal notes of an order. Phase 1 does not call this —
- * kept here so the Phase 3 "купил частично" action can persist the
+ * kept here so the Phase 3 "bought some" action can persist the
  * [PROCUREMENT] block.
  *
  * TODO(phase-3): As with tags, confirm the actual Veeqo PUT shape. The

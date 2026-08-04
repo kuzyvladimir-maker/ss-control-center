@@ -15,21 +15,21 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getProduct } from "@/lib/veeqo/client";
 import { CLAUDE } from "@/lib/ai-models";
 
-const SYSTEM_PROMPT = `Ты классифицируешь товар как FROZEN или DRY для логистики.
+const SYSTEM_PROMPT = `You classify a product as FROZEN or DRY for logistics.
 
-Контекст: Salutem Solutions продаёт продукты питания на Amazon. Frozen — это замороженные товары, которые требуют хладопакетов и быстрой доставки (≤3 дня). Dry — обычные товары без температурного режима.
+Context: Salutem Solutions sells food on Amazon. Frozen means goods that need gel packs and fast delivery (<=3 days). Dry means ordinary goods with no temperature control.
 
-Подсказки:
-- На картинках замороженных товаров часто изображён пенопластовый кулер, лёд, белые упаковки с пометкой "Keep Frozen"
-- В описании могут быть слова "frozen", "freezer", "thaw", "keep frozen", "ice pack", "perishable"
-- В title часто прямо указано (например "Frozen Pizza")
-- Колбасы, сыр, замороженные сэндвичи, пицца, морепродукты — обычно Frozen
-- Сухие смеси, орехи, чипсы, выпечка длительного хранения — обычно Dry
+Hints:
+- Photos of frozen goods often show a foam cooler, ice, or white packaging marked "Keep Frozen"
+- The description may contain "frozen", "freezer", "thaw", "keep frozen", "ice pack", "perishable"
+- The title often says it outright (e.g. "Frozen Pizza")
+- Sausage, cheese, frozen sandwiches, pizza, seafood — usually Frozen
+- Dry mixes, nuts, chips, shelf-stable baked goods — usually Dry
 
-Ответь СТРОГО валидным JSON, без какого-либо текста до или после:
-{"type":"Frozen","confidence":0.92,"reasoning":"Краткое объяснение на русском, 1-2 предложения."}
+Answer with STRICTLY valid JSON and nothing before or after it:
+{"type":"Frozen","confidence":0.92,"reasoning":"A short explanation in English, 1-2 sentences."}
 
-Поле type — строго "Frozen" или "Dry". confidence — число от 0 до 1. reasoning — короткий текст.`;
+The type field is strictly "Frozen" or "Dry". confidence is a number from 0 to 1. reasoning is short text.`;
 
 function detectMediaType(
   bytes: Uint8Array
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     type: "text",
     text:
       SYSTEM_PROMPT +
-      `\n\nТовар:\nTitle: ${title}\nDescription: ${(description || "").slice(0, 1500)}`,
+      `\n\nProduct:\nTitle: ${title}\nDescription: ${(description || "").slice(0, 1500)}`,
   });
 
   let parsed: AIResult | null = null;

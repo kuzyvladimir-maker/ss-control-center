@@ -29,7 +29,7 @@
  * (handled in the first pass), never on its own.
  *
  * Returns null when no recognised pattern is found — the caller (UI) then
- * either falls back to plain "qty шт" display or hits the AI endpoint
+ * either falls back to plain "qty pcs" display or hits the AI endpoint
  * (/api/procurement/pack-size) for compound cases like
  * "12 / Carton | Bundle of 2 Cartons" (= 24) which pure regex can't
  * multiply.
@@ -79,7 +79,7 @@ const N_UNIT_PATTERNS: Array<{ regex: RegExp; unitLabel: string }> = [
   { regex: /(?:^|[^.\d])(\d+)[\s\-]*pouch(?:es)?\b/i, unitLabel: "Pouches" },
   // NB: "N Count" / "N ct" is deliberately NOT here. Those describe the pieces
   // INSIDE one retail unit (16 sliders in a box, 32 ct per box), not how many
-  // units to buy — treating them as a multiplier caused the "16 шт" over-buy on
+  // units to buy — treating them as a multiplier caused the "16 pcs" over-buy on
   // a "…16 count" title and let "32 ct" out-vote a real "2 Boxes" pack noun.
   // A count still counts toward a pack ONLY via "Pack of N" (first pass above).
   // "N Pieces" / "N pcs"

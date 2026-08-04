@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       const doc = assembleFromPlan(plan, concept); // structure + text; image refs filled at publish
       const gate = qualify(doc, { disclaimer: CONCEPT_CONFIG[concept].disclaimer });
       // Carry over already-generated images by slot key — a TEXT regenerate must NOT
-      // discard (and re-pay for) images we already have. New images only via "Только картинки".
+      // discard (and re-pay for) images we already have. New images only via "Regenerate the images".
       const existing = await prisma.amazonAplusJob.findUnique({
         where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
         select: { imagePlanJson: true },

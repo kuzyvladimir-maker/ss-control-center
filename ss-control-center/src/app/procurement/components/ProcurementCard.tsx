@@ -54,7 +54,8 @@ export interface ProcurementCardData {
   status: { kind: string; remaining?: number } | null;
   shippingMethod: string | null;
   isPremium: boolean;
-  /** Order carries the "Заказано у Майка" tag — ordered through Mike (Publix),
+  /** Order carries the "Заказано у Майка" Veeqo tag (that tag name is typed in
+   *  Veeqo, so it stays as is) — ordered through Mike (Publix),
    *  not online. Shown for tracking but excluded from the buy pool. */
   fromMike?: boolean;
 }
@@ -91,7 +92,7 @@ interface ProcurementCardProps {
    *  the chip on this card updates immediately. */
   onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
   /** Sales channel ("Amazon" | "Walmart" | ...). Determines whether
-   *  Walmart-only actions (e.g. "Снять с продажи") appear in the kebab menu. */
+   *  Walmart-only actions (e.g. "Retire from sale") appear in the kebab menu. */
   channel?: string;
   /** Source order id — recorded on Walmart retirement audit rows so we know
    *  which procurement order triggered the action. */
@@ -113,9 +114,9 @@ interface ProcurementCardProps {
 /**
  * Single line-item card. Photo (tap → lightbox), title with one-tap copy,
  * pack-aware physical-quantity display, and Phase 3 action buttons:
- *   - "Купил всё" → mark as bought; card stays visible until refresh
- *   - "Купил частично" → ask for remaining count, save
- *   - "Откат" → undo the last action on this line
+ *   - "Bought everything" → mark as bought; card stays visible until refresh
+ *   - "Bought some" → ask for remaining count, save
+ *   - "Undo" → undo the last action on this line
  */
 export function ProcurementCard({
   card,
@@ -269,7 +270,7 @@ export function ProcurementCard({
     const r = await onAction(card.lineItemId, action);
     setPending(null);
     if (!r.ok) {
-      setActionError(r.error ?? "Не удалось применить действие");
+      setActionError(r.error ?? "Could not apply the action");
     } else {
       setPartialMode(false);
     }
@@ -297,7 +298,7 @@ export function ProcurementCard({
                 ? "border-green bg-green text-green-cream"
                 : "border-rule-strong bg-surface text-transparent hover:border-green-mid hover:bg-green-soft"
             )}
-            aria-label={selected ? "Убрать выделение" : "Выбрать"}
+            aria-label={selected ? "Clear selection" : "Select"}
             aria-pressed={selected}
           >
             <Check size={13} strokeWidth={3} />
@@ -368,10 +369,10 @@ export function ProcurementCard({
                     "inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink md:h-7 md:w-7",
                     menuOpen && "bg-bg-elev text-ink",
                   )}
-                  aria-label="Действия"
+                  aria-label="Actions"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
-                  title="Ещё действия"
+                  title="More actions"
                 >
                   <MoreVertical size={14} />
                 </button>
@@ -391,7 +392,7 @@ export function ProcurementCard({
                         className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-info-tint hover:text-info"
                       >
                         <MessageSquare size={13} className="shrink-0" />
-                        Уточнить количество у клиента
+                        Ask the customer about the quantity
                       </button>
                     )}
                     {isWalmart && (
@@ -405,7 +406,7 @@ export function ProcurementCard({
                         className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-danger-tint hover:text-danger"
                       >
                         <Ban size={13} className="shrink-0" />
-                        Снять с продажи (Walmart)
+                        Retire from sale (Walmart)
                       </button>
                     )}
                   </div>
@@ -420,7 +421,7 @@ export function ProcurementCard({
           {fromMike && (
             <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-[#fb923c] bg-[#fb923c]/15 px-2 py-1 text-[12px] font-semibold text-[#c2410c]">
               <Truck size={13} className="shrink-0" />
-              Заказано у Майка (Publix) — закупка идёт через него
+              Ordered through Mike (Publix) — he buys it
             </div>
           )}
 
@@ -448,7 +449,7 @@ export function ProcurementCard({
               type="button"
               onClick={() => setStorePopupOpen(true)}
               className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-md border border-rule bg-surface-tint px-2 py-0.5 text-[11px] tabular text-ink-2 transition-colors hover:border-silver-line hover:bg-bg-elev"
-              title="Где покупать этот SKU"
+              title="Where to buy this SKU"
             >
               <Store size={11} className="shrink-0 text-ink-3" />
               {storePriorities.length > 0 ? (
@@ -456,7 +457,7 @@ export function ProcurementCard({
                   {storePriorities.join(" → ")}
                 </span>
               ) : (
-                <span className="text-ink-3">Магазины не указаны</span>
+                <span className="text-ink-3">No stores set</span>
               )}
               <Pencil size={10} className="shrink-0 text-ink-4" />
             </button>
@@ -476,12 +477,12 @@ export function ProcurementCard({
                 <span>
                   {isPartial
                     ? fromMike
-                      ? "Осталось получить:"
-                      : "Осталось купить:"
+                      ? "Left to collect:"
+                      : "Left to buy:"
                     : fromMike
-                      ? "Получить:"
-                      : "Купить:"}{" "}
-                  {remainingPhysical} шт
+                      ? "Collect:"
+                      : "Buy:"}{" "}
+                  {remainingPhysical} pcs
                 </span>
               </div>
               {pack !== null && !isPartial && (
@@ -492,7 +493,7 @@ export function ProcurementCard({
               )}
               {isPartial && (
                 <span className="inline-flex items-center gap-1.5 text-[11.5px] tabular text-ink-3">
-                  из {totalPhysical} шт всего
+                  of {totalPhysical} pcs in total
                   {pack !== null && (
                     <span className="inline-flex items-center gap-1.5">
                       <OrderMultipleBadge count={card.quantityOrdered} />
@@ -514,10 +515,10 @@ export function ProcurementCard({
                   type="button"
                   onClick={() => setInquiryOpen(true)}
                   className="inline-flex items-center gap-1 rounded-md bg-warn-tint px-2 py-0.5 text-[11px] font-medium text-warn-strong transition-colors hover:bg-warn-tint/80"
-                  title="Большое количество для мультипака — уточнить у клиента"
+                  title="A big quantity for a multipack — ask the customer"
                 >
                   <AlertTriangle size={11} className="shrink-0" />
-                  Возможно ошибочное количество — спросить
+                  Quantity may be a mistake — ask
                 </button>
               )}
               {inquiryFlag && <InquiryStatusChip flag={inquiryFlag} />}
@@ -562,7 +563,7 @@ export function ProcurementCard({
             ) : isBought ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-md bg-green px-2 py-1 text-[12.5px] font-semibold text-green-cream">
-                  <Check size={13} /> {fromMike ? "Получено" : "Куплено"}
+                  <Check size={13} /> {fromMike ? "Collected" : "Bought"}
                 </span>
                 <Btn
                   variant="ghost"
@@ -571,7 +572,7 @@ export function ProcurementCard({
                   icon={<Undo2 size={13} />}
                   onClick={() => dispatch({ kind: "undo" })}
                 >
-                  Откатить
+                  Undo
                 </Btn>
               </div>
             ) : (
@@ -583,7 +584,7 @@ export function ProcurementCard({
                   disabled={pending !== null}
                   onClick={() => dispatch({ kind: "bought" })}
                 >
-                  {fromMike ? "Получили всё" : "Купил всё"}
+                  {fromMike ? "Collected everything" : "Bought everything"}
                 </Btn>
                 <Btn
                   variant="default"
@@ -595,10 +596,10 @@ export function ProcurementCard({
                   }}
                 >
                   {isPartial
-                    ? "Изменить остаток"
+                    ? "Change what is left"
                     : fromMike
-                      ? "Получили частично"
-                      : "Купил частично"}
+                      ? "Collected some"
+                      : "Bought some"}
                 </Btn>
                 {isPartial && (
                   <Btn
@@ -609,7 +610,7 @@ export function ProcurementCard({
                     icon={<Undo2 size={13} />}
                     onClick={() => dispatch({ kind: "undo" })}
                   >
-                    Откатить
+                    Undo
                   </Btn>
                 )}
               </div>
@@ -674,7 +675,7 @@ function OrderMultipleBadge({ count }: { count: number }) {
   const isHigh = count >= 5;
   return (
     <span
-      title={`Этот листинг заказан ${count} раз — купить ${count} комплекта`}
+      title={`This listing was ordered ${count} times — buy ${count} sets`}
       className={cn(
         "inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 align-middle font-extrabold tabular leading-none text-white shadow-sm ring-2",
         isHigh ? "bg-danger ring-danger/30" : "bg-warn-strong ring-warn-tint",
@@ -689,14 +690,14 @@ function OrderMultipleBadge({ count }: { count: number }) {
 /** Small status chip for the buyer-quantity inquiry shown on the card. */
 function InquiryStatusChip({ flag }: { flag: QuantityInquiryFlag }) {
   if (flag.status === "ANSWERED") {
-    const reply = flag.replyText?.trim() || "(пустой ответ)";
+    const reply = flag.replyText?.trim() || "(empty reply)";
     return (
       <span
         className="inline-flex max-w-full items-center gap-1 rounded-md bg-green-soft px-2 py-0.5 text-[11px] font-medium text-green-ink"
         title={reply}
       >
         <Check size={11} className="shrink-0" />
-        <span className="truncate">Ответ клиента: {reply}</span>
+        <span className="truncate">Customer reply: {reply}</span>
       </span>
     );
   }
@@ -704,7 +705,7 @@ function InquiryStatusChip({ flag }: { flag: QuantityInquiryFlag }) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-bg-elev px-2 py-0.5 text-[11px] font-medium text-ink-3">
         <Clock size={11} className="shrink-0" />
-        Нет ответа (48ч)
+        No reply (48h)
       </span>
     );
   }
@@ -712,7 +713,7 @@ function InquiryStatusChip({ flag }: { flag: QuantityInquiryFlag }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-info-tint px-2 py-0.5 text-[11px] font-medium text-info">
       <MessageSquare size={11} className="shrink-0" />
-      Спросили клиента · ждём ответ
+      Customer asked · waiting for a reply
     </span>
   );
 }
@@ -729,10 +730,10 @@ interface PartialInputProps {
 }
 
 /**
- * Inline stepper for "сколько ещё нужно купить" in PHYSICAL UNITS.
+ * Inline stepper for "how many are still to be bought" in PHYSICAL UNITS.
  *
  * Range 1..totalPhysical-1, since:
- *   - 0  = everything bought (use the "Купил всё" button instead)
+ *   - 0  = everything bought (use the "Bought everything" button instead)
  *   - =totalPhysical = nothing bought (use undo)
  *
  * For Del Monte ordered ×1 with "Pack of 6" in title, totalPhysical=6,
@@ -762,12 +763,12 @@ function PartialInput({
     return (
       <div className="rounded-md border border-rule bg-surface-tint px-2.5 py-2">
         <div className="text-[12px] text-ink-2">
-          Этот товар — одна физическая единица. Используй «Купил всё» или
-          оставь как есть.
+          This product is a single physical unit. Use &quot;Bought everything&quot;
+          or leave it as it is.
         </div>
         <div className="mt-2">
           <Btn variant="ghost" size="sm" onClick={onCancel}>
-            Закрыть
+            Close
           </Btn>
         </div>
       </div>
@@ -777,7 +778,7 @@ function PartialInput({
   return (
     <div className="rounded-md border border-rule bg-surface-tint px-2.5 py-2">
       <div className="text-[12px] font-medium text-ink-2">
-        Сколько ещё нужно купить?
+        How many are still to buy?
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-2">
         <div className="inline-flex items-center overflow-hidden rounded-md border border-rule bg-surface">
@@ -814,7 +815,7 @@ function PartialInput({
           </button>
         </div>
         <span className="text-[11.5px] tabular text-ink-3">
-          из {totalPhysical} шт всего
+          of {totalPhysical} pcs in total
           {pack ? ` (× ${pack.label})` : ""}
         </span>
       </div>
@@ -825,7 +826,7 @@ function PartialInput({
           loading={pending}
           onClick={() => onSave(n)}
         >
-          Сохранить
+          Save
         </Btn>
         <Btn
           variant="ghost"
@@ -833,11 +834,11 @@ function PartialInput({
           disabled={pending}
           onClick={onCancel}
         >
-          Отмена
+          Cancel
         </Btn>
         {pending && (
           <span className="inline-flex items-center gap-1 text-[11px] text-ink-3">
-            <Loader2 size={12} className="animate-spin" /> Записываем в Veeqo…
+            <Loader2 size={12} className="animate-spin" /> Writing to Veeqo…
           </span>
         )}
       </div>

@@ -60,17 +60,17 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
       <Panel>
         <PanelBody className="flex items-center gap-3 text-[13px] text-ink-2">
           <FileSearch className="size-5 text-ink-3" />
-          Полный census каталога ещё не загружен в этот экран.
+          The full catalog census has not been loaded into this screen yet.
         </PanelBody>
       </Panel>
     );
   }
   const queueRows = [
-    ["Готовы к визуальной проверке", catalog.queues.visualTriageReady],
-    ["Нужно получить источник", catalog.queues.sourceAcquisitionRequired],
-    ["Отдельная проверка статуса", catalog.queues.statusReview],
-    ["Источник заблокирован", catalog.queues.blockedSource],
-    ["Не трогать", catalog.queues.doNotTouch],
+    ["Ready for visual review", catalog.queues.visualTriageReady],
+    ["Source still to be acquired", catalog.queues.sourceAcquisitionRequired],
+    ["Separate status review", catalog.queues.statusReview],
+    ["Source blocked", catalog.queues.blockedSource],
+    ["Do not touch", catalog.queues.doNotTouch],
   ] as const;
   const reconciled = catalog.catalog.exactOnce
     && catalog.catalog.duplicateSkus === 0;
@@ -79,7 +79,7 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
       <PanelHeader
         title={
           <div className="flex flex-wrap items-center gap-2">
-            <span>Весь каталог Walmart</span>
+            <span>The whole Walmart catalog</span>
             <StatusPill tone={reconciled ? "success" : "danger"}>
               {catalog.catalog.total}/{catalog.catalog.total} SKU
             </StatusPill>
@@ -95,10 +95,10 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
       <PanelBody className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Всего SKU", catalog.catalog.total],
+            ["SKUs total", catalog.catalog.total],
             ["Published", catalog.catalog.published],
             ["Active", catalog.catalog.active],
-            ["Дубли / пропуски", `${catalog.catalog.duplicateSkus} / ${reconciled ? 0 : "?"}`],
+            ["Duplicates / gaps", `${catalog.catalog.duplicateSkus} / ${reconciled ? 0 : "?"}`],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-rule bg-bg-elev p-3">
               <div className="text-[10px] font-mono uppercase tracking-[0.1em] text-ink-3">{label}</div>
@@ -109,7 +109,7 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
 
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="rounded-lg border border-rule p-3">
-            <div className="text-[12px] font-semibold text-ink">Очереди всего каталога</div>
+            <div className="text-[12px] font-semibold text-ink">Queues across the catalog</div>
             <div className="mt-3 space-y-2">
               {queueRows.map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between gap-3 text-[11px]">
@@ -118,7 +118,7 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
                 </div>
               ))}
               <div className="flex items-center justify-between gap-3 border-t border-rule pt-2 text-[11px]">
-                <span className="text-ink-2">Явные count-конфликты</span>
+                <span className="text-ink-2">Explicit count conflicts</span>
                 <span className="font-mono font-semibold text-[var(--danger)]">
                   {catalog.queues.deterministicConflicts}
                 </span>
@@ -127,25 +127,25 @@ function CatalogOverview({ catalog }: { catalog: ListingIntegrityCatalogOverview
           </section>
 
           <section className="rounded-lg border border-rule p-3">
-            <div className="text-[12px] font-semibold text-ink">Визуальный скан</div>
+            <div className="text-[12px] font-semibold text-ink">Visual scan</div>
             <div className="mt-3 space-y-2 text-[11px] text-ink-2">
-              <div className="flex justify-between gap-3"><span>SKU с изображениями</span><b className="font-mono text-ink">{catalog.visualScan.listings}</b></div>
-              <div className="flex justify-between gap-3"><span>Изображений в плане</span><b className="font-mono text-ink">{catalog.visualScan.tasks}</b></div>
-              <div className="flex justify-between gap-3"><span>Партии</span><b className="font-mono text-ink">{catalog.visualScan.partitions}</b></div>
-              <div className="flex justify-between gap-3"><span>Тестово загружено</span><b className="font-mono text-ink">{catalog.visualScan.capturedPartitions}/{catalog.visualScan.partitions} · {catalog.visualScan.capturedAssets} images</b></div>
-              <div className="flex justify-between gap-3"><span>Visual model calls завершено</span><b className="font-mono text-ink">{catalog.visualScan.modelCallsCompleted}</b></div>
-              <div className="flex justify-between gap-3"><span>Ошибки текущей загрузки</span><b className="font-mono text-ink">{catalog.visualScan.captureTechnicalErrors}</b></div>
+              <div className="flex justify-between gap-3"><span>SKUs with images</span><b className="font-mono text-ink">{catalog.visualScan.listings}</b></div>
+              <div className="flex justify-between gap-3"><span>Images planned</span><b className="font-mono text-ink">{catalog.visualScan.tasks}</b></div>
+              <div className="flex justify-between gap-3"><span>Partitions</span><b className="font-mono text-ink">{catalog.visualScan.partitions}</b></div>
+              <div className="flex justify-between gap-3"><span>Test-captured</span><b className="font-mono text-ink">{catalog.visualScan.capturedPartitions}/{catalog.visualScan.partitions} · {catalog.visualScan.capturedAssets} images</b></div>
+              <div className="flex justify-between gap-3"><span>Visual model calls completed</span><b className="font-mono text-ink">{catalog.visualScan.modelCallsCompleted}</b></div>
+              <div className="flex justify-between gap-3"><span>Errors in the current capture</span><b className="font-mono text-ink">{catalog.visualScan.captureTechnicalErrors}</b></div>
             </div>
           </section>
         </div>
 
         <div className="rounded-md border border-dashed border-rule bg-bg-elev px-3 py-2 text-[11px] text-ink-2">
-          Сейчас завершены census и тестовая загрузка первой партии. Визуальные вердикты для всего
-          каталога ещё не выданы: исторические изображения могут отметить подозрение, но не могут
-          дать финальный PASS без свежего buyer-facing reread. Walmart writes: 0.
+          The census and the test capture of the first partition are done. Visual verdicts for the
+          whole catalog are not issued yet: historical images can raise a suspicion, but they cannot
+          give a final PASS without a fresh buyer-facing reread. Walmart writes: 0.
         </div>
         <details className="text-[10px] text-ink-3">
-          <summary className="cursor-pointer font-medium">Техническое доказательство охвата</summary>
+          <summary className="cursor-pointer font-medium">Technical evidence of coverage</summary>
           <div className="mt-2 space-y-0.5 font-mono">
             <div>{catalog.censusId}</div>
             <div>{catalog.planId}</div>
@@ -177,7 +177,7 @@ function ListingIntegrityOperations({
       <Panel>
         <PanelBody className="flex items-center gap-3 text-[13px] text-ink-2">
           <FileSearch className="size-5 text-ink-3" />
-          Постоянная контролируемая очередь ещё не опубликована.
+          The standing supervised queue has not been published yet.
         </PanelBody>
       </Panel>
     );
@@ -187,7 +187,7 @@ function ListingIntegrityOperations({
       <PanelHeader
         title={
           <div className="flex flex-wrap items-center gap-2">
-            <span>Listing Integrity · производственный контур</span>
+            <span>Listing Integrity · production loop</span>
             <StatusPill tone="success">{operations.completed.length} qualified</StatusPill>
             <StatusPill tone="neutral">{operations.pool.length} repair-ready</StatusPill>
             <StatusPill tone="neutral">{operations.sourceRequiredCount} source-required</StatusPill>
@@ -206,11 +206,11 @@ function ListingIntegrityOperations({
             <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--green-ink)]" />
             <div>
               <div className="text-[12px] font-semibold text-ink">
-                Замкнутый цикл доказан на {operations.completed.length} live SKU
+                The closed loop is proven on {operations.completed.length} live SKUs
               </div>
               <p className="mt-1 text-[11px] text-ink-2">
-                Walmart принял feed, buyer-facing карточка перечитана, PUBLISHED/ACTIVE и
-                изображения сохранены, frozen Qualification = PASS.
+                Walmart accepted the feed, the buyer-facing card was reread, PUBLISHED/ACTIVE and
+                the images are intact, frozen Qualification = PASS.
               </p>
             </div>
           </div>
@@ -218,7 +218,7 @@ function ListingIntegrityOperations({
 
         <section>
           <div className="mb-2 text-[12px] font-semibold text-ink">
-            Завершённые исправления · фактическое ДО → ПОСЛЕ
+            Completed repairs · the actual BEFORE → AFTER
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
             {operations.completed.map((entry) => (
@@ -235,20 +235,20 @@ function ListingIntegrityOperations({
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
                   <div className="rounded border border-rule bg-bg-elev px-2 py-1.5">
-                    <span className="text-ink-3">Проверки</span>
+                    <span className="text-ink-3">Checks</span>
                     <div className="font-mono font-semibold text-ink">
                       {entry.checksPassed}/{entry.checksPassed} PASS
                     </div>
                   </div>
                   <div className="rounded border border-rule bg-bg-elev px-2 py-1.5">
-                    <span className="text-ink-3">Публикация / индексация</span>
-                    <div className="font-semibold text-[var(--green-ink)]">Сохранены</div>
+                    <span className="text-ink-3">Publication / indexing</span>
+                    <div className="font-semibold text-[var(--green-ink)]">Intact</div>
                   </div>
                 </div>
                 <div className="mt-2 text-[10px] text-ink-3">
-                  До {formatCapturedAt(entry.beforeCapturedAt)} UTC
+                  Before {formatCapturedAt(entry.beforeCapturedAt)} UTC
                   <br />
-                  После {formatCapturedAt(entry.afterCapturedAt)} UTC
+                  After {formatCapturedAt(entry.afterCapturedAt)} UTC
                 </div>
                 <a
                   href={entry.galleryHref}
@@ -256,11 +256,11 @@ function ListingIntegrityOperations({
                   rel="noreferrer"
                   className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--green-ink)] hover:underline"
                 >
-                  Открыть фактическую галерею ДО → ПОСЛЕ
+                  Open the actual BEFORE → AFTER gallery
                   <ExternalLink className="size-3" />
                 </a>
                 <details className="mt-2 break-all text-[9px] text-ink-3">
-                  <summary className="cursor-pointer">Feed и SHA-bound evidence</summary>
+                  <summary className="cursor-pointer">Feed and SHA-bound evidence</summary>
                   <div className="mt-1 font-mono">
                     <div>feed {entry.feedId}</div>
                     <div>payload {entry.payloadSha256}</div>
@@ -275,7 +275,7 @@ function ListingIntegrityOperations({
         {operations.quarantined.length > 0 && (
           <section>
             <div className="mb-2 text-[12px] font-semibold text-ink">
-              Нерешённые Walmart catalog/content-control случаи
+              Unresolved Walmart catalog/content-control cases
             </div>
             <div className="grid gap-2 lg:grid-cols-2">
               {operations.quarantined.map((entry) => (
@@ -292,15 +292,15 @@ function ListingIntegrityOperations({
                         Item {entry.itemId}
                       </div>
                     </div>
-                    <StatusPill tone="danger">QUARANTINED · не исправлен</StatusPill>
+                    <StatusPill tone="danger">QUARANTINED · not repaired</StatusPill>
                   </div>
                   <p className="mt-2 text-[10px] text-ink-2">
-                    Feed принят, но точный target не появился после полного окна
-                    публикации. Тот же payload автоматически не повторяется; остальные
-                    SKU могут обрабатываться дальше.
+                    The feed was accepted, but the exact target never appeared within the full
+                    publication window. The same payload is not retried automatically; the other
+                    SKUs can keep moving.
                   </p>
                   <div className="mt-2 text-[10px] font-semibold text-ink">
-                    Следующий шаг: Content Ownership / Walmart Support → новый replan
+                    Next step: Content Ownership / Walmart Support → a new replan
                   </div>
                   <details className="mt-2 break-all text-[9px] text-ink-3">
                     <summary className="cursor-pointer">Failure disposition evidence</summary>
@@ -322,7 +322,7 @@ function ListingIntegrityOperations({
                 Product Truth-ready repair pool
               </div>
               <div className="text-[10px] text-ink-3">
-                Следующий: источник → диагноз → точный diff → один apply → reread → Qualification
+                Next: source → diagnosis → exact diff → one apply → reread → Qualification
               </div>
             </div>
             <StatusPill tone="neutral">No Walmart writes</StatusPill>
@@ -332,11 +332,11 @@ function ListingIntegrityOperations({
               <thead className="bg-bg-elev font-mono uppercase tracking-[0.08em] text-ink-3">
                 <tr>
                   <th className="px-3 py-2"># / SKU</th>
-                  <th className="px-3 py-2">Товар</th>
+                  <th className="px-3 py-2">Product</th>
                   <th className="px-3 py-2">Pack</th>
-                  <th className="px-3 py-2">90 дней</th>
-                  <th className="px-3 py-2">Причина</th>
-                  <th className="px-3 py-2">Стадия</th>
+                  <th className="px-3 py-2">90 days</th>
+                  <th className="px-3 py-2">Reason</th>
+                  <th className="px-3 py-2">Stage</th>
                 </tr>
               </thead>
               <tbody>
@@ -377,13 +377,13 @@ function ListingIntegrityOperations({
 
         <section>
           <div className="mb-2 text-[12px] font-semibold text-ink">
-            SOURCE_REQUIRED · не расходовать visual/model calls
+            SOURCE_REQUIRED · do not spend visual/model calls
           </div>
           <div className="rounded-lg border border-[var(--warn)]/35 bg-[var(--warn-tint)]/35 p-3">
             <div className="text-[11px] text-ink-2">
-              {operations.sourceRequiredCount} из {operations.sourceCandidateCount} кандидатов
-              не имеют точного Product Truth для safe repair lane. Ни один из них не получает
-              write authority; ниже показан приоритетный preview очереди обогащения.
+              {operations.sourceRequiredCount} of {operations.sourceCandidateCount} candidates
+              have no exact Product Truth for the safe repair lane. None of them gets write
+              authority; below is a prioritised preview of the enrichment queue.
             </div>
             <div className="mt-3 grid gap-2 lg:grid-cols-2">
               {operations.sourceRequired.map((item) => (
@@ -472,7 +472,7 @@ function CurrentOwnerRepairReview({
       <PanelHeader
         title={
           <div className="flex flex-wrap items-center gap-2">
-            <span>Актуальное исправление</span>
+            <span>The current repair</span>
             <span className="font-mono">{review.sku}</span>
             <StatusPill tone="neutral">Owner review</StatusPill>
             <StatusPill tone="success">Precheck PASS</StatusPill>
@@ -506,17 +506,16 @@ function CurrentOwnerRepairReview({
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
                 <span className="text-[12px] font-semibold text-ink">
-                  Exact Product Truth подтверждён для review
+                  Exact Product Truth confirmed for review
                 </span>
               </div>
               <p className="mt-1 text-[11px] text-ink-2">
                 {review.productTruth.brand} · {review.productTruth.product} · {review.productTruth.variant}
               </p>
               <p className="mt-1 text-[11px] text-ink-2">
-                Pack of {review.productTruth.outerUnits}: каждая упаковка {review.productTruth.singleUnitSize},
-                {" "}{review.productTruth.singleUnitInnerCount} внутренних единиц; всего{" "}
-                {review.productTruth.totalUnits}.
-                UPC единичной упаковки {review.productTruth.singleUnitUpc}.
+                Pack of {review.productTruth.outerUnits}: each pack is {review.productTruth.singleUnitSize},
+                {" "}{review.productTruth.singleUnitInnerCount} inner units; {review.productTruth.totalUnits}{" "}
+                in total. Single-pack UPC {review.productTruth.singleUnitUpc}.
               </p>
             </div>
             <StatusPill tone="success">Exact donor</StatusPill>
@@ -533,10 +532,10 @@ function CurrentOwnerRepairReview({
           <section className="rounded-xl border border-rule p-3">
             <div className="mb-3">
               <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-ink-3">
-                Текущие live изображения · без изменений
+                Current live images · unchanged
               </div>
               <div className="mt-1 text-[12px] font-semibold text-ink">
-                MAIN уже показывает правильный multipack; gallery остаётся текущей
+                MAIN already shows the right multipack; the gallery stays as it is
               </div>
             </div>
             <div className="aspect-square overflow-hidden rounded-lg border border-rule bg-white">
@@ -572,8 +571,8 @@ function CurrentOwnerRepairReview({
               ))}
             </div>
             <div className="mt-3 rounded-md border border-dashed border-rule bg-bg-elev px-3 py-2 text-[10px] text-ink-2">
-              Exact bytes проверены сертификатом. Изображения, их порядок и URLs
-              в предлагаемом исправлении не меняются.
+              Exact bytes verified by the certificate. The images, their order and their URLs
+              do not change in the proposed repair.
             </div>
           </section>
 
@@ -581,14 +580,14 @@ function CurrentOwnerRepairReview({
             <div className="flex items-center gap-2 border-b border-rule px-3 py-2.5">
               <FileSearch className="size-4 text-ink-3" />
               <span className="text-[12px] font-semibold text-ink">
-                Exact diff · только description и bullets
+                Exact diff · description and bullets only
               </span>
             </div>
             <div className="grid gap-0 lg:grid-cols-2">
               <div className="border-b border-rule p-3 lg:border-b-0 lg:border-r">
                 <div className="mb-2 flex items-center gap-2">
                   <AlertTriangle className="size-4 text-[var(--danger)]" />
-                  <span className="text-[11px] font-semibold text-[var(--danger)]">ДО · сейчас live</span>
+                  <span className="text-[11px] font-semibold text-[var(--danger)]">BEFORE · live right now</span>
                 </div>
                 <p className="max-h-52 overflow-y-auto whitespace-pre-wrap text-[10px] leading-relaxed text-ink-2">
                   {review.current.description}
@@ -613,7 +612,7 @@ function CurrentOwnerRepairReview({
                 <div className="mb-2 flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
                   <span className="text-[11px] font-semibold text-[var(--green-ink)]">
-                    ПРЕДЛАГАЕМОЕ · ещё не live
+                    PROPOSED · not live yet
                   </span>
                 </div>
                 <p className="max-h-52 overflow-y-auto whitespace-pre-wrap text-[10px] leading-relaxed text-ink-2">
@@ -641,7 +640,7 @@ function CurrentOwnerRepairReview({
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-lg border border-rule p-3">
-            <div className="text-[12px] font-semibold text-ink">Что гарантированно не меняется</div>
+            <div className="text-[12px] font-semibold text-ink">What is guaranteed not to change</div>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {review.unchangedFields.map((field) => (
                 <StatusPill key={field} tone="neutral">{field}</StatusPill>
@@ -664,10 +663,10 @@ function CurrentOwnerRepairReview({
         </div>
 
         <section className="rounded-lg border border-[var(--warn)]/45 bg-[var(--warn-tint)] px-3 py-3">
-          <div className="text-[12px] font-semibold text-ink">Следующий gate — ваше подтверждение</div>
+          <div className="text-[12px] font-semibold text-ink">The next gate is your approval</div>
           <p className="mt-1 text-[11px] text-ink-2">
-            Это не кнопка публикации. После подтверждения будет подготовлен отдельный
-            one-SKU permit; массовый запуск останется закрыт.
+            This is not a publish button. After approval a separate one-SKU permit is prepared;
+            the mass run stays closed.
           </p>
           <code className="mt-2 block select-all rounded-md border border-rule bg-surface px-3 py-2 text-[10px] text-ink">
             {review.approvalInstruction}
@@ -731,9 +730,9 @@ function IntegrityCase({
           <section className="rounded-xl border border-[var(--danger)]/25 bg-[var(--danger-tint)]/35 p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--danger)]">До · live buyer surface</div>
+                <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--danger)]">Before · live buyer surface</div>
                 <div className="mt-1 text-[13px] font-semibold text-ink">
-                  Показана {control.observedMainUnits} упаковка из {control.expectedOuterUnits}
+                  Showing {control.observedMainUnits} pack out of {control.expectedOuterUnits}
                 </div>
               </div>
               <AlertTriangle className="size-5 text-[var(--danger)]" />
@@ -747,9 +746,9 @@ function IntegrityCase({
           <section className="rounded-xl border border-[var(--green)]/25 bg-[var(--green-soft)]/45 p-3">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--green-ink)]">Предлагаемое исправление · ещё не live</div>
+                <div className="text-[10px] font-mono uppercase tracking-[0.12em] text-[var(--green-ink)]">Proposed repair · not live yet</div>
                 <div className="mt-1 text-[13px] font-semibold text-ink">
-                  Показаны все {control.proposedMain.representedOuterUnits} упаковок
+                  All {control.proposedMain.representedOuterUnits} packs are shown
                 </div>
               </div>
               <StatusPill tone="success">MAIN {control.proposedMainVerdict}</StatusPill>
@@ -763,9 +762,9 @@ function IntegrityCase({
               />
             </div>
             <div className="mt-3 rounded-md border border-dashed border-[var(--green)]/35 bg-white/70 px-3 py-2 text-[11px] text-ink-2">
-              Это точный repair candidate, а не выдуманное «После». Фактическое
-              buyer-facing «После» появится здесь только после canary, propagation
-              и свежего Qualification.
+              This is the exact repair candidate, not an invented &quot;after&quot;. The real
+              buyer-facing &quot;after&quot; appears here only following canary, propagation and a
+              fresh Qualification.
             </div>
           </section>
         </div>
@@ -776,15 +775,15 @@ function IntegrityCase({
               <div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
-                  <span className="text-[12px] font-semibold text-ink">Подписанная визуальная проверка завершена</span>
+                  <span className="text-[12px] font-semibold text-ink">Signed visual review complete</span>
                 </div>
                 <p className="mt-1 text-[11px] text-ink-2">
-                  Текущая MAIN = BAD · предлагаемая MAIN = PASS · ошибочных gallery = {control.visualAttestation.galleryBadCount}.
+                  Current MAIN = BAD · proposed MAIN = PASS · bad gallery images = {control.visualAttestation.galleryBadCount}.
                   {control.ownerVisualReviewStatus === "APPROVED"
-                    ? " Ручная проверка target MAIN и gallery подтверждена владельцем."
+                    ? " The owner confirmed the manual review of the target MAIN and the gallery."
                     : control.visualAttestation.galleryReviewCount > 0
-                    ? ` Для ручного просмотра оставлено gallery: ${control.visualAttestation.galleryReviewCount}.`
-                    : " Все gallery прошли автоматически."}
+                    ? ` Gallery images left for manual review: ${control.visualAttestation.galleryReviewCount}.`
+                    : " Every gallery image passed automatically."}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -807,11 +806,11 @@ function IntegrityCase({
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
               <span className="text-[12px] font-semibold text-ink">
-                Владелец подтвердил новую MAIN и дополнительные изображения
+                The owner approved the new MAIN and the extra images
               </span>
             </div>
             <p className="mt-1 text-[11px] text-ink-2">
-              Подтверждение разрешает подготовить точный one-SKU diff. Запись в Walmart отдельно не разрешена.
+              The approval allows preparing the exact one-SKU diff. Writing to Walmart is not authorised by it.
             </p>
             <div className="mt-2 font-mono text-[9px] text-ink-3">
               {control.ownerVisualReview.reviewSha256} · {control.ownerVisualReview.evidencePath}
@@ -895,11 +894,11 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
           <Eye className="mt-0.5 size-5 shrink-0 text-[var(--warn-strong)]" />
           <div>
             <div className="text-[13px] font-semibold text-ink">
-              Постоянный Listing Integrity · контролируемая работа
+              Standing Listing Integrity · supervised work
             </div>
             <div className="mt-0.5 text-[11px] text-ink-2">
-              Движок ведёт каталог и очередь; исправления выполняются строго по одному SKU
-              с обязательным reread и Qualification.
+              The engine keeps the catalog and the queue; repairs run strictly one SKU at a time,
+              with a mandatory reread and Qualification.
             </div>
           </div>
         </div>
@@ -934,16 +933,16 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
               {data.productTruth.status === "READY"
                 ? <CheckCircle2 className="size-4 text-[var(--green-ink)]" />
                 : <AlertTriangle className="size-4 text-[var(--danger)]" />}
-              <span className="text-[13px] font-semibold text-ink">Product Truth readiness · контрольное исправление</span>
+              <span className="text-[13px] font-semibold text-ink">Product Truth readiness · the control repair</span>
             </div>
             <p className="mt-1 text-[11px] text-ink-2">
               {data.productTruth.status === "READY"
-                ? "Canonical shared Product Truth read-contract готов."
+                ? "The canonical shared Product Truth read-contract is ready."
                 : data.productTruth.status === "BLOCKED_SCHEMA_NOT_READY"
-                ? `Production schema ещё не активирована: ожидаются ${data.productTruth.pendingMigrations} migrations. Точный execution package пока не создаётся.`
+                ? `The production schema is not activated yet: ${data.productTruth.pendingMigrations} migrations pending. The exact execution package is not being built.`
                 : data.productTruth.status === "BLOCKED_SKU_TRUTH_NOT_READY"
-                ? `Schema активирована и подтверждена 8/8. Для ${data.productTruth.listingKey} ещё отсутствует canonical listing truth: ${data.productTruth.blockers.join(", ")}.`
-                : "Canonical Product Truth ещё не проверен. Точный execution package пока не создаётся."}
+                ? `The schema is activated and confirmed 8/8. ${data.productTruth.listingKey} still has no canonical listing truth: ${data.productTruth.blockers.join(", ")}.`
+                : "The canonical Product Truth is not verified yet. The exact execution package is not being built."}
             </p>
             <p className="mt-1 text-[11px] font-semibold text-ink">
               Execution package: {data.productTruth.executionPackageReady ? "READY" : "NO-GO"} · Walmart write: {data.productTruth.walmartWriteAuthorized ? "OPEN" : "LOCKED"} · Mass run: {data.productTruth.massRunAuthorized ? "OPEN" : "LOCKED"}.
@@ -983,7 +982,7 @@ export function ListingIntegrityPanel({ data }: { data: ListingIntegrityShadowDa
       {data.cases.length ? (
         <details className="rounded-lg border border-rule bg-bg-elev/35 px-3 py-2">
           <summary className="cursor-pointer text-[12px] font-semibold text-ink">
-            Исторический контроль MAIN 1 → 6 — доказательство детектора, не актуальный payload
+            Historical MAIN 1 → 6 control — evidence the detector works, not a current payload
           </summary>
           <div className="mt-3 space-y-3">
             {data.cases.map((control) => (

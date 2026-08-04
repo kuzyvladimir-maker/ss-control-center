@@ -72,7 +72,7 @@ export async function generateImagesForJob(
   for (const s of stored.slots ?? []) {
     if (!s.brief || (s.url && !force)) continue;
     idx++;
-    // Live progress so the UI can show "картинка 2/6 · serve".
+    // Live progress so the UI can show "generating images 2/6 · serve".
     await prisma.amazonAplusJob.update({
       where: { id: jobId },
       data: { progressJson: JSON.stringify({ phase: "images", done: idx - 1, total, label: s.key }) },

@@ -27,8 +27,8 @@ import type {
 type SortKey = "shipBy" | "title";
 
 const SORT_TABS: FilterTab<SortKey>[] = [
-  { id: "shipBy", label: "По срочности" },
-  { id: "title", label: "По названию" },
+  { id: "shipBy", label: "By urgency" },
+  { id: "title", label: "By title" },
 ];
 
 type ShipByBucket = "overdue" | "today" | "tomorrow" | "dayafter" | "later";
@@ -60,27 +60,27 @@ const SHIP_BY_OPTIONS: Array<{
 }> = [
   {
     id: "overdue",
-    label: "Просрочено",
+    label: "Overdue",
     activeCls: "border-danger bg-danger-tint text-danger",
   },
   {
     id: "today",
-    label: "Сегодня",
+    label: "Today",
     activeCls: "border-warn-strong bg-warn-tint text-warn-strong",
   },
   {
     id: "tomorrow",
-    label: "Завтра",
+    label: "Tomorrow",
     activeCls: "border-info bg-info-tint text-info",
   },
   {
     id: "dayafter",
-    label: "Послезавтра",
+    label: "In two days",
     activeCls: "border-green bg-green-soft text-green-ink",
   },
   {
     id: "later",
-    label: "Позже",
+    label: "Later",
     activeCls: "border-rule-strong bg-bg-elev text-ink",
   },
 ];
@@ -111,7 +111,7 @@ export default function ProcurementPage() {
   >({});
   // Buyer quantity-inquiry state keyed by Walmart orderNumber. Loaded in
   // parallel with /items (same as the cancellation sweep) so the card chips
-  // ("Спросили · ждём ответ" / "Ответ получен") paint moments after the list.
+  // ("Customer asked · waiting" / "Reply received") paint moments after the list.
   const [inquiryFlags, setInquiryFlags] = useState<
     Record<string, QuantityInquiryFlag>
   >({});
@@ -365,7 +365,7 @@ export default function ProcurementPage() {
 
   const clearSelection = useCallback(() => setSelected(new Set()), []);
 
-  // Optimistically flip a card to "Спросили · ждём ответ" right after the
+  // Optimistically flip a card to "Customer asked · waiting" right after the
   // QuantityInquiryModal reports a successful send. The poll cron later
   // upgrades it to ANSWERED/TIMEOUT, surfaced on the next refresh.
   const handleInquirySent = useCallback((orderNumber: string) => {
@@ -386,8 +386,8 @@ export default function ProcurementPage() {
   /**
    * Apply an action optimistically, then call the server. On failure the
    * UI reverts to the previous status. Cards that become "bought" stay
-   * visible until the next refresh — that's the spec ("карточка не
-   * исчезает, она просто меняет визуальный статус").
+   * visible until the next refresh — that's the spec: the card does not
+   * disappear, it only changes its visual status.
    */
   const handleAction = useCallback(
     async (
@@ -518,7 +518,7 @@ export default function ProcurementPage() {
     return arr;
   }, [cards, search, channelFilter, shipByFilter, mikeOnly]);
 
-  // Distinct orders ordered through Mike — drives the "От Майка (N)" chip.
+  // Distinct orders ordered through Mike — drives the "From Mike (N)" chip.
   const mikeOrderCount = useMemo(() => {
     const ids = new Set<string>();
     for (const c of cards) if (c.fromMike) ids.add(c.orderId);
@@ -619,8 +619,8 @@ export default function ProcurementPage() {
             />
             <span>
               {easedPull >= 80
-                ? "Отпусти чтобы обновить"
-                : "Потяни чтобы обновить"}
+                ? "Release to refresh"
+                : "Pull to refresh"}
             </span>
           </div>
         </div>
@@ -632,27 +632,27 @@ export default function ProcurementPage() {
             {search || channelFilter || shipByFilter || mikeOnly ? (
               <>
                 <span className="font-medium text-ink-2">
-                  {filteredOrderCount} из {orderCount} заказов
+                  {filteredOrderCount} of {orderCount} orders
                 </span>
                 <span className="text-ink-4">·</span>
                 <span>
-                  {filteredCards.length} из {cards.length} товаров
+                  {filteredCards.length} of {cards.length} items
                 </span>
               </>
             ) : (
               <>
                 <span className="font-medium text-ink-2">
-                  {orderCount} заказов
+                  {orderCount} orders
                 </span>
                 <span className="text-ink-4">·</span>
-                <span>{cards.length} товаров</span>
+                <span>{cards.length} items</span>
               </>
             )}
             {lastSync && (
               <>
                 <span className="text-ink-4">·</span>
                 <span className="font-mono text-[11.5px]">
-                  Обновлено {lastSync.toLocaleTimeString("ru-RU", {
+                  Updated {lastSync.toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -664,7 +664,7 @@ export default function ProcurementPage() {
       />
 
       {/* Sticky filter toolbar — search, channel/ship-by chips, sort tabs,
-          and a persistent "Обновить" button. Sticks under the Header so all
+          and a persistent "Refresh" button. Sticks under the Header so all
           of this is reachable at any scroll depth. */}
       <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-rule bg-bg/95 px-4 pb-2 pt-2 backdrop-blur-sm sm:-mx-6 sm:px-6">
         {/* Row 1: Search + persistent refresh */}
@@ -694,14 +694,14 @@ export default function ProcurementPage() {
             onClick={load}
             disabled={loading}
             className="inline-flex h-10 items-center gap-1.5 rounded-md border border-rule bg-surface px-3 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-bg-elev hover:text-ink disabled:opacity-60 md:h-9"
-            aria-label="Обновить список"
-            title="Обновить"
+            aria-label="Refresh the list"
+            title="Refresh"
           >
             <RefreshCw
               size={14}
               className={cn(loading && "animate-spin")}
             />
-            <span className="hidden sm:inline">Обновить</span>
+            <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
 
@@ -718,7 +718,7 @@ export default function ProcurementPage() {
               setChannelFilter((prev) => (prev === "amazon" ? null : "amazon"))
             }
             aria-pressed={channelFilter === "amazon"}
-            title="Только Amazon заказы"
+            title="Amazon orders only"
             className={cn(
               "group relative shrink-0 rounded-md border px-3.5 pb-2 pt-1.5 text-[13px] font-semibold leading-none transition",
               channelFilter === "amazon"
@@ -742,7 +742,7 @@ export default function ProcurementPage() {
               setChannelFilter((prev) => (prev === "walmart" ? null : "walmart"))
             }
             aria-pressed={channelFilter === "walmart"}
-            title="Только Walmart заказы"
+            title="Walmart orders only"
             className={cn(
               "flex shrink-0 items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
               channelFilter === "walmart"
@@ -754,7 +754,7 @@ export default function ProcurementPage() {
             <span>Walmart</span>
           </button>
 
-          {/* "От Майка" status filter — isolates orders ordered through Mike
+          {/* "From Mike" status filter — isolates orders ordered through Mike
               (Publix). Only rendered when at least one such order exists.
               Bright amber to match the per-card badge. */}
           {mikeOrderCount > 0 && (
@@ -762,7 +762,7 @@ export default function ProcurementPage() {
               type="button"
               onClick={() => setMikeOnly((prev) => !prev)}
               aria-pressed={mikeOnly}
-              title="Только заказы, оформленные через Майка"
+              title="Only orders placed through Mike"
               className={cn(
                 "inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2.5 text-[12px] font-semibold transition-colors",
                 mikeOnly
@@ -770,7 +770,7 @@ export default function ProcurementPage() {
                   : "border-rule bg-surface text-ink-2 hover:border-[#fb923c]/60 hover:text-ink-1"
               )}
             >
-              От Майка
+              From Mike
               <span className="tabular text-[10.5px] font-semibold">
                 {mikeOrderCount}
               </span>
@@ -780,7 +780,7 @@ export default function ProcurementPage() {
           {/* Divider */}
           <span className="mx-1 h-4 w-px shrink-0 bg-rule" aria-hidden />
 
-          {/* "Все" — резетит ship-by фильтр; всегда показан, активен когда
+          {/* "All days" — resets the ship-by filter; always shown, active when
               shipByFilter == null. */}
           <button
             type="button"
@@ -793,7 +793,7 @@ export default function ProcurementPage() {
             )}
             aria-pressed={shipByFilter === null}
           >
-            Все дни
+            All days
           </button>
           {SHIP_BY_OPTIONS.map((opt) => {
             const count = shipByCounts[opt.id];
@@ -842,7 +842,7 @@ export default function ProcurementPage() {
         <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-tint px-3 py-2 text-[13px] text-danger">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <div>
-            <div className="font-medium">Не удалось загрузить</div>
+            <div className="font-medium">Could not load</div>
             <div className="text-[12px] opacity-80">{error}</div>
           </div>
         </div>
@@ -851,11 +851,11 @@ export default function ProcurementPage() {
       {loading && cards.length === 0 ? (
         <div className="flex items-center justify-center gap-2 rounded-lg border border-rule bg-surface px-4 py-12 text-[13px] text-ink-3">
           <Loader2 size={16} className="animate-spin" />
-          Загружаем список из Veeqo…
+          Loading the list from Veeqo…
         </div>
       ) : !loading && cards.length === 0 && !error ? (
         <div className="rounded-lg border border-rule bg-surface px-4 py-12 text-center text-[13px] text-ink-3">
-          Список пуст — всё закуплено
+          The list is empty — everything is bought
         </div>
       ) : (
         <ProcurementList
@@ -896,15 +896,15 @@ export default function ProcurementPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-[13px] font-semibold text-ink">
                     {bulkProgress.done < bulkProgress.total
-                      ? `Сохранение… ${bulkProgress.done} из ${bulkProgress.total}`
+                      ? `Saving… ${bulkProgress.done} of ${bulkProgress.total}`
                       : bulkProgress.errors === 0
-                        ? `Готово — ${bulkProgress.total} отмечено`
-                        : `${bulkProgress.total - bulkProgress.errors} отмечено, ${bulkProgress.errors} с ошибкой`}
+                        ? `Done — ${bulkProgress.total} marked`
+                        : `${bulkProgress.total - bulkProgress.errors} marked, ${bulkProgress.errors} failed`}
                   </div>
                   {bulkProgress.errors > 0 && (
                     <div className="text-[11.5px] tabular text-danger">
-                      Ошибки в Veeqo — обнови страницу и проверь, что
-                      успело записаться
+                      Veeqo errors — refresh the page and check what actually
+                      got written
                     </div>
                   )}
                 </div>
@@ -913,12 +913,8 @@ export default function ProcurementPage() {
               <>
                 <ShoppingCart size={15} className="shrink-0 text-ink-2" />
                 <div className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
-                  Выбрано: {selected.size}{" "}
-                  {selected.size === 1
-                    ? "товар"
-                    : selected.size < 5
-                      ? "товара"
-                      : "товаров"}
+                  Selected: {selected.size}{" "}
+                  {selected.size === 1 ? "item" : "items"}
                 </div>
                 <Btn
                   variant="ghost"
@@ -926,7 +922,7 @@ export default function ProcurementPage() {
                   onClick={clearSelection}
                   icon={<X size={14} />}
                 >
-                  Снять
+                  Clear
                 </Btn>
                 <Btn
                   variant="primary"
@@ -934,7 +930,7 @@ export default function ProcurementPage() {
                   onClick={handleBulkBought}
                   icon={<Check size={14} />}
                 >
-                  Купил всё
+                  Bought everything
                 </Btn>
               </>
             )}

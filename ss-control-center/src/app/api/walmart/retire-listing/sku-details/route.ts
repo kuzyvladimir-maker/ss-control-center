@@ -9,7 +9,7 @@
  *                 demand if missing or older than 7 days (or null if itemId
  *                 absent / scrape failed)
  *
- * Called by the "Снять с продажи" modal AFTER the catalog search finishes,
+ * Called by the "Retire from sale" modal AFTER the catalog search finishes,
  * so the search itself stays sub-second. Items render with a skeleton
  * placeholder until this returns.
  *

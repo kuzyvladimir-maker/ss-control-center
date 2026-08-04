@@ -80,20 +80,20 @@ test("renders qualified canaries and the sealed controlled pool without mutation
   };
   const html = renderToStaticMarkup(<ListingIntegrityPanel data={data} />);
 
-  assert.match(html, /Постоянный Listing Integrity · контролируемая работа/);
-  assert.match(html, /Listing Integrity · производственный контур/);
+  assert.match(html, /Standing Listing Integrity · supervised work/);
+  assert.match(html, /Listing Integrity · production loop/);
   assert.match(html, /3 qualified/);
   assert.match(html, /10 repair-ready/);
   assert.match(html, /1190 source-required/);
   assert.match(html, /1 unresolved/);
-  assert.match(html, /Замкнутый цикл доказан на 3 live SKU/);
+  assert.match(html, /The closed loop is proven on 3 live SKUs/);
   assert.match(html, /FaisalX-1148/);
   assert.match(html, /FaisalX-1181/);
   assert.match(html, /FaisalX-1183/);
   assert.match(html, /18\/18 PASS/);
   assert.match(html, /20\/20 PASS/);
-  assert.match(html, /Публикация \/ индексация/);
-  assert.match(html, /Открыть фактическую галерею ДО → ПОСЛЕ/);
+  assert.match(html, /Publication \/ indexing/);
+  assert.match(html, /Open the actual BEFORE → AFTER gallery/);
   assert.match(
     html,
     /\/api\/walmart\/growth\/listing-integrity\/gallery\/FaisalX-1181/,
@@ -101,20 +101,20 @@ test("renders qualified canaries and the sealed controlled pool without mutation
   assert.match(html, /Product Truth-ready repair pool/);
   assert.match(html, /FaisalX-1140/);
   assert.match(html, /FaisalX-2768/);
-  assert.match(html, /QUARANTINED · не исправлен/);
+  assert.match(html, /QUARANTINED · not repaired/);
   assert.match(html, /Content Ownership \/ Walmart Support/);
   assert.match(html, /FaisalX-1220/);
   assert.match(html, /Multipack audit/);
   assert.match(html, /SOURCE_REQUIRED/);
-  assert.match(html, /1190 из 1204 кандидатов/);
+  assert.match(html, /1190 of 1204 candidates/);
   assert.match(html, /Write authority: false/);
   assert.match(html, new RegExp(fixture.pool.poolId));
-  assert.match(html, /Актуальное исправление/);
+  assert.match(html, /The current repair/);
   assert.match(html, /FaisalX-1228/);
   assert.match(html, /PACK OF 6/);
   assert.match(html, /EXACT_PRODUCT_DONOR/);
   assert.match(html, /Подтверждаю FaisalX-1228 и diff 4e81c7ca…6e58f/);
-  assert.match(html, /Весь каталог Walmart/);
+  assert.match(html, /The whole Walmart catalog/);
   assert.match(html, /3566\/3566 SKU/);
   assert.match(html, /1298/);
   assert.match(html, /1346/);
@@ -123,25 +123,25 @@ test("renders qualified canaries and the sealed controlled pool without mutation
   assert.match(html, /1738/);
   assert.match(
     html,
-    /Исторический контроль MAIN 1 → 6 — доказательство детектора, не актуальный payload/,
+    /Historical MAIN 1 → 6 control — evidence the detector works, not a current payload/,
   );
   assert.match(html, /FaisalX-1183/);
-  assert.match(html, /Показана 1 упаковка из 6/);
-  assert.match(html, /Показаны все 6 упаковок/);
+  assert.match(html, /Showing 1 pack out of 6/);
+  assert.match(html, /All 6 packs are shown/);
   assert.match(html, /37\/37/);
   assert.match(html, /38\/38/);
   assert.match(html, /17\/17/);
   assert.match(html, /8\/8/);
   assert.match(html, /exact-byte custody verified/);
   assert.match(html, /Source-aware visual attestation/);
-  assert.match(html, /Подписанная визуальная проверка завершена/);
-  assert.match(html, /предлагаемая MAIN = PASS/);
-  assert.match(html, /ошибочных gallery = 0/);
-  assert.match(html, /Ручная проверка target MAIN и gallery подтверждена владельцем/);
-  assert.match(html, /Владелец подтвердил новую MAIN и дополнительные изображения/);
+  assert.match(html, /Signed visual review complete/);
+  assert.match(html, /proposed MAIN = PASS/);
+  assert.match(html, /bad gallery images = 0/);
+  assert.match(html, /The owner confirmed the manual review of the target MAIN and the gallery/);
+  assert.match(html, /The owner approved the new MAIN and the extra images/);
   assert.match(html, /Owner visual review of target MAIN and gallery/);
   assert.match(html, /Owner approved/);
-  assert.match(html, /ещё не live/);
+  assert.match(html, /not live yet/);
   assert.match(html, /Exact payload only/);
   assert.match(html, /Mass run locked/);
   assert.doesNotMatch(html, /method="post"/i);

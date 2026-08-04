@@ -130,7 +130,7 @@ export function StorePriorityPopup({
 
   const save = async () => {
     // If Vladimir picked a store from the dropdown but forgot to click
-    // "Добавить", treat Save as if Add+Save: include that store as the next
+    // "Add", treat Save as if Add+Save: include that store as the next
     // priority. Without this people lose their selection on save.
     let toSave = list;
     if (
@@ -198,7 +198,7 @@ export function StorePriorityPopup({
         <div className="flex items-start justify-between gap-2 border-b border-rule px-4 py-3">
           <div className="min-w-0">
             <div className="text-[14px] font-semibold text-ink">
-              Где покупать
+              Where to buy
             </div>
             <div className="mt-0.5 text-[11.5px] tabular text-ink-3">
               SKU {sku}
@@ -221,7 +221,7 @@ export function StorePriorityPopup({
         <div className="px-4 py-3">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-6 text-[13px] text-ink-3">
-              <Loader2 size={14} className="animate-spin" /> Загружаем…
+              <Loader2 size={14} className="animate-spin" /> Loading…
             </div>
           ) : (
             <>
@@ -230,14 +230,14 @@ export function StorePriorityPopup({
                   <AlertCircle size={14} className="mt-0.5 shrink-0" />
                   <div>
                     <div className="font-semibold">
-                      База данных ещё не мигрирована
+                      The database is not migrated yet
                     </div>
                     <div className="mt-0.5 text-[11px] opacity-90">
-                      Чтобы включить эту функцию, нужно один раз запустить{" "}
+                      To turn this on, run{" "}
                       <code className="rounded bg-warn-tint/60 px-1 font-mono">
                         npx prisma db push
                       </code>{" "}
-                      против Turso. Сохранение пока не сработает.
+                      against Turso once. Saving will not work until then.
                     </div>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export function StorePriorityPopup({
 
               {list.length === 0 ? (
                 <div className="rounded-md border border-dashed border-rule px-3 py-4 text-center text-[12.5px] text-ink-3">
-                  Магазинов пока не выбрано — добавь первый ниже.
+                  No stores picked yet — add the first one below.
                 </div>
               ) : (
                 <ul className="divide-y divide-rule">
@@ -299,7 +299,7 @@ export function StorePriorityPopup({
                     onChange={(e) => setAddingStore(e.target.value)}
                     className="h-9 flex-1 rounded-md border border-rule bg-surface px-2 text-[13px] text-ink outline-none focus:border-silver-line"
                   >
-                    <option value="">+ Добавить магазин</option>
+                    <option value="">+ Add a store</option>
                     {availableToAdd.map((s) => (
                       <option key={s} value={s}>
                         {s}
@@ -313,7 +313,7 @@ export function StorePriorityPopup({
                     disabled={!addingStore}
                     onClick={addStore}
                   >
-                    Добавить
+                    Add
                   </Btn>
                 </div>
               )}
@@ -331,7 +331,7 @@ export function StorePriorityPopup({
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 border-t border-rule bg-surface-tint px-4 py-3">
           <Btn variant="ghost" size="md" disabled={saving} onClick={onClose}>
-            Отмена
+            Cancel
           </Btn>
           <Btn
             variant="primary"
@@ -340,7 +340,7 @@ export function StorePriorityPopup({
             disabled={loading}
             onClick={save}
           >
-            Сохранить
+            Save
           </Btn>
         </div>
       </div>

@@ -132,7 +132,7 @@ export async function stageUncrustablesCandidate(
     return {
       ok: false,
       stage: "INPUT",
-      error: `MAIN не на credential-free R2: ${input.mainImageUrl}`,
+      error: `MAIN is not on credential-free R2: ${input.mainImageUrl}`,
     };
   }
   if (
@@ -144,7 +144,7 @@ export async function stageUncrustablesCandidate(
     return {
       ok: false,
       stage: "INPUT",
-      error: "packCount не равен сумме компонентов или состав пуст.",
+      error: "packCount does not equal the sum of components, or the composition is empty.",
     };
   }
 
@@ -170,7 +170,7 @@ export async function stageUncrustablesCandidate(
       return {
         ok: false,
         stage: "DONOR",
-        error: `донор не найден: ${c.donor_title}`,
+        error: `donor not found: ${c.donor_title}`,
       };
     }
     const upc = donor.upc?.trim() || UPC_OVERRIDES[c.flavor];
@@ -178,12 +178,12 @@ export async function stageUncrustablesCandidate(
       return {
         ok: false,
         stage: "DONOR",
-        error: `нет manufacturer UPC: ${c.flavor}`,
+        error: `no manufacturer UPC: ${c.flavor}`,
       };
     }
     const unit = deps.donorUnitPriceCents(donor) ?? null;
     if (!unit || !Number.isInteger(unit) || unit <= 0) {
-      return { ok: false, stage: "DONOR", error: `нет unit price: ${c.flavor}` };
+      return { ok: false, stage: "DONOR", error: `no unit price: ${c.flavor}` };
     }
     components.push({
       research_pool_id: donor.id,
@@ -289,7 +289,7 @@ export async function stageUncrustablesCandidate(
     return {
       ok: false,
       stage: "PROMOTE",
-      error: "promote не создал master bundle",
+      error: "promote did not create a master bundle",
       draftId: draft.id,
     };
   }

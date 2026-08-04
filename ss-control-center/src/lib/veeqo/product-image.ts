@@ -9,7 +9,7 @@
  * (thumbnails.veeqo.com), so we use it as the image source instead.
  *
  * Used by /api/walmart/retire-listing/sku-details to fan out per-SKU image
- * lookups when the "Снять с продажи" modal renders its results.
+ * lookups when the "Retire from sale" modal renders its results.
  */
 
 import { veeqoFetch } from "./client";

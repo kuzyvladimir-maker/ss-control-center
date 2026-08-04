@@ -123,8 +123,8 @@ export default function FundDetailPage() {
         </Card>
       )}
 
-      {/* Per-expense balance: Accrued (начислено, ticks daily) − Paid (выплачено) =
-          Owed (остаток, carries forward). Press Paid to pay one down. Hidden on the
+      {/* Per-expense balance: Accrued (ticks daily) − Paid = Owed (carries
+          forward). Press Paid to pay one down. Hidden on the
           Debt fund (Debts table) and the Salaries fund (the Timesheet shows balances). */}
       {!isDebtFund && !isSalary && (
       <Card>

@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Timesheet (табель) — lives inside the Salaries fund. Each employee is one salary
- * expense with its own running BALANCE: Accrued (начислено = worked days × per-day
- * rate) − Paid (выплачено) = Owed (остаток), carried forward across plans. Mark
+ * Timesheet — lives inside the Salaries fund. Each employee is one salary
+ * expense with its own running BALANCE: Accrued (worked days × per-day
+ * rate) − Paid = Owed, carried forward across plans. Mark
  * worked days in the month grid; press Paid to pay an employee's owed amount (debits
  * the fund). Salaries are driven only here (not by the daily meter).
  */
@@ -100,7 +100,7 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
       ) : (
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
-            <thead className="border-b bg-muted/30 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Employee</th><th className="px-3 py-2 text-right">Accrued (начислено)</th><th className="px-3 py-2 text-right">Paid (выплачено)</th><th className="px-3 py-2 text-right">Balance (остаток)</th><th className="px-3 py-2">Pay</th></tr></thead>
+            <thead className="border-b bg-muted/30 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Employee</th><th className="px-3 py-2 text-right">Accrued</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Balance</th><th className="px-3 py-2">Pay</th></tr></thead>
             <tbody>
               {emps.map((e) => {
                 const balance = up5(e.owed); // remaining, rounded up to $5

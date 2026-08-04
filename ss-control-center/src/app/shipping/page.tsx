@@ -3086,7 +3086,7 @@ export default function ShippingLabelsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск: номер заказа, трек, имя, адрес, ZIP, SKU, товар…"
+              placeholder="Search: order number, tracking, name, address, ZIP, SKU, product…"
               className="w-full rounded-md border border-rule bg-surface px-9 py-1.5 text-[12.5px] text-ink placeholder:text-ink-3 focus:border-[#0071dc] focus:outline-none"
             />
             {archive.loading && (
@@ -3124,24 +3124,24 @@ export default function ShippingLabelsPage() {
         {searchActive && (
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-3">
             <span className="inline-flex items-center gap-1 rounded bg-green-soft px-1.5 py-0.5 font-medium text-green-ink">
-              <Search size={11} /> Поиск по всем заказам
+              <Search size={11} /> Searching every order
             </span>
             <span>
-              фильтры (канал, день, тип, магазин) не применяются
+              filters (channel, day, type, store) are not applied
               {archiveEnabled
-                ? " · включая отправленные, доставленные и отменённые"
-                : ` · с ${ARCHIVE_MIN_CHARS} символов ищем и в архиве`}
+                ? " · including shipped, delivered and cancelled"
+                : ` · from ${ARCHIVE_MIN_CHARS} characters we search the archive too`}
             </span>
             <span className="tabular">
-              найдено: {displayedOrders.length} в очереди
-              {archiveEnabled ? ` · ${archiveOnlyHits.length} в архиве` : ""}
+              found: {displayedOrders.length} in the queue
+              {archiveEnabled ? ` · ${archiveOnlyHits.length} in the archive` : ""}
             </span>
             {archive.error && (
-              <span className="text-danger">архив: {archive.error}</span>
+              <span className="text-danger">archive: {archive.error}</span>
             )}
             {archive.degraded.length > 0 && (
               <span className="text-warn-strong">
-                источник недоступен: {archive.degraded.join(", ")}
+                source unavailable: {archive.degraded.join(", ")}
               </span>
             )}
           </div>
@@ -3411,7 +3411,7 @@ export default function ShippingLabelsPage() {
                 onClick={() =>
                   setStoreFilter(storeFilter === s.storeId ? null : s.storeId)
                 }
-                title={`${s.storeName} — ${s.all} всего · ${s.readyToBuy} готовы к покупке · ${s.needAttention} требуют внимания`}
+                title={`${s.storeName} — ${s.all} total · ${s.readyToBuy} ready to buy · ${s.needAttention} need attention`}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11.5px] transition-colors",
                   storeFilter === s.storeId
@@ -3700,10 +3700,10 @@ export default function ShippingLabelsPage() {
           <div className="rounded-md border border-rule bg-surface px-4 py-8 text-center text-[12px] text-ink-3">
             {searchActive
               ? archive.loading
-                ? `Ищем «${searchQuery}» по всем заказам…`
+                ? `Searching every order for "${searchQuery}"…`
                 : archiveOnlyHits.length > 0
-                  ? `В очереди на отправку ничего нет — смотри найденное в архиве ниже.`
-                  : `Ничего не найдено по «${searchQuery}».`
+                  ? `Nothing in the shipping queue — see the archive hits below.`
+                  : `Nothing found for "${searchQuery}".`
               : "No orders match the current filter."}
           </div>
           )
@@ -3778,8 +3778,8 @@ export default function ShippingLabelsPage() {
 
       {/* Archive results — orders that are NOT in today's fulfillment queue:
           already shipped, delivered, cancelled, refunded. This is the half
-          of the search the operator asked for by name: "надо найти заказ по
-          этикетке / номеру / адресу и посмотреть, что это был за товар".
+          of the search the operator asked for by name: find an order by its
+          label / number / address and see what the product was.
           Read-only on purpose — these orders are done, there is nothing to
           buy here. */}
       {archiveEnabled && (archive.loading || archiveOnlyHits.length > 0) && (
@@ -3787,7 +3787,7 @@ export default function ShippingLabelsPage() {
           <div className="flex items-center gap-2 pt-2">
             <div className="h-px flex-1 bg-rule" />
             <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
-              Архив · все статусы
+              Archive · every status
               {archiveOnlyHits.length > 0 && ` · ${archiveOnlyHits.length}`}
             </span>
             <div className="h-px flex-1 bg-rule" />
@@ -3795,15 +3795,15 @@ export default function ShippingLabelsPage() {
           {archive.loading && archiveOnlyHits.length === 0 ? (
             <div className="flex items-center justify-center gap-2 rounded-md border border-rule bg-surface px-4 py-6 text-[12px] text-ink-3">
               <Loader2 size={13} className="animate-spin" />
-              Ищем в Veeqo и в нашей базе…
+              Searching Veeqo and our own database…
             </div>
           ) : (
             archiveOnlyHits.map((h) => <ArchiveRow key={h.key} hit={h} />)
           )}
           {archive.truncated && (
             <div className="px-1 text-[11.5px] text-ink-3">
-              Показаны первые {archiveOnlyHits.length} совпадений — уточни
-              запрос, если нужного нет.
+              Showing the first {archiveOnlyHits.length} matches — narrow the
+              query if the one you want isn&apos;t here.
             </div>
           )}
         </div>
@@ -4337,7 +4337,7 @@ function ArchiveRow({ hit }: { hit: ArchiveHit }) {
                 rel="noreferrer"
                 className="ml-auto text-[length:var(--ship-button)] text-[#0071dc] underline-offset-2 hover:underline"
               >
-                Этикетка PDF
+                Label PDF
               </a>
             )}
           </div>
@@ -4362,7 +4362,7 @@ function ArchiveRow({ hit }: { hit: ArchiveHit }) {
             </ul>
           ) : (
             <div className="mt-1.5 text-[length:var(--ship-meta)] text-ink-3">
-              Состав заказа не сохранился в нашей базе — открой заказ в Veeqo.
+              The order contents weren&apos;t kept in our database — open the order in Veeqo.
             </div>
           )}
 
@@ -5502,7 +5502,7 @@ function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
   const isMid = qty >= 4;
   return (
     <span
-      title={`Заказано ${qty} штук с одного листинга — проверь`}
+      title={`${qty} units ordered from one listing — check it`}
       className={cn(
         "inline-flex items-center justify-center rounded-full font-bold tabular leading-none",
         big
@@ -6411,7 +6411,7 @@ function SkuDataDialog({
             </div>
           </div>
           {/* Box preset — picking a chip fills the three L/W/H inputs.
-              Typing a new size in the "Свой размер" mini-form auto-saves
+              Typing a new size in the "Custom size" mini-form auto-saves
               it as a new preset AND fills the inputs in one step. */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">
@@ -7112,7 +7112,7 @@ function EditPackageDialog({
 
         <div className="space-y-3 text-[length:var(--ship-row)]">
           {/* Box preset picker — clicking a chip fills the L/W/H fields
-              below. Typing a new size in "Свой размер" auto-saves it as
+              below. Typing a new size in "Custom size" auto-saves it as
               a new preset AND fills the inputs in one step. */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">

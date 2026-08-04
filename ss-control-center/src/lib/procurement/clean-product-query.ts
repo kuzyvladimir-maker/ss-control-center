@@ -3,7 +3,7 @@
  * search returns ALL pack variants of the same product — not just the exact
  * listing the procurement row points to.
  *
- * Used by the "Снять с продажи" modal on the Procurement page. The user
+ * Used by the "Retire from sale" modal on the Procurement page. The user
  * still sees the cleaned query in an editable input, so this is a
  * convenience default — not a hard guarantee.
  *
@@ -97,7 +97,7 @@ export function stripSizeTokens(input: string): string {
  * result to one size variant, which Vladimir asked to drop (2026-06-30).
  *
  * Sibling of `cleanProductQuery` (also strips weight — used by the Walmart
- * "Снять с продажи" catalog search).
+ * "Retire from sale" catalog search).
  *
  * Examples:
  *   "Arnold Premium Sub Rolls, 6 Count, 15 oz Box (Pack of 2)"

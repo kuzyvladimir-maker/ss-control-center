@@ -937,16 +937,16 @@ export default function MessageDetail({
             </div>
             <div>
               <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
-                🇷🇺 Русский
+                🇷🇺 Russian
               </p>
               <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[4rem]">
                 {m.customerMessageRu ||
                   (m.customerMessage ? (
                     <span className="text-ink-3 italic">
-                      Перевод недоступен (переведётся при следующем Re-analyze)
+                      No translation yet (it appears on the next Re-analyze)
                     </span>
                   ) : (
-                    "Нет текста"
+                    "No text"
                   ))}
               </div>
             </div>
@@ -1113,12 +1113,12 @@ export default function MessageDetail({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-[9px] font-semibold text-ink-3 uppercase">
-                        🇷🇺 Русский (рабочий)
+                        🇷🇺 Russian (working copy)
                       </p>
                       {translatingRu && (
                         <span className="text-[9px] text-ink-3 flex items-center gap-1">
                           <Loader2 size={10} className="animate-spin" />
-                          перевод…
+                          translating…
                         </span>
                       )}
                     </div>
@@ -1133,8 +1133,8 @@ export default function MessageDetail({
                   </div>
                 </div>
                 <p className="text-[10px] text-ink-3">
-                  Правь любую из колонок — при уходе фокуса вторая колонка
-                  автоматически переведётся. Отправляется английская версия.
+                  Edit either column — on blur the other one is translated
+                  automatically. The English version is what gets sent.
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -1165,13 +1165,13 @@ export default function MessageDetail({
                 </div>
                 <div>
                   <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
-                    🇷🇺 Русский
+                    🇷🇺 Russian
                   </p>
                   <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[6rem]">
                     {m.editedResponseRu ||
                       m.suggestedResponseRu || (
                         <span className="text-ink-3 italic">
-                          Перевод недоступен (появится после Re-analyze)
+                          No translation yet (it appears after Re-analyze)
                         </span>
                       )}
                   </div>

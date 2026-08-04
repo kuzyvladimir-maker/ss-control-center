@@ -67,7 +67,7 @@ export function QuantityInquiryModal({
 
   async function handleSend() {
     if (!subject.trim() || !body.trim()) {
-      setError("Тема и текст письма не могут быть пустыми");
+      setError("The subject and the body cannot be empty");
       return;
     }
     setSending(true);
@@ -124,18 +124,18 @@ export function QuantityInquiryModal({
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
               <Mail size={14} className="text-info" />
-              Уточнить количество у клиента
+              Ask the customer about the quantity
             </div>
             <div className="mt-0.5 truncate text-[11.5px] text-ink-3">
-              #{orderNumber} · {customerName || "клиент"} ·{" "}
-              {orderedQty} × {packLabel || "ед."} = {totalUnits} шт
+              #{orderNumber} · {customerName || "customer"} ·{" "}
+              {orderedQty} × {packLabel || "unit"} = {totalUnits} pcs
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink"
-            aria-label="Закрыть"
+            aria-label="Close"
           >
             <X size={16} />
           </button>
@@ -146,9 +146,9 @@ export function QuantityInquiryModal({
           <div className="mb-3 inline-flex items-start gap-1.5 rounded-md bg-info-tint/60 px-2.5 py-1.5 text-[11.5px] text-info">
             <Info size={12} className="mt-0.5 shrink-0" />
             <span>
-              Письмо уйдёт через Walmart-relay с ящика info.siriustrading@gmail.com.
-              Только вопрос по заказу — без маркетинга и просьб об отзыве (это
-              требование политики Walmart).
+              The email goes through the Walmart relay from info.siriustrading@gmail.com.
+              A question about the order only — no marketing and no review requests
+              (Walmart policy).
             </span>
           </div>
 
@@ -156,7 +156,7 @@ export function QuantityInquiryModal({
             htmlFor="inq-subject"
             className="text-[11px] font-medium text-ink-3"
           >
-            Тема
+            Subject
           </label>
           <input
             id="inq-subject"
@@ -171,7 +171,7 @@ export function QuantityInquiryModal({
             htmlFor="inq-body"
             className="mt-3 block text-[11px] font-medium text-ink-3"
           >
-            Текст письма (английский — клиент англоязычный)
+            Body (English — the customer is English-speaking)
           </label>
           <textarea
             id="inq-body"
@@ -193,7 +193,7 @@ export function QuantityInquiryModal({
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 border-t border-rule px-4 py-3">
           <Btn variant="ghost" size="sm" onClick={onClose} disabled={sending}>
-            Отмена
+            Cancel
           </Btn>
           <Btn
             variant="primary"
@@ -203,7 +203,7 @@ export function QuantityInquiryModal({
             icon={sent ? <Check size={13} /> : <Mail size={13} />}
             onClick={handleSend}
           >
-            {sent ? "Отправлено" : "Отправить клиенту"}
+            {sent ? "Sent" : "Send to the customer"}
           </Btn>
         </div>
       </div>

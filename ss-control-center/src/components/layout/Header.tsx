@@ -62,7 +62,7 @@ export default function Header() {
       <button
         type="button"
         onClick={() => setMobileNavOpen(true)}
-        aria-label="Открыть меню"
+        aria-label="Open menu"
         className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-rule bg-surface-tint text-ink hover:bg-bg-elev md:hidden"
       >
         <Menu size={20} strokeWidth={2.2} />

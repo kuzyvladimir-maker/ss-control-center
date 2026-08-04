@@ -18,7 +18,7 @@ import { CLAUDE, CLAUDE_MODEL_LABELS } from "@/lib/ai-models";
 const STORES = [{ index: 1, label: "Salutem Solutions" }, { index: 3, label: "AMZ Commerce" }];
 
 const HELP =
-  "Фабрика A+ контента. «Сканировать» находит наши листинги (Salutem Vita/Starfit) БЕЗ A+. «Сгенерировать» — Claude пишет профессиональный A+ (SEO-текст + раскадровка), прогоняет через гейт квалификации (brand-voice + политика A+ + IP: чужие бренды только фактически, логотипы не в кадре). «Review» — смотришь готовый контент по модулям и комментируешь. «Approve» → «Publish» — отправка в Amazon (валидация → создание → привязка ASIN → на ревью Amazon). Ничего не публикуется без твоего approve. Картинки: брифы генерятся (lifestyle без чужих логотипов), сам слой картинок подключается отдельно.";
+  "A+ content factory. Scan finds our listings (Salutem Vita/Starfit) with NO A+. Generate has Claude write the A+ (SEO copy + storyboard) and runs it through the qualification gate (brand voice + A+ policy + IP: other brands only factually, no logos in frame). Review shows the finished content module by module for your comments. Approve → Publish sends it to Amazon (validate → create → attach ASIN → Amazon review). Nothing publishes without your approve. Images: the briefs are generated (lifestyle, no third-party logos); the image layer itself is wired separately.";
 
 interface Opportunity { sku: string; asin: string; itemName: string | null; opportunityScore: number | null; revenue30d: number | null }
 interface PoolItem {
@@ -103,7 +103,7 @@ export function AplusFactory() {
     setBusy(sku); setMsg(null);
     try {
       const j = await runGenerate(sku, name, 1, 1);
-      setMsg(j?.ok ? (j.qualified ? "Сгенерировано ✓ — на ревью" : `Сгенерировано, но гейт нашёл нарушения (${j.violations?.length})`) : `Ошибка: ${j?.error}`);
+      setMsg(j?.ok ? (j.qualified ? "Generated ✓ — ready for review" : `Generated, but the gate found violations (${j.violations?.length})`) : `Error: ${j?.error}`);
       await loadJobs(); setTab("jobs");
     } finally { setBusy(null); setGen(null); }
   }
@@ -116,7 +116,7 @@ export function AplusFactory() {
     setBusy(id); setMsg(null);
     try {
       const j = await post({ action: "publish", id });
-      setMsg(j.ok ? "Отправлено в Amazon ✓" : `Публикация не прошла: ${j.error}`);
+      setMsg(j.ok ? "Sent to Amazon ✓" : `Publishing failed: ${j.error}`);
       await loadJobs();
     } finally { setBusy(null); }
   }
@@ -162,13 +162,13 @@ export function AplusFactory() {
     }
     setGen(null); setSelected(new Set());
     await loadJobs(); setTab("jobs");
-    setMsg(`Сгенерировано ${skus.length} A+ — на ревью (вкладка Jobs)`);
+    setMsg(`Generated ${skus.length} A+ pages — ready for review (Jobs tab)`);
   }
   function phaseText(g: { phase: string; done?: number; tot?: number }): string {
-    if (g.phase === "analyzing") return "изучаю листинг…";
-    if (g.phase === "text") return "генерирую текст…";
-    if (g.phase === "images") return `генерирую картинки ${Math.min((g.done ?? 0) + 1, g.tot ?? 6)}/${g.tot ?? 6}`;
-    if (g.phase === "done") return "сборка готова";
+    if (g.phase === "analyzing") return "reading the listing…";
+    if (g.phase === "text") return "writing the copy…";
+    if (g.phase === "images") return `generating images ${Math.min((g.done ?? 0) + 1, g.tot ?? 6)}/${g.tot ?? 6}`;
+    if (g.phase === "done") return "build complete";
     return g.phase;
   }
   function toggleSel(sku: string) {
@@ -216,7 +216,7 @@ export function AplusFactory() {
             <option value="smart">Smart (photos→2, infographics→1)</option>
           </select>
         </div>
-        <span className="text-[11px] text-ink-3">Текст — генерация копирайта (Anthropic). Картинки — графика (OpenAI). «Перегенерировать картинки» в ревью использует выбранную image-модель.</span>
+        <span className="text-[11px] text-ink-3">Text — copywriting (Anthropic). Images — graphics (OpenAI). &quot;Regenerate images&quot; in review uses the selected image model.</span>
       </div>
 
       <div className="flex items-center gap-1.5">
@@ -233,7 +233,7 @@ export function AplusFactory() {
         <div className="rounded-lg border border-green/40 bg-green-soft/60 px-3 py-2.5">
           <div className="flex items-center justify-between text-[12px] text-green-ink">
             <span className="flex items-center gap-2"><Sparkles size={13} className="animate-pulse" />
-              <span className="font-medium">Лист {gen.idx}/{gen.total}:</span>
+              <span className="font-medium">Listing {gen.idx}/{gen.total}:</span>
               <span className="max-w-[420px] truncate">{gen.name}</span>
             </span>
             <span className="font-mono text-[11px]">{phaseText(gen)}</span>
@@ -247,10 +247,10 @@ export function AplusFactory() {
 
       {tab === "opportunities" && (
         <Panel>
-          <PanelHeader title="Каталог — выбор листингов для A+" count={scan?.ownBrandTotal}
+          <PanelHeader title="Catalog — pick listings for A+" count={scan?.ownBrandTotal}
             right={<Btn size="sm" icon={<RefreshCw size={13} />} loading={scanning} onClick={runScan}>Scan</Btn>} />
           {!scan ? (
-            <div className="px-4 py-8 text-center text-[12px] text-ink-3">Жми «Scan» — подтянем весь наш каталог (Salutem Vita/Starfit) с пометкой A+ есть/нет (может занять ~10–20с, идёт по живому A+ API).</div>
+            <div className="px-4 py-8 text-center text-[12px] text-ink-3">Hit Scan — we pull the whole own-brand catalog (Salutem Vita/Starfit) flagged A+ yes/no (~10–20 s, it goes through the live A+ API).</div>
           ) : (() => {
             const q = search.trim().toLowerCase();
             const filtered = (scan.pool ?? []).filter((p) => {
@@ -265,27 +265,27 @@ export function AplusFactory() {
             const allSel = filtered.length > 0 && filtered.every((p) => selected.has(p.sku));
             const selInView = filtered.filter((p) => selected.has(p.sku)).length;
             const SORTS: { k: SortKey; label: string }[] = [
-              { k: "revenue30d", label: "Продажи $" }, { k: "unitsOrdered30d", label: "Штуки" },
-              { k: "unitSessionPct", label: "Конверсия" }, { k: "opportunityScore", label: "Opp" },
+              { k: "revenue30d", label: "Revenue $" }, { k: "unitsOrdered30d", label: "Units" },
+              { k: "unitSessionPct", label: "Conversion" }, { k: "opportunityScore", label: "Opp" },
             ];
             return (
             <>
               <div className="grid grid-cols-3 gap-3 p-4 pb-2">
-                <KpiCard label="Без A+" value={scan.ownBrandWithout} iconVariant="warn" />
-                <KpiCard label="С A+" value={scan.ownBrandWithAplus} />
-                <KpiCard label="Всего own-brand" value={scan.ownBrandTotal} />
+                <KpiCard label="No A+" value={scan.ownBrandWithout} iconVariant="warn" />
+                <KpiCard label="With A+" value={scan.ownBrandWithAplus} />
+                <KpiCard label="Own-brand total" value={scan.ownBrandTotal} />
               </div>
 
               {/* Search + filters */}
               <div className="flex flex-wrap items-center gap-2 px-4 pb-2">
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск: title / ASIN / SKU (напр. cooler)"
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search: title / ASIN / SKU (e.g. cooler)"
                   className="min-w-[240px] flex-1 rounded-md border border-rule bg-bg px-2.5 py-1.5 text-[12px] text-ink" />
                 <select value={aplusFilter} onChange={(e) => setAplusFilter(e.target.value as typeof aplusFilter)} className="rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink">
-                  <option value="without">Без A+</option><option value="all">Все</option><option value="with">С A+</option>
+                  <option value="without">No A+</option><option value="all">All</option><option value="with">With A+</option>
                 </select>
-                <input value={minRev} onChange={(e) => setMinRev(e.target.value)} inputMode="numeric" placeholder="мин $ 30d" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
-                <input value={minUnits} onChange={(e) => setMinUnits(e.target.value)} inputMode="numeric" placeholder="мин шт" className="w-[80px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
-                <input value={minConv} onChange={(e) => setMinConv(e.target.value)} inputMode="numeric" placeholder="мин конв%" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <input value={minRev} onChange={(e) => setMinRev(e.target.value)} inputMode="numeric" placeholder="min $ 30d" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <input value={minUnits} onChange={(e) => setMinUnits(e.target.value)} inputMode="numeric" placeholder="min units" className="w-[80px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <input value={minConv} onChange={(e) => setMinConv(e.target.value)} inputMode="numeric" placeholder="min conv %" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
                 <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink">
                   {SORTS.map((s) => <option key={s.k} value={s.k}>↓ {s.label}</option>)}
                 </select>
@@ -293,12 +293,12 @@ export function AplusFactory() {
 
               {/* Bulk action bar */}
               <div className="flex items-center justify-between gap-2 border-y border-rule bg-bg-elev/30 px-4 py-2">
-                <span className="text-[11px] text-ink-3">Показано {filtered.length} · выбрано {selected.size}</span>
+                <span className="text-[11px] text-ink-3">Showing {filtered.length} · selected {selected.size}</span>
                 <div className="flex items-center gap-2">
-                  {selected.size > 0 && <button onClick={() => setSelected(new Set())} className="text-[11px] text-ink-4 hover:text-ink">Сбросить</button>}
+                  {selected.size > 0 && <button onClick={() => setSelected(new Set())} className="text-[11px] text-ink-4 hover:text-ink">Clear</button>}
                   <Btn size="sm" variant="primary" icon={<Sparkles size={12} />} disabled={selected.size === 0 || !!gen}
                     loading={!!gen} onClick={() => bulkGenerate([...selected])}>
-                    {gen ? `Лист ${gen.idx}/${gen.total}…` : `Сгенерить A+ (${selected.size})`}
+                    {gen ? `Listing ${gen.idx}/${gen.total}…` : `Generate A+ (${selected.size})`}
                   </Btn>
                 </div>
               </div>
@@ -308,17 +308,17 @@ export function AplusFactory() {
                   <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-wider text-ink-3">
                     <th className="px-2 py-2 w-8"><input type="checkbox" checked={allSel} ref={(el) => { if (el) el.indeterminate = !allSel && selInView > 0; }}
                       onChange={() => setSelected((prev) => { const n = new Set(prev); if (allSel) filtered.forEach((p) => n.delete(p.sku)); else filtered.forEach((p) => n.add(p.sku)); return n; })} /></th>
-                    <th className="px-2 py-2">Product</th><th className="px-2 py-2">A+</th><th className="px-2 py-2">$ 30d</th><th className="px-2 py-2">Шт</th><th className="px-2 py-2">Конв</th><th className="px-2 py-2"></th>
+                    <th className="px-2 py-2">Product</th><th className="px-2 py-2">A+</th><th className="px-2 py-2">$ 30d</th><th className="px-2 py-2">Units</th><th className="px-2 py-2">Conv</th><th className="px-2 py-2"></th>
                   </tr></thead>
                   <tbody>
-                    {filtered.length === 0 ? <tr><td colSpan={7} className="px-3 py-8 text-center text-ink-3">Ничего не найдено под фильтры.</td></tr> :
+                    {filtered.length === 0 ? <tr><td colSpan={7} className="px-3 py-8 text-center text-ink-3">Nothing matches the filters.</td></tr> :
                     filtered.map((p) => (
                       <tr key={p.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(p.sku) && "bg-green-soft/40")}>
                         <td className="px-2 py-2"><input type="checkbox" checked={selected.has(p.sku)} onChange={() => toggleSel(p.sku)} /></td>
                         <td className="max-w-[380px] px-2 py-2"><div className="flex items-center gap-1"><span className="truncate text-ink">{p.itemName ?? p.sku}</span>
                           <a href={`https://www.amazon.com/dp/${p.asin}`} target="_blank" rel="noreferrer" className="shrink-0 text-ink-4 hover:text-green-ink"><ExternalLink size={12} /></a></div>
                           <span className="font-mono text-[10px] text-ink-4">{p.sku} · {CONCEPT_LABEL[p.concept] ?? p.concept}</span></td>
-                        <td className="px-2 py-2">{p.hasAplus ? <span className="text-[10px] text-green-ink">есть</span> : <span className="text-[10px] text-warn-strong">нет</span>}</td>
+                        <td className="px-2 py-2">{p.hasAplus ? <span className="text-[10px] text-green-ink">yes</span> : <span className="text-[10px] text-warn-strong">no</span>}</td>
                         <td className="px-2 py-2 tabular">{p.revenue30d != null ? "$" + p.revenue30d.toFixed(0) : "—"}</td>
                         <td className="px-2 py-2 tabular">{p.unitsOrdered30d ?? "—"}</td>
                         <td className="px-2 py-2 tabular">{p.unitSessionPct != null ? p.unitSessionPct.toFixed(1) + "%" : "—"}</td>
@@ -338,10 +338,10 @@ export function AplusFactory() {
         <>
           {summary && (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <KpiCard label="На ревью" value={summary.pending} iconVariant="warn" />
-              <KpiCard label="Нужна правка" value={summary.needsFix} iconVariant={summary.needsFix > 0 ? "danger" : "default"} />
-              <KpiCard label="Одобрено" value={summary.approved} />
-              <KpiCard label="Опубликовано" value={summary.published} />
+              <KpiCard label="In review" value={summary.pending} iconVariant="warn" />
+              <KpiCard label="Needs a fix" value={summary.needsFix} iconVariant={summary.needsFix > 0 ? "danger" : "default"} />
+              <KpiCard label="Approved" value={summary.approved} />
+              <KpiCard label="Published" value={summary.published} />
             </div>
           )}
           <Panel>
@@ -352,7 +352,7 @@ export function AplusFactory() {
                   <th className="px-3 py-2">Product</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Gate</th><th className="px-2 py-2"></th>
                 </tr></thead>
                 <tbody>
-                  {jobs.length === 0 ? <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-3">Заданий нет — сгенерируй из Opportunities.</td></tr> :
+                  {jobs.length === 0 ? <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-3">No jobs — generate some from Opportunities.</td></tr> :
                     jobs.map((j) => (
                       <tr key={j.id} className="border-b border-rule/60 hover:bg-bg-elev/40">
                         <td className="max-w-[360px] px-3 py-2"><span className="block truncate text-ink">{j.itemName ?? j.sku}</span><span className="font-mono text-[10px] text-ink-4">{j.sku}{j.concept ? ` · ${CONCEPT_LABEL[j.concept] ?? j.concept}` : ""}</span></td>
@@ -382,7 +382,7 @@ export function AplusFactory() {
         const slots: { key: string; url?: string | null; brief?: string }[] = stored?.slots ?? [];
         const urlOf = (k: string) => slots.find((s) => s.key === k)?.url ?? null;
         const ph = (label: string) => <div className="flex h-40 w-full items-center justify-center rounded border border-dashed border-gray-300 text-[10px] text-gray-400">{label}</div>;
-        const img = (k: string, cls: string) => { const u = urlOf(k); return u ? <img src={u} alt="" className={cls} /> : ph("картинка генерируется…"); };
+        const img = (k: string, cls: string) => { const u = urlOf(k); return u ? <img src={u} alt="" className={cls} /> : ph("image is being generated…"); };
         const DISCLAIMER_TXT =
           concept === "supplement" ? "These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease."
           : concept === "giftbasket" ? "Curated and assembled by Salutem Solutions LLC as a gift basket. The included items are packaged by their original manufacturers."
@@ -404,15 +404,15 @@ export function AplusFactory() {
               )}
 
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] text-ink-3">Превью как на странице листинга · модели: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
+                <span className="text-[11px] text-ink-3">Preview as on the listing page · models: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
                 <div className="flex items-center gap-1.5">
-                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Текст заново (картинки сохранить)</Btn>
-                  <Btn size="sm" variant="primary" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id, review.sku, review.itemName ?? review.sku)}>Картинки заново ($)</Btn>
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Rewrite the text (keep the images)</Btn>
+                  <Btn size="sm" variant="primary" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id, review.sku, review.itemName ?? review.sku)}>Regenerate the images ($)</Btn>
                 </div>
               </div>
               {/* WYSIWYG preview — image-forward A+ landing page */}
               <div className="space-y-5 rounded-lg bg-white p-4 text-[#0f1111]">
-                {!plan ? <div className="text-center text-[12px] text-gray-400">нет данных превью</div> : <>
+                {!plan ? <div className="text-center text-[12px] text-gray-400">no preview data</div> : <>
                   {/* 1. Hero banner — benefit headline */}
                   <div>
                     {img("hero", "w-full rounded")}
@@ -447,12 +447,12 @@ export function AplusFactory() {
                 </>}
               </div>
 
-              <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Комментарии (по модулям, что поправить)…" className="mt-3 h-20 w-full rounded-lg border border-rule bg-surface p-2 text-[12px] text-ink placeholder:text-ink-4 focus:outline-none" />
+              <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Comments (per module, what to fix)…" className="mt-3 h-20 w-full rounded-lg border border-rule bg-surface p-2 text-[12px] text-ink placeholder:text-ink-4 focus:outline-none" />
               <div className="mt-3 flex items-center justify-end gap-2">
                 <Btn variant="outline" icon={<X size={13} />} loading={busy === review.id} onClick={() => decide(review.id, "reject")}>Reject</Btn>
                 <Btn variant="primary" icon={<Check size={13} />} loading={busy === review.id} disabled={!review.qualified} onClick={() => decide(review.id, "approve")}>Approve</Btn>
               </div>
-              {!review.qualified && <div className="mt-1 text-right text-[11px] text-danger">Approve заблокирован — гейт нашёл нарушения, перегенерируй.</div>}
+              {!review.qualified && <div className="mt-1 text-right text-[11px] text-danger">Approve is blocked — the gate found violations, regenerate.</div>}
             </div>
           </div>
         );

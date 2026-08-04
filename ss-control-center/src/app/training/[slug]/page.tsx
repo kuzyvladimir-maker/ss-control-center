@@ -135,7 +135,7 @@ export default function CourseDetailPage() {
       {course.finalTest && (
         <section className="mt-6">
           <h2 className="mb-2 text-[13px] font-semibold text-ink">
-            Финальный тест
+            Final test
           </h2>
           <Panel className="bg-surface-tint p-3">
             <p className="text-[13px] leading-relaxed text-ink-2">
@@ -148,7 +148,7 @@ export default function CourseDetailPage() {
       {course.completionNote && (
         <section className="mt-6">
           <h2 className="mb-2 text-[13px] font-semibold text-ink">
-            Зачёт / отметка о прохождении
+            Pass / completion mark
           </h2>
           <p className="text-[13px] leading-relaxed text-ink-2">
             {course.completionNote}
@@ -157,7 +157,7 @@ export default function CourseDetailPage() {
       )}
 
       <section className="mt-6">
-        <h2 className="mb-2 text-[13px] font-semibold text-ink">Источник</h2>
+        <h2 className="mb-2 text-[13px] font-semibold text-ink">Source</h2>
         <Panel className="bg-surface-tint p-3">
           <p className="text-[12.5px] leading-relaxed text-ink-2">
             {course.source.name}

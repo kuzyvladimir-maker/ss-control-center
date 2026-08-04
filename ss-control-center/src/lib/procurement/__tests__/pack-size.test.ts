@@ -1,5 +1,5 @@
 // Pure-function unit tests for parsePackSize — the regex pack-multiplier
-// extractor that feeds the Procurement "Купить: N шт" calculation.
+// extractor that feeds the Procurement "Buy: N pcs" calculation.
 //
 // Run with:
 //   npx tsx --test src/lib/procurement/__tests__/pack-size.test.ts
@@ -37,7 +37,7 @@ test("no pack pattern → null", () => {
 });
 
 test("standalone 'N count' is contents, NOT a buy multiplier → null", () => {
-  // The live bug: a "…16 count" title made the card say "Купить: 16 шт" when
+  // The live bug: a "…16 count" title made the card say "Buy: 16 pcs" when
   // the order was for ONE unit. A bare count with no pack noun must not
   // multiply the buy quantity.
   assert.equal(

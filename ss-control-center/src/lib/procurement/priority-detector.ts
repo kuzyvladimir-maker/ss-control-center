@@ -88,7 +88,7 @@ export function detectPriority(
   if (tightest !== null && tightest <= 1) {
     return {
       kind: "tight-dispatch",
-      detail: tightest <= 0 ? "сегодня" : "завтра",
+      detail: tightest <= 0 ? "today" : "tomorrow",
     };
   }
 

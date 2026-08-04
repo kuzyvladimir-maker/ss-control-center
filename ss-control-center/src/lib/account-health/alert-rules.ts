@@ -28,7 +28,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon AHR dropped to ${v} (At Risk of Deactivation)`,
     message: (v, store) =>
-      `Account Health Rating для ${store} = ${v}. Зона риска деактивации (< 200). Срочно проверь Policy Compliance.`,
+      `Account Health Rating for ${store} = ${v}. Deactivation risk zone (< 200). Check Policy Compliance now.`,
   },
   {
     metric: "orderDefectRate",
@@ -37,7 +37,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon ODR breached: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `ODR = ${v.toFixed(2)}% превысил порог 1% на магазине ${store}.`,
+      `ODR = ${v.toFixed(2)}% is over the 1% threshold on ${store}.`,
   },
   {
     metric: "lateShipmentRate30d",
@@ -46,7 +46,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon LSR(30d) breached: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Late Shipment Rate (30 дней) = ${v.toFixed(2)}% превысил порог 4% на ${store}.`,
+      `Late Shipment Rate (30 days) = ${v.toFixed(2)}% is over the 4% threshold on ${store}.`,
   },
   {
     metric: "preFulfillmentCancelRate",
@@ -55,7 +55,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon Cancel Rate breached: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Pre-fulfillment Cancel Rate = ${v.toFixed(2)}% > 2.5% на ${store}.`,
+      `Pre-fulfillment Cancel Rate = ${v.toFixed(2)}% > 2.5% on ${store}.`,
   },
   {
     metric: "validTrackingRate",
@@ -64,7 +64,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon VTR dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Valid Tracking Rate = ${v.toFixed(2)}% упал ниже 95% на ${store}.`,
+      `Valid Tracking Rate = ${v.toFixed(2)}% fell below 95% on ${store}.`,
   },
   {
     metric: "onTimeDeliveryRate",
@@ -73,7 +73,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Amazon OTDR dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `On-Time Delivery Rate = ${v.toFixed(2)}% упал ниже 90% на ${store}.`,
+      `On-Time Delivery Rate = ${v.toFixed(2)}% fell below 90% on ${store}.`,
   },
   // Policy violations — metric is "newPolicyViolation_<CATEGORY>" with value
   // = newly-added count since the previous snapshot.
@@ -84,7 +84,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `New Food Safety violation${v > 1 ? "s" : ""}: ${v}`,
     message: (v, store) =>
-      `Обнаружено ${v} новых Food Safety нарушений на ${store}. Критично для frozen food бизнеса.`,
+      `${v} new Food Safety violations on ${store}. Critical for a frozen-food business.`,
   },
   {
     metric: "newPolicyViolation_SUSPECTED_IP",
@@ -93,7 +93,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `New IP violation${v > 1 ? "s" : ""}: ${v}`,
     message: (v, store) =>
-      `Обнаружено ${v} новых подозрений на IP-нарушения на ${store}.`,
+      `${v} new suspected IP violations on ${store}.`,
   },
   {
     metric: "newPolicyViolation_LISTING_POLICY",
@@ -102,7 +102,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `New Listing Policy violations: ${v}`,
     message: (v, store) =>
-      `Обнаружено ${v} новых нарушений Listing Policy на ${store}.`,
+      `${v} new Listing Policy violations on ${store}.`,
   },
 
   // ─── WALMART ────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Walmart On-Time Shipment dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart On-Time Shipment = ${v.toFixed(2)}% упал ниже 99% (значит Late Shipment > 1%) на ${store}.`,
+      `Walmart On-Time Shipment = ${v.toFixed(2)}% fell below 99% (so Late Shipment > 1%) on ${store}.`,
   },
   {
     metric: "cancellations30d",
@@ -127,7 +127,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Walmart Cancellations breached: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Cancellations = ${v.toFixed(2)}% > 2% на ${store}.`,
+      `Walmart Cancellations = ${v.toFixed(2)}% > 2% on ${store}.`,
   },
   {
     metric: "validTracking30d",
@@ -136,7 +136,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Walmart Valid Tracking dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Valid Tracking = ${v.toFixed(2)}% упал ниже 99% на ${store}.`,
+      `Walmart Valid Tracking = ${v.toFixed(2)}% fell below 99% on ${store}.`,
   },
   {
     metric: "onTimeDelivery30d",
@@ -145,7 +145,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "CRITICAL",
     title: (v) => `Walmart On-Time Delivery dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart On-Time Delivery = ${v.toFixed(2)}% упал ниже 90% на ${store}.`,
+      `Walmart On-Time Delivery = ${v.toFixed(2)}% fell below 90% on ${store}.`,
   },
   {
     metric: "sellerResponse30d",
@@ -154,7 +154,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `Walmart Seller Response dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Seller Response = ${v.toFixed(2)}% упал ниже 95% на ${store}.`,
+      `Walmart Seller Response = ${v.toFixed(2)}% fell below 95% on ${store}.`,
   },
   {
     metric: "negativeFeedback60d",
@@ -163,7 +163,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `Walmart Negative Feedback elevated: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Negative Feedback = ${v.toFixed(2)}% > 2% на ${store}.`,
+      `Walmart Negative Feedback = ${v.toFixed(2)}% > 2% on ${store}.`,
   },
   {
     metric: "returns60d",
@@ -172,7 +172,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `Walmart Returns elevated: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Returns = ${v.toFixed(2)}% > 6% на ${store}.`,
+      `Walmart Returns = ${v.toFixed(2)}% > 6% on ${store}.`,
   },
   {
     metric: "itemNotReceived60d",
@@ -181,7 +181,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `Walmart Item Not Received elevated: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Item Not Received = ${v.toFixed(2)}% > 2% на ${store}.`,
+      `Walmart Item Not Received = ${v.toFixed(2)}% > 2% on ${store}.`,
   },
   {
     metric: "newItemCompliance",
@@ -190,7 +190,7 @@ export const ALERT_RULES: AlertRule[] = [
     severity: "HIGH",
     title: (v) => `New Walmart Item Compliance issues: ${v}`,
     message: (_v, store) =>
-      `Обнаружены новые проблемы с item compliance на ${store}.`,
+      `New item-compliance problems on ${store}.`,
   },
 ];
 

@@ -274,15 +274,15 @@ export default function BootstrapFrozenV2Page() {
             )}
             {result.ok && (
               <div className="mt-4 rounded-md border border-rule bg-green-soft px-3 py-2 text-[12.5px] text-green-ink">
-                Готово. Открой{" "}
+                Done. Open{" "}
                 <a
                   href="/frozen-analytics"
                   className="font-semibold underline"
                 >
                   /frozen-analytics
                 </a>{" "}
-                — таб &ldquo;Today&rsquo;s risk&rdquo; должен теперь работать.
-                Нажми &ldquo;Run analysis&rdquo; чтобы прогнать первый pipeline.
+                — the &ldquo;Today&rsquo;s risk&rdquo; tab should work now.
+                Press &ldquo;Run analysis&rdquo; to run the first pipeline.
               </div>
             )}
           </PanelBody>

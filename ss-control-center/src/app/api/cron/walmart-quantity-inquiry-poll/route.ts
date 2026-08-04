@@ -7,10 +7,10 @@
  *
  *   * A reply arrived (a message FROM the order's relay address, dated after
  *     we sent) → flip SENT → ANSWERED, store the reply text, ping Telegram so
- *     Vladimir sees it. The procurement card chip turns into "Ответ получен".
+ *     Vladimir sees it. The procurement card chip turns into "Reply received".
  *
  *   * No reply and it's been > 48h → flip SENT → TIMEOUT. The card chip shows
- *     "Нет ответа (48ч)" and we stop watching.
+ *     "No reply (48h)" and we stop watching.
  *
  * The buyer's reply comes back THROUGH Walmart's relay, so its From address is
  * the same per-order relay we emailed — which is how we match a reply to an
@@ -197,11 +197,11 @@ export async function GET(request: NextRequest) {
 
     if (answeredSummaries.length > 0) {
       const text = [
-        `📨 <b>Walmart: ответы по уточнению количества (${answeredSummaries.length})</b>`,
+        `📨 <b>Walmart: replies about quantity (${answeredSummaries.length})</b>`,
         "",
         ...answeredSummaries,
         "",
-        "Открой Procurement — карточки помечены «Ответ получен».",
+        "Open Procurement — the cards are marked \"Reply received\".",
       ].join("\n");
       await sendWalmartTelegram(text);
     }

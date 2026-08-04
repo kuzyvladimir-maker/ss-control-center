@@ -32,7 +32,7 @@ interface BoxPresetPickerProps {
  * Editable box-size dropdown. Closed state shows the currently selected
  * preset; opens to a list where every row has the dimensions next to the
  * label and — for non-builtin rows — a × delete button. The list ends
- * with a "Свой размер L × W × H" mini-form that POSTs a new preset and
+ * with a "Custom size L × W × H" mini-form that POSTs a new preset and
  * auto-selects it.
  *
  * Replaces the previously-hardcoded <select> on PackingProfileDialog /
@@ -95,7 +95,7 @@ export function BoxPresetPicker({
     const W = Number(addW);
     const H = Number(addH);
     if (![L, W, H].every((n) => Number.isFinite(n) && n > 0)) {
-      setAddError("L, W, H должны быть положительными числами");
+      setAddError("L, W and H must all be positive numbers");
       return;
     }
     setAdding(true);
@@ -129,7 +129,7 @@ export function BoxPresetPicker({
   async function deletePreset(e: React.MouseEvent, p: BoxPreset) {
     e.stopPropagation();
     if (p.builtin) return;
-    if (!confirm(`Удалить пресет «${p.label}»?`)) return;
+    if (!confirm(`Delete the preset "${p.label}"?`)) return;
     setDeletingId(p.id);
     try {
       const r = await fetch(`/api/shipping/box-presets/${p.id}`, {
@@ -167,7 +167,7 @@ export function BoxPresetPicker({
           ) : value ? (
             <span className="font-medium">{value}</span>
           ) : (
-            <span className="text-ink-3">Выбери размер…</span>
+            <span className="text-ink-3">Pick a box size…</span>
           )}
         </span>
         <ChevronDown
@@ -187,12 +187,12 @@ export function BoxPresetPicker({
           )}
           {!presets && !loadError && (
             <div className="flex items-center gap-1.5 px-2 py-1.5 text-[11.5px] text-ink-3">
-              <Loader2 size={11} className="animate-spin" /> Загружаем пресеты…
+              <Loader2 size={11} className="animate-spin" /> Loading presets…
             </div>
           )}
           {presets && presets.length === 0 && (
             <div className="px-2 py-1.5 text-[11.5px] text-ink-3">
-              Нет пресетов. Добавь свой ниже.
+              No presets yet. Add one below.
             </div>
           )}
           {presets &&
@@ -232,7 +232,7 @@ export function BoxPresetPicker({
                       type="button"
                       onClick={(e) => deletePreset(e, p)}
                       disabled={isDeleting}
-                      title="Удалить пресет"
+                      title="Delete preset"
                       className="inline-flex h-5 w-5 items-center justify-center rounded text-ink-4 hover:bg-danger-tint hover:text-danger"
                     >
                       {isDeleting ? (
@@ -246,13 +246,13 @@ export function BoxPresetPicker({
               );
             })}
 
-          {/* "Свой размер" — POSTs a new preset and auto-selects it. */}
+          {/* "Custom size" — POSTs a new preset and auto-selects it. */}
           <div
             onClick={(e) => e.stopPropagation()}
             className="mt-1 border-t border-rule/60 px-2 py-2"
           >
             <div className="mb-1 text-[10.5px] uppercase tracking-wide text-ink-3">
-              Свой размер
+              Custom size
             </div>
             <div className="flex items-center gap-1">
               <input
@@ -288,7 +288,7 @@ export function BoxPresetPicker({
                 className="ml-auto inline-flex h-7 items-center gap-1 rounded border border-rule bg-surface px-2 text-[11.5px] font-medium text-ink-2 hover:border-ink-3 hover:text-ink disabled:opacity-50"
               >
                 {adding ? <Loader2 size={10} className="animate-spin" /> : <Plus size={11} />}
-                {adding ? "Добавляю…" : "Добавить"}
+                {adding ? "Adding…" : "Add"}
               </button>
             </div>
             {addError && (

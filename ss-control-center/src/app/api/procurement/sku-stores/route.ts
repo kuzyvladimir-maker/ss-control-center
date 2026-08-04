@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  *
  * Used by the Procurement page to populate per-card store chips without
  * firing one request per visible card. SKUs missing from the response
- * have no entry — the UI shows "магазины не указаны".
+ * have no entry — the UI shows "No stores set".
  */
 export async function GET(req: NextRequest) {
   const skus = req.nextUrl.searchParams.getAll("sku").filter(Boolean);

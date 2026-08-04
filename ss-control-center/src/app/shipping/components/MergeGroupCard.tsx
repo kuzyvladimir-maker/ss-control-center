@@ -125,11 +125,11 @@ function shortDate(raw: string | null | undefined): string {
   return m ? `${parseInt(m[2], 10)}/${parseInt(m[3], 10)}` : "";
 }
 
-const DAY_RU = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function dayLabel(ymd: string): string {
   const d = new Date(`${ymd}T12:00:00`);
-  return Number.isNaN(d.getTime()) ? "" : DAY_RU[d.getDay()];
+  return Number.isNaN(d.getTime()) ? "" : DAY_SHORT[d.getDay()];
 }
 
 // Today in Eastern — the operator's day, matching the server's todayNY().
@@ -587,14 +587,14 @@ export function MergeGroupCard({
               {recommended && (
                 <div className="flex flex-wrap items-center gap-2 rounded border border-info bg-surface px-2 py-2">
                   <span className="rounded bg-info px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
-                    Выбрано алгоритмом
+                    Picked by the rules
                   </span>
                   <span className="min-w-0 flex-1 truncate text-[length:var(--ship-row)] font-medium text-ink">
                     {recommended.label}
                   </span>
                   {recommended.edd && (
                     <span className="shrink-0 text-[length:var(--ship-meta)] text-ink-3">
-                      доставка {shortDate(recommended.edd)}
+                      delivers {shortDate(recommended.edd)}
                     </span>
                   )}
                   <span className="shrink-0 text-[length:var(--ship-cell-value)] font-semibold tabular text-ink">
@@ -613,7 +613,7 @@ export function MergeGroupCard({
                     ) : (
                       <ShoppingCart size={12} />
                     )}
-                    Купить этикетку
+                    Buy one label
                   </button>
                   <div className="w-full text-[length:var(--ship-meta)] text-ink-3">
                     {recommended.reason}
@@ -624,9 +624,9 @@ export function MergeGroupCard({
                       day quoted, or the food travels longer than planned. */}
                   {recommended.shipDate !== todayET() && (
                     <div className="w-full rounded bg-warn-tint px-2 py-1 text-[length:var(--ship-meta)] font-medium text-warn-strong">
-                      Отправить {dayLabel(recommended.shipDate)}{" "}
-                      {shortDate(recommended.shipDate)} — этикетка печатается
-                      сегодняшней датой, коробка уезжает в этот день.
+                      Ship {dayLabel(recommended.shipDate)}{" "}
+                      {shortDate(recommended.shipDate)} — the label prints with
+                      today&apos;s date, the box leaves that day.
                     </div>
                   )}
                 </div>
@@ -636,7 +636,7 @@ export function MergeGroupCard({
                   frozen box that is a food-safety decision, not a UI default. */}
               {!recommended && noRecReason && !ratesLoading && (
                 <div className="rounded border border-warn bg-warn-tint px-2 py-1.5 text-[length:var(--ship-meta)] text-warn-strong">
-                  Алгоритм не смог выбрать тариф: {noRecReason}
+                  No rate could be picked: {noRecReason}
                 </div>
               )}
 
@@ -648,8 +648,8 @@ export function MergeGroupCard({
                     className="text-[length:var(--ship-button)] text-info underline"
                   >
                     {showAllRates
-                      ? "Скрыть остальные тарифы"
-                      : `Другие тарифы (${rates.length})`}
+                      ? "Hide the other rates"
+                      : `Other rates (${rates.length})`}
                   </button>
                   {showAllRates && (
                     <div className="max-h-[220px] space-y-1 overflow-y-auto">
@@ -682,7 +682,7 @@ export function MergeGroupCard({
                               ) : (
                                 <ShoppingCart size={12} />
                               )}
-                              Купить этот
+                              Buy this one
                             </button>
                           </div>
                         ))}

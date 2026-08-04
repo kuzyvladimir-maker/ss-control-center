@@ -2,7 +2,7 @@
  * GET /api/cron/procurement-priority
  *
  * Every 15 minutes (per vercel.json): scan awaiting_fulfillment orders,
- * filter by Procurement rules (no Placed / canceled / Заказано у Майка /
+ * filter by Procurement rules (no Placed / canceled / ordered-through-Mike /
  * NAN-health), find priority-flagged ones, and Telegram-notify Vladimir
  * for any not yet logged in ProcurementNotificationLog.
  *
@@ -77,14 +77,14 @@ function buildMessage(order: VeeqoOrder, reason: string): string {
         li.sellable?.title ??
         "?";
       const q = li.quantity ?? 0;
-      return `• ${escapeHtml(t)} — ${q} шт`;
+      return `• ${escapeHtml(t)} — ${q} pcs`;
     })
     .join("\n");
   const more =
-    items.length > 3 ? `\n• …и ещё ${items.length - 3} товаров` : "";
+    items.length > 3 ? `\n• …and ${items.length - 3} more items` : "";
   const shipBy =
     typeof order.deliver_by === "string" && order.deliver_by
-      ? new Date(order.deliver_by).toLocaleString("ru-RU", {
+      ? new Date(order.deliver_by).toLocaleString("en-US", {
           timeZone: "America/New_York",
           dateStyle: "short",
           timeStyle: "short",
@@ -92,16 +92,16 @@ function buildMessage(order: VeeqoOrder, reason: string): string {
       : "—";
 
   return [
-    "🚨 <b>Приоритетный заказ требует закупа</b>",
+    "🚨 <b>A priority order needs buying</b>",
     `<i>${escapeHtml(reason)}</i>`,
     "",
     productLines + more,
     "",
     `Order: <code>${escapeHtml(orderNum)}</code> (${escapeHtml(channel)})`,
-    `Доставка: ${escapeHtml(shipping)}`,
+    `Shipping: ${escapeHtml(shipping)}`,
     `Ship by: ${escapeHtml(shipBy)} ET`,
     "",
-    `<a href="${PUBLIC_BASE_URL}/procurement">Открыть Procurement</a>`,
+    `<a href="${PUBLIC_BASE_URL}/procurement">Open Procurement</a>`,
   ].join("\n");
 }
 
@@ -214,11 +214,11 @@ export async function GET(req: NextRequest) {
 }
 
 function humanReason(r: ReturnType<typeof detectPriority>): string {
-  if (!r) return "Приоритет";
-  if (r.kind === "premium") return "Premium-заказ";
-  if (r.kind === "express-shipping") return `Экспресс-доставка: ${r.detail}`;
-  if (r.kind === "tight-dispatch") return `Срок отгрузки: ${r.detail}`;
-  return "Приоритет";
+  if (!r) return "Priority";
+  if (r.kind === "premium") return "Premium order";
+  if (r.kind === "express-shipping") return `Express shipping: ${r.detail}`;
+  if (r.kind === "tight-dispatch") return `Ship-by: ${r.detail}`;
+  return "Priority";
 }
 
 interface PrismaErrorLike {

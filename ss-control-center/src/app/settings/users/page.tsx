@@ -122,16 +122,16 @@ export default function UsersSettingsPage() {
       if (data.emailSent) {
         setInviteNotice({
           ok: true,
-          text: `Приглашение отправлено на ${data.emailTo}${
-            data.emailFrom ? ` (от ${data.emailFrom})` : ""
+          text: `Invitation sent to ${data.emailTo}${
+            data.emailFrom ? ` (from ${data.emailFrom})` : ""
           }.`,
         });
       } else {
         setInviteNotice({
           ok: false,
-          text: `Письмо не отправлено${
+          text: `The email was not sent${
             data.emailError ? `: ${data.emailError}` : ""
-          }. Скопируйте ссылку приглашения ниже и отправьте вручную.`,
+          }. Copy the invitation link below and send it by hand.`,
         });
       }
       setNewEmail("");

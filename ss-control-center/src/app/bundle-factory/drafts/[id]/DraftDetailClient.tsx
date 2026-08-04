@@ -536,7 +536,7 @@ export function DraftDetailClient(props: Props) {
   async function republishSku(skuId: string) {
     if (
       !window.confirm(
-        "Повторно отправить этот SKU в маркетплейс? Подтвердите, что контент, изображения, цена и остаток заново проверены.",
+        "Submit this SKU to the marketplace again? Confirm the content, images, price and stock have been re-checked.",
       )
     ) {
       return;
@@ -785,10 +785,10 @@ export function DraftDetailClient(props: Props) {
             channel of this draft.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <SpecInput label="Вес (oz)" value={weightOz} onChange={setWeightOz} />
-            <SpecInput label="Длина (in)" value={lengthIn} onChange={setLengthIn} />
-            <SpecInput label="Ширина (in)" value={widthIn} onChange={setWidthIn} />
-            <SpecInput label="Высота (in)" value={heightIn} onChange={setHeightIn} />
+            <SpecInput label="Weight (oz)" value={weightOz} onChange={setWeightOz} />
+            <SpecInput label="Length (in)" value={lengthIn} onChange={setLengthIn} />
+            <SpecInput label="Width (in)" value={widthIn} onChange={setWidthIn} />
+            <SpecInput label="Height (in)" value={heightIn} onChange={setHeightIn} />
           </div>
           <div className="mt-3 flex justify-end">
             <Btn
@@ -797,7 +797,7 @@ export function DraftDetailClient(props: Props) {
               loading={busy}
               onClick={saveShipSpecs}
             >
-              Сохранить и проверить
+              Save and validate
             </Btn>
           </div>
         </div>
@@ -1018,14 +1018,14 @@ function ChannelCard({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-rule/40 pt-3">
         <span className="text-[11px] text-ink-3">
           {row.main_image_url
-            ? `Картинка: попыток ${row.image_retry_count} · $${(row.image_generation_cost_cents / 100).toFixed(2)}`
+            ? `Image: ${row.image_retry_count} attempts · $${(row.image_generation_cost_cents / 100).toFixed(2)}`
             : canStartImage
-              ? "Картинки ещё нет — сгенерируй главное изображение (2000×2000) для публикации."
-              : "Картинка станет доступна после бренд-проверки текста."}
+              ? "No image yet — generate the MAIN image (2000×2000) before publishing."
+              : "The image unlocks once the text passes the brand check."}
         </span>
         {row.main_image_url ? (
           <Btn variant="ghost" disabled={busy} loading={busy} onClick={onRegenerateImage}>
-            Re-roll картинку
+            Re-roll the image
           </Btn>
         ) : canStartImage ? (
           <Btn variant="primary" disabled={busy} loading={busy} onClick={onGenerateImage}>
@@ -1234,7 +1234,7 @@ function MarketplacePreview({
   return (
     <div className="mt-3 overflow-hidden rounded-[12px] border border-rule bg-white">
       <div className="flex items-center justify-between border-b border-rule bg-[#f7f8f8] px-3 py-1.5 text-[10.5px] uppercase tracking-wider text-[#565959]">
-        <span>Предпросмотр · как на {market}</span>
+        <span>Preview · as it looks on {market}</span>
         <span className="font-mono normal-case tracking-normal">{channel}</span>
       </div>
       <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-[280px_1fr]">
@@ -1245,7 +1245,7 @@ function MarketplacePreview({
               <img src={hero} alt={title} className="h-full w-full object-contain" />
             ) : (
               <span className="px-6 text-center text-[12px] leading-snug text-[#8d9091]">
-                Изображение появится после «Generate image»
+                The image appears after &quot;Generate image&quot;
               </span>
             )}
           </div>
@@ -1258,8 +1258,8 @@ function MarketplacePreview({
                   onClick={() => setHeroIdx(i)}
                   title={
                     i === 0 && u === imageUrl
-                      ? "Сгенерированное титульное фото"
-                      : "Фото из донорского каталога"
+                      ? "Generated MAIN photo"
+                      : "Photo from the donor catalog"
                   }
                   className={`relative h-11 w-11 overflow-hidden rounded border ${
                     i === heroIdx
@@ -1280,9 +1280,9 @@ function MarketplacePreview({
           )}
           {gallery.length > 0 && (
             <div className="mt-1 text-[10.5px] text-[#8d9091]">
-              {gallery.length} фото
-              {imageUrl ? " · титул сгенерирован" : " · титул ещё не сгенерирован"}
-              {donorPhotos.length > 0 && ` · ${donorPhotos.length} из донора`}
+              {gallery.length} photos
+              {imageUrl ? " · MAIN generated" : " · MAIN not generated yet"}
+              {donorPhotos.length > 0 && ` · ${donorPhotos.length} from the donor`}
             </div>
           )}
         </div>
@@ -1290,14 +1290,14 @@ function MarketplacePreview({
           <h3 className="text-[19px] font-medium leading-snug text-[#0F1111]">
             {title}
           </h3>
-          <div className="mt-1 text-[12.5px] text-[#007185]">Бренд: {brand}</div>
+          <div className="mt-1 text-[12.5px] text-[#007185]">Brand: {brand}</div>
           <div className="mt-1 text-[12px] text-[#565959]">
-            Новый листинг · ещё нет отзывов
+            New listing · no reviews yet
           </div>
           <button
             type="button"
             onClick={() => setPriceOpen(true)}
-            title="Показать формулу ценообразования"
+            title="Show the pricing formula"
             className="mt-3 flex w-full items-baseline gap-1 border-t border-[#e7e7e7] pt-3 text-left hover:opacity-80"
           >
             <span className="align-top text-[13px] text-[#0F1111]">$</span>
@@ -1305,7 +1305,7 @@ function MarketplacePreview({
               {price}
             </span>
             <span className="ml-1 self-center text-[11px] text-[#007185] underline">
-              формула цены
+              pricing formula
             </span>
           </button>
           <div className="mt-4">
@@ -1327,7 +1327,7 @@ function MarketplacePreview({
       {attributes.length > 0 && (
         <div className="border-t border-[#e7e7e7] px-4 py-3.5">
           <div className="text-[15px] font-bold text-[#0F1111]">
-            Product information · все атрибуты
+            Product information · every attribute
           </div>
           <table className="mt-2 w-full border-collapse text-[12px]">
             <tbody>
@@ -1578,46 +1578,46 @@ function PricingModal({
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[14px] border border-rule bg-surface p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-[14px] font-semibold text-ink">Калькулятор цены</h3>
+        <h3 className="text-[14px] font-semibold text-ink">Price calculator</h3>
         <p className="mt-1 text-[12px] text-ink-3">
-          Цена набора считается из полной себестоимости (товар + кулер + лёд +
-          коробка) и комиссий маркетплейса так, чтобы удержать целевую маржу.
+          The bundle price is solved from the full cost (goods + cooler + ice +
+          box) and the marketplace fees so the target margin holds.
         </p>
 
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* LEFT — cost buildup */}
           <div className="rounded-md border border-rule bg-bg-elev/40 p-3">
             <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-ink-3">
-              Себестоимость набора
+              Bundle cost
             </div>
             <div className="space-y-1 text-[12.5px]">
-              <FormulaRow label="Товар (COGS)" value={dollars(c.goods_cents)} />
+              <FormulaRow label="Goods (COGS)" value={dollars(c.goods_cents)} />
               <FormulaRow
-                label={`Кулер${result.cooler_size ? ` (${result.cooler_size})` : ""}`}
+                label={`Cooler${result.cooler_size ? ` (${result.cooler_size})` : ""}`}
                 value={dollars(c.cooler_cents)}
               />
-              <FormulaRow label="Гелевый лёд" value={dollars(c.ice_cents)} />
-              <FormulaRow label="Картонная коробка" value={dollars(c.box_cents)} />
+              <FormulaRow label="Gel ice" value={dollars(c.ice_cents)} />
+              <FormulaRow label="Cardboard box" value={dollars(c.box_cents)} />
             </div>
             <div className="mt-2 border-t border-rule pt-2">
-              <MoneyInput label="FBA / фулфилмент" value={fba} onChange={setFba} />
+              <MoneyInput label="FBA / fulfillment" value={fba} onChange={setFba} />
               <MoneyInput label="Closing fee" value={closing} onChange={setClosing} />
               {result.shipping_auto ? (
                 <FormulaRow
-                  label={`Доставка (кулер ${result.cooler_size ?? "—"}, авто)`}
+                  label={`Shipping (cooler ${result.cooler_size ?? "—"}, auto)`}
                   value={dollars(result.cost.own_shipping_cents)}
                 />
               ) : (
-                <MoneyInput label="Наша доставка (лейбл)" value={ownShip} onChange={setOwnShip} />
+                <MoneyInput label="Our shipping (label)" value={ownShip} onChange={setOwnShip} />
               )}
             </div>
             <div className="mt-2 flex items-center justify-between border-t border-rule pt-2 text-[12.5px] font-semibold text-ink">
-              <span>Итого себестоимость</span>
+              <span>Total cost</span>
               <span className="tabular-nums">{dollars(c.total_cost_cents)}</span>
             </div>
             {result.packaging_estimated && (
               <p className="mt-1 text-[10.5px] text-warn">
-                Упаковка оценена (нет веса) — уточни в ship-specs, цена пересчитается.
+                Packaging estimated (no weight) — set it in ship-specs and the price recalculates.
               </p>
             )}
           </div>
@@ -1625,7 +1625,7 @@ function PricingModal({
           {/* RIGHT — fees, lever, result */}
           <div className="rounded-md border border-rule bg-bg-elev/40 p-3">
             <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-ink-3">
-              Комиссии и цена
+              Fees and price
             </div>
 
             <div className="mb-2 flex rounded-md border border-rule p-0.5 text-[11.5px]">
@@ -1634,31 +1634,31 @@ function PricingModal({
                 onClick={() => setMode("margin")}
                 className={`flex-1 rounded px-2 py-1 ${mode === "margin" ? "bg-green-ink text-white" : "text-ink-2"}`}
               >
-                По марже
+                By margin
               </button>
               <button
                 type="button"
                 onClick={() => setMode("markup")}
                 className={`flex-1 rounded px-2 py-1 ${mode === "markup" ? "bg-green-ink text-white" : "text-ink-2"}`}
               >
-                По маркапу
+                By markup
               </button>
               <button
                 type="button"
                 onClick={() => setMode("roi")}
                 className={`flex-1 rounded px-2 py-1 ${mode === "roi" ? "bg-green-ink text-white" : "text-ink-2"}`}
               >
-                По ROI
+                By ROI
               </button>
             </div>
 
             {mode === "margin" ? (
-              <PctInput label="Целевая маржа" value={marginPct} onChange={setMarginPct} />
+              <PctInput label="Target margin" value={marginPct} onChange={setMarginPct} />
             ) : mode === "roi" ? (
-              <PctInput label="Целевой ROI" value={roiPct} onChange={setRoiPct} />
+              <PctInput label="Target ROI" value={roiPct} onChange={setRoiPct} />
             ) : (
               <label className="flex items-center justify-between gap-2 py-0.5 text-[12px] text-ink-2">
-                <span>Маркап (× себестоимости)</span>
+                <span>Markup (× cost)</span>
                 <input
                   type="number"
                   min="1"
@@ -1670,19 +1670,19 @@ function PricingModal({
               </label>
             )}
             <PctInput
-              label="Referral (пусто = авто 8/15%)"
+              label="Referral (blank = auto 8/15%)"
               value={referral}
               onChange={setReferral}
-              placeholder="авто"
+              placeholder="auto"
             />
-            <MoneyInput label="Пол цены (минимум)" value={floor} onChange={setFloor} />
+            <MoneyInput label="Price floor (minimum)" value={floor} onChange={setFloor} />
             <label className="mt-1 flex items-center gap-2 text-[11.5px] text-ink-2">
               <input
                 type="checkbox"
                 checked={shippingInPrice}
                 onChange={(event) => setShippingInPrice(event.target.checked)}
               />
-              Включать стоимость лейбла в цену товара
+              Include the label cost in the item price
             </label>
 
             <div className="mt-2 space-y-1 border-t border-rule pt-2 text-[12.5px]">
@@ -1691,11 +1691,11 @@ function PricingModal({
                 value={`− ${dollars(result.referral_fee_cents)}`}
               />
               <div className="flex items-center justify-between pt-1 text-[13px] font-semibold text-ink">
-                <span>Цена продажи</span>
+                <span>Sale price</span>
                 <span className="tabular-nums">{dollars(result.selling_price_cents)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-ink-2">Прибыль</span>
+                <span className="text-ink-2">Profit</span>
                 <span className={`tabular-nums font-medium ${marginColor}`}>
                   {dollars(result.profit_cents)} ({(result.margin_pct * 100).toFixed(0)}%)
                 </span>
@@ -1706,17 +1706,17 @@ function PricingModal({
 
         <p className="mt-3 text-[11px] text-warn">
           {result.pricing_source === "UNCRUSTABLES_CANONICAL"
-            ? "Для Uncrustables действует утверждённая модель по количеству; глобальные настройки применяются к другим листингам."
-            : "Изменение применяется ко ВСЕМ листингам фабрики (единая модель цены)."}
+            ? "Uncrustables run on the approved per-quantity model; the global settings apply to the other listings."
+            : "The change applies to EVERY listing in the factory (one pricing model)."}
         </p>
         {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
 
         <div className="mt-4 flex items-center justify-end gap-2">
           <Btn variant="ghost" disabled={saving} onClick={onClose}>
-            Закрыть
+            Close
           </Btn>
           <Btn variant="primary" disabled={!dirty || saving} loading={saving} onClick={save}>
-            Сохранить модель
+            Save the model
           </Btn>
         </div>
       </div>

@@ -1,7 +1,7 @@
 /**
  * GET /api/shipping/search?q=<free text>
  *
- * "Найти любой заказ" — the archive search behind the Shipping Labels
+ * "Find any order" — the archive search behind the Shipping Labels
  * search box. Unlike /api/shipping/dashboard (which loads ONLY Veeqo's
  * `awaiting_fulfillment` bucket), this endpoint answers across EVERY
  * order status: shipped, delivered, cancelled, refunded, on hold. That
@@ -347,7 +347,7 @@ export async function GET(request: NextRequest) {
       query: q,
       hits: [],
       degraded: [],
-      note: `Введите минимум ${MIN_QUERY} символа`,
+      note: `Type at least ${MIN_QUERY} characters`,
     });
   }
 
@@ -726,7 +726,7 @@ export async function GET(request: NextRequest) {
                 // A discarded label is still findable by its tracking
                 // number, so say so instead of showing it as live.
                 service: label.discardedAt
-                  ? "этикетка отменена"
+                  ? "label discarded"
                   : label.serviceType,
               },
             ]

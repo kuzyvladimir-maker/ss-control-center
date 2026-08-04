@@ -63,22 +63,22 @@ interface SkuDetail {
 }
 
 /**
- * "Снять с продажи" modal. Opens from the Procurement card ⋮ menu.
+ * "Retire from sale" modal. Opens from the Procurement card ⋮ menu.
  *
  *   1. Auto-fills the search box with a cleaned version of the procurement
  *      title (Pack/size noise stripped) — Vladimir can edit before searching.
  *   2. Hits POST /api/walmart/retire-listing/search → reads the Walmart
  *      catalog mirror (sub-second).
- *   3. Lists every matching SKU with per-row "Снять" button and a footer
- *      "Снять все найденные" master button.
- *   4. Each Снять sets inventory=0 on Walmart and writes an audit row to
+ *   3. Lists every matching SKU with a per-row "Retire" button and a footer
+ *      "Retire everything found" master button.
+ *   4. Each Retire sets inventory=0 on Walmart and writes an audit row to
  *      WalmartListingRetirement.
  *
- * A SKU is shown greyed-out with a "Снят" badge (and its button disabled)
+ * A SKU is shown greyed-out with a "Retired" badge (and its button disabled)
  * only when Walmart's LIVE stock is 0 — i.e. it's genuinely not selling.
  * The local WalmartListingRetirement log is just a provisional hint while
  * live stock loads: a SKU that was retired in the past but has since been
- * restocked (сток > 0, still PUBLISHED) must stay retireable, not be hidden
+ * restocked (stock > 0, still PUBLISHED) must stay retireable, not be hidden
  * behind a stale log row.
  */
 export function RetireFromSaleModal({
@@ -115,7 +115,7 @@ export function RetireFromSaleModal({
   const [details, setDetails] = useState<Map<string, SkuDetail>>(new Map());
   const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // Whether the collapsed "похожие товары" (secondary) block is expanded, and
+  // Whether the collapsed "similar products" (secondary) block is expanded, and
   // whether we've already lazily loaded thumbnails/qty for it (so revealing it
   // doesn't re-fetch on every toggle).
   const [showSimilar, setShowSimilar] = useState(false);
@@ -131,7 +131,7 @@ export function RetireFromSaleModal({
   async function runSearch(q: string, includeUnp: boolean, live = false) {
     const cleaned = q.trim();
     if (!cleaned) {
-      setSearchError("Введи название для поиска");
+      setSearchError("Type a product name to search for");
       return;
     }
     setSearching(true);
@@ -175,19 +175,19 @@ export function RetireFromSaleModal({
           (Date.now() - synced.getTime()) / (1000 * 60 * 60),
         );
         setCacheNote(
-          `Каталог обновлён ${ageHours < 1 ? "недавно" : `~${ageHours} ч. назад`} (${data.totalInCache ?? "?"} SKU всего)`,
+          `Catalog refreshed ${ageHours < 1 ? "recently" : `~${ageHours} h ago`} (${data.totalInCache ?? "?"} SKUs in total)`,
         );
       }
       // Fire-and-forget: enrich each row with image + live qty in the
       // background. The list renders immediately with skeletons; thumbs
       // and qty badges pop in as the call resolves. Only the PRIMARY rows
       // (the product + its variations) are loaded up front — the collapsed
-      // "похожие" block loads its details lazily when expanded.
+      // The "similar" block loads its details lazily when expanded.
       const primaryRows = found.filter((m) => m.tier !== "secondary");
       if (primaryRows.length > 0) {
         void fetchDetails(primaryRows);
       } else if (found.length > 0) {
-        // No exact product/variation match — the "похожие" (secondary) block IS
+        // No exact product/variation match — the "similar" (secondary) block IS
         // the only result, so auto-expand it and load its details up front.
         setShowSimilar(true);
         setSimilarDetailsLoaded(true);
@@ -213,7 +213,7 @@ export function RetireFromSaleModal({
       if (!res.ok) return;
       const data = (await res.json()) as { details?: SkuDetail[] };
       if (!data.details) return;
-      // Merge (don't replace) so a later lazy load for the "похожие" block
+      // Merge (don't replace) so a later lazy load for the "similar" block
       // keeps the already-loaded primary rows' thumbnails/qty.
       setDetails((prev) => {
         const next = new Map(prev);
@@ -294,12 +294,12 @@ export function RetireFromSaleModal({
     }
   }
 
-  // A SKU counts as "снят" only when Walmart actually shows it NOT selling —
-  // live сток === 0. The local retirement log (m.alreadyRetired) is used only
+  // A SKU counts as "retired" only when Walmart actually shows it NOT selling —
+  // live stock === 0. The local retirement log (m.alreadyRetired) is used only
   // as a provisional fallback WHILE live stock is still loading; once stock is
   // known it wins. Otherwise a stale / never-rolled-back log row masks a
   // restocked, still-PUBLISHED listing — the bug where 9 ACTIVE SKUs with
-  // сток:50 all showed "Снят" and the "Снять" button was disabled.
+  // stock:50 all showed "Retired" and the "Retire" button was disabled.
   const effectivelyRetired = (m: SearchMatch): boolean => {
     if (executeResults.get(m.sku)?.ok) return true; // zeroed this session
     const qty = details.get(m.sku)?.currentQty ?? null;
@@ -308,18 +308,18 @@ export function RetireFromSaleModal({
   };
 
   // Split into the tight PRIMARY list (product + its pack/multipack/bundle
-  // variations) and the collapsed SECONDARY "похожие" siblings (same brand,
+  // variations) and the collapsed SECONDARY "similar" siblings (same brand,
   // other flavour). A missing tier (live path / old response) counts as primary.
   const primaryMatches = (matches ?? []).filter((m) => m.tier !== "secondary");
   const secondaryMatches = (matches ?? []).filter((m) => m.tier === "secondary");
 
-  // Bulk "Снять все найденные" targets ONLY the primary list — never the
+  // Bulk "Retire everything found" targets ONLY the primary list — never the
   // collapsed siblings — so a mass-retire can't accidentally zero out other
-  // flavours of the brand. Individual per-row "Снять" still works on any row.
+  // flavours of the brand. Individual per-row "Retire" still works on any row.
   const eligible = primaryMatches.filter((m) => !effectivelyRetired(m));
   const eligibleSkus = eligible.map((m) => m.sku);
 
-  // One row renderer, reused by the primary list and the "похожие" block.
+  // One row renderer, reused by the primary list and the "similar" block.
   const renderRow = (m: SearchMatch) => {
     const isBusy = executing.has(m.sku);
     const result = executeResults.get(m.sku);
@@ -356,14 +356,14 @@ export function RetireFromSaleModal({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
-            <span className="truncate">{m.title || "(без названия)"}</span>
+            <span className="truncate">{m.title || "(no title)"}</span>
             {m.itemId && (
               <a
                 href={`https://www.walmart.com/ip/${m.itemId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 text-ink-4 hover:text-ink-2"
-                title="Открыть на Walmart.com"
+                title="Open on Walmart.com"
               >
                 <ExternalLink size={11} />
               </a>
@@ -384,26 +384,26 @@ export function RetireFromSaleModal({
             {loadingDetails && liveQty === null ? (
               <span className="inline-flex items-center gap-1 text-ink-4">
                 <Loader2 size={9} className="animate-spin" />
-                сток…
+                stock…
               </span>
             ) : liveQty === null ? (
-              <span className="text-ink-4">сток: ?</span>
+              <span className="text-ink-4">stock: ?</span>
             ) : liveQty === 0 ? (
               // Show literal "0", not "OOS" — Vladimir wants the actual number
               // visible so he can confirm at a glance whether the retire took.
               <span className="rounded bg-bg-elev px-1 font-medium text-ink-3">
-                сток: 0
+                stock: 0
               </span>
             ) : (
               <span className="rounded bg-green-soft px-1 font-medium text-green-ink">
-                сток: {liveQty}
+                stock: {liveQty}
               </span>
             )}
             {effRetired && (
               <>
                 <span className="text-ink-4">·</span>
                 <span className="font-medium text-green-ink">
-                  Снят
+                  Retired
                   {m.retiredAt
                     ? ` ${new Date(m.retiredAt).toLocaleDateString("ru-RU")}`
                     : ""}
@@ -426,7 +426,7 @@ export function RetireFromSaleModal({
           icon={justDone ? <Check size={12} /> : <Ban size={12} />}
           onClick={() => executeSkus([m.sku])}
         >
-          {justDone ? "Снят" : "Снять"}
+          {justDone ? "Retired" : "Retire"}
         </Btn>
       </div>
     );
@@ -448,7 +448,7 @@ export function RetireFromSaleModal({
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
               <Ban size={14} className="text-danger" />
-              Снять с продажи на Walmart
+              Retire from sale on Walmart
             </div>
             <div className="mt-0.5 truncate text-[11.5px] text-ink-3">
               {productTitle}
@@ -458,7 +458,7 @@ export function RetireFromSaleModal({
             type="button"
             onClick={onClose}
             className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink"
-            aria-label="Закрыть"
+            aria-label="Close"
           >
             <X size={16} />
           </button>
@@ -470,7 +470,7 @@ export function RetireFromSaleModal({
             htmlFor="retire-query"
             className="text-[11px] font-medium text-ink-3"
           >
-            Поиск в каталоге Walmart
+            Search the Walmart catalog
           </label>
           <div className="mt-1 flex gap-2">
             <input
@@ -484,7 +484,7 @@ export function RetireFromSaleModal({
                   void runSearch(query, includeUnpublished);
                 }
               }}
-              placeholder="название товара…"
+              placeholder="product name…"
               className="h-9 flex-1 rounded-md border border-rule bg-surface px-2.5 text-[13px] text-ink outline-none focus:border-silver-line"
             />
             <Btn
@@ -494,7 +494,7 @@ export function RetireFromSaleModal({
               icon={<Search size={13} />}
               onClick={() => runSearch(query, includeUnpublished)}
             >
-              Найти
+              Search
             </Btn>
           </div>
           <label className="mt-2 inline-flex cursor-pointer items-center gap-1.5 text-[11.5px] text-ink-3">
@@ -504,7 +504,7 @@ export function RetireFromSaleModal({
               onChange={(e) => setIncludeUnpublished(e.target.checked)}
               className="h-3.5 w-3.5 rounded border-rule"
             />
-            Включать также UNPUBLISHED
+            Include UNPUBLISHED too
           </label>
           {cacheNote && (
             <div className="mt-1 text-[10.5px] text-ink-4">{cacheNote}</div>
@@ -517,8 +517,8 @@ export function RetireFromSaleModal({
             <div className="flex items-center gap-2 text-[12.5px] text-ink-3">
               <Loader2 size={14} className="animate-spin" />{" "}
               {searchedLive
-                ? "Ищу вживую на Walmart (может занять до ~20 сек)…"
-                : "Ищу в каталоге…"}
+                ? "Searching Walmart live (can take ~20 s)…"
+                : "Searching the catalog…"}
             </div>
           )}
           {searchError && (
@@ -533,7 +533,7 @@ export function RetireFromSaleModal({
               the cache doesn't have yet. */}
           {!searching && matches !== null && !searchedLive && (
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-rule bg-surface-tint px-2.5 py-1.5 text-[12px] text-ink-3">
-              <span>Нет нужного товара? Каталог мог не успеть обновиться.</span>
+              <span>Product missing? The catalog may not have refreshed yet.</span>
               <div className="flex shrink-0 items-center gap-3">
                 {orderSku && (
                   // Reliable path: Walmart's `?sku=` lookup is instant and
@@ -544,7 +544,7 @@ export function RetireFromSaleModal({
                     className="font-medium text-[#0071dc] underline"
                     onClick={() => runSearch(orderSku, true, true)}
                   >
-                    Найти по SKU: {orderSku}
+                    Search by SKU: {orderSku}
                   </button>
                 )}
                 <button
@@ -552,14 +552,14 @@ export function RetireFromSaleModal({
                   className="font-medium text-[#0071dc] underline"
                   onClick={() => runSearch(query, includeUnpublished, true)}
                 >
-                  Искать вживую по названию
+                  Search live by name
                 </button>
               </div>
             </div>
           )}
           {!searching && searchedLive && matches !== null && (
             <div className="mb-2 text-[11px] text-ink-4">
-              Результаты получены вживую с Walmart (актуально).
+              Results fetched live from Walmart (up to date).
             </div>
           )}
           {/* Hint: matches exist in UNPUBLISHED but the box is off. Shows
@@ -572,9 +572,9 @@ export function RetireFromSaleModal({
             excludedByStatus > 0 && (
               <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-info-tint px-2.5 py-1.5 text-[12px] text-info">
                 <span>
-                  Ещё <span className="font-medium">{excludedByStatus}</span>{" "}
-                  в UNPUBLISHED / других статусах скрыто — нужный товар может
-                  быть там.
+                  Another <span className="font-medium">{excludedByStatus}</span>{" "}
+                  in UNPUBLISHED / other statuses are hidden — the one you want
+                  may be there.
                 </span>
                 <button
                   type="button"
@@ -584,15 +584,15 @@ export function RetireFromSaleModal({
                     void runSearch(query, true);
                   }}
                 >
-                  Показать
+                  Show
                 </button>
               </div>
             )}
           {!searching && matches !== null && matches.length === 0 && (
             <div className="text-[12.5px] text-ink-3">
               {!includeUnpublished && excludedByStatus > 0
-                ? "В PUBLISHED ничего не найдено."
-                : "Ничего не найдено. Попробуй сократить запрос или включить UNPUBLISHED."}
+                ? "Nothing found in PUBLISHED."
+                : "Nothing found. Try a shorter query or include UNPUBLISHED."}
             </div>
           )}
           {matches !== null && matches.length > 0 && (
@@ -603,14 +603,14 @@ export function RetireFromSaleModal({
                 <>
                   <div className="mb-2 flex items-baseline justify-between text-[11.5px] text-ink-3">
                     <span>
-                      Найдено:{" "}
+                      Found:{" "}
                       <span className="font-medium text-ink">
                         {primaryMatches.length}
                       </span>{" "}
                       <span className="text-ink-4">
-                        (товар и вариации
+                        (the product and its variations
                         {eligible.length < primaryMatches.length
-                          ? `, из них ${eligible.length} ещё не снято`
+                          ? `, ${eligible.length} of them not retired yet`
                           : ""}
                         )
                       </span>
@@ -622,14 +622,14 @@ export function RetireFromSaleModal({
                 </>
               ) : (
                 <div className="mb-2 text-[12px] text-ink-3">
-                  Точных совпадений (товар или его вариации) не найдено — ниже
-                  похожие товары этого бренда.
+                  No exact match (the product or its variations) — below are
+                  similar products from the same brand.
                 </div>
               )}
 
               {/* SECONDARY: same brand, different flavour/line. Collapsed by
                   default so the noise the old search flooded in stays one click
-                  away — and out of "Снять все найденные". */}
+                  away — and out of "Retire everything found". */}
               {secondaryMatches.length > 0 && (
                 <div className="mt-2">
                   <button
@@ -651,7 +651,7 @@ export function RetireFromSaleModal({
                     ) : (
                       <ChevronRight size={13} />
                     )}
-                    Похожие товары этого бренда ({secondaryMatches.length})
+                    Similar products from this brand ({secondaryMatches.length})
                   </button>
                   {showSimilar && (
                     <div className="mt-1 divide-y divide-rule/60 rounded-md border border-rule/60">
@@ -670,32 +670,32 @@ export function RetireFromSaleModal({
             htmlFor="retire-reason"
             className="text-[11px] font-medium text-ink-3"
           >
-            Причина (опционально, сохранится в логе)
+            Reason (optional, saved to the log)
           </label>
           <input
             id="retire-reason"
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="напр. поставщик прекратил поставки"
+            placeholder="e.g. the supplier stopped shipping it"
             className="mt-1 h-9 w-full rounded-md border border-rule bg-surface px-2.5 text-[13px] text-ink outline-none focus:border-silver-line"
           />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <Btn variant="ghost" size="sm" onClick={onClose}>
-              Закрыть
+              Close
             </Btn>
             {eligibleSkus.length > 1 &&
               (bulkConfirm ? (
                 <div className="flex items-center gap-2">
                   <span className="text-[11.5px] text-warn-strong">
-                    Снять все {eligibleSkus.length} SKU?
+                    Retire all {eligibleSkus.length} SKUs?
                   </span>
                   <Btn
                     variant="ghost"
                     size="sm"
                     onClick={() => setBulkConfirm(false)}
                   >
-                    Отмена
+                    Cancel
                   </Btn>
                   <Btn
                     variant="primary"
@@ -704,7 +704,7 @@ export function RetireFromSaleModal({
                     icon={<Ban size={12} />}
                     onClick={() => executeSkus(eligibleSkus)}
                   >
-                    Да, снять все
+                    Yes, retire them all
                   </Btn>
                 </div>
               ) : (
@@ -715,7 +715,7 @@ export function RetireFromSaleModal({
                   icon={<Ban size={12} />}
                   onClick={() => setBulkConfirm(true)}
                 >
-                  Снять все найденные ({eligibleSkus.length})
+                  Retire everything found ({eligibleSkus.length})
                 </Btn>
               ))}
           </div>

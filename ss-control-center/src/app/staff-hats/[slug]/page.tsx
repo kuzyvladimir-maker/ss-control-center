@@ -69,13 +69,13 @@ export default function HatDetailPage() {
       <div className="space-y-6">
         <section>
           <h2 className="mb-2 text-[13px] font-semibold text-ink">
-            Назначение поста
+            Purpose of the post
           </h2>
           <p className="text-[13px] leading-relaxed text-ink-2">{hat.purpose}</p>
         </section>
 
         <section>
-          <h2 className="mb-2 text-[13px] font-semibold text-ink">Обязанности</h2>
+          <h2 className="mb-2 text-[13px] font-semibold text-ink">Duties</h2>
           <ul className="space-y-1.5">
             {hat.duties.map((duty, i) => (
               <li
@@ -92,18 +92,18 @@ export default function HatDetailPage() {
         {(hat.reportsTo || hat.manages) && (
           <section>
             <h2 className="mb-2 text-[13px] font-semibold text-ink">
-              Подчинение / Руководит
+              Reports to / Manages
             </h2>
             <div className="space-y-2">
               {hat.reportsTo && (
                 <p className="text-[13px] leading-relaxed text-ink-2">
-                  <span className="font-medium text-ink">Подчиняется: </span>
+                  <span className="font-medium text-ink">Reports to: </span>
                   {hat.reportsTo}
                 </p>
               )}
               {hat.manages && (
                 <p className="text-[13px] leading-relaxed text-ink-2">
-                  <span className="font-medium text-ink">Руководит: </span>
+                  <span className="font-medium text-ink">Manages: </span>
                   {hat.manages}
                 </p>
               )}
@@ -115,7 +115,7 @@ export default function HatDetailPage() {
           <section>
             <div className="mb-2 flex items-center gap-2">
               <h2 className="text-[13px] font-semibold text-ink">
-                Продукт поста
+                Product of the post
               </h2>
               {hat.productInferred && (
                 <span className="inline-flex items-center rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn-strong">
@@ -130,7 +130,7 @@ export default function HatDetailPage() {
         )}
 
         <section>
-          <h2 className="mb-2 text-[13px] font-semibold text-ink">Источник</h2>
+          <h2 className="mb-2 text-[13px] font-semibold text-ink">Source</h2>
           <Panel className="bg-surface-tint p-3">
             <p className="text-[12.5px] leading-relaxed text-ink-2">
               {hat.source.name}

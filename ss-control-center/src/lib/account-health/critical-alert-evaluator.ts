@@ -132,7 +132,7 @@ function formatTelegramAlert(alert: {
   return (
     `${emoji} *${alert.title}*\n\n` +
     `${alert.message}\n\n` +
-    `📊 ${alert.metricName}: ${alert.metricValue} (порог: ${alert.metricThreshold})` +
+    `📊 ${alert.metricName}: ${alert.metricValue} (threshold: ${alert.metricThreshold})` +
     link
   );
 }

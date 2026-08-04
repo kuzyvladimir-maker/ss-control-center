@@ -3,7 +3,7 @@
  *
  * Body: { query: string; limit?: number; includeUnpublished?: boolean }
  *
- * Wraps searchWalmartCatalogCache so the Procurement "Снять с продажи"
+ * Wraps searchWalmartCatalogCache so the Procurement "Retire from sale"
  * modal can find every SKU sharing a product name (multi-pack variants,
  * bundles, etc.). Reads from the nightly catalog mirror — sub-second.
  *

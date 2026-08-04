@@ -36,19 +36,19 @@ type FilterId = "all" | "suppressed" | "hasErrors" | "lowScore" | "notBuyable";
 // tab/algorithm does (chat with Vladimir is Russian; UI strings stay English).
 const TAB_HELP: Record<string, string> = {
   "action-center":
-    "Что горит прямо сейчас: сводка проблем по аккаунту и быстрые переходы в нужный список листингов. Точка входа — видишь, куда нажать.",
+    "What is on fire right now: a summary of account problems and quick jumps into the right listing list. The entry point — you see where to click.",
   "listing-health":
-    "Здоровье каждого листинга: наш балл (у Amazon своего нет) + полная воронка продаж. Сверху — AI-аналитик: отбираешь пул фильтрами, и LLM по каждому листингу ставит диагноз и сам применяет безопасные фиксы. Тратит деньги на AI — запуск только вручную. Кнопка ↗ открывает листинг на Amazon.",
+    "The health of every listing: our own score (Amazon has none) plus the full sales funnel. On top is the AI analyst: you pick the pool with filters, and the LLM diagnoses each listing and applies the safe fixes itself. It spends money on AI — manual launch only. The ↗ button opens the listing on Amazon.",
   optimizer:
-    "Массовая безопасная чистка: фильтр → пул → одна кнопка убирает дубли-ошибки, вычищает промо-слова из заголовков, проставляет недостающие unit_count/вес. Только детерминированные правки, с проверкой перед записью и откатом — бесплатно, без AI. Снизу — что это дало (Impact + карта частых ошибок).",
+    "Bulk safe clean-up: filter → pool → one button removes duplicate errors, strips promo words from titles, fills missing unit_count/weight. Deterministic edits only, verified before the write and reversible — free, no AI. Below is what it achieved (Impact + a map of frequent errors).",
   "buy-box":
-    "Кто владеет featured offer (Buy Box). Где мы его теряем — туда уходит трафик к конкуренту, и конверсия падает не из-за контента, а из-за потери Buy Box.",
+    "Who owns the featured offer (Buy Box). Where we lose it, the traffic goes to a competitor and conversion drops because of the lost Buy Box, not because of the content.",
   pricing:
-    "Цены и гард-рейлы (пол/потолок маржи) + репрайс. Ведётся параллельно с расчётом реальной себестоимости (COGS).",
+    "Prices and guard rails (margin floor/ceiling) plus repricing. Runs alongside the real cost (COGS) calculation.",
   recovery:
-    "История продаж по дням + «потерянные чемпионы» — листинги, что продавались раньше, а сейчас пропали или просели. Раскрой строку → rebuild-kit (контент из снимка или каталога Amazon) → Restore вернёт контент. Кнопка «Backfill 90d» наполняет историю для трендов и измерения эффекта.",
+    "Daily sales history plus the lost champions — listings that used to sell and have since vanished or sagged. Expand a row → rebuild kit (content from a snapshot or the Amazon catalog) → Restore puts the content back. The Backfill 90d button fills the history for trends and effect measurement.",
   "change-log":
-    "Журнал каждого изменения: что/когда/каким алгоритмом, значения до→после, оценка польза/нейтрально/вред и контроль-скорректированный лифт (DiD — эффект за вычетом движения рынка). Любую атрибутную правку откатываешь одной кнопкой.",
+    "A log of every change: what/when/by which algorithm, before→after values, a helped/neutral/hurt verdict and the control-adjusted lift (DiD — the effect net of market movement). Any attribute edit rolls back with one button.",
 };
 
 function TabHelp({ tab }: { tab: string }) {
