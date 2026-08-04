@@ -99,11 +99,28 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Listing images marketplaces fetch for themselves. Walmart and Amazon
+  // download from the URL in the feed with no session and no bearer token, so
+  // this route has to answer them. It is deliberately narrow: read-only, GET,
+  // confined to the image key prefixes we publish under, and it refuses
+  // anything that is not an image file.
+  //
+  // Named explicitly rather than left to the extension list below, because
+  // that list is missing .jpg — which silently returned 401 for every gallery
+  // image and got a Walmart submission rejected for "missing a valid
+  // authentication credential".
+  if (pathname.startsWith("/api/public-image/")) {
+    return NextResponse.next();
+  }
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.endsWith(".ico") ||
     pathname.endsWith(".png") ||
+    pathname.endsWith(".jpg") ||
+    pathname.endsWith(".jpeg") ||
+    pathname.endsWith(".webp") ||
     pathname.endsWith(".svg")
   ) {
     return NextResponse.next();
