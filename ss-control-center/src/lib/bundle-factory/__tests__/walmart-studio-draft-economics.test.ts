@@ -1,32 +1,43 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+/**
+ * Pricing is solved for return on invested capital, not for margin.
+ *
+ * The owner's rule, in his words: 70% back on the money he actually puts in.
+ * Invested is the goods and the packaging. The shipping label is a real cost
+ * and comes out of profit, but it is NOT in the denominator — it is bought on
+ * account, not staked out of his own pocket.
+ *
+ * Why this replaced a margin target: margin measures profit against what the
+ * customer paid, and on a free-shipping template the label comes out of our own
+ * price. A 30% margin target priced the first published listing at $37.68 on
+ * $16.38 invested — a 42% return, not 70%. The two metrics diverge exactly
+ * where the shipping cost is.
+ */
 
+import test from "node:test";
+import assert from "node:assert/strict";
 import {
   calculateWalmartStudioDraftEconomics,
-  walmartStudioDraftPackageWeightOz,
+  WALMART_STUDIO_TARGET_ROI_BPS,
 } from "../walmart-studio-draft-economics";
-import { parseWalmartShippingTemplateDetails } from
-  "../walmart-shipping-templates";
+import { parseWalmartShippingTemplateDetails } from "../walmart-shipping-templates";
 
-function flatTemplate(amount: number) {
+function flatTemplate(dollars: number) {
   return parseWalmartShippingTemplateDetails({
-    id: amount === 0 ? "free" : "paid-1199",
-    name: amount === 0 ? "Free shipping" : "Standard $11.99",
+    id: "T1",
+    name: `flat ${dollars}`,
     type: "CUSTOM",
-    status: "ACTIVE",
     rateModelType: "PER_SHIPMENT_PRICING",
-    createdDate: 1_700_000_000_000,
-    modifiedDate: 1_700_000_000_001,
+    status: "ACTIVE",
     shippingMethods: [{
-      shipMethod: "STANDARD",
+      shipMethod: "VALUE",
       status: "ACTIVE",
       configurations: [{
-        regions: [{ regionCode: "C", regionName: "48 State" }],
+        regions: [{ regionCode: "C", regionName: "48 State", subRegions: [] }],
         addressTypes: ["STREET"],
-        transitTime: 5,
+        transitTime: 6,
         perShippingCharge: {
           unitOfMeasure: "LB",
-          shippingAndHandling: { amount, currency: "USD" },
+          shippingAndHandling: { amount: dollars, currency: "USD" },
           chargePerWeight: { amount: 0, currency: "USD" },
           chargePerItem: { amount: 0, currency: "USD" },
         },
@@ -35,84 +46,129 @@ function flatTemplate(amount: number) {
   });
 }
 
-test("free and $11.99 templates preserve one landed target at 30 percent", () => {
+/** The live Campbell's Pack-of-6 numbers, so the test speaks about real money. */
+const REAL = {
+  goodsCostCents: 1_488,
+  packagingCostCents: 150,
+  shippingLabelCents: 878,
+  packageWeightOz: 179,
+};
+
+test("70 percent is the default, and it is the owner's rule", () => {
+  assert.equal(WALMART_STUDIO_TARGET_ROI_BPS, 7_000);
+});
+
+test("the live listing prices at $43.10 and returns exactly 70 percent", () => {
+  const result = calculateWalmartStudioDraftEconomics({
+    ...REAL,
+    template: flatTemplate(0),
+  });
+
+  assert.equal(result.invested_capital_cents, 1_638, "goods + packaging only");
+  assert.equal(result.item_price_cents, 4_310);
+
+  const scenario = result.scenarios[0]!;
+  assert.equal(scenario.customer_total_cents, 4_310);
+  assert.equal(scenario.referral_fee_cents, 647);
+  assert.equal(scenario.contribution_profit_cents, 1_147);
+  assert.ok(
+    scenario.return_on_invested_bps >= 7_000,
+    `ROI was ${scenario.return_on_invested_bps} bps`,
+  );
+});
+
+test("the shipping label is subtracted from profit but is not invested", () => {
+  const result = calculateWalmartStudioDraftEconomics({
+    ...REAL,
+    template: flatTemplate(0),
+  });
+  // Invested excludes the label...
+  assert.equal(
+    result.invested_capital_cents,
+    REAL.goodsCostCents + REAL.packagingCostCents,
+  );
+  // ...but profit still pays for it.
+  const scenario = result.scenarios[0]!;
+  const allCosts = REAL.goodsCostCents + REAL.packagingCostCents
+    + REAL.shippingLabelCents;
+  assert.equal(
+    scenario.contribution_profit_cents,
+    scenario.customer_total_cents - allCosts - scenario.referral_fee_cents,
+  );
+});
+
+test("the old 30 percent margin target would have under-priced it", () => {
+  const result = calculateWalmartStudioDraftEconomics({
+    ...REAL,
+    template: flatTemplate(0),
+  });
+  // $37.68 was the price the margin rule produced. Whatever we charge now must
+  // be more than that, or the change achieved nothing.
+  assert.ok(
+    result.item_price_cents > 3_768,
+    `priced at ${result.item_price_cents}, which is no better than the margin rule`,
+  );
+  // And that old price really did fall short of the owner's rule.
+  const oldProfit = 3_768 - 1_488 - 150 - 878 - Math.ceil(3_768 * 0.15);
+  assert.ok(oldProfit * 10_000 / 1_638 < 7_000);
+});
+
+test("a customer-paid shipping template lowers the item price, not the return", () => {
   const free = calculateWalmartStudioDraftEconomics({
-    goodsCostCents: 794,
-    packagingCostCents: 150,
-    shippingLabelCents: 878,
-    targetMarginBps: 3_000,
-    packageWeightOz: 1,
+    ...REAL,
     template: flatTemplate(0),
   });
   const paid = calculateWalmartStudioDraftEconomics({
-    goodsCostCents: 794,
-    packagingCostCents: 150,
-    shippingLabelCents: 878,
-    targetMarginBps: 3_000,
-    packageWeightOz: 1,
+    ...REAL,
     template: flatTemplate(11.99),
   });
 
-  assert.equal(free.item_price_cents, 3_313);
-  assert.equal(free.minimum_customer_total_cents, 3_313);
-  assert.equal(paid.item_price_cents, 2_114);
-  assert.equal(paid.minimum_customer_shipping_charge_cents, 1_199);
-  assert.equal(paid.minimum_customer_total_cents, 3_313);
+  assert.ok(
+    paid.item_price_cents < free.item_price_cents,
+    "when the buyer pays shipping, the item itself costs less",
+  );
+  // The return is what must stay put.
+  assert.ok(paid.worst_case_return_on_invested_bps >= 7_000);
+  assert.ok(free.worst_case_return_on_invested_bps >= 7_000);
 });
-test("honors a non-default owner-selected target margin", () => {
+
+test("an explicitly chosen target is honoured", () => {
   const result = calculateWalmartStudioDraftEconomics({
-    goodsCostCents: 794,
-    packagingCostCents: 150,
-    shippingLabelCents: 878,
-    targetMarginBps: 2_500,
-    packageWeightOz: 1,
+    ...REAL,
+    targetRoiBps: 10_000,
     template: flatTemplate(0),
   });
-  assert.equal(result.target_margin_bps, 2_500);
-  assert.ok(result.worst_case_contribution_margin_bps >= 2_500);
-  assert.ok(result.item_price_cents < 3_313);
+  assert.equal(result.target_roi_bps, 10_000);
+  assert.ok(result.worst_case_return_on_invested_bps >= 10_000);
 });
 
 test("does not invent weight when the template actually charges by weight", () => {
-  const free = flatTemplate(0);
-  assert.deepEqual(walmartStudioDraftPackageWeightOz({
-    sizeDimension: "COUNT",
-    sizeBaseAmount: 1,
-    sizeBaseUnit: "count",
-    packCount: 8,
-    template: free,
-  }), { package_weight_oz: 1, basis: "NOT_USED_BY_TEMPLATE" });
-
   const weighted = parseWalmartShippingTemplateDetails({
-    id: "weighted",
-    name: "Weighted",
+    id: "T2",
+    name: "by weight",
     type: "CUSTOM",
-    status: "ACTIVE",
     rateModelType: "PER_SHIPMENT_PRICING",
+    status: "ACTIVE",
     shippingMethods: [{
-      shipMethod: "STANDARD",
+      shipMethod: "VALUE",
       status: "ACTIVE",
       configurations: [{
-        regions: [{ regionCode: "C", regionName: "48 State" }],
+        regions: [{ regionCode: "C", regionName: "48 State", subRegions: [] }],
         addressTypes: ["STREET"],
-        transitTime: 5,
+        transitTime: 6,
         perShippingCharge: {
           unitOfMeasure: "LB",
-          shippingAndHandling: { amount: 5, currency: "USD" },
-          chargePerWeight: { amount: 0.5, currency: "USD" },
+          shippingAndHandling: { amount: 0, currency: "USD" },
+          chargePerWeight: { amount: 1, currency: "USD" },
           chargePerItem: { amount: 0, currency: "USD" },
         },
       }],
     }],
   });
-  assert.throws(
-    () => walmartStudioDraftPackageWeightOz({
-      sizeDimension: "COUNT",
-      sizeBaseAmount: 1,
-      sizeBaseUnit: "count",
-      packCount: 8,
-      template: weighted,
-    }),
-    /no exact product mass/,
-  );
+  const result = calculateWalmartStudioDraftEconomics({
+    ...REAL,
+    template: weighted,
+  });
+  assert.ok(result.scenarios.every((s) => s.customer_shipping_charge_cents > 0));
+  assert.ok(result.worst_case_return_on_invested_bps >= 7_000);
 });

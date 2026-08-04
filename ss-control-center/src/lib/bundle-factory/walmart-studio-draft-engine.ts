@@ -302,7 +302,6 @@ async function buildOneDraft(input: {
     goodsCostCents,
     packagingCostCents: input.brief.pricing_inputs.packaging_cost_cents,
     shippingLabelCents: input.brief.pricing_inputs.shipping_label_cents,
-    targetMarginBps: input.item.target_margin_bps,
     packageWeightOz: weight.package_weight_oz,
     template,
   });
