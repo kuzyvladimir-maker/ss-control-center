@@ -1,4 +1,18 @@
-@import "tailwindcss";
+/* `source("../")` pins Tailwind's automatic content detection to `src/`.
+ *
+ * Without it Tailwind v4 scans the whole project for class names, and this
+ * repo COMMITS ~555MB of Product Truth audit evidence under `data/audits/`
+ * (single `source-snapshot.json` files of 51MB each). Those are text files,
+ * so the scanner reads every one of them looking for utility classes. On a
+ * developer Mac that just wastes time; in Vercel's 8GB build container the
+ * PostCSS worker got SIGKILLed by the OOM killer while processing this very
+ * file, and EVERY production deploy since 2026-08-03 failed with
+ * "TurbopackInternalError: globals.css". Class names only ever live in
+ * `src/`, so pointing the scanner there is both the fix and the truth.
+ *
+ * `outputFileTracingExcludes` in next.config.ts keeps the same directory out
+ * of the serverless bundles for the same underlying reason. */
+@import "tailwindcss" source("../");
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
