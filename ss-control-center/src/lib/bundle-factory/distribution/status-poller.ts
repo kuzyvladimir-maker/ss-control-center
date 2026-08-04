@@ -695,9 +695,16 @@ async function pollWalmart(
   // WALMART_FEED_TERMINAL_NOT_SUCCESS with the message "Exact feed item status
   // is SUCCESS", which is a contradiction on its face. The listing was live on
   // Walmart and PENDING_REVIEW here.
-  const createdItemId = [item.wpid, item.itemid, item.martId]
+  const identifiers = [item.wpid, item.itemid, item.martId]
     .map((value) => (value == null ? "" : String(value).trim()))
-    .find((value) => value.length > 0 && value !== "0");
+    .filter((value) => value.length > 0 && value !== "0");
+  // Two different identifiers, for two different purposes. `wpid` is how the
+  // seller catalog names the item; the buyer-facing page is addressed by the
+  // NUMERIC `itemid`, which is what the live-gate re-checks. Passing the
+  // alphanumeric one left the gate reporting
+  // WALMART_NUMERIC_BUYER_ITEM_ID_MISSING for an item that was published.
+  const createdItemId = identifiers[0];
+  const numericItemId = identifiers.find((value) => /^\d+$/.test(value));
   if (
     String(item.ingestionStatus ?? "").toUpperCase() === "SUCCESS" &&
     createdItemId
@@ -706,7 +713,7 @@ async function pollWalmart(
       sku,
       client,
       attempt,
-      expectedItemId: createdItemId,
+      expectedItemId: numericItemId ?? null,
       feedRaw: raw,
     });
   }
