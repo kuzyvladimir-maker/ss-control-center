@@ -99,6 +99,33 @@ export async function fetchAllOrders(status = "awaiting_fulfillment") {
 }
 
 /**
+ * Free-text order search across EVERY order status.
+ *
+ * `GET /orders` takes a `query` parameter documented as "Free text search"
+ * (https://developers.veeqo.com/api/operations/list-all-orders/). The
+ * `status` parameter is deliberately OMITTED here: passing it restricts
+ * the result to that one status, and this search exists precisely so the
+ * operator can find an order that already shipped, was cancelled or
+ * refunded — the statuses the shipping dashboard never loads.
+ *
+ * Used by /api/shipping/search. Errors are the caller's to swallow: the
+ * search endpoint merges this with our own DB and must still answer when
+ * Veeqo is throttled or down.
+ */
+export async function searchOrders(
+  query: string,
+  opts?: { pageSize?: number },
+): Promise<unknown[]> {
+  const q = query.trim();
+  if (!q) return [];
+  const pageSize = Math.min(Math.max(opts?.pageSize ?? 25, 1), 100);
+  const res = await veeqoFetch(
+    `/orders?page_size=${pageSize}&query=${encodeURIComponent(q)}`,
+  );
+  return Array.isArray(res) ? res : [];
+}
+
+/**
  * Fetch Veeqo orders created within a UTC date range, with parallel
  * pagination for speed. Used by Sales Overview to pull non-cached
  * channels (eBay / TikTok / Shopify / direct / Merged) — Amazon and

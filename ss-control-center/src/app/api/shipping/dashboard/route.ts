@@ -632,8 +632,11 @@ export async function GET() {
 
       // Shipping address — name/city/state — pulled from deliver_to so the
       // operator can sanity-check the destination on the row without
-      // opening Veeqo. (Address1/zip omitted to keep the chip compact;
-      // they'd dox the order without adding decision-useful info.)
+      // opening Veeqo. The row CHIP still shows only name/city/state (a
+      // street address there would dox the order without helping any
+      // decision), but street + ZIP now travel with the payload because
+      // the page's smart search matches against them: looking an order up
+      // by its ZIP or street is one of the things the operator does.
       const dt = o.deliver_to ?? {};
       const firstName = String(dt.first_name ?? "").trim();
       const lastName = String(dt.last_name ?? "").trim();
@@ -641,6 +644,12 @@ export async function GET() {
         [firstName, lastName].filter(Boolean).join(" ") || null;
       const city = String(dt.city ?? "").trim() || null;
       const stateCode = String(dt.state ?? "").trim() || null;
+      const shipToZip = String(dt.zip ?? "").trim() || null;
+      const shipToAddress =
+        [dt.address1, dt.address2]
+          .map((p: unknown) => (typeof p === "string" ? p.trim() : ""))
+          .filter(Boolean)
+          .join(" ") || null;
 
       orders.push({
         orderId: String(o.id),
@@ -692,6 +701,14 @@ export async function GET() {
         customerName,
         city,
         shipToState: stateCode,
+        shipToZip,
+        shipToAddress,
+        // Buyer email — never rendered on the row, carried so the search
+        // box can find an order by the address the customer wrote from.
+        customerEmail:
+          (typeof o.customer?.email === "string" && o.customer.email.trim()) ||
+          (typeof dt.email === "string" && dt.email.trim()) ||
+          null,
         // Walmart-direct flow markers (null/false for Amazon orders).
         isWalmart: walmartPoByCustomer.has(String(o.number ?? o.id)),
         walmartPurchaseOrderId:

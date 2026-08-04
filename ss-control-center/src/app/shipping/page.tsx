@@ -31,12 +31,6 @@ import { MergeGroupCard } from "./components/MergeGroupCard";
 import { WeightInput, toLbs, type WeightUnit } from "./components/WeightInput";
 import {
   Btn,
-  FilterTabs,
-  KpiCard,
-  PageHead,
-  Panel,
-  PanelHeader,
-  PanelBody,
   StoreAvatar,
   storeKeyFor,
   TypeTag,
@@ -131,6 +125,12 @@ interface DashboardOrder {
   customerName?: string | null;
   city?: string | null;
   shipToState?: string | null;
+  // Street + ZIP + buyer email are NOT rendered on the row — they travel
+  // with the payload so the smart search can match on them (looking an
+  // order up by ZIP or street is a real operator workflow).
+  shipToZip?: string | null;
+  shipToAddress?: string | null;
+  customerEmail?: string | null;
 }
 
 interface PlanItem {
@@ -142,6 +142,11 @@ interface PlanItem {
   edd: string | null;
   status: string;
   notes: string | null;
+  // Set once a label is bought against this plan item. Optional because a
+  // live Walmart quote is folded into the same map before any purchase.
+  // Fed into the smart search so a tracking number finds the LIVE row, not
+  // just its archive copy.
+  trackingNumber?: string | null;
   // What the agent fed into the carrier rate lookup. Surface on the row so
   // Vladimir can sanity-check (weight off by 5 lb completely changes which
   // service the algorithm picks).
@@ -320,6 +325,44 @@ interface BuyReport {
   bought: BuyReportSuccess[];
   errors: BuyReportError[];
 }
+
+/**
+ * One result from /api/shipping/search — an order found ANYWHERE, at any
+ * status, including ones this page never loads (shipped / delivered /
+ * cancelled / refunded). Shape mirrors the route's SearchHit exactly.
+ */
+interface ArchiveHit {
+  key: string;
+  sources: string[];
+  orderNumber: string;
+  veeqoOrderId: string | null;
+  channel: string | null;
+  channelKind: string | null;
+  status: string;
+  statusLabel: string;
+  statusTone: "ok" | "warn" | "danger" | "neutral";
+  orderDate: string | null;
+  shipBy: string | null;
+  deliverBy: string | null;
+  customerName: string | null;
+  customerEmail: string | null;
+  address: string | null;
+  total: number | null;
+  currency: string;
+  items: {
+    sku: string | null;
+    title: string;
+    quantity: number;
+    imageUrl: string | null;
+  }[];
+  tracking: { number: string; carrier: string | null; service: string | null }[];
+  labelPdfUrl: string | null;
+  walmartPurchaseOrderId: string | null;
+  storeName: string | null;
+}
+
+/** From this many characters the archive (all-status) search kicks in. */
+const ARCHIVE_MIN_CHARS = 3;
 
 const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
   { id: "overdue",  label: "Overdue",  activeCls: "border-danger bg-danger-tint text-danger" },
@@ -683,9 +726,86 @@ export default function ShippingLabelsPage() {
     "urgency" | "cost" | "edd" | "deadline" | "product"
   >("urgency");
   // Smart free-text search — matched against order#, customer, ship-to,
-  // city, state, store, channel, SKU and product title. Filters the
-  // currently visible list after every other filter has been applied.
+  // city, state, store, channel, SKU and product title.
+  //
+  // Search is a MODE, not another filter: the moment there is a query,
+  // every other filter (channel / day bucket / Frozen-Dry / store / state
+  // / awaiting-scope) is bypassed, because the operator searching for an
+  // order has no idea which tab it happens to live in. Anything below 3
+  // characters only narrows the loaded list; from 3 characters up we also
+  // hit /api/shipping/search, which answers across EVERY order status —
+  // shipped, delivered, cancelled, refunded — the ones the dashboard
+  // never loads.
   const [searchQuery, setSearchQuery] = useState("");
+  const [archive, setArchive] = useState<{
+    query: string;
+    loading: boolean;
+    hits: ArchiveHit[];
+    error: string | null;
+    truncated: boolean;
+    degraded: string[];
+  }>({
+    query: "",
+    loading: false,
+    hits: [],
+    error: null,
+    truncated: false,
+    degraded: [],
+  });
+  // Debounced archive lookup. 250ms is short enough that it feels like
+  // type-ahead and long enough that a 15-character tracking number costs
+  // one request instead of fifteen. Every keystroke aborts the in-flight
+  // request, so a slow answer for "111-71" can never overwrite the answer
+  // for the full number the operator has already finished typing.
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < ARCHIVE_MIN_CHARS) {
+      setArchive({
+        query: "",
+        loading: false,
+        hits: [],
+        error: null,
+        truncated: false,
+        degraded: [],
+      });
+      return;
+    }
+    const ctrl = new AbortController();
+    setArchive((a) => ({ ...a, loading: true, error: null }));
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/shipping/search?q=${encodeURIComponent(q)}`,
+          { signal: ctrl.signal },
+        );
+        const json = await res.json();
+        if (ctrl.signal.aborted) return;
+        if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
+        setArchive({
+          query: q,
+          loading: false,
+          hits: Array.isArray(json.hits) ? json.hits : [],
+          error: null,
+          truncated: Boolean(json.truncated),
+          degraded: Array.isArray(json.degraded) ? json.degraded : [],
+        });
+      } catch (e) {
+        if (ctrl.signal.aborted || (e as Error)?.name === "AbortError") return;
+        setArchive({
+          query: q,
+          loading: false,
+          hits: [],
+          error: errMsg(e),
+          truncated: false,
+          degraded: [],
+        });
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [searchQuery]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [buying, setBuying] = useState(false);
@@ -1573,19 +1693,29 @@ export default function ShippingLabelsPage() {
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean);
-    return channelOrders
+    // Search is a MODE. With a query on, every narrowing filter is
+    // bypassed and the base pool widens from `channelOrders` (already
+    // channel-filtered) to every loaded order — an operator looking for
+    // one order does not know, and should not have to know, which tab it
+    // is sitting in. Merge-mode and open merge groups are the two
+    // exceptions below: those aren't filters, they're safety rails around
+    // buying a label for half a shipment.
+    const searching = tokens.length > 0;
+    return (searching ? orders : channelOrders)
       .filter((o) => {
         // viewScope (set by the AWAITING split tile) is the source of
         // truth for active vs awaiting-ship-confirm partitioning. Every
         // count downstream (buckets, types, stores) now respects it,
         // so the bucket-filter no longer needs its old escape hatch.
         const awaiting = isAwaitingShipConfirm(o);
-        if (viewScope === "awaiting") {
-          if (!awaiting) return false;
-        } else if (awaiting) {
-          return false;
+        if (!searching) {
+          if (viewScope === "awaiting") {
+            if (!awaiting) return false;
+          } else if (awaiting) {
+            return false;
+          }
         }
-        if (bucketFilter) {
+        if (bucketFilter && !searching) {
           // "Today" swallows "Overdue": an order whose ship-by already passed
           // is still due today (more so than today's own), and operators were
           // losing them by living on the Today tab. The Overdue tab remains
@@ -1605,10 +1735,17 @@ export default function ShippingLabelsPage() {
         if (groupedOrderIds.has(o.orderId)) return false;
         // Merge mode: only the candidates, so ticking is unambiguous.
         if (mergeMode && !mergeCandidateIds.has(o.orderId)) return false;
-        if (deferredOnly && !deferredShipNums.has(o.orderNumber)) return false;
-        if (storeFilter && o.storeId !== storeFilter) return false;
-        if (stateFilter !== "all" && o.state !== stateFilter) return false;
-        if (typeFilter !== "all") {
+        if (
+          deferredOnly &&
+          !searching &&
+          !deferredShipNums.has(o.orderNumber)
+        )
+          return false;
+        if (storeFilter && !searching && o.storeId !== storeFilter)
+          return false;
+        if (stateFilter !== "all" && !searching && o.state !== stateFilter)
+          return false;
+        if (typeFilter !== "all" && !searching) {
           const types = o.items.map((i) => i.knownType);
           if (types.length === 0) return false;
           if (typeFilter === "Untyped") {
@@ -1630,9 +1767,16 @@ export default function ShippingLabelsPage() {
             o.channel,
             o.channelKind,
             o.customerName,
+            o.customerEmail,
+            o.shipToAddress,
             o.city,
             o.shipToState,
+            o.shipToZip,
             o.walmartPurchaseOrderId,
+            // Tracking of a label already bought in this session — so the
+            // operator can paste a tracking number and land on the live row
+            // instead of only on the archive copy of it.
+            planByOrderNumber.get(o.orderNumber)?.trackingNumber,
             ...o.items.map((i) => `${i.sku} ${i.productTitle}`),
           ]
             .filter(Boolean)
@@ -1657,7 +1801,9 @@ export default function ShippingLabelsPage() {
         return ab - bb;
       });
   }, [
+    orders,
     channelOrders,
+    planByOrderNumber,
     bucketFilter,
     deferredOnly,
     deferredShipNums,
@@ -1784,6 +1930,27 @@ export default function ShippingLabelsPage() {
     });
     return rows;
   }, [filteredOrders, sortBy, planByOrderNumber, pinRank]);
+
+  // ── Search mode ───────────────────────────────────────────────────────
+  // `searchActive` = there is a query, so the filters are bypassed and the
+  // banner explains it. `archiveEnabled` = the query is long enough that
+  // /api/shipping/search has been asked for every-status matches too.
+  const searchActive = searchQuery.trim().length > 0;
+  const archiveEnabled = searchQuery.trim().length >= ARCHIVE_MIN_CHARS;
+
+  // Archive hits that are NOT already on screen as a live row. An order in
+  // today's queue is far more useful in its normal row (with rates, buy
+  // button, packing state) than as a flat archive record, so the live row
+  // wins and the duplicate is dropped.
+  const archiveOnlyHits = useMemo(() => {
+    if (!archiveEnabled) return [];
+    const shown = new Set(
+      displayedOrders.map((o) => o.orderNumber.trim().toUpperCase()),
+    );
+    return archive.hits.filter(
+      (h) => !shown.has(h.orderNumber.trim().toUpperCase()),
+    );
+  }, [archive.hits, archiveEnabled, displayedOrders]);
 
   // Sum of the label cost across selected orders (Veeqo plan price + Walmart
   // quote price both live in planByOrderNumber). Shown in the Buy-selected
@@ -2702,15 +2869,63 @@ export default function ShippingLabelsPage() {
     // `shipping-scale` carries the module's type scale (see globals.css). Every
     // operator-facing size below reads from those variables rather than a
     // hardcoded px value, so the density of the whole page is one edit.
-    <div className="shipping-scale space-y-5">
-      <PageHead
-        title="Shipping labels"
-        subtitle={
-          data?.refreshedAt
-            ? `Last refresh: ${new Date(data.refreshedAt).toLocaleString()}`
-            : "Loading…"
-        }
-        actions={
+    <div className="shipping-scale space-y-3">
+      {/* Command bar — title, smart search and Refresh, PINNED to the top
+          of the scroll area. Vladimir works this page by scrolling a long
+          list; the two controls he reaches for mid-scroll (search, and
+          re-pull from Veeqo) used to scroll away with the header, so both
+          now ride along. The negative margins let the bar span the full
+          content width and paint over the rows sliding underneath it. */}
+      <div className="sticky top-0 z-30 -mx-4 border-b border-rule bg-bg/95 px-4 py-2 backdrop-blur md:-mx-8 md:px-8">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="flex min-w-0 shrink-0 items-baseline gap-2">
+            <h1
+              className="font-semibold text-ink"
+              style={{ fontSize: 19, letterSpacing: "-0.02em", lineHeight: 1.1 }}
+            >
+              Shipping labels
+            </h1>
+            <span className="hidden whitespace-nowrap text-[11px] text-ink-3 xl:inline">
+              {data?.refreshedAt
+                ? new Date(data.refreshedAt).toLocaleTimeString()
+                : "Loading…"}
+            </span>
+          </div>
+
+          {/* Smart search. Everything on the row is searchable: order
+              number, customer, street, city, ZIP, store, SKU, product,
+              tracking. From 3 characters it ALSO queries the archive
+              (every status — shipped, delivered, cancelled). */}
+          <div className="relative min-w-[200px] flex-1">
+            <Search
+              size={14}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Поиск: номер заказа, трек, имя, адрес, ZIP, SKU, товар…"
+              className="w-full rounded-md border border-rule bg-surface px-9 py-1.5 text-[12.5px] text-ink placeholder:text-ink-3 focus:border-[#0071dc] focus:outline-none"
+            />
+            {archive.loading && (
+              <Loader2
+                size={13}
+                className="absolute right-8 top-1/2 -translate-y-1/2 animate-spin text-ink-3"
+              />
+            )}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-3 hover:bg-bg-elev hover:text-ink"
+                aria-label="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
           <Btn
             icon={<RefreshCw size={13} />}
             onClick={load}
@@ -2718,8 +2933,39 @@ export default function ShippingLabelsPage() {
           >
             {loading ? "Refreshing…" : "Refresh"}
           </Btn>
-        }
-      />
+        </div>
+
+        {/* One line telling the operator exactly what the search is doing
+            — that it deliberately ignores every filter above, and that it
+            reaches past today's queue into every status. Without it, a hit
+            list that contradicts the active Frozen/Today/Walmart filters
+            reads like a bug. */}
+        {searchActive && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-3">
+            <span className="inline-flex items-center gap-1 rounded bg-green-soft px-1.5 py-0.5 font-medium text-green-ink">
+              <Search size={11} /> Поиск по всем заказам
+            </span>
+            <span>
+              фильтры (канал, день, тип, магазин) не применяются
+              {archiveEnabled
+                ? " · включая отправленные, доставленные и отменённые"
+                : ` · с ${ARCHIVE_MIN_CHARS} символов ищем и в архиве`}
+            </span>
+            <span className="tabular">
+              найдено: {displayedOrders.length} в очереди
+              {archiveEnabled ? ` · ${archiveOnlyHits.length} в архиве` : ""}
+            </span>
+            {archive.error && (
+              <span className="text-danger">архив: {archive.error}</span>
+            )}
+            {archive.degraded.length > 0 && (
+              <span className="text-warn-strong">
+                источник недоступен: {archive.degraded.join(", ")}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {error && (
         <div className="rounded-md border border-danger/30 bg-danger-tint px-4 py-3 text-[12px] text-danger">
@@ -2888,140 +3134,156 @@ export default function ShippingLabelsPage() {
         </div>
       </div>
 
-      {/* Totals row — first tile is a split AWAITING FULFILLMENT card:
-            * top half shows the grand total (= channelOrders.length =
-              everything not Shipped: rows without a label AND rows
-              with a label but Acknowledged on Walmart). Matches Walmart
-              Seller Center's "Unshipped" count.
-            * bottom half splits into "Without label" / "With label" —
-              click either to switch the rest of the page into that
-              scope. Only rendered when there are awaiting-ship-confirm
-              rows in view (otherwise the bottom half adds no info).
-          The remaining 3 tiles still drive the stateFilter the way
-          they always did.
-       */}
-      <div className="grid gap-3 sm:grid-cols-4">
-        <AwaitingSplitCard
-          total={channelOrders.length}
-          withoutLabelCount={channelOrders.length - awaitingShipConfirmCount}
-          withLabelCount={awaitingShipConfirmCount}
-          viewScope={viewScope}
-          stateFilter={stateFilter}
-          onSelectActive={() => {
-            setViewScope("active");
-            setBucketFilter(null);
-            setStateFilter("all");
-          }}
-          onSelectAwaiting={() => {
-            setViewScope("awaiting");
-            setBucketFilter(null);
-            setStateFilter("all");
-          }}
-          onSelectAll={() => setStateFilter("all")}
-        />
-        <KpiCard
-          label="Ready to buy"
-          value={totals.ready}
-          icon={<CheckCircle size={14} />}
-          iconVariant="default"
-          onClick={() =>
-            setStateFilter(
-              stateFilter === "ready_to_buy" ? "all" : "ready_to_buy",
-            )
+      {/* Totals — one dense strip instead of four tall tiles. Same four
+          numbers, same click-to-filter behaviour, ~110px of vertical space
+          returned to the order list. The AWAITING segment still carries its
+          split (No label / Label bought) as two inline sub-buttons, shown
+          only when there is something in the label-bought bucket. */}
+      <div className="flex flex-wrap items-stretch gap-1 rounded-lg border border-rule bg-surface p-1">
+        <StatSeg
+          label="Awaiting"
+          value={channelOrders.length}
+          icon={<Package size={13} />}
+          active={
+            stateFilter === "all" &&
+            viewScope === "active" &&
+            awaitingShipConfirmCount === 0
           }
-          active={stateFilter === "ready_to_buy"}
+          onClick={() => setStateFilter("all")}
+          title="Everything not yet shipped"
         />
-        <KpiCard
-          label="Need attention"
-          value={totals.attention}
-          icon={<AlertTriangle size={14} />}
-          iconVariant={totals.attention > 0 ? "warn" : "default"}
-          onClick={() =>
-            setStateFilter(
-              stateFilter === "need_attention" ? "all" : "need_attention",
-            )
-          }
-          active={stateFilter === "need_attention"}
-        />
-        <KpiCard
-          label="Waiting for procurement"
-          value={totals.waiting}
-          icon={<Loader2 size={14} />}
-          onClick={() =>
-            setStateFilter(
-              stateFilter === "waiting_placed" ? "all" : "waiting_placed",
-            )
-          }
-          active={stateFilter === "waiting_placed"}
-        />
+        {awaitingShipConfirmCount > 0 && (
+          <div className="flex items-center gap-1 border-l border-rule pl-1">
+            <StatSeg
+              small
+              label="No label"
+              value={channelOrders.length - awaitingShipConfirmCount}
+              active={viewScope === "active"}
+              onClick={() => {
+                setViewScope("active");
+                setBucketFilter(null);
+                setStateFilter("all");
+              }}
+              title="Orders without a label yet — needs purchase"
+            />
+            <StatSeg
+              small
+              label="Label bought"
+              value={awaitingShipConfirmCount}
+              active={viewScope === "awaiting"}
+              onClick={() => {
+                setViewScope("awaiting");
+                setBucketFilter(null);
+                setStateFilter("all");
+              }}
+              title="Label purchased — Walmart not yet marked Shipped"
+            />
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-1 border-l border-rule pl-1">
+          <StatSeg
+            label="Ready to buy"
+            value={totals.ready}
+            icon={<CheckCircle size={13} />}
+            active={stateFilter === "ready_to_buy"}
+            onClick={() =>
+              setStateFilter(
+                stateFilter === "ready_to_buy" ? "all" : "ready_to_buy",
+              )
+            }
+          />
+          <StatSeg
+            label="Need attention"
+            value={totals.attention}
+            icon={<AlertTriangle size={13} />}
+            tone={totals.attention > 0 ? "warn" : undefined}
+            active={stateFilter === "need_attention"}
+            onClick={() =>
+              setStateFilter(
+                stateFilter === "need_attention" ? "all" : "need_attention",
+              )
+            }
+          />
+          <StatSeg
+            label="Procurement"
+            value={totals.waiting}
+            icon={<Loader2 size={13} />}
+            active={stateFilter === "waiting_placed"}
+            onClick={() =>
+              setStateFilter(
+                stateFilter === "waiting_placed" ? "all" : "waiting_placed",
+              )
+            }
+            title="Waiting for procurement"
+          />
+        </div>
       </div>
 
       {/* Store breakdown — uses the client-side `storeBreakdown` derived
           above (NOT `data.storeBreakdown`), so the per-store totals stay
           in sync with the KPI tiles after Walmart probe results land. */}
       {data && storeBreakdown.length > 0 && (
-        <Panel>
-          <PanelHeader title="By store" />
-          <PanelBody>
-            <div className="flex flex-wrap gap-2">
-              {storeBreakdown
-                .filter((s) => {
-                  // Walmart-only / non-Walmart split is the one we can do
-                  // store-side; other channel filters fall through to "show
-                  // all stores" because the dashboard rolls store totals
-                  // across all marketplaces.
-                  if (!channelFilter) return true;
-                  if (channelFilter === "walmart")
-                    return walmartStoreIds.has(s.storeId);
-                  // For any other channel (amazon, ebay, tiktok…) hide the
-                  // Walmart store but keep the rest.
-                  return !walmartStoreIds.has(s.storeId);
-                })
-                .map((s) => (
-                <button
-                  key={s.storeId}
-                  type="button"
-                  onClick={() =>
-                    setStoreFilter(storeFilter === s.storeId ? null : s.storeId)
-                  }
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-left text-[12px] min-w-[160px]",
-                    storeFilter === s.storeId
-                      ? "border-green bg-green-soft text-green-ink"
-                      : "border-rule bg-surface hover:border-silver-line"
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <StoreAvatar
-                      store={storeKeyFor({
-                        marketplace: s.channel,
-                        storeName: s.storeName,
-                      })}
-                      size="sm"
-                    />
-                    <span className="font-medium truncate">{s.storeName}</span>
-                  </div>
-                  <div className="mt-1 grid grid-cols-3 gap-1 text-[11px]">
-                    <div>
-                      <div className="text-ink-3">all</div>
-                      <div className="font-semibold tabular">{s.all}</div>
-                    </div>
-                    <div>
-                      <div className="text-ink-3">ready</div>
-                      <div className="font-semibold tabular">{s.readyToBuy}</div>
-                    </div>
-                    <div>
-                      <div className="text-ink-3">⚠</div>
-                      <div className="font-semibold tabular text-warn-strong">
-                        {s.needAttention}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </PanelBody>
-        </Panel>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+            Store
+          </span>
+          {storeBreakdown
+            .filter((s) => {
+              // Walmart-only / non-Walmart split is the one we can do
+              // store-side; other channel filters fall through to "show
+              // all stores" because the dashboard rolls store totals
+              // across all marketplaces.
+              if (!channelFilter) return true;
+              if (channelFilter === "walmart")
+                return walmartStoreIds.has(s.storeId);
+              // For any other channel (amazon, ebay, tiktok…) hide the
+              // Walmart store but keep the rest.
+              return !walmartStoreIds.has(s.storeId);
+            })
+            .map((s) => (
+              <button
+                key={s.storeId}
+                type="button"
+                onClick={() =>
+                  setStoreFilter(storeFilter === s.storeId ? null : s.storeId)
+                }
+                title={`${s.storeName} — ${s.all} всего · ${s.readyToBuy} готовы к покупке · ${s.needAttention} требуют внимания`}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11.5px] transition-colors",
+                  storeFilter === s.storeId
+                    ? "border-green bg-green-soft text-green-ink"
+                    : "border-rule bg-surface hover:border-silver-line",
+                )}
+              >
+                <StoreAvatar
+                  store={storeKeyFor({
+                    marketplace: s.channel,
+                    storeName: s.storeName,
+                  })}
+                  size="sm"
+                />
+                <span className="max-w-[150px] truncate font-medium">
+                  {s.storeName}
+                </span>
+                <span className="tabular font-semibold">{s.all}</span>
+                <span className="tabular text-ink-3">/{s.readyToBuy}</span>
+                {s.needAttention > 0 && (
+                  <span className="tabular font-semibold text-warn-strong">
+                    ⚠{s.needAttention}
+                  </span>
+                )}
+              </button>
+            ))}
+          {storeFilter && (
+            <button
+              type="button"
+              onClick={() => setStoreFilter(null)}
+              className="text-[11px] text-ink-3 underline-offset-2 hover:text-ink-1 hover:underline"
+            >
+              show all
+            </button>
+          )}
+        </div>
       )}
 
       {/* Bucket filter — viewScope selection moved into the AWAITING tile
@@ -3030,103 +3292,105 @@ export default function ShippingLabelsPage() {
           mirror Walmart Seller Center's overdue / today tally regardless
           of label-bought state. */}
       {data && (
-        <FilterTabs
-          tabs={[
-            {
-              id: "all" as const,
-              label: "All",
-              count: scopedOrders.length,
-            },
-            ...BUCKET_TABS.map((b) => ({
-              id: b.id,
-              label: b.label,
-              // "Today" also serves the overdue rows (see filteredOrders), so
-              // its count includes them — the badge always equals the number
-              // of rows the tab actually shows.
-              count:
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-rule bg-surface px-2 py-1.5">
+          {/* Day buckets. "Today" also serves the overdue rows (see
+              filteredOrders), so its count includes them — the badge always
+              equals the number of rows the tab actually shows. */}
+          <Seg
+            label="All"
+            count={scopedOrders.length}
+            active={bucketFilter === null}
+            onClick={() => setBucketFilter(null)}
+          />
+          {BUCKET_TABS.map((b) => (
+            <Seg
+              key={b.id}
+              label={b.label}
+              count={
                 b.id === "today"
                   ? bucketCounts.today + bucketCounts.overdue
-                  : (bucketCounts[b.id] ?? 0),
+                  : (bucketCounts[b.id] ?? 0)
+              }
               // Overdue only turns red when there is something to act on.
-              tone:
+              tone={
                 b.id === "overdue" && bucketCounts.overdue > 0
-                  ? ("danger" as const)
-                  : undefined,
-            })),
-          ]}
-          active={bucketFilter ?? ("all" as const)}
-          onChange={(id) => {
-            setBucketFilter(id === "all" ? null : (id as ShipByBucket));
-          }}
-        />
-      )}
+                  ? "danger"
+                  : undefined
+              }
+              active={bucketFilter === b.id}
+              onClick={() =>
+                setBucketFilter(bucketFilter === b.id ? null : b.id)
+              }
+            />
+          ))}
 
-      {/* Product type filter — Frozen / Dry. Operates on the items array
-          (every item must match the chosen type). Counts are derived
-          locally from the already-loaded orders so no extra API call. */}
-      {data && (
-        <FilterTabs
-          tabs={[
-            {
-              id: "all" as const,
-              label: "All types",
-              count: scopedOrders.length,
-            },
-            {
-              id: "Frozen" as const,
-              label: "Frozen",
-              count: typeCounts.frozen,
-            },
-            {
-              id: "Dry" as const,
-              label: "Dry",
-              count: typeCounts.dry,
-            },
-            // Untyped = orders with at least one item that has no
-            // Frozen/Dry tag. Added so Frozen + Dry + Untyped sums
-            // to All types — Vladimir flagged math that didn't add
-            // up (22 = 21 + 0 was missing 1 untyped row).
-            {
-              id: "Untyped" as const,
-              label: "Untyped",
-              count: typeCounts.untyped,
-            },
-          ]}
-          active={typeFilter}
-          onChange={(id) => setTypeFilter(id)}
-          rightSlot={
-            // Isolates the Ship-Date-Trick rows: label bought today, package
-            // handed to the carrier on a later business day. These are the
-            // ones the warehouse must HOLD, so the operator needs to see them
-            // as their own worklist.
-            <label
+          <div className="mx-1 h-5 w-px bg-rule" />
+
+          {/* Product type — Frozen / Dry / Untyped. Operates on the items
+              array (every item must match). Counts come from the already-
+              loaded orders, no extra API call. Untyped exists so Frozen +
+              Dry + Untyped sums to All — Vladimir flagged math that didn't
+              add up (22 = 21 + 0 was missing 1 untyped row). */}
+          <Seg
+            label="All types"
+            count={scopedOrders.length}
+            active={typeFilter === "all"}
+            onClick={() => setTypeFilter("all")}
+          />
+          <Seg
+            label="Frozen"
+            count={typeCounts.frozen}
+            active={typeFilter === "Frozen"}
+            onClick={() =>
+              setTypeFilter(typeFilter === "Frozen" ? "all" : "Frozen")
+            }
+          />
+          <Seg
+            label="Dry"
+            count={typeCounts.dry}
+            active={typeFilter === "Dry"}
+            onClick={() => setTypeFilter(typeFilter === "Dry" ? "all" : "Dry")}
+          />
+          <Seg
+            label="Untyped"
+            count={typeCounts.untyped}
+            active={typeFilter === "Untyped"}
+            onClick={() =>
+              setTypeFilter(typeFilter === "Untyped" ? "all" : "Untyped")
+            }
+          />
+
+          {/* Isolates the Ship-Date-Trick rows: label bought today, package
+              handed to the carrier on a later business day. These are the
+              ones the warehouse must HOLD, so the operator needs to see them
+              as their own worklist. */}
+          <label
+            className={cn(
+              "ml-auto flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium transition-colors",
+              deferredOnly
+                ? "bg-warn-tint text-warn-strong"
+                : "text-ink-2 hover:bg-bg-elev hover:text-ink",
+            )}
+            title="Show only orders whose label prints today but which physically ship on a later business day (Frozen Ship Date Trick)"
+          >
+            <input
+              type="checkbox"
+              checked={deferredOnly}
+              onChange={(e) => setDeferredOnly(e.target.checked)}
+            />
+            📦 Ships later
+            <span
               className={cn(
-                "flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] font-medium transition-colors",
+                "inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular",
                 deferredOnly
-                  ? "bg-warn-tint text-warn-strong"
-                  : "text-ink-2 hover:bg-bg-elev hover:text-ink",
+                  ? "bg-warn-strong text-white"
+                  : "bg-bg-elev text-ink-3",
               )}
-              title="Show only orders whose label prints today but which physically ship on a later business day (Frozen Ship Date Trick)"
             >
-              <input
-                type="checkbox"
-                checked={deferredOnly}
-                onChange={(e) => setDeferredOnly(e.target.checked)}
-              />
-              📦 Ships later
-              <span
-                className={cn(
-                  "inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular",
-                  deferredOnly
-                    ? "bg-warn-strong text-white"
-                    : "bg-bg-elev text-ink-3",
-                )}
-              >
-                {deferredCount}
-              </span>
-            </label>
-          }
-        />
+              {deferredCount}
+            </span>
+          </label>
+        </div>
       )}
 
       {/* Action bar — checkbox + bulk button. In the active tab the bulk
@@ -3242,43 +3506,21 @@ export default function ShippingLabelsPage() {
         </div>
       </div>
 
-      {/* Smart search — filters the visible list by any field. Sits
-          directly above the order rows so the operator can narrow what
-          they're looking at without losing the chip/bucket context. */}
-      <div className="relative">
-        <Search
-          size={14}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
-        />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by order #, customer, ship-to, ZIP, store, SKU, product…"
-          className="w-full rounded-md border border-rule bg-surface px-9 py-2 text-[12.5px] text-ink placeholder:text-ink-3 focus:border-[#0071dc] focus:outline-none"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-3 hover:bg-bg-elev hover:text-ink"
-            aria-label="Clear search"
-          >
-            <X size={13} />
-          </button>
-        )}
-      </div>
-
-      {/* Order list */}
+      {/* Order list. The search box itself now lives in the pinned command
+          bar at the top of the page. */}
       <div className="space-y-2">
         {loading && !data ? (
           <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
             Fetching orders from Veeqo…
           </div>
         ) : displayedOrders.length === 0 ? (
-          <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
-            {searchQuery
-              ? `No orders match “${searchQuery}”.`
+          <div className="rounded-md border border-rule bg-surface px-4 py-8 text-center text-[12px] text-ink-3">
+            {searchActive
+              ? archive.loading
+                ? `Ищем «${searchQuery}» по всем заказам…`
+                : archiveOnlyHits.length > 0
+                  ? `В очереди на отправку ничего нет — смотри найденное в архиве ниже.`
+                  : `Ничего не найдено по «${searchQuery}».`
               : "No orders match the current filter."}
           </div>
         ) : (
@@ -3349,6 +3591,39 @@ export default function ShippingLabelsPage() {
           ))
         )}
       </div>
+
+      {/* Archive results — orders that are NOT in today's fulfillment queue:
+          already shipped, delivered, cancelled, refunded. This is the half
+          of the search the operator asked for by name: "надо найти заказ по
+          этикетке / номеру / адресу и посмотреть, что это был за товар".
+          Read-only on purpose — these orders are done, there is nothing to
+          buy here. */}
+      {archiveEnabled && (archive.loading || archiveOnlyHits.length > 0) && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 pt-2">
+            <div className="h-px flex-1 bg-rule" />
+            <span className="text-[length:var(--ship-cell-label)] font-mono uppercase tracking-wider text-ink-3">
+              Архив · все статусы
+              {archiveOnlyHits.length > 0 && ` · ${archiveOnlyHits.length}`}
+            </span>
+            <div className="h-px flex-1 bg-rule" />
+          </div>
+          {archive.loading && archiveOnlyHits.length === 0 ? (
+            <div className="flex items-center justify-center gap-2 rounded-md border border-rule bg-surface px-4 py-6 text-[12px] text-ink-3">
+              <Loader2 size={13} className="animate-spin" />
+              Ищем в Veeqo и в нашей базе…
+            </div>
+          ) : (
+            archiveOnlyHits.map((h) => <ArchiveRow key={h.key} hit={h} />)
+          )}
+          {archive.truncated && (
+            <div className="px-1 text-[11.5px] text-ink-3">
+              Показаны первые {archiveOnlyHits.length} совпадений — уточни
+              запрос, если нужного нет.
+            </div>
+          )}
+        </div>
+      )}
 
       {classifyModal && (
         <ClassifyAiDialog
@@ -3569,118 +3844,259 @@ export default function ShippingLabelsPage() {
  * channels with the same thematic colours. ChannelToggle is imported above. */
 
 /**
- * "Awaiting fulfillment" KPI tile with a 2-segment scope selector built
- * into the bottom half. Replaces a flat KpiCard so the operator can see
- * BOTH the grand total (= everything not Shipped, matches Walmart SC's
- * Unshipped count) AND the split between rows that still need a label
- * vs rows that already have one and are just waiting on ship-confirm.
- *
- * Layout (per Vladimir 2026-06-04):
- *   ┌──────────────────────────────────────┐
- *   │ AWAITING FULFILLMENT          [icon] │
- *   │                  31                  │
- *   ├──────────────────┬───────────────────┤
- *   │  No label   18   │  Label bought 13  │
- *   └──────────────────┴───────────────────┘
- *
- * The bottom segments are hidden entirely when there are 0 with-label
- * rows in view (other channels), so the card collapses back to a plain
- * KPI on Amazon / eBay / etc.
+ * One segment of the totals strip. Replaces the old 4-up grid of tall
+ * KpiCards: same numbers, same click-to-filter, one line instead of a
+ * 110px-tall row of cards. The page is a work queue — the queue itself
+ * deserves the vertical space, not the tiles above it.
  */
-function AwaitingSplitCard({
-  total,
-  withoutLabelCount,
-  withLabelCount,
-  viewScope,
-  stateFilter,
-  onSelectActive,
-  onSelectAwaiting,
-  onSelectAll,
+function StatSeg({
+  label,
+  value,
+  icon,
+  active,
+  onClick,
+  tone,
+  small,
+  title,
 }: {
-  total: number;
-  withoutLabelCount: number;
-  withLabelCount: number;
-  viewScope: "active" | "awaiting";
-  stateFilter: string;
-  onSelectActive: () => void;
-  onSelectAwaiting: () => void;
-  onSelectAll: () => void;
+  label: string;
+  value: number;
+  icon?: ReactNode;
+  active?: boolean;
+  onClick: () => void;
+  tone?: "warn";
+  small?: boolean;
+  title?: string;
 }) {
-  const hasSplit = withLabelCount > 0;
-  const activeAll = stateFilter === "all" && viewScope === "active" && !hasSplit;
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      title={title ?? label}
       className={cn(
-        "flex w-full flex-col overflow-hidden rounded-lg border border-rule bg-surface text-left transition-colors",
-        activeAll && "border-green bg-green-soft",
+        "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors",
+        active
+          ? "bg-green-soft text-green-ink"
+          : "text-ink-2 hover:bg-bg-elev hover:text-ink",
       )}
     >
-      {/* Top: total. Clickable when the splits aren't relevant
-          (collapses back to a plain "show everything" toggle). */}
-      <button
-        type="button"
-        onClick={onSelectAll}
-        className={cn(
-          "flex-1 p-4 text-left",
-          "hover:bg-bg-elev/40 hover:border-green-mid/40 transition-colors",
-        )}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="text-[11px] font-mono uppercase tracking-[0.12em] text-ink-3">
-            Awaiting fulfillment
-          </div>
-          <div
-            className="grid h-7 w-7 place-items-center rounded-md"
-            style={{ background: "var(--bg-elev)", color: "var(--ink-2)" }}
-          >
-            <Package size={14} />
-          </div>
-        </div>
-        <div className="mt-3 flex items-baseline gap-1.5">
-          <div className="kpi-number">{total}</div>
-        </div>
-      </button>
+      {icon && (
+        <span
+          className={cn(
+            "grid h-6 w-6 shrink-0 place-items-center rounded",
+            tone === "warn"
+              ? "bg-warn-tint text-warn-strong"
+              : active
+                ? "bg-green text-green-cream"
+                : "bg-bg-elev text-ink-3",
+          )}
+        >
+          {icon}
+        </span>
+      )}
+      <span className="leading-tight">
+        <span
+          className={cn(
+            "block font-mono uppercase tracking-[0.10em] text-ink-3",
+            small ? "text-[9.5px]" : "text-[10px]",
+          )}
+        >
+          {label}
+        </span>
+        <span
+          className={cn(
+            "block font-semibold tabular",
+            small ? "text-[14px]" : "text-[17px]",
+            tone === "warn" && value > 0 ? "text-warn-strong" : "text-ink",
+          )}
+        >
+          {value}
+        </span>
+      </span>
+    </button>
+  );
+}
 
-      {/* Bottom: scope split — only when there's actually something in
-          the "with label" bucket to switch to. */}
-      {hasSplit && (
-        <div className="grid grid-cols-2 border-t border-rule">
-          <button
-            type="button"
-            onClick={onSelectActive}
-            className={cn(
-              "px-3 py-2 text-left transition-colors",
-              viewScope === "active"
-                ? "bg-green-soft text-green-ink"
-                : "bg-surface text-ink-2 hover:bg-bg-elev",
-            )}
-            title="Orders without a label yet — needs purchase"
+/**
+ * One chip in the merged filter row (day bucket + product type). Same
+ * visual language as the kit's FilterTabs, but rendered inline so both
+ * filter groups fit on a single line instead of stacking two bordered
+ * panels.
+ */
+function Seg({
+  label,
+  count,
+  active,
+  onClick,
+  tone,
+}: {
+  label: string;
+  count?: number;
+  active: boolean;
+  onClick: () => void;
+  tone?: "danger";
+}) {
+  const danger = tone === "danger";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium transition-colors",
+        danger
+          ? active
+            ? "bg-danger text-white"
+            : "bg-danger-tint text-danger hover:bg-danger hover:text-white"
+          : active
+            ? "bg-green-soft text-green-ink"
+            : "text-ink-2 hover:bg-bg-elev hover:text-ink",
+      )}
+    >
+      {label}
+      {count !== undefined && (
+        <span
+          className={cn(
+            "inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular",
+            danger
+              ? active
+                ? "bg-white/25 text-white"
+                : "bg-danger text-white"
+              : active
+                ? "bg-green text-green-cream"
+                : "bg-bg-elev text-ink-3",
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/**
+ * One archive search result — an order that is NOT in today's fulfillment
+ * queue (shipped / delivered / cancelled / refunded), rendered read-only.
+ * Deliberately flat and dense: the operator is here to CONFIRM something
+ * ("what was in that order?", "which tracking went to that address?"),
+ * not to act, so every field that answers such a question is on screen at
+ * once and nothing is behind an expander.
+ */
+function ArchiveRow({ hit }: { hit: ArchiveHit }) {
+  const toneCls =
+    hit.statusTone === "ok"
+      ? "bg-green-soft text-green-ink"
+      : hit.statusTone === "danger"
+        ? "bg-danger-tint text-danger"
+        : hit.statusTone === "warn"
+          ? "bg-warn-tint text-warn-strong"
+          : "bg-bg-elev text-ink-2";
+  const date = hit.orderDate ? new Date(hit.orderDate) : null;
+  return (
+    <div className="rounded-md border border-rule bg-surface px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
+        <span
+          className={cn(
+            "rounded px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide",
+            toneCls,
+          )}
+        >
+          {hit.statusLabel}
+        </span>
+        <span className="font-mono font-medium text-ink">
+          {hit.orderNumber}
+        </span>
+        {hit.channel && <span className="text-ink-3">· {hit.channel}</span>}
+        {date && !Number.isNaN(date.getTime()) && (
+          <span className="text-ink-3">· {date.toLocaleDateString()}</span>
+        )}
+        {typeof hit.total === "number" && hit.total > 0 && (
+          <span className="tabular text-ink-2">· ${hit.total.toFixed(2)}</span>
+        )}
+        {hit.walmartPurchaseOrderId && (
+          <span className="font-mono text-[11px] text-ink-3">
+            · PO {hit.walmartPurchaseOrderId}
+          </span>
+        )}
+        {hit.labelPdfUrl && (
+          <a
+            href={hit.labelPdfUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-auto text-[11.5px] text-[#0071dc] underline-offset-2 hover:underline"
           >
-            <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
-              No label
+            Этикетка PDF
+          </a>
+        )}
+      </div>
+
+      {(hit.customerName || hit.address) && (
+        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11.5px] text-ink-2">
+          {hit.customerName && (
+            <span className="inline-flex items-center gap-1">
+              <User size={11} className="text-ink-3" />
+              {hit.customerName}
+            </span>
+          )}
+          {hit.address && <span className="text-ink-3">· {hit.address}</span>}
+        </div>
+      )}
+
+      {hit.items.length > 0 && (
+        <div className="mt-1.5 space-y-0.5">
+          {hit.items.slice(0, 4).map((it, i) => (
+            <div
+              key={`${it.sku ?? "no-sku"}-${i}`}
+              className="flex items-center gap-1.5 text-[11.5px] text-ink-2"
+            >
+              {/* Thumbnail — "посмотреть, что это был за товар" is the
+                  whole reason this archive lookup exists, and the picture
+                  answers it faster than the title does. Plain <img>:
+                  Veeqo/Walmart CDN hosts aren't in next.config's allowlist. */}
+              {it.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={it.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-7 w-7 shrink-0 rounded border border-rule bg-surface object-contain"
+                />
+              ) : (
+                <span className="h-7 w-7 shrink-0 rounded border border-rule bg-bg-elev" />
+              )}
+              <span className="tabular text-ink-3">×{it.quantity}</span>
+              <span className="min-w-0 truncate">{it.title}</span>
+              {it.sku && (
+                <span className="shrink-0 font-mono text-[10.5px] text-ink-3">
+                  {it.sku}
+                </span>
+              )}
+              {/* Spacer keeps title+SKU together on the left instead of
+                  flinging the SKU to the far edge of a wide screen. */}
+              <span className="flex-1" />
             </div>
-            <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
-              {withoutLabelCount}
+          ))}
+          {hit.items.length > 4 && (
+            <div className="text-[11px] text-ink-3">
+              …и ещё {hit.items.length - 4}
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={onSelectAwaiting}
-            className={cn(
-              "border-l border-rule px-3 py-2 text-left transition-colors",
-              viewScope === "awaiting"
-                ? "bg-green-soft text-green-ink"
-                : "bg-surface text-ink-2 hover:bg-bg-elev",
-            )}
-            title="Label purchased — Walmart not yet marked Shipped"
-          >
-            <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
-              Label bought
-            </div>
-            <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
-              {withLabelCount}
-            </div>
-          </button>
+          )}
+        </div>
+      )}
+
+      {hit.tracking.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {hit.tracking.map((t) => (
+            <span
+              key={t.number}
+              className="inline-flex items-center gap-1 rounded border border-rule bg-bg-elev px-1.5 py-0.5 font-mono text-[10.5px] text-ink-2"
+              title={[t.carrier, t.service].filter(Boolean).join(" · ")}
+            >
+              {t.carrier && (
+                <span className="font-sans text-ink-3">{t.carrier}</span>
+              )}
+              {t.number}
+            </span>
+          ))}
         </div>
       )}
     </div>
