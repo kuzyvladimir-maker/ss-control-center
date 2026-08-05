@@ -54,6 +54,7 @@ import {
   withVerifiedPhysicalPackageSpecs,
 } from "../physical-package-specs";
 import { getWalmartClient } from "@/lib/walmart/client";
+import { walmartStudioRoiPriceCents } from "../walmart-studio-price";
 import { resolveIngredientListImage } from "../walmart-ingredient-list-image";
 import {
   fetchWalmartItemSpecSchemaCached,
@@ -638,11 +639,28 @@ export async function promoteDraftToChannelSkus(
   // Amazon cost model (cooler bands, FBA fees) produced a different, lower
   // price at promotion — the page said one thing and the listing would have
   // gone live at another. The reviewed price wins.
-  const studioPriceCents = walmartStudioReviewedPriceCents(
+  const reviewedPriceCents = walmartStudioReviewedPriceCents(
     draftPriceRow?.approval_notes,
     draftPriceRow?.draft_suggested_price_cents ?? null,
   );
-  const autoPriceCents = studioPriceCents ?? autoPrice.selling_price_cents;
+  // A Walmart-only draft is priced by the studio's own rule — return on
+  // invested capital against the exact shipping template it was built with.
+  // Without this it fell through to the Amazon model (cooler bands, FBA fees)
+  // for a marketplace this listing never touches, which priced the first live
+  // listing at $37.68 where the rule requires $43.10 — and re-priced it back
+  // on every publish, silently undoing any correction.
+  const studioRoiPriceCents = targetsWalmartOnly(draftPriceRow?.target_channels)
+    ? await walmartStudioRoiPriceCents({
+      draftId,
+      goodsCostCents: masterForPrice?.estimated_cost_cents ?? 0,
+      packageWeightOz:
+        parseVerifiedPhysicalPackageSpecs(masterForPrice?.packaging_spec)?.weight_oz
+          ?? masterForPrice?.total_weight_oz
+          ?? 0,
+    }).catch(() => null)
+    : null;
+  const autoPriceCents =
+    studioRoiPriceCents ?? reviewedPriceCents ?? autoPrice.selling_price_cents;
   const canonicalBusinessPrice = isOwnBrandPassthrough(masterForPrice?.brand)
     ? autoPriceCents
     : null;
