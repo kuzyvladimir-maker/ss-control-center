@@ -1,0 +1,118 @@
+/**
+ * Refuse to put the same product on Walmart twice.
+ *
+ * `recipe_fingerprint` stops a duplicate DRAFT from being built, which is not
+ * the same protection: two drafts of the same product can be created by two
+ * different builds, or one can be rebuilt after an earlier one already went
+ * live. Nothing stood between that and two identical live listings.
+ *
+ * Walmart has a duplicate-listings policy, and at a hundred listings a week the
+ * cost of tripping it is the account, not the listing. The identity that
+ * matters is the one the factory itself already decided: the exact canonical
+ * variant plus how many retail units are in the pack. Same variant, same pack
+ * count, already out — that is the same listing.
+ *
+ * This deliberately does NOT compare titles or images. Two listings can differ
+ * in wording and still be the same offer, and a title comparison would both
+ * miss those and flag legitimate re-wordings.
+ */
+
+import { prisma } from "@/lib/prisma";
+
+import {
+  WALMART_STUDIO_LISTING_ATTRIBUTE_KEY,
+} from "./walmart-studio-listing";
+
+export interface WalmartListingIdentity {
+  canonicalVariantId: string;
+  packCount: number;
+}
+
+export interface DuplicateListing {
+  sku: string;
+  channelSkuId: string;
+  listingStatus: string;
+  liveUrl: string | null;
+}
+
+/** The variant-and-pack identity a studio listing claims, if it declares one. */
+export function walmartListingIdentity(
+  attributes: string | null | undefined,
+): WalmartListingIdentity | null {
+  if (!attributes) return null;
+  try {
+    const parsed = JSON.parse(attributes) as Record<string, unknown>;
+    const evidence = parsed[WALMART_STUDIO_LISTING_ATTRIBUTE_KEY];
+    if (!evidence || typeof evidence !== "object") return null;
+    const record = evidence as {
+      identity?: { canonical_variant_id?: unknown };
+      listing_scope?: { pack_count?: unknown };
+    };
+    const canonicalVariantId = record.identity?.canonical_variant_id;
+    const packCount = Number(record.listing_scope?.pack_count);
+    if (typeof canonicalVariantId !== "string" || !canonicalVariantId.trim()) {
+      return null;
+    }
+    if (!Number.isInteger(packCount) || packCount <= 0) return null;
+    return { canonicalVariantId: canonicalVariantId.trim(), packCount };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Another Walmart listing for the same variant and pack that has already left,
+ * or null when this listing is the first of its kind.
+ *
+ * "Already left" includes everything past submission, not just LIVE: a second
+ * feed for a product whose first feed is still processing is the same duplicate,
+ * discovered an hour earlier.
+ */
+export async function findDuplicateWalmartListing(input: {
+  channelSkuId: string;
+  attributes: string | null;
+}): Promise<DuplicateListing | null> {
+  const identity = walmartListingIdentity(input.attributes);
+  // A listing that declares no identity cannot be compared. That is the frozen
+  // pilot lane, which is governed by its own owner-signed evidence.
+  if (!identity) return null;
+
+  const candidates = await prisma.channelSKU.findMany({
+    where: {
+      channel: "WALMART",
+      id: { not: input.channelSkuId },
+      OR: [
+        { live_url: { not: null } },
+        {
+          listing_status: {
+            in: ["SUBMITTED", "SUBMITTING", "PENDING_REVIEW", "SUBMISSION_UNKNOWN", "LIVE"],
+          },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      sku: true,
+      attributes: true,
+      listing_status: true,
+      live_url: true,
+    },
+  });
+
+  for (const candidate of candidates) {
+    const other = walmartListingIdentity(candidate.attributes);
+    if (!other) continue;
+    if (
+      other.canonicalVariantId === identity.canonicalVariantId
+      && other.packCount === identity.packCount
+    ) {
+      return {
+        sku: candidate.sku,
+        channelSkuId: candidate.id,
+        listingStatus: candidate.listing_status,
+        liveUrl: candidate.live_url,
+      };
+    }
+  }
+  return null;
+}

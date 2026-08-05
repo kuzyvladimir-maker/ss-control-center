@@ -22,6 +22,7 @@
 
 import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-pipeline";
 import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
+import { findDuplicateWalmartListing } from "@/lib/bundle-factory/walmart-duplicate-listing";
 import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
 import { runValidationForDraft } from "@/lib/bundle-factory/validation/validation-pipeline";
 import { withSqliteBusyRetry } from "@/lib/bundle-factory/sqlite-busy-retry";
@@ -128,6 +129,13 @@ export type PublishOneDraftResult =
   }
   | {
     ok: false;
+    stage: "DUPLICATE";
+    error: string;
+    duplicate: { sku: string; listing_status: string; live_url: string | null };
+    promotion: unknown;
+  }
+  | {
+    ok: false;
     stage: "VALIDATE";
     error: string;
     failures: Array<{ channel: string; status: string; failed: unknown }>;
@@ -184,6 +192,42 @@ export async function publishOneDraft(
       error: "This draft could not be promoted into a publishable SKU.",
       skipped: promotion.skipped,
     };
+  }
+
+  // Same product, same pack, already sent — publishing it again would create a
+  // duplicate listing, and Walmart charges for that against the account rather
+  // than the item. Checked before validation so the refusal is cheap and the
+  // reason names the listing that already exists.
+  if (apply) {
+    const walmartSkus = await prisma.channelSKU.findMany({
+      where: {
+        channel: "WALMART",
+        master_bundle_id: promotion.master_bundle_id,
+      },
+      select: { id: true, attributes: true },
+    });
+    for (const candidate of walmartSkus) {
+      const duplicate = await findDuplicateWalmartListing({
+        channelSkuId: candidate.id,
+        attributes: candidate.attributes,
+      });
+      if (duplicate) {
+        return {
+          ok: false,
+          stage: "DUPLICATE",
+          error:
+            `${duplicate.sku} is already on Walmart for the same product and pack `
+            + `size (${duplicate.listingStatus}). Publishing this one would create `
+            + "a duplicate listing.",
+          duplicate: {
+            sku: duplicate.sku,
+            listing_status: duplicate.listingStatus,
+            live_url: duplicate.liveUrl,
+          },
+          promotion,
+        };
+      }
+    }
   }
 
   const validation = await withSqliteBusyRetry(

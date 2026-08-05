@@ -96,6 +96,15 @@ export const POST = withErrorHandler(
         skipped: outcome.skipped,
       }, { status: 409 });
     }
+    if (outcome.stage === "DUPLICATE") {
+      return NextResponse.json({
+        ok: false,
+        stage: "DUPLICATE",
+        error: outcome.error,
+        duplicate: outcome.duplicate,
+        promotion: outcome.promotion,
+      }, { status: 409 });
+    }
     if (outcome.stage === "VALIDATE") {
       return NextResponse.json({
         ok: false,

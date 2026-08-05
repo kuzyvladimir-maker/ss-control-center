@@ -5,6 +5,7 @@ import {
   fetchWalmartItemSpecSchema,
   validateWalmartPayloadAgainstFetchedSpec,
   validateWalmartPayloadAgainstLiveSpec,
+  clearWalmartItemSpecCache,
 } from "@/lib/bundle-factory/distribution/walmart-item-spec";
 import {
   sha256WalmartJson,
@@ -260,6 +261,7 @@ test("Walmart minEntries extension is enforced rather than ignored", async () =>
 });
 
 test("live schema hash drift blocks publication", async () => {
+  clearWalmartItemSpecCache();
   const pinnedSchema = { type: "object", required: ["one"] };
   const liveSchema = { type: "object", required: ["two"] };
   const result = await validateWalmartPayloadAgainstLiveSpec({
@@ -283,6 +285,7 @@ test("live schema hash drift blocks publication", async () => {
 });
 
 test("Get Spec failures are fail-closed", async () => {
+  clearWalmartItemSpecCache();
   const schema = { type: "object" };
   const result = await validateWalmartPayloadAgainstLiveSpec({
     contract: contractFor(schema),

@@ -6,6 +6,10 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+
+import {
+  clearWalmartItemSpecCache,
+} from "@/lib/bundle-factory/distribution/walmart-item-spec";
 import { generateKeyPairSync, sign } from "node:crypto";
 
 import type { ChannelSKU } from "@/generated/prisma/client";
@@ -932,6 +936,10 @@ test("submitToWalmart — a signed permit alone cannot bypass the durable claim"
 });
 
 test("submitToWalmart — production transport rejects a test-fixture permit", async () => {
+  // The live spec is cached across calls now, so a test that injects its own
+  // schema must start from an empty cache or it is checked against whatever a
+  // previous test left behind.
+  clearWalmartItemSpecCache();
   const schema = { type: "object", required: ["MPItemFeedHeader", "MPItem"] };
   const contract = walmartContract({ spec_schema_hash: sha256WalmartJson(schema) });
   const calls: Array<{ path: string; options: Record<string, unknown> }> = [];
@@ -985,6 +993,7 @@ test("submitToWalmart — production transport rejects a test-fixture permit", a
 });
 
 test("submitToWalmart — mutation-adjacent fence can still block the feed", async () => {
+  clearWalmartItemSpecCache();
   const schema = { type: "object" };
   const contract = walmartContract({ spec_schema_hash: sha256WalmartJson(schema) });
   const calls: string[] = [];
