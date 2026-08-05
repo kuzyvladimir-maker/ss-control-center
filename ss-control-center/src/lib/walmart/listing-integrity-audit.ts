@@ -587,9 +587,11 @@ function containsAlias(value: string, aliases: readonly string[]): boolean {
 }
 
 function containsIdentityAlias(value: string, aliases: readonly string[]): boolean {
-  const tokens = new Set(normalize(value).split(" ").filter(Boolean));
+  const identityTokens = (text: string) => normalize(text).split(" ").filter(Boolean)
+    .map((token) => token === "lite" ? "light" : token);
+  const tokens = new Set(identityTokens(value));
   return aliases.some((alias) => {
-    const required = normalize(alias).split(" ").filter(Boolean);
+    const required = identityTokens(alias);
     return required.length > 0 && required.every((token) => tokens.has(token));
   });
 }

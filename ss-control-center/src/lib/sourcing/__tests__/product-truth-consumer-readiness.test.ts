@@ -376,6 +376,9 @@ test("readiness source has no writer, provider, or consumer activation path", as
   assert.doesNotMatch(source, /\b(?:INSERT|UPDATE|DELETE|REPLACE)\b/i);
   assert.doesNotMatch(source, /\bfetch\s*\(|retail-fetch|oxylabs|unwrangle|bluecart/i);
   assert.doesNotMatch(source, /buildProductTruthConsumerActivation|validateProductTruthConsumerActivation/);
+  assert.match(source, /readProductTruthSnapshotsInTransaction/);
+  assert.doesNotMatch(source, /\breadProductTruthSnapshots\(/);
+  assert.match(source, /db\.transaction\("read"\)/);
   assert.match(source, /ownerActivationGranted:\s*false/);
   assert.match(source, /consumerCutoverClaimed:\s*false/);
 });

@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash, generateKeyPairSync } from "node:crypto";
-import { chmod, lstat, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  lstat,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
@@ -19,7 +27,8 @@ import {
 } from "../buyer-facing-snapshot.ts";
 import { resolveExactWalmartItemCandidate } from "../exact-item-resolution.ts";
 import { walmartListingIntegrityImageId } from "../listing-integrity-audit.ts";
-import type { BlindObservation } from "../catalog-visual-audit.ts";
+import { auditGallerySlot } from "../catalog-gallery-audit.ts";
+import { decideBlind, type BlindObservation } from "../catalog-visual-audit.ts";
 import type { ProductTruthSnapshot } from "../../sourcing/product-truth-read-contract.ts";
 import {
   executeLiveWalmartListingSingleObservation,
@@ -32,6 +41,7 @@ import {
 } from "../listing-integrity-single-intake.ts";
 import { projectWalmartPublicBuyerPdpHtml } from "../public-buyer-pdp.ts";
 import {
+  WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT,
   WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
   buildWalmartListingSingleObserverPlan,
   buildWalmartListingSingleObserverRequest,
@@ -40,6 +50,9 @@ import {
 import {
   compileWalmartListingDeclaredConsistency,
 } from "../listing-integrity-declared-consistency.ts";
+import {
+  qualifyWalmartListingIntegrityCleanCandidate,
+} from "../listing-integrity-single-clean-qualification.server.ts";
 
 const require = createRequire(import.meta.url);
 const visionContract = require("../../../../ops/codex-image-worker/vision-contract.js");
@@ -51,6 +64,8 @@ function snapshot(overrides: {
   content?: boolean;
   componentCount?: number;
   evidenceStatus?: "FACT" | "MANUAL_FACT" | "ESTIMATE" | "REJECT";
+  contentBlockers?: string[];
+  viewBlockers?: string[];
 } = {}): ProductTruthSnapshot {
   const component = {
     componentEvidenceId: "evidence-1",
@@ -107,7 +122,7 @@ function snapshot(overrides: {
         meteredReceiptId: null,
       },
     },
-    contentBlockers: [],
+    contentBlockers: overrides.contentBlockers ?? [],
   };
   const components = Array.from(
     { length: overrides.componentCount ?? 1 },
@@ -136,7 +151,8 @@ function snapshot(overrides: {
         consumer: "LISTING_IMPROVEMENT",
         ready: overrides.ready ?? true,
         components,
-        blockers: overrides.ready === false ? ["CONTENT_MISSING"] : [],
+        blockers: overrides.viewBlockers
+          ?? (overrides.ready === false ? ["CONTENT_MISSING"] : []),
       },
       unitEconomics: {
         consumer: "UNIT_ECONOMICS",
@@ -324,7 +340,7 @@ test("exact canonical content remains usable when price evidence is unsourceable
   const result = projectProductTruthForWalmartSingleListing(contentOnly);
   assert.equal(result.status, "READY");
   if (result.status !== "READY") return;
-  assert.equal(result.adapter_version, "walmart-listing-single-pipeline-truth-adapter/v5");
+  assert.equal(result.adapter_version, "walmart-listing-single-pipeline-truth-adapter/v9");
   assert.equal(result.expected.outer_units, 6);
   assert.deepEqual(result.expected.identity.brand_aliases, [
     "Pepperidge Farm",
@@ -336,6 +352,200 @@ test("exact canonical content remains usable when price evidence is unsourceable
     ["top"],
   ]);
   assert.deepEqual(result.blockers, []);
+
+  const exactAttributeFallback = snapshot({ evidenceStatus: "REJECT" });
+  const fallbackComponent = exactAttributeFallback.views.listingImprovement.components[0]!;
+  fallbackComponent.product = "chunky soup ready to serve chicken broccoli cheese soup can";
+  fallbackComponent.flavor = null;
+  fallbackComponent.content!.identity.brand = "campbells";
+  fallbackComponent.content!.identity.productLine =
+    "broccoli can cheese chicken chunky ready serve soup to";
+  fallbackComponent.content!.identity.flavor = null;
+  fallbackComponent.content!.identity.sizeBaseAmount = 532.97103475;
+  fallbackComponent.content!.facts.title =
+    "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can";
+  fallbackComponent.content!.facts.attributes = [
+    { name: "Flavor", value: "Chicken Broccoli Cheese" },
+    { name: "Brand", value: "Chunky" },
+  ];
+  const fallback = projectProductTruthForWalmartSingleListing(exactAttributeFallback);
+  assert.equal(fallback.status, "READY");
+  if (fallback.status === "READY") {
+    assert.deepEqual(fallback.expected.identity.variant_marker_groups, [
+      ["Chicken Broccoli Cheese"],
+    ]);
+    assert.deepEqual(fallback.expected.identity.product_marker_groups, [[
+      "broccoli can cheese chicken chunky ready serve soup to",
+      "chunky soup ready to serve chicken broccoli cheese soup can",
+      "Chunky",
+    ]]);
+    const exactMain = decideBlind({
+      case_id: "campbells-main-candidate",
+      sku: "SKU-6",
+      expected: fallback.expected,
+      images: [{
+        slot: "main",
+        url: "https://i5.walmartimages.com/campbells-main.png",
+        buyer_facing_verified: true,
+        surface: "last_applied_artifact",
+      }],
+    }, {
+      slot: "main",
+      url: "https://i5.walmartimages.com/campbells-main.png",
+      buyer_facing_verified: true,
+      surface: "last_applied_artifact",
+    }, observation("campbells-main", {
+      visible_brand_text: "Campbell's",
+      visible_product_text: "CHUNKY",
+      visible_variant_text: "CHICKEN BROCCOLI CHEESE WITH POTATO",
+      visible_size_texts: ["NET WT 18.8 OZ (1 LB 2.8 OZ) 533 GRAMS"],
+      external_package_count: { mode: "exact", value: 6, min: null, max: null },
+    }));
+    assert.equal(exactMain.verdict, "PASS");
+    assert.equal(exactMain.checks.identity, "MATCH");
+    const exactFlavorGallery = auditGallerySlot({
+      slot: "gallery-1",
+      expected: fallback.expected,
+      source: {
+        state: "observed",
+        observation: observation("campbells-gallery", {
+          visual_role: "lifestyle",
+          visible_brand_text: "Campbell's Chunky",
+          visible_product_text: "Chicken Broccoli Cheese with Potato",
+          visible_variant_text: "Chicken Broccoli Cheese with Potato",
+          visible_size_texts: [],
+          external_package_count: { mode: "exact", value: 1, min: null, max: null },
+          grid_cell_kind: "not_a_grid",
+          front_visibility: "some",
+          background: "lifestyle",
+          evidence: ["CHICKEN BROCCOLI CHEESE WITH POTATO"],
+        }),
+      },
+    });
+    assert.equal(exactFlavorGallery.verdict, "REVIEW");
+    assert.deepEqual(exactFlavorGallery.hard_failures, []);
+  }
+
+  const labelAttributeFallback = snapshot({ evidenceStatus: "REJECT" });
+  const labelComponent = labelAttributeFallback.views.listingImprovement.components[0]!;
+  labelComponent.content!.facts.attributes = [
+    { label: "Product line", value: "Farmhouse" },
+  ] as typeof labelComponent.content.facts.attributes;
+  const labelFallback = projectProductTruthForWalmartSingleListing(labelAttributeFallback);
+  assert.equal(labelFallback.status, "READY");
+  if (labelFallback.status === "READY") {
+    assert.deepEqual(labelFallback.expected.identity.product_marker_groups, [[
+      "Farmhouse Bread",
+      "Farmhouse Homestyle Oat Bread",
+      "Farmhouse",
+    ]]);
+  }
+});
+
+test("exact Product line and Flavor attributes qualify a literal multipack label", () => {
+  const progresso = snapshot({ evidenceStatus: "REJECT" });
+  const component = progresso.views.listingImprovement.components[0]!;
+  component.product = "rich hearty italian sausage potato canned soup gluten free";
+  component.flavor = null;
+  component.content!.identity.brand = "progresso";
+  component.content!.identity.productLine =
+    "canned free gluten hearty italian potato rich sausage soup";
+  component.content!.identity.flavor = null;
+  component.content!.identity.modifiers = ["gluten_free"];
+  component.content!.identity.sizeBaseAmount = 524.4661778125;
+  component.content!.facts.title =
+    "Progresso Rich and Hearty, Italian Sausage and Potato Canned Soup, Gluten Free, 18.5 oz";
+  component.content!.facts.attributes = [
+    { name: "Flavor", value: "Sausage & Potato" },
+    { name: "Product line", value: "Rich & Hearty" },
+    { name: "Brand", value: "Progresso" },
+  ];
+
+  const truth = projectProductTruthForWalmartSingleListing(progresso);
+  assert.equal(truth.status, "READY");
+  if (truth.status !== "READY") return;
+  assert.deepEqual(truth.expected.identity.product_marker_groups, [[
+    "canned free gluten hearty italian potato rich sausage soup",
+    "rich hearty italian sausage potato canned soup gluten free",
+    "Rich & Hearty",
+  ]]);
+  assert.deepEqual(truth.expected.identity.variant_marker_groups, [
+    ["Sausage & Potato"],
+    ["gluten_free"],
+  ]);
+  const decision = decideBlind({
+    case_id: "progresso-main-candidate",
+    sku: "SKU-6",
+    expected: truth.expected,
+    images: [{
+      slot: "main",
+      url: "https://i5.walmartimages.com/progresso-main.png",
+      buyer_facing_verified: true,
+      surface: "last_applied_artifact",
+    }],
+  }, {
+    slot: "main",
+    url: "https://i5.walmartimages.com/progresso-main.png",
+    buyer_facing_verified: true,
+    surface: "last_applied_artifact",
+  }, observation("progresso-main", {
+    visible_brand_text: "PROGRESSO",
+    visible_product_text: "ITALIAN SAUSAGE & POTATO",
+    visible_variant_text: "RICH & HEARTY GLUTEN FREE",
+    visible_size_texts: ["NET WT 18.5 OZ (1 LB 2.5 OZ) 524g"],
+    external_package_count: { mode: "exact", value: 6, min: null, max: null },
+  }));
+  assert.equal(decision.verdict, "PASS");
+  assert.equal(decision.checks.identity, "MATCH");
+});
+
+test("missing storage remains an enrichment task but cannot block an exact image audit", () => {
+  const result = projectProductTruthForWalmartSingleListing(snapshot({
+    ready: false,
+    contentBlockers: ["CONTENT_STORAGE_MISSING"],
+    viewBlockers: ["COMPONENT_0:CONTENT_STORAGE_MISSING"],
+  }));
+  assert.equal(result.status, "READY");
+  if (result.status !== "READY") return;
+  assert.equal(result.expected.outer_units, 6);
+  assert.deepEqual(result.blockers, []);
+});
+
+test("field-scoped readiness never masks an identity or image content blocker", () => {
+  const result = projectProductTruthForWalmartSingleListing(snapshot({
+    ready: false,
+    contentBlockers: ["CONTENT_STORAGE_MISSING", "CONTENT_MAIN_IMAGE_MISSING"],
+    viewBlockers: [
+      "COMPONENT_0:CONTENT_STORAGE_MISSING",
+      "COMPONENT_0:CONTENT_MAIN_IMAGE_MISSING",
+    ],
+  }));
+  assert.equal(result.status, "SOURCE_REQUIRED");
+  if (result.status !== "SOURCE_REQUIRED") return;
+  assert.equal(result.blockers.includes("CONTENT:CONTENT_MAIN_IMAGE_MISSING"), true);
+  assert.equal(result.blockers.includes("CONTENT:CONTENT_STORAGE_MISSING"), false);
+  assert.equal(result.blockers.includes("LISTING_IMPROVEMENT_NOT_READY"), true);
+});
+
+test("nutrition grams in donor title never become package net content", () => {
+  const nutrientClaim = snapshot({ evidenceStatus: "REJECT" });
+  const component = nutrientClaim.views.listingImprovement.components[0]!;
+  component.product = "roasted chicken ramen cup noodles protein";
+  component.flavor = null;
+  component.content!.identity.brand = "chef woo";
+  component.content!.identity.productLine = "chicken cup noodles protein ramen roasted";
+  component.content!.identity.flavor = null;
+  component.content!.identity.modifiers = [];
+  component.content!.identity.sizeDimension = "MASS";
+  component.content!.identity.sizeBaseAmount = 20;
+  component.content!.identity.sizeBaseUnit = "g";
+  component.content!.facts.title = "Chef Woo Roasted Chicken Ramen Cup Noodles, 20g Protein";
+
+  const result = projectProductTruthForWalmartSingleListing(nutrientClaim);
+  assert.equal(result.status, "SOURCE_REQUIRED");
+  if (result.status !== "SOURCE_REQUIRED") return;
+  assert.equal(result.adapter_version, "walmart-listing-single-pipeline-truth-adapter/v9");
+  assert.deepEqual(result.blockers, ["CANONICAL_SIZE_LOOKS_LIKE_NUTRIENT_CLAIM"]);
 });
 
 test("product aliases are deduplicated after detector normalization", () => {
@@ -471,6 +681,103 @@ test("full diagnostic accepts possessive brand, interleaved title tokens, and ob
     assert.equal(result.report.text_decision.checks.title_identity, "MATCH");
     assert.equal(result.report.main_decision.checks.identity, "MATCH");
     assert.equal(result.report.gallery_decisions[0]?.checks.identity, "MATCH");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Del Monte Lite evidence cannot create a false title or gallery foreign-product BAD", async () => {
+  const fixture = await diagnosticFixture();
+  try {
+    const truth = snapshot({ qty: 4 });
+    const component = truth.views.listingImprovement.components[0]!;
+    component.product = "Lite Canned Fruit";
+    component.flavor = "Apricot Halves";
+    component.content!.identity.brand = "del monte";
+    component.content!.identity.productLine = "canned fruit lite";
+    component.content!.identity.flavor = "apricot halves";
+    component.content!.identity.modifiers = ["light"];
+    component.content!.identity.form = "can";
+    component.content!.identity.sizeBaseAmount = 425.242846875;
+    component.content!.facts.title =
+      "Del Monte Lite Apricot Halves, Canned Fruit, 15 oz Can";
+
+    const payload = structuredClone(diagnosticBuyerPayload);
+    payload.product.title =
+      "Del Monte Lite Apricot Halves Canned Fruit 15 oz Can (Pack of 4)";
+    payload.product.description =
+      "Del Monte Lite Apricot Halves in Extra Light Syrup. Pack of 4. Each can is 15 oz.";
+    payload.product.feature_bullets = [
+      "Pack of 4 Del Monte Lite Apricot Halves",
+      "Canned fruit in extra light syrup; each can is 15 oz",
+    ];
+    payload.product.attributes = {
+      Brand: "Del Monte",
+      "Product Type": "Lite Canned Fruit",
+      Flavor: "Apricot Halves",
+      "Multipack Quantity": 4,
+      "Net Weight": "15 oz",
+    };
+    fixture.blind_observations[0] = observation(
+      fixture.blind_observations[0]!.image_id,
+      {
+        visible_brand_text: "Del Monte",
+        visible_product_text: "Apricot Halves",
+        visible_variant_text: "Lite",
+        visible_size_texts: ["15 oz"],
+        external_package_count: { mode: "exact", value: 4, min: null, max: null },
+      },
+    );
+    fixture.blind_observations[1] = observation(
+      fixture.blind_observations[1]!.image_id,
+      {
+        visual_role: "infographic",
+        visible_brand_text: "Del Monte",
+        visible_product_text: "Apricot Halves",
+        visible_variant_text: "Lite",
+        visible_size_texts: ["NET WT 15 OZ (425g)"],
+        external_package_count: { mode: "exact", value: 1, min: null, max: null },
+      },
+    );
+    const result = await diagnoseWalmartSingleListing({
+      product_truth: truth,
+      buyer_snapshot: fixture.buyer_snapshot,
+      buyer_pdp_payload: payload,
+      image_bytes_by_sha256: fixture.image_bytes_by_sha256,
+      blind_observations: fixture.blind_observations,
+    });
+    assert.equal(result.status, "DIAGNOSED");
+    if (result.status !== "DIAGNOSED") return;
+    assert.equal(result.report.text_decision.checks.title_identity, "MATCH");
+    assert.equal(result.report.gallery_decisions[0]?.verdict, "REVIEW");
+    assert.equal(result.report.gallery_decisions[0]?.checks.identity, "UNKNOWN");
+    assert.equal(result.report.gallery_decisions[0]?.checks.package_facts.net_content, "MATCH");
+    assert.doesNotMatch(result.report.blocking_reasons.join(" "), /visible product is not allowed/);
+
+    const projected = projectProductTruthForWalmartSingleListing(truth);
+    assert.equal(projected.status, "READY");
+    if (projected.status !== "READY") return;
+    const lifestyle = auditGallerySlot({
+      slot: "gallery-1",
+      expected: projected.expected,
+      source: {
+        state: "observed",
+        observation: observation("lifestyle-apricots", {
+          visual_role: "lifestyle",
+          visible_brand_text: null,
+          visible_product_text: "Apricots",
+          visible_variant_text: "Juicy",
+          visible_size_texts: [],
+          external_package_count: { mode: "unknown", value: null, min: null, max: null },
+          grid_cell_kind: "not_a_grid",
+          front_visibility: "none",
+          background: "lifestyle",
+          evidence: ["Juicy Apricots"],
+        }),
+      },
+    });
+    assert.equal(lifestyle.verdict, "REVIEW");
+    assert.deepEqual(lifestyle.hard_failures, []);
   } finally {
     await fixture.cleanup();
   }
@@ -1141,6 +1448,7 @@ test("buyer-PDP substitution is sealed as a capture requirement, never accepted 
     const written = await writeWalmartListingSingleIntake(
       path.join(root, "partial-intake"),
       result,
+      { product_truth_manifest_sha256: "a".repeat(64) },
     );
     assert.equal(written.index.status, "BUYER_CAPTURE_REQUIRED");
     assert.equal(written.index.buyer_snapshot_id, null);
@@ -1179,6 +1487,7 @@ test("inspect accepts one exact imported buyer HTML file and accounts for zero P
     "inspect",
     "--sku=SKU-6",
     "--store-index=1",
+    `--product-truth-manifest-sha256=${"a".repeat(64)}`,
     "--output-dir=/tmp/wli-output",
     "--buyer-pdp-html=/tmp/wli-exact-pdp.html",
   ]);
@@ -1383,6 +1692,7 @@ test("captured intake is atomically persisted as one immutable local bundle", as
     const written = await writeWalmartListingSingleIntake(
       path.join(root, "exact-sku-intake"),
       result,
+      { product_truth_manifest_sha256: "a".repeat(64) },
     );
     assert.equal(written.index.status, "CAPTURED");
     assert.match(written.index.body_sha256, /^[a-f0-9]{64}$/);
@@ -1578,12 +1888,72 @@ test("captured intake is atomically persisted as one immutable local bundle", as
     assert.equal(summary.execution.subscription_calls_consumed, 1);
     assert.equal(summary.execution.retries, 0);
     assert.equal(summary.execution.walmart_writes, 0);
+    const diagnosisPath = path.join(root, "diagnosis.json");
+    const productTruthRef = written.index.files.find((row) => row.role === "product_truth")!;
+    const buyerSnapshotRef = written.index.files.find(
+      (row) => row.role === "buyer_snapshot_manifest",
+    )!;
+    const buyerPdpRef = written.index.files.find((row) => row.role === "buyer_pdp_payload")!;
+    const diagnosis = await executeWalmartListingSingleProcess({
+      command: "diagnose",
+      product_truth: path.join(written.directory, productTruthRef.path),
+      buyer_snapshot: path.join(written.directory, buyerSnapshotRef.path),
+      buyer_pdp: path.join(written.directory, buyerPdpRef.path),
+      observations: summary.observations_path,
+      asset_root: path.dirname(path.join(written.directory, buyerSnapshotRef.path)),
+      output: diagnosisPath,
+    });
+    assert.equal("outcome" in diagnosis ? diagnosis.outcome.status : null, "CLEAN_CANDIDATE");
+    const trust = {
+      key_id: signer.key_id,
+      public_key_spki_sha256: signer.public_key_spki_sha256,
+    };
+    const canonicalRoot = await realpath(root);
+    const canonicalIntake = await realpath(written.directory);
+    const canonicalObservation = await realpath(path.join(root, "observer"));
+    const canonicalDiagnosis = await realpath(diagnosisPath);
+    await assert.rejects(
+      qualifyWalmartListingIntegrityCleanCandidate({
+        intake_dir: canonicalIntake,
+        observation_dir: canonicalObservation,
+        diagnosis_path: canonicalDiagnosis,
+        output_dir: path.join(canonicalRoot, "wrong-manifest-gallery"),
+        expected_listing_key: written.index.listing_key,
+        expected_product_truth_manifest_sha256: "b".repeat(64),
+        observer_trust: trust,
+      }),
+      /manifest-bound exact CAPTURED listing/,
+    );
+    const qualified = await qualifyWalmartListingIntegrityCleanCandidate({
+      intake_dir: canonicalIntake,
+      observation_dir: canonicalObservation,
+      diagnosis_path: canonicalDiagnosis,
+      output_dir: path.join(canonicalRoot, "clean-gallery"),
+      expected_listing_key: written.index.listing_key,
+      expected_product_truth_manifest_sha256: "a".repeat(64),
+      observer_trust: trust,
+      now: new Date("2026-07-25T13:05:00.000Z"),
+    });
+    assert.equal(qualified.status, "LIVE_SURFACE_PASS");
+    assert.equal(qualified.completion_mode, "AUDITED_NO_CHANGE");
+    assert.equal(qualified.walmart_writes, 0);
+    assert.equal(qualified.checks, 19);
+    const noChangeVerification = JSON.parse(
+      await readFile(qualified.verification_path, "utf8"),
+    );
+    assert.equal(noChangeVerification.feed_id, null);
+    assert.equal(noChangeVerification.exact_payload_sha256, null);
+    assert.equal(
+      noChangeVerification.qualification_boundary.no_walmart_write_required,
+      true,
+    );
   } finally {
     await chmod(path.join(root, "observer-unknown-outcome", "model-assets"), 0o700)
       .catch(() => {});
     await chmod(path.join(root, "observer-unknown-outcome"), 0o700).catch(() => {});
     await chmod(path.join(root, "observer", "model-assets"), 0o700).catch(() => {});
     await chmod(path.join(root, "observer"), 0o700).catch(() => {});
+    await chmod(path.join(root, "clean-gallery"), 0o700).catch(() => {});
     await rm(root, { recursive: true, force: true });
   }
 });
@@ -1617,6 +1987,8 @@ test("blind observer plan hides listing truth and verifies an exact signed worke
   assert.equal(plan.calls[0]!.prompt.includes("SKU-6"), false);
   assert.equal(plan.calls[0]!.prompt.includes("Pack of 6"), false);
   assert.equal(plan.calls[0]!.prompt.includes("Product Truth"), false);
+  assert.match(plan.calls[0]!.prompt, /external_package_count can never be zero/u);
+  assert.match(plan.calls[0]!.prompt, /use mode=unknown with value\/min\/max all null/u);
   const request = buildWalmartListingSingleObserverRequest(plan, 0, [modelBytes]);
 
   const { privateKey } = generateKeyPairSync("ed25519");
@@ -1692,4 +2064,101 @@ test("blind observer plan hides listing truth and verifies an exact signed worke
       public_key_spki_sha256: signer.public_key_spki_sha256,
     },
   }), /signed worker receipt mismatch/);
+});
+
+test("blind observer verifies a separately signed Codex subscription response", async () => {
+  const modelBytes = await sharp({
+    create: { width: 8, height: 6, channels: 3, background: "#f0d0a0" },
+  }).jpeg().toBuffer();
+  const worker = WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT;
+  const plan = buildWalmartListingSingleObserverPlan({
+    created_at: "2026-08-01T15:00:00.000Z",
+    listing_key: "walmart:1:SKU-CODEX",
+    item_id: diagnosticTarget.item_id,
+    intake_index_file_sha256: "d".repeat(64),
+    intake_index_body_sha256: "e".repeat(64),
+    prepared_assets: [{
+      slot: "main",
+      source_asset_sha256: "f".repeat(64),
+      model_asset: {
+        path: "model-assets/main.jpeg",
+        sha256: createHash("sha256").update(modelBytes).digest("hex"),
+        bytes: modelBytes.length,
+        media_type: "image/jpeg",
+        width: 8,
+        height: 6,
+      },
+    }],
+    worker_contract: worker,
+  });
+  const request = buildWalmartListingSingleObserverRequest(plan, 0, [modelBytes]);
+  const { privateKey } = generateKeyPairSync("ed25519");
+  const signer = visionContract.createVisionReceiptSigner(
+    privateKey.export({ format: "der", type: "pkcs8" }).toString("base64"),
+    "test-codex-worker-key",
+  );
+  const result = {
+    schema_version: "wm_visual_observation_batch/v3",
+    observations: [observation(plan.assets[0]!.image_id)],
+  };
+  const metadata = {
+    input_image_count: 1,
+    vision_provider: "codex_cli_subscription",
+    vision_model: worker.model,
+    vision_reasoning_effort: worker.reasoning_effort,
+    cli_version: worker.cli_version,
+    node_version: worker.node_version,
+    runtime_platform: worker.runtime_platform,
+    runtime_arch: worker.runtime_arch,
+    worker_build: worker.worker_build,
+    vision_timeout_ms: worker.vision_timeout_ms,
+    reservation_ledger: worker.reservation_ledger,
+  };
+  const receipt = signer.sign({
+    issued_at: "2026-08-01T15:00:01.000Z",
+    reservation_reserved_at: "2026-08-01T15:00:00.000Z",
+    request_attestation: request.value.request_attestation,
+    result_canonical_sha256: createHash("sha256")
+      .update(visionContract.canonicalJson(result))
+      .digest("hex"),
+    worker_contract: metadata,
+    subscription_policy: {
+      auth_mode: "codex_chatgpt_subscription_oauth",
+      paid_api_environment_absent: true,
+      alternate_cloud_routing_absent: true,
+    },
+  });
+  const verified = verifyWalmartListingSingleWorkerResponse({
+    plan,
+    call_index: 0,
+    request: request.value,
+    http_status: 200,
+    response: {
+      ok: true,
+      result,
+      ...metadata,
+      request_attestation_verified: true,
+      worker_receipt: receipt,
+    },
+    trust: {
+      key_id: signer.key_id,
+      public_key_spki_sha256: signer.public_key_spki_sha256,
+    },
+  });
+  assert.equal(verified.observations.length, 1);
+  assert.notEqual(
+    plan.calls[0]!.call_key,
+    buildWalmartListingSingleObserverPlan({
+      created_at: "2026-08-01T15:00:00.000Z",
+      listing_key: "walmart:1:SKU-CODEX",
+      item_id: diagnosticTarget.item_id,
+      intake_index_file_sha256: "d".repeat(64),
+      intake_index_body_sha256: "e".repeat(64),
+      prepared_assets: plan.assets.map((asset) => ({
+        slot: asset.slot,
+        source_asset_sha256: asset.source_asset_sha256,
+        model_asset: asset.model_asset,
+      })),
+    }).calls[0]!.call_key,
+  );
 });

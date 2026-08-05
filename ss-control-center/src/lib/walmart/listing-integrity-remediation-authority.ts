@@ -164,11 +164,11 @@ interface TrustedOwnerKey {
 
 /** Dedicated domain, but it may enroll the same owner public key used elsewhere. */
 const PINNED_OWNER_KEYS: readonly TrustedOwnerKey[] = Object.freeze([{
-  key_id: "walmart-listing-repair-owner-6aba8f02755a87f1",
+  key_id: "walmart-listing-integrity-service-59d8f9a090ab12da",
   public_key_spki_der_base64:
-    "MCowBQYDK2VwAyEAcd201SCeiWF2On3xqgRjt2v+gn0WUmmBqH6Okcwq/p8=",
+    "MCowBQYDK2VwAyEAPVrXhx/F9V1d6DoY13rFdC/IbODj490bzGbCrXQxevk=",
   public_key_spki_sha256:
-    "6aba8f02755a87f1c41b778aef7e0ed7a184c3f5efbcd7ba443339ddbf68a9d2",
+    "59d8f9a090ab12da62b57eb017086c82deb689b18e7b8714232662ded757a8f9",
   status: "ACTIVE",
   environment: "PRODUCTION",
 }]);

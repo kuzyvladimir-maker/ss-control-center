@@ -410,6 +410,25 @@ function imageSetCompilationRequest() {
   };
 }
 
+function nonImageCompilationRequest() {
+  const request = attributeCompilationRequest();
+  const body = structuredClone(request) as Record<string, unknown>
+    & Omit<typeof request, "body_sha256">;
+  delete body.body_sha256;
+  body.schema_version = "walmart-listing-single-repair-compilation-request/v6";
+  const repair = body.repair as typeof request.repair;
+  repair.target_surface.description =
+    "Pepperidge Farm Hot Dog Buns. This listing includes 6 packages.";
+  repair.target_surface.bullets = [
+    "PACK OF 6: Six packages of Pepperidge Farm Hot Dog Buns",
+  ];
+  repair.changed_fields = ["description", "bullets", "attributes"];
+  return {
+    ...body,
+    body_sha256: walmartListingIntegritySha256(body),
+  };
+}
+
 test("owner compiler accepts only an exact reviewed description/bullets/MAIN diff", () => {
   const request = mainCompilationRequest();
   const verified = verifyWalmartListingRepairCompilationRequest(request);
@@ -505,6 +524,31 @@ test("owner compiler accepts only the exact v3 attributes diff and preserves opa
   assert.throws(
     () => verifyWalmartListingRepairCompilationRequest(changedDescription),
     /attributes-only diff/u,
+  );
+});
+
+test("owner compiler accepts an exact canonical v6 combined non-image diff", () => {
+  const request = nonImageCompilationRequest();
+  const verified = verifyWalmartListingRepairCompilationRequest(request);
+  assert.deepEqual(verified.repair.changed_fields, [
+    "description",
+    "bullets",
+    "attributes",
+  ]);
+  assert.equal(verified.repair.unchanged_image_bytes, true);
+  assert.deepEqual(
+    verified.repair.target_images,
+    verified.repair.baseline_images,
+  );
+
+  const reordered = structuredClone(request);
+  reordered.repair.changed_fields = ["attributes", "description", "bullets"];
+  const body = structuredClone(reordered) as Record<string, unknown>;
+  delete body.body_sha256;
+  reordered.body_sha256 = walmartListingIntegritySha256(body);
+  assert.throws(
+    () => verifyWalmartListingRepairCompilationRequest(reordered),
+    /canonical non-image diff/u,
   );
 });
 

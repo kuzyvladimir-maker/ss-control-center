@@ -11,7 +11,7 @@ export const WALMART_VISUAL_AUDIT_SCHEMA = "walmart-visual-audit/v3" as const;
 export const WALMART_VISUAL_COMPARATOR_VERSION = "walmart-visual-comparator/v5" as const;
 export const WALMART_VISUAL_AUXILIARY_OCR_MIN_CONFIDENCE = 0.95 as const;
 export const BLIND_OBSERVATION_SCHEMA = "wm_visual_observation_batch/v3" as const;
-export const BLIND_PROMPT_VERSION = "walmart-visual-blind/v4" as const;
+export const BLIND_PROMPT_VERSION = "walmart-visual-blind/v6" as const;
 
 export type AuditVerdict = "PASS" | "BAD" | "REVIEW";
 export type ImageSlot = "main" | `gallery-${number}`;
@@ -540,10 +540,12 @@ export function buildBlindObservationPrompt(imageIds: readonly string[]): string
     "Image mapping (attachment order is authoritative):",
     mapping,
     "For a tiled image, external_package_count means how many repeated OUTER packages are visibly shown in the whole image.",
+    "external_package_count can never be zero. If no complete sellable outer package is visibly shown, including a food-only lifestyle image, use mode=unknown with value/min/max all null. exact and range integers always start at 1.",
     "A sealed retail bag/box that naturally contains loose pieces is ONE sellable package: a 20-teabag box, an 8-bun bag, a cookie bag, or a 6-English-muffin tray is not automatically a case. Put that literal count text in inner_contents_claims.",
     "A shipping/display case, shrink-wrap, caddy, tray, or offer graphic that contains several separately packaged cans/bottles/boxes/bags is multi_package_case. Put a literal claim such as '24 cans' or '12 pack' in case_package_claims when the pixels show a case of separate packages.",
     "visible_size_texts is an array of every literal readable size/count for ONE repeated outer package (examples: ['48 fl oz', '2 qt', '1.89 L'] or ['20 tea bags', '0.91 oz']). Use [] when none is readable. Do not convert sizes into objects.",
     "Evidence must be short text actually visible in the image. Do not copy or invent an expected title.",
+    "Put all directly readable product-line, flavor, formulation, and dietary badge text into visible_product_text, visible_variant_text, or evidence. These fields may combine several literal phrases from the same package; do not omit a clearly readable badge merely because another variant phrase is more prominent.",
     "Hard array limits: visible_size_texts and evidence contain at most 8 strings each; outer_package_claims, inner_contents_claims, case_package_claims, unclear_quantity_claims, and flags contain at most 12 strings each. Keep only the strongest literal evidence when more text is visible.",
     "Allowed enums: visual_role=tiled_main|single_product_front|back|nutrition|ingredients|lifestyle|infographic|mixed_products|other; grid_cell_kind=single_sellable_package|multi_package_case|multiple_loose_products|not_a_grid|unknown; front_visibility=all|some|none|not_applicable|unknown; background=white|near_white|colored|lifestyle|mixed|unknown; multiple_distinct_products=yes|no|unknown; readable_identity=clear|partial|none.",
     `Return exactly this valid JSON shape with one observation for every supplied image_id and no other fields (replace the placeholder values with observations):\n${JSON.stringify({
@@ -590,7 +592,7 @@ function sizeEquals(expected: ExpectedSize, observed: ExpectedSize): boolean {
   const b = normalizedSize(observed);
   if (a.dimension !== b.dimension) return false;
   if (a.dimension === "count") return false;
-  return Math.abs(a.value - b.value) / a.value <= 0.005;
+  return Math.abs(a.value - b.value) / Math.min(a.value, b.value) <= 0.005;
 }
 
 function isNutrientClaim(value: string): boolean {
@@ -679,9 +681,11 @@ function textContainsIdentityAliases(
   value: string | null,
   aliases: readonly string[],
 ): boolean {
-  const tokens = new Set(normalizeVisibleText(value ?? "").split(" ").filter(Boolean));
+  const identityTokens = (text: string) => normalizeVisibleText(text).split(" ").filter(Boolean)
+    .map((token) => token === "lite" ? "light" : token);
+  const tokens = new Set(identityTokens(value ?? ""));
   return aliases.some((alias) => {
-    const required = normalizeVisibleText(alias).split(" ").filter(Boolean);
+    const required = identityTokens(alias);
     return required.length > 0 && required.every((token) => tokens.has(token));
   });
 }

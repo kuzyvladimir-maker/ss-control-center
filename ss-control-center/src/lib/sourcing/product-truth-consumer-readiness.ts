@@ -9,12 +9,16 @@ import {
 } from "./phase1-scope-manifest";
 import {
   PRODUCT_TRUTH_MAX_BATCH_SCOPES,
-  readProductTruthSnapshots,
+  readProductTruthSnapshotsInTransaction,
   type ProductTruthReadScope,
   type ProductTruthSnapshot,
 } from "./product-truth-read-contract";
 import { PRODUCT_TRUTH_READ_CONTRACT_VERSION } from "./product-truth-read-contract-version";
 import { buildProductTruthListingScope } from "./product-truth-listing-scope";
+import {
+  assertProductTruthEvidenceSchema,
+  assertProductTruthListingScopeSchema,
+} from "./product-truth-schema-gate";
 import {
   productTruthOperationalSha256,
   renderProductTruthOperationalJson,
@@ -390,8 +394,11 @@ export function compileProductTruthConsumerReadiness(input: {
 
 /**
  * Reads the complete manifest denominator in deterministic sequential chunks.
- * The canonical reader uses read transactions and contains no writer/provider
- * path; the returned artifact explicitly grants no activation.
+ * Schema gates run once before one shared read transaction; repeating both
+ * remote schema audits for every 100-row chunk made the 5,935-row denominator
+ * scale with gate latency instead of data latency. The canonical in-transaction
+ * reader contains no writer/provider path and every chunk retains one immutable
+ * manifest/as-of boundary.
  */
 export async function readProductTruthConsumerReadiness(
   db: Client,
@@ -402,14 +409,28 @@ export async function readProductTruthConsumerReadiness(
 ): Promise<ProductTruthConsumerReadinessReport> {
   const manifest = validateManifest(input);
   const snapshots: ProductTruthSnapshot[] = [];
-  for (let index = 0; index < manifest.scopes.length; index += PRODUCT_TRUTH_MAX_BATCH_SCOPES) {
-    const scopes = manifest.scopes.slice(index, index + PRODUCT_TRUTH_MAX_BATCH_SCOPES);
-    snapshots.push(...await readProductTruthSnapshots(db, {
-      scopes,
-      expectedManifestSha256: manifest.manifestSha256,
-      asOf: input.asOf,
-      maxPriceAgeMs: input.maxPriceAgeMs,
-    }));
+  await assertProductTruthEvidenceSchema(db);
+  await assertProductTruthListingScopeSchema(db);
+  const tx = await db.transaction("read");
+  try {
+    for (
+      let index = 0;
+      index < manifest.scopes.length;
+      index += PRODUCT_TRUTH_MAX_BATCH_SCOPES
+    ) {
+      const scopes = manifest.scopes.slice(
+        index,
+        index + PRODUCT_TRUTH_MAX_BATCH_SCOPES,
+      );
+      snapshots.push(...await readProductTruthSnapshotsInTransaction(tx, {
+        scopes,
+        expectedManifestSha256: manifest.manifestSha256,
+        asOf: input.asOf,
+        maxPriceAgeMs: input.maxPriceAgeMs,
+      }));
+    }
+  } finally {
+    tx.close();
   }
   return compileProductTruthConsumerReadiness({ ...input, snapshots });
 }

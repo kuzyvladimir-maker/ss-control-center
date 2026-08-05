@@ -322,6 +322,22 @@ test("listing identity tolerates possessive punctuation, interleaved title token
   assert.equal(report.gallery_decisions[0].checks.identity, "MATCH");
 });
 
+test("title identity treats Lite as the exact retail spelling of Light", () => {
+  const { report } = compile((input) => {
+    input.expected.title = "Del Monte Lite Apricot Halves Canned Fruit 15 oz Can (Pack of 4)";
+    input.expected.outer_units = 4;
+    input.expected.identity = {
+      brand_aliases: ["Del Monte"],
+      product_marker_groups: [["canned fruit lite", "Lite Canned Fruit"]],
+      variant_marker_groups: [["apricot halves"], ["light"]],
+      forbidden_markers: [],
+    };
+    input.surface.title = input.expected.title;
+  });
+  assert.equal(report.text_decision.checks.title_identity, "MATCH");
+  assert.doesNotMatch(report.blocking_reasons.join(" "), /title is missing required identity roles/);
+});
+
 function truthEvidence(sourceRefId, sourceKind, supports) {
   return {
     source_ref_id: sourceRefId,

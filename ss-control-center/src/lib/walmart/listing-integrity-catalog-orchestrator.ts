@@ -2,8 +2,10 @@ import { createHash } from "node:crypto";
 
 import { extractTitleOuterCountEvidence } from "./catalog-visual-truth-preflight.ts";
 
-export const WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA =
+export const WALMART_LISTING_INTEGRITY_LEGACY_CATALOG_CENSUS_SCHEMA =
   "walmart-listing-integrity-catalog-census/v1" as const;
+export const WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA =
+  "walmart-listing-integrity-catalog-census/v2" as const;
 export const WALMART_LISTING_INTEGRITY_SCAN_PLAN_SCHEMA =
   "walmart-listing-integrity-scan-plan/v1" as const;
 export const WALMART_LISTING_INTEGRITY_CATALOG_ORCHESTRATOR_VERSION =
@@ -14,6 +16,10 @@ export const WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_PARTITION = (
   WALMART_LISTING_INTEGRITY_MAX_IMAGES_PER_CALL
   * WALMART_LISTING_INTEGRITY_MAX_CALLS_PER_PARTITION
 ) as 36;
+export const WALMART_LISTING_INTEGRITY_MAX_CATALOG_REPORT_AGE_MS =
+  24 * 60 * 60 * 1_000;
+export const WALMART_LISTING_INTEGRITY_MAX_CATALOG_SNAPSHOT_AGE_MS =
+  15 * 60 * 1_000;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -25,6 +31,19 @@ export interface WalmartListingIntegrityCatalogMirrorRow {
   publishedStatus: unknown;
   syncedAt: unknown;
   mainImageUrl: unknown;
+}
+
+export interface WalmartListingIntegrityCatalogReportRow {
+  id: unknown;
+  storeIndex: unknown;
+  reportType: unknown;
+  requestId: unknown;
+  status: unknown;
+  requestedAt: unknown;
+  readyAt: unknown;
+  downloadedAt: unknown;
+  rowCount: unknown;
+  error: unknown;
 }
 
 export interface WalmartListingIntegrityRemediationHistoryRow {
@@ -87,19 +106,37 @@ interface CatalogCensusRow {
 }
 
 export interface WalmartListingIntegrityCatalogCensus {
-  schema_version: typeof WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA;
+  schema_version:
+    | typeof WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA
+    | typeof WALMART_LISTING_INTEGRITY_LEGACY_CATALOG_CENSUS_SCHEMA;
   orchestrator_version: typeof WALMART_LISTING_INTEGRITY_CATALOG_ORCHESTRATOR_VERSION;
   census_id: string;
   body_sha256: string;
   captured_at: string;
   store_index: number;
   source_contract: {
-    catalog_population: "WalmartCatalogItem compatibility mirror";
+    catalog_population:
+      | "WalmartCatalogItem compatibility mirror"
+      | "WalmartCatalogItem exact ITEM_CATALOG report mirror";
     remediation_history: "WalmartListingRemediation immutable history";
-    authority: "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED";
+    authority:
+      | "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED"
+      | "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR";
     may_issue_pass: false;
     may_authorize_walmart_write: false;
   };
+  source_report: {
+    store_index: number;
+    database_id: string;
+    report_type: "ITEM_CATALOG";
+    request_id: string;
+    status: "DOWNLOADED";
+    requested_at: string;
+    ready_at: string | null;
+    downloaded_at: string;
+    row_count: number;
+    error: null;
+  } | null;
   reconciliation: {
     catalog_rows: number;
     distinct_skus: number;
@@ -120,7 +157,7 @@ export interface WalmartListingIntegrityCatalogCensus {
     disposition_counts: Record<WalmartListingIntegrityScanDisposition, number>;
   };
   external_effects: {
-    database_reads: 2;
+    database_reads: 2 | 3;
     database_writes: 0;
     walmart_reads: 0;
     walmart_writes: 0;
@@ -347,6 +384,7 @@ export function buildWalmartListingIntegrityCatalogCensus(input: {
   captured_at: string;
   catalog_rows: WalmartListingIntegrityCatalogMirrorRow[];
   remediation_rows: WalmartListingIntegrityRemediationHistoryRow[];
+  source_report?: WalmartListingIntegrityCatalogReportRow | null;
 }): WalmartListingIntegrityCatalogCensus {
   if (!Number.isSafeInteger(input.store_index) || input.store_index < 1) {
     throw new Error("store_index must be a positive integer");
@@ -454,6 +492,46 @@ export function buildWalmartListingIntegrityCatalogCensus(input: {
   if (syncInstants.size !== 1) {
     throw new Error("WalmartCatalogItem mirror is not one atomic catalog snapshot");
   }
+  const catalogSyncedAt = [...syncInstants][0]!;
+  let sourceReport: WalmartListingIntegrityCatalogCensus["source_report"] = null;
+  if (input.source_report !== null && input.source_report !== undefined) {
+    const reportStoreIndex = numeric(input.source_report.storeIndex);
+    const reportType = text(input.source_report.reportType, "source_report.reportType", 100);
+    const reportStatus = text(input.source_report.status, "source_report.status", 100);
+    const requestedAt = timestamp(input.source_report.requestedAt, "source_report.requestedAt");
+    const downloadedAt = timestamp(
+      input.source_report.downloadedAt,
+      "source_report.downloadedAt",
+    );
+    const readyAt = input.source_report.readyAt == null
+      ? null
+      : timestamp(input.source_report.readyAt, "source_report.readyAt");
+    const rowCount = numeric(input.source_report.rowCount);
+    if (reportStoreIndex !== input.store_index
+      || reportType !== "ITEM_CATALOG"
+      || reportStatus !== "DOWNLOADED"
+      || rowCount !== rows.length
+      || downloadedAt !== catalogSyncedAt
+      || Date.parse(requestedAt) > Date.parse(downloadedAt)
+      || Date.parse(downloadedAt) > Date.parse(capturedAt)
+      || (readyAt !== null && (Date.parse(readyAt) < Date.parse(requestedAt)
+        || Date.parse(readyAt) > Date.parse(downloadedAt)))
+      || input.source_report.error !== null) {
+      throw new Error("ITEM_CATALOG report does not exactly reconcile with the mirror");
+    }
+    sourceReport = {
+      store_index: reportStoreIndex,
+      database_id: text(input.source_report.id, "source_report.id", 500),
+      report_type: "ITEM_CATALOG",
+      request_id: text(input.source_report.requestId, "source_report.requestId", 500),
+      status: "DOWNLOADED",
+      requested_at: requestedAt,
+      ready_at: readyAt,
+      downloaded_at: downloadedAt,
+      row_count: rowCount,
+      error: null,
+    };
+  }
   const dispositionCounts: Record<WalmartListingIntegrityScanDisposition, number> = {
     VISUAL_TRIAGE_READY: 0,
     SOURCE_ACQUISITION_REQUIRED: 0,
@@ -463,24 +541,31 @@ export function buildWalmartListingIntegrityCatalogCensus(input: {
   };
   for (const row of rows) dispositionCounts[row.scan_disposition] += 1;
   return sealCensusBody({
-    schema_version: WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA,
+    schema_version: sourceReport
+      ? WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA
+      : WALMART_LISTING_INTEGRITY_LEGACY_CATALOG_CENSUS_SCHEMA,
     orchestrator_version: WALMART_LISTING_INTEGRITY_CATALOG_ORCHESTRATOR_VERSION,
     captured_at: capturedAt,
     store_index: input.store_index,
     source_contract: {
-      catalog_population: "WalmartCatalogItem compatibility mirror",
+      catalog_population: sourceReport
+        ? "WalmartCatalogItem exact ITEM_CATALOG report mirror"
+        : "WalmartCatalogItem compatibility mirror",
       remediation_history: "WalmartListingRemediation immutable history",
-      authority: "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED",
+      authority: sourceReport
+        ? "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR"
+        : "READ_ONLY_PROVISIONAL_NOT_BUYER_VERIFIED",
       may_issue_pass: false,
       may_authorize_walmart_write: false,
     },
+    source_report: sourceReport,
     reconciliation: {
       catalog_rows: input.catalog_rows.length,
       distinct_skus: seen.size,
       duplicate_skus: 0,
       output_rows: rows.length,
       exact_once: true,
-      catalog_synced_at: [...syncInstants][0]!,
+      catalog_synced_at: catalogSyncedAt,
     },
     summary: {
       total: rows.length,
@@ -496,7 +581,7 @@ export function buildWalmartListingIntegrityCatalogCensus(input: {
       disposition_counts: dispositionCounts,
     },
     external_effects: {
-      database_reads: 2,
+      database_reads: sourceReport ? 3 : 2,
       database_writes: 0,
       walmart_reads: 0,
       walmart_writes: 0,
@@ -564,7 +649,8 @@ function sealPlanBody(
 export function buildWalmartListingIntegrityScanPlan(
   census: WalmartListingIntegrityCatalogCensus,
 ): WalmartListingIntegrityScanPlan {
-  if (census.schema_version !== WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA) {
+  if (census.schema_version !== WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA
+    && census.schema_version !== WALMART_LISTING_INTEGRITY_LEGACY_CATALOG_CENSUS_SCHEMA) {
     throw new Error("unsupported census schema");
   }
   const tasks = imageTasks(census);
@@ -639,6 +725,60 @@ export function buildWalmartListingIntegrityScanPlan(
     source_acquisition_listing_keys: sourceAcquisition,
     partitions,
   });
+}
+
+export function verifyWalmartListingIntegrityCatalogFreshness(input: {
+  census: WalmartListingIntegrityCatalogCensus;
+  as_of: string;
+  max_report_age_ms?: number;
+  max_snapshot_age_ms?: number;
+}): {
+  verified: true;
+  authority: "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR";
+  report_request_id: string;
+  report_downloaded_at: string;
+  report_age_ms: number;
+  snapshot_age_ms: number;
+  catalog_rows: number;
+} {
+  const asOf = timestamp(input.as_of, "as_of");
+  const maxReportAge = input.max_report_age_ms
+    ?? WALMART_LISTING_INTEGRITY_MAX_CATALOG_REPORT_AGE_MS;
+  const maxSnapshotAge = input.max_snapshot_age_ms
+    ?? WALMART_LISTING_INTEGRITY_MAX_CATALOG_SNAPSHOT_AGE_MS;
+  if (!Number.isSafeInteger(maxReportAge) || maxReportAge < 1
+    || !Number.isSafeInteger(maxSnapshotAge) || maxSnapshotAge < 1) {
+    throw new Error("catalog freshness limits must be positive integer milliseconds");
+  }
+  const report = input.census.source_report;
+  if (input.census.schema_version !== WALMART_LISTING_INTEGRITY_CATALOG_CENSUS_SCHEMA
+    || input.census.source_contract.authority
+      !== "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR"
+    || !report
+    || report.status !== "DOWNLOADED"
+    || report.report_type !== "ITEM_CATALOG"
+    || report.store_index !== input.census.store_index
+    || report.row_count !== input.census.reconciliation.catalog_rows
+    || report.downloaded_at !== input.census.reconciliation.catalog_synced_at) {
+    throw new Error("catalog census lacks exact authoritative ITEM_CATALOG provenance");
+  }
+  const reportAge = Date.parse(asOf) - Date.parse(report.downloaded_at);
+  const snapshotAge = Date.parse(asOf) - Date.parse(input.census.captured_at);
+  if (reportAge < 0 || reportAge > maxReportAge) {
+    throw new Error("authoritative ITEM_CATALOG report is stale or from the future");
+  }
+  if (snapshotAge < 0 || snapshotAge > maxSnapshotAge) {
+    throw new Error("catalog census snapshot is stale or from the future");
+  }
+  return {
+    verified: true,
+    authority: "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR",
+    report_request_id: report.request_id,
+    report_downloaded_at: report.downloaded_at,
+    report_age_ms: reportAge,
+    snapshot_age_ms: snapshotAge,
+    catalog_rows: report.row_count,
+  };
 }
 
 export function verifyWalmartListingIntegrityCatalogArtifacts(input: {

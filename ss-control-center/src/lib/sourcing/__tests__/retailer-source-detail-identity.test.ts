@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { createClient } from "@libsql/client";
+
 import {
   RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION,
   evaluateRetailerSourceDetailEscalation,
+  loadSealedLegacySourceDetailCandidate,
+  selectSealedRetailerSourceDetailCandidate,
   verifyRetailerSourceDetailIdentity,
 } from "../donor-catalog";
 import { scoreOffer } from "../retail-fetch";
@@ -75,6 +79,155 @@ test("paid detail admission requires exact size before missing-form escalation",
       "SOURCE_DETAIL_SEARCH_URL_SIZE_CONTRADICTION",
     ),
   );
+});
+
+test("missing form cannot hide an adjacent variant before paid detail", () => {
+  const adjacentVariant = evaluateRetailerSourceDetailEscalation({
+    target,
+    offer: scoredSearchOffer(
+      "Birds Eye Sweet Fire Roasted Corn, 12 oz",
+    ),
+  });
+  assert.equal(adjacentVariant.admitted, false);
+  assert.ok(
+    adjacentVariant.blockers.includes(
+      "SOURCE_DETAIL_SEARCH_REMAINDER_NOT_EXACT",
+    ),
+  );
+});
+
+test("paid detail selection accepts only the sealed retailer item and uses its exact URL", () => {
+  const offer = scoredSearchOffer(
+    "Birds Eye Fire Roasted Corn, 12 oz",
+  );
+  const pinnedUrl =
+    "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn/123456789?classType=VARIANT";
+  const selected = selectSealedRetailerSourceDetailCandidate({
+    target,
+    offers: [
+      {
+        ...offer,
+        retailerProductId: "999999999",
+        productUrl:
+          "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn/999999999",
+      },
+      offer,
+    ],
+    sealed: {
+      admissionSha256: "a".repeat(64),
+      retailer: "walmart",
+      retailerProductId: "123456789",
+      productUrl: pinnedUrl,
+    },
+  });
+  assert.equal(selected, offer);
+  assert.equal(selected?.retailerProductId, "123456789");
+  assert.equal(selected?.productUrl, pinnedUrl);
+
+  assert.equal(
+    selectSealedRetailerSourceDetailCandidate({
+      target,
+      offers: [offer],
+      sealed: {
+        admissionSha256: "a".repeat(64),
+        retailer: "walmart",
+        retailerProductId: "999999999",
+        productUrl:
+          "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn/999999999",
+      },
+    }),
+    null,
+  );
+  assert.equal(
+    selectSealedRetailerSourceDetailCandidate({
+      target,
+      offers: [offer],
+      sealed: null,
+    }),
+    null,
+  );
+});
+
+test("sealed detail may reuse only the exact saved first-party offer", async () => {
+  const db = createClient({ url: "file::memory:" });
+  try {
+    await db.executeMultiple(`
+      CREATE TABLE "DonorProduct" (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        brand TEXT,
+        imageUrls TEXT,
+        bullets TEXT
+      );
+      CREATE TABLE "DonorOffer" (
+        id TEXT PRIMARY KEY,
+        donorProductId TEXT NOT NULL,
+        retailer TEXT NOT NULL,
+        retailerProductId TEXT NOT NULL,
+        price REAL,
+        currency TEXT,
+        inStock INTEGER,
+        productUrl TEXT,
+        zip TEXT,
+        localityEvidence TEXT,
+        packSizeSeen INTEGER,
+        sellerName TEXT,
+        isFirstParty INTEGER,
+        sourceApi TEXT,
+        via TEXT,
+        fetchedAt TEXT
+      );
+      INSERT INTO "DonorProduct"
+        (id,title,brand,imageUrls,bullets)
+      VALUES
+        ('dp1','Birds Eye Fire Roasted Corn, 12 oz','Birds Eye','[]','[]');
+      INSERT INTO "DonorOffer"
+        (id,donorProductId,retailer,retailerProductId,price,currency,inStock,
+         productUrl,zip,localityEvidence,packSizeSeen,sellerName,isFirstParty,
+         sourceApi,via,fetchedAt)
+      VALUES
+        ('do1','dp1','walmart','123456789',2.48,'USD',1,
+         'https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Bag/123456789',
+         '33765','zip_scoped',1,'Walmart.com',1,'oxylabs','direct',
+         '2026-07-09T12:00:00.000Z');
+    `);
+    const exactUrl =
+      "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Bag/123456789";
+    const selected = await loadSealedLegacySourceDetailCandidate(db, {
+      target,
+      sealed: {
+        admissionSha256: "a".repeat(64),
+        retailer: "walmart",
+        retailerProductId: "123456789",
+        productUrl: exactUrl,
+      },
+    });
+    assert.equal(selected?.retailerProductId, "123456789");
+    assert.equal(selected?.productUrl, exactUrl);
+    assert.equal(
+      evaluateRetailerSourceDetailEscalation({
+        target,
+        offer: selected!,
+      }).admitted,
+      true,
+    );
+
+    assert.equal(
+      await loadSealedLegacySourceDetailCandidate(db, {
+        target,
+        sealed: {
+          admissionSha256: "a".repeat(64),
+          retailer: "walmart",
+          retailerProductId: "123456789",
+          productUrl:
+            "https://www.walmart.com/ip/Different-Item/123456789",
+        },
+      }),
+      null,
+    );
+  } finally {
+    db.close();
+  }
 });
 
 test("an explicit competing package form blocks paid detail", () => {
@@ -159,6 +312,99 @@ test("same-item structured container type can supply only the missing form token
     result.identityEvidenceNormalization ?? "",
     new RegExp(`^${RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION.replaceAll(".", "\\.")}:`),
   );
+});
+
+test("same-item exact first-party URL can supply only an explicit missing form", () => {
+  const result = verifyRetailerSourceDetailIdentity({
+    retailer: "walmart",
+    retailerProductId: "123456789",
+    productUrl:
+      "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Bag/123456789",
+    target,
+    detail: {
+      title: "Birds Eye Fire Roasted Corn, 12 oz",
+      retailerProductId: "123456789",
+      productUrl:
+        "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Bag/123456789",
+      specifications: [],
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.identityMatch?.verdict, "EXACT_IDENTITY");
+  assert.equal(
+    result.identityEvidenceTitle,
+    "Birds Eye Fire Roasted Corn, 12 oz bag",
+  );
+  assert.match(
+    result.identityEvidenceNormalization ?? "",
+    /append-exact-source-url-container-descriptor/u,
+  );
+
+  const conflicting = verifyRetailerSourceDetailIdentity({
+    retailer: "walmart",
+    retailerProductId: "123456789",
+    productUrl:
+      "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Box/123456789",
+    target,
+    detail: {
+      title: "Birds Eye Fire Roasted Corn, 12 oz",
+      retailerProductId: "123456789",
+      productUrl:
+        "https://www.walmart.com/ip/Birds-Eye-Fire-Roasted-Corn-12-oz-Box/123456789",
+      specifications: [],
+    },
+  });
+  assert.equal(conflicting.ok, false);
+  assert.ok(conflicting.blockers.includes("SOURCE_DETAIL_URL_FORM_MISMATCH"));
+});
+
+test("same-item explicit canned descriptor proves only an exact can target", () => {
+  const canTarget = {
+    brand: "Acme",
+    product_line: "Tomato Soup",
+    container_type: "can",
+    size: "18.5 oz",
+    outer_pack_count: 1,
+  };
+  const result = verifyRetailerSourceDetailIdentity({
+    retailer: "walmart",
+    retailerProductId: "23598003",
+    productUrl:
+      "https://www.walmart.com/ip/Acme-Tomato-Canned-Soup-18-5-oz/23598003",
+    target: canTarget,
+    detail: {
+      title: "Acme Tomato Canned Soup, 18.5 oz",
+      retailerProductId: "23598003",
+      productUrl:
+        "https://www.walmart.com/ip/Acme-Tomato-Canned-Soup-18-5-oz/23598003",
+      specifications: [],
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.identityMatch?.verdict, "EXACT_IDENTITY");
+  assert.match(
+    result.identityEvidenceNormalization ?? "",
+    /explicit-canned-to-can-container-descriptor/u,
+  );
+
+  const bagTarget = { ...canTarget, container_type: "bag" };
+  const bagResult = verifyRetailerSourceDetailIdentity({
+    retailer: "walmart",
+    retailerProductId: "23598003",
+    productUrl:
+      "https://www.walmart.com/ip/Acme-Tomato-Canned-Soup-18-5-oz/23598003",
+    target: bagTarget,
+    detail: {
+      title: "Acme Tomato Canned Soup, 18.5 oz",
+      retailerProductId: "23598003",
+      productUrl:
+        "https://www.walmart.com/ip/Acme-Tomato-Canned-Soup-18-5-oz/23598003",
+      specifications: [],
+    },
+  });
+  assert.equal(bagResult.ok, false);
+  assert.notEqual(bagResult.identityMatch?.verdict, "EXACT_IDENTITY");
 });
 
 test("bounded full-phrase copy normalization preserves exact identity", () => {

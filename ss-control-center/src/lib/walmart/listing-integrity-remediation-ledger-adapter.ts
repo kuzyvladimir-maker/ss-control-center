@@ -108,7 +108,7 @@ export function createWalmartListingRepairLedgerAdapter(options: {
   }
   const expectedBinding = structuredClone(options.expected_binding);
 
-  return Object.freeze({
+  const adapter: WalmartListingRepairLedgerAdapter = {
     consume: async ({
       permit,
       claimed_at,
@@ -206,5 +206,6 @@ export function createWalmartListingRepairLedgerAdapter(options: {
       }
       return receipt;
     },
-  });
+  };
+  return Object.freeze(adapter);
 }

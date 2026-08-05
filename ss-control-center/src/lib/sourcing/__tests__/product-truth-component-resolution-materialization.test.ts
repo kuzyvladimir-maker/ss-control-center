@@ -19,8 +19,10 @@ import {
   type ProductTruthLegacyBridgeStandingPolicy,
 } from "../product-truth-legacy-bridge-apply";
 import {
+  PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   renderProductTruthLegacyBridgeSnapshot,
+  type ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
   type ProductTruthLegacyBridgeDonorRow,
   type ProductTruthLegacyBridgeOfferRow,
   type ProductTruthLegacyBridgeSnapshot,
@@ -35,11 +37,24 @@ import {
   ProductTruthComponentResolutionMaterializationError,
   applyProductTruthComponentResolutionMaterialization,
   compileProductTruthComponentResolutionMaterializationPlan,
+  compileProductTruthListingRetailerIdentityMaterializationPlan,
   preflightProductTruthComponentResolutionMaterialization,
   renderProductTruthComponentResolutionPreflightReport,
   renderProductTruthComponentResolutionMaterializationPlan,
   type ProductTruthComponentResolutionMaterializationSources,
 } from "../product-truth-component-resolution-materialization";
+import {
+  compileProductTruthListingRetailerIdentityBridge,
+} from "../product-truth-listing-retailer-identity-bridge";
+import {
+  productTruthOperationalSha256,
+  renderProductTruthOperationalJson,
+} from "../product-truth-operational-run-contract";
+import {
+  PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+  renderProductTruthSourceDetailAdmission,
+  type ProductTruthSourceDetailAdmission,
+} from "../product-truth-source-detail-admission";
 import {
   applyProductTruthAllComponentsRecipeMaterialization,
   planProductTruthAllComponentsRecipeMaterialization,
@@ -353,6 +368,141 @@ function fixture(input: {
     standingPolicy: policy,
     standingPolicyJson: policyJson,
     standingPolicySha256: sha256(policyJson),
+  };
+}
+
+function listingRetailerIdentityFixture():
+ProductTruthComponentResolutionMaterializationSources {
+  const base = fixture();
+  const sourceDonor = {
+    ...base.bridgeSnapshot.donors[0]!,
+    containerType: null,
+    title: "Acme Crunch Barbecue 8 oz",
+  };
+  const evidenceCore = {
+    schemaVersion:
+      PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
+    listingKey: "walmart:1:ACME-1",
+    storeIndex: 1,
+    sku: "ACME-1",
+    itemId: "seller-item-acme-1",
+    title: "Acme Crunch Barbecue 8 oz Bag (Pack of 2)",
+    brand: "Acme",
+    gtin: "00684611926128",
+    upc: "684611926128",
+    itemPageUrl: "https://www.walmart.com/ip/seller-item-acme-1",
+    primaryImageUrl: "https://i5.walmartimages.com/acme.jpeg",
+    publishStatus: "PUBLISHED" as const,
+    lifecycleStatus: "ACTIVE" as const,
+    sourceReportId: "fixture-report",
+    sourceReportName: "ItemReport.csv",
+    sourceReportCapturedAt: CAPTURED_AT,
+    sourceReportSha256: "9".repeat(64),
+    sourceReportByteLength: 100,
+    sourceRowNumber: 2,
+  };
+  const reportEvidence: ProductTruthAuthoritativeWalmartItemReportEvidenceRow = {
+    ...evidenceCore,
+    evidenceRowSha256: productTruthOperationalSha256(evidenceCore),
+  };
+  const snapshot = {
+    ...base.bridgeSnapshot,
+    donors: [sourceDonor],
+    authoritativeWalmartItemReportEvidence: [reportEvidence],
+  } satisfies ProductTruthLegacyBridgeSnapshot;
+  const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
+  const snapshotSha256 = sha256(snapshotJson);
+  const providerTarget = acquisitionTarget({
+    acquisitionLane: "PROVIDER_IDENTITY_ACQUISITION",
+    exactCatalogCandidates: [],
+  });
+  const componentScope = {
+    ...base.componentScope,
+    source: {
+      ...base.componentScope.source,
+      bridgeSnapshot: {
+        ...base.componentScope.source.bridgeSnapshot,
+        sha256: snapshotSha256,
+      },
+    },
+    targets: [providerTarget],
+  } satisfies ProductTruthComponentAcquisitionScope;
+  const componentScopeJson =
+    renderProductTruthComponentAcquisitionScope(componentScope);
+  const componentScopeSha256 = sha256(componentScopeJson);
+  const admission = {
+    schemaVersion: PRODUCT_TRUTH_SOURCE_DETAIL_ADMISSION_VERSION,
+    generatedAt: CAPTURED_AT,
+    databaseTargetFingerprint: FINGERPRINT,
+    source: {
+      componentAcquisitionScope: {
+        schemaVersion: componentScope.schemaVersion,
+        sha256: componentScopeSha256,
+        generatedAt: componentScope.generatedAt,
+      },
+      bridgeSnapshot: {
+        schemaVersion: snapshot.schemaVersion,
+        sha256: snapshotSha256,
+        capturedAt: snapshot.capturedAt,
+      },
+      searchQueryCalibration: {
+        schemaVersion: "product-truth-search-query-calibration/1.0.0",
+        sha256: "8".repeat(64),
+        generatedAt: CAPTURED_AT,
+      },
+    },
+    targets: [{
+      ordinal: 0,
+      acquisitionPriority: providerTarget.acquisitionPriority,
+      canonicalVariantId: providerTarget.canonicalVariantId,
+      canonicalIdentityHash: providerTarget.canonicalIdentityHash,
+      targetIdentity: providerTarget.targetIdentity,
+      impact: providerTarget.impact,
+      candidate: {
+        retailer: "walmart",
+        retailerProductId: base.bridgeSnapshot.offers[0]!.retailerProductId,
+        productUrl: base.bridgeSnapshot.offers[0]!.productUrl!,
+        donorProductIds: [sourceDonor.id],
+        offerIds: [base.bridgeSnapshot.offers[0]!.id],
+        observedTitles: [sourceDonor.title!],
+        admissionReasons: ["MISSING_FORM_ONLY"],
+      },
+    }],
+  } as unknown as ProductTruthSourceDetailAdmission;
+  const sourceDetailAdmissionJson =
+    renderProductTruthSourceDetailAdmission(admission);
+  const sourceDetailAdmissionSha256 = sha256(sourceDetailAdmissionJson);
+  const bridge = compileProductTruthListingRetailerIdentityBridge({
+    generatedAt: CREATED_AT,
+    componentScope,
+    componentScopeJson,
+    componentScopeSha256,
+    bridgeSnapshot: snapshot,
+    bridgeSnapshotJson: snapshotJson,
+    bridgeSnapshotSha256: snapshotSha256,
+    sourceDetailAdmission: admission,
+    sourceDetailAdmissionJson,
+    sourceDetailAdmissionSha256,
+  });
+  const bridgeJson = renderProductTruthOperationalJson(bridge);
+  return {
+    componentScope,
+    componentScopeJson,
+    componentScopeSha256,
+    bridgeSnapshot: snapshot,
+    bridgeSnapshotJson: snapshotJson,
+    bridgeSnapshotSha256: snapshotSha256,
+    standingPolicy: base.standingPolicy,
+    standingPolicyJson: base.standingPolicyJson,
+    standingPolicySha256: base.standingPolicySha256,
+    listingRetailerIdentityEvidence: {
+      bridge,
+      bridgeJson,
+      bridgeSha256: sha256(bridgeJson),
+      sourceDetailAdmission: admission,
+      sourceDetailAdmissionJson,
+      sourceDetailAdmissionSha256,
+    },
   };
 }
 
@@ -704,6 +854,120 @@ test("component resolution plan materializes only canonical identity/content row
     renderProductTruthComponentResolutionMaterializationPlan(plan),
     renderProductTruthComponentResolutionMaterializationPlan(plan),
   );
+});
+
+test("authoritative listing bridge recompiles into a separate exact no-paid materialization plan", () => {
+  const sources = listingRetailerIdentityFixture();
+  const plan =
+    compileProductTruthListingRetailerIdentityMaterializationPlan({
+      sources,
+      createdAt: "2026-07-30T02:01:00.000Z",
+      expiresAt: EXPIRES_AT,
+    });
+  assert.equal(
+    plan.schemaVersion,
+    "product-truth-component-resolution-materialization-plan/1.1.0",
+  );
+  assert.equal(plan.targets.length, 1);
+  assert.equal(plan.databaseWrites.maximumRows, 4);
+  assert.equal(plan.claims.noPaidExistingCatalogLaneOnly, false);
+  assert.equal(plan.claims.authoritativeListingIdentityBridgeOnly, true);
+  assert.equal(plan.claims.providerCalls, 0);
+  assert.equal(plan.claims.paidCalls, 0);
+  const decisionEvidence = JSON.parse(
+    plan.targets[0]!.decision.evidenceJson,
+  ) as { method: string; identityMethod: string };
+  assert.equal(
+    decisionEvidence.method,
+    "AUTHORITATIVE_LISTING_RETAILER_IDENTITY_RESOLUTION",
+  );
+  assert.equal(
+    decisionEvidence.identityMethod,
+    "EXACT_AUTHORITATIVE_PACKAGE_FORM",
+  );
+  const content = JSON.parse(plan.targets[0]!.content.contentJson) as {
+    sourceBinding: { listingRetailerIdentityBridgeSha256: string };
+  };
+  assert.equal(
+    content.sourceBinding.listingRetailerIdentityBridgeSha256,
+    sources.listingRetailerIdentityEvidence!.bridgeSha256,
+  );
+  assert.throws(
+    () => compileProductTruthComponentResolutionMaterializationPlan({
+      sources,
+      createdAt: "2026-07-30T02:01:00.000Z",
+      expiresAt: EXPIRES_AT,
+    }),
+    (error: unknown) =>
+      error instanceof ProductTruthComponentResolutionMaterializationError
+      && error.code === "COMPONENT_RESOLUTION_PLAN_MODE_INVALID",
+  );
+});
+
+test("authoritative listing bridge applies atomically and remains idempotent", async (t) => {
+  const sources = listingRetailerIdentityFixture();
+  const plan =
+    compileProductTruthListingRetailerIdentityMaterializationPlan({
+      sources,
+      createdAt: "2026-07-30T02:01:00.000Z",
+      expiresAt: EXPIRES_AT,
+    });
+  const planJson =
+    renderProductTruthComponentResolutionMaterializationPlan(plan);
+  const planSha256 = sha256(planJson);
+  const directory = await mkdtemp(join(tmpdir(), "pt-listing-identity-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const db = createClient({
+    url: `file:${join(directory, "fixture.sqlite")}`,
+    concurrency: 1,
+  });
+  try {
+    await createBaseSchema(db);
+    await applyMigrations(db);
+    await seedSources(db, sources);
+    const preflight =
+      await preflightProductTruthComponentResolutionMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources,
+        checkedAt: "2026-07-30T02:02:00.000Z",
+      });
+    assert.equal(preflight.status, "READY_TO_APPLY");
+    assert.equal(preflight.counts.absentRows, 4);
+    const preflightJson =
+      renderProductTruthComponentResolutionPreflightReport(preflight);
+    const report =
+      await applyProductTruthComponentResolutionMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources,
+        preflightReport: preflight,
+        preflightReportJson: preflightJson,
+        preflightReportSha256: sha256(preflightJson),
+        startedAt: "2026-07-30T02:03:00.000Z",
+      });
+    assert.equal(report.status, "APPLIED");
+    assert.equal(report.counts.insertedRows, 4);
+    const post =
+      await preflightProductTruthComponentResolutionMaterialization({
+        db,
+        databaseTargetFingerprint: plan.databaseTargetFingerprint,
+        plan,
+        planJson,
+        planSha256,
+        sources,
+        checkedAt: "2026-07-30T02:04:00.000Z",
+      });
+    assert.equal(post.status, "ALREADY_APPLIED");
+  } finally {
+    db.close();
+  }
 });
 
 test("component resolution independently rejects same-unit package drift", () => {

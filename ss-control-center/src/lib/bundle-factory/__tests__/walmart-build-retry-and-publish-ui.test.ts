@@ -43,6 +43,7 @@ test("the drafts list publishes one row or a whole batch, but asks first", async
   // and that it cannot be undone.
   assert.match(cell, /Publish selected \(\{selectedPublishable\.length\}\)/u);
   assert.match(cell, /cannot be undone/u);
-  // Each listing is its own claim and its own POST — never one shared request.
-  assert.match(cell, /for \(const \[index, row\] of selectedPublishable\.entries\(\)\)/u);
+  // The batch is handed to the SERVER queue rather than walked in this
+  // component: a closed tab used to abandon a batch half-sent.
+  assert.match(cell, /api\/bundle-factory\/publish-batches/u);
 });

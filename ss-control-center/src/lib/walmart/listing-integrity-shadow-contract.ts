@@ -171,11 +171,12 @@ export interface ListingIntegrityCatalogOverview {
 }
 
 export interface ListingIntegrityCompletedOperation {
+  completionMode: "REPAIRED" | "AUDITED_NO_CHANGE";
   listingKey: string;
   sku: string;
   itemId: string;
-  feedId: string;
-  payloadSha256: string;
+  feedId: string | null;
+  payloadSha256: string | null;
   beforeCapturedAt: string;
   afterCapturedAt: string;
   checksPassed: number;
@@ -193,7 +194,8 @@ export interface ListingIntegrityQuarantinedOperation {
   itemId: string;
   quarantinedAt: string;
   status: "QUARANTINED_UNRESOLVED";
-  outcome: "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET";
+  outcome: "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_TARGET"
+    | "ACCEPTED_FEED_DID_NOT_PUBLISH_EXACT_MAIN";
   nextAction: "CONTENT_OWNERSHIP_OR_SUPPORT_CASE_THEN_REPLAN";
   listingRepairComplete: false;
   samePayloadReapplyAllowed: false;

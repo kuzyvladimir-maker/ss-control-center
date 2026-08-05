@@ -8,6 +8,7 @@ import sharp from "sharp";
 
 import {
   walmartListingIntegrityGalleryHasExplicitOuterQuantity,
+  walmartListingIntegrityGalleryOuterQuantityTarget,
   walmartListingIntegrityGalleryQuantityTarget,
 } from "../../../../scripts/build-walmart-listing-integrity-live-gallery.mjs";
 import {
@@ -667,6 +668,28 @@ test("factual gallery accepts explicit pack quantity in product-first SEO copy",
       6,
     ),
     false,
+  );
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "This 60-count listing includes 5 manufacturer cartons.",
+      60,
+    ),
+    true,
+  );
+  assert.equal(
+    walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+      "Includes 60 Chicken Flavor cups, 2.25 oz each.",
+      60,
+    ),
+    true,
+  );
+});
+
+test("factual gallery derives the exact content-repair quantity when attributes omit it", () => {
+  const target = planWithTextDerivedOuterUnits();
+  assert.equal(
+    walmartListingIntegrityGalleryOuterQuantityTarget(target.target.surface),
+    24,
   );
 });
 

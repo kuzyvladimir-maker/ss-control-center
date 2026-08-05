@@ -169,6 +169,7 @@ export interface ProductTruthLegacyBridgeSourceBinding {
   authoritativeWalmartDonorTitleProofSha256: string | null;
   bundleFactoryComponentId: string | null;
   bundleFactoryComponentEvidenceSha256: string | null;
+  amazonComponentGraphEvidenceSha256?: string | null;
   donorProductSha256: string;
   donorContentSha256: string;
   contentSourceOfferSha256: string;
@@ -629,6 +630,7 @@ function contentPayload(input: {
   contentOverride: NonNullable<
     NonNullable<ProductTruthLegacyBridgeComponentPlan["contentAssessment"]>["contentOverride"]
   > | null;
+  contentProjection: "FULL_EXACT_CONTENT" | "IDENTITY_ONLY";
   graphSourceBinding: Pick<
     ProductTruthLegacyBridgeSourceBinding,
     | "donorProductSha256"
@@ -638,6 +640,7 @@ function contentPayload(input: {
     | "directTargetContentEvidenceSha256"
     | "authoritativeWalmartDonorTitleProofSha256"
     | "bundleFactoryComponentEvidenceSha256"
+    | "amazonComponentGraphEvidenceSha256"
   >;
   sourceSnapshotSha256: string;
   bridgePlanSha256: string;
@@ -649,26 +652,30 @@ function contentPayload(input: {
   }
   const upc = normalizeProductTruthBridgeGtin(input.donor.upc);
   const content = input.contentOverride;
+  const identityOnly = input.contentProjection === "IDENTITY_ONLY";
   return {
     _schemaVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_CONTENT_VERSION,
     _capture: "legacy_materialized_bridge",
     title: content?.title ?? input.donor.title,
-    description: content?.description ?? input.donor.description,
-    bullets: content?.bullets ?? parseJson(input.donor.bullets),
-    attributes: content?.attributes ?? parseJson(input.donor.attributes),
-    nutritionFacts: content?.nutritionFacts ?? parseJson(input.donor.nutritionFacts),
-    ingredients: content?.ingredients ?? input.donor.ingredients,
-    allergens: evidenceValue(input.allergensEvidence),
-    category: input.donor.category,
-    storage: evidenceValue(input.storageEvidence),
+    description: identityOnly ? null : content?.description ?? input.donor.description,
+    bullets: identityOnly ? null : content?.bullets ?? parseJson(input.donor.bullets),
+    attributes: identityOnly ? null : content?.attributes ?? parseJson(input.donor.attributes),
+    nutritionFacts: identityOnly
+      ? null
+      : content?.nutritionFacts ?? parseJson(input.donor.nutritionFacts),
+    ingredients: identityOnly ? null : content?.ingredients ?? input.donor.ingredients,
+    allergens: identityOnly ? null : evidenceValue(input.allergensEvidence),
+    category: identityOnly ? null : input.donor.category,
+    storage: identityOnly ? null : evidenceValue(input.storageEvidence),
     upc: input.donor.upc,
     normalizedGtin14: upc ?? null,
-    mainImageUrl: input.donor.mainImageUrl,
-    imageUrls: images,
+    mainImageUrl: identityOnly ? null : input.donor.mainImageUrl,
+    imageUrls: identityOnly ? [] : images,
     sourceBinding: {
       policyVersion: PRODUCT_TRUTH_LEGACY_BRIDGE_POLICY_VERSION,
       materializationRoute: PRODUCT_TRUTH_LEGACY_BRIDGE_MATERIALIZATION_SOURCE,
       originalSourceApi: content?.sourceApi ?? input.offer.sourceApi,
+      contentProjection: input.contentProjection,
       exactContentEvidenceArtifactSha256: content?.evidenceArtifactSha256 ?? null,
       exactContentRawHtmlSha256: content?.rawHtmlSha256 ?? null,
       sourceSnapshotSha256: input.sourceSnapshotSha256,
@@ -1234,6 +1241,18 @@ function singleComponentDraftFromScope(input: {
       === "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN"
     && componentPlan.legacyComponentId === null
     && bundleFactoryComponentEvidence !== null;
+  const amazonComponentGraphEvidence =
+    (input.snapshot.amazonComponentGraphEvidence ?? []).find(
+      (row) =>
+        row.listingKey === input.listingKey
+        && row.componentIndex === input.componentIndex,
+    ) ?? null;
+  const amazonComponentGraphProof =
+    componentPlan.matcherVerdict === null
+    && componentPlan.identityProof
+      === "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION"
+    && componentPlan.legacyComponentId === null
+    && amazonComponentGraphEvidence !== null;
   if (
     ![
       "EXACT_CONTENT_ONLY_CANDIDATE",
@@ -1244,6 +1263,7 @@ function singleComponentDraftFromScope(input: {
       && !exactLiveBarcodeProof
       && !authoritativeWalmartTitleProof
       && !bundleFactoryComponentProof
+      && !amazonComponentGraphProof
     )
     || !componentPlan.targetIdentity
     || !componentPlan.targetVariant
@@ -1315,6 +1335,15 @@ function singleComponentDraftFromScope(input: {
           ?? normalizeProductTruthBridgeGtin(donor.gtin)
         )
           !== bundleFactoryComponentEvidence.normalizedGtin14
+      )
+    )
+    || (
+      amazonComponentGraphProof
+      && (
+        amazonComponentGraphEvidence?.donorProductId !== donor.id
+        || amazonComponentGraphEvidence?.offerId !== offer.id
+        || amazonComponentGraphEvidence?.targetCanonicalVariantId
+          !== originalTargetVariant.canonicalVariantId
       )
     )
   ) {
@@ -1418,6 +1447,10 @@ function singleComponentDraftFromScope(input: {
       bundleFactoryComponentProof
         ? bundleFactoryComponentEvidence?.evidenceRowSha256 ?? null
         : null,
+    amazonComponentGraphEvidenceSha256:
+      amazonComponentGraphProof
+        ? amazonComponentGraphEvidence?.evidenceRowSha256 ?? null
+        : null,
     donorProductSha256: rowHash(donor),
     donorContentSha256: rowHash(sourceContentFields(donor)),
     contentSourceOfferSha256: rowHash(contentSourceOfferFields(offer)),
@@ -1442,6 +1475,8 @@ function singleComponentDraftFromScope(input: {
       sourceBinding.authoritativeWalmartDonorTitleProofSha256,
     bundleFactoryComponentEvidenceSha256:
       sourceBinding.bundleFactoryComponentEvidenceSha256,
+    amazonComponentGraphEvidenceSha256:
+      sourceBinding.amazonComponentGraphEvidenceSha256 ?? null,
   };
   const supersedesInvalidCanonicalCostIds = [
     ...scope.supersedesInvalidCanonicalCostIds,
@@ -1532,6 +1567,8 @@ function singleComponentDraftFromScope(input: {
     storageEvidence: componentPlan.contentAssessment.storageEvidence,
     allergensEvidence: componentPlan.contentAssessment.allergensEvidence,
     contentOverride: componentPlan.contentAssessment.contentOverride,
+    contentProjection:
+      componentPlan.contentAssessment.contentProjection ?? "FULL_EXACT_CONTENT",
     graphSourceBinding,
     sourceSnapshotSha256: input.snapshotSha256,
     bridgePlanSha256: input.bridgePlanSha256,
@@ -3090,6 +3127,8 @@ async function preflightTarget(
       && componentTarget.sourceBinding.bundleFactoryComponentId === null
       && componentTarget.sourceBinding
         .bundleFactoryComponentEvidenceSha256 === null
+      && (componentTarget.sourceBinding.amazonComponentGraphEvidenceSha256 ?? null)
+        === null
       && source.bundleFactoryComponent === null;
     const bundleFactorySyntheticSourceValid =
       componentTarget.sourceBinding
@@ -3101,12 +3140,28 @@ async function preflightTarget(
         componentTarget.sourceBinding
           .bundleFactoryComponentEvidenceSha256 ?? "",
       )
+      && (componentTarget.sourceBinding.amazonComponentGraphEvidenceSha256 ?? null)
+        === null
       && source.bundleFactoryComponent !== null
       && rowHash(source.bundleFactoryComponent)
         === componentTarget.sourceBinding
           .bundleFactoryComponentEvidenceSha256;
+    const amazonComponentGraphSyntheticSourceValid =
+      componentTarget.sourceBinding
+        .authoritativeWalmartItemReportEvidenceSha256 === null
+      && componentTarget.sourceBinding
+        .authoritativeWalmartDonorTitleProofSha256 === null
+      && componentTarget.sourceBinding.bundleFactoryComponentId === null
+      && componentTarget.sourceBinding
+        .bundleFactoryComponentEvidenceSha256 === null
+      && /^[a-f0-9]{64}$/.test(
+        componentTarget.sourceBinding.amazonComponentGraphEvidenceSha256 ?? "",
+      )
+      && source.bundleFactoryComponent === null;
     const sourceKindValid = source.component === null
-      ? walmartSyntheticSourceValid || bundleFactorySyntheticSourceValid
+      ? walmartSyntheticSourceValid
+        || bundleFactorySyntheticSourceValid
+        || amazonComponentGraphSyntheticSourceValid
       : (
           componentTarget.sourceBinding
             .authoritativeWalmartItemReportEvidenceSha256 === null
@@ -3115,6 +3170,8 @@ async function preflightTarget(
           && componentTarget.sourceBinding.bundleFactoryComponentId === null
           && componentTarget.sourceBinding
             .bundleFactoryComponentEvidenceSha256 === null
+          && (componentTarget.sourceBinding.amazonComponentGraphEvidenceSha256 ?? null)
+            === null
           && source.bundleFactoryComponent === null
         );
     if (

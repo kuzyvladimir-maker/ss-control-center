@@ -502,11 +502,11 @@ export function parseUnwrangleDetailPayload(json: unknown): DetailContent | null
 }
 
 export const RETAILER_SOURCE_DETAIL_IDENTITY_VERSION =
-  "retailer-source-detail-identity/1.0.0" as const;
+  "retailer-source-detail-identity/1.2.0" as const;
 export const RETAILER_SOURCE_DETAIL_COPY_NORMALIZATION =
-  "retailer-source-detail-copy/1.0.0" as const;
+  "retailer-source-detail-copy/1.2.0" as const;
 export const RETAILER_SOURCE_DETAIL_ESCALATION_ADMISSION_VERSION =
-  "retailer-source-detail-escalation-admission/1.1.0" as const;
+  "retailer-source-detail-escalation-admission/1.2.0" as const;
 
 export interface RetailerSourceDetailIdentityResult {
   ok: boolean;
@@ -609,6 +609,27 @@ function normalizeSourceDetailCopy(
   return { title: normalized, rules };
 }
 
+function normalizeExplicitSourceDetailContainerDescriptor(
+  title: string,
+  targetFormTokens: readonly string[],
+): { title: string; rules: string[] } {
+  // `canned` is an explicit physical package descriptor, not an inferred
+  // category synonym. Keep this bridge deliberately one-way and restricted to
+  // an exact target `can`; bag/pouch, bottle/jar and every other form remain
+  // distinct. The global matcher is unchanged.
+  if (
+    targetFormTokens.length === 1
+    && targetFormTokens[0] === "can"
+    && /\bcanned\b/iu.test(title)
+  ) {
+    return {
+      title: title.replace(/\bcanned\b/giu, "can"),
+      rules: ["explicit-canned-to-can-container-descriptor"],
+    };
+  }
+  return { title, rules: [] };
+}
+
 const SOURCE_DETAIL_CONTAINER_TOKEN_GROUPS = [
   ["bag", "pouch", "sachet"],
   ["bottle", "jug"],
@@ -628,6 +649,49 @@ function sourceDetailContainerGroup(tokens: readonly string[]): number | null {
     if (group.some((token) => tokens.includes(token))) return index;
   }
   return null;
+}
+
+function exactSourceUrlContainerDescriptor(
+  sourceUrl: string | null,
+  targetFormTokens: readonly string[],
+): { descriptor: string | null; conflict: boolean } {
+  if (!sourceUrl || targetFormTokens.length !== 1) {
+    return { descriptor: null, conflict: false };
+  }
+  let pathTokens: string[];
+  try {
+    pathTokens = normalizeIdentityTokens(
+      decodeURIComponent(new URL(sourceUrl).pathname).replaceAll("-", " "),
+    );
+  } catch {
+    return { descriptor: null, conflict: false };
+  }
+  const targetGroup = sourceDetailContainerGroup(targetFormTokens);
+  const observedGroups = new Set<number>();
+  for (let index = 0; index < SOURCE_DETAIL_CONTAINER_TOKEN_GROUPS.length; index++) {
+    if (
+      SOURCE_DETAIL_CONTAINER_TOKEN_GROUPS[index]
+        .some((token) => pathTokens.includes(token))
+    ) {
+      observedGroups.add(index);
+    }
+  }
+  if (
+    targetGroup !== null
+    && [...observedGroups].some((group) => group !== targetGroup)
+  ) {
+    return { descriptor: null, conflict: true };
+  }
+  const targetToken = targetFormTokens[0];
+  const explicitlyPresent = pathTokens.includes(targetToken)
+    || (
+      targetToken === "can"
+      && pathTokens.includes("canned")
+    );
+  return {
+    descriptor: targetGroup !== null && explicitlyPresent ? targetToken : null,
+    conflict: false,
+  };
 }
 
 function sourceDetailUrlSize(value: string | null | undefined) {
@@ -734,6 +798,30 @@ export function evaluateRetailerSourceDetailEscalation(input: {
       ) {
         blockers.push("SOURCE_DETAIL_SEARCH_CONTAINER_CONTRADICTION");
       }
+      // The title matcher necessarily returns as soon as it finds a missing
+      // required token. Prove that the still-unchecked remainder is exact
+      // before spending on detail: normalize only an explicit `canned`→`can`
+      // descriptor, or synthetically append only the missing target form for
+      // this admission check. The synthetic token grants no content truth; it
+      // merely exposes adjacent flavor/variant copy that follows the earlier
+      // missing-form failure.
+      const title = offer.title?.trim() ?? "";
+      const explicitContainer = normalizeExplicitSourceDetailContainerDescriptor(
+        title,
+        targetFormTokens,
+      );
+      const remainderEvidenceTitle = explicitContainer.rules.length
+        ? explicitContainer.title
+        : `${title} ${targetFormTokens.join(" ")}`.trim();
+      const remainderMatch = matchCanonicalProductTitle(target, {
+        title: remainderEvidenceTitle,
+        brand: offer.brand ?? null,
+      });
+      if (remainderMatch.verdict !== "EXACT_IDENTITY") {
+        blockers.push("SOURCE_DETAIL_SEARCH_REMAINDER_NOT_EXACT");
+      } else {
+        identityBasisMatch = remainderMatch;
+      }
     } else {
       blockers.push("SOURCE_DETAIL_SEARCH_MISSING_TOKENS_NOT_FORM_ONLY");
     }
@@ -801,6 +889,126 @@ export function evaluateRetailerSourceDetailEscalation(input: {
   };
 }
 
+export interface SealedRetailerSourceDetailCandidate {
+  admissionSha256: string;
+  retailer: "walmart" | "target";
+  retailerProductId: string;
+  productUrl: string;
+}
+
+export function selectSealedRetailerSourceDetailCandidate(input: {
+  target: CanonicalProduct | CanonicalProductIdentity;
+  offers: readonly ScoredOffer[];
+  sealed: SealedRetailerSourceDetailCandidate | null | undefined;
+}): ScoredOffer | null {
+  if (!input.sealed) return null;
+  const exact = input.offers.filter((offer) => (
+    offer.retailer === input.sealed!.retailer
+    && offer.retailerProductId === input.sealed!.retailerProductId
+    && evaluateRetailerSourceDetailEscalation({
+      target: input.target,
+      offer,
+    }).admitted
+  ));
+  if (exact.length !== 1) return null;
+  Object.assign(exact[0], {
+    productUrl: input.sealed.productUrl,
+  });
+  return exact[0];
+}
+
+export async function loadSealedLegacySourceDetailCandidate(
+  db: Client,
+  input: {
+    target: CanonicalProduct;
+    sealed: SealedRetailerSourceDetailCandidate;
+  },
+): Promise<ScoredOffer | null> {
+  if (!/^[a-f0-9]{64}$/.test(input.sealed.admissionSha256)) return null;
+  const rows = (await db.execute({
+    sql: `SELECT offer.retailer, offer.retailerProductId, offer.price,
+                 offer.currency, offer.inStock, offer.productUrl, offer.zip,
+                 offer.localityEvidence, offer.packSizeSeen, offer.sellerName,
+                 offer.isFirstParty, offer.sourceApi, offer.via, offer.fetchedAt,
+                 product.title, product.brand, product.imageUrls,
+                 product.bullets
+          FROM "DonorOffer" offer
+          JOIN "DonorProduct" product ON product.id=offer.donorProductId
+          WHERE offer.retailer=? AND offer.retailerProductId=?
+            AND offer.productUrl=?
+            AND offer.via='direct'
+            AND offer.isFirstParty=1
+            AND COALESCE(offer.packSizeSeen,1)=1
+            AND (offer.retailer<>'walmart' OR offer.sellerName='Walmart.com')
+          LIMIT 2`,
+    args: [
+      input.sealed.retailer,
+      input.sealed.retailerProductId,
+      input.sealed.productUrl,
+    ],
+  })).rows;
+  if (rows.length !== 1) return null;
+  const row = rows[0];
+  const observedAt = exactInstant(row.fetchedAt);
+  const title = nonEmptyText(row.title);
+  if (!observedAt || !title) return null;
+  const parsedArray = (value: unknown): string[] => {
+    if (typeof value !== "string") return [];
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      return Array.isArray(parsed)
+        ? parsed.filter((item): item is string =>
+          typeof item === "string" && item.trim().length > 0,
+        )
+        : [];
+    } catch {
+      return [];
+    }
+  };
+  const localityEvidence = [
+    "zip_scoped",
+    "store_scoped",
+    "national_unscoped",
+  ].includes(String(row.localityEvidence))
+    ? String(row.localityEvidence) as
+      | "zip_scoped"
+      | "store_scoped"
+      | "national_unscoped"
+    : null;
+  const price = typeof row.price === "number" && Number.isFinite(row.price)
+    ? row.price
+    : null;
+  const offer = scoreOffer({
+    retailer: input.sealed.retailer,
+    retailerProductId: input.sealed.retailerProductId,
+    price,
+    currency: nonEmptyText(row.currency) ?? "USD",
+    inStock: row.inStock === 1
+      ? true
+      : row.inStock === 0 ? false : null,
+    productUrl: input.sealed.productUrl,
+    zip: nonEmptyText(row.zip),
+    localityEvidence,
+    observedAt,
+    title,
+    brand: nonEmptyText(row.brand),
+    description: null,
+    keyFeatures: parsedArray(row.bullets),
+    imageUrls: parsedArray(row.imageUrls),
+    packSizeSeen: 1,
+    isMarketplaceItem: false,
+    sellerName: nonEmptyText(row.sellerName),
+    sourceApi: nonEmptyText(row.sourceApi) ?? "legacy_saved_offer",
+    via: "direct",
+  }, input.target);
+  return evaluateRetailerSourceDetailEscalation({
+    target: input.target,
+    offer,
+  }).admitted
+    ? offer
+    : null;
+}
+
 /**
  * Pure fail-closed bridge for retailer search titles that omit only the
  * package form. It requires the exact same Walmart/Target item plus a strict
@@ -845,6 +1053,13 @@ export function verifyRetailerSourceDetailIdentity(input: {
   const structuredForm = exactStructuredContainerType(input.detail.specifications);
   const targetFormTokens = normalizeIdentityTokens(target.form);
   const structuredFormTokens = normalizeIdentityTokens(structuredForm?.value);
+  const sourceUrlForm = exactSourceUrlContainerDescriptor(
+    sourceUrl,
+    targetFormTokens,
+  );
+  if (sourceUrlForm.conflict) {
+    blockers.push("SOURCE_DETAIL_URL_FORM_MISMATCH");
+  }
   if (
     targetFormTokens.length
     && structuredForm
@@ -869,6 +1084,13 @@ export function verifyRetailerSourceDetailIdentity(input: {
     const normalizedCopy = normalizeSourceDetailCopy(identityEvidenceTitle);
     identityEvidenceTitle = normalizedCopy.title;
     normalizationRules.push(...normalizedCopy.rules);
+    const normalizedContainer =
+      normalizeExplicitSourceDetailContainerDescriptor(
+        identityEvidenceTitle,
+        targetFormTokens,
+      );
+    identityEvidenceTitle = normalizedContainer.title;
+    normalizationRules.push(...normalizedContainer.rules);
   }
   let identityMatch = identityEvidenceTitle
     ? matchCanonicalProductTitle(target, { title: identityEvidenceTitle })
@@ -881,6 +1103,31 @@ export function verifyRetailerSourceDetailIdentity(input: {
     && identityMatch.reasonCodes.length === 1
     && identityMatch.reasonCodes[0] === "TITLE_TARGET_TOKEN_MISSING"
     && missingOnlyForm
+    && !structuredForm
+    && sourceUrlForm.descriptor
+    && !sourceUrlForm.conflict
+  ) {
+    identityEvidenceTitle =
+      `${identityEvidenceTitle} ${sourceUrlForm.descriptor}`.trim();
+    normalizationRules.push(
+      "append-exact-source-url-container-descriptor",
+    );
+    identityMatch = matchCanonicalProductTitle(target, {
+      title: identityEvidenceTitle,
+    });
+  }
+  const remainingMissing = new Set(
+    identityMatch?.titleEvidence?.missingTargetTokens ?? [],
+  );
+  const remainingMissingOnlyForm = remainingMissing.size > 0
+    && [...remainingMissing].every((token) =>
+      targetFormTokens.includes(token),
+    );
+  if (
+    identityMatch?.verdict === "REJECT"
+    && identityMatch.reasonCodes.length === 1
+    && identityMatch.reasonCodes[0] === "TITLE_TARGET_TOKEN_MISSING"
+    && remainingMissingOnlyForm
     && structuredForm
     && !blockers.includes("SOURCE_DETAIL_STRUCTURED_FORM_MISMATCH")
   ) {
@@ -2731,6 +2978,12 @@ export interface PersistScoredDonorOfferOptions {
    * It never changes price eligibility or COGS selection.
    */
   allowContentOnly?: boolean;
+  /**
+   * When an exact retailer item is revalidated from an existing saved offer,
+   * its commercial observation keeps the original fetchedAt while the new
+   * detail-backed identity decision is timestamped independently.
+   */
+  identityObservedAt?: string;
 }
 
 /** Offline-testable persistence boundary; performs no provider/network calls. */
@@ -2748,6 +3001,15 @@ export async function persistScoredDonorOffer(
     throw new Error("DONOR_SOURCE_OFFER_NOT_ACCEPTED");
   }
   const observedAt = offer.observedAt || processingNow;
+  const identityObservedAt = exactInstant(
+    options.identityObservedAt ?? observedAt,
+  );
+  if (
+    !identityObservedAt
+    || Date.parse(identityObservedAt) > Date.parse(processingNow)
+  ) {
+    throw new Error("DONOR_SOURCE_IDENTITY_OBSERVED_AT_INVALID");
+  }
   const permit = currentMeteredRunPermit(undefined, Date.parse(processingNow));
   const capturedReceiptId = String(offer.meteredReceiptId ?? "").trim() || null;
   const capturedRunId = String(offer.meteredRunId ?? "").trim() || null;
@@ -2970,7 +3232,7 @@ export async function persistScoredDonorOffer(
         offer,
         target,
         sourceIdentity,
-        observedAt,
+        observedAt: identityObservedAt,
         now: processingNow,
         runId,
         approvalId,
@@ -3311,7 +3573,7 @@ async function failPrefetchedSourceDetailLifecycle(
 // `unwrangleRetailers` is passed by an owner-budgeted caller.
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[]; allowNonGrocery?: boolean; canonicalProduct?: CanonicalProduct; matchSpec?: { brandToks: string[]; tokens: string[]; sizeAmount?: number | null } },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[]; allowNonGrocery?: boolean; canonicalProduct?: CanonicalProduct; matchSpec?: { brandToks: string[]; tokens: string[]; sizeAmount?: number | null }; sealedSourceDetailCandidate?: SealedRetailerSourceDetailCandidate | null },
 ): Promise<EnrichTargetResult> {
   // Code may deploy before its additive Turso migration. Never spend on a
   // retailer observation that cannot be preserved with locality/provenance.
@@ -3362,6 +3624,7 @@ export async function enrichTarget(
     content: DetailContent;
     authorization: MeteredProviderAuthorization;
     observedAt: string;
+    reusedLegacyEvidence: boolean;
   }>();
   const diagnosticSources: Array<{
     source: string;
@@ -3558,20 +3821,20 @@ export async function enrichTarget(
   // though the exact first-party item detail exposes it as a structured fact.
   // Consume at most one pre-planned detail call for one narrowly admissible
   // candidate. Adjacent flavors/sizes never reach the paid detail boundary.
-  const detailCandidates = batches
-    .flatMap((batch) => batch.offers)
-    .filter((offer) =>
-      evaluateRetailerSourceDetailEscalation({
-        target: cp,
-        offer,
-      }).admitted)
-    .sort((left, right) => (
-      Number(typeof right.price === "number" && right.price > 0)
-        - Number(typeof left.price === "number" && left.price > 0)
-      || (left.retailer === "walmart" ? 0 : 1) - (right.retailer === "walmart" ? 0 : 1)
-      || left.retailerProductId.localeCompare(right.retailerProductId, "en-US")
-    ));
-  const sourceDetailCandidate = detailCandidates[0] ?? null;
+  let sourceDetailCandidate =
+    selectSealedRetailerSourceDetailCandidate({
+      target: cp,
+      offers: batches.flatMap((batch) => batch.offers),
+      sealed: opts.sealedSourceDetailCandidate,
+    });
+  let reusedLegacySourceDetailEvidence = false;
+  if (!sourceDetailCandidate && opts.sealedSourceDetailCandidate) {
+    sourceDetailCandidate = await loadSealedLegacySourceDetailCandidate(db, {
+      target: cp,
+      sealed: opts.sealedSourceDetailCandidate,
+    });
+    reusedLegacySourceDetailEvidence = sourceDetailCandidate !== null;
+  }
   const unwrangleKey = process.env.UNWRANGLE_API_KEY;
   if (sourceDetailCandidate && unwrangleKey) {
     let authorization: MeteredProviderAuthorization | null = null;
@@ -3612,22 +3875,43 @@ export async function enrichTarget(
         Object.assign(sourceDetailCandidate, rescored, {
           contentIdentityAccepted: true,
         });
+        if (reusedLegacySourceDetailEvidence) {
+          batches.push({ offers: [sourceDetailCandidate] });
+        }
         sourceDetailCaptures.set(sourceDetailCandidate, {
           content: detail,
           authorization: capturedAuthorization,
           observedAt: detailObservedAt,
+          reusedLegacyEvidence: reusedLegacySourceDetailEvidence,
         });
         recordSourceAttempt({
           source: `unwrangle:${sourceDetailCandidate.retailer}:detail-identity`,
           status: "content_only",
           detail: "SOURCE_DETAIL_IDENTITY_EXACT",
-        });
+        }, [sourceDetailCandidate]);
       } else {
+        const diagnosticOffer: ScoredOffer = {
+          ...sourceDetailCandidate,
+          title: verified.observedTitle ?? sourceDetailCandidate.title,
+          identityEvidenceTitle: verified.identityEvidenceTitle,
+          identityEvidenceNormalization:
+            verified.identityEvidenceNormalization,
+          accepted: false,
+          contentIdentityAccepted: false,
+          rejectReason:
+            `source detail identity rejected: ${verified.blockers.join(",")}`,
+          identityMatch: verified.identityMatch,
+        };
+        // Keep the paid detail response auditable without letting it enter the
+        // survivor/persistence path. Adding the rejected clone to `batches`
+        // ensures the common diagnostic admission map assigns SCORE_REJECTED,
+        // while the original search observation remains byte-for-byte intact.
+        batches.push({ offers: [diagnosticOffer] });
         recordSourceAttempt({
           source: `unwrangle:${sourceDetailCandidate.retailer}:detail-identity`,
           status: "content_only",
           detail: `SOURCE_DETAIL_IDENTITY_REJECTED:${verified.blockers.join(",")}`,
-        });
+        }, [diagnosticOffer]);
       }
     } else {
       recordSourceAttempt({
@@ -3729,15 +4013,23 @@ export async function enrichTarget(
 
   try {
     for (const o of survivors) {
-      if (["unwrangle", "bluecart", "oxylabs", "oxylabs-google"].includes(o.sourceApi)) {
+      const sourceDetailCapture = sourceDetailCaptures.get(o);
+      if (
+        !sourceDetailCapture?.reusedLegacyEvidence
+        && ["unwrangle", "bluecart", "oxylabs", "oxylabs-google"]
+          .includes(o.sourceApi)
+      ) {
         if (!o.meteredReceiptId || !o.meteredRunId || !o.meteredApprovalId) {
           throw new Error(`METERED_SOURCE_RECEIPT_REQUIRED: ${o.sourceApi}`);
         }
       }
       const persisted = await persistScoredDonorOffer(db, o, cp, now, {
         allowContentOnly: o.contentIdentityAccepted === true,
+        identityObservedAt:
+          sourceDetailCapture?.reusedLegacyEvidence
+            ? sourceDetailCapture.observedAt
+            : undefined,
       });
-      const sourceDetailCapture = sourceDetailCaptures.get(o);
       if (sourceDetailCapture) {
         const detailLifecycle = await beginPrefetchedSourceDetailLifecycle(db, {
           donorProductId: persisted.donorProductId,

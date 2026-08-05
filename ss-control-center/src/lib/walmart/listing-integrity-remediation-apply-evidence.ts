@@ -71,7 +71,7 @@ type JsonRecord = Record<string, unknown>;
 function verifyExactTargetImageCertificate(input: {
   certificate_bytes: Uint8Array;
   plan: SealedWalmartListingRepairPlan;
-  at: string;
+  at: Date;
 }): void {
   const verifiers = [
     verifyWalmartListingRepairReviewedImageSetCertificateBytes,
@@ -804,7 +804,7 @@ export function verifyWalmartListingRepairCustodyLoadedApplyEvidence(input: {
     verifyExactTargetImageCertificate({
       certificate_bytes: supporting.target_image_certificate_bytes,
       plan: input.plan,
-      at: manifestPreparedAt,
+      at: new Date(manifestPreparedAt),
     });
   } catch (error) {
     fail(`target image certificate semantic validation failed: ${
@@ -939,7 +939,7 @@ export function verifyWalmartListingRepairCustodyLoadedApplyEvidence(input: {
     verifyExactTargetImageCertificate({
       certificate_bytes: supporting.target_image_certificate_bytes,
       plan: input.plan,
-      at: postReceipt.captured_at,
+      at: new Date(postReceipt.captured_at),
     });
   } catch (error) {
     fail(`target image certificate was not valid at POST response capture: ${

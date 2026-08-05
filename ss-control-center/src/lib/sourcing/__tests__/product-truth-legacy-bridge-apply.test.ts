@@ -27,13 +27,16 @@ import {
 } from "../product-truth-legacy-bridge-apply";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION,
   PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
+  productTruthAmazonComponentGraphEvidenceCore,
   productTruthBundleFactoryEvidenceCore,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthDirectTargetContentEvidence,
+  type ProductTruthAmazonComponentGraphEvidenceRow,
   type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthLegacyBridgeSnapshot,
 } from "../product-truth-legacy-bridge";
@@ -278,6 +281,98 @@ function bundleFactoryRecoveryFixture(): ReturnType<typeof sourceFixture> {
     donors: [donor],
     offers: [offer],
     bundleFactoryRecipeEvidence: [evidence],
+  }, {
+    contentOnly: 0,
+    identityOnly: 1,
+  });
+}
+
+function amazonComponentGraphRecoveryFixture(): ReturnType<typeof sourceFixture> {
+  const base = sourceFixture().snapshot;
+  const listing = {
+    ...base.listings[0]!,
+    channel: "amazon" as const,
+    listingKey: `amazon:${base.listings[0]!.storeIndex}:${base.listings[0]!.sku}`,
+    productIdentityJson: null,
+    productIdentityUpdatedAt: null,
+  };
+  const donor = base.donors[0]!;
+  const offer = base.offers[0]!;
+  const targetIdentity = {
+    brand: donor.brand,
+    productLine: "Crunch Chips Original",
+    flavor: null,
+    modifiers: [],
+    form: "bag",
+    size: "8 oz",
+    outerPackCount: 1,
+  };
+  const evidenceCore = {
+    schemaVersion: PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION,
+    listingKey: listing.listingKey,
+    storeIndex: listing.storeIndex,
+    sku: listing.sku,
+    asin: "B012345678",
+    listingTitle: "Acme Brand 1 Crunch Chips Original 8 oz, Pack of 2",
+    componentIndex: 0,
+    retailPackageQuantity: 2,
+    donorProductId: donor.id,
+    offerId: offer.id,
+    targetIdentity,
+    targetCanonicalVariantId:
+      buildCanonicalProductVariantKey(targetIdentity).canonicalVariantId,
+    normalizedGtin14: "00036000291452",
+    retailer: "walmart" as const,
+    retailerProductId: offer.retailerProductId,
+    retailerProductUrl: offer.productUrl!,
+    retailerTitle: donor.title!,
+    packageForm: "bag",
+    reviewedImageFiles: ["0001-B012345678-MAIN.jpg"],
+    adjudicatedAt: "2026-07-26T09:30:00.000Z",
+    adjudication: {
+      reviewer: "CODEX_VISUAL_AND_STRUCTURED_EVIDENCE_REVIEW" as const,
+      catalogBasePackageMatchesRetailer: true as const,
+      listingOuterQuantityProven: true as const,
+      exactVariantContradictionObserved: false as const,
+      contentTransferAuthorized: false as const,
+    },
+    source: {
+      amazonCatalogPlanSha256: "1".repeat(64),
+      amazonCatalogEvidenceSha256: "2".repeat(64),
+      amazonDecompositionSha256: "3".repeat(64),
+      amazonImagePlanSha256: "4".repeat(64),
+      amazonImageCaptureSha256: "5".repeat(64),
+      amazonImageVerificationSha256: "6".repeat(64),
+      amazonImageAssessmentSha256: "7".repeat(64),
+      directRetailerIdentityEvidenceSha256: "8".repeat(64),
+      directRetailerHtmlSha256: "9".repeat(64),
+      legacySnapshotSha256: "a".repeat(64),
+    },
+    safety: {
+      networkCallsDuringCompilation: 0 as const,
+      modelCallsDuringCompilation: 0 as const,
+      providerCallsDuringCompilation: 0 as const,
+      paidCallsDuringCompilation: 0 as const,
+      databaseWritesDuringCompilation: 0 as const,
+      marketplaceMutationsDuringCompilation: 0 as const,
+    },
+  };
+  const evidence: ProductTruthAmazonComponentGraphEvidenceRow = {
+    ...evidenceCore,
+    evidenceRowSha256: productTruthOperationalSha256(
+      productTruthAmazonComponentGraphEvidenceCore(
+        evidenceCore as ProductTruthAmazonComponentGraphEvidenceRow,
+      ),
+    ),
+  };
+  return rebuildFixture({
+    ...base,
+    manifest: { ...base.manifest, listingCount: 1 },
+    listings: [listing],
+    components: [],
+    donors: [donor],
+    offers: [offer],
+    amazonComponentGraphEvidence: [evidence],
   }, {
     contentOnly: 0,
     identityOnly: 1,
@@ -1340,6 +1435,58 @@ test("Bundle Factory GTIN recipe evidence materializes atomically and detects so
       "SELECT quantity FROM ProductTruthListingRecipeComponent",
     )).rows[0]?.quantity),
     3,
+  );
+});
+
+test("Amazon component graph adjudication materializes an identity-only recipe without unsafe content", async (t) => {
+  const input = applyPlan(amazonComponentGraphRecoveryFixture());
+  assert.equal(input.plan.targets.length, 1);
+  const target = input.plan.targets[0]!;
+  const component = target.components[0]!;
+  assert.equal(component.legacyComponentId, null);
+  assert.match(
+    component.sourceBinding.amazonComponentGraphEvidenceSha256 ?? "",
+    /^[a-f0-9]{64}$/,
+  );
+  assert.equal(component.sourceBinding.bundleFactoryComponentId, null);
+  assert.equal(target.listingRecipeComponents[0]?.quantity, 2);
+  const content = JSON.parse(component.content.contentJson) as {
+    title: unknown;
+    description: unknown;
+    bullets: unknown;
+    attributes: unknown;
+    nutritionFacts: unknown;
+    ingredients: unknown;
+    allergens: unknown;
+    category: unknown;
+    storage: unknown;
+    mainImageUrl: unknown;
+    imageUrls: unknown[];
+    sourceBinding: { contentProjection: unknown };
+  };
+  assert.equal(content.title, input.fixture.snapshot.donors[0]?.title);
+  assert.equal(content.description, null);
+  assert.equal(content.bullets, null);
+  assert.equal(content.attributes, null);
+  assert.equal(content.nutritionFacts, null);
+  assert.equal(content.ingredients, null);
+  assert.equal(content.allergens, null);
+  assert.equal(content.category, null);
+  assert.equal(content.storage, null);
+  assert.equal(content.mainImageUrl, null);
+  assert.deepEqual(content.imageUrls, []);
+  assert.equal(content.sourceBinding.contentProjection, "IDENTITY_ONLY");
+
+  const db = await seededDatabase(t, input.fixture);
+  t.after(() => db.close());
+  const report = await executeApproved(db, input);
+  assert.equal(report.status, "APPLIED");
+  assert.equal(report.verification.unitEconomicsUnsourceable, 1);
+  assert.equal(
+    Number((await db.execute(
+      "SELECT quantity FROM ProductTruthListingRecipeComponent",
+    )).rows[0]?.quantity),
+    2,
   );
 });
 

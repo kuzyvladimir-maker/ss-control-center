@@ -5,29 +5,92 @@
  * GENERATED, APPROVED, ERROR, etc.) — i.e. anything actively moving
  * through the pipeline.
  *
- * The table itself is a client component: the operator publishes one listing
- * from its row, or ticks a batch and publishes all of them with one press.
+ * The list is filtered and paged on the SERVER. It used to load the newest 100
+ * rows and nothing else, so "select all and publish" could never reach a batch
+ * of 200 — the owner's own scenario did not fit on his own screen. Filtering to
+ * "ready to publish" narrows the list to exactly the rows a batch is made of,
+ * so one tick selects the whole batch.
  */
 
 import { prisma } from "@/lib/prisma";
-import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
+import type { Prisma } from "@/generated/prisma/client";
+import { PUBLISHABLE_LISTING_STATUSES } from "@/lib/bundle-factory/publishable-listing-status";
 import { PageHead, Sep } from "@/components/kit";
 import {
   DraftsTable,
   type DraftRow,
 } from "@/components/bundle-factory/DraftsTable";
+import { DraftFilters } from "@/components/bundle-factory/DraftFilters";
 
 export const dynamic = "force-dynamic";
 
-export default async function DraftsPage() {
-  const drafts = await prisma.bundleDraft.findMany({
-    where: { status: { not: "DRAFT" } },
-    orderBy: { updated_at: "desc" },
-    take: 100,
-  });
+const PAGE_SIZES = [50, 100, 250, 500] as const;
+const DEFAULT_PAGE_SIZE = 100;
 
-  // Walmart state per row, so the list shows whether a listing is actually
-  // publishable instead of only where the draft sits in the pipeline.
+function readPageSize(value: string | undefined): number {
+  const parsed = Number(value);
+  return (PAGE_SIZES as readonly number[]).includes(parsed)
+    ? parsed
+    : DEFAULT_PAGE_SIZE;
+}
+
+export default async function DraftsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const one = (key: string): string | undefined => {
+    const value = params[key];
+    return Array.isArray(value) ? value[0] : value;
+  };
+
+  const search = (one("q") ?? "").trim();
+  const buildId = (one("build") ?? "").trim();
+  const readyOnly = one("ready") === "1";
+  const pageSize = readPageSize(one("size"));
+  const page = Math.max(1, Number(one("page") ?? 1) || 1);
+
+  // "Ready to publish" is a property of the SKU, not the draft, so that filter
+  // starts from the SKUs and narrows the drafts to their bundles.
+  const readySkuWhere = {
+    channel: "WALMART",
+    validation_status: "PASSED",
+    live_url: null,
+    listing_status: { in: [...PUBLISHABLE_LISTING_STATUSES] },
+  } satisfies Prisma.ChannelSKUWhereInput;
+
+  let readyMasterBundleIds: string[] | null = null;
+  if (readyOnly) {
+    const readySkus = await prisma.channelSKU.findMany({
+      where: readySkuWhere,
+      select: { master_bundle_id: true },
+    });
+    readyMasterBundleIds = readySkus.map((row) => row.master_bundle_id);
+  }
+
+  const where: Prisma.BundleDraftWhereInput = {
+    status: { not: "DRAFT" },
+    ...(search ? { draft_name: { contains: search } } : {}),
+    ...(buildId ? { generation_job_id: buildId } : {}),
+    ...(readyMasterBundleIds
+      ? { master_bundle_id: { in: readyMasterBundleIds } }
+      : {}),
+  };
+
+  const [matching, drafts, readyTotal] = await Promise.all([
+    prisma.bundleDraft.count({ where }),
+    prisma.bundleDraft.findMany({
+      where,
+      orderBy: { updated_at: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    // Ready across the WHOLE catalogue, not just this page, so the operator
+    // knows how big the batch he is assembling actually is.
+    prisma.channelSKU.count({ where: readySkuWhere }),
+  ]);
+
   const masterBundleIds = drafts
     .map((d) => d.master_bundle_id)
     .filter((id): id is string => typeof id === "string" && id.length > 0);
@@ -93,16 +156,7 @@ export default async function DraftsPage() {
       : null,
   }));
 
-  const tally = drafts.reduce<Record<string, number>>((acc, d) => {
-    acc[d.status] = (acc[d.status] ?? 0) + 1;
-    return acc;
-  }, {});
-  const readyToPublish = rows.filter(
-    (row) =>
-      row.walmart?.validation_status === "PASSED"
-      && row.walmart.live_url == null
-      && isPublishableListingStatus(row.walmart.listing_status),
-  ).length;
+  const totalPages = Math.max(1, Math.ceil(matching / pageSize));
 
   return (
     <>
@@ -111,26 +165,38 @@ export default async function DraftsPage() {
         subtitle={
           <>
             <span className="font-medium text-ink-2">
-              {drafts.length} drafts in flight
+              {matching} draft{matching === 1 ? "" : "s"} match
             </span>
             <Sep />
             <span className="font-medium text-green-ink">
-              {readyToPublish} ready to publish
+              {readyTotal} ready to publish
             </span>
             <Sep />
             <span className="font-mono tabular-nums">
-              {Object.entries(tally)
-                .map(([k, v]) => `${k.toLowerCase()}: ${v}`)
-                .join(" · ") || "—"}
+              page {page} of {totalPages}
             </span>
           </>
         }
       />
 
-      {drafts.length === 0 ? (
+      <DraftFilters
+        search={search}
+        buildId={buildId}
+        readyOnly={readyOnly}
+        pageSize={pageSize}
+        pageSizes={[...PAGE_SIZES]}
+        page={page}
+        totalPages={totalPages}
+      />
+
+      {rows.length === 0 ? (
         <EmptyState
-          title="No drafts in flight"
-          body="Drafts appear here as the pipeline advances them past the initial brief."
+          title="Nothing matches"
+          body={
+            search || buildId || readyOnly
+              ? "No draft matches these filters. Clear them to see the whole pipeline."
+              : "Drafts appear here as the pipeline advances them past the initial brief."
+          }
         />
       ) : (
         <DraftsTable rows={rows} />

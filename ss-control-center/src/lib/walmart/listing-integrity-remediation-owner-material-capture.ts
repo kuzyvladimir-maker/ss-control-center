@@ -398,7 +398,7 @@ export async function captureWalmartListingRepairOwnerMaterials(input: {
         ...walmartHeaders(token, specCorrelation),
         "content-type": "application/json",
       },
-      body: getSpecRequestBytes,
+      body: getSpecRequestBytes.toString("utf8"),
     },
     timeout_ms: timeoutMs,
     maximum_response_bytes: MAX_JSON_BYTES,

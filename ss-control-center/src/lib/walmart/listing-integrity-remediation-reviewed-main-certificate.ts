@@ -12,12 +12,18 @@ import { createHash } from "node:crypto";
 import sharp from "sharp";
 
 import {
+  PRODUCT_TRUTH_READ_CONTRACT_VERSION,
+  type ProductTruthSnapshot,
+} from "../sourcing/product-truth-read-contract.ts";
+
+import {
   decideBlind,
   type AuditExpectedTruth,
   type AuditImageInput,
 } from "./catalog-visual-audit.ts";
 import { preprocessCatalogVisual } from "./catalog-visual-preprocess.ts";
 import {
+  WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT,
   WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
   verifyWalmartListingSingleWorkerResponse,
   type WalmartListingSingleObserverPlan,
@@ -28,6 +34,10 @@ import {
 import {
   canonicalWalmartListingSurgicalJson,
 } from "./listing-integrity-remediation-payload.ts";
+import {
+  productTruthSupportsWalmartListingIntegrityAudit,
+  walmartListingIntegrityBlockingContentCodes,
+} from "./listing-integrity-single-pipeline.ts";
 import {
   WALMART_LISTING_REPAIR_PLAN_SCHEMA,
   type SealedWalmartListingRepairPlan,
@@ -269,7 +279,11 @@ function parsePlan(
 function parseObserverPlan(raw: JsonRecord): WalmartListingSingleObserverPlan {
   const verified = verifiedBody(raw, "observer plan");
   if (raw.schema_version !== "walmart-listing-single-observer-plan/v1"
-    || !exactEqual(raw.worker_contract, WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT)
+    || (!exactEqual(raw.worker_contract, WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT)
+      && !exactEqual(
+        raw.worker_contract,
+        WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT,
+      ))
     || !Array.isArray(raw.assets) || raw.assets.length !== 1
     || !Array.isArray(raw.calls) || raw.calls.length !== 1) {
     fail("observer plan is not the exact pinned one-MAIN contract");
@@ -309,12 +323,14 @@ export async function certifyWalmartListingRepairReviewedMain(input: {
     views.listingImprovement,
     "Product Truth.views.listingImprovement",
   );
-  if (truth.contractVersion !== "product-truth-read-contract/3.2.0"
+  if (truth.contractVersion !== PRODUCT_TRUTH_READ_CONTRACT_VERSION
     || snapshot.channel !== "walmart"
     || snapshot.storeIndex !== plan.listing.store_index
     || snapshot.sku !== plan.listing.sku
     || snapshot.listingKey !== plan.listing.listing_key
-    || listingImprovement.ready !== true
+    || !productTruthSupportsWalmartListingIntegrityAudit(
+      truth as unknown as ProductTruthSnapshot,
+    )
     || !Array.isArray(listingImprovement.components)
     || listingImprovement.components.length !== 1) {
     fail("Product Truth is not one exact Listing Improvement component for this listing");
@@ -336,7 +352,9 @@ export async function certifyWalmartListingRepairReviewedMain(input: {
   if (outerUnits !== input.expected.outer_units
     || content.canonicalVariantId !== canonicalVariantId
     || !Array.isArray(component.contentBlockers)
-    || component.contentBlockers.length !== 0) {
+    || walmartListingIntegrityBlockingContentCodes(
+      component.contentBlockers as string[],
+    ).length !== 0) {
     fail("Product Truth component/count/content is incomplete or contradictory");
   }
 

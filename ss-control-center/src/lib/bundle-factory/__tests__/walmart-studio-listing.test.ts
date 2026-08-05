@@ -62,15 +62,23 @@ test("declares the buy-to-order quantity the owner set", () => {
     secondaryImageUrls: [],
     fulfillmentCenterId: null,
     declaredQuantity: WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
+    // Walmart's required set for creating a food item; facts about the
+    // product, not choices.
+    containerMaterial: ["Metal"],
+    foodCondition: ["Shelf-Stable"],
+    ingredientListImageUrl: "https://example.test/ingredients.png",
+    netContent: { unit: "Gram", measure: 532.971 },
   });
   const offer = attributes.offer_handoff as { quantity: number };
   assert.equal(offer.quantity, 50);
   // The quantity trio Walmart's spec wants: 8 retail packages, one item each.
-  assert.deepEqual(attributes.public_attributes, {
-    multipackQuantity: 8,
-    countPerPack: 1,
-    count: 8,
-  });
+  // Asserted field by field — the block also carries the required food fields
+  // (condition, Prop 65, container, ingredient image, net content), and pinning
+  // the whole object would break every time that required set grows.
+  const publicAttributes = attributes.public_attributes as Record<string, unknown>;
+  assert.equal(publicAttributes.multipackQuantity, 8);
+  assert.equal(publicAttributes.countPerPack, 1);
+  assert.equal(publicAttributes.count, 8);
 });
 
 test("resolves the product type from Walmart's live taxonomy list", () => {

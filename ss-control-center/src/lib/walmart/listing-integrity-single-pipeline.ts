@@ -37,7 +37,8 @@ import type {
 } from "../sourcing/product-truth-read-contract.ts";
 
 export const WALMART_LISTING_SINGLE_PIPELINE_TRUTH_ADAPTER_VERSION =
-  "walmart-listing-single-pipeline-truth-adapter/v5" as const;
+  "walmart-listing-single-pipeline-truth-adapter/v9" as const;
+export const WALMART_LISTING_SINGLE_DIAGNOSIS_FILENAME = "diagnosis-v9.json" as const;
 
 export type WalmartListingSingleTruthProjection =
   | {
@@ -123,6 +124,7 @@ function normalizeIdentityText(value: string): string {
     .replace(/[\u0300-\u036f]/gu, "")
     .toLowerCase()
     .replace(/['’ʼ]/gu, "")
+    .replace(/&/gu, " and ")
     .replace(/[^a-z0-9]+/gu, " ")
     .trim()
     .replace(/\s+/gu, " ");
@@ -135,6 +137,14 @@ function uniqueNormalizedTexts(values: readonly unknown[]): string[] {
     if (normalized && !byNormalized.has(normalized)) byNormalized.set(normalized, value);
   }
   return [...byNormalized.values()];
+}
+
+function exactIdentitySpanInTitle(value: string, title: string | null): boolean {
+  if (!title) return false;
+  const normalizedValue = normalizeIdentityText(value);
+  const normalizedTitle = normalizeIdentityText(title);
+  return normalizedValue.length > 0
+    && ` ${normalizedTitle} `.includes(` ${normalizedValue} `);
 }
 
 /**
@@ -174,6 +184,22 @@ function displayModifier(value: unknown): string | null {
   return stripped || null;
 }
 
+function exactContentAttribute(value: unknown, expectedName: string): string | null {
+  if (!Array.isArray(value)) return null;
+  const expected = normalizeIdentityText(expectedName);
+  const matches = value.flatMap((row) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) return [];
+    const record = row as Record<string, unknown>;
+    const name = exactText(record.name) ?? exactText(record.label);
+    const attributeValue = exactText(record.value);
+    return name && attributeValue && normalizeIdentityText(name) === expected
+      ? [attributeValue]
+      : [];
+  });
+  const unique = uniqueNormalizedTexts(matches);
+  return unique.length === 1 ? unique[0]! : null;
+}
+
 function packageFact(component: ProductTruthRecipeComponent): ExpectedPackageFact | null {
   const identity = component.content?.identity;
   if (!identity || !Number.isFinite(identity.sizeBaseAmount) || identity.sizeBaseAmount <= 0) {
@@ -206,6 +232,33 @@ function packageFact(component: ProductTruthRecipeComponent): ExpectedPackageFac
   return null;
 }
 
+/**
+ * Fail closed when an upstream canonical MASS identity appears to have parsed
+ * a nutrition claim as the package size. A title such as `20g Protein` does
+ * not establish a 20 g net weight; using it as `net_content` can make correct
+ * 2.5 oz / 71 g package images look like the wrong product.
+ */
+function canonicalSizeLooksLikeNutrientClaim(
+  component: ProductTruthRecipeComponent,
+  contentTitle: string | null,
+): boolean {
+  const identity = component.content?.identity;
+  if (!identity || !contentTitle || identity.sizeDimension !== "MASS") return false;
+  if (identity.sizeBaseUnit !== "g" || !Number.isFinite(identity.sizeBaseAmount)) return false;
+
+  const nutrientClaim = /(protein|fiber|sugar|carbohydrate|carbs|fat)\b/iu;
+  const massClaims = contentTitle.matchAll(/(\d+(?:\.\d+)?)\s*(?:g|gram|grams)\b/giu);
+  let matchedCanonicalAmount = false;
+  for (const match of massClaims) {
+    const amount = Number(match[1]);
+    if (!Number.isFinite(amount) || Math.abs(amount - identity.sizeBaseAmount) > 1e-9) continue;
+    matchedCanonicalAmount = true;
+    const suffix = contentTitle.slice((match.index ?? 0) + match[0].length).trimStart();
+    if (!nutrientClaim.test(suffix)) return false;
+  }
+  return matchedCanonicalAmount;
+}
+
 function sourceRequired(
   listingKey: string,
   blockers: readonly string[],
@@ -222,6 +275,42 @@ function sourceRequired(
 }
 
 /**
+ * Content facts that are mandatory for a complete catalog record but do not
+ * participate in a visual identity/quantity audit. Keeping this exception
+ * here (instead of weakening Product Truth readiness) preserves the missing
+ * enrichment task while allowing a proven wrong-product image to be repaired.
+ */
+const WALMART_LISTING_INTEGRITY_NON_BLOCKING_CONTENT_CODES = new Set([
+  "CONTENT_STORAGE_MISSING",
+]);
+
+export function walmartListingIntegrityBlockingContentCodes(
+  codes: readonly string[],
+): string[] {
+  return codes.filter((code) => (
+    !WALMART_LISTING_INTEGRITY_NON_BLOCKING_CONTENT_CODES.has(code)
+  ));
+}
+
+export function productTruthSupportsWalmartListingIntegrityAudit(
+  snapshot: ProductTruthSnapshot,
+): boolean {
+  const view = snapshot?.views?.listingImprovement;
+  if (!view) return false;
+  if (view.ready) return true;
+  if (view.components.length !== 1) return false;
+  const component = view.components[0]!;
+  if (!component.content
+    || walmartListingIntegrityBlockingContentCodes(component.contentBlockers).length) {
+    return false;
+  }
+  const allowedViewBlockers = new Set(component.contentBlockers.map((code) => (
+    `COMPONENT_${component.componentIndex}:${code}`
+  )));
+  return view.blockers.every((code) => allowedViewBlockers.has(code));
+}
+
+/**
  * Project one canonical listing-improvement snapshot into detector truth.
  * Unsupported/missing evidence never falls back to title inference.
  */
@@ -230,16 +319,17 @@ export function projectProductTruthForWalmartSingleListing(
 ): WalmartListingSingleTruthProjection {
   const listingKey = exactText(snapshot?.snapshot?.listingKey) ?? "UNKNOWN_LISTING";
   const blockers: string[] = [];
+  const components = snapshot?.views?.listingImprovement?.components ?? [];
+  const fieldScopedReady = productTruthSupportsWalmartListingIntegrityAudit(snapshot);
   if (snapshot?.snapshot?.channel.toLowerCase() !== "walmart") {
     blockers.push("CHANNEL_NOT_WALMART");
   }
-  if (!snapshot?.views?.listingImprovement?.ready) {
+  if (!fieldScopedReady) {
     blockers.push("LISTING_IMPROVEMENT_NOT_READY");
+    blockers.push(...(snapshot?.views?.listingImprovement?.blockers ?? []).map((value) => (
+      `PRODUCT_TRUTH:${value}`
+    )));
   }
-  blockers.push(...(snapshot?.views?.listingImprovement?.blockers ?? []).map((value) => (
-    `PRODUCT_TRUTH:${value}`
-  )));
-  const components = snapshot?.views?.listingImprovement?.components ?? [];
   if (components.length !== 1) {
     blockers.push(`SAME_PRODUCT_PIPELINE_REQUIRES_ONE_COMPONENT:FOUND_${components.length}`);
     return sourceRequired(listingKey, blockers);
@@ -254,7 +344,9 @@ export function projectProductTruthForWalmartSingleListing(
   // component has no current factual buy price. The shared read contract
   // already fail-closes this content axis through `listingImprovement.ready`,
   // `contentBlockers`, canonical-variant equality, and donor outer-pack checks.
-  blockers.push(...component.contentBlockers.map((value) => `CONTENT:${value}`));
+  blockers.push(...walmartListingIntegrityBlockingContentCodes(
+    component.contentBlockers,
+  ).map((value) => `CONTENT:${value}`));
   if (!component.content) {
     blockers.push("EXACT_CONTENT_MISSING");
     return sourceRequired(listingKey, blockers);
@@ -274,12 +366,39 @@ export function projectProductTruthForWalmartSingleListing(
     recoverOrderedIdentityAlias(canonicalBrand, contentTitle),
     canonicalBrand,
   ]);
+  const exactAttributeBrand = exactContentAttribute(
+    component.content.facts.attributes,
+    "Brand",
+  );
+  const exactSubBrand = exactAttributeBrand
+    && !brandAliases.some((value) => normalizeIdentityText(value)
+      === normalizeIdentityText(exactAttributeBrand))
+    && exactIdentitySpanInTitle(exactAttributeBrand, contentTitle)
+    ? exactAttributeBrand
+    : null;
+  const exactAttributeProductLine = exactContentAttribute(
+    component.content.facts.attributes,
+    "Product line",
+  );
+  const exactProductLine = exactAttributeProductLine
+    && exactIdentitySpanInTitle(exactAttributeProductLine, contentTitle)
+    ? exactAttributeProductLine
+    : null;
   const productAliases = uniqueNormalizedTexts([
     component.content.identity.productLine,
     component.product,
+    exactSubBrand,
+    exactProductLine,
   ]);
+  const structuredFlavors = uniqueNormalizedTexts([
+    component.content.identity.flavor,
+    component.flavor,
+  ]);
+  const exactAttributeFlavor = structuredFlavors.length === 0
+    ? exactContentAttribute(component.content.facts.attributes, "Flavor")
+    : null;
   const variantGroups = [
-    ...uniqueNormalizedTexts([component.content.identity.flavor, component.flavor])
+    ...uniqueNormalizedTexts([...structuredFlavors, exactAttributeFlavor])
       .map((value) => [value]),
     ...(Array.isArray(component.content.identity.modifiers)
       ? component.content.identity.modifiers
@@ -295,6 +414,9 @@ export function projectProductTruthForWalmartSingleListing(
   ];
   if (!brandAliases.length) blockers.push("BRAND_IDENTITY_MISSING");
   if (!productAliases.length) blockers.push("PRODUCT_IDENTITY_MISSING");
+  if (canonicalSizeLooksLikeNutrientClaim(component, contentTitle)) {
+    blockers.push("CANONICAL_SIZE_LOOKS_LIKE_NUTRIENT_CLAIM");
+  }
 
   const fact = packageFact(component);
   if (!fact) blockers.push("EXACT_ONE_PACKAGE_SIZE_OR_INNER_COUNT_MISSING");

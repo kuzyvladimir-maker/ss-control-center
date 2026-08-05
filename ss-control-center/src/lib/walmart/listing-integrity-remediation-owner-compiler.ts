@@ -89,6 +89,8 @@ export const WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA =
   "walmart-listing-single-repair-compilation-request/v4" as const;
 export const WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA =
   "walmart-listing-single-repair-compilation-request/v5" as const;
+export const WALMART_LISTING_REPAIR_NON_IMAGE_COMPILATION_REQUEST_SCHEMA =
+  "walmart-listing-single-repair-compilation-request/v6" as const;
 export const WALMART_LISTING_REPAIR_REVIEWED_TRUTH_SCHEMA =
   "walmart-listing-repair-reviewed-one-sku-truth/v1" as const;
 
@@ -109,7 +111,8 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
     | typeof WALMART_LISTING_REPAIR_MAIN_COMPILATION_REQUEST_SCHEMA
     | typeof WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA
     | typeof WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA
-    | typeof WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA;
+    | typeof WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA
+    | typeof WALMART_LISTING_REPAIR_NON_IMAGE_COMPILATION_REQUEST_SCHEMA;
   created_at: string;
   status: "READY_FOR_CONNECTED_MATERIALS";
   listing: WalmartListingRepairListingIdentity & {
@@ -142,12 +145,9 @@ export interface VerifiedWalmartListingRepairCompilationRequest {
     target_surface: WalmartListingSurface;
     baseline_images: WalmartListingRepairTargetImage[];
     target_images: WalmartListingRepairTargetImage[];
-    changed_fields:
-      | ["description", "bullets"]
-      | ["description", "bullets", "main"]
-      | ["description", "bullets", "main", "gallery"]
-      | ["attributes"]
-      | ["title"];
+    changed_fields: Array<
+      "title" | "description" | "bullets" | "attributes" | "main" | "gallery"
+    >;
     unchanged_image_bytes: boolean;
     changed_main_evidence?: {
       product_truth: ImmutableCompilationArtifactReference;
@@ -419,7 +419,8 @@ export function verifyWalmartListingRepairCompilationRequest(
       && requestSchema !== WALMART_LISTING_REPAIR_MAIN_COMPILATION_REQUEST_SCHEMA
       && requestSchema !== WALMART_LISTING_REPAIR_ATTRIBUTE_COMPILATION_REQUEST_SCHEMA
       && requestSchema !== WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA
-      && requestSchema !== WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA)
+      && requestSchema !== WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA
+      && requestSchema !== WALMART_LISTING_REPAIR_NON_IMAGE_COMPILATION_REQUEST_SCHEMA)
     || raw.status !== "READY_FOR_CONNECTED_MATERIALS") {
     fail("compilation request schema/status is unsupported");
   }
@@ -477,6 +478,8 @@ export function verifyWalmartListingRepairCompilationRequest(
     requestSchema === WALMART_LISTING_REPAIR_IMAGE_SET_COMPILATION_REQUEST_SCHEMA;
   const titleOnly =
     requestSchema === WALMART_LISTING_REPAIR_TITLE_COMPILATION_REQUEST_SCHEMA;
+  const nonImageRepair =
+    requestSchema === WALMART_LISTING_REPAIR_NON_IMAGE_COMPILATION_REQUEST_SCHEMA;
   const attributeOnlySurfaceMatches = walmartListingIntegritySha256({
     ...baselineSurface,
     attribute_claims: targetSurface.attribute_claims,
@@ -711,6 +714,35 @@ export function verifyWalmartListingRepairCompilationRequest(
       || Object.hasOwn(repair, "changed_image_set_evidence")) {
       fail("v3 repair is not an exact attributes-only diff with opaque fields/images preserved");
     }
+  } else if (nonImageRepair) {
+    const allowed = ["title", "description", "bullets", "attributes"] as const;
+    const actual = allowed.filter((field) => {
+      if (field === "attributes") {
+        return walmartListingIntegritySha256([
+          baselineSurface.attribute_claims,
+          baselineSurface.unmapped_attributes,
+        ]) !== walmartListingIntegritySha256([
+          targetSurface.attribute_claims,
+          targetSurface.unmapped_attributes,
+        ]);
+      }
+      return walmartListingIntegritySha256(baselineSurface[field])
+        !== walmartListingIntegritySha256(targetSurface[field]);
+    });
+    if (!Array.isArray(repair.changed_fields)
+      || actual.length < 1
+      || walmartListingIntegritySha256(repair.changed_fields)
+        !== walmartListingIntegritySha256(actual)
+      || actual.includes("description") !== actual.includes("bullets")
+      || walmartListingIntegritySha256(baselineSurface.unmapped_attributes)
+        !== walmartListingIntegritySha256(targetSurface.unmapped_attributes)
+      || walmartListingIntegritySha256(baselineImages)
+        !== walmartListingIntegritySha256(targetImages)
+      || repair.unchanged_image_bytes !== true
+      || Object.hasOwn(repair, "changed_main_evidence")
+      || Object.hasOwn(repair, "changed_image_set_evidence")) {
+      fail("v6 repair is not an exact canonical non-image diff with images/opaque fields preserved");
+    }
   } else {
     fail("compilation request schema branch is unsupported");
   }
@@ -789,7 +821,11 @@ export function verifyWalmartListingRepairCompilationRequest(
           ? ["description", "bullets", "main"]
           : imageSetRepair
             ? ["description", "bullets", "main", "gallery"]
-          : ["attributes"],
+          : nonImageRepair
+            ? [...(repair.changed_fields as Array<
+              "title" | "description" | "bullets" | "attributes"
+            >)]
+            : ["attributes"],
       unchanged_image_bytes: !(mainRepair || imageSetRepair),
       ...(changedMainEvidence ? { changed_main_evidence: changedMainEvidence } : {}),
       ...(changedImageSetEvidence
@@ -1178,12 +1214,9 @@ export interface WalmartListingRepairOwnerCompilerDraft {
   };
   assurance: {
     exact_listing_count: 1;
-    changed_fields:
-      | ["description", "bullets"]
-      | ["description", "bullets", "main"]
-      | ["description", "bullets", "main", "gallery"]
-      | ["attributes"]
-      | ["title"];
+    changed_fields: Array<
+      "title" | "description" | "bullets" | "attributes" | "main" | "gallery"
+    >;
     current_walmart_write_authorized: false;
     mass_apply_allowed: false;
     network_calls: 0;
@@ -1366,7 +1399,7 @@ function schemaContract(input: {
     ]),
   );
   const mappings: WalmartListingSurgicalAttributeMapping[] =
-    input.request.repair.changed_fields.includes("attributes")
+    (input.request.repair.changed_fields as readonly string[]).includes("attributes")
       ? input.request.repair.target_surface.attribute_claims
         .filter((claim) => {
           const baseline = baselineClaims.get(claimKey(claim));
@@ -1410,7 +1443,7 @@ function schemaContract(input: {
             : left.walmart_visible_field > right.walmart_visible_field ? 1 : 0
         ))
       : [];
-  if (input.request.repair.changed_fields.includes("attributes")) {
+  if ((input.request.repair.changed_fields as readonly string[]).includes("attributes")) {
     const targetKeys = new Set(
       input.request.repair.target_surface.attribute_claims.map(claimKey),
     );
@@ -1746,8 +1779,8 @@ export function compileWalmartListingRepairOwnerDraft(input: {
     apply_engine_release_sha256: input.apply_engine_release_sha256,
     expected_environment: environment,
   });
-  const mainChanged = request.repair.changed_fields.includes("main");
-  const galleryChanged = request.repair.changed_fields.includes("gallery");
+  const mainChanged = (request.repair.changed_fields as readonly string[]).includes("main");
+  const galleryChanged = (request.repair.changed_fields as readonly string[]).includes("gallery");
   let certificate:
     | SealedWalmartListingRepairUnchangedImageCertificate
     | SealedWalmartListingRepairReviewedMainCertificate

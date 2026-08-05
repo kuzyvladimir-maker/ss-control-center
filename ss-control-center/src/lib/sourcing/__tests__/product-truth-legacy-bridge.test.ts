@@ -16,13 +16,16 @@ import {
 } from "../canonical-product-variant";
 import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
+  PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION,
   PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
+  productTruthAmazonComponentGraphEvidenceCore,
   productTruthBundleFactoryEvidenceCore,
   productTruthLegacyBridgeBytesSha256,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeComponentRow,
+  type ProductTruthAmazonComponentGraphEvidenceRow,
   type ProductTruthBundleFactoryRecipeEvidenceRow,
   type ProductTruthAuthoritativeWalmartItemReportEvidenceRow,
   type ProductTruthDirectTargetContentEvidence,
@@ -258,6 +261,81 @@ function bundleFactoryRecipeEvidence(
   };
 }
 
+function amazonComponentGraphEvidence(
+  overrides: Partial<ProductTruthAmazonComponentGraphEvidenceRow> = {},
+): ProductTruthAmazonComponentGraphEvidenceRow {
+  const targetIdentity = {
+    brand: "Acme",
+    productLine: "Crunch Chips Barbecue",
+    flavor: null,
+    modifiers: [],
+    form: "Bag",
+    size: "8 oz",
+    outerPackCount: 1,
+  };
+  const core = {
+    schemaVersion: PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION,
+    listingKey: "ptls1:test",
+    storeIndex: 1,
+    sku: "SKU-1",
+    asin: "B012345678",
+    listingTitle: "Acme Crunch Chips Barbecue 8 oz, Pack of 2",
+    componentIndex: 0,
+    retailPackageQuantity: 2,
+    donorProductId: "donor-1",
+    offerId: "offer-1",
+    targetIdentity,
+    targetCanonicalVariantId:
+      buildCanonicalProductVariantKey(targetIdentity).canonicalVariantId,
+    normalizedGtin14: "00036000291452",
+    retailer: "walmart" as const,
+    retailerProductId: "123",
+    retailerProductUrl: "https://www.walmart.com/ip/123",
+    retailerTitle: "Acme Crunch Chips Barbecue Bag 8 oz",
+    packageForm: "bag",
+    reviewedImageFiles: ["0001-B012345678-MAIN.jpg"],
+    adjudicatedAt: "2026-07-26T11:30:00.000Z",
+    adjudication: {
+      reviewer: "CODEX_VISUAL_AND_STRUCTURED_EVIDENCE_REVIEW" as const,
+      catalogBasePackageMatchesRetailer: true as const,
+      listingOuterQuantityProven: true as const,
+      exactVariantContradictionObserved: false as const,
+      contentTransferAuthorized: false as const,
+    },
+    source: {
+      amazonCatalogPlanSha256: "1".repeat(64),
+      amazonCatalogEvidenceSha256: "2".repeat(64),
+      amazonDecompositionSha256: "3".repeat(64),
+      amazonImagePlanSha256: "4".repeat(64),
+      amazonImageCaptureSha256: "5".repeat(64),
+      amazonImageVerificationSha256: "6".repeat(64),
+      amazonImageAssessmentSha256: "7".repeat(64),
+      directRetailerIdentityEvidenceSha256: "8".repeat(64),
+      directRetailerHtmlSha256: "9".repeat(64),
+      legacySnapshotSha256: "a".repeat(64),
+    },
+    safety: {
+      networkCallsDuringCompilation: 0 as const,
+      modelCallsDuringCompilation: 0 as const,
+      providerCallsDuringCompilation: 0 as const,
+      paidCallsDuringCompilation: 0 as const,
+      databaseWritesDuringCompilation: 0 as const,
+      marketplaceMutationsDuringCompilation: 0 as const,
+    },
+  };
+  const merged = { ...core, ...overrides };
+  return {
+    ...merged,
+    evidenceRowSha256:
+      overrides.evidenceRowSha256
+      ?? productTruthOperationalSha256(
+        productTruthAmazonComponentGraphEvidenceCore(
+          merged as ProductTruthAmazonComponentGraphEvidenceRow,
+        ),
+      ),
+  };
+}
+
 function walmartManifestForReport(
   csv: string,
   title = "Acme Crunch Chips Barbecue Bag 8 oz (Pack of 4)",
@@ -429,6 +507,129 @@ test("exact Bundle Factory component GTIN recovers a missing Amazon bundle recip
     scope.components[0]?.identityProof,
     "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN",
   );
+  assert.equal(scope.components[0]?.donorProductId, "donor-1");
+});
+
+test("byte-bound Amazon adjudication recovers only the exact identity and recipe quantity", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      channel: "amazon",
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    amazonComponentGraphEvidence: [amazonComponentGraphEvidence()],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(
+    scope.disposition,
+    "IDENTITY_ONLY_CANONICALIZATION_CANDIDATE",
+  );
+  assert.equal(scope.components.length, 1);
+  assert.equal(scope.components[0]?.qty, 2);
+  assert.equal(scope.components[0]?.legacyComponentId, null);
+  assert.equal(
+    scope.components[0]?.identityProof,
+    "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION",
+  );
+  assert.equal(
+    scope.components[0]?.contentAssessment?.contentProjection,
+    "IDENTITY_ONLY",
+  );
+  assert.equal(scope.components[0]?.contentAssessment?.complete, false);
+  assert.ok(
+    scope.components[0]?.contentAssessment?.missing.includes(
+      "FULL_CONTENT_TRANSFER_NOT_AUTHORIZED",
+    ),
+  );
+});
+
+test("Amazon component graph evidence fails closed when its canonical variant binding drifts", () => {
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      channel: "amazon",
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    amazonComponentGraphEvidence: [amazonComponentGraphEvidence({
+      targetCanonicalVariantId: `cpv1:${"f".repeat(64)}`,
+    })],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(scope.disposition, "QUARANTINE");
+  assert.deepEqual(
+    scope.blockers.map((blocker) => blocker.code),
+    ["PRODUCT_IDENTITY_MISSING"],
+  );
+});
+
+test("a materialized Amazon recipe remains canonical without replaying the external evidence file", () => {
+  const evidence = amazonComponentGraphEvidence();
+  const variant = buildCanonicalProductVariantKey(evidence.targetIdentity);
+  const decisionId = "decision-amazon-1";
+  const sourceEvidence = {
+    schemaVersion: "product-truth-legacy-bridge-recipe-component-source/1.0.0",
+    identityProof: "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION",
+  };
+  const recipeEvidence = {
+    componentIndex: 0,
+    donorProductId: "donor-1",
+    flavor: null,
+    listingKey: "ptls1:test",
+    product: "Crunch Chips Barbecue",
+    quantity: 2,
+    schemaVersion: "product-truth-listing-recipe-component-evidence/1.0.0",
+    size: "8 oz",
+    sourceComponentId: null,
+    sourceEvidence,
+    sourceEvidenceSha256: productTruthOperationalSha256(sourceEvidence),
+    targetCanonicalVariantId: variant.canonicalVariantId,
+    variantDecisionId: decisionId,
+  };
+  const value = snapshot({
+    listings: [{
+      ...snapshot().listings[0],
+      channel: "amazon",
+      productIdentityJson: null,
+      productIdentityUpdatedAt: null,
+    }],
+    components: [],
+    canonicalDonorBindings: [{
+      donorProductId: "donor-1",
+      canonicalVariantId: variant.canonicalVariantId,
+      canonicalIdentityJson: variant.identityJson,
+      decisionId,
+      decisionStatus: "exact_confirmed",
+      decidedAt: "2026-07-26T11:30:00.000Z",
+    }],
+    canonicalListingComponents: [{
+      listingKey: "ptls1:test",
+      skuCostId: "cost-amazon-1",
+      componentIndex: 0,
+      evidenceStatus: "REJECT",
+      targetCanonicalVariantId: variant.canonicalVariantId,
+      contentCanonicalVariantId: variant.canonicalVariantId,
+      contentObservationId: "content-amazon-1",
+      observedContentCanonicalVariantId: variant.canonicalVariantId,
+      decisionId,
+      decisionStatus: "exact_confirmed",
+      decisionCanonicalVariantId: variant.canonicalVariantId,
+      recipeTargetCanonicalVariantId: variant.canonicalVariantId,
+      recipeDonorProductId: "donor-1",
+      recipeVariantDecisionId: decisionId,
+      recipeComponentEvidenceHash:
+        productTruthOperationalSha256(recipeEvidence),
+      recipeComponentEvidenceJson:
+        renderProductTruthOperationalJson(recipeEvidence),
+    }],
+    amazonComponentGraphEvidence: [],
+  });
+  const scope = compile(value).scopes[0]!;
+  assert.equal(scope.disposition, "ALREADY_CANONICAL");
+  assert.equal(scope.components[0]?.qty, 2);
   assert.equal(scope.components[0]?.donorProductId, "donor-1");
 });
 

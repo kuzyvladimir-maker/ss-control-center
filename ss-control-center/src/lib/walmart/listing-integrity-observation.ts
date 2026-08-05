@@ -64,10 +64,8 @@ export interface WalmartListingWorkerReservationLedgerContract {
   identity_artifact_sha256: string;
 }
 
-export interface WalmartListingObservationWorkerContract {
+interface WalmartListingObservationWorkerContractBase {
   worker_build: `sha256:${string}`;
-  model: "sonnet";
-  reasoning_effort: null;
   cli_version: string;
   node_version: string;
   runtime_platform: string;
@@ -75,6 +73,16 @@ export interface WalmartListingObservationWorkerContract {
   vision_timeout_ms: number;
   reservation_ledger: WalmartListingWorkerReservationLedgerContract;
 }
+
+export type WalmartListingObservationWorkerContract =
+  | (WalmartListingObservationWorkerContractBase & {
+    model: "sonnet";
+    reasoning_effort: null;
+  })
+  | (WalmartListingObservationWorkerContractBase & {
+    model: "gpt-5.6-sol";
+    reasoning_effort: "medium";
+  });
 
 export interface WalmartListingExecutionPermit {
   sha256: string;

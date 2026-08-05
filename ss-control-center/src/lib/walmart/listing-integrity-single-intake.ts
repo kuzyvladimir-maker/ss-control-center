@@ -38,7 +38,7 @@ import type { ProductTruthSnapshot } from "../sourcing/product-truth-read-contra
 import { walmartListingIntegritySha256 } from "./listing-integrity-audit.ts";
 
 export const WALMART_LISTING_SINGLE_INTAKE_INDEX_SCHEMA =
-  "walmart-listing-single-intake-index/v1" as const;
+  "walmart-listing-single-intake-index/v2" as const;
 
 export interface WalmartListingSingleIntakeTarget {
   sku: string;
@@ -119,6 +119,7 @@ export interface SealedWalmartListingSingleIntakeIndex {
   schema_version: typeof WALMART_LISTING_SINGLE_INTAKE_INDEX_SCHEMA;
   created_at: string;
   listing_key: string;
+  product_truth_manifest_sha256: string;
   status: WalmartListingSingleIntakeResult["status"];
   files: Array<{
     role: string;
@@ -348,11 +349,15 @@ function outputDirectory(value: string): string {
 export async function writeWalmartListingSingleIntake(
   rawOutputDirectory: string,
   result: WalmartListingSingleIntakeResult,
+  options: { product_truth_manifest_sha256: string },
 ): Promise<{
   directory: string;
   index_path: string;
   index: SealedWalmartListingSingleIntakeIndex;
 }> {
+  if (!/^[a-f0-9]{64}$/u.test(options.product_truth_manifest_sha256)) {
+    throw new Error("Product Truth manifest must be one exact lowercase SHA-256");
+  }
   const directory = outputDirectory(rawOutputDirectory);
   const parent = path.dirname(directory);
   const temporary = path.join(
@@ -431,6 +436,7 @@ export async function writeWalmartListingSingleIntake(
     schema_version: WALMART_LISTING_SINGLE_INTAKE_INDEX_SCHEMA,
     created_at: new Date().toISOString(),
     listing_key: result.product_truth.snapshot.listingKey,
+    product_truth_manifest_sha256: options.product_truth_manifest_sha256,
     status: result.status,
     files: files.sort((left, right) => left.path.localeCompare(right.path)),
     buyer_snapshot_id: buyerSnapshotId,

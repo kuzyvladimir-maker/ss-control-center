@@ -945,6 +945,12 @@ export type CostOptions = {
     canonicalIdentityHash: string;
     queryVersion: string;
     query: string;
+    sourceDetailAdmissionSha256?: string;
+    sourceDetailCandidate?: {
+      retailer: "walmart" | "target";
+      retailerProductId: string;
+      productUrl: string;
+    };
   } | null;
 };
 
@@ -967,6 +973,46 @@ export function resolveSealedProviderAcquisitionQuery(input: {
     || sealed.canonicalVariantId !== `cpv1:${sealed.canonicalIdentityHash}`
   ) {
     throw new Error("SEALED_PROVIDER_ACQUISITION_IDENTITY_MISMATCH");
+  }
+  if (
+    !sealed.sourceDetailAdmissionSha256
+    || !/^[a-f0-9]{64}$/u.test(sealed.sourceDetailAdmissionSha256)
+    || !sealed.sourceDetailCandidate
+  ) {
+    throw new Error("SEALED_PROVIDER_ACQUISITION_SOURCE_DETAIL_PIN_REQUIRED");
+  }
+  let sourceDetailUrl: URL;
+  try {
+    sourceDetailUrl = new URL(sealed.sourceDetailCandidate.productUrl);
+  } catch {
+    throw new Error("SEALED_PROVIDER_ACQUISITION_SOURCE_DETAIL_PIN_INVALID");
+  }
+  const retailerProductId =
+    sealed.sourceDetailCandidate.retailerProductId;
+  const pathParts = sourceDetailUrl.pathname.split("/").filter(Boolean);
+  const walmartBound =
+    sealed.sourceDetailCandidate.retailer === "walmart"
+    && ["walmart.com", "www.walmart.com"].includes(
+      sourceDetailUrl.hostname.toLowerCase(),
+    )
+    && pathParts.some((part) => part.toLowerCase() === "ip")
+    && pathParts.at(-1) === retailerProductId;
+  const targetBound =
+    sealed.sourceDetailCandidate.retailer === "target"
+    && ["target.com", "www.target.com"].includes(
+      sourceDetailUrl.hostname.toLowerCase(),
+    )
+    && new RegExp(`(?:^|/)A-${retailerProductId}(?:/|$)`, "u")
+      .test(sourceDetailUrl.pathname);
+  if (
+    sourceDetailUrl.protocol !== "https:"
+    || sourceDetailUrl.username
+    || sourceDetailUrl.password
+    || sourceDetailUrl.hash
+    || !retailerProductId
+    || (!walmartBound && !targetBound)
+  ) {
+    throw new Error("SEALED_PROVIDER_ACQUISITION_SOURCE_DETAIL_PIN_INVALID");
   }
   return sealed.query;
 }
@@ -1242,6 +1288,15 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
             unwrangleRetailers: [...sourcePolicy.unwrangleRetailers],
             openClawRetailers: [...sourcePolicy.openClawRetailers],
             allowNonGrocery: true,
+            sealedSourceDetailCandidate:
+              opts.sealedProviderAcquisition
+                ? {
+                  admissionSha256:
+                    opts.sealedProviderAcquisition
+                      .sourceDetailAdmissionSha256!,
+                  ...opts.sealedProviderAcquisition.sourceDetailCandidate!,
+                }
+                : null,
           });
         res = enrichmentResult;
         acquisitionDiagnostics.push(enrichmentResult.diagnostics);

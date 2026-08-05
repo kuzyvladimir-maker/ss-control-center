@@ -25,13 +25,23 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(data.mode, "SHADOW_READ_ONLY");
   assert.equal(data.catalog.status, "CATALOG_PLAN_READY");
   assert.equal(data.catalog.snapshotVerified, true);
-  assert.equal(data.catalog.catalog.total, 3566);
+  assert.equal(data.catalog.catalog.total, 5235);
+  assert.equal(data.catalog.catalog.published, 3877);
+  assert.equal(data.catalog.catalog.active, 5100);
   assert.equal(data.catalog.catalog.exactOnce, true);
   assert.equal(data.catalog.catalog.duplicateSkus, 0);
-  assert.equal(data.catalog.queues.visualTriageReady, 1298);
-  assert.equal(data.catalog.queues.sourceAcquisitionRequired, 1346);
-  assert.equal(data.catalog.visualScan.tasks, 1738);
-  assert.equal(data.catalog.visualScan.partitions, 49);
+  assert.equal(
+    data.catalog.evidencePath,
+    "data/audits/walmart-listing-integrity-catalog/20260801T-frozen-v4-runtime-proof-v6",
+  );
+  assert.equal(
+    data.catalog.censusFileSha256,
+    "a5aac585edba15d2a5119451a146dc92700e1e0daeb720e08575f297c7fcfe19",
+  );
+  assert.equal(data.catalog.queues.visualTriageReady, 1936);
+  assert.equal(data.catalog.queues.sourceAcquisitionRequired, 1941);
+  assert.equal(data.catalog.visualScan.tasks, 2576);
+  assert.equal(data.catalog.visualScan.partitions, 74);
   assert.equal(data.catalog.visualScan.capturedPartitions, 0);
   assert.equal(data.catalog.visualScan.capturedAssets, 0);
   assert.equal(data.catalog.visualScan.captureTechnicalErrors, 0);
@@ -44,26 +54,10 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(data.engine.workerSecurityTestsPassed, 17);
   assert.equal(data.engine.shadowTestsPassed, 8);
   assert.equal(data.engine.walmartWrites, 0);
-  assert.equal(data.ownerRepairReview.status, "OWNER_REVIEW_REQUIRED");
-  assert.equal(data.ownerRepairReview.sku, "FaisalX-1228");
-  assert.equal(data.ownerRepairReview.itemId, "8393619891");
-  assert.deepEqual(data.ownerRepairReview.changedFields, ["description", "bullets"]);
-  assert.equal(data.ownerRepairReview.productTruth.outerUnits, 6);
-  assert.equal(data.ownerRepairReview.productTruth.singleUnitInnerCount, 16);
-  assert.equal(data.ownerRepairReview.productTruth.totalUnits, 96);
-  assert.equal(data.ownerRepairReview.productTruth.donorStatus, "EXACT_PRODUCT_DONOR");
-  assert.equal(data.ownerRepairReview.productTruth.wrongLegacyDonorId, null);
-  assert.equal(data.ownerRepairReview.current.images.length, 3);
-  assert.doesNotMatch(data.ownerRepairReview.current.bullets.join(" "), /PACK OF 6/iu);
-  assert.match(data.ownerRepairReview.proposed.bullets[0], /PACK OF 6/u);
-  assert.equal(data.ownerRepairReview.qualificationPrecheck, "PASS");
-  assert.equal(data.ownerRepairReview.exactImageBytesVerified, true);
-  assert.equal(data.ownerRepairReview.walmartWriteAuthorized, false);
-  assert.equal(data.ownerRepairReview.databaseWriteAuthorized, false);
-  assert.equal(
-    data.ownerRepairReview.reviewFileSha256,
-    "4e81c7cae683cdffaa4c977f0fa01dd769e2bae6b98a2a9ba29c337ef3d6e58f",
-  );
+  // The previously reviewed FaisalX-1228 repair is already qualified and its
+  // current-review pointer is intentionally absent; the UI must not ask the
+  // owner to approve a completed SKU again.
+  assert.equal(data.ownerRepairReview, null);
   assert.equal(data.productTruth.status, "BLOCKED_SKU_TRUTH_NOT_READY");
   assert.equal(data.productTruth.schemaReady, true);
   assert.equal(data.productTruth.pendingMigrations, 0);
@@ -104,8 +98,8 @@ test("projects the fresh quantity-confusion control into read-only Command Cente
   assert.equal(control.ownerVisualReview.proposedMainAcceptedAsSixPackages, true);
   assert.equal(control.ownerVisualReview.galleryAccepted, true);
   assert.equal(control.ownerVisualReview.walmartWriteAuthorized, false);
-  assert.match(data.gates.next, /Owner reviews FaisalX-1228/);
-  assert.match(data.gates.next, /certified description\/bullets diff/);
+  assert.match(data.gates.next, /walmart:1:FaisalX-1183 is blocked/);
+  assert.match(data.gates.next, /LISTING_SCOPE_NOT_REGISTERED/);
   assert.deepEqual(control.changedFields, ["MAIN"]);
   assert.equal(control.currentImages.length, 3);
 });

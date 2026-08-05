@@ -406,8 +406,18 @@ export interface TickResult {
  */
 export async function tickPublishBatch(
   batchId: string,
-  options: { now?: Date } = {},
+  options: {
+    now?: Date;
+    /**
+     * The publisher. Injectable so the queue's own behaviour — the ceiling, the
+     * one-item-per-tick rule, what a refusal does to the batch — can be tested
+     * without a marketplace on the other end. Production always uses the real
+     * one.
+     */
+    publish?: typeof publishOneDraft;
+  } = {},
 ): Promise<TickResult> {
+  const publish = options.publish ?? publishOneDraft;
   const now = options.now ?? new Date();
 
   const batch = await prisma.publishBatch.findUnique({
@@ -479,7 +489,7 @@ export async function tickPublishBatch(
 
   let itemStatus = "FAILED";
   try {
-    const result = await publishOneDraft({
+    const result = await publish({
       draftId: next.bundle_draft_id,
       channels: [PUBLISH_QUEUE_MARKETPLACE],
       actor: batch.actor,

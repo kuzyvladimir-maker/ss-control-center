@@ -50,6 +50,8 @@ export const PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION =
   "product-truth-authoritative-walmart-item-report-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION =
   "product-truth-bundle-factory-recipe-evidence/1.0.0" as const;
+export const PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION =
+  "product-truth-amazon-component-graph-evidence/1.0.0" as const;
 export const PRODUCT_TRUTH_LEGACY_BRIDGE_PRICE_MAX_AGE_MS =
   24 * 60 * 60 * 1_000;
 
@@ -73,6 +75,7 @@ export type ProductTruthBridgeIdentityProof =
   | "EXACT_LIVE_IMAGE_BARCODE"
   | "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE"
   | "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN"
+  | "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION"
   | "STRICT_TITLE_MATCH"
   | "NONE";
 
@@ -403,6 +406,66 @@ export interface ProductTruthBundleFactoryRecipeEvidenceRow {
   evidenceRowSha256: string;
 }
 
+/**
+ * Immutable post-adjudication evidence for an Amazon listing whose legacy
+ * component graph is empty. The row is compiled from byte-bound Amazon
+ * Catalog/image artifacts plus a direct first-party retailer identity page.
+ * It proves only the base-product identity and recipe quantity. It never
+ * promotes the Amazon outer identifier to a manufacturer GTIN and never
+ * authorizes content transfer by itself.
+ */
+export interface ProductTruthAmazonComponentGraphEvidenceRow {
+  schemaVersion:
+    typeof PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION;
+  listingKey: string;
+  storeIndex: number;
+  sku: string;
+  asin: string;
+  listingTitle: string;
+  componentIndex: number;
+  retailPackageQuantity: number;
+  donorProductId: string;
+  offerId: string;
+  targetIdentity: CanonicalProductIdentity;
+  targetCanonicalVariantId: string;
+  normalizedGtin14: string;
+  retailer: "walmart" | "target";
+  retailerProductId: string;
+  retailerProductUrl: string;
+  retailerTitle: string;
+  packageForm: string;
+  reviewedImageFiles: string[];
+  adjudicatedAt: string;
+  adjudication: {
+    reviewer: "CODEX_VISUAL_AND_STRUCTURED_EVIDENCE_REVIEW";
+    catalogBasePackageMatchesRetailer: true;
+    listingOuterQuantityProven: true;
+    exactVariantContradictionObserved: false;
+    contentTransferAuthorized: false;
+  };
+  source: {
+    amazonCatalogPlanSha256: string;
+    amazonCatalogEvidenceSha256: string;
+    amazonDecompositionSha256: string;
+    amazonImagePlanSha256: string;
+    amazonImageCaptureSha256: string;
+    amazonImageVerificationSha256: string;
+    amazonImageAssessmentSha256: string;
+    directRetailerIdentityEvidenceSha256: string;
+    directRetailerHtmlSha256: string;
+    legacySnapshotSha256: string;
+  };
+  safety: {
+    networkCallsDuringCompilation: 0;
+    modelCallsDuringCompilation: 0;
+    providerCallsDuringCompilation: 0;
+    paidCallsDuringCompilation: 0;
+    databaseWritesDuringCompilation: 0;
+    marketplaceMutationsDuringCompilation: 0;
+  };
+  evidenceRowSha256: string;
+}
+
 export interface ProductTruthLegacyBridgeSnapshot {
   schemaVersion: typeof PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION;
   capturedAt: string;
@@ -420,6 +483,8 @@ export interface ProductTruthLegacyBridgeSnapshot {
     ProductTruthAuthoritativeWalmartItemReportEvidenceRow[];
   bundleFactoryRecipeEvidence?:
     ProductTruthBundleFactoryRecipeEvidenceRow[];
+  amazonComponentGraphEvidence?:
+    ProductTruthAmazonComponentGraphEvidenceRow[];
 }
 
 export interface ProductTruthBridgeBlocker {
@@ -463,6 +528,7 @@ export interface ProductTruthLegacyBridgeComponentPlan {
       nutritionFacts: Record<string, unknown>;
       ingredients: string;
     } | null;
+    contentProjection?: "FULL_EXACT_CONTENT" | "IDENTITY_ONLY";
   } | null;
   targetIdentity: CanonicalProductIdentity | null;
   targetVariant: ProductTruthBridgeCanonicalVariantProjection | null;
@@ -1930,6 +1996,16 @@ export function productTruthBundleFactoryEvidenceCore(
   return core;
 }
 
+export function productTruthAmazonComponentGraphEvidenceCore(
+  evidence: ProductTruthAmazonComponentGraphEvidenceRow,
+): Omit<ProductTruthAmazonComponentGraphEvidenceRow, "evidenceRowSha256"> {
+  const core = { ...evidence };
+  delete (
+    core as Partial<ProductTruthAmazonComponentGraphEvidenceRow>
+  ).evidenceRowSha256;
+  return core;
+}
+
 function authoritativeWalmartDonorBaseTitle(
   value: string | null | undefined,
 ): ReturnType<
@@ -2293,6 +2369,152 @@ function recoverBundleFactoryRecipeScope(input: {
     });
   }
   return aggregateScope(listing, components, []);
+}
+
+function recoverAmazonComponentGraphScope(input: {
+  listing: ProductTruthLegacyBridgeListingRow;
+  legacyComponents: readonly ProductTruthLegacyBridgeComponentRow[];
+  evidence: readonly ProductTruthAmazonComponentGraphEvidenceRow[];
+  donorsById: ReadonlyMap<string, ProductTruthLegacyBridgeDonorRow>;
+  offersById: ReadonlyMap<string, ProductTruthLegacyBridgeOfferRow>;
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+}): ProductTruthLegacyBridgeScopePlan | null {
+  if (
+    input.listing.channel !== "amazon"
+    || input.legacyComponents.length !== 0
+    || input.evidence.length === 0
+  ) return null;
+
+  const evidence = [...input.evidence].sort(
+    (left, right) => left.componentIndex - right.componentIndex,
+  );
+  const sourceShaKeys: Array<keyof ProductTruthAmazonComponentGraphEvidenceRow["source"]> = [
+    "amazonCatalogPlanSha256",
+    "amazonCatalogEvidenceSha256",
+    "amazonDecompositionSha256",
+    "amazonImagePlanSha256",
+    "amazonImageCaptureSha256",
+    "amazonImageVerificationSha256",
+    "amazonImageAssessmentSha256",
+    "directRetailerIdentityEvidenceSha256",
+    "directRetailerHtmlSha256",
+    "legacySnapshotSha256",
+  ];
+  const components: ProductTruthLegacyBridgeComponentPlan[] = [];
+
+  for (const [index, row] of evidence.entries()) {
+    const donor = input.donorsById.get(row.donorProductId);
+    const offer = input.offersById.get(row.offerId);
+    let projected: ProductTruthBridgeCanonicalVariantProjection;
+    try {
+      projected = projectVariant(buildCanonicalProductVariantKey(row.targetIdentity));
+    } catch {
+      return null;
+    }
+    const targetBrandTokens = foldedTokens(row.targetIdentity.brand ?? "");
+    const targetProductTokens = foldedTokens(row.targetIdentity.productLine ?? "");
+    const retailerTitleTokens = foldedTokens(row.retailerTitle);
+    const donorTitleTokens = foldedTokens(donor?.title ?? "");
+    const targetSize = stringOrNull(row.targetIdentity.size);
+    if (
+      row.schemaVersion
+        !== PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION
+      || row.listingKey !== input.listing.listingKey
+      || row.storeIndex !== input.listing.storeIndex
+      || row.sku !== input.listing.sku
+      || row.componentIndex !== index
+      || !row.asin
+      || row.listingTitle.trim() === ""
+      || !Number.isInteger(row.retailPackageQuantity)
+      || row.retailPackageQuantity < 1
+      || !donor
+      || !offer
+      || offer.donorProductId !== donor.id
+      || offer.id !== row.offerId
+      || offer.retailer.trim().toLowerCase() !== row.retailer
+      || offer.retailerProductId !== row.retailerProductId
+      || offer.productUrl !== row.retailerProductUrl
+      || !usableContentSourceOffer(offer)
+      || normalizeProductTruthBridgeGtin(row.normalizedGtin14)
+        !== row.normalizedGtin14
+      || !row.packageForm.trim()
+      || (
+        String(row.targetIdentity.form ?? "").trim() !== ""
+        && String(row.targetIdentity.form ?? "").trim().toLowerCase()
+          !== row.packageForm.trim().toLowerCase()
+      )
+      || !targetSize
+      || !titleContainsEquivalentCanonicalSize(row.retailerTitle, targetSize)
+      || projected.canonicalVariantId !== row.targetCanonicalVariantId
+      || row.adjudication.reviewer
+        !== "CODEX_VISUAL_AND_STRUCTURED_EVIDENCE_REVIEW"
+      || row.adjudication.catalogBasePackageMatchesRetailer !== true
+      || row.adjudication.listingOuterQuantityProven !== true
+      || row.adjudication.exactVariantContradictionObserved !== false
+      || row.adjudication.contentTransferAuthorized !== false
+      || !Number.isFinite(Date.parse(row.adjudicatedAt))
+      || row.reviewedImageFiles.length < 1
+      || new Set(row.reviewedImageFiles).size !== row.reviewedImageFiles.length
+      || row.reviewedImageFiles.some(
+        (file) => !file || file.includes("/") || file.includes("\\"),
+      )
+      || sourceShaKeys.some((key) => !/^[a-f0-9]{64}$/.test(row.source[key]))
+      || row.safety.networkCallsDuringCompilation !== 0
+      || row.safety.modelCallsDuringCompilation !== 0
+      || row.safety.providerCallsDuringCompilation !== 0
+      || row.safety.paidCallsDuringCompilation !== 0
+      || row.safety.databaseWritesDuringCompilation !== 0
+      || row.safety.marketplaceMutationsDuringCompilation !== 0
+      || row.evidenceRowSha256 !== productTruthOperationalSha256(
+        productTruthAmazonComponentGraphEvidenceCore(row),
+      )
+      || targetBrandTokens.length === 0
+      || targetProductTokens.length === 0
+      || !targetBrandTokens.every((token) => retailerTitleTokens.includes(token))
+      || !targetProductTokens.every((token) => retailerTitleTokens.includes(token))
+      || JSON.stringify(donorTitleTokens) !== JSON.stringify(retailerTitleTokens)
+      || canonicalDonorConflictBlocker({
+        donor,
+        targetVariant: projected,
+        canonicalDonorBindings: input.canonicalDonorBindings,
+      })
+    ) return null;
+
+    const assessed = assessLegacyContent(donor, offer);
+    const contentAssessment: NonNullable<
+      ProductTruthLegacyBridgeComponentPlan["contentAssessment"]
+    > = {
+      ...assessed,
+      complete: false,
+      missing: [...new Set([
+        ...assessed.missing,
+        "FULL_CONTENT_TRANSFER_NOT_AUTHORIZED",
+      ])].sort(),
+      contentOverride: null,
+      contentProjection: "IDENTITY_ONLY",
+    };
+    components.push({
+      componentIndex: row.componentIndex,
+      qty: row.retailPackageQuantity,
+      legacyComponentId: null,
+      donorProductId: donor.id,
+      legacyDonorProductId: null,
+      donorOfferId: null,
+      contentSourceOfferId: offer.id,
+      identityProof: "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION",
+      contentAssessment,
+      targetIdentity: row.targetIdentity,
+      targetVariant: projected,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "EXACT_IDENTITY_ONLY_CANDIDATE",
+      blockers: [],
+    });
+  }
+  return aggregateScope(input.listing, components, []);
 }
 
 function explicitDonorAttributeBrand(attributes: string | null): string | null {
@@ -2730,6 +2952,153 @@ function validIdentityPartitionReconciliation(input: {
   }
 }
 
+function canonicalIdentityFromStoredBinding(
+  binding: ProductTruthLegacyBridgeCanonicalDonorBindingRow,
+): CanonicalProductIdentity | null {
+  const parsed = parsedJson(binding.canonicalIdentityJson ?? null);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const row = parsed as Record<string, unknown>;
+  const size = row.size;
+  if (!size || typeof size !== "object" || Array.isArray(size)) return null;
+  const sizeRow = size as Record<string, unknown>;
+  const baseAmount = Number(sizeRow.baseAmount);
+  const baseUnit = stringOrNull(sizeRow.baseUnit);
+  if (
+    row.schemaVersion !== "canonical-product-variant-identity/1.0.0"
+    || !stringOrNull(row.brand)
+    || !Number.isFinite(baseAmount)
+    || baseAmount <= 0
+    || !baseUnit
+    || !["g", "ml", "count"].includes(baseUnit)
+    || !Number.isInteger(row.outerPackCount)
+    || Number(row.outerPackCount) < 1
+    || !Array.isArray(row.modifiers)
+    || row.modifiers.some((value) => typeof value !== "string")
+  ) return null;
+  const identity: CanonicalProductIdentity = {
+    brand: String(row.brand),
+    productLine: stringOrNull(row.productLine),
+    flavor: stringOrNull(row.flavor),
+    modifiers: row.modifiers as string[],
+    form: stringOrNull(row.form),
+    size: `${baseAmount} ${baseUnit}`,
+    outerPackCount: Number(row.outerPackCount),
+  };
+  try {
+    return buildCanonicalProductVariantKey(identity).canonicalVariantId
+        === binding.canonicalVariantId
+      ? identity
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function recoverExistingCanonicalRecipeScope(input: {
+  listing: ProductTruthLegacyBridgeListingRow;
+  legacyComponents: readonly ProductTruthLegacyBridgeComponentRow[];
+  rows: readonly ProductTruthLegacyBridgeCanonicalListingComponentRow[];
+  canonicalDonorBindings: ReadonlyMap<
+    string,
+    readonly ProductTruthLegacyBridgeCanonicalDonorBindingRow[]
+  >;
+}): ProductTruthLegacyBridgeScopePlan | null {
+  if (input.legacyComponents.length !== 0 || input.rows.length === 0) return null;
+  const rows = [...input.rows].sort(
+    (left, right) => left.componentIndex - right.componentIndex,
+  );
+  const components: ProductTruthLegacyBridgeComponentPlan[] = [];
+  for (const [index, row] of rows.entries()) {
+    if (
+      row.componentIndex !== index
+      || !row.recipeComponentEvidenceJson
+      || !row.recipeComponentEvidenceHash
+      || !row.recipeDonorProductId
+      || !row.recipeVariantDecisionId
+      || row.recipeTargetCanonicalVariantId !== row.targetCanonicalVariantId
+      || row.recipeVariantDecisionId !== row.decisionId
+      || row.decisionStatus !== "exact_confirmed"
+      || row.decisionCanonicalVariantId !== row.targetCanonicalVariantId
+    ) return null;
+    const evidence = parsedJson(row.recipeComponentEvidenceJson);
+    if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
+      return null;
+    }
+    const record = evidence as Record<string, unknown>;
+    const sourceEvidence = record.sourceEvidence;
+    if (
+      !sourceEvidence
+      || typeof sourceEvidence !== "object"
+      || Array.isArray(sourceEvidence)
+    ) return null;
+    const sourceRecord = sourceEvidence as Record<string, unknown>;
+    const identityProof = stringOrNull(sourceRecord.identityProof);
+    const allowedProofs = new Set<ProductTruthBridgeIdentityProof>([
+      "EXACT_GTIN",
+      "EXACT_LIVE_IMAGE_BARCODE",
+      "EXACT_AUTHORITATIVE_WALMART_REPORT_TITLE",
+      "EXACT_BUNDLE_FACTORY_COMPONENT_GTIN",
+      "EXACT_AMAZON_COMPONENT_GRAPH_ADJUDICATION",
+      "STRICT_TITLE_MATCH",
+    ]);
+    const quantity = positiveInteger(record.quantity);
+    if (
+      renderProductTruthOperationalJson(record) !== row.recipeComponentEvidenceJson
+      || productTruthOperationalSha256(record) !== row.recipeComponentEvidenceHash
+      || record.schemaVersion
+        !== "product-truth-listing-recipe-component-evidence/1.0.0"
+      || record.listingKey !== input.listing.listingKey
+      || Number(record.componentIndex) !== row.componentIndex
+      || record.targetCanonicalVariantId !== row.targetCanonicalVariantId
+      || record.donorProductId !== row.recipeDonorProductId
+      || record.variantDecisionId !== row.recipeVariantDecisionId
+      || record.sourceEvidenceSha256
+        !== productTruthOperationalSha256(sourceRecord)
+      || !identityProof
+      || !allowedProofs.has(identityProof as ProductTruthBridgeIdentityProof)
+      || !quantity
+    ) return null;
+    const bindings = input.canonicalDonorBindings.get(
+      row.recipeDonorProductId,
+    ) ?? [];
+    const binding = bindings.find(
+      (candidate) =>
+        candidate.canonicalVariantId === row.targetCanonicalVariantId
+        && candidate.decisionId === row.recipeVariantDecisionId
+        && candidate.decisionStatus === "exact_confirmed",
+    );
+    if (!binding || bindings.filter(
+      (candidate) => candidate.canonicalVariantId === row.targetCanonicalVariantId,
+    ).length !== 1) return null;
+    const targetIdentity = canonicalIdentityFromStoredBinding(binding);
+    if (!targetIdentity) return null;
+    const targetVariant = projectVariant(
+      buildCanonicalProductVariantKey(targetIdentity),
+    );
+    components.push({
+      componentIndex: row.componentIndex,
+      qty: quantity,
+      legacyComponentId: null,
+      donorProductId: row.recipeDonorProductId,
+      legacyDonorProductId: null,
+      donorOfferId: null,
+      contentSourceOfferId: null,
+      identityProof: identityProof as ProductTruthBridgeIdentityProof,
+      contentAssessment: null,
+      targetIdentity,
+      targetVariant,
+      matcherVerdict: null,
+      matcherReasonCodes: [],
+      disposition: "EXACT_IDENTITY_ONLY_CANDIDATE",
+      blockers: [],
+    });
+  }
+  return classifyExistingCanonicalScope(
+    aggregateScope(input.listing, components, []),
+    rows,
+  );
+}
+
 function classifyExistingCanonicalScope(
   scope: ProductTruthLegacyBridgeScopePlan,
   rows: readonly ProductTruthLegacyBridgeCanonicalListingComponentRow[],
@@ -3004,6 +3373,49 @@ export function compileProductTruthLegacyBridgePlan(input: {
         || left.componentId.localeCompare(right.componentId),
     );
   }
+  const amazonComponentGraphEvidenceByListing = new Map<
+    string,
+    ProductTruthAmazonComponentGraphEvidenceRow[]
+  >();
+  for (const evidence of input.snapshot.amazonComponentGraphEvidence ?? []) {
+    const listing = listingsByKey.get(evidence.listingKey);
+    if (
+      evidence.schemaVersion
+        !== PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION
+      || !listing
+      || listing.channel !== "amazon"
+      || listing.storeIndex !== evidence.storeIndex
+      || listing.sku !== evidence.sku
+      || !Number.isInteger(evidence.componentIndex)
+      || evidence.componentIndex < 0
+      || !Number.isInteger(evidence.retailPackageQuantity)
+      || evidence.retailPackageQuantity < 1
+      || !Number.isFinite(Date.parse(evidence.adjudicatedAt))
+      || Date.parse(evidence.adjudicatedAt) > Date.parse(input.snapshot.capturedAt)
+      || evidence.evidenceRowSha256 !== productTruthOperationalSha256(
+        productTruthAmazonComponentGraphEvidenceCore(evidence),
+      )
+    ) {
+      throw new Error(
+        `LEGACY_BRIDGE_AMAZON_COMPONENT_GRAPH_EVIDENCE_INVALID:${evidence.listingKey}`,
+      );
+    }
+    const rows =
+      amazonComponentGraphEvidenceByListing.get(evidence.listingKey) ?? [];
+    rows.push(evidence);
+    amazonComponentGraphEvidenceByListing.set(evidence.listingKey, rows);
+  }
+  for (const rows of amazonComponentGraphEvidenceByListing.values()) {
+    rows.sort((left, right) => left.componentIndex - right.componentIndex);
+    if (
+      new Set(rows.map((row) => row.componentIndex)).size !== rows.length
+      || rows.some((row, index) => row.componentIndex !== index)
+    ) {
+      throw new Error(
+        `LEGACY_BRIDGE_AMAZON_COMPONENT_GRAPH_EVIDENCE_INVALID:${rows[0]?.listingKey ?? "unknown"}`,
+      );
+    }
+  }
   const donorsById = new Map(input.snapshot.donors.map((row) => [row.id, row]));
   const donorsByGtin = new Map<string, ProductTruthLegacyBridgeDonorRow[]>();
   for (const donor of input.snapshot.donors) {
@@ -3112,6 +3524,28 @@ export function compileProductTruthLegacyBridgePlan(input: {
       const scopeBlockers = [...parsed.blockers];
       const legacyComponents = componentsBySku.get(listing.sku) ?? [];
       if (!parsed.identity) {
+        const existingCanonicalRecipe = recoverExistingCanonicalRecipeScope({
+          listing,
+          legacyComponents,
+          rows: canonicalComponentsByListing.get(listing.listingKey) ?? [],
+          canonicalDonorBindings,
+        });
+        if (existingCanonicalRecipe) return existingCanonicalRecipe;
+        const amazonComponentGraphRecovered = recoverAmazonComponentGraphScope({
+          listing,
+          legacyComponents,
+          evidence:
+            amazonComponentGraphEvidenceByListing.get(listing.listingKey) ?? [],
+          donorsById,
+          offersById,
+          canonicalDonorBindings,
+        });
+        if (amazonComponentGraphRecovered) {
+          return classifyExistingCanonicalScope(
+            amazonComponentGraphRecovered,
+            canonicalComponentsByListing.get(listing.listingKey) ?? [],
+          );
+        }
         const bundleFactoryRecovered = recoverBundleFactoryRecipeScope({
           listing,
           legacyComponents,

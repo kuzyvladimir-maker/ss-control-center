@@ -1946,7 +1946,9 @@ export async function withWalmartListingRepairLockedArtifactCustody<T>(input: {
       readEvidence: async () => evidenceFromScan(
         await scanCustody(await openCustody(root, input.permit, operationLock)),
       ),
-      loadSucceededTerminal: async ({ terminal }) => loadSucceededTerminalFromCustody({
+      loadSucceededTerminal: async ({ terminal }: {
+        terminal: WalmartListingRepairPermitTerminalReceipt;
+      }) => loadSucceededTerminalFromCustody({
         custody_root: root,
         permit: input.permit,
         terminal,

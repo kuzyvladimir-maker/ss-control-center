@@ -201,6 +201,23 @@ test("product and variant markers may cross observer fields without weakening id
   assert.equal(decision.checks.identity, "MATCH");
 });
 
+test("identity matching treats retail Lite spelling as exact Light variant evidence", () => {
+  const apricotCase = caseWith({
+    identity: {
+      brand_aliases: ["del monte"],
+      product_marker_groups: [["apricot halves"]],
+      variant_marker_groups: [["light"]],
+      forbidden_markers: [],
+    },
+  });
+  const decision = decideBlind(apricotCase, image, observation({
+    visible_brand_text: "Del Monte",
+    visible_product_text: "Apricot Halves",
+    visible_variant_text: "Lite",
+  }));
+  assert.equal(decision.checks.identity, "MATCH");
+});
+
 test("an explicitly empty product-marker list supports brand-equals-product truth", () => {
   const drPepperCase = caseWith({
     identity: {

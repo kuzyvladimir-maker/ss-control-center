@@ -6,6 +6,7 @@ import {
   buildWalmartListingIntegrityCatalogCensus,
   buildWalmartListingIntegrityScanPlan,
   verifyWalmartListingIntegrityCatalogArtifacts,
+  verifyWalmartListingIntegrityCatalogFreshness,
 } from "../listing-integrity-catalog-orchestrator.ts";
 
 const capturedAt = "2026-07-23T12:00:00.000Z";
@@ -35,6 +36,22 @@ function remediation(sku, overrides = {}) {
     newTitle: null,
     packCount: 6,
     changeSummary: null,
+    ...overrides,
+  };
+}
+
+function sourceReport(overrides = {}) {
+  return {
+    id: "report-row-1",
+    storeIndex: 1,
+    reportType: "ITEM_CATALOG",
+    requestId: "request-1",
+    status: "DOWNLOADED",
+    requestedAt: "2026-07-23T11:00:00.000Z",
+    readyAt: "2026-07-23T11:25:00.000Z",
+    downloadedAt: syncedAt,
+    rowCount: 1,
+    error: null,
     ...overrides,
   };
 }
@@ -189,4 +206,56 @@ test("duplicate catalog SKU and non-atomic mirror fail closed", () => {
     catalog_rows: [catalog("A"), catalog("B", { syncedAt: "2026-07-23T11:31:00.000Z" })],
     remediation_rows: [],
   }), /not one atomic catalog snapshot/);
+});
+
+test("authoritative census binds exact ITEM_CATALOG provenance and expires closed", () => {
+  const census = buildWalmartListingIntegrityCatalogCensus({
+    store_index: 1,
+    captured_at: capturedAt,
+    catalog_rows: [catalog("A")],
+    remediation_rows: [],
+    source_report: sourceReport(),
+  });
+  assert.equal(census.schema_version, "walmart-listing-integrity-catalog-census/v2");
+  assert.equal(
+    census.source_contract.authority,
+    "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR",
+  );
+  assert.equal(census.source_report.request_id, "request-1");
+  assert.deepEqual(verifyWalmartListingIntegrityCatalogFreshness({
+    census,
+    as_of: "2026-07-23T12:01:00.000Z",
+  }), {
+    verified: true,
+    authority: "AUTHORITATIVE_ITEM_CATALOG_REPORT_MIRROR",
+    report_request_id: "request-1",
+    report_downloaded_at: syncedAt,
+    report_age_ms: 31 * 60 * 1_000,
+    snapshot_age_ms: 60 * 1_000,
+    catalog_rows: 1,
+  });
+  assert.throws(() => verifyWalmartListingIntegrityCatalogFreshness({
+    census,
+    as_of: "2026-07-24T12:00:01.000Z",
+  }), /report is stale/u);
+  assert.throws(() => verifyWalmartListingIntegrityCatalogFreshness({
+    census,
+    as_of: "2026-07-23T12:16:00.000Z",
+  }), /snapshot is stale/u);
+});
+
+test("authoritative census rejects report/mirror count or timestamp mismatch", () => {
+  for (const report of [
+    sourceReport({ rowCount: 2 }),
+    sourceReport({ downloadedAt: "2026-07-23T11:29:59.000Z" }),
+    sourceReport({ status: "READY" }),
+  ]) {
+    assert.throws(() => buildWalmartListingIntegrityCatalogCensus({
+      store_index: 1,
+      captured_at: capturedAt,
+      catalog_rows: [catalog("A")],
+      remediation_rows: [],
+      source_report: report,
+    }), /does not exactly reconcile/u);
+  }
 });

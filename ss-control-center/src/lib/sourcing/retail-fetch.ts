@@ -48,7 +48,7 @@ export type RetailOffer = {
    * title above. Raw search/detail titles remain unchanged.
    */
   identityEvidenceProvenance?: {
-    schemaVersion: "retailer-source-detail-identity/1.0.0";
+    schemaVersion: "retailer-source-detail-identity/1.2.0";
     retailer: string;
     retailerProductId: string;
     productUrl: string;

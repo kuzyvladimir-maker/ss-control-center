@@ -557,7 +557,10 @@ function attributeOnlyTarget(input: {
   const identityClaimsMatch = identityTargets.every((target) => (
     liveSurface.attribute_claims.some((live) => claimValueExact(live, target))
   ));
-  const syntheticCountPerPack = targetSurface.attribute_claims.filter((claim) => (
+  const syntheticCountPerPack = targetSurface.attribute_claims.filter((claim): claim is Extract<
+    ListingAttributeClaim,
+    { kind: "inner_item_count" }
+  > => (
     claim.field_path === "walmart.Visible.countPerPack"
       && claim.kind === "inner_item_count"
   ));

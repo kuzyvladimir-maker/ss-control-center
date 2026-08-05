@@ -10,6 +10,8 @@ import {
   WALMART_LISTING_INTEGRITY_CONTROLLED_POOL_SCHEMA,
   WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_SCHEMA,
   WALMART_LISTING_INTEGRITY_LEGACY_CONTROLLED_POOL_V1_SCHEMA,
+  WALMART_LISTING_INTEGRITY_LIVE_VERIFICATION_SCHEMA,
+  WALMART_LISTING_INTEGRITY_NO_CHANGE_VERIFICATION_SCHEMA,
   parseWalmartListingIntegrityCompletedCase,
   verifyWalmartListingIntegrityControlledPool,
   type WalmartListingIntegrityControlledPool,
@@ -73,12 +75,20 @@ function isFinalQualification(value: unknown): boolean {
   const boundary = verification.qualification_boundary;
   if (!boundary || typeof boundary !== "object" || Array.isArray(boundary)) return false;
   const fields = boundary as Record<string, unknown>;
-  return verification.schema_version
-      === "walmart-listing-integrity-live-canary-verification/v1"
-    && verification.status === "LIVE_SURFACE_PASS"
+  const common = verification.status === "LIVE_SURFACE_PASS"
     && fields.buyer_facing_live_surface_verified === true
-    && fields.frozen_sequence_gate_receipt_emitted === true
     && fields.next_sku_unblocked === true;
+  return common && (
+    (verification.schema_version === WALMART_LISTING_INTEGRITY_LIVE_VERIFICATION_SCHEMA
+      && fields.frozen_sequence_gate_receipt_emitted === true)
+    || (verification.schema_version
+        === WALMART_LISTING_INTEGRITY_NO_CHANGE_VERIFICATION_SCHEMA
+      && verification.completion_mode === "AUDITED_NO_CHANGE"
+      && verification.feed_id === null
+      && verification.exact_payload_sha256 === null
+      && fields.source_aware_qualification_receipt_emitted === true
+      && fields.no_walmart_write_required === true)
+  );
 }
 
 async function loadCompletedOperations(
@@ -138,6 +148,7 @@ async function loadCompletedOperations(
       || left.listingKey.localeCompare(right.listingKey, "en")
     ))
     .map((entry) => ({
+      completionMode: entry.completionMode,
       listingKey: entry.listingKey,
       sku: entry.sku,
       itemId: entry.itemId,

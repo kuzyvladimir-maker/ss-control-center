@@ -44,6 +44,13 @@ test("sealed provider acquisition delivers only its byte-bound query to the exac
     canonicalIdentityHash: variant.identityHash,
     queryVersion: "product-truth-provider-query/form-augmented-v1",
     query: "Birds Eye Steamfresh Sweet Peas bag 10 oz",
+    sourceDetailAdmissionSha256: HASH_B,
+    sourceDetailCandidate: {
+      retailer: "walmart" as const,
+      retailerProductId: "123456789",
+      productUrl:
+        "https://www.walmart.com/ip/Birds-Eye-Steamfresh-Sweet-Peas/123456789",
+    },
   };
   assert.equal(
     resolveSealedProviderAcquisitionQuery({
@@ -77,6 +84,37 @@ test("sealed provider acquisition delivers only its byte-bound query to the exac
       sealedProviderAcquisition: sealed,
     }),
     /SEALED_PROVIDER_ACQUISITION_REQUIRES_ONE_EXACT_COMPONENT/u,
+  );
+  assert.throws(
+    () => resolveSealedProviderAcquisitionQuery({
+      defaultQuery: "old query",
+      targetVariant: variant,
+      componentCount: 1,
+      componentIndex: 0,
+      sealedProviderAcquisition: {
+        canonicalVariantId: variant.canonicalVariantId,
+        canonicalIdentityHash: variant.identityHash,
+        queryVersion: "product-truth-provider-query/form-augmented-v1",
+        query: sealed.query,
+      },
+    }),
+    /SEALED_PROVIDER_ACQUISITION_SOURCE_DETAIL_PIN_REQUIRED/u,
+  );
+  assert.throws(
+    () => resolveSealedProviderAcquisitionQuery({
+      defaultQuery: "old query",
+      targetVariant: variant,
+      componentCount: 1,
+      componentIndex: 0,
+      sealedProviderAcquisition: {
+        ...sealed,
+        sourceDetailCandidate: {
+          ...sealed.sourceDetailCandidate,
+          retailerProductId: "987654321",
+        },
+      },
+    }),
+    /SEALED_PROVIDER_ACQUISITION_SOURCE_DETAIL_PIN_INVALID/u,
   );
 });
 

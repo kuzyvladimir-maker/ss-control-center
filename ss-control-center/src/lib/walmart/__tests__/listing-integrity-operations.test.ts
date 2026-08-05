@@ -39,6 +39,35 @@ function verification(qualificationPass = true) {
   return { ...body, body_sha256: walmartListingIntegrityCatalogSha256(body) };
 }
 
+function noChangeVerification(noWriteBoundary = true) {
+  const body = {
+    schema_version: "walmart-listing-integrity-no-change-verification/v1",
+    status: "LIVE_SURFACE_PASS",
+    completion_mode: "AUDITED_NO_CHANGE",
+    qualified_at: "2026-07-26T11:01:00.000Z",
+    listing: {
+      listing_key: "walmart:1:clean-sku",
+      sku: "clean-sku",
+      item_id: "654321",
+      store_index: 1,
+    },
+    feed_id: null,
+    exact_payload_sha256: null,
+    before: { captured_at: "2026-07-26T11:00:00.000Z" },
+    after: { captured_at: "2026-07-26T11:00:00.000Z" },
+    checks: Object.fromEntries(
+      Array.from({ length: 19 }, (_, index) => [`check_${String(index)}`, true]),
+    ),
+    qualification_boundary: {
+      buyer_facing_live_surface_verified: true,
+      source_aware_qualification_receipt_emitted: noWriteBoundary,
+      no_walmart_write_required: noWriteBoundary,
+      next_sku_unblocked: noWriteBoundary,
+    },
+  };
+  return { ...body, body_sha256: walmartListingIntegrityCatalogSha256(body) };
+}
+
 function catalog() {
   const catalogRows = Array.from({ length: 12 }, (_, index) => ({
     sku: `sku-${String(index).padStart(2, "0")}`,
@@ -112,6 +141,29 @@ test("completed case requires exact body seal and final Qualification PASS", () 
   );
 });
 
+test("audited no-change case requires source-aware Qualification and no fake feed", () => {
+  const parsed = parseWalmartListingIntegrityCompletedCase({
+    verification: noChangeVerification(),
+    verificationFileSha256: "d".repeat(64),
+    galleryFileSha256: "e".repeat(64),
+    verificationPath: "data/no-change-verification.json",
+    galleryPath: "data/no-change-gallery.html",
+  });
+  assert.equal(parsed.completionMode, "AUDITED_NO_CHANGE");
+  assert.equal(parsed.feedId, null);
+  assert.equal(parsed.payloadSha256, null);
+  assert.throws(
+    () => parseWalmartListingIntegrityCompletedCase({
+      verification: noChangeVerification(false),
+      verificationFileSha256: "d".repeat(64),
+      galleryFileSha256: "e".repeat(64),
+      verificationPath: "data/no-change-verification.json",
+      galleryPath: "data/no-change-gallery.html",
+    }),
+    /not bound to final Qualification PASS/,
+  );
+});
+
 test("controlled pool is read-only, excludes completed SKUs and prioritizes proven conflicts", () => {
   const { census, scanPlan } = catalog();
   const performanceRows: WalmartListingIntegrityPerformanceRow[] = census.rows.map(
@@ -136,7 +188,7 @@ test("controlled pool is read-only, excludes completed SKUs and prioritizes prov
     scanPlanFileSha256: "e".repeat(64),
     performanceRows,
     productTruthReadiness: readiness(census, ["sku-05"]).filter(
-      (row) => row.sku !== "sku-00",
+      (row) => row.sku !== "sku-00" && row.sku !== "sku-01" && row.sku !== "sku-02",
     ),
     authoritativeManifestSha256: "4".repeat(64),
     databaseReads: 2,
@@ -157,12 +209,18 @@ test("controlled pool is read-only, excludes completed SKUs and prioritizes prov
       verificationPath: "verification.json",
       galleryPath: "gallery.html",
     }],
+    processedControlListingKeys: ["walmart:1:sku-02"],
+    reservedListingKeys: ["walmart:1:sku-01"],
     createdAt: "2026-07-27T12:30:00.000Z",
     requestedSize: 10,
   });
-  assert.equal(pool.items.length, 10);
+  assert.equal(pool.items.length, 8);
   assert.equal(pool.items[0]?.sku, "sku-03");
   assert.equal(pool.items.some((item) => item.sku === "sku-00"), false);
+  assert.equal(pool.items.some((item) => item.sku === "sku-01"), false);
+  assert.equal(pool.items.some((item) => item.sku === "sku-02"), false);
+  assert.deepEqual(pool.processedControlListingKeys, ["walmart:1:sku-02"]);
+  assert.deepEqual(pool.reservedListingKeys, ["walmart:1:sku-01"]);
   assert.equal(pool.items.every((item) => item.authority.productTruthReady), true);
   assert.equal(pool.sourceRequiredItems[0]?.sku, "sku-05");
   assert.equal(pool.sourceRequiredItems[0]?.nextAction, "ENRICH_EXACT_PRODUCT_TRUTH");
@@ -198,4 +256,90 @@ test("controlled pool seal and strict sequence fail closed", () => {
     }),
     /seal mismatch/,
   );
+});
+
+test("exact algorithm-fix readmission is sealed, prioritized, and selected once", () => {
+  const { census, scanPlan } = catalog();
+  const readmittedKey = "walmart:1:sku-01";
+  const pool = buildWalmartListingIntegrityControlledPool({
+    census,
+    scanPlan,
+    censusFileSha256: "d".repeat(64),
+    scanPlanFileSha256: "e".repeat(64),
+    performanceRows: [],
+    productTruthReadiness: readiness(census),
+    authoritativeManifestSha256: "4".repeat(64),
+    databaseReads: 2,
+    completedCases: [],
+    processedControlListingKeys: [],
+    readmission: {
+      schemaVersion: "walmart-listing-integrity-controlled-pool-readmission/v1",
+      artifactFileSha256: "8".repeat(64),
+      artifactBodySha256: "9".repeat(64),
+      items: [{
+        listingKey: readmittedKey,
+        priorStateBodySha256: "7".repeat(64),
+        reasonCode: "ALGORITHM_FALSE_NEGATIVE_FIXED",
+      }],
+    },
+    createdAt: "2026-07-27T12:30:00.000Z",
+    requestedSize: 10,
+  });
+  assert.equal(pool.items[0]?.listingKey, readmittedKey);
+  assert.equal(pool.readmission?.items[0]?.listingKey, readmittedKey);
+  assert.doesNotThrow(() => verifyWalmartListingIntegrityControlledPool(pool));
+  assert.throws(
+    () => buildWalmartListingIntegrityControlledPool({
+      census,
+      scanPlan,
+      censusFileSha256: "d".repeat(64),
+      scanPlanFileSha256: "e".repeat(64),
+      performanceRows: [],
+      productTruthReadiness: readiness(census).filter((row) => row.listingKey !== readmittedKey),
+      authoritativeManifestSha256: "4".repeat(64),
+      databaseReads: 2,
+      completedCases: [],
+      processedControlListingKeys: [readmittedKey],
+      readmission: pool.readmission,
+      createdAt: "2026-07-27T12:30:00.000Z",
+      requestedSize: 10,
+    }),
+    /still excluded/,
+  );
+});
+
+test("full published denominator includes rows without a preliminary defect signal", () => {
+  const census = buildWalmartListingIntegrityCatalogCensus({
+    store_index: 1,
+    captured_at: "2026-07-27T12:00:00.000Z",
+    catalog_rows: [{
+      sku: "plain-published-sku",
+      itemId: "plain-item",
+      title: "Example Grocery Product",
+      lifecycleStatus: "ACTIVE",
+      publishedStatus: "PUBLISHED",
+      syncedAt: "2026-07-27T06:00:00.000Z",
+      mainImageUrl: "https://i5.walmartimages.com/asr/plain.jpeg",
+    }],
+    remediation_rows: [],
+  });
+  assert.equal(census.rows[0]?.scan_disposition, "SOURCE_ACQUISITION_REQUIRED");
+  assert.equal(census.rows[0]?.deterministic_findings.length, 0);
+  const scanPlan = buildWalmartListingIntegrityScanPlan(census);
+  const pool = buildWalmartListingIntegrityControlledPool({
+    census,
+    scanPlan,
+    censusFileSha256: "d".repeat(64),
+    scanPlanFileSha256: "e".repeat(64),
+    performanceRows: [],
+    productTruthReadiness: readiness(census),
+    authoritativeManifestSha256: "4".repeat(64),
+    databaseReads: 2,
+    completedCases: [],
+    createdAt: "2026-07-27T12:30:00.000Z",
+    requestedSize: 10,
+  });
+  assert.equal(pool.sourceReadiness.candidateCount, 1);
+  assert.equal(pool.items[0]?.sku, "plain-published-sku");
+  assert.doesNotThrow(() => verifyWalmartListingIntegrityControlledPool(pool));
 });

@@ -635,6 +635,87 @@ test("size-unknown source remains candidate and cannot create content truth", as
   });
 });
 
+test("reused saved offer keeps its old price timestamp while detail dates identity", async () => {
+  await withScratchDb(async (db) => {
+    const sourceObservedAt = "2026-07-09T12:00:00.000Z";
+    await db.execute({
+      sql: `INSERT INTO DonorProduct
+        (id,brand,title,identityKey,identityStatus,needsReview,createdAt,updatedAt)
+        VALUES (?,?,?,?,?,?,?,?)`,
+      args: [
+        "legacy-product",
+        "Acme",
+        "Acme Potato Chips Original Bag, 8 oz",
+        "legacy-product-key",
+        "legacy_unverified",
+        1,
+        sourceObservedAt,
+        sourceObservedAt,
+      ],
+    });
+    await db.execute({
+      sql: `INSERT INTO DonorOffer
+        (id,donorProductId,retailer,retailerProductId,via,price,packSizeSeen,
+         pricePerUnit,currency,zip,localityEvidence,inStock,productUrl,
+         sellerName,isFirstParty,sourceApi,fetchedAt,createdAt,updatedAt)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        "legacy-offer",
+        "legacy-product",
+        "walmart",
+        "legacy-item",
+        "direct",
+        3.99,
+        1,
+        3.99,
+        "USD",
+        "33765",
+        "zip_scoped",
+        1,
+        "https://walmart.example.test/item/legacy-item",
+        "Walmart.com",
+        1,
+        "scratch-test",
+        sourceObservedAt,
+        sourceObservedAt,
+        sourceObservedAt,
+      ],
+    });
+    const persisted = await persistScoredDonorOffer(
+      db,
+      sourceOffer({
+        target: EIGHT_OZ,
+        retailer: "walmart",
+        retailerProductId: "legacy-item",
+        title: "Acme Potato Chips Original Bag, 8 oz",
+        price: 3.99,
+        observedAt: sourceObservedAt,
+      }),
+      EIGHT_OZ,
+      DETAIL_PROCESSING_NOW,
+      { identityObservedAt: DETAIL_OBSERVED_AT },
+    );
+
+    const product = (await db.execute({
+      sql: `SELECT identityConfirmedAt FROM DonorProduct WHERE id=?`,
+      args: [persisted.donorProductId],
+    })).rows[0];
+    const offer = (await db.execute({
+      sql: `SELECT fetchedAt,price FROM DonorOffer WHERE id=?`,
+      args: [persisted.donorOfferId],
+    })).rows[0];
+    const observation = (await db.execute({
+      sql: `SELECT observedAt,price FROM DonorOfferObservation WHERE id=?`,
+      args: [persisted.offerObservationId],
+    })).rows[0];
+    assert.equal(product.identityConfirmedAt, DETAIL_OBSERVED_AT);
+    assert.equal(offer.fetchedAt, sourceObservedAt);
+    assert.equal(offer.price, 3.99);
+    assert.equal(observation.observedAt, sourceObservedAt);
+    assert.equal(observation.price, 3.99);
+  });
+});
+
 test("existing exact alias conflict is immutable, quarantined, and observed unlinked", async () => {
   await withScratchDb(async (db) => {
     const first = await persistScoredDonorOffer(db, sourceOffer({

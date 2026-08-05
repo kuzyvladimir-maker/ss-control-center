@@ -172,11 +172,26 @@ function containsIdentityAlias(
   value: string | null,
   aliases: readonly string[],
 ): boolean {
-  const tokens = new Set(normalizeGalleryText(value ?? "").split(" ").filter(Boolean));
+  const identityTokens = (text: string) => normalizeGalleryText(text).split(" ").filter(Boolean)
+    .map((token) => token === "lite" ? "light" : token);
+  const tokens = new Set(identityTokens(value ?? ""));
   return aliases.some((alias) => {
-    const required = normalizeGalleryText(alias).split(" ").filter(Boolean);
+    const required = identityTokens(alias);
     return required.length > 0 && required.every((token) => tokens.has(token));
   });
+}
+
+function hasIdentityTokenOverlap(value: string | null, groups: readonly string[][]): boolean {
+  const observed = normalizeGalleryText(value ?? "").split(" ").filter(Boolean)
+    .map((token) => token === "lite" ? "light" : token);
+  const compatible = (left: string, right: string) => left === right
+    || (left.length > 3 && `${left}s` === right)
+    || (right.length > 3 && `${right}s` === left);
+  return groups.some((aliases) => aliases.some((alias) => {
+    const expected = normalizeGalleryText(alias).split(" ").filter(Boolean)
+      .map((token) => token === "lite" ? "light" : token);
+    return expected.some((left) => observed.some((right) => compatible(left, right)));
+  }));
 }
 
 function ocrContainsAlias(values: readonly string[], aliases: readonly string[]): boolean {
@@ -285,6 +300,16 @@ function assessIdentity(
     observation.visible_product_text,
     observation.visible_variant_text,
   ].filter((value): value is string => value !== null).join(" ");
+  const blindBrandMatches = containsAlias(observation.visible_brand_text, expected.brand_aliases);
+  const blindVariantMatchesAll = expected.variant_marker_groups.length > 0
+    && expected.variant_marker_groups.every((aliases) =>
+      containsIdentityAlias(blindNonBrandIdentity, aliases));
+  const relevantUnbrandedLifestyle = observation.visual_role === "lifestyle"
+    && !hasSpecificText(observation.visible_brand_text)
+    && hasIdentityTokenOverlap(blindNonBrandIdentity, [
+      ...expected.product_marker_groups,
+      ...expected.variant_marker_groups,
+    ]);
   const roleAssessments: Array<{
     role: IdentityRole;
     blind: string | null;
@@ -338,6 +363,16 @@ function assessIdentity(
     const explicitBlindMismatch = observation.readable_identity === "clear"
       && hasSpecificText(role.blind) && !blindMatchesAny;
     const ocrResolvesMismatch = supportedGroupMatches.some(Boolean);
+    const genericProductLineOmitted = role.role === "product"
+      && blindBrandMatches
+      && blindVariantMatchesAll;
+    if (explicitBlindMismatch && !ocrResolvesMismatch
+      && (genericProductLineOmitted || relevantUnbrandedLifestyle)) {
+      review.push(genericProductLineOmitted
+        ? "generic product-line wording is absent but brand and exact variant agree"
+        : "unbranded lifestyle subject partially agrees with expected identity");
+      continue;
+    }
     if (explicitBlindMismatch && !ocrResolvesMismatch) {
       hard.push(`visible ${role.role} is not allowed: ${role.blind}`);
       continue;
@@ -386,7 +421,7 @@ function sizeEquals(expected: ExpectedSize, observed: ExpectedSize): boolean {
   const left = normalizedSize(expected);
   const right = normalizedSize(observed);
   if (left.dimension !== right.dimension || left.dimension === "count") return false;
-  return Math.abs(left.value - right.value) / left.value <= 0.005;
+  return Math.abs(left.value - right.value) / Math.min(left.value, right.value) <= 0.005;
 }
 
 function sizeEquivalent(left: ExpectedSize, right: ExpectedSize): boolean {
@@ -454,11 +489,11 @@ function sourceStatus(expected: ExpectedPackageFact, values: readonly ExpectedSi
   const dimension = normalizedSize(expected).dimension;
   const comparable = values.filter((value) => normalizedSize(value).dimension === dimension);
   if (comparable.length === 0) return "ABSENT";
-  const matching = comparable.filter((value) => sizeEquals(expected, value));
-  if (matching.length === comparable.length) return "MATCH";
-  if (matching.length > 0) return "CONFLICT";
+  // Retail labels often print one exact imperial value plus a rounded metric
+  // conversion, for example 15 OZ (425g). Treat mutually equivalent literals
+  // as one fact and bind the fact when any literal matches Product Truth.
   if (comparable.some((value) => !sizeEquivalent(comparable[0], value))) return "CONFLICT";
-  return "MISMATCH";
+  return comparable.some((value) => sizeEquivalent(expected, value)) ? "MATCH" : "MISMATCH";
 }
 
 function formatSizes(values: readonly ExpectedSize[]): string {

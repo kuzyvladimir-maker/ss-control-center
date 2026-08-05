@@ -34,7 +34,7 @@ export const WALMART_LISTING_SINGLE_OBSERVER_MAX_CALLS = 6;
 
 export const WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT:
   WalmartListingObservationWorkerContract = Object.freeze({
-    worker_build: "sha256:fed5fa5e49914c1df1ae2197c51be4d7c0342f2adad4d01819f792622614f0f9",
+    worker_build: "sha256:bd6aa14f1b13622b482e66cdf19b44ba940c5959def67933f472e6beb1006125",
     model: "sonnet",
     reasoning_effort: null,
     cli_version: "2.1.179 (Claude Code)",
@@ -53,6 +53,19 @@ export const WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT:
       identity_artifact_sha256:
         "ffd380901c51e88205454d1ddd68141d94e811c286b62d556c60e335e84e3a68",
     },
+  });
+
+export const WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT:
+  WalmartListingObservationWorkerContract = Object.freeze({
+    worker_build: "sha256:bd6aa14f1b13622b482e66cdf19b44ba940c5959def67933f472e6beb1006125",
+    model: "gpt-5.6-sol",
+    reasoning_effort: "medium",
+    cli_version: "codex-cli 0.144.5",
+    node_version: "v20.20.1",
+    runtime_platform: "linux",
+    runtime_arch: "x64",
+    vision_timeout_ms: 300000,
+    reservation_ledger: WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT.reservation_ledger,
   });
 
 export const WALMART_LISTING_SINGLE_OBSERVER_TRUST = Object.freeze({
@@ -334,6 +347,20 @@ function exactEqual(left: unknown, right: unknown): boolean {
   return visionContract.canonicalJson(left) === visionContract.canonicalJson(right);
 }
 
+function providerForWorker(worker: WalmartListingObservationWorkerContract):
+  "claude_cli_subscription" | "codex_cli_subscription" {
+  return worker.model === "sonnet"
+    ? "claude_cli_subscription"
+    : "codex_cli_subscription";
+}
+
+function authModeForWorker(worker: WalmartListingObservationWorkerContract):
+  "claude_subscription_oauth" | "codex_chatgpt_subscription_oauth" {
+  return worker.model === "sonnet"
+    ? "claude_subscription_oauth"
+    : "codex_chatgpt_subscription_oauth";
+}
+
 export function verifyWalmartListingSingleWorkerHealth(
   raw: unknown,
   worker = WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
@@ -343,7 +370,8 @@ export function verifyWalmartListingSingleWorkerHealth(
   const health = raw as Record<string, unknown>;
   const receipts = health?.signed_vision_receipts as Record<string, unknown>;
   const contracts = health?.vision_contracts as Record<string, unknown>;
-  const claude = contracts?.claude_cli_subscription as Record<string, unknown>;
+  const provider = providerForWorker(worker);
+  const providerContract = contracts?.[provider] as Record<string, unknown>;
   if (health?.ok !== true
     || health?.health_authorization_verified !== true
     || health?.vision !== true
@@ -353,9 +381,9 @@ export function verifyWalmartListingSingleWorkerHealth(
     || receipts?.schema_version !== "vision-worker-receipt/v2"
     || receipts?.key_id !== trust.key_id
     || receipts?.public_key_spki_sha256 !== trust.public_key_spki_sha256
-    || claude?.model !== worker.model
-    || claude?.reasoning_effort !== worker.reasoning_effort
-    || claude?.cli_version !== worker.cli_version
+    || providerContract?.model !== worker.model
+    || providerContract?.reasoning_effort !== worker.reasoning_effort
+    || providerContract?.cli_version !== worker.cli_version
     || !exactEqual(health?.reservation_ledger, worker.reservation_ledger)) {
     throw new Error("authenticated worker health differs from the single-observer plan");
   }
@@ -373,12 +401,14 @@ export function verifyWalmartListingSingleWorkerResponse(input: {
   if (!call) throw new Error("single-observer call is absent from the plan");
   const response = input.response as Record<string, unknown>;
   const worker = input.plan.worker_contract;
+  const provider = providerForWorker(worker);
+  const authMode = authModeForWorker(worker);
   const trust = input.trust ?? WALMART_LISTING_SINGLE_OBSERVER_TRUST;
   if (input.http_status !== 200
     || response?.ok !== true
     || response?.request_attestation_verified !== true
     || response?.input_image_count !== call.image_ids.length
-    || response?.vision_provider !== "claude_cli_subscription"
+    || response?.vision_provider !== provider
     || response?.vision_model !== worker.model
     || response?.vision_reasoning_effort !== worker.reasoning_effort
     || response?.cli_version !== worker.cli_version
@@ -401,7 +431,7 @@ export function verifyWalmartListingSingleWorkerResponse(input: {
     ))
     || !exactEqual(body.worker_contract, {
       input_image_count: call.image_ids.length,
-      vision_provider: "claude_cli_subscription",
+      vision_provider: provider,
       vision_model: worker.model,
       vision_reasoning_effort: worker.reasoning_effort,
       cli_version: worker.cli_version,
@@ -413,7 +443,7 @@ export function verifyWalmartListingSingleWorkerResponse(input: {
       reservation_ledger: worker.reservation_ledger,
     })
     || !exactEqual(body.subscription_policy, {
-      auth_mode: "claude_subscription_oauth",
+      auth_mode: authMode,
       paid_api_environment_absent: true,
       alternate_cloud_routing_absent: true,
     })) {

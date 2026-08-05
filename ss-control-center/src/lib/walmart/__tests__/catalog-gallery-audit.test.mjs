@@ -94,6 +94,50 @@ test("gallery identity tolerates possessive punctuation and product/variant role
   assert.equal(decision.checks.identity, "MATCH");
 });
 
+test("Del Monte Lite gallery evidence stays REVIEW instead of a false foreign-product BAD", () => {
+  const apricotExpected = {
+    ...expected,
+    identity: {
+      brand_aliases: ["Del Monte"],
+      product_marker_groups: [["canned fruit lite", "Lite Canned Fruit"]],
+      variant_marker_groups: [["apricot halves"], ["light"]],
+      forbidden_markers: [],
+    },
+    package_facts: [
+      { kind: "net_content", value: 425.242846875, unit: "g", requirement: "required" },
+    ],
+  };
+  const packagePanel = auditGallerySlot({
+    ...observedInput({
+      visual_role: "infographic",
+      visible_brand_text: "Del Monte",
+      visible_product_text: "Apricot Halves",
+      visible_variant_text: "Lite",
+      visible_size_texts: ["NET WT 15 OZ (425g)"],
+    }),
+    expected: apricotExpected,
+  });
+  assert.equal(packagePanel.verdict, "REVIEW");
+  assert.equal(packagePanel.checks.identity, "UNKNOWN");
+  assert.equal(packagePanel.checks.package_facts.net_content, "MATCH");
+  assert.deepEqual(packagePanel.hard_failures, []);
+  assert.match(packagePanel.review_reasons.join(" "), /generic product-line wording is absent/);
+
+  const lifestyle = auditGallerySlot({
+    ...observedInput({
+      visual_role: "lifestyle",
+      visible_brand_text: null,
+      visible_product_text: "Apricots",
+      visible_variant_text: "Juicy",
+      visible_size_texts: [],
+    }),
+    expected: apricotExpected,
+  });
+  assert.equal(lifestyle.verdict, "REVIEW");
+  assert.deepEqual(lifestyle.hard_failures, []);
+  assert.match(lifestyle.review_reasons.join(" "), /lifestyle subject partially agrees/);
+});
+
 test("correct back and nutrition gallery observations pass with or without visible package facts", () => {
   const back = auditGallerySlot(observedInput({
     visual_role: "back",
