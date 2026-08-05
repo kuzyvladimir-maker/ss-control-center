@@ -337,6 +337,7 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 ⊂ [Walmart BF repair 2026-08-02](walmart-bundle-factory-repair-2026-08-02.md)
 ← [Diagnostic handoff](walmart-bundle-factory-independent-diagnostic-handoff.md) — вход независимого расследования
 → [Bundle Factory scale plan 2026-08-02](bundle-factory-scale-plan-2026-08-02.md) — партии, пакетная публикация, непрерывная фабрика
+→ [Walmart lane audit 2026-08-05](walmart-lane-audit-2026-08-05.md) — независимый аудит всей ветки: 10 дефектов, порядок устранения
 → [Walmart new-SKU command center](walmart-new-sku-command-center.md)
 → [Product Truth web operations control plane](product-truth-web-operations-control-plane.md)
 
