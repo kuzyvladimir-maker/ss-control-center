@@ -610,17 +610,18 @@ function walmartParts(payload: Record<string, unknown>): {
   };
 }
 
-test("buildWalmartPayload — emits the full pinned MP_ITEM 5.0 header", () => {
+test("buildWalmartPayload — emits the three-field MP_ITEM header the schema allows", () => {
+  // The header used to carry seven fields and omit the required businessUnit,
+  // which is why creating an item was impossible: `additionalProperties` is
+  // false, so extra keys are rejected outright. Three fields is not a guess —
+  // it is what Walmart accepted on 2026-07-30 (evidence under data/audits),
+  // and seven listings have since been created with it.
   const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
   const header = payload.MPItemFeedHeader as Record<string, unknown>;
   assert.deepEqual(header, {
-    sellingChannel: "marketplace",
-    feedType: "MP_ITEM",
-    processMode: "REPLACE",
+    businessUnit: "WALMART_US",
     locale: "en",
     version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
-    subset: "EXTERNAL",
-    subCategory: "product_content_and_site_exp",
   });
   assert.ok(Array.isArray(payload.MPItem));
   assert.equal((payload.MPItem as unknown[]).length, 1);
@@ -636,7 +637,8 @@ test("buildWalmartPayload — uses nested Orderable/Visible and typed UPC", () =
     productIdType: "UPC",
     productId: "012345678905",
   });
-  assert.equal(orderable.specProductType, "Food And Beverage");
+  // specProductType is not in the schema at all; sending it failed the feed.
+  assert.equal(orderable.specProductType, undefined);
   assert.equal(orderable.price, 79.99);
   assert.equal(visible.productName, walmartSku().title);
   assert.equal(visible.brand, "Salutem Vita");
@@ -647,12 +649,20 @@ test("buildWalmartPayload — carries exact verified package facts", () => {
   const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
   const { orderable } = walmartParts(payload);
   assert.equal(orderable.ShippingWeight, 2);
-  assert.deepEqual(orderable.productPackageDimensionsAndWeight, {
-    productPackageDimensionsDepth: 14,
-    productPackageDimensionsHeight: 6,
-    productPackageDimensionsWidth: 10,
-    productPackageWeight: 2,
+  // snake_case is not a style choice here: `additionalProperties` is false, so
+  // a camelCase key is not an alias, it is an unknown field and the feed is
+  // rejected.
+  assert.deepEqual(orderable.product_package_dimensions_and_weight, {
+    product_package_dimensions_depth: 14,
+    product_package_dimensions_height: 6,
+    product_package_dimensions_width: 10,
+    product_package_weight: 2,
   });
+  assert.equal(
+    orderable.productPackageDimensionsAndWeight,
+    undefined,
+    "the camelCase block must not be sent alongside it",
+  );
 });
 
 test("buildWalmartPayload — refuses all former defaults", () => {
@@ -962,8 +972,14 @@ test("submitToWalmart — production transport rejects a test-fixture permit", a
 
   assert.equal(result.ok, false);
   assert.equal(result.feed_id, null);
-  assert.deepEqual(sequence, ["/items/spec", "approval-fence"]);
-  assert.deepEqual(calls.map((call) => call.path), ["/items/spec"]);
+  // What matters is that NO feed was posted, not which reads happened first:
+  // the live spec is now served from the same cache promotion filled seconds
+  // earlier, so the fetch may not reach this injected client at all.
+  assert.deepEqual(
+    calls.map((call) => call.path).filter((path) => path === "/feeds"),
+    [],
+    "an untrusted permit must never reach POST /feeds",
+  );
   assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_FAILED");
   assert.match(result.error ?? "", /KEY_UNTRUSTED_OR_REVOKED/);
 });

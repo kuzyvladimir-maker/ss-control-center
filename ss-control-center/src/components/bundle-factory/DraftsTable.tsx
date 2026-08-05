@@ -18,6 +18,7 @@ import Link from "next/link";
 import { Btn } from "@/components/kit";
 import { Loader2, ExternalLink, CheckCircle2 } from "lucide-react";
 import { describeBundleFactoryFailure } from "@/lib/bundle-factory/api-error-text";
+import { PublishBatchBar } from "@/components/bundle-factory/PublishBatchBar";
 import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
 
 export interface DraftRow {
@@ -30,31 +31,56 @@ export interface DraftRow {
   draft_suggested_price_cents: number | null;
   updated_at: string;
   walmart: {
+    id: string;
     sku: string;
     validation_status: string;
     listing_status: string;
     live_url: string | null;
     price_cents: number;
+    /** True when this listing's own product ID was quarantined by a collision. */
+    upc_quarantined: boolean;
+    /** Pool numbers this listing has already burned on the same rejection. */
+    burned_upcs: number;
   } | null;
 }
 
 type RowState =
   | { phase: "idle" }
   | { phase: "publishing" }
+  | { phase: "rotating" }
   | { phase: "done"; message: string }
   | { phase: "error"; message: string };
+
+/**
+ * A listing whose product ID is dead and can still be given a new one.
+ *
+ * One replacement is a repair. A listing that already burned more than one
+ * number is not failing because of the number, so the button goes away rather
+ * than feeding the pool into a hole (2026-08-05: the same SKU collided twice
+ * with two different fresh numbers).
+ */
+function needsUpcRotation(row: DraftRow): boolean {
+  return row.walmart != null
+    && row.walmart.upc_quarantined
+    && row.walmart.live_url == null
+    && row.walmart.burned_upcs <= 1;
+}
 
 /** A listing that can still be sent: validated, and not already out. */
 function isPublishable(row: DraftRow): boolean {
   return row.walmart != null
     && row.walmart.validation_status === "PASSED"
     && row.walmart.live_url == null
+    // A quarantined product ID guarantees the same rejection again; the row
+    // offers "Replace product ID" instead of a Publish that cannot work.
+    && !row.walmart.upc_quarantined
     && isPublishableListingStatus(row.walmart.listing_status);
 }
 
 export function DraftsTable({ rows }: { rows: DraftRow[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [state, setState] = useState<Record<string, RowState>>({});
+  const [batchId, setBatchId] = useState<string | null>(null);
   const [batchRunning, setBatchRunning] = useState(false);
   const [batchNote, setBatchNote] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -130,30 +156,82 @@ export function DraftsTable({ rows }: { rows: DraftRow[] }) {
     }
   }
 
+  /** Swap a dead product ID for a fresh one, then let the operator publish. */
+  async function rotateUpc(row: DraftRow) {
+    if (!row.walmart) return;
+    setState((prior) => ({ ...prior, [row.id]: { phase: "rotating" } }));
+    try {
+      const res = await fetch(
+        `/api/bundle-factory/skus/${row.walmart.id}/rotate-upc`,
+        { method: "POST" },
+      );
+      const data = (await res.json()) as {
+        ok?: boolean; new_upc?: string; error?: string;
+      };
+      if (!res.ok || !data.ok) {
+        throw new Error(describeBundleFactoryFailure(data, "Could not replace the product ID"));
+      }
+      setState((prior) => ({
+        ...prior,
+        [row.id]: {
+          phase: "done",
+          message: `new product ID ${data.new_upc} — reload, then publish`,
+        },
+      }));
+    } catch (error) {
+      setState((prior) => ({
+        ...prior,
+        [row.id]: {
+          phase: "error",
+          message: error instanceof Error ? error.message : "Could not replace the product ID",
+        },
+      }));
+    }
+  }
+
+  /**
+   * Hand the selection to the server queue.
+   *
+   * The batch used to run as a loop in this component, which meant closing the
+   * tab abandoned it half-sent. Now the queue owns it: this only states the
+   * decision once, and the cron finishes the work whether or not anyone is
+   * watching.
+   */
   async function publishSelected() {
     setConfirming(false);
     setBatchRunning(true);
-    let sent = 0;
-    let failed = 0;
-    for (const [index, row] of selectedPublishable.entries()) {
+    setBatchNote(null);
+    try {
+      const res = await fetch("/api/bundle-factory/publish-batches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftIds: selectedPublishable.map((row) => row.id),
+          approvalConfirmed: true,
+          note: `Queued ${selectedPublishable.length} listing(s) from the drafts list`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(describeBundleFactoryFailure(data, "Could not queue the batch"));
+      setBatchId(data.batchId as string | null);
+      const deferred = Number(data.deferredToday ?? 0);
+      const rejected = Array.isArray(data.rejected) ? data.rejected.length : 0;
       setBatchNote(
-        `Publishing ${index + 1} of ${selectedPublishable.length}: ${row.walmart?.sku ?? row.id}`,
+        `${data.queued} listing(s) queued`
+        + (deferred > 0 ? ` · ${deferred} wait for the daily ceiling` : "")
+        + (rejected > 0 ? ` · ${rejected} could not be queued` : ""),
       );
-      const ok = await publishOne(row);
-      if (ok) sent += 1;
-      else failed += 1;
+      setSelected(new Set());
+    } catch (error) {
+      setBatchNote(error instanceof Error ? error.message : "Could not queue the batch");
+    } finally {
+      setBatchRunning(false);
     }
-    setBatchNote(
-      failed === 0
-        ? `${sent} listing(s) submitted to Walmart.`
-        : `${sent} submitted, ${failed} failed — see the rows below.`,
-    );
-    setBatchRunning(false);
-    setSelected(new Set());
   }
 
   return (
     <>
+      <PublishBatchBar batchId={batchId} />
       {publishable.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-3 rounded-[12px] border border-rule bg-surface px-3.5 py-2.5">
           <label className="flex items-center gap-2 text-[12.5px] text-ink">
@@ -189,7 +267,7 @@ export function DraftsTable({ rows }: { rows: DraftRow[] }) {
           {batchRunning && (
             <span className="inline-flex items-center gap-1.5 text-[12px] text-ink-2">
               <Loader2 size={13} strokeWidth={2} className="animate-spin" />
-              {batchNote}
+              queueing…
             </span>
           )}
           {!batchRunning && batchNote && (
@@ -250,6 +328,7 @@ export function DraftsTable({ rows }: { rows: DraftRow[] }) {
                       rowState={rowState}
                       busy={batchRunning}
                       onPublish={() => void publishOne(row)}
+                      onRotateUpc={() => void rotateUpc(row)}
                     />
                   </Td>
                   <Td className="text-right font-mono tabular-nums text-ink-2">
@@ -276,11 +355,13 @@ function WalmartCell({
   rowState,
   busy,
   onPublish,
+  onRotateUpc,
 }: {
   row: DraftRow;
   rowState: RowState;
   busy: boolean;
   onPublish: () => void;
+  onRotateUpc: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   if (!row.walmart) {
@@ -295,6 +376,14 @@ function WalmartCell({
       >
         live <ExternalLink size={11} strokeWidth={2} />
       </Link>
+    );
+  }
+  if (rowState.phase === "rotating") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-2">
+        <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+        replacing product ID…
+      </span>
     );
   }
   if (rowState.phase === "publishing") {
@@ -317,6 +406,26 @@ function WalmartCell({
     return (
       <span className="block max-w-[340px] text-[11px] text-danger">
         {rowState.message}
+      </span>
+    );
+  }
+  if (needsUpcRotation(row)) {
+    return (
+      <div className="flex flex-col items-start gap-1">
+        <span className="text-[11.5px] text-warn-strong">
+          product ID rejected by Walmart
+        </span>
+        <Btn variant="outline" size="sm" onClick={onRotateUpc} disabled={busy}>
+          Replace product ID
+        </Btn>
+      </div>
+    );
+  }
+  if (row.walmart.upc_quarantined) {
+    return (
+      <span className="block max-w-[320px] text-[11px] text-danger">
+        product ID rejected {row.walmart.burned_upcs}× — needs a look at the
+        payload, not another number
       </span>
     );
   }

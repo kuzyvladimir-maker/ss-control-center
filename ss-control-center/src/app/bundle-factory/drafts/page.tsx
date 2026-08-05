@@ -35,8 +35,10 @@ export default async function DraftsPage() {
     ? await prisma.channelSKU.findMany({
         where: { channel: "WALMART", master_bundle_id: { in: masterBundleIds } },
         select: {
+          id: true,
           master_bundle_id: true,
           sku: true,
+          upc: true,
           validation_status: true,
           listing_status: true,
           live_url: true,
@@ -44,13 +46,36 @@ export default async function DraftsPage() {
         },
       })
     : [];
+
+  // A listing whose own product ID was quarantined by a Walmart collision can
+  // never publish again under that number, so the row must offer a replacement
+  // instead of a Publish button that is guaranteed to fail. `burned_upcs`
+  // counts how many numbers this listing has already consumed — more than one
+  // means the collision is not about the number.
+  const quarantined = walmartSkus.length
+    ? await prisma.uPCPool.findMany({
+        where: { status: "QUARANTINED" },
+        select: { upc: true, notes: true },
+      })
+    : [];
+  const quarantinedUpcs = new Set(quarantined.map((row) => row.upc));
+  const burnedBySku = new Map<string, number>();
+  for (const row of quarantined) {
+    const match = /SKU ([A-Z0-9-]+)/.exec(row.notes ?? "");
+    if (!match) continue;
+    burnedBySku.set(match[1], (burnedBySku.get(match[1]) ?? 0) + 1);
+  }
+
   const walmartByMaster = new Map(
     walmartSkus.map((row) => [row.master_bundle_id, {
+      id: row.id,
       sku: row.sku,
       validation_status: row.validation_status,
       listing_status: row.listing_status,
       live_url: row.live_url,
       price_cents: row.price_cents,
+      upc_quarantined: quarantinedUpcs.has(row.upc),
+      burned_upcs: burnedBySku.get(row.sku) ?? 0,
     }]),
   );
 
