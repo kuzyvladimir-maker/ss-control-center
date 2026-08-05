@@ -195,6 +195,19 @@ async function uploadPanel(key: string, body: Buffer): Promise<string | null> {
 }
 
 /**
+ * The panel exists but has nowhere to live.
+ *
+ * Distinct from "no ingredient statement": the data was there and the image
+ * was drawn, so the fix is configuration, not catalogue work.
+ */
+export class IngredientPanelNotHostedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "IngredientPanelNotHostedError";
+  }
+}
+
+/**
  * Resolve the ingredient-list image for a listing: donor photograph if one
  * genuinely shows the ingredient statement, otherwise the manufacturer's text
  * rendered as a panel.
@@ -235,6 +248,14 @@ export async function resolveIngredientListImage(
     .update(`${input.productKey}\n${text}`)
     .digest("hex")}.png`;
   const url = await uploadPanel(objectKey, png);
-  if (!url) return null;
+  if (!url) {
+    // The statement was found and the panel was drawn; only the hosting failed.
+    // Reporting this as "no ingredient text" sent the operator looking for
+    // missing data that was never missing.
+    throw new IngredientPanelNotHostedError(
+      "The ingredient panel was rendered but could not be hosted: R2 is not "
+      + "configured in this environment (R2_PUBLIC_URL / credentials).",
+    );
+  }
   return remember({ url, source: "RENDERED" });
 }
