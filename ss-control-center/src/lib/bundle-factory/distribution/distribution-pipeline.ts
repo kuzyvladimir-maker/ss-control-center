@@ -39,7 +39,7 @@ import {
  * rest of the platform hashes it. Recorded on the attempt row so a submission
  * can always be traced to the account that made it.
  */
-function walmartSellerAccountFingerprint(storeIndex: number): string {
+export function walmartSellerAccountFingerprint(storeIndex: number): string {
   const status = getWalmartStoreStatus(storeIndex);
   const clientId = process.env[`WALMART_CLIENT_ID_STORE${storeIndex}`] ?? "";
   if (!status.sellerId || !clientId) {
@@ -172,7 +172,7 @@ export interface RunWalmartPilotDistributionInput {
   beforeWalmartFeedPost?: () => void | Promise<void>;
 }
 
-async function assertCurrentWalmartDistributionApproval(
+export async function assertCurrentWalmartDistributionApproval(
   channelSkuId: string,
   expectedPublishableContentSha256: string,
   expectedMarketplacePayloadSha256: string,

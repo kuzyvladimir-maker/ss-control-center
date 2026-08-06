@@ -123,6 +123,57 @@ export function buildWalmartSkuTemplateMapContract(
   };
 }
 
+/**
+ * The same association feed, carrying many SKUs.
+ *
+ * A batched MP_ITEM feed would be pointless if its shipping associations still
+ * cost one feed each: the rate limit counts feeds, not items. The header and
+ * per-item shape are unchanged — only the array is longer.
+ */
+export function buildWalmartSkuTemplateMapBatch(
+  entries: WalmartShippingAssociationExpectation[],
+): WalmartSkuTemplateMapContract {
+  if (entries.length === 0) {
+    throw new WalmartShippingTemplateAssociationContractError(
+      "A SKU_TEMPLATE_MAP feed needs at least one SKU",
+    );
+  }
+  const seen = new Set<string>();
+  const items = entries.map((entry) => {
+    const sku = exactText(entry.sku, "SKU");
+    if (seen.has(sku)) {
+      throw new WalmartShippingTemplateAssociationContractError(
+        `${sku} appears twice in one SKU_TEMPLATE_MAP feed`,
+      );
+    }
+    seen.add(sku);
+    return {
+      sku,
+      actionType: "Add" as const,
+      shippingTemplateId: exactText(entry.shipping_template_id, "Shipping template ID"),
+      fulfillmentCenterId: exactText(entry.fulfillment_center_id, "Fulfillment center ID"),
+    };
+  });
+  const payload = {
+    ItemFeedHeader: {
+      sellingChannel: WALMART_SKU_TEMPLATE_MAP_SELLING_CHANNEL,
+      locale: "en" as const,
+      version: WALMART_SKU_TEMPLATE_MAP_VERSION,
+    },
+    ItemFeed: items,
+  } as unknown as WalmartSkuTemplateMapPayload;
+  return {
+    payload,
+    payload_sha256: sha256WalmartJson(payload),
+    params: { feedType: WALMART_SKU_TEMPLATE_MAP_FEED_TYPE },
+    file: {
+      filename: `batch-${items.length}-sku-template-map.json`,
+      contentType: "application/json",
+      content: stableWalmartJson(payload),
+    },
+  };
+}
+
 export function buildWalmartItemAssociationsRequest(
   sku: string,
 ): { items: [{ sku: string }] } {
