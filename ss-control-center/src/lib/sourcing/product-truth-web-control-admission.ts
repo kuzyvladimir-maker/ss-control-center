@@ -146,9 +146,17 @@ export class ProductTruthWebControlAdmissionError extends Error {
 }
 
 function fail(code: string, message: string, cause?: unknown): never {
+  // Say WHY, not just that. The cause used to be attached to the error object
+  // and dropped on the way out, so a worker that finished its command received
+  // `WEB_CONTROL_PLAN_ADMISSION_FAILED: immutable run-plan command was not
+  // admitted` and nothing else — the whole collection then sat "Preparing…"
+  // forever with no way to tell a constraint violation from a busy database.
+  const detail = cause instanceof Error
+    ? cause.message
+    : cause === undefined ? "" : String(cause);
   throw new ProductTruthWebControlAdmissionError(
     code,
-    message,
+    detail ? `${message}: ${detail.slice(0, 300)}` : message,
     cause === undefined ? undefined : { cause },
   );
 }
