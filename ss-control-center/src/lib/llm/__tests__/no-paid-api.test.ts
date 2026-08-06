@@ -33,7 +33,6 @@ const PAID_CALL = /new\s+Anthropic\s*\(|new\s+OpenAI\s*\(|api\.anthropic\.com|ap
  * lanes. Every text call site is already on a subscription.
  */
 const ALLOWED = new Set([
-  "lib/ai-vision.ts",
   "lib/claude.ts",
   "lib/bundle-factory/audit/vision-check.ts",
   "lib/finance/receipt-ocr.ts",
