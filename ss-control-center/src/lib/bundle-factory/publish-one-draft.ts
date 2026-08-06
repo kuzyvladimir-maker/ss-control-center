@@ -23,6 +23,10 @@
 import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-pipeline";
 import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
 import { findDuplicateWalmartListing } from "@/lib/bundle-factory/walmart-duplicate-listing";
+import {
+  NoFreeUpcAvailable,
+  ensureFreeWalmartUpc,
+} from "@/lib/bundle-factory/walmart-upc-availability";
 import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
 import { runValidationForDraft } from "@/lib/bundle-factory/validation/validation-pipeline";
 import { withSqliteBusyRetry } from "@/lib/bundle-factory/sqlite-busy-retry";
@@ -129,6 +133,12 @@ export type PublishOneDraftResult =
   }
   | {
     ok: false;
+    stage: "PRODUCT_ID";
+    error: string;
+    promotion: unknown;
+  }
+  | {
+    ok: false;
     stage: "DUPLICATE";
     error: string;
     duplicate: { sku: string; listing_status: string; live_url: string | null };
@@ -224,6 +234,35 @@ export async function publishOneDraft(
             listing_status: duplicate.listingStatus,
             live_url: duplicate.liveUrl,
           },
+          promotion,
+        };
+      }
+    }
+  }
+
+  // Walmart refuses a product ID that is already in its catalog, and our pool
+  // block is not exclusively ours: a sample on 2026-08-05 found 24% of the
+  // next numbers in line carrying other companies' products. Asking costs one
+  // GET; finding out the other way costs a feed and ninety minutes.
+  if (apply) {
+    const walmartSkuIds = await prisma.channelSKU.findMany({
+      where: {
+        channel: "WALMART",
+        master_bundle_id: promotion.master_bundle_id,
+        live_url: null,
+      },
+      select: { id: true },
+    });
+    for (const candidate of walmartSkuIds) {
+      try {
+        await ensureFreeWalmartUpc({ channelSkuId: candidate.id });
+      } catch (error) {
+        return {
+          ok: false,
+          stage: "PRODUCT_ID",
+          error: error instanceof NoFreeUpcAvailable
+            ? error.message
+            : `Could not confirm a free product ID: ${error instanceof Error ? error.message : String(error)}`,
           promotion,
         };
       }
