@@ -11,7 +11,7 @@
  * Basic A+ = 5 modules. Copy short & benefit-first; NEVER baked into images (mobile).
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 import {
   assembleDocument, headerImageText, singleSideImage, threeImageText, standardText,
   type AplusDocument, type ImageComponent,
@@ -22,8 +22,11 @@ import { CLAUDE } from "@/lib/ai-models";
 export type TextModel = "opus" | "sonnet";
 const TEXT_MODEL_ID: Record<TextModel, string> = { opus: CLAUDE.premium, sonnet: CLAUDE.balanced };
 
-let _client: Anthropic | null = null;
-function client() { return (_client ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })); }
+function client() {
+  const c = claudeWorkerClient();
+  if (!c) throw new Error("The Claude subscription worker is not configured (CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). This platform does not use paid API keys.");
+  return c;
+}
 
 export interface GeneratorInput { sku: string; asin: string | null; itemName: string | null; productType: string | null; brand: string | null }
 
@@ -130,11 +133,11 @@ Fill the conversion storyboard for this concept. Short benefit-first copy; cohes
     thinking: textModel === "opus" ? { type: "adaptive" } : { type: "disabled" },
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
     system: buildSystem(concept), messages: [{ role: "user", content: userPrompt }],
-  } as Anthropic.MessageCreateParamsNonStreaming);
+  });
 
   const block = resp.content.find((b) => b.type === "text");
   if (!block || block.type !== "text") throw new Error("generator returned no plan");
-  const plan = JSON.parse(block.text) as AplusPlan;
+  const plan = JSON.parse(block.text ?? "") as AplusPlan;
   plan.benefits.cells = (plan.benefits.cells ?? []).slice(0, 3);
   while (plan.benefits.cells.length < 3) plan.benefits.cells.push({ headline: "", body: "", imageBrief: plan.hero.imageBrief, imageAlt: "" });
   return plan;

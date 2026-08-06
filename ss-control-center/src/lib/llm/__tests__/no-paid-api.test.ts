@@ -27,20 +27,19 @@ const PAID_CALL = /new\s+Anthropic\s*\(|new\s+OpenAI\s*\(|api\.anthropic\.com|ap
 
 /**
  * Still on the paid path, to be moved. Shrink this list; never grow it.
- * Vision entries move to the worker's /analyze-claude, text to /text-claude.
+ *
+ * Everything left is VISION — it sends images, so it moves to the worker's
+ * /analyze-claude (Claude Max) or /analyze (ChatGPT Pro) rather than the text
+ * lanes. Every text call site is already on a subscription.
  */
 const ALLOWED = new Set([
   "lib/ai-vision.ts",
   "lib/claude.ts",
-  "lib/amazon/aplus/generator.ts",
-  "lib/amazon/growth/advisor.ts",
   "lib/bundle-factory/audit/vision-check.ts",
   "lib/finance/receipt-ocr.ts",
   "lib/sourcing/donor-catalog.ts",
   "lib/sourcing/vision.ts",
-  "app/api/procurement/clean-title/route.ts",
   "app/api/procurement/pack-size/route.ts",
-  "app/api/settings/integrations/route.ts",
   "app/api/shipping/classify-ai/route.ts",
 ]);
 

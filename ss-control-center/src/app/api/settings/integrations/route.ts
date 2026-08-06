@@ -64,36 +64,51 @@ async function probeUnwrangle(refresh: boolean): Promise<Svc> {
   return s;
 }
 
-async function probeAnthropic(): Promise<Svc> {
-  const s: Svc = { key: "anthropic", name: "Anthropic Claude", group: "AI", configured: !!process.env.ANTHROPIC_API_KEY, status: "unknown", unit: "pay-as-you-go" };
-  if (!s.configured) return s;
-  s.detail = "configured; billed message probe disabled";
+/**
+ * The two subscription lanes, which is what actually answers now.
+ *
+ * This panel used to report `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` as
+ * "pay-as-you-go". Both keys still sit in .env with a zero balance and nothing
+ * calls them — reporting them as the AI setup told the owner the opposite of
+ * the truth. What matters is whether each subscription lane answers.
+ */
+async function probeSubscriptionLane(
+  key: "claude-subscription" | "codex-subscription",
+  name: string,
+  path: string,
+): Promise<Svc> {
+  const base = process.env.CODEX_IMAGE_WORKER_URL;
+  const configured = !!(base && process.env.CODEX_IMAGE_WORKER_TOKEN);
+  const s: Svc = { key, name, group: "AI", configured, status: "unknown", unit: "subscription" };
+  if (!configured || !base) { s.detail = "worker not configured"; return s; }
+  try {
+    // A GET on a POST-only endpoint proves the box and ingress are up without
+    // spending a minute of subscription quota on a real completion.
+    const { status } = await getJson(base.replace(/\/generate\/?$/, path), { method: "GET" }, 6000);
+    s.status = "ok";
+    s.detail = `lane reachable (HTTP ${status})`;
+  } catch (e: any) {
+    s.status = "error";
+    s.detail = (e?.message ?? "unreachable").slice(0, 100);
+  }
   return s;
 }
+
+const probeClaudeText = () =>
+  probeSubscriptionLane("claude-subscription", "Claude Max (text + vision)", "/text-claude");
+const probeCodexText = () =>
+  probeSubscriptionLane("codex-subscription", "ChatGPT Pro (text)", "/text-codex");
 
 async function probeCodex(): Promise<Svc> {
   const url = process.env.CODEX_IMAGE_WORKER_URL;
   const s: Svc = { key: "codex", name: "Codex image worker (free image gen)", group: "AI", configured: !!(url && process.env.CODEX_IMAGE_WORKER_TOKEN), status: "unknown", unit: "subscription" };
   if (!s.configured || !url) { if (s.configured === false) s.detail = "not configured"; return s; }
   try {
-    // The /generate endpoint is POST-only; a GET just proves the OpenClaw box +
-    // nginx ingress are up (any HTTP response = reachable) WITHOUT triggering a
-    // ~4-minute, ChatGPT-quota-consuming image generation.
     const { status } = await getJson(url, { method: "GET" }, 6000);
     s.status = "ok"; s.detail = `worker reachable (HTTP ${status})`;
   } catch (e: any) {
     s.status = "error"; s.detail = (e?.message ?? "unreachable").slice(0, 100);
   }
-  return s;
-}
-
-async function probeOpenai(): Promise<Svc> {
-  const s: Svc = { key: "openai", name: "OpenAI (fallback)", group: "AI", configured: !!process.env.OPENAI_API_KEY, status: "unknown", unit: "pay-as-you-go" };
-  if (!s.configured) return s;
-  try {
-    const { ok, status } = await getJson("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } });
-    s.status = ok ? "ok" : "error"; if (!ok) s.detail = `HTTP ${status}`;
-  } catch (e: any) { s.status = "error"; s.detail = e?.message?.slice(0, 100); }
   return s;
 }
 
@@ -108,7 +123,7 @@ function infra(): Svc[] {
 
 export async function GET(request: NextRequest) {
   const refresh = new URL(request.url).searchParams.get("refresh");
-  const [bc, uw, an, oa, cx] = await Promise.all([probeBluecart(), probeUnwrangle(refresh === "unwrangle" || refresh === "all"), probeAnthropic(), probeOpenai(), probeCodex()]);
+  const [bc, uw, an, oa, cx] = await Promise.all([probeBluecart(), probeUnwrangle(refresh === "unwrangle" || refresh === "all"), probeClaudeText(), probeCodexText(), probeCodex()]);
   const services = [bc, uw, an, oa, cx, ...infra()];
   const budgetRow = await prisma.setting.findUnique({ where: { key: "paid_monthly_budget_usd" } }).catch(() => null);
   const monthlyBudgetUsd = budgetRow?.value ? Number(budgetRow.value) : 100;

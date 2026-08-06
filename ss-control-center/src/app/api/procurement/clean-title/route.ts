@@ -23,7 +23,7 @@
 // alike come back size-free.
 
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 import { prisma } from "@/lib/prisma";
 import {
   cleanProductTitleForSearch,
@@ -90,19 +90,16 @@ OUTPUT: Salmon Recipe Wet Cat Food
 INPUT: Maruchan Ramen Noodle Pork Flavor Soup, 3 oz Shelf Stable Package (Pack of 8)
 OUTPUT: Maruchan Ramen Noodle Pork Flavor Soup`;
 
-function extractText(message: Anthropic.Messages.Message): string {
+function extractText(message: { content: Array<{ type: string; text?: string }> }): string {
   for (const block of message.content) {
-    if (block.type === "text") return block.text;
+    if (block.type === "text" && block.text) return block.text;
   }
   return "";
 }
 
 async function cleanViaClaude(rawTitle: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "<api_key>") {
-    throw new Error("ANTHROPIC_API_KEY not configured");
-  }
-  const client = new Anthropic({ apiKey });
+  const client = claudeWorkerClient();
+  if (!client) throw new Error("The Claude subscription worker is not configured (CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). This platform does not use paid API keys.");
   // 200 max_tokens is plenty — outputs are short single-line strings.
   // Thinking is disabled by default on Haiku 4.5 (no `effort` either —
   // Haiku doesn't support those knobs). cache_control on the system block

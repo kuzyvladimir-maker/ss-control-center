@@ -10,7 +10,7 @@
  * the response is a validated plan, not prose we have to parse loosely.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 import { CLAUDE } from "@/lib/ai-models";
 
 // Default model for the single, deliberate per-listing "AI Advise" (deep dive).
@@ -20,12 +20,10 @@ import { CLAUDE } from "@/lib/ai-models";
 const DEFAULT_MODEL = CLAUDE.premium;
 export const BULK_ADVISOR_MODEL = CLAUDE.balanced;
 
-function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "<api_key>") {
-    throw new Error("ANTHROPIC_API_KEY not configured");
-  }
-  return new Anthropic({ apiKey });
+function getClient() {
+  const client = claudeWorkerClient();
+  if (!client) throw new Error("The Claude subscription worker is not configured (CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). This platform does not use paid API keys.");
+  return client;
 }
 
 /** Per-listing productivity + health snapshot handed to the advisor. */
@@ -216,11 +214,11 @@ export async function adviseListing(
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
     system: SYSTEM,
     messages: [{ role: "user", content: userPrompt }],
-  } as Anthropic.MessageCreateParamsNonStreaming);
+  });
 
   const textBlock = response.content.find((b) => b.type === "text");
   if (!textBlock || textBlock.type !== "text") {
     throw new Error("Advisor returned no plan");
   }
-  return JSON.parse(textBlock.text) as AdvisorResult;
+  return JSON.parse(textBlock.text ?? "") as AdvisorResult;
 }
