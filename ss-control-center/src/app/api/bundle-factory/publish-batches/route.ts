@@ -20,6 +20,10 @@ import {
   writeFactoryMode,
 } from "@/lib/bundle-factory/factory-mode";
 import {
+  readFactoryRails,
+  setFactoryPaused,
+} from "@/lib/bundle-factory/walmart-factory-rails";
+import {
   enqueuePublishBatch,
   listOpenPublishBatches,
   readPublishCapState,
@@ -32,15 +36,17 @@ export const GET = withErrorHandler(
   async (request: NextRequest) => {
     const auth = await requireModuleAccess(request, "bundle-factory");
     if (auth instanceof NextResponse) return auth;
-    const [mode, cap, open] = await Promise.all([
+    const [mode, cap, open, rails] = await Promise.all([
       readFactoryMode(),
       readPublishCapState(),
       listOpenPublishBatches(5),
+      readFactoryRails(),
     ]);
     return NextResponse.json({
       ok: true,
       mode,
       modes: FACTORY_MODES,
+      rails,
       cap,
       open_batches: open,
     });
@@ -56,11 +62,19 @@ export const POST = withErrorHandler(
       draftIds?: unknown;
       note?: unknown;
       mode?: unknown;
+      paused?: unknown;
       approvalConfirmed?: unknown;
     }>(request)) ?? {};
 
     // The switch shares this route so the UI has one place to read and write
     // the factory's operating state.
+    // The pause is a separate handle from the mode on purpose: stopping the
+    // line should not also forget whether it was running itself.
+    if (typeof body.paused === "boolean") {
+      await setFactoryPaused(body.paused, auth.username ?? "operator");
+      return NextResponse.json({ ok: true, rails: await readFactoryRails() });
+    }
+
     if (body.mode !== undefined) {
       if (!isFactoryMode(body.mode)) {
         return NextResponse.json(

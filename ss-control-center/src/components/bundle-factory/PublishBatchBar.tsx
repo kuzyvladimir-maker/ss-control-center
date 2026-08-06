@@ -52,6 +52,13 @@ const MODE_HELP: Record<FactoryMode, string> = {
     "The schedule also publishes, inside the daily ceiling. No press needed.",
 };
 
+interface FactoryRails {
+  allowed: boolean;
+  paused: boolean;
+  blocks: string[];
+  reasons: string[];
+}
+
 export function PublishBatchBar({
   batchId,
   onBatchFinished,
@@ -64,6 +71,7 @@ export function PublishBatchBar({
   const [progress, setProgress] = useState<BatchProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
+  const [rails, setRails] = useState<FactoryRails | null>(null);
   const finishedRef = useRef(false);
 
   useEffect(() => {
@@ -74,6 +82,7 @@ export function PublishBatchBar({
         if (!res.ok) throw new Error(describeBundleFactoryFailure(data));
         setMode(data.mode as FactoryMode);
         setCap(data.cap as PublishCap);
+        setRails(data.rails as FactoryRails);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not read the factory mode");
       }
@@ -127,6 +136,25 @@ export function PublishBatchBar({
     return () => { cancelled = true; };
   }, [batchId, advance, onBatchFinished]);
 
+  async function setPaused(next: boolean) {
+    setSwitching(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/bundle-factory/publish-batches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paused: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(describeBundleFactoryFailure(data));
+      setRails(data.rails as FactoryRails);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not change the pause");
+    } finally {
+      setSwitching(false);
+    }
+  }
+
   async function switchMode(next: FactoryMode) {
     setSwitching(true);
     setError(null);
@@ -171,7 +199,29 @@ export function PublishBatchBar({
             {cap.remaining} of {cap.cap} left in the last 24 h
           </span>
         )}
+
+        {rails && (
+          <Btn
+            variant={rails.paused ? "primary" : "outline"}
+            size="sm"
+            disabled={switching}
+            onClick={() => void setPaused(!rails.paused)}
+            className="ml-auto"
+          >
+            {rails.paused ? "Resume" : "Pause everything"}
+          </Btn>
+        )}
       </div>
+
+      {rails && rails.reasons.length > 0 && (
+        <ul className="mt-2 space-y-1 rounded-[10px] border border-warn-strong/40 bg-warn-tint px-2.5 py-2">
+          {rails.reasons.map((reason) => (
+            <li key={reason} className="text-[11.5px] leading-snug text-warn-strong">
+              {reason}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {mode && (
         <p className="mt-1.5 text-[11.5px] leading-snug text-ink-3">

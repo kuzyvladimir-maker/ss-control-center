@@ -13,13 +13,17 @@
  *               within the same rolling 24-hour ceiling.
  *
  * Either way every fence is identical: validation, sealed approval, the
- * one-shot claim, one SKU per POST, and the daily cap.
+ * one-shot claim, one SKU per POST, and the daily cap. On top of those sit the
+ * rails (see walmart-factory-rails.ts), which can stop the schedule outright:
+ * a pause a person pulled, a refusal rate that says stop guessing, or a product
+ * ID pool too low to spend unattended.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
 
 import { withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { readFactoryMode } from "@/lib/bundle-factory/factory-mode";
+import { readFactoryRails } from "@/lib/bundle-factory/walmart-factory-rails";
 import { isPublishableListingStatus } from "@/lib/bundle-factory/publishable-listing-status";
 import {
   enqueuePublishBatch,
@@ -90,9 +94,25 @@ export const GET = withErrorHandler(
 
     const mode = await readFactoryMode();
     const cap = await readPublishCapState();
+    const rails = await readFactoryRails();
     const started: string[] = [];
 
-    if (mode === "AUTO" && cap.remaining > 0) {
+    // A pause outranks everything, including a batch a person queued: it is the
+    // handle you pull when you have just seen something wrong and want the
+    // writing to stop now, not after the queue drains.
+    if (rails.blocks.includes("PAUSED")) {
+      return NextResponse.json({
+        ok: true,
+        mode,
+        cap,
+        rails,
+        started_batches: [],
+        open_batches: 0,
+        ticks: [],
+      });
+    }
+
+    if (mode === "AUTO" && cap.remaining > 0 && rails.allowed) {
       const drafts = await findAutoPublishableDrafts(cap.remaining);
       if (drafts.length > 0) {
         const enqueued = await enqueuePublishBatch({
@@ -123,6 +143,7 @@ export const GET = withErrorHandler(
       ok: true,
       mode,
       cap,
+      rails,
       started_batches: started,
       open_batches: open.length,
       ticks,
