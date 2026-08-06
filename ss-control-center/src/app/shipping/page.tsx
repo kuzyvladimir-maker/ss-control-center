@@ -1882,21 +1882,32 @@ export default function ShippingLabelsPage() {
     // exceptions below: those aren't filters, they're safety rails around
     // buying a label for half a shipment.
     const searching = tokens.length > 0;
-    return (searching ? orders : channelOrders)
+    // Merge mode is a MODE, exactly like search — not one more filter on top
+    // of the day/type/store tabs. It has to be: candidates are grouped by
+    // delivery address, and two orders to one address routinely sit in
+    // different day buckets, different stores, even different channels. With
+    // the ordinary filters still applied, the operator opened merge mode from
+    // a banner that said "3 orders can ship together" and got an empty list
+    // and no way to tick anything (observed 2026-08-05: candidates due 08-07
+    // while the Today tab was active). So merge mode widens the pool to every
+    // loaded order and narrows it by ONE thing — being a candidate.
+    const merging = mergeMode;
+    const wideOpen = searching || merging;
+    return (wideOpen ? orders : channelOrders)
       .filter((o) => {
         // viewScope (set by the AWAITING split tile) is the source of
         // truth for active vs awaiting-ship-confirm partitioning. Every
         // count downstream (buckets, types, stores) now respects it,
         // so the bucket-filter no longer needs its old escape hatch.
         const awaiting = isAwaitingShipConfirm(o);
-        if (!searching) {
+        if (!wideOpen) {
           if (viewScope === "awaiting") {
             if (!awaiting) return false;
           } else if (awaiting) {
             return false;
           }
         }
-        if (bucketFilter && !searching) {
+        if (bucketFilter && !wideOpen) {
           // "Today" swallows "Overdue": an order whose ship-by already passed
           // is still due today (more so than today's own), and operators were
           // losing them by living on the Today tab. The Overdue tab remains
@@ -1918,15 +1929,15 @@ export default function ShippingLabelsPage() {
         if (mergeMode && !mergeCandidateIds.has(o.orderId)) return false;
         if (
           deferredOnly &&
-          !searching &&
+          !wideOpen &&
           !deferredShipNums.has(o.orderNumber)
         )
           return false;
-        if (storeFilter && !searching && o.storeId !== storeFilter)
+        if (storeFilter && !wideOpen && o.storeId !== storeFilter)
           return false;
-        if (stateFilter !== "all" && !searching && o.state !== stateFilter)
+        if (stateFilter !== "all" && !wideOpen && o.state !== stateFilter)
           return false;
-        if (typeFilter !== "all" && !searching) {
+        if (typeFilter !== "all" && !wideOpen) {
           const types = o.items.map((i) => i.knownType);
           if (types.length === 0) return false;
           if (typeFilter === "Untyped") {
@@ -3046,6 +3057,61 @@ export default function ShippingLabelsPage() {
     }
   }
 
+  // One order row, wired to everything on this page. Extracted so a merged
+  // group can render its members as the SAME rows the queue shows — the owner
+  // wants a merged parcel to read like an ordinary order, not like a summary
+  // of one. `groupRole` tells the row it belongs to a group: it then drops
+  // the controls that act on a single order (buy, ship date, rollback,
+  // discard, package/rate cells), because the group owns all of those.
+  const renderOrderRow = (
+    o: DashboardOrder,
+    groupRole: "primary" | "sibling" | null = null,
+  ) => (
+    <OrderRow
+      order={o}
+      groupRole={groupRole}
+      overdue={o.timeBucket === "overdue"}
+      printedInSession={o.orderId in justBought}
+      plan={planByOrderNumber.get(o.orderNumber) ?? null}
+      planLoading={planLoading}
+      selected={selected.has(o.orderId)}
+      selectable={selectableIds.has(o.orderId)}
+      buying={buyingRow === o.orderId}
+      buyError={buyErrors[o.orderId] ?? null}
+      walmartStatus={walmartStatus[o.orderNumber] ?? null}
+      walmartRateError={walmartRateErrors[o.orderNumber] ?? null}
+      markingShipped={markingShipped === o.orderId}
+      onMarkShipped={() => markShipped(o)}
+      markingPlaced={markingPlaced === o.orderId}
+      onMarkPlaced={() => markPlaced(o)}
+      rollingBack={rollingBack === o.orderId}
+      onRollback={() => rollbackProcurement(o)}
+      discardingLabel={discardingLabel === o.orderId}
+      onDiscardLabel={() => setDiscardConfirm(o)}
+      shipDate={effectiveShipDate(o.orderNumber)}
+      shipDateOverridden={o.orderNumber in shipDateByOrder}
+      requoting={!!requoting[o.orderNumber]}
+      onShipDateChange={(d) => changeOrderShipDate(o, d)}
+      frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
+      onToggleSelected={() => toggleOne(o.orderId)}
+      onClassify={() => setClassifyModal(o)}
+      onManual={() => setManualModal(o)}
+      onPacking={() => setPackingModal(o)}
+      onSku={() => setSkuModal(o)}
+      onEditPackage={() => setEditPackageModal(o)}
+      onPickRate={() => setPickRateModal(o)}
+      rateOverride={rateOverrides[o.orderId] ?? null}
+      onClearOverride={() => {
+        setRateOverrides((prev) => {
+          const next = { ...prev };
+          delete next[o.orderId];
+          return next;
+        });
+      }}
+      onBuy={() => buyOne(o)}
+    />
+  );
+
   return (
     // `shipping-scale` carries the module's type scale (see globals.css). Every
     // operator-facing size below reads from those variables rather than a
@@ -3570,9 +3636,11 @@ export default function ShippingLabelsPage() {
             }
             onChange={toggleAll}
           />
-          {viewScope === "awaiting"
-            ? `Select all awaiting (${selected.size}/${selectableIds.size})`
-            : `Select all ready (${selected.size}/${selectableIds.size})`}
+          {mergeMode
+            ? `Select the orders to merge (${selected.size}/${selectableIds.size})`
+            : viewScope === "awaiting"
+              ? `Select all awaiting (${selected.size}/${selectableIds.size})`
+              : `Select all ready (${selected.size}/${selectableIds.size})`}
         </label>
         <div className="flex items-center gap-2">
           {/* Sort — like Veeqo's sortable columns. */}
@@ -3687,7 +3755,12 @@ export default function ShippingLabelsPage() {
               onUpdate={(patch: Record<string, unknown>) =>
                 updateMergeGroup(g.id, patch)
               }
+              onRefresh={loadMerge}
               onDissolve={() => dissolveMergeGroup(g.id)}
+              renderMember={(orderId, role) => {
+                const o = orders.find((x) => x.orderId === orderId);
+                return o ? renderOrderRow(o, role) : null;
+              }}
             />
           ))}
 
@@ -3729,48 +3802,7 @@ export default function ShippingLabelsPage() {
                     <div className="h-px flex-1 bg-rule" />
                   </div>
                 )}
-              <OrderRow
-              order={o}
-              overdue={o.timeBucket === "overdue"}
-              printedInSession={o.orderId in justBought}
-              plan={planByOrderNumber.get(o.orderNumber) ?? null}
-              planLoading={planLoading}
-              selected={selected.has(o.orderId)}
-              selectable={selectableIds.has(o.orderId)}
-              buying={buyingRow === o.orderId}
-              buyError={buyErrors[o.orderId] ?? null}
-              walmartStatus={walmartStatus[o.orderNumber] ?? null}
-              walmartRateError={walmartRateErrors[o.orderNumber] ?? null}
-              markingShipped={markingShipped === o.orderId}
-              onMarkShipped={() => markShipped(o)}
-              markingPlaced={markingPlaced === o.orderId}
-              onMarkPlaced={() => markPlaced(o)}
-              rollingBack={rollingBack === o.orderId}
-              onRollback={() => rollbackProcurement(o)}
-              discardingLabel={discardingLabel === o.orderId}
-              onDiscardLabel={() => setDiscardConfirm(o)}
-              shipDate={effectiveShipDate(o.orderNumber)}
-              shipDateOverridden={o.orderNumber in shipDateByOrder}
-              requoting={!!requoting[o.orderNumber]}
-              onShipDateChange={(d) => changeOrderShipDate(o, d)}
-              frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
-              onToggleSelected={() => toggleOne(o.orderId)}
-              onClassify={() => setClassifyModal(o)}
-              onManual={() => setManualModal(o)}
-              onPacking={() => setPackingModal(o)}
-              onSku={() => setSkuModal(o)}
-              onEditPackage={() => setEditPackageModal(o)}
-              onPickRate={() => setPickRateModal(o)}
-              rateOverride={rateOverrides[o.orderId] ?? null}
-              onClearOverride={() => {
-                setRateOverrides((prev) => {
-                  const next = { ...prev };
-                  delete next[o.orderId];
-                  return next;
-                });
-              }}
-              onBuy={() => buyOne(o)}
-              />
+              {renderOrderRow(o)}
             </Fragment>
           ))
         )}
@@ -4433,6 +4465,7 @@ function ArchiveRow({ hit }: { hit: ArchiveHit }) {
 
 function OrderRow({
   order,
+  groupRole = null,
   overdue,
   printedInSession,
   plan,
@@ -4468,6 +4501,11 @@ function OrderRow({
   onShipDateChange,
 }: {
   order: DashboardOrder;
+  /** Set when this row is a member of a merged group. The row then shows all
+   *  its ORDER facts as usual and drops every control that acts on this order
+   *  alone — package, rate, buy, ship date, rollback, discard — because the
+   *  group owns the single physical parcel those would act on. */
+  groupRole?: "primary" | "sibling" | null;
   /** Ship-by already passed. Item 7: these carry a red fill so they read as
    *  exceptions at a glance, not just as another row near the top. */
   overdue: boolean;
@@ -4525,6 +4563,9 @@ function OrderRow({
   const isAttn = order.state === "need_attention";
   const isWaiting = order.state === "waiting_placed";
   const isBought = order.state === "bought";
+  // This row is one member of a merged parcel. Everything it says about the
+  // ORDER stays; everything that would act on its own box goes.
+  const inGroup = groupRole != null;
 
   // Click a product thumbnail to view it fullscreen — same lightbox the
   // Procurement module uses, so the operator can read package text/expiry.
@@ -4601,7 +4642,12 @@ function OrderRow({
         // because a missed ship-by outranks "needs attention" (owner's rule,
         // 2026-07-30) and must be visible as an exception, not just as a row
         // that happens to sit near the top.
-        printedInSession
+        // A group member sits inside the group's own blue card. It keeps the
+        // card shape so it reads as a row, but not the loud state fills —
+        // the group card is the thing carrying the state now.
+        inGroup
+          ? "border-info/30 bg-surface"
+          : printedInSession
           ? "border-green bg-green-soft/60"
           : overdue
             ? "border-danger bg-danger-tint/40"
@@ -4692,7 +4738,13 @@ function OrderRow({
         <div className="min-w-0 flex-1">
       {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
-        {selectable ? (
+        {inGroup ? (
+          // No checkbox inside a group: the whole parcel is the unit of
+          // action, and a tick here would offer to buy half a shipment.
+          <div className="mt-1 h-3.5 w-3.5">
+            <Package size={14} className="text-info" />
+          </div>
+        ) : selectable ? (
           <input
             type="checkbox"
             checked={selected}
@@ -4760,6 +4812,7 @@ function OrderRow({
                 date only re-derives the "N days" transit shown by the EDD. A
                 per-order date highlights in blue. */}
             {isReady &&
+              !inGroup &&
               (order.isWalmart ? !wmBought && !wmShipped : true) && (
                 <span className="inline-flex items-center gap-1 text-[length:var(--ship-meta)] text-ink-3">
                   · Ship
@@ -4947,7 +5000,7 @@ function OrderRow({
               : urgencyClass(order.deliverBy)) ?? "text-ink"
           }
         />
-        {(isReady || isBought) && (
+        {(isReady || isBought) && !inGroup && (
           <button
             type="button"
             onClick={onEditPackage}
@@ -4986,7 +5039,7 @@ function OrderRow({
             )}
           </button>
         )}
-        {(isReady || isBought) && (
+        {(isReady || isBought) && !inGroup && (
           <Cell
             label={isBought ? "Label cost (bought)" : "Label cost"}
             value={
@@ -5019,7 +5072,7 @@ function OrderRow({
             }
           />
         )}
-        {(isReady || isBought) && (
+        {(isReady || isBought) && !inGroup && (
           // Carrier/service: when an operator override is active we show
           // their chosen rate in green with a "(manual)" tag, plus a Clear
           // button to revert to the algorithmic pick. Pre-purchase only —
@@ -5259,7 +5312,7 @@ function OrderRow({
         </div>
       )}
 
-      {isReady && !wmBought && !wmShipped && (
+      {isReady && !inGroup && !wmBought && !wmShipped && (
         <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
           {planStop && rateOverride ? (
             // Algorithm stopped this order (e.g. no rate meets the deadline),
@@ -5378,7 +5431,13 @@ function OrderRow({
           every shipping row regardless of channel or state. Rollback
           handles "supplier didn't deliver" (keeps the label); Discard
           handles "order cancelled" (refunds the label). Both Amazon
-          and Walmart paths are dispatched server-side. */}
+          and Walmart paths are dispatched server-side.
+
+          Hidden for a group member: there is no per-order label to discard
+          (the group bought ONE), and rolling a single member back would
+          leave the others pointing at a parcel that no longer exists. Both
+          actions belong to the group — un-merge first, then act. */}
+      {!inGroup && (
       <div className="mt-3 ml-6 flex flex-wrap items-center gap-2 border-t border-rule pt-2">
         <Button
           size="sm"
@@ -5415,6 +5474,7 @@ function OrderRow({
           )}
         </Button>
       </div>
+      )}
         </div>
         {/* /right column */}
       </div>
@@ -5441,6 +5501,11 @@ function MergeBanner({
 }) {
   const blocked = merge.groupCount - merge.readyCount;
   const groupWord = merge.groupCount === 1 ? "group" : "groups";
+  const blockedNumbers = [
+    ...new Set(
+      merge.candidates.flatMap((c) => c.blockedOrderNumbers ?? []),
+    ),
+  ];
   return (
     <button
       type="button"
@@ -5473,6 +5538,14 @@ function MergeBanner({
           {blocked > 0 &&
             ` ${blocked} waiting on goods to be purchased first.`}
         </div>
+        {/* Name the orders holding a group back. "Waiting on goods" without
+            saying WHICH order sends the operator hunting through the queue
+            for a row that the day filter may not even be showing. */}
+        {blockedNumbers.length > 0 && (
+          <div className="text-[length:var(--ship-meta)] text-ink-3">
+            Not purchased yet: {blockedNumbers.join(", ")}
+          </div>
+        )}
       </div>
       <span
         className={cn(

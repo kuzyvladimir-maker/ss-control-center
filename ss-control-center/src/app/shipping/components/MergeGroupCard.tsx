@@ -14,8 +14,8 @@
 // carries the tightest dispatch deadline in the normal case. Every other member
 // is ship-confirmed with that label's tracking.
 
-import { useCallback, useEffect, useState } from "react";
-import { Loader2, Package, Trash2, Check, ShoppingCart } from "lucide-react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { Loader2, Package, Trash2, Check, ShoppingCart, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BoxPresetPicker } from "./BoxPresetPicker";
 import { WeightInput, type WeightUnit, toLbs } from "./WeightInput";
@@ -132,6 +132,14 @@ function dayLabel(ymd: string): string {
   return Number.isNaN(d.getTime()) ? "" : DAY_SHORT[d.getDay()];
 }
 
+// Turn the label bytes into something the browser can open in a tab.
+function base64ToPdfUrl(b64: string): string {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+}
+
 // Today in Eastern — the operator's day, matching the server's todayNY().
 function todayET(): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -143,12 +151,25 @@ export function MergeGroupCard({
   group,
   orders,
   onUpdate,
+  onRefresh,
   onDissolve,
+  renderMember,
 }: {
   group: MergeGroupCardGroup;
   orders: OrderLite[];
   onUpdate: (patch: Record<string, unknown>) => Promise<void>;
+  /** Re-read the groups. Separate from onUpdate on purpose: a read-back is
+   *  not an edit, and a bought group refuses edits. */
+  onRefresh: () => Promise<void>;
   onDissolve: () => Promise<void>;
+  /** Renders one member as the SAME row the rest of the queue uses, so a
+   *  merged parcel shows every product, photo and figure an ordinary order
+   *  shows. Returns null for a member that has already left the queue (its
+   *  order was ship-confirmed), and the compact line below stands in. */
+  renderMember?: (
+    orderId: string,
+    role: "primary" | "sibling",
+  ) => ReactNode | null;
 }) {
   const byId = new Map(orders.map((o) => [o.orderId, o]));
   const members = group.members.map((m) => ({
@@ -195,6 +216,9 @@ export function MergeGroupCard({
   const [showAllRates, setShowAllRates] = useState(false);
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<string | null>(null);
+  // In-memory copy of the label, used only when neither Drive nor a proxy
+  // link is available. Lives for the life of the page — long enough to print.
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
 
   const isBought = group.status === "bought";
   // Frozen ships on Amazon only — a frozen parcel behind a Walmart order is the
@@ -316,8 +340,16 @@ export function MergeGroupCard({
         j.warning ??
           `Bought — tracking ${j.tracking} sent to all ${j.members?.length ?? 0} orders.`,
       );
-      // Refresh the group so its bought state and per-member sync show through.
-      await onUpdate({});
+      // Drive was down (or isn't configured) and there's no proxy link for
+      // this channel — hold the bytes so the operator can still open and
+      // print the label they just paid for.
+      if (!j.labelPdfUrl && typeof j.pdfBase64 === "string") {
+        setPdfBlobUrl(base64ToPdfUrl(j.pdfBase64));
+      }
+      // Re-read the group so its bought state, tracking and per-member sync
+      // show through. This is a READ — sending it as a package edit is what
+      // made a successful purchase report itself as a failure.
+      await onRefresh();
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -384,63 +416,90 @@ export function MergeGroupCard({
         </div>
       </div>
 
-      {/* Members. The primary is called out because that is the order the
-          real label is bought against — the others receive its tracking. */}
-      <div className="mt-2 space-y-1">
-        {members.map((m) => (
-          <div
-            key={m.id}
-            className="flex flex-wrap items-center gap-2 rounded bg-surface px-2 py-1.5 text-[length:var(--ship-meta)]"
-          >
-            <span className="font-mono text-ink">{m.orderNumber}</span>
-            {m.orderId === group.primaryOrderId ? (
-              <span className="rounded bg-info px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
-                label bought here
-              </span>
-            ) : (
-              <span className="rounded border border-rule px-1.5 py-0.5 text-[length:var(--ship-badge)] text-ink-3">
-                gets the same tracking
-              </span>
-            )}
-            {m.order && (
-              <span className="text-ink-3">{m.order.storeName}</span>
-            )}
-            <span className="min-w-0 flex-1 truncate text-ink-2">
-              {m.order?.items
-                .map((i) => `${i.quantity}× ${i.productTitle}`)
-                .join(" + ")}
-            </span>
-            {m.shipmentSyncedAt && (
-              <span className="text-green-ink">tracking sent ✓</span>
-            )}
-            {m.shipmentSyncError && (
-              <span className="text-danger" title={m.shipmentSyncError}>
-                tracking failed
-              </span>
-            )}
-          </div>
-        ))}
+      {/* Members. Each one renders as the SAME row it would have in the
+          queue — photo, product, money, deadline, everything — because a
+          merged parcel is still those orders and the operator needs to read
+          them exactly as they read every other row. The merge-specific facts
+          (who carries the real label, who gets a copy of the tracking) ride
+          on a strip above each row rather than replacing the row.
+
+          The compact line is the fallback for a member that has already left
+          the queue: once its shipment is confirmed, the order is no longer in
+          the dashboard's list and there is no row to render. */}
+      <div className="mt-2 space-y-2">
+        {members.map((m) => {
+          const isPrimary = m.orderId === group.primaryOrderId;
+          const row = renderMember?.(
+            m.orderId,
+            isPrimary ? "primary" : "sibling",
+          );
+          return (
+            <div key={m.id} className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2 text-[length:var(--ship-meta)]">
+                {isPrimary ? (
+                  <span className="rounded bg-info px-1.5 py-0.5 text-[length:var(--ship-badge)] font-semibold text-white">
+                    label bought here
+                  </span>
+                ) : (
+                  <span className="rounded border border-rule bg-surface px-1.5 py-0.5 text-[length:var(--ship-badge)] text-ink-3">
+                    gets the same tracking
+                  </span>
+                )}
+                {m.shipmentSyncedAt && (
+                  <span className="text-green-ink">tracking sent ✓</span>
+                )}
+                {m.shipmentSyncError && (
+                  <span className="text-danger" title={m.shipmentSyncError}>
+                    tracking failed — {m.shipmentSyncError}
+                  </span>
+                )}
+              </div>
+              {row ?? (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-rule bg-surface px-2 py-1.5 text-[length:var(--ship-meta)]">
+                  <span className="font-mono text-ink">{m.orderNumber}</span>
+                  {m.order && (
+                    <span className="text-ink-3">{m.order.storeName}</span>
+                  )}
+                  <span className="min-w-0 flex-1 truncate text-ink-2">
+                    {m.order?.items
+                      .map((i) => `${i.quantity}× ${i.productTitle}`)
+                      .join(" + ") ?? "shipped — no longer in the queue"}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {isBought ? (
-        <div className="mt-2 border-t border-rule pt-2 text-[length:var(--ship-meta)]">
-          <span className="text-ink-2">
+        // The label exists. Everything the operator needs to finish the box:
+        // what was bought, the tracking that went to every member, and the
+        // PDF to print. The PDF is the point — a merged label that can't be
+        // printed is the same as no label at all.
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-rule pt-3 text-[length:var(--ship-meta)]">
+          <span className="font-medium text-ink">
             {group.carrier} {group.service}
             {group.price != null && ` · $${group.price.toFixed(2)}`}
           </span>
-          <span className="ml-3 text-ink-3">
+          <span className="text-ink-3">
             Tracking:{" "}
             <span className="font-mono text-ink-2">{group.trackingNumber}</span>
           </span>
-          {group.labelPdfUrl && (
+          {group.labelPdfUrl || pdfBlobUrl ? (
             <a
-              href={group.labelPdfUrl}
+              href={group.labelPdfUrl ?? pdfBlobUrl ?? "#"}
               target="_blank"
               rel="noreferrer"
-              className="ml-3 text-info underline"
+              className="ml-auto inline-flex items-center gap-1 rounded bg-info px-3 py-1.5 text-[length:var(--ship-button)] font-semibold text-white"
             >
-              Open PDF
+              <FileText size={12} />
+              Open label PDF
             </a>
+          ) : (
+            <span className="ml-auto text-warn-strong">
+              Label PDF not saved — open the shipment in Veeqo to print it.
+            </span>
           )}
         </div>
       ) : (

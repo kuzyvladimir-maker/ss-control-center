@@ -40,3 +40,6 @@ If Vladimir asks Veeqo support and they expose a merge API endpoint (or hands on
 - [Как merge устроен у Veeqo — разбор на живых данных](merge-orders-veeqo-mechanics.md)
   — механика объединения, зеркальные отгрузки с трек-номером, и почему
   группировка теперь идёт по `mergable_checksum` самого Veeqo.
+- [Почему покупка «не работала» — разбор 2026-08-05](merge-orders-buy-and-visibility-fixes-2026-08-05.md)
+  — read-back вместо PATCH после покупки, сохранение PDF лейбла, видимость
+  купленной группы, merge-mode как режим и вид карточки.

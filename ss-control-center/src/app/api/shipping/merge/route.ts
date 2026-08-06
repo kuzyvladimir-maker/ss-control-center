@@ -67,8 +67,19 @@ export async function GET() {
       "awaiting_fulfillment",
     )) as VeeqoOrderLite[];
 
+    // Open groups plus the ones bought recently. A bought group used to
+    // vanish from the page the moment its label was purchased — which is
+    // exactly when the operator needs it most: that is where the tracking
+    // number and the label PDF live, and the box still has to be packed and
+    // printed. Two days is enough to cover a Friday buy picked up on Monday.
+    const boughtSince = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const openGroups = await prisma.mergeGroup.findMany({
-      where: { status: "open" },
+      where: {
+        OR: [
+          { status: "open" },
+          { status: "bought", boughtAt: { gte: boughtSince } },
+        ],
+      },
       include: { members: true },
       orderBy: { createdAt: "desc" },
     });
@@ -282,9 +293,24 @@ export async function PATCH(request: NextRequest) {
     if (!groupId) {
       return NextResponse.json({ error: "groupId is required" }, { status: 400 });
     }
-    const group = await prisma.mergeGroup.findUnique({ where: { id: groupId } });
+    const group = await prisma.mergeGroup.findUnique({
+      where: { id: groupId },
+      include: { members: true },
+    });
     if (!group) {
       return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    }
+    // An empty patch is a plain read-back — the client asking "give me this
+    // group as it stands now". It changes nothing, so it must not be refused
+    // on a bought group. It used to be: the card re-read itself this way right
+    // after a successful purchase, got a 409 back, and showed the operator a
+    // red "can no longer change" error over a label that had in fact been
+    // bought and paid for.
+    const hasChange = ["productType", "boxSize", "weight", "primaryOrderId"].some(
+      (k) => body[k] != null,
+    );
+    if (!hasChange) {
+      return NextResponse.json({ group });
     }
     if (group.status !== "open") {
       return NextResponse.json(
