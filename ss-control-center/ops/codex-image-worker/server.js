@@ -820,7 +820,12 @@ const server = http.createServer((req, res) => {
   const isGenerate = req.method === "POST" && url.pathname === "/generate";
   const isAnalyze = req.method === "POST" && url.pathname === "/analyze";
   const isAnalyzeClaude = req.method === "POST" && url.pathname === "/analyze-claude";
-  const isComplete = req.method === "POST" && url.pathname === "/complete";
+  // Two names, one handler. `/text-claude` is what src/lib/text-gen expects and
+  // was never actually served — every listing-copy call had been falling
+  // through to the paid API, which has no credit, so content generation was
+  // dead. `/complete` is the newer, general name.
+  const isComplete = req.method === "POST"
+    && (url.pathname === "/complete" || url.pathname === "/text-claude");
   if (!isGenerate && !isAnalyze && !isAnalyzeClaude && !isComplete) {
     res.writeHead(404, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));

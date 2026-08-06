@@ -24,7 +24,7 @@
  * Cost: ~$0.008 per listing with prompt caching enabled.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 import { CLAUDE } from "@/lib/ai-models";
 
 const MODEL = CLAUDE.balanced;
@@ -131,14 +131,8 @@ const EMPTY_RESULT: Omit<RewriteOutput, "error"> = {
   cache_hit: false,
 };
 
-let _client: Anthropic | null = null;
-function getClient(): Anthropic | null {
-  if (_client) return _client;
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  _client = new Anthropic({ apiKey: key });
-  return _client;
-}
+// No paid client. Rewrites run on the Max subscription through the box worker,
+// the same transport the copy generator uses (owner instruction 2026-08-06).
 
 // Visible for tests.
 export function buildUserMessage(input: RewriteInput): string {
@@ -307,14 +301,16 @@ async function callOnce(
 export async function rewriteListingContent(
   input: RewriteInput,
 ): Promise<RewriteOutput> {
-  const client = getClient();
+  const client = claudeWorkerClient();
   if (!client) {
-    return { ...EMPTY_RESULT, error: "ANTHROPIC_API_KEY not set" };
+    return {
+      ...EMPTY_RESULT,
+      error: "The Claude subscription worker is not configured "
+        + "(CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). "
+        + "This platform does not use paid API keys, so there is no fallback.",
+    };
   }
-  return rewriteListingContentWithClient(
-    client as unknown as AnthropicLike,
-    input,
-  );
+  return rewriteListingContentWithClient(client as unknown as AnthropicLike, input);
 }
 
 // Visible for tests so we can inject a stub Anthropic client.

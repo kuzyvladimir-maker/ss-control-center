@@ -22,7 +22,6 @@
  * so we pay for one Claude call across them.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import {
   loadKnowledgeBase,
   enforceCacheMarkerLimit,
@@ -366,16 +365,10 @@ function buildUserMessage(input: ContentGenerationInput): string {
 
 // ── Public surface ──────────────────────────────────────────────────────
 
-let _client: Anthropic | null = null;
-function getClient(): AnthropicLike | null {
-  const stub = (globalThis as { __BUNDLE_FACTORY_CLAUDE_STUB__?: AnthropicLike })
-    .__BUNDLE_FACTORY_CLAUDE_STUB__;
-  if (stub) return stub;
-  if (_client) return _client as unknown as AnthropicLike;
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  _client = new Anthropic({ apiKey: key });
-  return _client as unknown as AnthropicLike;
+/** The test stub, or nothing. There is no paid client to fall back to. */
+function getStub(): AnthropicLike | null {
+  return (globalThis as { __BUNDLE_FACTORY_CLAUDE_STUB__?: AnthropicLike })
+    .__BUNDLE_FACTORY_CLAUDE_STUB__ ?? null;
 }
 
 interface AnthropicLike {
@@ -396,30 +389,26 @@ interface AnthropicLike {
 export async function generateContent(
   input: ContentGenerationInput,
 ): Promise<ContentGenerationOutput> {
-  // Subscription FIRST (Vladimir 2026-07-07, same architecture as images +
-  // vision): the Claude worker on the OpenClaw box writes the copy at $0 on
-  // the Max subscription. The paid Anthropic API is only the INFRASTRUCTURE
-  // fallback — a transport/worker failure falls through to it; model-quality
-  // failures (JSON/validation) do NOT, the compliance retry loop handles those.
-  const stub = (globalThis as { __BUNDLE_FACTORY_CLAUDE_STUB__?: AnthropicLike })
-    .__BUNDLE_FACTORY_CLAUDE_STUB__;
-  const worker = stub ? null : claudeWorkerClient();
-  if (worker) {
-    const viaWorker = await generateContentWithClient(worker, input);
-    const infraFailure = viaWorker.error?.startsWith("Claude API call failed");
-    if (!infraFailure) return viaWorker;
-    console.error(`[content-gen] subscription worker failed, falling back to paid API: ${viaWorker.error}`);
-  }
-  const client = getClient();
-  if (!client) {
+  // The Claude worker on the OpenClaw box writes the copy at $0 on the Max
+  // subscription. There is no paid fallback: the owner removed paid API tokens
+  // outright on 2026-08-06, and a fallback that cannot be paid for is not a
+  // fallback — it is a second, more confusing error message.
+  //
+  // Worth remembering how this was found: `/text-claude` had never actually
+  // been served by the box, so every call quietly fell through to the paid API
+  // and died there. A silent fallback hid a dead endpoint for weeks.
+  const stub = getStub();
+  if (stub) return generateContentWithClient(stub, input);
+  const worker = claudeWorkerClient();
+  if (!worker) {
     return {
       ...EMPTY_OUTPUT,
-      error: worker
-        ? "subscription worker failed and ANTHROPIC_API_KEY not set"
-        : "ANTHROPIC_API_KEY not set (and claude text worker not configured)",
+      error: "The Claude subscription worker is not configured "
+        + "(CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). "
+        + "This platform does not use paid API keys, so there is no fallback.",
     };
   }
-  return generateContentWithClient(client, input);
+  return generateContentWithClient(worker, input);
 }
 
 export async function generateContentWithClient(
