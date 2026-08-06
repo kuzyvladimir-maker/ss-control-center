@@ -19,9 +19,10 @@
 
 // A single listing's copy takes ~20-90s on the box (plus queue wait behind
 // COGS vision jobs). Keep under Vercel's 300s route ceiling.
-const DEFAULT_TIMEOUT_MS = 240_000;
+import { completeWithSubscription } from "@/lib/llm/subscription";
 
-/** /text-claude URL derived from the image worker URL. null = not configured. */
+
+/** Kept for callers that only need to know whether the worker is set up. */
 export function claudeTextWorkerUrl(): string | null {
   const base = (process.env.CODEX_IMAGE_WORKER_URL ?? "").trim();
   if (!base) return null;
@@ -42,37 +43,15 @@ export interface ClaudeTextArgs {
 export async function generateTextViaClaudeWorker(
   args: ClaudeTextArgs,
 ): Promise<{ text: string; model: string }> {
-  const url = claudeTextWorkerUrl();
-  const token = (process.env.CODEX_IMAGE_WORKER_TOKEN ?? "").trim();
-  if (!url || !token) throw new Error("claude text worker not configured");
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      prompt: args.prompt,
-      ...(args.system ? { system: args.system } : {}),
-      model: args.model ?? "sonnet",
-    }),
-    signal: AbortSignal.timeout(args.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+  // Delegates to the shared two-subscription client: Claude Max first, ChatGPT
+  // Pro when it refuses. Both are subscriptions Vladimir already pays for, and
+  // neither is a paid API — that path was removed on 2026-08-06.
+  const result = await completeWithSubscription({
+    prompt: args.prompt,
+    ...(args.system ? { system: args.system } : {}),
+    model: args.model ?? "sonnet",
   });
-
-  type WorkerReply = { ok?: boolean; text?: string; model?: string; error?: string };
-  let json: WorkerReply | null = null;
-  try {
-    json = (await res.json()) as WorkerReply;
-  } catch {
-    /* non-JSON reply — treated as failure below */
-  }
-  if (!res.ok || !json?.ok || typeof json.text !== "string" || !json.text.trim()) {
-    throw new Error(
-      `claude text worker failed (HTTP ${res.status}): ${json?.error ?? "no text"}`,
-    );
-  }
-  return { text: json.text, model: json.model ?? args.model ?? "sonnet" };
+  return { text: result.text, model: result.model };
 }
 
 // ── AnthropicLike adapter ────────────────────────────────────────────────────

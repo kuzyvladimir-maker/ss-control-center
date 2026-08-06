@@ -36,15 +36,62 @@ const ok = (text: string) =>
     headers: { "content-type": "application/json" },
   })) as unknown as typeof fetch;
 
-test("the completion endpoint is derived from the image worker's URL", () => {
+test("each subscription lane has its own endpoint, derived from one URL", () => {
   assert.equal(
     completionEndpoint("https://box.example/codex-image/generate"),
-    "https://box.example/codex-image/complete",
+    "https://box.example/codex-image/text-claude",
   );
   assert.equal(
-    completionEndpoint("https://box.example/codex-image/generate/"),
-    "https://box.example/codex-image/complete",
+    completionEndpoint("https://box.example/codex-image/generate/", "codex"),
+    "https://box.example/codex-image/text-codex",
   );
+});
+
+test("when Claude Max is exhausted, ChatGPT Pro answers", async () => {
+  // The whole point of paying for two subscriptions: one hitting its monthly
+  // limit is a slowdown, not an outage.
+  const tried: string[] = [];
+  const flaky = (async (url: string) => {
+    tried.push(url);
+    if (url.endsWith("/text-claude")) {
+      return new Response(JSON.stringify({ error: "usage limit reached" }), { status: 429 });
+    }
+    return new Response(JSON.stringify({ ok: true, text: "answered", model: "codex" }), { status: 200 });
+  }) as unknown as typeof fetch;
+
+  const result = await withWorker(() =>
+    completeWithSubscription({ prompt: "hi", fetchImpl: flaky }));
+  assert.equal(result.text, "answered");
+  assert.equal(result.lane, "codex");
+  assert.equal(result.costCents, 0);
+  assert.equal(tried.length, 2);
+  assert.ok(tried[0].endsWith("/text-claude"));
+});
+
+test("both lanes refusing is reported once, naming both", async () => {
+  const dead = (async () =>
+    new Response(JSON.stringify({ error: "limit" }), { status: 429 })) as unknown as typeof fetch;
+  await assert.rejects(
+    () => withWorker(() => completeWithSubscription({ prompt: "hi", fetchImpl: dead })),
+    (error: unknown) => {
+      assert.ok(error instanceof SubscriptionLlmUnavailable);
+      assert.match(error.message, /claude:/);
+      assert.match(error.message, /codex:/);
+      return true;
+    },
+  );
+});
+
+test("a caller can pin one subscription", async () => {
+  const tried: string[] = [];
+  const spy = (async (url: string) => {
+    tried.push(url);
+    return new Response(JSON.stringify({ ok: true, text: "x" }), { status: 200 });
+  }) as unknown as typeof fetch;
+  await withWorker(() =>
+    completeWithSubscription({ prompt: "hi", lanes: ["codex"], fetchImpl: spy }));
+  assert.equal(tried.length, 1);
+  assert.ok(tried[0].endsWith("/text-codex"));
 });
 
 test("a completion always reports zero cost", async () => {
@@ -64,7 +111,7 @@ test("the request carries the bearer token and the prompt", async () => {
   }) as unknown as typeof fetch;
   await withWorker(() =>
     completeWithSubscription({ prompt: "brief", system: "rules", fetchImpl: spy }));
-  assert.match(seenUrl, /\/complete$/);
+  assert.match(seenUrl, /\/text-claude$/);
   const init = seenInit as unknown as { headers: Record<string, string>; body: string };
   assert.equal(init.headers.authorization, "Bearer test-token");
   const body = JSON.parse(init.body) as { prompt: string; system: string };
@@ -78,6 +125,7 @@ test("an unreachable worker fails — it does not fall back to a paid API", asyn
     () => withWorker(() => completeWithSubscription({ prompt: "hi", fetchImpl: dead })),
     (error: unknown) => {
       assert.ok(error instanceof SubscriptionLlmUnavailable);
+      assert.match(error.message, /No subscription lane answered/);
       assert.match(error.message, /could not be reached/);
       return true;
     },

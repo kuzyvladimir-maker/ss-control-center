@@ -636,6 +636,55 @@ function runClaudeText(prompt, model, systemPrompt) {
   });
 }
 
+// --- TEXT via the Codex CLI (the SECOND subscription: ChatGPT Pro) -------------
+// Owner instruction 2026-08-06: BOTH subscriptions must be wired, not just
+// Claude. This is the other lane, and it is what makes exhausted Claude Max
+// limits a slowdown instead of an outage.
+//
+// `codex exec` prints a transcript, not a bare answer, so the prompt asks for
+// the answer between two markers and we cut it out. Guessing at "the last
+// paragraph" would silently return reasoning as if it were the answer.
+const CODEX_ANSWER_OPEN = "<<<ANSWER>>>";
+const CODEX_ANSWER_CLOSE = "<<<END>>>";
+
+function codexAnswerFrom(stdout) {
+  const open = stdout.lastIndexOf(CODEX_ANSWER_OPEN);
+  if (open < 0) return "";
+  const from = open + CODEX_ANSWER_OPEN.length;
+  const close = stdout.indexOf(CODEX_ANSWER_CLOSE, from);
+  return (close < 0 ? stdout.slice(from) : stdout.slice(from, close)).trim();
+}
+
+async function handleCompleteCodex(body) {
+  const prompt = String((body && body.prompt) || "").trim();
+  if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const systemPrompt = body && body.system ? String(body.system) : "";
+
+  const framed = [
+    systemPrompt,
+    prompt,
+    "",
+    `Print your COMPLETE answer between ${CODEX_ANSWER_OPEN} and ${CODEX_ANSWER_CLOSE}.`,
+    "Put nothing else between those markers, and do not use any tools.",
+  ].filter(Boolean).join("\n\n");
+
+  const { code, stdout, stderr } = await runCodex(framed);
+  if (code !== 0) {
+    return {
+      status: 502,
+      json: { error: `codex text exited with code ${code}`, stderr: stderr.slice(-2000) },
+    };
+  }
+  const text = codexAnswerFrom(stdout);
+  if (!text) {
+    return {
+      status: 502,
+      json: { error: "codex produced no delimited answer", stderr: stderr.slice(-2000) },
+    };
+  }
+  return { status: 200, json: { ok: true, text, model: "codex" } };
+}
+
 async function handleComplete(body) {
   const prompt = String((body && body.prompt) || "").trim();
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
@@ -826,7 +875,10 @@ const server = http.createServer((req, res) => {
   // dead. `/complete` is the newer, general name.
   const isComplete = req.method === "POST"
     && (url.pathname === "/complete" || url.pathname === "/text-claude");
-  if (!isGenerate && !isAnalyze && !isAnalyzeClaude && !isComplete) {
+  // The second subscription lane. Same request shape, different provider.
+  const isCompleteCodex = req.method === "POST"
+    && (url.pathname === "/complete-codex" || url.pathname === "/text-codex");
+  if (!isGenerate && !isAnalyze && !isAnalyzeClaude && !isComplete && !isCompleteCodex) {
     res.writeHead(404, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));
     return;
@@ -857,7 +909,10 @@ const server = http.createServer((req, res) => {
       // Both ride the Claude subscription, so they share its queue — running
       // them concurrently would race the same rate limit.
       ? enqueueClaude(() => (isComplete ? handleComplete(body) : handleAnalyzeClaude(body)))
-      : enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body))))
+      // Everything else rides the ChatGPT subscription and shares ITS queue.
+      : enqueue(() => (isCompleteCodex
+        ? handleCompleteCodex(body)
+        : isAnalyze ? handleAnalyze(body) : handleGenerate(body))))
       .then((result) => {
         if (result.png) {
           res.writeHead(200, {

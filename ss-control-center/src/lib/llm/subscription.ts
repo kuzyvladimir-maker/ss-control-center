@@ -14,7 +14,17 @@
  * ANTHROPIC_API_KEY from the child environment, so even a stray key on the box
  * cannot turn a subscription call into a billed one.
  *
- * See `ops/codex-image-worker/server.js` (`/complete`) for the other end.
+ * There are TWO subscription lanes, because Vladimir pays for two and an
+ * exhausted monthly limit on one should be a slowdown, not an outage:
+ *
+ *   /text-claude  → `claude` CLI on Claude Max
+ *   /text-codex   → `codex exec` on ChatGPT Pro
+ *
+ * Claude goes first (it answers faster and follows a JSON contract more
+ * reliably); Codex picks up whatever it refuses. Both cost nothing. Neither is
+ * an API key.
+ *
+ * See `ops/codex-image-worker/server.js` for the other end.
  */
 
 /**
@@ -38,6 +48,8 @@ export interface SubscriptionCompletionInput {
   system?: string;
   /** `sonnet`, `opus`, `haiku` — CLI aliases, not API model IDs. */
   model?: string;
+  /** Restrict to one subscription. Default: try both, Claude first. */
+  lanes?: readonly SubscriptionLane[];
   /** Overrides the test seam; production never sets this. */
   fetchImpl?: typeof fetch;
 }
@@ -45,13 +57,29 @@ export interface SubscriptionCompletionInput {
 export interface SubscriptionCompletion {
   text: string;
   model: string;
+  /** Which subscription answered. Worth logging when one lane is degraded. */
+  lane: SubscriptionLane;
   /** Always zero. Kept so callers can record cost without special-casing. */
   costCents: 0;
 }
 
-/** …/generate → …/complete, the same derivation the vision client uses. */
-export function completionEndpoint(generateUrl: string): string {
-  return generateUrl.replace(/\/generate\/?$/, "/complete");
+/** Which subscription answered, or should. */
+export type SubscriptionLane = "claude" | "codex";
+
+/** Tried in order. Claude first: faster, and steadier on a JSON contract. */
+export const SUBSCRIPTION_LANES: readonly SubscriptionLane[] = ["claude", "codex"];
+
+const LANE_PATH: Record<SubscriptionLane, string> = {
+  claude: "/text-claude",
+  codex: "/text-codex",
+};
+
+/** …/generate → the lane's endpoint, the same derivation the vision client uses. */
+export function completionEndpoint(
+  generateUrl: string,
+  lane: SubscriptionLane = "claude",
+): string {
+  return generateUrl.replace(/\/generate\/?$/, LANE_PATH[lane]);
 }
 
 export function subscriptionLlmConfigured(): boolean {
@@ -79,12 +107,36 @@ export async function completeWithSubscription(
   const prompt = input.prompt.trim();
   if (!prompt) throw new SubscriptionLlmUnavailable("An empty prompt was requested");
 
+  const lanes = input.lanes ?? SUBSCRIPTION_LANES;
+  const failures: string[] = [];
+  for (const lane of lanes) {
+    try {
+      return await askLane(lane, base, token, prompt, input);
+    } catch (error) {
+      // A lane that is out of monthly quota, or a worker that is down, is not
+      // the end of the call — the other subscription is right there. Only when
+      // both refuse does the caller hear about it.
+      failures.push(`${lane}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  throw new SubscriptionLlmUnavailable(
+    `No subscription lane answered. ${failures.join(" | ")}`,
+  );
+}
+
+async function askLane(
+  lane: SubscriptionLane,
+  base: string,
+  token: string,
+  prompt: string,
+  input: SubscriptionCompletionInput,
+): Promise<SubscriptionCompletion> {
   const doFetch = input.fetchImpl ?? fetch;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await doFetch(completionEndpoint(base), {
+    response = await doFetch(completionEndpoint(base, lane), {
       method: "POST",
       headers: {
         authorization: `Bearer ${token}`,
@@ -93,14 +145,14 @@ export async function completeWithSubscription(
       body: JSON.stringify({
         prompt,
         ...(input.system ? { system: input.system } : {}),
-        ...(input.model ? { model: input.model } : {}),
+        // The model alias is Claude's; Codex picks its own.
+        ...(input.model && lane === "claude" ? { model: input.model } : {}),
       }),
       signal: controller.signal,
     });
   } catch (error) {
     throw new SubscriptionLlmUnavailable(
-      `The subscription model worker could not be reached: `
-      + (error instanceof Error ? error.message : String(error)),
+      `could not be reached: ${error instanceof Error ? error.message : String(error)}`,
     );
   } finally {
     clearTimeout(timer);
@@ -111,11 +163,15 @@ export async function completeWithSubscription(
     | null;
   if (!response.ok || !body?.text) {
     throw new SubscriptionLlmUnavailable(
-      `The subscription model worker returned HTTP ${response.status}`
-      + (body?.error ? `: ${body.error}` : ""),
+      `HTTP ${response.status}${body?.error ? `: ${body.error}` : ""}`,
     );
   }
-  return { text: body.text, model: body.model ?? "sonnet", costCents: 0 };
+  return {
+    text: body.text,
+    model: body.model ?? (lane === "claude" ? "sonnet" : "codex"),
+    lane,
+    costCents: 0,
+  };
 }
 
 /**
