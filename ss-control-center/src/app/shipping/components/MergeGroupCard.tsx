@@ -152,6 +152,7 @@ export function MergeGroupCard({
   orders,
   onUpdate,
   onRefresh,
+  onBought,
   onDissolve,
   renderMember,
 }: {
@@ -161,6 +162,9 @@ export function MergeGroupCard({
   /** Re-read the groups. Separate from onUpdate on purpose: a read-back is
    *  not an edit, and a bought group refuses edits. */
   onRefresh: () => Promise<void>;
+  /** The label was just bought. The page holds the group on screen until the
+   *  operator refreshes — same as it holds a just-bought order row. */
+  onBought?: () => void;
   onDissolve: () => Promise<void>;
   /** Renders one member as the SAME row the rest of the queue uses, so a
    *  merged parcel shows every product, photo and figure an ordinary order
@@ -346,6 +350,10 @@ export function MergeGroupCard({
       if (!j.labelPdfUrl && typeof j.pdfBase64 === "string") {
         setPdfBlobUrl(base64ToPdfUrl(j.pdfBase64));
       }
+      // Claim the group as bought-in-this-session BEFORE the re-read, or the
+      // page would drop it the moment the server reports it as bought and the
+      // operator would lose the label they just paid for.
+      onBought?.();
       // Re-read the group so its bought state, tracking and per-member sync
       // show through. This is a READ — sending it as a package edit is what
       // made a successful purchase report itself as a failure.

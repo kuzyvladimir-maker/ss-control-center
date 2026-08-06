@@ -854,6 +854,15 @@ export default function ShippingLabelsPage() {
   const [mergeMode, setMergeMode] = useState(false);
   const [merging, setMerging] = useState(false);
   const [mergeMsg, setMergeMsg] = useState<string | null>(null);
+  // Groups whose label was bought in THIS session. A merged group follows the
+  // same rule as an ordinary bought row: it holds its place so the operator
+  // can print the label and see the tracking, and a deliberate Refresh is what
+  // lets it settle out of the queue (owner, 2026-08-05). The server keeps
+  // serving bought groups for a while — this set is what decides whether the
+  // page still shows one.
+  const [sessionBoughtGroups, setSessionBoughtGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
@@ -1193,8 +1202,11 @@ export default function ShippingLabelsPage() {
     setLoading(true);
     setError(null);
     // A deliberate refresh is when just-bought rows are allowed to settle into
-    // their real state (bought / awaiting ship-confirm) and move.
+    // their real state (bought / awaiting ship-confirm) and move. Merged
+    // groups settle the same way: once bought, Refresh takes them out of the
+    // queue exactly like it takes out a bought order.
     setJustBought({});
+    setSessionBoughtGroups(new Set());
     try {
       // Two-pass load:
       //   1. /api/shipping/dashboard — state, $ fields, time buckets. Cheap.
@@ -1805,15 +1817,30 @@ export default function ShippingLabelsPage() {
     return set;
   }, [merge]);
 
-  // Orders already inside an open group — they render under the group card,
+  // The groups the page actually shows. Open ones always; a bought one only
+  // until the next Refresh — or for as long as one of its orders failed to
+  // receive the tracking, because that is a real problem and hiding it would
+  // leave a marketplace order reading as late with nobody watching.
+  const visibleGroups = useMemo(
+    () =>
+      (merge?.groups ?? []).filter(
+        (g) =>
+          g.status !== "bought" ||
+          sessionBoughtGroups.has(g.id) ||
+          g.members.some((m) => m.shipmentSyncError),
+      ),
+    [merge, sessionBoughtGroups],
+  );
+
+  // Orders already inside a visible group — they render under the group card,
   // not as loose rows, so the operator can't act on half a shipment.
   const groupedOrderIds = useMemo(() => {
     const set = new Set<string>();
-    for (const g of merge?.groups ?? []) {
+    for (const g of visibleGroups) {
       for (const m of g.members) set.add(m.orderId);
     }
     return set;
-  }, [merge]);
+  }, [visibleGroups]);
 
   // The state a row is RANKED by. A row bought in this session keeps the state
   // it had a moment before the purchase, so every sort input stays identical
@@ -3175,7 +3202,14 @@ export default function ShippingLabelsPage() {
 
           <Btn
             icon={<RefreshCw size={13} />}
-            onClick={load}
+            // Refresh re-reads the merged groups too. Without it a group
+            // merged (or bought) elsewhere only appeared after a full page
+            // reload, and the bought one the operator just settled out of the
+            // queue would come back on the next mount instead.
+            onClick={() => {
+              void load();
+              void loadMerge();
+            }}
             loading={loading}
           >
             {loading ? "Refreshing…" : "Refresh"}
@@ -3746,8 +3780,7 @@ export default function ShippingLabelsPage() {
             rows it competes with for the operator's attention, not in a
             separate zone above the filters. Its member orders are hidden as
             loose rows (groupedOrderIds), so nobody can buy half a shipment. */}
-        {(merge?.groups.length ?? 0) > 0 &&
-          merge!.groups.map((g) => (
+        {visibleGroups.map((g) => (
             <MergeGroupCard
               key={g.id}
               group={g}
@@ -3756,6 +3789,9 @@ export default function ShippingLabelsPage() {
                 updateMergeGroup(g.id, patch)
               }
               onRefresh={loadMerge}
+              onBought={() =>
+                setSessionBoughtGroups((prev) => new Set(prev).add(g.id))
+              }
               onDissolve={() => dissolveMergeGroup(g.id)}
               renderMember={(orderId, role) => {
                 const o = orders.find((x) => x.orderId === orderId);
@@ -3769,7 +3805,7 @@ export default function ShippingLabelsPage() {
             Fetching orders from Veeqo…
           </div>
         ) : displayedOrders.length === 0 ? (
-          (merge?.groups.length ?? 0) > 0 ? null : (
+          visibleGroups.length > 0 ? null : (
           <div className="rounded-md border border-rule bg-surface px-4 py-8 text-center text-[12px] text-ink-3">
             {searchActive
               ? archive.loading
