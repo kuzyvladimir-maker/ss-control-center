@@ -231,7 +231,10 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
           requireIngredients: true,
           requireNutrition: true,
           requireAllergens: true,
-          limit: Math.max(20, Math.min(500, intent.listing_count * 4)),
+          limit: Math.max(
+            20,
+            Math.min(500, intent.listing_count * intent.flavors_per_listing * 4),
+          ),
         },
       );
     } finally {
@@ -241,6 +244,8 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
     try {
       executionWorkItems = buildWalmartStudioDraftWorkItems({
         candidates: diagnostic.candidates,
+        flavorsPerListing: intent.flavors_per_listing,
+        unitsPerFlavor: intent.units_per_flavor,
         listingCount: intent.listing_count,
         packCount: intent.pack_count,
         storeIndex,

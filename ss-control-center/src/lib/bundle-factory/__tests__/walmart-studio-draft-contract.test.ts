@@ -109,8 +109,32 @@ test("detects any work-item mutation after admission", () => {
     priceMaxAgeMs: 86_400_000,
     zip: "33765",
   });
+  // Changing the pack size alone now trips the composition check first — the
+  // components still hold 8 units — which is a more specific refusal of the
+  // same tampering.
   assert.throws(
     () => parseWalmartStudioDraftWorkItem({ ...item, pack_count: 6 }),
+    (error) =>
+      error instanceof WalmartStudioDraftContractError &&
+      error.code === "WORK_ITEM_INVALID",
+  );
+
+  // A mutation that keeps the composition self-consistent has nothing left to
+  // catch it but the seal, so the seal must still catch it.
+  assert.throws(
+    () => parseWalmartStudioDraftWorkItem({
+      ...item,
+      pack_count: 6,
+      components: [{ ...item.components[0], quantity: 6 }],
+    }),
+    (error) =>
+      error instanceof WalmartStudioDraftContractError &&
+      error.code === "WORK_ITEM_HASH_MISMATCH",
+  );
+
+  // And so must a change to a field the composition never looks at.
+  assert.throws(
+    () => parseWalmartStudioDraftWorkItem({ ...item, zip: "90210" }),
     (error) =>
       error instanceof WalmartStudioDraftContractError &&
       error.code === "WORK_ITEM_HASH_MISMATCH",

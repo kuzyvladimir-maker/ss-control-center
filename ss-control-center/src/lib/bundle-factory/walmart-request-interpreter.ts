@@ -36,7 +36,20 @@ export interface WalmartRequestInterpretation {
   /** Product/category words without the brand, e.g. "chunky soup". */
   product: string | null;
   listing_count: number | null;
+  /** Total retail units inside ONE listing, across all flavors. */
   pack_count: number | null;
+  /**
+   * How many DIFFERENT exact products share one listing.
+   *
+   * 1 (or null) is the homogeneous multipack this lane has always built. 2+ is
+   * a mixed assortment — "20 листингов по 8 банок, по 2 вида, по 4 банки
+   * каждого" is listing_count 20, pack_count 8, flavors_per_listing 2,
+   * units_per_flavor 4. The request used to lose that entirely: the reading
+   * kept only 20 × 8 and would have built twenty single-flavor eight-packs.
+   */
+  flavors_per_listing: number | null;
+  /** Units of EACH flavor. `flavors_per_listing × units_per_flavor = pack_count`. */
+  units_per_flavor: number | null;
   target_margin_pct: number | null;
   /** One sentence back to the owner, in his own language. */
   readback: string;
@@ -61,19 +74,25 @@ Your job:
 2. Build search_query: the Latin words the product catalogue should be searched
    with — brand plus product words, no counts, no marketing words, no Cyrillic.
 3. Extract listing_count (how many DIFFERENT listings to create) and pack_count
-   (how many identical retail units inside ONE listing). "5 листингов по 8 банок"
-   means listing_count 5, pack_count 8. If a number is not stated, use null —
-   never guess a count.
+   (how many retail units inside ONE listing, counting every flavor together).
+   "5 листингов по 8 банок" means listing_count 5, pack_count 8. If a number is
+   not stated, use null — never guess a count.
+3a. A listing may mix several DIFFERENT products. When the request says so, set
+   flavors_per_listing and units_per_flavor. "20 листингов по 8 банок, в каждом
+   по 2 вида супа, по 4 банки каждого" means listing_count 20, pack_count 8,
+   flavors_per_listing 2, units_per_flavor 4. Their product must equal
+   pack_count. For a plain single-product multipack use flavors_per_listing 1
+   and units_per_flavor equal to pack_count.
 4. target_margin_pct only if the request states a margin.
 5. readback: one short sentence IN THE SELLER'S OWN LANGUAGE stating what will be
    built, so he can confirm or correct it.
 6. assumptions: anything you filled in that the request did not literally say.
-7. unsupported: anything requested that this lane cannot do — it only builds
-   homogeneous multipacks of ONE exact product per listing for Walmart. Mixed
-   assortments, gift baskets, Amazon, frozen goods and price overrides belong in
-   unsupported.
+7. unsupported: anything requested that this lane cannot do — it builds Walmart
+   multipacks, of one product or of several mixed in one listing. Gift baskets,
+   Amazon, frozen goods and price overrides belong in unsupported.
 
-Answer with the interpret_request tool. Never add commentary.`;
+Never silently drop part of the request. If you cannot express something in
+these fields, say so in unsupported rather than leaving it out.`;
 
 export class WalmartRequestInterpreterError extends Error {
   readonly code: string;
@@ -130,11 +149,44 @@ Keys, all required (use null when a value is absent):
   brand             string|null
   product           string|null
   listing_count     integer|null  1-500
-  pack_count        integer|null  1-500
+  pack_count        integer|null  1-500  total units in one listing
+  flavors_per_listing integer|null 1-20  different products sharing one listing
+  units_per_flavor  integer|null  1-500  units of each; × flavors = pack_count
   target_margin_pct number|null   1-50
   readback          string  one sentence restating the request as understood
   assumptions       string[]  what you filled in that the request did not say
   unsupported       string[]  what was asked for and cannot be done`;
+
+/**
+ * The mixed-assortment part of a reading, made consistent.
+ *
+ * A model asked for three related numbers will occasionally return two that
+ * disagree with the third. Rather than trusting the arithmetic, this derives
+ * what it can and drops what it cannot prove — a listing built on a wrong unit
+ * count is worse than one built on a missing one.
+ */
+function mixedComposition(raw: Record<string, unknown>): {
+  flavors_per_listing: number | null;
+  units_per_flavor: number | null;
+} {
+  const pack = positiveInteger(raw.pack_count, 500);
+  let flavors = positiveInteger(raw.flavors_per_listing, 20);
+  let units = positiveInteger(raw.units_per_flavor, 500);
+
+  // Either one plus the pack size determines the other.
+  if (flavors && !units && pack && pack % flavors === 0) units = pack / flavors;
+  if (units && !flavors && pack && pack % units === 0) flavors = pack / units;
+
+  // They must multiply out. When they do not, the reading is not trustworthy
+  // enough to spend a build on, so the mix is dropped and the listing falls
+  // back to the single-product multipack the pack count already describes.
+  if (flavors && units && pack && flavors * units !== pack) {
+    return { flavors_per_listing: null, units_per_flavor: null };
+  }
+  // One flavor is not a mix; say nothing rather than decorate it.
+  if (flavors === 1) return { flavors_per_listing: null, units_per_flavor: null };
+  return { flavors_per_listing: flavors, units_per_flavor: units };
+}
 
 export async function interpretWalmartRequest(
   prompt: string,
@@ -215,6 +267,7 @@ export async function interpretWalmartRequest(
     product: cleanText(raw.product),
     listing_count: positiveInteger(raw.listing_count, 500),
     pack_count: positiveInteger(raw.pack_count, 500),
+    ...mixedComposition(raw),
     target_margin_pct:
       typeof raw.target_margin_pct === "number"
         && raw.target_margin_pct >= 1

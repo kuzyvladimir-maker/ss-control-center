@@ -12,6 +12,23 @@ export const WALMART_STUDIO_DRAFT_WORK_ITEM_SCHEMA =
 export const WALMART_STUDIO_DRAFT_BRIEF_SCHEMA =
   "bundle-factory.walmart-draft-brief/1.0.0" as const;
 
+/**
+ * One exact product inside a listing, and how many of it are in the box.
+ *
+ * A listing used to be one product, so the work item named it directly. A mixed
+ * assortment — "2 flavors, 4 cans each" — needs several, and dropping that part
+ * of the request is how twenty listings of the wrong thing get built.
+ */
+export interface WalmartStudioDraftComponent {
+  donor_product_id: string;
+  canonical_variant_id: string;
+  content_observation_id: string;
+  price_observation_id: string;
+  title_at_admission: string;
+  /** Retail units of THIS product in one listing. */
+  quantity: number;
+}
+
 export interface WalmartStudioDraftWorkItem {
   schema_version: typeof WALMART_STUDIO_DRAFT_WORK_ITEM_SCHEMA;
   work_item_sha256: string;
@@ -21,6 +38,12 @@ export interface WalmartStudioDraftWorkItem {
   content_observation_id: string;
   price_observation_id: string;
   title_at_admission: string;
+  /**
+   * Everything in the box, in order. Always at least one entry, and the first
+   * mirrors the singular fields above so readers that only understand a single
+   * product keep working. Quantities sum to pack_count.
+   */
+  components: WalmartStudioDraftComponent[];
   pack_count: number;
   store_index: number;
   shipping_template_id: string;
@@ -125,10 +148,100 @@ function positiveInteger(value: unknown, label: string, maximum: number): number
   return Number(value);
 }
 
-function hashPayload(
-  item: Omit<WalmartStudioDraftWorkItem, "work_item_sha256">,
-): string {
+function hashPayload(item: Record<string, unknown>): string {
   return sha256(item);
+}
+
+/**
+ * The contents of one listing.
+ *
+ * A work item written before mixed assortments existed has no `components`; it
+ * is read as the single product its singular fields already describe, so old
+ * sealed briefs keep their exact meaning.
+ */
+/**
+ * The exact bytes a work item is sealed over.
+ *
+ * `components` is deliberately absent when the listing is the plain
+ * single-product multipack this lane always built: every work item sealed
+ * before mixed assortments existed was hashed without that field, and adding it
+ * to the digest would make each of them fail as "bytes changed after
+ * admission". A mix has no such history, so it seals over its components and
+ * cannot be altered afterwards either.
+ */
+function sealShape(
+  item: Omit<WalmartStudioDraftWorkItem, "work_item_sha256">,
+): Record<string, unknown> {
+  const plainMultipack = item.components.length === 1
+    && item.components[0].quantity === item.pack_count
+    && item.components[0].canonical_variant_id === item.canonical_variant_id;
+  if (!plainMultipack) return item as unknown as Record<string, unknown>;
+  const { components: _components, ...rest } = item;
+  void _components;
+  return rest as unknown as Record<string, unknown>;
+}
+
+function parseComponents(raw: Record<string, unknown>): WalmartStudioDraftComponent[] {
+  const packCount = positiveInteger(raw.pack_count, "pack_count", 500);
+  if (raw.components === undefined || raw.components === null) {
+    return [{
+      donor_product_id: requiredText(raw.donor_product_id, "donor_product_id"),
+      canonical_variant_id: requiredText(raw.canonical_variant_id, "canonical_variant_id"),
+      content_observation_id: requiredText(raw.content_observation_id, "content_observation_id"),
+      price_observation_id: requiredText(raw.price_observation_id, "price_observation_id"),
+      title_at_admission: requiredText(raw.title_at_admission, "title_at_admission"),
+      quantity: packCount,
+    }];
+  }
+  if (!Array.isArray(raw.components) || raw.components.length === 0) {
+    throw new WalmartStudioDraftContractError(
+      "WORK_ITEM_INVALID",
+      "components must be a non-empty array",
+    );
+  }
+  const seen = new Set<string>();
+  const components = raw.components.map((entry, index) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      throw new WalmartStudioDraftContractError(
+        "WORK_ITEM_INVALID",
+        `component ${index} must be an object`,
+      );
+    }
+    const row = entry as Record<string, unknown>;
+    const variantId = requiredText(row.canonical_variant_id, "canonical_variant_id");
+    // The same product twice is two entries that should have been one, and it
+    // would double-count in the price and read as two flavors on the listing.
+    if (seen.has(variantId)) {
+      throw new WalmartStudioDraftContractError(
+        "WORK_ITEM_INVALID",
+        `component ${variantId} appears twice in one listing`,
+      );
+    }
+    seen.add(variantId);
+    return {
+      donor_product_id: requiredText(row.donor_product_id, "donor_product_id"),
+      canonical_variant_id: variantId,
+      content_observation_id: requiredText(row.content_observation_id, "content_observation_id"),
+      price_observation_id: requiredText(row.price_observation_id, "price_observation_id"),
+      title_at_admission: requiredText(row.title_at_admission, "title_at_admission"),
+      quantity: positiveInteger(row.quantity, "quantity", 500),
+    };
+  });
+  const total = components.reduce((sum, entry) => sum + entry.quantity, 0);
+  if (total !== packCount) {
+    throw new WalmartStudioDraftContractError(
+      "WORK_ITEM_INVALID",
+      `components hold ${total} units but pack_count says ${packCount}`,
+    );
+  }
+  if (components[0].canonical_variant_id
+    !== requiredText(raw.canonical_variant_id, "canonical_variant_id")) {
+    throw new WalmartStudioDraftContractError(
+      "WORK_ITEM_INVALID",
+      "the first component must be the work item's primary product",
+    );
+  }
+  return components;
 }
 
 export function parseWalmartStudioDraftWorkItem(
@@ -171,6 +284,7 @@ export function parseWalmartStudioDraftWorkItem(
       "price_observation_id",
     ),
     title_at_admission: requiredText(raw.title_at_admission, "title_at_admission"),
+    components: parseComponents(raw),
     pack_count: positiveInteger(raw.pack_count, "pack_count", 500),
     store_index: positiveInteger(raw.store_index, "store_index", 5),
     shipping_template_id: requiredText(
@@ -218,7 +332,7 @@ export function parseWalmartStudioDraftWorkItem(
       "work_item_sha256 must be a lowercase SHA-256 digest",
     );
   }
-  const expected = hashPayload(withoutHash);
+  const expected = hashPayload(sealShape(withoutHash));
   if (workItemSha256 !== expected) {
     throw new WalmartStudioDraftContractError(
       "WORK_ITEM_HASH_MISMATCH",
@@ -232,6 +346,10 @@ export function buildWalmartStudioDraftWorkItems(input: {
   candidates: readonly ProductTruthWalmartRequestCandidateDiagnostic[];
   listingCount: number;
   packCount: number;
+  /** Different products per listing. 1 (default) is the plain multipack. */
+  flavorsPerListing?: number;
+  /** Units of each. Defaults to the whole pack, i.e. one product. */
+  unitsPerFlavor?: number;
   storeIndex: number;
   shippingTemplateId: string;
   shippingTemplateSha256: string;
@@ -245,29 +363,67 @@ export function buildWalmartStudioDraftWorkItems(input: {
     "listingCount",
     500,
   );
+  const flavors = Math.max(1, Math.trunc(input.flavorsPerListing ?? 1));
+  const unitsEach = Math.trunc(input.unitsPerFlavor ?? input.packCount);
+  if (flavors * unitsEach !== input.packCount) {
+    throw new WalmartStudioDraftContractError(
+      "PACK_COMPOSITION_INVALID",
+      `${flavors} flavors x ${unitsEach} units is ${flavors * unitsEach}, not the requested pack of ${input.packCount}`,
+    );
+  }
+
   const ready = input.candidates.filter(
     (entry) => entry.ready && entry.candidate !== null,
   );
-  if (ready.length < listingCount) {
+  // Each listing consumes `flavors` DISTINCT variants, so a mixed run needs
+  // that many times more of them. Saying so up front beats building half a
+  // batch and failing on the last listing.
+  const needed = listingCount * flavors;
+  if (ready.length < needed) {
     throw new WalmartStudioDraftContractError(
       "INSUFFICIENT_READY_VARIANTS",
-      `Product Truth has ${ready.length} ready exact variants; ${listingCount} are required`,
+      `Product Truth has ${ready.length} ready exact variants; ${needed} are required`
+      + (flavors > 1 ? ` (${listingCount} listings x ${flavors} flavors)` : ""),
     );
   }
+
+  // One variant is used once across the whole run: repeating it would put the
+  // same soup in two listings, which is the duplicate Walmart penalises.
   const seenVariants = new Set<string>();
-  const items: WalmartStudioDraftWorkItem[] = [];
+  const pool: typeof ready = [];
   for (const entry of ready) {
     if (seenVariants.has(entry.canonical_variant_id)) continue;
     seenVariants.add(entry.canonical_variant_id);
-    const candidate = entry.candidate!;
-    const withoutHash: Omit<WalmartStudioDraftWorkItem, "work_item_sha256"> = {
-      schema_version: WALMART_STUDIO_DRAFT_WORK_ITEM_SCHEMA,
-      spec_index: items.length,
+    pool.push(entry);
+  }
+  if (pool.length < needed) {
+    throw new WalmartStudioDraftContractError(
+      "INSUFFICIENT_DISTINCT_READY_VARIANTS",
+      `Product Truth has ${pool.length} distinct ready exact variants; ${needed} are required`,
+    );
+  }
+
+  const items: WalmartStudioDraftWorkItem[] = [];
+  for (let index = 0; index < listingCount; index += 1) {
+    const chosen = pool.slice(index * flavors, index * flavors + flavors);
+    const components: WalmartStudioDraftComponent[] = chosen.map((entry) => ({
       donor_product_id: entry.donor_product_id,
       canonical_variant_id: entry.canonical_variant_id,
-      content_observation_id: candidate.content_observation_id,
-      price_observation_id: candidate.price_observation_id,
+      content_observation_id: entry.candidate!.content_observation_id,
+      price_observation_id: entry.candidate!.price_observation_id,
       title_at_admission: entry.title,
+      quantity: unitsEach,
+    }));
+    const primary = components[0];
+    const withoutHash: Omit<WalmartStudioDraftWorkItem, "work_item_sha256"> = {
+      schema_version: WALMART_STUDIO_DRAFT_WORK_ITEM_SCHEMA,
+      spec_index: index,
+      donor_product_id: primary.donor_product_id,
+      canonical_variant_id: primary.canonical_variant_id,
+      content_observation_id: primary.content_observation_id,
+      price_observation_id: primary.price_observation_id,
+      title_at_admission: primary.title_at_admission,
+      components,
       pack_count: input.packCount,
       store_index: input.storeIndex,
       shipping_template_id: input.shippingTemplateId,
@@ -281,15 +437,8 @@ export function buildWalmartStudioDraftWorkItems(input: {
     };
     items.push(parseWalmartStudioDraftWorkItem({
       ...withoutHash,
-      work_item_sha256: hashPayload(withoutHash),
+      work_item_sha256: hashPayload(sealShape(withoutHash)),
     }));
-    if (items.length === listingCount) break;
-  }
-  if (items.length !== listingCount) {
-    throw new WalmartStudioDraftContractError(
-      "INSUFFICIENT_DISTINCT_READY_VARIANTS",
-      `Product Truth has ${items.length} distinct ready exact variants; ${listingCount} are required`,
-    );
   }
   return items;
 }

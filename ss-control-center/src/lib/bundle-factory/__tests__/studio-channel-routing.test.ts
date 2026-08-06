@@ -32,6 +32,10 @@ test("Russian Campbell's request preserves 5 listings and 8 cans instead of appl
   assert.deepEqual(parseWalmartPromptIntent(prompt), {
     listing_count: 5,
     pack_count: 8,
+    // This request names no mix, so there is nothing to report — a single
+    // product fills the pack and the composition fields stay null.
+    flavors_per_listing: null,
+    units_per_flavor: null,
   });
 
   const request = resolveWalmartStudioRequestIntent({
@@ -78,6 +82,10 @@ test("Walmart request defaults remain explicit", () => {
     {
       listing_count: 2,
       pack_count: 2,
+      // A request that names no mix is the plain multipack: one product filling
+      // the whole pack.
+      flavors_per_listing: 1,
+      units_per_flavor: 2,
       prompt_listing_count: null,
       prompt_pack_count: null,
       blockers: [],

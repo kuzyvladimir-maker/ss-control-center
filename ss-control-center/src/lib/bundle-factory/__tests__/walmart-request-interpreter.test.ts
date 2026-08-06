@@ -138,3 +138,77 @@ test("an empty answer is a failed interpretation, not an empty spec", async () =
     },
   );
 });
+
+test("a mixed assortment is read, not silently dropped", async () => {
+  // The real loss, 2026-08-06: "20 листингов по 8 банок, в каждом по 2 вида,
+  // по 4 банки каждого" was reduced to 20 × 8 and would have built twenty
+  // single-flavor eight-packs — the wrong product, at full cost.
+  const result = await interpretWalmartRequest(
+    "20 листингов по 8 банок, в каждом по 2 вида супа, по 4 банки каждого",
+    {
+      complete: async () => reply({
+        search_query: "Campbell's condensed soup",
+        listing_count: 20,
+        pack_count: 8,
+        flavors_per_listing: 2,
+        units_per_flavor: 4,
+        readback: "20 листингов по 8 банок: 2 вида по 4 банки.",
+        assumptions: [],
+        unsupported: [],
+      }),
+    },
+  );
+  assert.equal(result.listing_count, 20);
+  assert.equal(result.pack_count, 8);
+  assert.equal(result.flavors_per_listing, 2);
+  assert.equal(result.units_per_flavor, 4);
+});
+
+test("the missing half of a mix is derived from the pack size", async () => {
+  const result = await interpretWalmartRequest("листинги по 12 банок, 3 вида", {
+    complete: async () => reply({
+      search_query: "Campbell's condensed soup",
+      pack_count: 12,
+      flavors_per_listing: 3,
+      readback: "12 банок, 3 вида.",
+      assumptions: [],
+      unsupported: [],
+    }),
+  });
+  assert.equal(result.units_per_flavor, 4);
+});
+
+test("numbers that do not multiply out are refused, not published", async () => {
+  // 3 × 5 ≠ 8. Building on that would put the wrong number of cans in a box.
+  const result = await interpretWalmartRequest("8 банок, 3 вида по 5", {
+    complete: async () => reply({
+      search_query: "Campbell's condensed soup",
+      pack_count: 8,
+      flavors_per_listing: 3,
+      units_per_flavor: 5,
+      readback: "8 банок.",
+      assumptions: [],
+      unsupported: [],
+    }),
+  });
+  assert.equal(result.flavors_per_listing, null);
+  assert.equal(result.units_per_flavor, null);
+  assert.equal(result.pack_count, 8);
+});
+
+test("a single-flavor multipack reports no mix at all", async () => {
+  const result = await interpretWalmartRequest("5 листингов Progresso по 8", {
+    complete: async () => reply({
+      search_query: "Progresso soup",
+      listing_count: 5,
+      pack_count: 8,
+      flavors_per_listing: 1,
+      units_per_flavor: 8,
+      readback: "5 листингов по 8 банок.",
+      assumptions: [],
+      unsupported: [],
+    }),
+  });
+  assert.equal(result.flavors_per_listing, null);
+  assert.equal(result.units_per_flavor, null);
+});

@@ -15,7 +15,8 @@
 
 export type WalmartStudioRequestBlockerCode =
   | "LISTING_COUNT_CONFLICT"
-  | "PACK_COUNT_CONFLICT";
+  | "PACK_COUNT_CONFLICT"
+  | "PACK_COMPOSITION_CONFLICT";
 
 export type WalmartStudioRequestBlockerKind = "INPUT_CONFLICT";
 
@@ -29,11 +30,19 @@ export interface WalmartStudioRequestBlocker {
 export interface WalmartPromptIntent {
   listing_count: number | null;
   pack_count: number | null;
+  /** Different products sharing one listing. null means a plain multipack. */
+  flavors_per_listing: number | null;
+  /** Units of each product. flavors x units must equal pack_count. */
+  units_per_flavor: number | null;
 }
 
 export interface WalmartStudioRequestIntent {
   listing_count: number;
   pack_count: number;
+  /** 1 for the plain multipack this lane has always built. */
+  flavors_per_listing: number;
+  /** Units of each product; equals pack_count when there is one product. */
+  units_per_flavor: number;
   prompt_listing_count: number | null;
   prompt_pack_count: number | null;
   blockers: WalmartStudioRequestBlocker[];
@@ -71,10 +80,54 @@ export function parseWalmartPromptIntent(prompt: string): WalmartPromptIntent {
     /(?:^|[^\p{L}\p{N}])(\d{1,3})[\s-]*(?:pack|count|ct)(?=$|[^\p{L}\p{N}])/iu,
     /(?:^|[^\p{L}\p{N}])(\d{1,3})\s+(?:cans?|units?|items?)\s+(?:per|in\s+each)\s+(?:listing|sku|pack)(?=$|[^\p{L}\p{N}])/iu,
   ]);
+  // "по 2 вида супа … по 4 банки каждого вкуса" — the part that used to be
+  // dropped silently, turning a mixed assortment into twenty single-flavor
+  // packs. Read both halves; either one plus the pack size gives the other.
+  const flavorsPerListing = firstCapturedInteger(text, [
+    /(?:по|каждом\p{L}*\s+(?:должно\s+быть\s+)?по)\s*(\d{1,2})\s+(?:вид(?:а|ов)?|сорт(?:а|ов)?|вкус(?:а|ов)?|разновидност\p{L}*)(?=$|[^\p{L}\p{N}])/iu,
+    /(?:^|[^\p{L}\p{N}])(\d{1,2})\s+(?:вид(?:а|ов)?|сорт(?:а|ов)?|вкус(?:а|ов)?)\s+(?:в|на)\s+(?:одн\p{L}+\s+)?(?:листинг\p{L}*|карточк\p{L}*|набор\p{L}*)(?=$|[^\p{L}\p{N}])/iu,
+    /(?:^|[^\p{L}\p{N}])(\d{1,2})\s+(?:different\s+)?(?:flavou?rs?|varieties|kinds|types)(?=$|[^\p{L}\p{N}])/iu,
+  ]);
+  const unitsPerFlavor = firstCapturedInteger(text, [
+    /(?:по)\s*(\d{1,3})\s+(?:бан(?:ок|ки|ка)|штук(?:и)?|единиц(?:ы)?|пач(?:ек|ки))\s+(?:каждого|кажд\p{L}+)(?=$|[^\p{L}\p{N}])/iu,
+    /(?:^|[^\p{L}\p{N}])(\d{1,3})\s+(?:cans?|units?|items?)\s+(?:of\s+)?each(?=$|[^\p{L}\p{N}])/iu,
+  ]);
+
   return {
     listing_count: listingCount,
     pack_count: packCount,
+    ...resolvePromptComposition(flavorsPerListing, unitsPerFlavor, packCount),
   };
+}
+
+/**
+ * Make the three numbers agree, or report no mix at all.
+ *
+ * Two of them determine the third, so a request only has to say two. When they
+ * contradict each other the reading is not trustworthy enough to build on, and
+ * a plain multipack — which the pack count alone already describes — is the
+ * safer thing to fall back to.
+ */
+function resolvePromptComposition(
+  flavors: number | null,
+  units: number | null,
+  packCount: number | null,
+): { flavors_per_listing: number | null; units_per_flavor: number | null } {
+  let resolvedFlavors = flavors;
+  let resolvedUnits = units;
+  if (resolvedFlavors && !resolvedUnits && packCount && packCount % resolvedFlavors === 0) {
+    resolvedUnits = packCount / resolvedFlavors;
+  }
+  if (resolvedUnits && !resolvedFlavors && packCount && packCount % resolvedUnits === 0) {
+    resolvedFlavors = packCount / resolvedUnits;
+  }
+  if (!resolvedFlavors || resolvedFlavors < 2 || !resolvedUnits) {
+    return { flavors_per_listing: null, units_per_flavor: null };
+  }
+  if (packCount && resolvedFlavors * resolvedUnits !== packCount) {
+    return { flavors_per_listing: null, units_per_flavor: null };
+  }
+  return { flavors_per_listing: resolvedFlavors, units_per_flavor: resolvedUnits };
 }
 
 export function resolveWalmartStudioRequestIntent(input: {
@@ -115,9 +168,33 @@ export function resolveWalmartStudioRequestIntent(input: {
         `Units field says ${input.packCount}. Make them match.`,
     });
   }
+  // The mix is only honoured when it divides the pack size actually being
+  // built. If the operator overrode the units field, the prompt's "4 of each"
+  // may no longer fit — and quietly building a different composition than the
+  // one asked for is the failure this whole change exists to prevent.
+  const composition = parsed.flavors_per_listing && parsed.units_per_flavor
+    && parsed.flavors_per_listing * parsed.units_per_flavor === packCount
+    ? { flavors: parsed.flavors_per_listing, units: parsed.units_per_flavor }
+    : { flavors: 1, units: packCount };
+  if (
+    parsed.flavors_per_listing
+    && composition.flavors === 1
+  ) {
+    blockers.push({
+      code: "PACK_COMPOSITION_CONFLICT",
+      kind: "INPUT_CONFLICT",
+      can_data_collection_fix: false,
+      message:
+        `The prompt asks for ${parsed.flavors_per_listing} kinds per listing, `
+        + `which does not divide ${packCount} units. Make them match.`,
+    });
+  }
+
   return {
     listing_count: listingCount,
     pack_count: packCount,
+    flavors_per_listing: composition.flavors,
+    units_per_flavor: composition.units,
     prompt_listing_count: parsed.listing_count,
     prompt_pack_count: parsed.pack_count,
     blockers,
