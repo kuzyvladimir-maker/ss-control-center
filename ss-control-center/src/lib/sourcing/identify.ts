@@ -95,7 +95,7 @@ quantity so each can be priced separately.`;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runIdentify(urls: string[], prompt: string): Promise<any> {
   if (urls.length) {
-    const r = await askVisionJson(urls, prompt, 900);
+    const r = await askVisionJson(urls, prompt);
     if (r && typeof r === "object" && (r as any).brand !== undefined) return r;
     throw new Error("vision unavailable (shared router exhausted) — SKU skipped, will retry later");
   }

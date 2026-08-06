@@ -18,10 +18,9 @@
 //      regex also failed). We never block the procurement card.
 
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { completeWithSubscription } from "@/lib/llm/subscription";
 import { prisma } from "@/lib/prisma";
 import { parsePackSize } from "@/lib/procurement/pack-size";
-import { CLAUDE } from "@/lib/ai-models";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -36,7 +35,6 @@ interface PackSizeResponse {
   source: "cache" | "ai" | "regex" | "default";
 }
 
-const MODEL = CLAUDE.cheap;
 
 // System prompt is byte-identical across requests — `cache_control` on it
 // means second+ calls pay ~10% of input cost on the (stable) instructions.
@@ -89,38 +87,13 @@ OUTPUT: 1
 INPUT: Salutem Vita Pets Salmon Recipe Wet Cat Food 5.5 oz Cans (Pack of 12)
 OUTPUT: 12`;
 
-function extractText(message: Anthropic.Messages.Message): string {
-  for (const block of message.content) {
-    if (block.type === "text") return block.text;
-  }
-  return "";
-}
-
 async function sizeViaClaude(rawTitle: string): Promise<number> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "<api_key>") {
-    throw new Error("ANTHROPIC_API_KEY not configured");
-  }
-  const client = new Anthropic({ apiKey });
-  const message = await client.messages.create({
-    model: MODEL,
-    // Output is a single integer — 16 tokens is plenty.
-    max_tokens: 16,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [
-      {
-        role: "user",
-        content: `INPUT: ${rawTitle}\nOUTPUT:`,
-      },
-    ],
+  // Runs on the subscription lanes, never a paid API key.
+  const { text: answer } = await completeWithSubscription({
+    prompt: `INPUT: ${rawTitle}\nOUTPUT:`,
+    system: SYSTEM_PROMPT,
   });
-  const text = extractText(message).trim();
+  const text = answer.trim();
   const m = text.match(/(\d+)/);
   if (!m) throw new Error(`Claude returned non-numeric: "${text}"`);
   const n = parseInt(m[1], 10);

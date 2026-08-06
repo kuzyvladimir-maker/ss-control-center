@@ -96,10 +96,16 @@ test("Oxylabs and Gemini adapters fail before network without a permit", async (
   await assertBlocked(() => identifyImageViaGemini(["/9j/test"], "identify"));
 });
 
-test("high-level paid Anthropic vision preserves the permit denial", async () => {
+test("there is no paid vision path left to permit", async () => {
+  // This used to assert that the paid Anthropic reserve refused without an
+  // owner permit — a permit denial was a control error, so it propagated.
+  // The owner removed paid API tokens outright on 2026-08-06, so the reserve is
+  // gone: asking for it, even with both old escape hatches set, now simply
+  // finds no lane and reports "no answer" like any other exhausted lane.
   process.env.SS_VISION_PROVIDER = "anthropic";
   process.env.SS_VISION_FREE_ONLY = "0";
-  await assertBlocked(() => askVisionJson(["https://images.example.test/product.jpg"], "inspect"));
+  const result = await askVisionJson(["https://images.example.test/product.jpg"], "inspect");
+  assert.equal(result, null);
 });
 
 test("a valid permit without a configured ledger still performs zero fetches", async () => {

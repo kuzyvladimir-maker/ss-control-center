@@ -1,68 +1,29 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { CLAUDE } from "@/lib/ai-models";
+/**
+ * Read screenshots and get JSON back.
+ *
+ * Was a direct Anthropic SDK client on a paid key; since 2026-08-06 the
+ * platform holds no paid API tokens, so this runs on Vladimir's Claude Max
+ * subscription through the box worker. The worker parses the model's JSON, so
+ * what used to be regex-hunting for a `{…}` block now arrives as an object.
+ *
+ * Claude only, deliberately: callers of this helper want the stronger reader.
+ * For work that should survive an exhausted Claude limit, use
+ * `analyzeImagesWithFallback` in `ai-vision.ts`, which tries ChatGPT Pro next.
+ */
 
-function getClient() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "<api_key>") {
-    throw new Error(
-      "ANTHROPIC_API_KEY not configured. Set your real API key in .env"
-    );
-  }
-  return new Anthropic({ apiKey });
-}
+import { identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 
-function detectMediaType(
-  base64: string
-): "image/jpeg" | "image/png" | "image/gif" | "image/webp" {
-  if (base64.startsWith("/9j/")) return "image/jpeg";
-  if (base64.startsWith("iVBOR")) return "image/png";
-  if (base64.startsWith("R0lG")) return "image/gif";
-  if (base64.startsWith("UklG")) return "image/webp";
-  return "image/png";
-}
-
-// Analyze one or more screenshots
 export async function analyzeScreenshots(
   base64Images: string[],
-  systemPrompt: string
-) {
-  const client = getClient();
-
-  // Build content blocks: all images first, then the text prompt
-  const content: Anthropic.MessageCreateParams["messages"][0]["content"] = [];
-
-  for (const img of base64Images) {
-    content.push({
-      type: "image",
-      source: {
-        type: "base64",
-        media_type: detectMediaType(img),
-        data: img,
-      },
-    });
+  systemPrompt: string,
+): Promise<Record<string, unknown>> {
+  const result = await identifyImageViaClaudeCli(base64Images, systemPrompt);
+  if (!result) {
+    throw new Error(
+      "The Claude subscription vision lane did not answer. This platform does "
+      + "not use paid API keys, so there is no fallback here — see "
+      + "analyzeImagesWithFallback for the two-lane version.",
+    );
   }
-
-  content.push({
-    type: "text",
-    text: systemPrompt,
-  });
-
-  const response = await client.messages.create({
-    model: CLAUDE.balanced,
-    max_tokens: 4096,
-    thinking: { type: "disabled" },
-    messages: [{ role: "user", content }],
-  });
-
-  const textBlock = response.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("No text response from Claude");
-  }
-
-  const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("No JSON found in Claude response");
-  }
-
-  return JSON.parse(jsonMatch[0]);
+  return result;
 }

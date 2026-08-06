@@ -22,8 +22,6 @@
 // filtered out via `filterRealLogos` before the result is returned, so
 // the risk-scorer never sees them as foreign-brand violations.
 
-import Anthropic from "@anthropic-ai/sdk";
-import { CLAUDE } from "@/lib/ai-models";
 import { identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 
 /**
@@ -116,28 +114,6 @@ const SAFE_EMPTY: VisionCheckResult = {
   cost_cents: 0,
 };
 
-let _client: Anthropic | null = null;
-function getClient(): Anthropic | null {
-  if (_client) return _client;
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  _client = new Anthropic({ apiKey: key });
-  return _client;
-}
-
-// Sonnet 4.5 pricing per Anthropic public pricing page (per 1M tokens):
-//   input  $3.00
-//   output $15.00
-// We convert to cents per request from the usage block.
-function estimateCostCents(usage: {
-  input_tokens: number;
-  output_tokens: number;
-}): number {
-  const dollars =
-    (usage.input_tokens / 1_000_000) * 3.0 +
-    (usage.output_tokens / 1_000_000) * 15.0;
-  return Math.max(1, Math.ceil(dollars * 100));
-}
 
 /**
  * Test seam — when set, `detectForeignLogosInImage` skips the real
@@ -226,63 +202,12 @@ export async function detectForeignLogosInImage(
   const viaSub = await detectViaSubscription(imageUrl, ownBrand, allowedBrands);
   if (viaSub) return viaSub;
 
-  const client = getClient();
-  if (!client) {
-    return { ...SAFE_EMPTY, error: "vision worker failed and ANTHROPIC_API_KEY not set" };
-  }
-
-  try {
-    const response = await client.messages.create({
-      model: CLAUDE.balanced,
-      max_tokens: 500,
-      thinking: { type: "disabled" },
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "url", url: imageUrl } },
-            { type: "text", text: visionPrompt(ownBrand) },
-          ],
-        },
-      ],
-    });
-
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      return { ...SAFE_EMPTY, error: "no text block in response" };
-    }
-    // Claude sometimes wraps JSON in ```json fences even when told not to.
-    // Strip leading/trailing prose conservatively.
-    const raw = textBlock.text.trim();
-    const jsonStart = raw.indexOf("{");
-    const jsonEnd = raw.lastIndexOf("}");
-    if (jsonStart < 0 || jsonEnd <= jsonStart) {
-      return { ...SAFE_EMPTY, error: "no JSON object in response" };
-    }
-    const parsed = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
-
-    const cost_cents = estimateCostCents({
-      input_tokens: response.usage.input_tokens,
-      output_tokens: response.usage.output_tokens,
-    });
-
-    // Raw Vision output may include own-brand mentions or generic
-    // deli/snack terms — strip both before they reach the risk-scorer
-    // so we don't fire +35 risk on a Salutem-branded box.
-    const rawLogos: string[] = Array.isArray(parsed.detected_logos)
-      ? parsed.detected_logos.filter((s: unknown) => typeof s === "string")
-      : [];
-    const realLogos = filterRealLogos(rawLogos, allowedBrands);
-
-    return {
-      has_foreign_logos: realLogos.length > 0,
-      detected_logos: realLogos,
-      cost_cents,
-    };
-  } catch (e) {
-    return {
-      ...SAFE_EMPTY,
-      error: e instanceof Error ? e.message : String(e),
-    };
-  }
+  // No paid fallback. It used to sit here, and it was worse than useless: the
+  // paid balance ran out, so EVERY generated image failed this gate silently
+  // while generation itself looked fine. A gate that cannot answer must say so.
+  return {
+    ...SAFE_EMPTY,
+    error: "The Claude subscription vision lane did not answer. This platform "
+      + "holds no paid API keys, so there is no fallback.",
+  };
 }

@@ -26,20 +26,13 @@ const ROOT = path.resolve(process.cwd(), "src");
 const PAID_CALL = /new\s+Anthropic\s*\(|new\s+OpenAI\s*\(|api\.anthropic\.com|api\.openai\.com/;
 
 /**
- * Still on the paid path, to be moved. Shrink this list; never grow it.
+ * Empty, and it must stay that way.
  *
- * Everything left is VISION — it sends images, so it moves to the worker's
- * /analyze-claude (Claude Max) or /analyze (ChatGPT Pro) rather than the text
- * lanes. Every text call site is already on a subscription.
+ * Every language-model call in this platform — text and vision — runs on a
+ * subscription through the box worker. There is nothing left to exempt, so a
+ * name appearing here again means someone reintroduced a paid API call.
  */
 const ALLOWED = new Set([
-  "lib/claude.ts",
-  "lib/bundle-factory/audit/vision-check.ts",
-  "lib/finance/receipt-ocr.ts",
-  "lib/sourcing/donor-catalog.ts",
-  "lib/sourcing/vision.ts",
-  "app/api/procurement/pack-size/route.ts",
-  "app/api/shipping/classify-ai/route.ts",
 ]);
 
 function sourceFiles(dir: string, found: string[] = []): string[] {

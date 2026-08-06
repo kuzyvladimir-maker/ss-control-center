@@ -9,17 +9,14 @@
 //     pure-promo). (2) verifyMainImage — confirm the generated tile shows the
 //     product front-facing before we ever publish it (the do-no-harm gate).
 
-import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
 import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 import { identifyImageViaGemini } from "./gemini-vision";
 import {
   throwIfMeteredProviderControlError,
-  withMeteredProviderCall,
 } from "./metered-provider-call";
 import { currentMeteredRunPermit } from "./metered-call-guard";
 
-const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
 // tell a bread loaf's UPRIGHT FRONT from a LYING end-slice or a barcode BACK, so
 // it tiled torец/back/nutrition/infographic shots. Sonnet + explicit orientation
@@ -29,14 +26,6 @@ const STRONG_MODEL = CLAUDE.balanced;
 // classifications made under the old prompt (cache key = model + this version).
 const CLASSIFY_VER = "v2-solo";
 const CLASSIFY_KEY = `${STRONG_MODEL}@${CLASSIFY_VER}`;
-
-let client: Anthropic | null = null;
-function getClient(): Anthropic | null {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  if (!client) client = new Anthropic({ apiKey: key });
-  return client;
-}
 
 // Vision provider: the FREE ChatGPT-subscription path (GPT-5.4, high reasoning, via
 // the Codex worker on the box, $0/call) is PRIMARY, paid Anthropic (Sonnet) is the
@@ -121,7 +110,7 @@ async function fetchB64(url: string): Promise<string | null> {
   return null;
 }
 
-async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
+async function ask(imageUrls: string[], prompt: string): Promise<string> {
   const provider = visionProvider();
   // Retry budget for the FREE lanes: rate-limits are transient, so on an all-lanes
   // miss we WAIT (backoff — which also self-throttles and eases the limit) and retry
@@ -193,22 +182,14 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
     }
     if (provider !== "auto") throw new Error(`${provider} vision unavailable after ${RETRIES} retries`);
   }
-  // TIER 2 — paid Anthropic reserve (Sonnet). Only for "auto" (after free retries) or
-  // forced "anthropic". Sends image URLs directly.
-  if (visionFreeOnly()) throw new Error("VISION_UNAVAILABLE: paid Anthropic fallback is disabled by SS_VISION_FREE_ONLY");
-  const c = getClient();
-  if (!c) throw new Error("ANTHROPIC_API_KEY missing");
-  const content: any[] = imageUrls.map((u) => ({ type: "image", source: { type: "url", url: u } }));
-  content.push({ type: "text", text: prompt });
-  const res = await withMeteredProviderCall(
-    {
-      provider: "anthropic",
-      operation: "vision",
-      requestFingerprint: { imageUrls, maxTokens, model, prompt },
-    },
-    () => c.messages.create({ model, max_tokens: maxTokens, thinking: { type: "disabled" }, messages: [{ role: "user", content }] }),
+  // There is no tier 2. A paid Anthropic reserve used to sit here, behind two
+  // locks (SS_VISION_FREE_ONLY and an owner-approved metered permit); the owner
+  // removed paid API tokens outright on 2026-08-06, so the three free lanes
+  // above are the whole ladder. When all three are down, that is the answer.
+  throw new Error(
+    "VISION_UNAVAILABLE: every subscription lane (Codex, Claude CLI, Gemini) "
+    + "refused or is cooling down. This platform holds no paid API keys.",
   );
-  return res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
 }
 function parseJson(t: string): any { try { return JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)); } catch { return null; } }
 
@@ -274,7 +255,7 @@ export async function pickCleanFrontIndex(urls: string[]): Promise<number> {
     `REJECT (never pick): a photo of the PREPARED/COOKED food or a SERVING of it (e.g. a bowl/plate/cup of the soup), recipe or serving-suggestion shots, nutrition-facts panels, back-of-package, lifestyle scenes, and pure promo/marketing art. The PACKAGE WITH ITS LABEL must be the main subject. ` +
     `Return -1 ONLY if no image shows the product package with its label.\nReply with JSON only: {"best": <index or -1>}`;
   try {
-    const j = parseJson(await ask(cands, prompt, 50));
+    const j = parseJson(await ask(cands, prompt));
     const b = Number(j?.best);
     return Number.isInteger(b) && b >= 0 && b < cands.length ? b : -1;
   } catch (error) {
@@ -296,7 +277,7 @@ export async function pickFrontRanked(urls: string[], top = 3): Promise<number[]
     `EXCLUDE: prepared/cooked food or a serving (e.g. a bowl/plate of soup), recipe/serving-suggestion shots, nutrition panels, back-of-package, lifestyle, and promo art. ` +
     `Return JSON only: {"ranked": [indices best-first, up to ${top}]}. Empty array if none show the package.`;
   try {
-    const j = parseJson(await ask(cands, prompt, 60));
+    const j = parseJson(await ask(cands, prompt));
     const arr = Array.isArray(j?.ranked) ? j.ranked : [];
     return arr.map((x: any) => Number(x)).filter((i: number) => Number.isInteger(i) && i >= 0 && i < cands.length).slice(0, top);
   } catch (error) {
@@ -316,7 +297,7 @@ export async function verifyMainImage(url: string, packCount?: number): Promise<
     : "";
   const prompt = `The image above is a candidate marketplace MAIN image — the retail PACKAGE repeated in a grid to show a multipack.${cnt} Acceptable = every unit is the product's UPRIGHT FRONT (the standing package with its brand label toward the camera). Reject if it is: the BACK/side or a visible barcode, a Nutrition-Facts panel, an infographic/marketing graphic, prepared/served food (a bowl/plate), or a soft package (bread loaf) LYING on its side/end so you see the end-slice instead of the standing front. Reply with JSON only: {"ok": true|false, "kind": "front|lying|back|nutrition|infographic|serving|promo|other"}`;
   try {
-    const j = parseJson(await ask([url], prompt, 40, STRONG_MODEL));
+    const j = parseJson(await ask([url], prompt));
     return { ok: j?.ok === true, kind: String(j?.kind || "other") };
   } catch (error) {
     throwIfMeteredProviderControlError(error);
@@ -356,7 +337,7 @@ export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
   const cached = await classFromCache(url, CLASSIFY_KEY);
   if (cached) return cached; // ~free — the big re-run cost saver
   try {
-    const j = parseJson(await ask([url], CLASSIFY_PROMPT, 120, STRONG_MODEL));
+    const j = parseJson(await ask([url], CLASSIFY_PROMPT));
     if (!j) return fallback;
     const out: PhotoClass = {
       type: j.type ?? "other", orientation: j.orientation ?? "na",
@@ -379,7 +360,7 @@ async function filterMatchingVariant(urls: string[], listingTitle: string): Prom
   if (cands.length < 2) return cands;
   const prompt = `The listing is: "${listingTitle}". Above are ${cands.length} candidate product photos, index 0..${cands.length - 1} (in order). Which show the SAME product as the listing — same brand AND the SAME flavor/variant? Match the flavor EXACTLY: e.g. "Korean Spicy Beef" must NOT match "Teriyaki Chicken"; "Whole Wheat" must NOT match "White". Return JSON only: {"match":[indices that are the same product+flavor]}. Empty array if none clearly match.`;
   try {
-    const j = parseJson(await ask(cands, prompt, 60, STRONG_MODEL));
+    const j = parseJson(await ask(cands, prompt));
     const arr = Array.isArray(j?.match) ? j.match : [];
     return arr.map((i: any) => cands[Number(i)]).filter((u: any): u is string => typeof u === "string");
   } catch (error) {
@@ -467,7 +448,7 @@ REJECT — do NOT pick these; return {"index": -1} if they are all you have:
 - the product shown together with OTHER items or props (a cup, bowl, second product, free gift) or a "2-pack / X-pack offer" bundle.
 It is BETTER to return {"index": -1} (we will then search other retailers) than to pick a colored-background, banner, lifestyle, infographic, multi-unit, or bundle photo. Prefer the flavor/variant matching the listing. Return JSON only: {"index": N} for a CLEAN single product-package front on white, or {"index": -1} if none qualify.`;
   try {
-    const j = parseJson(await ask(cands, prompt, 40, STRONG_MODEL));
+    const j = parseJson(await ask(cands, prompt));
     const i = Number(j?.index);
     return Number.isInteger(i) && i >= 0 && i < cands.length ? cands[i] : null;
   } catch (error) {
@@ -485,7 +466,7 @@ export async function mainImageAcceptable(url: string, packCount: number): Promi
 "good": true ONLY if subject="front" (upright standing, or a rigid box/can/bottle shown normally) AND it depicts roughly ${packCount} units. For bread/soft packages a LYING/end-slice orientation is good=false even with a readable label.
 Return JSON only: {"subject":"front|lying|back|nutrition|infographic|serving|other","good":true|false}`;
   try {
-    const j = parseJson(await ask([url], prompt, 50, STRONG_MODEL));
+    const j = parseJson(await ask([url], prompt));
     return { good: j?.good === true, subject: String(j?.subject || "other") };
   } catch (error) {
     throwIfMeteredProviderControlError(error);
@@ -514,7 +495,7 @@ Read the BRAND NAME and the FLAVOR/VARIANT text printed on the package label. De
 Judge from the LABEL TEXT you can actually read, not from the general shape/color. If the label is unreadable, or you are not confident it is the same product+variant, answer false.
 Return JSON only: {"match": true|false, "brandOnPackage": "<brand>", "variantOnPackage": "<variant>", "reason": "<short why>"}`;
   try {
-    const j = parseJson(await ask([url], prompt, 150, STRONG_MODEL));
+    const j = parseJson(await ask([url], prompt));
     const reason = String(j?.reason || [j?.brandOnPackage, j?.variantOnPackage].filter(Boolean).join(" ") || "").slice(0, 90);
     return { match: j?.match === true, reason };
   } catch (error) {
@@ -585,7 +566,7 @@ The image above is ONE candidate photo we may TILE to build the multipack main i
 - "front": the package's UPRIGHT FRONT with the brand label toward the camera — NOT the back/side, NOT a visible barcode, NOT a Nutrition-Facts panel, NOT a soft package lying on its end/side, NOT a prepared-food serving (bowl/plate), NOT an infographic/marketing banner.
 - "whiteBg": plain WHITE or very-light background (colored/lifestyle backgrounds are false).`;
   try {
-    const j = parseJson(await ask([url], prompt, 140, STRONG_MODEL));
+    const j = parseJson(await ask([url], prompt));
     if (!j) return fail("unparseable");
     const v = {
       brand: j.brand === true, type: j.type === true, variant: j.variant === true,
@@ -601,9 +582,9 @@ The image above is ONE candidate photo we may TILE to build the multipack main i
 
 /** Generic JSON vision question over image URLs — for one-off qualification passes
  *  (e.g. the promo-banner sweep) so scripts don't re-implement lane dispatch. */
-export async function askVisionJson(imageUrls: string[], prompt: string, maxTokens = 140): Promise<any> {
+export async function askVisionJson(imageUrls: string[], prompt: string): Promise<any> {
   try {
-    return parseJson(await ask(imageUrls, prompt, maxTokens, STRONG_MODEL));
+    return parseJson(await ask(imageUrls, prompt));
   } catch (error) {
     throwIfMeteredProviderControlError(error);
     return null;
@@ -634,7 +615,7 @@ Judge each point strictly and INDEPENDENTLY. Return JSON only:
 - "front": every unit is shown FACE-ON — its WIDE FRONT PANEL with the full brand + product name toward the camera, clearly readable. For a SOFT package (bread loaf, bun/bagel bag) this is the long printed FACE; it is FALSE if the loaf stands on its END/heel or is angled so you see mainly the narrow top/side with only a sliver of label (a common bad case — the wide front must face the camera). Also FALSE for back/side/barcode, Nutrition-Facts panel, a package lying down, a serving/prepared food, or an infographic.
 - "whiteBg": plain white background.`;
   try {
-    const j = parseJson(await ask([url], prompt, 140, STRONG_MODEL));
+    const j = parseJson(await ask([url], prompt));
     if (!j) return fail("unparseable");
     const v = {
       identity: j.identity === true, eachCellSingle: j.eachCellSingle === true,

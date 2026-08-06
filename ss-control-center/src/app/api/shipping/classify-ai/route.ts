@@ -11,9 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
+import { completeJsonWithSubscription } from "@/lib/llm/subscription";
 import { getProduct } from "@/lib/veeqo/client";
-import { CLAUDE } from "@/lib/ai-models";
 
 const SYSTEM_PROMPT = `You classify a product as FROZEN or DRY for logistics.
 
@@ -64,28 +64,6 @@ interface AIResult {
   reasoning: string;
 }
 
-function parseClaudeJson(text: string): AIResult | null {
-  // Strip code fences if Claude wrapped the JSON.
-  const cleaned = text
-    .replace(/^```(?:json)?/i, "")
-    .replace(/```$/i, "")
-    .trim();
-  // Find the first JSON object substring.
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try {
-    const obj = JSON.parse(match[0]);
-    if (obj.type !== "Frozen" && obj.type !== "Dry") return null;
-    return {
-      type: obj.type,
-      confidence: Math.max(0, Math.min(1, Number(obj.confidence) || 0)),
-      reasoning: String(obj.reasoning ?? ""),
-    };
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === "<api_key>") {
@@ -127,47 +105,32 @@ export async function POST(request: NextRequest) {
     product?.images?.[0]?.src ??
     product?.images?.[0]?.url;
 
-  const client = new Anthropic({ apiKey });
+  const prompt = SYSTEM_PROMPT
+    + `\n\nProduct:\nTitle: ${title}\nDescription: ${(description || "").slice(0, 1500)}`;
 
-  const content: Anthropic.MessageCreateParams["messages"][0]["content"] = [];
+  const images: string[] = [];
   if (imageUrl) {
     const img = await downloadImageAsBase64(imageUrl);
-    if (img) {
-      content.push({
-        type: "image",
-        source: {
-          type: "base64",
-          media_type: img.mediaType,
-          data: img.base64,
-        },
-      });
-    }
+    if (img) images.push(img.base64);
   }
-  content.push({
-    type: "text",
-    text:
-      SYSTEM_PROMPT +
-      `\n\nProduct:\nTitle: ${title}\nDescription: ${(description || "").slice(0, 1500)}`,
-  });
 
   let parsed: AIResult | null = null;
   let rawText = "";
   try {
-    const resp = await client.messages.create({
-      model: CLAUDE.balanced,
-      max_tokens: 512,
-      thinking: { type: "disabled" },
-      messages: [{ role: "user", content }],
-    });
-    const textBlock = resp.content.find((b) => b.type === "text");
-    if (textBlock && textBlock.type === "text") {
-      rawText = textBlock.text;
-      parsed = parseClaudeJson(textBlock.text);
+    // Claude Max subscription through the box worker — no paid API tokens
+    // anywhere in this platform (owner instruction 2026-08-06). The worker
+    // returns a parsed object, so there is no JSON to dig out of prose.
+    const result = images.length
+      ? await identifyImageViaClaudeCli(images, prompt)
+      : await completeJsonWithSubscription<Record<string, unknown>>({ prompt });
+    if (result) {
+      rawText = JSON.stringify(result);
+      parsed = result as unknown as AIResult;
     }
   } catch (err) {
     return NextResponse.json(
       {
-        error: `Claude call failed: ${
+        error: `Subscription vision lane failed: ${
           err instanceof Error ? err.message : String(err)
         }`,
       },

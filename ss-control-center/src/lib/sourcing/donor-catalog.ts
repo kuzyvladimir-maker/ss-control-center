@@ -33,7 +33,6 @@ import {
 } from "./canonical-product-match-provenance";
 import { oxylabsSearch, oxylabsWalmartSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
 import { openClawSearch, openClawEnabled, type OpenClawRetailer } from "./openclaw-fetch";
-import { CLAUDE } from "@/lib/ai-models";
 import { currentMeteredRunPermit } from "./metered-call-guard";
 import {
   throwIfMeteredProviderControlError,
@@ -1565,17 +1564,7 @@ export async function qcProductImage(db: Client, productId: string): Promise<Ima
   for (let i = 0; i < urls.length; i++) { const b = await toBase64(urls[i]); if (b) imgs.push({ i, b64: b }); }
   if (!imgs.length) return { ok: false, chosen: -1, flagged: false, reason: "no fetchable images" };
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === "<api_key>") return { ok: false, chosen: -1, flagged: false, reason: "no anthropic key" };
-  const mediaType = (
-    b: string,
-  ): "image/jpeg" | "image/png" | "image/gif" | "image/webp" => b.startsWith("/9j/")
-    ? "image/jpeg"
-    : b.startsWith("iVBOR")
-      ? "image/png"
-      : b.startsWith("R0lG")
-        ? "image/gif"
-        : b.startsWith("UklG") ? "image/webp" : "image/jpeg";
+
   // Pick the RETAIL PACKAGE shot — the product in its store packaging (box, bag,
   // carton, can, jar, wrapper) front-facing, as it sits on the Walmart shelf. This
   // is what the catalog thumbnail must show, NOT a plated/"prepared" photo of the
@@ -1585,34 +1574,12 @@ export async function qcProductImage(db: Client, productId: string): Promise<Ima
   const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in order) are photos of ONE grocery product sold at a retailer. Pick the index of the best CATALOG THUMBNAIL = the RETAIL PACKAGE as sold on the shelf: the product in its own box/bag/carton/can/jar/wrapper, front facing. STRONGLY PREFER the packaged-product shot. Do NOT pick: a "prepared"/plated photo of the food taken OUT of its packaging (e.g. a cooked sandwich or a bowl of the food), a lifestyle/hand/table scene, an infographic or text-heavy banner, a nutrition-facts or ingredients label image, a collage/grid, or a multipack of several units. Index 0 is the retailer's primary image — prefer it when it is a clean package front; only choose another index if 0 is one of the bad types above and another image is a clean package shot. Return ONLY JSON {"best": <index, or -1 ONLY if NONE shows the retail package>, "reason": "short"}.`;
   let res: { best?: unknown; reason?: unknown } | null = null;
   try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic({ apiKey });
-    const content = imgs.map((x) => ({
-      type: "image" as const,
-      source: {
-        type: "base64" as const,
-        media_type: mediaType(x.b64),
-        data: x.b64,
-      },
-    }));
-    const messageContent = [
-      ...content,
-      { type: "text" as const, text: prompt },
-    ];
-    const r = await withMeteredProviderCall({
-      provider: "anthropic",
-      operation: "vision",
-      requestFingerprint: { productId, imageUrls: imgs.map((x) => urls[x.i]) },
-    }, () => client.messages.create({
-      model: CLAUDE.cheap,
-      max_tokens: 300,
-      messages: [{ role: "user", content: messageContent }],
-    }));
-    const textBlock = r.content.find((block) => block.type === "text");
-    const m = textBlock?.type === "text"
-      ? textBlock.text.match(/\{[\s\S]*\}/)
-      : null;
-    res = m ? JSON.parse(m[0]) : null;
+    // Claude Max subscription through the box worker — the platform holds no
+    // paid API tokens (owner instruction 2026-08-06). The worker returns a
+    // parsed object, so there is no JSON to dig out of prose.
+    const { identifyImageViaClaudeCli } = await import("@/lib/image-gen/codex-worker");
+    res = (await identifyImageViaClaudeCli(imgs.map((x) => x.b64), prompt)) as
+      { best?: unknown; reason?: unknown } | null;
   } catch (error: unknown) {
     throwIfMeteredProviderControlError(error);
     const reason = error instanceof Error ? error.message : "vision failed";
