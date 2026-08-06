@@ -24,6 +24,9 @@ const ITEMS: SubNavItem[] = [
   // The page itself is titled "Drafts". Calling the tab something else sent
   // the owner looking for a drafts list that was there all along.
   { href: "/bundle-factory/drafts", label: "Drafts" },
+  // Only listings that need a person. At a thousand listings a list of
+  // everything shows nothing.
+  { href: "/bundle-factory/exceptions", label: "Needs attention" },
   { href: "/bundle-factory/live", label: "Published" },
   { href: "/bundle-factory/uncrustables", label: "Uncrustables Studio" },
   { href: "/bundle-factory/channelmax", label: "ChannelMAX" },

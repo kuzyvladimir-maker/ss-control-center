@@ -64,6 +64,9 @@ import {
   isWalmartPilotImageUrl,
 } from "./walmart-prepublication-policy";
 import {
+  checkUpcAvailability,
+} from "../walmart-upc-availability";
+import {
   WALMART_DEFAULT_SHIP_NODE_SETTING_KEY,
   WALMART_STUDIO_DECLARED_INVENTORY_UNITS,
   WALMART_STUDIO_LISTING_ATTRIBUTE_KEY,
@@ -84,6 +87,9 @@ export interface PromoteOutcome {
    *  the GeneratedContent row didn't qualify). */
   skipped: Array<{ channel: string; reason: string }>;
 }
+
+/** How many pool numbers to try before giving up on attaching one. */
+const MAX_UPC_ATTACH_ATTEMPTS = 12;
 
 const SKU_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // exclude I + O for legibility
 const SKU_ALNUM = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -170,30 +176,82 @@ function walmartStudioReviewedPriceCents(
   }
 }
 
-async function reserveUpc(draftId: string): Promise<{ id: string; upc: string } | null> {
-  // Atomic-ish: pull one AVAILABLE row, claim it. SQLite + Prisma
-  // doesn't give us SELECT FOR UPDATE, but the @unique constraint on
-  // assigned_to_id provides the race-condition safety net.
-  const row = await prisma.uPCPool.findFirst({
-    where: { status: "AVAILABLE", assigned_to_id: null },
-    orderBy: { acquired_at: "asc" }, // FIFO so oldest pool entries get used
-    select: { id: true, upc: true },
-  });
-  if (!row) return null;
-  try {
-    await prisma.uPCPool.update({
-      where: { id: row.id, status: "AVAILABLE" }, // gated update
-      data: {
-        status: "RESERVED",
-        reserved_for_id: draftId,
-        reserved_at: new Date(),
-        reserved_until: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
+/**
+ * Take a product ID from the pool that Walmart will actually accept.
+ *
+ * The pool is not exclusively ours — roughly a quarter of the numbers next in
+ * line already carry other companies' products — so a number is checked
+ * against Walmart's catalogue BEFORE it is attached to a listing, and a taken
+ * one is retired and skipped. Owner's instruction 2026-08-05: check, attach if
+ * free, take the next if not, and only then push. Doing it here means a
+ * listing is never born holding a dead number; the check before the feed is
+ * then just a cheap re-confirmation.
+ *
+ * A number that cannot be checked is not attached: an unanswered question is
+ * not permission.
+ */
+async function reserveUpc(
+  draftId: string,
+  channel: string,
+): Promise<{ id: string; upc: string } | null> {
+  // Non-Walmart channels have no catalogue to ask, so they keep the plain
+  // first-available behaviour.
+  const verifyAgainstWalmart = channel === "WALMART";
+
+  for (let attempt = 0; attempt < MAX_UPC_ATTACH_ATTEMPTS; attempt += 1) {
+    // Atomic-ish: pull one AVAILABLE row, claim it. SQLite + Prisma
+    // doesn't give us SELECT FOR UPDATE, but the @unique constraint on
+    // assigned_to_id provides the race-condition safety net.
+    const row = await prisma.uPCPool.findFirst({
+      where: { status: "AVAILABLE", assigned_to_id: null },
+      orderBy: { acquired_at: "asc" }, // FIFO so oldest pool entries get used
+      select: { id: true, upc: true },
     });
-    return row;
-  } catch {
-    return null;
+    if (!row) return null;
+
+    if (verifyAgainstWalmart) {
+      const availability = await checkUpcAvailability(row.upc);
+      if (!availability.checked) {
+        console.warn(
+          `[promote-draft] Walmart could not be asked about ${row.upc}; not attaching an unverified product ID`,
+        );
+        return null;
+      }
+      if (availability.taken) {
+        const pool = await prisma.uPCPool.findUnique({
+          where: { id: row.id },
+          select: { notes: true },
+        });
+        const note = `${new Date().toISOString()} UPC_TAKEN_IN_WALMART_CATALOG: `
+          + `item ${availability.existingItemId ?? "unknown"} already uses this product ID`;
+        await prisma.uPCPool.update({
+          where: { id: row.id },
+          data: {
+            status: "QUARANTINED",
+            notes: pool?.notes ? `${pool.notes}\n${note}` : note,
+          },
+        });
+        continue;
+      }
+    }
+
+    try {
+      await prisma.uPCPool.update({
+        where: { id: row.id, status: "AVAILABLE" }, // gated update
+        data: {
+          status: "RESERVED",
+          reserved_for_id: draftId,
+          reserved_at: new Date(),
+          reserved_until: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+      return row;
+    } catch {
+      // Someone else took it between the read and the claim; try the next.
+      continue;
+    }
   }
+  return null;
 }
 
 async function ensureMasterBundle(
@@ -1290,11 +1348,14 @@ export async function promoteDraftToChannelSkus(
       existing.push(row.channel);
       continue;
     }
-    const upcRow = await reserveUpc(draftId);
+    const upcRow = await reserveUpc(draftId, row.channel);
     if (!upcRow) {
       skipped.push({
         channel: row.channel,
-        reason: "UPCPool exhausted — no AVAILABLE rows left",
+        reason:
+          `No product ID could be attached: after ${MAX_UPC_ATTACH_ATTEMPTS} tries `
+          + "every candidate was already in Walmart's catalogue, unverifiable, or "
+          + "the pool is empty.",
       });
       continue;
     }

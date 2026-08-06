@@ -44,3 +44,20 @@ test("publishing checks the product ID before it spends a feed", async () => {
     "the product ID is checked before validation runs",
   );
 });
+
+test("a listing is never born holding a taken product ID", async () => {
+  const promote = await readFile(
+    new URL("../validation/promote-draft.ts", import.meta.url),
+    "utf8",
+  );
+  // Owner's instruction 2026-08-05: check before attaching, take the next if
+  // taken, and only then push. Checking at publish alone would still mint
+  // listings around dead numbers.
+  assert.match(promote, /checkUpcAvailability/u);
+  assert.match(promote, /MAX_UPC_ATTACH_ATTEMPTS/u);
+  assert.match(promote, /UPC_TAKEN_IN_WALMART_CATALOG/u);
+  // Unverifiable is not attachable.
+  assert.match(promote, /not attaching an unverified product ID/u);
+  // Other channels have no Walmart catalogue to consult and keep their old path.
+  assert.match(promote, /channel === "WALMART"/u);
+});
