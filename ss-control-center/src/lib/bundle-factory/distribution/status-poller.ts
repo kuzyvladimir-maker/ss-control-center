@@ -32,6 +32,7 @@ import {
   type WalmartMarketplaceDisposition,
   type WalmartSubmissionAttemptIdentity,
 } from "./walmart-publish-lifecycle";
+import { checkUpcAvailability } from "../walmart-upc-availability";
 
 export type PollTerminalStatus =
   | "LIVE"
@@ -776,6 +777,67 @@ export function assertWalmartPollPersistenceFence(input: {
   }
 }
 
+interface WalmartUpcRefusalVerdict {
+  /** Retire the number: Walmart's catalog confirms another item owns it. */
+  quarantine: boolean;
+  /** The item that owns it, when the catalog named one. */
+  existingItemId: string | null;
+  /** Set when the refusal was NOT the number's fault, in words for an operator. */
+  explanation: string | null;
+}
+
+/**
+ * Decide whether a product-ID refusal really is the product ID.
+ *
+ * Runs before the persistence transaction, because it asks Walmart and a
+ * transaction is no place for a network call.
+ */
+export async function classifyWalmartUpcRefusal(
+  input: {
+    channel: string;
+    upc: string;
+    hasPoolRow: boolean;
+    disposition: WalmartMarketplaceDisposition | null | undefined;
+  },
+  askWalmart: typeof checkUpcAvailability = checkUpcAvailability,
+): Promise<WalmartUpcRefusalVerdict> {
+  const idle: WalmartUpcRefusalVerdict = {
+    quarantine: false,
+    existingItemId: null,
+    explanation: null,
+  };
+  if (input.channel !== "WALMART" || !input.hasPoolRow) return idle;
+  if (!walmartDispositionQuarantinesUpc(input.disposition)) return idle;
+
+  const availability = await askWalmart(input.upc);
+  if (!availability.checked) {
+    return {
+      quarantine: false,
+      existingItemId: null,
+      explanation:
+        `Walmart refused product ID ${input.upc}, and the catalog could not be `
+        + "asked whether it is actually taken. The number is kept until that "
+        + "question can be answered; replacing it now might retire a good one.",
+    };
+  }
+  if (availability.taken) {
+    return {
+      quarantine: true,
+      existingItemId: availability.existingItemId,
+      explanation: null,
+    };
+  }
+  return {
+    quarantine: false,
+    existingItemId: null,
+    explanation:
+      `Walmart refused this listing for a duplicate product ID, but its own `
+      + `catalog has no item using ${input.upc}. The number is free and has been `
+      + "kept. The collision is with the product itself — Walmart already carries "
+      + "this exact item — so replacing the product ID will not publish it.",
+  };
+}
+
 export async function persistPollResult(
   result: PollResult,
   expectedAttempt?: WalmartCertifiedSubmissionAttemptBinding,
@@ -786,6 +848,7 @@ export async function persistPollResult(
       id: true,
       channel: true,
       sku: true,
+      upc: true,
       upc_pool_id: true,
       master_bundle_id: true,
       listing_status: true,
@@ -794,6 +857,33 @@ export async function persistPollResult(
     },
   });
   const now = new Date();
+
+  // Walmart's "product ID already exists" is not proof that it does.
+  //
+  // `756441906103` was refused with ERR_EXT_DATA_0101119 while Walmart's own
+  // catalog search returned zero items for it — the number was free, and
+  // quarantining on the error alone retired a good number and sent the
+  // operator to replace something that was never broken. Three of this SKU's
+  // numbers were burned that way before anyone asked Walmart directly.
+  //
+  // So the error opens the question and the catalog answers it. Confirmed
+  // taken: retire the number, naming the item that owns it. Confirmed free:
+  // keep it, and say plainly that the conflict is the product, not the ID —
+  // rotating again would burn a fourth number for nothing. Unanswerable: keep
+  // the number, because a network failure is not evidence of anything.
+  const upcVerdict = await classifyWalmartUpcRefusal({
+    channel: sku.channel,
+    upc: sku.upc,
+    hasPoolRow: Boolean(sku.upc_pool_id),
+    disposition: result.marketplace_disposition,
+  });
+  const issues = upcVerdict.explanation
+    ? [
+        { code: "PRODUCT_ID_VERIFIED_FREE", message: upcVerdict.explanation },
+        ...result.issues,
+      ]
+    : result.issues;
+
   const lifecycleStatus =
     result.new_listing_status === "LIVE"
       ? "LIVE"
@@ -899,12 +989,12 @@ export async function persistPollResult(
       data: {
         listing_status: result.new_listing_status,
         lifecycle_status: lifecycleStatus,
-        distribution_errors: result.issues.length
-          ? JSON.stringify(result.issues)
+        distribution_errors: issues.length
+          ? JSON.stringify(issues)
           : null,
         errors:
-          result.new_listing_status === "FAILED" && result.issues.length
-            ? JSON.stringify(result.issues)
+          result.new_listing_status === "FAILED" && issues.length
+            ? JSON.stringify(issues)
             : result.new_listing_status === "LIVE"
               ? null
               : undefined,
@@ -945,7 +1035,7 @@ export async function persistPollResult(
           active_key: terminal ? null : sku.id,
           marketplace_disposition:
             result.marketplace_disposition ?? attempt.marketplace_disposition,
-          error_json: result.issues.length ? JSON.stringify(result.issues) : null,
+          error_json: issues.length ? JSON.stringify(issues) : null,
           recovery_count: recoveryCount,
           retry_after: result.retryable
             ? new Date(
@@ -957,15 +1047,14 @@ export async function persistPollResult(
       });
     }
 
-    if (
-      sku.upc_pool_id &&
-      walmartDispositionQuarantinesUpc(result.marketplace_disposition)
-    ) {
+    if (sku.upc_pool_id && upcVerdict.quarantine) {
       const pool = await tx.uPCPool.findUnique({
         where: { id: sku.upc_pool_id },
         select: { notes: true },
       });
-      const note = `${new Date().toISOString()} ${result.marketplace_disposition}: Walmart rejected SKU ${sku.sku}`;
+      const note = `${new Date().toISOString()} ${result.marketplace_disposition}: `
+        + `Walmart rejected SKU ${sku.sku}; catalog confirms item `
+        + `${upcVerdict.existingItemId ?? "unknown"} already uses ${sku.upc}`;
       await tx.uPCPool.update({
         where: { id: sku.upc_pool_id },
         data: {
@@ -990,7 +1079,7 @@ export async function persistPollResult(
           details: JSON.stringify({
             prior_listing_status: sku.listing_status,
             listing_status: result.new_listing_status,
-            issues_count: result.issues.length,
+            issues_count: issues.length,
             marketplace_disposition: result.marketplace_disposition ?? null,
             submission_attempt_id: result.submission_attempt_id ?? null,
             buyer_evidence_id: buyerEvidence?.id ?? null,
