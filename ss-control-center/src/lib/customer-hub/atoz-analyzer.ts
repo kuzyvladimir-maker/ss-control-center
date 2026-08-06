@@ -12,8 +12,7 @@
  * from CUSTOMER_HUB_ALGORITHM_v3.0 §9.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig } from "@/lib/ai-config";
 
 export interface AtozAnalysisResult {
@@ -121,34 +120,15 @@ Generate the two responses. Return valid JSON only.`;
   let rawText = "";
 
   for (const provider of config.providerChain) {
-    const model =
-      provider === "claude" ? config.claudeModel : config.openaiModel;
     try {
-      if (provider === "claude") {
-        const client = new Anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY,
-        });
-        const r = await client.messages.create({
-          model,
-          max_tokens: 2000,
-          thinking: { type: "disabled" },
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: userMessage }],
-        });
-        rawText = r.content[0].type === "text" ? r.content[0].text : "";
-      } else {
-        const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-        const r = await client.chat.completions.create({
-          model,
-          max_tokens: 2000,
-          temperature: 0.3,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: userMessage },
-          ],
-        });
-        rawText = r.choices[0]?.message?.content || "";
-      }
+      // Both providers are subscriptions on the box worker; the chain still
+      // decides WHICH subscription answers first.
+      const { text } = await completeWithSubscription({
+        prompt: userMessage,
+        system: SYSTEM_PROMPT,
+        lanes: [provider === "claude" ? "claude" : "codex"],
+      });
+      rawText = text;
 
       if (rawText) break;
     } catch (e) {

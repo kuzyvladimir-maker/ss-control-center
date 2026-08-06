@@ -4,7 +4,10 @@
 // copy. The pack-quantity message is NOT produced here — the caller adds it
 // exactly once. Deterministic fallback (caller's scrubbed copy) on any failure.
 
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
+
+/** What both call sites actually use from the client. */
+type AnthropicLikeClient = NonNullable<ReturnType<typeof claudeWorkerClient>>;
 import { WALMART_CONTENT_RULES } from "./guidelines";
 import { CLAUDE } from "@/lib/ai-models";
 import {
@@ -28,12 +31,11 @@ export interface PolishedCopy {
   description: string;
 }
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic | null {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  if (!client) client = new Anthropic({ apiKey: key });
-  return client;
+// Runs on Vladimir's Claude Max / ChatGPT Pro subscriptions through the box
+// worker, never a paid API key (owner instruction 2026-08-06). The adapter
+// speaks the same `messages.create` shape, so the call sites below are unchanged.
+function getClient(): AnthropicLikeClient | null {
+  return claudeWorkerClient();
 }
 
 const RULES = `${WALMART_CONTENT_RULES}
@@ -78,7 +80,7 @@ Provide 5-7 keyFeatures. The description is 150-220 words (about 800-1300 charac
         thinking: { type: "disabled" },
         messages: [{ role: "user", content: prompt }],
       }));
-      const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
+      const text = res.content.filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
       const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
       const parsed = JSON.parse(json) as PolishedCopy;
       if (!Array.isArray(parsed.keyFeatures) || !parsed.keyFeatures.length || !parsed.description) throw new Error("empty/invalid copy");

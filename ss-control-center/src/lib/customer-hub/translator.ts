@@ -10,8 +10,7 @@
  * a working language for the operator.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig } from "@/lib/ai-config";
 
 export type TranslateDirection = "en-ru" | "ru-en";
@@ -37,26 +36,14 @@ TEXT TO TRANSLATE:
 ${text}`;
 }
 
-async function callClaude(prompt: string, model: string): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const response = await client.messages.create({
-    model,
-    max_tokens: 2000,
-    thinking: { type: "disabled" },
-    messages: [{ role: "user", content: prompt }],
-  });
-  return response.content[0].type === "text" ? response.content[0].text : "";
+async function callClaude(prompt: string): Promise<string> {
+  const { text } = await completeWithSubscription({ prompt, lanes: ["claude"] });
+  return text;
 }
 
-async function callOpenAI(prompt: string, model: string): Promise<string> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.chat.completions.create({
-    model,
-    max_tokens: 2000,
-    temperature: 0.2,
-    messages: [{ role: "user", content: prompt }],
-  });
-  return response.choices[0]?.message?.content || "";
+async function callOpenAI(prompt: string): Promise<string> {
+  const { text } = await completeWithSubscription({ prompt, lanes: ["codex"] });
+  return text;
 }
 
 /**
@@ -82,13 +69,11 @@ export async function translateText(
   const prompt = buildPrompt(trimmed, direction);
 
   for (const provider of config.providerChain) {
-    const model =
-      provider === "claude" ? config.claudeModel : config.openaiModel;
     try {
       const raw =
         provider === "claude"
-          ? await callClaude(prompt, model)
-          : await callOpenAI(prompt, model);
+          ? await callClaude(prompt)
+          : await callOpenAI(prompt);
       const cleaned = raw.trim();
       if (cleaned) {
         return cleaned;

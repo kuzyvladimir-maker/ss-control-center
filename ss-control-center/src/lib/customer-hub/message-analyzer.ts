@@ -6,8 +6,7 @@
  * do we return the safe heuristic fallback.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import { completeWithSubscription } from "@/lib/llm/subscription";
 import { getAIConfig, type ProviderName } from "@/lib/ai-config";
 import { findSimilarCases } from "./knowledge-base";
 
@@ -1008,13 +1007,11 @@ Return ONLY the rewritten response text, no JSON, no explanation.`;
   try {
     const config = await getAIConfig();
     for (const provider of config.providerChain) {
-      const model =
-        provider === "claude" ? config.claudeModel : config.openaiModel;
       try {
         const fixedText =
           provider === "claude"
-            ? await callClaudeRaw(fixPrompt, model)
-            : await callOpenAIRaw(fixPrompt, model);
+            ? await callClaudeRaw(fixPrompt)
+            : await callOpenAIRaw(fixPrompt);
         const trimmed = fixedText.trim();
         if (trimmed && trimmed.toLowerCase().startsWith("dear")) {
           console.log(`[Validator] Response fixed with ${provider}`);
@@ -1047,68 +1044,35 @@ Return ONLY the rewritten response text, no JSON, no explanation.`;
 // Provider call returns the raw text from the model. Parsing + greeting
 // fallback happens in tryParseAnalysis, which is shared between providers
 // since both models return the same JSON schema.
-async function callClaude(
-  userMessage: string,
-  model: string
-): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const response = await client.messages.create({
-    model,
-    max_tokens: 2000,
-    thinking: { type: "disabled" },
+async function callClaude(userMessage: string): Promise<string> {
+  const { text } = await completeWithSubscription({
+    prompt: userMessage,
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMessage }],
+    lanes: ["claude"],
   });
-  return response.content[0].type === "text" ? response.content[0].text : "";
+  return text;
 }
 
-async function callOpenAI(
-  userMessage: string,
-  model: string
-): Promise<string> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.chat.completions.create({
-    model,
-    max_tokens: 2000,
-    // Low temperature for consistent structured JSON output
-    temperature: 0.3,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userMessage },
-    ],
+async function callOpenAI(userMessage: string): Promise<string> {
+  const { text } = await completeWithSubscription({
+    prompt: userMessage,
+    system: SYSTEM_PROMPT,
+    lanes: ["codex"],
   });
-  return response.choices[0]?.message?.content || "";
+  return text;
 }
 
 // Raw text-only provider calls for the validator. Unlike the analysis
 // calls above these DO NOT send SYSTEM_PROMPT — the validator passes its
 // own constrained prompt and expects plain-text output, not JSON.
-async function callClaudeRaw(
-  prompt: string,
-  model: string
-): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const response = await client.messages.create({
-    model,
-    max_tokens: 1000,
-    thinking: { type: "disabled" },
-    messages: [{ role: "user", content: prompt }],
-  });
-  return response.content[0].type === "text" ? response.content[0].text : "";
+async function callClaudeRaw(prompt: string): Promise<string> {
+  const { text } = await completeWithSubscription({ prompt, lanes: ["claude"] });
+  return text;
 }
 
-async function callOpenAIRaw(
-  prompt: string,
-  model: string
-): Promise<string> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.chat.completions.create({
-    model,
-    max_tokens: 1000,
-    temperature: 0.3,
-    messages: [{ role: "user", content: prompt }],
-  });
-  return response.choices[0]?.message?.content || "";
+async function callOpenAIRaw(prompt: string): Promise<string> {
+  const { text } = await completeWithSubscription({ prompt, lanes: ["codex"] });
+  return text;
 }
 
 export async function analyzeMessage(
@@ -1120,7 +1084,8 @@ export async function analyzeMessage(
   const config = await getAIConfig();
   if (config.providerChain.length === 0) {
     console.error(
-      "[Analyzer] No AI providers configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in .env"
+      "[Analyzer] No AI providers configured. Check the provider chain in Settings; "
+      + "both providers run on the box worker's subscriptions, not on API keys."
     );
     return fallbackResult(input);
   }
@@ -1151,14 +1116,12 @@ export async function analyzeMessage(
   let lastError = "";
 
   for (const provider of config.providerChain) {
-    const model =
-      provider === "claude" ? config.claudeModel : config.openaiModel;
     try {
-      console.log(`[Analyzer] Trying ${provider} (${model})…`);
+      console.log(`[Analyzer] Trying ${provider} on its subscription…`);
       const text =
         provider === "claude"
-          ? await callClaude(userMessage, model)
-          : await callOpenAI(userMessage, model);
+          ? await callClaude(userMessage)
+          : await callOpenAI(userMessage);
 
       const parsed = tryParseAnalysis(text, input);
       if (parsed) {

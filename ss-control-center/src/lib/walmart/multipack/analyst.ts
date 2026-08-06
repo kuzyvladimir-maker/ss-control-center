@@ -9,7 +9,10 @@
 //   - type "advisory" → levers we CANNOT auto-apply (restock, price/buy-box,
 //                       fast shipping, reviews) — surfaced as "needs you".
 
-import Anthropic from "@anthropic-ai/sdk";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
+
+/** What both call sites actually use from the client. */
+type AnthropicLikeClient = NonNullable<ReturnType<typeof claudeWorkerClient>>;
 import { WALMART_CONTENT_RULES } from "./guidelines";
 import { CLAUDE } from "@/lib/ai-models";
 import { withMeteredProviderCall } from "@/lib/sourcing/metered-provider-call";
@@ -25,17 +28,16 @@ export interface PoolListing {
 export interface Recommendation { type: "auto" | "advisory"; title: string; detail: string; skus: string[]; fields: string[]; }
 export interface PoolAnalysis { narrative: string; recommendations: Recommendation[]; }
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic | null {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  if (!client) client = new Anthropic({ apiKey: key });
-  return client;
+// Runs on Vladimir's Claude Max / ChatGPT Pro subscriptions through the box
+// worker, never a paid API key (owner instruction 2026-08-06). The adapter
+// speaks the same `messages.create` shape, so the call sites below are unchanged.
+function getClient(): AnthropicLikeClient | null {
+  return claudeWorkerClient();
 }
 
 export async function analyzePool(input: { period: number; aggregates: Record<string, number>; listings: PoolListing[] }): Promise<PoolAnalysis> {
   const c = getClient();
-  if (!c) throw new Error("ANTHROPIC_API_KEY is not set in this environment");
+  if (!c) throw new Error("The Claude subscription worker is not configured (CODEX_IMAGE_WORKER_URL / CODEX_IMAGE_WORKER_TOKEN). This platform does not use paid API keys.");
   const rows = input.listings.slice(0, 60).map((l) =>
     `- ${l.sku} | ${l.name?.slice(0, 50)} | status:${l.status || "?"} pack:${l.pack ?? "?"} LQ:${l.lq ?? "?"} content:${l.content ?? "?"} | ${input.period}d sales:$${l.sales} units:${l.units} conv:${l.conv != null ? (l.conv * 100).toFixed(1) + "%" : "—"} views:${l.views} reviews:${l.reviews} returns:${l.returns} inStock:${l.inStock} | issues: ${l.issues.join("; ") || "none"}`
   ).join("\n");
@@ -63,7 +65,7 @@ Return ONLY valid JSON:
     operation: "analysis",
     requestFingerprint: { model: MODEL, period: input.period, aggregates: input.aggregates, listings: input.listings.slice(0, 60) },
   }, () => c.messages.create({ model: MODEL, max_tokens: 2500, thinking: { type: "disabled" }, messages: [{ role: "user", content: prompt }] }));
-  const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
+  const text = res.content.filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
   let parsed: PoolAnalysis;
   try { parsed = JSON.parse(json) as PoolAnalysis; }

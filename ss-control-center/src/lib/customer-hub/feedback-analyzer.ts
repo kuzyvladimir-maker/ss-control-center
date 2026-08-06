@@ -7,8 +7,7 @@
  * Claude API is unavailable so the UI never breaks.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import { CLAUDE } from "@/lib/ai-models";
+import { completeWithSubscription } from "@/lib/llm/subscription";
 
 export interface FeedbackAnalysisInput {
   rating: number;
@@ -177,26 +176,15 @@ function parseResponse(
 export async function analyzeFeedback(
   input: FeedbackAnalysisInput
 ): Promise<FeedbackAnalysisResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || !apiKey.startsWith("sk-ant-")) {
-    return fallback(input);
-  }
-
   try {
-    const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model: CLAUDE.balanced,
-      max_tokens: 1200,
-      thinking: { type: "disabled" },
+    const { text } = await completeWithSubscription({
+      prompt: buildUserMessage(input),
       system: FEEDBACK_ANALYSIS_PROMPT,
-      messages: [{ role: "user", content: buildUserMessage(input) }],
     });
-
-    const text =
-      response.content[0].type === "text" ? response.content[0].text : "";
     return parseResponse(text, input);
   } catch (e) {
-    console.error("[FeedbackAnalyzer] Claude API failed:", e);
+    // Both subscriptions refused. A rule-based reading beats none.
+    console.error("[FeedbackAnalyzer] no subscription lane answered:", e);
     return fallback(input);
   }
 }
