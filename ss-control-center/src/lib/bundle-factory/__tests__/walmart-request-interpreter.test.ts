@@ -1,25 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type Anthropic from "@anthropic-ai/sdk";
-
+import { SubscriptionLlmUnavailable } from "@/lib/llm/subscription";
 import {
   WALMART_REQUEST_INTERPRETATION_SCHEMA,
   WalmartRequestInterpreterError,
   interpretWalmartRequest,
 } from "../walmart-request-interpreter";
 
-function reply(input: Record<string, unknown>): Anthropic.Message {
-  return {
-    id: "msg_test",
-    type: "message",
-    role: "assistant",
-    model: "claude-sonnet-5",
-    stop_reason: "tool_use",
-    stop_sequence: null,
-    usage: { input_tokens: 1, output_tokens: 1 },
-    content: [{ type: "tool_use", id: "tool_1", name: "interpret_request", input }],
-  } as unknown as Anthropic.Message;
+/** The subscription worker answers with a parsed JSON object. */
+function reply(input: Record<string, unknown>): Record<string, unknown> {
+  return input;
 }
 
 test("a spoken Russian request becomes a Latin catalogue query", async () => {
@@ -28,7 +19,7 @@ test("a spoken Russian request becomes a Latin catalogue query", async () => {
   const result = await interpretWalmartRequest(
     "сделай пять листингов супа Прогрессо по восемь банок",
     {
-      createMessage: async () => reply({
+      complete: async () => reply({
         search_query: "Progresso soup",
         brand: "Progresso",
         product: "soup",
@@ -52,7 +43,7 @@ test("a query that stayed in Cyrillic is refused, not searched", async () => {
   // exists to remove, so it fails loudly with what to type instead.
   await assert.rejects(
     () => interpretWalmartRequest("суп Прогрессо", {
-      createMessage: async () => reply({
+      complete: async () => reply({
         search_query: "Прогрессо суп",
         readback: "…",
         assumptions: [],
@@ -69,7 +60,7 @@ test("a query that stayed in Cyrillic is refused, not searched", async () => {
 
 test("counts are never invented and out-of-range values are dropped", async () => {
   const result = await interpretWalmartRequest("нужны листинги Campbell's", {
-    createMessage: async () => reply({
+    complete: async () => reply({
       search_query: "Campbell's soup",
       brand: "Campbell's",
       listing_count: null,
@@ -90,7 +81,7 @@ test("what the lane cannot do comes back as unsupported, not silently dropped", 
   const result = await interpretWalmartRequest(
     "собери подарочный набор из разных супов и выложи на Амазон",
     {
-      createMessage: async () => reply({
+      complete: async () => reply({
         search_query: "assorted soup",
         readback: "Это смешанный набор для Amazon.",
         assumptions: [],
@@ -105,7 +96,7 @@ test("an empty request never reaches the model", async () => {
   let called = false;
   await assert.rejects(
     () => interpretWalmartRequest("  ", {
-      createMessage: async () => {
+      complete: async () => {
         called = true;
         return reply({ search_query: "x", readback: "x", assumptions: [], unsupported: [] });
       },
@@ -115,36 +106,34 @@ test("an empty request never reaches the model", async () => {
   assert.equal(called, false);
 });
 
-test("OpenAI answers when Claude is unreachable", async () => {
-  const result = await interpretWalmartRequest("пять листингов Progresso по 8", {
-    createMessage: async () => {
-      throw new Error("400 credit balance is too low");
-    },
-    createFallback: async () => ({
-      search_query: "Progresso soup",
-      listing_count: 5,
-      pack_count: 8,
-      readback: "5 листингов Progresso по 8 банок.",
-      assumptions: [],
-      unsupported: [],
-    }),
-  });
-  assert.equal(result.search_query, "Progresso soup");
-  assert.equal(result.listing_count, 5);
-});
-
-test("when no provider answers, the operator is told what to do instead", async () => {
-  // Both balances empty is the state this was written in; the page must not
-  // show a raw provider error, and typing Latin by hand must still work.
+test("there is no paid fallback — an unreachable worker says so plainly", async () => {
+  // Until 2026-08-06 this fell back to OpenAI on a paid key. The owner's
+  // instruction removed paid APIs entirely, so the only honest outcome is a
+  // sentence the operator can act on.
   await assert.rejects(
     () => interpretWalmartRequest("пять листингов Прогрессо", {
-      createMessage: async () => { throw new Error("429 no credits"); },
-      createFallback: async () => { throw new Error("429 no credits"); },
+      complete: async () => {
+        throw new SubscriptionLlmUnavailable("worker unreachable");
+      },
     }),
     (error: unknown) => {
       assert.ok(error instanceof WalmartRequestInterpreterError);
       assert.equal(error.code, "LLM_UNAVAILABLE");
       assert.match(error.message, /Latin letters/);
+      assert.doesNotMatch(error.message, /OpenAI|Anthropic|balance/i);
+      return true;
+    },
+  );
+});
+
+test("an empty answer is a failed interpretation, not an empty spec", async () => {
+  await assert.rejects(
+    () => interpretWalmartRequest("пять листингов Progresso", {
+      complete: async () => ({}),
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof WalmartRequestInterpreterError);
+      assert.equal(error.code, "NO_INTERPRETATION");
       return true;
     },
   );

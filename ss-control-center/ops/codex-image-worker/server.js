@@ -440,11 +440,25 @@ function extractLastJson(text) {
 async function handleAnalyze(body) {
   const prompt = String((body && body.prompt) || "").trim();
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const receiptRequested = !!(body && body.request_attestation);
+  if (receiptRequested && !VISION_RECEIPT_SIGNER) {
+    return { status: 503, json: { error: "signed vision receipts are not configured" } };
+  }
 
   const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "codex-vis-"));
   let imgFiles = [];
+  let requestAttestation = null;
+  let reservationReservedAt = null;
   try {
     imgFiles = await stageVisionImages(body, runDir);
+    if (receiptRequested) {
+      const imageBytes = await Promise.all(imgFiles.map((file) => fsp.readFile(file)));
+      requestAttestation = parseVisionRequestAttestation(
+        body.request_attestation,
+        prompt,
+        imageBytes,
+      );
+    }
   } catch (error) {
     try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
     return {
@@ -455,6 +469,38 @@ async function handleAnalyze(body) {
         ...visionMetadata("codex_cli_subscription", 0),
       },
     };
+  }
+  if (requestAttestation) {
+    try {
+      const reservation = await reserveVisionCallKey(
+        VISION_CALL_STATE_DIR,
+        requestAttestation,
+        new Date().toISOString(),
+        VISION_RESERVATION_LEDGER,
+      );
+      VISION_RESERVATION_LEDGER = reservation.ledger;
+      reservationReservedAt = reservation.body.reserved_at;
+    } catch (error) {
+      try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+      if (error instanceof VisionCallKeyAlreadyReservedError) {
+        return {
+          status: 409,
+          json: {
+            ok: false,
+            error: "call_key_already_reserved_or_ambiguous",
+            ...visionMetadata("codex_cli_subscription", imgFiles.length),
+          },
+        };
+      }
+      return {
+        status: 503,
+        json: {
+          ok: false,
+          error: "durable_call_key_reservation_failed",
+          ...visionMetadata("codex_cli_subscription", imgFiles.length),
+        },
+      };
+    }
   }
 
   const names = imgFiles.map((f) => path.basename(f)).join(", ");
@@ -494,12 +540,31 @@ async function handleAnalyze(body) {
       },
     };
   }
+  const metadata = visionMetadata("codex_cli_subscription", imgFiles.length);
+  const workerReceipt = requestAttestation && VISION_RECEIPT_SIGNER
+    ? VISION_RECEIPT_SIGNER.sign({
+      issued_at: new Date().toISOString(),
+      reservation_reserved_at: reservationReservedAt,
+      request_attestation: requestAttestation,
+      result_canonical_sha256: visionSha256(Buffer.from(canonicalJson(result), "utf8")),
+      worker_contract: metadata,
+      subscription_policy: {
+        auth_mode: "codex_chatgpt_subscription_oauth",
+        paid_api_environment_absent: true,
+        alternate_cloud_routing_absent: true,
+      },
+    })
+    : null;
   return {
     status: 200,
     json: {
       ok: true,
       result,
-      ...visionMetadata("codex_cli_subscription", imgFiles.length),
+      ...metadata,
+      ...(requestAttestation ? {
+        request_attestation_verified: true,
+        worker_receipt: workerReceipt,
+      } : {}),
     },
   };
 }
@@ -529,6 +594,73 @@ function runClaudeVision(imgFiles, prompt) {
     child.on("error", (e) => { clearTimeout(timer); resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude spawn error: " + e.message }); });
     child.on("close", (code) => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
   });
+}
+
+// --- TEXT via the Claude Code CLI (same subscription, no images) ---------------
+// Owner instruction 2026-08-06: no paid API tokens, ever. Anything that needs a
+// language model comes here instead. Same OAuth subscription as the vision path
+// ($0/call); ANTHROPIC_API_KEY is stripped by buildClaudeSubscriptionEnv so a
+// stray key can never turn this into a billed call.
+//
+// No tools are allowed: this answers from the prompt alone, so it cannot read
+// the box's filesystem or reach the network on the caller's behalf.
+const TEXT_TIMEOUT_MS = Number(process.env.CLAUDE_TEXT_TIMEOUT_MS || 240000);
+const TEXT_MODEL_DEFAULT = process.env.CLAUDE_TEXT_MODEL || "sonnet";
+
+function runClaudeText(prompt, model, systemPrompt) {
+  return new Promise((resolve) => {
+    const env = buildClaudeSubscriptionEnv(process.env);
+    const args = [
+      "-p", prompt,
+      "--output-format", "json",
+      "--allowedTools", "",
+      "--permission-mode", "bypassPermissions",
+      "--model", model,
+      "--max-turns", "1",
+    ];
+    if (systemPrompt) args.push("--append-system-prompt", systemPrompt);
+    const child = spawn(CLAUDE_BIN, args, { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "", stderr = "";
+    const cap = (s, d) => { s += d.toString(); return s.length > 400000 ? s.slice(-400000) : s; };
+    child.stdout.on("data", (d) => { stdout = cap(stdout, d); });
+    child.stderr.on("data", (d) => { stderr = cap(stderr, d); });
+    const timer = setTimeout(() => {
+      try { child.kill("SIGKILL"); } catch {}
+      resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude text timed out" });
+    }, TEXT_TIMEOUT_MS);
+    child.on("error", (e) => {
+      clearTimeout(timer);
+      resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude spawn error: " + e.message });
+    });
+    child.on("close", (code) => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
+  });
+}
+
+async function handleComplete(body) {
+  const prompt = String((body && body.prompt) || "").trim();
+  if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const model = String((body && body.model) || TEXT_MODEL_DEFAULT).trim() || TEXT_MODEL_DEFAULT;
+  const systemPrompt = body && body.system ? String(body.system) : "";
+
+  const { code, stdout, stderr } = await runClaudeText(prompt, model, systemPrompt);
+  if (code !== 0) {
+    return {
+      status: 502,
+      json: { error: `claude text exited with code ${code}`, stderr: stderr.slice(-2000) },
+    };
+  }
+  // `--output-format json` wraps the answer: { result: "<text>", ... }
+  let text = "";
+  try {
+    const parsed = JSON.parse(stdout);
+    text = typeof parsed.result === "string" ? parsed.result : "";
+  } catch {
+    text = "";
+  }
+  if (!text.trim()) {
+    return { status: 502, json: { error: "claude produced no text", stderr: stderr.slice(-2000) } };
+  }
+  return { status: 200, json: { ok: true, text, model } };
 }
 
 async function handleAnalyzeClaude(body) {
@@ -688,7 +820,8 @@ const server = http.createServer((req, res) => {
   const isGenerate = req.method === "POST" && url.pathname === "/generate";
   const isAnalyze = req.method === "POST" && url.pathname === "/analyze";
   const isAnalyzeClaude = req.method === "POST" && url.pathname === "/analyze-claude";
-  if (!isGenerate && !isAnalyze && !isAnalyzeClaude) {
+  const isComplete = req.method === "POST" && url.pathname === "/complete";
+  if (!isGenerate && !isAnalyze && !isAnalyzeClaude && !isComplete) {
     res.writeHead(404, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));
     return;
@@ -715,8 +848,10 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ error: "bad json" }));
       return;
     }
-    (isAnalyzeClaude
-      ? enqueueClaude(() => handleAnalyzeClaude(body))
+    (isAnalyzeClaude || isComplete
+      // Both ride the Claude subscription, so they share its queue — running
+      // them concurrently would race the same rate limit.
+      ? enqueueClaude(() => (isComplete ? handleComplete(body) : handleAnalyzeClaude(body)))
       : enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body))))
       .then((result) => {
         if (result.png) {
