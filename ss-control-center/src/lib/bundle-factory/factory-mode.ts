@@ -13,7 +13,8 @@
  *               live listings.
  *
  *   AUTO      — the schedule also PUBLISHES, inside the daily ceiling
- *               (`walmart_publish_daily_cap`, default 25). The owner's decision
+ *               (`walmart_publish_daily_cap`, derived from Walmart's feed
+ *               throughput, not a hand-picked number). The owner's decision
  *               moves from "press for each batch" to "this ceiling, this mode",
  *               which is what makes a factory run for weeks unattended.
  *

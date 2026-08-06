@@ -29,11 +29,28 @@ export const PUBLISH_QUEUE_MARKETPLACE = "WALMART";
 export const PUBLISH_DAILY_CAP_SETTING = "walmart_publish_daily_cap";
 
 /**
- * Owner decision 2026-08-03: start at 25 a day and raise it once the lane has
- * proven itself. Nothing had been published through this lane at the time, and
- * Walmart sends an account to review for a sudden spike in new items.
+ * Walmart's documented baseline throughput: roughly ten feeds an hour.
+ * See docs/marketplace-rules/walmart/kb/feeds-maintenance-and-errors.md.
  */
-export const PUBLISH_DAILY_CAP_DEFAULT = 25;
+export const WALMART_FEEDS_PER_HOUR = 10;
+
+/**
+ * The ceiling is what Walmart can actually take, not a number someone picked.
+ *
+ * It used to be a flat 25 a day. That was mine, not the owner's, and he said so
+ * on 2026-08-06: "потолок может быть ограничен только количеством проходящих
+ * фидов в Walmart и не меньше." So it is derived — feeds per hour × 24 —
+ * and it rises on its own the moment a feed carries more than one listing.
+ *
+ * A setting still overrides it, for the case where someone deliberately wants
+ * less. Nothing here removes the rolling window, the rails, or the fences: the
+ * ceiling bounds volume, and those bound correctness.
+ */
+export function derivedPublishDailyCap(listingsPerFeed = 1): number {
+  return WALMART_FEEDS_PER_HOUR * 24 * Math.max(1, listingsPerFeed);
+}
+
+export const PUBLISH_DAILY_CAP_DEFAULT = derivedPublishDailyCap();
 
 /**
  * A claim older than this whose POST never happened is considered abandoned.
