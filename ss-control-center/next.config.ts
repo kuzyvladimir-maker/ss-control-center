@@ -21,10 +21,17 @@ const nextConfig: NextConfig = {
       "./node_modules/@libsql/linux-arm64-gnu/**/*",
       "./node_modules/@libsql/linux-x64-gnu/**/*",
       // sharp resolves its native binding by platform at runtime as well, and
-      // Vercel runs arm64 here — a macOS-traced build shipped only darwin and
-      // x64, so every image-touching route 500'd.
+      // a macOS-traced build ships only darwin unless both Linux arches are
+      // named here. Vercel has served this project on BOTH: arm64 when this
+      // note was written, x64 on 2026-08-06, when the publish cron 500'd with
+      // ERR_DLOPEN_FAILED (libvips-cpp.so.8.18.3) on every single run since it
+      // was added. The x64 pair used to be traced into the remediation worker
+      // route alone, so any OTHER route touching an image was one deploy away
+      // from the same failure. Trace both arches everywhere.
       "./node_modules/@img/sharp-linux-arm64/**/*",
       "./node_modules/@img/sharp-libvips-linux-arm64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
     ],
   },
   // The repo carries ~3.6GB of local audit/evidence artifacts under data/.
