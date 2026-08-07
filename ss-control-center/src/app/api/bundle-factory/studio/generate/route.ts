@@ -285,6 +285,7 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
             prompt,
             listingCount: intent.listing_count,
             packCount: intent.pack_count,
+            flavorsPerListing: intent.flavors_per_listing,
           });
         } catch (collectionError) {
           // A request the catalogue cannot serve is the operator's answer to

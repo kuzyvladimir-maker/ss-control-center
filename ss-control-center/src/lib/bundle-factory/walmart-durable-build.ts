@@ -286,6 +286,14 @@ export async function prepareWalmartDurableBuildCollection(input: {
   prompt: string;
   listingCount: number;
   packCount: number;
+  /**
+   * Different products per listing. A mixed assortment consumes this many
+   * distinct variants per listing, so the readiness gate below must ask for
+   * that many times more of them — comparing ready variants against the
+   * listing count alone declared "nothing missing" while the build was
+   * genuinely short, and the request died as NO_COLLECTIBLE_CANDIDATES.
+   */
+  flavorsPerListing?: number;
   excludedDonorProductIds?: readonly string[];
   /**
    * 1-based ordinal of this collection attempt inside the durable build.
@@ -295,9 +303,10 @@ export async function prepareWalmartDurableBuildCollection(input: {
    */
   attempt?: number;
 }) {
+  const variantsPerListing = Math.max(1, Math.trunc(input.flavorsPerListing ?? 1));
   const missingNeeded = Math.max(
     0,
-    input.listingCount - input.diagnostic.ready_variants,
+    input.listingCount * variantsPerListing - input.diagnostic.ready_variants,
   );
   const rankedCandidates = rankWalmartDurableCollectionCandidates(
     input.diagnostic,
