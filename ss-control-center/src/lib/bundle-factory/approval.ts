@@ -79,20 +79,47 @@ export async function approveDraftForDistribution(input: {
       // Reuse is permitted only while every Walmart approval still binds the
       // current payload, Product Truth/prepublication evidence, and validation
       // run. Preserve the original approver and timestamp.
+      //
+      // A listing that was RE-PROMOTED since it was approved has no seal at
+      // all: promotion rewrites the attributes and the seal lives in them.
+      // Treating that as "already approved" left an approved draft whose
+      // listing could never be published — every publish refused with
+      // "distribution approval is missing or unsupported", and re-approving
+      // changed nothing because this branch skipped sealing (found on the first
+      // live batch, 2026-08-08). A missing seal is re-sealed here against the
+      // current payload and validation run; a seal that exists must still match.
       for (const sku of skus) {
-        if (sku.channel === "WALMART") {
-          const approval = assertValidWalmartDistributionApproval(sku);
-          const payloadHash = hashWalmartPayload(
-            buildWalmartPayload(sku, {
-              brand: masterBundle.brand,
-              packCount: masterBundle.pack_count,
-              physicalPackageSpecs,
-            }),
-          );
+        if (sku.channel !== "WALMART") continue;
+        const payloadHash = hashWalmartPayload(
+          buildWalmartPayload(sku, {
+            brand: masterBundle.brand,
+            packCount: masterBundle.pack_count,
+            physicalPackageSpecs,
+          }),
+        );
+        let approval: ReturnType<typeof assertValidWalmartDistributionApproval> | null = null;
+        try {
+          approval = assertValidWalmartDistributionApproval(sku);
+        } catch {
+          approval = null;
+        }
+        if (approval) {
           if (payloadHash !== approval.marketplace_payload_sha256) {
             throw new Error("Walmart marketplace payload changed after approval");
           }
+          continue;
         }
+        const resealed = sealWalmartDistributionApproval({
+          sku,
+          approvedAt,
+          approvedBy: actor,
+          validationRunId: sku.validation_check_id ?? "",
+          marketplacePayloadSha256: payloadHash,
+        });
+        await tx.channelSKU.update({
+          where: { id: sku.id },
+          data: { attributes: resealed.attributes },
+        });
       }
       await tx.bundleDraft.update({
         where: { id: draft.id },

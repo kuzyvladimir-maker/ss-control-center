@@ -195,6 +195,13 @@ function createWalmartAjv(): Ajv.Ajv {
     jsonPointers: true,
     unknownFormats: "ignore",
     verbose: true,
+    // Walmart states money as a multiple of 0.01 and weight as a multiple of
+    // 0.0001, and binary floating point cannot represent either exactly:
+    // 39.26 / 0.01 comes out as 3925.9999999999995, so a perfectly legal price
+    // failed our OWN pre-flight check and blocked the feed. The first live
+    // batch was refused for exactly that (2026-08-08). This tolerance is what
+    // Ajv provides for the case; it does not loosen any structural rule.
+    multipleOfPrecision: 6,
   });
   // Walmart augments draft-07 with minEntries/maxEntries on image arrays.
   // Ajv otherwise treats those annotations as unknown and silently skips the

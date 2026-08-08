@@ -7,6 +7,12 @@
  *
  *   npx tsx --env-file=.env scripts/walmart-publish-batch.ts SKU-1 SKU-2 [...]
  *   npx tsx --env-file=.env scripts/walmart-publish-batch.ts --ready --limit 5
+ *   npx tsx --env-file=.env scripts/walmart-publish-batch.ts --drafts ID-1 ID-2 --apply
+ *
+ * `--drafts` takes drafts the whole way: promote, validate and approve each one
+ * WITHOUT writing to the marketplace, then send them together in one feed. That
+ * is the only way to exercise the batch transport, because the single path
+ * publishes as it promotes.
  *
  * Nothing is sent without --apply. The first live batch should be TWO listings:
  * an unknown POST outcome now costs every listing in the feed, and that risk is
@@ -14,6 +20,7 @@
  */
 
 import { prisma } from "../src/lib/prisma";
+import { publishOneDraft } from "../src/lib/bundle-factory/publish-one-draft";
 import { submitWalmartBatch } from "../src/lib/bundle-factory/distribution/walmart-batch-submit";
 import { WALMART_BATCH_FEED_MAX_ITEMS } from "../src/lib/bundle-factory/distribution/walmart-batch-feed";
 import { isPublishableListingStatus } from "../src/lib/bundle-factory/publishable-listing-status";
@@ -25,7 +32,57 @@ const limitFlag = argv.indexOf("--limit");
 const LIMIT = limitFlag >= 0 ? Number(argv[limitFlag + 1]) : WALMART_BATCH_FEED_MAX_ITEMS;
 const NAMED = argv.filter((arg) => !arg.startsWith("--") && arg !== String(LIMIT));
 
+/**
+ * Bring drafts to the edge of publication without publishing them.
+ *
+ * `apply: false` runs promote → validate → approve and stops before the
+ * marketplace write, which is exactly the state `submitWalmartBatch` expects.
+ */
+async function prepareDrafts(draftIds: string[]): Promise<Array<{ id: string; sku: string }>> {
+  const ready: Array<{ id: string; sku: string }> = [];
+  for (const draftId of draftIds) {
+    const result = await publishOneDraft({
+      draftId,
+      actor: "batch-live-test",
+      apply: false,
+      approvalConfirmed: true,
+    } as Parameters<typeof publishOneDraft>[0]);
+    // Reaching DISTRIBUTE is the goal: promotion, validation and approval are
+    // done and the dry run stopped before the marketplace write. Anything that
+    // stopped EARLIER genuinely refused.
+    if (result.stage !== "DISTRIBUTE") {
+      console.log(
+        `  ! ${draftId} stopped at ${result.stage}: `
+        + `${"error" in result ? result.error ?? "" : ""}`,
+      );
+      continue;
+    }
+    const draft = await prisma.bundleDraft.findUnique({
+      where: { id: draftId },
+      select: { master_bundle_id: true },
+    });
+    const sku = draft?.master_bundle_id
+      ? await prisma.channelSKU.findFirst({
+        where: { master_bundle_id: draft.master_bundle_id, channel: "WALMART" },
+        select: { id: true, sku: true },
+      })
+      : null;
+    if (!sku) {
+      console.log(`  ! ${draftId} produced no Walmart listing`);
+      continue;
+    }
+    ready.push(sku);
+  }
+  return ready;
+}
+
 async function resolveTargets(): Promise<Array<{ id: string; sku: string }>> {
+  const draftsFlag = argv.indexOf("--drafts");
+  if (draftsFlag >= 0) {
+    const ids = argv.slice(draftsFlag + 1).filter((arg) => !arg.startsWith("--"));
+    if (ids.length === 0) throw new Error("--drafts needs at least one draft id");
+    return prepareDrafts(ids);
+  }
   if (NAMED.length > 0) {
     const rows = await prisma.channelSKU.findMany({
       where: { channel: "WALMART", sku: { in: NAMED } },

@@ -267,7 +267,12 @@ export function buildWalmartPayload(
   );
   const price = positivePriceDollars(sku.price_cents);
   // The schema requires a multiple of 0.001; four decimals is not one.
-  const shippingWeight = Number((physical.weight_oz / 16).toFixed(3));
+  // Walmart's live schema requires the weight to be a multiple of 0.01, and
+  // ounces rarely divide by sixteen that cleanly: 102.6 oz became 6.412 lb and
+  // the feed was refused as "should be multiple of 0.01" on the first live
+  // batch (2026-08-08). Rounding UP to the cent keeps the declared weight at or
+  // above the real one, so the carrier is never under-quoted.
+  const shippingWeight = Math.ceil((physical.weight_oz / 16) * 100) / 100;
   const publicAttributes = { ...contract.public_attributes };
   assertQuantityAttributes(publicAttributes, packCount);
 

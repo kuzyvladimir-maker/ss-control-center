@@ -48,6 +48,7 @@ import {
   walmartSellerAccountFingerprint,
 } from "./distribution-pipeline";
 import { ensureFreeWalmartUpc } from "../walmart-upc-availability";
+import { parseVerifiedPhysicalPackageSpecs } from "../physical-package-specs";
 import { buildWalmartSkuTemplateMapBatch } from "../walmart-shipping-template-association";
 
 export interface WalmartBatchSkipped {
@@ -348,6 +349,14 @@ async function prepareOne(
     where: { id: sku.master_bundle_id },
     select: { brand: true, pack_count: true, packaging_spec: true },
   });
+  // The public item contract requires package weight and dimensions that match
+  // the ChannelSKU. The single path reads them off the master bundle; omitting
+  // them here made the batch refuse every listing with "operator-verified
+  // package weight and dimensions are required" — correctly, but for a reason
+  // that was mine rather than the listing's.
+  const verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(
+    masterBundle?.packaging_spec,
+  );
 
   // Build the payload through the same function the single path uses, in dry
   // run, so the batch cannot drift from the proven construction or skip the
@@ -357,6 +366,7 @@ async function prepareOne(
     storeIndex: resolvedStore,
     ...(masterBundle?.brand ? { brand: masterBundle.brand } : {}),
     ...(masterBundle?.pack_count ? { packCount: masterBundle.pack_count } : {}),
+    ...(verifiedPhysicalSpecs ? { physicalPackageSpecs: verifiedPhysicalSpecs } : {}),
     dryRun: true,
     validateLiveSpec: true,
   });
