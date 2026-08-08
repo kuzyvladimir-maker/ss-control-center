@@ -168,6 +168,7 @@ Keys, all required (use null when a value is absent):
 function mixedComposition(raw: Record<string, unknown>): {
   flavors_per_listing: number | null;
   units_per_flavor: number | null;
+  unsupported?: string;
 } {
   const pack = positiveInteger(raw.pack_count, 500);
   let flavors = positiveInteger(raw.flavors_per_listing, 20);
@@ -178,10 +179,22 @@ function mixedComposition(raw: Record<string, unknown>): {
   if (units && !flavors && pack && pack % units === 0) flavors = pack / units;
 
   // They must multiply out. When they do not, the reading is not trustworthy
-  // enough to spend a build on, so the mix is dropped and the listing falls
-  // back to the single-product multipack the pack count already describes.
+  // enough to spend a build on — but dropping it silently turned a mixed
+  // request into a single-product pack with nothing said (re-review
+  // 2026-08-08), so the caller is told.
   if (flavors && units && pack && flavors * units !== pack) {
-    return { flavors_per_listing: null, units_per_flavor: null };
+    return {
+      flavors_per_listing: null,
+      units_per_flavor: null,
+      unsupported: `${flavors} kinds of ${units} does not add up to ${pack} units`,
+    };
+  }
+  if (flavors && flavors > 1 && !units && pack && pack % flavors !== 0) {
+    return {
+      flavors_per_listing: null,
+      units_per_flavor: null,
+      unsupported: `${flavors} kinds does not divide ${pack} units evenly`,
+    };
   }
   // One flavor is not a mix; say nothing rather than decorate it.
   if (flavors === 1) return { flavors_per_listing: null, units_per_flavor: null };
@@ -243,6 +256,7 @@ export async function interpretWalmartRequest(
   }
   const usedModel = model;
 
+  const composition = mixedComposition(raw);
   const searchQuery = cleanText(raw.search_query);
   if (!searchQuery) {
     throw new WalmartRequestInterpreterError(
@@ -267,7 +281,7 @@ export async function interpretWalmartRequest(
     product: cleanText(raw.product),
     listing_count: positiveInteger(raw.listing_count, 500),
     pack_count: positiveInteger(raw.pack_count, 500),
-    ...mixedComposition(raw),
+    ...composition,
     target_margin_pct:
       typeof raw.target_margin_pct === "number"
         && raw.target_margin_pct >= 1
@@ -276,7 +290,9 @@ export async function interpretWalmartRequest(
         : null,
     readback: cleanText(raw.readback) ?? searchQuery,
     assumptions: stringList(raw.assumptions),
-    unsupported: stringList(raw.unsupported),
+    unsupported: composition.unsupported
+      ? [...stringList(raw.unsupported), composition.unsupported]
+      : stringList(raw.unsupported),
     model: usedModel,
   };
 }

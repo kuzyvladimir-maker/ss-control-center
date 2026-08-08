@@ -305,6 +305,27 @@ async function buildOneDraft(input: {
     productTruthDb.close();
   }
 
+  // Walmart declares net content per retail unit, and an assortment of
+  // different sizes has no single one. Promotion refuses such a listing — which
+  // is correct but happens after a draft exists that can never be published, so
+  // it is refused here instead, where the sizes first become known
+  // (re-review 2026-08-08).
+  const declaredSizes = new Set(
+    resolved.map((entry) => {
+      const identity = entry.component.canonical_identity as
+        | { sizeBaseAmount?: number; sizeBaseUnit?: string }
+        | undefined;
+      return `${identity?.sizeBaseAmount}|${identity?.sizeBaseUnit}`;
+    }),
+  );
+  if (declaredSizes.size > 1) {
+    throw new Error(
+      "A mixed listing needs every product in the same retail size: Walmart "
+      + "declares one net content per unit, and these differ ("
+      + [...declaredSizes].join(", ") + ")",
+    );
+  }
+
   const primary = resolved[0]!;
   const component = primary.component;
   const displayFlavor = primary.displayFlavor;

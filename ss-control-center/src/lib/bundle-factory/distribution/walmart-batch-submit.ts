@@ -29,9 +29,9 @@ import {
   WALMART_BATCH_FEED_MAX_ITEMS,
 } from "./walmart-batch-feed";
 import {
-  acceptWalmartSubmission,
+  acceptWalmartSubmissions,
   claimWalmartSubmission,
-  markWalmartSubmissionRequesting,
+  markWalmartSubmissionsRequesting,
   recordWalmartSynchronousFailure,
 } from "./walmart-publish-lifecycle";
 import { hashWalmartPayload } from "./walmart-payload-hash";
@@ -203,15 +203,15 @@ export async function submitWalmartBatch(input: {
   // listing left marked "requesting" with no feed behind it would be unknown
   // forever, which is the most expensive state there is.
   try {
-    for (const item of prepared) {
-      await markWalmartSubmissionRequesting({
-        attemptId: item.attemptId,
-        claimToken: item.claimToken,
-        channelSkuId: item.channelSkuId,
-        payloadHash: item.payloadHash,
-        pilotPermitSha256: item.authorizationSha256,
-      });
-    }
+    // One transaction: a failure here leaves every attempt CLAIMED, which is
+    // true, instead of leaving the first few marked as possibly-posted.
+    await markWalmartSubmissionsRequesting(prepared.map((item) => ({
+      attemptId: item.attemptId,
+      claimToken: item.claimToken,
+      channelSkuId: item.channelSkuId,
+      payloadHash: item.payloadHash,
+      pilotPermitSha256: item.authorizationSha256,
+    })));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await releaseAll(prepared, message, null);
@@ -291,15 +291,18 @@ export async function submitWalmartBatch(input: {
     shippingError = error instanceof Error ? error.message : String(error);
   }
 
-  for (const item of prepared) {
-    await acceptWalmartSubmission({
+  // Also one transaction: every listing in the feed records the same feed ID,
+  // or none does. A listing left without it cannot be reconciled by reading,
+  // and reading is the only recovery this lane permits.
+  await acceptWalmartSubmissions(
+    prepared.map((item) => ({
       channelSkuId: item.channelSkuId,
       attemptId: item.attemptId,
       claimToken: item.claimToken,
-      feedId,
-      marketplaceStatus: "SUBMITTED",
-    });
-  }
+    })),
+    feedId,
+    "SUBMITTED",
+  );
 
   return {
     outcome: "SUBMITTED",

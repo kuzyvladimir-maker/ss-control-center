@@ -752,6 +752,137 @@ export async function markWalmartSubmissionRequesting(input: {
   }
 }
 
+/**
+ * Mark EVERY attempt in a batch as requesting, in one transaction.
+ *
+ * A batched feed is one POST for many listings, so the marks must be one write:
+ * marking them one by one meant a failure on the fifth left the first four at
+ * `REQUESTING/1` with no POST behind them. The recovery classifier reads
+ * `REQUESTING/1` as "the request may have left" and parks the listing as
+ * UNKNOWN with its fence held — a POST that never happened, and the most
+ * expensive state in the system, invented by a database error
+ * (re-review 2026-08-08).
+ *
+ * All or nothing: if any row fails its guard, the transaction rolls back and
+ * every attempt stays CLAIMED, which is the truth.
+ */
+export async function markWalmartSubmissionsRequesting(
+  items: ReadonlyArray<{
+    attemptId: string;
+    claimToken: string;
+    channelSkuId: string;
+    payloadHash: string;
+    pilotPermitSha256: string;
+  }>,
+  now: Date = new Date(),
+): Promise<void> {
+  if (items.length === 0) return;
+  for (const item of items) {
+    if (!item.attemptId.trim() || !item.claimToken.trim() || !item.channelSkuId.trim()) {
+      throw new Error("Walmart feed POST claim identity is incomplete");
+    }
+    if (!/^[a-f0-9]{64}$/.test(item.payloadHash)
+      || !/^[a-f0-9]{64}$/.test(item.pilotPermitSha256)) {
+      throw new Error("Walmart feed POST claim hashes are invalid");
+    }
+  }
+  await busyTx("walmart:mark-requesting-batch", async (tx) => {
+    for (const item of items) {
+      const result = await tx.marketplaceSubmissionAttempt.updateMany({
+        where: {
+          id: item.attemptId,
+          claim_token: item.claimToken,
+          channel_sku_id: item.channelSkuId,
+          payload_hash: item.payloadHash,
+          authorization_sha256: item.pilotPermitSha256,
+          state: "CLAIMED",
+          request_count: 0,
+        },
+        data: {
+          state: "REQUESTING",
+          marketplace_disposition: "REQUESTING",
+          requested_at: now,
+          request_count: 1,
+        },
+      });
+      if (result.count !== 1) {
+        throw new Error(
+          "Walmart submission one-shot claim was absent, forged, changed, or already consumed",
+        );
+      }
+    }
+  });
+}
+
+/**
+ * Bind one accepted feed ID to EVERY attempt it carried, in one transaction.
+ *
+ * Accepting one at a time left the first listings ACCEPTED and the rest
+ * REQUESTING with no feed ID recorded when a later write failed — and a
+ * listing with no feed ID cannot be reconciled by reading, which is the only
+ * recovery this lane allows.
+ */
+export async function acceptWalmartSubmissions(
+  items: ReadonlyArray<{ channelSkuId: string; attemptId: string; claimToken: string }>,
+  feedId: string,
+  marketplaceStatus?: string | null,
+  now: Date = new Date(),
+): Promise<void> {
+  if (items.length === 0) return;
+  await busyTx("walmart:accept-batch", async (tx) => {
+    for (const item of items) {
+      const attempt = await tx.marketplaceSubmissionAttempt.updateMany({
+        where: {
+          id: item.attemptId,
+          channel_sku_id: item.channelSkuId,
+          claim_token: item.claimToken,
+          state: "REQUESTING",
+        },
+        data: {
+          state: "ACCEPTED",
+          marketplace_submission_id: feedId,
+          marketplace_disposition: "FEED_ACCEPTED",
+          error_json: null,
+          accepted_at: now,
+          retry_after: null,
+        },
+      });
+      if (attempt.count !== 1) {
+        throw new Error("Walmart submission attempt was not REQUESTING at accept");
+      }
+      await tx.channelSKU.update({
+        where: { id: item.channelSkuId },
+        data: {
+          listing_status: "SUBMITTED",
+          lifecycle_status: "SUBMITTED",
+          submission_id: feedId,
+          submitted_at: now,
+          distribution_attempt_count: { increment: 1 },
+          last_status_check_at: now,
+          distribution_errors: null,
+        },
+      });
+      await tx.listingLifecycleLog.create({
+        data: {
+          entity_type: "ChannelSKU",
+          entity_id: item.channelSkuId,
+          channel_sku_id: item.channelSkuId,
+          from_status: "SUBMITTING",
+          to_status: "SUBMITTED",
+          trigger: "walmart_submission_accepted",
+          details: JSON.stringify({
+            attempt_id: item.attemptId,
+            feed_id: feedId,
+            marketplace_status: marketplaceStatus ?? null,
+            batched: items.length > 1,
+          }),
+          user_id: "walmart-batch",
+        },
+      });
+    }
+  });
+}
+
 export async function acceptWalmartSubmission(input: {
   channelSkuId: string;
   attemptId: string;

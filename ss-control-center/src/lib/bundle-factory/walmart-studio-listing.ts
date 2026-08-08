@@ -197,20 +197,42 @@ export function estimateWalmartStudioShippingPackage(input: {
   sizeBaseAmount: number;
   sizeBaseUnit: string;
   packCount: number;
+  /**
+   * The other products in the box, for an assortment.
+   *
+   * There is ONE box, so the formula runs once over the whole net mass. Running
+   * it per flavor and adding the results charged the 6 oz carton and the retail
+   * tare once per flavor, and then picked the box that fits the largest single
+   * flavor rather than everything together: a live 4x10.5 oz + 4x18.8 oz set
+   * came out 146.8 oz in a 9x6x6 instead of 140.8 oz in a 10x8x6 — heavier than
+   * real and in a carton too small to hold it (re-review 2026-08-08).
+   */
+  additional?: ReadonlyArray<{
+    sizeDimension: string;
+    sizeBaseAmount: number;
+    sizeBaseUnit: string;
+    packCount: number;
+  }>;
 }): WalmartStudioShippingPackage {
-  if (
-    input.sizeDimension !== "MASS" ||
-    input.sizeBaseUnit !== "g" ||
-    !Number.isFinite(input.sizeBaseAmount) ||
-    input.sizeBaseAmount <= 0 ||
-    !Number.isInteger(input.packCount) ||
-    input.packCount <= 0
-  ) {
-    throw new Error(
-      "Cannot declare a shipping package: Product Truth has no exact net mass in grams",
-    );
+  const every = [input, ...(input.additional ?? [])];
+  for (const entry of every) {
+    if (
+      entry.sizeDimension !== "MASS" ||
+      entry.sizeBaseUnit !== "g" ||
+      !Number.isFinite(entry.sizeBaseAmount) ||
+      entry.sizeBaseAmount <= 0 ||
+      !Number.isInteger(entry.packCount) ||
+      entry.packCount <= 0
+    ) {
+      throw new Error(
+        "Cannot declare a shipping package: Product Truth has no exact net mass in grams",
+      );
+    }
   }
-  const netGrams = input.sizeBaseAmount * input.packCount;
+  const netGrams = every.reduce(
+    (sum, entry) => sum + entry.sizeBaseAmount * entry.packCount,
+    0,
+  );
   const weightOz = netGrams / GRAMS_PER_OZ * RETAIL_TARE_FACTOR + OUTER_PACKAGING_OZ;
   // Soups, sauces and other packaged wet goods sit close to 1 g/ml; the factor
   // below carries the packing void, so a small density error cannot shrink the
@@ -285,6 +307,48 @@ export interface WalmartStudioListingEvidenceInput {
  * be, which observation the copy came from, which offer the cost came from,
  * and which bytes became the main image.
  */
+/**
+ * The identity, content and price chain of ONE product.
+ *
+ * Extracted once so the primary product and every other flavor in an
+ * assortment are recorded identically. Recording only name and quantity for the
+ * others meant their content observation, source URL, offer and price could all
+ * be swapped and the evidence stayed byte-identical — so nothing could prove
+ * where the second flavor's copy or cost came from (re-review 2026-08-08).
+ */
+function evidenceChain(component: Record<string, unknown>): Record<string, unknown> {
+  const price = (component.price_evidence ?? null) as Record<string, unknown> | null;
+  return {
+    identity: {
+      canonical_variant_id: component.canonical_variant_id ?? null,
+      variant_decision_id: component.variant_decision_id ?? null,
+      donor_product_id: component.donor_product_id ?? null,
+      matcher_version: component.matcher_version ?? null,
+      matcher_implementation_sha256: component.matcher_implementation_sha256 ?? null,
+      matcher_release_sha256: component.matcher_release_sha256 ?? null,
+    },
+    content: {
+      role: component.content_role ?? null,
+      observation_id: component.content_observation_id ?? null,
+      source_url: component.content_source_url ?? null,
+      captured_at: component.content_captured_at ?? null,
+    },
+    price: price
+      ? {
+        eligibility: price.eligibility ?? null,
+        observation_id: price.observation_id ?? null,
+        donor_offer_id: price.donor_offer_id ?? null,
+        retailer: price.retailer ?? null,
+        source_url: price.source_url ?? null,
+        observed_at: price.observed_at ?? null,
+        locality_evidence: price.locality_evidence ?? null,
+        zip: price.zip ?? null,
+        price_per_unit: price.price_per_unit ?? null,
+      }
+      : null,
+  };
+}
+
 export function buildWalmartStudioListingEvidence(
   input: WalmartStudioListingEvidenceInput,
 ): Record<string, unknown> {
@@ -312,10 +376,9 @@ export function buildWalmartStudioListingEvidence(
     ...(mixed
       ? {
         components: input.components!.map((entry) => ({
-          canonical_variant_id: entry.component.canonical_variant_id ?? null,
-          donor_product_id: entry.component.donor_product_id ?? null,
           product_name: entry.component.product_name ?? null,
           quantity: entry.quantity,
+          ...evidenceChain(entry.component),
         })),
       }
       : {}),

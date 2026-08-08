@@ -1029,27 +1029,23 @@ export async function promoteDraftToChannelSkus(
           | undefined;
         const qty = Number(entry?.qty);
         if (!identity || !Number.isFinite(qty) || qty <= 0) return null;
-        return estimateWalmartStudioShippingPackage({
+        return {
           sizeDimension: String(identity.sizeDimension ?? ""),
           sizeBaseAmount: Number(identity.sizeBaseAmount),
           sizeBaseUnit: String(identity.sizeBaseUnit ?? ""),
           packCount: Math.trunc(qty),
-        });
+        };
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
     if (measurable.length === 0) return null;
-    if (measurable.length === 1) return measurable[0];
-    // Weight adds up; the box itself does not, so the outer dimensions stay the
-    // largest single estimate rather than a sum that would invent a longer box.
-    return {
-      ...measurable.reduce((largest, entry) =>
-        entry.package_length_in > largest.package_length_in ? entry : largest),
-      package_weight_oz: measurable.reduce(
-        (sum, entry) => sum + entry.package_weight_oz,
-        0,
-      ),
-    };
+    // One call for the whole box: the estimator adds the carton and the tare
+    // once and picks a box for everything together.
+    return estimateWalmartStudioShippingPackage({
+      ...measurable[0]!,
+      ...(measurable.length > 1 ? { additional: measurable.slice(1) } : {}),
+    });
   })();
+
   // Only the four measurable columns reach the database; `basis` stays in the
   // estimator's return so callers can see where the numbers came from.
   const studioPackage = studioEstimate

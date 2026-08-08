@@ -17,6 +17,7 @@ import {
   WalmartStudioDraftContractError,
 } from "../walmart-studio-draft-contract";
 import { resolveWalmartStudioRequestIntent } from "../walmart-studio-request";
+import { estimateWalmartStudioShippingPackage } from "../walmart-studio-listing";
 
 const BASE = {
   storeIndex: 1,
@@ -283,4 +284,57 @@ test("swapping a sealed item's evidence for the same variant is refused", () => 
       return true;
     },
   );
+});
+
+// ── Shipping package: one box, one carton allowance ─────────────────────────
+
+test("an assortment is boxed once, not once per flavor", () => {
+  // Re-review 2026-08-08: estimating each flavor separately and adding the
+  // results charged the 6 oz carton and the 15% retail tare once per flavor,
+  // then chose a box sized for the largest single flavor. A live
+  // 4 x 10.5 oz + 4 x 18.8 oz set came out 146.8 oz in a 9x6x6 instead of
+  // 140.8 oz in a 10x8x6 — heavier than real, in a carton too small to hold it.
+  const grams = (oz: number) => oz * 28.349523125;
+  const mixed = estimateWalmartStudioShippingPackage({
+    sizeDimension: "MASS",
+    sizeBaseUnit: "g",
+    sizeBaseAmount: grams(10.5),
+    packCount: 4,
+    additional: [{
+      sizeDimension: "MASS",
+      sizeBaseUnit: "g",
+      sizeBaseAmount: grams(18.8),
+      packCount: 4,
+    }],
+  });
+  assert.equal(mixed.package_weight_oz, 140.8);
+  assert.deepEqual(
+    [mixed.package_length_in, mixed.package_width_in, mixed.package_height_in],
+    [10, 8, 6],
+  );
+
+  // Adding the two separate estimates is what used to happen; it must not be
+  // what the mixed estimate returns.
+  const first = estimateWalmartStudioShippingPackage({
+    sizeDimension: "MASS", sizeBaseUnit: "g", sizeBaseAmount: grams(10.5), packCount: 4,
+  });
+  const second = estimateWalmartStudioShippingPackage({
+    sizeDimension: "MASS", sizeBaseUnit: "g", sizeBaseAmount: grams(18.8), packCount: 4,
+  });
+  assert.notEqual(
+    mixed.package_weight_oz,
+    first.package_weight_oz + second.package_weight_oz,
+  );
+});
+
+test("a single-product pack is estimated exactly as before", () => {
+  const grams = (oz: number) => oz * 28.349523125;
+  const plain = estimateWalmartStudioShippingPackage({
+    sizeDimension: "MASS", sizeBaseUnit: "g", sizeBaseAmount: grams(10.5), packCount: 8,
+  });
+  const stated = estimateWalmartStudioShippingPackage({
+    sizeDimension: "MASS", sizeBaseUnit: "g", sizeBaseAmount: grams(10.5), packCount: 8,
+    additional: [],
+  });
+  assert.deepEqual(stated, plain);
 });

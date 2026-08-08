@@ -178,6 +178,24 @@ test("the missing half of a mix is derived from the pack size", async () => {
   assert.equal(result.units_per_flavor, 4);
 });
 
+test("a contradictory mix is reported, not silently dropped", async () => {
+  // Re-review 2026-08-08: the model path returned two nulls and said nothing,
+  // so a mixed request quietly became a single-product pack.
+  const result = await interpretWalmartRequest("8 банок, 3 вида по 3", {
+    complete: async () => reply({
+      search_query: "Campbell's soup",
+      pack_count: 8,
+      flavors_per_listing: 3,
+      units_per_flavor: 3,
+      readback: "8 банок.",
+      assumptions: [],
+      unsupported: [],
+    }),
+  });
+  assert.equal(result.flavors_per_listing, null);
+  assert.ok(result.unsupported.some((entry) => /does not add up to 8/.test(entry)));
+});
+
 test("numbers that do not multiply out are refused, not published", async () => {
   // 3 × 5 ≠ 8. Building on that would put the wrong number of cans in a box.
   const result = await interpretWalmartRequest("8 банок, 3 вида по 5", {

@@ -260,6 +260,8 @@ interface RequestInterpretation {
   product: string | null;
   listing_count: number | null;
   pack_count: number | null;
+  flavors_per_listing: number | null;
+  units_per_flavor: number | null;
   target_margin_pct: number | null;
   readback: string;
   assumptions: string[];
@@ -477,7 +479,15 @@ export default function StudioStartPage() {
 
   /** Accept the reading: it becomes the prompt and the numeric scope. */
   function applyInterpretation(value: RequestInterpretation) {
-    setPrompt(value.search_query);
+    // The prompt becomes the search words, and the deterministic parser reads
+    // the composition back out of THAT string. Replacing the brief with the
+    // bare query therefore threw away "2 kinds of 4" and silently rebuilt the
+    // request as a single-product pack — the exact failure this feature exists
+    // to prevent (re-review 2026-08-08). So the composition travels with it.
+    const composition = value.flavors_per_listing && value.units_per_flavor
+      ? `, ${value.flavors_per_listing} kinds, ${value.units_per_flavor} of each`
+      : "";
+    setPrompt(`${value.search_query}${composition}`);
     if (value.listing_count) setListingCount(String(value.listing_count));
     if (value.pack_count) setPackCount(String(value.pack_count));
     if (value.target_margin_pct) setTargetMargin(String(value.target_margin_pct));

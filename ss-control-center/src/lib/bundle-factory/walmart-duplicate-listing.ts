@@ -71,10 +71,15 @@ export function walmartListingIdentity(
     const parts = components
       .map((entry) => {
         if (!entry || typeof entry !== "object") return null;
-        const row = entry as { canonical_variant_id?: unknown; quantity?: unknown };
-        const variant = typeof row.canonical_variant_id === "string"
-          ? row.canonical_variant_id.trim()
-          : "";
+        const row = entry as {
+          canonical_variant_id?: unknown;
+          identity?: { canonical_variant_id?: unknown };
+          quantity?: unknown;
+        };
+        // The full chain nests the variant under `identity`; the first shape
+        // this shipped with put it at the top level. Read either.
+        const raw = row.identity?.canonical_variant_id ?? row.canonical_variant_id;
+        const variant = typeof raw === "string" ? raw.trim() : "";
         const quantity = Number(row.quantity);
         if (!variant || !Number.isInteger(quantity) || quantity <= 0) return null;
         return `${variant}x${quantity}`;

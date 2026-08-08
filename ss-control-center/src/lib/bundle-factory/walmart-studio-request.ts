@@ -100,7 +100,13 @@ export function parseWalmartPromptIntent(prompt: string): WalmartPromptIntent {
   return {
     listing_count: listingCount,
     pack_count: packCount,
-    ...resolvePromptComposition(flavorsPerListing, unitsPerFlavor, packCount),
+    // Raw, exactly as the words said. The arithmetic happens in
+    // resolveWalmartStudioRequestIntent, where the pack size in force is known:
+    // resolving here against the PROMPT's pack count silently dropped the
+    // composition whenever the operator supplied the count in the form instead
+    // — which is what the Interpret/Use-this path does (re-review 2026-08-08).
+    flavors_per_listing: flavorsPerListing,
+    units_per_flavor: unitsPerFlavor,
   };
 }
 
@@ -197,9 +203,18 @@ export function resolveWalmartStudioRequestIntent(input: {
   // built. If the operator overrode the units field, the prompt's "4 of each"
   // may no longer fit — and quietly building a different composition than the
   // one asked for is the failure this whole change exists to prevent.
-  const composition = parsed.flavors_per_listing && parsed.units_per_flavor
-    && parsed.flavors_per_listing * parsed.units_per_flavor === packCount
-    ? { flavors: parsed.flavors_per_listing, units: parsed.units_per_flavor }
+  const resolvedComposition = resolvePromptComposition(
+    parsed.flavors_per_listing,
+    parsed.units_per_flavor,
+    packCount,
+  );
+  const composition = resolvedComposition.flavors_per_listing
+    && resolvedComposition.units_per_flavor
+    && !resolvedComposition.contradictory
+    ? {
+      flavors: resolvedComposition.flavors_per_listing,
+      units: resolvedComposition.units_per_flavor,
+    }
     : { flavors: 1, units: packCount };
   if (parsed.flavors_per_listing && composition.flavors === 1) {
     blockers.push({
