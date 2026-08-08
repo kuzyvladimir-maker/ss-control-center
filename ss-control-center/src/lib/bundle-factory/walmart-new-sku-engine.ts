@@ -108,7 +108,14 @@ export type WalmartNewSkuPlanBlocker =
   | "EXPLICIT_DISTRIBUTION_APPROVAL";
 
 export interface DeterministicWalmartContent {
-  generator: "deterministic-product-truth-multipack/v4";
+  /**
+   * Which builder wrote this, so a stored draft says whether it describes one
+   * product or an assortment. The two say materially different things about
+   * what is in the box.
+   */
+  generator:
+    | "deterministic-product-truth-multipack/v4"
+    | "deterministic-product-truth-mixed-pack/v1";
   title: string;
   bullets: string[];
   description: string;
@@ -1386,6 +1393,111 @@ export function buildDeterministicWalmartMultipackContent(input: {
 
   return {
     generator: "deterministic-product-truth-multipack/v4",
+    title,
+    bullets,
+    description,
+  };
+}
+
+/**
+ * Content for a listing that holds several DIFFERENT products.
+ *
+ * The homogeneous builder above states outright that the pack is "not a mixed
+ * assortment" and that every package is identical. Reusing it for a real mix
+ * would put a false sentence on a live product page, so a mix gets its own
+ * wording — and the same brand-voice rules: no emoji, no promotional
+ * adjectives, no claims about sale, shipping or availability.
+ */
+export function buildDeterministicWalmartMixedPackContent(input: {
+  components: ReadonlyArray<Pick<
+    ProductTruthRecipeComponentEvidence,
+    "product_name" | "manufacturer_brand" | "flavor" | "qty"
+  >>;
+  packCount: number;
+}): DeterministicWalmartContent {
+  if (
+    !Number.isInteger(input.packCount)
+    || input.packCount < WALMART_NEW_SKU_MIN_PACK_COUNT
+    || input.packCount > WALMART_NEW_SKU_MAX_PACK_COUNT
+  ) {
+    throw new WalmartNewSkuPlanError([`PACK_COUNT_INVALID:${input.packCount}`]);
+  }
+  if (input.components.length < 2) {
+    throw new WalmartNewSkuPlanError([
+      `MIXED_PACK_NEEDS_TWO_COMPONENTS:${input.components.length}`,
+    ]);
+  }
+  const total = input.components.reduce((sum, entry) => sum + entry.qty, 0);
+  if (total !== input.packCount) {
+    throw new WalmartNewSkuPlanError([
+      `RECIPE_QTY_MISMATCH:${total}!=${input.packCount}`,
+    ]);
+  }
+
+  const brands = [...new Set(
+    input.components.map((entry) => cleanPlainText(entry.manufacturer_brand, "BRAND")),
+  )];
+  // One brand across the box is the normal case and reads better in the title;
+  // several is legitimate too and simply gets listed.
+  const brandLabel = brands.length === 1 ? brands[0] : brands.join(" and ");
+
+  const parts = input.components.map((entry) => {
+    const identity = contentIdentityLabel(entry)
+      .replace(/\s*-\s*(?=\d)/g, ", ")
+      .replace(/(\d)\s*(fl\s*oz|oz|lb|ct)\b/gi, "$1 $2")
+      .replace(/\s+/g, " ")
+      .trim();
+    const flavor = entry.flavor ? cleanPlainText(entry.flavor, "FLAVOR") : null;
+    return { identity, flavor, qty: entry.qty };
+  });
+
+  const everyFlavorSameCount = parts.every((part) => part.qty === parts[0].qty);
+  const flavorList = parts
+    .map((part) => part.flavor ?? part.identity)
+    .join(", ");
+
+  // The title states what is in the box and how many — nothing subjective.
+  const countClause = everyFlavorSameCount
+    ? `${input.packCount}-Pack, ${parts.length} Varieties, ${parts[0].qty} of Each`
+    : `${input.packCount}-Pack, ${parts.length} Varieties`;
+  const title = assertLength(
+    cleanPlainText(`${brandLabel} Variety Pack, ${flavorList} (${countClause})`, "WALMART_TITLE"),
+    150,
+    "WALMART_TITLE",
+  );
+
+  const bullets = [
+    `Includes ${input.packCount} retail packages across ${parts.length} varieties`,
+    ...parts.slice(0, 2).map((part) => `${part.qty} x ${part.flavor ?? part.identity}`),
+    "Original package labels provide ingredients, allergens and nutrition facts",
+    `Main image represents all ${input.packCount} packages included`,
+  ].map((bullet, index) =>
+    assertLength(cleanPlainText(bullet, `BULLET_${index + 1}`), 100, `BULLET_${index + 1}`),
+  );
+
+  const contents = parts
+    .map((part) => `${part.qty} packages of ${part.identity}`)
+    .join("; ");
+  const description = assertLength(
+    cleanPlainText(
+      `This assortment contains ${input.packCount} retail packages across ${parts.length} varieties: ${contents}. `
+      + "Each package is a separate retail unit and remains sealed in its original manufacturer packaging. "
+      + "The varieties and counts listed above describe exactly what is included; no other items are part of this listing. "
+      + "Each package can be stored and opened separately, so one variety can be kept unopened while another is in use. "
+      + "The package count in the title and main image refers to the total number of individual retail packages included. "
+      + "Products arrive new in their original retail packaging. "
+      + "Check every package before use and follow the information printed by the manufacturer. "
+      + "Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. "
+      + "Package design and labeling may change when the manufacturer updates them. "
+      + "Compare the delivered product names, sizes, varieties and package counts with the order details.",
+      "DESCRIPTION",
+    ),
+    1_500,
+    "DESCRIPTION",
+  );
+
+  return {
+    generator: "deterministic-product-truth-mixed-pack/v1",
     title,
     bullets,
     description,

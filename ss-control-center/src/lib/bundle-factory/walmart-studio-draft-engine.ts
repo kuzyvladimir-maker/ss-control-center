@@ -16,6 +16,7 @@ import { uploadToR2 } from "@/lib/walmart/multipack/r2";
 
 import type { BatchProgress } from "./studio-engine";
 import {
+  buildDeterministicWalmartMixedPackContent,
   buildDeterministicWalmartMultipackContent,
 } from "./walmart-new-sku-engine";
 import { buildDeterministicWalmartMultipackImage } from
@@ -166,6 +167,7 @@ export async function fetchWalmartStudioExactImage(
 function draftRecipeFingerprint(input: {
   item: WalmartStudioDraftWorkItem;
 }): string {
+  const mixed = input.item.components.length > 1;
   return `walmart-preview:${sha256(stableWalmartStudioDraftJson({
     store_index: input.item.store_index,
     canonical_variant_id: input.item.canonical_variant_id,
@@ -174,6 +176,20 @@ function draftRecipeFingerprint(input: {
     target_margin_bps: input.item.target_margin_bps,
     content_observation_id: input.item.content_observation_id,
     price_observation_id: input.item.price_observation_id,
+    // Two assortments can share a primary product and differ entirely in the
+    // rest of the box, so a mix is identified by everything in it. A plain
+    // multipack omits the field and keeps the fingerprint it always had —
+    // existing drafts are found by this string.
+    ...(mixed
+      ? {
+        components: input.item.components.map((component) => ({
+          canonical_variant_id: component.canonical_variant_id,
+          content_observation_id: component.content_observation_id,
+          price_observation_id: component.price_observation_id,
+          quantity: component.quantity,
+        })),
+      }
+      : {}),
   }))}`;
 }
 
@@ -228,53 +244,89 @@ async function buildOneDraft(input: {
     };
   }
 
+  // Resolve EVERY product in the box. A plain multipack has one entry and this
+  // loop runs once; an assortment resolves each flavor against the exact
+  // evidence its work item was sealed with.
   const productTruthDb = openProductTruthWebReadClient();
-  let productTruth;
+  const resolved: Array<{
+    sealed: (typeof input.item.components)[number];
+    component: Awaited<ReturnType<typeof readProductTruthWalmartPilotCandidate>>["newSkuView"]["components"][number];
+    displayFlavor: string | null;
+    displayBrand: string;
+    unitPriceCents: number;
+  }> = [];
   try {
-    productTruth = await readProductTruthWalmartPilotCandidate(productTruthDb, {
-      donorProductId: input.item.donor_product_id,
-      qty: input.item.pack_count,
-      asOf: input.item.as_of,
-      maxPriceAgeMs: input.item.price_max_age_ms,
-      zip: input.item.zip,
-      requireIngredients: true,
-      requireNutrition: true,
-      requireAllergens: true,
-    });
+    for (const sealed of input.item.components) {
+      const productTruth = await readProductTruthWalmartPilotCandidate(productTruthDb, {
+        donorProductId: sealed.donor_product_id,
+        qty: sealed.quantity,
+        asOf: input.item.as_of,
+        maxPriceAgeMs: input.item.price_max_age_ms,
+        zip: input.item.zip,
+        requireIngredients: true,
+        requireNutrition: true,
+        requireAllergens: true,
+      });
+      const candidate = productTruth.candidate;
+      const resolvedComponent = productTruth.newSkuView.components[0];
+      if (
+        candidate.donor_product_id !== sealed.donor_product_id ||
+        candidate.canonical_variant_id !== sealed.canonical_variant_id ||
+        candidate.content_observation_id !== sealed.content_observation_id ||
+        candidate.price_observation_id !== sealed.price_observation_id ||
+        resolvedComponent.qty !== sealed.quantity
+      ) {
+        throw new Error(
+          "Product Truth identity or evidence changed after this work item was admitted",
+        );
+      }
+      const unitPriceCents = Math.round(
+        resolvedComponent.price_evidence.price_per_unit * 100,
+      );
+      if (!Number.isSafeInteger(unitPriceCents) || unitPriceCents <= 0) {
+        throw new Error("Product Truth unit cost is not positive integer cents");
+      }
+      resolved.push({
+        sealed,
+        component: resolvedComponent,
+        // The canonical flavor is a sorted token bag built for hashing, not for
+        // a shopper to read. Show the manufacturer's own wording instead; the
+        // identity the listing claims is unchanged, only its spelling.
+        displayFlavor: walmartStudioDisplayFlavor(
+          resolvedComponent as unknown as Record<string, unknown>,
+        ),
+        displayBrand: walmartStudioDisplayBrand(
+          resolvedComponent as unknown as Record<string, unknown>,
+        ),
+        unitPriceCents,
+      });
+    }
   } finally {
     productTruthDb.close();
   }
-  const candidate = productTruth.candidate;
-  const component = productTruth.newSkuView.components[0];
-  if (
-    candidate.donor_product_id !== input.item.donor_product_id ||
-    candidate.canonical_variant_id !== input.item.canonical_variant_id ||
-    candidate.content_observation_id !== input.item.content_observation_id ||
-    candidate.price_observation_id !== input.item.price_observation_id ||
-    component.qty !== input.item.pack_count
-  ) {
-    throw new Error(
-      "Product Truth identity or evidence changed after this work item was admitted",
-    );
-  }
-  // The canonical flavor is a sorted token bag built for hashing, not for a
-  // shopper to read. Show the manufacturer's own wording instead; see
-  // walmartStudioDisplayFlavor. The identity the listing claims is unchanged —
-  // only how the same variant is spelled on the page.
-  const displayFlavor = walmartStudioDisplayFlavor(
-    component as unknown as Record<string, unknown>,
-  );
-  const displayBrand = walmartStudioDisplayBrand(
-    component as unknown as Record<string, unknown>,
-  );
-  const content = buildDeterministicWalmartMultipackContent({
-    component: {
-      ...component,
-      flavor: displayFlavor,
-      manufacturer_brand: displayBrand,
-    },
-    packCount: input.item.pack_count,
-  });
+
+  const primary = resolved[0]!;
+  const component = primary.component;
+  const displayFlavor = primary.displayFlavor;
+  const displayBrand = primary.displayBrand;
+  const mixed = resolved.length > 1;
+  const content = mixed
+    ? buildDeterministicWalmartMixedPackContent({
+      components: resolved.map((entry) => ({
+        ...entry.component,
+        flavor: entry.displayFlavor,
+        manufacturer_brand: entry.displayBrand,
+      })),
+      packCount: input.item.pack_count,
+    })
+    : buildDeterministicWalmartMultipackContent({
+      component: {
+        ...component,
+        flavor: displayFlavor,
+        manufacturer_brand: displayBrand,
+      },
+      packCount: input.item.pack_count,
+    });
   const template = assertWalmartShippingTemplateDetailsIntegrity(
     input.brief.walmart_shipping.template,
   );
@@ -284,20 +336,32 @@ async function buildOneDraft(input: {
   ) {
     throw new Error("The selected shipping template differs from the sealed work item");
   }
-  const unitPriceCents = Math.round(
-    component.price_evidence.price_per_unit * 100,
+  const unitPriceCents = primary.unitPriceCents;
+  // Cost is the sum over what is actually in the box. Multiplying one flavor's
+  // unit price by the whole pack would misprice every assortment whose flavors
+  // do not cost the same — and mispricing is invisible until the margin is gone.
+  const goodsCostCents = resolved.reduce(
+    (sum, entry) => sum + entry.unitPriceCents * entry.sealed.quantity,
+    0,
   );
-  if (!Number.isSafeInteger(unitPriceCents) || unitPriceCents <= 0) {
-    throw new Error("Product Truth unit cost is not positive integer cents");
-  }
-  const goodsCostCents = unitPriceCents * input.item.pack_count;
-  const weight = walmartStudioDraftPackageWeightOz({
-    sizeDimension: component.canonical_identity.sizeDimension,
-    sizeBaseAmount: component.canonical_identity.sizeBaseAmount,
-    sizeBaseUnit: component.canonical_identity.sizeBaseUnit,
-    packCount: input.item.pack_count,
-    template,
-  });
+  // Same for weight: each flavor contributes its own size for its own count.
+  const perComponentWeights = resolved.map((entry) =>
+    walmartStudioDraftPackageWeightOz({
+      sizeDimension: entry.component.canonical_identity.sizeDimension,
+      sizeBaseAmount: entry.component.canonical_identity.sizeBaseAmount,
+      sizeBaseUnit: entry.component.canonical_identity.sizeBaseUnit,
+      packCount: entry.sealed.quantity,
+      template,
+    }));
+  const weight = mixed
+    ? {
+      ...perComponentWeights[0]!,
+      package_weight_oz: perComponentWeights.reduce(
+        (sum, entry) => sum + entry.package_weight_oz,
+        0,
+      ),
+    }
+    : perComponentWeights[0]!;
   const economics = calculateWalmartStudioDraftEconomics({
     goodsCostCents,
     packagingCostCents: input.brief.pricing_inputs.packaging_cost_cents,
@@ -322,12 +386,52 @@ async function buildOneDraft(input: {
   let composed: Awaited<ReturnType<typeof buildDeterministicWalmartMultipackImage>>
     | null = null;
   let lastImageError: unknown = null;
+  // For an assortment every OTHER flavor also needs a packshot. They are
+  // fetched once, up front: if one of them cannot be read there is no picture
+  // that honestly shows the box, and composing without it would show a
+  // different product than the listing sells.
+  const otherFlavorImages: Array<{ bytes: Buffer; quantity: number }> = [];
+  for (const entry of resolved.slice(1)) {
+    const candidates = [
+      exactMainImageUrl(entry.component.facts.attributes._exact_main_image_url),
+      ...exactStringArray(entry.component.facts.attributes._exact_image_urls),
+    ]
+      .map((url) => assertWalmartStudioExactImageUrl(url).toString())
+      .filter((url, index, all) => all.indexOf(url) === index);
+    let bytes: Buffer | null = null;
+    let lastError: unknown = null;
+    for (const candidate of candidates) {
+      try {
+        bytes = (await fetchWalmartStudioExactImage(candidate)).bytes;
+        break;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (!bytes) {
+      throw new Error(
+        `No exact donor image could be read for ${entry.sealed.title_at_admission}: ${
+          lastError instanceof Error ? lastError.message : String(lastError)
+        }`,
+      );
+    }
+    otherFlavorImages.push({ bytes, quantity: entry.sealed.quantity });
+  }
+
   for (const candidate of imageCandidates) {
     try {
       const source = await fetchWalmartStudioExactImage(candidate);
       composed = await buildDeterministicWalmartMultipackImage({
         sourceUnitImageBytes: source.bytes,
         packCount: input.item.pack_count,
+        ...(mixed
+          ? {
+            unitSources: [
+              { bytes: source.bytes, quantity: primary.sealed.quantity },
+              ...otherFlavorImages,
+            ],
+          }
+          : {}),
       });
       sourceMainImageUrl = candidate;
       sourceFetchedUrl = source.fetched_url;
@@ -399,18 +503,39 @@ async function buildOneDraft(input: {
         construction_method: composed.construction_method,
       },
     },
-  }];
+  },
+  // Every other flavor is recorded in full too. A draft whose snapshot listed
+  // one product while the box held several would hide the assortment from
+  // every downstream reader — pricing, compliance and the publish payload.
+  ...resolved.slice(1).map((entry) => ({
+    research_pool_id: entry.component.donor_product_id,
+    product_name: entry.component.product_name,
+    brand: entry.displayBrand,
+    flavor: entry.displayFlavor,
+    manufacturer_upc: entry.component.manufacturer_upc,
+    qty: entry.component.qty,
+    unit_price_cents: entry.unitPriceCents,
+    ingredients: entry.component.facts.ingredients,
+    allergens: entry.component.facts.allergens,
+    allergen_declaration: allergenDeclarationFromLabel(entry.component.facts.allergens),
+    nutrition_facts: entry.component.facts.nutrition_facts,
+    storage_temp: "Shelf-stable",
+    donor_image_urls: exactStringArray(entry.component.facts.attributes._exact_image_urls)
+      .map((url) => assertWalmartStudioExactImageUrl(url).toString()),
+    product_truth_component: entry.component,
+  })),
+  ];
   const variant = {
     idx: 0,
     name: content.title,
     notes: "Exact Product Truth variant; deterministic Walmart draft preview",
-    composition: [{
-      research_pool_id: component.donor_product_id,
-      product_name: component.product_name,
-      brand: displayBrand,
-      qty: component.qty,
-      unit_price_cents: unitPriceCents,
-    }],
+    composition: resolved.map((entry) => ({
+      research_pool_id: entry.component.donor_product_id,
+      product_name: entry.component.product_name,
+      brand: entry.displayBrand,
+      qty: entry.component.qty,
+      unit_price_cents: entry.unitPriceCents,
+    })),
     cost_cents: goodsCostCents,
     suggested_price_cents: economics.item_price_cents,
     margin_cents: worstScenario.contribution_profit_cents,
