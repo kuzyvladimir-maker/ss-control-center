@@ -484,6 +484,16 @@ export default function StudioStartPage() {
     // bare query therefore threw away "2 kinds of 4" and silently rebuilt the
     // request as a single-product pack — the exact failure this feature exists
     // to prevent (re-review 2026-08-08). So the composition travels with it.
+    // A reading the model itself could not fully support must not be turned
+    // into a clean-looking spec: the operator's own words stay, so the
+    // deterministic parser sees the same conflict and blocks the build instead
+    // of quietly producing a single-flavor pack (third review, 2026-08-08).
+    if (value.unsupported.length > 0) {
+      if (value.listing_count) setListingCount(String(value.listing_count));
+      if (value.target_margin_pct) setTargetMargin(String(value.target_margin_pct));
+      setInterpretation(null);
+      return;
+    }
     const composition = value.flavors_per_listing && value.units_per_flavor
       ? `, ${value.flavors_per_listing} kinds, ${value.units_per_flavor} of each`
       : "";

@@ -95,6 +95,12 @@ export function parseWalmartPromptIntent(prompt: string): WalmartPromptIntent {
   const unitsPerFlavor = firstCapturedInteger(text, [
     /(?:по)\s*(\d{1,3})\s+(?:бан(?:ок|ки|ка)|штук(?:и)?|единиц(?:ы)?|пач(?:ек|ки))\s+(?:каждого|кажд\p{L}+)(?=$|[^\p{L}\p{N}])/iu,
     /(?:^|[^\p{L}\p{N}])(\d{1,3})\s+(?:cans?|units?|items?)\s+(?:of\s+)?each(?=$|[^\p{L}\p{N}])/iu,
+    // Bare "4 of each", with no unit noun — what the Interpret/Use-this button
+    // writes back into the prompt. Unrecognised, the count was re-derived from
+    // whatever pack size was in force, so changing Pack Count silently changed
+    // "4 cans of each" into something else (third review, 2026-08-08).
+    /(?:^|[^\p{L}\p{N}])(\d{1,3})\s+of\s+each(?=$|[^\p{L}\p{N}])/iu,
+    /(?:^|[^\p{L}\p{N}])по\s*(\d{1,3})\s+кажд\p{L}+(?=$|[^\p{L}\p{N}])/iu,
   ]);
 
   return {

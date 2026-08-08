@@ -338,3 +338,20 @@ test("a single-product pack is estimated exactly as before", () => {
   });
   assert.deepEqual(stated, plain);
 });
+
+// ── One POST means one POST ─────────────────────────────────────────────────
+
+test("a feed POST is never repeated by the transport", async () => {
+  // Third review 2026-08-08: the client retried POST /feeds on 5xx, 429 and
+  // network errors, so a single publish call could put the same item into
+  // Walmart's catalog twice — the exact thing "one SKU, one POST, zero retry"
+  // forbids. An unknown outcome is resolved by reading, never by resending.
+  const { walmartRequestIsUnrepeatable } = await import("@/lib/walmart/client");
+  assert.equal(walmartRequestIsUnrepeatable("POST", "/feeds", {}), true);
+  assert.equal(walmartRequestIsUnrepeatable("POST", "feeds?feedType=MP_ITEM", {}), true);
+  // Reading a feed is safe to retry — that is how an unknown outcome is settled.
+  assert.equal(walmartRequestIsUnrepeatable("GET", "/feeds/abc", {}), false);
+  // And any request can opt out explicitly.
+  assert.equal(walmartRequestIsUnrepeatable("POST", "/items", { noRetry: true }), true);
+  assert.equal(walmartRequestIsUnrepeatable("POST", "/items", {}), false);
+});

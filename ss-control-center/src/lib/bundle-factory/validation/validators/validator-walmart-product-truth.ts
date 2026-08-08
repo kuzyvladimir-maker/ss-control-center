@@ -117,49 +117,73 @@ function validateWalmartStudioListingTruth(input: {
     failures.push("verified_at is missing, invalid, or future-dated");
   }
 
-  const identity = isRecord(evidence.identity) ? evidence.identity : null;
-  if (
-    !identity ||
-    !hasText(identity.canonical_variant_id) ||
-    !hasText(identity.variant_decision_id) ||
-    !hasText(identity.donor_product_id)
-  ) {
-    failures.push("exact canonical identity is incomplete");
-  } else if (
-    identity.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
-    identity.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
-    identity.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
-  ) {
-    failures.push("identity was matched by a superseded matcher release");
-  }
+  /**
+   * Prove one product's identity, content and price.
+   *
+   * A mixed listing records a chain per flavor. Checking only the top-level one
+   * meant the second soup's evidence was written but never verified — so a
+   * stale price or a missing content observation on it could reach a live
+   * listing unchallenged (third review, 2026-08-08).
+   */
+  const checkChain = (chain: Record<string, unknown>, label: string): void => {
+    const where = label ? `${label}: ` : "";
+    const identity = isRecord(chain.identity) ? chain.identity : null;
+    if (
+      !identity ||
+      !hasText(identity.canonical_variant_id) ||
+      !hasText(identity.variant_decision_id) ||
+      !hasText(identity.donor_product_id)
+    ) {
+      failures.push(`${where}exact canonical identity is incomplete`);
+    } else if (
+      identity.matcher_version !== CANONICAL_PRODUCT_MATCHER_VERSION ||
+      identity.matcher_implementation_sha256 !== CANONICAL_PRODUCT_MATCHER_SOURCE_SHA256 ||
+      identity.matcher_release_sha256 !== CANONICAL_PRODUCT_MATCHER_RELEASE_SHA256
+    ) {
+      failures.push(`${where}identity was matched by a superseded matcher release`);
+    }
 
-  const content = isRecord(evidence.content) ? evidence.content : null;
-  if (!content || content.role !== "EXACT") {
-    failures.push("content role is not EXACT");
-  } else {
-    if (!hasText(content.observation_id)) {
-      failures.push("content lacks an immutable observation id");
+    const content = isRecord(chain.content) ? chain.content : null;
+    if (!content || content.role !== "EXACT") {
+      failures.push(`${where}content role is not EXACT`);
+    } else {
+      if (!hasText(content.observation_id)) {
+        failures.push(`${where}content lacks an immutable observation id`);
+      }
+      if (!isHttpUrl(content.source_url)) {
+        failures.push(`${where}content source URL is invalid`);
+      }
+      if (!isPastIsoDate(content.captured_at)) {
+        failures.push(`${where}content capture time is invalid`);
+      }
     }
-    if (!isHttpUrl(content.source_url)) failures.push("content source URL is invalid");
-    if (!isPastIsoDate(content.captured_at)) failures.push("content capture time is invalid");
-  }
 
-  const price = isRecord(evidence.price) ? evidence.price : null;
-  if (!price) {
-    failures.push("no price evidence recorded");
-  } else {
-    if (!hasText(price.observation_id) || !hasText(price.donor_offer_id)) {
-      failures.push("price evidence lacks immutable offer provenance");
+    const price = isRecord(chain.price) ? chain.price : null;
+    if (!price) {
+      failures.push(`${where}no price evidence recorded`);
+    } else {
+      if (!hasText(price.observation_id) || !hasText(price.donor_offer_id)) {
+        failures.push(`${where}price evidence lacks immutable offer provenance`);
+      }
+      if (!isPositiveNumber(price.price_per_unit)) {
+        failures.push(`${where}recorded unit price is not positive`);
+      }
+      // The owner's decision of 2026-08-02: a catalogue price up to three
+      // months old is usable for listing economics; a few cents of drift does
+      // not justify re-buying the observation.
+      if (!isFreshIsoDate(price.observed_at, WALMART_STUDIO_PRICE_EVIDENCE_MAX_AGE_MS)) {
+        failures.push(`${where}price evidence is older than 90 days or invalid`);
+      }
     }
-    if (!isPositiveNumber(price.price_per_unit)) {
-      failures.push("recorded unit price is not positive");
-    }
-    // The owner's decision of 2026-08-02: a catalogue price up to three months
-    // old is usable for listing economics; a few cents of drift does not
-    // justify re-buying the observation.
-    if (!isFreshIsoDate(price.observed_at, WALMART_STUDIO_PRICE_EVIDENCE_MAX_AGE_MS)) {
-      failures.push("price evidence is older than 90 days or invalid");
-    }
+  };
+
+  checkChain(evidence, "");
+  const recordedComponents = Array.isArray(evidence.components)
+    ? evidence.components.filter(isRecord)
+    : [];
+  for (const [index, entry] of recordedComponents.entries()) {
+    const name = hasText(entry.product_name) ? String(entry.product_name) : `component ${index + 1}`;
+    checkChain(entry, name);
   }
 
   const images = Array.isArray(evidence.images)
@@ -232,9 +256,14 @@ function validateWalmartStudioListingTruth(input: {
     passed: true,
     details: {
       lane: "WALMART_STUDIO_DRAFT",
-      canonical_variant_id: identity?.canonical_variant_id,
-      content_observation_id: content?.observation_id,
-      price_observation_id: price?.observation_id,
+      canonical_variant_id: (isRecord(evidence.identity) ? evidence.identity : {})
+        .canonical_variant_id,
+      content_observation_id: (isRecord(evidence.content) ? evidence.content : {})
+        .observation_id,
+      price_observation_id: (isRecord(evidence.price) ? evidence.price : {})
+        .observation_id,
+      // How many products were proven, not just the first.
+      verified_component_count: 1 + recordedComponents.length,
       image_count: images.length,
     },
   };

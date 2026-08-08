@@ -269,9 +269,23 @@ export async function submitWalmartBatch(input: {
     };
   }
 
-  // The item feed is in. The template feed is a separate write, and failing it
-  // does not un-submit the items — so its failure is reported, never retried,
-  // and the listings stay bound to the feed that carries them.
+  // Record the accepted feed ID FIRST. The item feed is already in Walmart's
+  // hands; if the shipping POST below throws before this runs, the only copy of
+  // that ID is a local variable, and a submitted listing with no feed ID cannot
+  // be reconciled by reading — the one recovery this lane allows
+  // (third review, 2026-08-08).
+  await acceptWalmartSubmissions(
+    prepared.map((item) => ({
+      channelSkuId: item.channelSkuId,
+      attemptId: item.attemptId,
+      claimToken: item.claimToken,
+    })),
+    feedId,
+    "SUBMITTED",
+  );
+
+  // The template feed is a separate write, and failing it does not un-submit
+  // the items — so its failure is reported, never retried.
   let shippingFeedId: string | null = null;
   let shippingError: string | null = null;
   try {
@@ -290,19 +304,6 @@ export async function submitWalmartBatch(input: {
   } catch (error) {
     shippingError = error instanceof Error ? error.message : String(error);
   }
-
-  // Also one transaction: every listing in the feed records the same feed ID,
-  // or none does. A listing left without it cannot be reconciled by reading,
-  // and reading is the only recovery this lane permits.
-  await acceptWalmartSubmissions(
-    prepared.map((item) => ({
-      channelSkuId: item.channelSkuId,
-      attemptId: item.attemptId,
-      claimToken: item.claimToken,
-    })),
-    feedId,
-    "SUBMITTED",
-  );
 
   return {
     outcome: "SUBMITTED",

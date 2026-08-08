@@ -68,6 +68,33 @@ export interface WalmartRequestOptions {
    *  succeed on same-invocation retry and just deepens the violation — the caller
    *  (report state machines) defers to the next cron tick instead. */
   noRetryOn429?: boolean;
+  /**
+   * Never send this request twice, whatever happens.
+   *
+   * A retried POST is a second submission. The transport retried POST /feeds on
+   * 5xx, 429 and network errors, so one publish call could put the same item
+   * into Walmart's catalog twice — the exact thing "one SKU, one POST, zero
+   * retry" exists to prevent (third review, 2026-08-08). An unknown outcome is
+   * resolved by READING the feed, never by sending again.
+   *
+   * Feed POSTs set this implicitly; see isUnrepeatable().
+   */
+  noRetry?: boolean;
+}
+
+/**
+ * Requests that must never be repeated by the transport.
+ *
+ * Explicit on the option, and enforced for every POST to /feeds regardless —
+ * a caller who forgets the flag must not be able to cause a double submission.
+ */
+export function walmartRequestIsUnrepeatable(
+  method: string,
+  path: string,
+  options: { noRetry?: boolean },
+): boolean {
+  if (options.noRetry) return true;
+  return method.toUpperCase() === "POST" && /^\/?feeds(\/|$|\?)/.test(path);
 }
 
 export class WalmartApiError extends Error {
@@ -359,7 +386,7 @@ export class WalmartClient {
         res = await fetch(url, { method, headers, body });
       } catch (err) {
         lastError = err;
-        if (attempt < MAX_RETRIES) {
+        if (attempt < MAX_RETRIES && !walmartRequestIsUnrepeatable(method, path, options)) {
           const delay = Math.min(
             BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
             BACKOFF_MAX_MS
@@ -414,7 +441,11 @@ export class WalmartClient {
       }
 
       // Retry on 429 / 5xx
-      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+      if (
+        (res.status === 429 || res.status >= 500)
+        && attempt < MAX_RETRIES
+        && !walmartRequestIsUnrepeatable(method, path, options)
+      ) {
         let delay = Math.min(
           BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
           BACKOFF_MAX_MS
@@ -520,7 +551,7 @@ export class WalmartClient {
         res = await fetch(url, { method, headers, body });
       } catch (err) {
         lastError = err;
-        if (attempt < MAX_RETRIES) {
+        if (attempt < MAX_RETRIES && !walmartRequestIsUnrepeatable(method, path, options)) {
           const delay = Math.min(
             BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
             BACKOFF_MAX_MS
@@ -566,7 +597,11 @@ export class WalmartClient {
       // strictly-rate-limited endpoint (e.g. /reports) pass noRetryOn429 so a 429
       // returns immediately instead of hammering the bucket 5x before deferring.
       const retriable429 = res.status === 429 && !options.noRetryOn429;
-      if ((retriable429 || res.status >= 500) && attempt < MAX_RETRIES) {
+      if (
+        (retriable429 || res.status >= 500)
+        && attempt < MAX_RETRIES
+        && !walmartRequestIsUnrepeatable(method, path, options)
+      ) {
         let delay = Math.min(
           BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
           BACKOFF_MAX_MS
