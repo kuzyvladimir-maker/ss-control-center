@@ -87,6 +87,10 @@ export function parseWalmartPromptIntent(prompt: string): WalmartPromptIntent {
     /(?:по|каждом\p{L}*\s+(?:должно\s+быть\s+)?по)\s*(\d{1,2})\s+(?:вид(?:а|ов)?|сорт(?:а|ов)?|вкус(?:а|ов)?|разновидност\p{L}*)(?=$|[^\p{L}\p{N}])/iu,
     /(?:^|[^\p{L}\p{N}])(\d{1,2})\s+(?:вид(?:а|ов)?|сорт(?:а|ов)?|вкус(?:а|ов)?)\s+(?:в|на)\s+(?:одн\p{L}+\s+)?(?:листинг\p{L}*|карточк\p{L}*|набор\p{L}*)(?=$|[^\p{L}\p{N}])/iu,
     /(?:^|[^\p{L}\p{N}])(\d{1,2})\s+(?:different\s+)?(?:flavou?rs?|varieties|kinds|types)(?=$|[^\p{L}\p{N}])/iu,
+    // Last resort: a bare "3 вида" with no preposition and no trailing clause.
+    // Without this, "8 банок, 3 вида" parsed as no mix at all and quietly built
+    // eight cans of one soup — the silent wrong build the review caught.
+    /(?:^|[^\p{L}\p{N}])(\d{1,2})\s+(?:вид(?:а|ов)?|сорт(?:а|ов)?|вкус(?:а|ов)?)(?=$|[^\p{L}\p{N}])/iu,
   ]);
   const unitsPerFlavor = firstCapturedInteger(text, [
     /(?:по)\s*(\d{1,3})\s+(?:бан(?:ок|ки|ка)|штук(?:и)?|единиц(?:ы)?|пач(?:ек|ки))\s+(?:каждого|кажд\p{L}+)(?=$|[^\p{L}\p{N}])/iu,
@@ -112,7 +116,11 @@ function resolvePromptComposition(
   flavors: number | null,
   units: number | null,
   packCount: number | null,
-): { flavors_per_listing: number | null; units_per_flavor: number | null } {
+): {
+  flavors_per_listing: number | null;
+  units_per_flavor: number | null;
+  contradictory?: boolean;
+} {
   let resolvedFlavors = flavors;
   let resolvedUnits = units;
   if (resolvedFlavors && !resolvedUnits && packCount && packCount % resolvedFlavors === 0) {
@@ -121,11 +129,28 @@ function resolvePromptComposition(
   if (resolvedUnits && !resolvedFlavors && packCount && packCount % resolvedUnits === 0) {
     resolvedFlavors = packCount / resolvedUnits;
   }
+  // A named number of kinds that does not divide the pack is a contradiction
+  // even when the per-kind count was never stated: "8 банок, 3 вида" cannot be
+  // built, and silently making it one product would ship eight of one soup.
+  if (resolvedFlavors && resolvedFlavors >= 2 && !resolvedUnits && packCount) {
+    return {
+      flavors_per_listing: resolvedFlavors,
+      units_per_flavor: null,
+      contradictory: true,
+    };
+  }
   if (!resolvedFlavors || resolvedFlavors < 2 || !resolvedUnits) {
     return { flavors_per_listing: null, units_per_flavor: null };
   }
   if (packCount && resolvedFlavors * resolvedUnits !== packCount) {
-    return { flavors_per_listing: null, units_per_flavor: null };
+    // Contradictory, and it must NOT quietly become a single-product pack:
+    // "8 банок, 3 вида по 3" would then build eight cans of one soup. Report
+    // the mix that was asked for so the caller can raise it as a conflict.
+    return {
+      flavors_per_listing: resolvedFlavors,
+      units_per_flavor: resolvedUnits,
+      contradictory: true,
+    };
   }
   return { flavors_per_listing: resolvedFlavors, units_per_flavor: resolvedUnits };
 }
@@ -176,17 +201,15 @@ export function resolveWalmartStudioRequestIntent(input: {
     && parsed.flavors_per_listing * parsed.units_per_flavor === packCount
     ? { flavors: parsed.flavors_per_listing, units: parsed.units_per_flavor }
     : { flavors: 1, units: packCount };
-  if (
-    parsed.flavors_per_listing
-    && composition.flavors === 1
-  ) {
+  if (parsed.flavors_per_listing && composition.flavors === 1) {
     blockers.push({
       code: "PACK_COMPOSITION_CONFLICT",
       kind: "INPUT_CONFLICT",
       can_data_collection_fix: false,
       message:
-        `The prompt asks for ${parsed.flavors_per_listing} kinds per listing, `
-        + `which does not divide ${packCount} units. Make them match.`,
+        `The prompt asks for ${parsed.flavors_per_listing} kinds per listing`
+        + (parsed.units_per_flavor ? ` of ${parsed.units_per_flavor} each` : "")
+        + `, which does not add up to ${packCount} units. Make them match.`,
     });
   }
 

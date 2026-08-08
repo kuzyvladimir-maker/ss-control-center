@@ -263,6 +263,16 @@ export interface WalmartStudioListingEvidenceInput {
   verifiedAt: Date;
   /** The exact Product Truth component the draft was built from. */
   component: Record<string, unknown>;
+  /**
+   * Every product in the box, when there is more than one.
+   *
+   * The record modelled a single identity/content/price chain, so an
+   * assortment's other flavors left no evidence at all — a reviewer could not
+   * see them and the duplicate check could not compare them (independent review
+   * 2026-08-08). Omitted for a plain multipack, whose single chain the fields
+   * above already state.
+   */
+  components?: ReadonlyArray<{ component: Record<string, unknown>; quantity: number }>;
   images: WalmartStudioImageEvidence[];
   shippingTemplateId: string | null;
   fulfillmentCenterId: string | null;
@@ -287,9 +297,28 @@ export function buildWalmartStudioListingEvidence(
       `MAIN image represents ${main.represented_unit_count} units; the listing sells ${input.packCount}`,
     );
   }
+  const mixed = (input.components?.length ?? 0) > 1;
+  const declaredUnits = mixed
+    ? input.components!.reduce((sum, entry) => sum + entry.quantity, 0)
+    : input.packCount;
+  if (declaredUnits !== input.packCount) {
+    throw new Error(
+      `the recorded components hold ${declaredUnits} units; the listing sells ${input.packCount}`,
+    );
+  }
   return {
     schema_version: WALMART_STUDIO_LISTING_EVIDENCE_SCHEMA,
     lane: WALMART_STUDIO_LISTING_LANE,
+    ...(mixed
+      ? {
+        components: input.components!.map((entry) => ({
+          canonical_variant_id: entry.component.canonical_variant_id ?? null,
+          donor_product_id: entry.component.donor_product_id ?? null,
+          product_name: entry.component.product_name ?? null,
+          quantity: entry.quantity,
+        })),
+      }
+      : {}),
     listing_scope: {
       channel: "WALMART",
       store_index: input.storeIndex,

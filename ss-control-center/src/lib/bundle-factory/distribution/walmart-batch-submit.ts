@@ -128,16 +128,43 @@ export async function submitWalmartBatch(input: {
     };
   }
 
-  const feed = buildWalmartBatchFeed(
-    prepared.map((item) => ({ sku: item.sku, payload: item.payload })),
-  );
-  const templateFeed = buildWalmartSkuTemplateMapBatch(
-    prepared.map((item) => ({
-      sku: item.sku,
-      shipping_template_id: item.shipping.templateId,
-      fulfillment_center_id: item.shipping.fulfillmentCenterId,
-    })),
-  );
+  // Composing happens AFTER the claims, so a composer that refuses — a
+  // duplicate product ID, a header that disagrees — must release them. Left
+  // outside a cleanup path it stranded every claim in CLAIMED, and a stranded
+  // claim blocks that listing from ever being published again (independent
+  // review 2026-08-08).
+  let feed: ReturnType<typeof buildWalmartBatchFeed>;
+  let templateFeed: ReturnType<typeof buildWalmartSkuTemplateMapBatch>;
+  try {
+    feed = buildWalmartBatchFeed(
+      prepared.map((item) => ({ sku: item.sku, payload: item.payload })),
+    );
+    templateFeed = buildWalmartSkuTemplateMapBatch(
+      prepared.map((item) => ({
+        sku: item.sku,
+        shipping_template_id: item.shipping.templateId,
+        fulfillment_center_id: item.shipping.fulfillmentCenterId,
+      })),
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await releaseAll(prepared, message, null);
+    return {
+      outcome: "NOTHING_TO_SEND",
+      feedId: null,
+      shippingFeedId: null,
+      submitted: [],
+      skipped: [
+        ...skipped,
+        ...prepared.map((item) => ({
+          channelSkuId: item.channelSkuId,
+          sku: item.sku,
+          reason: message,
+        })),
+      ],
+      error: message,
+    };
+  }
 
   // Last fence before the network: re-read every approval, so one revoked or
   // re-sealed between preparation and now stops the whole feed rather than

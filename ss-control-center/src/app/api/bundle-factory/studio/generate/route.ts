@@ -466,12 +466,24 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
       store_index: storeIndex,
       shipping_template_sha256: template.template_sha256,
       target_margin_bps: targetMarginBps,
+      // The WHOLE box, not just its first product. Hashing only the singular
+      // fields meant two builds whose listings shared a primary flavor but
+      // differed in every second flavor produced the same build id: the second
+      // request found the first job, wrote no new brief, and handed the
+      // operator the old assortment (independent review 2026-08-08).
       work_items: executionWorkItems.map((item) => ({
         donor_product_id: item.donor_product_id,
         canonical_variant_id: item.canonical_variant_id,
         content_observation_id: item.content_observation_id,
         price_observation_id: item.price_observation_id,
         pack_count: item.pack_count,
+        components: item.components.map((component) => ({
+          donor_product_id: component.donor_product_id,
+          canonical_variant_id: component.canonical_variant_id,
+          content_observation_id: component.content_observation_id,
+          price_observation_id: component.price_observation_id,
+          quantity: component.quantity,
+        })),
       })),
     })).digest("hex");
     const readyBuildId = `wbf-ready-${readyBuildSha.slice(0, 24)}`;

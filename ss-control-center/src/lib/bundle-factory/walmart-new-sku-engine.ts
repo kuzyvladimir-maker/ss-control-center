@@ -1441,6 +1441,27 @@ export function buildDeterministicWalmartMixedPackContent(input: {
   // several is legitimate too and simply gets listed.
   const brandLabel = brands.length === 1 ? brands[0] : brands.join(" and ");
 
+  // A donor without a short `flavor` leaves only its full identity — up to ~180
+  // characters. Using that verbatim fixed the title and moved the failure into
+  // the bullets (BULLET_2_TOO_LONG:181>100). Every place that names a variety
+  // uses this instead: the flavor when there is one, otherwise the identity
+  // with the brand and the size removed, and only then a word-boundary trim.
+  const shortLabel = (identity: string, flavor: string | null, brand: string): string => {
+    if (flavor && flavor.length <= 48) return flavor;
+    let label = identity;
+    if (label.toLowerCase().startsWith(brand.toLowerCase())) {
+      label = label.slice(brand.length).replace(/^[\s,-]+/, "");
+    }
+    label = label
+      .replace(/,?\s*\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|lb|ct|g|kg|ml|l)\b.*$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (label.length <= 48) return label || identity.slice(0, 48).trim();
+    const cut = label.slice(0, 48);
+    const boundary = cut.lastIndexOf(" ");
+    return (boundary > 20 ? cut.slice(0, boundary) : cut).trim();
+  };
+
   const parts = input.components.map((entry) => {
     const identity = contentIdentityLabel(entry)
       .replace(/\s*-\s*(?=\d)/g, ", ")
@@ -1448,13 +1469,12 @@ export function buildDeterministicWalmartMixedPackContent(input: {
       .replace(/\s+/g, " ")
       .trim();
     const flavor = entry.flavor ? cleanPlainText(entry.flavor, "FLAVOR") : null;
-    return { identity, flavor, qty: entry.qty };
+    const brand = cleanPlainText(entry.manufacturer_brand, "BRAND");
+    return { identity, flavor, qty: entry.qty, label: shortLabel(identity, flavor, brand) };
   });
 
   const everyFlavorSameCount = parts.every((part) => part.qty === parts[0].qty);
-  const flavorList = parts
-    .map((part) => part.flavor ?? part.identity)
-    .join(", ");
+  const flavorList = parts.map((part) => part.label).join(", ");
 
   // The title states what is in the box and how many — nothing subjective.
   const countClause = everyFlavorSameCount
@@ -1480,7 +1500,7 @@ export function buildDeterministicWalmartMixedPackContent(input: {
 
   const bullets = [
     `Includes ${input.packCount} retail packages across ${parts.length} varieties`,
-    ...parts.slice(0, 2).map((part) => `${part.qty} x ${part.flavor ?? part.identity}`),
+    ...parts.slice(0, 2).map((part) => `${part.qty} x ${part.label}`),
     "Original package labels provide ingredients, allergens and nutrition facts",
     `Main image represents all ${input.packCount} packages included`,
   ].map((bullet, index) =>

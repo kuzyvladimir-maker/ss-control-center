@@ -26,6 +26,17 @@ import {
 export interface WalmartListingIdentity {
   canonicalVariantId: string;
   packCount: number;
+  /**
+   * Every product in the box with its count, sorted, as one string.
+   *
+   * Identity used to be the FIRST variant plus the pack size. For an assortment
+   * that was wrong twice over: two different mixes sharing a first flavor
+   * looked like duplicates of each other, and the same mix listed in a
+   * different order looked like a new product and slipped past the check
+   * (independent review 2026-08-08). Sorting makes order irrelevant, which is
+   * what "the same box" actually means.
+   */
+  compositionKey: string;
 }
 
 export interface DuplicateListing {
@@ -47,6 +58,7 @@ export function walmartListingIdentity(
     const record = evidence as {
       identity?: { canonical_variant_id?: unknown };
       listing_scope?: { pack_count?: unknown };
+      components?: unknown;
     };
     const canonicalVariantId = record.identity?.canonical_variant_id;
     const packCount = Number(record.listing_scope?.pack_count);
@@ -54,7 +66,27 @@ export function walmartListingIdentity(
       return null;
     }
     if (!Number.isInteger(packCount) || packCount <= 0) return null;
-    return { canonicalVariantId: canonicalVariantId.trim(), packCount };
+    const primary = canonicalVariantId.trim();
+    const components = Array.isArray(record.components) ? record.components : [];
+    const parts = components
+      .map((entry) => {
+        if (!entry || typeof entry !== "object") return null;
+        const row = entry as { canonical_variant_id?: unknown; quantity?: unknown };
+        const variant = typeof row.canonical_variant_id === "string"
+          ? row.canonical_variant_id.trim()
+          : "";
+        const quantity = Number(row.quantity);
+        if (!variant || !Number.isInteger(quantity) || quantity <= 0) return null;
+        return `${variant}x${quantity}`;
+      })
+      .filter((entry): entry is string => entry !== null)
+      .sort();
+    // A listing that records no components is the single-product multipack its
+    // primary variant and pack count already describe.
+    const compositionKey = parts.length > 0
+      ? parts.join("|")
+      : `${primary}x${packCount}`;
+    return { canonicalVariantId: primary, packCount, compositionKey };
   } catch {
     return null;
   }
@@ -103,8 +135,8 @@ export async function findDuplicateWalmartListing(input: {
     const other = walmartListingIdentity(candidate.attributes);
     if (!other) continue;
     if (
-      other.canonicalVariantId === identity.canonicalVariantId
-      && other.packCount === identity.packCount
+      other.packCount === identity.packCount
+      && other.compositionKey === identity.compositionKey
     ) {
       return {
         sku: candidate.sku,

@@ -172,9 +172,20 @@ function hashPayload(item: Record<string, unknown>): string {
 function sealShape(
   item: Omit<WalmartStudioDraftWorkItem, "work_item_sha256">,
 ): Record<string, unknown> {
-  const plainMultipack = item.components.length === 1
-    && item.components[0].quantity === item.pack_count
-    && item.components[0].canonical_variant_id === item.canonical_variant_id;
+  // "Plain" means the components array says nothing the singular fields do not
+  // already say. Comparing only the canonical variant was a hole: an admitted
+  // item could have its donor, its content observation and its price
+  // observation swapped for a different source that resolves to the same
+  // variant, and the seal would still verify. Every field the engine actually
+  // reads has to match.
+  const only = item.components.length === 1 ? item.components[0] : null;
+  const plainMultipack = only !== null
+    && only.quantity === item.pack_count
+    && only.canonical_variant_id === item.canonical_variant_id
+    && only.donor_product_id === item.donor_product_id
+    && only.content_observation_id === item.content_observation_id
+    && only.price_observation_id === item.price_observation_id
+    && only.title_at_admission === item.title_at_admission;
   if (!plainMultipack) return item as unknown as Record<string, unknown>;
   const { components: _components, ...rest } = item;
   void _components;
@@ -234,11 +245,18 @@ function parseComponents(raw: Record<string, unknown>): WalmartStudioDraftCompon
       `components hold ${total} units but pack_count says ${packCount}`,
     );
   }
-  if (components[0].canonical_variant_id
-    !== requiredText(raw.canonical_variant_id, "canonical_variant_id")) {
+  const primary = components[0];
+  const disagreement = [
+    ["canonical_variant_id", primary.canonical_variant_id],
+    ["donor_product_id", primary.donor_product_id],
+    ["content_observation_id", primary.content_observation_id],
+    ["price_observation_id", primary.price_observation_id],
+    ["title_at_admission", primary.title_at_admission],
+  ].find(([field, value]) => value !== requiredText(raw[field], field));
+  if (disagreement) {
     throw new WalmartStudioDraftContractError(
       "WORK_ITEM_INVALID",
-      "the first component must be the work item's primary product",
+      `the first component must be the work item's primary product; ${disagreement[0]} differs`,
     );
   }
   return components;

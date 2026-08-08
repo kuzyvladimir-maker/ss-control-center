@@ -858,6 +858,10 @@ export async function promoteDraftToChannelSkus(
   let hostedGalleryUrls: string[] = [];
   const snapshotComponents = JSON.parse(draft.draft_components) as Array<{
     research_pool_id?: string;
+    /** Units of THIS product in the box. A mixed assortment has several rows. */
+    qty?: number;
+    ingredients?: string;
+    allergens?: string[] | string;
     product_truth_component?: Record<string, unknown>;
     walmart_preview?: {
       image?: {
@@ -1012,15 +1016,40 @@ export async function promoteDraftToChannelSkus(
   const studioIdentity = studioComponent?.canonical_identity as
     | { sizeDimension?: string; sizeBaseAmount?: number; sizeBaseUnit?: string }
     | undefined;
-  const studioEstimate =
-    studioComponent && studioIdentity
-      ? estimateWalmartStudioShippingPackage({
-          sizeDimension: String(studioIdentity.sizeDimension ?? ""),
-          sizeBaseAmount: Number(studioIdentity.sizeBaseAmount),
-          sizeBaseUnit: String(studioIdentity.sizeBaseUnit ?? ""),
-          packCount: draft.pack_count,
-        })
-      : null;
+  // Every product in the box contributes its OWN size for its OWN count.
+  // Estimating the whole pack from the first flavor was wrong for any
+  // assortment whose flavors differ in size: 4 x 10.5 oz + 4 x 18.8 oz weighs
+  // 117.2 oz, but the first-flavor estimate claimed 84 oz — or 150.4 oz if the
+  // bigger can happened to be listed first (independent review 2026-08-08).
+  const studioEstimate = (() => {
+    const measurable = snapshotComponents
+      .map((entry) => {
+        const identity = entry?.product_truth_component?.canonical_identity as
+          | { sizeDimension?: string; sizeBaseAmount?: number; sizeBaseUnit?: string }
+          | undefined;
+        const qty = Number(entry?.qty);
+        if (!identity || !Number.isFinite(qty) || qty <= 0) return null;
+        return estimateWalmartStudioShippingPackage({
+          sizeDimension: String(identity.sizeDimension ?? ""),
+          sizeBaseAmount: Number(identity.sizeBaseAmount),
+          sizeBaseUnit: String(identity.sizeBaseUnit ?? ""),
+          packCount: Math.trunc(qty),
+        });
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    if (measurable.length === 0) return null;
+    if (measurable.length === 1) return measurable[0];
+    // Weight adds up; the box itself does not, so the outer dimensions stay the
+    // largest single estimate rather than a sum that would invent a longer box.
+    return {
+      ...measurable.reduce((largest, entry) =>
+        entry.package_length_in > largest.package_length_in ? entry : largest),
+      package_weight_oz: measurable.reduce(
+        (sum, entry) => sum + entry.package_weight_oz,
+        0,
+      ),
+    };
+  })();
   // Only the four measurable columns reach the database; `basis` stays in the
   // estimator's return so callers can see where the numbers came from.
   const studioPackage = studioEstimate
@@ -1109,10 +1138,28 @@ export async function promoteDraftToChannelSkus(
   // render the manufacturer's own statement when there is none (owner decision
   // 2026-08-03). A Nutrition Facts crop is a different panel and is never used.
   const studioIngredientsText = (() => {
-    const fromComponent = studioComponent?.ingredients;
-    if (typeof fromComponent === "string" && fromComponent.trim()) {
-      return fromComponent.trim();
+    // A box holding several products needs EVERY statement, labelled, or the
+    // rendered panel would describe one soup and omit the allergens of the
+    // other (independent review 2026-08-08).
+    const perComponent = snapshotComponents
+      .map((entry) => {
+        const text = typeof entry?.ingredients === "string" && entry.ingredients.trim()
+          ? entry.ingredients.trim()
+          : typeof entry?.product_truth_component?.ingredients === "string"
+            ? String(entry.product_truth_component.ingredients).trim()
+            : "";
+        if (!text) return null;
+        const name = String(entry?.product_truth_component?.product_name ?? "").trim();
+        return { name, text };
+      })
+      .filter((entry): entry is { name: string; text: string } => entry !== null);
+
+    if (perComponent.length > 1) {
+      return perComponent
+        .map((entry) => (entry.name ? `${entry.name}: ${entry.text}` : entry.text))
+        .join("\n\n");
     }
+    if (perComponent.length === 1) return perComponent[0].text;
     // The MasterBundle's own component row carries the catalogued statement.
     const fromBundle = masterBundleComponents[0]?.ingredients;
     return typeof fromBundle === "string" && fromBundle.trim()
@@ -1140,8 +1187,23 @@ export async function promoteDraftToChannelSkus(
     }
   }
 
-  /** Net content of ONE retail unit, from the manufacturer's declared size. */
+  /**
+   * Net content of ONE retail unit, from the manufacturer's declared size.
+   *
+   * An assortment has no single unit size. Rather than declare one flavor's can
+   * as if it were the box, it declares nothing when the sizes disagree — a
+   * missing value is caught downstream, a wrong one is not.
+   */
   const studioNetContent = (() => {
+    const sizes = snapshotComponents
+      .map((entry) => entry?.product_truth_component?.canonical_identity as
+        | { sizeBaseAmount?: number; sizeBaseUnit?: string }
+        | undefined)
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+    const distinct = new Set(
+      sizes.map((entry) => `${entry.sizeBaseAmount}|${entry.sizeBaseUnit}`),
+    );
+    if (distinct.size > 1) return null;
     const amount = Number(studioIdentity?.sizeBaseAmount);
     const unit = String(studioIdentity?.sizeBaseUnit ?? "").trim().toLowerCase();
     if (!Number.isFinite(amount) || amount <= 0) return null;
@@ -1253,6 +1315,17 @@ export async function promoteDraftToChannelSkus(
       packCount: draft.pack_count,
       verifiedAt: new Date(),
       component: studioComponent,
+      // Every flavor, so the evidence and the duplicate check see the real box.
+      ...(snapshotComponents.length > 1
+        ? {
+          components: snapshotComponents
+            .map((entry) => ({
+              component: entry?.product_truth_component ?? {},
+              quantity: Number(entry?.qty),
+            }))
+            .filter((entry) => Number.isInteger(entry.quantity) && entry.quantity > 0),
+        }
+        : {}),
       images: [{
         role: "MAIN",
         url: mainImageUrl,

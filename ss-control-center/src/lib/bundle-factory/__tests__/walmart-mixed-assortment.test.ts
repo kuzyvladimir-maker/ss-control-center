@@ -253,3 +253,34 @@ test("a mix that does not divide the pack is a blocker, never a silent fallback"
   assert.equal(intent.flavors_per_listing, 1);
   assert.ok(intent.blockers.some((b) => b.code === "PACK_COMPOSITION_CONFLICT"));
 });
+
+test("swapping a sealed item's evidence for the same variant is refused", () => {
+  // Independent review 2026-08-08: the seal skipped `components` for a plain
+  // multipack and the parser only compared the canonical variant, so an
+  // admitted item could have its donor and both observations replaced by a
+  // different source that resolves to the same variant — and the old SHA still
+  // verified. The engine reads the component fields, so that swapped the
+  // actual source after admission.
+  const [sealed] = buildWalmartStudioDraftWorkItems({
+    ...BASE, candidates: pool(1), listingCount: 1, packCount: 8,
+  });
+  const swapped = {
+    ...sealed,
+    components: [{
+      ...sealed.components[0],
+      donor_product_id: "donor-impostor",
+      content_observation_id: "content-impostor",
+      price_observation_id: "price-impostor",
+    }],
+  };
+  assert.throws(
+    () => parseWalmartStudioDraftWorkItem(swapped),
+    (error: unknown) => {
+      assert.ok(error instanceof WalmartStudioDraftContractError);
+      // Either gate is a correct refusal: the fields no longer agree with the
+      // singular ones, and the bytes no longer match the seal.
+      assert.match(error.message, /differs|bytes changed after admission/);
+      return true;
+    },
+  );
+});

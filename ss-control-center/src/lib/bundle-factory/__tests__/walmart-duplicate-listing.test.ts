@@ -18,7 +18,13 @@ function attributes(canonicalVariantId: string, packCount: number): string {
 
 test("a listing is identified by its exact variant and its pack size", () => {
   const eight = walmartListingIdentity(attributes("cpv1:abc", 8));
-  assert.deepEqual(eight, { canonicalVariantId: "cpv1:abc", packCount: 8 });
+  // A listing that records no components is the single-product multipack its
+  // variant and pack count already describe.
+  assert.deepEqual(eight, {
+    canonicalVariantId: "cpv1:abc",
+    packCount: 8,
+    compositionKey: "cpv1:abcx8",
+  });
 
   // Same product in a different pack is a DIFFERENT listing — proven live on
   // 2026-08-05, when Pack of 8 published while its own Pack of 6 was already
@@ -54,4 +60,42 @@ test("the duplicate check runs before publishing and counts in-flight listings",
   // Only a real publish is blocked; a dry run is still allowed to show what
   // would be sent.
   assert.match(publish, /if \(apply\) \{\s*\n\s*const walmartSkus/u);
+});
+
+test("two assortments sharing a first flavor are different listings", () => {
+  // Identity was the FIRST variant plus the pack size, so these two looked
+  // identical and the second would have been refused as a duplicate of the
+  // first (independent review 2026-08-08).
+  const mix = (second: string) => JSON.stringify({
+    walmart_studio_listing: {
+      identity: { canonical_variant_id: "cpv1:tomato" },
+      listing_scope: { pack_count: 8 },
+      components: [
+        { canonical_variant_id: "cpv1:tomato", quantity: 4 },
+        { canonical_variant_id: second, quantity: 4 },
+      ],
+    },
+  });
+  const withNoodle = walmartListingIdentity(mix("cpv1:noodle"));
+  const withMushroom = walmartListingIdentity(mix("cpv1:mushroom"));
+  assert.notEqual(withNoodle?.compositionKey, withMushroom?.compositionKey);
+});
+
+test("the same box listed in a different order is the same listing", () => {
+  // And this is the other half: order used to make an identical box look new,
+  // so a true duplicate could slip past the check.
+  const ordered = (first: string, second: string) => JSON.stringify({
+    walmart_studio_listing: {
+      identity: { canonical_variant_id: first },
+      listing_scope: { pack_count: 8 },
+      components: [
+        { canonical_variant_id: first, quantity: 4 },
+        { canonical_variant_id: second, quantity: 4 },
+      ],
+    },
+  });
+  assert.equal(
+    walmartListingIdentity(ordered("cpv1:tomato", "cpv1:noodle"))?.compositionKey,
+    walmartListingIdentity(ordered("cpv1:noodle", "cpv1:tomato"))?.compositionKey,
+  );
 });

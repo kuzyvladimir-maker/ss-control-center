@@ -600,7 +600,10 @@ async function buildOneDraft(input: {
         draft_name: content.title,
         brand: displayBrand,
         category: "SHELF_STABLE",
-        composition_type: "SINGLE_FLAVOR",
+        // What is actually in the box. Always writing SINGLE_FLAVOR carried a
+        // false claim into the MasterBundle and out to every reader of it
+        // (independent review 2026-08-08).
+        composition_type: mixed ? "MIXED_FLAVOR" : "SINGLE_FLAVOR",
         pack_count: input.item.pack_count,
         draft_components: JSON.stringify(snapshot),
         draft_title: content.title,
