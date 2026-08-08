@@ -21,6 +21,7 @@
 
 import { prisma } from "../src/lib/prisma";
 import { publishOneDraft } from "../src/lib/bundle-factory/publish-one-draft";
+import { approveDraftForDistribution } from "../src/lib/bundle-factory/approval";
 import { submitWalmartBatch } from "../src/lib/bundle-factory/distribution/walmart-batch-submit";
 import { WALMART_BATCH_FEED_MAX_ITEMS } from "../src/lib/bundle-factory/distribution/walmart-batch-feed";
 import { isPublishableListingStatus } from "../src/lib/bundle-factory/publishable-listing-status";
@@ -57,6 +58,17 @@ async function prepareDrafts(draftIds: string[]): Promise<Array<{ id: string; sk
       );
       continue;
     }
+    // publishOneDraft only approves when it is going to publish, and a dry run
+    // is not. The seal is what the batch transport checks, so it is sealed here
+    // explicitly — the same call the single path makes, just without the POST.
+    try {
+      await approveDraftForDistribution({ draftId, actor: "batch-live-test" });
+    } catch (error) {
+      console.log(`  ! ${draftId} could not be approved: `
+        + `${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
+
     const draft = await prisma.bundleDraft.findUnique({
       where: { id: draftId },
       select: { master_bundle_id: true },

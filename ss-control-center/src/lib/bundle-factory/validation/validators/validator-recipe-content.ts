@@ -149,21 +149,29 @@ export const validatorRecipeContent: ValidatorFn = async ({
     );
   }
   for (const component of bundle_components) {
+    // What this check protects: a mixed assortment must name every product it
+    // contains and how many of each. The flavor field is how that is usually
+    // said — but many manufacturers publish none ("New England Clam Chowder"
+    // IS the product, not a flavor of it), and demanding one refused perfectly
+    // describable assortments outright: a live mixed Campbell's listing failed
+    // validation and could never be published (2026-08-08). The product name
+    // says the same thing, so it stands in when there is no flavor.
     const flavor = component.flavor?.trim();
-    if (!flavor) {
-      // A mixed assortment must name every flavor it contains and how many of
-      // each — that is what this check protects. A homogeneous pack of ONE
-      // exact variant is fully identified by the donor's own product name in
-      // the title, and some manufacturers publish no separate flavor field at
-      // all ("New England Clam Chowder" is the product, not a flavor of it).
+    const label = flavor || component.product_name?.trim() || "";
+    if (!label) {
       if (bundle_components.length > 1) {
-        failures.push(`component "${component.product_name}" has no canonical flavor`);
+        failures.push("a component of this assortment has neither flavor nor product name");
       }
       continue;
     }
-    const expectedTokens = tokens(flavor);
+    if (!flavor && bundle_components.length <= 1) {
+      // A homogeneous pack of ONE exact variant is fully identified by the
+      // donor's own product name in the title; nothing further to prove.
+      continue;
+    }
+    const expectedTokens = tokens(label);
     if (expectedTokens.length > 0 && !expectedTokens.every((token) => content.includes(token))) {
-      failures.push(`content omits flavor "${flavor}"`);
+      failures.push(`content omits "${label}"`);
     }
     if (bundle_components.length > 1 && expectedTokens.length > 0) {
       const flavorPattern = expectedTokens.map(escapeRegExp).join(".{0,20}");
@@ -172,7 +180,7 @@ export const validatorRecipeContent: ValidatorFn = async ({
         new RegExp(`\\b${qty}\\b.{0,80}${flavorPattern}`, "i").test(content) ||
         new RegExp(`${flavorPattern}.{0,80}\\b${qty}\\b`, "i").test(content);
       if (!allocationPresent) {
-        failures.push(`content does not state ${component.qty} pieces for "${flavor}"`);
+        failures.push(`content does not state ${component.qty} pieces for "${label}"`);
       }
     }
   }
