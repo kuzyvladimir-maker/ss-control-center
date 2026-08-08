@@ -91,3 +91,25 @@ test("one component is not an assortment", () => {
     /MIXED_PACK_NEEDS_TWO_COMPONENTS/,
   );
 });
+
+test("a title too long to list every variety degrades instead of failing", () => {
+  // A real build died with WALMART_TITLE_TOO_LONG:225>150 because each variety
+  // contributed its full identity label. The listing must still be buildable.
+  const longNames = [
+    "Chunky Pub-Style Chicken Pot Pie with Seasoned White Meat Chicken",
+    "Chunky Baked Potato with Steak and Cheese Flavored Hearty Soup",
+  ];
+  const content = buildDeterministicWalmartMixedPackContent({
+    components: longNames.map((flavor) => ({
+      product_name: `Campbell's ${flavor} Soup, 18.8 oz Can`,
+      manufacturer_brand: "Campbell's",
+      flavor,
+      qty: 4,
+    })),
+    packCount: 8,
+  });
+  assert.ok(content.title.length <= 150, `title was ${content.title.length}`);
+  assert.match(content.title, /Variety Pack/);
+  // What did not fit in the title is still stated in full in the description.
+  for (const flavor of longNames) assert.match(content.description, new RegExp(flavor));
+});

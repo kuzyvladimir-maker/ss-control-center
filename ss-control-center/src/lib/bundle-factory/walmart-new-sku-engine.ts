@@ -1460,8 +1460,20 @@ export function buildDeterministicWalmartMixedPackContent(input: {
   const countClause = everyFlavorSameCount
     ? `${input.packCount}-Pack, ${parts.length} Varieties, ${parts[0].qty} of Each`
     : `${input.packCount}-Pack, ${parts.length} Varieties`;
+  // Walmart caps the title at 150 characters, and a full identity label per
+  // variety blows past that fast — a real build hit 225. So the title is built
+  // longest-first and degrades: name every variety, then just count them.
+  // Truncating mid-flavor would be worse than not listing them.
+  const titleCandidates = [
+    `${brandLabel} Variety Pack, ${flavorList} (${countClause})`,
+    `${brandLabel} Variety Pack (${countClause})`,
+    `${brandLabel} Variety Pack, ${input.packCount} Cans`,
+  ];
+  const fitted = titleCandidates
+    .map((candidate) => cleanPlainText(candidate, "WALMART_TITLE"))
+    .find((candidate) => candidate.length <= 150);
   const title = assertLength(
-    cleanPlainText(`${brandLabel} Variety Pack, ${flavorList} (${countClause})`, "WALMART_TITLE"),
+    fitted ?? cleanPlainText(titleCandidates[titleCandidates.length - 1]!, "WALMART_TITLE"),
     150,
     "WALMART_TITLE",
   );
