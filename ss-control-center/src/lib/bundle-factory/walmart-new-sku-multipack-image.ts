@@ -126,9 +126,79 @@ async function exactPackageCutout(source: Buffer): Promise<Buffer> {
     .toBuffer();
 }
 
+/**
+ * The per-cell sources, in the order they fill the grid.
+ *
+ * A single-product pack is expressed as one source with the whole count, so
+ * everything below has exactly one shape to handle.
+ */
+/**
+ * Provenance for the composed picture.
+ *
+ * A single-product pack keeps the plain digest of its one source, so every
+ * image made before mixed assortments existed still hashes the same. A mix
+ * digests all of its sources with their counts, because "which packages, how
+ * many of each" is exactly what the picture claims.
+ */
+function sourcesDigest(
+  sources: ReadonlyArray<{ bytes: Buffer; quantity: number }>,
+  primary: Buffer,
+): string {
+  if (sources.length === 1 && sources[0].bytes.equals(primary)) {
+    return sha256(primary);
+  }
+  return sha256(Buffer.from(
+    sources.map((entry) => `${sha256(entry.bytes)}x${entry.quantity}`).join("|"),
+    "utf8",
+  ));
+}
+
+function normalizeUnitSources(input: {
+  sourceUnitImageBytes: Buffer;
+  packCount: number;
+  unitSources?: ReadonlyArray<{ bytes: Buffer; quantity: number }>;
+}): Array<{ bytes: Buffer; quantity: number }> {
+  if (!input.unitSources || input.unitSources.length === 0) {
+    return [{ bytes: input.sourceUnitImageBytes, quantity: input.packCount }];
+  }
+  const sources = input.unitSources.map((entry, index) => {
+    if (!Number.isInteger(entry.quantity) || entry.quantity < 1) {
+      throw new Error(`unit source ${index} needs a whole quantity of at least 1`);
+    }
+    if (entry.bytes.length === 0) {
+      throw new Error(`unit source ${index} has no image bytes`);
+    }
+    return { bytes: entry.bytes, quantity: entry.quantity };
+  });
+  const total = sources.reduce((sum, entry) => sum + entry.quantity, 0);
+  if (total !== input.packCount) {
+    throw new Error(
+      `mixed unit sources hold ${total} units but packCount is ${input.packCount}`,
+    );
+  }
+  if (!sources[0].bytes.equals(input.sourceUnitImageBytes)) {
+    // The layout is measured from sourceUnitImageBytes. If the first cell came
+    // from somewhere else, the picture would be laid out for one product and
+    // filled with another.
+    throw new Error("the first unit source must be sourceUnitImageBytes");
+  }
+  return sources;
+}
+
 export async function buildDeterministicWalmartMultipackImage(input: {
   sourceUnitImageBytes: Buffer;
   packCount: number;
+  /**
+   * A mixed assortment: several DIFFERENT products in one box, each with its
+   * own count. Quantities must sum to packCount, and the first entry must be
+   * `sourceUnitImageBytes` — the layout is measured from it, so the primary
+   * source stays the one the caller named.
+   *
+   * Omitted, this composes packCount copies of one product exactly as before,
+   * byte for byte. That matters: existing drafts are addressed by the output
+   * digest, and a layout change would orphan every one of them.
+   */
+  unitSources?: ReadonlyArray<{ bytes: Buffer; quantity: number }>;
 }): Promise<WalmartDeterministicMultipackImage> {
   if (
     !Number.isInteger(input.packCount) ||
@@ -141,6 +211,16 @@ export async function buildDeterministicWalmartMultipackImage(input: {
   }
   if (input.sourceUnitImageBytes.length === 0) {
     throw new Error("sourceUnitImageBytes cannot be empty");
+  }
+  const sources = normalizeUnitSources(input);
+  if (sources.length > 1 && (input.packCount === 2 || input.packCount === 3)) {
+    // Packs of two and three use hand-tuned layouts further down that place
+    // each unit individually. Mixing there is not implemented, and composing
+    // one flavor while claiming several would be worse than refusing.
+    throw new Error(
+      "A mixed assortment of 2 or 3 units is not supported yet; "
+      + "use a pack of 4 or more, or a single product",
+    );
   }
   const cutout = await exactPackageCutout(input.sourceUnitImageBytes);
   const cutoutMetadata = await sharp(cutout).metadata();
@@ -219,15 +299,28 @@ export async function buildDeterministicWalmartMultipackImage(input: {
       throw new Error("unable to determine deterministic multipack layout");
     }
 
-    const unit = await sharp(cutout, { failOn: "warning" })
-      .resize({
-        width: Math.max(1, Math.floor(best.unitWidth)),
-        height: Math.max(1, Math.floor(best.unitHeight)),
-        fit: "inside",
-        withoutEnlargement: false,
-      })
-      .png({ compressionLevel: 9, adaptiveFiltering: false })
-      .toBuffer();
+    const resizeToCell = async (bytes: Buffer): Promise<Buffer> =>
+      sharp(bytes, { failOn: "warning" })
+        .resize({
+          width: Math.max(1, Math.floor(best.unitWidth)),
+          height: Math.max(1, Math.floor(best.unitHeight)),
+          fit: "inside",
+          withoutEnlargement: false,
+        })
+        .png({ compressionLevel: 9, adaptiveFiltering: false })
+        .toBuffer();
+
+    // Every cell is an exact-pixel copy of one of the sources, cut out and
+    // scaled into the same box the layout was measured for. `unit` stays the
+    // FIRST source, so a single-product pack composes exactly as it always did.
+    const unit = await resizeToCell(cutout);
+    const cellUnits: Buffer[] = [];
+    for (const source of sources) {
+      const scaled = source.bytes.equals(input.sourceUnitImageBytes)
+        ? unit
+        : await resizeToCell(await exactPackageCutout(source.bytes));
+      for (let copy = 0; copy < source.quantity; copy += 1) cellUnits.push(scaled);
+    }
     const unitMetadata = await sharp(unit).metadata();
     const unitWidth = unitMetadata.width;
     const unitHeight = unitMetadata.height;
@@ -258,7 +351,7 @@ export async function buildDeterministicWalmartMultipackImage(input: {
           Math.round((canvasSize - rowWidth) / 2),
         );
         return {
-          input: unit,
+          input: cellUnits[index]!,
           left: Math.round(rowStart + column * horizontalStep),
           top: Math.round(startTop + row * verticalStep),
         };
@@ -278,7 +371,7 @@ export async function buildDeterministicWalmartMultipackImage(input: {
 
     return {
       bytes,
-      source_asset_sha256: sha256(input.sourceUnitImageBytes),
+      source_asset_sha256: sourcesDigest(sources, input.sourceUnitImageBytes),
       output_sha256: sha256(bytes),
       represented_unit_count: input.packCount,
       construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",
@@ -351,7 +444,7 @@ export async function buildDeterministicWalmartMultipackImage(input: {
 
     return {
       bytes,
-      source_asset_sha256: sha256(input.sourceUnitImageBytes),
+      source_asset_sha256: sourcesDigest(sources, input.sourceUnitImageBytes),
       output_sha256: sha256(bytes),
       represented_unit_count: input.packCount,
       construction_method: "DETERMINISTIC_EXACT_PIXEL_MULTIPACK",

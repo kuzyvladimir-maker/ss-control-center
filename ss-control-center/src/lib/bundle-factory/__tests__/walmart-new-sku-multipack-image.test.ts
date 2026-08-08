@@ -150,3 +150,100 @@ test("rejects invalid counts and empty sources", async () => {
     /cannot be empty/,
   );
 });
+
+// ── Mixed assortments: several DIFFERENT products in one box ────────────────
+
+async function secondSourceFixture(): Promise<Buffer> {
+  const packageFace = Buffer.from(`
+    <svg width="620" height="900" xmlns="http://www.w3.org/2000/svg">
+      <rect width="620" height="900" rx="12" fill="#1e7a34"/>
+      <rect y="570" width="620" height="330" fill="#cfe9d6"/>
+      <text x="310" y="330" text-anchor="middle"
+        font-family="Arial" font-size="150" font-weight="700" fill="white">PEAS</text>
+    </svg>
+  `);
+  return sharp({
+    create: { width: 1_000, height: 1_000, channels: 3, background: "white" },
+  })
+    .composite([{ input: packageFace, left: 190, top: 50 }])
+    .png()
+    .toBuffer();
+}
+
+test("a mixed pack shows both products and counts every unit", async () => {
+  const first = await sourceFixture();
+  const second = await secondSourceFixture();
+
+  const mixed = await buildDeterministicWalmartMultipackImage({
+    sourceUnitImageBytes: first,
+    packCount: 8,
+    unitSources: [{ bytes: first, quantity: 4 }, { bytes: second, quantity: 4 }],
+  });
+  assert.equal(mixed.represented_unit_count, 8);
+
+  // Composing eight of the FIRST product must not produce the same picture —
+  // that would mean the second flavor never made it onto the tile, which is the
+  // exact failure a mixed listing must never ship with.
+  const singleFlavor = await buildDeterministicWalmartMultipackImage({
+    sourceUnitImageBytes: first,
+    packCount: 8,
+  });
+  assert.notEqual(mixed.output_sha256, singleFlavor.output_sha256);
+  assert.notEqual(mixed.source_asset_sha256, singleFlavor.source_asset_sha256);
+});
+
+test("a single-product pack is unchanged whether or not sources are named", async () => {
+  // Existing drafts are addressed by the output digest. Stating the one source
+  // explicitly must produce the very same bytes as leaving it implicit.
+  const first = await sourceFixture();
+  const implicit = await buildDeterministicWalmartMultipackImage({
+    sourceUnitImageBytes: first,
+    packCount: 6,
+  });
+  const explicit = await buildDeterministicWalmartMultipackImage({
+    sourceUnitImageBytes: first,
+    packCount: 6,
+    unitSources: [{ bytes: first, quantity: 6 }],
+  });
+  assert.equal(explicit.output_sha256, implicit.output_sha256);
+  assert.equal(explicit.source_asset_sha256, implicit.source_asset_sha256);
+});
+
+test("quantities that miss the pack count are refused", async () => {
+  const first = await sourceFixture();
+  const second = await secondSourceFixture();
+  await assert.rejects(
+    () => buildDeterministicWalmartMultipackImage({
+      sourceUnitImageBytes: first,
+      packCount: 8,
+      unitSources: [{ bytes: first, quantity: 4 }, { bytes: second, quantity: 3 }],
+    }),
+    /hold 7 units but packCount is 8/,
+  );
+});
+
+test("the layout source must be the first cell", async () => {
+  const first = await sourceFixture();
+  const second = await secondSourceFixture();
+  await assert.rejects(
+    () => buildDeterministicWalmartMultipackImage({
+      sourceUnitImageBytes: first,
+      packCount: 8,
+      unitSources: [{ bytes: second, quantity: 4 }, { bytes: first, quantity: 4 }],
+    }),
+    /first unit source must be sourceUnitImageBytes/,
+  );
+});
+
+test("a mixed pack of two or three is refused rather than faked", async () => {
+  const first = await sourceFixture();
+  const second = await secondSourceFixture();
+  await assert.rejects(
+    () => buildDeterministicWalmartMultipackImage({
+      sourceUnitImageBytes: first,
+      packCount: 2,
+      unitSources: [{ bytes: first, quantity: 1 }, { bytes: second, quantity: 1 }],
+    }),
+    /not supported yet/,
+  );
+});
