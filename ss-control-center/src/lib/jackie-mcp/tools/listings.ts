@@ -28,48 +28,76 @@ import {
 } from "../channels";
 import type { JackieTool } from "../registry";
 
+/** Page size cap. Raised from 100 now that `offset` exists — the clamp
+ *  exists to protect the agent's context, not to hide rows. */
+const LISTINGS_PAGE_MAX = 200;
+
 const listingsSearch: JackieTool = {
   name: "listings_search",
   description:
-    "Search ChannelSKU rows for one channel by SKU/ASIN/title fragment. Returns up to `limit` matches from our internal mirror — fast, no marketplace round-trip.",
+    "Search ChannelSKU rows for one channel by SKU/ASIN/title fragment. Reads our internal mirror — fast, no marketplace round-trip. `query` is OPTIONAL: omit it (or pass an empty string) to list the whole channel. PAGINATION: `limit` is capped at 200 per page; the response carries `total` (all rows matching channel+query) and `next_offset` — call again with that `offset` until next_offset is null to export the full mirror. Ordering is stable (sku asc) so pages never overlap or skip.",
   write: false,
   input_schema: {
     type: "object",
     properties: {
       channel: { type: "string" },
-      query: { type: "string" },
-      limit: { type: "number", default: 20 },
+      query: {
+        type: "string",
+        description:
+          "Substring matched against sku / asin / title. Omit or pass \"\" to return every listing on the channel.",
+      },
+      limit: { type: "number", default: 20, description: "Page size, capped at 200." },
+      offset: { type: "number", default: 0, description: "Rows to skip. Pass the previous response's `next_offset`." },
     },
-    required: ["channel", "query"],
+    required: ["channel"],
     additionalProperties: false,
   },
   handler: async (args) => {
     const channel = requireChannel(args);
-    const query = requireString(args, "query");
-    const limit = optionalNumber(args, "limit") ?? 20;
-    const rows = await prisma.channelSKU.findMany({
-      where: {
-        channel,
-        OR: [
-          { sku: { contains: query } },
-          { asin: { contains: query } },
-          { title: { contains: query } },
-        ],
-      },
-      take: Math.min(limit, 100),
-      select: {
-        id: true,
-        sku: true,
-        asin: true,
-        title: true,
-        price_cents: true,
-        compliance_status: true,
-        validation_status: true,
-        listing_status: true,
-        live_url: true,
-      },
-    });
-    return { count: rows.length, listings: rows };
+    // Empty/absent query = "everything on this channel". Jackie needs the
+    // full mirror for audits; requiring a term meant guessing words.
+    const query = (optionalString(args, "query") ?? "").trim();
+    const limit = Math.min(optionalNumber(args, "limit") ?? 20, LISTINGS_PAGE_MAX);
+    const offset = Math.max(optionalNumber(args, "offset") ?? 0, 0);
+    const where = query
+      ? {
+          channel,
+          OR: [
+            { sku: { contains: query } },
+            { asin: { contains: query } },
+            { title: { contains: query } },
+          ],
+        }
+      : { channel };
+    const [total, rows] = await Promise.all([
+      prisma.channelSKU.count({ where }),
+      prisma.channelSKU.findMany({
+        where,
+        // sku is @unique — a total order, so paging can't drop or repeat rows.
+        orderBy: { sku: "asc" },
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          sku: true,
+          asin: true,
+          title: true,
+          price_cents: true,
+          compliance_status: true,
+          validation_status: true,
+          listing_status: true,
+          live_url: true,
+        },
+      }),
+    ]);
+    const nextOffset = offset + rows.length;
+    return {
+      count: rows.length,
+      total,
+      offset,
+      next_offset: nextOffset < total && rows.length > 0 ? nextOffset : null,
+      listings: rows,
+    };
   },
 };
 

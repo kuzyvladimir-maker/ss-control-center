@@ -124,8 +124,37 @@ test("required tool names present", () => {
     "channelmax_job_get",
     "channelmax_job_cancel",
     "channelmax_job_reconcile",
+    "walmart_price_get",
+    "research_pool_search",
+    "sku_cost_get",
   ];
   for (const name of required) {
     assert.ok(ALL.some((t) => t.name === name), `missing tool: ${name}`);
   }
+});
+
+test("paged read tools expose the { total, next_offset } contract", () => {
+  // Jackie's clamp used to be a dead end: limit was capped but there was no
+  // way to ask for the next page. Every paged read tool must therefore take
+  // an `offset` and hand back where to continue.
+  for (const name of ["drafts_list", "listings_search", "research_pool_search"]) {
+    const t = ALL.find((x) => x.name === name);
+    assert.ok(t, `tool ${name} not registered`);
+    const props = t!.input_schema.properties as Record<string, unknown>;
+    assert.ok(props.offset !== undefined, `${name} must accept an offset`);
+    assert.ok(props.limit !== undefined, `${name} must accept a limit`);
+  }
+});
+
+test("walmart_orders_list accepts a cursor (Walmart's own pagination)", () => {
+  const t = ALL.find((x) => x.name === "walmart_orders_list");
+  assert.ok(t);
+  const props = t!.input_schema.properties as Record<string, unknown>;
+  assert.ok(props.cursor !== undefined, "walmart_orders_list must accept a cursor");
+});
+
+test("listings_search no longer requires a query (full-mirror export)", () => {
+  const t = ALL.find((x) => x.name === "listings_search");
+  assert.ok(t);
+  assert.deepEqual(t!.input_schema.required, ["channel"]);
 });

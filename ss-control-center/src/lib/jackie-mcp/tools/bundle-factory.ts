@@ -17,16 +17,21 @@ import {
 import { optionalNumber, optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
 
+/** Page size cap. A single MCP response has to fit the agent's context, so
+ *  the clamp stays — `offset` is what makes the whole table reachable. */
+const DRAFTS_PAGE_MAX = 200;
+
 const draftsList: JackieTool = {
   name: "drafts_list",
   description:
-    "List BundleDraft rows. status filter optional (DRAFT|RESEARCHED|VARIATION_SELECTED|GENERATED|IMAGE_GENERATING|IMAGE_GENERATED|VALIDATING|VALIDATED|PUBLISHING|PUBLISHED|APPROVED|ERROR|…).",
+    "List BundleDraft rows, one page at a time. status filter optional (DRAFT|RESEARCHED|VARIATION_SELECTED|GENERATED|IMAGE_GENERATING|IMAGE_GENERATED|VALIDATING|VALIDATED|PUBLISHING|PUBLISHED|APPROVED|ERROR|…). PAGINATION: `limit` is capped at 200 per page; the response carries `total` (all rows matching the filter) and `next_offset` — call again with that `offset` until next_offset is null to walk the full set. Ordering is stable (updated_at desc, id desc) so pages never overlap or skip.",
   write: false,
   input_schema: {
     type: "object",
     properties: {
       status: { type: "string" },
-      limit: { type: "number", default: 50 },
+      limit: { type: "number", default: 50, description: "Page size, capped at 200." },
+      offset: { type: "number", default: 0, description: "Rows to skip. Pass the previous response's `next_offset`." },
     },
     additionalProperties: false,
   },
@@ -34,25 +39,40 @@ const draftsList: JackieTool = {
     const where: Record<string, unknown> = {};
     const status = optionalString(args, "status");
     if (status) where.status = status;
-    const limit = optionalNumber(args, "limit") ?? 50;
-    const rows = await prisma.bundleDraft.findMany({
-      where,
-      orderBy: { updated_at: "desc" },
-      take: Math.min(limit, 200),
-      select: {
-        id: true,
-        draft_name: true,
-        brand: true,
-        category: true,
-        status: true,
-        compliance_status: true,
-        target_channels: true,
-        master_bundle_id: true,
-        created_at: true,
-        updated_at: true,
-      },
-    });
-    return { count: rows.length, drafts: rows };
+    const limit = Math.min(optionalNumber(args, "limit") ?? 50, DRAFTS_PAGE_MAX);
+    const offset = Math.max(optionalNumber(args, "offset") ?? 0, 0);
+    const [total, rows] = await Promise.all([
+      prisma.bundleDraft.count({ where }),
+      prisma.bundleDraft.findMany({
+        where,
+        // Secondary key on id: updated_at alone is not unique (bulk writes
+        // share a timestamp), and a non-deterministic tie-break makes paged
+        // reads drop and duplicate rows.
+        orderBy: [{ updated_at: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          draft_name: true,
+          brand: true,
+          category: true,
+          status: true,
+          compliance_status: true,
+          target_channels: true,
+          master_bundle_id: true,
+          created_at: true,
+          updated_at: true,
+        },
+      }),
+    ]);
+    const nextOffset = offset + rows.length;
+    return {
+      count: rows.length,
+      total,
+      offset,
+      next_offset: nextOffset < total && rows.length > 0 ? nextOffset : null,
+      drafts: rows,
+    };
   },
 };
 

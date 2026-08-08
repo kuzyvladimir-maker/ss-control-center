@@ -2,10 +2,22 @@
  * Walmart Orders API wrapper.
  * Endpoints: /v3/orders, /v3/orders/released, /v3/orders/{po}/...
  *
- * Pagination: Walmart returns `meta.nextCursor` when more pages exist. When
- * present it is an opaque string you pass as-is to the next call. The cursor
- * already encodes the original filter — do NOT send createdStartDate etc
- * alongside it.
+ * Pagination: Walmart returns `meta.nextCursor` when more pages exist. It is
+ * NOT an opaque token — it is a ready-made query string
+ * ("?limit=200&soIndex=…&cursor=…&poIndex=200&createdStartDate=…") that must be
+ * APPENDED TO THE PATH verbatim. The cursor already encodes the original
+ * filter, so nothing else is sent alongside it.
+ *
+ * Do not send it as `?nextCursor=<encoded>`: probed live 2026-08-08, Walmart
+ * answers 200 while silently ignoring the cursor and re-serving page 1
+ * (verified — 76 rows, 100 % overlap with the first page, nextCursor null).
+ * That is why every deep walk used to stop at ~2 pages with duplicate rows.
+ *
+ * Look-back clamp: Walmart caps `createdStartDate` at ~180 days and rewrites
+ * anything older without saying so — asking for 2026-01-01 on 2026-08-08 came
+ * back with the cursor carrying createdStartDate=2026-02-09. To read further
+ * back you must walk explicit createdStartDate/createdEndDate windows, and
+ * even then Walmart serves nothing beyond its retention horizon.
  */
 
 import type { WalmartClient } from "./client";
@@ -45,10 +57,9 @@ export interface OrdersPage {
 }
 
 function buildOrdersQuery(params: OrdersListParams): Record<string, string | number> {
-  // When nextCursor is present, Walmart says send ONLY the cursor.
-  if (params.nextCursor) {
-    return { nextCursor: params.nextCursor };
-  }
+  // A cursor call carries no params of its own — the cursor IS the query
+  // string and is appended to the path by cursorPath() below.
+  if (params.nextCursor) return {};
   const q: Record<string, string | number> = {};
   if (params.createdStartDate) q.createdStartDate = params.createdStartDate;
   if (params.createdEndDate) q.createdEndDate = params.createdEndDate;
@@ -75,20 +86,31 @@ function parseOrdersPage(payload: any): OrdersPage {
   };
 }
 
+/** Walmart's cursor is a whole query string; append it to the path as-is.
+ *  It already carries its own "?" — tolerate a missing one anyway. */
+function cursorPath(base: string, cursor: string | undefined): string {
+  if (!cursor) return base;
+  return `${base}${cursor.startsWith("?") ? "" : "?"}${cursor}`;
+}
+
 export class WalmartOrdersApi {
   constructor(private client: WalmartClient) {}
 
   async getAllOrders(params: OrdersListParams = {}): Promise<OrdersPage> {
-    const data = await this.client.request<any>("GET", "/orders", {
-      params: buildOrdersQuery(params),
-    });
+    const data = await this.client.request<any>(
+      "GET",
+      cursorPath("/orders", params.nextCursor),
+      { params: buildOrdersQuery(params) },
+    );
     return parseOrdersPage(data);
   }
 
   async getReleasedOrders(params: OrdersListParams = {}): Promise<OrdersPage> {
-    const data = await this.client.request<any>("GET", "/orders/released", {
-      params: buildOrdersQuery(params),
-    });
+    const data = await this.client.request<any>(
+      "GET",
+      cursorPath("/orders/released", params.nextCursor),
+      { params: buildOrdersQuery(params) },
+    );
     return parseOrdersPage(data);
   }
 
