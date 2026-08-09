@@ -49,7 +49,7 @@ import {
 } from "./distribution-pipeline";
 import { ensureFreeWalmartUpc } from "../walmart-upc-availability";
 import { parseVerifiedPhysicalPackageSpecs } from "../physical-package-specs";
-import { buildWalmartSkuTemplateMapBatch } from "../walmart-shipping-template-association";
+import { buildWalmartSkuTemplateMapContract } from "../walmart-shipping-template-association";
 
 export interface WalmartBatchSkipped {
   channelSkuId: string;
@@ -135,18 +135,30 @@ export async function submitWalmartBatch(input: {
   // claim blocks that listing from ever being published again (independent
   // review 2026-08-08).
   let feed: ReturnType<typeof buildWalmartBatchFeed>;
-  let templateFeed: ReturnType<typeof buildWalmartSkuTemplateMapBatch>;
+  let templateFeeds: Array<{
+    sku: string;
+    contract: ReturnType<typeof buildWalmartSkuTemplateMapContract>;
+  }>;
   try {
     feed = buildWalmartBatchFeed(
       prepared.map((item) => ({ sku: item.sku, payload: item.payload })),
     );
-    templateFeed = buildWalmartSkuTemplateMapBatch(
-      prepared.map((item) => ({
+    // ONE association feed per listing, not one for the batch. The batched
+    // SKU_TEMPLATE_MAP shape was refused outright on the first live run
+    // (ERR_INT_DATA_01010092, "Malformed data … NullPointerException",
+    // itemsReceived 0), and because the association never applied both
+    // listings published with no delivery option and read "Not Available" to
+    // every shopper. The single-SKU shape is proven by seven live listings, so
+    // correctness wins until a batched shape is verified against Walmart.
+    // The item feed — what batching was for — is still one POST.
+    templateFeeds = prepared.map((item) => ({
+      sku: item.sku,
+      contract: buildWalmartSkuTemplateMapContract({
         sku: item.sku,
         shipping_template_id: item.shipping.templateId,
         fulfillment_center_id: item.shipping.fulfillmentCenterId,
-      })),
-    );
+      }),
+    }));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await releaseAll(prepared, message, null);
@@ -288,23 +300,34 @@ export async function submitWalmartBatch(input: {
   // The template feed is a separate write, and failing it does not un-submit
   // the items — so its failure is reported, never retried.
   let shippingFeedId: string | null = null;
-  let shippingError: string | null = null;
-  try {
-    const response = await client.requestRaw("POST", "/feeds", {
-      params: { feedType: templateFeed.params.feedType },
-      file: templateFeed.file,
-    });
-    const body = response.body && typeof response.body === "object"
-      ? (response.body as { feedId?: string })
-      : null;
-    shippingFeedId = body?.feedId ?? null;
-    if (!response.ok || !shippingFeedId) {
-      shippingError =
-        `Walmart SKU_TEMPLATE_MAP batch feed returned HTTP ${response.status} without a feedId`;
+  const shippingErrors: string[] = [];
+  for (const entry of templateFeeds) {
+    try {
+      const response = await client.requestRaw("POST", "/feeds", {
+        params: { feedType: entry.contract.params.feedType },
+        file: entry.contract.file,
+      });
+      const body = response.body && typeof response.body === "object"
+        ? (response.body as { feedId?: string })
+        : null;
+      const id = body?.feedId ?? null;
+      if (!response.ok || !id) {
+        shippingErrors.push(
+          `${entry.sku}: HTTP ${response.status} without a feedId`,
+        );
+        continue;
+      }
+      // Reported as the first association feed; each listing has its own.
+      shippingFeedId = shippingFeedId ?? id;
+    } catch (error) {
+      shippingErrors.push(
+        `${entry.sku}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
-  } catch (error) {
-    shippingError = error instanceof Error ? error.message : String(error);
   }
+  const shippingError = shippingErrors.length > 0
+    ? `shipping template association failed — ${shippingErrors.join("; ")}`
+    : null;
 
   return {
     outcome: "SUBMITTED",

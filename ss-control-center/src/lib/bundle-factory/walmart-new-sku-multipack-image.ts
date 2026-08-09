@@ -41,7 +41,7 @@ function isConnectedBackgroundCandidate(
  * Removes only near-white pixels connected to the outer canvas.
  * Package pixels, including isolated white logos and label text, are preserved.
  */
-async function exactPackageCutout(source: Buffer): Promise<Buffer> {
+export async function exactPackageCutout(source: Buffer): Promise<Buffer> {
   const decoded = await sharp(source, {
     failOn: "warning",
     limitInputPixels: 40_000_000,

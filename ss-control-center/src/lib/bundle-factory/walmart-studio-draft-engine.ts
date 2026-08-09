@@ -19,6 +19,7 @@ import {
   buildDeterministicWalmartMixedPackContent,
   buildDeterministicWalmartMultipackContent,
 } from "./walmart-new-sku-engine";
+import { exactPackageCutout } from "@/lib/bundle-factory/walmart-new-sku-multipack-image";
 import { buildDeterministicWalmartMultipackImage } from
   "./walmart-new-sku-multipack-image";
 import {
@@ -423,7 +424,15 @@ async function buildOneDraft(input: {
     let lastError: unknown = null;
     for (const candidate of candidates) {
       try {
-        bytes = (await fetchWalmartStudioExactImage(candidate)).bytes;
+        const fetched = await fetchWalmartStudioExactImage(candidate);
+        // Prove it is a PACKSHOT, not whatever the donor happened to publish.
+        // Taking the first image that merely downloaded put a Nutrition Facts
+        // panel and an ingredient list on a live main tile, overlapping and
+        // cropped, on 2026-08-08. The primary flavor was always proven this way
+        // — by whether a package can be cut out of it — and the others must be
+        // held to the same test.
+        await exactPackageCutout(fetched.bytes);
+        bytes = fetched.bytes;
         break;
       } catch (error) {
         lastError = error;
