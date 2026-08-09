@@ -73,3 +73,16 @@ canonical URL дают `UNKNOWN`, но никогда ложный `AVAILABLE`.
 `UNAVAILABLE / OWN_OFFER_NOT_PRESENT`, даже когда товар доступен у другого
 продавца. Историческая живая PDP нашего продавца определяется как
 `AVAILABLE / OWN_OFFER_BUYABLE`.
+
+## Production activation
+
+- Source commit: `a64554691e92c443c64d00e6886cee330775733b`.
+- Production deployment: `dpl_499vv5vWy7QGjtMA3sfkHvU4sMBM`, status `READY`,
+  основной alias `salutemsolutions.info` обслуживает этот deployment.
+- `vercel crons ls` подтвердил регистрацию
+  `/api/cron/walmart-offer-restoration` с расписанием `17 */4 * * *`.
+- Первый авторизованный production run вернул HTTP 200: `available=0`,
+  `unavailable=3`, `unknown=0`; все три SKU —
+  `OWN_OFFER_NOT_PRESENT`, ошибок нет.
+- Контрольный run подтвердил `paidProviderCalls=0`, `walmartWrites=0`; Telegram
+  не вызывался, потому что перехода в `AVAILABLE` ещё не было.
