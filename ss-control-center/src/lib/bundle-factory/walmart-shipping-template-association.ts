@@ -7,21 +7,27 @@ export const WALMART_SKU_TEMPLATE_MAP_FEED_TYPE =
   "SKU_TEMPLATE_MAP" as const;
 export const WALMART_SKU_TEMPLATE_MAP_VERSION = "1.0" as const;
 /**
- * The selling channel this account's association feed is parsed under.
+ * UNRESOLVED, and the whole feed is known broken.
  *
- * It was "precisedelivery", and Walmart refused EVERY such feed — all eighteen
- * ever sent, going back to the first listing, with the same
+ * Walmart has refused EVERY SKU_TEMPLATE_MAP feed this platform ever sent — all
+ * eighteen, back to the first listing — with the same
  * `ERR_INT_DATA_01010092 … NullPointerException` and zero items received. The
- * platform believed it was attaching shipping templates and never once had.
- * Probed live on 2026-08-09: "marketplace" is accepted where "precisedelivery"
- * and a missing header are both rejected.
+ * publish path believes it attaches the shipping template and never once has.
  *
- * Why it mattered: a listing with no template association offers no delivery
+ * Probed live 2026-08-09: "marketplace", a missing header, and version 1.1 all
+ * fail identically. "marketplace" briefly reports RECEIVED before ending in the
+ * same ERROR, so intermediate status proves nothing here.
+ *
+ * Why it matters: a listing with no template association offers no delivery
  * option, so the page publishes and every purchase button reads "Not
- * available". It earns nothing and nothing complains.
+ * available" — it earns nothing and nothing complains. Five listings are in
+ * that state right now; see scripts/walmart-audit-shipping-associations.ts.
+ *
+ * The value below is left as it was until Walmart's own Get Spec for this feed
+ * type can be read (it was rate-limited when this was found).
  */
 export const WALMART_SKU_TEMPLATE_MAP_SELLING_CHANNEL =
-  "marketplace" as const;
+  "precisedelivery" as const;
 export const WALMART_SHIPPING_ASSOCIATION_PROPAGATION_MAX_MS =
   4 * 60 * 60 * 1_000;
 

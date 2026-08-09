@@ -18,7 +18,7 @@ test("builds the exact one-SKU SKU_TEMPLATE_MAP multipart contract", () => {
   assert.deepEqual(result.params, { feedType: "SKU_TEMPLATE_MAP" });
   assert.deepEqual(result.payload, {
     ItemFeedHeader: {
-      sellingChannel: "marketplace",
+      sellingChannel: "precisedelivery",
       locale: "en",
       version: "1.0",
     },
