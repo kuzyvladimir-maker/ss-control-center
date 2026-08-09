@@ -6,8 +6,22 @@ import {
 export const WALMART_SKU_TEMPLATE_MAP_FEED_TYPE =
   "SKU_TEMPLATE_MAP" as const;
 export const WALMART_SKU_TEMPLATE_MAP_VERSION = "1.0" as const;
+/**
+ * The selling channel this account's association feed is parsed under.
+ *
+ * It was "precisedelivery", and Walmart refused EVERY such feed — all eighteen
+ * ever sent, going back to the first listing, with the same
+ * `ERR_INT_DATA_01010092 … NullPointerException` and zero items received. The
+ * platform believed it was attaching shipping templates and never once had.
+ * Probed live on 2026-08-09: "marketplace" is accepted where "precisedelivery"
+ * and a missing header are both rejected.
+ *
+ * Why it mattered: a listing with no template association offers no delivery
+ * option, so the page publishes and every purchase button reads "Not
+ * available". It earns nothing and nothing complains.
+ */
 export const WALMART_SKU_TEMPLATE_MAP_SELLING_CHANNEL =
-  "precisedelivery" as const;
+  "marketplace" as const;
 export const WALMART_SHIPPING_ASSOCIATION_PROPAGATION_MAX_MS =
   4 * 60 * 60 * 1_000;
 
