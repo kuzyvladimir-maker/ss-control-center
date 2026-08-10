@@ -2,7 +2,7 @@
 // Gate with CRON_SECRET (Bearer). Schedule weekly in vercel.json.
 
 import { NextRequest, NextResponse } from "next/server";
-import { ingestAllPayouts } from "@/lib/finance/payouts";
+import { ingestAmazonPayouts } from "@/lib/finance/payouts";
 import { runDistribution } from "@/lib/finance/run";
 
 export const maxDuration = 300;
@@ -20,7 +20,9 @@ export async function GET(request: NextRequest) {
   const authFail = requireCronAuth(request);
   if (authFail) return authFail;
   try {
-    const ingest = await ingestAllPayouts(35);
+    // Walmart is intentionally excluded while the marketplace account is
+    // blocked. Finance Funds continues to ingest the active Amazon accounts.
+    const ingest = [await ingestAmazonPayouts(35)];
     const run = await runDistribution({ preview: false, source: "cron" });
     return NextResponse.json({ ok: true, ingest, run });
   } catch (e) {

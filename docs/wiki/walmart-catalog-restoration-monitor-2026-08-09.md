@@ -1,5 +1,10 @@
 # Walmart catalog restoration monitor — 2026-08-09
 
+> **ОСТАНОВЛЕН 2026-08-10.** После подтверждения блокировки marketplace account
+> владелец распорядился снять Walmart automation и monitoring. Текущее состояние
+> и условия возможного возобновления:
+> [Walmart channel suspension](./walmart-channel-suspension-2026-08-10.md).
+
 ## Назначение
 
 Этот монитор отвечает на один операционный вопрос: вернулось ли на публичной

@@ -34,6 +34,10 @@ import {
   getWalmartStoreStatus,
 } from "@/lib/walmart";
 import {
+  WALMART_CHANNEL_SUSPENDED,
+  WALMART_CHANNEL_SUSPENSION,
+} from "@/lib/walmart/channel-state";
+import {
   resolveWalmartStudioRequestIntent,
 } from "@/lib/bundle-factory/walmart-studio-request";
 import {
@@ -85,6 +89,15 @@ export const POST = withErrorHandler("studio-generate", async (request: NextRequ
   // are wired. eBay/TikTok land later.
   if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
     return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
+  }
+  if (channel === "WALMART" && WALMART_CHANNEL_SUSPENDED) {
+    return NextResponse.json(
+      {
+        error: "Walmart is suspended because the marketplace account is blocked.",
+        code: WALMART_CHANNEL_SUSPENSION.code,
+      },
+      { status: 423 },
+    );
   }
   const rawMargin = Number(body.target_margin_pct);
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;

@@ -42,7 +42,8 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_RETAILER", label: "Amazon · Retailer Distributor" },
   {
     value: "WALMART",
-    label: "Walmart · new SKU",
+    label: "Walmart · suspended (account blocked)",
+    disabled: true,
   },
 ];
 

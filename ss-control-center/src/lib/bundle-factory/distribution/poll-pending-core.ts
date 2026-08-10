@@ -56,13 +56,20 @@ export interface PollPendingSummary {
 export async function runPollPending(opts: {
   olderThanMinutes?: number;
   limit?: number;
+  excludeChannels?: string[];
 }): Promise<PollPendingSummary> {
   const olderThanMinutes = Math.max(1, Number(opts.olderThanMinutes ?? 5));
   const limit = Math.max(1, Math.min(200, Number(opts.limit ?? 50)));
   const cutoff = new Date(Date.now() - olderThanMinutes * 60_000);
+  const excludeChannels = [...new Set(
+    (opts.excludeChannels ?? []).map((channel) => channel.trim()).filter(Boolean),
+  )];
 
   const pending = await prisma.channelSKU.findMany({
     where: {
+      ...(excludeChannels.length > 0
+        ? { channel: { notIn: excludeChannels } }
+        : {}),
       listing_status: { in: [...WALMART_POLLABLE_LISTING_STATUSES] },
       OR: [{ last_status_check_at: null }, { last_status_check_at: { lt: cutoff } }],
     },

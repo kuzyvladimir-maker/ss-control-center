@@ -28,7 +28,11 @@ export async function GET(request: Request) {
   }
 
   const reaped = await reapExpiredReservations();
-  const poll = await runPollPending({ olderThanMinutes: 5, limit: 50 });
+  const poll = await runPollPending({
+    olderThanMinutes: 5,
+    limit: 50,
+    excludeChannels: ["WALMART"],
+  });
 
   return NextResponse.json({ reaped: reaped.reaped, poll });
 }

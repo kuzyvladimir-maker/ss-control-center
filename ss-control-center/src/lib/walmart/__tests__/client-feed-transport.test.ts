@@ -34,7 +34,7 @@ test("Walmart feed transport sends a multipart file without a manual boundary", 
   }) as typeof fetch;
 
   try {
-    const client = new WalmartClient(99);
+    const client = new WalmartClient(99, { allowSuspendedForTests: true });
     const response = await client.requestRaw("POST", "/feeds", {
       params: { feedType: "MP_ITEM" },
       // A stale caller override must not suppress fetch's multipart boundary.

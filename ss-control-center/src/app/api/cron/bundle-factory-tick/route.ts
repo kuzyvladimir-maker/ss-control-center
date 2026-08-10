@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { tickBatch } from "@/lib/bundle-factory/studio-engine";
+import { generationJobTargetsWalmart } from "@/lib/bundle-factory/generation-job-channel";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -47,10 +48,14 @@ export async function GET(request: NextRequest) {
         { status: "PENDING", current_stage: "WALMART_DRAFT_QUEUE" },
       ],
     },
-    select: { id: true },
+    select: { id: true, current_stage: true, brief: true },
     orderBy: { created_at: "asc" },
-    take: 5,
+    // Over-fetch before the in-memory channel check so dormant Walmart work
+    // cannot sit ahead of and starve valid Amazon jobs.
+    take: 100,
   });
+  const walmartSkipped = jobs.filter(generationJobTargetsWalmart).length;
+  const runnableJobs = jobs.filter((job) => !generationJobTargetsWalmart(job)).slice(0, 5);
 
   const results: Array<{
     id: string;
@@ -59,7 +64,7 @@ export async function GET(request: NextRequest) {
     failed: number;
   }> = [];
 
-  for (const job of jobs) {
+  for (const job of runnableJobs) {
     let ticks = 0;
     let done = false;
     let failed = 0;
@@ -76,5 +81,10 @@ export async function GET(request: NextRequest) {
     if (Date.now() >= deadline) break;
   }
 
-  return NextResponse.json({ ok: true, in_progress: jobs.length, results });
+  return NextResponse.json({
+    ok: true,
+    in_progress: runnableJobs.length,
+    walmart_skipped: walmartSkipped,
+    results,
+  });
 }

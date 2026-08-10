@@ -15,6 +15,7 @@
  */
 
 import { randomUUID } from "crypto";
+import { assertWalmartChannelActive } from "./channel-state";
 
 const DEFAULT_BASE_URL =
   process.env.WALMART_API_BASE_URL || "https://marketplace.walmartapis.com";
@@ -39,6 +40,11 @@ export interface WalmartCredentials {
 export interface WalmartTokenInfo {
   accessToken: string;
   expiresAt: Date;
+}
+
+export interface WalmartClientOptions {
+  /** Keeps transport contract tests available while production stays fail-closed. */
+  allowSuspendedForTests?: boolean;
 }
 
 export interface WalmartRequestOptions {
@@ -277,16 +283,23 @@ export class WalmartClient {
   readonly storeIndex: number;
   readonly credentials: WalmartCredentials;
   private token: WalmartTokenInfo | null = null;
+  private readonly allowSuspendedForTests: boolean;
   /** Wait until this Date before issuing the next request (rate-limit aware). */
   private rateLimitWaitUntil: Date | null = null;
 
-  constructor(storeIndex = 1) {
+  constructor(storeIndex = 1, options: WalmartClientOptions = {}) {
     this.storeIndex = storeIndex;
+    this.allowSuspendedForTests = options.allowSuspendedForTests === true;
     this.credentials = getCredentials(storeIndex);
   }
 
   /** Get a cached or fresh access token. Refreshed 60s before expiry. */
   async getAccessToken(): Promise<WalmartTokenInfo> {
+    // The channel-level breaker must run before cached-token reuse and before
+    // OAuth, otherwise a stale cron can still reach Walmart after suspension.
+    assertWalmartChannelActive("Walmart OAuth/API access", {
+      allowNonProductionTest: this.allowSuspendedForTests,
+    });
     const now = Date.now();
     if (
       this.token &&

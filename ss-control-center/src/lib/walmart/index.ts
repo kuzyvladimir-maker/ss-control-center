@@ -5,6 +5,12 @@ export {
   getWalmartStoreStatus,
 } from "./client";
 export type { WalmartCredentials, WalmartTokenInfo } from "./client";
+export {
+  WALMART_CHANNEL_SUSPENDED,
+  WALMART_CHANNEL_SUSPENSION,
+  WalmartChannelSuspendedError,
+  assertWalmartChannelActive,
+} from "./channel-state";
 
 export { WalmartOrdersApi } from "./orders";
 export type { OrdersListParams, OrdersPage } from "./orders";
