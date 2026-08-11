@@ -1,5 +1,77 @@
 [
  {
+  "slug": "b2-bright-eyed-berry-24",
+  "ok": true,
+  "sku": "HV-ASFY-TLQA",
+  "upc": "756441906264",
+  "price_cents": 7699,
+  "channel_sku_id": "cmso98i80000752fzb7a3xp6o",
+  "draft_id": "cmso988ji000152fz277gxwfy",
+  "master_bundle_id": "cmso98hb1000552fz34tp11o7",
+  "pack_count": 24,
+  "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/b2c-b2-bright-eyed-berry-24/main-2026-08-11-a1.png",
+  "image_kind": "real-photo-composite",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 24,
+    "box_size": 8,
+    "box_count": 3,
+    "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+    "donor_image": "https://target.scene7.com/is/image/Target/GUEST_cbf8c112-3935-44c3-a263-87001ec7ce11"
+   }
+  ],
+  "title": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Bright-Eyed Berry, 24 Count"
+ },
+ {
+  "slug": "b2-honey-30",
+  "ok": true,
+  "sku": "MG-AS3A-NYNU",
+  "upc": "756441906271",
+  "price_cents": 8599,
+  "channel_sku_id": "cmso98r0f000f52fzwchdlpuu",
+  "draft_id": "cmso98isw000952fz92bmf53a",
+  "master_bundle_id": "cmso98qc1000d52fz6eb5apa9",
+  "pack_count": 30,
+  "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/b2c-b2-honey-30/main-2026-08-11-a1.png",
+  "image_kind": "real-photo-composite",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30,
+    "box_size": 10,
+    "box_count": 3,
+    "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+    "donor_image": "https://target.scene7.com/is/image/Target/GUEST_94feaaa2-a28a-42c8-a402-f3cfb065b6be"
+   }
+  ],
+  "title": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Honey, 30 Count"
+ },
+ {
+  "slug": "b2-burstin-blueberry-24",
+  "ok": true,
+  "sku": "KZ-AS7R-XJDH",
+  "upc": "756441906288",
+  "price_cents": 7699,
+  "channel_sku_id": "cmso992su000n52fz72v82zzb",
+  "draft_id": "cmso98rdi000h52fzsohqgf7r",
+  "master_bundle_id": "cmso99274000l52fzya7dodic",
+  "pack_count": 24,
+  "main_image_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/b2c-b2-burstin-blueberry-24/main-2026-08-11-a1.png",
+  "image_kind": "real-photo-composite",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 24,
+    "box_size": 8,
+    "box_count": 3,
+    "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+    "donor_image": "https://target.scene7.com/is/image/Target/GUEST_6e3d9277-6100-42bb-b325-8884e5a59885"
+   }
+  ],
+  "title": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Burstin' Blueberry, 24 Count"
+ },
+ {
   "slug": "b2-whole-wheat-strawb-strawberry-jam-24",
   "ok": true,
   "sku": "VH-ASWM-EDTH",

@@ -125,9 +125,24 @@ async function main() {
     const locator = (s: string, kind: string) =>
       `${base}/studio-audit/${s}.${kind === "image" ? "png" : "generation-manifest.json"}`;
 
+    // ---- идемпотентность минта: если пруф для этого слага уже зарегистрирован
+    // И запечатан по ТЕМ ЖЕ байтам, второй раз не минтим (иначе union
+    // справедливо ругается на дубль proof_id и публикация встаёт).
+    const existingProof = uni
+      .allUnionOwnerApprovedProofs()
+      .find((pr: any) => pr.proof_id === `production-${slug}`);
+    if (existingProof) {
+      if (String(existingProof.image?.sha256 ?? "").toLowerCase() === sha) {
+        console.log(`  ↷ пруф уже запечатан по этим байтам (${sha.slice(0, 12)}…)`);
+      } else {
+        console.log(`  ✗ пруф ${existingProof.proof_id} запечатан по ДРУГИМ байтам — нужен новый slug/ID`);
+        fail++; continue;
+      }
+    }
+
     // ---- mint + seal + register + DB record
-    let minted: any;
-    try {
+    let minted: any = null;
+    if (!existingProof) try {
       minted = mint.mintCandidateProof(
         {
           slug,
@@ -181,6 +196,19 @@ async function main() {
     }
 
     // ---- permit + submit
+    // Гейт свежести: submitToAmazon требует подтверждённый положительный
+    // остаток не старше 15 минут (buy-to-order — остаток объявляет оператор).
+    const current = await prisma.channelSKU.findUnique({
+      where: { id: sku.channel_sku_id },
+      select: { available_quantity: true },
+    });
+    await prisma.channelSKU.update({
+      where: { id: sku.channel_sku_id },
+      data: {
+        available_quantity: current?.available_quantity ?? 10,
+        inventory_checked_at: new Date(),
+      },
+    });
     const freshSku = await prisma.channelSKU.findUnique({ where: { id: sku.channel_sku_id } });
     const mb = await prisma.masterBundle.findUnique({
       where: { id: staged.masterBundleId },
@@ -210,8 +238,8 @@ async function main() {
       verifiedAllergens,
       uncrustablesMainPermit: pfRes.permit,
     });
-    const issues = (result.issues ?? []).map((i: any) => `${i.severity}:${i.code}`).join(" ");
-    console.log(`  → ${result.ok ? "OK" : "FAIL"} | amazon ${result.amazon_status ?? "?"} | sub ${result.submission_id ?? "-"}${issues ? " | " + issues.slice(0, 160) : ""}`);
+    const issues = (result.issues ?? []).map((i: any) => `${i.severity}:${i.code} ${String(i.message ?? "").slice(0, 90)}`).join(" | ");
+    console.log(`  → ${result.ok ? "OK" : "FAIL"} | amazon ${result.amazon_status ?? "?"} | sub ${result.submission_id ?? "-"}${result.error ? " | ERROR: " + String(result.error).slice(0, 300) : ""}${issues ? " | " + issues.slice(0, 300) : ""}`);
     if (result.ok && !DRY) {
       await prisma.channelSKU.update({
         where: { id: sku.channel_sku_id },

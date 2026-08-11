@@ -41,13 +41,17 @@ async function main() {
   // уже застейдженные этим конвейером (идемпотентность)
   const priorJobs = await prisma.generationJob.findMany({
     where: { brief: { contains: "uncrustables-batch200" } },
-    select: { brief: true, bundle_drafts: { select: { master_bundle_id: true } } },
+    select: { brief: true, bundle_drafts: { select: { id: true, master_bundle_id: true } } },
   });
-  const staged = new Set<string>();
+  // slug → уже созданный драфт/бандл. Раньше такие слаги просто пропускались
+  // и НЕ попадали в staged.json — из-за этого первые три листинга выпадали из
+  // конвейера публикации. Теперь они восстанавливаются из базы.
+  const staged = new Map<string, { draftId: string; masterBundleId: string }>();
   for (const j of priorJobs) {
     try {
       const slug = JSON.parse(j.brief).slug;
-      if (j.bundle_drafts.some((d: any) => d.master_bundle_id)) staged.add(slug);
+      const d = j.bundle_drafts.find((x: any) => x.master_bundle_id);
+      if (d) staged.set(slug, { draftId: d.id, masterBundleId: d.master_bundle_id as string });
     } catch { /* ignore */ }
   }
 
@@ -55,7 +59,24 @@ async function main() {
   let ok = 0, skip = 0, fail = 0;
   for (const slug of targets) {
     const row = bySlug.get(slug);
-    if (staged.has(slug)) { skip++; continue; }
+    const prior = staged.get(slug);
+    if (prior) {
+      const skus = await prisma.channelSKU.findMany({
+        where: { master_bundle_id: prior.masterBundleId },
+        select: { id: true, sku: true, upc: true, price_cents: true },
+      });
+      if (skus.length) {
+        const s0 = skus[0];
+        results.push({
+          slug, ok: true, sku: s0.sku, upc: s0.upc, price_cents: s0.price_cents,
+          channel_sku_id: s0.id, draft_id: prior.draftId,
+          master_bundle_id: prior.masterBundleId, pack_count: row.total,
+          main_image_url: row.main_image_url, image_kind: row.image_kind,
+          comps: row.comps, title: row.title,
+        });
+      }
+      skip++; continue;
+    }
     const res = await stageLib.stageUncrustablesCandidate(
       {
         slug,
