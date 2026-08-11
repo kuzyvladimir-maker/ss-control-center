@@ -244,7 +244,7 @@ async function main() {
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Mixed Berry Spread"))
       frontText.push('The BERRY BURST cartons are PINK with a pattern of blue circles and stars and a "Limited Edition Flavor" roundel, copied exactly from their reference photo — never dark purple, never a plain dot pattern.');
     if (r.comps.some((c: any) => c.flavor === "Whole Wheat Peanut Butter & Strawberry Jam"))
-      frontText.push('The red Reduced Sugar Strawberry cartons read exactly "Peanut Butter & Strawberry Spread Sandwich" — the "&" character MUST appear right after "Butter" on every red carton, and the green pill above reads exactly "Reduced Sugar".');
+      frontText.push('The red Reduced Sugar Strawberry cartons read exactly "Peanut Butter & Strawberry Spread Sandwich" — the "&" character MUST appear right after "Butter" on every red carton, and the green pill above reads exactly "Reduced Sugar" — spelled R-e-d-u-c-e-d S-u-g-a-r on EVERY red carton, never "Sugor", "Sogar" or "Redaced". The pill text must be sharp and letter-perfect even on angled cartons.');
     mapLines.push(
       "ROW LAYOUT CONTRACT (mandatory): the cartons stand in stepped rows from back to front, one flavor per row:",
       ...rowLines,
