@@ -63,10 +63,15 @@ const size = (f: string) => UNCRUSTABLES_FLAVORS[f].cartonSize;
 // qty options per flavor with N cartons
 const qtyFor = (f: string, cartons: number[]) => cartons.map((n) => n * size(f));
 
-// ── 1. SINGLES: все валидные размеры, Tier A приоритет 1, B — 2, C — 3
+// ── 1. SINGLES: ТОЛЬКО рациональные каунты (owner canon: S = 24/28/30, не
+// 8/12/16 — там кулер и заморозка дают $6.62/сэндвич вместо ~$3).
+// Одновкусовые ряды упираются в 4 коробки, поэтому 24+ достижимы только на
+// 8/10ct-фасовках; 4ct-вкусы в синглы не идут (4×4=16 < 24).
+const MIN_RATIONAL_TOTAL = 24;
 for (const [tier, prio] of [[A, 1], [B, 2], [C, 3]] as const) {
   for (const f of tier) {
-    for (const q of qtyFor(f, [2, 3, 4])) {
+    for (const q of qtyFor(f, [3, 4])) {
+      if (q < MIN_RATIONAL_TOTAL) continue;
       push("single", prio, [{ flavor: f, qty: q }]);
     }
   }
@@ -79,7 +84,7 @@ const duoSizes = (f1: string, f2: string): [number, number][] => {
     for (const n2 of [1, 2, 3, 4]) {
       const q1 = n1 * size(f1), q2 = n2 * size(f2);
       const total = q1 + q2;
-      if (total >= 16 && total <= 54) combos.push([q1, q2]);
+      if (total >= 24 && total <= 54) combos.push([q1, q2]);
     }
   }
   return combos;
@@ -98,7 +103,7 @@ for (const [f1, f2, prio] of duoPairs) {
       return t !== prev;
     });
   const pick: [number, number][] = [];
-  const wantTotals = [24, 28, 48, 54, 16, 30];
+  const wantTotals = [24, 28, 30, 48, 54];
   for (const w of wantTotals) {
     const hit = sizes.find(([q1, q2]) => q1 + q2 === w);
     if (hit && pick.length < 3) pick.push(hit);
