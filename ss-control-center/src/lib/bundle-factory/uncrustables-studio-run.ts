@@ -18,6 +18,7 @@ import { priceFor } from "@/lib/pricing/cost-model";
 
 import { resolveMergedUncrustablesPackageArt } from "./audit/uncrustables-authenticity-merged";
 import {
+  UNCRUSTABLES_FLAVORS,
   buildListingCopy,
   rationalBandFor,
   validateRecipe,
@@ -234,6 +235,7 @@ export function buildStudioCandidatePrompt(input: {
       qty: c.qty,
       donorImage: c.donor_image,
       artSize: c.box_size,
+      frontPanelText: UNCRUSTABLES_FLAVORS[c.flavor]?.frontPanelText ?? null,
     })),
     anchorUrl: frozenAnchorUrls()[0],
   });

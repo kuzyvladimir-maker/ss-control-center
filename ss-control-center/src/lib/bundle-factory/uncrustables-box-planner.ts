@@ -26,6 +26,13 @@ export type UncrustablesFlavor = {
   bulletPhrase: string;
   /** Name used in "Packed in original retail boxes: …". */
   boxPhrase: string;
+  /** EXACT front-panel wording printed on the genuine retail carton, when it
+   *  differs from our internal component name. The render contract must feed
+   *  the model THIS text — otherwise the model prints our internal name onto
+   *  the package art and fabricates a variant that does not exist (measured
+   *  2026-08-11: the Whole Wheat cartons came out "Strawberry Jam" because the
+   *  reference line said so, while the real pack reads "Strawberry Spread"). */
+  frontPanelText?: string;
 };
 
 export const UNCRUSTABLES_FLAVORS: Record<string, UncrustablesFlavor> = Object.fromEntries(
@@ -39,13 +46,13 @@ export const UNCRUSTABLES_FLAVORS: Record<string, UncrustablesFlavor> = Object.f
       { component: "Peanut Butter & Chocolate Flavored Spread", cartonSize: 10, titleName: "Chocolate", bulletPhrase: "Peanut Butter & Chocolate Flavored Spread", boxPhrase: "Chocolate Flavored Spread" },
       { component: "Chocolate Flavored Hazelnut Spread", cartonSize: 4, titleName: "Chocolate Hazelnut", bulletPhrase: "Chocolate Flavored Hazelnut Spread", boxPhrase: "Chocolate Hazelnut" },
       { component: "Peanut Butter & Mixed Berry Spread", cartonSize: 4, titleName: "Berry Burst Mixed Berry", bulletPhrase: "Berry Burst Peanut Butter & Mixed Berry Spread", boxPhrase: "Berry Burst" },
-      { component: "Peanut Butter & Blackberry Spread", cartonSize: 4, titleName: "Blackberry Boom", bulletPhrase: "Blackberry Boom Peanut Butter & Blackberry Spread", boxPhrase: "Blackberry Boom" },
-      { component: "Whole Wheat Peanut Butter & Strawberry Jam", cartonSize: 4, titleName: "Whole Wheat Strawberry Jam", bulletPhrase: "Whole Wheat Peanut Butter & Strawberry Jam (reduced sugar)", boxPhrase: "Whole Wheat Strawberry Jam" },
-      { component: "Whole Wheat Peanut Butter & Grape Jelly", cartonSize: 4, titleName: "Whole Wheat Grape", bulletPhrase: "Whole Wheat Peanut Butter & Grape Spread (reduced sugar, on wheat bread)", boxPhrase: "Whole Wheat Grape Spread" },
-      { component: "Peanut Butter & Blueberry", cartonSize: 8, titleName: "Burstin' Blueberry", bulletPhrase: "Burstin' Blueberry Peanut Butter & Blueberry Spread (12g protein per sandwich)", boxPhrase: "Burstin' Blueberry" },
+      { component: "Peanut Butter & Blackberry Spread", cartonSize: 4, titleName: "Blackberry Boom", bulletPhrase: "Blackberry Boom Peanut Butter & Blackberry Spread", boxPhrase: "Blackberry Boom", frontPanelText: "BLACKBERRY BOOM / Peanut Butter & Blackberry Spread Sandwich" },
+      { component: "Whole Wheat Peanut Butter & Strawberry Jam", cartonSize: 4, titleName: "Whole Wheat Strawberry Jam", bulletPhrase: "Whole Wheat Peanut Butter & Strawberry Jam (reduced sugar)", boxPhrase: "Whole Wheat Strawberry Jam", frontPanelText: "Reduced Sugar / Peanut Butter & Strawberry Spread Sandwich" },
+      { component: "Whole Wheat Peanut Butter & Grape Jelly", cartonSize: 4, titleName: "Whole Wheat Grape", bulletPhrase: "Whole Wheat Peanut Butter & Grape Spread (reduced sugar, on wheat bread)", boxPhrase: "Whole Wheat Grape Spread", frontPanelText: "Reduced Sugar / Peanut Butter & Grape Spread Sandwich" },
+      { component: "Peanut Butter & Blueberry", cartonSize: 8, titleName: "Burstin' Blueberry", bulletPhrase: "Burstin' Blueberry Peanut Butter & Blueberry Spread (12g protein per sandwich)", boxPhrase: "Burstin' Blueberry", frontPanelText: "BURSTIN' BLUEBERRY / Peanut Butter & Blueberry Spread Sandwich / 12G PROTEIN" },
       { component: "Morning Protein Peanut Butter & Mixed Berry Spread", cartonSize: 8, titleName: "Beamin' Berry Blend", bulletPhrase: "Beamin' Berry Blend Morning Protein Peanut Butter & Mixed Berry Spread (12g protein per sandwich)", boxPhrase: "Beamin' Berry Blend" },
-      { component: "Peanut Butter & Strawberry Jam Protein", cartonSize: 8, titleName: "Bright-Eyed Berry", bulletPhrase: "Bright-Eyed Berry Peanut Butter & Strawberry Jam (12g protein per sandwich)", boxPhrase: "Bright-Eyed Berry" },
-      { component: "Peanut Butter & Apple Cinnamon Jelly Protein", cartonSize: 8, titleName: "Up & Apple", bulletPhrase: "Up & Apple Peanut Butter & Apple Cinnamon Jelly (12g protein per sandwich)", boxPhrase: "Up & Apple" },
+      { component: "Peanut Butter & Strawberry Jam Protein", cartonSize: 8, titleName: "Bright-Eyed Berry", bulletPhrase: "Bright-Eyed Berry Peanut Butter & Strawberry Jam (12g protein per sandwich)", boxPhrase: "Bright-Eyed Berry", frontPanelText: "BRIGHT-EYED BERRY / Peanut Butter & Strawberry Jam Sandwich / 12G PROTEIN" },
+      { component: "Peanut Butter & Apple Cinnamon Jelly Protein", cartonSize: 8, titleName: "Up & Apple", bulletPhrase: "Up & Apple Peanut Butter & Apple Cinnamon Jelly (12g protein per sandwich)", boxPhrase: "Up & Apple", frontPanelText: "UP & APPLE / Peanut Butter & Apple Cinnamon Jelly Sandwich / 12G PROTEIN" },
     ] as UncrustablesFlavor[]
   ).map((f) => [f.component, f])
 );

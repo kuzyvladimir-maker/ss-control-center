@@ -17,9 +17,11 @@
 
 import { mirrorImages } from "../r2-image-mirror";
 
-/** Reserve the last slot(s) for the brand card → cap donor gallery at 6, well
- *  under Amazon's 8-slot ceiling. */
-export const MAX_DONOR_GALLERY = 6;
+/** Amazon gives 8 secondary slots. Slot #1 is the cold-chain brand card (owner
+ *  ruling 2026-08-11: the card sits right after MAIN, not last), so the donor
+ *  gallery fills the remaining 7 — the owner asked to use every slot when the
+ *  donor has enough clean photos. */
+export const MAX_DONOR_GALLERY = 7;
 
 /** Ask known retailer CDNs for a large, white-background render so the mirrored
  *  gallery image is crisp and Amazon-friendly (≥1000px recommended). Unknown

@@ -214,7 +214,7 @@ async function main() {
       refs.push(c._donor_image);
       const boxes = c.qty / c._art.size;
       mapLines.push(
-        `Ref ${refs.length} = the ${c._art.size}-count carton of ${c.flavor}; draw exactly ${boxes} of it, its printed "${c._art.size}" badge and its own fruit artwork unchanged.`,
+        `Ref ${refs.length} = the ${c._art.size}-count carton of ${c.flavor}${c._front_panel ? `, whose front panel reads exactly "${c._front_panel}"` : ""}; draw exactly ${boxes} of it, its printed "${c._art.size}" badge and its own fruit artwork unchanged. Copy the front-panel wording from the reference photo — never print this flavor's internal catalog name if the pack itself says something else.`,
       );
     });
 
@@ -244,12 +244,13 @@ async function main() {
     if (r.comps.some((c: any) => c.flavor === "Peanut Butter & Mixed Berry Spread"))
       frontText.push('The BERRY BURST cartons are PINK with a pattern of blue circles and stars and a "Limited Edition Flavor" roundel, copied exactly from their reference photo — never dark purple, never a plain dot pattern.');
     if (r.comps.some((c: any) => c.flavor.startsWith("Whole Wheat")))
-      frontText.push('Every Whole Wheat (Reduced Sugar) carton keeps its exact reference front text — strawberry variant reads "Peanut Butter & Strawberry Spread Sandwich", grape variant reads "Peanut Butter & Grape Spread Sandwich" — the "&" character MUST appear right after "Butter" on every one, and the green pill above reads exactly "Reduced Sugar" — spelled R-e-d-u-c-e-d S-u-g-a-r on EVERY red carton, never "Sugor", "Sogar" or "Redaced". The pill text must be sharp and letter-perfect even on angled cartons.');
+      frontText.push('Every Whole Wheat (Reduced Sugar) carton keeps its exact reference front text — strawberry variant reads "Peanut Butter & Strawberry Spread Sandwich", grape variant reads "Peanut Butter & Grape Spread Sandwich" — the "&" character MUST appear right after "Butter" on every one, and the green pill above reads exactly "Reduced Sugar" — spelled R-e-d-u-c-e-d S-u-g-a-r on EVERY red carton, never "Sugor", "Sogar" or "Redaced". The pill text must be sharp and letter-perfect even on angled cartons. The Whole Wheat strawberry carton says "Strawberry Spread" — never "Strawberry Jam"; the Whole Wheat grape carton says "Grape Spread" — never "Grape Jelly". Copy the wording from the reference photo, do not substitute a synonym.');
     mapLines.push(
       "ROW LAYOUT CONTRACT (mandatory): the cartons stand in stepped rows from back to front, one flavor per row:",
       ...rowLines,
       `TOTAL cartons: EXACTLY ${totalBoxes}.`,
       "Unfilled row width stays empty (foam/gel pack) — never add cartons to fill space. Every carton front fully visible; none cropped, slivered, or hidden. Cartons stand side by side only — no depth pairs. Same-count cartons share identical dimensions — no wide or stretched boxes.",
+    "ROW FITS THE COOLER: the cooler is wide enough for every carton of a row PLUS the two inside gel packs. Draw the full row — never drop, hide or push a carton out of frame because the row looks tight, and never let a gel pack cover a carton front. If a row of four is specified, four complete carton fronts are visible with the gel packs beside them, not in front of them.",
       "FRUIT ART: every carton front shows ONLY its own flavor's signature artwork copied from its reference photo (grape cartons show purple grapes, strawberry cartons show strawberries, mixed-berry cartons show strawberries AND blueberries, honey cartons show the wooden honey dipper, chocolate cartons show NO fruit and NO dipper — just the chocolate-filled sandwich). NEVER paint fruit, honey dippers or any art element from a neighboring row's flavor onto a carton, and never drop an element that the reference shows.",
       "GEL PACKS: EXACTLY four in the scene — one standing inside against the left wall, one inside against the right wall, and two leaning outside at the front right. Never add a fifth gel pack or a duplicate behind another.",
       'GEL PACK TEXT: every gel pack prints exactly, letter for letter: "FROZEN GEL PACK" then "KEEP FROZEN" (F-R-O-Z-E-N, never "PROZEN") then "FOR FROZEN SHIPMENTS" then the green lotus then "SALUTEM SOLUTIONS" then "OUR BEST SOLUTIONS FOR YOU".',
