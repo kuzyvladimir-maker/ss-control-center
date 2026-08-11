@@ -30,138 +30,6 @@
   "kind": "single"
  },
  {
-  "slug": "b2-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 24
-   }
-  ],
-  "kind": "single"
- },
- {
-  "slug": "b2-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "single"
- },
- {
-  "slug": "b2-chocolate-30",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Chocolate Flavored Spread",
-    "qty": 30
-   }
-  ],
-  "kind": "single"
- },
- {
-  "slug": "b2-honey-chocolate-burstin-blueberry-up-apple-96",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Honey Spread",
-    "qty": 20
-   },
-   {
-    "flavor": "Peanut Butter & Chocolate Flavored Spread",
-    "qty": 20
-   },
-   {
-    "flavor": "Peanut Butter & Blueberry",
-    "qty": 32
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "xl"
- },
- {
-  "slug": "b2-honey-bright-eyed-berry-beamin-berry-blend-94",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Honey Spread",
-    "qty": 30
-   },
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 32
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "xl"
- },
- {
-  "slug": "b2-chocolate-burstin-blueberry-bright-eyed-berry-94",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Chocolate Flavored Spread",
-    "qty": 30
-   },
-   {
-    "flavor": "Peanut Butter & Blueberry",
-    "qty": 32
-   },
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "xl"
- },
- {
-  "slug": "b2-honey-burstin-blueberry-up-apple-beamin-berry-blend-92",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Honey Spread",
-    "qty": 20
-   },
-   {
-    "flavor": "Peanut Butter & Blueberry",
-    "qty": 32
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 8
-   }
-  ],
-  "kind": "xl"
- },
- {
-  "slug": "b2-honey-chocolate-burstin-blueberry-bright-eyed-berry-90",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Honey Spread",
-    "qty": 30
-   },
-   {
-    "flavor": "Peanut Butter & Chocolate Flavored Spread",
-    "qty": 20
-   },
-   {
-    "flavor": "Peanut Butter & Blueberry",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "xl"
- },
- {
   "slug": "b2-whole-wheat-strawb-strawberry-jam-24",
   "comps": [
    {
@@ -1178,552 +1046,6 @@
    },
    {
     "flavor": "Peanut Butter & Blackberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-beamin-berry-blend-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 4
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-beamin-berry-blend-48",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 16
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-up-apple-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 4
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-up-apple-48",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-raspberry-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-strawb-raspberry-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
-    "qty": 12
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-beamin-berry-blend-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 4
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-beamin-berry-blend-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 16
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-up-apple-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 4
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-up-apple-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-raspberry-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-strawberry-jam-raspberry-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam",
-    "qty": 12
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 8
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-beamin-berry-blend-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 16
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-up-apple-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-raspberry-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-raspberry-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 12
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-bright-eyed-berry-raspberry-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Strawberry Jam Protein",
-    "qty": 32
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-beamin-berry-blend-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 4
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-beamin-berry-blend-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 16
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-up-apple-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 4
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-up-apple-48",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-raspberry-24",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-grape-jelly-raspberry-28",
-  "comps": [
-   {
-    "flavor": "Peanut Butter & Grape Jelly",
-    "qty": 12
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-beamin-berry-blend-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-beamin-berry-blend-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 4
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-beamin-berry-blend-48",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 16
-   },
-   {
-    "flavor": "Morning Protein Peanut Butter & Mixed Berry Spread",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-up-apple-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-up-apple-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 4
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 24
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-up-apple-48",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 16
-   },
-   {
-    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
-    "qty": 32
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-raspberry-24",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 8
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
-    "qty": 16
-   }
-  ],
-  "kind": "duo"
- },
- {
-  "slug": "b2-whole-wheat-grape-raspberry-28",
-  "comps": [
-   {
-    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
-    "qty": 12
-   },
-   {
-    "flavor": "Peanut Butter & Raspberry Spread",
     "qty": 16
    }
   ],
@@ -3114,5 +2436,763 @@
    }
   ],
   "kind": "trio"
+ },
+ {
+  "slug": "b2-up-apple-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 24
+   }
+  ],
+  "kind": "single"
+ },
+ {
+  "slug": "b2-whole-wheat-strawb-up-apple-24",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-strawb-up-apple-48",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-strawb-raspberry-24",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-strawb-raspberry-28",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Strawberry Jam",
+    "qty": 12
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-strawberry-jam-up-apple-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-strawberry-jam-up-apple-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 24
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-strawberry-jam-up-apple-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-strawberry-jam-raspberry-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-strawberry-jam-raspberry-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam",
+    "qty": 12
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-up-apple-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-up-apple-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-raspberry-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-raspberry-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-raspberry-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 32
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-grape-jelly-up-apple-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-grape-jelly-raspberry-24",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-grape-jelly-raspberry-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 12
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-up-apple-48",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Apple Cinnamon Jelly Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-raspberry-24",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-raspberry-28",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 12
+   },
+   {
+    "flavor": "Peanut Butter & Raspberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "duo"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-honey-burstin-blueberry-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-honey-burstin-blueberry-60",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 20
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-honey-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 20
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-honey-blackberry-boom-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-burstin-blueberry-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 24
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-bright-eyed-berry-burstin-blueberry-blackberry-boom-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-whole-wheat-grape-honey-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 40
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-whole-wheat-grape-honey-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-whole-wheat-grape-burstin-blueberry-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 12
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-whole-wheat-grape-burstin-blueberry-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-whole-wheat-grape-blackberry-boom-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-honey-burstin-blueberry-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 20
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 24
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-honey-burstin-blueberry-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-honey-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 40
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 4
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-honey-blackberry-boom-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-burstin-blueberry-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-grape-jelly-burstin-blueberry-blackberry-boom-28",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-honey-burstin-blueberry-48",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 20
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 24
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-honey-burstin-blueberry-54",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-honey-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 40
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 4
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-honey-blackberry-boom-54",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-burstin-blueberry-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-whole-wheat-grape-burstin-blueberry-blackberry-boom-28",
+  "comps": [
+   {
+    "flavor": "Whole Wheat Peanut Butter & Grape Jelly",
+    "qty": 4
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 8
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 16
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-honey-burstin-blueberry-blackberry-boom-48",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 20
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 16
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-honey-burstin-blueberry-blackberry-boom-54",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 10
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   },
+   {
+    "flavor": "Peanut Butter & Blackberry Spread",
+    "qty": 12
+   }
+  ],
+  "kind": "trio"
+ },
+ {
+  "slug": "b2-honey-burstin-blueberry-bright-eyed-berry-94",
+  "comps": [
+   {
+    "flavor": "Peanut Butter & Honey Spread",
+    "qty": 30
+   },
+   {
+    "flavor": "Peanut Butter & Blueberry",
+    "qty": 32
+   },
+   {
+    "flavor": "Peanut Butter & Strawberry Jam Protein",
+    "qty": 32
+   }
+  ],
+  "kind": "xl"
  }
 ]

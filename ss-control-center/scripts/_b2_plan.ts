@@ -6,7 +6,7 @@
 // validateRecipe (кулерные пределы владельца + renderable-лимиты) и дедуп
 // против живого каталога. Вывод: data/batch200/recipes.json.
 import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import {
   UNCRUSTABLES_FLAVORS,
@@ -26,13 +26,23 @@ const A = [
   "Peanut Butter & Blackberry Spread",
 ];
 const B = [
-  "Morning Protein Peanut Butter & Mixed Berry Spread",
   "Peanut Butter & Apple Cinnamon Jelly Protein",
   "Peanut Butter & Raspberry Spread",
   "Peanut Butter & Mixed Berry Spread",
-  "Peanut Butter & Chocolate Flavored Spread",
 ];
 const C = ["Peanut Butter", "Chocolate Flavored Hazelnut Spread"];
+
+// ИСКЛЮЧЕНЫ из композитного пути (2026-08-11): на РЕАЛЬНЫХ фото этих коробок
+// напечатан ретейлерский бейдж «Only at Walmart» — на Amazon его показывать
+// нельзя, а стереть с реального фото = подделка. Замер QA-офицера:
+// Chocolate Flavored Spread 0 прошло / 4 отклонено (все фото i5.walmartimages,
+// чистых студийных в пуле нет), Beamin' Berry Blend 1 / 16. Оба вкуса по
+// данным спроса 30d слабые (Chocolate 1.9 сессии на листинг, 0 продаж).
+// Вернуть можно только с чистым фото без бейджа в донор-пуле.
+const RETAILER_BADGE_BLOCKED = [
+  "Peanut Butter & Chocolate Flavored Spread",
+  "Morning Protein Peanut Butter & Mixed Berry Spread",
+];
 
 const short = (f: string) =>
   UNCRUSTABLES_FLAVORS[f].titleName
@@ -48,6 +58,7 @@ const compKey = (comps: RecipeComponent[]) =>
   comps.map((c) => `${c.flavor}:${c.qty}`).sort().join("|");
 
 function push(kind: string, priority: number, comps: RecipeComponent[]) {
+  if (comps.some((c) => RETAILER_BADGE_BLOCKED.includes(c.flavor))) return false;
   const errors = validateRecipe(comps);
   if (errors.length) return false;
   const key = compKey(comps);
@@ -143,34 +154,34 @@ for (const [flavors, prio] of trioSets) {
 
 // ── 4. XL flagships: 90-96 на лидерах (структуры из доказанных суб-блоков)
 const xl: RecipeComponent[][] = [
-  [
-    { flavor: "Peanut Butter & Honey Spread", qty: 20 },
-    { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 20 },
-    { flavor: "Peanut Butter & Blueberry", qty: 32 },
-    { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 24 },
-  ], // 96, cartons 2+2+4+3=11
+  // Только вкусы с чистыми фото (без ретейлерского бейджа), 11 коробок максимум.
   [
     { flavor: "Peanut Butter & Honey Spread", qty: 30 },
-    { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 32 },
-    { flavor: "Morning Protein Peanut Butter & Mixed Berry Spread", qty: 32 },
-  ], // 94, 3+4+4=11
-  [
-    { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 30 },
     { flavor: "Peanut Butter & Blueberry", qty: 32 },
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 32 },
-  ], // 94, 3+4+4=11
+  ], // 94 = 3+4+4
   [
-    { flavor: "Peanut Butter & Honey Spread", qty: 20 },
+    { flavor: "Peanut Butter & Honey Spread", qty: 30 },
     { flavor: "Peanut Butter & Blueberry", qty: 32 },
     { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 32 },
-    { flavor: "Morning Protein Peanut Butter & Mixed Berry Spread", qty: 8 },
-  ], // 92, 2+4+4+1=11
+  ], // 94 = 3+4+4
   [
     { flavor: "Peanut Butter & Honey Spread", qty: 30 },
-    { flavor: "Peanut Butter & Chocolate Flavored Spread", qty: 20 },
-    { flavor: "Peanut Butter & Blueberry", qty: 16 },
+    { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 32 },
+    { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 32 },
+  ], // 94 = 3+4+4
+  [
+    { flavor: "Peanut Butter & Honey Spread", qty: 20 },
+    { flavor: "Peanut Butter & Blueberry", qty: 24 },
     { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 24 },
-  ], // 90, 3+2+2+3=10
+    { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 24 },
+  ], // 92 = 2+3+3+3
+  [
+    { flavor: "Peanut Butter & Honey Spread", qty: 20 },
+    { flavor: "Peanut Butter & Blueberry", qty: 32 },
+    { flavor: "Peanut Butter & Strawberry Jam Protein", qty: 32 },
+    { flavor: "Peanut Butter & Apple Cinnamon Jelly Protein", qty: 8 },
+  ], // 92 = 2+4+4+1
 ];
 for (const comps of xl) push("xl", 1, comps);
 
@@ -192,18 +203,27 @@ async function main() {
   );
   const fresh = out.filter((c) => !liveKeys.has(compKey(c.comps)));
 
-  // сортировка: priority, потом разнообразие видов; кап 200
-  fresh.sort((a, b) => a.priority - b.priority);
+  // Уже готовые QA-passed композиты держим в наборе (их работа не пропадает).
+  const done = new Set<string>();
+  for (let i = 1; i <= 8; i++) {
+    try {
+      for (const row of JSON.parse(readFileSync(`data/batch200/waves/c${i}.json`, "utf8"))) {
+        done.add(row.slug);
+      }
+    } catch { /* нет файла — пропускаем */ }
+  }
+  // сортировка: сначала уже сделанные, потом по приоритету спроса; кап 200
+  fresh.sort((a, b) => {
+    const da = done.has(a.slug) ? 0 : 1;
+    const db = done.has(b.slug) ? 0 : 1;
+    return da - db || a.priority - b.priority;
+  });
   const singles = fresh.filter((c) => c.kind === "single");
   const duos = fresh.filter((c) => c.kind === "duo");
   const trios = fresh.filter((c) => c.kind === "trio");
   const xls = fresh.filter((c) => c.kind === "xl");
-  const picked = [
-    ...singles,
-    ...xls,
-    ...duos,
-    ...trios,
-  ].slice(0, 200);
+  void singles; void duos; void trios; void xls;
+  const picked = fresh.slice(0, 200);
 
   mkdirSync("data/batch200", { recursive: true });
   writeFileSync(
