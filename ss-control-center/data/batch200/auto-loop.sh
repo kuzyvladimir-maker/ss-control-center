@@ -16,9 +16,12 @@ trap 'rm -f "$LOCK"' EXIT
 
 echo "[$(date +%H:%M)] --- цикл стартовал ---" >> "$LOG"
 while true; do
-  OUT=$(LIMIT=10 npx tsx scripts/_b2_auto.ts 2>&1)
-  echo "$OUT" | grep -E "^\[auto\]|✓ ОПУБЛИКОВАН|✗" >> "$LOG"
-  if echo "$OUT" | grep -q "ALL-DONE"; then
+  # вывод пишем ПОТОКОМ (иначе лог обновляется раз в пачку и кажется, что всё встало)
+  LIMIT=10 npx tsx scripts/_b2_auto.ts 2>&1 \
+    | stdbuf -oL grep -E "^\[auto\]|ОПУБЛИКОВАН|✗|ALL-DONE" \
+    | stdbuf -oL sed "s/^/[$(date +%H:%M)] /" \
+    | tee -a "$LOG" > data/batch200/last-run.txt
+  if grep -q "ALL-DONE" data/batch200/last-run.txt; then
     echo "[$(date +%H:%M)] === ВСЕ 200 ГОТОВЫ ===" >> "$LOG"
     break
   fi
