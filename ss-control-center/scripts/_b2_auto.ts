@@ -13,9 +13,10 @@
 // Env: LIMIT=n (сколько слагов обработать за запуск, по умолчанию все)
 //      MAX_ATTEMPTS=3
 import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+
+import { nextUncrustablesQualityAttempt } from "../src/lib/bundle-factory/uncrustables-auto-attempt-policy";
 
 const STATE = "data/batch200/auto-state.json";
 const MAX_ATTEMPTS = Number(process.env.MAX_ATTEMPTS ?? 3);
@@ -25,6 +26,28 @@ type State = {
   failed: string[];      // исчерпали попытки
   attempts: Record<string, number>;
 };
+
+type BatchRecipeComponent = {
+  flavor: string;
+  qty: number;
+  box_size: number;
+  box_count: number;
+  donor_title: string;
+};
+
+type BatchRecipe = {
+  slug: string;
+  comps: BatchRecipeComponent[];
+};
+
+type StagedSku = {
+  slug: string;
+  sku: string;
+};
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function loadState(): State {
   if (!existsSync(STATE)) return { done: [], failed: [], attempts: {} };
@@ -46,15 +69,15 @@ async function main() {
   const LIMIT = Number(process.env.LIMIT ?? 9999);
   const state = loadState();
 
-  const p: any = await import("../src/lib/prisma");
+  const p = await import("../src/lib/prisma");
   const prisma = p.prisma ?? p.default?.prisma;
-  const sr: any = await import("../src/lib/bundle-factory/uncrustables-studio-run");
-  const rr: any = await import("../src/lib/bundle-factory/uncrustables-render-runner");
-  const qa: any = await import("../src/lib/bundle-factory/audit/frozen-main-qa");
-  const bp: any = await import("../src/lib/bundle-factory/uncrustables-box-planner");
+  const sr = await import("../src/lib/bundle-factory/uncrustables-studio-run");
+  const rr = await import("../src/lib/bundle-factory/uncrustables-render-runner");
+  const qa = await import("../src/lib/bundle-factory/audit/frozen-main-qa");
+  const bp = await import("../src/lib/bundle-factory/uncrustables-box-planner");
 
-  const recipes: any[] = JSON.parse(readFileSync("data/batch200/recipes.json", "utf8"));
-  const staged: any[] = JSON.parse(readFileSync("data/batch200/staged.json", "utf8"));
+  const recipes = JSON.parse(readFileSync("data/batch200/recipes.json", "utf8")) as BatchRecipe[];
+  const staged = JSON.parse(readFileSync("data/batch200/staged.json", "utf8")) as StagedSku[];
   const stagedBy = new Map(staged.map((r) => [r.slug, r]));
 
   // уже опубликованные — из базы (источник истины), а не только из state
@@ -62,7 +85,7 @@ async function main() {
     where: { submission_id: { not: null } },
     select: { sku: true },
   });
-  const pubSet = new Set(publishedSkus.map((r: any) => r.sku));
+  const pubSet = new Set(publishedSkus.map((r) => r.sku));
   for (const r of staged) if (pubSet.has(r.sku) && !state.done.includes(r.slug)) state.done.push(r.slug);
 
   const queue = recipes
@@ -76,9 +99,10 @@ async function main() {
 
   for (const slug of queue) {
     const recipe = recipes.find((r) => r.slug === slug);
+    // attempts = QA-evaluated image candidates, not infrastructure calls.
+    // WORKER_*, postcheck failures and unavailable vision did not produce a
+    // quality verdict and therefore must not consume the finite reroll budget.
     const attempt = (state.attempts[slug] ?? 0) + 1;
-    state.attempts[slug] = attempt;
-    saveState(state);
     console.log(`\n[auto] ${slug} — попытка ${attempt}/${MAX_ATTEMPTS}`);
 
     // ---- 1. рендер
@@ -88,23 +112,37 @@ async function main() {
     try {
       const built = sr.buildStudioCandidatePrompt({ title: plan.title, recipe: plan.recipe });
       prompt = built.prompt; referenceUrls = built.referenceUrls;
-    } catch (e: any) { console.log(`  ✗ prompt: ${String(e?.message ?? e).slice(0, 120)}`); state.failed.push(slug); saveState(state); continue; }
+    } catch (error: unknown) { console.log(`  ✗ prompt: ${errorMessage(error).slice(0, 120)}`); state.failed.push(slug); saveState(state); continue; }
 
     const res = await rr.renderUncrustablesMainCandidate({ slug, prompt, referenceUrls, r2Prefix: "b2" }, {});
     if (!res.ok) {
-      console.log(`  ✗ render ${res.code}`);
-      if (attempt >= MAX_ATTEMPTS) { state.failed.push(slug); }
-      saveState(state); continue;
+      console.log(`  ↻ технический сбой render ${res.code}; попытка не списана`);
+      continue;
     }
     console.log(`  ✓ render ${res.imageSha256.slice(0, 12)}…`);
 
     // ---- 2. QA-офицер
-    const comps = plan.recipe.comps.map((c: any) => ({
+    const comps = plan.recipe.comps.map((c) => ({
       label: bp.UNCRUSTABLES_FLAVORS[c.flavor]?.frontPanelText ?? c.flavor,
       boxes: c.box_count,
       boxSize: c.box_size,
     }));
-    const verdict = await qa.qaFrozenMainImage({ image_url: res.imageUrl, comps });
+    let verdict: Awaited<ReturnType<typeof qa.qaFrozenMainImage>>;
+    try {
+      verdict = await qa.qaFrozenMainImage({ image_url: res.imageUrl, comps });
+    } catch (error: unknown) {
+      console.log(`  ↻ технический сбой QA: ${errorMessage(error).slice(0, 160)}; попытка не списана`);
+      continue;
+    }
+    if (!verdict.verified) {
+      console.log(`  ↻ QA недоступен: ${verdict.hard_fails.slice(0, 2).join(" | ").slice(0, 160)}; попытка не списана`);
+      continue;
+    }
+    state.attempts[slug] = nextUncrustablesQualityAttempt(
+      state.attempts[slug] ?? 0,
+      { stage: "QA", verified: true, passed: Boolean(verdict.pass) },
+    );
+    saveState(state);
     if (!verdict.pass) {
       console.log(`  ✗ QA: ${verdict.hard_fails.slice(0, 3).join(" | ").slice(0, 200)}`);
       if (attempt >= MAX_ATTEMPTS) { state.failed.push(slug); console.log("  → исчерпаны попытки"); }
@@ -117,7 +155,7 @@ async function main() {
     writeFileSync(waveFile, JSON.stringify([{
       slug, total: plan.pack_count, title: plan.title, bullets: plan.bullets,
       description: plan.description,
-      comps: plan.recipe.comps.map((c: any) => ({
+      comps: plan.recipe.comps.map((c) => ({
         flavor: c.flavor, qty: c.qty, box_size: c.box_size,
         box_count: c.box_count, donor_title: c.donor_title,
       })),
@@ -139,11 +177,9 @@ async function main() {
       } else {
         const err = out.split("\n").find((l) => /✗|FAIL/.test(l)) ?? "unknown";
         console.log(`  ✗ publish: ${err.slice(0, 180)}`);
-        if (attempt >= MAX_ATTEMPTS) state.failed.push(slug);
       }
-    } catch (e: any) {
-      console.log(`  ✗ pipeline: ${String(e?.message ?? e).slice(0, 200)}`);
-      if (attempt >= MAX_ATTEMPTS) state.failed.push(slug);
+    } catch (error: unknown) {
+      console.log(`  ✗ pipeline: ${errorMessage(error).slice(0, 200)}`);
     }
     saveState(state);
   }

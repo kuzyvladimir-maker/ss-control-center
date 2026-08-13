@@ -8,8 +8,8 @@
  * listing title + category synonyms; the publisher prefers a manual override
  * (`ChannelSKU.search_terms`) when present, else calls this.
  *
- * Backend keywords add value when they include synonyms/use-cases a shopper
- * might type; we mix product tokens from the title with frozen/food use-case
+ * Backend keywords add value when they describe the exact product shoppers
+ * might type; we mix product tokens from the title with narrow frozen-food
  * synonyms, dedup, and cap at Amazon's ~250-byte search-terms limit.
  * (A future upgrade can have Claude generate richer synonyms at content time.)
  */
@@ -21,12 +21,19 @@ const STOP = new Set([
 ]);
 
 const BASE_SYNONYMS = [
-  "individually wrapped", "grab and go", "ready to eat", "snack", "lunch box",
-  "bulk", "variety pack", "family pack",
+  "individually", "wrapped", "grab", "go", "snack", "lunchbox", "bulk",
 ];
 const FROZEN_SYNONYMS = [
-  "frozen", "freezer", "freezer meals", "thaw and eat", "no prep", "quick meal",
+  "frozen", "thaw", "eat",
 ];
+
+function uncrustablesCountPhrase(title: string): string | null {
+  const total = [...title.matchAll(/(?:total\s+)?(\d{1,3})\s*(?:pieces?|count|ct)\b/giu)]
+    .map((match) => Number(match[1]))
+    .filter((value) => Number.isInteger(value) && value > 0);
+  if (total.length === 0) return null;
+  return `${total.at(-1)} count`;
+}
 
 /** Build a ≤maxBytes space-joined backend keyword string from a title. */
 export function buildSearchTerms(
@@ -44,8 +51,10 @@ export function buildSearchTerms(
     .filter(
       (w) =>
         w.length > 2 && !STOP.has(w) && !brandTokens.has(w) && !/^\d/.test(w),
-    );
+    )
+    .map((word) => word === "sandwiches" ? "sandwich" : word);
   const isFrozen = /frozen|chilled|refriger/i.test(title ?? "");
+  const isUncrustables = /\buncrustables\b/i.test(title ?? "");
 
   const seen = new Set<string>();
   const parts: string[] = [];
@@ -56,7 +65,17 @@ export function buildSearchTerms(
       parts.push(k);
     }
   };
+  // The historical Uncrustables winner indexed the exact product family,
+  // flavor and total count. Preserve those high-intent facts instead of
+  // diluting them with generic meal claims. The title remains the only source:
+  // no sibling flavor or inferred package fact is introduced here.
+  if (isUncrustables) push("uncrustables");
   titleTokens.forEach(push);
+  if (isUncrustables) {
+    push("sandwich");
+    const countPhrase = uncrustablesCountPhrase(title ?? "");
+    if (countPhrase) push(countPhrase);
+  }
   if (isFrozen) FROZEN_SYNONYMS.forEach(push);
   BASE_SYNONYMS.forEach(push);
 
