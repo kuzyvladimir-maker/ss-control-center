@@ -10,7 +10,9 @@
 //
 // Row builder rule (must stay in lockstep with the box-planner's
 // validateRecipe() row simulation): single-carton flavors share the first
-// row, every multi-carton flavor stands in its own row, in recipe order.
+// row, every multi-carton flavor stands in its own row, in recipe order, and
+// spills onto further rows of the same flavor when it holds more than four
+// cartons. Output for any recipe that fits one row per flavor is unchanged.
 
 const WORDS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
@@ -63,13 +65,24 @@ export function buildUncrustablesRetailBoxesContract(input: {
 
   const singles = withArt.filter((c) => c.qty / c.artSize === 1);
   const multis = withArt.filter((c) => c.qty / c.artSize > 1);
-  const rows: (typeof withArt)[] = [];
-  if (singles.length) rows.push(singles);
-  multis.forEach((c) => rows.push([c]));
+  // A flavor wider than one row spills onto further rows of the same flavor,
+  // four cartons maximum per row. Single-flavor sets depend on this: 24 units
+  // of 4-count art is six cartons, which no single row can hold.
+  type RowSlice = { c: (typeof withArt)[number]; boxes: number };
+  const rows: RowSlice[][] = [];
+  if (singles.length) rows.push(singles.map((c) => ({ c, boxes: 1 })));
+  for (const c of multis) {
+    let left = c.qty / c.artSize;
+    while (left > 0) {
+      const take = Math.min(left, 4);
+      rows.push([{ c, boxes: take }]);
+      left -= take;
+    }
+  }
   const totalBoxes = withArt.reduce((s, c) => s + c.qty / c.artSize, 0);
   const rowLines = rows.map((row, i) => {
-    const n = row.reduce((s, c) => s + c.qty / c.artSize, 0);
-    const desc = row.map((c) => `${c.qty / c.artSize} carton${c.qty / c.artSize > 1 ? "s" : ""} of ${c.artSize}-count ${c.flavor}`).join(" and ");
+    const n = row.reduce((s, r) => s + r.boxes, 0);
+    const desc = row.map((r) => `${r.boxes} carton${r.boxes > 1 ? "s" : ""} of ${r.c.artSize}-count ${r.c.flavor}`).join(" and ");
     const pos = i === 0 ? "back row, tallest" : i === rows.length - 1 ? "front row" : `row ${i + 1}`;
     return `Row ${i + 1} (${pos}): EXACTLY ${n} carton${n > 1 ? "s" : ""} — ${desc}. Count: ${WORDS.slice(0, n).join(", ")}. No other carton in this row.`;
   });

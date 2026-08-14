@@ -165,7 +165,18 @@ async function main() {
     }], null, 1));
     const waveName = waveFile.split("/").pop() as string;
 
-    // ---- 4. main в базу → галерея → публикация
+    // ---- 4. стейджинг (если слаг ещё не имеет SKU) → main → галерея → публикация
+    // Стейдж требует MAIN уже на R2, поэтому он идёт ПОСЛЕ рендера и QA, а не
+    // до них: волна выше уже содержит проверенную картинку.
+    if (!stagedBy.has(slug)) {
+      try {
+        sh("npx", ["tsx", "scripts/_b2_stage.ts"], { WAVES: waveName, ONLY: slug });
+        const fresh = JSON.parse(readFileSync("data/batch200/staged.json", "utf8")) as StagedSku[];
+        for (const r of fresh) stagedBy.set(r.slug, r);
+      } catch (error: unknown) {
+        console.log(`  ✗ stage: ${errorMessage(error).slice(0, 200)}`);
+      }
+    }
     if (!stagedBy.has(slug)) { console.log("  ✗ нет застейдженного SKU"); state.failed.push(slug); saveState(state); continue; }
     try {
       sh("npx", ["tsx", "scripts/_b2_setmain.ts"], { WAVES: waveName, SLUGS: slug });

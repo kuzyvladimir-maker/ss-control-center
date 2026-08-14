@@ -21,8 +21,11 @@ while true; do
     | stdbuf -oL grep -E "^\[auto\]|ОПУБЛИКОВАН|✗|ALL-DONE" \
     | stdbuf -oL sed "s/^/[$(date +%H:%M)] /" \
     | tee -a "$LOG" > data/batch200/last-run.txt
+  # статус обновляем САМИ после каждой пачки: системный крон на macOS без
+  # Full Disk Access молча не выполняется, и страница застывала на час.
+  npx tsx scripts/_b3_status.ts >/dev/null 2>&1
   if grep -q "ALL-DONE" data/batch200/last-run.txt; then
-    echo "[$(date +%H:%M)] === ВСЕ 200 ГОТОВЫ ===" >> "$LOG"
+    echo "[$(date +%H:%M)] === ОЧЕРЕДЬ ПУСТА ===" >> "$LOG"
     break
   fi
   sleep 5

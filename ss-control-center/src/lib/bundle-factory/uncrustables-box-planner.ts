@@ -96,13 +96,18 @@ export function validateRecipe(comps: RecipeComponent[]): string[] {
   if (totalCartons > RENDER_LIMITS.maxCartons) errors.push(`too many cartons: ${totalCartons} > ${RENDER_LIMITS.maxCartons}`);
 
   // Mirror the render script's row builder: single-carton flavors share one
-  // row, every multi-carton flavor stands in its own row.
+  // row, every multi-carton flavor takes its own row — and, when it holds more
+  // cartons than fit a row, spills onto the next row of the SAME flavor.
+  // The spill is what makes single-flavor sets possible at all: with 4-count
+  // reviewed art the economic minimum of 24 units is six cartons, which no
+  // single row can hold.
   const singles = cartonCounts.filter((n) => n === 1).length;
   const multis = cartonCounts.filter((n) => n > 1);
-  const rows = (singles ? 1 : 0) + multis.length;
+  const rows =
+    (singles ? 1 : 0) +
+    multis.reduce((s, n) => s + Math.ceil(n / RENDER_LIMITS.maxCartonsPerRow), 0);
   if (rows > RENDER_LIMITS.maxRows) errors.push(`too many rows: ${rows} > ${RENDER_LIMITS.maxRows}`);
   if (singles > RENDER_LIMITS.maxCartonsPerRow) errors.push(`singles row too wide: ${singles} > ${RENDER_LIMITS.maxCartonsPerRow}`);
-  for (const n of multis) if (n > RENDER_LIMITS.maxCartonsPerRow) errors.push(`a row of ${n} cartons exceeds the proven maximum of ${RENDER_LIMITS.maxCartonsPerRow}`);
 
   return errors;
 }

@@ -187,3 +187,18 @@ test("golden parity — a component without a donor image is excluded from mappi
   assert.match(contractText, /the green pill above reads exactly "Reduced Sugar"/);
   assert.match(contractText, /TOTAL cartons: EXACTLY 2\./);
 });
+
+// A single flavor wider than one row spills onto further rows of the SAME
+// flavor. Without this, no single-flavor set reaches the economic minimum of
+// 24 units on 4-count reviewed art (24 units = six cartons).
+test("single flavor spills across rows, four cartons maximum per row", () => {
+  const { contractText } = buildUncrustablesRetailBoxesContract({
+    anchorUrl: "https://example.test/anchor.png",
+    comps: [{ flavor: "Peanut Butter & Grape Jelly", qty: 28, donorImage: "https://example.test/grape.jpg", artSize: 4 }],
+  });
+  const rows = contractText.split("\n").filter((l) => /^Row \d+ \(/.test(l));
+  assert.equal(rows.length, 2);
+  assert.match(rows[0], /EXACTLY 4 cartons — 4 cartons of 4-count Peanut Butter & Grape Jelly\./);
+  assert.match(rows[1], /EXACTLY 3 cartons — 3 cartons of 4-count Peanut Butter & Grape Jelly\./);
+  assert.match(contractText, /TOTAL cartons: EXACTLY 7\./);
+});

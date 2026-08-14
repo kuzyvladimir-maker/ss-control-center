@@ -116,7 +116,14 @@ async function main() {
     });
     ok++;
   }
-  writeFileSync("data/batch200/staged.json", JSON.stringify(results.filter((r) => r.ok), null, 1));
+  // СЛИЯНИЕ, а не перезапись: конвейер публикации берёт slug→sku именно
+  // отсюда, и прогон по одной волне не должен стирать ранее застейдженные
+  // слаги других волн.
+  let prior: any[] = [];
+  try { prior = JSON.parse(readFileSync("data/batch200/staged.json", "utf8")); } catch { prior = []; }
+  const merged = new Map<string, any>(prior.map((r: any) => [r.slug, r]));
+  for (const r of results.filter((r) => r.ok)) merged.set(r.slug, r);
+  writeFileSync("data/batch200/staged.json", JSON.stringify([...merged.values()], null, 1));
   console.log(`\nитого: ✓ ${ok} | ↷ уже было ${skip} | ✗ ${fail} → data/batch200/staged.json`);
   await prisma.$disconnect();
   process.exit(0);
