@@ -19,7 +19,10 @@ const SALE_CLAIMS = [
 ];
 const HEALTH = ["cure", "treat ", "prevent", "boost", "weight loss", "detox", "heal "];
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/u;
-const DISCLAIMER = "Curated and assembled by Salutem Solutions LLC";
+// Дисклеймер сборщика здесь НЕ проверяется. Он относится к подарочным наборам
+// под нашим брендом, где чужой товар кладётся в нашу корзину. Мультипак
+// Smucker's с прямо названным брендом в нём не нуждается: 388 живых листингов
+// приняты без него (замер 2026-08-16).
 
 async function main() {
   const p: any = await import("../src/lib/prisma");
@@ -47,7 +50,6 @@ async function main() {
     for (const w of HEALTH) if (low.includes(w)) bad.push(`health-claim «${w.trim()}»`);
     if (EMOJI.test(text)) bad.push("эмодзи в тексте");
     if (/[•●►▪○]/.test(text)) bad.push("ручной маркер списка");
-    if (!text.includes(DISCLAIMER)) bad.push("нет дисклеймера куратора");
     if (!/Keep frozen/i.test(text)) bad.push("нет инструкции хранения Keep frozen");
     if (!r.main_image_url) bad.push("нет главной картинки");
 
@@ -74,7 +76,7 @@ async function main() {
     console.log(`\n✗ ${f.sku} — ${f.title}`);
     for (const x of f.problems) console.log(`    ${x}`);
   }
-  if (!findings.length) console.log("\n✓ все чисто: бренд-голос, дисклеймер, хранение, цена по модели, каунт сходится");
+  if (!findings.length) console.log("\n✓ все чисто: бренд-голос, хранение, цена по модели, каунт сходится");
   writeFileSync("data/batch300/audit.json", JSON.stringify({ checked: rows.length, findings }, null, 1));
   await prisma.$disconnect(); process.exit(findings.length ? 1 : 0);
 }
