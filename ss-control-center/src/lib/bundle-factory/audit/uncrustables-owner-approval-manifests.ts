@@ -19,7 +19,8 @@
 import approvalsV3Json from "./data/uncrustables-main-owner-approvals-v3.json";
 import trialApprovalsJson from "./data/uncrustables-main-owner-approvals-trial1.json";
 
-import { MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
+import { KNOWN_UNCRUSTABLES_AUTHENTICITY_REGISTRIES,
+  MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
 import {
   evaluateUncrustablesMainAuthenticity,
   uncrustablesAuthenticitySha256,
@@ -127,7 +128,17 @@ export function verifySealedOwnerApprovalManifest(
   if (claimedManifestSha.toLowerCase() !== digestObject(manifestBody)) {
     throw new Error("Owner-approval manifest SHA-256 seal does not match.");
   }
-  if (manifest.registry_sha256.toLowerCase() !== registry.sha256.toLowerCase()) {
+  // Манифест сам называет реестр, против которого он подписан. Ищем его среди
+  // известных: MERGED (подписанная история) и GENERATION (после owner-ревью
+  // дополнительных розничных коробок). Неизвестный хеш — отказ.
+  const boundRegistry =
+    registry.sha256.toLowerCase() === manifest.registry_sha256.toLowerCase()
+      ? registry
+      : KNOWN_UNCRUSTABLES_AUTHENTICITY_REGISTRIES.find(
+          (candidate) =>
+            candidate.sha256.toLowerCase() === manifest.registry_sha256.toLowerCase(),
+        );
+  if (!boundRegistry) {
     throw new Error("Owner-approval manifest is bound to another registry.");
   }
 
@@ -195,7 +206,7 @@ export function verifySealedOwnerApprovalManifest(
     }
     const result = evaluateUncrustablesMainAuthenticity({
       ...proof,
-      registry,
+      registry: boundRegistry,
     });
     if (!result.pass || !result.verified) {
       throw new Error(

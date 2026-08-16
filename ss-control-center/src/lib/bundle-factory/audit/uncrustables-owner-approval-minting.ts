@@ -19,6 +19,7 @@
 import { createHash } from "node:crypto";
 
 import {
+  GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
   MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
   resolveMergedUncrustablesPackageArt,
 } from "./uncrustables-authenticity-merged";
@@ -133,8 +134,11 @@ export function mintCandidateProof(
   archiveLocator: (slug: string, kind: "image" | "generation-manifest") => string,
   registryInput?: unknown,
 ): MintedCandidateProof {
+  // Художку ищем в реестре ГЕНЕРАЦИИ: именно там лежат вторые и последующие
+  // розничные коробки вкуса (owner review v3). Хеш манифеста при этом
+  // остаётся привязан к MERGED — см. buildStudioManifest.
   const registry = (registryInput ??
-    MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY) as never as Record<
+    GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY) as never as Record<
     string,
     unknown
   > & { flavors: unknown[] };
@@ -176,6 +180,7 @@ export function mintCandidateProof(
     const art = resolveMergedUncrustablesPackageArt(
       c.flavor,
       "retail-carton",
+      c.box_size,
     ) as {
       art_id: string;
       retail_pack_size: number;
@@ -310,8 +315,11 @@ export function sealStudioOwnerApprovalManifest(args: {
   entries: UncrustablesOwnerApprovedMainProof[];
   registryInput?: unknown;
 }): UncrustablesMainOwnerApprovalManifest {
+  // Новый манифест подписывается против реестра ГЕНЕРАЦИИ: его пруфы могут
+  // ссылаться на художку v3. Старые манифесты остаются на MERGED и проверяются
+  // по своему хешу — см. KNOWN_UNCRUSTABLES_AUTHENTICITY_REGISTRIES.
   const registry = (args.registryInput ??
-    MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY) as { sha256: string };
+    GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY) as { sha256: string };
   if (args.entries.length === 0) {
     throw new Error("Studio manifest requires at least one proof.");
   }

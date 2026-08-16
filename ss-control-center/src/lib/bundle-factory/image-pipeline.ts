@@ -145,8 +145,14 @@ export function planReviewedUncrustablesImage(args: {
       NonNullable<ReturnType<typeof resolveReviewedUncrustablesPackageArt>>
     > = [];
     try {
+      // Фасовка приходит из позиции рецепта: один вкус продаётся в нескольких
+      // коробках (виноград — 4/10/15/18/24), и без неё выбор неоднозначен.
+      // Для режима россыпи фасовка не применяется — там художка одна.
+      const wantSize = packMode === "retail-carton"
+        ? (component as { retail_pack_size?: number | null }).retail_pack_size ?? null
+        : null;
       candidates = labels
-        .map((label) => resolveMergedUncrustablesPackageArt(label, packMode))
+        .map((label) => resolveMergedUncrustablesPackageArt(label, packMode, wantSize))
         .filter((art): art is NonNullable<typeof art> => art !== null);
     } catch (error) {
       errors.push(

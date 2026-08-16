@@ -14,7 +14,17 @@ const read = <T,>(p: string, fallback: T): T => {
 };
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-const wave = read<Wave[]>("data/batch200/waves/b3-plan.json", []);
+// Очередь ночного прогона: рецепты, а не волна с готовой копией — картинку и
+// текст конвейер строит сам на каждом слаге.
+type Q = { slug: string; comps: { flavor: string; qty: number; cartonSize?: number }[]; kind: string };
+const queue = read<Q[]>("data/batch300/b4-queue.json", []);
+const wave: Wave[] = queue.map((q) => ({
+  slug: q.slug,
+  total: q.comps.reduce((s, c) => s + c.qty, 0),
+  title: q.comps.map((c) => c.flavor).join(", "),
+  price: 0,
+  comps: q.comps,
+}));
 const state = read<State>("data/batch200/auto-state.json", { done: [], failed: [], attempts: {} });
 const doneSet = new Set(state.done);
 const failSet = new Set(state.failed);
@@ -43,12 +53,13 @@ const rows = wave.map((w) => {
   const st = doneSet.has(w.slug) ? "done" : failSet.has(w.slug) ? "fail"
     : w.slug === current?.slug ? "now" : "wait";
   const label = { done: "опубликован", fail: "брак", now: "собирается", wait: "в очереди" }[st];
-  const flavor = w.title.replace(/^Smucker's Uncrustables Frozen Sandwich Variety Pack, /, "")
-    .replace(/, \d+ Count$/, "");
+  const q = queue.find((x) => x.slug === w.slug);
+  const flavor = w.title.replace(/^Peanut Butter & /, "").replace(/ Spread$/, "");
+  const boxes = q ? q.comps.map((c) => `${c.qty / (c.cartonSize ?? 1)}×${c.cartonSize}`).join(" + ") : "";
   const tries = state.attempts[w.slug] ?? 0;
   return `<tr class="${st}"><td class="s"><span class="dot"></span>${label}</td>
     <td class="f">${esc(flavor)}</td><td class="n">${w.total}</td>
-    <td class="n">$${w.price.toFixed(2)}</td><td class="n t">${tries || ""}</td></tr>`;
+    <td class="t">${esc(boxes)}</td><td class="n t">${tries || ""}</td></tr>`;
 }).join("\n");
 
 type Gap = { titleName: string; size: number; have: number | null; unlocked: number[]; donorTitle: string; image: string };
@@ -62,7 +73,7 @@ const stamp = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: 
 
 const html = `<!doctype html>
 <meta charset="utf-8"><meta http-equiv="refresh" content="30">
-<title>Партия-3 — ${done} из ${total}</title>
+<title>Ночной прогон — ${done} из ${total}</title>
 <style>
 :root{--bg:#F6F6F3;--card:#FFF;--ink:#17191D;--dim:#6B7076;--line:#E4E4DF;
       --ok:#3FA46A;--now:#D98324;--bad:#E5484D;--wait:#B9BDC2}
@@ -107,7 +118,7 @@ tr.fail .dot{background:var(--bad)} tr.fail .s{color:var(--bad)}
 .gal figcaption b{display:block;color:var(--ink);font-size:13px}
 </style>
 <div class="wrap">
-<h1>Партия-3 — одновкусовые наборы</h1>
+<h1>Ночной прогон — одновкусовые наборы</h1>
 <p class="sub">Обновляется само каждые 30 секунд · последнее обновление ${stamp}</p>
 
 <div class="card">
@@ -120,7 +131,7 @@ tr.fail .dot{background:var(--bad)} tr.fail .s{color:var(--bad)}
 </div>
 
 <div class="card">
-  <h2>Все ${total} наборов партии</h2>
+  <h2>Все ${total} наборов очереди · колонка справа — раскладка коробок</h2>
   <table>${rows}</table>
   <p class="note">Каждый набор — <b>один вкус</b>. Картинку рисует GPT Image 2 по кулерному
   якорю и точным фото коробок, затем её трижды проверяет машинный QA-офицер; непрошедшая

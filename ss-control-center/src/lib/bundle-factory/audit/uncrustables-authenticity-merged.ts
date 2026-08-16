@@ -56,15 +56,25 @@ function foldV3Arts(flavors: unknown[]): unknown[] {
   return out;
 }
 
+// ВНИМАНИЕ, ключевая развязка. Каждый sealed owner-approval манифест пинит
+// SHA-256 реестра, против которого он был подписан. Если дописать v3 прямо
+// сюда, хеш merged поменяется — и ВСЕ ранее опубликованные одобрения
+// (229 штук на 2026-08-16) разом перестанут верифицироваться.
+//
+// Поэтому реестра два, ровно по тому же образцу, по которому v1 остался
+// нетронутым при добавлении v2:
+//   MERGED_…      = v1 + v2, хеш НЕИЗМЕНЕН — против него проверяются манифесты;
+//   GENERATION_…  = v1 + v2 + v3 — против него резолвится художка для рисования.
+// Расширять художку можно бесконечно, не трогая подписанную историю.
 const mergedBody = {
   schema_version: "uncrustables-authenticity-registry/v1",
   immutable: true,
-  registry_id: "uncrustables-us-reviewed-package-art-merged-v1-plus-v2ext-plus-v3ext",
-  reviewed_at: (v3.reviewed_at as string) ?? (v2.reviewed_at as string) ?? (v1.reviewed_at as string),
+  registry_id: "uncrustables-us-reviewed-package-art-merged-v1-plus-v2ext",
+  reviewed_at: (v2.reviewed_at as string) ?? (v1.reviewed_at as string),
   reviewed_by: "owner",
   review_method: "human-visual-with-source-evidence",
   brand: v1.brand,
-  flavors: foldV3Arts([...v1.flavors, ...v2.flavors]),
+  flavors: [...v1.flavors, ...v2.flavors],
 };
 
 export const MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY = {
@@ -72,8 +82,33 @@ export const MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY = {
   sha256: uncrustablesAuthenticitySha256(uncrustablesAuthenticityStableJson(mergedBody)),
 } as unknown as UncrustablesAuthenticityRegistry;
 
+const generationBody = {
+  ...mergedBody,
+  registry_id: "uncrustables-us-reviewed-package-art-generation-v1-plus-v2ext-plus-v3ext",
+  reviewed_at: (v3.reviewed_at as string) ?? mergedBody.reviewed_at,
+  flavors: foldV3Arts([...v1.flavors, ...v2.flavors]),
+};
+
+/** Реестр для ГЕНЕРАЦИИ картинок: включает owner-ревью v3 (несколько розничных
+ *  коробок на вкус). Манифесты одобрений против него не проверяются. */
+export const GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY = {
+  ...generationBody,
+  sha256: uncrustablesAuthenticitySha256(uncrustablesAuthenticityStableJson(generationBody)),
+} as unknown as UncrustablesAuthenticityRegistry;
+
 // Fail-closed at import: an inconsistent merge must stop image generation.
 verifyUncrustablesAuthenticityRegistry(MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY);
+verifyUncrustablesAuthenticityRegistry(GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY);
+
+/** Реестры, против которых допустимо проверять sealed owner-approval манифест.
+ *  Манифест НАЗЫВАЕТ свой реестр полем registry_sha256; проверка ищет его
+ *  здесь. Неизвестный хеш — отказ, fail-closed сохраняется. Так подписанная
+ *  история переживает расширение художки: старые манифесты остаются на
+ *  MERGED, новые подписываются против GENERATION. */
+export const KNOWN_UNCRUSTABLES_AUTHENTICITY_REGISTRIES: readonly UncrustablesAuthenticityRegistry[] = [
+  MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+  GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+];
 
 /** Resolve reviewed package art across v1 + the owner's extension.
  *
@@ -91,7 +126,7 @@ export function resolveMergedUncrustablesPackageArt(
   retailPackSize?: number | null,
 ): ReturnType<typeof resolveReviewedUncrustablesPackageArt> {
   const direct = resolveReviewedUncrustablesPackageArt(
-    MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+    GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
     label,
     packMode,
     retailPackSize,
@@ -113,7 +148,7 @@ export function resolveMergedUncrustablesPackageArt(
   for (const candidate of [stripped, tailCut]) {
     if (!candidate || candidate === label) continue;
     const art = resolveReviewedUncrustablesPackageArt(
-      MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+      GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
       candidate,
       packMode,
       retailPackSize,

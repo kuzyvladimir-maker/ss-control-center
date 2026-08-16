@@ -219,6 +219,10 @@ export function buildStudioCandidatePrompt(input: {
     brand: "Uncrustables",
     qty: c.qty,
     unit_price_cents: c.unit_price_cents ?? 100,
+    // Точная розничная коробка этой позиции. Без неё резолвер художки видит у
+    // винограда пять утверждённых коробок, считает выбор неоднозначным и
+    // fail-closed блокирует весь рецепт.
+    retail_pack_size: c.box_size,
   }));
   const basePrompt = buildImagePrompt({
     brand: "Uncrustables",

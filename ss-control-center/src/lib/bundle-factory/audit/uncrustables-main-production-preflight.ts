@@ -16,7 +16,7 @@
 // 2026-07-27: manifest storage/verification extracted to the union loader
 // (uncrustables-owner-approval-manifests.ts) so the BF studio can register
 // sealed DB manifests; this module keeps its public API and delegates.
-import { MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
+import { GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./uncrustables-authenticity-merged";
 
 import {
   allUnionOwnerApprovedProofs,
@@ -113,8 +113,12 @@ export type UncrustablesMainImageBytesFetcher = (
   url: string,
 ) => Promise<Buffer>;
 
+// Предполётный гейт судит КАРТИНКУ, которую мы рисуем сейчас, поэтому смотрит
+// в реестр ГЕНЕРАЦИИ: там лежат вторые и последующие розничные коробки вкуса
+// (owner review v3). Привязка манифестов к их собственному реестру — отдельно,
+// см. KNOWN_UNCRUSTABLES_AUTHENTICITY_REGISTRIES.
 export const PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY =
-  MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY as unknown as UncrustablesAuthenticityRegistry;
+  GENERATION_UNCRUSTABLES_AUTHENTICITY_REGISTRY as unknown as UncrustablesAuthenticityRegistry;
 export const PRODUCTION_UNCRUSTABLES_MAIN_OWNER_APPROVALS =
   STATIC_UNCRUSTABLES_MAIN_OWNER_APPROVAL_MANIFESTS[0];
 // Sealed manifests are additive: batch 1+2 (v3) stays immutable; each later
