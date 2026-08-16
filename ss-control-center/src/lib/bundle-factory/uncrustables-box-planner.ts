@@ -14,6 +14,13 @@
 // exceeded them (5 flavors / 13 cartons) failed 8 consecutive renders; every
 // scene within them has rendered correctly under the frozen prompt contract.
 
+import {
+  DISCLAIMER_BULLET,
+  DISCLAIMER_DESCRIPTION,
+  MULTIPACK_DISCLAIMER_BULLET,
+  MULTIPACK_DISCLAIMER_DESCRIPTION,
+} from "./remediation/disclaimer-text";
+
 /** Retail cartons Smucker's actually sells (confirmed on shelves around the
  *  warehouse, 2026-08-15): 4 and 10 broadly, 8 for the protein/wheat lines,
  *  15 selectively, 18 and 24 in the clubs. */
@@ -150,6 +157,7 @@ function joinAnd(parts: string[], oxford: boolean): string {
  *  phrased as "Keep frozen" — never a shipping claim). */
 export function buildListingCopy(comps: RecipeComponent[]): { title: string; bullets: string[]; description: string } {
   const total = comps.reduce((s, c) => s + c.qty, 0);
+  const isSingleFlavor = new Set(comps.map((c) => c.flavor)).size === 1;
   // One flavor may occupy SEVERAL positions in different retail cartons
   // (10 + 10 + 4 of grape). The buyer-facing copy must name the flavor once
   // and sum its sandwiches; only the box line enumerates each carton.
@@ -180,13 +188,21 @@ export function buildListingCopy(comps: RecipeComponent[]): { title: string; bul
     `Packed in original retail boxes: ${boxesList}.`,
     "Each sandwich is sealed in its original individual wrapper on soft crustless bread.",
     "Keep frozen. Thaw at room temperature for 30 to 60 minutes before eating; once thawed, consume within 8 hours. Do not refreeze.",
-    "An insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components.",
+    // Дисклеймер сборщика обязателен по канону владельца. Для набора
+    // одинаковых сэндвичей это МУЛЬТИПАК, а не подарочная корзина (решение
+    // владельца 2026-08-02): называть его корзиной значит описывать товар
+    // неверно. Держим в пятом буллете, чтобы не разрастись до шести — Amazon
+    // рендерит пять.
+    `An insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. ${
+      isSingleFlavor ? MULTIPACK_DISCLAIMER_BULLET : DISCLAIMER_BULLET
+    }`,
   ];
 
   const description = [
     `This variety pack contains ${total} individually wrapped Smucker's Uncrustables frozen sandwiches in ${NUM_WORDS[flavors.length]} ${flavors.length > 1 ? "varieties" : "variety"}: ${includesList}.`,
     `The sandwiches arrive in their original retail boxes: ${boxesList}. Each sandwich is made on soft crustless bread and sealed in its own wrapper by the original manufacturer.`,
     "Keep frozen. Thaw at room temperature for 30 to 60 minutes before eating and consume within 8 hours of thawing. An insulated foam cooler with frozen gel packs is included as packaging.",
+    isSingleFlavor ? MULTIPACK_DISCLAIMER_DESCRIPTION : DISCLAIMER_DESCRIPTION,
   ].join("\n\n");
 
   return { title, bullets, description };
