@@ -60,11 +60,15 @@ verifyUncrustablesAuthenticityRegistry(MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY
 export function resolveMergedUncrustablesPackageArt(
   label: string,
   packMode: UncrustablesPackMode,
+  /** Retail carton to draw; required once a flavor has more than one reviewed
+   *  carton, otherwise resolution is ambiguous and fails closed. */
+  retailPackSize?: number | null,
 ): ReturnType<typeof resolveReviewedUncrustablesPackageArt> {
   const direct = resolveReviewedUncrustablesPackageArt(
     MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
     label,
     packMode,
+    retailPackSize,
   );
   if (direct) return direct;
   // Candidate 2: leading brand words stripped ("Smuckers Uncrustables X" → "X").
@@ -86,6 +90,7 @@ export function resolveMergedUncrustablesPackageArt(
       MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
       candidate,
       packMode,
+      retailPackSize,
     );
     if (art) return art;
   }

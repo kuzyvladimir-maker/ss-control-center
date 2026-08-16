@@ -14,12 +14,20 @@
 // exceeded them (5 flavors / 13 cartons) failed 8 consecutive renders; every
 // scene within them has rendered correctly under the frozen prompt contract.
 
+/** Retail cartons Smucker's actually sells (confirmed on shelves around the
+ *  warehouse, 2026-08-15): 4 and 10 broadly, 8 for the protein/wheat lines,
+ *  15 selectively, 18 and 24 in the clubs. */
+export const UNCRUSTABLES_CARTON_SIZES = [4, 8, 10, 15, 18, 24] as const;
+export type UncrustablesCartonSize = (typeof UNCRUSTABLES_CARTON_SIZES)[number];
+
 export type UncrustablesFlavor = {
   /** Exact component/product name — resolvable by BOTH the donor matcher and
    *  the merged authenticity registry. Never invent new spellings. */
   component: string;
-  /** Retail carton size with reviewed package art in the merged registry. */
-  cartonSize: 4 | 8 | 10;
+  /** DEFAULT retail carton size, used when a recipe component does not name
+   *  one. A flavor is sold in several retail cartons (grape: 4/10/15/18/24),
+   *  so this is a fallback, not the flavor's only pack. */
+  cartonSize: UncrustablesCartonSize;
   /** Short name used in the listing title. */
   titleName: string;
   /** Full phrase used in the "Includes N …" bullet and the description. */
@@ -70,7 +78,19 @@ export function rationalBandFor(total: number) {
 
 export const RENDER_LIMITS = { maxFlavors: 4, maxCartons: 11, maxRows: 4, maxCartonsPerRow: 4 };
 
-export type RecipeComponent = { flavor: string; qty: number };
+/** One position of a recipe: a flavor, how many sandwiches, and WHICH retail
+ *  carton they come in. The carton belongs to the position, not to the flavor:
+ *  owner canon 2026-08-15 — "5 коробок по 10 и одна коробка на 4" of one
+ *  flavor is a legitimate listing, and a different carton mix of the same
+ *  total is a DIFFERENT listing because the picture differs. Omit cartonSize
+ *  to fall back to the flavor's default pack. */
+export type RecipeComponent = { flavor: string; qty: number; cartonSize?: number };
+
+/** Retail carton this position is packed in. */
+export function cartonSizeOf(c: RecipeComponent): number | null {
+  if (c.cartonSize != null) return c.cartonSize;
+  return UNCRUSTABLES_FLAVORS[c.flavor]?.cartonSize ?? null;
+}
 export type Recipe = { slug: string; comps: RecipeComponent[] };
 
 /** Validate a recipe against flavor catalog, carton math, rational bands and
@@ -84,8 +104,13 @@ export function validateRecipe(comps: RecipeComponent[]): string[] {
   for (const c of comps) {
     const f = UNCRUSTABLES_FLAVORS[c.flavor];
     if (!f) { errors.push(`unknown flavor: ${c.flavor}`); continue; }
-    if (c.qty % f.cartonSize !== 0) { errors.push(`${c.flavor}: qty ${c.qty} not divisible by carton size ${f.cartonSize}`); continue; }
-    const n = c.qty / f.cartonSize;
+    const size = cartonSizeOf(c);
+    if (size == null || !(UNCRUSTABLES_CARTON_SIZES as readonly number[]).includes(size)) {
+      errors.push(`${c.flavor}: carton size ${size} is not a real retail pack (${UNCRUSTABLES_CARTON_SIZES.join("/")})`);
+      continue;
+    }
+    if (c.qty % size !== 0) { errors.push(`${c.flavor}: qty ${c.qty} not divisible by carton size ${size}`); continue; }
+    const n = c.qty / size;
     cartonCounts.push(n);
     totalCartons += n;
   }
@@ -125,15 +150,27 @@ function joinAnd(parts: string[], oxford: boolean): string {
  *  phrased as "Keep frozen" — never a shipping claim). */
 export function buildListingCopy(comps: RecipeComponent[]): { title: string; bullets: string[]; description: string } {
   const total = comps.reduce((s, c) => s + c.qty, 0);
-  const flavors = comps.map((c) => ({ ...UNCRUSTABLES_FLAVORS[c.flavor], qty: c.qty }));
+  // One flavor may occupy SEVERAL positions in different retail cartons
+  // (10 + 10 + 4 of grape). The buyer-facing copy must name the flavor once
+  // and sum its sandwiches; only the box line enumerates each carton.
+  const merged: { titleName: string; bulletPhrase: string; qty: number }[] = [];
+  for (const c of comps) {
+    const f = UNCRUSTABLES_FLAVORS[c.flavor];
+    const hit = merged.find((m) => m.titleName === f.titleName);
+    if (hit) hit.qty += c.qty;
+    else merged.push({ titleName: f.titleName, bulletPhrase: f.bulletPhrase, qty: c.qty });
+  }
+  const flavors = merged;
 
   const title = `Smucker's Uncrustables Frozen Sandwich Variety Pack, ${joinAnd(flavors.map((f) => f.titleName), false)}, ${total} Count`;
 
   const includesList = joinAnd(flavors.map((f) => `${f.qty} ${f.bulletPhrase}`), true);
   const boxesList = joinAnd(
-    flavors.map((f) => {
-      const n = f.qty / f.cartonSize;
-      return `${NUM_WORDS[n]} ${f.cartonSize}-count box${n > 1 ? "es" : ""} of ${f.boxPhrase}`;
+    comps.map((c) => {
+      const f = UNCRUSTABLES_FLAVORS[c.flavor];
+      const size = cartonSizeOf(c) as number;
+      const n = c.qty / size;
+      return `${NUM_WORDS[n]} ${size}-count box${n > 1 ? "es" : ""} of ${f.boxPhrase}`;
     }),
     true
   );

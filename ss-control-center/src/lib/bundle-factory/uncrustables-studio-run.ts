@@ -20,6 +20,7 @@ import { resolveMergedUncrustablesPackageArt } from "./audit/uncrustables-authen
 import {
   UNCRUSTABLES_FLAVORS,
   buildListingCopy,
+  cartonSizeOf,
   rationalBandFor,
   validateRecipe,
   type RecipeComponent,
@@ -110,9 +111,16 @@ export function resolveStudioComps(
   const errors: string[] = [];
   const snapshots: StudioRecipeCompSnapshot[] = [];
   for (const c of comps) {
-    const art = resolveMergedUncrustablesPackageArt(c.flavor, "retail-carton");
+    // The recipe position names its retail carton; the registry must hold
+    // reviewed art for THAT exact carton. A flavor sells in several cartons,
+    // so "reviewed art exists for this flavor" is not enough — it must be
+    // reviewed art of the carton we are about to draw.
+    const wantSize = cartonSizeOf(c);
+    const art = resolveMergedUncrustablesPackageArt(c.flavor, "retail-carton", wantSize);
     if (!art) {
-      errors.push(`${c.flavor}: no reviewed retail-carton package art in the merged registry`);
+      errors.push(
+        `${c.flavor}: no reviewed retail-carton package art for the ${wantSize}-count pack — it needs owner art review first`,
+      );
       continue;
     }
     if (c.qty % art.retail_pack_size !== 0) {

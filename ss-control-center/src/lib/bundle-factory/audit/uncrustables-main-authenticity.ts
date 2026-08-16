@@ -594,14 +594,21 @@ export function resolveReviewedUncrustablesPackageArt(
   registry: UncrustablesAuthenticityRegistry,
   label: string,
   packMode: UncrustablesPackMode,
+  /** Retail carton to draw. A flavor is sold in several cartons (grape:
+   *  4/10/15/18/24), so once more than one is reviewed the caller MUST say
+   *  which one — otherwise the resolution is ambiguous and fails closed. */
+  retailPackSize?: number | null,
 ): ResolvedReviewedUncrustablesPackageArt | null {
   verifyUncrustablesAuthenticityRegistry(registry);
   const index = indexRegistry(registry);
   const flavorId = resolveFlavor(index, label);
   if (!flavorId) return null;
-  const matches = index.flavorsById
+  const ofMode = index.flavorsById
     .get(flavorId)!
     .art.filter((art) => art.pack_mode === packMode);
+  const matches = retailPackSize == null
+    ? ofMode
+    : ofMode.filter((art) => art.retail_pack_size === retailPackSize);
   if (matches.length !== 1) return null;
   const art = matches[0];
   return {
