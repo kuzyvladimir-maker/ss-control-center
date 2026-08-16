@@ -5,7 +5,7 @@
   "reviewed_at": "2026-08-15T00:00:00.000Z",
   "reviewed_by": "owner",
   "review_method": "human-visual-with-source-evidence",
-  "review_note": "Owner reviewed the machine-screened gallery (Коробки-на-утверждение.html) on 2026-08-15 and confirmed every card: genuine Uncrustables packaging, correct flavor, correct printed count. Candidates carrying a retailer overlay banner or a loose sandwich beside the carton were rejected by screenPackageArt before reaching the owner.",
+  "review_note": "Owner reviewed the machine-screened gallery (Коробки-на-утверждение.html) on 2026-08-15 and confirmed every card: genuine Uncrustables packaging, correct flavor, correct printed count. Candidates carrying a retailer overlay banner or a loose sandwich beside the carton were rejected by screenPackageArt before reaching the owner. Strawberry 10ct and Raspberry 10ct were added on the same day from Shoppers Food and Wegmans after every photo in our own catalog turned out to carry a retailer overlay banner; both passed screenPackageArt and visual check. Strawberry 10ct and Raspberry 10ct were added on the same day from Shoppers Food and Wegmans after every photo in our own catalog turned out to carry a retailer overlay banner; both passed screenPackageArt and visual check.",
   "flavors": [
     {
       "flavor_id": "peanut-butter-and-strawberry-jam",
@@ -41,6 +41,23 @@
               "kind": "reviewed-artifact",
               "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-strawberry-jam-24ct.jpg",
               "sha256": "ffd5cab863404dc6874614c2ebaf1ef767dac6d9f45dd3d25040f7d66cee1e64"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-strawberry-jam-carton-us-10ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 10,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-strawberry-jam-10ct.jpg",
+              "sha256": "d9b47a0e67fd69e523cb69e24e169d15bd7076fd48c8fb7ef220a3bbd626a830"
             }
           ]
         }
@@ -136,6 +153,23 @@
               "kind": "reviewed-artifact",
               "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-raspberry-spread-15ct.jpg",
               "sha256": "1a315b6f3e59c2126efad8281da41758b2bb7f6cd225b180004457fda447a661"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-raspberry-spread-carton-us-10ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 10,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-raspberry-spread-10ct.jpg",
+              "sha256": "4e33a577afa9a410ce2dee05998156d0b609b60f640d97bea76e7c496f0fa611"
             }
           ]
         }
