@@ -128,6 +128,28 @@ async function main() {
     // ---- идемпотентность минта: если пруф для этого слага уже зарегистрирован
     // И запечатан по ТЕМ ЖЕ байтам, второй раз не минтим (иначе union
     // справедливо ругается на дубль proof_id и публикация встаёт).
+    // САМООЧИСТКА: неудачная попытка оставляет запечатанный пруф на этом SKU,
+    // и следующий заход упирается в стража «этот товар уже одобрен». Пруф
+    // мёртвой попытки — мусор: листинг ни разу не публиковался, на него никто
+    // не ссылается. Снимаем его сам, без участия человека.
+    const live = await prisma.channelSKU.findFirst({
+      where: { sku: sku.sku }, select: { submission_id: true },
+    });
+    if (!live?.submission_id) {
+      const stale = await prisma.uncrustablesOwnerApprovalManifestRecord.findMany({
+        select: { id: true, manifest_id: true, body_json: true },
+      });
+      for (const rec of stale) {
+        let body: { entries?: { sku?: string }[] } | null = null;
+        try { body = JSON.parse(rec.body_json); } catch { continue; }
+        const entries = body?.entries ?? [];
+        if (!entries.length) continue;
+        if (!entries.every((e) => e.sku === sku.sku)) continue;
+        await prisma.uncrustablesOwnerApprovalManifestRecord.delete({ where: { id: rec.id } });
+        console.log(`  ↺ снят пруф мёртвой попытки ${rec.manifest_id}`);
+      }
+    }
+
     // Пруф ИМЕНУЕТСЯ своими байтами. Ре-ролл картинки после неудачной попытки
     // даёт другой файл, а значит и другой пруф — старый остаётся в союзе как
     // след неопубликованной попытки и ничему не мешает. Раньше id зависел
