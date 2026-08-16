@@ -16,6 +16,7 @@
  */
 import registryV1Json from "./data/uncrustables-authenticity-registry-v1.json";
 import registryV2ExtJson from "./data/uncrustables-authenticity-registry-v2-extension.json";
+import registryV3ExtJson from "./data/uncrustables-authenticity-registry-v3-extension.json";
 import {
   resolveReviewedUncrustablesPackageArt,
   uncrustablesAuthenticitySha256,
@@ -30,15 +31,40 @@ type RegistryLike = Record<string, unknown> & { flavors: unknown[] };
 const v1 = registryV1Json as unknown as RegistryLike;
 const v2 = registryV2ExtJson as unknown as RegistryLike;
 
+const v3 = registryV3ExtJson as unknown as RegistryLike;
+
+// v3 (owner review 2026-08-15) добавляет ВТОРУЮ и последующие розничные
+// фасовки уже известным вкусам: виноград продаётся в 4/10/15/18/24. Поэтому
+// его записи вливаются в существующий вкус ПО flavor_id, а не кладутся рядом
+// отдельной записью — иначе verifier поймает дубль вкуса и коллизию алиасов.
+function foldV3Arts(flavors: unknown[]): unknown[] {
+  const extra = new Map<string, unknown[]>();
+  for (const f of v3.flavors as Array<{ flavor_id: string; art: unknown[] }>) {
+    extra.set(f.flavor_id, [...(extra.get(f.flavor_id) ?? []), ...f.art]);
+  }
+  const seen = new Set<string>();
+  const out = flavors.map((f) => {
+    const row = f as { flavor_id: string; art: unknown[] };
+    const add = extra.get(row.flavor_id);
+    if (!add) return f;
+    seen.add(row.flavor_id);
+    return { ...row, art: [...row.art, ...add] };
+  });
+  for (const id of extra.keys()) {
+    if (!seen.has(id)) throw new Error(`v3 extension references unknown flavor_id: ${id}`);
+  }
+  return out;
+}
+
 const mergedBody = {
   schema_version: "uncrustables-authenticity-registry/v1",
   immutable: true,
-  registry_id: "uncrustables-us-reviewed-package-art-merged-v1-plus-v2ext",
-  reviewed_at: (v2.reviewed_at as string) ?? (v1.reviewed_at as string),
+  registry_id: "uncrustables-us-reviewed-package-art-merged-v1-plus-v2ext-plus-v3ext",
+  reviewed_at: (v3.reviewed_at as string) ?? (v2.reviewed_at as string) ?? (v1.reviewed_at as string),
   reviewed_by: "owner",
   review_method: "human-visual-with-source-evidence",
   brand: v1.brand,
-  flavors: [...v1.flavors, ...v2.flavors],
+  flavors: foldV3Arts([...v1.flavors, ...v2.flavors]),
 };
 
 export const MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY = {

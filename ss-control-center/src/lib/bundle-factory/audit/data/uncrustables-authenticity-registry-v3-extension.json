@@ -1,0 +1,228 @@
+{
+  "schema_version": "uncrustables-authenticity-registry-extension/v3",
+  "immutable": true,
+  "registry_id": "uncrustables-us-reviewed-package-art-v3-extension",
+  "reviewed_at": "2026-08-15T00:00:00.000Z",
+  "reviewed_by": "owner",
+  "review_method": "human-visual-with-source-evidence",
+  "review_note": "Owner reviewed the machine-screened gallery (Коробки-на-утверждение.html) on 2026-08-15 and confirmed every card: genuine Uncrustables packaging, correct flavor, correct printed count. Candidates carrying a retailer overlay banner or a loose sandwich beside the carton were rejected by screenPackageArt before reaching the owner.",
+  "flavors": [
+    {
+      "flavor_id": "peanut-butter-and-strawberry-jam",
+      "art": [
+        {
+          "art_id": "peanut-butter-and-strawberry-jam-carton-us-15ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 15,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-strawberry-jam-15ct.jpg",
+              "sha256": "a69b36f33369cfc23c4f3217bb78bcfe59b9d29391ad22042ea1fcb7ba802c3d"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-strawberry-jam-carton-us-24ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 24,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-strawberry-jam-24ct.jpg",
+              "sha256": "ffd5cab863404dc6874614c2ebaf1ef767dac6d9f45dd3d25040f7d66cee1e64"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "peanut-butter-and-grape-jelly",
+      "art": [
+        {
+          "art_id": "peanut-butter-and-grape-jelly-carton-us-10ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 10,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-grape-jelly-10ct.jpg",
+              "sha256": "3fa3d74b65036237e88427b4204ef96f82503451b5aa29333d654f099b6eb0d8"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-grape-jelly-carton-us-15ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 15,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-grape-jelly-15ct.jpg",
+              "sha256": "3820df0ef3b6a5f750ca7f101c7de07f3eac42f6bc1925b0945a3184d271cc8e"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-grape-jelly-carton-us-18ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 18,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-grape-jelly-18ct.jpg",
+              "sha256": "2eb47c4b5fa22ffc6513c51e43b73289fc2ef880e6384f87ed4eb4950454a21e"
+            }
+          ]
+        },
+        {
+          "art_id": "peanut-butter-and-grape-jelly-carton-us-24ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 24,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-grape-jelly-24ct.jpg",
+              "sha256": "33069a347d064c7acfe6e8392c59712a24f3a75ea35e5d083ddca8473c5be042"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "peanut-butter-and-raspberry-spread",
+      "art": [
+        {
+          "art_id": "peanut-butter-and-raspberry-spread-carton-us-15ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 15,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-raspberry-spread-15ct.jpg",
+              "sha256": "1a315b6f3e59c2126efad8281da41758b2bb7f6cd225b180004457fda447a661"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "peanut-butter-and-honey-spread",
+      "art": [
+        {
+          "art_id": "peanut-butter-and-honey-spread-carton-us-4ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 4,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-honey-spread-4ct.jpg",
+              "sha256": "42b4f40b75fd85bd4bbf8ff7de64c9af8d2e688358c916124614d23c557ca3b3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "peanut-butter-and-chocolate-flavored-spread",
+      "art": [
+        {
+          "art_id": "peanut-butter-and-chocolate-flavored-spread-carton-us-4ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 4,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/peanut-butter-and-chocolate-flavored-spread-4ct.jpg",
+              "sha256": "3fcc01471ef1ac1cc9d2b10f7f2ba48335416f5aa0f06b3ce366609cc706b769"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "chocolate-hazelnut",
+      "art": [
+        {
+          "art_id": "chocolate-hazelnut-carton-us-10ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 10,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/chocolate-hazelnut-10ct.jpg",
+              "sha256": "ac4a462caab23c3eb4c191781a552fcec9dba7bfc753be7ccf82d2af7fe44ecd"
+            }
+          ]
+        },
+        {
+          "art_id": "chocolate-hazelnut-carton-us-15ct-2026-v3",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 15,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-owner-art-review-20260815/chocolate-hazelnut-15ct.jpg",
+              "sha256": "740ab60add4b3c9d372bdcf9f5ad899450f67521c2e85070b1f14b14b42dd023"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
