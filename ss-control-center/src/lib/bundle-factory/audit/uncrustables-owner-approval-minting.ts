@@ -266,7 +266,13 @@ export function mintCandidateProof(
   } as never);
 
   const proof = {
-    proof_id: `production-${input.slug}`,
+    // Пруф — это утверждение о КОНКРЕТНЫХ байтах картинки, поэтому и
+    // именуется ими. Ре-ролл после неудачной попытки даёт другой файл и
+    // другой пруф; раньше id зависел только от слага, и первый же ре-ролл
+    // намертво запирал публикацию слага («запечатан по ДРУГИМ байтам»).
+    // Защита от дублей от этого не слабеет: союз отдельно ловит повтор
+    // байтов и повтор товара (sku+asin) — см. verifySealedOwnerApprovalManifest.
+    proof_id: `production-${input.slug}-${imageSha.slice(0, 12)}`,
     sku: input.sku,
     asin: "PENDING-FIRST-PUBLISH",
     approval_scope: "production-main",

@@ -94,7 +94,7 @@ test("sealed studio manifest passes the union verifier in isolation", () => {
   );
 });
 
-test("union registration accepts a unique studio proof and rejects a proof_id colliding with the static trial manifest", () => {
+test("union registration accepts a unique studio proof and rejects a second approval of a listing already in the static trial manifest", () => {
   try {
     const unique = mintCandidateProof(
       mintInput("studio-test-xl90"),
@@ -124,7 +124,7 @@ test("union registration accepts a unique studio proof and rejects a proof_id co
     });
     assert.throws(
       () => registerSealedOwnerApprovalManifest(badManifest),
-      /Duplicate owner-approved proof_id/,
+      /Duplicate owner-approved (proof_id|listing)/,
     );
   } finally {
     __clearRegisteredOwnerApprovalManifestsForTests();

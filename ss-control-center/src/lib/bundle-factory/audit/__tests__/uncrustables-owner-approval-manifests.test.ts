@@ -56,7 +56,7 @@ test("a duplicated proof across manifests fails cross-manifest uniqueness", () =
   manifests.push(clone(manifests[1]));
   assert.throws(
     () => verifyUncrustablesOwnerApprovalManifestUnion(undefined, manifests),
-    /Duplicate owner-approved proof_id/,
+    /Duplicate owner-approved (proof_id|listing)/,
   );
 });
 

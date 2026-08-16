@@ -163,6 +163,15 @@ export function verifySealedOwnerApprovalManifest(
       throw new Error(`Duplicate owner-approved proof_id: ${proof.proof_id}.`);
     }
     proofIds.add(proof.proof_id);
+    // Пруф адресуется байтами, поэтому совпадения id уже мало: главный дубль,
+    // который надо ловить, — ДВА одобрения на один и тот же товар. Байтовый
+    // страж здесь намеренно не ставится: архивные фикстуры законно
+    // переиспользуют один файл на несколько слагов.
+    const subjectKey = `subject:${proof.sku.toLowerCase()}|${proof.asin.toLowerCase()}`;
+    if (proofIds.has(subjectKey)) {
+      throw new Error(`Duplicate owner-approved listing: ${proof.sku} / ${proof.asin}.`);
+    }
+    proofIds.add(subjectKey);
     if (approvedSubjects.has(proof.human_approval.subject_sha256.toLowerCase())) {
       throw new Error("Two owner-approved proofs reuse the same review subject.");
     }

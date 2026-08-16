@@ -128,16 +128,23 @@ async function main() {
     // ---- идемпотентность минта: если пруф для этого слага уже зарегистрирован
     // И запечатан по ТЕМ ЖЕ байтам, второй раз не минтим (иначе union
     // справедливо ругается на дубль proof_id и публикация встаёт).
-    const existingProof = uni
-      .allUnionOwnerApprovedProofs()
-      .find((pr: any) => pr.proof_id === `production-${slug}`);
+    // Пруф ИМЕНУЕТСЯ своими байтами. Ре-ролл картинки после неудачной попытки
+    // даёт другой файл, а значит и другой пруф — старый остаётся в союзе как
+    // след неопубликованной попытки и ничему не мешает. Раньше id зависел
+    // только от слага, и любой ре-ролл намертво запирал публикацию слага.
+    const proofId = `production-${slug}-${sha.slice(0, 12)}`;
+    const allProofs = uni.allUnionOwnerApprovedProofs();
+    const existingProof = allProofs.find((pr: any) => pr.proof_id === proofId);
     if (existingProof) {
-      if (String(existingProof.image?.sha256 ?? "").toLowerCase() === sha) {
-        console.log(`  ↷ пруф уже запечатан по этим байтам (${sha.slice(0, 12)}…)`);
-      } else {
-        console.log(`  ✗ пруф ${existingProof.proof_id} запечатан по ДРУГИМ байтам — нужен новый slug/ID`);
-        fail++; continue;
-      }
+      console.log(`  ↷ пруф уже запечатан по этим байтам (${sha.slice(0, 12)}…)`);
+    }
+    const sealedElsewhere = allProofs.find(
+      (pr: any) => pr.proof_id !== proofId
+        && String(pr.image?.sha256 ?? "").toLowerCase() === sha,
+    );
+    if (sealedElsewhere) {
+      console.log(`  ✗ эти же байты уже запечатаны как ${sealedElsewhere.proof_id}`);
+      fail++; continue;
     }
 
     // ---- mint + seal + register + DB record
