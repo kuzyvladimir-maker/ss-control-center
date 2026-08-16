@@ -3,7 +3,7 @@
 // собирает ровно те пары «вкус × фасовка», что есть в каталоге с фото, но ещё
 // не утверждены в реестре.
 import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { UNCRUSTABLES_FLAVORS } from "../src/lib/bundle-factory/uncrustables-box-planner";
@@ -22,18 +22,18 @@ async function main() {
       mainImageUrl: true, bestPrice: true, bestRetailer: true, offers: { select: { price: true, packSizeSeen: true, pricePerUnit: true } } },
   });
 
+  // Показываем ТОЛЬКО фото, прошедшие машинный отсев: без ритейлерских
+  // накладок поверх снимка и без посторонних предметов в кадре. Владелец
+  // 2026-08-15 отловил это глазами — ловить должна машина.
+  const screened: any[] = JSON.parse(readFileSync("data/batch300/art-screen.json", "utf8"));
   const pending: any[] = [];
-  for (const [flavor, meta] of Object.entries(UNCRUSTABLES_FLAVORS)) {
-    for (const size of SIZES) {
-      if (resolveMergedUncrustablesPackageArt(flavor, "retail-carton", size)) continue; // уже утверждено
-      const d = resolveUncrustablesDonor(donors, flavor, size);
-      if (!d?.mainImageUrl) continue;
-      const re = new RegExp(`(?:^|[^0-9])${size}\\s*(?:ct\\b|count\\b|pk\\b|pack\\b)`, "i");
-      if (!re.test(d.title ?? "")) continue;
-      const unit = d.bestPrice ? d.bestPrice / size : null;
-      pending.push({ flavor, titleName: meta.titleName, size, image: d.mainImageUrl,
-        donorTitle: d.title, retailer: d.bestRetailer, unit });
-    }
+  const noClean: any[] = [];
+  for (const r of screened) {
+    if (!r.winner) { noClean.push(r); continue; }
+    pending.push({ flavor: r.flavor, titleName: r.titleName, size: r.size,
+      image: r.winner.url, donorTitle: r.winner.title,
+      retailer: r.winner.retailer, unit: r.winner.price ? r.winner.price / r.size : null,
+      rejected: r.rejected.length });
   }
   pending.sort((a, b) => a.titleName.localeCompare(b.titleName) || a.size - b.size);
 
@@ -41,7 +41,10 @@ async function main() {
   <img src="${esc(g.image)}" alt="${esc(g.donorTitle ?? "")}" loading="lazy">
   <figcaption><b>${esc(g.titleName)} · коробка на ${g.size}</b>
   <span>${esc(g.donorTitle ?? "")}</span>
-  <span>${g.retailer ?? "—"}${g.unit ? ` · $${g.unit.toFixed(2)} за штуку` : ""}</span></figcaption></figure>`).join("\n");
+  <span>${g.retailer ?? "—"}${g.unit ? ` · $${g.unit.toFixed(2)} за штуку` : ""}</span>
+  ${g.rejected ? `<span style="color:var(--ok)">машина отбраковала ${g.rejected} других фото</span>` : ""}</figcaption></figure>`).join("\n");
+
+  const missing = noClean.map((r) => `<li><b>${esc(r.titleName)} · коробка на ${r.size}</b> — ${esc(r.rejected[0] ?? "")}</li>`).join("");
 
   const html = `<!doctype html><meta charset="utf-8">
 <title>Коробки на утверждение — ${pending.length}</title>
@@ -66,10 +69,14 @@ h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
 <h1>Коробки на утверждение — ${pending.length}</h1>
 <p class="sub">Движок рисует только ту коробку, которую вы лично отсмотрели: реестр подлинности
 требует человеческого просмотра владельцем, и подписать это за вас нельзя.</p>
-<p class="ask">Проверьте по каждой карточке три вещи: это настоящая упаковка Uncrustables,
+<p class="ask">Машина уже отсеяла снимки с рекламными плашками поверх фото и с посторонними предметами в кадре. Проверьте по каждой карточке три вещи: это настоящая упаковка Uncrustables,
 это тот вкус, и на коробке напечатан именно этот счёт. Скажите слово в чат — внесу в реестр,
 и все раскладки с этими коробками станут собираемыми.</p>
 <div class="card"><div class="gal">${cards}</div></div>
+${noClean.length ? `<div class="card" style="margin-top:16px">
+<h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin:0 0 10px">Чистого фото пока нет — ${noClean.length}</h2>
+<p class="sub" style="margin:0 0 10px">На всех доступных снимках этих коробок ритейлер положил рекламную плашку поверх фото. Такое фото нельзя отдавать генератору: он перерисует плашку на упаковку. Ищу чистый снимок в других сетях.</p>
+<ul style="margin:0;padding-left:20px;font-size:14px;color:var(--dim)">${missing}</ul></div>` : ""}
 </div>`;
   const out = join(homedir(), "Desktop", "Коробки-на-утверждение.html");
   writeFileSync(out, html);
