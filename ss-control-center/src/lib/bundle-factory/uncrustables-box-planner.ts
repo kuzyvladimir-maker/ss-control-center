@@ -126,8 +126,17 @@ export function validateRecipe(comps: RecipeComponent[]): string[] {
   // The spill is what makes single-flavor sets possible at all: with 4-count
   // reviewed art the economic minimum of 24 units is six cartons, which no
   // single row can hold.
-  const singles = cartonCounts.filter((n) => n === 1).length;
-  const multis = cartonCounts.filter((n) => n > 1);
+  // Зеркало построителя рядов в контракте картинки: позиции ОДНОГО вкуса
+  // сливаются в один ряд, пока помещаются (иначе соседние ряды одного вкуса
+  // путают модель — замер 2026-08-16).
+  const byFlavor = new Map<string, number>();
+  comps.forEach((c, i) => {
+    const n = cartonCounts[i];
+    if (n == null) return;
+    byFlavor.set(c.flavor, (byFlavor.get(c.flavor) ?? 0) + n);
+  });
+  const singles = [...byFlavor.values()].filter((n) => n === 1).length;
+  const multis = [...byFlavor.values()].filter((n) => n > 1);
   const rows =
     (singles ? 1 : 0) +
     multis.reduce((s, n) => s + Math.ceil(n / RENDER_LIMITS.maxCartonsPerRow), 0);

@@ -71,7 +71,26 @@ export function buildUncrustablesRetailBoxesContract(input: {
   type RowSlice = { c: (typeof withArt)[number]; boxes: number };
   const rows: RowSlice[][] = [];
   if (singles.length) rows.push(singles.map((c) => ({ c, boxes: 1 })));
+  // ОДИН ВКУС В РАЗНЫХ КОРОБКАХ ЖИВЁТ В ОДНОМ РЯДУ, пока влезает.
+  // Замер 2026-08-16: из 11 бракованных сцен 7 — шоколадный орех в двух
+  // фасовках, и 9 отказов из 12 — «потеряна/добавлена коробка». Разложенные
+  // по СОСЕДНИМ рядам коробки одного вкуса выглядят почти одинаково, и модель
+  // сбивается со счёта. Собранные в один ряд они различаются размером — этому
+  // помогает пункт контракта CARTON SCALE.
+  const grouped: Array<typeof multis> = [];
+  const takenFlavors = new Set<string>();
   for (const c of multis) {
+    if (takenFlavors.has(c.flavor)) continue;
+    const sameFlavor = multis.filter((x) => x.flavor === c.flavor);
+    takenFlavors.add(c.flavor);
+    const boxes = sameFlavor.reduce((s2, x) => s2 + x.qty / x.artSize, 0);
+    if (sameFlavor.length > 1 && boxes <= 4) {
+      rows.push(sameFlavor.map((x) => ({ c: x, boxes: x.qty / x.artSize })));
+      continue;
+    }
+    grouped.push(sameFlavor);
+  }
+  for (const c of grouped.flat()) {
     let left = c.qty / c.artSize;
     while (left > 0) {
       const take = Math.min(left, 4);
