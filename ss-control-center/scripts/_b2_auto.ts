@@ -15,6 +15,7 @@
 import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 import { nextUncrustablesQualityAttempt } from "../src/lib/bundle-factory/uncrustables-auto-attempt-policy";
 
@@ -151,7 +152,12 @@ async function main() {
     console.log(`  ✓ QA пройден`);
 
     // ---- 3. волна для последующих шагов
-    const waveFile = `data/batch200/waves/auto-${slug.slice(0, 40)}.json`;
+    // Имя волны обязано быть УНИКАЛЬНЫМ. Обрезка до 40 символов сталкивала
+    // длинные слаги одного вкуса в один файл: они затирали друг друга, и
+    // стейджинг не находил нужный слаг — «нет застейдженного SKU» на ровном
+    // месте (замер 2026-08-17: так потерялось 6 ореховых раскладок).
+    const waveKey = createHash("sha1").update(slug).digest("hex").slice(0, 8);
+    const waveFile = `data/batch200/waves/auto-${slug.slice(0, 40)}-${waveKey}.json`;
     writeFileSync(waveFile, JSON.stringify([{
       slug, total: plan.pack_count, title: plan.title, bullets: plan.bullets,
       description: plan.description,

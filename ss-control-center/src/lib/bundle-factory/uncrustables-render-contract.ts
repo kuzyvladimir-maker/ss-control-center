@@ -114,6 +114,11 @@ export function buildUncrustablesRetailBoxesContract(input: {
     frontText.push('The Chocolate carton reads exactly "Peanut Butter & Chocolate Flavored Spread Sandwich" (the word Spread appears once before Sandwich). The "&" symbol MUST appear between "Butter" and "Chocolate" on EVERY chocolate carton — never omit it.');
   if (input.comps.some((c) => c.flavor === "Morning Protein Peanut Butter & Mixed Berry Spread"))
     frontText.push("Every Beamin' Berry Blend carton reads exactly \"Peanut Butter & Mixed Berry Spread Sandwich\" — \"Peanut\" P-e-a-n-u-t, \"Mixed\" M-i-x-e-d with a clear X, \"Spread Sandwich\" spelled exactly.");
+  // Самая длинная лицевая надпись во всей линейке — три длинных слова подряд.
+  // Замер 2026-08-16/17: 11 из 14 забракованных сцен — этот вкус, живой пример
+  // искажения «Chocolatla Flavoura» вместо «Chocolate Flavored».
+  if (input.comps.some((c) => c.flavor === "Chocolate Flavored Hazelnut Spread"))
+    frontText.push('The Chocolate Hazelnut carton reads exactly "Chocolate Flavored Hazelnut Spread Sandwich" on three lines. Spell each word letter by letter: "Chocolate" C-h-o-c-o-l-a-t-e (never "Chocolatla" or "Choclate"), "Flavored" F-l-a-v-o-r-e-d (never "Flavoura" or "Flavered"), "Hazelnut" H-a-z-e-l-n-u-t, "Spread" S-p-r-e-a-d, "Sandwich" S-a-n-d-w-i-c-h. There is NO ampersand anywhere on this carton and the words "Peanut Butter" do NOT appear on it. The brown carton shows the chocolate-filled sandwich and whole hazelnuts, never fruit.');
   if (input.comps.some((c) => c.flavor === "Peanut Butter & Honey Spread"))
     frontText.push('The Honey carton reads exactly "Peanut Butter & Honey Spread Sandwich".');
   if (input.comps.some((c) => c.flavor === "Peanut Butter & Mixed Berry Spread"))
