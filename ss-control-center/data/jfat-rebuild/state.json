@@ -1,0 +1,139 @@
+{
+ "attempts": [
+  {
+   "ok": true,
+   "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/jfat-sz-aspi-jfat-1789505744751/main.png",
+   "sha256": "e3daf7e97dc09fbecf86a53bef6af6e17188457d2d7465866d76023c834db3e9",
+   "verified": true,
+   "pass": true,
+   "hard_fails": [],
+   "warnings": [
+    "QA majority-pass (3/3)"
+   ],
+   "observed": {
+    "visible_cartons_total": 6,
+    "cartons_per_flavor": [
+     {
+      "label": "BLACKBERRY BOOM / Peanut Butter & Blackberry Spread Sandwich",
+      "count": 6,
+      "badge_digit": "4"
+     }
+    ],
+    "all_cartons_are_genuine_uncrustables": true,
+    "wordmark_complete_on_every_carton": true,
+    "garbled_or_misspelled_text_on_any_front_panel": false,
+    "misspelled_words": [],
+    "gel_packs_total": 4,
+    "gel_packs_all_say_keep_frozen": true,
+    "cooler_has_green_lotus_and_salutem_wordmark": true,
+    "background_is_pure_white": true,
+    "loose_ice_people_props_or_overlay_text": false,
+    "notes": "Image matches expected spec exactly: 6 Blackberry Boom cartons with badge 4, 4 gel packs (2 inside, 2 outside front), open white cooler with green lotus emblem and SALUTEM SOLUTIONS wordmark on pure white background."
+   }
+  }
+ ],
+ "approved": {
+  "url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/jfat-sz-aspi-jfat-1789505744751/main.png",
+  "sha256": "e3daf7e97dc09fbecf86a53bef6af6e17188457d2d7465866d76023c834db3e9",
+  "verdict": {
+   "pass": true,
+   "verified": true,
+   "hard_fails": [],
+   "warnings": [
+    "QA majority-pass (3/3)"
+   ],
+   "observed": {
+    "visible_cartons_total": 6,
+    "cartons_per_flavor": [
+     {
+      "label": "BLACKBERRY BOOM / Peanut Butter & Blackberry Spread Sandwich",
+      "count": 6,
+      "badge_digit": "4"
+     }
+    ],
+    "all_cartons_are_genuine_uncrustables": true,
+    "wordmark_complete_on_every_carton": true,
+    "garbled_or_misspelled_text_on_any_front_panel": false,
+    "misspelled_words": [],
+    "gel_packs_total": 4,
+    "gel_packs_all_say_keep_frozen": true,
+    "cooler_has_green_lotus_and_salutem_wordmark": true,
+    "background_is_pure_white": true,
+    "loose_ice_people_props_or_overlay_text": false,
+    "notes": "Image matches expected spec exactly: 6 Blackberry Boom cartons with badge 4, 4 gel packs (2 inside, 2 outside front), open white cooler with green lotus emblem and SALUTEM SOLUTIONS wordmark on pure white background."
+   },
+   "cost_cents": 0
+  }
+ },
+ "gallery": [
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/1.jpg",
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/2.jpg",
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/3.jpg",
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/4.jpg",
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/5.jpg",
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/6.jpg"
+ ],
+ "patch": {
+  "at": "2026-09-15T21:00:49.589Z",
+  "status": "ACCEPTED",
+  "submissionId": "1934877deb3940caa6559ed31612cc0d",
+  "attrs": {
+   "main_product_image_locator": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/jfat-sz-aspi-jfat-1789505744751/main.png",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_1": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_2": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/1.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_3": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/2.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_4": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/3.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_5": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/4.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_6": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/5.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ],
+   "other_product_image_locator_7": [
+    {
+     "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/sec/SZ-ASPI-JFAT/6.jpg",
+     "language_tag": "en_US",
+     "marketplace_id": "ATVPDKIKX0DER"
+    }
+   ]
+  }
+ }
+}
