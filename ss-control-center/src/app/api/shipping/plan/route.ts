@@ -11,6 +11,7 @@ import {
   updateAllocationPackage,
   normalizeShipToName,
 } from "@/lib/veeqo";
+import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 import {
   buildPackingSignature,
@@ -920,11 +921,12 @@ export async function GET(request: NextRequest) {
               li.sellable.sku_code || li.sellable.sku || ""
           )
           .join("; ") || "";
+      // Full name incl. the variant half ("2-Pack Bundle") — see
+      // src/lib/veeqo/item-title.ts.
       const product =
         order.line_items
-          ?.map(
-            (li: { sellable: { product_title: string } }) =>
-              li.sellable.product_title
+          ?.map((li: { sellable: unknown }) =>
+            buildVeeqoItemTitle(li.sellable as never)
           )
           .join("; ") || "";
       const qty =

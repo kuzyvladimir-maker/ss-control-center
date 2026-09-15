@@ -37,6 +37,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { searchOrders } from "@/lib/veeqo/client";
+import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { utcToPacificYMD } from "@/lib/shipping/dates";
 
 // Below 3 characters the result set is meaningless (every order matches
@@ -257,9 +258,8 @@ function fromVeeqo(o: any): SearchHit {
       const sku = String(sellable?.sku_code ?? sellable?.sku ?? "").trim();
       return {
         sku: sku || null,
-        title: String(
-          sellable?.product_title ?? sellable?.product?.title ?? sku ?? "",
-        ),
+        // Same two-field name as the dashboard — keep the pack size visible.
+        title: buildVeeqoItemTitle(sellable) || sku || "",
         quantity: Number(li?.quantity ?? 1) || 1,
         imageUrl: pickImage(li),
       };

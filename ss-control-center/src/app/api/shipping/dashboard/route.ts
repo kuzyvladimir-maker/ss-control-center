@@ -16,6 +16,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchAllOrders, getProduct } from "@/lib/veeqo/client";
+import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import {
@@ -233,9 +234,9 @@ export async function GET() {
           return {
             sku,
             productId,
-            productTitle: String(
-              sellable?.product_title ?? sellable?.product?.title ?? sku
-            ),
+            // Veeqo keeps the pack size ("2-Pack Bundle") in the VARIANT
+            // half of the name, so the master title alone would hide it.
+            productTitle: buildVeeqoItemTitle(sellable) || sku,
             quantity: Number(li?.quantity ?? 1),
             imageUrl: pickImage(li),
           };
