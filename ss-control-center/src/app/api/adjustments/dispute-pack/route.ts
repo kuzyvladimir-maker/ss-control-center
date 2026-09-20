@@ -9,6 +9,11 @@
  *   класс D — замер раздут в 2.5+ раза, машинная ошибка измерителя
  *
  * Отдаёт и структурой (для UI), и готовым текстом (для вставки в обращение).
+ *
+ * 🔴 store обязателен. Кейс подаётся из кабинета конкретного юрлица, и попадание в него
+ * отправлений другого аккаунта — это раскрытие связи между аккаунтами. 20.09.2026 так и
+ * вышло: в кейс Salutem Solutions попали 16 строк AMZ Commerce, пришлось подавать
+ * исправление. Без явного store ручка отказывает.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -23,6 +28,13 @@ export async function GET(request: NextRequest) {
   const want = (sp.get("class") || "D").toUpperCase() as DisputeClass;
   const days = Math.min(400, Math.max(7, parseInt(sp.get("days") || "180")));
   const carrier = (sp.get("carrier") || "").toUpperCase();
+  const store = sp.get("store") || "";
+  if (!store) {
+    return NextResponse.json(
+      { error: "store is required — пакет доказательств собирается строго по одному аккаунту" },
+      { status: 400 }
+    );
+  }
   const since = new Date(Date.now() - days * 86400_000);
 
   const rows = await prisma.shippingAdjustment.findMany({
@@ -30,6 +42,7 @@ export async function GET(request: NextRequest) {
       adjustmentAmount: { lt: 0 },
       adjustedDimL: { not: null },
       createdAt: { gte: since },
+      storeId: store,
       ...(carrier ? { carrier } : {}),
     },
     orderBy: { adjustmentAmount: "asc" },
@@ -72,6 +85,7 @@ export async function GET(request: NextRequest) {
   ];
 
   return NextResponse.json({
+    store,
     class: want,
     label: DISPUTE_CLASS_LABEL[want] ?? null,
     count: items.length,
