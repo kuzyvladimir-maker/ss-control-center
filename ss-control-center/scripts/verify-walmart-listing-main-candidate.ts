@@ -24,6 +24,7 @@ import {
 } from "../src/lib/walmart/catalog-visual-audit.ts";
 import { preprocessCatalogVisual } from "../src/lib/walmart/catalog-visual-preprocess.ts";
 import {
+  WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT,
   WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
   buildWalmartListingSingleObserverPlan,
   buildWalmartListingSingleObserverRequest,
@@ -109,6 +110,12 @@ async function writeExclusive(pathname: string, bytes: Uint8Array): Promise<void
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
   const args = parseArgs(argv);
+  const provider = process.env.WALMART_LISTING_TRIAGE_PROVIDER?.trim() === "codex"
+    ? "codex" as const
+    : "claude" as const;
+  const workerContract = provider === "codex"
+    ? WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT
+    : WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT;
   try {
     await lstat(args.outputDir);
     fail("--output-dir must not already exist");
@@ -181,6 +188,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
         height: full.height,
       },
     }],
+    worker_contract: workerContract,
   });
   const planBytes = Buffer.from(`${JSON.stringify(plan, null, 2)}\n`, "utf8");
   await writeExclusive(path.join(args.outputDir, "observer-plan.json"), planBytes);
@@ -188,7 +196,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   if (health.status !== 200) fail(`worker health returned HTTP ${health.status}`);
   verifyWalmartListingSingleWorkerHealth(
     health.value,
-    WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
+    workerContract,
   );
   await writeExclusive(path.join(args.outputDir, "worker-health.json"), health.bytes);
   const request = buildWalmartListingSingleObserverRequest(plan, 0, [full.bytes]);
@@ -197,7 +205,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   let response;
   try {
     response = await sshWorkerJson(
-      "analyze",
+      provider === "codex" ? "analyze-codex" : "analyze",
       request.body,
       plan.worker_contract.vision_timeout_ms + 60_000,
     );

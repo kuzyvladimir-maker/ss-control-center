@@ -33,6 +33,8 @@ import {
 } from "../src/lib/sourcing/product-truth-read-contract.ts";
 import {
   verifyWalmartListingIntegrityCatalogArtifacts,
+  verifyWalmartListingIntegrityCatalogFreshness,
+  walmartListingIntegrityCatalogSha256,
 } from "../src/lib/walmart/listing-integrity-catalog-orchestrator.ts";
 
 const HELP = `Usage:
@@ -45,6 +47,9 @@ const HELP = `Usage:
     --manifest-sha256=<authoritative-manifest-sha256> \
     --completed-root=/absolute/walmart-listing-integrity-post-canary \
     --quarantine-root=/absolute/walmart-listing-integrity-quarantine \
+    --reserved-listing-keys=walmart:1:SKU-RESERVED \
+    --readmission-artifact=/absolute/readmission.json \
+    --expect-readmission-sha256=<sha256> \
     --limit=10 \
     --output-dir=/absolute/new/directory
 
@@ -92,13 +97,28 @@ function parseArgs(argv) {
     "limit",
     "output-dir",
   ];
-  if (flags.size !== required.length || required.some((key) => !flags.has(key))) {
+  const allowed = new Set([
+    ...required,
+    "reserved-listing-keys",
+    "readmission-artifact",
+    "expect-readmission-sha256",
+  ]);
+  if (required.some((key) => !flags.has(key))
+    || flags.has("readmission-artifact") !== flags.has("expect-readmission-sha256")
+    || [...flags.keys()].some((key) => !allowed.has(key))) {
     fail(`required arguments: ${required.map((key) => `--${key}=...`).join(" ")}`);
   }
   const rawLimit = flags.get("limit");
   if (!/^[1-9]\d*$/u.test(rawLimit)) fail("--limit must be a positive integer");
   const limit = Number(rawLimit);
   if (!Number.isSafeInteger(limit) || limit > 50) fail("--limit must be between 1 and 50");
+  const reservedListingKeys = (flags.get("reserved-listing-keys") ?? "")
+    .split(",")
+    .filter(Boolean);
+  if (new Set(reservedListingKeys).size !== reservedListingKeys.length
+    || reservedListingKeys.some((key) => !/^walmart:\d+:[^,\s]+$/u.test(key))) {
+    fail("--reserved-listing-keys must be unique exact Walmart listing keys");
+  }
   return {
     help: false,
     census: absolutePath(flags.get("census"), "--census"),
@@ -111,6 +131,15 @@ function parseArgs(argv) {
     manifest_sha256: exactSha(flags.get("manifest-sha256"), "--manifest-sha256"),
     completed_root: absolutePath(flags.get("completed-root"), "--completed-root"),
     quarantine_root: absolutePath(flags.get("quarantine-root"), "--quarantine-root"),
+    readmission_artifact: flags.has("readmission-artifact")
+      ? absolutePath(flags.get("readmission-artifact"), "--readmission-artifact")
+      : null,
+    expect_readmission_sha256: flags.has("expect-readmission-sha256")
+      ? exactSha(flags.get("expect-readmission-sha256"), "--expect-readmission-sha256")
+      : null,
+    reserved_listing_keys: reservedListingKeys.sort((left, right) => (
+      left.localeCompare(right, "en")
+    )),
     limit,
     output_dir: absolutePath(flags.get("output-dir"), "--output-dir"),
   };
@@ -138,11 +167,20 @@ async function readPinnedJson(file, expectedSha, label) {
 }
 
 function isQualificationBoundVerification(value) {
-  return value?.schema_version === "walmart-listing-integrity-live-canary-verification/v1"
-    && value?.status === "LIVE_SURFACE_PASS"
-    && value?.qualification_boundary?.buyer_facing_live_surface_verified === true
-    && value?.qualification_boundary?.frozen_sequence_gate_receipt_emitted === true
-    && value?.qualification_boundary?.next_sku_unblocked === true;
+  const boundary = value?.qualification_boundary;
+  const common = value?.status === "LIVE_SURFACE_PASS"
+    && boundary?.buyer_facing_live_surface_verified === true
+    && boundary?.next_sku_unblocked === true;
+  return common && (
+    (value?.schema_version === "walmart-listing-integrity-live-canary-verification/v1"
+      && boundary?.frozen_sequence_gate_receipt_emitted === true)
+    || (value?.schema_version === "walmart-listing-integrity-no-change-verification/v1"
+      && value?.completion_mode === "AUDITED_NO_CHANGE"
+      && value?.feed_id === null
+      && value?.exact_payload_sha256 === null
+      && boundary?.source_aware_qualification_receipt_emitted === true
+      && boundary?.no_walmart_write_required === true)
+  );
 }
 
 async function completedCases(root) {
@@ -254,6 +292,120 @@ async function readPerformance(storeIndex) {
   }
 }
 
+async function readControlTerminalRows() {
+  const url = cleanEnv(process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL);
+  const authToken = cleanEnv(process.env.TURSO_AUTH_TOKEN) || undefined;
+  if (!url) fail("TURSO_DATABASE_URL or DATABASE_URL is required");
+  const db = createClient({ url, authToken });
+  try {
+    const result = await db.execute(`
+      SELECT runId,listingKey,sku,itemId,state,stateBodySha256,evidenceSha256,transitionedAt
+      FROM WalmartListingIntegrityControlItem
+      WHERE state IN (
+        'AUDITED_PASS','QUALIFIED_PASS',
+        'QUARANTINED_SOURCE_REQUIRED','QUARANTINED_UNRESOLVED'
+      )
+      ORDER BY listingKey ASC,transitionedAt DESC,runId DESC
+    `);
+    return result.rows;
+  } finally {
+    db.close();
+  }
+}
+
+function exactText(value, label, maximum = 768) {
+  if (typeof value !== "string" || !value || value !== value.trim()
+    || value.length > maximum || /[\u0000-\u001f\u007f]/u.test(value)) {
+    fail(`${label} must be bounded exact text`);
+  }
+  return value;
+}
+
+function parseReadmission(pinned, terminalRows) {
+  if (!pinned) return null;
+  const value = pinned.value;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    fail("readmission must be one object");
+  }
+  const body = { ...value };
+  delete body.body_sha256;
+  const bodySha256 = walmartListingIntegrityCatalogSha256(body);
+  const policy = value.policy;
+  if (value.schema_version !== "walmart-listing-integrity-control-readmission/v1"
+    || value.body_sha256 !== bodySha256
+    || new Date(value.created_at).toISOString() !== value.created_at
+    || value.required_diagnosis_adapter_version
+      !== "walmart-listing-integrity-single-process-adapter/v9"
+    || value.reason_code !== "ALGORITHM_FALSE_NEGATIVE_FIXED"
+    || !policy || typeof policy !== "object" || Array.isArray(policy)
+    || policy.single_use !== true || policy.maximum_items !== 2
+    || policy.model_call_reuse_allowed !== false
+    || policy.walmart_writes_authorized !== false
+    || !Array.isArray(value.items) || value.items.length < 1
+    || value.items.length > policy.maximum_items) {
+    fail("readmission contract or body seal is invalid");
+  }
+  const rowsByListing = new Map();
+  for (const [index, row] of terminalRows.entries()) {
+    const listingKey = exactText(row.listingKey, `terminalRows[${index}].listingKey`);
+    const rows = rowsByListing.get(listingKey) ?? [];
+    rows.push(row);
+    rowsByListing.set(listingKey, rows);
+  }
+  const seen = new Set();
+  const activeItems = [];
+  for (const [index, raw] of value.items.entries()) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      fail(`readmission.items[${index}] must be one object`);
+    }
+    const item = {
+      listingKey: exactText(raw.listing_key, `readmission.items[${index}].listing_key`),
+      sku: exactText(raw.sku, `readmission.items[${index}].sku`, 500),
+      itemId: exactText(raw.item_id, `readmission.items[${index}].item_id`, 100),
+      priorRunId: exactText(raw.prior_run_id, `readmission.items[${index}].prior_run_id`, 200),
+      priorState: raw.prior_state,
+      priorStateBodySha256: exactSha(
+        raw.prior_state_body_sha256,
+        `readmission.items[${index}].prior_state_body_sha256`,
+      ),
+      priorEvidenceSha256: exactSha(
+        raw.prior_evidence_sha256,
+        `readmission.items[${index}].prior_evidence_sha256`,
+      ),
+    };
+    if (seen.has(item.listingKey)
+      || item.priorState !== "QUARANTINED_UNRESOLVED"
+      || item.listingKey !== `walmart:1:${item.sku}`) {
+      fail(`readmission.items[${index}] identity or prior state is invalid`);
+    }
+    seen.add(item.listingKey);
+    const rows = rowsByListing.get(item.listingKey) ?? [];
+    const prior = rows.find((row) => (
+      row.runId === item.priorRunId
+      && row.sku === item.sku
+      && row.itemId === item.itemId
+      && row.state === item.priorState
+      && row.stateBodySha256 === item.priorStateBodySha256
+      && row.evidenceSha256 === item.priorEvidenceSha256
+    ));
+    if (!prior) fail(`readmission prior terminal state is absent for ${item.listingKey}`);
+    const latest = rows[0];
+    if (latest?.stateBodySha256 === item.priorStateBodySha256) {
+      activeItems.push({
+        listingKey: item.listingKey,
+        priorStateBodySha256: item.priorStateBodySha256,
+        reasonCode: "ALGORITHM_FALSE_NEGATIVE_FIXED",
+      });
+    }
+  }
+  activeItems.sort((left, right) => left.listingKey.localeCompare(right.listingKey, "en"));
+  return {
+    artifactFileSha256: pinned.fileSha256,
+    artifactBodySha256: bodySha256,
+    activeItems,
+  };
+}
+
 async function readProductTruthReadiness(input) {
   const url = cleanEnv(process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL);
   const authToken = cleanEnv(process.env.TURSO_AUTH_TOKEN) || undefined;
@@ -333,22 +485,48 @@ async function main() {
     process.stdout.write(HELP);
     return;
   }
-  const [censusFile, planFile, completed, quarantined] = await Promise.all([
+  const [censusFile, planFile, completed, quarantined, terminalRows, readmissionFile] = await Promise.all([
     readPinnedJson(options.census, options.expect_census_sha256, "census"),
     readPinnedJson(options.plan, options.expect_plan_sha256, "plan"),
     completedCases(options.completed_root),
     quarantinedCases(options.quarantine_root),
+    readControlTerminalRows(),
+    options.readmission_artifact
+      ? readPinnedJson(
+        options.readmission_artifact,
+        options.expect_readmission_sha256,
+        "readmission",
+      )
+      : null,
   ]);
+  const readmission = parseReadmission(readmissionFile, terminalRows);
+  const activeReadmissionKeys = new Set(
+    readmission?.activeItems.map((item) => item.listingKey) ?? [],
+  );
+  const processedControlListingKeys = [...new Set(
+    terminalRows.map((row, index) => exactText(
+      row.listingKey,
+      `terminalRows[${index}].listingKey`,
+    )),
+  )]
+    .filter((listingKey) => !activeReadmissionKeys.has(listingKey))
+    .sort((left, right) => left.localeCompare(right, "en"));
   verifyWalmartListingIntegrityCatalogArtifacts({
     census: censusFile.value,
     plan: planFile.value,
+  });
+  const createdAt = new Date();
+  const catalogFreshness = verifyWalmartListingIntegrityCatalogFreshness({
+    census: censusFile.value,
+    as_of: createdAt.toISOString(),
   });
   const scopes = listWalmartListingIntegrityControlledPoolCandidateScopes({
     census: censusFile.value,
     completedListingKeys: completed.map((entry) => entry.listingKey),
     quarantinedListingKeys: quarantined.map((entry) => entry.listingKey),
+    processedControlListingKeys,
+    reservedListingKeys: options.reserved_listing_keys,
   });
-  const createdAt = new Date();
   const [performanceRows, productTruth] = await Promise.all([
     readPerformance(censusFile.value.store_index),
     readProductTruthReadiness({
@@ -365,9 +543,17 @@ async function main() {
     performanceRows,
     productTruthReadiness: productTruth.rows,
     authoritativeManifestSha256: options.manifest_sha256,
-    databaseReads: 1 + productTruth.logicalReads,
+    databaseReads: 2 + productTruth.logicalReads,
     completedCases: completed,
     quarantinedCases: quarantined,
+    processedControlListingKeys,
+    readmission: readmission?.activeItems.length ? {
+      schemaVersion: "walmart-listing-integrity-controlled-pool-readmission/v1",
+      artifactFileSha256: readmission.artifactFileSha256,
+      artifactBodySha256: readmission.artifactBodySha256,
+      items: readmission.activeItems,
+    } : undefined,
+    reservedListingKeys: options.reserved_listing_keys,
     createdAt: createdAt.toISOString(),
     requestedSize: options.limit,
   });
@@ -394,7 +580,11 @@ async function main() {
       next_action: item.nextAction,
     })),
     completed_listing_keys: pool.completedListingKeys,
+    processed_control_listing_keys: pool.processedControlListingKeys,
+    reserved_listing_keys: pool.reservedListingKeys ?? [],
+    readmission: pool.readmission ?? null,
     source_readiness: pool.sourceReadiness,
+    catalog_freshness: catalogFreshness,
     source_required_preview: pool.sourceRequiredItems.map((item) => ({
       ordinal: item.ordinal,
       sku: item.sku,

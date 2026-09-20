@@ -14,16 +14,19 @@ import {
   PRODUCT_TRUTH_LEGACY_BRIDGE_SNAPSHOT_VERSION,
   PRODUCT_TRUTH_AUTHORITATIVE_WALMART_ITEM_REPORT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_BUNDLE_FACTORY_RECIPE_EVIDENCE_VERSION,
+  PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION,
   PRODUCT_TRUTH_DIRECT_TARGET_CONTENT_EVIDENCE_VERSION,
   PRODUCT_TRUTH_LIVE_IMAGE_BARCODE_EVIDENCE_VERSION,
   compileProductTruthLegacyBridgePlan,
   productTruthLegacyBridgeBytesSha256,
   productTruthBundleFactoryEvidenceCore,
+  productTruthAmazonComponentGraphEvidenceCore,
   normalizeProductTruthBridgeGtin,
   renderProductTruthLegacyBridgePlan,
   renderProductTruthLegacyBridgeSnapshot,
   type ProductTruthLegacyBridgeCanonicalDonorBindingRow,
   type ProductTruthBundleFactoryRecipeEvidenceRow,
+  type ProductTruthAmazonComponentGraphEvidenceRow,
   type ProductTruthLegacyBridgeCanonicalListingComponentRow,
   type ProductTruthLegacyBridgeComponentRow,
   type ProductTruthLegacyBridgeComponentBarcodeEvidenceRow,
@@ -60,6 +63,7 @@ type CliOptions = {
   outDir: string;
   componentBarcodeEvidencePaths: string[];
   directTargetContentEvidencePaths: string[];
+  amazonComponentGraphEvidencePaths: string[];
   walmartItemReportPath: string | null;
 };
 
@@ -75,6 +79,7 @@ function usage(): string {
     "    --manifest ABS_PATH --captured-at ISO --out ABS_NEW_DIR",
     "    [--component-barcode-evidence ABS_EVIDENCE_JSON] (repeatable)",
     "    [--direct-target-content-evidence ABS_EVIDENCE_JSON] (repeatable)",
+    "    [--amazon-component-graph-evidence ABS_EVIDENCE_JSON] (repeatable)",
     "    [--walmart-item-report ABS_ACCEPTED_ITEM_REPORT_CSV]",
     "    [--allow-remote --auth-token-env ENV_NAME]",
     "",
@@ -86,6 +91,7 @@ function parseOptions(argv: readonly string[]): CliOptions {
   const values = new Map<string, string>();
   const componentBarcodeEvidencePaths: string[] = [];
   const directTargetContentEvidencePaths: string[] = [];
+  const amazonComponentGraphEvidencePaths: string[] = [];
   let allowRemote = false;
   for (let index = 0; index < argv.length; index += 1) {
     const item = argv[index];
@@ -103,6 +109,7 @@ function parseOptions(argv: readonly string[]): CliOptions {
       "--out",
       "--component-barcode-evidence",
       "--direct-target-content-evidence",
+      "--amazon-component-graph-evidence",
       "--walmart-item-report",
     ].includes(item)) {
       fail("CLI_ARGUMENT_UNKNOWN", item);
@@ -113,6 +120,8 @@ function parseOptions(argv: readonly string[]): CliOptions {
       componentBarcodeEvidencePaths.push(value);
     } else if (item === "--direct-target-content-evidence") {
       directTargetContentEvidencePaths.push(value);
+    } else if (item === "--amazon-component-graph-evidence") {
+      amazonComponentGraphEvidencePaths.push(value);
     } else {
       if (values.has(item)) fail("CLI_ARGUMENT_DUPLICATE", item);
       values.set(item, value);
@@ -133,6 +142,7 @@ function parseOptions(argv: readonly string[]): CliOptions {
     || !isAbsolute(outDir)
     || componentBarcodeEvidencePaths.some((path) => !isAbsolute(path))
     || directTargetContentEvidencePaths.some((path) => !isAbsolute(path))
+    || amazonComponentGraphEvidencePaths.some((path) => !isAbsolute(path))
     || (
       values.get("--walmart-item-report")
       && !isAbsolute(values.get("--walmart-item-report")!)
@@ -162,6 +172,7 @@ function parseOptions(argv: readonly string[]): CliOptions {
     outDir,
     componentBarcodeEvidencePaths,
     directTargetContentEvidencePaths,
+    amazonComponentGraphEvidencePaths,
     walmartItemReportPath:
       values.get("--walmart-item-report")?.trim() || null,
   };
@@ -471,6 +482,42 @@ async function loadDirectTargetContentEvidence(
   }
   return rows.sort((left, right) =>
     left.donorProductId.localeCompare(right.donorProductId));
+}
+
+async function loadAmazonComponentGraphEvidence(
+  paths: readonly string[],
+): Promise<ProductTruthAmazonComponentGraphEvidenceRow[]> {
+  const rows: ProductTruthAmazonComponentGraphEvidenceRow[] = [];
+  const keys = new Set<string>();
+  for (const path of paths) {
+    const resolved = await realpath(path);
+    const json = await readFile(resolved, "utf8");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      fail("AMAZON_COMPONENT_GRAPH_EVIDENCE_JSON_INVALID", resolved);
+    }
+    const evidence = parsed as ProductTruthAmazonComponentGraphEvidenceRow;
+    const key = `${evidence.listingKey}:${evidence.componentIndex}`;
+    if (
+      evidence.schemaVersion
+        !== PRODUCT_TRUTH_AMAZON_COMPONENT_GRAPH_EVIDENCE_VERSION
+      || renderProductTruthOperationalJson(evidence) !== json
+      || evidence.evidenceRowSha256 !== productTruthOperationalSha256(
+        productTruthAmazonComponentGraphEvidenceCore(evidence),
+      )
+      || !evidence.listingKey
+      || !Number.isInteger(evidence.componentIndex)
+      || evidence.componentIndex < 0
+      || keys.has(key)
+    ) fail("AMAZON_COMPONENT_GRAPH_EVIDENCE_CONTRACT_INVALID", resolved);
+    keys.add(key);
+    rows.push(evidence);
+  }
+  return rows.sort((left, right) =>
+    left.listingKey.localeCompare(right.listingKey)
+    || left.componentIndex - right.componentIndex);
 }
 
 async function readListings(
@@ -955,6 +1002,8 @@ async function buildSnapshot(
       ProductTruthLegacyBridgeDirectTargetContentEvidenceRow[];
     authoritativeWalmartItemReportEvidence:
       ProductTruthAuthoritativeWalmartItemReportEvidenceRow[];
+    amazonComponentGraphEvidence:
+      ProductTruthAmazonComponentGraphEvidenceRow[];
   },
 ): Promise<ProductTruthLegacyBridgeSnapshot> {
   const listings = await readListings(db, input.manifest, input.manifestSha256);
@@ -998,6 +1047,7 @@ async function buildSnapshot(
     authoritativeWalmartItemReportEvidence:
       input.authoritativeWalmartItemReportEvidence,
     bundleFactoryRecipeEvidence,
+    amazonComponentGraphEvidence: input.amazonComponentGraphEvidence,
   };
 }
 
@@ -1029,6 +1079,9 @@ async function run(options: CliOptions): Promise<void> {
   const directTargetContentEvidence = await loadDirectTargetContentEvidence(
     options.directTargetContentEvidencePaths,
   );
+  const amazonComponentGraphEvidence = await loadAmazonComponentGraphEvidence(
+    options.amazonComponentGraphEvidencePaths,
+  );
   const authoritativeWalmartItemReportEvidence =
     await loadAuthoritativeWalmartItemReportEvidence(
       options.walmartItemReportPath,
@@ -1038,6 +1091,11 @@ async function run(options: CliOptions): Promise<void> {
   for (const evidence of componentBarcodeEvidence) {
     if (!manifestListingKeys.has(evidence.listingKey)) {
       fail("BARCODE_EVIDENCE_OUTSIDE_MANIFEST", evidence.listingKey);
+    }
+  }
+  for (const evidence of amazonComponentGraphEvidence) {
+    if (!manifestListingKeys.has(evidence.listingKey)) {
+      fail("AMAZON_COMPONENT_GRAPH_EVIDENCE_OUTSIDE_MANIFEST", evidence.listingKey);
     }
   }
   const db = createClient({ url: target.clientUrl, ...(authToken ? { authToken } : {}) });
@@ -1050,6 +1108,7 @@ async function run(options: CliOptions): Promise<void> {
       componentBarcodeEvidence,
       directTargetContentEvidence,
       authoritativeWalmartItemReportEvidence,
+      amazonComponentGraphEvidence,
     });
     const snapshotJson = renderProductTruthLegacyBridgeSnapshot(snapshot);
     const snapshotSha256 = productTruthLegacyBridgeBytesSha256(snapshotJson);

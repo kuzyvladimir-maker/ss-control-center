@@ -49,6 +49,8 @@ async function buildFixture() {
   const gitRoot = path.join(privateRoot, "checkout");
   const engineRoot = path.join(gitRoot, "ss-control-center");
   const manifestPath = path.join(privateRoot, "release-manifest.json");
+  const globalAdmissionRoot = path.join(privateRoot, "global-admission");
+  const globalAdmissionIdentity = Buffer.from("{\"fixture\":true}\n", "utf8");
   const sources = new Map([
     ["package-lock.json", "{\"lockfileVersion\":3}\n"],
     ["package.json", "{\"private\":true}\n"],
@@ -60,6 +62,12 @@ async function buildFixture() {
       `const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null = "${RELEASE_ID}";\n`],
   ]);
   await mkdir(engineRoot, { recursive: true, mode: 0o700 });
+  await mkdir(globalAdmissionRoot, { mode: 0o700 });
+  await writeFile(
+    path.join(globalAdmissionRoot, ".identity.json"),
+    globalAdmissionIdentity,
+    { mode: 0o400 },
+  );
   for (const [relative, source] of sources) {
     const absolute = path.join(engineRoot, relative);
     await mkdir(path.dirname(absolute), { recursive: true });
@@ -95,6 +103,8 @@ async function buildFixture() {
       caller_dependency_injection_allowed: false,
       automatic_retry_allowed: false,
       marketplace_write_calls_maximum: 1,
+      global_admission_root_path_sha256: sha256(globalAdmissionRoot),
+      global_admission_identity_sha256: sha256(globalAdmissionIdentity),
     },
     certification: { test_entrypoints: [], expected_test_count: 0, logs: [] },
     source_inventory: inventory,
@@ -112,6 +122,7 @@ async function buildFixture() {
     engineRoot,
     manifestPath,
     manifestSha: sha256(manifestBytes),
+    globalAdmissionRoot,
   };
 }
 
@@ -121,6 +132,7 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
     "--manifest", "/private/tmp/release-manifest.json",
     "--manifest-sha256", "a".repeat(64),
     "--release-id-sha256", "b".repeat(64),
+    "--global-admission-root", "/private/tmp/global-admission",
     "--", "doctor", "--out", "/private/tmp/doctor.json",
   ]);
   assert.equal(parsed.operator_args[0], "doctor");
@@ -129,6 +141,7 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
     "--manifest", "/private/tmp/release-manifest.json",
     "--manifest-sha256", "a".repeat(64),
     "--release-id-sha256", "b".repeat(64),
+    "--global-admission-root", "/private/tmp/global-admission",
     "--", "recover-accepted", "--package", "/private/tmp/package.json",
   ]);
   assert.equal(recovery.operator_args[0], "recover-accepted");
@@ -137,6 +150,7 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
     "--manifest", "/private/tmp/release-manifest.json",
     "--manifest-sha256", "a".repeat(64),
     "--release-id-sha256", "b".repeat(64),
+    "--global-admission-root", "/private/tmp/global-admission",
     "--", "resume-recovered", "--package", "/private/tmp/package.json",
   ]);
   assert.equal(recoveredResume.operator_args[0], "resume-recovered");
@@ -145,14 +159,24 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
     "--manifest", "/private/tmp/release-manifest.json",
     "--manifest-sha256", "a".repeat(64),
     "--release-id-sha256", "b".repeat(64),
+    "--global-admission-root", "/private/tmp/global-admission",
     "--", "qualify", "--package", "/private/tmp/package.json",
   ]);
   assert.equal(qualify.operator_args[0], "qualify");
+  const quarantine = parseWalmartListingRepairReleaseWrapperArgs([
+    "--engine-root", "/private/tmp/engine",
+    "--manifest", "/private/tmp/release-manifest.json",
+    "--manifest-sha256", "a".repeat(64),
+    "--release-id-sha256", "b".repeat(64),
+    "--global-admission-root", "/private/tmp/global-admission",
+    "--", "quarantine", "--package", "/private/tmp/package.json",
+  ]);
+  assert.equal(quarantine.operator_args[0], "quarantine");
   assert.throws(
     () => parseWalmartListingRepairReleaseWrapperArgs([
       "--engine-root", "/private/tmp/engine", "--", "execute",
     ]),
-    /all four wrapper trust inputs/u,
+    /all five wrapper trust inputs/u,
   );
   assert.throws(
     () => parseWalmartListingRepairReleaseWrapperArgs([
@@ -160,6 +184,7 @@ test("wrapper CLI requires exact external trust inputs and one bounded operator 
       "--manifest", "/private/tmp/release-manifest.json",
       "--manifest-sha256", "a".repeat(64),
       "--release-id-sha256", "b".repeat(64),
+      "--global-admission-root", "/private/tmp/global-admission",
       "--", "help",
     ]),
     /operator command is missing or forbidden/u,
@@ -174,6 +199,7 @@ test("wrapper verifies canonical manifest, clean Git identity, inventory, and re
       manifest_path: fixture.manifestPath,
       expected_manifest_sha256: fixture.manifestSha,
       expected_release_id_sha256: RELEASE_ID,
+      global_admission_root: fixture.globalAdmissionRoot,
     });
     assert.equal(verified.status, "VERIFIED");
     assert.equal(verified.release_id_sha256, RELEASE_ID);
@@ -198,6 +224,7 @@ test("wrapper fails closed on source drift and noncanonical manifest bytes", asy
           manifest_path: fixture.manifestPath,
           expected_manifest_sha256: fixture.manifestSha,
           expected_release_id_sha256: RELEASE_ID,
+          global_admission_root: fixture.globalAdmissionRoot,
         }),
         (error) => error instanceof WalmartListingRepairReleaseVerificationError
           && error.code === "DIRTY_OR_WRONG_CHECKOUT",
@@ -221,6 +248,7 @@ test("wrapper fails closed on source drift and noncanonical manifest bytes", asy
           manifest_path: fixture.manifestPath,
           expected_manifest_sha256: sha256(drifted),
           expected_release_id_sha256: RELEASE_ID,
+          global_admission_root: fixture.globalAdmissionRoot,
         }),
         (error) => error instanceof WalmartListingRepairReleaseVerificationError
           && error.code === "NON_CANONICAL_MANIFEST",

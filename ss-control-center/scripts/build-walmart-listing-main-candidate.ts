@@ -22,6 +22,10 @@ import sharp from "sharp";
 
 import { composeTiledMainImage } from "../src/lib/walmart/multipack/composite.ts";
 import type { ProductTruthSnapshot } from "../src/lib/sourcing/product-truth-read-contract.ts";
+import {
+  productTruthSupportsWalmartListingIntegrityAudit,
+  walmartListingIntegrityBlockingContentCodes,
+} from "../src/lib/walmart/listing-integrity-single-pipeline.ts";
 
 const MAX_JSON_BYTES = 100 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
@@ -148,11 +152,13 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   ]);
   const truth = truthArtifact.value;
   const components = truth.views?.listingImprovement?.components ?? [];
-  if (!truth.views?.listingImprovement?.ready || components.length !== 1) {
-    fail("Listing Improvement Product Truth is not exact one-component READY");
+  if (!productTruthSupportsWalmartListingIntegrityAudit(truth)
+    || components.length !== 1) {
+    fail("Listing Improvement Product Truth is not exact one-component field-scoped READY");
   }
   const component = components[0]!;
-  if (!component.content || component.contentBlockers.length
+  if (!component.content
+    || walmartListingIntegrityBlockingContentCodes(component.contentBlockers).length
     || component.content.canonicalVariantId !== component.targetCanonicalVariantId
     || component.content.identity.outerPackCount !== 1
     || !Number.isSafeInteger(component.qty) || component.qty < 2 || component.qty > 24) {

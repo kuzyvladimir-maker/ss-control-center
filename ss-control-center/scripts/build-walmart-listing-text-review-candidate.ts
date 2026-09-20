@@ -70,23 +70,28 @@ function parseArgs(argv: readonly string[]) {
     }
     flags.set(match[1]!, match[2]!);
   }
-  const expected = [
+  const required = [
     "product-truth",
     "diagnosis",
     "buyer-snapshot",
     "buyer-pdp",
-    "content-evidence",
     "output-dir",
   ] as const;
-  if (flags.size !== expected.length || expected.some((key) => !flags.has(key))) {
-    fail(`arguments must be exactly ${expected.map((key) => `--${key}=...`).join(" ")}`);
+  const allowed = new Set<string>([...required, "content-evidence"]);
+  if (required.some((key) => !flags.has(key))
+    || [...flags.keys()].some((key) => !allowed.has(key))) {
+    fail(
+      `arguments must include ${required.map((key) => `--${key}=...`).join(" ")}`
+        + " and may include --content-evidence=...",
+    );
   }
   return {
     productTruth: exactPath(flags.get("product-truth"), "--product-truth"),
     diagnosis: exactPath(flags.get("diagnosis"), "--diagnosis"),
     buyerSnapshot: exactPath(flags.get("buyer-snapshot"), "--buyer-snapshot"),
     buyerPdp: exactPath(flags.get("buyer-pdp"), "--buyer-pdp"),
-    contentEvidence: exactPath(flags.get("content-evidence"), "--content-evidence"),
+    contentEvidence: flags.has("content-evidence")
+      ? exactPath(flags.get("content-evidence"), "--content-evidence") : null,
     outputDir: exactPath(flags.get("output-dir"), "--output-dir"),
   };
 }
@@ -165,6 +170,25 @@ function exactStringRows(value: unknown, label: string): string[] {
   return [...value] as string[];
 }
 
+function findServingsPerContainer(value: unknown): number | null {
+  if (!value || typeof value !== "object") return null;
+  if (Array.isArray(value)) {
+    for (const row of value) {
+      const found = findServingsPerContainer(row);
+      if (found !== null) return found;
+    }
+    return null;
+  }
+  const recordValue = value as JsonRecord;
+  const direct = Number(recordValue.servings_per_container);
+  if (Number.isSafeInteger(direct) && direct > 0) return direct;
+  for (const row of Object.values(recordValue)) {
+    const found = findServingsPerContainer(row);
+    if (found !== null) return found;
+  }
+  return null;
+}
+
 export async function main(argv = process.argv.slice(2)): Promise<void> {
   const args = parseArgs(argv);
   try {
@@ -179,7 +203,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
       readJson<JsonRecord>(args.diagnosis, "diagnosis"),
       readJson<JsonRecord>(args.buyerSnapshot, "buyer snapshot"),
       readJson<JsonRecord>(args.buyerPdp, "buyer PDP"),
-      readJson<JsonRecord>(args.contentEvidence, "exact content evidence"),
+      args.contentEvidence
+        ? readJson<JsonRecord>(args.contentEvidence, "exact content evidence")
+        : Promise.resolve(null),
     ]);
   const truth = truthFile.value;
   const diagnosis = diagnosisFile.value;
@@ -199,9 +225,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   if (!truth.views?.listingImprovement?.ready || components.length !== 1
     || truth.snapshot.listingKey !== diagnosis.listing_key
     || truth.snapshot.listingKey !== listing.listing_key
-    || !["REVIEW", "BAD"].includes(String(outcome.status))
-    || (report.blocking_reasons as unknown[])?.length !== 0) {
-    fail("inputs are not one exact source-ready non-clean listing without hard failures");
+    || !["REVIEW", "BAD"].includes(String(outcome.status))) {
+    fail("inputs are not one exact source-ready non-clean listing");
   }
   const component = components[0]!;
   const content = component.content;
@@ -244,10 +269,16 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     || product.title !== surface.title) {
     fail("buyer snapshot/PDP differs from the exact listing");
   }
-  const evidence = evidenceFile.value;
-  const retailerContent = record(evidence.retailerContent, "content evidence.retailerContent");
-  if (evidence.donorProductId !== content.provenance.donorProductId
-    || retailerContent.finalUrl !== content.provenance.sourceUrl) {
+  const evidence = evidenceFile?.value ?? null;
+  const retailerContent = evidence
+    ? record(evidence.retailerContent, "content evidence.retailerContent")
+    : {
+      finalUrl: content.provenance.sourceUrl,
+      normalizedGtin14: content.facts.normalizedGtin14,
+      nutritionFacts: content.facts.nutritionFacts,
+    };
+  if (evidence && (evidence.donorProductId !== content.provenance.donorProductId
+    || retailerContent.finalUrl !== content.provenance.sourceUrl)) {
     fail("exact content evidence differs from Product Truth provenance");
   }
   const outerUnits = component.qty;
@@ -293,14 +324,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     "content evidence normalizedGtin14",
   );
   const singleUnitUpc = normalizedGtin14.replace(/^0+(?=\d{12,13}$)/u, "");
-  const servings = Number(
-    record(
-      (record(retailerContent.nutritionFacts, "nutritionFacts")
-        .value_prepared_list as unknown[])[0],
-      "nutritionFacts.value_prepared_list[0]",
-    ).servings_per_container,
-  );
-  const innerCount = Number.isSafeInteger(servings) && servings > 0 ? servings : 1;
+  const innerCount = findServingsPerContainer(retailerContent.nutritionFacts) ?? 1;
   const donorAudit = {
     schema_version: "walmart-listing-exact-donor-audit/v1",
     exact_content_candidate: {
@@ -318,7 +342,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
       content_observation_id: content.provenance.contentObservationId,
       content_hash: content.provenance.contentHash,
       source_url: content.provenance.sourceUrl,
-      source_file_sha256: sha256(evidenceFile.bytes),
+      source_file_sha256: evidenceFile
+        ? sha256(evidenceFile.bytes) : sha256(truthFile.bytes),
+      source_role: evidenceFile ? "EXACT_CONTENT_EVIDENCE" : "CANONICAL_PRODUCT_TRUTH",
     },
   };
   await mkdir(args.outputDir, { recursive: false, mode: 0o700 });

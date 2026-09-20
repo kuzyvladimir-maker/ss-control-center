@@ -23,6 +23,14 @@ import {
   readWalmartListingRepairPermitLedgerEvidence,
 } from "../src/lib/walmart/listing-integrity-remediation-ledger.ts";
 import {
+  acquireWalmartListingIntegrityGlobalAdmission,
+  assertWalmartListingIntegrityGlobalAdmission,
+  completeWalmartListingIntegrityGlobalAdmission,
+  inspectWalmartListingIntegrityGlobalAdmissionRoot,
+  type WalmartListingIntegrityGlobalAdmissionBinding,
+  type WalmartListingIntegrityGlobalAdmissionClaimInput,
+} from "../src/lib/walmart/listing-integrity-global-admission.ts";
+import {
   assertWalmartListingRepairLiveQualificationSourceRelease,
   qualifyWalmartListingRepairFreshLive,
 } from "../src/lib/walmart/listing-integrity-remediation-live-qualification.ts";
@@ -44,13 +52,18 @@ import {
 import {
   executeWalmartListingSingleProcess,
 } from "./walmart-listing-integrity-process.ts";
+import {
+  verifyWalmartListingIntegrityTerminalFailureDisposition,
+  type WalmartListingIntegrityTerminalFailureDisposition,
+} from "../src/lib/walmart/listing-integrity-terminal-failure.ts";
 
 export const WALMART_LISTING_REPAIR_OPERATOR_RECEIPT_SCHEMA =
   "walmart-listing-repair-operator-receipt/v1" as const;
 
 type Command =
   | "doctor" | "plan" | "execute" | "recover-accepted"
-  | "resume-recovered" | "resume" | "qualify" | "status" | "report" | "help";
+  | "resume-recovered" | "resume" | "qualify" | "quarantine"
+  | "status" | "report" | "help";
 type JsonRecord = Record<string, unknown>;
 
 interface ParsedArgs {
@@ -62,6 +75,8 @@ interface ParsedArgs {
   plan_receipt_path: string | null;
   plan_receipt_sha256: string | null;
   capture_dir: string | null;
+  disposition_path: string | null;
+  disposition_sha256: string | null;
   confirm: string | null;
   out: string | null;
 }
@@ -87,6 +102,9 @@ const COMMAND_FLAGS: Readonly<Record<Command, ReadonlySet<string>>> = Object.fre
   qualify: new Set([
     "package", "package-sha256", "doctor-receipt", "doctor-receipt-sha256",
     "capture-dir", "out",
+  ]),
+  quarantine: new Set([
+    "package", "package-sha256", "disposition", "disposition-sha256", "out",
   ]),
   status: new Set(["package", "package-sha256", "out"]),
   report: new Set(["package", "package-sha256", "out"]),
@@ -144,7 +162,8 @@ function parseCommand(value: string | undefined): Command {
   const command = value ?? "help";
   if (![
     "doctor", "plan", "execute", "recover-accepted",
-    "resume-recovered", "resume", "qualify", "status", "report", "help",
+    "resume-recovered", "resume", "qualify", "quarantine",
+    "status", "report", "help",
   ].includes(command)) {
     fail("INVALID_CLI", `unknown command ${command}`);
   }
@@ -177,6 +196,8 @@ export function parseWalmartListingRepairOperatorArgs(argv: readonly string[]): 
     plan_receipt_path: values.get("plan-receipt") ?? null,
     plan_receipt_sha256: values.get("plan-receipt-sha256") ?? null,
     capture_dir: values.get("capture-dir") ?? null,
+    disposition_path: values.get("disposition") ?? null,
+    disposition_sha256: values.get("disposition-sha256") ?? null,
     confirm: values.get("confirm") ?? null,
     out: values.get("out") ?? null,
   };
@@ -233,7 +254,7 @@ function readiness() {
  */
 export function assertWalmartListingRepairFrozenReleaseAttestation(
   env: NodeJS.ProcessEnv = process.env,
-): void {
+): WalmartListingIntegrityGlobalAdmissionBinding {
   const current = readiness();
   const releaseId = env.WALMART_LISTING_REPAIR_FROZEN_RELEASE_ID_SHA256;
   const manifestSha = env.WALMART_LISTING_REPAIR_FROZEN_RELEASE_MANIFEST_SHA256;
@@ -248,6 +269,21 @@ export function assertWalmartListingRepairFrozenReleaseAttestation(
   if (env.NODE_ENV === "test" || env.WALMART_LISTING_REPAIR_TEST_MODE === "1") {
     fail("TEST_RUNTIME_FORBIDDEN", "production operator CLI rejects test authority/runtime flags");
   }
+  const globalAdmissionRoot = env.WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_ROOT;
+  const globalAdmissionIdentitySha =
+    env.WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_IDENTITY_SHA256;
+  if (!globalAdmissionRoot || !isAbsolute(globalAdmissionRoot)
+    || resolve(globalAdmissionRoot) !== globalAdmissionRoot
+    || !globalAdmissionIdentitySha || !SHA256.test(globalAdmissionIdentitySha)) {
+    fail(
+      "GLOBAL_ADMISSION_ATTESTATION_REQUIRED",
+      "verified wrapper must bind one canonical global admission root and identity",
+    );
+  }
+  return Object.freeze({
+    root: globalAdmissionRoot,
+    expected_identity_sha256: globalAdmissionIdentitySha,
+  });
 }
 
 function receipt(body: JsonRecord): JsonRecord {
@@ -324,6 +360,31 @@ async function loadExecution(args: ParsedArgs): Promise<{
     execution: parsed.execution,
     package_sha256: String(parsed.artifact.body_sha256),
     package_artifact_sha256: parsed.artifact_sha256,
+  };
+}
+
+async function loadTerminalFailureDisposition(args: ParsedArgs): Promise<{
+  disposition: WalmartListingIntegrityTerminalFailureDisposition;
+  artifact_sha256: string;
+}> {
+  const artifactPath = exactPath(args.disposition_path, "--disposition");
+  const expectedSha = exactSha(args.disposition_sha256, "--disposition-sha256");
+  const bytes = await readPrivateFile(artifactPath, 16 * 1024 * 1024);
+  if (sha256(bytes) !== expectedSha) {
+    fail("DISPOSITION_SHA_MISMATCH", "terminal failure disposition exact-file SHA differs");
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  } catch {
+    return fail("INVALID_DISPOSITION", "terminal failure disposition is not exact JSON");
+  }
+  verifyWalmartListingIntegrityTerminalFailureDisposition(
+    parsed as WalmartListingIntegrityTerminalFailureDisposition,
+  );
+  return {
+    disposition: parsed as WalmartListingIntegrityTerminalFailureDisposition,
+    artifact_sha256: expectedSha,
   };
 }
 
@@ -483,9 +544,26 @@ async function emit(value: JsonRecord, out: string | null): Promise<JsonRecord> 
   return value;
 }
 
+function globalAdmissionClaimInput(input: {
+  execution: WalmartListingRepairProductionExecutionInput;
+  execution_package_artifact_sha256: string;
+  permit: WalmartListingRepairOneSkuPermit;
+  claimed_at: string;
+}): WalmartListingIntegrityGlobalAdmissionClaimInput {
+  return Object.freeze({
+    listing: structuredClone(input.permit.signed_body.listing),
+    permit_authorization_sha256: input.permit.authorization_sha256,
+    execution_package_artifact_sha256: input.execution_package_artifact_sha256,
+    plan_body_sha256: input.permit.signed_body.plan_body_sha256,
+    frozen_release_id_sha256: input.execution.writer_input.plan.apply_engine_release_sha256,
+    claimed_at: input.claimed_at,
+  });
+}
+
 export async function runWalmartListingRepairOperator(
   args: ParsedArgs,
   now = new Date(),
+  globalAdmissionBinding?: WalmartListingIntegrityGlobalAdmissionBinding,
 ): Promise<JsonRecord> {
   if (args.command === "help") {
     return emit(receipt({
@@ -493,7 +571,7 @@ export async function runWalmartListingRepairOperator(
       status: "OK",
       commands: [
         "doctor", "plan", "execute", "recover-accepted",
-        "resume-recovered", "resume", "qualify", "status", "report",
+        "resume-recovered", "resume", "qualify", "quarantine", "status", "report",
       ],
       marketplace_write_authorized: false,
       external_effects: externalEffects(),
@@ -502,11 +580,15 @@ export async function runWalmartListingRepairOperator(
   }
   const currentReadiness = readiness();
   if (args.command === "doctor") {
+    const globalAdmission = globalAdmissionBinding
+      ? await inspectWalmartListingIntegrityGlobalAdmissionRoot(globalAdmissionBinding)
+      : null;
     return emit(receipt({
       command: "doctor",
       evaluated_at: now.toISOString(),
       status: currentReadiness.ready ? "READY" : "NO_GO",
       readiness: currentReadiness,
+      global_admission: globalAdmission,
       marketplace_write_authorized: false,
       external_effects: externalEffects(),
       next_command: currentReadiness.ready
@@ -516,6 +598,56 @@ export async function runWalmartListingRepairOperator(
   }
 
   const loaded = await loadExecution(args);
+  if (args.command === "quarantine") {
+    if (!globalAdmissionBinding) {
+      fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "quarantine requires the wrapper-bound global admission root");
+    }
+    const permit = permitFromExecution(loaded.execution);
+    const { disposition, artifact_sha256: dispositionFileSha } =
+      await loadTerminalFailureDisposition(args);
+    if (disposition.listing.listing_key !== permit.signed_body.listing.listing_key
+      || disposition.listing.sku !== permit.signed_body.listing.sku
+      || disposition.listing.item_id !== permit.signed_body.listing.item_id
+      || disposition.listing.store_index !== permit.signed_body.listing.store_index
+      || disposition.accepted_feed.request_payload_sha256
+        !== permit.signed_body.request_payload_sha256) {
+      fail("DISPOSITION_MISMATCH", "quarantine disposition does not bind the exact package/permit listing");
+    }
+    const admissionClaim = globalAdmissionClaimInput({
+      execution: loaded.execution,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      permit,
+      claimed_at: permit.signed_body.issued_at,
+    });
+    await assertWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: admissionClaim,
+    });
+    const quarantineReceipt = receipt({
+      command: args.command,
+      completed_at: now.toISOString(),
+      status: "QUARANTINED_UNRESOLVED",
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      execution_package_body_sha256: loaded.package_sha256,
+      listing: disposition.listing,
+      permit_authorization_sha256: permit.authorization_sha256,
+      failure_disposition_file_sha256: dispositionFileSha,
+      failure_disposition_id: disposition.disposition_id,
+      marketplace_write_authorized: false,
+      automatic_reapply_allowed: false,
+      external_effects: externalEffects(),
+      next_command: null,
+    });
+    await emit(quarantineReceipt, args.out);
+    await completeWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: admissionClaim,
+      completed_at: now.toISOString(),
+      outcome: "QUARANTINED_UNRESOLVED",
+      evidence_file_sha256: dispositionFileSha,
+    });
+    return quarantineReceipt;
+  }
   if (args.command === "status" || args.command === "report") {
     const permit = permitFromExecution(loaded.execution);
     const ledger = await readWalmartListingRepairPermitLedgerEvidence({
@@ -559,6 +691,18 @@ export async function runWalmartListingRepairOperator(
         `exact confirmation required: ${exactConfirm}`,
       );
     }
+    if (!globalAdmissionBinding) {
+      fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "resume requires the wrapper-bound global admission root");
+    }
+    await assertWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: globalAdmissionClaimInput({
+        execution: loaded.execution,
+        execution_package_artifact_sha256: loaded.package_artifact_sha256,
+        permit,
+        claimed_at: permit.signed_body.issued_at,
+      }),
+    });
     const result = await resumeWalmartListingRepairFeedPoll(loaded.execution);
     return emit(receipt({
       command: args.command,
@@ -618,6 +762,19 @@ export async function runWalmartListingRepairOperator(
 
   if (args.command === "qualify") {
     const permit = permitFromExecution(loaded.execution);
+    if (!globalAdmissionBinding) {
+      fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "Qualification requires the wrapper-bound global admission root");
+    }
+    const admissionClaim = globalAdmissionClaimInput({
+      execution: loaded.execution,
+      execution_package_artifact_sha256: loaded.package_artifact_sha256,
+      permit,
+      claimed_at: permit.signed_body.issued_at,
+    });
+    await assertWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: admissionClaim,
+    });
     const ledger = await readWalmartListingRepairPermitLedgerEvidence({
       state_directory: loaded.execution.production_context.ledger_state_directory,
       expected_binding: permit.signed_body.consumption_ledger,
@@ -648,7 +805,7 @@ export async function runWalmartListingRepairOperator(
       evaluated_at: new Date(),
       ...(targetMainBytes ? { target_main_bytes: targetMainBytes } : {}),
     });
-    return emit(receipt({
+    const qualificationReceipt = receipt({
       command: args.command,
       completed_at: qualification.qualified_at,
       status: qualification.verdict,
@@ -665,7 +822,18 @@ export async function runWalmartListingRepairOperator(
       external_effects: externalEffects("BOUNDED_LIVE_REREAD"),
       next_command: qualification.verdict === "PASS"
         ? null : "qualify --fresh-live-reread-no-write",
-    }), args.out);
+    });
+    await emit(qualificationReceipt, args.out);
+    if (qualification.verdict === "PASS") {
+      await completeWalmartListingIntegrityGlobalAdmission({
+        binding: globalAdmissionBinding,
+        claim: admissionClaim,
+        completed_at: qualification.qualified_at,
+        outcome: "PASS",
+        evidence_file_sha256: sha256(receiptBytes(qualificationReceipt)),
+      });
+    }
+    return qualificationReceipt;
   }
 
   if (args.command === "recover-accepted") {
@@ -676,6 +844,18 @@ export async function runWalmartListingRepairOperator(
     if (args.confirm !== exactConfirm) {
       fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
     }
+    if (!globalAdmissionBinding) {
+      fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "recovery requires the wrapper-bound global admission root");
+    }
+    await assertWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: globalAdmissionClaimInput({
+        execution: loaded.execution,
+        execution_package_artifact_sha256: loaded.package_artifact_sha256,
+        permit,
+        claimed_at: permit.signed_body.issued_at,
+      }),
+    });
     const result = await recoverWalmartListingRepairAcceptedPost(loaded.execution);
     return emit(receipt({
       command: args.command,
@@ -707,6 +887,18 @@ export async function runWalmartListingRepairOperator(
     if (args.confirm !== exactConfirm) {
       fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
     }
+    if (!globalAdmissionBinding) {
+      fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "recovered resume requires the wrapper-bound global admission root");
+    }
+    await assertWalmartListingIntegrityGlobalAdmission({
+      binding: globalAdmissionBinding,
+      claim: globalAdmissionClaimInput({
+        execution: loaded.execution,
+        execution_package_artifact_sha256: loaded.package_artifact_sha256,
+        permit,
+        claimed_at: permit.signed_body.issued_at,
+      }),
+    });
     const result = await resumeWalmartListingRepairRecoveredFeed(loaded.execution);
     return emit(receipt({
       command: args.command,
@@ -750,6 +942,20 @@ export async function runWalmartListingRepairOperator(
     + permit.signed_body.plan_body_sha256;
   if (args.confirm !== exactConfirm) fail("CONFIRMATION_MISMATCH", `exact confirmation required: ${exactConfirm}`);
 
+  if (!globalAdmissionBinding) {
+    fail("GLOBAL_ADMISSION_ATTESTATION_REQUIRED", "execute requires the wrapper-bound global admission root");
+  }
+  const admissionClaim = globalAdmissionClaimInput({
+    execution: loaded.execution,
+    execution_package_artifact_sha256: loaded.package_artifact_sha256,
+    permit,
+    claimed_at: now.toISOString(),
+  });
+  await acquireWalmartListingIntegrityGlobalAdmission({
+    binding: globalAdmissionBinding,
+    claim: admissionClaim,
+  });
+
   const result = await executeWalmartListingRepairOneSku(loaded.execution);
   return emit(receipt({
     command: args.command,
@@ -779,8 +985,9 @@ export async function runWalmartListingRepairOperator(
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
   const args = parseWalmartListingRepairOperatorArgs(argv);
-  if (args.command !== "help") assertWalmartListingRepairFrozenReleaseAttestation();
-  await runWalmartListingRepairOperator(args);
+  const globalAdmissionBinding = args.command === "help"
+    ? undefined : assertWalmartListingRepairFrozenReleaseAttestation();
+  await runWalmartListingRepairOperator(args, new Date(), globalAdmissionBinding);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

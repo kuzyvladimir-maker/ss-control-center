@@ -8,6 +8,7 @@
  *
  * Step 1: /api/adjustments/scan         (Financial Events, real-time)
  * Step 2: /api/adjustments/settlement-sync (TSV Settlement Reports for SKU)
+ * Step 3: замер перевозчика (FedEx/UPS Track API) — доказательная база для спора
  *
  * Walmart adjustments are handled separately by /api/cron/walmart's
  * syncAdjustments sub-job.
@@ -25,6 +26,7 @@ import {
 } from "@/lib/amazon-sp-api/finances";
 import { fetchSettlementAdjustments } from "@/lib/amazon-sp-api/settlement-reports";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
+import { syncMeasurements } from "@/lib/adjustments/carrier-measure";
 
 // Settlement TSV downloads + financial-events pagination can take a while
 // across all stores. 5 minutes covers the worst case (full settlement
@@ -169,6 +171,16 @@ export async function GET(request: NextRequest) {
     const scan = await runFinancialEventsScan();
     const settle = await runSettlementSync();
 
+    // Шаг 3: дотянуть фактический замер перевозчика по свежим строкам.
+    // Перевозчики отдают вес и габариты только ~3 месяца, поэтому тянем
+    // сразу после сбора, а не по требованию — потом будет уже нечего тянуть.
+    let measure = { scanned: 0, updated: 0, missed: 0 };
+    try {
+      measure = await syncMeasurements({ limit: 150 });
+    } catch (err) {
+      console.error("[cron adjustments] measure step failed:", err);
+    }
+
     const totalItems =
       scan.inserted + settle.inserted + settle.enriched;
     await prisma.syncLog.update({
@@ -185,6 +197,7 @@ export async function GET(request: NextRequest) {
       durationMs: Date.now() - startedAt,
       scan,
       settle,
+      measure,
       itemsSynced: totalItems,
     });
   } catch (err) {

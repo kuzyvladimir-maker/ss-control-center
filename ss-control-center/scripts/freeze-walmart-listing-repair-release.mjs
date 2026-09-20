@@ -65,6 +65,7 @@ const TEST_ENTRYPOINTS = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-monitor-lifecycle.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-terminal-failure.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-global-admission.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-operations.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-operations.server.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-routes.test.ts",
@@ -107,6 +108,7 @@ const TARGETED_LINT = Object.freeze([
   "src/lib/walmart/listing-integrity-variant-group-evidence.ts",
   "src/lib/walmart/listing-integrity-monitor-lifecycle.ts",
   "src/lib/walmart/listing-integrity-terminal-failure.ts",
+  "src/lib/walmart/listing-integrity-global-admission.ts",
   "src/lib/walmart/listing-integrity-operations.ts",
   "src/lib/walmart/listing-integrity-operations.server.ts",
   "src/lib/walmart/listing-integrity-shadow-contract.ts",
@@ -131,6 +133,7 @@ const TARGETED_LINT = Object.freeze([
   "src/lib/walmart/__tests__/listing-integrity-single-pipeline.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-monitor-lifecycle.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-terminal-failure.test.ts",
+  "src/lib/walmart/__tests__/listing-integrity-global-admission.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-operations.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-operations.server.test.ts",
   "src/lib/walmart/__tests__/listing-integrity-routes.test.ts",
@@ -171,10 +174,12 @@ function parseArgs(argv) {
   let root = process.cwd();
   let out = null;
   let createdAt = null;
+  let globalAdmissionRoot = null;
   const seen = new Set();
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
-    if (!["--mode", "--root", "--out", "--created-at"].includes(token) || seen.has(token)) {
+    if (!["--mode", "--root", "--out", "--created-at", "--global-admission-root"].includes(token)
+      || seen.has(token)) {
       fail("INVALID_CLI", `unsupported or repeated flag ${token}`);
     }
     seen.add(token);
@@ -184,6 +189,7 @@ function parseArgs(argv) {
     if (token === "--root") root = value;
     if (token === "--out") out = value;
     if (token === "--created-at") createdAt = value;
+    if (token === "--global-admission-root") globalAdmissionRoot = value;
     index += 1;
   }
   if (!["compute-id", "certify"].includes(mode)) fail("INVALID_CLI", "mode must be compute-id or certify");
@@ -195,7 +201,11 @@ function parseArgs(argv) {
     || new Date(createdAt).toISOString() !== createdAt)) {
     fail("INVALID_CLI", "certify requires canonical --created-at");
   }
-  return { mode, root, out, createdAt };
+  if (mode === "certify" && (!globalAdmissionRoot || !path.isAbsolute(globalAdmissionRoot)
+    || path.resolve(globalAdmissionRoot) !== globalAdmissionRoot)) {
+    fail("INVALID_CLI", "certify requires absolute normalized --global-admission-root");
+  }
+  return { mode, root, out, createdAt, globalAdmissionRoot };
 }
 
 async function safeFile(root, relative) {
@@ -334,6 +344,28 @@ async function certify(input, runtimePaths, allPaths, releaseId) {
   const commit = git(input.root, ["rev-parse", "HEAD"]);
   const tree = git(input.root, ["rev-parse", "HEAD^{tree}"]);
   const outputRoot = input.out;
+  const globalAdmissionRoot = input.globalAdmissionRoot;
+  const globalAdmissionMetadata = await lstat(globalAdmissionRoot).catch(() => fail(
+    "INVALID_GLOBAL_ADMISSION_ROOT",
+    "global admission root is missing",
+  ));
+  if (!globalAdmissionMetadata.isDirectory() || globalAdmissionMetadata.isSymbolicLink()
+    || (globalAdmissionMetadata.mode & 0o077) !== 0
+    || await realpath(globalAdmissionRoot) !== globalAdmissionRoot
+    || (typeof process.getuid === "function" && globalAdmissionMetadata.uid !== process.getuid())) {
+    fail("INVALID_GLOBAL_ADMISSION_ROOT", "global admission root must be private and canonical");
+  }
+  const globalAdmissionIdentity = await safeFile(
+    globalAdmissionRoot,
+    ".identity.json",
+  ).catch(() => fail(
+    "INVALID_GLOBAL_ADMISSION_ROOT",
+    "global admission identity is missing or unsafe",
+  ));
+  const globalAdmissionIdentityMetadata = await lstat(globalAdmissionIdentity.absolute);
+  if ((globalAdmissionIdentityMetadata.mode & 0o077) !== 0) {
+    fail("INVALID_GLOBAL_ADMISSION_ROOT", "global admission identity must be private");
+  }
   await mkdir(outputRoot, { mode: 0o700 });
   const logs = [
     runCertification(input.root, "remediation-suite", process.execPath, [
@@ -371,10 +403,12 @@ async function certify(input, runtimePaths, allPaths, releaseId) {
       caller_dependency_injection_allowed: false,
       automatic_retry_allowed: false,
       marketplace_write_calls_maximum: 1,
+      global_admission_root_path_sha256: sha256(globalAdmissionRoot),
+      global_admission_identity_sha256: sha256(globalAdmissionIdentity.bytes),
     },
     certification: {
       test_entrypoints: TEST_ENTRYPOINTS,
-      expected_test_count: 204,
+      expected_test_count: 203,
       logs: logRows,
     },
     source_inventory: sourceInventory,

@@ -21,6 +21,7 @@ import {
   buildWalmartListingIntegrityCatalogCensus,
   buildWalmartListingIntegrityScanPlan,
   verifyWalmartListingIntegrityCatalogArtifacts,
+  verifyWalmartListingIntegrityCatalogFreshness,
 } from "../src/lib/walmart/listing-integrity-catalog-orchestrator.ts";
 
 const HELP = `Usage:
@@ -36,8 +37,9 @@ const HELP = `Usage:
     --plan=/absolute/scan-plan.json --expect-plan-sha256=<file-sha256> \
     --capture-index=/absolute/capture-index.json --expect-capture-index-sha256=<file-sha256>
 
-plan:     DB read-only, no filesystem writes, no Walmart/model calls.
-snapshot: same two DB reads plus a new immutable local evidence directory.
+plan:     three DB read-only queries, no filesystem writes, no Walmart/model calls.
+snapshot: same three DB reads plus a new immutable local evidence directory;
+          fails closed unless the mirror exactly matches a fresh downloaded ITEM_CATALOG report.
 verify:   offline; no DB, network, Walmart, or model calls.
 capture:  exact plan-bound HTTPS image GETs, zero retries/model/Walmart writes.
 verify-capture: offline exact-byte/source-plan verification of every captured image.
@@ -167,21 +169,35 @@ async function readRemediationHistory(db, storeIndex) {
   return result.rows;
 }
 
+async function readLatestDownloadedItemCatalogReport(db, storeIndex) {
+  const result = await db.execute({
+    sql: `SELECT id,storeIndex,reportType,requestId,status,requestedAt,readyAt,
+                 downloadedAt,rowCount,error
+            FROM WalmartReport
+           WHERE storeIndex=? AND reportType='ITEM_CATALOG' AND status='DOWNLOADED'
+           ORDER BY datetime(downloadedAt) DESC,id DESC LIMIT 1`,
+    args: [storeIndex],
+  });
+  return result.rows[0] ?? null;
+}
+
 async function buildFromDatabase(storeIndex, now = new Date()) {
   const url = cleanEnv(process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL);
   const authToken = cleanEnv(process.env.TURSO_AUTH_TOKEN) || undefined;
   if (!url) throw new Error("TURSO_DATABASE_URL or DATABASE_URL is required");
   const db = createClient({ url, authToken });
   try {
-    const [catalogRows, remediationRows] = await Promise.all([
+    const [catalogRows, remediationRows, sourceReport] = await Promise.all([
       readCatalog(db, storeIndex),
       readRemediationHistory(db, storeIndex),
+      readLatestDownloadedItemCatalogReport(db, storeIndex),
     ]);
     const census = buildWalmartListingIntegrityCatalogCensus({
       store_index: storeIndex,
       captured_at: now.toISOString(),
       catalog_rows: catalogRows,
       remediation_rows: remediationRows,
+      source_report: sourceReport,
     });
     const plan = buildWalmartListingIntegrityScanPlan(census);
     return { census, plan };
@@ -222,11 +238,27 @@ async function writeSnapshot(outputDir, artifacts) {
   return { census_sha256: censusSha, plan_sha256: planSha };
 }
 
-function planSummary(census, plan) {
+function planSummary(census, plan, asOf) {
+  let freshness = null;
+  let freshnessError = null;
+  try {
+    freshness = verifyWalmartListingIntegrityCatalogFreshness({
+      census,
+      as_of: asOf.toISOString(),
+    });
+  } catch (error) {
+    freshnessError = error instanceof Error ? error.message : String(error);
+  }
   return {
-    status: "READ_ONLY_PLAN_READY",
+    status: freshness
+      ? "AUTHORITATIVE_READ_ONLY_PLAN_READY"
+      : "PROVISIONAL_OR_STALE_READ_ONLY_PLAN",
     census_id: census.census_id,
     census_body_sha256: census.body_sha256,
+    source_contract: census.source_contract,
+    source_report: census.source_report,
+    freshness,
+    freshness_error: freshnessError,
     catalog: census.summary,
     reconciliation: census.reconciliation,
     scan: plan.coverage,
@@ -586,9 +618,13 @@ export async function main(argv = process.argv.slice(2)) {
     )}\n`);
     return;
   }
-  const artifacts = await buildFromDatabase(options.store_index);
-  const output = planSummary(artifacts.census, artifacts.plan);
+  const now = new Date();
+  const artifacts = await buildFromDatabase(options.store_index, now);
+  const output = planSummary(artifacts.census, artifacts.plan, now);
   if (options.command === "snapshot") {
+    if (!output.freshness) {
+      throw new Error(`authoritative catalog snapshot refused: ${output.freshness_error}`);
+    }
     output.local_artifacts = {
       output_dir: options.output_dir,
       ...await writeSnapshot(options.output_dir, artifacts),

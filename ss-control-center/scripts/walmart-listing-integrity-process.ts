@@ -46,6 +46,7 @@ import {
 } from "../src/lib/walmart/listing-integrity-single-intake.ts";
 import { preprocessCatalogVisual } from "../src/lib/walmart/catalog-visual-preprocess.ts";
 import {
+  WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT,
   WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
   buildWalmartListingSingleObserverPlan,
   buildWalmartListingSingleObserverRequest,
@@ -77,6 +78,7 @@ export interface WalmartListingSingleProcessArgs {
     | "prepare-repair";
   sku?: string;
   store_index?: number;
+  product_truth_manifest_sha256?: string;
   output_dir?: string;
   intake_dir?: string;
   product_truth?: string;
@@ -338,7 +340,12 @@ export function parseWalmartListingSingleProcessArgs(
       }
       flags.set(match[1]!, match[2]!);
     }
-    const required = ["sku", "store-index", "output-dir"] as const;
+    const required = [
+      "sku",
+      "store-index",
+      "product-truth-manifest-sha256",
+      "output-dir",
+    ] as const;
     const allowed = command === "inspect"
       ? new Set<string>([...required, "buyer-pdp-html"])
       : new Set<string>(required);
@@ -361,10 +368,15 @@ export function parseWalmartListingSingleProcessArgs(
     if (!Number.isSafeInteger(storeIndex) || storeIndex < 1 || storeIndex > 10) {
       throw new Error("--store-index must be an integer from 1 to 10");
     }
+    const productTruthManifestSha256 = flags.get("product-truth-manifest-sha256")!;
+    if (!/^[a-f0-9]{64}$/u.test(productTruthManifestSha256)) {
+      throw new Error("--product-truth-manifest-sha256 must be lowercase SHA-256");
+    }
     return {
       command,
       sku,
       store_index: storeIndex,
+      product_truth_manifest_sha256: productTruthManifestSha256,
       output_dir: exactPath(flags.get("output-dir"), "--output-dir"),
       buyer_pdp_html: flags.has("buyer-pdp-html")
         ? exactPath(flags.get("buyer-pdp-html"), "--buyer-pdp-html")
@@ -1281,6 +1293,7 @@ async function executeLiveWalmartListingSingleCapture(
           sku,
           channel: "walmart",
           storeIndex,
+          expectedManifestSha256: args.product_truth_manifest_sha256!,
           asOf: capturedAt,
           maxPriceAgeMs: 30 * 24 * 60 * 60 * 1_000,
         });
@@ -1324,7 +1337,9 @@ async function executeLiveWalmartListingSingleCapture(
       continue_when_source_required: continueWhenSourceRequired,
       buyer_pdp_gets: importedBuyerHtml === null ? 1 : 0,
     });
-    const written = await writeWalmartListingSingleIntake(outputDir, intake);
+    const written = await writeWalmartListingSingleIntake(outputDir, intake, {
+      product_truth_manifest_sha256: args.product_truth_manifest_sha256!,
+    });
     return {
       schema_version: WALMART_LISTING_SINGLE_PROCESS_REPORT_SCHEMA,
       status: intake.status,
@@ -1383,7 +1398,7 @@ async function fetchWorkerJson(
 }
 
 export async function sshWorkerJson(
-  action: "health" | "analyze",
+  action: "health" | "analyze" | "analyze-codex",
   body: string,
   timeoutMs: number,
 ): Promise<WorkerJsonResponse> {
@@ -1402,7 +1417,7 @@ export async function sshWorkerJson(
   child.stderr.on("data", (chunk: Buffer) => {
     if (Buffer.concat(stderr).length < 20_000) stderr.push(chunk);
   });
-  child.stdin.end(action === "analyze" ? body : "");
+  child.stdin.end(action === "health" ? "" : body);
   const exitCode = await new Promise<number | null>((resolve, reject) => {
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
@@ -1442,13 +1457,13 @@ export async function sshWorkerJson(
   };
 }
 
-async function workerConnection() {
+async function workerConnection(provider: "claude" | "codex") {
   const useSsh = process.env.WALMART_LISTING_TRIAGE_TRANSPORT === "ssh-openclaw";
   if (useSsh) {
     return {
       health: () => sshWorkerJson("health", "", 30_000),
       analyze: (body: string, timeoutMs: number) => (
-        sshWorkerJson("analyze", body, timeoutMs)
+        sshWorkerJson(provider === "codex" ? "analyze-codex" : "analyze", body, timeoutMs)
       ),
     };
   }
@@ -1463,7 +1478,9 @@ async function workerConnection() {
   const loopback = analyzeUrl.protocol === "http:"
     && ["127.0.0.1", "localhost", "::1"].includes(analyzeUrl.hostname);
   if ((analyzeUrl.protocol !== "https:" && !loopback)
-    || !analyzeUrl.pathname.endsWith("/analyze-claude")
+    || !analyzeUrl.pathname.endsWith(
+      provider === "codex" ? "/analyze" : "/analyze-claude",
+    )
     || analyzeUrl.username
     || analyzeUrl.password
     || analyzeUrl.search
@@ -1471,7 +1488,10 @@ async function workerConnection() {
     throw new Error("CODEX_IMAGE_WORKER_URL is not a trusted analyze-claude endpoint");
   }
   const healthUrl = new URL(analyzeUrl.toString());
-  healthUrl.pathname = healthUrl.pathname.replace(/\/analyze-claude$/u, "/health");
+  healthUrl.pathname = healthUrl.pathname.replace(
+    provider === "codex" ? /\/analyze$/u : /\/analyze-claude$/u,
+    "/health",
+  );
   const headers = { authorization: `Bearer ${token}` };
   return {
     health: () => fetchWorkerJson(
@@ -1530,6 +1550,11 @@ export async function executeLiveWalmartListingSingleObservation(
   const { config } = await import("dotenv");
   config({ path: ".env.local", quiet: true });
   config({ path: ".env", quiet: true });
+  const provider = cleanEnvironment(process.env.WALMART_LISTING_TRIAGE_PROVIDER)
+    === "codex" ? "codex" as const : "claude" as const;
+  const workerContract = provider === "codex"
+    ? WALMART_LISTING_SINGLE_OBSERVER_CODEX_WORKER_CONTRACT
+    : WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT;
   const indexPath = path.join(intakeDir, "intake-index.json");
   const indexBytes = await readFile(indexPath);
   const indexFileSha = walmartListingIntegritySha256Bytes(indexBytes);
@@ -1573,14 +1598,14 @@ export async function executeLiveWalmartListingSingleObservation(
    * directory. A connection/auth/contract failure must leave no partial output
    * that looks resumable or consumes a new execution identity.
    */
-  const connection = injected.connection ?? await workerConnection();
+  const connection = injected.connection ?? await workerConnection(provider);
   const health = await connection.health();
   if (health.status !== 200) {
     throw new Error(`authenticated worker health returned HTTP ${health.status}`);
   }
   verifyWalmartListingSingleWorkerHealth(
     health.value,
-    WALMART_LISTING_SINGLE_OBSERVER_WORKER_CONTRACT,
+    workerContract,
     injected.trust,
   );
   await mkdir(outputDir, { recursive: false, mode: 0o700 });
@@ -1630,6 +1655,7 @@ export async function executeLiveWalmartListingSingleObservation(
     intake_index_file_sha256: indexFileSha,
     intake_index_body_sha256: index.body_sha256,
     prepared_assets: prepared,
+    worker_contract: workerContract,
   });
   const planBytes = Buffer.from(`${JSON.stringify(plan, null, 2)}\n`, "utf8");
   await writeObserverArtifact(path.join(outputDir, "observer-plan.json"), planBytes);

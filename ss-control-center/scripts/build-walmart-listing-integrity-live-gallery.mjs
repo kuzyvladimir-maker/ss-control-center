@@ -20,15 +20,24 @@ function parseArgs(argv) {
     "before-dir",
     "after-dir",
     "execution-package",
-    "feed-receipt",
-    "terminal-report",
     "qualification-receipt",
     "output-dir",
   ];
-  if (flags.size !== required.length || required.some((key) => !flags.has(key))) {
-    fail(`required arguments: ${required.map((key) => `--${key}=...`).join(" ")}`);
+  const optionalTerminalPair = ["feed-receipt", "terminal-report"];
+  const allowed = new Set([...required, ...optionalTerminalPair]);
+  const optionalCount = optionalTerminalPair.filter((key) => flags.has(key)).length;
+  if (required.some((key) => !flags.has(key))
+    || [...flags.keys()].some((key) => !allowed.has(key))
+    || (optionalCount !== 0 && optionalCount !== optionalTerminalPair.length)) {
+    fail(
+      `required arguments: ${required.map((key) => `--${key}=...`).join(" ")}; `
+      + "--feed-receipt and --terminal-report must be supplied together when used",
+    );
   }
-  return Object.fromEntries(required.map((key) => [key.replaceAll("-", "_"), path.resolve(flags.get(key))]));
+  return Object.fromEntries([...required, ...optionalTerminalPair].map((key) => [
+    key.replaceAll("-", "_"),
+    flags.has(key) ? path.resolve(flags.get(key)) : null,
+  ]));
 }
 
 function sha256(bytes) {
@@ -167,6 +176,66 @@ export function walmartListingIntegrityGalleryQuantityTarget(input) {
   };
 }
 
+export function walmartListingIntegrityGalleryHasExplicitOuterQuantity(text, outerUnits) {
+  if (
+    typeof text !== "string"
+    || !Number.isSafeInteger(outerUnits)
+    || outerUnits < 1
+  ) {
+    return false;
+  }
+  const claims = [
+    /\bpack\s+of\s+(\d+)\b/giu,
+    /\bquantity\s+of\s+(\d+)\b/giu,
+    /\b(\d+)\s*-\s*count\b/giu,
+    /\bincludes\s+(\d+)\s+(?:[a-z]+\s+){0,4}(?:cups|bags|packs|packages)\b/giu,
+  ].flatMap((pattern) => Array.from(text.matchAll(pattern), (match) => Number(match[1])))
+    .filter((claim) => Number.isSafeInteger(claim) && claim > 0);
+  if (claims.includes(outerUnits)) return true;
+  const cartonFactor = text.match(
+    /\b(\d+)\s*\/\s*carton\b[\s\S]{0,80}\bbundle\s+of\s+(\d+)(?:\s+cartons?)?\b/iu,
+  );
+  if (!cartonFactor) return false;
+  const unitsPerCarton = Number(cartonFactor[1]);
+  const cartons = Number(cartonFactor[2]);
+  return Number.isSafeInteger(unitsPerCarton) && unitsPerCarton > 0
+    && Number.isSafeInteger(cartons) && cartons > 0
+    && unitsPerCarton * cartons === outerUnits;
+}
+
+export function walmartListingIntegrityGalleryOuterQuantityTarget(surface) {
+  const claims = (surface?.attribute_claims ?? []).filter((claim) => (
+    claim?.kind === "outer_units"
+  ));
+  if (claims.length > 1
+    || claims.some((claim) => claim.unit !== "count")
+    || (claims.length === 1
+      && (!Number.isSafeInteger(claims[0].value) || claims[0].value < 1))) {
+    fail("repair plan has no unambiguous positive outer-unit count");
+  }
+  if (claims.length === 1) return claims[0].value;
+  const values = [surface?.description ?? "", ...(surface?.bullets ?? [])]
+    .flatMap((value) => {
+      const matches = [];
+      const patterns = [
+        /\bpack\s+of\s+(\d+)\b/giu,
+        /\bquantity\s+of\s+(\d+)\b/giu,
+        /\b(\d+)\s*-\s*count\b/giu,
+        /\bincludes\s+(\d+)\s+(?:[a-z]+\s+){0,4}(?:cups|bags|packs|packages)\b/giu,
+      ];
+      for (const pattern of patterns) {
+        matches.push(...Array.from(value.matchAll(pattern), (match) => Number(match[1])));
+      }
+      return matches;
+    })
+    .filter((value) => Number.isSafeInteger(value) && value > 0);
+  const unique = [...new Set(values)];
+  if (unique.length !== 1) {
+    fail("repair plan has no exact positive text-derived outer-unit count");
+  }
+  return unique[0];
+}
+
 function renderSpecifications(product) {
   return `<table>${product.specifications.map((row) => (
     `<tr><th>${escapeHtml(row.name)}</th><td>${escapeHtml(row.value)}</td></tr>`
@@ -302,8 +371,8 @@ async function main() {
     readJson(path.join(args.before_dir, "seller-item.json")),
     readJson(path.join(args.after_dir, "seller-item.json")),
     readJson(args.execution_package),
-    readJson(args.feed_receipt),
-    readJson(args.terminal_report),
+    args.feed_receipt ? readJson(args.feed_receipt) : Promise.resolve(null),
+    args.terminal_report ? readJson(args.terminal_report) : Promise.resolve(null),
     readJson(args.qualification_receipt),
   ]);
   const plan = execution.value?.execution?.writer_input?.plan;
@@ -319,19 +388,15 @@ async function main() {
   const beforeImages = imageRows(beforeIndex.value);
   const afterImages = imageRows(afterIndex.value);
   const targetImages = plan.target.images;
-  const outerUnitsClaim = target.attribute_claims?.find(
-    (claim) => claim.kind === "outer_units" && claim.unit === "count",
-  );
-  const outerUnits = outerUnitsClaim?.value;
-  if (!Number.isSafeInteger(outerUnits) || outerUnits < 1) {
-    fail("repair plan has no exact positive outer-unit count");
-  }
-  const packPrefix = new RegExp(`^PACK OF ${outerUnits}:`, "u");
-  const explicitOuterQuantity = new RegExp(
-    `(?:PACK\\s+OF\\s+${outerUnits}|Quantity\\s+of\\s+${outerUnits})`,
-    "iu",
-  );
+  const outerUnits = walmartListingIntegrityGalleryOuterQuantityTarget(target);
   const qualificationResult = qualification.value?.qualification;
+  const qualificationOnlyTerminalProof = feed === null && terminal === null
+    && qualification.value.status === "PASS"
+    && qualificationResult?.verdict === "PASS"
+    && qualificationResult?.facets?.terminal_apply_custody === "PASS"
+    && typeof qualification.value.feed_id === "string"
+    && qualification.value.feed_id.length > 0;
+  const feedId = feed?.value?.feed_id ?? qualification.value.feed_id;
   const textOnly = exactArray(plan.changed_fields, ["description", "bullets"]);
   const reviewedMain = exactArray(plan.changed_fields, ["description", "bullets", "main"]);
   const reviewedImageSet = exactArray(
@@ -394,13 +459,14 @@ async function main() {
     : before.description !== after.description
       && !exactArray(before.feature_bullets, after.feature_bullets);
   const checks = {
-    feed_terminal_succeeded: feed.value.status === "SUCCEEDED" && terminal.value.status === "SUCCEEDED",
+    feed_terminal_succeeded: qualificationOnlyTerminalProof
+      || (feed?.value?.status === "SUCCEEDED" && terminal?.value?.status === "SUCCEEDED"),
     frozen_qualification_pass:
       qualification.value.status === "PASS"
       && qualificationResult?.verdict === "PASS"
       && qualificationResult?.next_sku_unblocked === true
       && qualificationResult?.listing?.listing_key === plan.listing.listing_key
-      && qualificationResult?.feed_id === feed.value.feed_id,
+      && qualificationResult?.feed_id === feedId,
     exact_listing_identity:
       afterSellerRow.sku === plan.listing.sku
       && after.product_url?.endsWith(`/${plan.listing.item_id}`)
@@ -443,12 +509,13 @@ async function main() {
       && mainUrlChangedAsApproved
       && mainBytesChangedAsApproved,
     quantity_explicit_in_description:
-      attributeOnly
-        ? explicitOuterQuantity.test(after.description)
-        : packPrefix.test(after.description),
+      walmartListingIntegrityGalleryHasExplicitOuterQuantity(
+        after.description,
+        outerUnits,
+      ),
     quantity_explicit_in_bullets:
       after.feature_bullets.some((row) => (
-        attributeOnly ? explicitOuterQuantity.test(row) : packPrefix.test(row)
+        walmartListingIntegrityGalleryHasExplicitOuterQuantity(row, outerUnits)
       )),
   };
   const passed = Object.values(checks).every(Boolean);
@@ -462,13 +529,13 @@ async function main() {
       item_id: plan.listing.item_id,
       store_index: plan.listing.store_index,
     },
-    feed_id: feed.value.feed_id,
-    exact_payload_sha256: feed.value.execution_package_body_sha256
-      ? execution.value.execution.writer_input.one_sku_permit.signed_body.request_payload_sha256
-      : null,
+    feed_id: feedId,
+    exact_payload_sha256:
+      execution.value.execution?.writer_input?.one_sku_permit?.signed_body
+        ?.request_payload_sha256 ?? null,
     execution_package_file_sha256: execution.file_sha256,
-    terminal_feed_receipt_file_sha256: feed.file_sha256,
-    terminal_report_file_sha256: terminal.file_sha256,
+    terminal_feed_receipt_file_sha256: feed?.file_sha256 ?? null,
+    terminal_report_file_sha256: terminal?.file_sha256 ?? null,
     qualification_receipt_file_sha256: qualification.file_sha256,
     before: {
       captured_at: beforeIndex.value.created_at,

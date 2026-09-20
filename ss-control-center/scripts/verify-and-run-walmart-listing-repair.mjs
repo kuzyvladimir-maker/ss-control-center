@@ -16,9 +16,10 @@ const WRAPPER_PATH = "scripts/verify-and-run-walmart-listing-repair.mjs";
 const OPERATOR_PATH = "scripts/walmart-listing-repair-operator.ts";
 const WRITER_PATH = "src/lib/walmart/listing-integrity-remediation-writer.ts";
 const QUALIFICATION_PATH = "src/lib/walmart/listing-integrity-remediation-qualification.ts";
+const GLOBAL_ADMISSION_IDENTITY_FILE = ".identity.json";
 const ALLOWED_COMMANDS = Object.freeze([
   "doctor", "plan", "execute", "recover-accepted", "resume-recovered",
-  "resume", "qualify", "status", "report",
+  "resume", "qualify", "quarantine", "status", "report",
 ]);
 
 export class WalmartListingRepairReleaseVerificationError extends Error {
@@ -117,6 +118,7 @@ export function parseWalmartListingRepairReleaseWrapperArgs(argv) {
   const values = new Map();
   const allowed = new Set([
     "engine-root", "manifest", "manifest-sha256", "release-id-sha256",
+    "global-admission-root",
   ]);
   for (let index = 0; index < wrapperArgs.length; index += 1) {
     const token = wrapperArgs[index];
@@ -132,7 +134,7 @@ export function parseWalmartListingRepairReleaseWrapperArgs(argv) {
     values.set(key, value);
     index += 1;
   }
-  if (values.size !== allowed.size) fail("INVALID_CLI", "all four wrapper trust inputs are required");
+  if (values.size !== allowed.size) fail("INVALID_CLI", "all five wrapper trust inputs are required");
   if (!ALLOWED_COMMANDS.includes(operatorArgs[0]) || operatorArgs.length < 1) {
     fail("INVALID_CLI", "operator command is missing or forbidden");
   }
@@ -143,6 +145,10 @@ export function parseWalmartListingRepairReleaseWrapperArgs(argv) {
     expected_release_id_sha256: exactSha(
       values.get("release-id-sha256"),
       "--release-id-sha256",
+    ),
+    global_admission_root: exactAbsolutePath(
+      values.get("global-admission-root"),
+      "--global-admission-root",
     ),
     operator_args: Object.freeze([...operatorArgs]),
   });
@@ -216,6 +222,7 @@ export async function verifyFrozenWalmartListingRepairRelease(input) {
     "entrypoints", "normalized_closure_file_count", "pinned_apply_release_matches",
     "pinned_verifier_release_matches", "caller_dependency_injection_allowed",
     "automatic_retry_allowed", "marketplace_write_calls_maximum",
+    "global_admission_root_path_sha256", "global_admission_identity_sha256",
   ], "manifest runtime");
   const entries = manifest.runtime.entrypoints;
   if (!Array.isArray(entries) || !entries.includes(WRAPPER_PATH) || !entries.includes(OPERATOR_PATH)
@@ -223,8 +230,48 @@ export async function verifyFrozenWalmartListingRepairRelease(input) {
     || manifest.runtime.pinned_verifier_release_matches !== true
     || manifest.runtime.caller_dependency_injection_allowed !== false
     || manifest.runtime.automatic_retry_allowed !== false
-    || manifest.runtime.marketplace_write_calls_maximum !== 1) {
+    || manifest.runtime.marketplace_write_calls_maximum !== 1
+    || !SHA256.test(manifest.runtime.global_admission_root_path_sha256)
+    || !SHA256.test(manifest.runtime.global_admission_identity_sha256)) {
     fail("INVALID_MANIFEST", "runtime safety claims or entrypoints are invalid");
+  }
+
+  const globalAdmissionRoot = exactAbsolutePath(
+    input.global_admission_root,
+    "global_admission_root",
+  );
+  const admissionStat = await lstat(globalAdmissionRoot).catch(() => fail(
+    "INVALID_GLOBAL_ADMISSION_ROOT",
+    "global admission root is missing",
+  ));
+  if (!admissionStat.isDirectory() || admissionStat.isSymbolicLink()
+    || (admissionStat.mode & 0o077) !== 0
+    || await realpath(globalAdmissionRoot) !== globalAdmissionRoot
+    || (typeof process.getuid === "function" && admissionStat.uid !== process.getuid())
+    || sha256(globalAdmissionRoot) !== manifest.runtime.global_admission_root_path_sha256) {
+    fail(
+      "INVALID_GLOBAL_ADMISSION_ROOT",
+      "global admission root differs from the frozen private canonical path",
+    );
+  }
+  const admissionIdentityPath = path.join(
+    globalAdmissionRoot,
+    GLOBAL_ADMISSION_IDENTITY_FILE,
+  );
+  const admissionIdentityStat = await lstat(admissionIdentityPath).catch(() => fail(
+    "INVALID_GLOBAL_ADMISSION_ROOT",
+    "global admission identity is missing",
+  ));
+  if ((admissionIdentityStat.mode & 0o077) !== 0) {
+    fail("INVALID_GLOBAL_ADMISSION_ROOT", "global admission identity is not private");
+  }
+  const admissionIdentityBytes = await readSingleRegularFile(
+    admissionIdentityPath,
+    "global admission identity",
+    1024 * 1024,
+  );
+  if (sha256(admissionIdentityBytes) !== manifest.runtime.global_admission_identity_sha256) {
+    fail("INVALID_GLOBAL_ADMISSION_ROOT", "global admission identity differs from frozen manifest");
   }
 
   const gitRoot = git(engineRoot, ["rev-parse", "--show-toplevel"]);
@@ -284,20 +331,26 @@ export async function verifyFrozenWalmartListingRepairRelease(input) {
     git_commit: manifest.git.commit,
     git_tree: manifest.git.tree,
     source_file_count: manifest.source_inventory.length,
+    global_admission_root: globalAdmissionRoot,
+    global_admission_identity_sha256: manifest.runtime.global_admission_identity_sha256,
   });
 }
 
-function cleanProductionEnvironment(releaseId, manifestSha) {
+function cleanProductionEnvironment(releaseId, manifestSha, admissionRoot, admissionIdentitySha) {
   const env = { ...process.env };
   for (const key of [
     "NODE_OPTIONS", "NODE_PATH", "WALMART_LISTING_REPAIR_TEST_MODE",
     "WALMART_LISTING_REPAIR_TEST_OWNER_KEY_ID",
     "WALMART_LISTING_REPAIR_TEST_OWNER_PUBLIC_KEY_SPKI_DER_BASE64",
+    "WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_ROOT",
+    "WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_IDENTITY_SHA256",
   ]) delete env[key];
   env.NODE_ENV = "production";
   env.NO_COLOR = "1";
   env.WALMART_LISTING_REPAIR_FROZEN_RELEASE_ID_SHA256 = releaseId;
   env.WALMART_LISTING_REPAIR_FROZEN_RELEASE_MANIFEST_SHA256 = manifestSha;
+  env.WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_ROOT = admissionRoot;
+  env.WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_IDENTITY_SHA256 = admissionIdentitySha;
   return env;
 }
 
@@ -317,6 +370,8 @@ export async function main(argv = process.argv.slice(2)) {
     env: cleanProductionEnvironment(
       verified.release_id_sha256,
       verified.manifest_sha256,
+      verified.global_admission_root,
+      verified.global_admission_identity_sha256,
     ),
     stdio: "inherit",
   });

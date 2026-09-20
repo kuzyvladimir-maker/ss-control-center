@@ -21,6 +21,12 @@ import {
 import {
   precheckWalmartListingRepairTargetForReview,
 } from "../src/lib/walmart/listing-integrity-remediation-qualification.ts";
+import {
+  productTruthSupportsWalmartListingIntegrityAudit,
+} from "../src/lib/walmart/listing-integrity-single-pipeline.ts";
+import type {
+  ProductTruthSnapshot,
+} from "../src/lib/sourcing/product-truth-read-contract.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -224,7 +230,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   }
   const truthViews = record(productTruthArtifact.value.views, "Product Truth views");
   const improvement = record(truthViews.listingImprovement, "Listing Improvement view");
-  if (improvement.ready !== true || !Array.isArray(improvement.components)
+  if (!productTruthSupportsWalmartListingIntegrityAudit(
+    productTruthArtifact.value as unknown as ProductTruthSnapshot,
+  ) || !Array.isArray(improvement.components)
     || improvement.components.length !== 1) {
     fail("Product Truth is not one exact ready component");
   }

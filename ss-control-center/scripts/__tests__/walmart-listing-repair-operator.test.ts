@@ -27,12 +27,16 @@ test("operator CLI requires wrapper-attested release hashes and rejects test run
     NODE_ENV: "production",
     WALMART_LISTING_REPAIR_FROZEN_RELEASE_ID_SHA256: RELEASE_ID,
     WALMART_LISTING_REPAIR_FROZEN_RELEASE_MANIFEST_SHA256: "a".repeat(64),
+    WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_ROOT: "/private/tmp/global-admission",
+    WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_IDENTITY_SHA256: "b".repeat(64),
   }));
   assert.throws(
     () => assertWalmartListingRepairFrozenReleaseAttestation({
       NODE_ENV: "test",
       WALMART_LISTING_REPAIR_FROZEN_RELEASE_ID_SHA256: RELEASE_ID,
       WALMART_LISTING_REPAIR_FROZEN_RELEASE_MANIFEST_SHA256: "a".repeat(64),
+      WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_ROOT: "/private/tmp/global-admission",
+      WALMART_LISTING_REPAIR_GLOBAL_ADMISSION_IDENTITY_SHA256: "b".repeat(64),
     }),
     /rejects test authority\/runtime flags/u,
   );
@@ -160,6 +164,22 @@ test("command flag allowlists reject implicit scope and live shortcuts", () => {
   );
   assert.throws(
     () => parseWalmartListingRepairOperatorArgs(["qualify", "--all", "true"]),
+    /forbidden or repeated/u,
+  );
+  const quarantine = parseWalmartListingRepairOperatorArgs([
+    "quarantine",
+    "--package", "/private/tmp/package.json",
+    "--package-sha256", "a".repeat(64),
+    "--disposition", "/private/tmp/failure-disposition.json",
+    "--disposition-sha256", "b".repeat(64),
+    "--out", "/private/tmp/quarantine.json",
+  ]);
+  assert.equal(quarantine.command, "quarantine");
+  assert.equal(quarantine.disposition_path, "/private/tmp/failure-disposition.json");
+  assert.throws(
+    () => parseWalmartListingRepairOperatorArgs([
+      "quarantine", "--confirm", "forbidden",
+    ]),
     /forbidden or repeated/u,
   );
   assert.equal(parseWalmartListingRepairOperatorArgs(["status"]).command, "status");

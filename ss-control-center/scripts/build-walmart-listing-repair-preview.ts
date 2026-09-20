@@ -17,6 +17,9 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import type { ProductTruthSnapshot } from "../src/lib/sourcing/product-truth-read-contract.ts";
+import {
+  productTruthSupportsWalmartListingIntegrityAudit,
+} from "../src/lib/walmart/listing-integrity-single-pipeline.ts";
 
 type JsonRecord = Record<string, unknown>;
 const MAX_JSON_BYTES = 100 * 1024 * 1024;
@@ -106,14 +109,16 @@ function numberWord(value: number): string {
 function pluralForm(form: string | null, quantity: number): string {
   const noun = form?.trim().toLowerCase() || "package";
   if (quantity === 1) return noun;
+  if (noun === "loaf") return "loaves";
   if (noun.endsWith("s")) return noun;
   if (noun.endsWith("y")) return `${noun.slice(0, -1)}ies`;
+  if (/(?:ch|sh|x|z)$/u.test(noun)) return `${noun}es`;
   return `${noun}s`;
 }
 
 function cleanSingleUnitTitle(value: string): string {
   return value
-    .replace(/\s*[-,]\s*\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|lb|g|kg|ml|l)\s*\/?\s*\d*\s*(?:ct|count)?\s*$/iu, "")
+    .replace(/\s*[-,]\s*\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|lb|g|kg|ml|l)\s*\/?\s*\d*\s*(?:ct|count)?\.?\s*$/iu, "")
     .trim();
 }
 
@@ -184,8 +189,7 @@ code{background:#edf1f7;padding:2px 5px;border-radius:5px}
 <article class="card before"><div class="head"><span>ДО</span><span>LIVE SNAPSHOT</span></div>
 <div class="image"><img src="${html(beforeImages.main_path)}"></div>
 <div class="body"><div class="label bad">Ошибка</div>
-MAIN показывает ${html(beforeImages.visible_outer_units)} упаковок, хотя листинг продаёт
- Pack of ${html(preview.outer_units)}.</div></article>
+ ${html(beforeImages.defect_summary)}</div></article>
 <article class="card after"><div class="head"><span>ПОСЛЕ</span><span>QUALIFIED PREVIEW</span></div>
 <div class="image"><img src="${html(afterImages.main_path)}"></div>
 <div class="body"><div class="label good">Исправление</div>
@@ -249,7 +253,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const candidate = candidateArtifact.value;
   const candidateImage = candidate.candidate as JsonRecord;
   const qualification = qualificationArtifact.value;
-  if (!truth.views.listingImprovement.ready || !component || !content
+  if (!productTruthSupportsWalmartListingIntegrityAudit(truth) || !component || !content
     || truth.snapshot.listingKey !== diagnosis.listing_key
     || listing.listing_key !== truth.snapshot.listingKey
     || (diagnosis.outcome as JsonRecord).status !== "BAD"
@@ -269,38 +273,34 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     fail("buyer snapshot MAIN is missing");
   }
   const expectedFacts = expected.package_facts as JsonRecord[];
-  const innerFact = expectedFacts.find((fact) => fact.kind === "inner_item_count");
-  const netClaim = (surface.attribute_claims as JsonRecord[]).find(
-    (claim) => claim.kind === "net_content",
-  );
-  if (!innerFact || typeof innerFact.value !== "number"
-    || !netClaim || typeof netClaim.value !== "number"
-    || typeof netClaim.unit !== "string") {
-    fail("exact inner count or net content is missing");
+  if (!Array.isArray(expectedFacts) || expectedFacts.length < 1) {
+    fail("exact per-package facts are missing");
   }
   const outer = component.qty;
-  const totalInner = Number(innerFact.value) * outer;
   const packageNoun = pluralForm(content.identity.form, outer);
   const singleTitle = cleanSingleUnitTitle(content.facts.title ?? component.product);
+  const perPackageSize = component.size?.trim() || (() => {
+    const fact = expectedFacts[0]!;
+    return typeof fact.value === "number" && typeof fact.unit === "string"
+      ? `${fact.value} ${fact.unit}`
+      : "one retail package";
+  })();
   const quantitySummary =
-    `PACK OF ${outer}: This listing includes ${numberWord(outer)} ${netClaim.value} ${netClaim.unit} `
-    + `${packageNoun} of ${singleTitle}. Each ${pluralForm(content.identity.form, 1)} contains `
-    + `${innerFact.value} buns, for ${totalInner} buns total.`;
+    `PACK OF ${outer}: This listing includes ${numberWord(outer)} ${perPackageSize} `
+    + `${packageNoun} of ${singleTitle}; ${outer} ${packageNoun} total.`;
   const sourceDescription = removeConflictingPackSentences(content.facts.description ?? "");
-  const afterDescription = `${quantitySummary} ${sourceDescription} Shelf-stable product.`
+  const afterDescription = `${quantitySummary} ${sourceDescription}`
     .replace(/\s+/gu, " ")
     .trim();
   const sourceBullets = Array.isArray(content.facts.bullets)
     ? content.facts.bullets.filter((value): value is string => (
       typeof value === "string"
       && value.trim().length > 0
-      && !/\bhamburger buns\b/iu.test(value)
     ))
     : [];
   const packBullet =
-    `PACK OF ${outer}: Includes ${outer} ${packageNoun} of ${singleTitle}; `
-    + `each ${netClaim.value} ${netClaim.unit} ${pluralForm(content.identity.form, 1)} `
-    + `contains ${innerFact.value} buns, for ${totalInner} buns total`;
+    `PACK OF ${outer}: Includes ${outer} ${perPackageSize} ${packageNoun} of `
+    + `${singleTitle}; ${outer} ${packageNoun} total`;
   const afterBullets = [packBullet, ...sourceBullets]
     .filter((value, index, values) => values.indexOf(value) === index)
     .slice(0, 6);
@@ -308,6 +308,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const currentMainPath = path.join(path.dirname(args.buyerSnapshot), currentMain.local_path);
   const beforeDescription = String(surface.description ?? "");
   const beforeBullets = surface.bullets as string[];
+  const currentProductText = String(
+    currentMainObservation?.visible_product_text ?? "another product",
+  );
+  const currentSizes = Array.isArray(currentMainObservation?.visible_size_texts)
+    ? currentMainObservation.visible_size_texts.map(String).join(", ")
+    : "";
+  const defectSummary = `MAIN shows ${currentProductText}${currentSizes ? ` (${currentSizes})` : ""} `
+    + `instead of ${singleTitle} (${perPackageSize}).`;
   const previewBody = {
     schema_version: "walmart-listing-integrity-repair-preview/v2",
     created_at: new Date().toISOString(),
@@ -336,6 +344,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
         main_path: currentMainPath,
         main_sha256: currentMain.sha256,
         visible_outer_units: currentMainCount,
+        defect_summary: defectSummary,
         gallery_unchanged: true,
       },
     },
