@@ -21,6 +21,7 @@ import {
 } from "@/components/kit";
 import { Info, RefreshCw } from "lucide-react";
 import AdjustmentsTable from "@/components/adjustments/AdjustmentsTable";
+import AdjustmentsRegistry from "@/components/adjustments/AdjustmentsRegistry";
 import SkuIssuesPanel from "@/components/adjustments/SkuIssuesPanel";
 
 interface Stats {
@@ -62,6 +63,9 @@ export default function AdjustmentsPage() {
     sku: "",
     carrier: "",
   });
+
+  // Старая таблица по умолчанию свёрнута — рабочая поверхность теперь реестр.
+  const [showLegacy, setShowLegacy] = useState(false);
 
   // SKU profiles
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -453,29 +457,50 @@ export default function AdjustmentsPage() {
         }
       />
 
-      {/* Adjustments list */}
+      {/* Реестр споров — основная рабочая таблица страницы */}
+      <Panel>
+        <PanelHeader title="Реестр споров по списаниям" />
+        <PanelBody>
+          <AdjustmentsRegistry />
+        </PanelBody>
+      </Panel>
+
+      {/* Старая таблица. Оставлена под кнопкой: на ней висит копирование текста
+          обращения и ручная отметка Case ID, которыми Владимир пользовался до
+          реестра. Удалять до переноса этих сценариев нельзя. */}
       <Panel>
         <PanelHeader
-          title="Shipping adjustments"
+          title="Старая таблица (до реестра)"
           right={
-            adjLoading && <Loader2 size={14} className="animate-spin text-ink-3" />
+            <div className="flex items-center gap-2">
+              {adjLoading && <Loader2 size={14} className="animate-spin text-ink-3" />}
+              <button
+                type="button"
+                onClick={() => setShowLegacy((v) => !v)}
+                className="text-[12px] text-ink-3 underline underline-offset-2 hover:text-ink"
+              >
+                {showLegacy ? "скрыть" : "показать"}
+              </button>
+            </div>
           }
         />
-        <PanelBody>
-          <AdjustmentsTable
-            adjustments={adjustments}
-            total={adjTotal}
-            filters={filters}
-            onFiltersChange={(f) =>
-              setFilters({
-                channel: f.channel,
-                days: f.days,
-                sku: f.sku,
-                carrier: f.carrier ?? "",
-              })
-            }
-          />
-        </PanelBody>
+        {showLegacy && (
+          <PanelBody>
+            <AdjustmentsTable
+              adjustments={adjustments}
+              total={adjTotal}
+              filters={filters}
+              onFiltersChange={(f) =>
+                setFilters({
+                  channel: f.channel,
+                  days: f.days,
+                  sku: f.sku,
+                  carrier: f.carrier ?? "",
+                })
+              }
+            />
+          </PanelBody>
+        )}
       </Panel>
 
       {/* SKU Issues */}
