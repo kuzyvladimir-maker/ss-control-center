@@ -8,10 +8,16 @@
  * и именно этим ответом спорим — Amazon в отказе по кейсу 20424098481 (30.05.2026)
  * сам отправил нас за reweigh data к перевозчику.
  *
- * Замер кладётся в уже существующие поля ShippingAdjustment (adjustedWeightLbs,
- * adjustedDim*), новых миграций не требуется.
+ * 🔴 ПОПРАВКА 21.09.2026. Проверка показала, что UPS Track API отдаёт МАНИФЕСТ —
+ * наши же цифры, введённые при покупке лейбла, — а не аудит измерителя. FedEx
+ * отдаёт настоящий аудит (13x42x11 сошлось с Amazon до цифры). Поэтому замер
+ * теперь кладётся в audited* вместе с полем auditSource, и классификация
+ * (см. audit-classify.ts) отбрасывает всё, что помечено
+ * UPS_API_MANIFEST_UNRELIABLE. Старые поля adjusted* продолжают заполняться
+ * только ради совместимости со старым пакетом доказательств.
  */
 import { prisma } from "@/lib/prisma";
+import { AUDIT_SOURCES, classifyByAudit } from "@/lib/adjustments/audit-classify";
 import { getFedexTracking } from "@/lib/carriers/fedex-tracking";
 import { getUpsTracking } from "@/lib/carriers/ups-tracking";
 
@@ -95,6 +101,19 @@ export function billableWeight(
   return Math.max(weight || 0, dim);
 }
 
+/** Источник аудита для перевозчика: у FedEx — настоящий, у UPS — манифест. */
+export function auditSourceForCarrier(carrier: string | null): string {
+  return (carrier || "").toUpperCase() === "FEDEX"
+    ? AUDIT_SOURCES.FEDEX_API
+    : AUDIT_SOURCES.UPS_API_MANIFEST_UNRELIABLE;
+}
+
+/**
+ * 🔴 УСТАРЕЛО. Классы A/B/C/D считались по adjusted*, куда для UPS попадал
+ * манифест — то есть класс A «штраф не на чем основан» выводился из сравнения
+ * наших цифр с нашими же. Оставлено ради старой ручки dispute-pack;
+ * новая классификация — classifyByAudit из audit-classify.ts.
+ */
 export type DisputeClass = "A" | "B" | "C" | "D";
 
 export const DISPUTE_CLASS_LABEL: Record<DisputeClass, string> = {
@@ -139,7 +158,9 @@ export async function syncMeasurements(opts: { limit?: number } = {}) {
     where: {
       adjustmentAmount: { lt: 0 },
       trackingNumber: { not: null },
-      adjustedDimL: null,
+      // Строки, по которым источника аудита ещё нет. Данные со страницы
+      // Transaction Details перетирать Track API нельзя — они точнее.
+      auditSource: null,
       carrier: { in: ["FEDEX", "UPS"] },
     },
     orderBy: { adjustmentDate: "desc" },
@@ -148,6 +169,8 @@ export async function syncMeasurements(opts: { limit?: number } = {}) {
 
   let updated = 0;
   let missed = 0;
+  /** Сколько строк пришло от UPS, то есть манифестом и для спора негодно. */
+  let unreliable = 0;
   for (const row of rows) {
     let m: CarrierMeasurement | null = null;
     try {
@@ -160,9 +183,25 @@ export async function syncMeasurements(opts: { limit?: number } = {}) {
       missed++;
       continue;
     }
+    const auditSource = auditSourceForCarrier(row.carrier);
+    const audited = {
+      auditedDimL: m.dimL,
+      auditedDimW: m.dimW,
+      auditedDimH: m.dimH,
+      auditedDimUnit: "IN",
+      auditedWeight: m.weightLbs,
+      auditedWeightUnit: "LB",
+      auditSource,
+      auditCapturedAt: new Date(),
+    };
+    const cls = classifyByAudit({ ...row, ...audited });
+
     await prisma.shippingAdjustment.update({
       where: { id: row.id },
       data: {
+        ...audited,
+        disputeClass: cls.cls,
+        // Устаревшие поля — только ради старой ручки dispute-pack.
         adjustedWeightLbs: m.weightLbs,
         adjustedDimL: m.dimL,
         adjustedDimW: m.dimW,
@@ -170,7 +209,8 @@ export async function syncMeasurements(opts: { limit?: number } = {}) {
         service: row.service ?? m.service,
       },
     });
+    if (auditSource === AUDIT_SOURCES.UPS_API_MANIFEST_UNRELIABLE) unreliable++;
     updated++;
   }
-  return { scanned: rows.length, updated, missed };
+  return { scanned: rows.length, updated, missed, unreliable };
 }
