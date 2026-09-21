@@ -406,10 +406,68 @@ model ShippingAdjustment {
   declaredDimH      Float?
   originalLabelCost Float?
 
+  // 🔴 УСТАРЕЛО (21.09.2026). Эти четыре поля заполнялись из Track API без
+  // различения источника, поэтому для UPS в них лежит МАНИФЕСТ (то, что мы сами
+  // ввели при покупке лейбла), а не аудит перевозчика. Спорить по ним нельзя.
+  // Оставлены только ради истории и старых пакетов доказательств; новая правда
+  // живёт в audited* / entered* ниже. Не читать в новом коде.
   adjustedWeightLbs Float?
   adjustedDimL      Float?
   adjustedDimW      Float?
   adjustedDimH      Float?
+
+  // --- Настоящий аудит габаритов (реестр споров, 21.09.2026) ---------------
+  //
+  // entered* — то, что мы САМИ заявили при покупке лейбла, как это показывает
+  // Amazon на странице Transaction Details. Отличается от declared* тем, что
+  // declared* приходит из нашей SKU-базы, а entered* — из кабинета Amazon,
+  // то есть это ровно та цифра, против которой перевозчик выставил претензию.
+  enteredDimL       Float?
+  enteredDimW       Float?
+  enteredDimH       Float?
+  enteredDimUnit    String? // IN | CM
+  enteredWeight     Float?
+  enteredWeightUnit String? // LB | OZ | KG
+  //
+  // audited* — то, что намерил измеритель перевозчика.
+  auditedDimL       Float?
+  auditedDimW       Float?
+  auditedDimH       Float?
+  auditedDimUnit    String? // IN | CM
+  auditedWeight     Float?
+  auditedWeightUnit String? // LB | OZ | KG
+  //
+  // 🔴 Откуда взялись audited*. Классификация обязана это учитывать:
+  //   TRANSACTION_DETAILS         — страница Transaction Details в Seller Central,
+  //                                 единственный полноценный источник аудита;
+  //   FEDEX_API                   — FedEx Track API, аудит подтверждён сверкой
+  //                                 с Amazon 21.09.2026 (13x42x11 сошлось до цифры);
+  //   UPS_API_MANIFEST_UNRELIABLE — UPS Track API отдаёт манифест, а не аудит.
+  //                                 Строки с этим источником в спорные классы
+  //                                 не попадают НИКОГДА.
+  auditSource     String?
+  auditCapturedAt DateTime?
+
+  // Разбивка начисления перевозчика: JSON-массив
+  // [{ label: "Fuel Surcharge", amount: -4.12 }, …] ровно так, как статьи
+  // названы на странице Transaction Details.
+  chargeBreakdown       String?
+  amountAlreadyPaid     Float? // сколько за лейбл уже было списано
+  totalChargeFromCarrier Float? // сколько перевозчик выставил итого
+  transactionTotal      Float? // итог транзакции на странице details
+  financialEventId      String?
+  transactionDetailsUrl String? // ссылка на саму страницу в Seller Central
+
+  // Класс расхождения на честных данных — считается audit-classify.ts и
+  // кэшируется, чтобы реестр фильтровался в базе, а не в памяти.
+  disputeClass String? // NO_AUDIT_DATA | MATCH | SCANNER_NOISE | DISCREPANCY | GROSS_DIM | GROSS_WEIGHT | SURCHARGE_ONLY
+
+  // Статус урегулирования, производный от последнего события истории.
+  disputeStatus      String?   @default("NONE") // NONE | FILED | AWAITING | REJECTED | PARTIAL | REFUNDED | ESCALATED | CLOSED
+  amountRecovered    Float?    @default(0)
+  lastDisputeEventAt DateTime?
+
+  disputeEvents AdjustmentDisputeEvent[]
 
   reviewed     Boolean @default(false)
   skuDataFixed Boolean @default(false)
@@ -425,6 +483,55 @@ model ShippingAdjustment {
   @@index([channel, createdAt])
   @@index([adjustmentDate])
   @@index([sku])
+  @@index([storeId, disputeClass])
+  @@index([trackingNumber])
+  @@index([disputeStatus])
+}
+
+/// История урегулирования по одному списанию — по записи на событие.
+///
+/// Amazon отказывает на групповые претензии и принимает только поштучные
+/// (order ID + конкретное расхождение), поэтому переписка по каждому заказу
+/// живёт своей жизнью: подали, уточнили, получили инструкцию, получили отказ,
+/// эскалировали. Хранить это в одном поле notes невозможно — отсюда отдельная
+/// таблица many-to-one, чтобы на строке реестра было видно последнее событие,
+/// а в раскрытии — вся переписка целиком.
+model AdjustmentDisputeEvent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  adjustmentId String
+  adjustment   ShippingAdjustment @relation(fields: [adjustmentId], references: [id], onDelete: Cascade)
+
+  eventDate String   // YYYY-MM-DD — дата события по календарю Владимира
+  eventAt   DateTime @default(now()) // точная метка, если известна
+
+  /// FILED — подано обращение
+  /// CLARIFICATION — мы дослали уточнение
+  /// AMAZON_REPLY — ответ Amazon (инструкция, запрос данных)
+  /// REJECTED — отказ
+  /// PARTIAL_REFUND — вернули часть
+  /// REFUND — вернули полностью
+  /// ESCALATED — эскалация
+  /// CLOSED — закрыто
+  /// NOTE — служебная пометка оператора
+  eventType String
+
+  caseId  String? // номер кейса Amazon, напр. 22167316661
+  storeId String? // store1..5 — из какого кабинета подано
+
+  amountInDispute Float? // сколько оспариваем
+  amountRefunded  Float? // сколько по итогам вернули
+
+  summary String? // суть события / текст ответа
+
+  /// EMAIL | CASE_PAGE | MANUAL | IMPORT — откуда знаем о событии
+  sourceType String?
+  sourceRef  String? // message-id письма, URL страницы кейса, имя файла импорта
+
+  @@index([adjustmentId, eventDate])
+  @@index([caseId])
+  @@index([eventType])
 }
 
 model SkuAdjustmentProfile {
