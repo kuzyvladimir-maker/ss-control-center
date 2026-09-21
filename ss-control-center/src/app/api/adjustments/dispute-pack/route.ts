@@ -22,6 +22,7 @@ import {
   DISPUTE_CLASS_LABEL,
   type DisputeClass,
 } from "@/lib/adjustments/carrier-measure";
+import { EXCLUDED_BLOCKED_ACCOUNT, originFor } from "@/lib/adjustments/submission-origin";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -33,6 +34,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { error: "store is required — пакет доказательств собирается строго по одному аккаунту" },
       { status: 400 }
+    );
+  }
+  // Заблокированный аккаунт в очередь спора не попадает никогда: строки живут
+  // в реестре со статусом EXCLUDED_BLOCKED_ACCOUNT, но пакет по ним не собрать.
+  const origin = originFor(store);
+  if (origin?.blocked) {
+    return NextResponse.json(
+      {
+        error: `${origin.account}: подача запрещена — ${origin.blockedReason ?? "аккаунт заблокирован"}`,
+        status: EXCLUDED_BLOCKED_ACCOUNT,
+      },
+      { status: 409 }
     );
   }
   const since = new Date(Date.now() - days * 86400_000);
@@ -86,6 +99,11 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     store,
+    // Откуда это подаётся — чтобы кабинет и VPS брались из справочника, а не
+    // из памяти оператора.
+    submitFrom: origin
+      ? { store: origin.storeId, account: origin.account, vps: origin.vps }
+      : null,
     class: want,
     label: DISPUTE_CLASS_LABEL[want] ?? null,
     count: items.length,

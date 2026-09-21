@@ -55,6 +55,7 @@ const STATUS_LABEL: Record<string, string> = {
   REFUNDED: "Вернули",
   ESCALATED: "Эскалация",
   CLOSED: "Закрыто",
+  EXCLUDED_BLOCKED_ACCOUNT: "Аккаунт заблокирован — не подаём",
 };
 
 const EVENT_LABEL: Record<string, string> = {
@@ -83,6 +84,21 @@ const STORES = [
   { id: "store5", name: "Retailer Distributor" },
   { id: "walmart-store1", name: "Walmart" },
 ];
+
+/**
+ * Справочник подачи — тот же, что в lib/adjustments/submission-origin.ts.
+ * Здесь он нужен, чтобы оператор выбирал кабинет и VPS из списка, а не вбивал
+ * руками: 20.09.2026 в кейс Salutem уехали 16 строк AMZ Commerce именно из-за
+ * ручной сборки выборки.
+ */
+const SUBMISSION_ORIGINS = [
+  { id: "store1", name: "Salutem Solutions", vps: "209.208.63.54", blocked: false },
+  { id: "store3", name: "AMZ Commerce LLC", vps: "209.208.78.229", blocked: false },
+  { id: "store5", name: "Retailer Distributor", vps: "209.208.79.131", blocked: true },
+];
+
+/** Типы событий, означающие исходящую подачу: для них кабинет и VPS обязательны. */
+const SUBMISSION_EVENT_TYPES = ["FILED", "CLARIFICATION", "ESCALATED"];
 
 interface ChargeLine {
   label: string;
@@ -124,6 +140,16 @@ interface RegistryRow {
   disputeClass: string;
   disputeClassLabel: string | null;
   disputeStatus: string;
+  submittable: boolean;
+  blockedReason: string | null;
+  submittedFrom: {
+    store: string | null;
+    account: string | null;
+    vps: string | null;
+    eventDate: string;
+    caseId: string | null;
+    mismatch: boolean;
+  } | null;
   disputeCaseId: string | null;
   amountRecovered: number;
   financialEventId: string | null;
@@ -143,6 +169,8 @@ interface DisputeEvent {
   eventType: string;
   caseId: string | null;
   storeId: string | null;
+  submittedFromStore: string | null;
+  submittedFromVps: string | null;
   amountInDispute: number | null;
   amountRefunded: number | null;
   summary: string | null;
@@ -162,6 +190,8 @@ interface Filters {
   carrier: string;
   cls: string;
   status: string;
+  submittedFrom: string;
+  originMismatch: boolean;
   amountMin: string;
   amountMax: string;
   days: string;
@@ -174,6 +204,8 @@ const EMPTY_FILTERS: Filters = {
   carrier: "",
   cls: "",
   status: "",
+  submittedFrom: "",
+  originMismatch: false,
   amountMin: "",
   amountMax: "",
   days: "180",
@@ -187,6 +219,8 @@ function buildParams(f: Filters): URLSearchParams {
   if (f.carrier) p.set("carrier", f.carrier);
   if (f.cls) p.set("class", f.cls);
   if (f.status) p.set("status", f.status);
+  if (f.submittedFrom) p.set("submittedFrom", f.submittedFrom);
+  if (f.originMismatch) p.set("originMismatch", "1");
   if (f.amountMin) p.set("amountMin", f.amountMin);
   if (f.amountMax) p.set("amountMax", f.amountMax);
   if (f.q) p.set("q", f.q);
@@ -311,6 +345,30 @@ export default function AdjustmentsRegistry() {
           ))}
         </select>
 
+        <select
+          className={selectClass}
+          value={filters.submittedFrom}
+          onChange={(e) => set({ submittedFrom: e.target.value })}
+          title="Из какого кабинета подано"
+        >
+          <option value="">Откуда подано: любой</option>
+          <option value="__none__">Не подавали</option>
+          {SUBMISSION_ORIGINS.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name} · {o.vps}
+            </option>
+          ))}
+        </select>
+
+        <label className="flex items-center gap-1 text-[12px] text-ink-2" title="Кабинет или VPS подачи не совпал со справочником">
+          <input
+            type="checkbox"
+            checked={filters.originMismatch}
+            onChange={(e) => set({ originMismatch: e.target.checked })}
+          />
+          чужой кабинет/VPS
+        </label>
+
         <div className="flex items-center gap-1">
           <input
             className={`${selectClass} w-24`}
@@ -349,6 +407,7 @@ export default function AdjustmentsRegistry() {
           <option value="store">Итоги по аккаунту</option>
           <option value="carrier">Итоги по перевозчику</option>
           <option value="status">Итоги по статусу</option>
+          <option value="submittedFrom">Итоги по кабинету подачи</option>
         </select>
 
         <button
@@ -413,6 +472,7 @@ export default function AdjustmentsRegistry() {
                 <th className="font-medium text-right">Списано</th>
                 <th className="font-medium">Класс</th>
                 <th className="font-medium">Спор</th>
+                <th className="font-medium">Откуда подано</th>
                 <th className="font-medium">Кейс</th>
                 <th className="font-medium">Последнее событие</th>
               </tr>
@@ -490,6 +550,30 @@ export default function AdjustmentsRegistry() {
                           <span className="ml-1 text-success">{money(r.amountRecovered)}</span>
                         )}
                       </td>
+                      <td className="whitespace-nowrap">
+                        {r.submittedFrom ? (
+                          <span
+                            className={
+                              r.submittedFrom.mismatch
+                                ? "rounded bg-danger-tint px-1.5 py-0.5 text-danger-strong"
+                                : "text-ink-2"
+                            }
+                            title={
+                              r.submittedFrom.mismatch
+                                ? "Кабинет или VPS подачи не совпал со справочником — проверить немедленно"
+                                : undefined
+                            }
+                          >
+                            {r.submittedFrom.mismatch && "⚠ "}
+                            {r.submittedFrom.account ?? "—"}
+                            <span className="ml-1 font-mono text-ink-3">
+                              {r.submittedFrom.vps ?? "—"}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-ink-3">—</span>
+                        )}
+                      </td>
                       <td className="font-mono whitespace-nowrap text-ink-3">{r.disputeCaseId ?? "—"}</td>
                       <td className="max-w-[200px] truncate text-ink-3">
                         {r.lastEvent
@@ -501,7 +585,7 @@ export default function AdjustmentsRegistry() {
                     {expanded && (
                       <tr className="border-b border-rule/40 bg-surface-tint/50">
                         <td />
-                        <td colSpan={14} className="px-2 py-3">
+                        <td colSpan={15} className="px-2 py-3">
                           <div className="grid gap-4 md:grid-cols-2">
                             {/* Состав начисления и источник аудита */}
                             <div>
@@ -577,6 +661,14 @@ export default function AdjustmentsRegistry() {
                                           </span>
                                         )}
                                       </div>
+                                      {e.submittedFromStore && (
+                                        <div className="text-[10.5px] text-ink-3">
+                                          подано из:{" "}
+                                          {SUBMISSION_ORIGINS.find((o) => o.id === e.submittedFromStore)
+                                            ?.name ?? e.submittedFromStore}
+                                          {e.submittedFromVps ? ` · VPS ${e.submittedFromVps}` : ""}
+                                        </div>
+                                      )}
                                       {e.summary && <div className="text-ink-2">{e.summary}</div>}
                                       {e.sourceType && (
                                         <div className="text-[10.5px] text-ink-3">
@@ -590,6 +682,9 @@ export default function AdjustmentsRegistry() {
                               )}
                               <AddEventForm
                                 adjustmentId={r.id}
+                                rowStoreId={r.storeId}
+                                submittable={r.submittable}
+                                blockedReason={r.blockedReason}
                                 onAdded={() => {
                                   loadEvents(r.id);
                                   load();
@@ -611,12 +706,24 @@ export default function AdjustmentsRegistry() {
   );
 }
 
-/** Запись события переписки. Ничего никуда не отправляет — только журнал. */
+/**
+ * Запись события переписки. Ничего никуда не отправляет — только журнал.
+ *
+ * Событие подачи требует кабинета и VPS: без них сервер запись не создаст, и
+ * форма это повторяет, чтобы ошибка ловилась до запроса. VPS подставляется из
+ * справочника по выбранному кабинету и руками не вводится.
+ */
 function AddEventForm({
   adjustmentId,
+  rowStoreId,
+  submittable,
+  blockedReason,
   onAdded,
 }: {
   adjustmentId: string;
+  rowStoreId: string | null;
+  submittable: boolean;
+  blockedReason: string | null;
   onAdded: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -625,10 +732,28 @@ function AddEventForm({
   const [summary, setSummary] = useState("");
   const [refunded, setRefunded] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // Кабинет подачи по умолчанию — тот, на который упало списание.
+  const [fromStore, setFromStore] = useState(rowStoreId ?? "");
 
   const input = "rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink";
+  const isSubmission = SUBMISSION_EVENT_TYPES.includes(eventType);
+  const origin = SUBMISSION_ORIGINS.find((o) => o.id === fromStore) ?? null;
 
   async function save() {
+    setError(null);
+    if (isSubmission && (!origin || origin.blocked)) {
+      setError(
+        origin?.blocked
+          ? `${origin.name}: подача запрещена, аккаунт заблокирован`
+          : "выберите кабинет подачи — без него и его VPS событие не записывается"
+      );
+      return;
+    }
+    if (isSubmission && rowStoreId && origin && rowStoreId !== origin.id) {
+      setError("кабинет подачи не совпадает с аккаунтом списания — смешивать нельзя");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/adjustments/dispute-events", {
@@ -641,9 +766,13 @@ function AddEventForm({
           summary: summary.trim() || null,
           amountRefunded: refunded ? parseFloat(refunded) : null,
           sourceType: "MANUAL",
+          ...(isSubmission && origin
+            ? { submittedFromStore: origin.id, submittedFromVps: origin.vps }
+            : {}),
         }),
       });
-      if (!res.ok) throw new Error(`POST failed (${res.status})`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `POST failed (${res.status})`);
       setOpen(false);
       setCaseId("");
       setSummary("");
@@ -651,10 +780,18 @@ function AddEventForm({
       onAdded();
     } catch (err) {
       console.error("add event failed", err);
-      alert("Не удалось записать событие");
+      setError(err instanceof Error ? err.message : "Не удалось записать событие");
     } finally {
       setSaving(false);
     }
+  }
+
+  if (!submittable) {
+    return (
+      <p className="mt-2 rounded-md bg-danger-tint px-2 py-1 text-[12px] text-danger-strong">
+        {blockedReason ?? "Аккаунт заблокирован"} — событий по этой строке не заводим.
+      </p>
+    );
   }
 
   if (!open) {
@@ -693,6 +830,27 @@ function AddEventForm({
           onChange={(e) => setRefunded(e.target.value)}
         />
       </div>
+
+      {isSubmission && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <select className={input} value={fromStore} onChange={(e) => setFromStore(e.target.value)}>
+            <option value="">кабинет подачи…</option>
+            {SUBMISSION_ORIGINS.map((o) => (
+              <option key={o.id} value={o.id} disabled={o.blocked}>
+                {o.name}
+                {o.blocked ? " — заблокирован" : ""}
+              </option>
+            ))}
+          </select>
+          <span className="font-mono text-[11.5px] text-ink-3">
+            VPS {origin?.vps ?? "—"}
+          </span>
+        </div>
+      )}
+
+      {error && (
+        <p className="rounded-md bg-danger-tint px-2 py-1 text-[11.5px] text-danger-strong">{error}</p>
+      )}
       <textarea
         className={`${input} w-full`}
         rows={2}

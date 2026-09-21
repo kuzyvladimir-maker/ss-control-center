@@ -518,7 +518,14 @@ model AdjustmentDisputeEvent {
   eventType String
 
   caseId  String? // номер кейса Amazon, напр. 22167316661
-  storeId String? // store1..5 — из какого кабинета подано
+  storeId String? // store1..5 — аккаунт, на который упало списание
+
+  /// Из какого кабинета Seller Central подано. Обязателен для событий подачи
+  /// (FILED, CLARIFICATION, ESCALATED) — проверяется в addDisputeEvent.
+  submittedFromStore String?
+  /// IP VPS, с которого шла подача. Должен совпасть со справочником
+  /// lib/adjustments/submission-origin.ts: подача с чужого VPS связывает аккаунты.
+  submittedFromVps String?
 
   amountInDispute Float? // сколько оспариваем
   amountRefunded  Float? // сколько по итогам вернули
@@ -532,6 +539,7 @@ model AdjustmentDisputeEvent {
   @@index([adjustmentId, eventDate])
   @@index([caseId])
   @@index([eventType])
+  @@index([submittedFromStore])
 }
 
 model SkuAdjustmentProfile {

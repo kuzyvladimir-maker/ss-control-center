@@ -11,7 +11,9 @@
  *   channel=Amazon
  *   carrier=FEDEX,UPS         __none__ — перевозчик не определён
  *   class=GROSS_DIM,MATCH     класс расхождения
- *   status=FILED,REJECTED     статус спора
+ *   status=FILED,REJECTED     статус спора (EXCLUDED_BLOCKED_ACCOUNT — заблокированный аккаунт)
+ *   submittedFrom=store1      из какого кабинета подавали; __none__ — не подавали ниоткуда
+ *   originMismatch=1          только строки, где кабинет/VPS подачи не сошлись со справочником
  *   source=TRANSACTION_DETAILS
  *   amountMin=50&amountMax=900  по модулю суммы списания, USD
  *   days=180 | from=YYYY-MM-DD&to=YYYY-MM-DD
@@ -24,12 +26,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { CLASS_LABEL, parseChargeBreakdown } from "@/lib/adjustments/audit-classify";
+import {
+  EXCLUDED_BLOCKED_ACCOUNT,
+  STORE_ORIGINS,
+  isBlockedStore,
+  isSubmissionEvent,
+  originFor,
+  originMismatch,
+} from "@/lib/adjustments/submission-origin";
 
 const list = (v: string | null): string[] =>
   (v || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+
+/** Аккаунты, с которых подача запрещена — их строки не идут в очередь спора. */
+const BLOCKED_STORE_IDS = Object.values(STORE_ORIGINS)
+  .filter((o) => o.blocked)
+  .map((o) => o.storeId);
 
 const ACCOUNT_NAMES: Record<string, string> = {
   store1: "Salutem Solutions",
@@ -52,6 +67,8 @@ export async function GET(request: NextRequest) {
   const carriers = list(sp.get("carrier"));
   const classes = list(sp.get("class"));
   const statuses = list(sp.get("status"));
+  const submittedFrom = list(sp.get("submittedFrom"));
+  const onlyMismatch = sp.get("originMismatch") === "1";
   const sources = list(sp.get("source"));
   const channel = sp.get("channel");
   const q = (sp.get("q") || "").trim();
@@ -66,8 +83,34 @@ export async function GET(request: NextRequest) {
   if (channel) where.channel = channel;
   if (stores.length) where.storeId = { in: stores };
   if (classes.length) where.disputeClass = { in: classes };
-  if (statuses.length) where.disputeStatus = { in: statuses };
   if (sources.length) where.auditSource = { in: sources };
+
+  // Статус заблокированного аккаунта не хранится в строке, а следует из
+  // справочника подачи: фильтр переводим в условие по storeId.
+  if (statuses.length) {
+    const wantsBlocked = statuses.includes(EXCLUDED_BLOCKED_ACCOUNT);
+    const others = statuses.filter((s) => s !== EXCLUDED_BLOCKED_ACCOUNT);
+    const clauses: Prisma.ShippingAdjustmentWhereInput[] = [];
+    if (wantsBlocked) clauses.push({ storeId: { in: BLOCKED_STORE_IDS } });
+    if (others.length) {
+      clauses.push({ disputeStatus: { in: others }, storeId: { notIn: BLOCKED_STORE_IDS } });
+    }
+    and.push(clauses.length === 1 ? clauses[0] : { OR: clauses });
+  }
+
+  // «Откуда подано» — по событиям строки. __none__ = ни одного события подачи.
+  if (submittedFrom.length) {
+    const named = submittedFrom.filter((s) => s !== "__none__");
+    const wantsNone = submittedFrom.includes("__none__");
+    const clauses: Prisma.ShippingAdjustmentWhereInput[] = [];
+    if (named.length) {
+      clauses.push({ disputeEvents: { some: { submittedFromStore: { in: named } } } });
+    }
+    if (wantsNone) {
+      clauses.push({ disputeEvents: { none: { submittedFromStore: { not: null } } } });
+    }
+    and.push(clauses.length === 1 ? clauses[0] : { OR: clauses });
+  }
 
   if (carriers.length) {
     const named = carriers.filter((c) => c !== "__none__");
@@ -127,15 +170,21 @@ export async function GET(request: NextRequest) {
     orderBy: [{ adjustmentDate: "desc" }, { createdAt: "desc" }],
     take: limit,
     include: {
+      // Берём последние события целиком: из них нужно не только самое свежее,
+      // но и последняя подача — по ней видно кабинет и VPS.
       disputeEvents: {
         orderBy: [{ eventDate: "desc" }, { eventAt: "desc" }],
-        take: 1,
+        take: 20,
       },
     },
   });
 
-  const items = rows.map((r) => {
+  let items = rows.map((r) => {
     const last = r.disputeEvents[0] ?? null;
+    const submission =
+      r.disputeEvents.find((e) => isSubmissionEvent(e.eventType) && e.submittedFromStore) ?? null;
+    const blocked = isBlockedStore(r.storeId);
+    const blockedOrigin = blocked ? originFor(r.storeId) : null;
     return {
       id: r.id,
       date: r.adjustmentDate,
@@ -175,7 +224,31 @@ export async function GET(request: NextRequest) {
 
       disputeClass: r.disputeClass ?? "NO_AUDIT_DATA",
       disputeClassLabel: CLASS_LABEL[(r.disputeClass ?? "NO_AUDIT_DATA") as keyof typeof CLASS_LABEL] ?? null,
-      disputeStatus: r.disputeStatus ?? "NONE",
+      // Заблокированный аккаунт виден в реестре, но подать по нему нечего —
+      // терминальный статус перекрывает всё, что было в переписке.
+      disputeStatus: blocked ? EXCLUDED_BLOCKED_ACCOUNT : (r.disputeStatus ?? "NONE"),
+      submittable: !blocked,
+      blockedReason: blockedOrigin?.blockedReason ?? null,
+
+      submittedFrom: submission
+        ? {
+            store: submission.submittedFromStore,
+            account: submission.submittedFromStore
+              ? (originFor(submission.submittedFromStore)?.account ??
+                ACCOUNT_NAMES[submission.submittedFromStore] ??
+                submission.submittedFromStore)
+              : null,
+            vps: submission.submittedFromVps,
+            eventDate: submission.eventDate,
+            caseId: submission.caseId,
+            mismatch: originMismatch(
+              r.storeId,
+              submission.submittedFromStore,
+              submission.submittedFromVps
+            ),
+          }
+        : null,
+
       disputeCaseId: r.disputeCaseId,
       amountRecovered: r.amountRecovered ?? 0,
       financialEventId: r.financialEventId,
@@ -193,11 +266,16 @@ export async function GET(request: NextRequest) {
     };
   });
 
+  // Смешение кабинетов — отдельный срез: расхождение ищут глазами, поэтому
+  // фильтр должен давать ровно эти строки и ничего больше.
+  if (onlyMismatch) items = items.filter((i) => i.submittedFrom?.mismatch);
+
   // Итоги по группам — строк и сумма, чтобы было видно, где деньги.
   const groupKey = (i: (typeof items)[number]): string => {
     if (groupBy === "store") return i.account ?? "—";
     if (groupBy === "carrier") return i.carrier ?? "—";
     if (groupBy === "status") return i.disputeStatus;
+    if (groupBy === "submittedFrom") return i.submittedFrom?.account ?? "не подавали";
     return i.disputeClass;
   };
   const groupMap = new Map<string, { key: string; count: number; amount: number; recovered: number }>();
@@ -230,6 +308,7 @@ export async function GET(request: NextRequest) {
       "entered_dims", "entered_weight", "audited_dims", "audited_weight", "audit_source",
       "charges", "label_cost", "amount", "class", "dispute_status", "case_id",
       "amount_recovered", "last_event_date", "last_event_type",
+      "submitted_from_account", "submitted_from_vps", "origin_mismatch",
     ];
     const esc = (v: unknown): string => {
       if (v == null) return "";
@@ -247,6 +326,8 @@ export async function GET(request: NextRequest) {
           i.charges.map((c) => `${c.label}: ${c.amount}`).join("; "),
           i.labelCost, i.amount, i.disputeClass, i.disputeStatus, i.disputeCaseId,
           i.amountRecovered, i.lastEvent?.date, i.lastEvent?.type,
+          i.submittedFrom?.account, i.submittedFrom?.vps,
+          i.submittedFrom?.mismatch ? "MISMATCH" : "",
         ]
           .map(esc)
           .join(",")

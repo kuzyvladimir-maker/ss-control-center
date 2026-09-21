@@ -13,8 +13,10 @@ import { prisma } from "@/lib/prisma";
 import {
   addDisputeEvent,
   isDisputeEventType,
+  SubmissionOriginError,
   DISPUTE_EVENT_TYPES,
 } from "@/lib/adjustments/dispute-history";
+import { isBlockedStore, originFor } from "@/lib/adjustments/submission-origin";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -68,24 +70,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "списание не найдено" }, { status: 404 });
   }
 
+  // Заблокированный аккаунт из переписки выключен целиком: по его строкам
+  // событий не заводим, чтобы они не выглядели поданными.
+  if (isBlockedStore(row.storeId)) {
+    const o = originFor(row.storeId);
+    return NextResponse.json(
+      {
+        error: `${o?.account ?? row.storeId}: ${o?.blockedReason ?? "аккаунт заблокирован"} — события по его строкам не записываем`,
+      },
+      { status: 409 }
+    );
+  }
+
   const num = (v: unknown): number | null =>
     typeof v === "number" && Number.isFinite(v) ? v : null;
 
-  const event = await addDisputeEvent({
-    adjustmentId,
-    eventType,
-    eventDate: typeof body.eventDate === "string" ? body.eventDate : undefined,
-    eventAt: typeof body.eventAt === "string" ? new Date(body.eventAt) : undefined,
-    caseId: typeof body.caseId === "string" ? body.caseId : null,
-    // Аккаунт по умолчанию берём со строки: кейс подаётся из кабинета того
-    // юрлица, на которое упало списание, смешивать аккаунты нельзя.
-    storeId: typeof body.storeId === "string" ? body.storeId : row.storeId,
-    amountInDispute: num(body.amountInDispute) ?? Math.abs(row.adjustmentAmount),
-    amountRefunded: num(body.amountRefunded),
-    summary: typeof body.summary === "string" ? body.summary : null,
-    sourceType: typeof body.sourceType === "string" ? body.sourceType : "MANUAL",
-    sourceRef: typeof body.sourceRef === "string" ? body.sourceRef : null,
-  });
-
-  return NextResponse.json({ ok: true, event });
+  try {
+    const event = await addDisputeEvent({
+      adjustmentId,
+      eventType,
+      eventDate: typeof body.eventDate === "string" ? body.eventDate : undefined,
+      eventAt: typeof body.eventAt === "string" ? new Date(body.eventAt) : undefined,
+      caseId: typeof body.caseId === "string" ? body.caseId : null,
+      // Аккаунт по умолчанию берём со строки: кейс подаётся из кабинета того
+      // юрлица, на которое упало списание, смешивать аккаунты нельзя.
+      storeId: typeof body.storeId === "string" ? body.storeId : row.storeId,
+      submittedFromStore:
+        typeof body.submittedFromStore === "string" ? body.submittedFromStore : null,
+      submittedFromVps:
+        typeof body.submittedFromVps === "string" ? body.submittedFromVps : null,
+      amountInDispute: num(body.amountInDispute) ?? Math.abs(row.adjustmentAmount),
+      amountRefunded: num(body.amountRefunded),
+      summary: typeof body.summary === "string" ? body.summary : null,
+      sourceType: typeof body.sourceType === "string" ? body.sourceType : "MANUAL",
+      sourceRef: typeof body.sourceRef === "string" ? body.sourceRef : null,
+    });
+    return NextResponse.json({ ok: true, event });
+  } catch (err) {
+    if (err instanceof SubmissionOriginError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+    throw err;
+  }
 }

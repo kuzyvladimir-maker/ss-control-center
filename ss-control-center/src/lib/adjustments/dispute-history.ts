@@ -8,6 +8,12 @@
  * другому, поданному днём раньше.
  */
 import { prisma } from "@/lib/prisma";
+import {
+  EXCLUDED_BLOCKED_ACCOUNT,
+  checkSubmissionOrigin,
+  isBlockedStore,
+  isSubmissionEvent,
+} from "@/lib/adjustments/submission-origin";
 
 export const DISPUTE_EVENT_TYPES = [
   "FILED",
@@ -43,7 +49,8 @@ export type DisputeStatus =
   | "PARTIAL"
   | "REFUNDED"
   | "ESCALATED"
-  | "CLOSED";
+  | "CLOSED"
+  | "EXCLUDED_BLOCKED_ACCOUNT";
 
 export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
   NONE: "Не подавали",
@@ -54,6 +61,7 @@ export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
   REFUNDED: "Вернули",
   ESCALATED: "Эскалация",
   CLOSED: "Закрыто",
+  EXCLUDED_BLOCKED_ACCOUNT: "Аккаунт заблокирован — не подаём",
 };
 
 /** Событие → статус, в котором оказывается спор после него. */
@@ -125,8 +133,18 @@ export function summarizeEvents(events: EventLike[]): {
   };
 }
 
-/** Пересчитывает сводку спора на строке списания по её событиям. */
+/**
+ * Пересчитывает сводку спора на строке списания по её событиям.
+ *
+ * Строка заблокированного аккаунта получает терминальный статус
+ * EXCLUDED_BLOCKED_ACCOUNT: она остаётся в реестре и в аналитике, но в очередь
+ * подачи не попадает никогда.
+ */
 export async function refreshDisputeSummary(adjustmentId: string) {
+  const row = await prisma.shippingAdjustment.findUnique({
+    where: { id: adjustmentId },
+    select: { storeId: true },
+  });
   const events = await prisma.adjustmentDisputeEvent.findMany({
     where: { adjustmentId },
     select: {
@@ -137,7 +155,10 @@ export async function refreshDisputeSummary(adjustmentId: string) {
       amountRefunded: true,
     },
   });
-  const summary = summarizeEvents(events);
+  const base = summarizeEvents(events);
+  const summary = isBlockedStore(row?.storeId)
+    ? { ...base, disputeStatus: EXCLUDED_BLOCKED_ACCOUNT as DisputeStatus }
+    : base;
   await prisma.shippingAdjustment.update({
     where: { id: adjustmentId },
     data: {
@@ -160,6 +181,10 @@ export interface NewDisputeEvent {
   eventType: DisputeEventType;
   caseId?: string | null;
   storeId?: string | null;
+  /** Из какого кабинета Seller Central подано — обязательно для событий подачи */
+  submittedFromStore?: string | null;
+  /** IP VPS, с которого шла подача — обязательно для событий подачи */
+  submittedFromVps?: string | null;
   amountInDispute?: number | null;
   amountRefunded?: number | null;
   summary?: string | null;
@@ -167,9 +192,35 @@ export interface NewDisputeEvent {
   sourceRef?: string | null;
 }
 
+/** Ошибка источника подачи — ручка возвращает её текст оператору как есть. */
+export class SubmissionOriginError extends Error {}
+
+/**
+ * Запись события. Событие подачи (FILED, CLARIFICATION, ESCALATED) без
+ * кабинета и VPS не создаётся вообще: валидация стоит здесь, а не в ручке,
+ * чтобы её нельзя было обойти импортом или скриптом.
+ */
 export async function addDisputeEvent(input: NewDisputeEvent) {
   const eventAt = input.eventAt ?? new Date();
   const eventDate = input.eventDate ?? eventAt.toISOString().slice(0, 10);
+
+  const rowStoreId = input.storeId ?? null;
+  let submittedFromStore = input.submittedFromStore ?? null;
+  let submittedFromVps = input.submittedFromVps ?? null;
+
+  if (isSubmissionEvent(input.eventType)) {
+    const check = checkSubmissionOrigin({
+      rowStoreId,
+      // Кабинет по умолчанию — тот, на который упало списание; VPS не
+      // подставляем молча, его называет тот, кто подавал.
+      submittedFromStore: submittedFromStore ?? rowStoreId,
+      submittedFromVps,
+    });
+    if (!check.ok) throw new SubmissionOriginError(check.error);
+    submittedFromStore = check.submittedFromStore;
+    submittedFromVps = check.submittedFromVps;
+  }
+
   const event = await prisma.adjustmentDisputeEvent.create({
     data: {
       adjustmentId: input.adjustmentId,
@@ -178,6 +229,8 @@ export async function addDisputeEvent(input: NewDisputeEvent) {
       eventType: input.eventType,
       caseId: input.caseId ?? null,
       storeId: input.storeId ?? null,
+      submittedFromStore,
+      submittedFromVps,
       amountInDispute: input.amountInDispute ?? null,
       amountRefunded: input.amountRefunded ?? null,
       summary: input.summary ?? null,
