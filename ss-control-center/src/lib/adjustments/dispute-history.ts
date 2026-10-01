@@ -16,9 +16,11 @@ import {
 } from "@/lib/adjustments/submission-origin";
 
 export const DISPUTE_EVENT_TYPES = [
+  "DRAFT",
   "FILED",
   "CLARIFICATION",
   "AMAZON_REPLY",
+  "AMAZON_REVIEW",
   "REJECTED",
   "PARTIAL_REFUND",
   "REFUND",
@@ -30,21 +32,25 @@ export const DISPUTE_EVENT_TYPES = [
 export type DisputeEventType = (typeof DISPUTE_EVENT_TYPES)[number];
 
 export const DISPUTE_EVENT_LABEL: Record<DisputeEventType, string> = {
+  DRAFT: "Черновик спора",
   FILED: "Подано",
   CLARIFICATION: "Уточнение",
   AMAZON_REPLY: "Ответ Amazon",
+  AMAZON_REVIEW: "Amazon взял на проверку",
   REJECTED: "Отказ",
   PARTIAL_REFUND: "Частичный возврат",
   REFUND: "Возврат",
-  ESCALATED: "Эскалация",
+  ESCALATED: "Повторная проверка",
   CLOSED: "Закрыто",
   NOTE: "Пометка",
 };
 
 export type DisputeStatus =
   | "NONE"
+  | "DRAFT"
   | "FILED"
   | "AWAITING"
+  | "REPLIED"
   | "REJECTED"
   | "PARTIAL"
   | "REFUNDED"
@@ -54,21 +60,25 @@ export type DisputeStatus =
 
 export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
   NONE: "Не подавали",
-  FILED: "Подано",
-  AWAITING: "Ждём ответа",
+  DRAFT: "Черновик",
+  FILED: "Открыт",
+  AWAITING: "Ждём ответа Amazon",
+  REPLIED: "Ответ Amazon — наш ход",
   REJECTED: "Отказ",
-  PARTIAL: "Вернули часть",
-  REFUNDED: "Вернули",
-  ESCALATED: "Эскалация",
+  PARTIAL: "Выигран частично",
+  REFUNDED: "Выигран",
+  ESCALATED: "Повторная проверка",
   CLOSED: "Закрыто",
   EXCLUDED_BLOCKED_ACCOUNT: "Аккаунт заблокирован — не подаём",
 };
 
 /** Событие → статус, в котором оказывается спор после него. */
 const STATUS_AFTER: Record<DisputeEventType, DisputeStatus> = {
+  DRAFT: "DRAFT",
   FILED: "FILED",
   CLARIFICATION: "AWAITING",
-  AMAZON_REPLY: "AWAITING",
+  AMAZON_REPLY: "REPLIED",
+  AMAZON_REVIEW: "AWAITING",
   REJECTED: "REJECTED",
   PARTIAL_REFUND: "PARTIAL",
   REFUND: "REFUNDED",
@@ -195,6 +205,13 @@ export interface NewDisputeEvent {
 /** Ошибка источника подачи — ручка возвращает её текст оператору как есть. */
 export class SubmissionOriginError extends Error {}
 
+/** События, которые засчитывают деньги как отвоёванные. */
+export const CREDIT_EVENT_TYPES = ["REFUND", "PARTIAL_REFUND"] as const;
+
+export function isCreditEvent(eventType: string): boolean {
+  return (CREDIT_EVENT_TYPES as readonly string[]).includes(eventType);
+}
+
 /**
  * Запись события. Событие подачи (FILED, CLARIFICATION, ESCALATED) без
  * кабинета и VPS не создаётся вообще: валидация стоит здесь, а не в ручке,
@@ -207,6 +224,21 @@ export async function addDisputeEvent(input: NewDisputeEvent) {
   const rowStoreId = input.storeId ?? null;
   let submittedFromStore = input.submittedFromStore ?? null;
   let submittedFromVps = input.submittedFromVps ?? null;
+
+  // Выиграно = кредит виден в Payments / SP-API. Письмо «мы уладим» — не
+  // кредит: без номера транзакции кредита возврат не записываем (01.10.2026,
+  // $848.82 по кейсу 22167316661 «одобрили» 30.09, а пришли деньги 29.09 —
+  // подтвердилось только по Transaction View).
+  if (isCreditEvent(input.eventType)) {
+    if (!input.sourceRef || !input.sourceRef.trim()) {
+      throw new SubmissionOriginError(
+        "возврат записывается только с номером транзакции кредита из Payments / SP-API (поле «транзакция кредита»)"
+      );
+    }
+    if (!(input.amountRefunded && input.amountRefunded > 0)) {
+      throw new SubmissionOriginError("у возврата должна быть сумма кредита больше нуля");
+    }
+  }
 
   if (isSubmissionEvent(input.eventType)) {
     const check = checkSubmissionOrigin({

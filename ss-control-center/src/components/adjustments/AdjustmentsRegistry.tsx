@@ -48,24 +48,28 @@ const CLASS_TONE: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   NONE: "Не подавали",
-  FILED: "Подано",
-  AWAITING: "Ждём ответа",
+  DRAFT: "Черновик",
+  FILED: "Открыт",
+  AWAITING: "Ждём ответа Amazon",
+  REPLIED: "Ответ Amazon — наш ход",
   REJECTED: "Отказ",
-  PARTIAL: "Вернули часть",
-  REFUNDED: "Вернули",
-  ESCALATED: "Эскалация",
+  PARTIAL: "Выигран частично",
+  REFUNDED: "Выигран",
+  ESCALATED: "Повторная проверка",
   CLOSED: "Закрыто",
   EXCLUDED_BLOCKED_ACCOUNT: "Аккаунт заблокирован — не подаём",
 };
 
 const EVENT_LABEL: Record<string, string> = {
+  DRAFT: "Черновик спора",
   FILED: "Подано",
   CLARIFICATION: "Уточнение",
   AMAZON_REPLY: "Ответ Amazon",
+  AMAZON_REVIEW: "Amazon взял на проверку",
   REJECTED: "Отказ",
   PARTIAL_REFUND: "Частичный возврат",
-  REFUND: "Возврат",
-  ESCALATED: "Эскалация",
+  REFUND: "Возврат (кредит в Payments)",
+  ESCALATED: "Повторная проверка",
   CLOSED: "Закрыто",
   NOTE: "Пометка",
 };
@@ -731,6 +735,8 @@ function AddEventForm({
   const [caseId, setCaseId] = useState("");
   const [summary, setSummary] = useState("");
   const [refunded, setRefunded] = useState("");
+  // Номер транзакции кредита из Payments / SP-API — без него возврат не пишется.
+  const [creditTx, setCreditTx] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Кабинет подачи по умолчанию — тот, на который упало списание.
@@ -738,6 +744,7 @@ function AddEventForm({
 
   const input = "rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink";
   const isSubmission = SUBMISSION_EVENT_TYPES.includes(eventType);
+  const isCredit = eventType === "REFUND" || eventType === "PARTIAL_REFUND";
   const origin = SUBMISSION_ORIGINS.find((o) => o.id === fromStore) ?? null;
 
   async function save() {
@@ -754,6 +761,10 @@ function AddEventForm({
       setError("кабинет подачи не совпадает с аккаунтом списания — смешивать нельзя");
       return;
     }
+    if (isCredit && (!creditTx.trim() || !(parseFloat(refunded) > 0))) {
+      setError("возврат — только когда кредит виден в Payments: нужны сумма и номер транзакции кредита");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/adjustments/dispute-events", {
@@ -765,7 +776,8 @@ function AddEventForm({
           caseId: caseId.trim() || null,
           summary: summary.trim() || null,
           amountRefunded: refunded ? parseFloat(refunded) : null,
-          sourceType: "MANUAL",
+          sourceType: isCredit ? "PAYMENTS" : "MANUAL",
+          ...(isCredit ? { sourceRef: creditTx.trim() } : {}),
           ...(isSubmission && origin
             ? { submittedFromStore: origin.id, submittedFromVps: origin.vps }
             : {}),
@@ -777,6 +789,7 @@ function AddEventForm({
       setCaseId("");
       setSummary("");
       setRefunded("");
+      setCreditTx("");
       onAdded();
     } catch (err) {
       console.error("add event failed", err);
@@ -829,6 +842,14 @@ function AddEventForm({
           value={refunded}
           onChange={(e) => setRefunded(e.target.value)}
         />
+        {isCredit && (
+          <input
+            className={`${input} w-56`}
+            placeholder="транзакция кредита (Payments)"
+            value={creditTx}
+            onChange={(e) => setCreditTx(e.target.value)}
+          />
+        )}
       </div>
 
       {isSubmission && (

@@ -23,6 +23,7 @@ import { Info, RefreshCw } from "lucide-react";
 import AdjustmentsTable from "@/components/adjustments/AdjustmentsTable";
 import AdjustmentsRegistry from "@/components/adjustments/AdjustmentsRegistry";
 import SkuIssuesPanel from "@/components/adjustments/SkuIssuesPanel";
+import DisputeBoard from "@/components/adjustments/DisputeBoard";
 
 interface Stats {
   thisMonth: number;
@@ -287,6 +288,9 @@ export default function AdjustmentsPage() {
       />
 
       {/* Sync status banner */}
+      {/* Дашборд споров — сводка по аккаунтам, кейсы, здоровье кронов */}
+      <DisputeBoard />
+
       {(syncMessage || syncError) && (
         <div
           className={`flex items-start gap-2 rounded-lg border px-4 py-2.5 text-[12.5px] ${
