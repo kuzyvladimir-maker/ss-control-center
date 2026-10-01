@@ -24,6 +24,7 @@ import AdjustmentsTable from "@/components/adjustments/AdjustmentsTable";
 import AdjustmentsRegistry from "@/components/adjustments/AdjustmentsRegistry";
 import SkuIssuesPanel from "@/components/adjustments/SkuIssuesPanel";
 import DisputeBoard from "@/components/adjustments/DisputeBoard";
+import DisputeAutopilot from "@/components/adjustments/DisputeAutopilot";
 
 interface Stats {
   thisMonth: number;
@@ -290,6 +291,9 @@ export default function AdjustmentsPage() {
       {/* Sync status banner */}
       {/* Дашборд споров — сводка по аккаунтам, кейсы, здоровье кронов */}
       <DisputeBoard />
+
+      {/* Автопилот: очередь «готов к подаче», обучение на исходах, плейбук */}
+      <DisputeAutopilot />
 
       {(syncMessage || syncError) && (
         <div

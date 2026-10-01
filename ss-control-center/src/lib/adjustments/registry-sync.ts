@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { addDisputeEvent, type DisputeEventType } from "@/lib/adjustments/dispute-history";
 import { BOARD_STORE_IDS } from "@/lib/adjustments/dispute-board";
 import { originFor } from "@/lib/adjustments/submission-origin";
+import { parseMeasure } from "@/lib/adjustments/dispute-learning";
 
 export interface SyncCase {
   orderId: string;
@@ -29,6 +30,9 @@ export interface SyncCase {
   vps?: string | null;
   filedDate?: string | null; // YYYY-MM-DD — дата подачи кейса
   summary?: string | null;
+  cls?: string | null; // класс из очереди: GROSS_DIM, GROSS_WEIGHT, DISCREPANCY…
+  declared?: string | null; // «12x12x10/12lb» — как заявлено при покупке лейбла
+  audited?: string | null; // «13x42x11/37lb» — аудит перевозчика (Transaction Details / FedEx)
 }
 
 export interface SyncPenalty {
@@ -41,6 +45,10 @@ export interface SyncPenalty {
   cls?: string | null;
   disputable?: string | null; // STRONG | CHECK | WEAK | NO | UNKNOWN
   reason?: string | null;
+  declared?: string | null;
+  audited?: string | null;
+  labelPaid?: number | null; // уплачено за лейбл
+  carrierCharge?: number | null; // выставил перевозчик итого
 }
 
 export interface SyncCredit {
@@ -140,15 +148,69 @@ async function hasEvent(adjustmentId: string, sourceRef: string) {
 
 async function enrich(
   row: { id: string; amazonOrderId: string | null; carrier: string | null; trackingNumber: string | null },
-  data: { orderId?: string | null; carrier?: string | null; tracking?: string | null }
+  data: {
+    orderId?: string | null;
+    carrier?: string | null;
+    tracking?: string | null;
+    cls?: string | null;
+    declared?: string | null;
+    audited?: string | null;
+    labelPaid?: number | null;
+    carrierCharge?: number | null;
+  }
 ) {
-  const patch: Record<string, string> = {};
+  const patch: Record<string, string | number> = {};
   if (!row.amazonOrderId && data.orderId) {
     patch.amazonOrderId = data.orderId;
     patch.orderId = data.orderId;
   }
   if (!row.carrier && data.carrier) patch.carrier = data.carrier.toUpperCase();
   if (!row.trackingNumber && data.tracking) patch.trackingNumber = data.tracking;
+
+  // Габариты и класс — только если в строке их ещё нет: аудит, снятый в
+  // модуле (Transaction Details), импорт с сервера не перетирает.
+  if (data.cls || data.declared || data.audited || data.labelPaid != null || data.carrierCharge != null) {
+    const cur = await prisma.shippingAdjustment.findUnique({
+      where: { id: row.id },
+      select: {
+        disputeClass: true,
+        enteredDimL: true,
+        enteredWeight: true,
+        auditedDimL: true,
+        auditedWeight: true,
+        auditSource: true,
+        amountAlreadyPaid: true,
+        totalChargeFromCarrier: true,
+      },
+    });
+    if (cur) {
+      if (!cur.disputeClass && data.cls) patch.disputeClass = data.cls.toUpperCase();
+      const e = parseMeasure(data.declared);
+      if (cur.enteredDimL == null && e.dims) {
+        [patch.enteredDimL, patch.enteredDimW, patch.enteredDimH] = e.dims;
+        patch.enteredDimUnit = "IN";
+      }
+      if (cur.enteredWeight == null && e.weight != null) {
+        patch.enteredWeight = e.weight;
+        patch.enteredWeightUnit = "LB";
+      }
+      // UPS-манифест за аудит не принимаем: у таких строк аудит пустой.
+      const a = parseMeasure(data.audited);
+      const manifest = cur.auditSource === "UPS_API_MANIFEST_UNRELIABLE";
+      if ((cur.auditedDimL == null || manifest) && a.dims) {
+        [patch.auditedDimL, patch.auditedDimW, patch.auditedDimH] = a.dims;
+        patch.auditedDimUnit = "IN";
+        if (manifest) patch.auditSource = "TRANSACTION_DETAILS";
+      }
+      if ((cur.auditedWeight == null || manifest) && a.weight != null) {
+        patch.auditedWeight = a.weight;
+        patch.auditedWeightUnit = "LB";
+      }
+      if (cur.amountAlreadyPaid == null && data.labelPaid != null) patch.amountAlreadyPaid = data.labelPaid;
+      if (cur.totalChargeFromCarrier == null && data.carrierCharge != null)
+        patch.totalChargeFromCarrier = -Math.abs(data.carrierCharge);
+    }
+  }
   if (Object.keys(patch).length) {
     await prisma.shippingAdjustment.update({ where: { id: row.id }, data: patch });
   }
@@ -180,7 +242,14 @@ export async function registrySync(input: RegistrySyncInput) {
       continue;
     }
     report.cases.matched++;
-    await enrich(row, { orderId: c.orderId, carrier: c.carrier, tracking: c.tracking });
+    await enrich(row, {
+      orderId: c.orderId,
+      carrier: c.carrier,
+      tracking: c.tracking,
+      cls: c.cls,
+      declared: c.declared,
+      audited: c.audited,
+    });
 
     if (c.vps && c.vps !== origin.vps) {
       report.cases.errors.push(`${c.orderId}: VPS ${c.vps} не совпадает с ${origin.vps} — строку не импортирую`);
@@ -230,7 +299,16 @@ export async function registrySync(input: RegistrySyncInput) {
     }
     report.penalties.matched++;
     if (!row.amazonOrderId && p.orderId) report.penalties.enriched++;
-    await enrich(row, { orderId: p.orderId, carrier: p.carrier, tracking: p.tracking });
+    await enrich(row, {
+      orderId: p.orderId,
+      carrier: p.carrier,
+      tracking: p.tracking,
+      cls: p.cls && p.cls !== "NEEDS_AUDIT" ? p.cls : null,
+      declared: p.declared,
+      audited: p.audited,
+      labelPaid: p.labelPaid,
+      carrierCharge: p.carrierCharge,
+    });
 
     if (!DRAFT_GRADES.has((p.disputable ?? "").toUpperCase())) continue;
     const ref = `penalty:${p.transactionId}`;
