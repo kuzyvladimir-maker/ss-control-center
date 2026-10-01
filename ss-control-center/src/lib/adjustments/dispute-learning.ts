@@ -21,6 +21,7 @@ export type Pattern =
   | "WEIGHT_ONLY"
   | "DECLARED_UNDER_DIMWEIGHT"
   | "MULTI_AXIS_GROWTH"
+  | "WEIGHT_MINOR"
   | "NO_MEASURE_CHANGE"
   | "UNEXPLAINED_CHARGE"
   | "USPS_APV"
@@ -85,6 +86,17 @@ export const ARGUMENTS: Record<Pattern, ArgumentSpec> = {
     fileable: false,
     prerequisite:
       "Amazon стабильно отказывает «consistent with the carrier's measurement process» — подавать только с новым доказательством (фото коробки, заводской артикул)",
+  },
+  WEIGHT_MINOR: {
+    pattern: "WEIGHT_MINOR",
+    title: "Вес +10–50% при тех же габаритах",
+    argument: "габариты совпали в пределах 1.5 дюйма, вес аудита выше на 10–50% — Amazon считает это обычным замером",
+    claim:
+      "The carrier-audited dimensions match the declared carton; the audited weight is moderately higher than declared.",
+    ask: "Please review the carrier's audited weight for these tracking numbers.",
+    fileable: false,
+    prerequisite:
+      "слабая строка: шаблонный отказ «consistent with the carrier's measurement»; подавать только с весовым доказательством (фото на весах); на будущее проверить заявляемый вес профиля коробки",
   },
   NO_MEASURE_CHANGE: {
     pattern: "NO_MEASURE_CHANGE",
@@ -220,6 +232,7 @@ export function detectPattern(input: {
       if (aw <= dimWeight(a) + 1 && ew < dimWeight(e) * 0.8) return "DECLARED_UNDER_DIMWEIGHT";
       return "WEIGHT_ONLY";
     }
+    if (ew && aw && aw >= 1.1 * ew) return "WEIGHT_MINOR";
     return "NO_MEASURE_CHANGE";
   }
   if (ew && aw && aw >= 1.5 * ew && ew < dimWeight(e) * 0.8) return "DECLARED_UNDER_DIMWEIGHT";

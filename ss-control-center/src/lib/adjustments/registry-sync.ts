@@ -157,6 +157,8 @@ async function enrich(
     audited?: string | null;
     labelPaid?: number | null;
     carrierCharge?: number | null;
+    /** Аудит из очереди кейсов: снят с Transaction Details / из писем Amazon */
+    auditFromTransactionDetails?: boolean;
   }
 ) {
   const patch: Record<string, string | number> = {};
@@ -194,15 +196,19 @@ async function enrich(
         patch.enteredWeight = e.weight;
         patch.enteredWeightUnit = "LB";
       }
-      // UPS-манифест за аудит не принимаем: у таких строк аудит пустой.
+      // UPS-манифест за аудит не принимаем. Аудит очереди кейсов снят с
+      // Transaction Details и сильнее FedEx Track API: по 112-6607996-5293053
+      // Track API отдал 12×12×10, а Amazon выставил и вернул по 22×13×13.
       const a = parseMeasure(data.audited);
-      const manifest = cur.auditSource === "UPS_API_MANIFEST_UNRELIABLE";
-      if ((cur.auditedDimL == null || manifest) && a.dims) {
+      const replace =
+        cur.auditSource === "UPS_API_MANIFEST_UNRELIABLE" ||
+        (data.auditFromTransactionDetails === true && cur.auditSource !== "TRANSACTION_DETAILS");
+      if ((cur.auditedDimL == null || replace) && a.dims) {
         [patch.auditedDimL, patch.auditedDimW, patch.auditedDimH] = a.dims;
         patch.auditedDimUnit = "IN";
-        if (manifest) patch.auditSource = "TRANSACTION_DETAILS";
+        if (replace) patch.auditSource = "TRANSACTION_DETAILS";
       }
-      if ((cur.auditedWeight == null || manifest) && a.weight != null) {
+      if ((cur.auditedWeight == null || replace) && a.weight != null) {
         patch.auditedWeight = a.weight;
         patch.auditedWeightUnit = "LB";
       }
@@ -249,6 +255,7 @@ export async function registrySync(input: RegistrySyncInput) {
       cls: c.cls,
       declared: c.declared,
       audited: c.audited,
+      auditFromTransactionDetails: true,
     });
 
     if (c.vps && c.vps !== origin.vps) {
