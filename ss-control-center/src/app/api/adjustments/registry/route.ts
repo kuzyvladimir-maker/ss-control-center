@@ -16,7 +16,7 @@
  *   originMismatch=1          только строки, где кабинет/VPS подачи не сошлись со справочником
  *   source=TRANSACTION_DETAILS
  *   amountMin=50&amountMax=900  по модулю суммы списания, USD
- *   days=180 | from=YYYY-MM-DD&to=YYYY-MM-DD
+ *   days=180 | days=all | from=YYYY-MM-DD&to=YYYY-MM-DD
  *   q=строка                  поиск по заказу, треку, SKU, номеру кейса
  *   groupBy=store|carrier|class|status
  *   limit=500
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       ...(from ? { gte: from } : {}),
       ...(to ? { lte: to } : {}),
     };
-  } else {
+  } else if (sp.get("days") !== "all") {
     const days = Math.min(1000, Math.max(1, parseInt(sp.get("days") || "180")));
     const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
     where.adjustmentDate = { gte: since };
@@ -343,5 +343,19 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ items, groups, totals, groupBy });
+  // Весь реестр без фильтров — для «показано N из M» на странице.
+  const all = await prisma.shippingAdjustment.aggregate({
+    _count: { _all: true },
+    _sum: { adjustmentAmount: true },
+    _min: { adjustmentDate: true },
+    _max: { adjustmentDate: true },
+  });
+  const grand = {
+    count: all._count._all,
+    amount: Math.round((all._sum.adjustmentAmount ?? 0) * 100) / 100,
+    firstDate: all._min.adjustmentDate,
+    lastDate: all._max.adjustmentDate,
+  };
+
+  return NextResponse.json({ items, groups, totals, grand, groupBy });
 }

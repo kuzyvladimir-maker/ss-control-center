@@ -14,6 +14,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Btn } from "@/components/kit";
 import { ChevronDown, ChevronRight, Download, ExternalLink, Loader2 } from "lucide-react";
+import PeriodPicker, { presetLabel, presetPeriod, ruDay, type Period } from "./PeriodPicker";
 
 const CLASS_ORDER = [
   "GROSS_DIM",
@@ -198,7 +199,7 @@ interface Filters {
   originMismatch: boolean;
   amountMin: string;
   amountMax: string;
-  days: string;
+  period: Period;
   q: string;
   groupBy: string;
 }
@@ -212,7 +213,7 @@ const EMPTY_FILTERS: Filters = {
   originMismatch: false,
   amountMin: "",
   amountMax: "",
-  days: "180",
+  period: presetPeriod("all"),
   q: "",
   groupBy: "class",
 };
@@ -227,10 +228,13 @@ function buildParams(f: Filters): URLSearchParams {
   if (f.originMismatch) p.set("originMismatch", "1");
   if (f.amountMin) p.set("amountMin", f.amountMin);
   if (f.amountMax) p.set("amountMax", f.amountMax);
-  if (f.q) p.set("q", f.q);
-  p.set("days", f.days);
+  if (f.q) p.set("q", f.q.trim());
+  // Период по дате списания; без границ — весь реестр.
+  if (f.period.from) p.set("from", f.period.from);
+  if (f.period.to) p.set("to", f.period.to);
+  if (!f.period.from && !f.period.to) p.set("days", "all");
   p.set("groupBy", f.groupBy);
-  p.set("limit", "1000");
+  p.set("limit", "5000");
   return p;
 }
 
@@ -256,6 +260,12 @@ export default function AdjustmentsRegistry() {
     recovered: number;
     truncated: boolean;
   } | null>(null);
+  const [grand, setGrand] = useState<{
+    count: number;
+    amount: number;
+    firstDate: string | null;
+    lastDate: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [events, setEvents] = useState<Record<string, DisputeEvent[]>>({});
@@ -269,6 +279,7 @@ export default function AdjustmentsRegistry() {
       setRows(data.items || []);
       setGroups(data.groups || []);
       setTotals(data.totals || null);
+      setGrand(data.grand || null);
     } catch (err) {
       console.error("registry load failed", err);
     } finally {
@@ -312,6 +323,12 @@ export default function AdjustmentsRegistry() {
 
   return (
     <div className="space-y-4">
+      {/* Период по дате списания */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[12px] text-ink-3">Дата списания:</span>
+        <PeriodPicker value={filters.period} onChange={(period) => set({ period })} />
+      </div>
+
       {/* Фильтры */}
       <div className="flex flex-wrap items-center gap-2">
         <select className={selectClass} value={filters.store} onChange={(e) => set({ store: e.target.value })}>
@@ -391,17 +408,10 @@ export default function AdjustmentsRegistry() {
           />
         </div>
 
-        <select className={selectClass} value={filters.days} onChange={(e) => set({ days: e.target.value })}>
-          <option value="30">30 дней</option>
-          <option value="90">90 дней</option>
-          <option value="180">180 дней</option>
-          <option value="365">год</option>
-          <option value="1000">всё</option>
-        </select>
 
         <input
           className={`${selectClass} w-52`}
-          placeholder="заказ, трек, SKU, кейс"
+          placeholder="номер заказа, трек, SKU, кейс"
           value={filters.q}
           onChange={(e) => set({ q: e.target.value })}
         />
@@ -430,6 +440,27 @@ export default function AdjustmentsRegistry() {
         </div>
       </div>
 
+      {/* Сколько показано из всего реестра */}
+      {totals && grand && (
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md bg-surface-tint px-3 py-2 text-[12.5px] text-ink-2">
+          <span>
+            Показано <strong className="tabular text-ink">{totals.count}</strong> из{" "}
+            <span className="tabular">{grand.count}</span>
+          </span>
+          <span>
+            сумма <strong className={`tabular ${totals.amount < 0 ? "text-danger" : "text-ink"}`}>{money(totals.amount)}</strong>
+            {totals.recovered > 0 && <span className="text-success"> · вернули {money(totals.recovered)}</span>}
+          </span>
+          <span className="text-[11.5px] text-ink-3 tabular">
+            {filters.period.from || filters.period.to
+              ? `${ruDay(filters.period.from || grand.firstDate)} – ${ruDay(filters.period.to || grand.lastDate)} (${presetLabel(filters.period.preset)})`
+              : `всё время: ${ruDay(grand.firstDate)} – ${ruDay(grand.lastDate)}`}
+            {" · "}сумма со знаком: списания минус, кредиты плюс
+          </span>
+          {totals.truncated && <span className="text-warn-strong">срез по лимиту 5000 строк</span>}
+        </div>
+      )}
+
       {/* Итоги по группам */}
       {groups.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -445,12 +476,6 @@ export default function AdjustmentsRegistry() {
               </span>
             </div>
           ))}
-          {totals && (
-            <div className="rounded-lg border border-ink bg-ink px-3 py-1.5 text-[12px] text-bg">
-              Итого {totals.count} · {money(totals.amount)}
-              {totals.truncated && <span className="ml-1 opacity-70">(срез по лимиту)</span>}
-            </div>
-          )}
         </div>
       )}
 
@@ -459,11 +484,12 @@ export default function AdjustmentsRegistry() {
           {loading ? "Загружаю…" : "Под фильтр ничего не попало"}
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        // Своя прокрутка: таблица не растягивает страницу, шапка прилипает.
+        <div className="max-h-[600px] overflow-auto rounded-md border border-rule">
           <table className="w-full min-w-[1400px] text-[12px]">
-            <thead>
-              <tr className="border-b border-rule text-left text-ink-3">
-                <th className="w-6 py-2" />
+            <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_var(--rule)]">
+              <tr className="text-left text-ink-3">
+                <th className="w-6 py-2 pl-1" />
                 <th className="py-2 font-medium">Дата</th>
                 <th className="font-medium">Аккаунт</th>
                 <th className="font-medium">Заказ</th>

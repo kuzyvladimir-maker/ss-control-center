@@ -196,10 +196,10 @@ function DisputeCard({ d }: { d: ComposedDispute }) {
   );
 }
 
-export default function DisputeAutopilot() {
+/** Данные автопилота: очередь, исходы, плейбук. Страница грузит один раз. */
+export function useAutopilot() {
   const [data, setData] = useState<Autopilot | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showPlaybook, setShowPlaybook] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -216,59 +216,76 @@ export default function DisputeAutopilot() {
     load();
   }, [load]);
 
-  if (error && !data) {
+  const fileable = data
+    ? data.queue.ready.filter((d) => d.choice.verdict === "FILE" || d.choice.verdict === "FILE_CAUTION")
+    : [];
+  return { data, error, fileable, reload: load };
+}
+
+export type AutopilotData = Autopilot;
+
+function AutopilotState({ error }: { error: string | null }) {
+  if (error) {
     return (
       <div className="rounded-lg border border-danger/20 bg-danger-tint px-4 py-2.5 text-[12.5px] text-danger-strong">
         Автопилот споров не загрузился: {error}
       </div>
     );
   }
-  if (!data) {
-    return (
-      <Panel>
-        <PanelBody className="flex items-center gap-2 text-[12.5px] text-ink-3">
-          <Loader2 size={14} className="animate-spin" /> Собираю очередь споров…
-        </PanelBody>
-      </Panel>
-    );
-  }
+  return (
+    <Panel>
+      <PanelBody className="flex items-center gap-2 text-[12.5px] text-ink-3">
+        <Loader2 size={14} className="animate-spin" /> Собираю очередь споров…
+      </PanelBody>
+    </Panel>
+  );
+}
 
+/** Очередь «готово к подаче» — черновики детектора, собранные в пачки. */
+export function AutopilotQueue({ data, error }: { data: Autopilot | null; error: string | null }) {
+  if (!data) return <AutopilotState error={error} />;
   const fileable = data.queue.ready.filter((d) => d.choice.verdict === "FILE" || d.choice.verdict === "FILE_CAUTION");
+  return (
+  <Panel>
+    <PanelHeader title="Очередь споров — готово к подаче" count={fileable.length} />
+    <PanelBody className="space-y-2">
+      {data.queue.ready.length === 0 ? (
+        <p className="text-[12.5px] text-ink-3">
+          Черновиков нет: детектор не нашёл новых оспоримых строк (STRONG/CHECK).
+        </p>
+      ) : (
+        data.queue.ready.map((d) => <DisputeCard key={d.key} d={d} />)
+      )}
+      {data.queue.gaps.some((g) => g.count > 0) && (
+        <div className="rounded-md bg-surface-tint px-3 py-2 text-[12px] text-ink-2">
+          <strong className="text-ink">Ждут замера с VPS</strong> (новые после отсечки, аудита нет):
+          <ul className="ml-4 mt-1 list-disc">
+            {data.queue.gaps
+              .filter((g) => g.count > 0)
+              .map((g) => (
+                <li key={g.storeId}>
+                  {g.account}: <span className="tabular">{g.count} на {usd(g.amount)}</span> —{" "}
+                  <span className="font-mono text-[11px]">{g.command}</span>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
+      <p className="text-[11px] text-ink-3">
+        Модуль готовит текст и очередь. Подаёт живая сессия из кабинета этого аккаунта и с его
+        VPS; номера кейсов и заказы другого аккаунта в тексте не упоминаются.
+      </p>
+    </PanelBody>
+  </Panel>
+  );
+}
 
+/** Что работает / что нет + плейбук (плейбук свёрнут). */
+export function AutopilotLearning({ data, error }: { data: Autopilot | null; error: string | null }) {
+  const [showPlaybook, setShowPlaybook] = useState(false);
+  if (!data) return <AutopilotState error={error} />;
   return (
     <div className="space-y-4">
-      <Panel>
-        <PanelHeader title="Очередь споров — готово к подаче" count={fileable.length} />
-        <PanelBody className="space-y-2">
-          {data.queue.ready.length === 0 ? (
-            <p className="text-[12.5px] text-ink-3">
-              Черновиков нет: детектор не нашёл новых оспоримых строк (STRONG/CHECK).
-            </p>
-          ) : (
-            data.queue.ready.map((d) => <DisputeCard key={d.key} d={d} />)
-          )}
-          {data.queue.gaps.some((g) => g.count > 0) && (
-            <div className="rounded-md bg-surface-tint px-3 py-2 text-[12px] text-ink-2">
-              <strong className="text-ink">Ждут замера с VPS</strong> (новые после отсечки, аудита нет):
-              <ul className="ml-4 mt-1 list-disc">
-                {data.queue.gaps
-                  .filter((g) => g.count > 0)
-                  .map((g) => (
-                    <li key={g.storeId}>
-                      {g.account}: <span className="tabular">{g.count} на {usd(g.amount)}</span> —{" "}
-                      <span className="font-mono text-[11px]">{g.command}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-          <p className="text-[11px] text-ink-3">
-            Модуль готовит текст и очередь. Подаёт живая сессия из кабинета этого аккаунта и с его
-            VPS; номера кейсов и заказы другого аккаунта в тексте не упоминаются.
-          </p>
-        </PanelBody>
-      </Panel>
-
       <Panel>
         <PanelHeader title="Что работает / что нет" />
         <PanelBody className="space-y-3">

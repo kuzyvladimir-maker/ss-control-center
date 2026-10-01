@@ -86,6 +86,8 @@ export interface AccountBoard {
   cutoff: string;
   all: AccountPeriod;
   last30: AccountPeriod;
+  /** Выбранный период (from/to); без границ совпадает с all. */
+  period: AccountPeriod;
   sinceCutoff: {
     charged: Money;
     disputable: Money; // черновик заведён или уже в работе
@@ -229,7 +231,19 @@ function caseStatus(statuses: string[], recovered: number): string {
 
 const NEXT_RE = /next=(\d{4}-\d{2}-\d{2})/;
 
-export async function buildDisputeBoard(now = new Date()) {
+/** Границы периода: YYYY-MM-DD включительно, null — без границы. */
+export interface BoardPeriod {
+  from: string | null;
+  to: string | null;
+}
+
+const inRange = (day: string | null, p: BoardPeriod): boolean =>
+  day != null && (!p.from || day >= p.from) && (!p.to || day <= p.to);
+
+export async function buildDisputeBoard(
+  now = new Date(),
+  range: BoardPeriod = { from: null, to: null }
+) {
   const rows = await prisma.shippingAdjustment.findMany({
     where: {
       channel: "Amazon",
@@ -260,9 +274,19 @@ export async function buildDisputeBoard(now = new Date()) {
     cutoff: a.cutoff,
     all: emptyPeriod(),
     last30: emptyPeriod(),
+    period: emptyPeriod(),
     sinceCutoff: { charged: empty(), disputable: empty(), untouched: empty() },
   }));
   const byStore = new Map(accounts.map((a) => [a.storeId, a]));
+  const hasRange = Boolean(range.from || range.to);
+
+  // Фактический охват данных — чтобы «всё время» на экране было датами, а не словами.
+  const dataRange = {
+    firstCharge: null as string | null,
+    lastCharge: null as string | null,
+    firstEvent: null as string | null,
+    lastEvent: null as string | null,
+  };
 
   const caseMap = new Map<
     string,
@@ -288,10 +312,25 @@ export async function buildDisputeBoard(now = new Date()) {
     const recovered = r.amountRecovered ?? 0;
     const lastEventDay = r.lastDisputeEventAt ? isoDay(r.lastDisputeEventAt) : null;
     const recentStatus = lastEventDay != null && lastEventDay >= since30;
+    // Для выбранного периода строка без событий считается по дате списания,
+    // иначе при границах «первая–последняя запись» сумма разошлась бы с «всё время».
+    const statusDay = lastEventDay ?? r.adjustmentDate;
+
+    if (!dataRange.firstCharge || r.adjustmentDate < dataRange.firstCharge) dataRange.firstCharge = r.adjustmentDate;
+    if (!dataRange.lastCharge || r.adjustmentDate > dataRange.lastCharge) dataRange.lastCharge = r.adjustmentDate;
+    if (lastEventDay) {
+      if (!dataRange.firstEvent || lastEventDay < dataRange.firstEvent) dataRange.firstEvent = lastEventDay;
+      if (!dataRange.lastEvent || lastEventDay > dataRange.lastEvent) dataRange.lastEvent = lastEventDay;
+    }
 
     const periods: Array<[AccountPeriod, boolean, boolean]> = [
       [acc.all, true, true],
       [acc.last30, r.adjustmentDate >= since30, recentStatus],
+      [
+        acc.period,
+        !hasRange || inRange(r.adjustmentDate, range),
+        !hasRange || inRange(statusDay, range),
+      ],
     ];
     for (const [p, chargedIn, statusIn] of periods) {
       if (chargedIn) add(p.charged, amount);
@@ -394,6 +433,8 @@ export async function buildDisputeBoard(now = new Date()) {
   return {
     generatedAt: now.toISOString(),
     today,
+    range: { from: range.from, to: range.to },
+    dataRange,
     accounts,
     cases,
     crons,
