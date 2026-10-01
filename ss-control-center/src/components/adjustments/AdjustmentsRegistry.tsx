@@ -486,7 +486,7 @@ export default function AdjustmentsRegistry() {
       ) : (
         // Своя прокрутка: таблица не растягивает страницу, шапка прилипает.
         <div className="max-h-[600px] overflow-auto rounded-md border border-rule">
-          <table className="w-full min-w-[1400px] text-[12px]">
+          <table className="w-full min-w-[1600px] text-[12px] [&_td]:px-2 [&_th]:whitespace-nowrap [&_th]:px-2">
             <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_var(--rule)]">
               <tr className="text-left text-ink-3">
                 <th className="w-6 py-2 pl-1" />

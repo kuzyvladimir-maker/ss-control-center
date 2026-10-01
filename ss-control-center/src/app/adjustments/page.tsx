@@ -629,7 +629,7 @@ export default function AdjustmentsPage() {
                     <th className="font-medium">Job</th>
                     <th className="font-medium">Status</th>
                     <th className="font-medium tabular text-right">Items</th>
-                    <th className="font-medium">Duration</th>
+                    <th className="pl-4 font-medium">Duration</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -662,7 +662,7 @@ export default function AdjustmentsPage() {
                           </span>
                         </td>
                         <td className="text-right text-ink">{e.itemsSynced}</td>
-                        <td className="text-ink-3">
+                        <td className="pl-4 text-ink-3">
                           {dur != null ? `${dur}s` : "—"}
                         </td>
                       </tr>
