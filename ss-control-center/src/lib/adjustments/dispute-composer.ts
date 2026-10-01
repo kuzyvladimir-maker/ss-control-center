@@ -156,6 +156,8 @@ const SELECT = {
   auditedWeight: true,
   auditedWeightUnit: true,
   auditSource: true,
+  amountAlreadyPaid: true,
+  totalChargeFromCarrier: true,
 } as const;
 
 type Row = {
@@ -181,6 +183,8 @@ type Row = {
   auditedWeight: number | null;
   auditedWeightUnit: string | null;
   auditSource: string | null;
+  amountAlreadyPaid: number | null;
+  totalChargeFromCarrier: number | null;
 };
 
 function rowMeasures(r: Row) {
@@ -195,7 +199,15 @@ function rowMeasures(r: Row) {
 
 export function patternOfRow(r: Row): Pattern {
   const { entered, audited } = rowMeasures(r);
-  return detectPattern({ entered, audited, carrier: r.carrier, cls: r.disputeClass });
+  const p = detectPattern({ entered, audited, carrier: r.carrier, cls: r.disputeClass });
+  // Замер не изменился, а перевозчик выставил вдвое больше уплаченного —
+  // это не надбавка, а коррекция без основания (правило детектора CHECK).
+  const paid = r.amountAlreadyPaid ?? 0;
+  const billed = Math.abs(r.totalChargeFromCarrier ?? 0);
+  if (p === "NO_MEASURE_CHANGE" && paid > 0 && billed >= 2 * paid && Math.abs(r.adjustmentAmount) >= 10) {
+    return "UNEXPLAINED_CHARGE";
+  }
+  return p;
 }
 
 function compose(
