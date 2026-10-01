@@ -310,7 +310,14 @@ export async function buildDisputeBoard(
     const amount = Math.abs(r.adjustmentAmount);
     const status = r.disputeStatus || "NONE";
     const recovered = r.amountRecovered ?? 0;
-    const lastEventDay = r.lastDisputeEventAt ? isoDay(r.lastDisputeEventAt) : null;
+    // Дата последнего события — по самой истории спора: lastDisputeEventAt
+    // проставляет мост реестра в момент импорта, а не в день события.
+    let lastEventDay: string | null = null;
+    for (const e of r.disputeEvents) {
+      const d = e.eventDate?.slice(0, 10);
+      if (d && (!lastEventDay || d > lastEventDay)) lastEventDay = d;
+    }
+    if (!lastEventDay && r.lastDisputeEventAt) lastEventDay = isoDay(r.lastDisputeEventAt);
     const recentStatus = lastEventDay != null && lastEventDay >= since30;
     // Для выбранного периода строка без событий считается по дате списания,
     // иначе при границах «первая–последняя запись» сумма разошлась бы с «всё время».
