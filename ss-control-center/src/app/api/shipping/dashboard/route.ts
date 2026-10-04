@@ -15,7 +15,12 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fetchAllOrders, getProduct } from "@/lib/veeqo/client";
+import {
+  fetchAllOrders,
+  getProduct,
+  isVeeqoAuthError,
+  VEEQO_KEY_REJECTED_MESSAGE,
+} from "@/lib/veeqo/client";
 import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
@@ -729,6 +734,12 @@ export async function GET() {
     });
   } catch (err) {
     console.error("[api/shipping/dashboard]", err);
+    if (isVeeqoAuthError(err)) {
+      return NextResponse.json(
+        { error: VEEQO_KEY_REJECTED_MESSAGE },
+        { status: 502 }
+      );
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "dashboard failed" },
       { status: 500 }

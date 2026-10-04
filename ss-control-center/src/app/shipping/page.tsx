@@ -1219,7 +1219,10 @@ export default function ShippingLabelsPage() {
       // ready in the dashboard but show no rates because plan ignored them.
       setPlanLoading(true);
       const dashRes = await fetch("/api/shipping/dashboard");
-      if (!dashRes.ok) throw new Error(`HTTP ${dashRes.status}`);
+      if (!dashRes.ok) {
+        const body = await dashRes.json().catch(() => null);
+        throw new Error(body?.error ?? `HTTP ${dashRes.status}`);
+      }
       const dashJson = (await dashRes.json()) as DashboardResponse;
       setData(dashJson);
       setLoading(false);

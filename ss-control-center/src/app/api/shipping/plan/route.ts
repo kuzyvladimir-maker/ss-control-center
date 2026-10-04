@@ -12,6 +12,10 @@ import {
   normalizeShipToName,
 } from "@/lib/veeqo";
 import { buildVeeqoItemTitle } from "@/lib/veeqo/item-title";
+import {
+  isVeeqoAuthError,
+  VEEQO_KEY_REJECTED_MESSAGE,
+} from "@/lib/veeqo/client";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 import {
   buildPackingSignature,
@@ -1120,6 +1124,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Shipping plan error:", error);
+    if (isVeeqoAuthError(error)) {
+      return NextResponse.json(
+        { error: VEEQO_KEY_REJECTED_MESSAGE },
+        { status: 502 }
+      );
+    }
     return NextResponse.json(
       {
         error:
