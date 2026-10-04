@@ -12,6 +12,15 @@ const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 const VEEQO_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 const VEEQO_MAX_ATTEMPTS = 4;
 
+export const VEEQO_KEY_REJECTED_MESSAGE =
+  "Veeqo API key rejected — обновите VEEQO_API_KEY в Vercel";
+
+export function isVeeqoAuthError(e: unknown): boolean {
+  return (
+    e instanceof Error && /Veeqo API error (401|403)\b/.test(e.message)
+  );
+}
+
 export async function veeqoFetch(path: string, options?: RequestInit) {
   // Only RETRY idempotent reads. GET/HEAD can be safely re-sent; a POST to
   // /shipping/shipments (label purchase) MUST NOT be — a transient error there

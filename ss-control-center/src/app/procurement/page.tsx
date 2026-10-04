@@ -158,7 +158,10 @@ export default function ProcurementPage() {
     setError(null);
     try {
       const res = await fetch("/api/procurement/items");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
       const data = await res.json();
       const newCards: ProcurementOrderCard[] = data.cards ?? [];
       setCards(newCards);

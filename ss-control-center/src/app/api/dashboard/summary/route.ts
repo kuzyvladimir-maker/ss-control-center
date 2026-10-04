@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  isVeeqoAuthError,
+  VEEQO_KEY_REJECTED_MESSAGE,
+} from "@/lib/veeqo/client";
 import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
 
 // Resolve a CSV `storeIds` param into the native filter keys used by
@@ -246,6 +250,7 @@ export async function GET(request: NextRequest) {
     // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
     // dimension that maps to our Store table cleanly. Surface it as-is.
     let procurementOrdersToBuy = 0;
+    let procurementError: string | null = null;
     try {
       const cards = await fetchProcurementCards();
       const distinctOrders = new Set<string>();
@@ -253,6 +258,7 @@ export async function GET(request: NextRequest) {
       procurementOrdersToBuy = distinctOrders.size;
     } catch (err) {
       console.error("[dashboard/summary] procurement count failed:", err);
+      if (isVeeqoAuthError(err)) procurementError = VEEQO_KEY_REJECTED_MESSAGE;
     }
 
     const latestByStore = new Map<string, (typeof healthSnapshots)[0]>();
@@ -328,7 +334,7 @@ export async function GET(request: NextRequest) {
       customerService: { openCases: openCsCases },
       claims: { active: activeClaims },
       health: { issues: healthIssues },
-      procurement: { ordersToBuy: procurementOrdersToBuy },
+      procurement: { ordersToBuy: procurementOrdersToBuy, error: procurementError },
       frozen: { incidents30d: frozenIncidents30d },
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,

@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  isVeeqoAuthError,
+  VEEQO_KEY_REJECTED_MESSAGE,
+} from "@/lib/veeqo/client";
 import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +27,12 @@ export async function GET() {
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     console.error("[procurement/items] error", e);
+    if (isVeeqoAuthError(e)) {
+      return NextResponse.json(
+        { error: VEEQO_KEY_REJECTED_MESSAGE },
+        { status: 502 },
+      );
+    }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

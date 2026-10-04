@@ -42,7 +42,7 @@ interface DashboardData {
   customerService: { openCases: number };
   claims: { active: number };
   health: { issues: number };
-  procurement: { ordersToBuy: number };
+  procurement: { ordersToBuy: number; error?: string | null };
   frozen: { incidents30d: number };
   adjustments: { monthlyTotal: number };
   walmart?: {
@@ -376,7 +376,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           href="/procurement"
-          label="To buy"
+          label={data?.procurement.error ? "To buy (Veeqo key rejected)" : "To buy"}
           value={data?.procurement.ordersToBuy ?? 0}
           icon={<ShoppingCart size={14} />}
           iconVariant={
