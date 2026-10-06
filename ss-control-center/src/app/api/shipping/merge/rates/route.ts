@@ -32,7 +32,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { veeqoFetch, getRatesForShipDate, veeqoDateToLocal } from "@/lib/veeqo";
+import {
+  veeqoFetch,
+  getRatesForShipDate,
+  getRatesForLaterShipDay,
+  veeqoDateToLocal,
+} from "@/lib/veeqo";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { estimateShippingRates } from "@/lib/walmart/shipping";
 import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
@@ -308,11 +313,14 @@ export async function GET(request: NextRequest) {
       heightIn: dims.height,
     };
 
-    const todayResp = await getRatesForShipDate(
-      primaryOrder,
-      `${shipDate}T16:00:00Z`,
-      parcel,
-    );
+    // A future ship day (weekend load / operator override) goes through the
+    // verified quote: if Veeqo ignores the date, EDDs are projected forward so
+    // transit-from-shipDate stays honest.
+    const todayYmd = todayNY();
+    const todayResp =
+      shipDate > todayYmd
+        ? await getRatesForLaterShipDay(primaryOrder, shipDate, todayYmd, parcel)
+        : await getRatesForShipDate(primaryOrder, `${shipDate}T16:00:00Z`, parcel);
     let rates = todayResp.available as unknown as VeeqoRate[];
     const todaySel = selectBestRate(
       rates,
@@ -348,11 +356,19 @@ export async function GET(request: NextRequest) {
       dayNameOf(shipDate) !== "Mon"
     ) {
       try {
-        const mondayResp = await getRatesForShipDate(
+        // Verified quote — see getRatesForLaterShipDay: when Veeqo ignores the
+        // Monday date its EDDs are "shipped today" and Monday transit looks
+        // absurdly short. Never shift on a projected quote.
+        const mondayResp = await getRatesForLaterShipDay(
           primaryOrder,
-          `${nextMonday}T16:00:00Z`,
+          nextMonday,
+          shipDate,
           parcel,
+          todayResp.available,
         );
+        if (!mondayResp.anchorHonored) {
+          throw new Error("Veeqo ignored the Monday ship date — shipping today");
+        }
         const mondayRates = mondayResp.available as unknown as VeeqoRate[];
         const mondaySel = selectBestRate(
           mondayRates,

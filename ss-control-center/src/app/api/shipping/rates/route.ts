@@ -15,11 +15,13 @@ import {
   veeqoFetch,
   getShippingRates,
   getRatesForShipDate,
+  getRatesForLaterShipDay,
   updateOrderDispatchDate,
 } from "@/lib/veeqo";
 import { prisma } from "@/lib/prisma";
 import { lookupSku } from "@/lib/sku-database";
 import { resolveOrderParcel } from "@/lib/shipping/order-parcel";
+import { todayNY } from "@/lib/shipping/dates";
 
 // Quoting carriers is a multi-second round trip and the operator is sitting in
 // front of the dialog waiting for it; never let the platform default cut it off
@@ -96,6 +98,18 @@ export async function GET(request: NextRequest) {
           `[rates] parcel resolve failed for order ${orderId}, quoting without it:`,
           e instanceof Error ? e.message : e,
         );
+      }
+      // Verified quote: Veeqo has been seen ignoring preferred_shipment_date
+      // (2026-10-06). Then EDDs are projected forward from today so the modal's
+      // "N days" transit is honest; `estimated` tells the UI they're not quoted.
+      const today = todayNY();
+      if (shipDate > today) {
+        const resp = await getRatesForLaterShipDay(order, shipDate, today, parcel);
+        return NextResponse.json({
+          rates: resp.available,
+          shipDate,
+          estimated: !resp.anchorHonored,
+        });
       }
       const resp = await getRatesForShipDate(
         order,

@@ -390,6 +390,66 @@ export async function getRatesForShipDate(
   return { available };
 }
 
+/**
+ * Quote for a LATER physical ship day — but verify Veeqo actually honoured
+ * `preferred_shipment_date`.
+ *
+ * Proven live 2026-10-06 (order 112-2383265-9469867, ship-by 10/6): Veeqo
+ * returned byte-identical EDDs for preferred dates 10/6, 10/7, 10/9 and 10/13.
+ * The date was silently ignored, so every EDD was still "shipped today", while
+ * our code measured transit from the later day. Result: UPS Ground Saver
+ * Florida→Washington, really 8 days, showed "EDD 10/14 · 1 day" from 10/13 and
+ * passed the frozen ≤3-day gate. Food-safety bug.
+ *
+ * We quote `baseYmd` (today) and `laterYmd`. If no common service's EDD moved,
+ * the anchor was ignored → we return `anchorHonored: false` and PROJECT each
+ * EDD forward by the calendar-day gap (same transit time as from today), so
+ * any transit math stays honest. Callers must not auto-pick a projected rate
+ * as a "cheaper Monday" — it is only an estimate.
+ */
+export async function getRatesForLaterShipDay(
+  order: Record<string, any>,
+  laterYmd: string,
+  baseYmd: string,
+  parcel?: RateShopParcel,
+  baseRates?: VeeqoNormalizedRate[],
+): Promise<{ available: VeeqoNormalizedRate[]; anchorHonored: boolean }> {
+  const later = await getRatesForShipDate(order, `${laterYmd}T16:00:00Z`, parcel);
+  const gapDays = Math.round(
+    (Date.parse(`${laterYmd}T00:00:00Z`) - Date.parse(`${baseYmd}T00:00:00Z`)) /
+      86_400_000,
+  );
+  if (gapDays <= 0) return { available: later.available, anchorHonored: true };
+
+  const base =
+    baseRates ??
+    (await getRatesForShipDate(order, `${baseYmd}T16:00:00Z`, parcel)).available;
+  const baseEdd = new Map(base.map((r) => [r.title, r.delivery_promise_date]));
+  let common = 0;
+  let moved = 0;
+  for (const r of later.available) {
+    const b = baseEdd.get(r.title);
+    if (b == null) continue;
+    common++;
+    if (utcToPacificYMD(b) !== utcToPacificYMD(r.delivery_promise_date)) moved++;
+  }
+  // Nothing to compare against → can't prove the anchor worked; treat as ignored.
+  const anchorHonored = common > 0 && moved > 0;
+  if (anchorHonored) return { available: later.available, anchorHonored };
+
+  const shiftMs = gapDays * 86_400_000;
+  const projected = later.available.map((r) => {
+    const t = Date.parse(r.delivery_promise_date);
+    return Number.isNaN(t)
+      ? r
+      : { ...r, delivery_promise_date: new Date(t + shiftMs).toISOString() };
+  });
+  console.warn(
+    `[veeqo] preferred_shipment_date ${laterYmd} IGNORED for order ${order.number} — EDDs projected +${gapDays}d from ${baseYmd}`,
+  );
+  return { available: projected, anchorHonored: false };
+}
+
 // Extract Value-Added-Service flags from a Veeqo rate object so the
 // matching `/shipping/shipments` POST can echo them back. Veeqo's
 // Amazon Shipping V2 errors with INVALID_VALUE_ADDED_SERVICES when the

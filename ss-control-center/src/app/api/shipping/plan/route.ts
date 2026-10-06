@@ -5,6 +5,7 @@ import {
   getProduct,
   getShippingRates,
   getRatesForShipDate,
+  getRatesForLaterShipDay,
   veeqoDateToLocal,
   getTodayNY,
   updateOrderDispatchDate,
@@ -704,13 +705,27 @@ export async function GET(request: NextRequest) {
           })();
 
           let rates: VeeqoRate[];
+          // True when Veeqo ignored a FUTURE ship day (weekend load / manual
+          // override) and the EDDs below are projected, not quoted.
+          let shipDayProjected = false;
           if (useNewRateApi) {
-            const resp = await getRatesForShipDate(
-              order,
-              `${effectiveShipDay}T16:00:00Z`,
-              newApiParcel,
-            );
-            rates = resp.available as unknown as VeeqoRate[];
+            if (effectiveShipDay > today) {
+              const resp = await getRatesForLaterShipDay(
+                order,
+                effectiveShipDay,
+                today,
+                newApiParcel,
+              );
+              rates = resp.available as unknown as VeeqoRate[];
+              shipDayProjected = !resp.anchorHonored;
+            } else {
+              const resp = await getRatesForShipDate(
+                order,
+                `${effectiveShipDay}T16:00:00Z`,
+                newApiParcel,
+              );
+              rates = resp.available as unknown as VeeqoRate[];
+            }
           } else {
             if (shipDateOverride) {
               try {
@@ -754,6 +769,14 @@ export async function GET(request: NextRequest) {
           selectedRate = todaySel.rate;
           if (productType === "Frozen" && todaySel.diagnostic) {
             frozenRateDebug = `today: ${todaySel.diagnostic}`;
+          }
+          if (shipDayProjected) {
+            frozenRateDebug = [
+              frozenRateDebug,
+              `EDDs ESTIMATED: Veeqo ignored ship date ${effectiveShipDay}, dates shifted from today`,
+            ]
+              .filter(Boolean)
+              .join(" | ");
           }
 
           // Surface a stopReason for non-Amazon orders whose rate quote
@@ -805,11 +828,23 @@ export async function GET(request: NextRequest) {
 
           if (tryMonday) {
             try {
-              const mondayResp = await getRatesForShipDate(
+              // Verified quote: if Veeqo ignores the Monday date (proven
+              // 2026-10-06 — identical EDDs for any preferred_shipment_date),
+              // the "Monday" EDDs are really "shipped today" and transit from
+              // Monday comes out absurdly short (Ground Saver FL→WA "1 day").
+              // Never auto-shift on a projected quote — ship today instead.
+              const mondayResp = await getRatesForLaterShipDay(
                 order,
-                `${nextMonday}T16:00:00Z`,
+                nextMonday,
+                effectiveShipDay,
                 newApiParcel,
+                shipDayProjected ? undefined : (rates as never),
               );
+              if (!mondayResp.anchorHonored) {
+                throw new Error(
+                  "Veeqo ignored the Monday ship date — no honest Monday EDDs, shipping today",
+                );
+              }
               const mondayRates = mondayResp.available as unknown as VeeqoRate[];
               const mondaySel = selectBestRate(
                 mondayRates,
@@ -839,6 +874,12 @@ export async function GET(request: NextRequest) {
             } catch (e) {
               // Trick failed — keep today's pick. The new API doesn't mutate the
               // order, so there is nothing to restore.
+              frozenRateDebug = [
+                frozenRateDebug,
+                `Monday-shift skipped: ${e instanceof Error ? e.message : e}`,
+              ]
+                .filter(Boolean)
+                .join(" | ");
               console.warn(
                 "Ship Date Trick (rate-shopping API) failed for order",
                 order.id,
